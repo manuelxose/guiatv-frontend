@@ -1,0 +1,66 @@
+@import '~primeng/resources/primeng.min.css';
+@import '~primeicons/primeicons.css';
+
+:host {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.p-menubar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 1.2em;
+  padding: 0 1em;
+
+  .p-menuitem {
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+  }
+  .menu-bar{
+    width: 100%;
+  }
+}
+
+
+
+.logo {
+  width: 100px;
+  height: 100px;
+  margin-right: 1em;
+}
+
+///estilos para movil
+
+@media screen and (max-width: 600px) {
+
+:host {
+
+  ::ng-deep .p-menubar {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  ::ng-deep .p-element {
+    min-width: -webkit-fill-available;
+  }
+
+  ::ng-deep .p-menubar-button{
+    padding: 35px;
+  }
+
+}
+
+.logo {
+  width: 100px;
+  height: 50px;
+  margin-right: 1em;
+}
+
+  }

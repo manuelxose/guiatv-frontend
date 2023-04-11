@@ -1,0 +1,10 @@
+<nav class="filter-nav">
+  <div class="p-grid p-justify-center p-align-center filter-container">
+    <div class="p-col-12 p-md-3 p-lg-2">
+      <p-menubar [model]="menuItems"></p-menubar>
+    </div>
+    <div class="p-col-12 p-md-3 p-lg-2">
+      <p-dropdown [options]="programTypes" [(ngModel)]="selectedProgramType" (onChange)="onProgramTypeChange()" placeholder="Tipo de programa"></p-dropdown>
+    </div>
+  </div>
+</nav>

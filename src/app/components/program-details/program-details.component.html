@@ -1,0 +1,8 @@
+<div class="program-details-container" *ngIf="program">
+  <h2>{{ program.title }}</h2>
+  <p>{{ program.description }}</p>
+  <p>{{ program.duration }} minutos</p>
+  <p>{{ program.channel }}</p>
+  <p>{{ program.airDate | date:'dd/MM/yyyy HH:mm' }}</p>
+  <button (click)="closeDetails()">Cerrar detalles</button>
+</div>

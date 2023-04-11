@@ -1,0 +1,44 @@
+@import '~primeng/resources/primeng.min.css';
+@import '~primeicons/primeicons.css';
+
+.filter-nav {
+  background-color: #ffffff;
+  padding: 1em 0;
+}
+
+.filter-container {
+  .p-menubar {
+    border: none;
+    background: transparent;
+
+    .p-menuitem {
+      font-size: 1em;
+
+      .p-menuitem-link {
+        color: #333;
+        padding: 0.5em;
+      }
+    }
+  }
+
+  .p-dropdown {
+    width: 100%;
+  }
+}
+
+.time-ranges {
+  margin-top: 1em;
+
+  .p-button {
+    margin: 0 0.5em;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .time-ranges {
+    flex-direction: column;
+    .p-button {
+      margin-bottom: 1em;
+    }
+  }
+}

@@ -1,0 +1,105 @@
+
+<h1 class="titulo-guia">GuiaProgramacionTv.Com</h1>
+<h2 class="subtitulo-guia">Encuentra fácilmente tus programas favoritos en nuestra guía de televisión</h2>
+
+
+
+<div class="card">
+  <div class="header-container">
+    <div class="dia-semana">
+      <button class="btn-dia-semana" *ngFor="let dia of dias"
+      (click)="cambiarDia(dia.diaNumero)"
+      [ngClass]="{'btn-dia-semana-activo': dia.diaNumero === diaActual}"
+      >
+        {{dia.diaSemana}} {{dia.diaNumero}}
+      </button>
+    </div>
+    <div class="selector-franjas-horarias">
+      <div class="selector-franjas-horarias">
+        <ul>
+          <li
+            *ngFor="let item of franjas; let i = index"
+            [class.activo]="item[0] === franjaHoraria"
+            (click)="cambiarFranjaHoraria(item, i)"
+            class="item-franja"
+          >
+            <button type="button" class="btn-franja">
+              {{ item[0] }} - {{ item[item.length - 1] }}
+            </button>
+          </li>
+        </ul>
+      </div>
+  </div>
+
+
+  <div class="scrollable-container">
+    <div *ngIf="mostrarHoraActual" class="hora-actual" [ngStyle]="{ left: leftRem + 'rem' }"></div>
+
+    <div class="scrollable-header">
+      <div class="header-item" *ngFor="let hora of horas">{{hora}}</div>
+    </div>
+
+    <div class="scrollable-body">
+      <div *ngFor="let canal of programas; let canalIndex = index">
+        <div class="channel-row">
+          <div class="logo-container">
+            <img class="logo" [src]="canal.image" alt="{{canal.canal}} logo">
+          </div>
+          <div class="programas-row" #programasRow>
+            <div
+              *ngFor="let programa of canal.programas; let i = index"
+              class="programa-container"
+              [ngStyle]="{
+                'margin-left': i === 0 ? calcularPosicionIzquierda(programa.inicio) : '',
+                'width': calcularAnchoPrograma(programa.duracion)
+              }"
+              (click)="mostrarInfoPrograma(canalIndex, programa)"
+
+            >
+              <div class="programa"
+
+              >
+                <div class="titulo">{{ programa.title }}</div>
+                <div class="hora">{{ programa.inicio }} - {{ programa.fin }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-container *ngIf="canalIndex === canalSeleccionado">
+          <div class="programa-info" *ngIf="programaSeleccionado">
+            <h2>{{ programaSeleccionado.title }}</h2>
+            <p><b>Hora de Inicio: </b>{{ programaSeleccionado.inicio }}</p>
+            <p><b>Hora de Finalización: </b>{{ programaSeleccionado.fin }}</p>
+            <p>{{ programaSeleccionado.ano }} <b *ngIf="programaSeleccionado.edad">|</b> {{ programaSeleccionado.edad }}</p>
+            <p *ngIf="programaSeleccionado.genero">{{ programaSeleccionado.genero }}</p>
+            <p><b class="bold">Descripción: </b>{{ programaSeleccionado.des_programa }}</p>
+            <p><b>Duración: </b>{{programaSeleccionado.duracion}} min.</p>
+            <p *ngIf="programaSeleccionado.detalles.presenta"><b>Presentado Por: </b>{{programaSeleccionado.detalles.presenta}}</p>
+            <p *ngIf="programaSeleccionado.detalles.pais"><b>País: </b>{{ programaSeleccionado.detalles.pais }}</p>
+                <div class="" *ngIf="programaSeleccionado.tipo == 'Cine'">
+                  <p *ngIf="programaSeleccionado.detalles.direccion"><b>Dirección: </b>{{ programaSeleccionado.detalles.direccion }}</p>
+                  <p *ngIf="programaSeleccionado.detalles.reparto"><b>Reparto: </b>{{ programaSeleccionado.detalles.reparto }}</p>
+                  <p *ngIf="programaSeleccionado.detalles.guion"><b>Guion: </b>{{ programaSeleccionado.detalles.guion }}</p>
+                  <p *ngIf="programaSeleccionado.detalles.musica"><b>Música: </b>{{ programaSeleccionado.detalles.musica }}</p>
+                  <p *ngIf="programaSeleccionado.detalles.produccion"><b>Producción: </b>{{ programaSeleccionado.detalles.produccion }}</p>
+                  <p *ngIf="programaSeleccionado.detalles.productora"><b>Productora: </b>{{ programaSeleccionado.detalles.productora }}</p>
+                </div>
+            <a href="javascript:void(0)" class="boton"(click)="cerrarPrograma()">Cerrar</a>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+
+<div *ngIf="isLoading" class="loader-container">
+  <div class="loader">
+    <span class="loader-text">Cargando Guía Programación TV</span>
+  </div>
+</div>

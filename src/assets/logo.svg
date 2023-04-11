@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 150" width="500" height="150">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #1c1c1c;
+        font-family: "Arial Black", Arial, sans-serif;
+        font-weight: bold;
+      }
+    </style>
+  </defs>
+ <rect width="100%" height="100%" fill="#fff"/>
+  <path class="cls-1" d="M20,80 L60,20 L100,80 Z" />
+  <path class="cls-1" d="M130,20 L130,80 L170,80 L170,20 Z" />
+  <path class="cls-1" d="M200,20 L200,80 L240,80 L240,20 Z" />
+  <path class="cls-1" d="M270,80 L310,20 L350,80 Z" />
+  <text class="cls-1" x="20" y="170" font-size="30"></text>
+
+</svg>
