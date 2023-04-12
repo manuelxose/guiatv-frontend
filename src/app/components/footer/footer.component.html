@@ -1,3 +1,18 @@
+
+<div class="footer-links">
+  <div class="footer-links-content">
+    <a href="/" title="Programacion TV">Programacion TV</a> -
+    <ng-container *ngFor="let url of urls; let i = index">
+      <a href="/programacion-tv/{{url}}" title="{{url}}">{{url}}</a>
+      <span *ngIf="i < urls.length - 1">-</span>
+    </ng-container>
+    <br>
+    <a title="programacion TV" href="https://guiaprogramaciontv.com/">Programacion TV</a> España
+  </div>
+</div>
+
+
+
 <div class="footer">
   <p>Diseñado por <a href="https://tecnoriasl.com/" target="_blank">TecnoRia</a> © {{currentYear}}</p>
 </div>

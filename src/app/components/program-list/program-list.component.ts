@@ -46,14 +46,14 @@ export class ProgramListComponent implements OnInit, OnDestroy {
   horaActual:any
   array_tipo:any = [];
   array_subTipo: any = [];
-  tdt = [  "La 1",  "La 2",  "Antena 3",  "Cuatro",  "Telecinco",  "La Sexta",  "Mega",  "Factoría de Ficción",  "Neox",  "Nova",  "Boing",  "Divinity",  "Energy",  "Paramount Network",  "DMax",  "Disney Channel",  "Ten",  "Clan",  "Teledeporte",  "Be Mad",  "TRECE",  "DKiss",  "Real Madrid TV",  "Atreseries",  "GOL PLAY"];
+  tdt = [  "La 1",  "La 2",  "Antena 3",  "Cuatro",  "Telecinco",  "La Sexta",  "Mega",  "Factoría de Ficción",  "Neox",  "Nova",  "Boing",  "Divinity",  "Energy",  "Paramount Network",  "DMAX",  "Disney Channel",  "Ten",  "Clan",  "Teledeporte",  "Be Mad",  "TRECE",  "DKISS",  "Atreseries",  "GOL PLAY"];
   autonomicos: any[] = [
     {
-      nombre: 'Canal Sur',
+      nombre: 'Canal Sur Andalucía',
       comunidad: 'Andalucía'
     },
     {
-      nombre: 'Canal Sur 2',
+      nombre: '7TV Andalucia',
       comunidad: 'Andalucía'
     },
     {
@@ -65,7 +65,7 @@ export class ProgramListComponent implements OnInit, OnDestroy {
       comunidad: 'Aragón'
     },
     {
-      nombre: 'IB3',
+      nombre: 'IB3 RTV Illes Balears',
       comunidad: 'Baleares'
     },
     {
@@ -73,11 +73,11 @@ export class ProgramListComponent implements OnInit, OnDestroy {
       comunidad: 'Canarias'
     },
     {
-      nombre: 'CMM TV',
+      nombre: 'Castilla la Mancha TV',
       comunidad: 'Castilla-La Mancha'
     },
     {
-      nombre: 'CyLTV',
+      nombre: 'CYLTV',
       comunidad: 'Castilla y León'
     },
     {
@@ -86,22 +86,6 @@ export class ProgramListComponent implements OnInit, OnDestroy {
     },
     {
       nombre: 'TV3',
-      comunidad: 'Cataluña'
-    },
-    {
-      nombre: '3/24',
-      comunidad: 'Cataluña'
-    },
-    {
-      nombre: 'Super3/33',
-      comunidad: 'Cataluña'
-    },
-    {
-      nombre: 'Esport3',
-      comunidad: 'Cataluña'
-    },
-    {
-      nombre: 'Barça TV',
       comunidad: 'Cataluña'
     },
     {
@@ -125,11 +109,11 @@ export class ProgramListComponent implements OnInit, OnDestroy {
       comunidad: 'Extremadura'
     },
     {
-      nombre: 'TVG',
+      nombre: 'TVG - TV Galicia',
       comunidad: 'Galicia'
     },
     {
-      nombre: 'TVG2',
+      nombre: 'TVG 2',
       comunidad: 'Galicia'
     },
     {
@@ -159,18 +143,6 @@ export class ProgramListComponent implements OnInit, OnDestroy {
     {
       nombre: 'ETB1',
       comunidad: 'País Vasco'
-    },
-    {
-      nombre: 'ETB2',
-      comunidad: 'País Vasco'
-    },
-    {
-      nombre: 'ETB3',
-      comunidad: 'País Vasco'
-    },
-    {
-      nombre: 'ETB4',
-      comunidad: 'País Vasco'
     }
   ];
   //todos los programas de cable y satelite
@@ -189,11 +161,27 @@ export class ProgramListComponent implements OnInit, OnDestroy {
     "TNT",
     "Comedy Central",
     "Calle 13",
-    "COSMO",
+    "Cosmo",
     "Canal Hollywood",
-    "SUNDAZE",
+    "Sundance TV",
+    "Paramount Network",
     "XTRM",
     "Somos",
+  ];
+  movistar = [
+    "M+ #0",
+    "M+ #Vamos",
+    "M+ Estrenos",
+    "M+ Estrenos 2",
+    "M+ Oscars",
+    "M+ Clásicos",
+    "M+ Acción",
+    "M+ Comedia",
+    "M+ Drama",
+    "M+ Cine Español",
+    "M+ Fest",
+    "M+ Series",
+    "M+ Series 2",
   ];
   screenWidthInRem: number;
   programaSeleccionado: any;
@@ -211,22 +199,19 @@ export class ProgramListComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
+    const hoy = new Date();
+    const dia = hoy.getDate();
+    this.diaActual = dia.toString();
+    this.horaActual = hoy.getHours();
+    const hora = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    this.hoy_format = hoy.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '_');
 
+    this.seleccionarFranjaHoraria(this.horaActual);
     this.updateScreenWidthInRem();
     window.addEventListener('resize', this.updateScreenWidthInRem.bind(this));
 
 
 
-
-    const hoy = new Date();
-     this.hoy_format = hoy.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '_');
-
-    //obtener el dia en numero
-    const dia = hoy.getDate();
-    this.diaActual = dia.toString();
-    this.horaActual = hoy.getHours();
-    const hora = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    this.seleccionarFranjaHoraria(this.horaActual);
 
 
     console.log('Realizando la llamada HTTP...');
@@ -259,7 +244,6 @@ export class ProgramListComponent implements OnInit, OnDestroy {
       });
 
       this.programas = this.ordenarProgramas(this.programas);
-
       this.isLoading = false;
 
       if (this.franjaHoraria != "00:00") {
@@ -301,7 +285,7 @@ export class ProgramListComponent implements OnInit, OnDestroy {
     const tamanioSegmento = 10;
     const nombresAutonomicos = this.autonomicos.map(autonomico => autonomico.nombre);
 
-    const todosLosNombres = [...this.tdt, ...this.cable, ...nombresAutonomicos];
+    const todosLosNombres = [...this.tdt, ...this.cable, ...this.movistar, ...nombresAutonomicos];
 
     // Divide los nombres en segmentos de tamaño 10
     for (let i = 0; i < todosLosNombres.length; i += tamanioSegmento) {
@@ -455,7 +439,9 @@ export class ProgramListComponent implements OnInit, OnDestroy {
   seleccionarFranjaHoraria(horaActual: number) {
     console.log('horaActual', horaActual);
 
-    const index = Math.floor(horaActual / 3) - 1;
+    let index = Math.floor(horaActual / 3) - 1;
+    if (index < 0) index = 0;
+
     console.log('index', index);
 
     // Verifica si this.franjas[index] está definido

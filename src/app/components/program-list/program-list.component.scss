@@ -341,7 +341,7 @@ body {
 .hora-actual {
   position: absolute;
   top: 0;
-  bottom: 0;
+  bottom: -592vh;
   width: 2px;
   background-color: #ff0000;
   opacity: 0.8;
@@ -458,6 +458,42 @@ body {
 }
 
 
+.footer-seo {
+  width: 100%;
+  margin: 15px 0;
+  font-size: 0.8rem;
+  color: #444;
+  line-height: 1.4;
+
+  .footer-content {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 0.5rem;
+
+    h2 {
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+      text-align: center;
+
+    }
+
+    p {
+      margin-bottom: 0.3rem;
+    }
+
+    a {
+      color: #333;
+      text-decoration: underline;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #888;
+      }
+    }
+  }
+}
+
 
 // Media query para dispositivos móviles
 // Media query para dispositivos móviles
@@ -487,6 +523,15 @@ body {
     box-sizing: border-box; // Asegúrate de que el padding esté incluido en el ancho
   }
 
+  .footer-seo {
+    .footer-content {
+      padding: 0.5rem;
+
+      h2 {
+        font-size: 0.9rem;
+      }
+    }
+  }
 
   .selector-franjas-horarias {
     display: flex;

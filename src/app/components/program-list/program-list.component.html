@@ -29,77 +29,98 @@
           </li>
         </ul>
       </div>
-  </div>
-
-
-  <div class="scrollable-container">
-    <div *ngIf="mostrarHoraActual" class="hora-actual" [ngStyle]="{ left: leftRem + 'rem' }"></div>
-
-    <div class="scrollable-header">
-      <div class="header-item" *ngFor="let hora of horas">{{hora}}</div>
     </div>
+    <div class="scrollable-container">
+      <div *ngIf="mostrarHoraActual" class="hora-actual" [ngStyle]="{ left: leftRem + 'rem' }"></div>
 
-    <div class="scrollable-body">
-      <div *ngFor="let canal of programas; let canalIndex = index">
-        <div class="channel-row">
-          <div class="logo-container">
-            <img class="logo" [src]="canal.image" alt="{{canal.canal}} logo">
-          </div>
-          <div class="programas-row" #programasRow>
-            <div
-              *ngFor="let programa of canal.programas; let i = index"
-              class="programa-container"
-              [ngStyle]="{
-                'margin-left': i === 0 ? calcularPosicionIzquierda(programa.inicio) : '',
-                'width': calcularAnchoPrograma(programa.duracion)
-              }"
-              (click)="mostrarInfoPrograma(canalIndex, programa)"
+      <div class="scrollable-header">
+        <div class="header-item" *ngFor="let hora of horas">{{hora}}</div>
+      </div>
 
-            >
-              <div class="programa"
+      <div class="scrollable-body">
+        <div *ngFor="let canal of programas; let canalIndex = index">
+          <div class="channel-row">
+            <div class="logo-container">
+              <img class="logo" [src]="canal.image" alt="{{canal.canal}} logo">
+            </div>
+            <div class="programas-row" #programasRow>
+              <div
+                *ngFor="let programa of canal.programas; let i = index"
+                class="programa-container"
+                [ngStyle]="{
+                  'margin-left': i === 0 ? calcularPosicionIzquierda(programa.inicio) : '',
+                  'width': calcularAnchoPrograma(programa.duracion)
+                }"
+                (click)="mostrarInfoPrograma(canalIndex, programa)"
 
               >
-                <div class="titulo">{{ programa.title }}</div>
-                <div class="hora">{{ programa.inicio }} - {{ programa.fin }}</div>
+                <div class="programa"
+
+                >
+                  <div class="titulo">{{ programa.title }}</div>
+                  <div class="hora">{{ programa.inicio }} - {{ programa.fin }}</div>
+                </div>
               </div>
             </div>
           </div>
+
+          <ng-container *ngIf="canalIndex === canalSeleccionado">
+            <div class="programa-info" *ngIf="programaSeleccionado">
+              <h2>{{ programaSeleccionado.title }}</h2>
+              <p><b>Hora de Inicio: </b>{{ programaSeleccionado.inicio }}</p>
+              <p><b>Hora de Finalización: </b>{{ programaSeleccionado.fin }}</p>
+              <p>{{ programaSeleccionado.ano }} <b *ngIf="programaSeleccionado.edad">|</b> {{ programaSeleccionado.edad }}</p>
+              <p *ngIf="programaSeleccionado.genero">{{ programaSeleccionado.genero }}</p>
+              <p><b class="bold">Descripción: </b>{{ programaSeleccionado.des_programa }}</p>
+              <p><b>Duración: </b>{{programaSeleccionado.duracion}} min.</p>
+              <p *ngIf="programaSeleccionado.detalles.presenta"><b>Presentado Por: </b>{{programaSeleccionado.detalles.presenta}}</p>
+              <p *ngIf="programaSeleccionado.detalles.pais"><b>País: </b>{{ programaSeleccionado.detalles.pais }}</p>
+                  <div class="" *ngIf="programaSeleccionado.tipo == 'Cine'">
+                    <p *ngIf="programaSeleccionado.detalles.direccion"><b>Dirección: </b>{{ programaSeleccionado.detalles.direccion }}</p>
+                    <p *ngIf="programaSeleccionado.detalles.reparto"><b>Reparto: </b>{{ programaSeleccionado.detalles.reparto }}</p>
+                    <p *ngIf="programaSeleccionado.detalles.guion"><b>Guion: </b>{{ programaSeleccionado.detalles.guion }}</p>
+                    <p *ngIf="programaSeleccionado.detalles.musica"><b>Música: </b>{{ programaSeleccionado.detalles.musica }}</p>
+                    <p *ngIf="programaSeleccionado.detalles.produccion"><b>Producción: </b>{{ programaSeleccionado.detalles.produccion }}</p>
+                    <p *ngIf="programaSeleccionado.detalles.productora"><b>Productora: </b>{{ programaSeleccionado.detalles.productora }}</p>
+                  </div>
+              <a href="javascript:void(0)" class="boton"(click)="cerrarPrograma()">Cerrar</a>
+            </div>
+          </ng-container>
+
         </div>
-
-        <ng-container *ngIf="canalIndex === canalSeleccionado">
-          <div class="programa-info" *ngIf="programaSeleccionado">
-            <h2>{{ programaSeleccionado.title }}</h2>
-            <p><b>Hora de Inicio: </b>{{ programaSeleccionado.inicio }}</p>
-            <p><b>Hora de Finalización: </b>{{ programaSeleccionado.fin }}</p>
-            <p>{{ programaSeleccionado.ano }} <b *ngIf="programaSeleccionado.edad">|</b> {{ programaSeleccionado.edad }}</p>
-            <p *ngIf="programaSeleccionado.genero">{{ programaSeleccionado.genero }}</p>
-            <p><b class="bold">Descripción: </b>{{ programaSeleccionado.des_programa }}</p>
-            <p><b>Duración: </b>{{programaSeleccionado.duracion}} min.</p>
-            <p *ngIf="programaSeleccionado.detalles.presenta"><b>Presentado Por: </b>{{programaSeleccionado.detalles.presenta}}</p>
-            <p *ngIf="programaSeleccionado.detalles.pais"><b>País: </b>{{ programaSeleccionado.detalles.pais }}</p>
-                <div class="" *ngIf="programaSeleccionado.tipo == 'Cine'">
-                  <p *ngIf="programaSeleccionado.detalles.direccion"><b>Dirección: </b>{{ programaSeleccionado.detalles.direccion }}</p>
-                  <p *ngIf="programaSeleccionado.detalles.reparto"><b>Reparto: </b>{{ programaSeleccionado.detalles.reparto }}</p>
-                  <p *ngIf="programaSeleccionado.detalles.guion"><b>Guion: </b>{{ programaSeleccionado.detalles.guion }}</p>
-                  <p *ngIf="programaSeleccionado.detalles.musica"><b>Música: </b>{{ programaSeleccionado.detalles.musica }}</p>
-                  <p *ngIf="programaSeleccionado.detalles.produccion"><b>Producción: </b>{{ programaSeleccionado.detalles.produccion }}</p>
-                  <p *ngIf="programaSeleccionado.detalles.productora"><b>Productora: </b>{{ programaSeleccionado.detalles.productora }}</p>
-                </div>
-            <a href="javascript:void(0)" class="boton"(click)="cerrarPrograma()">Cerrar</a>
-          </div>
-        </ng-container>
-
       </div>
     </div>
+  </div>
 
+  <div *ngIf="isLoading" class="loader-container">
+    <div class="loader">
+      <span class="loader-text">Cargando Guía Programación TV</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-seo">
+  <div class="footer-content">
+    <h2>GuiaProgramacionTv.Com - La Mejor Programación y Guía TV en Línea</h2>
+    <p>
+      En GuiaProgramacionTv.Com, te ofrecemos la <a title="parrilla TV" href="/">guía TV y programación</a> más completa y actualizada de todos los canales nacionales, locales, TDT y de pago por cable. Nuestra intuitiva parrilla de televisión te permite visualizar rápida y fácilmente la programación de todos los programas del día o de la noche. Al hacer clic en el título del programa, accederás a los detalles del mismo, incluyendo la descripción de la serie, la sinopsis de la película y las imágenes relacionadas.
+    </p>
+    <p>
+      En resumen, GuiaProgramacionTv.Com pone a tu disposición la mejor programación y guía TV:
+      - La programación TV de las principales cadenas nacionales: La 1, La 2, Antena 3, Cuatro, Telecinco y La Sexta.
+      - La <a title="parrilla tv" href="/programacion-tv/guia-tv-ahora">guía y programacion TV</a> de la TDT, con canales como Paramount, Divinity, Dkiss, DMAX, Neox, Nova, FDF, Energy, Atresseries, y más.
+      - La programación de las televisiones autonómicas y locales, como Telemadrid, 8 Madrid, TV3, 8TV, À Punt, Canal Sur, TVG, ETB1, ETB2, CMT, IB3, Aragón TV, 7RM, TPA, CyLTV, entre otras.
+      - Los canales de pago por cable, ADSL y satélite, como Cero, Fox, AXN, AXN White, Calle13, Syfy, TNT, Cosmo, Comedy Central, Canal Hollywood, TCM y muchos más.
+    </p>
+    <p>Desde GuiaProgramacionTv.Com, les deseamos que disfruten de excelentes momentos de televisión con nuestra programación y guía TV.</p>
+    <p>El equipo de TecnoRia</p>
   </div>
 </div>
 
 
 
 
-<div *ngIf="isLoading" class="loader-container">
-  <div class="loader">
-    <span class="loader-text">Cargando Guía Programación TV</span>
-  </div>
-</div>
+
+
+

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Meta } from '@angular/platform-browser';
 import { FilterMatchMode, PrimeNGConfig } from 'primeng/api';
 @Component({
   selector: 'app-root',
@@ -6,11 +7,16 @@ import { FilterMatchMode, PrimeNGConfig } from 'primeng/api';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'guiatv';
+  title = 'Guía de Programación TV - Encuentra tus programas favoritos';
+  //añadir etiquetas para seo
 
-  constructor(private primengConfig: PrimeNGConfig) {}
+  constructor(
+    private primengConfig: PrimeNGConfig,
+    private metaService: Meta
+    ) {}
 
   ngOnInit() {
+    this.updateMetaData();
     this.primengConfig.ripple = true;
     this.primengConfig.zIndex = {
       modal: 1100,    // dialog, sidebar
@@ -23,5 +29,16 @@ export class AppComponent {
     numeric: [FilterMatchMode.EQUALS, FilterMatchMode.NOT_EQUALS, FilterMatchMode.LESS_THAN, FilterMatchMode.LESS_THAN_OR_EQUAL_TO, FilterMatchMode.GREATER_THAN, FilterMatchMode.GREATER_THAN_OR_EQUAL_TO],
     date: [FilterMatchMode.DATE_IS, FilterMatchMode.DATE_IS_NOT, FilterMatchMode.DATE_BEFORE, FilterMatchMode.DATE_AFTER]
 };
+  }
+
+  updateMetaData(): void {
+
+    // Agregar o actualizar etiquetas meta
+    this.metaService.updateTag({ name: 'description', content: 'Consulta nuestra completa guía de programación TV y descubre los horarios de tus programas, series y películas favoritas en todos los canales de televisión.' });
+    this.metaService.updateTag({ name: 'keywords', content: 'guía TV, programación TV, horarios televisión, guía de programas, series, películas, canales de televisión, programación de canales, televisión en vivo' });
+    this.metaService.updateTag({ name: 'robots', content: 'index, follow' });
+    this.metaService.updateTag({ name: 'author', content: 'TecnoRia' });
+
+    // Puedes agregar más etiquetas según sea necesario
   }
 }

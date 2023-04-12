@@ -17,3 +17,42 @@
     }
   }
 }
+
+
+.footer-links {
+  width: 100%;
+  margin: 15px 0;
+  font-size: 0.7rem;
+  color: #777;
+  line-height: 1.4;
+
+  .footer-links-content {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 0.5rem;
+
+    a {
+      color: #777;
+      text-decoration: underline;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #555;
+      }
+    }
+
+    br {
+      display: block;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-links {
+    .footer-links-content {
+      padding: 0.5rem;
+    }
+  }
+}
