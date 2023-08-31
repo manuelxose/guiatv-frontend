@@ -1,0 +1,146 @@
+
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #141414;
+  color: #fff;
+}
+
+.canal-programacion {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Estilos de la cabecera del canal */
+.cabecera-canal {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.cabecera-canal img {
+  width: 80px;
+  margin-right: 20px;
+}
+
+.cabecera-canal h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ff9800; /* Color de resaltado para el título del canal */
+}
+
+/* Estilos de la lista de programas */
+.lista-programas {
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+  max-height: 500px;
+  padding-bottom: 20px;
+}
+
+/* Estilos del programa */
+.programa {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: #222;
+  color: #fff;
+  border-radius: 10px;
+}
+
+.programa-hora {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #ff9800; /* Color de resaltado para la hora del programa */
+}
+
+.programa-titulo,
+.programa-tipo,
+.programa-descripcion {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.programa-titulo {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  background-color: #444; /* Fondo diferente para el título del programa */
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.programa-tipo {
+  font-size: 0.8rem; /* Tamaño de fuente más pequeño */
+  margin-bottom: 10px;
+  background-color: #c3b884;
+  padding: 3px;
+  border-radius: 3px;
+  color: white; /* Cambio en el tono del texto */
+}
+
+
+
+/* Estilos de los botones de días */
+.dia-seleccion {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.dia-boton {
+  background-color: #222;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin: 0 10px;
+  transition: background-color 0.3s;
+}
+
+.dia-boton:hover {
+  background-color: #444;
+}
+
+.dia-boton.activo {
+  background-color: #ff9800;
+}
+
+.dia-boton-seleccionado {
+  background-color: #007bff;
+  color: #fff;
+  font-weight: bold;
+}
+/* Estilos para pantallas con un ancho máximo de 767px (dispositivos móviles) */
+@media (max-width: 767px) {
+  .cabecera-canal {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .cabecera-canal img {
+    margin-bottom: 20px;
+    margin-right: 0;
+  }
+
+  .lista-programas {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .dia-seleccion {
+    flex-wrap: wrap;
+  }
+
+  .dia-boton {
+    margin-bottom: 10px;
+  }
+}
+

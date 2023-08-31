@@ -1,0 +1,26 @@
+<h1 style="color:black">Guia de Canales TV</h1>
+<h2>Consulta la información de la programación de canales</h2>
+
+<div class="lista-canales">
+  <div class="overlay" *ngIf="cargando"></div>
+  <div class="spinner" *ngIf="cargando" [ngClass]="{'show-spinner': cargando}"></div>
+  <div class="categoria" *ngFor="let categoria of categorias">
+    <h2>Canales {{categoria}}</h2>
+    <div class="canales">
+      <ng-container *ngFor="let canal of canalesPorCategoria(categoria)">
+        <div class="canal">
+          <div class="canal-info">
+            <img class="logo" [src]="canal.image" alt="{{canal.name}} logo">
+            <h3 class="title">{{canal.name}}</h3>
+          </div>
+          <div class="acciones">
+            <button routerLink="/{{canal.name}}">Detalles</button>
+            <a *ngIf="canal.url_web != '#'" href="{{canal.url_web}}"><button>Página web</button></a>
+            <a *ngIf="canal.url_live != '#' " href="{{canal.url_live}}"><button>Ver en directo</button></a>
+
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

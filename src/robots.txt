@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /favorites/
+Disallow: /login/
+Disallow: /assets/
+Disallow: /api/
+
+Sitemap: https://www.guiaprogramaciontv.com/sitemap.xml

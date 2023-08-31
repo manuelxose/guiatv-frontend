@@ -1,0 +1,332 @@
+<div class="relative lg:h-[36.25vw] md:h-[50vw] h-[100vw]">
+  <img
+    class="absolute inset-0 w-full h-full object-cover object-center brightness-[60%]"
+    src="{{ program.icon }}"
+    alt=""
+  />
+  <div class="absolute top-[30%] md:top-[20%] ml-4 md:ml-16">
+    <!-- CREAR UN SPAN CON EL TIPO DE PROGRAMA -->
+    <span
+      class="text-white text-[8px] md:text-lg font-semibold bg-white bg-opacity-20 px-2 py-1 rounded-md"
+      >{{ program.desc?.category }}</span
+    >
+
+    <h2
+      class="text-white text-1xl md:text-5xl mt-4 h-full w-[90%] lg:text-6xl font-bold drop-shadow-xl"
+    >
+      {{ program.title?.value }}
+    </h2>
+    <p
+      class="text-white text-[8px] md:text-lg mt-3 md:mt-8 w-[90%] md:w-[80%] lg:w-[50%] drop-shadow-xl text-sm"
+    >
+      {{ program.desc?.details }}
+    </p>
+    <div class="flex flex-row items-center mt-3 md:mt-4 gap-3">
+      <button
+        class="bg-opacity-100 bg-white rounded-md py-1 md:py-2 px-2 md:px-4 w-auto text-xs lg:text-lf font-semibold flex flex-row items-center hover:bg-opacity-20 transition"
+      >
+        <i class="bi bi-play-fill text-black text-sm"></i>
+
+        <span class="text-black text-sm">Ver ahora</span>
+      </button>
+      <button
+        (click)="closeModal()"
+        class="bg-opacity-30 bg-white rounded-md py-1 md:py-2 px-2 md:px-4 w-auto text-xs lg:text-lf font-semibold flex flex-row items-center hover:bg-opacity-20 transition"
+      >
+        <i class="bi bi-info-circle text-white text-sm pr-1"></i>
+        <span class="text-white text-sm">Más Info</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="pb-5 lg:pt-10 pt-3">
+  <div class="md:p-8 lg:mt-4 sm:mt-2 mt-2 space-y-8">
+    <p
+      class="text-white text-md md:text-xl lg:text-2xl font-semibold pb-4 ml-3"
+    >
+      {{ program.desc?.category }} En Directo
+    </p>
+
+    <swiper
+      #swiperVirtualRef
+      [config]="config"
+      (slideChange)="onSlideChange()"
+      style="margin-top: -0.75rem"
+    >
+      <ng-template swiperSlide *ngFor="let slide of virtualSlides; index as i">
+        <div class="relative group cursor-pointer">
+          <img
+            class="cursor-pointer rounded-sm object-cover md:rounded lg:h-[12vw] w-full transition duration shadow-xl brightness-[80%]"
+            src="{{ program.icon }}"
+            alt="thumbnail"
+          />
+          <div class="absolute lg:top-[60%] top-[30%] ml-4 md:ml-16 p-2">
+            <h3
+              class="text-white w-full text-left text-lg font-bold drop-shadow-xl"
+            >
+              {{ program.title?.value }}
+            </h3>
+            <p class="text-white">Duration: {{ program?.duracion }} min</p>
+          </div>
+
+          <div
+            class="absolute top-0 left-0 w-full bg-zinc-800 bg-opacity-40 p-2 lg:p-4 transition shadow-md rounded-b-md opacity-0 group-hover:opacity-100 h-[40%] duration-300"
+          >
+            <div class="flex flex-row items-center gap-3">
+              <!-- BOTON DE VER AHORA O OTRAS MOVIDAS -->
+              <div
+                class="cursor-pointer w-6 h-6 lg:w-10 lg:h-10 bg-white rounded-full flex justify-center items-center transition hover:bg-neutral-300"
+              >
+                <i class="bi bi-play-fill text-black"></i>
+              </div>
+              <!-- BOTON DE FAVORITOS -->
+              <div
+                class="cursor-pointer group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
+              >
+                <i
+                  class="bi bi-plus text-white group-hover:text-neutral-300"
+                ></i>
+              </div>
+              <!-- BOTON DE VER MÁS DETALLES -->
+              <div
+                (click)="closeModal()"
+                class="cursor-pointer ml-auto group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
+              >
+                <i
+                  class="bi bi-info text-white group-hover:text-neutral-300"
+                ></i>
+              </div>
+            </div>
+            <!-- <p class="text-green-400 font-semibold mt-4">
+              New <span class="text-white">2023</span>
+            </p>
+            <div class="flex flex-row mt-4 items-center">
+              <p class="text-white text-[10px] lg:text-sm">
+                {{ program?.duracion }} min
+              </p>
+            </div>
+            <div class="flex flex-row mt-4 items-center">
+              <p class="text-white text-[10px] lg:text-sm">
+                {{ program.desc?.category }}
+              </p>
+            </div> -->
+          </div>
+        </div>
+      </ng-template>
+    </swiper>
+  </div>
+</div>
+
+<div class="pb-5 lg:pt-10 pt-3">
+  <div class="md:p-8 lg:mt-4 sm:mt-2 mt-2 space-y-8">
+    <p
+      class="text-white text-md md:text-xl lg:text-2xl font-semibold pb-4 ml-3"
+    >
+      Más del Canal
+    </p>
+
+    <swiper
+      #swiperVirtualRef
+      [config]="config"
+      (slideChange)="onSlideChange()"
+      style="margin-top: -0.75rem"
+    >
+      <ng-template swiperSlide *ngFor="let slide of virtualSlides; index as i">
+        <div class="relative group cursor-pointer">
+          <img
+            class="cursor-pointer rounded-sm object-cover md:rounded lg:h-[12vw] w-full transition duration shadow-xl brightness-[80%]"
+            src="{{ program.icon }}"
+            alt="thumbnail"
+          />
+          <div class="absolute lg:top-[60%] top-[30%] ml-4 md:ml-16 p-2">
+            <h3
+              class="text-white w-full text-left text-lg font-bold drop-shadow-xl"
+            >
+              {{ program.title?.value }}
+            </h3>
+            <p class="text-white">Duration: {{ program?.duracion }} min</p>
+          </div>
+
+          <div
+            class="absolute top-0 left-0 w-full bg-zinc-800 bg-opacity-40 p-2 lg:p-4 transition shadow-md rounded-b-md opacity-0 group-hover:opacity-100 h-[40%] duration-300"
+          >
+            <div class="flex flex-row items-center gap-3">
+              <!-- BOTON DE VER AHORA O OTRAS MOVIDAS -->
+              <div
+                class="cursor-pointer w-6 h-6 lg:w-10 lg:h-10 bg-white rounded-full flex justify-center items-center transition hover:bg-neutral-300"
+              >
+                <i class="bi bi-play-fill text-black"></i>
+              </div>
+              <!-- BOTON DE FAVORITOS -->
+              <div
+                class="cursor-pointer group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
+              >
+                <i
+                  class="bi bi-plus text-white group-hover:text-neutral-300"
+                ></i>
+              </div>
+              <!-- BOTON DE VER MÁS DETALLES -->
+              <div
+                (click)="closeModal()"
+                class="cursor-pointer ml-auto group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
+              >
+                <i
+                  class="bi bi-info text-white group-hover:text-neutral-300"
+                ></i>
+              </div>
+            </div>
+            <!-- <p class="text-green-400 font-semibold mt-4">
+              New <span class="text-white">2023</span>
+            </p>
+            <div class="flex flex-row mt-4 items-center">
+              <p class="text-white text-[10px] lg:text-sm">
+                {{ program?.duracion }} min
+              </p>
+            </div>
+            <div class="flex flex-row mt-4 items-center">
+              <p class="text-white text-[10px] lg:text-sm">
+                {{ program.desc?.category }}
+              </p>
+            </div> -->
+          </div>
+        </div>
+      </ng-template>
+    </swiper>
+  </div>
+</div>
+
+<div class="pb-5">
+  <div class="md:p-8 lg:mt-4 sm:mt-2 mt-1 space-y-8">
+    <p
+      class="text-white text-md md:text-xl lg:text-2xl font-semibold lg:pb-4 ml-3"
+    >
+      Ahora en Directo - Resto de Canales
+    </p>
+
+    <swiper
+      #swiperVirtualRef
+      [config]="config"
+      (slideChange)="onSlideChange()"
+      style="margin-top: -0.75rem"
+    >
+      <ng-template swiperSlide *ngFor="let slide of virtualSlides; index as i">
+        <div class="relative group cursor-pointer">
+          <img
+            class="cursor-pointer rounded-sm object-cover md:rounded lg:h-[12vw] w-full transition duration shadow-xl brightness-[80%]"
+            src="{{ program.icon }}"
+            alt="thumbnail"
+          />
+          <div class="absolute lg:top-[60%] top-[30%] ml-4 md:ml-16 p-2">
+            <h3
+              class="text-white w-full text-left text-lg font-bold drop-shadow-xl"
+            >
+              {{ program.title?.value }}
+            </h3>
+            <p class="text-white">Duration: {{ program?.duracion }} min</p>
+          </div>
+
+          <div
+            class="absolute top-0 left-0 w-full bg-zinc-800 bg-opacity-40 p-2 lg:p-4 transition shadow-md rounded-b-md opacity-0 group-hover:opacity-100 h-[40%] duration-300"
+          >
+            <div class="flex flex-row items-center gap-3">
+              <!-- BOTON DE VER AHORA O OTRAS MOVIDAS -->
+              <div
+                class="cursor-pointer w-6 h-6 lg:w-10 lg:h-10 bg-white rounded-full flex justify-center items-center transition hover:bg-neutral-300"
+              >
+                <i class="bi bi-play-fill text-black"></i>
+              </div>
+              <!-- BOTON DE FAVORITOS -->
+              <div
+                class="cursor-pointer group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
+              >
+                <i
+                  class="bi bi-plus text-white group-hover:text-neutral-300"
+                ></i>
+              </div>
+              <!-- BOTON DE VER MÁS DETALLES -->
+              <div
+                (click)="closeModal()"
+                class="cursor-pointer ml-auto group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
+              >
+                <i
+                  class="bi bi-info text-white group-hover:text-neutral-300"
+                ></i>
+              </div>
+            </div>
+            <!-- <p class="text-green-400 font-semibold mt-4">
+              New <span class="text-white">2023</span>
+            </p>
+            <div class="flex flex-row mt-4 items-center">
+              <p class="text-white text-[10px] lg:text-sm">
+                {{ program?.duracion }} min
+              </p>
+            </div>
+            <div class="flex flex-row mt-4 items-center">
+              <p class="text-white text-[10px] lg:text-sm">
+                {{ program.desc?.category }}
+              </p>
+            </div> -->
+          </div>
+        </div>
+      </ng-template>
+    </swiper>
+  </div>
+</div>
+
+<!-- COMPONENTE MODAL -->
+
+<div
+  [ngClass]="{ 'scale-100': isVisible, 'scale-0': !isVisible }"
+  class="z-50 transition duration-300 bg-black bg-opacity-80 flex justify-center items-center overflow-x-hidden overflow-y-auto fixed inset-0"
+>
+  <div class="relative w-auto mx-auto max-w-3xl rounded-md overflow-hidden">
+    <div
+      class="transform duration-300 relative flex-auto bg-zinc-900 drop-shadow-md"
+      [ngClass]="{ 'scale-100': isVisible, 'scale-0': !isVisible }"
+    >
+      <div class="relative h-96">
+        <img
+          class="w-full brightness-[60%] object-cover h-full"
+          src="{{ program.icon }}"
+          alt=""
+        />
+        <div
+          (click)="closeModal()"
+          class="cursor-pointer absolute top-3 right-3 h-10 w-10 rounded-full bg-black bg-opacity-70 items-center justify-center flex"
+        >
+          <i class="bi bi-x text-white text-xl"></i>
+        </div>
+
+        <div class="absolute bottom-[10%] left-10">
+          <p
+            class="text-white text-3xl md:text-4xl h-full lg:text-5xl font-bold mb-8"
+          >
+            {{ program.title?.value }}
+          </p>
+          <div class="flex flex-row gap-4 items-center">
+            <button
+              class="bg-opacity-100 bg-white rounded-md py-1 md:py-2 px-2 md:px-4 w-auto text-xs lg:text-lf font-semibold flex flex-row items-center hover:bg-opacity-20 transition"
+            >
+              <i class="bi bi-play-fill text-black text-sm"></i>
+
+              <span class="text-black text-sm">Ver ahora</span>
+            </button>
+            <div
+              class="cursor-pointer group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
+            >
+              <i class="bi bi-plus text-white group-hover:text-neutral-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-12 py-8">
+        <p class="text-green-400 font-semibold text-lg">New</p>
+        <p class="text-white text-lg">{{ program?.duracion }} min</p>
+        <p class="text-white text-lg">{{ program.desc?.category }} min</p>
+        <p class="text-white text-lg">{{ program.desc?.details }} min</p>
+      </div>
+    </div>
+  </div>
+</div>
