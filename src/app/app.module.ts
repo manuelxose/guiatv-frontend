@@ -1,48 +1,30 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HeaderComponent } from './components/header/header.component';
-import { FilterComponent } from './components/filter/filter.component';
-import { ProgramListComponent } from './components/program-list/program-list.component';
-import { ProgramDetailsComponent } from './components/program-details/program-details.component';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { AngularFireModule } from '@angular/fire/compat';
 import { environment } from '../environments/environment';
-import { PrimeNgModule } from './prime-ng.module';
-import { FooterComponent } from './components/footer/footer.component';
+import { PagesModule } from './pages/pages.module';
+import { StoreModule } from '@ngrx/store';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    HeaderComponent,
-    FilterComponent,
-    ProgramListComponent,
-    ProgramDetailsComponent,
-    FooterComponent
-
-  ],
+  declarations: [AppComponent],
   imports: [
-    BrowserModule,
+    BrowserModule.withServerTransition({ appId: 'serverApp' }),
     AppRoutingModule,
     BrowserAnimationsModule,
     FormsModule,
     HttpClientModule,
-    PrimeNgModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
+    PagesModule,
+    StoreModule.forRoot({}, {}),
   ],
-  exports: [
-    HeaderComponent,
-    FilterComponent,
-    ProgramListComponent,
-    ProgramDetailsComponent,
-    FooterComponent
-  ],
+  exports: [],
 
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

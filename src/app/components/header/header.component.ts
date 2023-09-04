@@ -1,43 +1,70 @@
-import { Component } from '@angular/core';
-import { MenuItem } from 'primeng/api';
+import { Component, HostListener } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss']
+  styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent {
-  items: MenuItem[] | any;
+  menuVisible = false; // Propiedad para controlar la visibilidad del menú
+  accVisible = false; // Propiedad para controlar la visibilidad del menú
+  offset: number = 0;
+  headerHeight: number = 250;
+  isAtTop = true;
+  items: any[] = [];
 
-  constructor() {}
+  constructor(private router: Router) {}
+
+  @HostListener('window:scroll', ['$event'])
+  handleScroll(event: Event) {
+    this.offset = window.scrollY || document.documentElement.scrollTop;
+    this.isAtTop = this.offset === 0;
+  }
+
+  get shouldShowHeader(): boolean {
+    return this.offset > this.headerHeight;
+  }
 
   ngOnInit() {
     this.items = [
       {
         label: 'Inicio',
         icon: 'pi pi-home',
-        routerLink: '/'
-      },
-      {
-        label: 'Ahora en TV',
-        icon: 'pi pi-clock',
-        routerLink: '/ahora-en-tv'
+        routerLink: '/',
       },
       {
         label: 'Canales',
-        icon: 'pi pi-television',
-        routerLink: '/canales'
-      },
-      {
-        label: 'Qué ver hoy',
         icon: 'pi pi-video',
-        routerLink: '/que-ver-hoy'
+        routerLink: '/programacion-tv/guia-canales',
       },
       {
-        label: 'Acerca de',
+        label: 'Series',
+        icon: 'pi pi-clock',
+        routerLink: '/',
+      },
+      {
+        label: 'Películas',
+        icon: 'pi pi-television',
+        routerLink: '/programacion-tv/guia-canales',
+      },
+      {
+        label: 'Top 10',
+        icon: 'pi pi-video',
+        routerLink: '/que-ver-hoy',
+      },
+      {
+        label: 'Mi Lista',
         icon: 'pi pi-info',
-        routerLink: '/acerca-de'
-      }
+        routerLink: '/acerca-de',
+      },
     ];
+  }
+
+  openMenu() {
+    this.menuVisible = !this.menuVisible;
+  }
+  openAcc() {
+    this.accVisible = !this.accVisible;
   }
 }

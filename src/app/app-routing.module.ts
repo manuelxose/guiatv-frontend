@@ -3,13 +3,13 @@ import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   { path: '', redirectTo: '/programacion-tv', pathMatch: 'full' },
-  { path:'programacion-tv/guia-tv-ahora', redirectTo: '/programacion-tv', pathMatch: 'full'},
-  //todo lo que sea programacion-tv/... lo redirige a programacion-tv
-  { path:'programacion-tv/', redirectTo: '/programacion-tv', pathMatch: 'full'},
-  { path: 'programacion-tv', loadChildren: () => import('./components/components.module').then(m => m.ComponentsModule) },
+  { path: 'programacion-tv', loadChildren: () => import('./pages/pages.module').then(m => m.PagesModule) },
+  // ... otras rutas
 ];
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, {
+    initialNavigation: 'enabledBlocking'
+})],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

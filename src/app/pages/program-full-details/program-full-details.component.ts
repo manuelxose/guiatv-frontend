@@ -2,10 +2,8 @@ import { Component, NgZone, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HttpService } from 'src/app/services/http.service';
 import { HeaderComponent } from 'src/app/components/header/header.component';
-import { SwiperComponent } from 'swiper/angular';
-import SwiperCore, {
+import {
   Navigation,
-  Pagination,
   Scrollbar,
   A11y,
   Virtual,
@@ -13,14 +11,17 @@ import SwiperCore, {
   Autoplay,
   Thumbs,
   Controller,
-  SwiperOptions,
+  Pagination,
 } from 'swiper';
+import SwiperCore from 'swiper';
 
-import { BehaviorSubject, Observable, first } from 'rxjs';
+import { BehaviorSubject, first } from 'rxjs';
 import { ReductorService } from 'src/app/reducers/reductor.service';
+import { SwiperOptions } from 'swiper/types/swiper-options';
 
 SwiperCore.use([
   Navigation,
+  Pagination,
   Scrollbar,
   A11y,
   Virtual,
@@ -36,7 +37,6 @@ SwiperCore.use([
   styleUrls: ['./program-full-details.component.scss'],
 })
 export class ProgramFullDetailsComponent {
-  @ViewChild('swiperRef', { static: false }) swiperRef?: SwiperComponent;
   @ViewChild(HeaderComponent) header!: HeaderComponent;
   public program: any = {};
   public isVisible = false;
@@ -67,7 +67,6 @@ export class ProgramFullDetailsComponent {
         spaceBetween: 5,
       },
     },
-    lazy: true,
     pagination: {
       clickable: true,
     },

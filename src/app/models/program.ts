@@ -14,3 +14,9 @@ export interface Program {
   end: string;
   chanelImage: any;
 }
+
+
+export interface ProgramList extends Program {
+    url_web: string;
+    url_live: string;
+}

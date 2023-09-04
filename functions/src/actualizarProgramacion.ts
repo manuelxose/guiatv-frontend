@@ -1,27 +1,48 @@
-import { obtenerProgramacionDeApi, Canal } from './api.js';
-import { guardarCanalesEnFirestore, guardarProgramasEnFirestore } from './firestore.js';
+import { downloadData } from "./downloadData";
+import { moverCanalesEspana } from "./firestore";
+import { inicializarDatos } from "./inicializarDatos";
+const admin = require('firebase-admin');
 
-export async function actualizarProgramacion() {
-  try {
-    // Obtiene la programación de TV de la API
-    const programacion: any = await obtenerProgramacionDeApi();
 
-    // Extrae la información de los canales
-    const canales: Canal[] = programacion.channel.map((item:any) => {
-      return {
-        name: item,
-        image: item,
-      };
-    });
+async function borrarDocumentos(coleccion: string) {
+  const db = admin.firestore();
+  const documentosSnapshot = await db.collection(coleccion).get();
 
-    // Guarda la información de los canales en Firestore y obtiene el mapa de IDs
-    const canalIdMap = await guardarCanalesEnFirestore(canales);
+  const batchSize = 100;
+  let batchArray:any = [];
+  let batchIndex = 0;
 
-    // Guarda la programación en Firestore asociándola a los canales por ID
-    await guardarProgramasEnFirestore(programacion, canalIdMap);
+  for (const doc of documentosSnapshot.docs) {
+    if (!batchArray[batchIndex]) {
+      batchArray[batchIndex] = db.batch();
+    }
+    batchArray[batchIndex].delete(doc.ref);
 
-    console.log('La programación ha sido actualizada exitosamente.');
-  } catch (error) {
-    console.error('Error al actualizar la programación:', error);
+    if (batchArray[batchIndex]._ops.length >= batchSize) {
+      batchIndex++;
+    }
+  }
+
+  for (const batch of batchArray) {
+    await batch.commit();
   }
 }
+
+export async function actualizarProgramacion() {
+  // Borrar todos los documentos de la colección canales
+  await borrarDocumentos('canales');
+
+  // Borrar todos los documentos de la colección canales_espana
+  await borrarDocumentos('canales_españa');
+
+  //Descarga el fichero de la web
+  await downloadData();
+
+  // Llama a la función inicializarDatos()
+  await inicializarDatos();
+
+  // Llama a la función moverCanalesEspana()
+  await moverCanalesEspana();
+}
+
+

@@ -1,5 +1,103 @@
-<p-menubar [model]="items" [autoDisplay]="false">
+<!-- <p-menubar [model]="items" [autoDisplay]="false">
   <ng-template class="menubar-personalizado" pTemplate="start">
-    <img src="assets/logo.svg" alt="Logo" class="logo" />
+    <a href="/programacion-tv">
+      <img src="assets/logo.svg" alt="Logo" class="logo" />
+    </a>
   </ng-template>
-</p-menubar>
+</p-menubar> -->
+
+<nav
+  [ngClass]="{ 'header-fixed': shouldShowHeader }"
+  class="w-full fixed z-40 header"
+>
+  <div
+    [ngClass]="{
+      'bg-transparent': isAtTop,
+      'bg-zinc-900 bg-opacity-90': !isAtTop
+    }"
+    class="px-4 md:px-16 py-6 flex flex-rpw items-center transition duration-500"
+  >
+    <a href="/">
+      <img src="assets/logo.svg" alt="logo" class="h-4 lg:h-7" />
+    </a>
+
+    <div class="flex-row ml-8 gap-7 hidden lg:flex">
+      <div
+        *ngFor="let item of items"
+        class="text-white cursor-pointer hover:text-gray-300 transition"
+      >
+        <a href="{{ item.routerLink }}">
+          {{ item.label }}
+        </a>
+      </div>
+    </div>
+
+    <!-- MENU MOVIL -->
+
+    <div
+      class="lg:hidden flex flex-row intems-center gap-2 ml-8 cursor-pointer relative"
+    >
+      <p class="text-white text-sm" (click)="openMenu()">Menu</p>
+      <i
+        class="bi bi-chevron-down text-white transition"
+        [ngClass]="{ 'rotate-180': menuVisible, 'rotate-0': !menuVisible }"
+      ></i>
+
+      <div
+        *ngIf="menuVisible"
+        class="bg-black w-56 absolute top-8 left-0 py-5 flex-col border-2 border-gray-800 flex"
+        style="z-index: 99999"
+      >
+        <div *ngFor="let item of items" class="flex flex-col gap-4">
+          <div class="px-3 text-center text-white hover:underline">
+            {{ item.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMPANITA Y ALARMA -->
+
+    <div class="flex flex-row ml-auto gap-7 items-center">
+      <div class="text-gray-200 hover:text-gray-300 cursor-pointer transition">
+        <i class="bi bi-search"></i>
+      </div>
+      <div class="text-gray-200 hover:text-gray-300 cursor-pointer transition">
+        <i class="bi bi-bell"></i>
+      </div>
+      <div
+        (click)="openAcc()"
+        class="flex flex-row items-center gap-2 cursor-pointer relative"
+      >
+        <div class="w-6 h-6 lg:w-10 lg:h-10 rounded-md overflow-hidden">
+          <img src="assets/gpt-avatar.png" alt="" />
+        </div>
+        <i
+          class="bi bi-chevron-down text-white transition"
+          [ngClass]="{ 'rotate-180': accVisible, 'rotate-0': !accVisible }"
+        ></i>
+
+        <!-- MENU DE LA CUENTA DE USUARIO -->
+        <div
+          *ngIf="accVisible"
+          class="bg-black w-56 absolute top-14 right-0 py-5 flex-col border-2 border-gray-800 flex"
+        >
+          <div class="flex flex-col gap-3">
+            <div
+              class="px-3 group/item flex flex-row gap-3 items-center w-full"
+            >
+              <img src="assets/gpt-avatar.png" alt="" class="w-8 rounded-md" />
+              <p class="text-white text-sm group-hover/item:underline">
+                Username
+              </p>
+            </div>
+            <hr class="bg-gray-600 border-0 h-px my-4" />
+            <div class="px-3 text-center text-white text-sm hover:underline">
+              Sign Out
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>

@@ -74,11 +74,10 @@ export async function inicializarDatos() {
       return;
     }
 
-    const url = 'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guia.xml';
-    const pais = 'es'; // Reemplaza con el país adecuado
-    const programacion = await obtenerProgramacion(url, pais);
 
-    console.log('Datos de programación obtenidos de la API.');
+const programacion = await obtenerProgramacion();
+
+  console.log('Datos de programación obtenidos de la API.');
 
 // Verifica si hay datos de programación para cargar
 if (!programacion || Object.keys(programacion).length === 0) {

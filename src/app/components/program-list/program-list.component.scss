@@ -5,9 +5,42 @@ $color-acento: #d81e1e;
 $color-texto: #ffffff;
 
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   background-color: $color-fondo;
   color: $color-texto;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+}
+.info img {
+  width: 100%; /* La imagen ocupa el 100% del contenedor */
+  max-width: 45vh; /* Máximo ancho de la imagen */
+  height: auto; /* Altura se ajusta automáticamente */
+  margin-bottom: 16px; /* Espacio entre la imagen y el texto */
+  border-radius: 5px; /* Bordes redondeados para la imagen */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra ligera para la imagen */
+}
+
+.info h2 {
+  font-size: 1.25rem; /* Tamaño de fuente para el título */
+}
+
+.info p {
+  margin-bottom: 8px; /* Espacio entre los párrafos */
+  line-height: 1.4; /* Espaciado entre líneas */
+}
+
+.botones-info {
+  display: flex;
+  margin-top: 1rem;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+.botones-info .btn {
+  margin-top: 8px; /* Espacio entre los botones */
 }
 
 .titulo-guia,
@@ -19,7 +52,8 @@ body {
 .titulo-guia {
   font-size: 2.5rem;
   font-weight: 500;
-  margin-top: 20px;
+  margin-top: 0px;
+  padding-top: 7rem;
 }
 
 .subtitulo-guia {
@@ -75,7 +109,7 @@ body {
   flex-direction: column;
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 20;
   background-color: #393939;
   color: white;
   font-weight: bold;
@@ -86,7 +120,7 @@ body {
   /* Tus estilos personalizados aquí, por ejemplo: */
   background-color: #555 !important;
   color: white !important;
-  border: 1px solid #555 !important
+  border: 1px solid #555 !important;
 }
 
 .dia-semana {
@@ -113,11 +147,10 @@ body {
 .scrollable-container {
   overflow-y: auto;
   height: 700px; // Ajustar según sea necesario
-  position:relative;
+  position: relative;
   max-height: 700px; // Establecer la altura máxima según sea necesario
   background-color: white;
   overflow-x: hidden; // Ocultar el desplazamiento horizontal
-
 }
 
 .scrollable-container::-webkit-scrollbar-track {
@@ -164,7 +197,6 @@ body {
   position: relative;
 }
 
-
 .header-item::after {
   content: "";
   position: absolute;
@@ -197,12 +229,18 @@ body {
   align-items: center;
   justify-content: center;
   padding: 5px 10px;
-  background-color: rgba(57, 57, 57, 0.8); // Cambiar a un color con 70% de opacidad
+  background-color: rgba(
+    57,
+    57,
+    57,
+    0.8
+  ); // Cambiar a un color con 70% de opacidad
   color: white;
   border-right: 1px solid #555;
   left: 0;
   z-index: 2;
   width: 100%;
+  min-width: 100px;
 
   position: relative;
   top: 0;
@@ -210,10 +248,12 @@ body {
 }
 
 .logo {
-  width: 100px;
-  height: 50px;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
   margin-left: 5px;
   border-radius: 5px;
+  min-width: 100%;
 }
 
 .programas-row {
@@ -228,10 +268,10 @@ body {
 
 .programa-container {
   height: 100px;
-  position:relative;
+  position: relative;
   margin-bottom: 5px;
   margin-top: 5px;
-  margin-left:1px;
+  margin-left: 1px;
   flex-grow: 1;
 }
 
@@ -302,9 +342,9 @@ body {
   left: 0; // Posicionado en la parte izquierda del contenedor
   width: 100%; // Establecido el ancho al 100% del contenedor
   height: 100%; // Establecido el alto al 100% del contenedor
-  overflow: hidden;  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); // Agregado sombra para dar apariencia de tarjeta
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); // Agregado sombra para dar apariencia de tarjeta
   margin-right: 10px; // Agregado margen derecho para separar tarjetas horizontalmente
-
 }
 .programa .titulo,
 .programa .hora {
@@ -337,7 +377,6 @@ body {
   font-size: 0.8rem;
 }
 
-
 .hora-actual {
   position: absolute;
   top: 0;
@@ -347,7 +386,7 @@ body {
   opacity: 0.8;
   z-index: 9999;
   &:before {
-    content: '';
+    content: "";
     position: absolute;
     top: -10px;
     left: -4px;
@@ -358,8 +397,6 @@ body {
   }
 }
 
-
-
 .loader-container {
   display: flex;
   align-items: center;
@@ -369,7 +406,12 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  background-color: rgba(0, 0, 0, 0.75); // Aumenta la opacidad para oscurecer el fondo
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.75
+  ); // Aumenta la opacidad para oscurecer el fondo
   z-index: 1000;
 }
 
@@ -379,7 +421,12 @@ body {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background-color: rgba(255, 255, 255, 0.8); // Cambia a un fondo blanco semi-transparente
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.8
+  ); // Cambia a un fondo blanco semi-transparente
   border-radius: 10px; // Añade bordes redondeados
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // Agrega una sombra sutil
 }
@@ -390,10 +437,10 @@ body {
   font-weight: bold;
   color: #000000; // Cambia el color del texto a negro
   animation: wave 1s linear infinite; // Aplica la animación
-
 }
 @keyframes wave {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -434,7 +481,8 @@ body {
   font-weight: bold;
   color: #333333;
   font-size: 1.5rem;
-  margin-bottom: 1rem;}
+  margin-bottom: 1rem;
+}
 
 .programa-info p {
   font-size: 14px;
@@ -457,7 +505,6 @@ body {
   background-color: #0056b3;
 }
 
-
 .footer-seo {
   width: 100%;
   margin: 15px 0;
@@ -475,7 +522,6 @@ body {
       color: #333;
       margin-bottom: 0.5rem;
       text-align: center;
-
     }
 
     p {
@@ -493,7 +539,22 @@ body {
     }
   }
 }
-
+.boton {
+  display: inline-block;
+  background-color: white !important;
+  color: black !important;
+  padding: 0.5rem 1rem !important;
+  margin: 0.5rem 0.5rem !important;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  border: 1px solid black;
+}
+.boton:hover {
+  background-color: black !important;
+  color: white !important;
+  transition: background-color 0.3s ease;
+}
 
 // Media query para dispositivos móviles
 // Media query para dispositivos móviles
@@ -505,9 +566,9 @@ body {
   .dia-semana {
     width: 100%;
   }
-.card{
-  padding: 5px;
-}
+  .card {
+    padding: 5px;
+  }
   .scrollable-header {
     display: flex;
     flex-direction: row;
@@ -521,6 +582,10 @@ body {
     min-width: 14.28%;
     text-align: center;
     box-sizing: border-box; // Asegúrate de que el padding esté incluido en el ancho
+  }
+  .info {
+    flex-direction: column;
+    align-items: center;
   }
 
   .footer-seo {
@@ -587,7 +652,6 @@ body {
     flex-direction: column;
   }
 
-
   .programa .hora {
     font-size: 0.6rem;
   }
@@ -596,10 +660,10 @@ body {
     overflow-x: hidden;
   }
 
-  .btn-franja{
+  .btn-franja {
     background-color: transparent;
     padding: 0;
-    font-size:1.03rem;
+    font-size: 1.03rem;
   }
 
   .titulo {
@@ -633,5 +697,4 @@ body {
     word-wrap: break-word;
     hyphens: auto;
   }
-
 }

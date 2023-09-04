@@ -39,7 +39,7 @@
     "rules": "storage.rules"
   },
   "hosting": {
-    "public": "dist/guiatv",
+    "public": "dist/guiatv/browser",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -48,6 +48,7 @@
     "rewrites": [
       {
         "source": "**",
+        "function": "ssr",
         "destination": "/index.html"
       }
     ]

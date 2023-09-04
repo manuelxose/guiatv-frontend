@@ -1,17 +1,28 @@
-
-<h1 class="titulo-guia">GuiaProgramacionTv.Com</h1>
-<h2 class="subtitulo-guia">Encuentra fácilmente tus programas favoritos en nuestra guía de televisión</h2>
-
-
+<!-- EMPLEAR CLASE DE TAILWIND NO PERSONALIZADA -->
+<!-- CENTRAR EL TITULO DE LA PAGINA ORIENTADO A SEO -->
+<div
+  class="flex flex-col items-center justify-center text-center py-8 md:py-12 lg:py-16 xl:py-20 2xl:py-24"
+>
+  <h2
+    class="text-2xl md:text-3xl lg:text-4xl mt-10 xl:text-5xl 2xl:text-6xl font-bold text-white mb-4"
+  >
+    Guía de Programación TV
+  </h2>
+  <p class="text-white text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl">
+    Encuentra tus programas favoritos
+  </p>
+</div>
 
 <div class="card">
   <div class="header-container">
     <div class="dia-semana">
-      <button class="btn-dia-semana" *ngFor="let dia of dias"
-      (click)="cambiarDia(dia.diaNumero)"
-      [ngClass]="{'btn-dia-semana-activo': dia.diaNumero === diaActual}"
+      <button
+        class="btn-dia-semana"
+        *ngFor="let dia of dias; let i = index"
+        (click)="cambiarDia(i)"
+        [ngClass]="{ 'btn-dia-semana-activo': dia.diaNumero === diaActual }"
       >
-        {{dia.diaSemana}} {{dia.diaNumero}}
+        {{ dia.diaSemana }} {{ dia.diaNumero }}
       </button>
     </div>
     <div class="selector-franjas-horarias">
@@ -31,34 +42,46 @@
       </div>
     </div>
     <div class="scrollable-container">
-      <div *ngIf="mostrarHoraActual" class="hora-actual" [ngStyle]="{ left: leftRem + 'rem' }"></div>
+      <div
+        *ngIf="mostrarHoraActual"
+        class="hora-actual"
+        [ngStyle]="{ left: leftRem + 'rem' }"
+      ></div>
 
       <div class="scrollable-header">
-        <div class="header-item" *ngFor="let hora of horas">{{hora}}</div>
+        <div class="header-item" *ngFor="let hora of horas">{{ hora }}</div>
       </div>
 
       <div class="scrollable-body">
         <div *ngFor="let canal of programas; let canalIndex = index">
           <div class="channel-row">
             <div class="logo-container">
-              <img class="logo" [src]="canal.image" alt="{{canal.canal}} logo">
+              <img
+                class="logo"
+                [src]="canal.channel.icon"
+                alt="{{ canal.channel.name }} logo"
+                loading="lazy"
+              />
             </div>
             <div class="programas-row" #programasRow>
               <div
-                *ngFor="let programa of canal.programas; let i = index"
+                *ngFor="let programa of canal.programs; let i = index"
                 class="programa-container"
                 [ngStyle]="{
-                  'margin-left': i === 0 ? calcularPosicionIzquierda(programa.inicio) : '',
-                  'width': calcularAnchoPrograma(programa.duracion)
+                  'margin-left':
+                    i === 0
+                      ? calcularPosicionIzquierda(getHoras(programa.start))
+                      : '',
+                  width: calcularAnchoPrograma(programa.duracion)
                 }"
                 (click)="mostrarInfoPrograma(canalIndex, programa)"
-
               >
-                <div class="programa"
-
-                >
-                  <div class="titulo">{{ programa.title }}</div>
-                  <div class="hora">{{ programa.inicio }} - {{ programa.fin }}</div>
+                <div class="programa">
+                  <div class="titulo">{{ programa?.title?.value }}</div>
+                  <div class="hora">
+                    {{ getHoras(programa.start) }} -
+                    {{ getHoras(programa.stop) }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -66,61 +89,162 @@
 
           <ng-container *ngIf="canalIndex === canalSeleccionado">
             <div class="programa-info" *ngIf="programaSeleccionado">
-              <h2>{{ programaSeleccionado.title }}</h2>
-              <p><b>Hora de Inicio: </b>{{ programaSeleccionado.inicio }}</p>
-              <p><b>Hora de Finalización: </b>{{ programaSeleccionado.fin }}</p>
-              <p>{{ programaSeleccionado.ano }} <b *ngIf="programaSeleccionado.edad">|</b> {{ programaSeleccionado.edad }}</p>
-              <p *ngIf="programaSeleccionado.genero">{{ programaSeleccionado.genero }}</p>
-              <p><b class="bold">Descripción: </b>{{ programaSeleccionado.des_programa }}</p>
-              <p><b>Duración: </b>{{programaSeleccionado.duracion}} min.</p>
-              <p *ngIf="programaSeleccionado.detalles.presenta"><b>Presentado Por: </b>{{programaSeleccionado.detalles.presenta}}</p>
-              <p *ngIf="programaSeleccionado.detalles.pais"><b>País: </b>{{ programaSeleccionado.detalles.pais }}</p>
-                  <div class="" *ngIf="programaSeleccionado.tipo == 'Cine'">
-                    <p *ngIf="programaSeleccionado.detalles.direccion"><b>Dirección: </b>{{ programaSeleccionado.detalles.direccion }}</p>
-                    <p *ngIf="programaSeleccionado.detalles.reparto"><b>Reparto: </b>{{ programaSeleccionado.detalles.reparto }}</p>
-                    <p *ngIf="programaSeleccionado.detalles.guion"><b>Guion: </b>{{ programaSeleccionado.detalles.guion }}</p>
-                    <p *ngIf="programaSeleccionado.detalles.musica"><b>Música: </b>{{ programaSeleccionado.detalles.musica }}</p>
-                    <p *ngIf="programaSeleccionado.detalles.produccion"><b>Producción: </b>{{ programaSeleccionado.detalles.produccion }}</p>
-                    <p *ngIf="programaSeleccionado.detalles.productora"><b>Productora: </b>{{ programaSeleccionado.detalles.productora }}</p>
+              <div class="info flex items-center mb-4">
+                <img
+                  class="w-16 h-16 mr-4 rounded-xl"
+                  [src]="programaSeleccionado.icon"
+                  alt="{{ programaSeleccionado.title.value }} imagen"
+                  loading="lazy"
+                />
+                <div class="pl-2">
+                  <h2 class="font-black text-gray-800 md:text-3xl text-xl">
+                    {{ programaSeleccionado.title.value }}
+                  </h2>
+                  <p class="text-gray-600">
+                    <b>Hora de Inicio:</b>
+                    {{ getHoras(programaSeleccionado.start) }}
+                  </p>
+                  <p class="text-gray-600">
+                    <b>Hora de Finalización:</b>
+                    {{ getHoras(programaSeleccionado.stop) }}
+                  </p>
+
+                  <p>
+                    {{ programaSeleccionado.desc.year }}
+                    <b *ngIf="programaSeleccionado.desc.rate != null">|</b>
+                    {{ programaSeleccionado.desc.rate }}
+                  </p>
+                  <p *ngIf="programaSeleccionado.category.value">
+                    {{ programaSeleccionado.category.value }}
+                  </p>
+                  <p>
+                    <b class="bold">Descripción: </b
+                    >{{ programaSeleccionado.desc.details }}
+                  </p>
+                  <p>
+                    <b>Duración: </b>{{ programaSeleccionado.duracion }} min.
+                  </p>
+                  <p
+                    *ngIf="
+                      programaSeleccionado.desc.directors &&
+                      programaSeleccionado.desc.category.split('/')[0] !==
+                        'Cine' &&
+                      programaSeleccionado.desc.category !==
+                        'Películas de suspense'
+                    "
+                  >
+                    <b>Presentado Por: </b
+                    >{{ programaSeleccionado.desc.directors }}
+                  </p>
+                  <p *ngIf="programaSeleccionado.desc.country">
+                    <b>País: </b>{{ programaSeleccionado.desc.country }}
+                  </p>
+
+                  <ng-container *ngIf="programaSeleccionado">
+                    <div
+                      *ngIf="isCineCategory(programaSeleccionado.desc.category)"
+                    >
+                      <p *ngIf="programaSeleccionado.desc.directors">
+                        <b>Dirección: </b
+                        >{{ programaSeleccionado.desc.directors }}
+                      </p>
+                      <p *ngIf="programaSeleccionado.desc.cast">
+                        <b>Reparto: </b>{{ programaSeleccionado.desc.cast }}
+                      </p>
+                      <p *ngIf="programaSeleccionado.desc.screenplay">
+                        <b>Guion: </b>{{ programaSeleccionado.desc.screenplay }}
+                      </p>
+                      <p *ngIf="programaSeleccionado.desc.music">
+                        <b>Música: </b>{{ programaSeleccionado.desc.music }}
+                      </p>
+                      <p *ngIf="programaSeleccionado.desc.producer">
+                        <b>Producción: </b
+                        >{{ programaSeleccionado.desc.producer }}
+                      </p>
+                      <p *ngIf="programaSeleccionado.desc.production">
+                        <b>Productora: </b
+                        >{{ programaSeleccionado.desc.production }}
+                      </p>
+                    </div>
+                  </ng-container>
+                  <div class="botones-info mt-4">
+                    <a
+                      href="javascript:void(0)"
+                      class="border border-gray-400 text-gray-400 rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-gray-900 focus:outline-none focus:shadow-outline"
+                      (click)="cerrarPrograma()"
+                      >Ocultar</a
+                    >
+                    <a
+                      *ngIf="programas[canalIndex].url_web != '#'"
+                      href="{{ programas[canalIndex].url_web }}"
+                      target="_blank"
+                      class="border border-gray-400 text-gray-400 rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-gray-900 focus:outline-none focus:shadow-outline"
+                    >
+                      Visitar Web
+                    </a>
+                    <a
+                      *ngIf="programas[canalIndex].url_live != '#'"
+                      href="{{ programas[canalIndex].url_live }}"
+                      target="_blank"
+                      class="border border-gray-400 text-gray-400 rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-gray-900 focus:outline-none focus:shadow-outline"
+                    >
+                      Ver en Directo
+                    </a>
+                    <a
+                      *ngIf="programas[canalIndex].url_live != '#'"
+                      [routerLink]="['/detalles', programaSeleccionado.id]"
+                      class="border border-gray-400 text-gray-400 rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-gray-900 focus:outline-none focus:shadow-outline"
+                    >
+                      Detalles
+                    </a>
                   </div>
-              <a href="javascript:void(0)" class="boton"(click)="cerrarPrograma()">Cerrar</a>
+                </div>
+              </div>
             </div>
           </ng-container>
-
+        </div>
+      </div>
+      <div *ngIf="isLoading" class="loader-container">
+        <div class="loader">
+          <span class="loader-text">Cargando Guía Programación TV</span>
         </div>
       </div>
     </div>
   </div>
-
-  <div *ngIf="isLoading" class="loader-container">
-    <div class="loader">
-      <span class="loader-text">Cargando Guía Programación TV</span>
-    </div>
-  </div>
-
 </div>
 
 <div class="footer-seo">
   <div class="footer-content">
     <h2>GuiaProgramacionTv.Com - La Mejor Programación y Guía TV en Línea</h2>
     <p>
-      En GuiaProgramacionTv.Com, te ofrecemos la <a title="parrilla TV" href="/">guía TV y programación</a> más completa y actualizada de todos los canales nacionales, locales, TDT y de pago por cable. Nuestra intuitiva parrilla de televisión te permite visualizar rápida y fácilmente la programación de todos los programas del día o de la noche. Al hacer clic en el título del programa, accederás a los detalles del mismo, incluyendo la descripción de la serie, la sinopsis de la película y las imágenes relacionadas.
+      En GuiaProgramacionTv.Com, te ofrecemos la
+      <a title="parrilla TV" href="/">guía TV y programación</a> más completa y
+      actualizada de todos los canales nacionales, locales, TDT y de pago por
+      cable. Nuestra intuitiva parrilla de televisión te permite visualizar
+      rápida y fácilmente la programación de todos los programas del día o de la
+      noche. Al hacer clic en el título del programa, accederás a los detalles
+      del mismo, incluyendo la descripción de la serie, la sinopsis de la
+      película y las imágenes relacionadas.
     </p>
     <p>
-      En resumen, GuiaProgramacionTv.Com pone a tu disposición la mejor programación y guía TV:
-      - La programación TV de las principales cadenas nacionales: La 1, La 2, Antena 3, Cuatro, Telecinco y La Sexta.
-      - La <a title="parrilla tv" href="/programacion-tv/guia-tv-ahora">guía y programacion TV</a> de la TDT, con canales como Paramount, Divinity, Dkiss, DMAX, Neox, Nova, FDF, Energy, Atresseries, y más.
-      - La programación de las televisiones autonómicas y locales, como Telemadrid, 8 Madrid, TV3, 8TV, À Punt, Canal Sur, TVG, ETB1, ETB2, CMT, IB3, Aragón TV, 7RM, TPA, CyLTV, entre otras.
-      - Los canales de pago por cable, ADSL y satélite, como Cero, Fox, AXN, AXN White, Calle13, Syfy, TNT, Cosmo, Comedy Central, Canal Hollywood, TCM y muchos más.
+      En resumen, GuiaProgramacionTv.Com pone a tu disposición la mejor
+      programación y guía TV: - La programación TV de las principales cadenas
+      nacionales: La 1, La 2, Antena 3, Cuatro, Telecinco y La Sexta. - La
+      <a title="parrilla tv" href="/programacion-tv/guia-tv-ahora"
+        >guía y programacion TV</a
+      >
+      de la TDT, con canales como Paramount, Divinity, Dkiss, DMAX, Neox, Nova,
+      FDF, Energy, Atresseries, y más. - La programación de las televisiones
+      autonómicas y locales, como Telemadrid, 8 Madrid, TV3, 8TV, À Punt, Canal
+      Sur, TVG, ETB1, ETB2, CMT, IB3, Aragón TV, 7RM, TPA, CyLTV, entre otras. -
+      Los canales de pago por cable, ADSL y satélite, como Cero, Fox, AXN, AXN
+      White, Calle13, Syfy, TNT, Cosmo, Comedy Central, Canal Hollywood, TCM y
+      muchos más.
     </p>
-    <p>Desde GuiaProgramacionTv.Com, les deseamos que disfruten de excelentes momentos de televisión con nuestra programación y guía TV.</p>
+    <p>
+      Desde GuiaProgramacionTv.Com, les deseamos que disfruten de excelentes
+      momentos de televisión con nuestra programación y guía TV.
+    </p>
     <p>El equipo de TecnoRia</p>
   </div>
 </div>
-
-
-
-
-
-
-

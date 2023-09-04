@@ -1,3 +1,21 @@
-/* You can add global styles to this file, and also import other style files */
-@import '../node_modules/bootstrap/scss/bootstrap';
-@import '../node_modules/primeflex/primeflex';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+@import "~bootstrap-icons/font/bootstrap-icons.css";
+
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
+@import "swiper/swiper-bundle.css";
+
+body {
+  @apply bg-zinc-900 h-full overflow-x-hidden scrollbar scrollbar-track-transparent scrollbar-thumb-white;
+}
+
+#__next {
+  @apply h-full;
+}
+
+html {
+  @apply h-full;
+}

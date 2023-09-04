@@ -49,12 +49,12 @@ export class TvGuideService {
 
         this.dbPath = "";
 
-
      }
 
 
   initProgramacion() {
-    return this.http.get(`https://us-central1-guia-tv-8fe3c.cloudfunctions.net/api/inicializarDatos`);
+    return this.http.get(`http://127.0.0.1:5001/guia-tv-8fe3c/us-central1/api/actualizarProgramacion1`)
+    // return this.http.get(`https://us-central1-guia-tv-8fe3c.cloudfunctions.net/api/actualizarProgramacion`);
   }
   getCollectionData(): Observable<any> {
     return this.firestore.collection('canales').doc('myDocument').collection('mySubcollection').valueChanges();
@@ -99,31 +99,17 @@ public getDocumentReference(path: string) {
   return this.db.doc(path).ref;
 }
 
-  getAllChannelsWithPrograms() {
-    return this.firestore.collection('canales').get().pipe(
-      switchMap((querySnapshot) => {
-        const channelsDocs = querySnapshot.docs;
+getDocumentByName(collection: string, name: string): Observable<any> {
+  return this.firestore.collection(collection, ref => ref.where('name', '==', name)).valueChanges().pipe(
+    map(docs => {
+      if (docs.length > 0) {
+        return docs[0]; // Devuelve el primer documento encontrado con el nombre especificado
+      } else {
+        return null; // Si no se encuentra ningún documento, devuelve null
+      }
+    })
+  );
+}
 
-        const channelsObservables = channelsDocs.map((channelDoc) => {
-          const channelId = channelDoc.id;
-          const channelData: ChannelData = {
-            id: channelId,
-            nombre: channelDoc.get('nombre'),
-            imagen: channelDoc.get('imagen'),
-            programas: [],
-          };
 
-          return this.firestore.collection(`canales/${channelId}/programas`).valueChanges().pipe(
-            map((programs:any) => ({
-              ...channelData,
-              id: channelId,
-              programas: programs,
-            })),
-          );
-        });
-
-        return combineLatest(channelsObservables);
-      }),
-    );
-  }
 }

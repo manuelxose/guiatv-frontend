@@ -6,11 +6,10 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { PagesRoutingModule } from './pages-routing.module';
 import { ComponentsModule } from '../components/components.module';
-import { PrimeNgModule } from '../prime-ng.module';
 import { ParrillaCanalesComponent } from './parrilla-canales/parrilla-canales.component';
 import { ProgramFullDetailsComponent } from './program-full-details/program-full-details.component';
-import { SwiperModule } from 'swiper/angular';
 import { ReductorService } from '../reducers/reductor.service';
+import { SwiperModule } from 'swiper/angular';
 
 const routes: Routes = [];
 
@@ -27,7 +26,6 @@ const routes: Routes = [];
     RouterModule,
     PagesRoutingModule,
     ComponentsModule,
-    PrimeNgModule,
     SwiperModule,
   ],
 

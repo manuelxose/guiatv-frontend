@@ -1,8 +1,14 @@
-import * as express from 'express';
-import * as cors from 'cors';
+import express from 'express';
+import cors from 'cors';
 import axios from 'axios';
 import * as xml2js from 'xml2js';
-import {  format } from 'date-fns';
+import {format} from 'date-fns';
+import { parseStringPromise as xml2jsParseStringPromise } from 'xml2js';
+import { Storage } from '@google-cloud/storage';
+const storage = new Storage();
+
+const bucketName = "guia-tv-8fe3c.appspot.com";
+
 
 
 export interface Programacion {
@@ -59,10 +65,15 @@ function parseXMLDate(dateStr: string): Date {
   return new Date(Date.UTC(year, month, day, hour, minute, second));
 }
 
-export async function obtenerProgramacion(url: string, pais: string): Promise<Record<string, Programa[]>> {
-  const response = await axios.get(url);
-  const xml = response.data;
-  const json = await xml2js.parseStringPromise(xml);
+export async function obtenerProgramacion(): Promise<Record<string, Programa[]>> {
+  const fechaActual = format(new Date(), 'yyyyMMdd');
+  const nombreArchivo = `archivo_xml/${fechaActual}_archivo.xml`;
+
+  // Leer el archivo XML desde Firebase Storage
+  const archivoBuffer = await storage.bucket(bucketName).file(nombreArchivo).download();
+  const xml = archivoBuffer.toString();
+
+  const json = await xml2jsParseStringPromise(xml);
 
   if (!json || !json.tv) {
     throw new Error('La respuesta de la API es inválida');
@@ -75,11 +86,8 @@ export async function obtenerProgramacion(url: string, pais: string): Promise<Re
     throw new Error('La respuesta de la API no contiene canales o programas');
   }
 
-  // const hoy = new Date();
-  // const manana = new Date(hoy.getTime() + 24 * 60 * 60 * 1000);
-
   const programacion: Programa[] = [];
-
+  console.log(programas[44]);
   programas.forEach((programa: any, index: number) => {
     const canal = canales.find((ch: any) => ch.$.id === programa.$.channel);
     if (!canal) {
@@ -91,19 +99,18 @@ export async function obtenerProgramacion(url: string, pais: string): Promise<Re
     const fin = parseXMLDate(programa.$.stop);
 
     const programaObj: Programa = {
-      channelName: canal['display-name']?.[0]?._ || canal.$.id,
-      channelId: canal.$.id,
+      channelName: canal?.['display-name']?.[0]?.['_'] || canal?.$.id,
+      channelId: canal?.$.id,
       start: format(inicio, 'dd/MM/yyyy HH:mm'),
       end: format(fin, 'dd/MM/yyyy HH:mm'),
-      title: programa.title?.[0]?._,
-      description: programa.desc?.[0]?._,
-      image: programa.icon?.[0]?.$.src,
-      programImage: programa['programme-image']?.[0]?.$.src,
-      chanelImage: canal.icon?.[0]?.$.src,
-      programName: programa['title']?.[0]?._,
+      title: programa?.title?.[0]?._,
+      description: programa?.desc?.[0]?._,
+      image: programa?.icon?.[0]?.$.src,
+      programImage: programa?.['programme-image']?.[0]?.$.src,
+      chanelImage: canal?.icon?.[0]?.$.src,
+      programName: programa?.['title']?.[0]?._,
     };
 
-    // Add the program to the array only if it starts on today or tomorrow
 
     programacion.push(programaObj);
 
@@ -119,12 +126,3 @@ export async function obtenerProgramacion(url: string, pais: string): Promise<Re
 
   return programacionPorCanal;
 }
-
-
-
-
-
-
-
-
-
