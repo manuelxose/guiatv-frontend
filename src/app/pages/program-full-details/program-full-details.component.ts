@@ -1,4 +1,4 @@
-import { Component, NgZone, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HttpService } from 'src/app/services/http.service';
 import { HeaderComponent } from 'src/app/components/header/header.component';
@@ -16,8 +16,8 @@ import {
 import SwiperCore from 'swiper';
 
 import { BehaviorSubject, first } from 'rxjs';
-import { ReductorService } from 'src/app/reducers/reductor.service';
 import { SwiperOptions } from 'swiper/types/swiper-options';
+import { ModalService } from 'src/app/services/modal.service';
 
 SwiperCore.use([
   Navigation,
@@ -45,6 +45,11 @@ export class ProgramFullDetailsComponent {
   thumbs: any;
   slides$ = new BehaviorSubject<string[]>(['']);
   programas$!: BehaviorSubject<any[]>;
+  programas_canal: any[] = [];
+  programas_ahora: any[] = [];
+  categoria: string = '';
+  programas_similares: any[] = [];
+  program_modal: any = {};
 
   config: SwiperOptions = {
     slidesPerView: 4,
@@ -69,6 +74,9 @@ export class ProgramFullDetailsComponent {
     },
     pagination: {
       clickable: true,
+      //no mostrar bullets
+      el: '.swiper-pagination',
+      type: 'bullets',
     },
     navigation: true,
     //detectar clicks en los slides
@@ -77,6 +85,7 @@ export class ProgramFullDetailsComponent {
         console.log('click', event);
       },
     },
+    //eliminar la navegacion por puntos
   };
 
   programas: any;
@@ -84,38 +93,75 @@ export class ProgramFullDetailsComponent {
   constructor(
     private route: ActivatedRoute,
     private http: HttpService,
-    private stateService: ReductorService
+    private modalService: ModalService
   ) {}
 
   ngOnInit() {
-    this.stateService
-      .getState()
-      .pipe(first())
-      .subscribe((state: any) => {
-        console.log('Estado actual:', state);
-        this.programas = state.programas;
-      });
-    this.route.params.subscribe((params) => {
-      console.log('Los putisimos params: ', params['id']);
+    //obtener los progrmas del reducer
+
+    ///obterner programa del behavior subject que vienen del http service
+
+    this.http.programas$.subscribe(async (programas) => {
+      this.programas = programas;
+      console.log('Programas del behavior subject:', this.programas);
+      //si no hay programas llamar a la api
+      if (this.programas.length === 0) {
+        (await this.http.getProgramacion('today')).subscribe((programas) => {
+          this.programas = programas;
+          console.log('Programas de la api:', this.programas);
+        });
+        // this.programas = this.prgramas_temp;
+      }
     });
 
-    this.http.getProgramaById(this.route.snapshot.params['id']).subscribe(
-      (data: any) => {
-        this.program = data;
-        console.log('los datos: ', this.program);
-        this.http.setToLocalStorage(
-          `${this.route.snapshot.params['id']}`,
-          this.program
-        );
-      },
-      (error: any) => {
-        console.error('Error al obtener el programa por ID:', error);
-      }
+    // this.http.getProgramaById(this.route.snapshot.params['id']).subscribe(
+    //   (data: any) => {
+    //     this.program = data;
+    //     console.log('los datos: ', this.program);
+    //     this.http.setToLocalStorage(
+    //       `${this.route.snapshot.params['id']}`,
+    //       this.program
+    //     );
+    //   },
+    //   (error: any) => {
+    //     console.error('Error al obtener el programa por ID:', error);
+    //   }
+    // );
+    //obterner por titile del programa
+    const idParam = this.route.snapshot.params['id'];
+
+    this.program = this.programas
+      .flatMap((data: any) => data.programs)
+      .find(
+        (program: any) =>
+          program?.title?.value.replace(/ /g, '-').trim() === idParam
+      );
+
+    const allPrograms = this.programas.flatMap(
+      (programa: any) => programa.programs
     );
+
+    const channelPrograms = allPrograms.filter(
+      (programa: any) => programa?.channel_id === this?.program?.channel_id
+    );
+    const currentPrograms = allPrograms.filter((programa: any) =>
+      this.compareDate(programa.start, programa.stop)
+    );
+    const similarPrograms = allPrograms.filter(
+      (programa: any) =>
+        (programa.desc?.category?.split('/')[0] ===
+          this.program?.desc?.category?.split('/')[0] ||
+          programa.desc?.category?.split('/')[1] ===
+            this.program?.desc?.category?.split('/')[1]) &&
+        this.compareDate(programa.start, programa.stop)
+    );
+    this.programas_canal = channelPrograms;
+    this.programas_ahora = currentPrograms;
+    this.programas_similares = similarPrograms;
   }
 
-  closeModal(): void {
-    this.isVisible = !this.isVisible;
+  manageModal(program: any): void {
+    this.modalService.setPrograma(program);
   }
   getSlides() {
     this.slides$.next(
@@ -136,5 +182,32 @@ export class ProgramFullDetailsComponent {
   }
   onSlideChange() {
     console.log('slide change');
+  }
+
+  public compareDate(dateIni: string, dateFin: string): boolean {
+    const horaActual = new Date();
+    const horaInicio = new Date(dateIni);
+    const horaFin = new Date(dateFin);
+
+    // Obtén las horas y minutos de la hora actual y las horas de inicio y fin
+    const horaActualNumero = horaActual.getHours() + 2;
+    const minutoActualNumero = horaActual.getMinutes();
+    const horaInicioNumero = horaInicio.getHours();
+    const minutoInicioNumero = horaInicio.getMinutes();
+    const horaFinNumero = horaFin.getHours();
+    const minutoFinNumero = horaFin.getMinutes();
+
+    // Comprueba si la hora actual está dentro del rango de horas
+    if (
+      (horaActualNumero > horaInicioNumero ||
+        (horaActualNumero === horaInicioNumero &&
+          minutoActualNumero >= minutoInicioNumero)) &&
+      (horaActualNumero < horaFinNumero ||
+        (horaActualNumero === horaFinNumero &&
+          minutoActualNumero <= minutoFinNumero))
+    ) {
+      return true;
+    }
+    return false;
   }
 }

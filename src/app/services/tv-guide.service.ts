@@ -1,115 +1,189 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument } from '@angular/fire/compat/firestore';
-import { Observable, combineLatest, map, switchMap } from 'rxjs';
-interface ChannelData {
-  id: string;
-  nombre: string;
-  imagen: string;
-  programas: any[]; // Puedes reemplazar 'any[]' con una interfaz más específica si lo deseas.
-}
+import { HttpService } from './http.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-
-
-
 export class TvGuideService {
+  private listaCanales: any[] = [];
+  private listaProgramas: any[] = [];
 
+  constructor(private http: HttpService) {}
 
-  private tdtChannels = [
-    'La 1',
-    'La 2',
-    'Antena 3',
-    'Cuatro',
-    'Telecinco',
-    'laSexta',
-    // Agrega más canales TDT aquí
-  ];
+  // GESTION DE LOS CANALES EN EL BEHAVIOR SUBJECT
 
-  private movistarChannels = [
-    'Movistar LaLiga',
-    'Movistar Estrenos',
-    'Movistar Series',
-    // Agrega más canales Movistar aquí
-  ];
-
-  private dbPath: string;
-  private collRef!: AngularFirestoreCollection<any>;
-  private queryPag:any;
-  private queryFilter: any;
-
-  constructor(
-    private http: HttpClient,
-    private firestore: AngularFirestore,
-    private db: AngularFirestore,
-
-    ) {
-
-        this.dbPath = "";
-
-     }
-
-
-  initProgramacion() {
-    return this.http.get(`http://127.0.0.1:5001/guia-tv-8fe3c/us-central1/api/actualizarProgramacion1`)
-    // return this.http.get(`https://us-central1-guia-tv-8fe3c.cloudfunctions.net/api/actualizarProgramacion`);
-  }
-  getCollectionData(): Observable<any> {
-    return this.firestore.collection('canales').doc('myDocument').collection('mySubcollection').valueChanges();
-  }
-  private setPath(name:string){
-    return this.dbPath = name;
+  private setProgramsAndChannels(programs: any[]) {
+    this.listaCanales = this.extractChannels(programs);
+    this.listaProgramas = this.extractPrograms(programs);
   }
 
-  public setCollection(name:string){
-    this.collRef = this.db.collection(this.setPath(name))
-    return this;
+  public setData(programs: any[]) {
+    this.setProgramsAndChannels(programs);
   }
 
-  // OBTENEMOS TODOS LOS DOCUMENTOS DE UNA COLECCION
-
-  public getAll(){
-    return this.collRef.get();
+  public getProgramsAndChannels() {
+    return this.http.programas$;
   }
 
-  public getdB(){
-
-    return this.db;
+  private extractChannels(programs: any[]): any[] {
+    return programs.flatMap((data) => data.channel);
   }
 
-  public getSubcollection(name:string){
-    return this.collRef.doc(name).collection('programas').get();
+  private extractPrograms(programs: any[]): any[] {
+    return programs.flatMap((data) => data.programs);
   }
 
-public deleteCollection(name:string){
- //eleminar todos los documentos de una coleccion
-  return this.db.collection(name).get().subscribe((querySnapshot) => {
-    querySnapshot.forEach((doc) => {
-      doc.ref.delete();
+  public getListaCanales() {
+    return this.listaCanales;
+  }
+
+  private getListaProgramas() {
+    return this.listaProgramas;
+  }
+
+  // Obtener los programas de la API
+
+  public getFromApi() {
+    return this.http.getProgramacion('today');
+  }
+
+  // GESTION DE LAS PELICULAS
+
+  getAllMovies() {
+    console.log('Metodo getAllMovies');
+    const peliculas = this.programsByCategory('Cine').filter(
+      (programa: any) => programa?.desc?.details !== 'Emisión de una película.'
+    );
+    return peliculas;
+  }
+
+  getMoviesByChannel(channelId: string) {
+    return this.programsByChannel(channelId, 'Cine').filter(
+      (programa: any) => programa?.title?.value !== 'Cine'
+    );
+  }
+
+  getMoviesByDate(date: string) {
+    return this.programsByDate(date, 'Cine').filter(
+      (programa: any) => programa?.title?.value !== 'Cine'
+    );
+  }
+
+  getMoviesByCategory(category: string) {
+    return this.getMoviesByCategories('Cine', category);
+  }
+
+  getMoviesCategories() {
+    return this.getUniqueCategories('Cine');
+  }
+
+  // GESTION DE LAS SERIES
+
+  getAllSeries() {
+    return this.programsByCategory('Series');
+  }
+
+  getSeriesByChannel(channelId: string) {
+    return this.programsByChannel(channelId, 'Series');
+  }
+
+  getSeriesByDate(date: string) {
+    return this.programsByDate(date, 'Series');
+  }
+
+  getSeriesByCategory(category: string) {
+    return this.getSeriesByCategories('Series', category);
+  }
+
+  getSeriesCategories() {
+    return this.getUniqueCategories('Series');
+  }
+
+  // Métodos genéricos para filtrar y obtener categorías únicas
+
+  private programsByCategory(categoryType: string, category?: string) {
+    //loa progrmas en lista de programas ya estan flatMap asi que no hace falta hacerlo aqui
+    console.log('Metodo programsByCategory');
+    const peliculas = this.getListaProgramas().filter((program: any) => {
+      if (
+        program?.category?.value?.split(',')[0] === categoryType &&
+        program?.desc?.details !== 'Emisión de una película.'
+      )
+        return program;
     });
-  });
-}
 
-public setSubcollection(name:string){
-  return this.collRef.doc(name).collection('programas');
-}
-public getDocumentReference(path: string) {
-  return this.db.doc(path).ref;
-}
+    return peliculas;
+  }
 
-getDocumentByName(collection: string, name: string): Observable<any> {
-  return this.firestore.collection(collection, ref => ref.where('name', '==', name)).valueChanges().pipe(
-    map(docs => {
-      if (docs.length > 0) {
-        return docs[0]; // Devuelve el primer documento encontrado con el nombre especificado
-      } else {
-        return null; // Si no se encuentra ningún documento, devuelve null
-      }
-    })
-  );
-}
+  private programsByChannel(channelId: string, categoryType: string) {
+    console.log('Metodo programsByChannel');
+    return this.getListaCanales().filter(
+      (programa: any) =>
+        programa?.category?.value?.split(',')[0] === categoryType &&
+        programa.channel.id === channelId
+    );
+  }
 
+  private programsByDate(date: string, categoryType: string) {
+    console.log('Metodo programsByDate');
+    return this.getListaCanales()
+      .flatMap((canal: any) => canal.programs)
+      .filter(
+        (programa: any) =>
+          programa?.category?.value?.split(',')[0] === categoryType &&
+          programa.start.split('T')[0] === date
+      );
+  }
 
+  private getUniqueCategories(categoryType: string) {
+    return this.getListaProgramas()
+      .filter(
+        (programa: any) =>
+          programa?.category?.value?.split(',')[0] === categoryType &&
+          programa?.desc?.details !== 'Emisión de una película.'
+      )
+      .map((programa: any) => programa?.category?.value?.split(',')[1])
+      .filter((value, index, self) => self.indexOf(value) === index);
+  }
+
+  private getMoviesByCategories(maincat: string, categoryType: string) {
+    return this.getListaProgramas().filter((programa: any) => {
+      if (
+        programa?.category?.value?.split(',')[0] === maincat &&
+        programa?.category?.value?.split(',')[1] === categoryType &&
+        programa?.desc?.details !== 'Emisión de una película.'
+      )
+        return programa;
+    });
+    // .map((programa: any) => programa?.category?.value?.split(',')[1])
+    // .filter((value, index, self) => self.indexOf(value) === index);
+  }
+  private getSeriesByCategories(maincat: string, categoryType: string) {
+    return this.getListaProgramas().filter((programa: any) => {
+      if (
+        programa?.category?.value?.split(',')[0] === maincat &&
+        programa?.category?.value?.split(',')[1] === categoryType
+      )
+        return programa;
+    });
+  }
+  // Obtener todos los canales si es necesario
+
+  // Otros métodos para obtener canales según el tipo (tdt, movistar, autonomico)
+  getTDTCanales() {
+    return this.listaCanales.filter((canal: any) => canal.type === 'tdt');
+  }
+
+  getMovistarCanales() {
+    return this.listaCanales.filter((canal: any) => canal.type === 'movistar');
+  }
+
+  getAutonomicoCanales() {
+    return this.listaCanales.filter(
+      (canal: any) => canal.type === 'autonomico'
+    );
+  }
+  getDeportesCanales() {
+    return this.listaCanales.slice(93, 103);
+  }
 }

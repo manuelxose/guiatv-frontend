@@ -64,11 +64,7 @@ export class ProgramListComponent implements OnInit, OnDestroy {
   isMobile: boolean;
   private scrollSubscription!: Subscription;
 
-  constructor(
-    private httpservce: HttpService,
-    private stateService: ReductorService,
-    private store: Store<{ programas: any[] }>
-  ) {
+  constructor(private httpservce: HttpService, private redux: ReductorService) {
     this.screenWidthInRem = 18.375;
     this.programasRow = new QueryList<ElementRef>();
     //dias debe tener la propuedad diaSemana y diaNumero el numero es el numero de dia del mes hoy seria Viernes 24 se debe calcular de forma dinamica a partir de la fecha actual
@@ -101,26 +97,65 @@ export class ProgramListComponent implements OnInit, OnDestroy {
     this.updateScreenWidthInRem();
     window.addEventListener('resize', this.updateScreenWidthInRem.bind(this));
 
-    this.httpservce.getProgramacion('today').subscribe((res: any) => {
-      this.programas = res;
-      //añadirle el url_web y url_live desde _canales
-      this.store.dispatch({ type: 'SET_PROGRAMAS', payload: res });
+    ///de forma temporal obtener los progrmaas de models programs
+
+    // this.programas = PROGRAMS;
+    //comprobar si hay progrmas en beahvior subject
+
+    this.httpservce.programas$.subscribe(async (programas) => {
+      this.programas = programas;
+      if (this.programas.length === 0) {
+        this.isLoading = true;
+
+        await this.getFromApi();
+      }
       this.isLoading = false;
       if (this.franjaHoraria != '00:00') {
         const index = this.franjas.findIndex(
           (franja) => franja[0] === this.franjaHoraria
         );
-        ///MANDA LOS PROGRAMAS A LA FRANJA HORARIA CORRESPONDIENTE
         this.cambiarFranjaHoraria(this.franjas[index], index);
       }
       this.leftRem = this.calcularLeft(hora, this.franjaHoraria);
+      //si no hay programas llamar a la api
     });
+
+    // this.httpservce.setProgramas(this.programas);
+
+    // console.log('Estado del Stoire: ', this.redux.getState());
+    // this.isLoading = false;
+    // if (this.franjaHoraria != '00:00') {
+    //   const index = this.franjas.findIndex(
+    //     (franja) => franja[0] === this.franjaHoraria
+    //   );
+    //   this.cambiarFranjaHoraria(this.franjas[index], index);
+    // }
   }
 
   ngOnDestroy(): void {
     if (this.scrollSubscription) {
       this.scrollSubscription.unsubscribe();
     }
+  }
+  public async getFromApi() {
+    const hora = new Date().toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    (await this.httpservce.getProgramacion('today')).subscribe((res: any) => {
+      this.programas = res;
+
+      this.httpservce.setProgramas(res);
+
+      this.isLoading = false;
+      if (this.franjaHoraria != '00:00') {
+        const index = this.franjas.findIndex(
+          (franja) => franja[0] === this.franjaHoraria
+        );
+        this.cambiarFranjaHoraria(this.franjas[index], index);
+      }
+      this.leftRem = this.calcularLeft(hora, this.franjaHoraria);
+    });
   }
 
   ngAfterViewInit() {
@@ -293,7 +328,7 @@ export class ProgramListComponent implements OnInit, OnDestroy {
     return leftRem < 8 ? 8 : leftRem;
   };
 
-  cambiarDia(dia: number) {
+  async cambiarDia(dia: number) {
     // Obtener la fecha actual y establecer el día proporcionado
 
     console.log(dia);
@@ -316,28 +351,34 @@ export class ProgramListComponent implements OnInit, OnDestroy {
       this.hoy = true;
       const fechaParaLlamar = esDiaSiguiente ? 'today+1' : 'today+2';
 
-      this.httpservce.getProgramacion(fechaParaLlamar).subscribe((res: any) => {
-        this.programas = res;
-        // Añadir el url_web y url_live desde _canales
-        this.isLoading = false;
-        if (this.franjaHoraria != '00:00') {
-          const index = this.franjas.findIndex(
-            (franja) => franja[0] === this.franjaHoraria
-          );
+      (await this.httpservce.getProgramacion(fechaParaLlamar)).subscribe(
+        (res: any) => {
+          this.programas = res;
+          // Añadir el url_web y url_live desde _canales
+          this.httpservce.setProgramas(this.programas);
 
-          this.cambiarFranjaHoraria(this.franjas[index], index);
+          this.isLoading = false;
+          if (this.franjaHoraria != '00:00') {
+            const index = this.franjas.findIndex(
+              (franja) => franja[0] === this.franjaHoraria
+            );
 
-          this.leftRem = this.calcularLeft(hora, this.franjaHoraria);
+            this.cambiarFranjaHoraria(this.franjas[index], index);
+
+            this.leftRem = this.calcularLeft(hora, this.franjaHoraria);
+          }
         }
-      });
+      );
     } else if (dia === 0) {
       this.isLoading = true;
       this.hoy = false;
       console.log('dia actual: ', this.hoy_format);
 
-      this.httpservce.getProgramacion('today').subscribe((res: any) => {
+      (await this.httpservce.getProgramacion('today')).subscribe((res: any) => {
         this.programas = res;
         // Añadir el url_web y url_live desde _canales
+        this.httpservce.setProgramas(this.programas);
+
         this.isLoading = false;
         if (this.franjaHoraria != '00:00') {
           const index = this.franjas.findIndex(
@@ -377,5 +418,18 @@ export class ProgramListComponent implements OnInit, OnDestroy {
     const hora = fechaActual.getHours().toString().padStart(2, '0');
     const minutos = fechaActual.getMinutes().toString().padStart(2, '0');
     return `${hora}:${minutos}`;
+  }
+
+  get programaRoute() {
+    // Verifica que programaSeleccionado.title.value sea una cadena válida antes de hacer el reemplazo
+    if (
+      this.programaSeleccionado &&
+      typeof this.programaSeleccionado.title.value === 'string'
+    ) {
+      return (
+        '/detalles/' + this.programaSeleccionado.title.value.replace(/ /g, '-')
+      );
+    }
+    return '/detalles'; // Otra ruta por defecto si no es válido
   }
 }

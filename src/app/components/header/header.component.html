@@ -26,7 +26,7 @@
         *ngFor="let item of items"
         class="text-white cursor-pointer hover:text-gray-300 transition"
       >
-        <a href="{{ item.routerLink }}">
+        <a routerLink="{{ item.routerLink }}">
           {{ item.label }}
         </a>
       </div>
@@ -50,7 +50,9 @@
       >
         <div *ngFor="let item of items" class="flex flex-col gap-4">
           <div class="px-3 text-center text-white hover:underline">
-            {{ item.label }}
+            <a routerLink="{{ item.routerLink }}">
+              {{ item.label }}
+            </a>
           </div>
         </div>
       </div>

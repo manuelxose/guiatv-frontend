@@ -37,17 +37,6 @@ export class CanalDetallesComponent implements OnInit {
     this.route.paramMap.subscribe((params) => {
       this.query = params.get('canal')?.toString() || '';
     });
-
-    this.guiaSvc
-      .getDocumentByName('canales_españa', this.query)
-      .subscribe((data: any) => {
-        console.log(data);
-        this.canal = data;
-        this.canalName = data.name;
-        this.canalLogo = data.image;
-        this.programas = data[`programas_${this.hoy_format}`];
-        console.log(this.programas);
-      });
   }
 
   ngOnDestroy(): void {

@@ -9,7 +9,6 @@ import { AngularFireModule } from '@angular/fire/compat';
 import { environment } from '../environments/environment';
 import { PagesModule } from './pages/pages.module';
 import { StoreModule } from '@ngrx/store';
-
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -20,7 +19,6 @@ import { StoreModule } from '@ngrx/store';
     HttpClientModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
     PagesModule,
-    StoreModule.forRoot({}, {}),
   ],
   exports: [],
 

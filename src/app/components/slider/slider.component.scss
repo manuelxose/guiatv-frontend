@@ -1,0 +1,84 @@
+:root {
+  --swiper-theme-color: #fff;
+}
+
+/* Estilos para los botones de navegación del Swiper similar a Netflix */
+::ng-deep .swiper-button-prev,
+::ng-deep .swiper-button-next {
+  width: 40px; /* Ancho del botón */
+  height: 100%; /* Altura igual al contenedor */
+  background: rgba(0, 0, 0, 0.5); /* Color de fondo con transparencia */
+  color: white; /* Color del texto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px; /* Tamaño de fuente */
+  transition: background 0.3s ease, transform 0.3s ease; /* Transiciones suaves */
+  position: absolute; /* Posición absoluta para pegarlo a los lados */
+  top: 0; /* Pegado en la parte superior */
+}
+
+::ng-deep .swiper-button-prev {
+  left: 0; /* Pegado en el lado izquierdo */
+  border-top-right-radius: 10px; /* Bordes redondeados en la parte superior derecha */
+  border-bottom-right-radius: 10px; /* Bordes redondeados en la parte inferior derecha */
+}
+
+::ng-deep .swiper-button-next {
+  right: 0; /* Pegado en el lado derecho */
+  border-top-left-radius: 10px; /* Bordes redondeados en la parte superior izquierda */
+  border-bottom-left-radius: 10px; /* Bordes redondeados en la parte inferior izquierda */
+}
+
+::ng-deep .swiper-button-prev:hover,
+::ng-deep .swiper-button-next:hover {
+  background: rgba(0, 0, 0, 0.8); /* Cambio de color al pasar el mouse */
+  transform: scale(1.1); /* Efecto de escala al pasar el mouse */
+}
+
+::ng-deep .swiper-wrapper {
+  display: flex;
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+::ng-deep .swiper-slide {
+  background: rgba(0, 0, 0, 0.5); /* Color de fondo con transparencia */
+  border-radius: 10px;
+  transition: transform 300ms ease 100ms;
+}
+
+::ng-deep .swiper-slide:after {
+  content: "";
+  display: block;
+}
+
+::ng-deep .swiper-slide:nth-child(even) {
+  background: rgba(0, 0, 0, 0.5); /* Color de fondo con transparencia */
+  border-radius: 10px;
+}
+
+::ng-deep .swiper-wrapper:hover ::ng-deep .swiper-slide {
+  transform: translateX(-25%);
+}
+
+::ng-deep .swiper-slide:hover ~ ::ng-deep .swiper-slide {
+  transform: translateX(25%);
+}
+
+::ng-deep .swiper-wrapper ::ng-deep .swiper-slide:hover {
+  transform: scale(1.5);
+}
+
+body {
+  overflow: hidden;
+}
+
+// OCULTAR LOS BOTONES DE SCROLL EN MOVILES
+
+@media (max-width: 768px) {
+  ::ng-deep .swiper-button-prev,
+  ::ng-deep .swiper-button-next {
+    display: none;
+  }
+}

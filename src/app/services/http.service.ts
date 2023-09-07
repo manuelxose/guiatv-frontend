@@ -16,13 +16,15 @@ export class HttpService {
   private programasSource = new BehaviorSubject<any[]>([]);
   programas$ = this.programasSource.asObservable();
 
+  ///variable temporal para no consumir recursos de la api
+
   // BehaviorSubject es un tipo de observable que siempre devuelve el último valor emitido
 
   constructor(private http: HttpClient) {
     console.log('HttpService constructor');
   }
 
-  public getProgramacion(dia: string) {
+  public async getProgramacion(dia: string) {
     const response = this.http.get<any[]>(
       `https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/programas/date/${dia}`
     );
@@ -81,12 +83,12 @@ export class HttpService {
     );
   }
 
-  public setProgramas(programas: Programme[]) {
+  public async setProgramas(programas: Programme[]) {
     // ESPERA A QUE SE CARGUEN LOS DATOS
     this.programasSource.next(programas);
     console.log('Los putisimos programas: ', this.programasSource);
   }
-  public getProgramas() {
+  public async getProgramas() {
     return this.programas$;
   }
 

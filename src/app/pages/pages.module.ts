@@ -10,6 +10,13 @@ import { ParrillaCanalesComponent } from './parrilla-canales/parrilla-canales.co
 import { ProgramFullDetailsComponent } from './program-full-details/program-full-details.component';
 import { ReductorService } from '../reducers/reductor.service';
 import { SwiperModule } from 'swiper/angular';
+import { SliderComponent } from '../components/slider/slider.component';
+import { SeriesComponent } from './series/series.component';
+import { PeliculasComponent } from './peliculas/peliculas.component';
+import { Top10Component } from './top10/top10.component';
+import { MilistaComponent } from './milista/milista.component';
+import { ModalComponent } from '../components/modal/modal.component';
+import { FichaProgramaComponent } from '../components/ficha-programa/ficha-programa.component';
 
 const routes: Routes = [];
 
@@ -20,6 +27,10 @@ const routes: Routes = [];
     HomeComponent,
     ParrillaCanalesComponent,
     ProgramFullDetailsComponent,
+    SeriesComponent,
+    PeliculasComponent,
+    Top10Component,
+    MilistaComponent,
   ],
   imports: [
     CommonModule,
@@ -29,7 +40,15 @@ const routes: Routes = [];
     SwiperModule,
   ],
 
-  exports: [CanalDetallesComponent, ListaCanalesComponent, HomeComponent],
+  exports: [
+    CanalDetallesComponent,
+    ListaCanalesComponent,
+    HomeComponent,
+    SliderComponent,
+    SeriesComponent,
+    PeliculasComponent,
+    FichaProgramaComponent,
+  ],
   providers: [ReductorService],
 })
 export class PagesModule {}

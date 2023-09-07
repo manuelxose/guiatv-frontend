@@ -1,0 +1,59 @@
+<swiper #swiperVirtualRef [config]="config" style="margin-top: -0.75rem">
+  <ng-template swiperSlide *ngFor="let program of programas; index as i">
+    <div class="relative group cursor-pointer">
+      <img
+        class="cursor-pointer rounded-sm object-cover md:rounded lg:h-[12vw] w-full transition duration shadow-xl brightness-[80%]"
+        src="https://wsrv.nl/?url={{ program?.icon }}&w=300&h=300"
+        alt="thumbnail"
+        loading="lazy"
+      />
+      <div class="absolute lg:top-[30%] top-[30%] ml-4 md:ml-16 p-2">
+        <h3
+          class="text-white w-full text-left text-lg font-bold drop-shadow-xl sm:h-10 md:h-12 lg:h-14 xl:h-16"
+        >
+          {{ program?.title?.value }}
+        </h3>
+        <p class="text-white">Duration: {{ program?.duracion }} min</p>
+      </div>
+
+      <div
+        class="absolute top-0 left-0 w-full bg-zinc-800 bg-opacity-40 p-2 lg:p-4 transition shadow-md rounded-b-md opacity-0 group-hover:opacity-100 h-[40%] duration-300"
+      >
+        <div class="flex flex-row items-center gap-3">
+          <!-- BOTON DE VER AHORA O OTRAS MOVIDAS -->
+          <div
+            class="cursor-pointer w-6 h-6 lg:w-10 lg:h-10 bg-white rounded-full flex justify-center items-center transition hover:bg-neutral-300"
+          >
+            <i class="bi bi-play-fill text-black"></i>
+          </div>
+          <!-- BOTON DE FAVORITOS -->
+          <div
+            class="cursor-pointer group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
+          >
+            <i class="bi bi-plus text-white group-hover:text-neutral-300"></i>
+          </div>
+          <!-- BOTON DE VER MÁS DETALLES -->
+          <div
+            (click)="manageModal(program)"
+            class="cursor-pointer ml-auto group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
+          >
+            <i class="bi bi-info text-white group-hover:text-neutral-300"></i>
+          </div>
+        </div>
+        <!-- <p class="text-green-400 font-semibold mt-4">
+              New <span class="text-white">2023</span>
+            </p>
+            <div class="flex flex-row mt-4 items-center">
+              <p class="text-white text-[10px] lg:text-sm">
+                {{ program?.duracion }} min
+              </p>
+            </div>
+            <div class="flex flex-row mt-4 items-center">
+              <p class="text-white text-[10px] lg:text-sm">
+                {{ program.desc?.category }}
+              </p>
+            </div> -->
+      </div>
+    </div>
+  </ng-template>
+</swiper>

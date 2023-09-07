@@ -7,6 +7,10 @@ import { FilterComponent } from './filter/filter.component';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
+import { SliderComponent } from './slider/slider.component';
+import { SwiperModule } from 'swiper/angular';
+import { ModalComponent } from './modal/modal.component';
+import { FichaProgramaComponent } from './ficha-programa/ficha-programa.component';
 
 @NgModule({
   declarations: [
@@ -14,13 +18,25 @@ import { FooterComponent } from './footer/footer.component';
     FilterComponent,
     HeaderComponent,
     FooterComponent,
+    SliderComponent,
+    ModalComponent,
+    FichaProgramaComponent,
   ],
-  imports: [CommonModule, ComponentsRoutingModule, RouterModule, FormsModule],
+  imports: [
+    CommonModule,
+    ComponentsRoutingModule,
+    RouterModule,
+    FormsModule,
+    SwiperModule,
+  ],
   exports: [
     ProgramListComponent,
     FilterComponent,
     HeaderComponent,
     FooterComponent,
+    SliderComponent,
+    ModalComponent,
+    FichaProgramaComponent,
   ],
 })
 export class ComponentsModule {}

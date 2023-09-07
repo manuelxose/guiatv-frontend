@@ -1,0 +1,71 @@
+<div
+  class="flex flex-col items-center justify-center text-center py-8 md:py-12 lg:py-16 xl:py-20 2xl:py-24"
+>
+  <h2
+    class="text-2xl md:text-3xl lg:text-4xl mt-10 xl:text-5xl 2xl:text-6xl font-bold text-white mb-4"
+  >
+    Guía de Programación TV
+  </h2>
+  <h3
+    class="text-white text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl"
+  >
+    TOP 10 Peliculas y Series en NETFLIX
+  </h3>
+</div>
+
+<div
+  class="category-selector text-white text-sm xs:text-base sm:text-lg md:text-2xl font-bold"
+>
+  <div class="pt-2 pb-4 md:pt-8">
+    <div class="flex items-center justify-center">
+      <div class="pr-3 inline-block w-10 sm:w-12 md:w-16">
+        <img src="" alt="" />
+        <div class="relative box-border z-100">
+          <div
+            class="items-center border-gray-400 border-0 border-b-2 border-solid bg-transparent"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="full-column max-w-full mx-auto py-1 md:py-3 px-1">
+  <div class="mb-12 list-banner-container md:mb-0 md:overflow-hidden">
+    <div
+      class="relative"
+      style="
+        padding-bottom: 32.8%;
+        box-shadow: 0px 20px 50px -10px black;
+        -webkit-tap-highlight-color: transparent;
+      "
+    >
+      <ul class="absolute flex mx-auto wh-full bg-smoky">
+        <button
+          class="banner-title relative flex-1 box-content h-full cursor-pointer"
+          style="z-index: 10"
+        ></button>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="pb-5 lg:pt-10 pt-3">
+  <div class="md:p-8 lg:mt-4 sm:mt-2 mt-2 space-y-8">
+    <h3
+      class="text-white text-md md:text-xl lg:text-2xl font-semibold pb-4 ml-3"
+    >
+      TOP 10 Peliculas en NETFLIX
+    </h3>
+    <app-slider [programas]="top10"></app-slider>
+  </div>
+</div>
+
+<div class="pb-5 lg:pt-10 pt-3">
+  <div class="md:p-8 lg:mt-4 sm:mt-2 mt-2 space-y-8">
+    <h3
+      class="text-white text-md md:text-xl lg:text-2xl font-semibold pb-4 ml-3"
+    >
+      TOP 10 Series en NETFLIX
+    </h3>
+    <app-slider [programas]="top10"></app-slider>
+  </div>
+</div>

@@ -41,17 +41,17 @@ export class HeaderComponent {
       {
         label: 'Series',
         icon: 'pi pi-clock',
-        routerLink: '/',
+        routerLink: '/programacion-tv/series-tv',
       },
       {
         label: 'Películas',
         icon: 'pi pi-television',
-        routerLink: '/programacion-tv/guia-canales',
+        routerLink: '/peliculas-tv',
       },
       {
         label: 'Top 10',
         icon: 'pi pi-video',
-        routerLink: '/que-ver-hoy',
+        routerLink: '/top-10',
       },
       {
         label: 'Mi Lista',
