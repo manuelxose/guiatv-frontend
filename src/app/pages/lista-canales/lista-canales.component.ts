@@ -20,6 +20,7 @@ export class ListaCanalesComponent {
   public canales_m: any = [];
   public canales_auto: any = [];
   public canales_dep: any = [];
+  public canales_cable: any = [];
 
   constructor(private guideSvc: TvGuideService, private http: HttpService) {
     this.categorias = ['TDT', 'Cable', 'Autonomico'];
@@ -56,6 +57,7 @@ export class ListaCanalesComponent {
     this.canales_tdt = this.guideSvc.getTDTCanales();
     this.canales_m = this.guideSvc.getMovistarCanales();
     this.canales_dep = this.guideSvc.getDeportesCanales();
+    this.canales_cable = this.guideSvc.getCableCanales();
   }
 
   ngAfterViewInit() {}

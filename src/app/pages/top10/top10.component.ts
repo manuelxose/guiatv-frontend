@@ -7,8 +7,26 @@ import { Component } from '@angular/core';
 })
 export class Top10Component {
   public top10: any[] = [];
+  public post_list: any[] = [];
+  public page: number = 1;
 
-  constructor() {}
+  ngOnInit(): void {
+    this.post_list = [
+      'uno',
+      'dos',
+      'tres',
+      'cuatro',
+      'cinco',
+      'seis',
+      'siete',
+      'ocho',
+      'nueve',
+      'diez',
+      'once',
+    ];
+  }
 
-  ngOnInit(): void {}
+  public setBlog(post: any) {
+    this.post_list.push(post);
+  }
 }

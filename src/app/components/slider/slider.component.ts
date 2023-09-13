@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { Router } from '@angular/router';
 import { ModalService } from 'src/app/services/modal.service';
 import { SwiperOptions } from 'swiper/types/swiper-options';
 
@@ -12,7 +13,7 @@ export class SliderComponent {
   config: SwiperOptions = {};
   programas_similares: any[] = [];
 
-  constructor(private modalService: ModalService) {
+  constructor(private modalService: ModalService, private router: Router) {
     this.config = {
       slidesPerView: 4,
       spaceBetween: 5,
@@ -45,7 +46,8 @@ export class SliderComponent {
       //detectar clicks en los slides
       on: {
         click: (event: any) => {
-          console.log('click', event);
+          //obtener el objeto programa
+          console.log('Programa:', event);
         },
       },
       //eliminar la navegacion por puntos
@@ -56,5 +58,19 @@ export class SliderComponent {
 
   manageModal(programa: any) {
     this.modalService.setPrograma(programa);
+  }
+  manageData(programa: any) {
+    console.log('Programa:', programa);
+    ///Si se trata de un canal hacer route a /ver-canal/:id
+    if (programa?.channel) {
+      console.log('Es un programa');
+      this.router.navigate(['/detalles', programa.id]);
+    }
+    //Si se trata de un programa hacer route a /detalles/:id
+    else {
+      console.log('Es un canal');
+      //sustituir espacios por guiones
+      this.router.navigate(['/ver-canal', programa.name.replace(/\s/g, '-')]);
+    }
   }
 }

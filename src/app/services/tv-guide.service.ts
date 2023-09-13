@@ -76,6 +76,10 @@ export class TvGuideService {
   getMoviesCategories() {
     return this.getUniqueCategories('Cine');
   }
+  getProgramsByCategory(category: string) {
+    //loa progrmas en lista de programas ya estan flatMap asi que no hace falta hacerlo aqui
+    return this.getAllProgramsByCategory(category);
+  }
 
   // GESTION DE LAS SERIES
 
@@ -97,6 +101,14 @@ export class TvGuideService {
 
   getSeriesCategories() {
     return this.getUniqueCategories('Series');
+  }
+
+  getProgramsByChannel(channelName: string) {
+    return this.getProgramsByChannelName(channelName);
+  }
+
+  getAllCategories() {
+    return this.getMainCategories();
   }
 
   // Métodos genéricos para filtrar y obtener categorías únicas
@@ -167,7 +179,27 @@ export class TvGuideService {
         return programa;
     });
   }
-  // Obtener todos los canales si es necesario
+
+  private getMainCategories() {
+    return this.getListaProgramas()
+      .filter((programa: any) => programa?.category?.value?.split(',')[0])
+      .map((programa: any) => programa?.category?.value?.split(',')[0])
+      .filter((value, index, self) => self.indexOf(value) === index);
+  }
+  // Obtener los programas del canal por canal name
+
+  private getProgramsByChannelName(channelName: string) {
+    return this.getListaProgramas().filter(
+      (program: any) => program.channel === channelName
+    );
+  }
+
+  private getAllProgramsByCategory(category: string) {
+    //loa progrmas en lista de programas ya estan flatMap asi que no hace falta hacerlo aqui
+    return this.getListaProgramas().filter((program: any) => {
+      if (program?.category?.value?.split(',')[0] === category) return program;
+    });
+  }
 
   // Otros métodos para obtener canales según el tipo (tdt, movistar, autonomico)
   getTDTCanales() {
@@ -185,5 +217,8 @@ export class TvGuideService {
   }
   getDeportesCanales() {
     return this.listaCanales.slice(93, 103);
+  }
+  getCableCanales() {
+    return this.listaCanales.filter((canal: any) => canal.type === 'cable');
   }
 }

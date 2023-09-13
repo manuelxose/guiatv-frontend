@@ -48,16 +48,16 @@ export class HeaderComponent {
         icon: 'pi pi-television',
         routerLink: '/peliculas-tv',
       },
-      {
-        label: 'Top 10',
-        icon: 'pi pi-video',
-        routerLink: '/top-10',
-      },
-      {
-        label: 'Mi Lista',
-        icon: 'pi pi-info',
-        routerLink: '/acerca-de',
-      },
+      // {
+      //   label: 'Top 10',
+      //   icon: 'pi pi-video',
+      //   routerLink: '/top-10',
+      // },
+      // {
+      //   label: 'Mi Lista',
+      //   icon: 'pi pi-info',
+      //   routerLink: '/acerca-de',
+      // },
     ];
   }
 

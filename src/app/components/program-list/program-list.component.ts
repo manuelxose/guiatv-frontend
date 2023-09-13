@@ -14,6 +14,7 @@ import * as _canales from '../../../assets/canales.json';
 import { HttpService } from 'src/app/services/http.service';
 import { ReductorService } from 'src/app/reducers/reductor.service';
 import { Store } from '@ngrx/store';
+import { PROGRAMS } from 'src/app/models/program';
 
 @Component({
   selector: 'app-program-list',

@@ -11,6 +11,7 @@ import { SliderComponent } from './slider/slider.component';
 import { SwiperModule } from 'swiper/angular';
 import { ModalComponent } from './modal/modal.component';
 import { FichaProgramaComponent } from './ficha-programa/ficha-programa.component';
+import { CardComponent } from './card/card.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { FichaProgramaComponent } from './ficha-programa/ficha-programa.componen
     SliderComponent,
     ModalComponent,
     FichaProgramaComponent,
+    CardComponent,
   ],
   imports: [
     CommonModule,
@@ -37,6 +39,7 @@ import { FichaProgramaComponent } from './ficha-programa/ficha-programa.componen
     SliderComponent,
     ModalComponent,
     FichaProgramaComponent,
+    CardComponent,
   ],
 })
 export class ComponentsModule {}

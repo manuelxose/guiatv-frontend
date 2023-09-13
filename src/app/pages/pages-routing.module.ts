@@ -9,6 +9,8 @@ import { ProgramFullDetailsComponent } from './program-full-details/program-full
 import { SeriesComponent } from './series/series.component';
 import { PeliculasComponent } from './peliculas/peliculas.component';
 import { Top10Component } from './top10/top10.component';
+import { CanalCompletoComponent } from './canal-completo/canal-completo.component';
+import { BlogDetailsComponent } from './blog-details/blog-details.component';
 
 const routes: Routes = [
   {
@@ -21,7 +23,9 @@ const routes: Routes = [
       { path: 'detalles/:id', component: ProgramFullDetailsComponent },
       { path: 'series-tv', component: SeriesComponent },
       { path: 'peliculas-tv', component: PeliculasComponent },
+      { path: 'ver-canal/:id', component: CanalCompletoComponent },
       { path: 'top-10', component: Top10Component },
+      { path: 'top-10/:id', component: BlogDetailsComponent },
       { path: '**', redirectTo: '' },
     ],
   },
