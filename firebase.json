@@ -1,19 +1,4 @@
 {
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "default",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run build"
-      ]
-    }
-  ],
   "emulators": {
     "functions": {
       "timeout": "540s",
@@ -38,18 +23,29 @@
   "storage": {
     "rules": "storage.rules"
   },
+
   "hosting": {
     "public": "dist/guiatv/browser",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
-        "source": "**",
-        "function": "ssr",
+        "source": "/api/**",
+        "function": "app"
+      },
+      {
+        "source": "!/robots.txt",
         "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=3600, s-maxage=3600, stale-while-revalidate=3600"
+          }
+        ]
       }
     ]
   }

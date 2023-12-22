@@ -2,13 +2,15 @@
   <img
     class="absolute inset-0 w-full h-full object-cover object-center brightness-[60%] lg:w-full"
     src="https://wsrv.nl/?url={{ program?.icon }}"
-    alt=""
+    alt="{{ program?.title?.value }}"
+    width="100%"
+    height="100%"
   />
   <div class="absolute top-[30%] md:top-[20%] ml-4 md:ml-16">
     <!-- CREAR UN SPAN CON EL TIPO DE PROGRAMA -->
     <span
       class="text-white text-[8px] md:text-lg font-semibold bg-white bg-opacity-20 px-2 py-1 rounded-md"
-      >{{ program?.desc?.category }}</span
+      >{{ program?.desc?.details }}</span
     >
     <span
       class="text-white text-lg font-semibold ml-2 bg-red-600 px-2 py-1 rounded-md"
@@ -68,16 +70,18 @@
     </button>
     <button
       class="dia-boton text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-400 py-3 px-6 rounded-full"
-      [ngClass]="{ 'dia-boton-seleccionado': diaSeleccionado === 'today+1' }"
-      (click)="cambiarDia('today+1')"
+      [ngClass]="{ 'dia-boton-seleccionado': diaSeleccionado === 'tomorrow' }"
+      (click)="cambiarDia('tomorrow')"
       aria-label="Programación de mañana"
     >
       Mañana
     </button>
     <button
       class="dia-boton text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-400 py-3 px-6 rounded-full"
-      [ngClass]="{ 'dia-boton-seleccionado': diaSeleccionado === 'today+2' }"
-      (click)="cambiarDia('today+2')"
+      [ngClass]="{
+        'dia-boton-seleccionado': diaSeleccionado === 'after_tomorrow'
+      }"
+      (click)="cambiarDia('after_tomorrow')"
       aria-label="Programación de pasado"
     >
       Pasado
@@ -112,9 +116,6 @@
       [(ngModel)]="categoriaSeleccionada"
       class="block appearance-none bg-opacity-30 bg-white text-black rounded-md py-2 pl-3 pr-10 w-full text-xs lg:text-lg font-semibold hover:bg-opacity-20 transition focus:outline-none focus:bg-opacity-20"
     >
-      <option value="" disabled selected hidden>
-        Selecciona una categoría
-      </option>
       <option *ngFor="let categoria of categorias" [value]="categoria">
         {{ categoria }}
       </option>

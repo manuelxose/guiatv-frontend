@@ -1,18 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {
-  AngularFirestoreCollection,
-  AngularFirestore,
-} from '@angular/fire/compat/firestore';
 import { Programme } from '../models/programa.interface';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HttpService {
-  private _cachedData: { [key: string]: any } = {};
-  private _cacheExpiry: { [key: string]: number } = {};
+  private today_programs: any[] = [];
+  private tomorrow_programs: any[] = [];
+  private after_tomorrow_programs: any[] = [];
+
   private programasSource = new BehaviorSubject<any[]>([]);
   programas$ = this.programasSource.asObservable();
 
@@ -24,52 +22,55 @@ export class HttpService {
     console.log('HttpService constructor');
   }
 
-  public async getProgramacion(dia: string) {
-    const response = this.http.get<any[]>(
-      `https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/programas/date/${dia}`
-    );
-
-    return response;
+  public setProgramasByDay(programas: any[], dia: string) {
+    switch (dia) {
+      case 'today':
+        this.today_programs = programas;
+        break;
+      case 'tomorrow':
+        this.tomorrow_programs = programas;
+        break;
+      case 'after_tomorrow':
+        this.after_tomorrow_programs = programas;
+        break;
+      default:
+        break;
+    }
   }
 
-  // GUARDAR LA RESPUESTA EN CACHE
-
-  public getProgramaById(id: string): any {
-    const cacheKey = `${id}`;
-    console.log('Cache key: ', cacheKey);
-    console.log('Cache data: ', this._cachedData[cacheKey]);
-    console.log('Cache expiry: ', this._cacheExpiry[cacheKey]);
-    if (
-      this._cachedData[cacheKey] &&
-      this._cacheExpiry[cacheKey] > Date.now()
-    ) {
-      console.log('Cache hit');
-      return of(this._cachedData[cacheKey]);
+  public getProgramasByDay(dia: string) {
+    switch (dia) {
+      case 'today':
+        return this.today_programs;
+      case 'tomorrow':
+        return this.tomorrow_programs;
+      case 'after_tomorrow':
+        return this.after_tomorrow_programs;
+      default:
+        break;
     }
+    return [];
+  }
 
-    const localData = localStorage.getItem(cacheKey);
-    if (localData) {
-      const parsedData = JSON.parse(localData);
-      this._cachedData[cacheKey] = parsedData;
-      this._cacheExpiry[cacheKey] = parseInt(
-        localStorage.getItem(`${cacheKey}-expiry`) || '0',
-        10
-      );
-      return of(parsedData);
+  public getProgramacion(dia: string): Observable<any[]> {
+    // Comprueba si estan los datos en las variables temporales
+    console.log('getProgramacion', dia);
+    const programas = this.getProgramasByDay(dia);
+    if (programas.length > 0) {
+      return of(programas);
+    } else {
+      return this.http
+        .get<any[]>(
+          `https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/programas/date/${dia}`
+        )
+        .pipe(
+          tap((data) => {
+            console.log('getProgramacion tap datos: ', data);
+            console.log('getProgramacion tap dia: ', dia);
+            this.setProgramasByDay(data, dia);
+          })
+        );
     }
-
-    const response = this.http.get<Programme>(
-      `https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/programas/${id}`
-    );
-
-    response.subscribe((data) => {
-      this._cachedData[cacheKey] = data;
-      const maxCacheAge = 1000 * 60 * 60 * 24 * 1; // 1 día
-      this._cacheExpiry[cacheKey] = Date.now() + maxCacheAge;
-      this.setToLocalStorage(cacheKey, data);
-    });
-
-    return response;
   }
 
   public setToLocalStorage(key: string, value: any): void {
@@ -83,10 +84,11 @@ export class HttpService {
     );
   }
 
-  public async setProgramas(programas: Programme[]) {
+  public async setProgramas(programas: Programme[], date: string) {
     // ESPERA A QUE SE CARGUEN LOS DATOS
     this.programasSource.next(programas);
     console.log('Los putisimos programas: ', this.programasSource);
+    // añadir a localstorage
   }
   public async getProgramas() {
     return this.programas$;

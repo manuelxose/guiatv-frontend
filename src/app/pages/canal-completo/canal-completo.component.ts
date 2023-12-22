@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Router } from 'express';
+import { Router } from '@angular/router';
 import { first } from 'rxjs';
 import { HttpService } from 'src/app/services/http.service';
+import { MetaService } from 'src/app/services/meta.service';
 import { ModalService } from 'src/app/services/modal.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 
@@ -18,13 +19,15 @@ export class CanalCompletoComponent {
   public programs: any = [];
   public program: any = {};
   public categorias: any[] = [];
-  public categoriaSeleccionada: any = 'Selcciona una categoria';
+  public categoriaSeleccionada: string = 'Selcciona una categoria';
 
   constructor(
     private route: ActivatedRoute,
     private http: HttpService,
     private modalService: ModalService,
-    private svcGuide: TvGuideService
+    private svcGuide: TvGuideService,
+    private router: Router,
+    private metaSvc: MetaService
   ) {}
 
   ngOnInit() {
@@ -35,13 +38,21 @@ export class CanalCompletoComponent {
       })
       .unsubscribe();
 
+    const canonicalUrl = this.router.url;
+
+    this.metaSvc.setMetaTags({
+      title: 'Programamacion de ' + this.canal + ' hoy',
+      description: 'Programacion de ' + this.canal + ' hoy',
+      canonicalUrl: canonicalUrl,
+    });
+
     try {
       this.http.programas$
         .pipe(first())
         .subscribe(async (data) => {
           if (data.length === 0) {
             (await this.http.getProgramacion('today')).subscribe((data) => {
-              this.http.setProgramas(data).then(() => {
+              this.http.setProgramas(data, 'today').then(() => {
                 this.managePrograms(data);
               });
             });
@@ -59,7 +70,7 @@ export class CanalCompletoComponent {
     console.log('Cambiando dia:', dia);
     this.diaSeleccionado = dia;
     (await this.http.getProgramacion(dia)).subscribe((data) => {
-      this.http.setProgramas(data).then(() => {
+      this.http.setProgramas(data, dia).then(() => {
         this.managePrograms(data);
       });
     });
@@ -72,9 +83,12 @@ export class CanalCompletoComponent {
       this.canal.replace('-', ' ')
     );
     //this.program es el programa que se optiene de cmpareDate
-    this.program = this.programs.find((programa: any) =>
-      this.compareDate(programa.start, programa.stop, programa.title.value)
-    );
+    this.program = this.programs.find((programa: any) => {
+      console.log(
+        this.compareDate(programa.start, programa.stop, programa.title.value)
+      );
+      this.compareDate(programa.start, programa.stop, programa.title.value);
+    });
     console.log('Programas del canal:', this.program);
     this.categorias = this.svcGuide
       .getAllCategories()

@@ -41,6 +41,8 @@ export class ProgramListComponent implements OnInit, OnDestroy {
   desplazamientoHorizontal: number = 0;
   diaActual: string = '';
   _canales: any;
+  public activeIndex: number = 0;
+
   franjas = [
     ['00:00', '00:30', '01:00', '01:30', '02:00', '02:30', '03:00'],
     ['03:30', '04:00', '04:30', '05:00', '05:30', '06:00', '06:30'],
@@ -63,7 +65,7 @@ export class ProgramListComponent implements OnInit, OnDestroy {
   programaSeleccionado: any;
   canalSeleccionado: number = -1;
   isMobile: boolean;
-  private scrollSubscription!: Subscription;
+  public scrollSubscription!: Subscription;
 
   constructor(private httpservce: HttpService, private redux: ReductorService) {
     this.screenWidthInRem = 18.375;
@@ -102,35 +104,22 @@ export class ProgramListComponent implements OnInit, OnDestroy {
 
     // this.programas = PROGRAMS;
     //comprobar si hay progrmas en beahvior subject
-
-    this.httpservce.programas$.subscribe(async (programas) => {
-      this.programas = programas;
-      if (this.programas.length === 0) {
-        this.isLoading = true;
-
-        await this.getFromApi();
-      }
+    if (this.httpservce.getProgramasByDay('today').length > 0) {
+      this.programas = this.httpservce.getProgramasByDay('today');
       this.isLoading = false;
-      if (this.franjaHoraria != '00:00') {
-        const index = this.franjas.findIndex(
-          (franja) => franja[0] === this.franjaHoraria
-        );
-        this.cambiarFranjaHoraria(this.franjas[index], index);
-      }
-      this.leftRem = this.calcularLeft(hora, this.franjaHoraria);
-      //si no hay programas llamar a la api
-    });
+    } else {
+      this.isLoading = true;
+      this.getFromApi();
+    }
 
-    // this.httpservce.setProgramas(this.programas);
-
-    // console.log('Estado del Stoire: ', this.redux.getState());
-    // this.isLoading = false;
-    // if (this.franjaHoraria != '00:00') {
-    //   const index = this.franjas.findIndex(
-    //     (franja) => franja[0] === this.franjaHoraria
-    //   );
-    //   this.cambiarFranjaHoraria(this.franjas[index], index);
-    // }
+    if (this.franjaHoraria != '00:00') {
+      const index = this.franjas.findIndex(
+        (franja) => franja[0] === this.franjaHoraria
+      );
+      this.cambiarFranjaHoraria(this.franjas[index], index);
+    }
+    this.leftRem = this.calcularLeft(hora, this.franjaHoraria);
+    //si no hay programas llamar a la api
   }
 
   ngOnDestroy(): void {
@@ -138,6 +127,7 @@ export class ProgramListComponent implements OnInit, OnDestroy {
       this.scrollSubscription.unsubscribe();
     }
   }
+
   public async getFromApi() {
     const hora = new Date().toLocaleTimeString('es-ES', {
       hour: '2-digit',
@@ -146,7 +136,7 @@ export class ProgramListComponent implements OnInit, OnDestroy {
     (await this.httpservce.getProgramacion('today')).subscribe((res: any) => {
       this.programas = res;
 
-      this.httpservce.setProgramas(res);
+      // this.httpservce.setProgramas(res, 'today');
 
       this.isLoading = false;
       if (this.franjaHoraria != '00:00') {
@@ -330,9 +320,7 @@ export class ProgramListComponent implements OnInit, OnDestroy {
   };
 
   async cambiarDia(dia: number) {
-    // Obtener la fecha actual y establecer el día proporcionado
-
-    console.log(dia);
+    this.activeIndex = dia;
 
     const hora = new Date().toLocaleTimeString('es-ES', {
       hour: '2-digit',
@@ -343,55 +331,32 @@ export class ProgramListComponent implements OnInit, OnDestroy {
     this.updateScreenWidthInRem();
     window.addEventListener('resize', this.updateScreenWidthInRem.bind(this));
 
-    // Lógica para verificar si el día seleccionado es el día siguiente o dos días después
-    const esDiaSiguiente = dia === 1;
-    const esDosDiasDespues = dia === 2;
-
-    if (esDiaSiguiente || esDosDiasDespues) {
-      this.isLoading = true;
-      this.hoy = true;
-      const fechaParaLlamar = esDiaSiguiente ? 'today+1' : 'today+2';
-
-      (await this.httpservce.getProgramacion(fechaParaLlamar)).subscribe(
-        (res: any) => {
-          this.programas = res;
-          // Añadir el url_web y url_live desde _canales
-          this.httpservce.setProgramas(this.programas);
-
-          this.isLoading = false;
-          if (this.franjaHoraria != '00:00') {
-            const index = this.franjas.findIndex(
-              (franja) => franja[0] === this.franjaHoraria
-            );
-
-            this.cambiarFranjaHoraria(this.franjas[index], index);
-
-            this.leftRem = this.calcularLeft(hora, this.franjaHoraria);
-          }
-        }
-      );
-    } else if (dia === 0) {
-      this.isLoading = true;
-      this.hoy = false;
-      console.log('dia actual: ', this.hoy_format);
-
-      (await this.httpservce.getProgramacion('today')).subscribe((res: any) => {
-        this.programas = res;
-        // Añadir el url_web y url_live desde _canales
-        this.httpservce.setProgramas(this.programas);
-
-        this.isLoading = false;
-        if (this.franjaHoraria != '00:00') {
-          const index = this.franjas.findIndex(
-            (franja) => franja[0] === this.franjaHoraria
-          );
-
-          this.cambiarFranjaHoraria(this.franjas[index], index);
-
-          this.leftRem = this.calcularLeft(hora, this.franjaHoraria);
-        }
-      });
+    // Lógica para verificar si el día seleccionado es el día actual, el día siguiente o dos días después
+    let fechaParaLlamar = 'today';
+    if (dia === 1) {
+      fechaParaLlamar = 'tomorrow';
+    } else if (dia === 2) {
+      fechaParaLlamar = 'after_tomorrow';
     }
+
+    this.isLoading = true;
+    this.hoy = dia === 0;
+    console.log('Fecha para llamar: ', fechaParaLlamar);
+
+    this.httpservce.getProgramacion(fechaParaLlamar).subscribe((res: any) => {
+      this.programas = res;
+      // Añadir el url_web y url_live desde _canales
+      this.isLoading = false;
+      if (this.franjaHoraria != '00:00') {
+        const index = this.franjas.findIndex(
+          (franja) => franja[0] === this.franjaHoraria
+        );
+
+        this.cambiarFranjaHoraria(this.franjas[index], index);
+
+        this.leftRem = this.calcularLeft(hora, this.franjaHoraria);
+      }
+    });
   }
 
   public cerrarPrograma() {
@@ -432,5 +397,8 @@ export class ProgramListComponent implements OnInit, OnDestroy {
       );
     }
     return '/detalles'; // Otra ruta por defecto si no es válido
+  }
+  trackById(index: any, item: any) {
+    return item.id; // o una propiedad única de tus objetos
   }
 }

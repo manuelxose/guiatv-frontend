@@ -64,13 +64,16 @@ export class SliderComponent {
     ///Si se trata de un canal hacer route a /ver-canal/:id
     if (programa?.channel) {
       console.log('Es un programa');
-      this.router.navigate(['/detalles', programa.id]);
+      this.router.navigate(['programacion-tv/detalles', programa.id]);
     }
     //Si se trata de un programa hacer route a /detalles/:id
     else {
       console.log('Es un canal');
       //sustituir espacios por guiones
-      this.router.navigate(['/ver-canal', programa.name.replace(/\s/g, '-')]);
+      this.router.navigate([
+        'programacion-tv/ver-canal',
+        programa.name.replace(/\s/g, '-'),
+      ]);
     }
   }
 }

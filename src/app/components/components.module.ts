@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProgramListComponent } from './program-list/program-list.component';
-import { ComponentsRoutingModule } from './components-routing.module';
 import { RouterModule } from '@angular/router';
 import { FilterComponent } from './filter/filter.component';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +11,7 @@ import { SwiperModule } from 'swiper/angular';
 import { ModalComponent } from './modal/modal.component';
 import { FichaProgramaComponent } from './ficha-programa/ficha-programa.component';
 import { CardComponent } from './card/card.component';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @NgModule({
   declarations: [
@@ -26,10 +26,11 @@ import { CardComponent } from './card/card.component';
   ],
   imports: [
     CommonModule,
-    ComponentsRoutingModule,
     RouterModule,
     FormsModule,
     SwiperModule,
+    RouterModule,
+    ScrollingModule,
   ],
   exports: [
     ProgramListComponent,

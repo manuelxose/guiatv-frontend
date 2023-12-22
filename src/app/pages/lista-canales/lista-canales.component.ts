@@ -4,6 +4,8 @@ import { TvGuideService } from 'src/app/services/tv-guide.service';
 import * as _canales from '../../../assets/canales.json';
 import { HttpService } from 'src/app/services/http.service';
 import { first } from 'rxjs';
+import { MetaService } from 'src/app/services/meta.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-lista-canales',
@@ -22,19 +24,33 @@ export class ListaCanalesComponent {
   public canales_dep: any = [];
   public canales_cable: any = [];
 
-  constructor(private guideSvc: TvGuideService, private http: HttpService) {
+  constructor(
+    private guideSvc: TvGuideService,
+    private http: HttpService,
+    private metaSvc: MetaService,
+    private router: Router
+  ) {
     this.categorias = ['TDT', 'Cable', 'Autonomico'];
     this.canales = [];
     this.url_web = _canales;
   }
 
   ngOnInit(): void {
+    const canonicalUrl = this.router.url;
+
+    this.metaSvc.setMetaTags({
+      title: 'Canales de TV de España',
+      description:
+        'Listado de canales de television de España, como TVE, Antena 3, Telecinco, Cuatro, La Sexta, etc.',
+      canonicalUrl: canonicalUrl,
+    });
+
     try {
       this.http.programas$.pipe(first()).subscribe(async (data) => {
         //si no hay programas llamar a la api
         if (data.length === 0) {
           (await this.http.getProgramacion('today')).subscribe((data) => {
-            this.http.setProgramas(data).then(() => {
+            this.http.setProgramas(data, 'today').then(() => {
               this.manageCanales(data);
             });
           });

@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { CanalDetallesComponent } from './canal-detalles/canal-detalles.component';
 import { HomeComponent } from './home/home.component';
 import { ParrillaCanalesComponent } from './parrilla-canales/parrilla-canales.component';
 import { ListaCanalesComponent } from './lista-canales/lista-canales.component';
@@ -21,12 +20,11 @@ const routes: Routes = [
       { path: 'guia-canales', component: ListaCanalesComponent },
       // { path: ':canal', component: CanalDetallesComponent },
       { path: 'detalles/:id', component: ProgramFullDetailsComponent },
-      { path: 'series-tv', component: SeriesComponent },
-      { path: 'peliculas-tv', component: PeliculasComponent },
+      { path: 'series', component: SeriesComponent },
+      { path: 'peliculas', component: PeliculasComponent },
       { path: 'ver-canal/:id', component: CanalCompletoComponent },
       { path: 'top-10', component: Top10Component },
       { path: 'top-10/:id', component: BlogDetailsComponent },
-      { path: '**', redirectTo: '' },
     ],
   },
 ];

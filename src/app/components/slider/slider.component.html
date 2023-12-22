@@ -6,6 +6,8 @@
         src="https://wsrv.nl/?url={{ program?.icon }}&w=300&h=300"
         alt="{{ program?.name || program?.title?.value }}"
         loading="lazy"
+        width="100%"
+        height="100%"
       />
       <div class="absolute lg:top-[30%] top-[30%] ml-4 md:ml-16 p-2">
         <h3
@@ -16,7 +18,7 @@
         </h3>
 
         <p *ngIf="program?.title?.value" class="text-white">
-          Duration: {{ program?.duracion }} min
+          Canal: {{ program?.channel }}
         </p>
       </div>
       <div *ngIf="!program?.title?.value" class="absolute top-[65%] ml-4">

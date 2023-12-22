@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpService } from 'src/app/services/http.service';
 import { HeaderComponent } from 'src/app/components/header/header.component';
 import {
@@ -15,9 +15,10 @@ import {
 } from 'swiper';
 import SwiperCore from 'swiper';
 
-import { BehaviorSubject, first } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { SwiperOptions } from 'swiper/types/swiper-options';
 import { ModalService } from 'src/app/services/modal.service';
+import { MetaService } from 'src/app/services/meta.service';
 
 SwiperCore.use([
   Navigation,
@@ -93,24 +94,38 @@ export class ProgramFullDetailsComponent {
   constructor(
     private route: ActivatedRoute,
     private http: HttpService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private router: Router,
+    private metaSvc: MetaService
   ) {}
 
   ngOnInit() {
+    const canonicalUrl = this.router.url;
+
+    this.metaSvc.setMetaTags({
+      title: 'Guia Programacion TV - Detalles de programa',
+      description:
+        'Detalles de programa de la guia de programacion de TV española',
+      canonicalUrl: canonicalUrl,
+    });
+
     //obtener los progrmas del reducer
 
     ///obterner programa del behavior subject que vienen del http service
 
     this.http.programas$.subscribe(async (programas) => {
       this.programas = programas;
-      console.log('Programas del behavior subject:', this.programas);
+      // console.log('Programas del behavior subject:', this.programas);
       //si no hay programas llamar a la api
       if (this.programas.length === 0) {
-        (await this.http.getProgramacion('today')).subscribe((programas) => {
+        this.http.getProgramacion('today').subscribe((programas) => {
           this.programas = programas;
-          console.log('Programas de la api:', this.programas);
+          // console.log('Programas de la api:', this.programas);
+          this.getProgramaById(); // Mover esta línea aquí
         });
         // this.programas = this.prgramas_temp;
+      } else {
+        this.getProgramaById();
       }
     });
 
@@ -128,36 +143,6 @@ export class ProgramFullDetailsComponent {
     //   }
     // );
     //obterner por titile del programa
-    const idParam = this.route.snapshot.params['id'];
-
-    this.program = this.programas
-      .flatMap((data: any) => data.programs)
-      .find(
-        (program: any) =>
-          program?.title?.value.replace(/ /g, '-').trim() === idParam
-      );
-
-    const allPrograms = this.programas.flatMap(
-      (programa: any) => programa.programs
-    );
-
-    const channelPrograms = allPrograms.filter(
-      (programa: any) => programa?.channel_id === this?.program?.channel_id
-    );
-    const currentPrograms = allPrograms.filter((programa: any) =>
-      this.compareDate(programa.start, programa.stop)
-    );
-    const similarPrograms = allPrograms.filter(
-      (programa: any) =>
-        (programa.desc?.category?.split('/')[0] ===
-          this.program?.desc?.category?.split('/')[0] ||
-          programa.desc?.category?.split('/')[1] ===
-            this.program?.desc?.category?.split('/')[1]) &&
-        this.compareDate(programa.start, programa.stop)
-    );
-    this.programas_canal = channelPrograms;
-    this.programas_ahora = currentPrograms;
-    this.programas_similares = similarPrograms;
   }
 
   manageModal(program: any): void {
@@ -177,12 +162,8 @@ export class ProgramFullDetailsComponent {
     // console.log(string);
   }
 
-  onSwiper([swiper]: any) {
-    console.log(swiper);
-  }
-  onSlideChange() {
-    console.log('slide change');
-  }
+  onSwiper([swiper]: any) {}
+  onSlideChange() {}
 
   public compareDate(dateIni: string, dateFin: string): boolean {
     const horaActual = new Date();
@@ -209,5 +190,47 @@ export class ProgramFullDetailsComponent {
       return true;
     }
     return false;
+  }
+
+  private getProgramaById() {
+    const idParam = this.route.snapshot.params['id'];
+
+    const allPrograms = this.programas.flatMap(
+      (programa: any) => programa.programs
+    );
+
+    const currentPrograms = allPrograms.filter((programa: any) =>
+      this.compareDate(programa.start, programa.stop)
+    );
+    const similarPrograms = allPrograms.filter(
+      (programa: any) =>
+        (programa.desc?.category?.split('/')[0] ===
+          this.program?.desc?.category?.split('/')[0] ||
+          programa.desc?.category?.split('/')[1] ===
+            this.program?.desc?.category?.split('/')[1]) &&
+        this.compareDate(programa.start, programa.stop)
+    );
+
+    console.log('Programas del canal:', this.programas_canal);
+    console.log('Programas de ahora:', this.programas_ahora);
+    console.log('Programas similares:', this.programas_similares);
+
+    console.log('Programas:', this.programas);
+
+    this.program = this.programas
+      .flatMap((data: any) => data.programs)
+      .find(
+        (program: any) =>
+          program?.id.replace(/ /g, '-').trim() ===
+          idParam.replace(/ /g, '-').trim()
+      );
+
+    const channelPrograms = allPrograms.filter(
+      (programa: any) => programa?.channel_id === this?.program?.channel_id
+    );
+    this.programas_canal = channelPrograms;
+    this.programas_ahora = currentPrograms;
+    this.programas_similares = similarPrograms;
+    console.log('Programa:', this.program);
   }
 }
