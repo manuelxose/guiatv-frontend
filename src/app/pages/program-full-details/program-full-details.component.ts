@@ -113,6 +113,12 @@ export class ProgramFullDetailsComponent {
 
     ///obterner programa del behavior subject que vienen del http service
 
+    // suscribirse al behavior subject del modal service
+
+    this.modalService.programa$.subscribe((programa) => {
+      this.program = programa;
+    });
+
     this.http.programas$.subscribe(async (programas) => {
       this.programas = programas;
       // console.log('Programas del behavior subject:', this.programas);
@@ -194,6 +200,7 @@ export class ProgramFullDetailsComponent {
 
   private getProgramaById() {
     const idParam = this.route.snapshot.params['id'];
+    console.log('ID del programa:', idParam);
 
     const allPrograms = this.programas.flatMap(
       (programa: any) => programa.programs
@@ -221,7 +228,7 @@ export class ProgramFullDetailsComponent {
       .flatMap((data: any) => data.programs)
       .find(
         (program: any) =>
-          program?.id.replace(/ /g, '-').trim() ===
+          program?.title.value.replace(/ /g, '-').trim() ===
           idParam.replace(/ /g, '-').trim()
       );
 

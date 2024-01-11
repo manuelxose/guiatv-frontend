@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 //importar canales.json de assets
 import * as _canales from '../../../assets/canales.json';
@@ -13,6 +13,9 @@ import { Router } from '@angular/router';
   styleUrls: ['./lista-canales.component.scss'],
 })
 export class ListaCanalesComponent {
+  @Output() nextClicked = new EventEmitter<void>();
+  @Output() prevClicked = new EventEmitter<void>();
+
   public categorias: any;
   public canales: any;
   public cargando: boolean = true;
@@ -23,6 +26,17 @@ export class ListaCanalesComponent {
   public canales_auto: any = [];
   public canales_dep: any = [];
   public canales_cable: any = [];
+  public data: any;
+  public popular_movies: any = [];
+  public relatedMovies: any;
+  public movieStartIndex: number = 0;
+  public actors: any;
+  public actorStartIndex = 0;
+  public actor = {};
+  public movie: any;
+  public time: any;
+  public logo: any;
+  public destacada: any;
 
   constructor(
     private guideSvc: TvGuideService,
@@ -80,5 +94,14 @@ export class ListaCanalesComponent {
 
   public canalesPorCategoria(categoria: string) {
     return this.canales.filter((canal: any) => canal.tipo == categoria);
+  }
+
+  onNextClick() {
+    console.log('next padre');
+    this.nextClicked.emit();
+  }
+
+  onPrevClick() {
+    this.prevClicked.emit();
   }
 }

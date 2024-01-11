@@ -19,28 +19,7 @@
     <!-- Agregamos la clase mx-4 para el margen horizontal -->
     <div
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4"
-    >
-      <a
-        href="javascript:void(0)"
-        *ngFor="
-          let item of post_list
-            | paginate : { itemsPerPage: 9, currentPage: page }
-        "
-      >
-        <app-card></app-card>
-      </a>
-    </div>
+    ></div>
     <!--end col-->
-    <div class="col-12 justify-center flex">
-      <!-- Centramos horizontalmente -->
-      <pagination-controls
-        (pageChange)="page = $event"
-        class="text-white p-2 rounded mt-4"
-        previousLabel="Anterior"
-        nextLabel="Siguiente"
-        *ngIf="post_list.length > 9"
-      ></pagination-controls>
-      <!-- Añadimos la clase mt-4 para margen superior -->
-    </div>
   </div>
 </div>

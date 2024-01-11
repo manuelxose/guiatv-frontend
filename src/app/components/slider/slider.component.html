@@ -1,57 +1,93 @@
-<swiper #swiperVirtualRef [config]="config" style="margin-top: -0.75rem">
+<swiper [config]="config" #swiperRef (swiper)="onSwiper($event)">
   <ng-template swiperSlide *ngFor="let program of programas; index as i">
-    <div class="relative group cursor-pointer çç" (click)="manageData(program)">
+    <div
+      class="relative group cursor-pointer rounded-xl overflow-hidden"
+      (click)="manageData(program)"
+    >
       <img
-        class="cursor-pointer rounded-sm object-center md:rounded lg:h-[15vw] w-full transition duration shadow-xl brightness-[80%]"
+        class="object-cover w-full h-full -z-10"
         src="https://wsrv.nl/?url={{ program?.icon }}&w=300&h=300"
         alt="{{ program?.name || program?.title?.value }}"
         loading="lazy"
         width="100%"
         height="100%"
       />
-      <div class="absolute lg:top-[30%] top-[30%] ml-4 md:ml-16 p-2">
+
+      <!-- BOTON SUPERIOR DERECHO -->
+
+      <div
+        class="absolute top-0 h-full w-full bg-gradient-to-t from-black/50 p-3 flex flex-col justify-between"
+      >
+        <!-- Mover el botón a la parte superior -->
+        <div class="flex justify-between items-center w-full">
+          <!-- Logo y título -->
+          <div class="flex items-center">
+            <img
+              *ngIf="logo !== ''"
+              class="object-cover w-10 h-10"
+              src="https://wsrv.nl/?url={{ logo }}&w=300&h=300"
+              alt="{{ program?.name || program?.title?.value }}"
+              loading="lazy"
+              width="100%"
+              height="100%"
+            />
+            <span
+              *ngIf="logo === ''"
+              class="text-white ml-2 p-2.5 bg-gray-800/80 rounded-lg"
+            >
+              {{ program?.channel || program?.name }}
+            </span>
+          </div>
+
+          <!-- Botón -->
+          <!-- <a
+            href="#"
+            class="p-2.5 bg-gray-800/80 rounded-lg text-white self-end hover:bg-red-600/80"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </a> -->
+        </div>
+      </div>
+      <!-- BOTON INFERIOR IZQUIERDO -->
+
+      <div class="self-center flex flex-col items-center space-y-1">
         <h3
           *ngIf="program?.title?.value"
-          class="text-white w-full text-left text-lg font-bold drop-shadow-xl sm:h-10 md:h-12 lg:h-14 xl:h-16"
+          class="capitalize text-white font-medium drop-shadow-md overflow-hidden whitespace-nowrap text-overflow-ellipsis"
+          style="max-width: 200px"
         >
           {{ program?.title?.value }}
         </h3>
 
         <p *ngIf="program?.title?.value" class="text-white">
-          Canal: {{ program?.channel }}
+          {{ horaInicio(i) }}
         </p>
       </div>
-      <div *ngIf="!program?.title?.value" class="absolute top-[65%] ml-4">
-        <h3 class="text-white bottom-0 items-center text-3xl">
+
+      <div
+        *ngIf="!program?.title?.value"
+        class="self-center flex flex-col items-center space-y-2"
+      >
+        <h3 class="capitalize text-white font-medium drop-shadow-md">
           {{ program?.name }}
         </h3>
       </div>
 
       <div
         *ngIf="!program?.name"
-        class="absolute top-0 left-0 w-full bg-zinc-800 bg-opacity-40 p-2 lg:p-4 transition shadow-md rounded-b-md opacity-0 group-hover:opacity-100 h-[40%] duration-300"
+        class="capitalize text-white font-medium drop-shadow-md"
       >
-        <div *ngIf="!program?.name" class="flex flex-row items-center gap-3">
-          <!-- BOTON DE VER AHORA O OTRAS MOVIDAS -->
-          <div
-            class="cursor-pointer w-6 h-6 lg:w-10 lg:h-10 bg-white rounded-full flex justify-center items-center transition hover:bg-neutral-300"
-          >
-            <i class="bi bi-play-fill text-black"></i>
-          </div>
-          <!-- BOTON DE FAVORITOS -->
-          <div
-            class="cursor-pointer group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
-          >
-            <i class="bi bi-plus text-white group-hover:text-neutral-300"></i>
-          </div>
-          <!-- BOTON DE VER MÁS DETALLES -->
-          <div
-            (click)="manageModal(program)"
-            class="cursor-pointer ml-auto group/item w-6 h-6 lg:w-10 lg:h-10 border-white border-2 rounded-full flex justify-center items-center transition hover:border-neutral-300"
-          >
-            <i class="bi bi-info text-white group-hover:text-neutral-300"></i>
-          </div>
-        </div>
         <!-- <p class="text-green-400 font-semibold mt-4">
               New <span class="text-white">2023</span>
             </p>

@@ -14,12 +14,17 @@ import { TvGuideService } from 'src/app/services/tv-guide.service';
 })
 export class CanalCompletoComponent {
   public query: string = '';
-  public diaSeleccionado: string = 'today';
+  public diaSeleccionado: string = 'Hoy';
   public canal: string = '';
   public programs: any = [];
   public program: any = {};
   public categorias: any[] = [];
   public categoriaSeleccionada: string = 'Selcciona una categoria';
+  public popular_movies: any[] = [];
+  public time: string = '';
+  public logo: string = '';
+  public channel: any = {};
+  public live_programs: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -31,12 +36,10 @@ export class CanalCompletoComponent {
   ) {}
 
   ngOnInit() {
-    this.route.paramMap
-      .subscribe((params) => {
-        this.query = params.get('id')?.toString() || '';
-        this.canal = this.query.replace('-', ' ');
-      })
-      .unsubscribe();
+    this.route.paramMap.subscribe((params) => {
+      this.query = params.get('id')?.toString() || '';
+      this.canal = this.query.replace('-', ' ');
+    });
 
     const canonicalUrl = this.router.url;
 
@@ -47,28 +50,24 @@ export class CanalCompletoComponent {
     });
 
     try {
-      this.http.programas$
-        .pipe(first())
-        .subscribe(async (data) => {
-          if (data.length === 0) {
-            (await this.http.getProgramacion('today')).subscribe((data) => {
-              this.http.setProgramas(data, 'today').then(() => {
-                this.managePrograms(data);
-              });
+      this.http.programas$.pipe(first()).subscribe(async (data) => {
+        if (data.length === 0) {
+          this.http.getProgramacion('today').subscribe((data) => {
+            this.http.setProgramas(data, 'today').then(() => {
+              this.managePrograms(data);
             });
-          } else {
-            this.managePrograms(data);
-          }
-        })
-        .unsubscribe();
+          });
+        } else {
+          this.managePrograms(data);
+        }
+      });
     } catch (error) {
       console.log(error);
     }
   }
 
   async cambiarDia(dia: string) {
-    console.log('Cambiando dia:', dia);
-    this.diaSeleccionado = dia;
+    this.diaSeleccionado = this.cambiaDia(dia);
     (await this.http.getProgramacion(dia)).subscribe((data) => {
       this.http.setProgramas(data, dia).then(() => {
         this.managePrograms(data);
@@ -84,38 +83,56 @@ export class CanalCompletoComponent {
     );
     //this.program es el programa que se optiene de cmpareDate
     this.program = this.programs.find((programa: any) => {
-      console.log(
-        this.compareDate(programa.start, programa.stop, programa.title.value)
-      );
-      this.compareDate(programa.start, programa.stop, programa.title.value);
+      return this.compareDate(programa.start, programa.stop);
     });
-    console.log('Programas del canal:', this.program);
+
+    for (let program of programas) {
+      let programm = program.programs.find((programa: any) => {
+        return this.compareDate(programa.start, programa.stop);
+      });
+      if (programm) {
+        this.live_programs.push(programm);
+      }
+    }
+
+    console.log('live_programs: ', this.live_programs);
+
     this.categorias = this.svcGuide
       .getAllCategories()
       .filter((categoria) => categoria !== undefined);
-    console.log('Categorias:', this.categorias);
 
-    console.log('categorias:', this.categorias);
+    this.http.getChannel(this.program.channel_id).forEach((data: any) => {
+      console.log('datos del canal: ', data);
+      this.logo = data.icon;
+      this.channel = data;
+    });
   }
 
   public manageModal(program: any) {
-    console.log('Programa:', program);
     this.modalService.setPrograma(program);
   }
 
-  public compareDate(
-    dateIni: string,
-    dateFin: string,
-    titulo: string
-  ): boolean {
-    console.log('Comparando fechas' + titulo);
-
+  public compareDate(dateIni: string, dateFin: string): boolean {
     // Obtiene la hora actual, la hora de inicio y la hora de fin
 
-    const horaActual = new Date().getTime() + 3600000; // Suma 1 hora en milisegundos (3600000 ms)
+    const horaActual = new Date(); // Suma 1 hora en milisegundos (3600000 ms)
+    const horaInicio = new Date(dateIni);
+    const horaFin = new Date(dateFin);
 
-    const horaInicio = new Date(dateIni).getTime();
-    const horaFin = new Date(dateFin).getTime();
+    if (this.diaSeleccionado !== 'Hoy') {
+      switch (this.diaSeleccionado) {
+        case 'Mañana':
+          horaInicio.setDate(horaInicio.getDate() - 1);
+          horaFin.setDate(horaFin.getDate() - 1);
+          break;
+        case 'Pasado mañana':
+          horaInicio.setDate(horaInicio.getDate() - 2);
+          horaFin.setDate(horaFin.getDate() - 2);
+          break;
+        default:
+          break;
+      }
+    }
 
     // Obtén las horas y minutos de la hora actual y las horas de inicio y fin
     if (horaActual >= horaInicio && horaActual <= horaFin) {
@@ -125,6 +142,19 @@ export class CanalCompletoComponent {
   }
 
   public getProgramsByCategory(categoria: string) {
-    return this.svcGuide.getProgramsByCategory(categoria);
+    return this.svcGuide.getProgramsByCategory(categoria, this.channel.name);
+  }
+
+  public cambiaDia(dia: string) {
+    switch (dia) {
+      case 'today':
+        return 'Hoy';
+      case 'tomorrow':
+        return 'Mañana';
+      case 'after_tomorrow':
+        return 'Pasado mañana';
+      default:
+        return 'Hoy';
+    }
   }
 }

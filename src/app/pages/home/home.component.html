@@ -1,5 +1,28 @@
-<app-header></app-header>
-<router-outlet></router-outlet>
-<app-footer></app-footer>
+<main class="flex-1 py-10 px-5 sm:px-10 w-full min-w-max">
+  <section>
+    <app-nav-bar></app-nav-bar>
 
-<app-modal></app-modal>
+    <div class="mt-9">
+      <div class="flex items-center justify-between">
+        <span class="font-semibold text-gray-700 text-base dark:text-white"
+          >Esta noche destamos</span
+        >
+      </div>
+    </div>
+    <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
+  </section>
+
+  <!-- PARRILLA DE CANALES -->
+  <section class="mt-9">
+    <div class="flex items-center justify-between">
+      <span class="font-semibold text-gray-700 text-base dark:text-white"
+        >Guia de Televisión España</span
+      >
+    </div>
+    <div class="mt-4 text-sm text-gray-600">
+      Encuentra tus programas favoritos
+    </div>
+  </section>
+
+  <app-program-list></app-program-list>
+</main>

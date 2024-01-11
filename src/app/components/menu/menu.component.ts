@@ -1,0 +1,56 @@
+import { Component, OnInit } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+
+@Component({
+  selector: 'app-menu',
+  templateUrl: './menu.component.html',
+  styleUrls: ['./menu.component.scss'],
+})
+export class MenuComponent {
+  public isHome: boolean = false;
+  public isGuiaCanales: boolean = false;
+  public isSeries: boolean = false;
+  public isPeliculas: boolean = false;
+
+  private unsuscribe$ = new Subject<void>();
+
+  constructor(private router: Router) {
+    // Suscribirse a los eventos del router
+    this.router.events.pipe(takeUntil(this.unsuscribe$)).subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        // Resetear todos los booleanos
+        this.isHome = false;
+        this.isGuiaCanales = false;
+        this.isSeries = false;
+        this.isPeliculas = false;
+        console.log('La ruta: ', this.router.url.split('/')[2]);
+
+        // Activar el booleano correspondiente a la ruta actual
+        switch (this.router.url.split('/')[2]) {
+          case 'home':
+            this.isHome = true;
+            break;
+          case 'guia-canales':
+            this.isGuiaCanales = true;
+            break;
+          case 'series':
+            this.isSeries = true;
+            break;
+          case 'peliculas':
+            console.log('Es peliculas');
+            this.isPeliculas = true;
+            break;
+          default:
+            this.isHome = true;
+            break;
+        }
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.unsuscribe$.next();
+    this.unsuscribe$.complete();
+  }
+}

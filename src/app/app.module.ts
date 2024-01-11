@@ -5,7 +5,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { PagesModule } from './pages/pages.module';
 
 // Firebase modules
 
@@ -13,6 +12,8 @@ import { environment } from '../environments/environment';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { ComponentsModule } from './components/components.module';
+import { RouterModule } from '@angular/router';
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -21,12 +22,12 @@ import { AngularFireAuthModule } from '@angular/fire/compat/auth';
     BrowserAnimationsModule,
     FormsModule,
     HttpClientModule,
-    PagesModule,
-
+    ComponentsModule,
     AngularFireModule.initializeApp(environment.firebaseConfig, 'getPrompts'),
     AngularFirestoreModule, // Only required for database features
     AngularFireAuthModule, // Only required for auth features,
     AngularFirestoreModule, // Only required for storage features
+    ComponentsModule,
   ],
   exports: [],
 

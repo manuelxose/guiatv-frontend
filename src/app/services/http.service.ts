@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Programme } from '../models/programa.interface';
 import { BehaviorSubject, Observable, of, tap } from 'rxjs';
@@ -73,6 +73,12 @@ export class HttpService {
     }
   }
 
+  public getChannel(id: string) {
+    return this.http.get<any[]>(
+      `https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/canales/${id}`
+    );
+  }
+
   public setToLocalStorage(key: string, value: any): void {
     const maxCacheAge = 1000 * 60 * 60 * 24 * 1; // 1 días
     localStorage.setItem(key, JSON.stringify(value));
@@ -96,5 +102,116 @@ export class HttpService {
 
   public setSesionStorage(key: string, value: any): void {
     sessionStorage.setItem(key, JSON.stringify(value));
+  }
+
+  //metodos para conectarse a la api de tmdb
+
+  public getPerson(person: string): Observable<any[]> {
+    const url = `https://api.themoviedb.org/3/search/person?language=es-ES&query=${person}&page=1&include_adult=false`;
+    const options = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+      }),
+    };
+    return this.http.get<any>(url, options);
+  }
+
+  public getMovieId(movie: string): Observable<any[]> {
+    const url = `https://api.themoviedb.org/3/search/movie?language=es-ES&query=${movie}&page=1&include_adult=false`;
+    const options = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+      }),
+    };
+    return this.http.get<any>(url, options);
+  }
+
+  public getSeriesId(serie: string): Observable<any[]> {
+    const url = `https://api.themoviedb.org/3/search/tv?language=es-ES&query=${serie}&page=1&include_adult=false`;
+    const options = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+      }),
+    };
+    return this.http.get<any>(url, options);
+  }
+
+  public getSeriesDetails(id: string) {
+    const url = `https://api.themoviedb.org/3/tv/${id}?language=es-ES&page=1`;
+    const options = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+      }),
+    };
+    return this.http.get<any>(url, options);
+  }
+
+  public getSimilarSeries(id: string): Observable<any[]> {
+    const url = `https://api.themoviedb.org/3/tv/${id}/similar?language=es-ES&page=1`;
+    const options = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+      }),
+    };
+    return this.http.get<any>(url, options);
+  }
+
+  public getPopularSeries(): Observable<any[]> {
+    const url = `https://api.themoviedb.org/3/tv/popular?language=es-ES&page=1`;
+    const options = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+      }),
+    };
+    return this.http.get<any>(url, options);
+  }
+
+  getMovieDetails(id: string) {
+    const url = `https://api.themoviedb.org/3/movie/${id}?language=es-ES&page=1`;
+    const options = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+      }),
+    };
+    return this.http.get<any>(url, options);
+  }
+
+  public getSimilarMovie(id: string): Observable<any[]> {
+    const url = `https://api.themoviedb.org/3/movie/${id}/similar?language=es-ES&page=1`;
+    const options = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+      }),
+    };
+    return this.http.get<any>(url, options);
+  }
+
+  public getPopularMovies(): Observable<any[]> {
+    const url =
+      'https://api.themoviedb.org/3/movie/popular?language=es-ES&page=1';
+    const options = {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+      }),
+    };
+    return this.http.get<any>(url, options);
   }
 }

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpService } from './http.service';
+import { getHoraInicio } from '../utils/utils';
+import { BehaviorSubject, lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -8,7 +10,56 @@ export class TvGuideService {
   private listaCanales: any[] = [];
   private listaProgramas: any[] = [];
 
+  //suscriber para peliculas destacadas
+
+  private peliculasDestacadasSource = new BehaviorSubject<any[]>([]);
+  peliculasDestacadas$ = this.peliculasDestacadasSource.asObservable();
+
+  //sucriber para series destacadas
+  private seriesDestacadasSource = new BehaviorSubject<any[]>([]);
+  seriesDestacadas$ = this.seriesDestacadasSource.asObservable();
+
+  //suscriber para detalles de progrmas
+
+  private detallesProgramaSource = new BehaviorSubject<any[]>([]);
+  detallesPrograma$ = this.detallesProgramaSource.asObservable();
+
   constructor(private http: HttpService) {}
+
+  // GESTION DE LOS DETALLES DE LOS PROGRMAS
+
+  public async setDetallesPrograma(programa: any) {
+    console.log('Metodo setDetallesPrograma');
+    this.detallesProgramaSource.next(programa);
+  }
+
+  public getDetallesPrograma() {
+    return this.detallesPrograma$;
+  }
+
+  // GESTION DE LAS PELICULAS DESTACADAS
+
+  public async setPeliculasDestacadas() {
+    console.log('Metodo setPeliculasDestacadas');
+    const peliculas = await this.getBestRatedMovies();
+    this.peliculasDestacadasSource.next(peliculas);
+  }
+
+  public getPeliculasDestacadas() {
+    return this.peliculasDestacadas$;
+  }
+
+  // GESTION DE LAS SERIES DESTACADAS
+
+  public async setSeriesDestacadas() {
+    console.log('Metodo setSeriesDestacadas');
+    const series = await this.getBestRatedSeries();
+    this.seriesDestacadasSource.next(series);
+  }
+
+  public getSeriesDestacadas() {
+    return this.seriesDestacadas$;
+  }
 
   // GESTION DE LOS CANALES EN EL BEHAVIOR SUBJECT
 
@@ -76,12 +127,119 @@ export class TvGuideService {
   getMoviesCategories() {
     return this.getUniqueCategories('Cine');
   }
-  getProgramsByCategory(category: string) {
+  getProgramsByCategory(category: string, channel?: string) {
     //loa progrmas en lista de programas ya estan flatMap asi que no hace falta hacerlo aqui
-    return this.getAllProgramsByCategory(category);
+    return this.getAllProgramsByCategory(category, channel);
+  }
+
+  async getBestRatedMovies() {
+    console.log('Metodo getBestRatedMovies');
+    const movies = this.getAllMovies();
+    console.log('Peliculas: ', movies);
+    // filtrar las películas que empiezan después de las 22:00 y no son de cine
+    const moviesAfter22 = movies.filter(
+      (movie) =>
+        getHoraInicio(movie.start) > '22:00' &&
+        movie.starRating !== null &&
+        movie.title.value !== 'Cine' &&
+        //no puede ser una serie el titulo no puede tener T seguido de un numero ejemplo T1 o T2 o T3 emplea expresiones regulares
+        !movie.title.value.match(/T\d/)
+    );
+
+    // obtener las calificaciones de las películas de la API
+    const ratings = (await Promise.all(
+      moviesAfter22.map(async (movie) => {
+        const response = (await lastValueFrom(
+          this.http.getMovieId(movie.title.value)
+        )) as any;
+        return response.results[0];
+      })
+    )) as any[];
+
+    // crear un nuevo array con las películas y sus calificaciones
+    const moviesWithRatings = moviesAfter22.map((movie) => {
+      // encontrar la calificación que corresponde a esta película
+      const ratingData = ratings.find((rating) => {
+        if (!rating) {
+          return false;
+        }
+        return rating.title.toLowerCase() === movie.title.value.toLowerCase();
+      });
+      const rating = ratingData?.vote_average ?? null;
+      return { ...movie, starRating: rating };
+    });
+
+    // ordenar el array por calificación de mayor a menor
+    const moviesOrdered = [...moviesWithRatings].sort(
+      (a, b) => b.starRating - a.starRating
+    );
+
+    // devolver las 5 primeras películas
+    return moviesOrdered;
   }
 
   // GESTION DE LAS SERIES
+
+  async getBestRatedSeries() {
+    console.log('Metodo getBestRatedSeries');
+    const series = this.getAllSeries();
+    console.log('Series: ', series);
+    // filtrar las películas que empiezan después de las 22:00 y no son de cine
+    let seriesAfter22 = series.filter((serie: any) => {
+      return (
+        getHoraInicio(serie.start) > '22:00' &&
+        serie.starRating !== null &&
+        serie.title.value !== 'Cine'
+      );
+    });
+
+    // Filtrar las series duplicadas
+    seriesAfter22 = seriesAfter22.filter(
+      (serie: any, index: number, self: any[]) => {
+        const title = serie.title.value.replace(/T\d+.*/, '');
+        return (
+          index ===
+          self.findIndex(
+            (s: any) => s.title.value.replace(/T\d+.*/, '') === title
+          )
+        );
+      }
+    );
+
+    // obtener las calificaciones de las películas de la API
+    const ratings = (await Promise.all(
+      seriesAfter22.map(async (serie) => {
+        const response = (await lastValueFrom(
+          this.http.getSeriesId(serie.title.value.replace(/T\d+.*/, ''))
+        )) as any;
+        return response.results[0];
+      })
+    )) as any[];
+
+    // crear un nuevo array con las películas y sus calificaciones
+    const seriesWithRatings = seriesAfter22.map((serie) => {
+      // encontrar la calificación que corresponde a esta película
+      const ratingData = ratings.find((rating) => {
+        if (!rating) {
+          return false;
+        }
+        return (
+          rating.name.toLowerCase() ===
+          serie.title.value.replace(/T\d+.*/, '').toLowerCase()
+        );
+      });
+      const rating = ratingData?.vote_average ?? null;
+      return { ...serie, starRating: rating };
+    });
+
+    // ordenar el array por calificación de mayor a menor
+    const seriesOrdered = [...seriesWithRatings].sort(
+      (a, b) => b.starRating - a.starRating
+    );
+
+    // devolver las 5 primeras películas
+    return seriesOrdered;
+  }
 
   getAllSeries() {
     return this.programsByCategory('Series');
@@ -194,10 +352,14 @@ export class TvGuideService {
     );
   }
 
-  private getAllProgramsByCategory(category: string) {
+  private getAllProgramsByCategory(category: string, channel?: string) {
     //loa progrmas en lista de programas ya estan flatMap asi que no hace falta hacerlo aqui
     return this.getListaProgramas().filter((program: any) => {
-      if (program?.category?.value?.split(',')[0] === category) return program;
+      if (
+        program?.category?.value?.split(',')[0] === category &&
+        program.channel === channel
+      )
+        return program;
     });
   }
 

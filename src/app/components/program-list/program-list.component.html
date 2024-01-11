@@ -1,255 +1,252 @@
 <!-- EMPLEAR CLASE DE TAILWIND NO PERSONALIZADA -->
 <!-- CENTRAR EL TITULO DE LA PAGINA ORIENTADO A SEO -->
-<div
-  class="flex flex-col items-center justify-center text-center py-8 md:py-12 lg:py-16 xl:py-20 2xl:py-24"
->
-  <h2
-    class="text-2xl md:text-3xl lg:text-4xl mt-10 xl:text-5xl 2xl:text-6xl font-bold text-white mb-4"
-  >
-    Guía de Programación TV
-  </h2>
-  <p class="text-white text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl">
-    Encuentra tus programas favoritos
-  </p>
-</div>
+<section class="pt-12">
+  <div class="card">
+    <div class="header-container">
+      <div class="dia-semana">
+        <button
+          class="btn-dia-semana"
+          *ngFor="let dia of dias; let i = index"
+          (click)="cambiarDia(i)"
+          [ngClass]="{ 'btn-dia-semana-activo': i === activeIndex }"
+        >
+          {{ dia.diaSemana }} {{ dia.diaNumero }}
+        </button>
+      </div>
 
-<div class="card">
-  <div class="header-container">
-    <div class="dia-semana">
-      <button
-        class="btn-dia-semana"
-        *ngFor="let dia of dias; let i = index"
-        (click)="cambiarDia(i)"
-        [ngClass]="{ 'btn-dia-semana-activo': i === activeIndex }"
-      >
-        {{ dia.diaSemana }} {{ dia.diaNumero }}
-      </button>
-    </div>
-
-    <div class="selector-franjas-horarias">
       <div class="selector-franjas-horarias">
-        <ul>
-          <li
-            *ngFor="let item of franjas; let i = index"
-            [class.activo]="item[0] === franjaHoraria"
-            (click)="cambiarFranjaHoraria(item, i)"
-            class="item-franja"
-          >
-            <button type="button" class="btn-franja">
-              {{ item[0] }} - {{ item[item.length - 1] }}
-            </button>
-          </li>
-        </ul>
+        <div class="selector-franjas-horarias">
+          <ul>
+            <li
+              *ngFor="let item of franjas; let i = index"
+              [class.activo]="item[0] === franjaHoraria"
+              (click)="cambiarFranjaHoraria(item, i)"
+              class="item-franja"
+            >
+              <button type="button" class="btn-franja">
+                {{ item[0] }} - {{ item[item.length - 1] }}
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
-    <div class="scrollable-container">
-      <div
-        *ngIf="mostrarHoraActual"
-        class="hora-actual"
-        [ngStyle]="{ left: leftRem + 'rem' }"
-      ></div>
+      <div class="scrollable-container">
+        <div
+          *ngIf="mostrarHoraActual"
+          class="hora-actual"
+          [ngStyle]="{ left: leftRem + 'rem' }"
+        ></div>
 
-      <div class="scrollable-header">
-        <div class="header-item" *ngFor="let hora of horas">{{ hora }}</div>
-      </div>
+        <div class="scrollable-header">
+          <div class="header-item" *ngFor="let hora of horas">{{ hora }}</div>
+        </div>
 
-      <div class="scrollable-body" cdkScrollable>
-        <cdk-virtual-scroll-viewport itemSize="50" class="example-viewport">
-          <div
-            *cdkVirtualFor="
-              let canal of programas;
-              let canalIndex = index;
-              trackBy: trackById
-            "
-          >
-            <div class="channel-row">
-              <div class="logo-container">
-                <img
-                  class="logo"
-                  src="https://wsrv.nl/?url={{ canal.channel.icon }}"
-                  alt="{{ canal.channel.name }} logo"
-                  loading="lazy"
-                  width="100%"
-                  height="100%"
-                />
-              </div>
-              <div class="programas-row" #programasRow>
-                <div
-                  *ngFor="let programa of canal.programs; let i = index"
-                  class="programa-container"
-                  [ngStyle]="{
-                    'margin-left':
-                      i === 0
-                        ? calcularPosicionIzquierda(getHoras(programa.start))
-                        : '',
-                    width: calcularAnchoPrograma(programa.duracion)
-                  }"
-                  (click)="mostrarInfoPrograma(canalIndex, programa)"
-                >
-                  <div class="programa">
-                    <div class="titulo">{{ programa?.title?.value }}</div>
-                    <div class="hora">
-                      {{ getHoras(programa.start) }} -
-                      {{ getHoras(programa.stop) }}
+        <div class="scrollable-body" cdkScrollable>
+          <cdk-virtual-scroll-viewport itemSize="130" class="scrollable-body">
+            <div
+              *cdkVirtualFor="
+                let canal of programas;
+                let canalIndex = index;
+                trackBy: trackById
+              "
+              let
+              i="index;"
+              (click)="canalSeleccionado = canalIndex"
+            >
+              <div class="channel-row">
+                <div class="logo-container">
+                  <img
+                    class="logo"
+                    src="https://wsrv.nl/?url={{ canal.channel.icon }}"
+                    alt="{{ canal.channel.name }} logo"
+                    loading="lazy"
+                    width="100%"
+                    height="100%"
+                  />
+                </div>
+                <div class="programas-row" #programasRow>
+                  <div
+                    *ngFor="let programa of canal.programs; let i = index"
+                    class="programa-container"
+                    [ngStyle]="{
+                      'margin-left':
+                        i === 0
+                          ? calcularPosicionIzquierda(getHoras(programa.start))
+                          : '',
+                      width: calcularAnchoPrograma(programa.duracion)
+                    }"
+                    (click)="mostrarInfoPrograma(canalIndex, programa)"
+                  >
+                    <div class="programa">
+                      <div class="titulo">{{ programa?.title?.value }}</div>
+                      <div class="hora">
+                        {{ getHoras(programa.start) }} -
+                        {{ getHoras(programa.stop) }}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <ng-container *ngIf="canalIndex === canalSeleccionado">
-              <div
-                *ngIf="programaSeleccionado"
-                class="relative bg-white rounded-lg p-6 shadow-lg"
-              >
-                <div class="sm:flex">
-                  <div class="sm:w-1/2 relative">
-                    <div class="absolute inset-0"></div>
-                    <img
-                      class="w-full h-full object-cover rounded-lg sm:rounded-l-lg sm:rounded-t-none"
-                      src="https://wsrv.nl/?url={{ programaSeleccionado.icon }}"
-                      alt="{{ programaSeleccionado.title.value }} imagen"
-                      loading="lazy"
-                      width="100%"
-                      height="100%"
-                    />
-                  </div>
-                  <div class="sm:w-1/2 p-4">
-                    <h3 class="text-2xl font-semibold mb-2 text-black">
-                      <b>{{ programaSeleccionado.title.value }}</b>
-                    </h3>
-                    <div class="text-gray-600">
-                      <div class="mb-2">
-                        <b class="text-black text-xl">Hora de Inicio:</b>
-                        {{ getHoras(programaSeleccionado.start) }}
-                      </div>
-                      <div class="mb-2">
-                        <b class="text-black text-xl">Hora de Finalización:</b>
-                        {{ getHoras(programaSeleccionado.stop) }}
-                      </div>
-                      <div class="text-black text-xl">
-                        {{ programaSeleccionado.desc.year }}
-                        <b
-                          class="text-black text-xl"
-                          *ngIf="programaSeleccionado.desc.rate != null"
-                          >|</b
-                        >
-                        {{ programaSeleccionado.desc.rate }}
-                      </div>
-                      <p
-                        class="burbujas"
-                        *ngIf="programaSeleccionado.category.value"
-                      >
-                        {{ programaSeleccionado.category.value }}
-                      </p>
-                      <div class="mt-2">
-                        <b class="text-black text-xl">Descripción:</b>
-                        {{ programaSeleccionado.desc.details }}
-                      </div>
-                      <div>
-                        <b class="text-black text-xl">Duración:</b>
-                        {{ programaSeleccionado.duracion }} min.
-                      </div>
-                      <p
-                        *ngIf="
-                          programaSeleccionado.desc.directors &&
-                          programaSeleccionado.desc.category.split('/')[0] !==
-                            'Cine' &&
-                          programaSeleccionado.desc.category !==
-                            'Películas de suspense'
-                        "
-                      >
-                        <b class="text-black text-xl">Presentado Por:</b>
-                        {{ programaSeleccionado.desc.directors }}
-                      </p>
-                      <p *ngIf="programaSeleccionado.desc.country">
-                        <b class="text-black text-xl">País:</b>
-                        {{ programaSeleccionado.desc.country }}
-                      </p>
+              <!-- CONTAINER DE LA TARJETA -->
+
+              <ng-container *ngIf="canalIndex === canalSeleccionado">
+                <div
+                  *ngIf="programaSeleccionado"
+                  class="relative bg-white rounded-lg p-6 shadow-lg"
+                >
+                  <div class="sm:flex">
+                    <div class="sm:w-1/2 relative">
+                      <div class="absolute inset-0"></div>
+                      <img
+                        class="w-full h-full object-cover rounded-lg sm:rounded-l-lg sm:rounded-t-none"
+                        src="https://wsrv.nl/?url={{
+                          programaSeleccionado.icon
+                        }}"
+                        alt="{{ programaSeleccionado.title.value }} imagen"
+                        loading="lazy"
+                      />
                     </div>
-                    <ng-container *ngIf="programaSeleccionado">
-                      <div
-                        *ngIf="
-                          isCineCategory(programaSeleccionado.desc.category)
-                        "
-                      >
-                        <p *ngIf="programaSeleccionado.desc.directors">
-                          <b class="text-black text-xl">Dirección:</b>
+                    <div class="sm:w-1/2 p-4">
+                      <h3 class="text-2xl font-semibold mb-2 text-black">
+                        <b>{{ programaSeleccionado.title.value }}</b>
+                      </h3>
+                      <div class="text-gray-600">
+                        <div class="mb-2">
+                          <b class="text-black text-xl">Hora de Inicio:</b>
+                          {{ getHoras(programaSeleccionado.start) }}
+                        </div>
+                        <div class="mb-2">
+                          <b class="text-black text-xl"
+                            >Hora de Finalización:</b
+                          >
+                          {{ getHoras(programaSeleccionado.stop) }}
+                        </div>
+                        <div class="text-black text-xl">
+                          {{ programaSeleccionado.desc.year }}
+                          <b
+                            class="text-black text-xl"
+                            *ngIf="programaSeleccionado.desc.rate != null"
+                            >|</b
+                          >
+                          {{ programaSeleccionado.desc.rate }}
+                        </div>
+                        <p
+                          class="burbujas"
+                          *ngIf="programaSeleccionado.category.value"
+                        >
+                          {{ programaSeleccionado.category.value }}
+                        </p>
+                        <div class="mt-2">
+                          <b class="text-black text-xl">Descripción:</b>
+                          {{ programaSeleccionado.desc.details }}
+                        </div>
+                        <div>
+                          <b class="text-black text-xl">Duración:</b>
+                          {{ programaSeleccionado.duracion }} min.
+                        </div>
+                        <p
+                          *ngIf="
+                            programaSeleccionado.desc.directors &&
+                            programaSeleccionado?.desc?.category?.split(
+                              '/'
+                            )[0] !== 'Cine' &&
+                            programaSeleccionado.desc.category !==
+                              'Películas de suspense'
+                          "
+                        >
+                          <b class="text-black text-xl">Presentado Por:</b>
                           {{ programaSeleccionado.desc.directors }}
                         </p>
-                        <p *ngIf="programaSeleccionado.desc.cast">
-                          <b class="text-black text-xl">Reparto:</b>
-                          {{ programaSeleccionado.desc.cast }}
-                        </p>
-                        <p *ngIf="programaSeleccionado.desc.screenplay">
-                          <b class="text-black text-xl">Guion:</b>
-                          {{ programaSeleccionado.desc.screenplay }}
-                        </p>
-                        <p *ngIf="programaSeleccionado.desc.music">
-                          <b class="">Música:</b>
-                          {{ programaSeleccionado.desc.music }}
-                        </p>
-                        <p *ngIf="programaSeleccionado.desc.producer">
-                          <b class="text-black text-xl">Producción:</b>
-                          {{ programaSeleccionado.desc.producer }}
-                        </p>
-                        <p *ngIf="programaSeleccionado.desc.production">
-                          <b class="text-black text-xl">Productora:</b>
-                          {{ programaSeleccionado.desc.production }}
+                        <p *ngIf="programaSeleccionado.desc.country">
+                          <b class="text-black text-xl">País:</b>
+                          {{ programaSeleccionado.desc.country }}
                         </p>
                       </div>
-                    </ng-container>
+                      <ng-container *ngIf="programaSeleccionado">
+                        <div
+                          *ngIf="
+                            isCineCategory(programaSeleccionado.desc.category)
+                          "
+                        >
+                          <p *ngIf="programaSeleccionado.desc.directors">
+                            <b class="text-black text-xl">Dirección:</b>
+                            {{ programaSeleccionado.desc.directors }}
+                          </p>
+                          <p *ngIf="programaSeleccionado.desc.cast">
+                            <b class="text-black text-xl">Reparto:</b>
+                            {{ programaSeleccionado.desc.cast }}
+                          </p>
+                          <p *ngIf="programaSeleccionado.desc.screenplay">
+                            <b class="text-black text-xl">Guion:</b>
+                            {{ programaSeleccionado.desc.screenplay }}
+                          </p>
+                          <p *ngIf="programaSeleccionado.desc.music">
+                            <b class="">Música:</b>
+                            {{ programaSeleccionado.desc.music }}
+                          </p>
+                          <p *ngIf="programaSeleccionado.desc.producer">
+                            <b class="text-black text-xl">Producción:</b>
+                            {{ programaSeleccionado.desc.producer }}
+                          </p>
+                          <p *ngIf="programaSeleccionado.desc.production">
+                            <b class="text-black text-xl">Productora:</b>
+                            {{ programaSeleccionado.desc.production }}
+                          </p>
+                        </div>
+                      </ng-container>
+                    </div>
                   </div>
-                </div>
-                <div
-                  class="mt-4 flex flex-row justify-center lg:justify-end lg:pl-4"
-                >
-                  <!-- <a
+                  <div
+                    class="mt-4 flex flex-row justify-center lg:justify-end lg:pl-4"
+                  >
+                    <!-- <a
                   href="javascript:void(0)"
                   class="btn btn-secondary"
                   (click)="cerrarPrograma()"
                 >
                   Ocultar
                 </a> -->
-                  <a
-                    *ngIf="programas[canalIndex].url_web != '#'"
-                    href="{{ programas[canalIndex].url_web }}"
-                    target="_blank"
-                    class="btn btn-primary"
-                  >
-                    Visitar Web
-                  </a>
-                  <a
-                    *ngIf="programas[canalIndex].url_live != '#'"
-                    href="{{ programas[canalIndex].url_live }}"
-                    target="_blank"
-                    class="btn btn-primary"
-                  >
-                    Ver en Directo
-                  </a>
-                  <a
-                    *ngIf="programas[canalIndex].url_live != '#'"
-                    [routerLink]="programaRoute"
-                    class="btn btn-primary"
-                  >
-                    Detalles
-                  </a>
+                    <a
+                      *ngIf="programas[canalIndex].channel.url_web != '#'"
+                      href="{{ programas[canalIndex].channel.url_web }}"
+                      target="_blank"
+                      class="btn btn-primary"
+                    >
+                      Visitar Web
+                    </a>
+                    <a
+                      *ngIf="programas[canalIndex].channel.url_live != '#'"
+                      href="{{ programas[canalIndex].channel.url_live }}"
+                      target="_blank"
+                      class="btn btn-primary"
+                    >
+                      Ver en Directo
+                    </a>
+                    <a
+                      *ngIf="programas[canalIndex].channel.url_live != '#'"
+                      [routerLink]="programaRoute"
+                      class="btn btn-primary"
+                    >
+                      Detalles
+                    </a>
+                  </div>
                 </div>
-              </div>
-            </ng-container>
-          </div>
-        </cdk-virtual-scroll-viewport>
-      </div>
+              </ng-container>
+            </div>
+          </cdk-virtual-scroll-viewport>
+        </div>
 
-      <!-- LOADER -->
-      <div *ngIf="isLoading" class="loader-container">
-        <div class="loader">
-          <span class="loader-text">Cargando Guía Programación TV</span>
+        <!-- LOADER -->
+        <div *ngIf="isLoading" class="loader-container">
+          <div class="loader">
+            <span class="loader-text">Cargando Guía Programación TV</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
 <div class="footer-seo">
   <div class="footer-content">

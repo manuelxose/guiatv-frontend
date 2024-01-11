@@ -1,31 +1,59 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-import { ParrillaCanalesComponent } from './parrilla-canales/parrilla-canales.component';
-import { ListaCanalesComponent } from './lista-canales/lista-canales.component';
-import { ProgramFullDetailsComponent } from './program-full-details/program-full-details.component';
-import { SeriesComponent } from './series/series.component';
-import { PeliculasComponent } from './peliculas/peliculas.component';
-import { Top10Component } from './top10/top10.component';
-import { CanalCompletoComponent } from './canal-completo/canal-completo.component';
-import { BlogDetailsComponent } from './blog-details/blog-details.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: HomeComponent,
-    children: [
-      { path: '', component: ParrillaCanalesComponent },
-      { path: 'guia-canales', component: ListaCanalesComponent },
-      // { path: ':canal', component: CanalDetallesComponent },
-      { path: 'detalles/:id', component: ProgramFullDetailsComponent },
-      { path: 'series', component: SeriesComponent },
-      { path: 'peliculas', component: PeliculasComponent },
-      { path: 'ver-canal/:id', component: CanalCompletoComponent },
-      { path: 'top-10', component: Top10Component },
-      { path: 'top-10/:id', component: BlogDetailsComponent },
-    ],
+    loadChildren: () => import('./home/home.module').then((m) => m.HomeModule),
+  },
+  {
+    path: 'series',
+    loadChildren: () =>
+      import('./series/series.module').then((m) => m.SeriesModule),
+  },
+  {
+    path: 'peliculas',
+    loadChildren: () =>
+      import('./peliculas/peliculas.module').then((m) => m.PeliculasModule),
+  },
+  {
+    path: 'guia-canales',
+    loadChildren: () =>
+      import('./lista-canales/lista-canales.module').then(
+        (m) => m.ListaCanalesModule
+      ),
+  },
+  // {
+  //   path: 'detalles/:id',
+  //   loadChildren: () =>
+  //     import('./program-full-details/program-full-details.module').then(
+  //       (m) => m.ProgramFullDetailsModule
+  //     ),
+  // },
+  {
+    path: 'ver-canal/:id',
+    loadChildren: () =>
+      import('./canal-completo/canal-completo.module').then(
+        (m) => m.CanalCompletoModule
+      ),
+  },
+  {
+    path: 'detalles/:?id',
+    loadChildren: () =>
+      import('./blog-details/blog-details.module').then(
+        (m) => m.BlogDetailsModule
+      ),
+  },
+  // {
+  //   path: 'milista',
+  //   loadChildren: () =>
+  //     import('./milista/milista.module').then((m) => m.MilistaModule),
+  // },
+  {
+    path: 'top10',
+    loadChildren: () =>
+      import('./top10/top10.module').then((m) => m.Top10Module),
   },
 ];
 

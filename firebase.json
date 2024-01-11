@@ -33,6 +33,11 @@
         "function": "app"
       },
       {
+        "source": "/blog",
+        "destination": "https://www.clientes.tecnoriasl.com/guiatv",
+        "type": 301
+      },
+      {
         "source": "!/robots.txt",
         "destination": "/index.html"
       }

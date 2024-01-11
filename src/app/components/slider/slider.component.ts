@@ -1,19 +1,33 @@
-import { Component, Input } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  OnInit,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { ModalService } from 'src/app/services/modal.service';
+import Swiper from 'swiper';
+import { SwiperComponent } from 'swiper/angular';
 import { SwiperOptions } from 'swiper/types/swiper-options';
-
+import { getHoraInicio } from 'src/app/utils/utils';
 @Component({
   selector: 'app-slider',
   templateUrl: './slider.component.html',
   styleUrls: ['./slider.component.scss'],
 })
-export class SliderComponent {
+export class SliderComponent implements OnInit {
   @Input() programas: any[] = [];
+  @Input() logo?: string = '';
+  @ViewChild('swiperRef', { static: false }) swiperRef?: SwiperComponent;
   config: SwiperOptions = {};
   programas_similares: any[] = [];
+  private swiperInstance?: Swiper;
 
-  constructor(private modalService: ModalService, private router: Router) {
+  constructor(private modalService: ModalService, private router: Router) {}
+
+  ngOnInit(): void {
     this.config = {
       slidesPerView: 4,
       spaceBetween: 5,
@@ -23,48 +37,31 @@ export class SliderComponent {
           spaceBetween: 5,
         },
         480: {
-          slidesPerView: 2,
-          spaceBetween: 5,
-        },
-        640: {
           slidesPerView: 3,
           spaceBetween: 5,
         },
-        768: {
+        640: {
           slidesPerView: 4,
           spaceBetween: 5,
         },
       },
-      lazy: true,
-      pagination: {
-        clickable: true,
-        //no mostrar bullets
-        el: '.swiper-pagination',
-        type: 'bullets',
-      },
-      navigation: true,
-      //detectar clicks en los slides
-      on: {
-        click: (event: any) => {
-          //obtener el objeto programa
-          console.log('Programa:', event);
-        },
-      },
-      //eliminar la navegacion por puntos
     };
   }
-
-  ngOnInit(): void {}
 
   manageModal(programa: any) {
     this.modalService.setPrograma(programa);
   }
+
   manageData(programa: any) {
     console.log('Programa:', programa);
     ///Si se trata de un canal hacer route a /ver-canal/:id
     if (programa?.channel) {
       console.log('Es un programa');
-      this.router.navigate(['programacion-tv/detalles', programa.id]);
+      this.modalService.setPrograma(programa),
+        this.router.navigate([
+          'programacion-tv/detalles',
+          programa.title.value.replace(/\s/g, '-'),
+        ]);
     }
     //Si se trata de un programa hacer route a /detalles/:id
     else {
@@ -75,5 +72,22 @@ export class SliderComponent {
         programa.name.replace(/\s/g, '-'),
       ]);
     }
+  }
+
+  onSwiper(swiper: Swiper) {
+    this.swiperInstance = swiper;
+  }
+
+  onNextClick() {
+    console.log('next');
+    this.swiperInstance?.slideNext();
+  }
+
+  onPrevClick() {
+    this.swiperInstance?.slidePrev();
+  }
+
+  public horaInicio(i: any) {
+    return getHoraInicio(this.programas[i].start);
   }
 }

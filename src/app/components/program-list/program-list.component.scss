@@ -107,7 +107,7 @@ body {
 .header-container {
   display: flex;
   flex-direction: column;
-  position: sticky;
+  // position: sticky;
   top: 0;
   z-index: 20;
   background-color: #393939;
@@ -145,8 +145,8 @@ body {
 }
 
 .scrollable-container {
-  overflow-y: auto;
-  height: 700px; // Ajustar según sea necesario
+  overflow-y: hidden;
+  height: 800px; // Ajustar según sea necesario
   position: relative;
   max-height: 700px; // Establecer la altura máxima según sea necesario
   background-color: white;
@@ -180,7 +180,7 @@ body {
 .scrollable-header {
   display: flex;
   padding: 5px 10px;
-  position: sticky;
+  // position: sticky;
   top: 0;
   z-index: 1000;
   background-color: #393939;
@@ -216,6 +216,8 @@ body {
 .scrollable-body {
   display: flex;
   flex-direction: column;
+  height: 42rem; // Ajustar según sea necesario
+  overflow: auto;
 }
 
 .channel-row {
@@ -281,8 +283,8 @@ body {
   width: 100%;
   max-width: 1029px;
   background-color: #393939;
-  z-index: 1000;
-  position: sticky;
+  z-index: 1;
+  // position: sticky;
   top: 0;
 }
 
@@ -559,6 +561,10 @@ body {
 // Media query para dispositivos móviles
 // Media query para dispositivos móviles
 @media (max-width: $breakpoint-movil) {
+  .logo-container {
+    min-width: 60px !important;
+  }
+
   .header-container {
     flex-direction: column;
   }
@@ -778,4 +784,42 @@ body {
   margin-left: 5px;
   border-radius: 5px;
   min-width: 100%;
+}
+
+::ng-deep .cdk-virtual-scroll-viewport {
+  overflow-y: hidden;
+  height: 42rem; // Ajustar según sea necesario
+  position: relative;
+  max-height: 42rem; // Establecer la altura máxima según sea necesario
+  background-color: white;
+  overflow-x: hidden; // Ocultar el desplazamiento horizontal
+
+  &::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+  }
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  // Estilizar la barra de desplazamiento en Firefox
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+::ng-deep .cdk-virtual-scroll-content-wrapper {
+  position: relative !important;
+  top: 0;
+  left: 0;
+  contain: content;
 }

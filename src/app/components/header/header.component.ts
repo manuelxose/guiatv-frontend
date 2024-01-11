@@ -1,5 +1,10 @@
-import { Component, HostListener } from '@angular/core';
-import { Router } from '@angular/router';
+import {
+  Component,
+  HostListener,
+  Renderer2,
+  RendererFactory2,
+} from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -13,8 +18,51 @@ export class HeaderComponent {
   headerHeight: number = 250;
   isAtTop = true;
   items: any[] = [];
+  public isViewable = false;
+  public renderer: Renderer2;
+  public isHome: boolean = false;
+  public isGuiaCanales: boolean = false;
+  public isSeries: boolean = false;
+  public isPeliculas: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private rendererFactory: RendererFactory2,
+    private router: Router
+  ) {
+    this.renderer = rendererFactory.createRenderer(null, null);
+
+    // Suscribirse a los eventos del router
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        // Resetear todos los booleanos
+        this.isHome = false;
+        this.isGuiaCanales = false;
+        this.isSeries = false;
+        this.isPeliculas = false;
+        console.log(this.router.url.split('/')[2]);
+
+        // Activar el booleano correspondiente a la ruta actual
+        switch (this.router.url.split('/')[2]) {
+          case 'home':
+            this.isHome = true;
+            break;
+          case 'guia-canales':
+            this.isGuiaCanales = true;
+            break;
+          case 'series':
+            this.isSeries = true;
+            break;
+          case 'peliculas':
+            console.log('Es peliculas');
+            this.isPeliculas = true;
+            break;
+          default:
+            this.isHome = true;
+            break;
+        }
+      }
+    });
+  }
 
   @HostListener('window:scroll', ['$event'])
   handleScroll(event: Event) {
@@ -66,5 +114,14 @@ export class HeaderComponent {
   }
   openAcc() {
     this.accVisible = !this.accVisible;
+  }
+
+  toggleMenu() {
+    this.isViewable = !this.isViewable;
+    if (this.isViewable) {
+      this.renderer.setStyle(document.body, 'overflow', 'hidden');
+    } else {
+      this.renderer.removeStyle(document.body, 'overflow');
+    }
   }
 }

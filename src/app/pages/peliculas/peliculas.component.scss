@@ -1,0 +1,9 @@
+// Clases personalizadas
+
+.lista {
+  list-style-type: disc;
+}
+
+.lista li:first-child::marker {
+  content: "";
+}

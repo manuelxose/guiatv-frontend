@@ -6,6 +6,12 @@ module.exports = {
   theme: {
     extend: {},
   },
+  variants: {
+    extend: {
+      display: ["first"],
+      content: ["before"],
+    },
+  },
 
   plugins: [
     require("tailwindcss-icons"),

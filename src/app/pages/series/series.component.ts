@@ -13,6 +13,9 @@ import { TvGuideService } from 'src/app/services/tv-guide.service';
 export class SeriesComponent {
   public series: any[] = [];
   public categorias: any[] = [];
+  public popular_series: any[] = [];
+  public logo: string = '';
+  public destacada: any = {};
 
   constructor(
     private svcGuide: TvGuideService,
@@ -35,7 +38,7 @@ export class SeriesComponent {
       this.http.programas$.pipe(first()).subscribe(async (data) => {
         //si no hay programas llamar a la api
         if (data.length === 0) {
-          (await this.http.getProgramacion('today')).subscribe((data) => {
+          this.http.getProgramacion('today').subscribe((data) => {
             this.http.setProgramas(data, 'today').then(() => {
               this.svcGuide.setData(data);
               this.manageSeries();
