@@ -60,7 +60,9 @@ export class SeriesComponent {
     this.categorias = this.svcGuide
       .getSeriesCategories()
       .filter((categoria) => categoria !== undefined);
-    console.log('Categorias:', this.categorias);
+    this.svcGuide.getSeriesDestacadas().subscribe((data) => {
+      this.destacada = data[0];
+    });
   }
 
   public getSeriesByCategory(categoria: string) {

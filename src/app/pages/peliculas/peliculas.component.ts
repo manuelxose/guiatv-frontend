@@ -13,7 +13,6 @@ import { TvGuideService } from 'src/app/services/tv-guide.service';
 export class PeliculasComponent {
   public peliculas: any[] = [];
   public categorias: any[] = [];
-  public popular_movies: any[] = [];
   public destacada: any = {};
   public logo: string = '';
 
@@ -50,8 +49,6 @@ export class PeliculasComponent {
     } catch (error) {
       console.log(error);
     }
-
-    // LOGICA DE GESTION DE PELICULAS
   }
 
   private manageMovies(data: any) {
@@ -62,14 +59,15 @@ export class PeliculasComponent {
     this.categorias = this.svcGuide
       .getMoviesCategories()
       .filter((categoria) => categoria !== undefined);
+
+    // GESTION DE PELICULA DESTACADA
+
+    this.svcGuide.getPeliculasDestacadas().subscribe((data) => {
+      console.log('Pelicula destacada', data);
+      this.destacada = data[0];
+    });
   }
 
-  //elminar de la lista de categorias las undefined
-  // this.categorias = this.svcGuide
-  //   .getMoviesCategories()
-  //   .filter((categoria) => categoria !== undefined);
-  // console.log('Peliculas:', this.peliculas);
-  // console.log('Categorias:', this.categorias);
   public getPeliculasByCategory(categoria: string) {
     return this.svcGuide.getMoviesByCategory(categoria);
   }

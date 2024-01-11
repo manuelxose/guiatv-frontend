@@ -1,12 +1,206 @@
-<div class="font-montserrat text-sm bg-white dark:bg-zinc-900 w-full h-full">
-  <div
-    class="flex min-h-screen 2xl:max-w-screen-2xl 2xl:mx-auto 2xl:border-x-2 2xl:border-gray-200 dark:2xl:border-zinc-700"
-  >
-    <!-- Left Sidebar -->
-    <aside
-      class="w-1/6 py-10 pl-10 min-w-min border-r border-gray-300 dark:border-zinc-700 hidden md:block"
+<main
+  class="flex-1 py-10 px-5 sm:px-10 max-w-[100vh] h-[100vh] overflow-y-auto"
+>
+  <section>
+    <app-nav-bar></app-nav-bar>
+
+    <div class="mt-9">
+      <div class="flex items-center justify-between">
+        <span class="font-semibold text-gray-700 text-base dark:text-white"
+          >Ahora en directo en {{ canal }} <span class="live-dot ml-2"></span
+        ></span>
+      </div>
+    </div>
+    <app-banner *ngIf="program" [data]="program"></app-banner>
+  </section>
+  <!-- SECCION CON LA SELECCION DE DIAS -->
+  <section class="mt-9">
+    <div class="flex justify-center items-center">
+      <nav class="dia-seleccion flex space-x-4">
+        <button
+          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
+          [ngClass]="{
+            'dia-boton-seleccionado': diaSeleccionado === 'today'
+          }"
+          (click)="cambiarDia('today')"
+          aria-label="Programación de hoy"
+        >
+          Hoy
+        </button>
+        <button
+          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
+          [ngClass]="{
+            'dia-boton-seleccionado': diaSeleccionado === 'tomorrow'
+          }"
+          (click)="cambiarDia('tomorrow')"
+          aria-label="Programación de mañana"
+        >
+          Mañana
+        </button>
+        <button
+          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
+          [ngClass]="{
+            'dia-boton-seleccionado': diaSeleccionado === 'after_tomorrow'
+          }"
+          (click)="cambiarDia('after_tomorrow')"
+          aria-label="Programación de pasado"
+        >
+          Pasado
+        </button>
+      </nav>
+    </div>
+  </section>
+
+  <!-- CAROUSEL PARA CADA UNO DE LOS CANALES -->
+
+  <section class="pt-6">
+    <div class="flex items-center justify-between">
+      <div class="flex">
+        <img
+          class="rounded-full w-12 h-12 pr-2"
+          [src]="logo"
+          alt=""
+          srcset=""
+        />
+        <span class="font-semibold text-gray-700 text-base dark:text-white">
+          - Programacion Completa de {{ canal }} {{ diaSeleccionado }}
+        </span>
+      </div>
+
+      <div class="flex items-center space-x-2 fill-gray-500">
+        <svg
+          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          (click)="sliderComponent4.onPrevClick()"
+        >
+          <path
+            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+          ></path>
+        </svg>
+        <svg
+          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          (click)="sliderComponent4.onNextClick()"
+        >
+          <path
+            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+          ></path>
+        </svg>
+      </div>
+    </div>
+
+    <div class="mt-4 text-sm text-gray-600">
+      <app-slider
+        #sliderComponent4
+        [programas]="programs"
+        [logo]="logo"
+      ></app-slider>
+    </div>
+  </section>
+
+  <!-- SECCION DE CATEGORIAS -->
+
+  <section class="mt-9">
+    <!-- Desplegable para elegir programacion por categoira -->
+
+    <div class="flex items-center justify-between">
+      <div class="flex">
+        <img
+          class="rounded-full w-12 h-12 pr-2"
+          [src]="logo"
+          alt=""
+          srcset=""
+        />
+        <span class="font-semibold text-gray-700 text-base dark:text-white">
+          - Programacion Por Categoria
+        </span>
+      </div>
+      <div class="relative">
+        <select
+          id="categorias"
+          [(ngModel)]="categoriaSeleccionada"
+          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white appearance-none"
+        >
+          <option value="Selcciona una categoria" disabled>
+            Selecciona una categoria
+          </option>
+          <option *ngFor="let categoria of categorias" [value]="categoria">
+            {{ categoria }}
+          </option>
+        </select>
+        <div
+          class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white"
+        >
+          <svg
+            class="w-4 h-4 text-white pl-2"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="mt-2"
+      *ngIf="categoriaSeleccionada !== 'Selcciona una categoria'"
     >
-      <div class="font-bold text-lg flex items-center gap-x-3">
+      <div class="flex items-center justify-between">
+        <h3
+          class="text-gray-700 text-md md:text-xl lg:text-2xl font-semibold pb-4 ml-3"
+        >
+          Ver {{ categoriaSeleccionada }} en {{ canal }}
+          {{ diaSeleccionado }}
+        </h3>
+
+        <div class="flex items-center space-x-2 fill-gray-500">
+          <svg
+            class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            (click)="sliderComponent.onPrevClick()"
+          >
+            <path
+              d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+            ></path>
+          </svg>
+          <svg
+            class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            (click)="sliderComponent.onNextClick()"
+          >
+            <path
+              d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+            ></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="mt-4 text-sm text-gray-600">
+        <app-slider
+          #sliderComponent
+          [programas]="getProgramsByCategory(categoriaSeleccionada)"
+        ></app-slider>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seccion en directo resto de canales -->
+
+  <section class="pt-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
         <svg
           class="h-8 w-8 fill-red-600"
           xmlns="http://www.w3.org/2000/svg"
@@ -16,792 +210,37 @@
             d="M10 15.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4Zm11.96-4.45c.58 6.26-4.64 11.48-10.9 10.9 -4.43-.41-8.12-3.85-8.9-8.23 -.26-1.42-.19-2.78.12-4.04 .14-.58.76-.9 1.31-.7v0c.47.17.75.67.63 1.16 -.2.82-.27 1.7-.19 2.61 .37 4.04 3.89 7.25 7.95 7.26 4.79.01 8.61-4.21 7.94-9.12 -.51-3.7-3.66-6.62-7.39-6.86 -.83-.06-1.63.02-2.38.2 -.49.11-.99-.16-1.16-.64v0c-.2-.56.12-1.17.69-1.31 1.79-.43 3.75-.41 5.78.37 3.56 1.35 6.15 4.62 6.5 8.4ZM5.5 4C4.67 4 4 4.67 4 5.5 4 6.33 4.67 7 5.5 7 6.33 7 7 6.33 7 5.5 7 4.67 6.33 4 5.5 4Z"
           ></path>
         </svg>
-        <div class="tracking-wide dark:text-white">
-          GPTV<span class="text-red-600">.</span>
-        </div>
-      </div>
-
-      <!-- Menu -->
-      <div
-        class="mt-12 flex flex-col gap-y-4 text-gray-500 fill-gray-500 text-sm"
-      >
-        <div class="text-gray-400/70 font-medium uppercase">Menu</div>
-        <a
-          class="flex items-center space-x-2 py-1 dark:text-white font-semibold border-r-4 border-r-red-600 pr-20"
-          href="#"
-        >
-          <svg
-            class="h-5 w-5 fill-red-600"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M5 22h14v0c1.1 0 2-.9 2-2v-9 0c0-.27-.11-.53-.29-.71l-8-8v0c-.4-.39-1.02-.39-1.41 0l-8 8h0c-.2.18-.3.44-.3.71v9 0c0 1.1.89 2 2 2Zm5-2v-5h4v5Zm-5-8.59l7-7 7 7V20h-3v-5 0c0-1.11-.9-2-2-2h-4v0c-1.11 0-2 .89-2 2v5H5Z"
-            ></path>
-          </svg>
-          <span>Inicio</span>
-        </a>
-        <a
-          class="flex items-center space-x-2 py-1 group hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
-          href="#"
-        >
-          <svg
-            class="h-5 w-5 group-hover:fill-red-600"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <g>
-              <path
-                d="M19 2H9c-1.11 0-2 .89-2 2v5.586l-4.707 4.7v0c-.4.39-.4 1.02 0 1.41 .18.18.44.29.7.29v5 0c0 .55.44 1 1 1h16v0c.55 0 1-.45 1-1v-17c0-1.11-.9-2-2-2Zm-8 18H5v-5.586l3-3 3 3V20Zm8 0h-6v-4 0c.55 0 .99-.45 1-1 0-.27-.11-.53-.3-.72L8.99 9.57V3.984h10v16Z"
-              ></path>
-              <path
-                d="M11 6h2v2h-2Zm4 0h2v2h-2Zm0 4.03h2v1.96h-2Zm0 3.96h2v2h-2Zm-8 1h2v2H7Z"
-              ></path>
-            </g>
-          </svg>
-          <span>Canales</span>
-        </a>
-        <a
-          class="flex items-center space-x-2 py-1 group hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
-          href="#"
-        >
-          <svg
-            class="h-5 w-5 group-hover:fill-red-600"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <g>
-              <path
-                d="M12 2C6.48 2 2 6.48 2 12c0 5.51 4.48 10 10 10 5.51 0 10-4.49 10-10 0-5.52-4.49-10-10-10Zm0 18c-4.42 0-8-3.59-8-8 0-4.42 3.58-8 8-8 4.41 0 8 3.58 8 8 0 4.41-3.59 8-8 8Z"
-              ></path>
-              <path d="M8 16l5.991-2 2-6 -6 2Z"></path>
-            </g>
-          </svg>
-          <span>Películas</span>
-        </a>
-        <a
-          class="flex items-center space-x-2 py-1 group hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
-          href="#"
-        >
-          <svg
-            class="h-5 w-5 group-hover:fill-red-600"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <g>
-              <path
-                d="M12 2C6.48 2 2 6.48 2 12c0 5.51 4.48 10 10 10 5.51 0 10-4.49 10-10 0-5.52-4.49-10-10-10Zm0 18c-4.42 0-8-3.59-8-8 0-4.42 3.58-8 8-8 4.41 0 8 3.58 8 8 0 4.41-3.59 8-8 8Z"
-              ></path>
-              <path d="M13 7h-2v5.414l3.29 3.29 1.41-1.42 -2.71-2.71Z"></path>
-            </g>
-          </svg>
-          <span>Series</span>
-        </a>
-
-        <div class="mt-8 text-gray-400/70 font-medium uppercase">Social</div>
-        <a
-          class="flex items-center space-x-2 py-1 group hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
-          href="#"
-        >
-          <svg
-            class="h-5 w-5 group-hover:fill-red-600"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2v0C9.23 2 7 4.23 7 7c0 2.76 2.23 5 5 5 2.76 0 5-2.24 5-5v0c0-2.77-2.24-5-5-5Zm0 8v0c-1.66 0-3-1.35-3-3 0-1.66 1.34-3 3-3 1.65 0 3 1.34 3 3v0c0 1.65-1.35 3-3 3Zm9 11v-1 0c0-3.87-3.14-7-7-7h-4v0c-3.87 0-7 3.13-7 7v1h2v-1 0c0-2.77 2.23-5 5-5h4v0c2.76 0 5 2.23 5 5v1Z"
-            ></path>
-          </svg>
-          <span>Profile</span>
-        </a>
-        <a
-          class="flex items-center space-x-2 py-1 group hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
-          href="#"
-        >
-          <svg
-            class="h-5 w-5 group-hover:fill-red-600"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <g>
-              <path
-                d="M16.6 11.04v-.001c.6-1.04.87-2.25.75-3.44 -.18-1.79-1.18-3.37-2.81-4.44l-1.11 1.66c1.11.742 1.8 1.79 1.91 2.974l-.001 0c.11 1.1-.29 2.2-1.08 2.98l-1.2 1.19 1.61.47c4.23 1.24 4.28 5.49 4.28 5.53h2c0-1.79-.96-5.285-4.4-6.952Z"
-              ></path>
-              <path
-                d="M9.5 12c2.2 0 4-1.8 4-4 0-2.21-1.8-4-4-4 -2.21 0-4 1.79-4 4 0 2.2 1.79 4 4 4Zm0-6c1.1 0 2 .89 2 2 0 1.1-.9 2-2 2 -1.11 0-2-.9-2-2 0-1.11.89-2 2-2Zm1.5 7H8c-3.31 0-6 2.69-6 6v1h2v-1c0-2.21 1.79-4 4-4h3c2.2 0 4 1.79 4 4v1h2v-1c0-3.31-2.7-6-6-6Z"
-              ></path>
-            </g>
-          </svg>
-          <span>Friends</span>
-        </a>
-        <a
-          class="flex items-center space-x-2 py-1 group hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
-          href="#"
-        >
-          <svg
-            class="h-5 w-5 group-hover:fill-red-600"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <g>
-              <path
-                d="M12 2v0C6.47 2 2 6.47 2 12c0 5.52 4.47 10 10 10 5.52 0 10-4.48 10-10v-.001c0-5.53-4.48-10-10-10Zm0 18v0c-4.42 0-8-3.59-8-8 0-4.42 3.58-8 8-8 4.41 0 8 3.58 8 8v0c0 4.41-3.59 8-8 8Z"
-              ></path>
-              <path
-                d="M12 8v0c-2.21 0-4 1.79-4 4 0 2.2 1.79 4 4 4 2.2 0 4-1.8 4-4v0c0-2.21-1.8-4-4-4Zm0 6v0c-1.11 0-2-.9-2-2 0-1.11.89-2 2-2 1.1 0 2 .89 2 2v0c0 1.1-.9 2-2 2Z"
-              ></path>
-            </g>
-          </svg>
-          <span>Media</span>
-        </a>
-
-        <div class="mt-8 text-gray-400/70 font-medium uppercase">General</div>
-        <a
-          class="flex items-center space-x-2 py-1 group hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
-          href="#"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 group-hover:stroke-red-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-            />
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          <span>Settings</span>
-        </a>
-        <a
-          class="flex items-center space-x-2 py-1 group hover:border-r-4 hover:border-r-red-600 hover:font-semibold dark:hover:text-white"
-          href="#"
-        >
-          <svg
-            class="h-5 w-5 group-hover:fill-red-600"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <g>
-              <path d="M16 13v-2H7V8l-5 4 5 4v-3Z"></path>
-              <path
-                d="M20 3h-9c-1.11 0-2 .89-2 2v4h2V5h9v14h-9v-4H9v4c0 1.1.89 2 2 2h9c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2Z"
-              ></path>
-            </g>
-          </svg>
-          <span>Logout</span>
-        </a>
-        <a class="flex items-center space-x-2 py-1 mt-4" href="#">
-          <div
-            class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"
-          >
-            <input
-              type="checkbox"
-              name="toggle"
-              id="toggle"
-              class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer"
-              :value="isDark"
-            />
-            <label
-              for="toggle"
-              class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
-            ></label>
-          </div>
-          <label for="toggle" class="">Dark Theme</label>
-        </a>
-      </div>
-      <!-- /Menu -->
-    </aside>
-    <!-- /Left Sidebar -->
-
-    <main class="flex-1 py-10 px-5 sm:px-10 w-[75vh] h-[100vh] overflow-y-auto">
-      <section>
-        <app-nav-bar></app-nav-bar>
-
-        <!-- <div
-          class="flex flex-col items-center justify-center text-center py-8 md:py-12 lg:py-16 xl:py-20 2xl:py-24"
-        >
-          <h2
-            class="text-2xl md:text-3xl lg:text-4xl mt-10 xl:text-5xl 2xl:text-6xl font-bold text-gray-700 mb-4"
-          >
-            Guía de Programación TV
-          </h2>
-          <p
-            class="text-gray-700 text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl"
-          >
-            Encuentra tus canales favoritos
-          </p>
-        </div> -->
-
-        <div
-          class="flex flex-col justify-between mt-4 bg-black/10 bg-blend-multiply rounded-3xl h-80 overflow-hidden bg-cover bg-center px-7 pt-4 pb-6 text-white"
-          [style.backgroundImage]="'url(' + program?.icon + ')'"
-        >
-          <!-- <img class="object-cover w-full h-full" src="images/inception.jpg" alt=""> -->
-          <div class="flex -space-x-1 items-center pointer">
-            <img
-              class="rounded-full w-12 h-12 shadow-lg"
-              [src]="logo"
-              alt=""
-              srcset=""
-            />
-            <span class="pl-4 text-xs drop-shadow-lg">{{
-              program?.channel
-            }}</span>
-            <!-- en directo -->
-          </div>
-          <div
-            class="bg-gradient-to-r from-black/30 to-transparent -mx-7 -mb-6 px-7 pb-6 pt-2 d-flex align-items-center justify-content-center"
-          >
-            <div class="flex align-items-center justify-content-center">
-              <span class="uppercase text-3xl font-semibold drop-shadow-lg">{{
-                program?.title?.value
-              }}</span>
-              <div
-                class="flex items-center bg-red-600 text-xs px-2 py-1 rounded-full drop-shadow-lg ml-0"
-              >
-                <span>En Directo</span>
-              </div>
-            </div>
-
-            <!-- <span class="text-xs text-gray-200 mt-2"> Título Original: </span> -->
-            <ul class="flex list-disc lista">
-              <li class="pr-6">{{ program?.desc?.year }}</li>
-              <li class="pr-6">{{ program?.desc?.rate }}</li>
-              <li class="">{{ time }}</li>
-            </ul>
-
-            <div class="text-xs text-gray-200 mt-2">
-              <a
-                *ngFor="let data of programs?.desc?.details.split(',')"
-                href="#"
-                class=""
-                >{{ data }}</a
-              >
-            </div>
-
-            <div class="mt-4 flex space-x-3 items-center">
-              <a
-                href="#"
-                class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-xs inline-block pointer"
-                >Ver Ahora</a
-              >
-              <a
-                href="#"
-                class="p-2.5 bg-gray-800/80 rounded-lg hover:bg-red-600"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- SECCION CON LA SELECCION DE DIAS -->
-      <section class="mt-9">
-        <div class="flex justify-center items-center">
-          <nav class="dia-seleccion flex space-x-4">
-            <button
-              class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
-              [ngClass]="{
-                'dia-boton-seleccionado': diaSeleccionado === 'today'
-              }"
-              (click)="cambiarDia('today')"
-              aria-label="Programación de hoy"
-            >
-              Hoy
-            </button>
-            <button
-              class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
-              [ngClass]="{
-                'dia-boton-seleccionado': diaSeleccionado === 'tomorrow'
-              }"
-              (click)="cambiarDia('tomorrow')"
-              aria-label="Programación de mañana"
-            >
-              Mañana
-            </button>
-            <button
-              class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
-              [ngClass]="{
-                'dia-boton-seleccionado': diaSeleccionado === 'after_tomorrow'
-              }"
-              (click)="cambiarDia('after_tomorrow')"
-              aria-label="Programación de pasado"
-            >
-              Pasado
-            </button>
-          </nav>
-        </div>
-      </section>
-
-      <!-- CAROUSEL PARA CADA UNO DE LOS CANALES -->
-
-      <section class="pt-6">
-        <div class="flex items-center justify-between">
-          <div class="flex">
-            <img
-              class="rounded-full w-12 h-12 pr-2"
-              [src]="logo"
-              alt=""
-              srcset=""
-            />
-            <span class="font-semibold text-gray-700 text-base dark:text-white">
-              - Programacion Completa de {{ canal }} {{ diaSeleccionado }}
-            </span>
-          </div>
-
-          <div class="flex items-center space-x-2 fill-gray-500">
-            <svg
-              class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              (click)="sliderComponent4.onPrevClick()"
-            >
-              <path
-                d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-              ></path>
-            </svg>
-            <svg
-              class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              (click)="sliderComponent4.onNextClick()"
-            >
-              <path
-                d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-              ></path>
-            </svg>
-          </div>
-        </div>
-
-        <div class="mt-4 text-sm text-gray-600">
-          <app-slider
-            #sliderComponent4
-            [programas]="programs"
-            [logo]="logo"
-          ></app-slider>
-        </div>
-      </section>
-
-      <!-- SECCION DE CATEGORIAS -->
-
-      <section class="mt-9">
-        <!-- Desplegable para elegir programacion por categoira -->
-
-        <div class="flex items-center justify-between">
-          <div class="flex">
-            <img
-              class="rounded-full w-12 h-12 pr-2"
-              [src]="logo"
-              alt=""
-              srcset=""
-            />
-            <span class="font-semibold text-gray-700 text-base dark:text-white">
-              - Programacion Por Categoria
-            </span>
-          </div>
-          <div class="relative">
-            <select
-              id="categorias"
-              [(ngModel)]="categoriaSeleccionada"
-              class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white appearance-none"
-            >
-              <option value="Selcciona una categoria" disabled>
-                Selecciona una categoria
-              </option>
-              <option *ngFor="let categoria of categorias" [value]="categoria">
-                {{ categoria }}
-              </option>
-            </select>
-            <div
-              class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white"
-            >
-              <svg
-                class="w-4 h-4 text-white pl-2"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="mt-2"
-          *ngIf="categoriaSeleccionada !== 'Selcciona una categoria'"
-        >
-          <div class="flex items-center justify-between">
-            <h3
-              class="text-gray-700 text-md md:text-xl lg:text-2xl font-semibold pb-4 ml-3"
-            >
-              Ver {{ categoriaSeleccionada }} en {{ canal }}
-              {{ diaSeleccionado }}
-            </h3>
-
-            <div class="flex items-center space-x-2 fill-gray-500">
-              <svg
-                class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                (click)="sliderComponent.onPrevClick()"
-              >
-                <path
-                  d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-                ></path>
-              </svg>
-              <svg
-                class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                (click)="sliderComponent.onNextClick()"
-              >
-                <path
-                  d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-                ></path>
-              </svg>
-            </div>
-          </div>
-
-          <div class="mt-4 text-sm text-gray-600">
-            <app-slider
-              #sliderComponent
-              [programas]="getProgramsByCategory(categoriaSeleccionada)"
-            ></app-slider>
-          </div>
-        </div>
-      </section>
-
-      <!-- Seccion en directo resto de canales -->
-
-      <section class="pt-6">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <svg
-              class="h-8 w-8 fill-red-600"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M10 15.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4Zm11.96-4.45c.58 6.26-4.64 11.48-10.9 10.9 -4.43-.41-8.12-3.85-8.9-8.23 -.26-1.42-.19-2.78.12-4.04 .14-.58.76-.9 1.31-.7v0c.47.17.75.67.63 1.16 -.2.82-.27 1.7-.19 2.61 .37 4.04 3.89 7.25 7.95 7.26 4.79.01 8.61-4.21 7.94-9.12 -.51-3.7-3.66-6.62-7.39-6.86 -.83-.06-1.63.02-2.38.2 -.49.11-.99-.16-1.16-.64v0c-.2-.56.12-1.17.69-1.31 1.79-.43 3.75-.41 5.78.37 3.56 1.35 6.15 4.62 6.5 8.4ZM5.5 4C4.67 4 4 4.67 4 5.5 4 6.33 4.67 7 5.5 7 6.33 7 7 6.33 7 5.5 7 4.67 6.33 4 5.5 4Z"
-              ></path>
-            </svg>
-            <span class="font-semibold text-gray-700 text-base dark:text-white">
-              - En Directo en el resto de canales
-            </span>
-          </div>
-
-          <div class="flex items-center space-x-2 fill-gray-500">
-            <svg
-              class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              (click)="sliderComponent2.onPrevClick()"
-            >
-              <path
-                d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-              ></path>
-            </svg>
-            <svg
-              class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              (click)="sliderComponent2.onNextClick()"
-            >
-              <path
-                d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-              ></path>
-            </svg>
-          </div>
-        </div>
-
-        <div class="mt-4 text-sm text-gray-600">
-          <app-slider
-            #sliderComponent2
-            [programas]="live_programs"
-          ></app-slider>
-        </div>
-      </section>
-    </main>
-
-    <!-- Right Sidebar -->
-    <aside
-      class="w-1/5 py-10 px-10 min-w-min border-l border-gray-300 dark:border-zinc-700 hidden lg:block"
-    >
-      <div class="relative items-center content-center flex">
-        <span class="text-gray-400 absolute left-4 cursor-pointer">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            ></path>
-          </svg>
+        <span class="font-semibold text-gray-700 text-base dark:text-white">
+          - En Directo en el resto de canales
         </span>
-        <input
-          type="text"
-          class="text-xs ring-1 bg-transparent ring-gray-200 dark:ring-zinc-600 focus:ring-red-300 pl-10 pr-5 text-gray-600 dark:text-white py-3 rounded-full w-full outline-none focus:ring-1"
-          placeholder="Search ..."
-        />
       </div>
 
-      <div class="mt-10">
-        <span class="font-semibold text-gray-700 dark:text-white"
-          >Películas Destacadas</span
+      <div class="flex items-center space-x-2 fill-gray-500">
+        <svg
+          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          (click)="sliderComponent2.onPrevClick()"
         >
-        <ul class="mt-4 text-gray-400 text-xs space-y-3">
-          <li
-            *ngFor="let movie of popular_movies.slice(0, 4)"
-            class="flex space-y-3 space-x-3"
-          >
-            <img
-              [src]="
-                'https://image.tmdb.org/t/p/w200' +
-                movie?.poster_path +
-                '?s=64&d=identicon'
-              "
-              class="w-1/3 rounded-md"
-              alt=""
-            />
-            <div class="flex flex-col justify-between">
-              <div class="flex flex-col space-y-1">
-                <span class="text-gray-700 dark:text-white font-semibold">{{
-                  movie.title
-                }}</span>
-                <span class="text-xxs hidden xl:block">Drama</span>
-              </div>
-              <div class="flex space-x-2 items-center">
-                <svg
-                  class="w-8 h-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="64"
-                  height="32"
-                  viewBox="0 0 64 32"
-                  version="1.1"
-                >
-                  <g fill="#F5C518">
-                    <rect x="0" y="0" width="100%" height="100%" rx="4"></rect>
-                  </g>
-                  <g
-                    transform="translate(8.000000, 7.000000)"
-                    fill="#000000"
-                    fill-rule="nonzero"
-                  >
-                    <polygon points="0 18 5 18 5 0 0 0"></polygon>
-                    <path
-                      d="M15.6725178,0 L14.5534833,8.40846934 L13.8582008,3.83502426 C13.65661,2.37009263 13.4632474,1.09175121 13.278113,0 L7,0 L7,18 L11.2416347,18 L11.2580911,6.11380679 L13.0436094,18 L16.0633571,18 L17.7583653,5.8517865 L17.7707076,18 L22,18 L22,0 L15.6725178,0 Z"
-                    ></path>
-                    <path
-                      d="M24,18 L24,0 L31.8045586,0 C33.5693522,0 35,1.41994415 35,3.17660424 L35,14.8233958 C35,16.5777858 33.5716617,18 31.8045586,18 L24,18 Z M29.8322479,3.2395236 C29.6339219,3.13233348 29.2545158,3.08072342 28.7026524,3.08072342 L28.7026524,14.8914865 C29.4312846,14.8914865 29.8796736,14.7604764 30.0478195,14.4865461 C30.2159654,14.2165858 30.3021941,13.486105 30.3021941,12.2871637 L30.3021941,5.3078959 C30.3021941,4.49404499 30.272014,3.97397442 30.2159654,3.74371416 C30.1599168,3.5134539 30.0348852,3.34671372 29.8322479,3.2395236 Z"
-                    ></path>
-                    <path
-                      d="M44.4299079,4.50685823 L44.749518,4.50685823 C46.5447098,4.50685823 48,5.91267586 48,7.64486762 L48,14.8619906 C48,16.5950653 46.5451816,18 44.749518,18 L44.4299079,18 C43.3314617,18 42.3602746,17.4736618 41.7718697,16.6682739 L41.4838962,17.7687785 L37,17.7687785 L37,0 L41.7843263,0 L41.7843263,5.78053556 C42.4024982,5.01015739 43.3551514,4.50685823 44.4299079,4.50685823 Z M43.4055679,13.2842155 L43.4055679,9.01907814 C43.4055679,8.31433946 43.3603268,7.85185468 43.2660746,7.63896485 C43.1718224,7.42607505 42.7955881,7.2893916 42.5316822,7.2893916 C42.267776,7.2893916 41.8607934,7.40047379 41.7816216,7.58767002 L41.7816216,9.01907814 L41.7816216,13.4207851 L41.7816216,14.8074788 C41.8721037,15.0130276 42.2602358,15.1274059 42.5316822,15.1274059 C42.8031285,15.1274059 43.1982131,15.0166981 43.281155,14.8074788 C43.3640968,14.5982595 43.4055679,14.0880581 43.4055679,13.2842155 Z"
-                    ></path>
-                  </g>
-                </svg>
-                <span>{{ movie.vote_average }}</span>
-              </div>
-            </div>
-          </li>
-          <li class="pt-1">
-            <a
-              href="#"
-              class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
-              >Ver Más</a
-            >
-          </li>
-        </ul>
-      </div>
-      <div class="mt-10">
-        <span class="font-semibold text-gray-700 dark:text-white"
-          >Favorites</span
+          <path
+            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+          ></path>
+        </svg>
+        <svg
+          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          (click)="sliderComponent2.onNextClick()"
         >
-        <ul class="mt-4 text-gray-400 text-xs space-y-3">
-          <li class="flex space-x-3">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/en/c/c1/The_Matrix_Poster.jpg"
-              class="object-cover w-1/3 rounded-md"
-              alt=""
-            />
-            <div class="flex flex-col justify-between">
-              <div class="flex flex-col space-y-1">
-                <span class="text-gray-700 dark:text-white font-semibold"
-                  >The Matrix</span
-                >
-                <span class="text-xxs hidden xl:block">Action, Sci-Fi</span>
-              </div>
-              <div class="flex space-x-2 items-center">
-                <svg
-                  class="w-8 h-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="64"
-                  height="32"
-                  viewBox="0 0 64 32"
-                  version="1.1"
-                >
-                  <g fill="#F5C518">
-                    <rect x="0" y="0" width="100%" height="100%" rx="4"></rect>
-                  </g>
-                  <g
-                    transform="translate(8.000000, 7.000000)"
-                    fill="#000000"
-                    fill-rule="nonzero"
-                  >
-                    <polygon points="0 18 5 18 5 0 0 0"></polygon>
-                    <path
-                      d="M15.6725178,0 L14.5534833,8.40846934 L13.8582008,3.83502426 C13.65661,2.37009263 13.4632474,1.09175121 13.278113,0 L7,0 L7,18 L11.2416347,18 L11.2580911,6.11380679 L13.0436094,18 L16.0633571,18 L17.7583653,5.8517865 L17.7707076,18 L22,18 L22,0 L15.6725178,0 Z"
-                    ></path>
-                    <path
-                      d="M24,18 L24,0 L31.8045586,0 C33.5693522,0 35,1.41994415 35,3.17660424 L35,14.8233958 C35,16.5777858 33.5716617,18 31.8045586,18 L24,18 Z M29.8322479,3.2395236 C29.6339219,3.13233348 29.2545158,3.08072342 28.7026524,3.08072342 L28.7026524,14.8914865 C29.4312846,14.8914865 29.8796736,14.7604764 30.0478195,14.4865461 C30.2159654,14.2165858 30.3021941,13.486105 30.3021941,12.2871637 L30.3021941,5.3078959 C30.3021941,4.49404499 30.272014,3.97397442 30.2159654,3.74371416 C30.1599168,3.5134539 30.0348852,3.34671372 29.8322479,3.2395236 Z"
-                    ></path>
-                    <path
-                      d="M44.4299079,4.50685823 L44.749518,4.50685823 C46.5447098,4.50685823 48,5.91267586 48,7.64486762 L48,14.8619906 C48,16.5950653 46.5451816,18 44.749518,18 L44.4299079,18 C43.3314617,18 42.3602746,17.4736618 41.7718697,16.6682739 L41.4838962,17.7687785 L37,17.7687785 L37,0 L41.7843263,0 L41.7843263,5.78053556 C42.4024982,5.01015739 43.3551514,4.50685823 44.4299079,4.50685823 Z M43.4055679,13.2842155 L43.4055679,9.01907814 C43.4055679,8.31433946 43.3603268,7.85185468 43.2660746,7.63896485 C43.1718224,7.42607505 42.7955881,7.2893916 42.5316822,7.2893916 C42.267776,7.2893916 41.8607934,7.40047379 41.7816216,7.58767002 L41.7816216,9.01907814 L41.7816216,13.4207851 L41.7816216,14.8074788 C41.8721037,15.0130276 42.2602358,15.1274059 42.5316822,15.1274059 C42.8031285,15.1274059 43.1982131,15.0166981 43.281155,14.8074788 C43.3640968,14.5982595 43.4055679,14.0880581 43.4055679,13.2842155 Z"
-                    ></path>
-                  </g>
-                </svg>
-                <span>8.7</span>
-              </div>
-            </div>
-          </li>
-          <li class="flex space-x-3">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg"
-              class="object-cover w-1/3 rounded-md"
-              alt=""
-            />
-            <div class="flex flex-col justify-between">
-              <div class="flex flex-col space-y-1">
-                <span class="text-gray-700 dark:text-white font-semibold"
-                  >Interstellar</span
-                >
-                <span class="text-xxs hidden xl:block"
-                  >Adventure, Crime, Sci-Fi</span
-                >
-              </div>
-              <div class="flex space-x-2 items-center">
-                <svg
-                  class="w-8 h-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="64"
-                  height="32"
-                  viewBox="0 0 64 32"
-                  version="1.1"
-                >
-                  <g fill="#F5C518">
-                    <rect x="0" y="0" width="100%" height="100%" rx="4"></rect>
-                  </g>
-                  <g
-                    transform="translate(8.000000, 7.000000)"
-                    fill="#000000"
-                    fill-rule="nonzero"
-                  >
-                    <polygon points="0 18 5 18 5 0 0 0"></polygon>
-                    <path
-                      d="M15.6725178,0 L14.5534833,8.40846934 L13.8582008,3.83502426 C13.65661,2.37009263 13.4632474,1.09175121 13.278113,0 L7,0 L7,18 L11.2416347,18 L11.2580911,6.11380679 L13.0436094,18 L16.0633571,18 L17.7583653,5.8517865 L17.7707076,18 L22,18 L22,0 L15.6725178,0 Z"
-                    ></path>
-                    <path
-                      d="M24,18 L24,0 L31.8045586,0 C33.5693522,0 35,1.41994415 35,3.17660424 L35,14.8233958 C35,16.5777858 33.5716617,18 31.8045586,18 L24,18 Z M29.8322479,3.2395236 C29.6339219,3.13233348 29.2545158,3.08072342 28.7026524,3.08072342 L28.7026524,14.8914865 C29.4312846,14.8914865 29.8796736,14.7604764 30.0478195,14.4865461 C30.2159654,14.2165858 30.3021941,13.486105 30.3021941,12.2871637 L30.3021941,5.3078959 C30.3021941,4.49404499 30.272014,3.97397442 30.2159654,3.74371416 C30.1599168,3.5134539 30.0348852,3.34671372 29.8322479,3.2395236 Z"
-                    ></path>
-                    <path
-                      d="M44.4299079,4.50685823 L44.749518,4.50685823 C46.5447098,4.50685823 48,5.91267586 48,7.64486762 L48,14.8619906 C48,16.5950653 46.5451816,18 44.749518,18 L44.4299079,18 C43.3314617,18 42.3602746,17.4736618 41.7718697,16.6682739 L41.4838962,17.7687785 L37,17.7687785 L37,0 L41.7843263,0 L41.7843263,5.78053556 C42.4024982,5.01015739 43.3551514,4.50685823 44.4299079,4.50685823 Z M43.4055679,13.2842155 L43.4055679,9.01907814 C43.4055679,8.31433946 43.3603268,7.85185468 43.2660746,7.63896485 C43.1718224,7.42607505 42.7955881,7.2893916 42.5316822,7.2893916 C42.267776,7.2893916 41.8607934,7.40047379 41.7816216,7.58767002 L41.7816216,9.01907814 L41.7816216,13.4207851 L41.7816216,14.8074788 C41.8721037,15.0130276 42.2602358,15.1274059 42.5316822,15.1274059 C42.8031285,15.1274059 43.1982131,15.0166981 43.281155,14.8074788 C43.3640968,14.5982595 43.4055679,14.0880581 43.4055679,13.2842155 Z"
-                    ></path>
-                  </g>
-                </svg>
-                <span>8.6</span>
-              </div>
-            </div>
-          </li>
-          <li class="flex space-x-3">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/en/8/86/The_Silence_of_the_Lambs_poster.jpg"
-              class="object-cover w-1/3 rounded-md"
-              alt=""
-            />
-            <div class="flex flex-col justify-between">
-              <div class="flex flex-col space-y-1">
-                <span class="text-gray-700 dark:text-white font-semibold"
-                  >The Silence of the Lambs</span
-                >
-                <span class="text-xxs hidden xl:block"
-                  >Crime, Drama, Thriller</span
-                >
-              </div>
-              <div class="flex space-x-2 items-center">
-                <svg
-                  class="w-8 h-5"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="64"
-                  height="32"
-                  viewBox="0 0 64 32"
-                  version="1.1"
-                >
-                  <g fill="#F5C518">
-                    <rect x="0" y="0" width="100%" height="100%" rx="4"></rect>
-                  </g>
-                  <g
-                    transform="translate(8.000000, 7.000000)"
-                    fill="#000000"
-                    fill-rule="nonzero"
-                  >
-                    <polygon points="0 18 5 18 5 0 0 0"></polygon>
-                    <path
-                      d="M15.6725178,0 L14.5534833,8.40846934 L13.8582008,3.83502426 C13.65661,2.37009263 13.4632474,1.09175121 13.278113,0 L7,0 L7,18 L11.2416347,18 L11.2580911,6.11380679 L13.0436094,18 L16.0633571,18 L17.7583653,5.8517865 L17.7707076,18 L22,18 L22,0 L15.6725178,0 Z"
-                    ></path>
-                    <path
-                      d="M24,18 L24,0 L31.8045586,0 C33.5693522,0 35,1.41994415 35,3.17660424 L35,14.8233958 C35,16.5777858 33.5716617,18 31.8045586,18 L24,18 Z M29.8322479,3.2395236 C29.6339219,3.13233348 29.2545158,3.08072342 28.7026524,3.08072342 L28.7026524,14.8914865 C29.4312846,14.8914865 29.8796736,14.7604764 30.0478195,14.4865461 C30.2159654,14.2165858 30.3021941,13.486105 30.3021941,12.2871637 L30.3021941,5.3078959 C30.3021941,4.49404499 30.272014,3.97397442 30.2159654,3.74371416 C30.1599168,3.5134539 30.0348852,3.34671372 29.8322479,3.2395236 Z"
-                    ></path>
-                    <path
-                      d="M44.4299079,4.50685823 L44.749518,4.50685823 C46.5447098,4.50685823 48,5.91267586 48,7.64486762 L48,14.8619906 C48,16.5950653 46.5451816,18 44.749518,18 L44.4299079,18 C43.3314617,18 42.3602746,17.4736618 41.7718697,16.6682739 L41.4838962,17.7687785 L37,17.7687785 L37,0 L41.7843263,0 L41.7843263,5.78053556 C42.4024982,5.01015739 43.3551514,4.50685823 44.4299079,4.50685823 Z M43.4055679,13.2842155 L43.4055679,9.01907814 C43.4055679,8.31433946 43.3603268,7.85185468 43.2660746,7.63896485 C43.1718224,7.42607505 42.7955881,7.2893916 42.5316822,7.2893916 C42.267776,7.2893916 41.8607934,7.40047379 41.7816216,7.58767002 L41.7816216,9.01907814 L41.7816216,13.4207851 L41.7816216,14.8074788 C41.8721037,15.0130276 42.2602358,15.1274059 42.5316822,15.1274059 C42.8031285,15.1274059 43.1982131,15.0166981 43.281155,14.8074788 C43.3640968,14.5982595 43.4055679,14.0880581 43.4055679,13.2842155 Z"
-                    ></path>
-                  </g>
-                </svg>
-                <span>8.6</span>
-              </div>
-            </div>
-          </li>
-          <li class="pt-1">
-            <a
-              href="#"
-              class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
-              >See More</a
-            >
-          </li>
-        </ul>
+          <path
+            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+          ></path>
+        </svg>
       </div>
-    </aside>
-    <!-- /Right Sidebar -->
-  </div>
-</div>
+    </div>
+
+    <div class="mt-4 text-sm text-gray-600">
+      <app-slider #sliderComponent2 [programas]="live_programs"></app-slider>
+    </div>
+  </section>
+</main>

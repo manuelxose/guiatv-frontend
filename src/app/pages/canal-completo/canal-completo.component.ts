@@ -101,6 +101,8 @@ export class CanalCompletoComponent {
       .getAllCategories()
       .filter((categoria) => categoria !== undefined);
 
+    this.categoriaSeleccionada = this.categorias[0];
+
     this.http.getChannel(this.program.channel_id).forEach((data: any) => {
       console.log('datos del canal: ', data);
       this.logo = data.icon;
@@ -115,7 +117,8 @@ export class CanalCompletoComponent {
   public compareDate(dateIni: string, dateFin: string): boolean {
     // Obtiene la hora actual, la hora de inicio y la hora de fin
 
-    const horaActual = new Date(); // Suma 1 hora en milisegundos (3600000 ms)
+    let horaActual = new Date(); // Suma 1 hora en milisegundos (3600000 ms)
+    horaActual.setHours(horaActual.getHours() + 1);
     const horaInicio = new Date(dateIni);
     const horaFin = new Date(dateFin);
 
