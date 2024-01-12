@@ -12,6 +12,7 @@ import Swiper from 'swiper';
 import { SwiperComponent } from 'swiper/angular';
 import { SwiperOptions } from 'swiper/types/swiper-options';
 import { getHoraInicio } from 'src/app/utils/utils';
+import { TvGuideService } from 'src/app/services/tv-guide.service';
 @Component({
   selector: 'app-slider',
   templateUrl: './slider.component.html',
@@ -25,7 +26,7 @@ export class SliderComponent implements OnInit {
   programas_similares: any[] = [];
   private swiperInstance?: Swiper;
 
-  constructor(private modalService: ModalService, private router: Router) {}
+  constructor(private guiatvSvc: TvGuideService, private router: Router) {}
 
   ngOnInit(): void {
     this.config = {
@@ -48,20 +49,16 @@ export class SliderComponent implements OnInit {
     };
   }
 
-  manageModal(programa: any) {
-    this.modalService.setPrograma(programa);
-  }
-
   manageData(programa: any) {
     console.log('Programa:', programa);
     ///Si se trata de un canal hacer route a /ver-canal/:id
     if (programa?.channel) {
       console.log('Es un programa');
-      this.modalService.setPrograma(programa),
-        this.router.navigate([
-          'programacion-tv/detalles',
-          programa.title.value.replace(/\s/g, '-'),
-        ]);
+      this.guiatvSvc.setDetallesPrograma(programa);
+      this.router.navigate([
+        'programacion-tv/detalles',
+        programa.title.value.replace(/\s/g, '-'),
+      ]);
     }
     //Si se trata de un programa hacer route a /detalles/:id
     else {

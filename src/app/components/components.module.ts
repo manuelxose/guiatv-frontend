@@ -6,7 +6,7 @@ import { CardComponent } from './card/card.component';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { FilterComponent } from './filter/filter.component';
 import { FooterComponent } from './footer/footer.component';
@@ -17,7 +17,9 @@ import { LeftSidebarComponent } from './left-sidebar/left-sidebar.component';
 import { RightSidebarComponent } from './right-sidebar/right-sidebar.component';
 import { MenuComponent } from './menu/menu.component';
 import { BannerComponent } from './banner/banner.component';
-
+import { AutocompleteComponent } from './autocomplete/autocomplete.component';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatFormFieldModule } from '@angular/material/form-field';
 @NgModule({
   declarations: [
     ProgramListComponent,
@@ -33,6 +35,7 @@ import { BannerComponent } from './banner/banner.component';
     RightSidebarComponent,
     MenuComponent,
     BannerComponent,
+    AutocompleteComponent,
   ],
   imports: [
     CommonModule,
@@ -40,6 +43,9 @@ import { BannerComponent } from './banner/banner.component';
     FormsModule,
     SwiperModule,
     ScrollingModule,
+    ReactiveFormsModule,
+    MatAutocompleteModule,
+    MatFormFieldModule,
   ],
   exports: [
     ProgramListComponent,
@@ -55,6 +61,7 @@ import { BannerComponent } from './banner/banner.component';
     RightSidebarComponent,
     MenuComponent,
     BannerComponent,
+    AutocompleteComponent,
   ],
 })
 export class ComponentsModule {}

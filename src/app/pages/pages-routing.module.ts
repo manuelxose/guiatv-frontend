@@ -24,13 +24,13 @@ const routes: Routes = [
         (m) => m.ListaCanalesModule
       ),
   },
-  // {
-  //   path: 'detalles/:id',
-  //   loadChildren: () =>
-  //     import('./program-full-details/program-full-details.module').then(
-  //       (m) => m.ProgramFullDetailsModule
-  //     ),
-  // },
+  {
+    path: 'que-ver-hoy',
+    loadChildren: () =>
+      import('./lista-destacadas/lista-destacadas.module').then(
+        (m) => m.ListaDestacadasModule
+      ),
+  },
   {
     path: 'ver-canal/:id',
     loadChildren: () =>
@@ -51,7 +51,7 @@ const routes: Routes = [
   //     import('./milista/milista.module').then((m) => m.MilistaModule),
   // },
   {
-    path: 'top10',
+    path: 'top-10',
     loadChildren: () =>
       import('./top10/top10.module').then((m) => m.Top10Module),
   },

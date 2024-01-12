@@ -1,16 +1,22 @@
 <div
   class="flex flex-col justify-between mt-4 bg-black/10 bg-blend-multiply rounded-3xl h-80 overflow-hidden bg-cover bg-center px-7 pt-4 pb-6 text-white"
   [style.backgroundImage]="'url(' + data?.icon + ')'"
+  [style.backgroundSize]="'cover'"
+  [style.backgroundPosition]="'center'"
+  [style.loading]="'lazy'"
 >
   <!-- <img class="object-cover w-full h-full" src="images/inception.jpg" alt=""> -->
 
   <div class="flex -space-x-1 items-center pointer justify-between">
     <div class="flex -space-x-1 items-center pointer">
       <img
-        class="w-20 h-20 bg-gray-800/40 rounded-lg px-1.5"
-        src="https://wsrv.nl/?url={{ logo }}"
+        class="w-32 h-16 bg-gray-800/40 rounded-lg px-1.5"
+        src="https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/{{
+          data.channel
+        }}.png"
         alt=""
         srcset=""
+        loading="lazy"
       />
       <span class="pl-4 text-xs drop-shadow-lg">{{ data?.channel }}</span>
     </div>

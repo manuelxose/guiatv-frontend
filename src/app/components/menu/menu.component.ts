@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { TvGuideService } from 'src/app/services/tv-guide.service';
 
 @Component({
   selector: 'app-menu',
@@ -12,10 +13,12 @@ export class MenuComponent {
   public isGuiaCanales: boolean = false;
   public isSeries: boolean = false;
   public isPeliculas: boolean = false;
+  public hoy: boolean = false;
+  public top: boolean = false;
 
   private unsuscribe$ = new Subject<void>();
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private guiaTvService: TvGuideService) {
     // Suscribirse a los eventos del router
     this.router.events.pipe(takeUntil(this.unsuscribe$)).subscribe((event) => {
       if (event instanceof NavigationEnd) {
@@ -24,6 +27,8 @@ export class MenuComponent {
         this.isGuiaCanales = false;
         this.isSeries = false;
         this.isPeliculas = false;
+        this.top = false;
+        this.hoy = false;
         console.log('La ruta: ', this.router.url.split('/')[2]);
 
         // Activar el booleano correspondiente a la ruta actual
@@ -41,6 +46,12 @@ export class MenuComponent {
             console.log('Es peliculas');
             this.isPeliculas = true;
             break;
+          case 'que-ver-hoy':
+            this.hoy = true;
+            break;
+          case 'top-10':
+            this.top = true;
+            break;
           default:
             this.isHome = true;
             break;
@@ -52,5 +63,10 @@ export class MenuComponent {
   ngOnDestroy(): void {
     this.unsuscribe$.next();
     this.unsuscribe$.complete();
+  }
+
+  public navigateTo() {
+    this.guiaTvService.setIsMovies();
+    this.router.navigate(['programacion-tv/que-ver-hoy']);
   }
 }

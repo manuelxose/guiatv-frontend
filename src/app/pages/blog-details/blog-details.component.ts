@@ -32,15 +32,19 @@ export class BlogDetailsComponent {
 
   ngOnInit(): void {
     this.guiaSvc.getDetallesPrograma().subscribe((data: any) => {
+      console.log('Detalles del progrma: ', data);
       this.data = data;
       this.destacada = data;
       this.time = diffHour(data.start, data.stop);
       this.tipo = this.getTipo();
-    });
 
-    console.log('lo del modal: ', this.data);
+      // Actualiza las propiedades de la clase
+      this.updateProperties();
+    });
+  }
+
+  private updateProperties(): void {
     this.httpSvc.getChannel(this.data.channel_id).subscribe((data: any) => {
-      console.log(data);
       this.logo = data.icon;
     });
 
@@ -69,6 +73,7 @@ export class BlogDetailsComponent {
   ngAfterViewInit(): void {}
 
   private getActors() {
+    this.actors = [];
     if (this.data.desc.cast === null) {
       return;
     }

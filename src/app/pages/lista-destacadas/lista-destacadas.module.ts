@@ -1,18 +1,18 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Top10Component } from './top10.component';
 import { RouterModule, Routes } from '@angular/router';
+import { ListaDestacadasComponent } from './lista-destacadas.component';
 import { ComponentsModule } from 'src/app/components/components.module';
 
 const routes: Routes = [
   {
     path: '',
-    component: Top10Component,
+    component: ListaDestacadasComponent,
   },
 ];
 
 @NgModule({
-  declarations: [Top10Component],
-  imports: [CommonModule, RouterModule.forChild(routes), ComponentsModule],
+  declarations: [ListaDestacadasComponent],
+  imports: [CommonModule, ComponentsModule, RouterModule.forChild(routes)],
 })
-export class Top10Module {}
+export class ListaDestacadasModule {}

@@ -9,6 +9,7 @@ export class Top10Component {
   public top10: any[] = [];
   public post_list: any[] = [];
   public page: number = 1;
+  public destacada: any = {};
 
   ngOnInit(): void {
     this.post_list = [

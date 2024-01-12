@@ -41,7 +41,21 @@ export class RightSidebarComponent {
     console.log('Series: ', this.popular_series);
   }
 
-  public navigateTo(title: string) {
-    this.route.navigate(['programacion-tv/detalles', title.replace(/s/g, '-')]);
+  public navigateTo(data: any) {
+    this.svcGuide.setDetallesPrograma(data);
+    this.route.navigate([
+      'programacion-tv/detalles',
+      data.title.value.replace(/s/g, '-'),
+    ]);
+  }
+
+  public navigateTo2(data: any) {
+    if (data === 'movie') {
+      this.svcGuide.setIsMovies();
+    }
+    if (data === 'serie') {
+      this.svcGuide.setIsSeries();
+    }
+    this.route.navigate(['programacion-tv/que-ver-hoy']);
   }
 }

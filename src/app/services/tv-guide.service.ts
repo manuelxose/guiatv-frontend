@@ -9,6 +9,8 @@ import { BehaviorSubject, lastValueFrom } from 'rxjs';
 export class TvGuideService {
   private listaCanales: any[] = [];
   private listaProgramas: any[] = [];
+  private isSerires: boolean = false;
+  private isMovies: boolean = false;
 
   //suscriber para peliculas destacadas
 
@@ -49,6 +51,15 @@ export class TvGuideService {
     return this.peliculasDestacadas$;
   }
 
+  public setIsMovies() {
+    this.isMovies = true;
+    this.isSerires = false;
+  }
+
+  public getIsMovies() {
+    return this.isMovies;
+  }
+
   // GESTION DE LAS SERIES DESTACADAS
 
   public async setSeriesDestacadas() {
@@ -59,6 +70,15 @@ export class TvGuideService {
 
   public getSeriesDestacadas() {
     return this.seriesDestacadas$;
+  }
+
+  public setIsSeries() {
+    this.isSerires = true;
+    this.isMovies = false;
+  }
+
+  public getIsSeries() {
+    return this.isSerires;
   }
 
   // GESTION DE LOS CANALES EN EL BEHAVIOR SUBJECT
