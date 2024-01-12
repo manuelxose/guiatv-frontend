@@ -20,6 +20,7 @@ import { BannerComponent } from './banner/banner.component';
 import { AutocompleteComponent } from './autocomplete/autocomplete.component';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 @NgModule({
   declarations: [
     ProgramListComponent,
@@ -46,6 +47,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatFormFieldModule,
+    MatInputModule,
   ],
   exports: [
     ProgramListComponent,

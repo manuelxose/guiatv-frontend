@@ -36,7 +36,10 @@
       >
     </div>
     <div class="mt-4 text-sm text-gray-600">
-      {{ data?.desc?.directors || movie?.created_by[0]?.name }}.
+      {{
+        data?.desc?.directors ||
+          (movie?.created_by[0] ? movie?.created_by[0]?.name : "")
+      }}.
     </div>
   </section>
   <section class="mt-9">

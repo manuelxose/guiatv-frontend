@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { Route, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
@@ -14,7 +15,7 @@ export class AutocompleteComponent {
   public filteredData: Observable<any[]>;
   public dataInput: FormControl;
 
-  constructor(private tvSvc: TvGuideService) {
+  constructor(private tvSvc: TvGuideService, private router: Router) {
     this.data = [];
     this.filteredData = new Observable<any[]>();
     this.dataInput = new FormControl();
@@ -33,8 +34,38 @@ export class AutocompleteComponent {
   private _filter(value: string): any[] {
     const filterValue = value.toLowerCase();
 
-    return this.data.filter((option) =>
-      option.toLowerCase().includes(filterValue)
+    // Filter the channels
+    const channels = this.data.filter((option) =>
+      option?.channel?.name.toLowerCase().includes(filterValue)
     );
+
+    // Filter the programs
+    const programs = this.data.flatMap(
+      (option) =>
+        option?.programs?.filter((program: any) =>
+          program?.title?.value
+            ? program.title.value.toLowerCase().includes(filterValue)
+            : false
+        ) || []
+    );
+    console.log('Filtered channels:', channels); // Log the filtered channels
+    console.log('Filtered programs:', programs); // Log the filtered programs
+    // Return the channels followed by the programs
+    return [...channels, ...programs];
+  }
+
+  public navigateTo(data: any): void {
+    if (data?.channel?.name) {
+      this.router.navigate([
+        '/programacion-tv/ver-canal',
+        data?.channel?.name.replace(/\s/g, '-'),
+      ]);
+      return;
+    }
+    this.tvSvc.setDetallesPrograma(data);
+    this.router.navigate([
+      '/programacion-tv/detalles',
+      data?.title?.value.replace(/\s/g, '-'),
+    ]);
   }
 }

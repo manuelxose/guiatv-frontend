@@ -1,0 +1,27 @@
+::ng-deep .cdk-overlay-pane {
+  position: absolute !important;
+  top: calc(0% + 5rem) !important;
+  z-index: 1000 !important;
+  background-color: white !important;
+}
+
+::ng-deep .mat-mdc-autocomplete-panel {
+  width: 100% !important;
+  max-height: 300px !important;
+  overflow: auto !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  border: 1px solid #ccc !important;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2) !important;
+  background-color: white !important;
+}
+
+::ng-deep .mat-mdc-option:hover {
+  background-color: #dc2626 !important;
+  color: white !important;
+}
+
+::ng-deep .mat-mdc-option.mat-active {
+  background-color: #dc2626 !important;
+  color: white !important;
+}
