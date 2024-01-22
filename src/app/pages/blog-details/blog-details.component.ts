@@ -32,7 +32,6 @@ export class BlogDetailsComponent {
 
   ngOnInit(): void {
     this.guiaSvc.getDetallesPrograma().subscribe((data: any) => {
-      console.log('Detalles del progrma: ', data);
       this.data = data;
       this.destacada = data;
       this.time = diffHour(data.start, data.stop);
@@ -80,7 +79,6 @@ export class BlogDetailsComponent {
     for (let actor of this.data.desc.cast.split(',')) {
       this.httpSvc.getPerson(actor).subscribe((data) => {
         this.actor = data;
-        console.log('actor', this.actor);
         this.actors.push(this.actor.results[0]);
       });
     }
@@ -92,7 +90,6 @@ export class BlogDetailsComponent {
       this.httpSvc
         .getSimilarSeries(data.results[0].id)
         .subscribe((data: any) => {
-          console.log('series similares', data.results);
           this.relatedMovies = data.results;
         });
     });
@@ -107,12 +104,9 @@ export class BlogDetailsComponent {
   private getSeriesDetails() {
     const title = this.data.title.value.replace(/T\d+.*/, '');
     this.httpSvc.getSeriesId(title).subscribe((data: any) => {
-      console.log('datos de la serie: ', data);
-
       this.httpSvc
         .getSeriesDetails(data.results[0].id)
         .subscribe((data: any) => {
-          console.log('datos de la serie: ', data);
           this.movie = data;
         });
     });
@@ -123,7 +117,6 @@ export class BlogDetailsComponent {
       this.httpSvc
         .getSimilarMovie(data.results[0].id)
         .subscribe((data: any) => {
-          console.log('peliculas similares', data.results);
           this.relatedMovies = data.results;
         });
     });
@@ -140,7 +133,6 @@ export class BlogDetailsComponent {
       this.httpSvc
         .getMovieDetails(data.results[0].id)
         .subscribe((data: any) => {
-          console.log('datos de la pelicula: ', data);
           this.movie = data;
         });
     });

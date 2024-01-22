@@ -13,6 +13,7 @@ export class NavBarComponent {
   public isGuiaCanales: boolean = false;
   public isSeries: boolean = false;
   public isPeliculas: boolean = false;
+  public isDirecto: boolean = false;
 
   private unsuscribe$ = new Subject<void>();
 
@@ -27,7 +28,7 @@ export class NavBarComponent {
           this.isGuiaCanales = false;
           this.isSeries = false;
           this.isPeliculas = false;
-          console.log(this.router.url.split('/')[2]);
+          this.isDirecto = false;
 
           // Activar el booleano correspondiente a la ruta actual
           switch (this.router.url.split('/')[2]) {
@@ -41,8 +42,10 @@ export class NavBarComponent {
               this.isSeries = true;
               break;
             case 'peliculas':
-              console.log('Es peliculas');
               this.isPeliculas = true;
+              break;
+            case 'en-directo':
+              this.isDirecto = true;
               break;
             default:
               this.isHome = true;

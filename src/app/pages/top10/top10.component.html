@@ -1,27 +1,206 @@
 <main
-  class="flex-1 py-10 px-5 sm:px-10 max-w-[100vh] h-[100vh] overflow-y-auto lg:min-w-[100vh]"
+  class="flex-1 py-10 px-5 sm:px-10 max-w-full lg:h-[100vh] lg:overflow-y-auto min-h-full flex-grow"
 >
-  <section>
-    <app-nav-bar></app-nav-bar>
-
+  <app-nav-bar></app-nav-bar>
+  <section class="lg:overflow-hidden border-b border-b-slate-400">
     <div class="mt-9">
-      <div class="flex items-center justify-between">
-        <span class="font-semibold text-gray-700 text-base dark:text-white"
-          >Top 10 Películas y Series</span
+      <div class="m-auto max-w-[1548px] lg:mx-10 my-0 w-full">
+        <div class="flex flex-col md:flex-row justify-between w-full">
+          <div
+            class="py-4 lg:py-28 lg:px-4 lg:w-[47%] w-full order-2 lg:order-1"
+          >
+            <h2
+              class="font-semibold text-gray-700 text-3xl lg:text-4xl dark:text-white mb-6"
+            >
+              Top 10: El Blog que te Descubre los Mejores Cine, Series y Anime
+            </h2>
+            <p class="font-medium text-xl lg:text-xl">
+              ¿Te gustan las listas? ¿Te encanta descubrir y comparar los
+              mejores cine, series y anime de todos los tiempos? ¿Quieres saber
+              cuáles son las obras maestras, las joyas ocultas y las sorpresas
+              de cada temporada? Entonces este es tu blog. Aquí encontrarás
+              rankings de todo tipo, basados en criterios objetivos y
+              subjetivos, con datos, opiniones, imágenes y vídeos que te harán
+              disfrutar y debatir.
+            </p>
+            <a
+              href="#"
+              class="block text-center bg-red-600 w-60 text-white border-0 py-2 px-6 rounded-full focus:outline-none hover:bg-red-600 text-lg mt-10"
+              >Ver Más</a
+            >
+          </div>
+          <div class="lg:w-[53%] lg:h-[65vh] h-40 flex order-1 lg:order-2">
+            <div class="overflow-y-hidden autoscroll">
+              @for( image of post_list; track image){
+              <div class="mb-8 rounded-lg max-w-xs lg:h-96 lg:w-52 mr-2">
+                <img
+                  class="object-cover w-full h-full max-w-lg rounded-lg"
+                  [src]="image.featured_image?.source_url"
+                  alt=""
+                />
+              </div>
+              }
+            </div>
+            <div class="overflow-y-hidden autoscroll1">
+              @for( image of post_list; track image){
+              <div class="mb-8 rounded-lg max-w-xs lg:h-96 lg:w-52">
+                <img
+                  class="object-cover w-full h-full max-w-lg rounded-lg"
+                  [src]="image.featured_image?.source_url"
+                  alt=""
+                />
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- SECCION CENTRAL CON LAS CATEGORIAS DEL BLOG -->
+  <section class="pt-9">
+    <div class="flex justify-between py-20">
+      <div class="">
+        <a href="#">
+          <h3 class="text-black font-bold text-4xl">
+            Publicaciones destacadas
+          </h3>
+        </a>
+      </div>
+      <div class="">
+        <a href="">
+          <span class="text-gray-400 text-sm pr-2">Más de la categoria</span>
+          <span class="text-gray-400 text-sm">&#8594;</span></a
         >
       </div>
     </div>
-    <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
+
+    <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-x-5 gap-y-5 relative">
+      @for(post of data_slider.slice(index_section,index_section + offset);
+      track post){
+      <app-post-card [data]="post"></app-post-card>
+
+      }
+      <button
+        class="top-28 bg-[#fdfdfd] shadow-md h-16 w-16 absolute z-10 rounded-full -left-5 text-2xl text-black"
+        (click)="_prev()"
+      >
+        &#8592;
+      </button>
+      <button
+        class="top-28 bg-[#fdfdfd] shadow-md h-16 w-16 absolute z-10 rounded-full -right-5 text-2xl text-black"
+        (click)="_next()"
+      >
+        &#8594;
+      </button>
+    </div>
   </section>
 
-  <!-- SECCION PARA LAS CARDS DEL BLOG -->
-  <div class="section py-8 md:py-12 lg:py-16 xl:py-20 2xl:py-24 t">
-    <div class="lg:mx-40 mx-4">
-      <!-- Agregamos la clase mx-4 para el margen horizontal -->
-      <div
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4"
-      ></div>
-      <!--end col-->
+  <!-- SECCION PARA ULTIMOS POSTS PUBLICADOS -->
+  <section class="mt-14">
+    <div class="flex justify-between">
+      <div class="">
+        <a href="#">
+          <h3 class="text-2xl text-black font-bold">Lo último añadido</h3>
+        </a>
+      </div>
+      <div class="">
+        <a href="">
+          <span class="text-gray-400 text-sm pr-2"></span>
+          <span class="text-gray-400 text-sm">&#8594;</span></a
+        >
+      </div>
     </div>
-  </div>
+    <div class="grid grid-cols-2 gap-y-12 mt-8">
+      <!-- contenido -->
+      @for(actor of post_list.slice(0,show_more); track actor){
+      <div
+        class="grid grid-cols-2 gap-x-8 gap-y-0 relative pb-4 post-row-border"
+      >
+        <!-- imagen del post -->
+        <div class="overflow-hidden relative rounded-lg">
+          <a href="#">
+            <img
+              class="object-cover w-full h-full max-w-lg rounded-lg"
+              [src]="actor.icon"
+              alt=""
+            />
+          </a>
+        </div>
+        <!-- descripcion del post -->
+        <div class="grid gap-6 grid-rows-1 auto-rows-max">
+          <div class="flex flex-col gap-3">
+            <div class="">
+              <a
+                class="text-xs text-gray-500 bg-[#f1f1f2] py-1 px-2 rounded-full cursor-pointer"
+                >categoria</a
+              >
+            </div>
+            <a href="" class="">
+              <h2 class="text-black font-bold text-base">
+                titulo del post, ES LARGO DE COJONES QUE PASA AQUI
+              </h2>
+            </a>
+            <span class="text-gray-400">Vigo, 23 Ocutbre 2023</span>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+
+    <div class="flex items-center justify-center mt-8">
+      @if(show_more <= post_list.length){
+      <a
+        (click)="showMore()"
+        class="py-2 px-3 text-white bg-red-600 rounded-full cursor-pointer"
+        >Ver Más</a
+      >
+      }
+    </div>
+  </section>
+  <section
+    class="lg:mt-20 bg-[#f8f8f8] h-[40vh] flex justify-center items-center px-3 rounded-md w-full"
+  >
+    <div class="h-[20vh] flex flex-col md:flex-row">
+      <div class="flex flex-col justify-center">
+        <h3 class="text-xl text-black font-bold mb-5">
+          Suscribete para más contenido
+        </h3>
+        <p class="lg:mb-8 font-medium text-gray-500 text-lg">
+          Suscríbete a nuesta news letter para mayor contenido de la osita
+        </p>
+        <a
+          href="#"
+          class="block text-center bg-red-600 w-60 text-white border-0 py-2 px-6 rounded-full focus:outline-none hover:bg-red-600 text-lg mt-10 mb-5"
+          >Suscribete</a
+        >
+      </div>
+      <div class="h-[20vh] flex pt-5">
+        <div class="overflow-y-hidden autoscroll">
+          @for( image of post_list; track image){
+          <div class="mb-8 rounded-lg max-w-xs h-96 lg:w-52 mr-2">
+            <img
+              class="object-cover w-full lg:h-full max-w-lg rounded-lg"
+              [src]="image.featured_image?.source_url"
+              alt=""
+              onload="this.parentNode.style.height = '0';"
+            />
+          </div>
+          }
+        </div>
+        <div class="overflow-y-hidden autoscroll1">
+          @for( image of post_list;track image){
+          <div class="mb-8 rounded-lg max-w-xs h-96 lg:w-52">
+            <img
+              class="object-cover w-full lg:h-full max-w-lg rounded-lg"
+              [src]="image.featured_image?.source_url"
+              alt=""
+              onload="this.parentNode.style.height = '0';"
+            />
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
 </main>

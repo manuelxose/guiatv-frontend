@@ -75,14 +75,11 @@ export class ListaCanalesComponent {
     } catch (error) {
       console.log(error);
     }
-
-    console.log('Canales autonomicos:', this.canales_auto);
   }
 
   private manageCanales(data: any) {
     this.guideSvc.setData(data);
 
-    console.log('Gestion de canales');
     this.canales_auto = this.guideSvc.getAutonomicoCanales();
     this.canales_tdt = this.guideSvc.getTDTCanales();
     this.canales_m = this.guideSvc.getMovistarCanales();
@@ -97,7 +94,6 @@ export class ListaCanalesComponent {
   }
 
   onNextClick() {
-    console.log('next padre');
     this.nextClicked.emit();
   }
 

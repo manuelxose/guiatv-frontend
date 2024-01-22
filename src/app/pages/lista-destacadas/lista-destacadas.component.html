@@ -6,22 +6,29 @@
 
     <div class="mt-9">
       <div class="flex items-center justify-between">
-        <span class="font-semibold text-gray-700 text-base dark:text-white"
-          >Descubre las peliculas y series destacadas hoy en televisión</span
-        >
+        <!-- Añade una etiqueta <h1> para indicar el encabezado principal de tu página -->
+        <h1 class="font-semibold text-gray-700 text-base dark:text-white">
+          Películas y series destacadas hoy en televisión
+        </h1>
       </div>
     </div>
   </section>
 
   <section class="mt-9">
     <div class="flex items-center justify-between">
-      <span class="font-semibold text-gray-700 text-base dark:text-white"
-        >Mejores Peliculas y Series</span
-      >
+      <!-- Añade una etiqueta <h2> para indicar el encabezado secundario de tu página -->
+      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
+        Mejores Películas y Series
+      </h2>
     </div>
-    <div class="mt-4 text-sm text-gray-600">
-      Listado de las mejores películas hoy en televisión
-    </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="mt-4 text-sm text-gray-600">
+      En esta página encontrarás una selección de las mejores películas y series
+      que se emiten hoy en televisión. Podrás ver los horarios, las sinopsis y
+      los tráilers de las películas y series más destacadas del momento.
+      Disfruta de un buen rato de entretenimiento con las mejores opciones que
+      te ofrece la televisión.
+    </p>
   </section>
 
   <section class="mt-9">
@@ -47,6 +54,8 @@
 
   <section>
     <div *ngFor="let destacada of destacados" class="">
+      <!-- Añade una etiqueta <img> para indicar las imágenes de tu página -->
+
       <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
     </div>
   </section>

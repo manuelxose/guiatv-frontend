@@ -200,7 +200,6 @@ export class ProgramFullDetailsComponent {
 
   private getProgramaById() {
     const idParam = this.route.snapshot.params['id'];
-    console.log('ID del programa:', idParam);
 
     const allPrograms = this.programas.flatMap(
       (programa: any) => programa.programs
@@ -218,12 +217,6 @@ export class ProgramFullDetailsComponent {
         this.compareDate(programa.start, programa.stop)
     );
 
-    console.log('Programas del canal:', this.programas_canal);
-    console.log('Programas de ahora:', this.programas_ahora);
-    console.log('Programas similares:', this.programas_similares);
-
-    console.log('Programas:', this.programas);
-
     this.program = this.programas
       .flatMap((data: any) => data.programs)
       .find(
@@ -238,6 +231,5 @@ export class ProgramFullDetailsComponent {
     this.programas_canal = channelPrograms;
     this.programas_ahora = currentPrograms;
     this.programas_similares = similarPrograms;
-    console.log('Programa:', this.program);
   }
 }

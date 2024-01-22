@@ -1,30 +1,72 @@
 <main
-  class="flex-1 py-10 px-5 sm:px-10 lg:min-w-[100vh] h-[100vh] overflow-y-auto max-w-[100vh]"
+  class="flex-1 py-10 px-5 sm:px-10 lg:min-w-[100vh] h-[100vh] overflow-y-auto max-w-[24.5rem] lg:max-w-[100vh]"
 >
   <section>
     <app-nav-bar></app-nav-bar>
 
-    <!-- <div
-          class="flex flex-col items-center justify-center text-center py-8 md:py-12 lg:py-16 xl:py-20 2xl:py-24"
-        >
-          <h2
-            class="text-2xl md:text-3xl lg:text-4xl mt-10 xl:text-5xl 2xl:text-6xl font-bold text-gray-700 mb-4"
-          >
-            Guía de Programación TV
-          </h2>
-          <p
-            class="text-gray-700 text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl"
-          >
-            Encuentra tus canales favoritos
-          </p>
-        </div> -->
-
-    <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
+    <div class="mt-9">
+      <div class="flex items-center justify-between">
+        <!-- Añade una etiqueta <h1> para indicar el encabezado principal de tu página -->
+        <h1 class="font-semibold text-gray-700 text-base dark:text-white">
+          Serie destacada esta noche
+        </h1>
+      </div>
+      <h3 class="mt-4 text-sm text-gray-600">
+        La mejor opcion para ver una buena serie esta noche en la televisión.
+      </h3>
+      <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
+    </div>
   </section>
 
   <!-- Seccion de listado de canales en España -->
 
   <!-- CAROUSEL PARA CADA UNO DE LOS CANALES -->
+
+  <section class="mt-9">
+    <div class="flex items-center justify-between">
+      <span class="font-semibold text-gray-700 text-base dark:text-white">
+        Series ahora en televisión
+      </span>
+      <div class="flex items-center space-x-2 fill-gray-500">
+        <svg
+          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          (click)="sliderComponent23.onPrevClick()"
+        >
+          <path
+            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+          ></path>
+        </svg>
+        <svg
+          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          (click)="sliderComponent23.onNextClick()"
+        >
+          <path
+            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+          ></path>
+        </svg>
+      </div>
+    </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="“mt-4" class="text-sm text-gray-600">
+      ¿Te gustan las series? En nuestra web te mostramos las mejores series en
+      TV hoy, para que no te pierdas ningún capítulo de tus ficciones favoritas.
+      Tenemos series de todos los géneros y para todos los públicos, desde
+      comedias que te harán pasar un buen rato hasta dramas que te emocionarán,
+      pasando por thrillers, ciencia ficción, acción y mucho más. Además, te
+      informamos de las series más recientes12, las más premiadas y las más
+      aclamadas por la crítica y el público, para que puedas disfrutar de la
+      mejor calidad televisiva. Con nuestra selección de series en TV hoy, solo
+      tienes que elegir la que más te apetezca ver y prepararte para vivir una
+      experiencia única.
+    </p>
+    <div class="mt-4 text-sm text-gray-600">
+      <app-slider #sliderComponent23 [programas]="en_emision"></app-slider>
+    </div>
+  </section>
 
   <section class="mt-9">
     <div class="flex items-center justify-between">
@@ -54,6 +96,18 @@
         </svg>
       </div>
     </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="mt-4 text-sm text-gray-600">
+      <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+
+      Si te gustan las series, no te pierdas nuestra selección de las mejores
+      series que se emiten hoy en la televisión. Podrás ver series de todos los
+      géneros y para todos los gustos, desde comedias hasta thrillers, pasando
+      por dramas, romances, acción y más. Disfruta de las series más
+      taquilleras, las más premiadas y las más aclamadas por la crítica en los
+      canales de televisión más populares. Con nuestro listado de series en TV
+      hoy podrás elegir la que más te apetezca ver y no perderte ningún detalle.
+    </p>
     <div class="mt-4 text-sm text-gray-600">
       <app-slider #sliderComponent [programas]="series"></app-slider>
     </div>

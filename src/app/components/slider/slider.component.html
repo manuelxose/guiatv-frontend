@@ -37,7 +37,7 @@
             <img
               *ngIf="logo !== ''"
               class="object-cover w-10 h-10"
-              src="https://wsrv.nl/?url={{ logo }}&w=300&h=300"
+              src="{{ logo }}"
               alt="{{ program?.name || program?.title?.value }}"
               loading="lazy"
               width="100%"

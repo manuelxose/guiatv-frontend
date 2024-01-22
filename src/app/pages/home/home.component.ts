@@ -31,8 +31,9 @@ export class HomeComponent implements OnInit {
     const canonicalUrl = this.router.url;
 
     this.metaSvc.setMetaTags({
-      title: 'Guia Programacion TV',
-      description: 'Guia de programacion de canales de television de España',
+      title: 'Los mejores mangas seinen que debes leer (y dónde encontrarlos)',
+      description:
+        'En este artículo te mostramos nuestra selección de los mejores mangas seinen que puedes leer, ordenados de menor a mayor preferencia. Te damos una breve descripción de cada uno, así como el enlace a su ficha en la web MangaUpdates, donde podrás encontrar más información sobre ellos. También te indicamos dónde puedes comprarlos o leerlos online, en caso de que estén disponibles.',
       canonicalUrl: canonicalUrl,
     });
 
@@ -71,8 +72,6 @@ export class HomeComponent implements OnInit {
 
     this.programs.find((programa: any) => {
       if (programa.channel.id === this.program.channel_id) {
-        console.log('Programa:', programa.channel);
-
         this.logo = programa.channel.icon;
       }
     });

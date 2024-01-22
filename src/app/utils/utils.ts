@@ -27,3 +27,22 @@ export function getHoraInicio(inicio: string) {
   });
   return horaInicioString;
 }
+
+export function isLive(dateIni: string, dateFin: string): boolean {
+  // Obtiene la hora actual, la hora de inicio y la hora de fin
+
+  let horaActual = new Date(); // Suma 1 hora en milisegundos (3600000 ms)
+  horaActual.setHours(horaActual.getHours() + 1);
+  const horaInicio = new Date(dateIni);
+  const horaFin = new Date(dateFin);
+
+  // Obtén las horas y minutos de la hora actual y las horas de inicio y fin
+  if (horaActual >= horaInicio && horaActual <= horaFin) {
+    return true;
+  }
+  return false;
+}
+
+export function truncateTitle(title: string, limit: number ): string {
+  return title?.length > limit ? title.slice(0, limit) + '...' : title;
+}

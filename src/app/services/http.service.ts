@@ -10,6 +10,10 @@ export class HttpService {
   private today_programs: any[] = [];
   private tomorrow_programs: any[] = [];
   private after_tomorrow_programs: any[] = [];
+  private headers = new HttpHeaders({
+    Accept: 'application/json',
+    Authorization: 'Bearer your-token',
+  });
 
   private programasSource = new BehaviorSubject<any[]>([]);
   programas$ = this.programasSource.asObservable();
@@ -18,8 +22,24 @@ export class HttpService {
 
   // BehaviorSubject es un tipo de observable que siempre devuelve el último valor emitido
 
-  constructor(private http: HttpClient) {
-    console.log('HttpService constructor');
+  constructor(private http: HttpClient) {}
+
+  // metodos para conectarse a la api de guia de programacion tv
+
+  get<T>(url: string): Observable<T> {
+    return this.http.get<T>(url, { headers: this.headers });
+  }
+
+  post<T>(url: string, body: any): Observable<T> {
+    return this.http.post<T>(url, body, { headers: this.headers });
+  }
+
+  put<T>(url: string, body: any): Observable<T> {
+    return this.http.put<T>(url, body, { headers: this.headers });
+  }
+
+  delete<T>(url: string): Observable<T> {
+    return this.http.delete<T>(url, { headers: this.headers });
   }
 
   public setProgramasByDay(programas: any[], dia: string) {
@@ -54,7 +74,6 @@ export class HttpService {
 
   public getProgramacion(dia: string): Observable<any[]> {
     // Comprueba si estan los datos en las variables temporales
-    console.log('getProgramacion', dia);
     const programas = this.getProgramasByDay(dia);
     if (programas.length > 0) {
       return of(programas);
@@ -65,8 +84,6 @@ export class HttpService {
         )
         .pipe(
           tap((data) => {
-            console.log('getProgramacion tap datos: ', data);
-            console.log('getProgramacion tap dia: ', dia);
             this.setProgramasByDay(data, dia);
           })
         );
@@ -93,7 +110,6 @@ export class HttpService {
   public async setProgramas(programas: Programme[], date: string) {
     // ESPERA A QUE SE CARGUEN LOS DATOS
     this.programasSource.next(programas);
-    console.log('Los putisimos programas: ', this.programasSource);
     // añadir a localstorage
   }
   public async getProgramas() {

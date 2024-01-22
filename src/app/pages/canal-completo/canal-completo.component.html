@@ -1,5 +1,5 @@
 <main
-  class="flex-1 py-10 px-5 sm:px-10 min-w-[100vh] h-[100vh] overflow-y-auto max-w-[100vh]"
+  class="flex-1 py-10 px-5 sm:px-10 lg:min-w-[100vh] max-w-[24.5rem] lg:max-w-[100vh]"
 >
   <section>
     <app-nav-bar></app-nav-bar>
@@ -7,7 +7,7 @@
     <div class="mt-9">
       <div class="flex items-center justify-between">
         <span class="font-semibold text-gray-700 text-base dark:text-white"
-          >Ahora en directo en {{ canal }} <span class="live-dot ml-2"></span
+          >Aen hora en directo {{ canal }} <span class="live-dot ml-2"></span
         ></span>
       </div>
     </div>
@@ -55,15 +55,18 @@
 
   <section class="pt-6">
     <div class="flex items-center justify-between">
-      <div class="flex">
+      <div class="flex items-center">
         <img
           class="rounded-full w-12 h-12 pr-2"
-          [src]="logo"
-          alt=""
+          src="https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/{{
+            program.channel
+          }}.png"
+          alt="{{ program.channel }}}"
           srcset=""
+          loading="lazy"
         />
         <span class="font-semibold text-gray-700 text-base dark:text-white">
-          - Programacion Completa de {{ canal }} {{ diaSeleccionado }}
+          - Qué ver {{ diaSeleccionado }} en {{ canal }}
         </span>
       </div>
 
@@ -95,29 +98,19 @@
       <app-slider
         #sliderComponent4
         [programas]="programs"
-        [logo]="logo"
+        logo="https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/{{
+          program.channel
+        }}.png"
       ></app-slider>
     </div>
   </section>
 
   <!-- SECCION DE CATEGORIAS -->
 
-  <section class="mt-9">
-    <!-- Desplegable para elegir programacion por categoira -->
+  <!-- <section class="mt-9">
 
-    <div class="flex items-center justify-between">
+    <div class="flex justify-center items-center">
       <div class="flex">
-        <img
-          class="rounded-full w-12 h-12 pr-2"
-          [src]="logo"
-          alt=""
-          srcset=""
-        />
-        <span class="font-semibold text-gray-700 text-base dark:text-white">
-          - Programacion Por Categoria
-        </span>
-      </div>
-      <div class="relative">
         <select
           id="categorias"
           [(ngModel)]="categoriaSeleccionada"
@@ -130,27 +123,44 @@
             {{ categoria }}
           </option>
         </select>
-        <div
-          class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white"
-        >
-          <svg
-            class="w-4 h-4 text-white pl-2"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </div>
       </div>
     </div>
 
+    <div class="flex pt-4">
+      <img
+        class="rounded-full w-12 h-12 pr-2"
+        src="https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/{{
+          program.channel
+        }}.png"
+        alt="{{ program.channel }}}"
+        srcset=""
+        loading="lazy"
+      />
+      <span class="font-semibold text-gray-700 text-base dark:text-white">
+        - Programacion Por Categoria
+      </span>
+    </div>
+    <div class="flex items-center justify-between"></div>
+    <div class="relative justify-center">
+      <div
+        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white"
+      >
+        <svg
+          class="w-4 h-4 text-white pl-2"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+    </div>
     <div
       class="mt-2"
       *ngIf="categoriaSeleccionada !== 'Selcciona una categoria'"
@@ -194,7 +204,7 @@
         ></app-slider>
       </div>
     </div>
-  </section>
+  </section> -->
 
   <!-- Seccion en directo resto de canales -->
 

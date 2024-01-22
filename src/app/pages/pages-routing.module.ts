@@ -45,15 +45,36 @@ const routes: Routes = [
         (m) => m.BlogDetailsModule
       ),
   },
-  // {
-  //   path: 'milista',
-  //   loadChildren: () =>
-  //     import('./milista/milista.module').then((m) => m.MilistaModule),
-  // },
+  {
+    path: 'noticias',
+    loadChildren: () =>
+      import('./blog-noticias/blog-noticias.module').then(
+        (m) => m.BlogNoticiasModule
+      ),
+  },
+  {
+    path: 'en-directo',
+    loadChildren: () =>
+      import('./ahora-directo/ahora-directo.module').then(
+        (m) => m.AhoraDirectoModule
+      ),
+  },
   {
     path: 'top-10',
     loadChildren: () =>
       import('./top10/top10.module').then((m) => m.Top10Module),
+  },
+  {
+    path: 'ver-mas/detalles/:id',
+    loadChildren: () =>
+      import('./blog-post/blog-post.module').then((m) => m.BlogPostModule),
+  },
+  {
+    path: 'ver-más/:id',
+    loadChildren: () =>
+      import('./blog-category/blog-category.module').then(
+        (m) => m.BlogCategoryModule
+      ),
   },
 ];
 

@@ -90,21 +90,23 @@ export class CanalCompletoComponent {
       let programm = program.programs.find((programa: any) => {
         return this.compareDate(programa.start, programa.stop);
       });
-      if (programm) {
+      if (programm && programm.title.value !== 'Cine') {
         this.live_programs.push(programm);
+        this.categorias.push(programm.desc.details.spli);
       }
     }
 
-    console.log('live_programs: ', this.live_programs);
+    // this.categorias = this.svcGuide
+    //   .getAllCategories()
+    //   .filter((categoria) => categoria !== undefined);
 
-    this.categorias = this.svcGuide
-      .getAllCategories()
-      .filter((categoria) => categoria !== undefined);
+    this.categorias = this.svcGuide.getChannelCategories(this.programs);
+    console.log(this.program);
 
-    this.categoriaSeleccionada = this.categorias[0];
+    this.categoriaSeleccionada = this.program.category.value.split(',')[0];
+    console.log(this.categoriaSeleccionada);
 
     this.http.getChannel(this.program.channel_id).forEach((data: any) => {
-      console.log('datos del canal: ', data);
       this.logo = data.icon;
       this.channel = data;
     });

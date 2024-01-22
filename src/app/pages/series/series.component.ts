@@ -4,6 +4,7 @@ import { first } from 'rxjs';
 import { HttpService } from 'src/app/services/http.service';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { isLive } from 'src/app/utils/utils';
 
 @Component({
   selector: 'app-series',
@@ -16,6 +17,7 @@ export class SeriesComponent {
   public popular_series: any[] = [];
   public logo: string = '';
   public destacada: any = {};
+  public en_emision: any[] = [];
 
   constructor(
     private svcGuide: TvGuideService,
@@ -55,11 +57,18 @@ export class SeriesComponent {
   }
 
   private manageSeries() {
-    console.log('Gestion de series');
     this.series = this.svcGuide.getAllSeries();
+    this.en_emision = this.series.filter((serie) => {
+      if (isLive(serie.start, serie.stop)) {
+        return serie;
+      }
+    });
     this.categorias = this.svcGuide
       .getSeriesCategories()
-      .filter((categoria) => categoria !== undefined);
+      .filter(
+        (categoria) =>
+          categoria !== undefined && categoria.toLowerCase().trim() !== 'otros'
+      );
     this.svcGuide.getSeriesDestacadas().subscribe((data) => {
       this.destacada = data[0];
     });

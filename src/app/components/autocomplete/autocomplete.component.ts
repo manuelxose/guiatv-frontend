@@ -51,7 +51,7 @@ export class AutocompleteComponent {
     console.log('Filtered channels:', channels); // Log the filtered channels
     console.log('Filtered programs:', programs); // Log the filtered programs
     // Return the channels followed by the programs
-    return [...channels, ...programs];
+    return [...channels, ...programs].slice(0, 5);
   }
 
   public navigateTo(data: any): void {

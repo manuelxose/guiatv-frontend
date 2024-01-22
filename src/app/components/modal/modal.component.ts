@@ -13,9 +13,7 @@ export class ModalComponent {
 
   ngOnInit(): void {
     this.isVisible = false;
-    console.log('ModalComponent');
     this.modalService.programa$.subscribe((program) => {
-      console.log('programa', program);
       this.program_modal = program;
       // si no esta vacio el objeto
       if (Object.keys(this.program_modal).length !== 0) {

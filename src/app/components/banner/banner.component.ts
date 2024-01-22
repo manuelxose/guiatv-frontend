@@ -16,7 +16,6 @@ export class BannerComponent {
   constructor(private router: Router, private guiatvSvc: TvGuideService) {}
 
   ngOnInit(): void {
-    console.log('lo del modal: ', this.data);
     this.time = this.getTime(this.data.start, this.data.stop);
   }
 

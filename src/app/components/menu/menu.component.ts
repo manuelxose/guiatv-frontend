@@ -15,6 +15,7 @@ export class MenuComponent {
   public isPeliculas: boolean = false;
   public hoy: boolean = false;
   public top: boolean = false;
+  public isDirecto: boolean = false;
 
   private unsuscribe$ = new Subject<void>();
 
@@ -29,7 +30,7 @@ export class MenuComponent {
         this.isPeliculas = false;
         this.top = false;
         this.hoy = false;
-        console.log('La ruta: ', this.router.url.split('/')[2]);
+        this.isDirecto = false;
 
         // Activar el booleano correspondiente a la ruta actual
         switch (this.router.url.split('/')[2]) {
@@ -43,7 +44,6 @@ export class MenuComponent {
             this.isSeries = true;
             break;
           case 'peliculas':
-            console.log('Es peliculas');
             this.isPeliculas = true;
             break;
           case 'que-ver-hoy':
@@ -51,6 +51,9 @@ export class MenuComponent {
             break;
           case 'top-10':
             this.top = true;
+            break;
+          case 'en-directo':
+            this.isDirecto = true;
             break;
           default:
             this.isHome = true;

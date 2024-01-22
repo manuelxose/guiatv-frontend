@@ -21,6 +21,8 @@ import { AutocompleteComponent } from './autocomplete/autocomplete.component';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { PostCardComponent } from './post-card/post-card.component';
+import { PostCardLastComponent } from './post-card-last/post-card-last.component';
 @NgModule({
   declarations: [
     ProgramListComponent,
@@ -37,6 +39,8 @@ import { MatInputModule } from '@angular/material/input';
     MenuComponent,
     BannerComponent,
     AutocompleteComponent,
+    PostCardComponent,
+    PostCardLastComponent,
   ],
   imports: [
     CommonModule,
@@ -64,6 +68,8 @@ import { MatInputModule } from '@angular/material/input';
     MenuComponent,
     BannerComponent,
     AutocompleteComponent,
+    PostCardComponent,
+    PostCardLastComponent,
   ],
 })
 export class ComponentsModule {}

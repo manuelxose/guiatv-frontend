@@ -4,6 +4,7 @@ import { first } from 'rxjs';
 import { HttpService } from 'src/app/services/http.service';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { isLive } from 'src/app/utils/utils';
 
 @Component({
   selector: 'app-peliculas',
@@ -15,6 +16,7 @@ export class PeliculasComponent {
   public categorias: any[] = [];
   public destacada: any = {};
   public logo: string = '';
+  public en_emision: any[] = [];
 
   constructor(
     private svcGuide: TvGuideService,
@@ -52,18 +54,29 @@ export class PeliculasComponent {
   }
 
   private manageMovies(data: any) {
-    console.log('Gestion de peliculas');
     this.svcGuide.setData(data);
 
-    this.peliculas = this.svcGuide.getAllMovies();
+    this.peliculas = this.svcGuide.getAllMovies().filter((pelicula) => {
+      if (isLive(pelicula.start, pelicula.stop)) {
+        this.en_emision.push(pelicula);
+      }
+
+      return (
+        pelicula !== undefined &&
+        pelicula.title.value.toLowerCase().trim() !== 'cine'
+      );
+    });
+
     this.categorias = this.svcGuide
       .getMoviesCategories()
-      .filter((categoria) => categoria !== undefined);
-
+      .filter((categoria) => {
+        return (
+          categoria !== undefined && categoria.toLowerCase().trim() !== 'otros'
+        );
+      });
     // GESTION DE PELICULA DESTACADA
 
     this.svcGuide.getPeliculasDestacadas().subscribe((data) => {
-      console.log('Pelicula destacada', data);
       this.destacada = data[0];
     });
   }

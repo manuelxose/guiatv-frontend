@@ -39,7 +39,6 @@ export class HeaderComponent {
         this.isGuiaCanales = false;
         this.isSeries = false;
         this.isPeliculas = false;
-        console.log(this.router.url.split('/')[2]);
 
         // Activar el booleano correspondiente a la ruta actual
         switch (this.router.url.split('/')[2]) {
@@ -53,7 +52,6 @@ export class HeaderComponent {
             this.isSeries = true;
             break;
           case 'peliculas':
-            console.log('Es peliculas');
             this.isPeliculas = true;
             break;
           default:

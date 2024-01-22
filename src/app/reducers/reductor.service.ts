@@ -17,7 +17,6 @@ export class ReductorService {
   dispatch(action: any) {
     const estadoActual = this.state.getValue();
     const nuevoEstado = this.reducer(estadoActual, action);
-    console.log('Nuevo estado:', nuevoEstado); // Agrega este log para verificar el nuevo estado
     this.state.next(nuevoEstado);
   }
 
@@ -30,7 +29,6 @@ export class ReductorService {
           ...estadoActual,
           programas,
         };
-        console.log('Programas guardados:', nuevoEstado.programas); // Agrega este log para verificar los programas guardados
         return nuevoEstado;
       default:
         return estadoActual;

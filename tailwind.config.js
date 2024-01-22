@@ -4,7 +4,20 @@ module.exports = {
   content: ["./src/**/*.{html,ts}"],
 
   theme: {
-    extend: {},
+    extend: {
+      animation: {
+        fadeIn: "fadeIn .6s cubic-bezier(.74,.01,.81,.75)",
+      },
+      keyFrames: {
+        fadeIn: {
+          "0%": { opacity: 0 },
+          "100%": { opacity: 1 },
+        },
+        translate: {
+          "-452": "-452px",
+        },
+      },
+    },
   },
   variants: {
     extend: {

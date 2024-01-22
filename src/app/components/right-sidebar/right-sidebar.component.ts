@@ -16,7 +16,6 @@ export class RightSidebarComponent {
   async ngOnInit(): Promise<void> {
     this.svcGuide.getProgramsAndChannels().subscribe((data) => {
       if (data.length > 0) {
-        console.log('Ya cargaron los datos: ', data);
         this.svcGuide.setData(data);
 
         this.manageList();
@@ -36,9 +35,6 @@ export class RightSidebarComponent {
         this.popular_series = data;
       });
     });
-
-    console.log('Peliculas: ', this.popular_movies);
-    console.log('Series: ', this.popular_series);
   }
 
   public navigateTo(data: any) {

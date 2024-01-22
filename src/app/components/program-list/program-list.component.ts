@@ -108,7 +108,7 @@ export class ProgramListComponent implements OnInit, OnDestroy {
     //this.getFromApi();
     //}
 
-    this.httpservce.getProgramacion('today').subscribe((res: any) => {
+    this.httpservce.programas$.subscribe((res: any) => {
       this.programas = res;
 
       // this.httpservce.setProgramas(res, 'today');
@@ -345,7 +345,6 @@ export class ProgramListComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
     this.hoy = dia === 0;
-    console.log('Fecha para llamar: ', fechaParaLlamar);
 
     this.httpservce.getProgramacion(fechaParaLlamar).subscribe((res: any) => {
       this.programas = res;
@@ -395,7 +394,6 @@ export class ProgramListComponent implements OnInit, OnDestroy {
 
   get programaRoute() {
     // Verifica que programaSeleccionado.title.value sea una cadena válida antes de hacer el reemplazo
-    console.log(this.programaSeleccionado);
     if (
       this.programaSeleccionado &&
       typeof this.programaSeleccionado.title.value === 'string'

@@ -31,7 +31,6 @@ export class TvGuideService {
   // GESTION DE LOS DETALLES DE LOS PROGRMAS
 
   public async setDetallesPrograma(programa: any) {
-    console.log('Metodo setDetallesPrograma');
     this.detallesProgramaSource.next(programa);
   }
 
@@ -42,7 +41,6 @@ export class TvGuideService {
   // GESTION DE LAS PELICULAS DESTACADAS
 
   public async setPeliculasDestacadas() {
-    console.log('Metodo setPeliculasDestacadas');
     const peliculas = await this.getBestRatedMovies();
     this.peliculasDestacadasSource.next(peliculas);
   }
@@ -63,7 +61,6 @@ export class TvGuideService {
   // GESTION DE LAS SERIES DESTACADAS
 
   public async setSeriesDestacadas() {
-    console.log('Metodo setSeriesDestacadas');
     const series = await this.getBestRatedSeries();
     this.seriesDestacadasSource.next(series);
   }
@@ -121,10 +118,16 @@ export class TvGuideService {
   // GESTION DE LAS PELICULAS
 
   getAllMovies() {
-    console.log('Metodo getAllMovies');
-    const peliculas = this.programsByCategory('Cine').filter(
-      (programa: any) => programa?.desc?.details !== 'Emisión de una película.'
-    );
+    const peliculas = this.programsByCategory('Cine')
+      .filter(
+        (programa: any) =>
+          programa?.desc?.details !== 'Emisión de una película.'
+      )
+      .sort(
+        (a: any, b: any) =>
+          new Date(a.start).getTime() - new Date(b.start).getTime()
+      );
+
     return peliculas;
   }
 
@@ -153,9 +156,7 @@ export class TvGuideService {
   }
 
   async getBestRatedMovies() {
-    console.log('Metodo getBestRatedMovies');
     const movies = this.getAllMovies();
-    console.log('Peliculas: ', movies);
     // filtrar las películas que empiezan después de las 22:00 y no son de cine
     const moviesAfter22 = movies.filter(
       (movie) =>
@@ -201,9 +202,7 @@ export class TvGuideService {
   // GESTION DE LAS SERIES
 
   async getBestRatedSeries() {
-    console.log('Metodo getBestRatedSeries');
     const series = this.getAllSeries();
-    console.log('Series: ', series);
     // filtrar las películas que empiezan después de las 22:00 y no son de cine
     let seriesAfter22 = series.filter((serie: any) => {
       return (
@@ -289,24 +288,31 @@ export class TvGuideService {
     return this.getMainCategories();
   }
 
+  getChannelCategories(progrmas: any[]) {
+    return this.getCategoriesFromChannel(progrmas);
+  }
+
   // Métodos genéricos para filtrar y obtener categorías únicas
 
   private programsByCategory(categoryType: string, category?: string) {
     //loa progrmas en lista de programas ya estan flatMap asi que no hace falta hacerlo aqui
-    console.log('Metodo programsByCategory');
-    const peliculas = this.getListaProgramas().filter((program: any) => {
-      if (
-        program?.category?.value?.split(',')[0] === categoryType &&
-        program?.desc?.details !== 'Emisión de una película.'
-      )
-        return program;
-    });
+    const peliculas = this.getListaProgramas()
+      .filter((program: any) => {
+        if (
+          program?.category?.value?.split(',')[0] === categoryType &&
+          program?.desc?.details !== 'Emisión de una película.'
+        )
+          return program;
+      })
+      .sort(
+        (a: any, b: any) =>
+          new Date(a.start).getTime() - new Date(b.start).getTime()
+      );
 
     return peliculas;
   }
 
   private programsByChannel(channelId: string, categoryType: string) {
-    console.log('Metodo programsByChannel');
     return this.getListaCanales().filter(
       (programa: any) =>
         programa?.category?.value?.split(',')[0] === categoryType &&
@@ -315,7 +321,6 @@ export class TvGuideService {
   }
 
   private programsByDate(date: string, categoryType: string) {
-    console.log('Metodo programsByDate');
     return this.getListaCanales()
       .flatMap((canal: any) => canal.programs)
       .filter(
@@ -356,6 +361,11 @@ export class TvGuideService {
       )
         return programa;
     });
+  }
+  private getCategoriesFromChannel(programs: any[]) {
+    return programs
+      .map((programa: any) => programa?.category?.value?.split(',')[1])
+      .filter((value, index, self) => self.indexOf(value) === index);
   }
 
   private getMainCategories() {

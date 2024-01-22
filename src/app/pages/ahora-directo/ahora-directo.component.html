@@ -1,0 +1,61 @@
+<main
+  class="flex-1 py-10 px-5 sm:px-10 max-w-[100vh] h-[100vh] overflow-y-auto lg:min-w-[100vh]"
+>
+  <section>
+    <app-nav-bar></app-nav-bar>
+
+    <div class="mt-9">
+      <div class="flex items-center justify-between">
+        <!-- Añade una etiqueta <h1> para indicar el encabezado principal de tu página -->
+        <h1 class="font-semibold text-gray-700 text-base dark:text-white">
+          Películas y series en directo hoy en televisión
+        </h1>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-9">
+    <div class="flex items-center justify-between">
+      <!-- Añade una etiqueta <h2> para indicar el encabezado secundario de tu página -->
+      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
+        Películas y Series Ahora en Directo
+      </h2>
+    </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="mt-4 text-sm text-gray-600">
+      En directo, en esta página puedes ver la programación de películas y
+      series en directo en televisión. Puedes ver la programación de hoy y de
+      los próximos días. También puedes ver la programación de películas y
+      series en directo de los canales de televisión en abierto y de pago.
+    </p>
+  </section>
+
+  <section class="mt-9">
+    <nav class="flex space-x-6 text-gray-400 font-medium justify-center">
+      <a
+        (click)="isPelicula = true; isSerie = false; getPeliculasAhora()"
+        class="hover:text-gray-700 dark:hover:text-white font-semibold cursor-pointer"
+        [ngClass]="{
+          'text-gray-700 dark:text-white border-b-2 border-red-600': isPelicula
+        }"
+        >Películas Ahora en Televisión</a
+      >
+      <a
+        (click)="isPelicula = false; isSerie = true; getSeriesAhora()"
+        class="dark:hover:text-white font-semibold cursor-pointer"
+        [ngClass]="{
+          'text-gray-700 dark:text-white border-b-2 border-red-600': isSerie
+        }"
+        >Series Ahora en Televisón</a
+      >
+    </nav>
+  </section>
+
+  <section>
+    <div *ngFor="let destacada of programs" class="">
+      <!-- Añade una etiqueta <img> para indicar las imágenes de tu página -->
+
+      <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
+    </div>
+  </section>
+</main>

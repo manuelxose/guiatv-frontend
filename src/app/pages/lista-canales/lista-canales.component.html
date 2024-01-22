@@ -1,5 +1,5 @@
 <main
-  class="flex-1 py-10 px-5 sm:px-10 h-[100vh] overflow-y-auto lg:min-w-[100vh] max-w-[100vh]"
+  class="flex-1 py-10 px-5 sm:px-10 lg:min-w-[100vh] h-[100vh] overflow-y-auto lg:max-w-[100vh] max-w-[24.5rem]"
 >
   <section>
     <app-nav-bar></app-nav-bar>
@@ -13,9 +13,28 @@
 
   <section class="mt-9">
     <div class="flex items-center justify-between">
-      <span class="font-semibold text-gray-700 text-base dark:text-white"
-        >Canales TDT España</span
-      >
+      <!-- Añade una etiqueta <h1> para indicar el encabezado principal de tu página -->
+      <h1 class="font-semibold text-gray-700 text-base dark:text-white">
+        Listado de canales de televisión en España
+      </h1>
+    </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="mt-4 text-sm text-gray-600">
+      En esta página podrás ver el listado de canales de televisión en España y
+      la programación de hoy en la tele. Podrás elegir entre los canales de TDT,
+      Movistar+, Televisión Digital y otros. Además, podrás ver las sinopsis,
+      los horarios y los tráilers de los programas que más te interesen.
+      Disfruta de la mejor oferta televisiva con nuestro listado de canales de
+      televisión en España.
+    </p>
+  </section>
+
+  <section class="mt-9">
+    <div class="flex items-center justify-between">
+      <!-- Añade una etiqueta <h2> para indicar el encabezado secundario de tu página -->
+      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
+        Canales TDT España
+      </h2>
       <div class="flex items-center space-x-2 fill-gray-500">
         <svg
           class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
@@ -39,6 +58,17 @@
         </svg>
       </div>
     </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="mt-4 text-sm text-gray-600">
+      Los canales TDT España son los que se emiten por la televisión digital
+      terrestre, que es el sistema de transmisión de señales de televisión en
+      formato digital. Los canales TDT España ofrecen una gran variedad de
+      contenidos, desde informativos y entretenimiento hasta cultura y deportes.
+      Algunos de los canales TDT España más populares son La 1, Antena 3,
+      Telecinco, Cuatro, La Sexta, TVE Internacional y Canal 24 Horas. Con
+      nuestro listado de canales TDT España podrás ver la programación de todos
+      estos canales y muchos más.
+    </p>
     <div class="mt-4 text-sm text-gray-600">
       <app-slider #sliderComponent [programas]="canales_tdt"></app-slider>
     </div>
@@ -46,8 +76,9 @@
 
   <section class="">
     <div class="flex items-center justify-between">
+      <!-- Cambia el texto por "Canales exclusivos de Movistar+" para resaltar la exclusividad de estos canales -->
       <span class="font-semibold text-gray-700 text-base dark:text-white"
-        >Canales Movistar+</span
+        >Canales exclusivos de Movistar+</span
       >
       <div class="flex items-center space-x-2 fill-gray-500">
         <svg
@@ -72,6 +103,17 @@
         </svg>
       </div>
     </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="mt-4 text-sm text-gray-600">
+      Los canales exclusivos de Movistar+ son los que solo puedes ver si estás
+      suscrito a esta plataforma de televisión de pago. Los canales exclusivos
+      de Movistar+ te ofrecen una programación de calidad, con películas,
+      series, documentales, deportes y mucho más. Algunos de los canales
+      exclusivos de Movistar+ son Movistar Estrenos, Movistar Series, Movistar
+      LaLiga, Movistar Fórmula 1 y Movistar Golf. Con nuestro listado de canales
+      exclusivos de Movistar+ podrás ver la programación de todos estos canales
+      y muchos más.
+    </p>
     <div class="mt-4 text-sm text-gray-600">
       <app-slider #sliderComponent1 [programas]="canales_m"></app-slider>
     </div>
@@ -79,9 +121,10 @@
 
   <section class="">
     <div class="flex items-center justify-between">
-      <span class="font-semibold text-gray-700 text-base dark:text-white">
-        Canales Televisión Digital
-      </span>
+      <!-- Cambia el texto por "Canales de TV online en España" para incluir una palabra clave más específica y actual -->
+      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
+        Canales de TV online en España
+      </h2>
       <div class="flex items-center space-x-2 fill-gray-500">
         <svg
           class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
@@ -105,6 +148,17 @@
         </svg>
       </div>
     </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="mt-4 text-sm text-gray-600">
+      Los canales de TV online en España son los que se pueden ver a través de
+      internet, sin necesidad de una antena o un cable. Los canales de TV online
+      en España ofrecen una programación variada y adaptada a los gustos de los
+      espectadores, desde series y películas hasta documentales y deportes.
+      Algunos de los canales de TV online en España más populares son Fox, AXN,
+      TNT, Comedy Central y Calle 13. Con nuestro listado de canales de TV
+      online en España podrás ver la programación de todos estos canales y
+      muchos más.
+    </p>
     <div class="mt-4 text-sm text-gray-600">
       <app-slider #sliderComponent2 [programas]="canales_cable"></app-slider>
     </div>
@@ -112,9 +166,10 @@
 
   <section class="">
     <div class="flex items-center justify-between">
-      <span class="font-semibold text-gray-700 text-base dark:text-white">
+      <!-- Cambia la etiqueta <span> por <h2> para indicar el encabezado secundario de tu página -->
+      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
         Canales Autonómicos España
-      </span>
+      </h2>
       <div class="flex items-center space-x-2 fill-gray-500">
         <svg
           class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
@@ -138,6 +193,16 @@
         </svg>
       </div>
     </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="mt-4 text-sm text-gray-600">
+      Los canales autonómicos de España son los que se emiten por las
+      televisiones públicas de cada comunidad autónoma. Los canales autonómicos
+      de España ofrecen una programación cercana y diversa, con contenidos de
+      actualidad, cultura, ocio, deportes y más. Algunos de los canales
+      autonómicos de España más vistos son TV3, Aragón TV, TVG, Canal Sur y
+      ETB2[^1^][1]. Con nuestro listado de canales autonómicos de España podrás
+      ver la programación de todos estos canales y muchos más.
+    </p>
     <div class="mt-4 text-sm text-gray-600">
       <app-slider #sliderComponent3 [programas]="canales_auto"></app-slider>
     </div>
@@ -145,9 +210,10 @@
 
   <section class="">
     <div class="flex items-center justify-between">
-      <span class="font-semibold text-gray-700 text-base dark:text-white">
+      <!-- Cambia la etiqueta <span> por <h2> para indicar el encabezado secundario de tu página -->
+      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
         Canales Deportes España
-      </span>
+      </h2>
       <div class="flex items-center space-x-2 fill-gray-500">
         <svg
           class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
@@ -171,6 +237,17 @@
         </svg>
       </div>
     </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="mt-4 text-sm text-gray-600">
+      Los canales de deportes en España son los que te ofrecen la mejor
+      cobertura de las competiciones deportivas más importantes del mundo. Los
+      canales de deportes en España te permiten disfrutar de fútbol, baloncesto,
+      tenis, motor, golf y mucho más. Algunos de los canales de deportes en
+      España más destacados son Movistar LaLiga, Movistar Liga de Campeones,
+      Movistar Deportes, Eurosport, Gol TV y DAZN[^1^][1]. Con nuestro listado
+      de canales de deportes en España podrás ver la programación de todos estos
+      canales y muchos más.
+    </p>
     <div class="mt-4 text-sm text-gray-600">
       <app-slider #sliderComponent4 [programas]="canales_dep"></app-slider>
     </div>
