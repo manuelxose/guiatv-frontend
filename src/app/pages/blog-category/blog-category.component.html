@@ -1,0 +1,108 @@
+<main
+  class="flex-1 py-10 px-5 sm:px-10 max-w-[100vh] h-[100vh] overflow-y-auto lg:min-w-[100vh] min-h-full"
+>
+  <section
+    class="overflow-hidden border-b border-b-slate-400 pb-20 flex flex-col"
+  >
+    <app-nav-bar></app-nav-bar>
+    <ul class="flex pb-6 pt-10">
+      <li class="pr-3">Home</li>
+      <li class="pr-3">Blog</li>
+      <li class="pr-3">Category</li>
+    </ul>
+    <div class="grid gap-x-25 items-center grid-cols-2 pb-22 relative">
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-3">
+          <h1 class="text-4xl font-bold text-black">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          </h1>
+          <div class="flex gap-3">
+            <span class="text-gray-400 text-sm">By</span>
+            <span class="text-gray-400 text-sm">Date</span>
+            <span class="text-gray-400 text-sm">Comments</span>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-lg h-80 overflow-hidden">
+        <img
+          class="object-cover w-full h-full max-w-lg rounded-lg"
+          src="https://spotlight-primary.highfivethemes.com/content/images/size/w500/format/webp/2023/06/Rectangle-4--3-.webp"
+          alt=""
+        />
+      </div>
+    </div>
+  </section>
+  <section class="mt-14">
+    <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-x-5 gap-y-5">
+      @for(actor of post_list.slice(0,show_more ); track actor){
+      <div class="grid-rows-1 grid gap-y-6 h-full">
+        <!-- imagen del post -->
+        <div class="overflow-hidden relative rounded-lg">
+          <a href="#">
+            <img
+              class="object-cover w-full h-full max-w-lg rounded-lg"
+              [src]="actor.programs[0].icon"
+              alt=""
+            />
+          </a>
+        </div>
+        <!-- descripcion del post -->
+        <div class="grid gap-6 grid-rows-1 auto-rows-max">
+          <div class="flex flex-col gap-3">
+            <div class="">
+              <a
+                href=""
+                class="text-xs text-gray-500 bg-[#f1f1f2] py-1 px-2 rounded-full"
+                >categoria</a
+              >
+            </div>
+            <a href="" class="">
+              <h2 class="text-black font-bold text-base">
+                titulo del post, ES LARGO DE COJONES QUE PASA AQUI
+              </h2>
+            </a>
+            <span class="text-gray-400">Vigo, 23 Ocutbre 2023</span>
+          </div>
+        </div>
+      </div>
+
+      }
+      <div class="flex items-center justify-center mt-8">
+        @if(show_more <= post_list.length){
+        <a
+          (click)="showMore()"
+          class="py-2 px-3 text-white bg-red-600 rounded-full cursor-pointer"
+          >Ver Más</a
+        >
+        }
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="mt-20 bg-[#f8f8f8] h-[40vh] flex justify-center items-center px-3 rounded-md"
+  >
+    <div class="h-[20vh] flex">
+      <div class="flex flex-col justify-center">
+        <h3 class="text-xl text-black font-bold mb-5">
+          Suscribete para más contenido
+        </h3>
+        <p class="mb-8 font-medium text-gray-500 text-lg">
+          Suscríbete a nuesta news letter para mayor contenido de la osita
+        </p>
+        <a
+          href="#"
+          class="block text-center bg-red-600 w-60 text-white border-0 py-2 px-6 rounded-full focus:outline-none hover:bg-red-600 text-lg mt-10"
+          >Suscribete</a
+        >
+      </div>
+      <div class="rounded-lg h-full w-96 overflow-hidden">
+        <img
+          class="object-cover w-full h-full max-w-lg rounded-lg"
+          src="https://spotlight-primary.highfivethemes.com/content/images/size/w500/format/webp/2023/06/Rectangle-4--3-.webp"
+          alt=""
+        />
+      </div>
+    </div>
+  </section>
+</main>

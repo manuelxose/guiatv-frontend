@@ -1,0 +1,825 @@
+$logo-ancho: 120px; // Ajusta este valor según el ancho real de tu logo
+$breakpoint-movil: 768px;
+$color-fondo: #141414;
+$color-acento: #d81e1e;
+$color-texto: #ffffff;
+
+body {
+  font-family: "Roboto", sans-serif;
+  background-color: $color-fondo;
+  color: $color-texto;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+}
+.info img {
+  width: 100%; /* La imagen ocupa el 100% del contenedor */
+  max-width: 45vh; /* Máximo ancho de la imagen */
+  height: auto; /* Altura se ajusta automáticamente */
+  margin-bottom: 16px; /* Espacio entre la imagen y el texto */
+  border-radius: 5px; /* Bordes redondeados para la imagen */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra ligera para la imagen */
+}
+
+.info h2 {
+  font-size: 1.25rem; /* Tamaño de fuente para el título */
+}
+
+.info p {
+  margin-bottom: 8px; /* Espacio entre los párrafos */
+  line-height: 1.4; /* Espaciado entre líneas */
+}
+
+.botones-info {
+  display: flex;
+  margin-top: 1rem;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+.botones-info .btn {
+  margin-top: 8px; /* Espacio entre los botones */
+}
+
+.titulo-guia,
+.subtitulo-guia {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.titulo-guia {
+  font-size: 2.5rem;
+  font-weight: 500;
+  margin-top: 0px;
+  padding-top: 7rem;
+}
+
+.subtitulo-guia {
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+
+.card {
+  max-width: 1029px;
+  margin: 0 auto;
+  //redondear bordes
+  border-radius: 5px;
+}
+
+.card {
+  background-color: rgba(20, 20, 20, 0.8);
+  border-radius: 5px;
+  padding: 20px;
+}
+
+.btn-dia-semana {
+  background-color: $color-fondo;
+  color: $color-texto;
+  border: none;
+  padding: 10px 20px;
+  margin: 5px;
+  font-weight: 400;
+}
+
+.btn-dia-semana:hover {
+  background-color: $color-acento;
+}
+
+.btn-dia-semana-activo {
+  background-color: $color-acento;
+}
+
+.boton {
+  background-color: $color-acento;
+  color: $color-texto;
+  border: none;
+  padding: 10px 20px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.boton:hover {
+  background-color: darken($color-acento, 10%);
+}
+
+.header-container {
+  display: flex;
+  flex-direction: column;
+  // position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: #393939;
+  color: white;
+  font-weight: bold;
+  border-bottom: 1px solid #555;
+}
+
+.btn-dia-semana-activo {
+  /* Tus estilos personalizados aquí, por ejemplo: */
+  background-color: #555 !important;
+  color: white !important;
+  border: 1px solid #555 !important;
+}
+
+.dia-semana {
+  display: flex;
+  justify-content: space-around;
+  padding: 5px 10px;
+  border-bottom: 1px solid #555;
+}
+
+.btn-dia-semana {
+  background-color: #393939;
+  color: white;
+  border: 1px solid #555;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 100%;
+}
+
+.btn-dia-semana:hover {
+  background-color: #555;
+}
+
+.scrollable-container {
+  overflow-y: hidden;
+  height: 800px; // Ajustar según sea necesario
+  position: relative;
+  max-height: 700px; // Establecer la altura máxima según sea necesario
+  background-color: white;
+  overflow-x: hidden; // Ocultar el desplazamiento horizontal
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+  border-radius: 5px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 5px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+.scrollable-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+// Estilizar la barra de desplazamiento en Firefox
+.scrollable-container {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+.scrollable-header {
+  display: flex;
+  padding: 5px 10px;
+  // position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #393939;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.header-item {
+  padding: 5px 10px;
+  text-align: center;
+  min-width: 8rem;
+  color: white;
+  font-weight: bold;
+  position: relative;
+}
+
+.header-item::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 50%;
+  background-color: white;
+  opacity: 0.5;
+}
+
+.header-item:last-child::after {
+  display: none;
+}
+
+.scrollable-body {
+  display: flex;
+  flex-direction: column;
+  height: 42rem; // Ajustar según sea necesario
+  overflow: auto;
+}
+
+.channel-row {
+  display: flex;
+  flex-wrap: nowrap; // Añade esta línea para permitir que los elementos se envuelvan a la siguiente línea
+  position: relative; // Agregado position: relative
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  background-color: rgba(
+    57,
+    57,
+    57,
+    0.8
+  ); // Cambiar a un color con 70% de opacidad
+  color: white;
+  border-right: 1px solid #555;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  min-width: 100px;
+
+  position: relative;
+  top: 0;
+  width: $logo-ancho;
+}
+
+.logo {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin-left: 5px;
+  border-radius: 5px;
+  min-width: 100%;
+}
+
+.programas-row {
+  display: flex;
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  min-width: fit-content;
+  flex-grow: 1;
+  left: -120px; // Agregar esta línea para desplazar 120px hacia la izquierda
+}
+
+.programa-container {
+  height: 100px;
+  position: relative;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  margin-left: 1px;
+  flex-grow: 1;
+}
+
+.selector-franjas-horarias {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1029px;
+  background-color: #393939;
+  z-index: 1;
+  // position: sticky;
+  top: 0;
+}
+
+.selector-franjas-horarias ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+}
+
+.item-franja {
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  transition: border-color 0.2s ease-in-out;
+  padding: 5px 0;
+}
+
+.item-franja.activo {
+  border-bottom-color: white;
+  font-weight: bold;
+}
+
+.item-franja:hover {
+  border-bottom-color: white;
+}
+
+.btn-franja {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: bold;
+  padding: 5px 10px;
+}
+
+.btn-franja:hover {
+  color: #cccccc;
+}
+
+.btn-franja:focus {
+  outline: none;
+}
+
+.programa {
+  background-color: #2d2d2d; // Cambiado el color de fondo a oscuro
+  border-radius: 8px; // Aumentado el borde redondeado
+  padding: 5px; // Agregado un relleno interno
+  box-sizing: border-box; // Asegura que el ancho y alto incluyan el padding y border
+  position: relative; // Cambiado de absolute a relative
+  top: 0; // Posicionado en la parte superior del contenedor
+  left: 0; // Posicionado en la parte izquierda del contenedor
+  width: 100%; // Establecido el ancho al 100% del contenedor
+  height: 100%; // Establecido el alto al 100% del contenedor
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); // Agregado sombra para dar apariencia de tarjeta
+  margin-right: 10px; // Agregado margen derecho para separar tarjetas horizontalmente
+}
+.programa .titulo,
+.programa .hora {
+  color: #ffffff; // Cambiado el color del texto a blanco
+}
+
+.programa:hover {
+  background-color: #555;
+  cursor: pointer;
+}
+
+.programa::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 20px 20px;
+  border-color: transparent transparent #555 transparent;
+}
+
+.programa .titulo {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.programa .hora {
+  font-size: 0.8rem;
+}
+
+.hora-actual {
+  position: absolute;
+  top: 0;
+  bottom: -592vh;
+  width: 2px;
+  background-color: #ff0000;
+  opacity: 0.8;
+  z-index: 9999;
+  &:before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: -4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ff0000;
+  }
+}
+
+.loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.75
+  ); // Aumenta la opacidad para oscurecer el fondo
+  z-index: 1000;
+}
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.8
+  ); // Cambia a un fondo blanco semi-transparente
+  border-radius: 10px; // Añade bordes redondeados
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // Agrega una sombra sutil
+}
+
+.loader-text {
+  margin-top: 10px; // Agrega espacio entre el ícono del loader y el texto
+  font-size: 16px;
+  font-weight: bold;
+  color: #000000; // Cambia el color del texto a negro
+  animation: wave 1s linear infinite; // Aplica la animación
+}
+@keyframes wave {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.programa-info {
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+@keyframes fadeInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.programa-info {
+  /* ... */
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+  animation: fadeInDown 0.3s ease-in-out; /* Añadir animación de aparición */
+}
+
+.programa-info h2 {
+  font-weight: bold;
+  color: #333333;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.programa-info p {
+  font-size: 14px;
+  color: #666666;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.programa-info .boton {
+  display: inline-block;
+  background-color: #007bff;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.programa-info .boton:hover {
+  background-color: #0056b3;
+}
+
+.footer-seo {
+  width: 100%;
+  margin: 15px 0;
+  font-size: 0.8rem;
+  color: #444;
+  line-height: 1.4;
+
+  .footer-content {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 0.5rem;
+
+    h2 {
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    p {
+      margin-bottom: 0.3rem;
+    }
+
+    a {
+      color: #333;
+      text-decoration: underline;
+      transition: color 0.3s ease;
+
+      &:hover {
+        color: #888;
+      }
+    }
+  }
+}
+.boton {
+  display: inline-block;
+  background-color: white !important;
+  color: black !important;
+  padding: 0.5rem 1rem !important;
+  margin: 0.5rem 0.5rem !important;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  border: 1px solid black;
+}
+.boton:hover {
+  background-color: black !important;
+  color: white !important;
+  transition: background-color 0.3s ease;
+}
+
+// Media query para dispositivos móviles
+// Media query para dispositivos móviles
+@media (max-width: $breakpoint-movil) {
+  .logo-container {
+    min-width: 60px !important;
+  }
+
+  .header-container {
+    flex-direction: column;
+  }
+
+  .dia-semana {
+    width: 100%;
+  }
+  .card {
+    padding: 5px;
+  }
+  .scrollable-header {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: 100%;
+  }
+
+  .header-item {
+    width: 14.28%; // Ajusta este valor de acuerdo con la cantidad de elementos que tengas
+    font-size: 0.6rem;
+    min-width: 14.28%;
+    text-align: center;
+    box-sizing: border-box; // Asegúrate de que el padding esté incluido en el ancho
+  }
+  .info {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .footer-seo {
+    .footer-content {
+      padding: 0.5rem;
+
+      h2 {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .selector-franjas-horarias {
+    display: flex;
+    overflow-x: auto;
+    padding: 0;
+
+    ul {
+      display: flex;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+    }
+  }
+
+  .item-franja {
+    display: inline-block;
+    margin-right: 8px;
+
+    .btn-franja {
+      font-size: 12px;
+      padding: 4px 8px;
+    }
+  }
+
+  .channel-row {
+    flex-wrap: nowrap;
+    position: relative;
+    display: flex;
+  }
+  .subtitulo-guia {
+    font-size: 1.2rem; // Ajusta el tamaño de la fuente según tus necesidades
+  }
+
+  .program-container {
+    position: static;
+    top: auto;
+    left: auto;
+    width: 100%;
+    padding-top: 1rem;
+  }
+
+  .titulo-guia {
+    font-size: 2rem;
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+
+  .subtitulo-guia {
+    font-size: 1.2rem;
+  }
+
+  .scrollable-body {
+    flex-direction: column;
+  }
+
+  .programa .hora {
+    font-size: 0.6rem;
+  }
+
+  .scrollable-container {
+    overflow-x: hidden;
+  }
+
+  .btn-franja {
+    background-color: transparent;
+    padding: 0;
+    font-size: 1.03rem;
+  }
+
+  .titulo {
+    // Ajustar el ancho del título aquí, por ejemplo:
+    width: 100%; // Establecer el ancho al 100% del contenedor en dispositivos móviles
+    white-space: nowrap; // Evitar que el texto se ajuste automáticamente
+    overflow: hidden; // Ocultar el texto que exceda el ancho del contenedor
+    text-overflow: ellipsis; // Agregar puntos suspensivos al final del texto si se corta
+  }
+
+  .titulo-guia,
+  .subtitulo-guia {
+    // Ajusta el tamaño de fuente y márgenes para dispositivos móviles
+    font-size: 1.5rem;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .titulo-guia {
+    font-weight: 500;
+  }
+
+  .subtitulo-guia {
+    font-weight: 300;
+  }
+
+  // Ajusta el ancho y el word-wrap para evitar el desbordamiento
+  h1,
+  h2 {
+    width: 100%;
+    word-wrap: break-word;
+    hyphens: auto;
+  }
+}
+
+/* Ensure the container has a specific height for the background image */
+
+/* Add gradient overlay to the image */
+
+/* Adjust the gradient overlay opacity as needed */
+.opacity-50 {
+  opacity: 0.5; /* Adjust opacity level (0-1) */
+}
+/* Add gradient overlay to the image */
+
+/* Ensure the image is rounded at the top on mobile */
+/* Ensure the image is rounded at the top on mobile */
+@media (max-width: 640px) {
+  .rounded-b-lg {
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+  }
+}
+/* Style for buttons */
+.btn {
+  display: inline-block;
+  font-weight: 400;
+  color: #fff;
+  text-align: center;
+  vertical-align: middle;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease-in-out;
+  margin: 0.05rem;
+}
+.btn:hover {
+  color: #fff;
+  text-decoration: none;
+}
+.btn:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+}
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.btn:not(:disabled):not(.disabled) {
+  cursor: pointer;
+}
+.btn:not(:disabled):not(.disabled):active {
+  background-image: none;
+}
+.btn-primary {
+  color: #fff;
+  background-color: #1e3044;
+  border-color: #152331;
+}
+
+// la clase burbujas es como la descripcion de genero en netflix con el con el fondo de color del boton pero mas difuminado
+
+.burbujas {
+  background-color: #1e30449a;
+  border-radius: 5px;
+  padding: 5px;
+  margin: 5px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin-left: 5px;
+  border-radius: 5px;
+  min-width: 100%;
+}
+
+::ng-deep .cdk-virtual-scroll-viewport {
+  overflow-y: hidden;
+  height: 42rem; // Ajustar según sea necesario
+  position: relative;
+  max-height: 42rem; // Establecer la altura máxima según sea necesario
+  background-color: white;
+  overflow-x: hidden; // Ocultar el desplazamiento horizontal
+
+  &::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+  }
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  // Estilizar la barra de desplazamiento en Firefox
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+::ng-deep .cdk-virtual-scroll-content-wrapper {
+  position: relative !important;
+  top: 0;
+  left: 0;
+  contain: content;
+}

@@ -1,0 +1,44 @@
+<main
+  class="flex-1 py-10 px-5 sm:px-10 w-full lg:min-w-[100vh] max-w-[24.5rem] lg:max-w-[100vh]"
+>
+  <section>
+    <app-nav-bar></app-nav-bar>
+
+    <div class="mt-9">
+      <div class="flex items-center justify-between">
+        <!-- Añade una etiqueta <h1> para indicar el encabezado principal de tu página -->
+        <h1 class="font-semibold text-gray-700 text-base dark:text-white">
+          Esta noche destacamos
+        </h1>
+      </div>
+      <h3 class="mt-4 text-sm text-gray-600">
+        La mejor opción para ver una película o serie de calidad
+      </h3>
+    </div>
+
+    <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
+  </section>
+
+  <!-- PARRILLA DE CANALES -->
+  <section class="mt-9">
+    <div class="flex items-center justify-between">
+      <!-- Añade una etiqueta <h2> para indicar el encabezado secundario de tu página -->
+      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
+        Guía de Televisión España
+      </h2>
+    </div>
+    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <p class="mt-4 text-sm text-gray-600">
+      ¿No sabes qué ver esta noche en la tele? Con nuestra guía de televisión
+      España podrás consultar la programación de todos los canales y elegir tus
+      programas favoritos. Desde películas y series hasta deportes y
+      documentales, tenemos todo lo que necesitas para disfrutar de una noche de
+      entretenimiento en casa. Además, podrás ver las sinopsis, los horarios y
+      los tráilers de los programas que más te interesen. No te pierdas nada de
+      lo que se emite hoy en la televisión con nuestra guía de televisión
+      España.
+    </p>
+  </section>
+
+  <app-program-list></app-program-list>
+</main>

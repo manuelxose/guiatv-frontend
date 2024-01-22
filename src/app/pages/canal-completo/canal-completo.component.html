@@ -1,0 +1,256 @@
+<main
+  class="flex-1 py-10 px-5 sm:px-10 lg:min-w-[100vh] max-w-[24.5rem] lg:max-w-[100vh]"
+>
+  <section>
+    <app-nav-bar></app-nav-bar>
+
+    <div class="mt-9">
+      <div class="flex items-center justify-between">
+        <span class="font-semibold text-gray-700 text-base dark:text-white"
+          >Aen hora en directo {{ canal }} <span class="live-dot ml-2"></span
+        ></span>
+      </div>
+    </div>
+    <app-banner *ngIf="program" [data]="program"></app-banner>
+  </section>
+  <!-- SECCION CON LA SELECCION DE DIAS -->
+  <section class="mt-9">
+    <div class="flex justify-center items-center">
+      <nav class="dia-seleccion flex space-x-4">
+        <button
+          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
+          [ngClass]="{
+            'dia-boton-seleccionado': diaSeleccionado === 'today'
+          }"
+          (click)="cambiarDia('today')"
+          aria-label="Programación de hoy"
+        >
+          Hoy
+        </button>
+        <button
+          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
+          [ngClass]="{
+            'dia-boton-seleccionado': diaSeleccionado === 'tomorrow'
+          }"
+          (click)="cambiarDia('tomorrow')"
+          aria-label="Programación de mañana"
+        >
+          Mañana
+        </button>
+        <button
+          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white"
+          [ngClass]="{
+            'dia-boton-seleccionado': diaSeleccionado === 'after_tomorrow'
+          }"
+          (click)="cambiarDia('after_tomorrow')"
+          aria-label="Programación de pasado"
+        >
+          Pasado
+        </button>
+      </nav>
+    </div>
+  </section>
+
+  <!-- CAROUSEL PARA CADA UNO DE LOS CANALES -->
+
+  <section class="pt-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <img
+          class="rounded-full w-12 h-12 pr-2"
+          src="https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/{{
+            program.channel
+          }}.png"
+          alt="{{ program.channel }}}"
+          srcset=""
+          loading="lazy"
+        />
+        <span class="font-semibold text-gray-700 text-base dark:text-white">
+          - Qué ver {{ diaSeleccionado }} en {{ canal }}
+        </span>
+      </div>
+
+      <div class="flex items-center space-x-2 fill-gray-500">
+        <svg
+          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          (click)="sliderComponent4.onPrevClick()"
+        >
+          <path
+            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+          ></path>
+        </svg>
+        <svg
+          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          (click)="sliderComponent4.onNextClick()"
+        >
+          <path
+            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+          ></path>
+        </svg>
+      </div>
+    </div>
+
+    <div class="mt-4 text-sm text-gray-600">
+      <app-slider
+        #sliderComponent4
+        [programas]="programs"
+        logo="https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/{{
+          program.channel
+        }}.png"
+      ></app-slider>
+    </div>
+  </section>
+
+  <!-- SECCION DE CATEGORIAS -->
+
+  <!-- <section class="mt-9">
+
+    <div class="flex justify-center items-center">
+      <div class="flex">
+        <select
+          id="categorias"
+          [(ngModel)]="categoriaSeleccionada"
+          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white appearance-none"
+        >
+          <option value="Selcciona una categoria" disabled>
+            Selecciona una categoria
+          </option>
+          <option *ngFor="let categoria of categorias" [value]="categoria">
+            {{ categoria }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="flex pt-4">
+      <img
+        class="rounded-full w-12 h-12 pr-2"
+        src="https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/{{
+          program.channel
+        }}.png"
+        alt="{{ program.channel }}}"
+        srcset=""
+        loading="lazy"
+      />
+      <span class="font-semibold text-gray-700 text-base dark:text-white">
+        - Programacion Por Categoria
+      </span>
+    </div>
+    <div class="flex items-center justify-between"></div>
+    <div class="relative justify-center">
+      <div
+        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-white"
+      >
+        <svg
+          class="w-4 h-4 text-white pl-2"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+    </div>
+    <div
+      class="mt-2"
+      *ngIf="categoriaSeleccionada !== 'Selcciona una categoria'"
+    >
+      <div class="flex items-center justify-between">
+        <h3
+          class="text-gray-700 text-md md:text-xl lg:text-2xl font-semibold pb-4 ml-3"
+        >
+          Ver {{ categoriaSeleccionada }} en {{ canal }}
+          {{ diaSeleccionado }}
+        </h3>
+
+        <div class="flex items-center space-x-2 fill-gray-500">
+          <svg
+            class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            (click)="sliderComponent.onPrevClick()"
+          >
+            <path
+              d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+            ></path>
+          </svg>
+          <svg
+            class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            (click)="sliderComponent.onNextClick()"
+          >
+            <path
+              d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+            ></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="mt-4 text-sm text-gray-600">
+        <app-slider
+          #sliderComponent
+          [programas]="getProgramsByCategory(categoriaSeleccionada)"
+        ></app-slider>
+      </div>
+    </div>
+  </section> -->
+
+  <!-- Seccion en directo resto de canales -->
+
+  <section class="pt-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <svg
+          class="h-8 w-8 fill-red-600"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M10 15.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4Zm11.96-4.45c.58 6.26-4.64 11.48-10.9 10.9 -4.43-.41-8.12-3.85-8.9-8.23 -.26-1.42-.19-2.78.12-4.04 .14-.58.76-.9 1.31-.7v0c.47.17.75.67.63 1.16 -.2.82-.27 1.7-.19 2.61 .37 4.04 3.89 7.25 7.95 7.26 4.79.01 8.61-4.21 7.94-9.12 -.51-3.7-3.66-6.62-7.39-6.86 -.83-.06-1.63.02-2.38.2 -.49.11-.99-.16-1.16-.64v0c-.2-.56.12-1.17.69-1.31 1.79-.43 3.75-.41 5.78.37 3.56 1.35 6.15 4.62 6.5 8.4ZM5.5 4C4.67 4 4 4.67 4 5.5 4 6.33 4.67 7 5.5 7 6.33 7 7 6.33 7 5.5 7 4.67 6.33 4 5.5 4Z"
+          ></path>
+        </svg>
+        <span class="font-semibold text-gray-700 text-base dark:text-white">
+          - En Directo en el resto de canales
+        </span>
+      </div>
+
+      <div class="flex items-center space-x-2 fill-gray-500">
+        <svg
+          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          (click)="sliderComponent2.onPrevClick()"
+        >
+          <path
+            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+          ></path>
+        </svg>
+        <svg
+          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          (click)="sliderComponent2.onNextClick()"
+        >
+          <path
+            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+          ></path>
+        </svg>
+      </div>
+    </div>
+
+    <div class="mt-4 text-sm text-gray-600">
+      <app-slider #sliderComponent2 [programas]="live_programs"></app-slider>
+    </div>
+  </section>
+</main>

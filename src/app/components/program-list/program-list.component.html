@@ -1,0 +1,147 @@
+<!-- EMPLEAR CLASE DE TAILWIND NO PERSONALIZADA -->
+<!-- CENTRAR EL TITULO DE LA PAGINA ORIENTADO A SEO -->
+<section class="pt-12">
+  <div class="card">
+    <div class="header-container">
+      <div class="dia-semana">
+        <button
+          class="btn-dia-semana"
+          *ngFor="let dia of dias; let i = index"
+          (click)="cambiarDia(i)"
+          [ngClass]="{ 'btn-dia-semana-activo': i === activeIndex }"
+        >
+          {{ dia.diaSemana }} {{ dia.diaNumero }}
+        </button>
+      </div>
+
+      <div class="selector-franjas-horarias">
+        <div class="selector-franjas-horarias">
+          <ul>
+            <li
+              *ngFor="let item of franjas; let i = index"
+              [class.activo]="item[0] === franjaHoraria"
+              (click)="cambiarFranjaHoraria(item, i)"
+              class="item-franja"
+            >
+              <button type="button" class="btn-franja">
+                {{ item[0] }} - {{ item[item.length - 1] }}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="scrollable-container">
+        <div
+          *ngIf="mostrarHoraActual"
+          class="hora-actual"
+          [ngStyle]="{ left: leftRem + 'rem' }"
+        ></div>
+
+        <div class="scrollable-header">
+          <div class="header-item" *ngFor="let hora of horas">{{ hora }}</div>
+        </div>
+
+        <div class="scrollable-body" cdkScrollable>
+          <cdk-virtual-scroll-viewport itemSize="130" class="scrollable-body">
+            <div
+              *cdkVirtualFor="
+                let canal of programas;
+                let canalIndex = index;
+                trackBy: trackById
+              "
+              let
+              i="index;"
+              (click)="canalSeleccionado = canalIndex"
+            >
+              <div class="channel-row">
+                <div class="logo-container">
+                  <img
+                    class="logo"
+                    src="https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/{{
+                      canal.channel.name
+                    }}.png"
+                    alt="{{ canal.channel.name }} logo"
+                    loading="lazy"
+                    width="100%"
+                    height="100%"
+                  />
+                </div>
+                <div class="programas-row" #programasRow>
+                  <div
+                    *ngFor="let programa of canal.programs; let i = index"
+                    class="programa-container"
+                    [ngStyle]="{
+                      'margin-left':
+                        i === 0
+                          ? calcularPosicionIzquierda(getHoras(programa.start))
+                          : '',
+                      width: calcularAnchoPrograma(programa.duracion)
+                    }"
+                    (click)="mostrarInfoPrograma(canalIndex, programa)"
+                  >
+                    <div class="programa">
+                      <div class="titulo">{{ programa?.title?.value }}</div>
+                      <div class="hora">
+                        {{ getHoras(programa.start) }} -
+                        {{ getHoras(programa.stop) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CONTAINER DE LA TARJETA -->
+
+              <ng-container *ngIf="canalIndex === canalSeleccionado">
+                <app-banner [data]="programaSeleccionado"></app-banner>
+              </ng-container>
+            </div>
+          </cdk-virtual-scroll-viewport>
+        </div>
+
+        <!-- LOADER -->
+        <div *ngIf="isLoading" class="loader-container">
+          <div class="loader">
+            <span class="loader-text">Cargando Guía Programación TV</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="footer-seo">
+  <div class="footer-content">
+    <h2>GuiaProgramacionTv.Com - La Mejor Programación y Guía TV en Línea</h2>
+    <p>
+      En GuiaProgramacionTv.Com, te ofrecemos la
+      <a title="parrilla TV" href="/">guía TV y programación</a> más completa y
+      actualizada de todos los canales nacionales, locales, TDT y de pago por
+      cable. Nuestra intuitiva parrilla de televisión te permite visualizar
+      rápida y fácilmente la programación de todos los programas del día o de la
+      noche. Al hacer clic en el título del programa, accederás a los detalles
+      del mismo, incluyendo la descripción de la serie, la sinopsis de la
+      película y las imágenes relacionadas.
+    </p>
+    <p>
+      En resumen, GuiaProgramacionTv.Com pone a tu disposición la mejor
+      programación y guía TV: - La programación TV de las principales cadenas
+      nacionales: La 1, La 2, Antena 3, Cuatro, Telecinco y La Sexta. - La
+      <a title="parrilla tv" href="/programacion-tv/guia-tv-ahora"
+        >guía y programacion TV</a
+      >
+      de la TDT, con canales como Paramount, Divinity, Dkiss, DMAX, Neox, Nova,
+      FDF, Energy, Atresseries, y más. - La programación de las televisiones
+      autonómicas y locales, como Telemadrid, 8 Madrid, TV3, 8TV, À Punt, Canal
+      Sur, TVG, ETB1, ETB2, CMT, IB3, Aragón TV, 7RM, TPA, CyLTV, entre otras. -
+      Los canales de pago por cable, ADSL y satélite, como Cero, Fox, AXN, AXN
+      White, Calle13, Syfy, TNT, Cosmo, Comedy Central, Canal Hollywood, TCM y
+      muchos más.
+    </p>
+    <p>
+      Desde GuiaProgramacionTv.Com, les deseamos que disfruten de excelentes
+      momentos de televisión con nuestra programación y guía TV.
+    </p>
+    <p>El equipo de TecnoRia</p>
+  </div>
+</div>

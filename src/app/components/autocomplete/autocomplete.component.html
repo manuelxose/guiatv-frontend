@@ -1,0 +1,84 @@
+<div class="relative items-center content-center flex w-full">
+  <span class="text-gray-400 absolute left-4 cursor-pointer">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-4 w-4"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      ></path>
+    </svg>
+  </span>
+  <div class="relative">
+    <input
+      type="text"
+      [formControl]="dataInput"
+      [matAutocomplete]="auto"
+      class="text-xs ring-1 bg-transparent ring-gray-200 dark:ring-zinc-600 focus:ring-red-300 pl-10 pr-5 text-gray-600 dark:text-white py-3 rounded-full w-full outline-none focus:ring-1"
+      placeholder="Buscar Pelicula, Serie. .."
+      matInput
+      [matAutocompletePosition]="'above'"
+    />
+    <mat-autocomplete
+      autoActiveFirstOption
+      #auto="matAutocomplete"
+      class="absolute top-full w-full z-10"
+    >
+      @for (option of filteredData | async; track option) {
+      @if(option?.channel?.name){
+      <mat-option
+        class="w-full bg-white hover:bg-slate-50 z-30"
+        [value]="option.channel.name"
+        (click)="navigateTo(option)"
+      >
+        <div class="flex justify-between content-center">
+          <img
+            class="w-10 h-10 rounded-full"
+            src="https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/{{
+              option.channel.name
+            }}.png"
+            alt="{{ option.channel.name }}"
+          />
+          <div class="flex flex-col ml-2">
+            <span class="text-xs font-semibold text-gray-600 dark:text-white">
+              {{ option.channel.name }}
+            </span>
+            <span class="text-xs text-gray-400 dark:text-gray-300">
+              {{ option.channel.name }}
+            </span>
+          </div>
+        </div> </mat-option
+      >} @if( option?.title?.value?.length > 0 ) {
+
+      <mat-option
+        class="w-full bg-white hover:bg-slate-50 z-30"
+        [value]="option?.title?.value"
+        (click)="navigateTo(option)"
+      >
+        <div class="flex justify-between content-center">
+          <img
+            class="w-10 h-10 rounded-full"
+            src="https://wsrv.nl/?url={{ option?.icon }}"
+            alt="{{ option?.icon }}"
+          />
+          <div class="flex flex-col ml-2">
+            <span class="text-xs font-semibold text-gray-600 dark:text-white">
+              {{ option?.title?.value }}
+            </span>
+            <span class="text-xs text-gray-400 dark:text-gray-300">
+              {{ option?.start | date : "shortTime" }} -
+              {{ option?.stop | date : "shortTime" }}
+            </span>
+          </div>
+        </div>
+      </mat-option>
+      }}
+    </mat-autocomplete>
+  </div>
+</div>

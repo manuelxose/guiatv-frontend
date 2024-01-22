@@ -1,0 +1,79 @@
+<div class="relative lg:h-[36.25vw] md:h-[50vw] h-[100vw]">
+  <img
+    class="absolute inset-0 w-full h-full object-cover object-center brightness-[60%] lg:w-full"
+    src="https://wsrv.nl/?url={{ program?.icon }}"
+    alt="{{ program?.title?.value }}"
+    width="100%"
+    height="100%"
+  />
+  <div class="absolute top-[30%] md:top-[20%] ml-4 md:ml-16">
+    <!-- CREAR UN SPAN CON EL TIPO DE PROGRAMA -->
+    <span
+      class="text-white text-[8px] md:text-lg font-semibold bg-white bg-opacity-20 px-2 py-1 rounded-md"
+      >{{ program?.channel }}</span
+    >
+
+    <h2
+      class="text-white text-1xl md:text-5xl mt-4 h-full w-[90%] lg:text-6xl font-bold drop-shadow-xl"
+    >
+      {{ program?.title?.value }}
+    </h2>
+    <p
+      class="text-white text-[8px] md:text-lg mt-3 md:mt-8 w-[90%] md:w-[80%] lg:w-[50%] drop-shadow-xl text-sm"
+    >
+      {{ program?.desc?.details }}
+    </p>
+    <div class="flex flex-row items-center mt-3 md:mt-4 gap-3">
+      <button
+        class="bg-opacity-100 bg-white rounded-md py-1 md:py-2 px-2 md:px-4 w-auto text-xs lg:text-lf font-semibold flex flex-row items-center hover:bg-opacity-20 transition"
+      >
+        <i class="bi bi-play-fill text-black text-sm"></i>
+
+        <span class="text-black text-sm">Ver ahora</span>
+      </button>
+      <button
+        (click)="manageModal(program)"
+        class="bg-opacity-30 bg-white rounded-md py-1 md:py-2 px-2 md:px-4 w-auto text-xs lg:text-lf font-semibold flex flex-row items-center hover:bg-opacity-20 transition"
+      >
+        <i class="bi bi-info-circle text-white text-sm pr-1"></i>
+        <span class="text-white text-sm">Más Info</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="pb-5 lg:pt-10 pt-3">
+  <div class="md:p-8 lg:mt-4 sm:mt-2 mt-2 space-y-8">
+    <p
+      class="text-white text-md md:text-xl lg:text-2xl font-semibold pb-4 ml-3"
+    >
+      {{ program?.desc?.category }} En Directo
+    </p>
+
+    <app-slider [programas]="programas_similares"></app-slider>
+  </div>
+</div>
+
+<div class="pb-5 lg:pt-10 pt-3">
+  <div class="md:p-8 lg:mt-4 sm:mt-2 mt-2 space-y-8">
+    <p
+      class="text-white text-md md:text-xl lg:text-2xl font-semibold pb-4 ml-3"
+    >
+      Más del Canal
+    </p>
+
+    <app-slider [programas]="programas_canal"></app-slider>
+  </div>
+</div>
+
+<div class="pb-5">
+  <div class="md:p-8 lg:mt-4 sm:mt-2 mt-1 space-y-8">
+    <p
+      class="text-white text-md md:text-xl lg:text-2xl font-semibold lg:pb-4 ml-3"
+    >
+      Ahora en Directo - Resto de Canales
+    </p>
+
+    <app-slider [programas]="programas_ahora"></app-slider>
+  </div>
+</div>

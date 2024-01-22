@@ -1,0 +1,57 @@
+{
+  "emulators": {
+    "functions": {
+      "timeout": "540s",
+      "port": 5001
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true,
+    "firestore": {
+      "timeout": "540s",
+      "port": 8080
+    },
+    "database": {
+      "port": 9000
+    },
+    "storage": {
+      "timeout": "540s",
+      "port": 9199
+    }
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+
+  "hosting": {
+    "public": "dist/guiatv/browser",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "function": "app"
+      },
+      {
+        "source": "/blog",
+        "destination": "https://www.clientes.tecnoriasl.com/guiatv",
+        "type": 301
+      },
+      {
+        "source": "!/robots.txt",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=3600, s-maxage=3600, stale-while-revalidate=3600"
+          }
+        ]
+      }
+    ]
+  }
+}
