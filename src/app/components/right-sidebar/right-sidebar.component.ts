@@ -1,11 +1,15 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { AutocompleteComponent } from '../autocomplete/autocomplete.component';
 
 @Component({
   selector: 'app-right-sidebar',
   templateUrl: './right-sidebar.component.html',
   styleUrls: ['./right-sidebar.component.scss'],
+  standalone: true,
+  imports: [CommonModule,AutocompleteComponent],
 })
 export class RightSidebarComponent {
   public popular_movies: any[] = [];

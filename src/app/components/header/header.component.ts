@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
   HostListener,
@@ -5,11 +6,15 @@ import {
   RendererFactory2,
 } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
+import { AutocompleteComponent } from '../autocomplete/autocomplete.component';
+import { MenuComponent } from '../menu/menu.component';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
+  standalone: true,
+  imports: [CommonModule,AutocompleteComponent,MenuComponent],
 })
 export class HeaderComponent {
   menuVisible = false; // Propiedad para controlar la visibilidad del menú

@@ -1,14 +1,31 @@
-import { Component } from '@angular/core';
+//app.component.ts
+
+import { Component, OnInit } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+import { HeaderComponent } from './components/header/header.component';
+import { LeftSidebarComponent } from './components/left-sidebar/left-sidebar.component';
+import { RightSidebarComponent } from './components/right-sidebar/right-sidebar.component';
+import { FooterComponent } from './components/footer/footer.component';
+
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    HeaderComponent,
+    LeftSidebarComponent,
+    RightSidebarComponent,
+    FooterComponent
+  ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'Guía de Programación TV - Encuentra tus programas favoritos';
-  //añadir etiquetas para seo
 
   constructor(private metaService: Meta) {}
 
@@ -17,7 +34,6 @@ export class AppComponent {
   }
 
   updateMetaData(): void {
-    // Agregar o actualizar etiquetas meta
     this.metaService.updateTag({
       name: 'description',
       content:
@@ -30,7 +46,5 @@ export class AppComponent {
     });
     this.metaService.updateTag({ name: 'robots', content: 'index, follow' });
     this.metaService.updateTag({ name: 'author', content: 'TecnoRia' });
-
-    // Puedes agregar más etiquetas según sea necesario
   }
 }

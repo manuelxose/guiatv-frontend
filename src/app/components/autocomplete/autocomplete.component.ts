@@ -1,6 +1,11 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { Route, Router } from '@angular/router';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatOptionModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
@@ -9,6 +14,15 @@ import { TvGuideService } from 'src/app/services/tv-guide.service';
   selector: 'app-autocomplete',
   templateUrl: './autocomplete.component.html',
   styleUrls: ['./autocomplete.component.scss'],
+  standalone: true,
+    imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatAutocompleteModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatOptionModule
+  ],
 })
 export class AutocompleteComponent {
   public data: any[];

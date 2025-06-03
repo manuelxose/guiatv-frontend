@@ -1,7 +1,9 @@
+//app.routing.module.ts
+
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-const routes: Routes = [
+export const routes: Routes = [
   { path: '', redirectTo: '/programacion-tv', pathMatch: 'full' },
   {
     path: 'programacion-tv',
@@ -9,10 +11,11 @@ const routes: Routes = [
       import('./pages/pages.module').then((m) => m.PagesModule),
   },
 ];
+
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, {
-      initialNavigation: 'enabledBlocking',
+      initialNavigation: 'enabledBlocking'
     }),
   ],
   exports: [RouterModule],

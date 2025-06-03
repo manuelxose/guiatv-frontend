@@ -1,66 +1,49 @@
 import {
-  AfterViewInit,
   Component,
   Input,
   OnInit,
-  SimpleChanges,
   ViewChild,
+  CUSTOM_ELEMENTS_SCHEMA,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { ModalService } from 'src/app/services/modal.service';
-import Swiper from 'swiper';
-import { SwiperComponent } from 'swiper/angular';
-import { SwiperOptions } from 'swiper/types/swiper-options';
+import { register } from 'swiper/element/bundle';
 import { getHoraInicio } from 'src/app/utils/utils';
+
 import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { CommonModule } from '@angular/common';
+
+// Register Swiper custom elements
+register();
+
 @Component({
   selector: 'app-slider',
   templateUrl: './slider.component.html',
   styleUrls: ['./slider.component.scss'],
+  standalone: true,
+  imports: [CommonModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class SliderComponent implements OnInit {
   @Input() programas: any[] = [];
   @Input() logo?: string = '';
-  @ViewChild('swiperRef', { static: false }) swiperRef?: SwiperComponent;
-  config: SwiperOptions = {};
+  @ViewChild('swiperRef', { static: false }) swiperRef?: any;
+  
   programas_similares: any[] = [];
-  private swiperInstance?: Swiper;
 
   constructor(private guiatvSvc: TvGuideService, private router: Router) {}
 
   ngOnInit(): void {
-    this.config = {
-      slidesPerView: 4,
-      spaceBetween: 5,
-      breakpoints: {
-        320: {
-          slidesPerView: 2,
-          spaceBetween: 5,
-        },
-        480: {
-          slidesPerView: 3,
-          spaceBetween: 5,
-        },
-        640: {
-          slidesPerView: 4,
-          spaceBetween: 5,
-        },
-      },
-    };
+    // Configuration is now handled in the template
   }
 
   manageData(programa: any) {
-    ///Si se trata de un canal hacer route a /ver-canal/:id
     if (programa?.channel) {
       this.guiatvSvc.setDetallesPrograma(programa);
       this.router.navigate([
         'programacion-tv/detalles',
         programa.title.value.replace(/\s/g, '-'),
       ]);
-    }
-    //Si se trata de un programa hacer route a /detalles/:id
-    else {
-      //sustituir espacios por guiones
+    } else {
       this.router.navigate([
         'programacion-tv/ver-canal',
         programa.name.replace(/\s/g, '-'),
@@ -68,16 +51,16 @@ export class SliderComponent implements OnInit {
     }
   }
 
-  onSwiper(swiper: Swiper) {
-    this.swiperInstance = swiper;
+  onSwiper(swiper: any) {
+    // Handle swiper instance if needed
   }
 
   onNextClick() {
-    this.swiperInstance?.slideNext();
+    this.swiperRef?.nativeElement?.swiper?.slideNext();
   }
 
   onPrevClick() {
-    this.swiperInstance?.slidePrev();
+    this.swiperRef?.nativeElement?.swiper?.slidePrev();
   }
 
   public horaInicio(i: any) {

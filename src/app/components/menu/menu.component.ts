@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -7,6 +8,8 @@ import { TvGuideService } from 'src/app/services/tv-guide.service';
   selector: 'app-menu',
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],
+  standalone: true,
+  imports: [CommonModule],
 })
 export class MenuComponent {
   public isHome: boolean = false;

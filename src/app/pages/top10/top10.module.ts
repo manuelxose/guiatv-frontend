@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Top10Component } from './top10.component';
 import { RouterModule, Routes } from '@angular/router';
 import { ComponentsModule } from 'src/app/components/components.module';
-import Swiper from 'swiper';
-import { SwiperModule } from 'swiper/angular';
+import { SliderComponent } from 'src/app/components/slider/slider.component';
 
 const routes: Routes = [
   {
@@ -19,7 +18,7 @@ const routes: Routes = [
     CommonModule,
     RouterModule.forChild(routes),
     ComponentsModule,
-    SwiperModule,
+    SliderComponent
   ],
 })
 export class Top10Module {}
