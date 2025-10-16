@@ -1,6 +1,10 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { first } from 'rxjs';
+import { first, filter } from 'rxjs';
+import { BannerComponent } from 'src/app/components/banner/banner.component';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
+import { SliderComponent } from 'src/app/components/slider/slider.component';
 import { HttpService } from 'src/app/services/http.service';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
@@ -10,6 +14,8 @@ import { isLive } from 'src/app/utils/utils';
   selector: 'app-peliculas',
   templateUrl: './peliculas.component.html',
   styleUrls: ['./peliculas.component.scss'],
+  standalone: true,
+  imports: [SliderComponent, CommonModule, BannerComponent, NavBarComponent],
 })
 export class PeliculasComponent {
   public peliculas: any[] = [];
@@ -33,18 +39,21 @@ export class PeliculasComponent {
       description:
         'Listado de peliculas de television de España, como El Hormiguero, La Voz, Masterchef, etc.',
       canonicalUrl: canonicalUrl,
-    });
-
-    try {
+    });    try {
       this.http.programas$.pipe(first()).subscribe(async (data) => {
-        //si no hay programas llamar a la api
+        //si no hay programas, esperar a que HomeComponent los cargue
         if (data.length === 0) {
-          this.http.getProgramacion('today').subscribe((data) => {
-            this.http.setProgramas(data, 'today').then(() => {
-              this.manageMovies(data);
-            });
+          console.log(`⏳ PELICULAS - No hay datos, esperando a que se carguen desde HomeComponent...`);
+          // En lugar de hacer una llamada API, suscribirse al observable para esperar datos
+          this.http.programas$.pipe(
+            filter(programs => programs.length > 0),
+            first()
+          ).subscribe((programs) => {
+            console.log(`📦 PELICULAS - Datos recibidos del observable global`);
+            this.manageMovies(programs);
           });
         } else {
+          console.log(`📋 PELICULAS - Usando datos ya disponibles en cache`);
           this.manageMovies(data);
         }
       });

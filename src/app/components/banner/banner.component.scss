@@ -1,0 +1,8 @@
+// banner.component.scss - MIGRADO COMPLETAMENTE A TAILWIND
+// Todos los estilos están ahora en el HTML usando clases de Tailwind CSS
+// No se requiere SCSS adicional
+
+:host {
+  display: block;
+  width: 100%;
+}

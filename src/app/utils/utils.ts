@@ -16,16 +16,11 @@ export function diffHour(start_string: string, stop_string: string) {
 
 export function getHoraInicio(inicio: string) {
   //la salida de la funcion es un string con la hora de inicio del programa
-  //ejemplo: 12:00
-  //la hora de entrada es "Tue Jan 09 2024 00:00:00 GMT+0000 (Coordinated Universal Time)" hay que sumarle 1 hora
+  //ejemplo: 21:15 (formato 24 horas)
+  //CORREGIDO: Los datos vienen con 2 horas de más, aplicamos corrección centralizada
 
-  const horaInicio = new Date(inicio);
-  horaInicio.setHours(horaInicio.getHours() - 1); // Restar 1 hora
-  const horaInicioString = horaInicio.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  return horaInicioString;
+  // Usar la utilidad centralizada para consistencia
+  return formatCorrectTime(inicio);
 }
 
 export function isLive(dateIni: string, dateFin: string): boolean {
@@ -45,4 +40,44 @@ export function isLive(dateIni: string, dateFin: string): boolean {
 
 export function truncateTitle(title: string, limit: number ): string {
   return title?.length > limit ? title.slice(0, limit) + '...' : title;
+}
+
+/**
+ * Utilidad centralizada para manejo de fechas con corrección de zona horaria
+ * CORREGIDO: Aplicar corrección de 2 horas para alinear con hora local española
+ */
+export function getCorrectTime(dateString: string): Date {
+  const date = new Date(dateString);
+  // Aplicar corrección de zona horaria (restar 2 horas)
+  // Los datos parecen venir en UTC+2 y necesitamos mostrar hora local española
+  date.setHours(date.getHours() - 2);
+  return date;
+}
+
+export function getCorrectHour(dateString: string): number {
+  return getCorrectTime(dateString).getHours();
+}
+
+export function formatCorrectTime(dateString: string): string {
+  return getCorrectTime(dateString).toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+}
+
+/**
+ * Función de debug para analizar problemas de zona horaria
+ */
+export function debugTimeZone(dateString: string, context: string = ''): void {
+  const originalDate = new Date(dateString);
+  const correctedDate = getCorrectTime(dateString);
+  
+  console.log(`🕐 DEBUG TIMEZONE ${context}:`);
+  console.log(`   Raw string: ${dateString}`);
+  console.log(`   Original UTC: ${originalDate.toISOString()}`);
+  console.log(`   Original local: ${originalDate.toLocaleString('es-ES')}`);
+  console.log(`   Corrected: ${correctedDate.toLocaleString('es-ES')}`);
+  console.log(`   Raw hour: ${originalDate.getHours()} -> Corrected hour: ${correctedDate.getHours()}`);
+  console.log('---');
 }

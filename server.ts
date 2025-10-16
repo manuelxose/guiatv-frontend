@@ -1,32 +1,28 @@
 import 'zone.js/node';
-import { APP_BASE_HREF } from '@angular/common';
-import { CommonEngine } from '@angular/ssr';
+import { CommonEngine } from '@angular/ssr/node';
 import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import bootstrap from './src/main.server';
 
-// The Express app is exported so that it can be used by serverless Functions.
+// La función app exportada es usada por el servidor de desarrollo SSR
 export function app(): express.Express {
   const server = express();
-  const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-  const browserDistFolder = resolve(serverDistFolder, '../browser');
-  const indexHtml = join(serverDistFolder, 'index.server.html');
-
   const commonEngine = new CommonEngine();
 
-  server.set('view engine', 'html');
-  server.set('views', browserDistFolder);
-
-  // Example Express Rest API endpoints
-  // server.get('/api/**', (req, res) => { });
+  const PORT = process.env['PORT'] || 4000;
   
-  // Serve static files from /browser
-  server.get('*.*', express.static(browserDistFolder, {
+  // Para Angular 20, los archivos están directamente en dist/guiatv
+  const serverDistPath = dirname(fileURLToPath(import.meta.url));
+  const distFolder = resolve(serverDistPath, '..');
+  const indexHtml = join(distFolder, 'index.html');
+
+  // Servir archivos estáticos desde dist/guiatv
+  server.get('*.*', express.static(distFolder, {
     maxAge: '1y'
   }));
 
-  // All regular routes use the Universal engine
+  // Todas las rutas regulares usan el motor Universal
   server.get('*', (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
 
@@ -35,11 +31,16 @@ export function app(): express.Express {
         bootstrap,
         documentFilePath: indexHtml,
         url: `${protocol}://${headers.host}${originalUrl}`,
-        publicPath: browserDistFolder,
-        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+        publicPath: distFolder,
+        providers: [
+          // Los providers adicionales van aquí si son necesarios
+        ],
       })
       .then((html) => res.send(html))
-      .catch((err) => next(err));
+      .catch((err) => {
+        console.error('SSR Error:', err);
+        res.status(500).send('Error rendering page');
+      });
   });
 
   return server;
@@ -48,19 +49,17 @@ export function app(): express.Express {
 function run(): void {
   const port = process.env['PORT'] || 4000;
 
-  // Start up the Node server
+  // Iniciar el servidor Express
   const server = app();
   server.listen(port, () => {
     console.log(`Node Express server listening on http://localhost:${port}`);
   });
 }
 
-declare const __non_webpack_require__: NodeRequire;
-const mainModule = __non_webpack_require__.main;
-const moduleFilename = (mainModule && mainModule.filename) || '';
-if (moduleFilename === __filename || moduleFilename.includes('iisnode')) {
+// Exportar para desarrollo con ng serve
+export default app;
+
+// Solo ejecutar si es llamado directamente
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
   run();
 }
-
-export default bootstrap;
-export * from './src/main.server';

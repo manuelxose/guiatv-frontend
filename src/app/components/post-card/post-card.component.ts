@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { BlogService } from 'src/app/services/blog.service';
@@ -7,6 +8,8 @@ import { truncateTitle } from 'src/app/utils/utils';
   selector: 'app-post-card',
   templateUrl: './post-card.component.html',
   styleUrl: './post-card.component.scss',
+  standalone: true,
+  imports: [CommonModule],
 })
 export class PostCardComponent {
   public post: any;

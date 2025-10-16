@@ -1,12 +1,16 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { BannerComponent } from 'src/app/components/banner/banner.component';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 
 @Component({
   selector: 'app-lista-destacadas',
   templateUrl: './lista-destacadas.component.html',
   styleUrls: ['./lista-destacadas.component.scss'],
+  standalone: true,
+  imports: [CommonModule,NavBarComponent,BannerComponent],
 })
 export class ListaDestacadasComponent implements OnInit {
   public canal: any;

@@ -2,10 +2,15 @@ import { Component } from '@angular/core';
 import { BlogService } from 'src/app/services/blog.service';
 import { Router } from '@angular/router';
 import { first, pipe } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
+import { PostCardComponent } from 'src/app/components/post-card/post-card.component';
 @Component({
   selector: 'app-top10',
   templateUrl: './top10.component.html',
   styleUrls: ['./top10.component.scss'],
+  standalone: true,
+  imports: [CommonModule,NavBarComponent,PostCardComponent],
 })
 export class Top10Component {
   public top10: any[] = [];

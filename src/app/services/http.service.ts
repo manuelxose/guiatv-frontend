@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Programme } from '../models/programa.interface';
-import { BehaviorSubject, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, Observable, of, tap, catchError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -14,13 +14,23 @@ export class HttpService {
     Accept: 'application/json',
     Authorization: 'Bearer your-token',
   });
+  
+  // Contador de llamadas a la base de datos
+  private static databaseCallCounter = 0;
 
-  private programasSource = new BehaviorSubject<any[]>([]);
+  // Flag para evitar múltiples llamadas simultáneas
+  private static isLoadingData: { [key: string]: boolean } = {};
+
+  // NUEVA PROTECCIÓN GLOBAL: Evitar múltiples inicializaciones desde diferentes componentes
+  private static globalDataLoaded = false;
+  private static globalDataLoading = false;
+
+  // Hacer público para acceso directo si es necesario
+  public programasSource = new BehaviorSubject<any[]>([]);
   programas$ = this.programasSource.asObservable();
 
-  ///variable temporal para no consumir recursos de la api
-
-  // BehaviorSubject es un tipo de observable que siempre devuelve el último valor emitido
+  // Flag para evitar emisiones múltiples
+  private isUpdating = false;
 
   constructor(private http: HttpClient) {}
 
@@ -42,8 +52,7 @@ export class HttpService {
     return this.http.delete<T>(url, { headers: this.headers });
   }
 
-  public setProgramasByDay(programas: any[], dia: string) {
-    switch (dia) {
+  public setProgramasByDay(programas: any[], dia: string) {    switch (dia) {
       case 'today':
         this.today_programs = programas;
         break;
@@ -75,19 +84,57 @@ export class HttpService {
   public getProgramacion(dia: string): Observable<any[]> {
     // Comprueba si estan los datos en las variables temporales
     const programas = this.getProgramasByDay(dia);
-    if (programas.length > 0) {
+    
+    if (programas && programas.length > 0) {
+      console.log(`💾 CACHE - Usando datos en cache para ${dia} (NO se llama a la base de datos)`);
       return of(programas);
-    } else {
-      return this.http
-        .get<any[]>(
-          `https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/programas/date/${dia}`
-        )
-        .pipe(
-          tap((data) => {
-            this.setProgramasByDay(data, dia);
-          })
-        );
     }
+
+    // Verificar si ya hay una llamada en progreso para este día
+    if (HttpService.isLoadingData[dia]) {
+      console.log(`⏳ ESPERANDO - Ya hay una llamada en progreso para ${dia}, esperando resultado...`);
+      // Retornar un observable que espere hasta que la llamada termine
+      return new Observable(subscriber => {
+        const checkInterval = setInterval(() => {
+          const cachedData = this.getProgramasByDay(dia);
+          if (cachedData && cachedData.length > 0) {
+            clearInterval(checkInterval);
+            subscriber.next(cachedData);
+            subscriber.complete();
+          }
+        }, 100);
+        
+        // Timeout después de 10 segundos
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          subscriber.error(new Error(`Timeout esperando datos para ${dia}`));
+        }, 10000);
+      });
+    }
+
+    // Marcar como cargando
+    HttpService.isLoadingData[dia] = true;
+
+    // Incrementar contador de llamadas a la base de datos
+    HttpService.databaseCallCounter++;
+    
+    return this.http
+      .get<any[]>(
+        `https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/programas/date/${dia}`
+      )
+      .pipe(
+        tap((data) => {
+          console.log(`✅ DATABASE RESPONSE #${HttpService.databaseCallCounter} - Recibidos ${data.length} programas para ${dia}`);
+          this.setProgramasByDay(data, dia);
+          // Limpiar el flag de carga
+          HttpService.isLoadingData[dia] = false;
+        }),
+        catchError((error) => {
+          // Limpiar el flag de carga en caso de error
+          HttpService.isLoadingData[dia] = false;
+          throw error;
+        })
+      );
   }
 
   public getChannel(id: string) {
@@ -106,12 +153,44 @@ export class HttpService {
       (currentTime + maxCacheAge).toString()
     );
   }
-
   public async setProgramas(programas: Programme[], date: string) {
-    // ESPERA A QUE SE CARGUEN LOS DATOS
-    this.programasSource.next(programas);
-    // añadir a localstorage
+    console.log('🔄 HTTP SERVICE - setProgramas llamado');
+    console.log('🔍 HTTP SERVICE - Programas recibidos:', programas?.length || 0);
+    console.log('🔍 HTTP SERVICE - Fecha:', date);
+    console.log('🔍 HTTP SERVICE - isUpdating actual:', this.isUpdating);
+    console.log('🔍 HTTP SERVICE - Estado actual del observable:', this.programasSource.value?.length || 0);
+    
+    // Evitar emisiones múltiples
+    if (this.isUpdating) {
+      console.log('⚠️ Ya se está actualizando, evitando emisión duplicada');
+      return;
+    }
+    
+    this.isUpdating = true;
+    
+    // Verificar si los datos son diferentes antes de emitir
+    const currentValue = this.programasSource.getValue();
+    const isDataDifferent = JSON.stringify(currentValue) !== JSON.stringify(programas);
+    
+    console.log('🔍 HTTP SERVICE - Datos son diferentes:', isDataDifferent);
+    console.log('🔍 HTTP SERVICE - Valor actual:', currentValue?.length || 0);
+    console.log('🔍 HTTP SERVICE - Nuevo valor:', programas?.length || 0);
+    
+    if (isDataDifferent) {
+      console.log('✅ HTTP SERVICE - Emitiendo nuevos datos al observable');
+      this.programasSource.next(programas);
+      console.log('📡 HTTP SERVICE - Datos emitidos. Nuevos suscriptores recibirán:', programas?.length || 0, 'programas');
+    } else {
+      console.log('🔄 HTTP SERVICE - Datos idénticos, no se emite');
+    }
+    
+    // Resetear flag después de un pequeño delay
+    setTimeout(() => {
+      this.isUpdating = false;
+      console.log('🔓 HTTP SERVICE - Flag isUpdating reseteado');
+    }, 100);
   }
+
   public async getProgramas() {
     return this.programas$;
   }
@@ -120,7 +199,7 @@ export class HttpService {
     sessionStorage.setItem(key, JSON.stringify(value));
   }
 
-  //metodos para conectarse a la api de tmdb
+  // metodos para conectarse a la api de tmdb
 
   public getPerson(person: string): Observable<any[]> {
     const url = `https://api.themoviedb.org/3/search/person?language=es-ES&query=${person}&page=1&include_adult=false`;
@@ -133,7 +212,6 @@ export class HttpService {
     };
     return this.http.get<any>(url, options);
   }
-
   public getMovieId(movie: string): Observable<any[]> {
     const url = `https://api.themoviedb.org/3/search/movie?language=es-ES&query=${movie}&page=1&include_adult=false`;
     const options = {
@@ -143,9 +221,15 @@ export class HttpService {
           'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
       }),
     };
-    return this.http.get<any>(url, options);
+    return this.http.get<any>(url, options).pipe(
+      catchError((error) => {
+        console.error(`🚨 SSL/HTTPS Error al obtener película "${movie}":`, error.message);
+        console.warn(`⚠️ Devolviendo respuesta vacía para evitar bloqueo de la aplicación`);
+        // Devolver respuesta vacía en caso de error SSL para evitar bloquear la app
+        return of({ results: [] });
+      })
+    );
   }
-
   public getSeriesId(serie: string): Observable<any[]> {
     const url = `https://api.themoviedb.org/3/search/tv?language=es-ES&query=${serie}&page=1&include_adult=false`;
     const options = {
@@ -155,7 +239,13 @@ export class HttpService {
           'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
       }),
     };
-    return this.http.get<any>(url, options);
+    return this.http.get<any>(url, options).pipe(
+      catchError((error) => {
+        console.error(`🚨 SSL/HTTPS Error al obtener serie "${serie}":`, error.message);
+        console.warn(`⚠️ Devolviendo respuesta vacía para evitar bloqueo de la aplicación`);
+        return of({ results: [] });
+      })
+    );
   }
 
   public getSeriesDetails(id: string) {
@@ -181,7 +271,6 @@ export class HttpService {
     };
     return this.http.get<any>(url, options);
   }
-
   public getPopularSeries(): Observable<any[]> {
     const url = `https://api.themoviedb.org/3/tv/popular?language=es-ES&page=1`;
     const options = {
@@ -191,7 +280,13 @@ export class HttpService {
           'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
       }),
     };
-    return this.http.get<any>(url, options);
+    return this.http.get<any>(url, options).pipe(
+      catchError((error) => {
+        console.error(`🚨 SSL/HTTPS Error al obtener series populares:`, error.message);
+        console.warn(`⚠️ Devolviendo respuesta vacía para evitar bloqueo de la aplicación`);
+        return of({ results: [] });
+      })
+    );
   }
 
   getMovieDetails(id: string) {
@@ -216,9 +311,7 @@ export class HttpService {
       }),
     };
     return this.http.get<any>(url, options);
-  }
-
-  public getPopularMovies(): Observable<any[]> {
+  }  public getPopularMovies(): Observable<any[]> {
     const url =
       'https://api.themoviedb.org/3/movie/popular?language=es-ES&page=1';
     const options = {
@@ -228,6 +321,28 @@ export class HttpService {
           'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
       }),
     };
-    return this.http.get<any>(url, options);
+    return this.http.get<any>(url, options).pipe(
+      catchError((error) => {
+        console.error(`🚨 SSL/HTTPS Error al obtener películas populares:`, error.message);
+        console.warn(`⚠️ Devolviendo respuesta vacía para evitar bloqueo de la aplicación`);
+        return of({ results: [] });
+      })
+    );
+  }
+
+  /**
+   * Obtiene el resumen de todas las llamadas a la base de datos
+   */
+  public getDatabaseCallSummary(): void {
+    console.log(`📊 RESUMEN DE LLAMADAS A LA BASE DE DATOS:`);
+    console.log(`🔥 Total de llamadas a la base de datos (Firebase): ${HttpService.databaseCallCounter}`);
+  }
+
+  /**
+   * Reinicia el contador de llamadas a la base de datos
+   */
+  public resetDatabaseCallCounter(): void {
+    HttpService.databaseCallCounter = 0;
+    console.log(`🔄 Contador de llamadas a la base de datos reiniciado`);
   }
 }

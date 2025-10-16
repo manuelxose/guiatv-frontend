@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
@@ -7,50 +8,41 @@ import { Meta, Title } from '@angular/platform-browser';
 export class MetaService {
   public url: string = 'https://www.guiaprogramacion.com';
 
-  constructor(private meta: Meta, private title: Title) {}
+  constructor(
+    private meta: Meta, 
+    private title: Title,
+    @Inject(DOCUMENT) private document: Document
+  ) {}
 
   setMetaTags(config: any) {
-    // Eliminar todas las metaetiquetas existentes
-    const metaTags = document.getElementsByTagName('meta');
-    while (metaTags.length) {
-      if (metaTags[0].parentNode) {
-        metaTags[0].parentNode.removeChild(metaTags[0]);
+    // Set title using Angular's Title service
+    this.title.setTitle(config.title);
+
+    // Remove existing meta tags
+    this.meta.removeTag('name="description"');
+    this.meta.removeTag('property="og:title"');
+    this.meta.removeTag('property="og:description"');
+    this.meta.removeTag('name="viewport"');
+
+    // Add new meta tags using Angular's Meta service
+    this.meta.addTag({ name: 'description', content: config.description });
+    this.meta.addTag({ property: 'og:title', content: config.title });
+    this.meta.addTag({ property: 'og:description', content: config.description });
+    this.meta.addTag({ name: 'viewport', content: 'width=device-width, initial-scale=1' });
+
+    // Handle canonical URL safely
+    if (this.document) {
+      // Remove existing canonical link
+      const existingCanonical = this.document.querySelector('link[rel="canonical"]');
+      if (existingCanonical) {
+        existingCanonical.remove();
       }
+
+      // Add new canonical link
+      const linkElement = this.document.createElement('link');
+      linkElement.setAttribute('rel', 'canonical');
+      linkElement.setAttribute('href', this.url + config.canonicalUrl);
+      this.document.head.appendChild(linkElement);
     }
-
-    // Añadir las nuevas metaetiquetas
-    document.title = config.title;
-    let metaTag = document.createElement('meta');
-    metaTag.name = 'description';
-    metaTag.content = config.description;
-    document.getElementsByTagName('head')[0].appendChild(metaTag);
-
-    metaTag = document.createElement('meta');
-    metaTag.setAttribute('property', 'og:title');
-    metaTag.content = config.title;
-    document.getElementsByTagName('head')[0].appendChild(metaTag);
-
-    metaTag = document.createElement('meta');
-    metaTag.setAttribute('property', 'og:description');
-    metaTag.content = config.description;
-    document.getElementsByTagName('head')[0].appendChild(metaTag);
-
-    // Añadir la etiqueta viewport
-    metaTag = document.createElement('meta');
-    metaTag.name = 'viewport';
-    metaTag.content = 'width=device-width, initial-scale=1';
-    document.getElementsByTagName('head')[0].appendChild(metaTag);
-
-    // Eliminar la URL canónica existente
-    const existingCanonical = document.querySelector('link[rel="canonical"]');
-    if (existingCanonical) {
-      document.head.removeChild(existingCanonical);
-    }
-
-    // Añadir la nueva URL canónica
-    const linkElement: HTMLLinkElement = document.createElement('link');
-    linkElement.setAttribute('rel', 'canonical');
-    linkElement.setAttribute('href', this.url + config.canonicalUrl);
-    document.head.appendChild(linkElement);
   }
 }

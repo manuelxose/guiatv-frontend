@@ -1,139 +1,222 @@
-<aside
-  class="w-full h-[100vh] py-10 px-10 border-l border-gray-300 dark:border-zinc-700 hidden lg:block min-w-fit"
->
-  <app-autocomplete></app-autocomplete>
+<!-- right-sidebar.component.html - SCROLL REORGANIZADO -->
+<aside class="w-80 xl:w-96 h-full bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 border-l border-gray-700/50 hidden lg:flex flex-col backdrop-blur-sm">
+  
+  <!-- Search Section (Fixed at top) -->
+  <div class="flex-shrink-0 p-6 pb-4 border-b border-gray-700/30 bg-gray-900/90 backdrop-blur-sm sticky top-0 z-10">
+    <app-autocomplete></app-autocomplete>
+  </div>
 
-  <div class="mt-10">
-    <span class="font-semibold text-gray-700 dark:text-white"
-      >Películas Destacadas</span
-    >
-    <ul class="mt-4 text-gray-400 text-xs space-y-3">
-      <li
-        *ngFor="let movie of popular_movies.slice(0, 4)"
-        class="flex space-y-3 space-x-3 cursor-pointer hover:bg-slate-200/30"
-        (click)="navigateTo(movie)"
-      >
-        <img
-          [src]="movie?.icon + '?s=64&d=identicon'"
-          class="w-1/3 rounded-md"
-          alt=""
-        />
-        <div class="flex flex-col justify-between">
-          <div class="flex flex-col space-y-1">
-            <span class="text-gray-700 dark:text-white font-semibold">{{
-              movie.title.value
-            }}</span>
-            <span class="text-xxs hidden xl:block">{{
-              movie?.category.value.split(",")[1]
-            }}</span>
-          </div>
-          <div class="flex space-x-2 items-center">
-            <svg
-              class="w-8 h-5"
-              xmlns="http://www.w3.org/2000/svg"
-              width="64"
-              height="32"
-              viewBox="0 0 64 32"
-              version="1.1"
-            >
-              <g fill="#F5C518">
-                <rect x="0" y="0" width="100%" height="100%" rx="4"></rect>
-              </g>
-              <g
-                transform="translate(8.000000, 7.000000)"
-                fill="#000000"
-                fill-rule="nonzero"
-              >
-                <polygon points="0 18 5 18 5 0 0 0"></polygon>
-                <path
-                  d="M15.6725178,0 L14.5534833,8.40846934 L13.8582008,3.83502426 C13.65661,2.37009263 13.4632474,1.09175121 13.278113,0 L7,0 L7,18 L11.2416347,18 L11.2580911,6.11380679 L13.0436094,18 L16.0633571,18 L17.7583653,5.8517865 L17.7707076,18 L22,18 L22,0 L15.6725178,0 Z"
-                ></path>
-                <path
-                  d="M24,18 L24,0 L31.8045586,0 C33.5693522,0 35,1.41994415 35,3.17660424 L35,14.8233958 C35,16.5777858 33.5716617,18 31.8045586,18 L24,18 Z M29.8322479,3.2395236 C29.6339219,3.13233348 29.2545158,3.08072342 28.7026524,3.08072342 L28.7026524,14.8914865 C29.4312846,14.8914865 29.8796736,14.7604764 30.0478195,14.4865461 C30.2159654,14.2165858 30.3021941,13.486105 30.3021941,12.2871637 L30.3021941,5.3078959 C30.3021941,4.49404499 30.272014,3.97397442 30.2159654,3.74371416 C30.1599168,3.5134539 30.0348852,3.34671372 29.8322479,3.2395236 Z"
-                ></path>
-                <path
-                  d="M44.4299079,4.50685823 L44.749518,4.50685823 C46.5447098,4.50685823 48,5.91267586 48,7.64486762 L48,14.8619906 C48,16.5950653 46.5451816,18 44.749518,18 L44.4299079,18 C43.3314617,18 42.3602746,17.4736618 41.7718697,16.6682739 L41.4838962,17.7687785 L37,17.7687785 L37,0 L41.7843263,0 L41.7843263,5.78053556 C42.4024982,5.01015739 43.3551514,4.50685823 44.4299079,4.50685823 Z M43.4055679,13.2842155 L43.4055679,9.01907814 C43.4055679,8.31433946 43.3603268,7.85185468 43.2660746,7.63896485 C43.1718224,7.42607505 42.7955881,7.2893916 42.5316822,7.2893916 C42.267776,7.2893916 41.8607934,7.40047379 41.7816216,7.58767002 L41.7816216,9.01907814 L41.7816216,13.4207851 L41.7816216,14.8074788 C41.8721037,15.0130276 42.2602358,15.1274059 42.5316822,15.1274059 C42.8031285,15.1274059 43.1982131,15.0166981 43.281155,14.8074788 C43.3640968,14.5982595 43.4055679,14.0880581 43.4055679,13.2842155 Z"
-                ></path>
-              </g>
-            </svg>
-            <span>{{ movie?.starRating }}</span>
+  <!-- Scrollable Content Container -->
+  <div class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800/50">
+    
+    <!-- Películas Destacadas Section -->
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+          Películas Destacadas
+        </h2>
+        <div class="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 110 2h-1v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h4z"></path>
+          </svg>
+        </div>
+      </div>
+    
+    <!-- Loading State -->
+    <div *ngIf="popular_movies().length === 0 && isLoading()" class="space-y-4">
+      <div class="flex space-x-3 animate-pulse">
+        <div class="w-16 h-20 bg-gray-700/50 rounded-lg"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-4 bg-gray-700/50 rounded w-3/4"></div>
+          <div class="h-3 bg-gray-700/50 rounded w-1/2"></div>
+          <div class="h-3 bg-gray-700/50 rounded w-1/4"></div>
+        </div>
+      </div>
+      <div class="flex space-x-3 animate-pulse">
+        <div class="w-16 h-20 bg-gray-700/50 rounded-lg"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-4 bg-gray-700/50 rounded w-3/4"></div>
+          <div class="h-3 bg-gray-700/50 rounded w-1/2"></div>
+          <div class="h-3 bg-gray-700/50 rounded w-1/4"></div>
+        </div>
+      </div>
+      <div class="flex space-x-3 animate-pulse">
+        <div class="w-16 h-20 bg-gray-700/50 rounded-lg"></div>
+        <div class="flex-1 space-y-2">
+          <div class="h-4 bg-gray-700/50 rounded w-3/4"></div>
+          <div class="h-3 bg-gray-700/50 rounded w-1/2"></div>
+          <div class="h-3 bg-gray-700/50 rounded w-1/4"></div>
+        </div>
+      </div>
+      <p class="text-center text-gray-400 text-sm mt-4">Cargando películas destacadas...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="popular_movies().length === 0 && !isLoading()" class="text-center py-8">
+      <div class="w-16 h-16 mx-auto mb-4 bg-gray-800/50 rounded-2xl flex items-center justify-center">
+        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 110 2h-1v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h4zM9 6v10h6V6H9z"></path>
+        </svg>
+      </div>
+      <p class="text-gray-400 text-sm mb-4">No hay películas disponibles</p>
+      <button (click)="forceReload()" 
+              class="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 hover:text-red-300 rounded-lg transition-all duration-200 text-sm font-medium">
+        Recargar
+      </button>
+    </div>
+
+    <!-- Movies List -->
+    <div *ngIf="popular_movies().length > 0" class="flex-1 overflow-y-auto custom-scrollbar">
+      <div class="space-y-4 pr-2">
+        <div *ngFor="let movie of popular_movies(); let i = index; trackBy: trackByMovieId"
+             class="group flex space-x-3 cursor-pointer p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 hover:border-red-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/10"
+             (click)="navigateTo(movie)"
+             [attr.aria-label]="'Ver detalles de ' + movie.title.value">
+        
+        <!-- Movie Poster -->
+        <div class="w-16 flex-shrink-0">
+          <div class="relative aspect-[2/3] rounded-lg overflow-hidden">
+            <img [src]="getMovieImageUrl(movie)"
+                 [alt]="movie.title.value + ' poster'"
+                 class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                 loading="lazy"
+                 (error)="onImageError($event)">
+            
+            <!-- Overlay on Hover -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            <!-- Play Icon -->
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div class="w-8 h-8 bg-red-500/90 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M8.445 14.832A1 1 0 0010 14v-4a1 1 0 00-.555-.832L6 7.732V4a1 1 0 00-1.496-.868l-4 2.132A1 1 0 000 6v8a1 1 0 00.504.868l4 2.132A1 1 0 006 16v-3.732l3.445-1.436z"></path>
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
-      </li>
-      <li class="pt-1">
-        <a
-          (click)="navigateTo2('movie')"
-          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white cursor-pointer"
-          >Ver Más</a
-        >
-      </li>
-    </ul>
-  </div>
-  <div class="mt-10">
-    <span class="font-semibold text-gray-700 dark:text-white"
-      >Series Destacadas</span
-    >
-    <ul class="mt-4 text-gray-400 text-xs space-y-3">
-      <li
-        *ngFor="let serie of popular_series.slice(0, 4)"
-        class="flex space-y-3 space-x-3 cursor-pointer hover:bg-slate-200/30"
-        (click)="navigateTo(serie)"
-      >
-        <img
-          [src]="serie?.icon + '?s=64&d=identicon'"
-          class="object-cover w-1/3 rounded-md"
-          alt=""
-        />
-        <div class="flex flex-col justify-between">
-          <div class="flex flex-col space-y-1">
-            <span class="text-gray-700 dark:text-white font-semibold">{{
-              serie.title.value
-            }}</span>
-            <span class="text-xxs hidden xl:block">{{
-              serie?.category.value.split(",")[1]
-            }}</span>
+        
+        <!-- Movie Info -->
+        <div class="flex flex-col justify-between flex-1 min-w-0">
+          <div class="space-y-1">
+            <h3 class="text-white font-semibold text-sm line-clamp-2 leading-tight group-hover:text-red-300 transition-colors">
+              {{ movie.title.value }}
+            </h3>
+            <p class="text-gray-400 text-xs">
+              {{ getMovieCategory(movie) }}
+            </p>
           </div>
-          <div class="flex space-x-2 items-center">
-            <svg
-              class="w-8 h-5"
-              xmlns="http://www.w3.org/2000/svg"
-              width="64"
-              height="32"
-              viewBox="0 0 64 32"
-              version="1.1"
-            >
-              <g fill="#F5C518">
-                <rect x="0" y="0" width="100%" height="100%" rx="4"></rect>
-              </g>
-              <g
-                transform="translate(8.000000, 7.000000)"
-                fill="#000000"
-                fill-rule="nonzero"
-              >
-                <polygon points="0 18 5 18 5 0 0 0"></polygon>
-                <path
-                  d="M15.6725178,0 L14.5534833,8.40846934 L13.8582008,3.83502426 C13.65661,2.37009263 13.4632474,1.09175121 13.278113,0 L7,0 L7,18 L11.2416347,18 L11.2580911,6.11380679 L13.0436094,18 L16.0633571,18 L17.7583653,5.8517865 L17.7707076,18 L22,18 L22,0 L15.6725178,0 Z"
-                ></path>
-                <path
-                  d="M24,18 L24,0 L31.8045586,0 C33.5693522,0 35,1.41994415 35,3.17660424 L35,14.8233958 C35,16.5777858 33.5716617,18 31.8045586,18 L24,18 Z M29.8322479,3.2395236 C29.6339219,3.13233348 29.2545158,3.08072342 28.7026524,3.08072342 L28.7026524,14.8914865 C29.4312846,14.8914865 29.8796736,14.7604764 30.0478195,14.4865461 C30.2159654,14.2165858 30.3021941,13.486105 30.3021941,12.2871637 L30.3021941,5.3078959 C30.3021941,4.49404499 30.272014,3.97397442 30.2159654,3.74371416 C30.1599168,3.5134539 30.0348852,3.34671372 29.8322479,3.2395236 Z"
-                ></path>
-                <path
-                  d="M44.4299079,4.50685823 L44.749518,4.50685823 C46.5447098,4.50685823 48,5.91267586 48,7.64486762 L48,14.8619906 C48,16.5950653 46.5451816,18 44.749518,18 L44.4299079,18 C43.3314617,18 42.3602746,17.4736618 41.7718697,16.6682739 L41.4838962,17.7687785 L37,17.7687785 L37,0 L41.7843263,0 L41.7843263,5.78053556 C42.4024982,5.01015739 43.3551514,4.50685823 44.4299079,4.50685823 Z M43.4055679,13.2842155 L43.4055679,9.01907814 C43.4055679,8.31433946 43.3603268,7.85185468 43.2660746,7.63896485 C43.1718224,7.42607505 42.7955881,7.2893916 42.5316822,7.2893916 C42.267776,7.2893916 41.8607934,7.40047379 41.7816216,7.58767002 L41.7816216,9.01907814 L41.7816216,13.4207851 L41.7816216,14.8074788 C41.8721037,15.0130276 42.2602358,15.1274059 42.5316822,15.1274059 C42.8031285,15.1274059 43.1982131,15.0166981 43.281155,14.8074788 C43.3640968,14.5982595 43.4055679,14.0880581 43.4055679,13.2842155 Z"
-                ></path>
-              </g>
-            </svg>
-            <span>8.7</span>
+          
+          <!-- Rating and Info -->
+          <div class="flex items-center justify-between mt-2">
+            <div class="flex items-center space-x-1">
+              <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <span class="text-yellow-400 text-xs font-medium">{{ formatRating(movie.starRating) }}</span>
+            </div>
           </div>
         </div>
-      </li>
-
-      <li class="pt-1">
-        <a
-          (click)="navigateTo2('serie')"
-          class="px-5 py-2.5 bg-red-600 hover:bg-red-700 rounded-lg text-center font-medium block text-white cursor-pointer"
-          >Ver Más</a
-        >
-      </li>
-    </ul>
+        </div>
+      </div>
+      
+      <!-- View More Movies Button -->
+      <div class="mt-6 flex-shrink-0">
+        <button (click)="navigateTo2('movie')"
+                class="w-full px-4 py-3 bg-gradient-to-r from-red-600/20 to-red-700/20 hover:from-red-600/30 hover:to-red-700/30 border border-red-500/30 hover:border-red-500/50 rounded-xl text-center font-medium text-red-400 hover:text-red-300 text-sm transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                aria-label="Ver más películas">
+          <span class="flex items-center justify-center space-x-2">
+            <span>Ver Más Películas</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+    </div>
+    
+    <!-- Series Section -->
+    <div class="px-6 pb-6" *ngIf="popular_series().length > 0">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+          Series Destacadas
+        </h2>
+        <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="space-y-4">
+        <div *ngFor="let serie of popular_series(); let i = index; trackBy: trackBySerieId"
+             class="group flex space-x-3 cursor-pointer p-3 rounded-xl bg-gray-800/30 hover:bg-gray-800/50 border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10"
+             (click)="navigateTo(serie)"
+             [attr.aria-label]="'Ver detalles de ' + serie.title.value">
+          
+          <!-- Serie Poster -->
+          <div class="w-16 flex-shrink-0">
+            <div class="relative aspect-[2/3] rounded-lg overflow-hidden">
+              <img [src]="getSerieImageUrl(serie)"
+                   [alt]="serie.title.value + ' poster'"
+                   class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                   loading="lazy"
+                   (error)="onImageError($event)">
+              
+              <!-- Overlay on Hover -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              <!-- Play Icon -->
+              <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div class="w-8 h-8 bg-blue-500/90 rounded-full flex items-center justify-center">
+                  <svg class="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.445 14.832A1 1 0 0010 14v-4a1 1 0 00-.555-.832L6 7.732V4a1 1 0 00-1.496-.868l-4 2.132A1 1 0 000 6v8a1 1 0 00.504.868l4 2.132A1 1 0 006 16v-3.732l3.445-1.436z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Serie Info -->
+          <div class="flex flex-col justify-between flex-1 min-w-0">
+            <div class="space-y-1">
+              <h3 class="text-white font-semibold text-sm line-clamp-2 leading-tight group-hover:text-blue-300 transition-colors">
+                {{ serie.title.value }}
+              </h3>
+              <p class="text-gray-400 text-xs">
+                {{ getSerieCategory(serie) }}
+              </p>
+            </div>
+            
+            <!-- Rating and Info -->
+            <div class="flex items-center justify-between mt-2">
+              <div class="flex items-center space-x-1">
+                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                </svg>
+                <span class="text-yellow-400 text-xs font-medium">{{ formatRating(serie.starRating) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- View More Series Button -->
+      <div class="mt-6">
+        <button (click)="navigateTo2('series')"
+                class="w-full px-4 py-3 bg-gradient-to-r from-blue-600/20 to-blue-700/20 hover:from-blue-600/30 hover:to-blue-700/30 border border-blue-500/30 hover:border-blue-500/50 rounded-xl text-center font-medium text-blue-400 hover:text-blue-300 text-sm transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                aria-label="Ver más series">
+          <span class="flex items-center justify-center space-x-2">
+            <span>Ver Más Series</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+    
   </div>
+
 </aside>

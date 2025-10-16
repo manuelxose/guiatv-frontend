@@ -8,20 +8,20 @@ import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { TvGuideService } from '../../services/tv-guide.service';
 
 @Component({
   selector: 'app-autocomplete',
   templateUrl: './autocomplete.component.html',
   styleUrls: ['./autocomplete.component.scss'],
   standalone: true,
-    imports: [
+  imports: [
     CommonModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatInputModule,
     MatFormFieldModule,
-    MatOptionModule
+    MatOptionModule,
   ],
 })
 export class AutocompleteComponent {
@@ -51,9 +51,7 @@ export class AutocompleteComponent {
     // Filter the channels
     const channels = this.data.filter((option) =>
       option?.channel?.name.toLowerCase().includes(filterValue)
-    );
-
-    // Filter the programs
+    );    // Filter the programs
     const programs = this.data.flatMap(
       (option) =>
         option?.programs?.filter((program: any) =>
@@ -62,8 +60,7 @@ export class AutocompleteComponent {
             : false
         ) || []
     );
-    console.log('Filtered channels:', channels); // Log the filtered channels
-    console.log('Filtered programs:', programs); // Log the filtered programs
+    
     // Return the channels followed by the programs
     return [...channels, ...programs].slice(0, 5);
   }

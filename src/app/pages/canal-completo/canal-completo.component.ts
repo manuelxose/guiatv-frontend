@@ -1,7 +1,11 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
-import { first } from 'rxjs';
+import { first, filter } from 'rxjs';
+import { BannerComponent } from 'src/app/components/banner/banner.component';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
+import { SliderComponent } from 'src/app/components/slider/slider.component';
 import { HttpService } from 'src/app/services/http.service';
 import { MetaService } from 'src/app/services/meta.service';
 import { ModalService } from 'src/app/services/modal.service';
@@ -11,6 +15,8 @@ import { TvGuideService } from 'src/app/services/tv-guide.service';
   selector: 'app-canal-completo',
   templateUrl: './canal-completo.component.html',
   styleUrls: ['./canal-completo.component.scss'],
+  standalone: true,
+  imports: [CommonModule,SliderComponent,BannerComponent,NavBarComponent],
 })
 export class CanalCompletoComponent {
   public query: string = '';
@@ -47,17 +53,20 @@ export class CanalCompletoComponent {
       title: 'Programamacion de ' + this.canal + ' hoy',
       description: 'Programacion de ' + this.canal + ' hoy',
       canonicalUrl: canonicalUrl,
-    });
-
-    try {
+    });    try {
       this.http.programas$.pipe(first()).subscribe(async (data) => {
         if (data.length === 0) {
-          this.http.getProgramacion('today').subscribe((data) => {
-            this.http.setProgramas(data, 'today').then(() => {
-              this.managePrograms(data);
-            });
+          console.log(`⏳ CANAL-COMPLETO - No hay datos, esperando a que se carguen desde HomeComponent...`);
+          // En lugar de hacer una llamada API, suscribirse al observable para esperar datos
+          this.http.programas$.pipe(
+            filter(programs => programs.length > 0),
+            first()
+          ).subscribe((programs) => {
+            console.log(`📦 CANAL-COMPLETO - Datos recibidos del observable global`);
+            this.managePrograms(programs);
           });
         } else {
+          console.log(`📋 CANAL-COMPLETO - Usando datos ya disponibles en cache`);
           this.managePrograms(data);
         }
       });

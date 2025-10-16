@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { NavigationEnd, NavigationStart, Router } from '@angular/router';
+import {  Router } from '@angular/router';
 import { take, tap } from 'rxjs';
-import { ComponentsModule } from 'src/app/components/components.module';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
+import { PostCardComponent } from 'src/app/components/post-card/post-card.component';
 import { BlogService } from 'src/app/services/blog.service';
 import { HttpService } from 'src/app/services/http.service';
 import { MetaService } from 'src/app/services/meta.service';
@@ -10,7 +11,7 @@ import { MetaService } from 'src/app/services/meta.service';
 @Component({
   selector: 'app-blog-post',
   standalone: true,
-  imports: [ComponentsModule, CommonModule],
+  imports: [ CommonModule,NavBarComponent,PostCardComponent],
   templateUrl: './blog-post.component.html',
   styleUrl: './blog-post.component.scss',
 })

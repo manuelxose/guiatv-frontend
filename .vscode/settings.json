@@ -1,0 +1,74 @@
+{
+    "css.validate": false,
+    "scss.validate": false,
+    "less.validate": false,
+    "scss.lint.unknownAtRules": "ignore",
+    "css.lint.unknownAtRules": "ignore",
+    "postcss.validate": false,
+    "stylelint.enable": true,
+    "css.customData": [
+        ".vscode/css_custom_data.json"
+    ],
+    "scss.customData": [
+        ".vscode/css_custom_data.json"
+    ],
+    "postcss.customData": [
+        ".vscode/css_custom_data.json"
+    ],
+    "tailwindCSS.includeLanguages": {
+        "scss": "css",
+        "sass": "css",
+        "html": "html",
+        "typescript": "html",
+        "javascript": "html"
+    },
+    "tailwindCSS.files.exclude": [
+        "**/.git/**",
+        "**/node_modules/**",
+        "**/.hg/**",
+        "**/.svn/**"
+    ],
+    "tailwindCSS.experimental.classRegex": [
+        [
+            "class:\\s*[\"'`]([^\"'`]*)[\"'`]",
+            "[\"'`]([^\"'`]*)[\"'`]"
+        ]
+    ],
+    "emmet.includeLanguages": {
+        "scss": "css"
+    },
+    "files.associations": {
+        "*.css": "tailwindcss",
+        "*.scss": "tailwindcss"
+    },
+    "editor.quickSuggestions": {
+        "strings": true
+    },
+    "[scss]": {
+        "editor.suggest.insertMode": "replace",
+        "editor.defaultFormatter": null
+    },
+    "[css]": {
+        "editor.defaultFormatter": null
+    },
+    "scss.completion.completePropertyWithSemicolon": true,
+    "scss.completion.triggerPropertyValueCompletion": true,
+    "css.completion.triggerPropertyValueCompletion": false,
+    "scss.showErrors": false,
+    "css.showErrors": false,
+    "json.schemaDownload.enable": false,
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "package.json"
+            ],
+            "url": "https://json.schemastore.org/package.json"
+        },
+        {
+            "fileMatch": [
+                "angular.json"
+            ],
+            "url": "./node_modules/@angular/cli/lib/config/schema.json"
+        }
+    ]
+}

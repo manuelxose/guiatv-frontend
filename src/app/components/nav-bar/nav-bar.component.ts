@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -6,6 +7,8 @@ import { Subject, takeUntil } from 'rxjs';
   selector: 'app-nav-bar',
   templateUrl: './nav-bar.component.html',
   styleUrls: ['./nav-bar.component.scss'],
+  standalone: true,
+  imports: [CommonModule],
 })
 export class NavBarComponent {
   // Booleanos para saber en qué ruta estamos

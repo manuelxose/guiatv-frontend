@@ -1,50 +1,249 @@
+/**
+ * Footer Component Styles
+ * Modern, accessible, and performance-optimized footer
+ */
+
 .footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #333;
-  color: #fff;
-  padding: 1rem 0;
+  background: linear-gradient(135deg, #1f2937, #374151);
+  color: #f9fafb;
+  padding: 2rem 1rem;
   font-size: 14px;
+  position: relative;
+  overflow: hidden;
+
+  // Modern backdrop effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  }
+
+  // Subtle animation on load
+  &.footer-loaded {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  p {
+    margin: 0;
+    text-align: center;
+    line-height: 1.6;
+    font-weight: 400;
+    
+    // Better text rendering
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
   a {
-    color: #fff;
+    color: #fbbf24;
     text-decoration: none;
-    margin-left: 5px;
+    margin-left: 0.25rem;
+    font-weight: 600;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    // Underline effect
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #fbbf24, #f59e0b);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
     &:hover {
-      text-decoration: underline;
+      color: #f59e0b;
+      transform: translateY(-1px);
+
+      &::after {
+        width: 100%;
+      }
     }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #fbbf24;
+      outline-offset: 2px;
+      border-radius: 0.25rem;
+    }
+  }
+
+  // Dark mode support
+  @media (prefers-color-scheme: dark) {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #e2e8f0;
   }
 }
 
-
+// Enhanced footer links section
 .footer-links {
   width: 100%;
-  margin: 15px 0;
-  font-size: 0.7rem;
-  color: #777;
-  line-height: 1.4;
+  margin: 1rem 0;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  line-height: 1.5;
+  background: rgba(0, 0, 0, 0.02);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  
+  @media (prefers-color-scheme: dark) {
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
 
   .footer-links-content {
     max-width: 850px;
     margin: 0 auto;
-    padding: 0.5rem;
+    padding: 1rem;
+    text-align: center;
 
     a {
-      color: #777;
-      text-decoration: underline;
-      transition: color 0.3s ease;
+      color: #6b7280;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      padding: 0.125rem 0.25rem;
+      border-radius: 0.25rem;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(239, 68, 68, 0.1);
+        border-radius: 0.25rem;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
 
       &:hover {
-        color: #555;
+        color: #374151;
+        
+        &::before {
+          opacity: 1;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          color: #d1d5db;
+        }
+      }
+
+      &:focus-visible {
+        outline: 2px solid #ef4444;
+        outline-offset: 2px;
       }
     }
 
     br {
       display: block;
-      margin-top: 0.5rem;
-      margin-bottom: 0.5rem;
+      margin: 0.5rem 0;
+    }
+  }
+}
+
+// Keyframe animations
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
+@media (max-width: 640px) {
+  .footer {
+    padding: 1.5rem 1rem;
+    font-size: 13px;
+
+    p {
+      line-height: 1.4;
+    }
+  }
+
+  .footer-links {
+    font-size: 0.7rem;
+    
+    .footer-links-content {
+      padding: 0.75rem;
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .footer {
+    background: #000;
+    color: #fff;
+    border-top: 2px solid #fff;
+
+    a {
+      color: #ffff00;
+      font-weight: 700;
+
+      &:hover {
+        background-color: #ffff00;
+        color: #000;
+      }
+    }
+  }
+
+  .footer-links {
+    background: #000;
+    border-top: 1px solid #fff;
+
+    .footer-links-content a {
+      color: #fff;
+      border: 1px solid transparent;
+
+      &:hover {
+        border-color: #fff;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .footer,
+  .footer a,
+  .footer-links a {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .footer a {
+    &::after {
+      transition: none !important;
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .footer {
+    background: none !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    
+    a {
+      color: #000 !important;
+      text-decoration: underline !important;
     }
   }
 }

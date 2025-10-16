@@ -1,0 +1,192 @@
+/**
+ * Left Sidebar Component Styles
+ * Optimized for modern UI/UX and performance
+ */
+
+/* Sidebar container optimization */
+aside {
+  // Smooth scrolling for sidebar content
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(156, 163, 175, 0.8);
+    }
+  }
+
+  // Shadow for depth perception
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+
+  @media (prefers-color-scheme: dark) {
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Logo section optimization */
+.logo-section {
+  will-change: transform;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  .logo-icon {
+    // Hardware acceleration
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    transition: all 0.3s ease;
+
+    &:hover {
+      filter: drop-shadow(0 4px 8px rgba(239, 68, 68, 0.3));
+    }
+  }
+
+  .logo-text {
+    transition: all 0.2s ease;
+
+    &:hover {
+      letter-spacing: 0.05em;
+    }
+  }
+}
+
+/* Navigation menu enhancements */
+.navigation-menu {
+  // Smooth height transitions for expanding/collapsing menus
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  .menu-item {
+    position: relative;
+    transition: all 0.2s ease;
+    border-radius: 0.5rem;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: linear-gradient(135deg, rgb(239, 68, 68), rgb(220, 38, 38));
+      border-radius: 0 0.25rem 0.25rem 0;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: -1;
+    }
+
+    &:hover,
+    &.active {
+      background-color: rgba(239, 68, 68, 0.05);
+      transform: translateX(4px);
+
+      &::before {
+        width: 4px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        background-color: rgba(239, 68, 68, 0.1);
+      }
+    }
+
+    &:active {
+      transform: translateX(2px) scale(0.98);
+    }
+  }
+
+  .menu-icon {
+    transition: all 0.2s ease;
+    
+    .menu-item:hover & {
+      transform: scale(1.1);
+      color: rgb(239, 68, 68);
+    }
+  }
+
+  .menu-text {
+    transition: all 0.2s ease;
+    
+    .menu-item:hover & {
+      font-weight: 600;
+      color: rgb(239, 68, 68);
+
+      @media (prefers-color-scheme: dark) {
+        color: rgb(248, 113, 113);
+      }
+    }
+  }
+}
+
+/* Responsive design optimizations */
+@media (max-width: 768px) {
+  aside {
+    // Better mobile experience
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.mobile-open {
+      transform: translateX(0);
+    }
+  }
+}
+
+/* Focus and accessibility improvements */
+[routerLink],
+button,
+[role="button"] {
+  &:focus-visible {
+    outline: 2px solid rgb(239, 68, 68);
+    outline-offset: 2px;
+    border-radius: 0.375rem;
+  }
+
+  &:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+/* Performance optimizations */
+* {
+  // Optimize repaints
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .logo-text {
+    font-weight: 800;
+  }
+
+  .menu-text {
+    font-weight: 600;
+  }
+
+  .navigation-menu .menu-item {
+    border: 1px solid currentColor;
+    margin-bottom: 0.25rem;
+  }
+}

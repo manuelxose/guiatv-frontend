@@ -2,13 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { first, pipe, take } from 'rxjs';
-import { ComponentsModule } from 'src/app/components/components.module';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
+import { PostCardLastComponent } from 'src/app/components/post-card-last/post-card-last.component';
+import { PostCardComponent } from 'src/app/components/post-card/post-card.component';
 import { BlogService } from 'src/app/services/blog.service';
 
 @Component({
   selector: 'app-blog-noticias',
   standalone: true,
-  imports: [ComponentsModule, CommonModule],
+  imports: [ CommonModule,PostCardComponent,NavBarComponent,PostCardLastComponent],
   templateUrl: './blog-noticias.component.html',
   styleUrl: './blog-noticias.component.scss',
   encapsulation: ViewEncapsulation.None,

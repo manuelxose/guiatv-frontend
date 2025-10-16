@@ -13,16 +13,21 @@
       name="keywords"
       content="guía TV, programación TV, horarios televisión, guía de programas, series, películas, canales de televisión, programación de canales, televisión en vivo"
     />
-    <meta name="robots" content="index, follow" />
-    <meta name="author" content="TecnoRia" />
+    <meta name="robots" content="index, follow" />    <meta name="author" content="TecnoRia" />
+    <!-- Content Security Policy for development -->
+    <meta http-equiv="Content-Security-Policy" content="font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com;">
     <link rel="icon" type="image/x-icon" href="assets/logo.svg" />
 
     <!-- Google tag (gtag.js) -->
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-P6Z3BY2DVW"
-    ></script>
-  </head>
+    ></script>    <!-- Google Fonts - Optimized loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Load only essential font weights to reduce bundle size -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Material+Icons&display=swap" rel="stylesheet">
+</head>
   <body>
     <app-root></app-root>
   </body>

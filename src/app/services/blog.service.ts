@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, first, map, take } from 'rxjs';
-import { environment } from 'src/environments/environment';
 import { HttpService } from './http.service';
 import { TvGuideService } from './tv-guide.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',

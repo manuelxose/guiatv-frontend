@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { first } from 'rxjs';
-import { ComponentsModule } from 'src/app/components/components.module';
+import { first, filter } from 'rxjs';
+import { BannerComponent } from 'src/app/components/banner/banner.component';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { HttpService } from 'src/app/services/http.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { isLive } from 'src/app/utils/utils';
@@ -9,7 +10,7 @@ import { isLive } from 'src/app/utils/utils';
 @Component({
   selector: 'app-ahora-directo',
   standalone: true,
-  imports: [ComponentsModule, CommonModule],
+  imports: [ CommonModule,NavBarComponent,BannerComponent],
   templateUrl: './ahora-directo.component.html',
   styleUrl: './ahora-directo.component.scss',
 })
@@ -21,19 +22,23 @@ export class AhoraDirectoComponent {
   public series_live: any[] = [];
   constructor(private http: HttpService, private svcGuide: TvGuideService) {}
 
-  ngOnInit(): void {
-    try {
+  ngOnInit(): void {    try {
       this.http.programas$.pipe(first()).subscribe(async (data) => {
-        //si no hay programas llamar a la api
+        //si no hay programas, esperar a que HomeComponent los cargue
         if (data.length === 0) {
-          this.http.getProgramacion('today').subscribe((data) => {
-            this.http.setProgramas(data, 'today').then(() => {
-              this.svcGuide.setData(data);
-              this.programs = data;
-              this.managePrograms();
-            });
+          console.log(`⏳ AHORA-DIRECTO - No hay datos, esperando a que se carguen desde HomeComponent...`);
+          // En lugar de hacer una llamada API, suscribirse al observable para esperar datos
+          this.http.programas$.pipe(
+            filter(programs => programs.length > 0),
+            first()
+          ).subscribe((programs) => {
+            console.log(`📦 AHORA-DIRECTO - Datos recibidos del observable global`);
+            this.svcGuide.setData(programs);
+            this.programs = programs;
+            this.managePrograms();
           });
         } else {
+          console.log(`📋 AHORA-DIRECTO - Usando datos ya disponibles en cache`);
           this.svcGuide.setData(data);
           this.programs = data;
           this.managePrograms();

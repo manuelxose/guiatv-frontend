@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { TvGuideService } from '../../services/tv-guide.service';
 
 @Component({
   selector: 'app-menu',

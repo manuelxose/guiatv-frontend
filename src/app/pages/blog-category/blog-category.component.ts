@@ -1,11 +1,12 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { ComponentsModule } from 'src/app/components/components.module';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { HttpService } from 'src/app/services/http.service';
 
 @Component({
   selector: 'app-blog-category',
   standalone: true,
-  imports: [ComponentsModule],
+  imports: [CommonModule,NavBarComponent],
   templateUrl: './blog-category.component.html',
   styleUrl: './blog-category.component.scss',
 })

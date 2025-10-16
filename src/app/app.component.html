@@ -1,13 +1,18 @@
-<app-header></app-header>
-
-<div class="font-montserrat text-sm bg-white dark:bg-zinc-900">
-  <div
-    class="flex min-h-screen 2xl:max-w-screen-2xl 2xl:mx-auto 2xl:border-x-2 2xl:border-gray-200 dark:2xl:border-zinc-700"
-  >
+<!-- app.component.html - ESTRUCTURA PRINCIPAL CORREGIDA SIN ESPACIOS EN BLANCO -->
+<div class="font-montserrat bg-gradient-to-br from-gray-900 via-gray-800 to-black h-screen overflow-hidden">
+  <!-- Layout Principal: Sidebar + Content + Sidebar -->
+  <div class="flex h-full w-full">
+    
+    <!-- Left Sidebar -->
     <app-left-sidebar></app-left-sidebar>
-    <router-outlet></router-outlet>
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto">
+      <router-outlet></router-outlet>
+    </main>
+    
+    <!-- Right Sidebar -->
     <app-right-sidebar></app-right-sidebar>
+    
   </div>
 </div>
-
-<app-footer></app-footer>

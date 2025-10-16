@@ -2,11 +2,14 @@ import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { BlogService } from 'src/app/services/blog.service';
 import { truncateTitle } from 'src/app/utils/utils';
 import { Router } from '@angular/router';
+import { CommonModule, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-post-card-last',
   templateUrl: './post-card-last.component.html',
   styleUrls: ['./post-card-last.component.scss'],
+  standalone: true,
+  imports: [CommonModule,DatePipe],
   encapsulation: ViewEncapsulation.None,
 })
 export class PostCardLastComponent {

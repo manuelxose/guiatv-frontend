@@ -1,12 +1,16 @@
 import { Component } from '@angular/core';
 import { HttpService } from 'src/app/services/http.service';
-import { ModalService } from 'src/app/services/modal.service';
 import { diffHour } from '../../utils/utils';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { CommonModule } from '@angular/common';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
+import { BannerComponent } from 'src/app/components/banner/banner.component';
 @Component({
   selector: 'app-blog-details',
   templateUrl: './blog-details.component.html',
   styleUrls: ['./blog-details.component.scss'],
+  standalone: true,
+  imports: [CommonModule,NavBarComponent,BannerComponent],
 })
 export class BlogDetailsComponent {
   public post: any = {};
