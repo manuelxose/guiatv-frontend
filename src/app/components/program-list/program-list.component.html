@@ -1,12 +1,9 @@
 <!-- program-list.component.html - SELECTORES TRANSFORMADOS EN DROPDOWNS -->
 <section class="pt-6 pb-4 px-4 lg:px-6 w-full min-h-screen">
-  
   <!-- Controls Row: Unified for Mobile and Desktop -->
   <div class="mb-8 space-y-4 w-full">
-    
     <!-- Responsive Controls Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
-      
       <!-- Day Selector Dropdown -->
       <div class="relative dropdown-container">
         <button
@@ -15,46 +12,75 @@
           class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600 rounded-xl text-white font-semibold hover:from-gray-700 hover:to-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-lg"
         >
           <div class="flex items-center space-x-3">
-            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+            <svg
+              class="h-5 w-5 text-red-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                clip-rule="evenodd"
+              ></path>
             </svg>
             <span>{{ getCurrentSelectedDay() }}</span>
           </div>
-          <svg 
+          <svg
             class="h-5 w-5 transition-transform duration-200"
             [class.rotate-180]="isDayDropdownOpen()"
-            fill="currentColor" 
+            fill="currentColor"
             viewBox="0 0 20 20"
           >
-            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            <path
+              fill-rule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            ></path>
           </svg>
         </button>
-        
+
         <!-- Day Dropdown Menu -->
-        <div 
+        <div
           *ngIf="isDayDropdownOpen()"
           class="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-600 rounded-xl shadow-2xl max-h-64 overflow-y-auto backdrop-blur-sm"
-          style="z-index: 50;"
+          style="z-index: 50"
         >
           <div class="py-2">
             <button
-              *ngFor="let dia of daysInfo(); let i = index; trackBy: trackByDayIndex"
+              *ngFor="
+                let dia of daysInfo();
+                let i = index;
+                trackBy: trackByDayIndex
+              "
               (click)="selectDay(i)"
               [class]="getDayDropdownItemClasses(i)"
               class="w-full text-left px-4 py-3 hover:bg-gray-700/80 transition-colors duration-200 flex items-center space-x-3 text-white"
             >
               <div class="flex-1">
-                <div class="font-medium text-base text-gray-100">{{ dia.diaSemana }}</div>
-                <div class="text-sm opacity-75 text-gray-300">{{ dia.diaNumero }}</div>
+                <div class="font-medium text-base text-gray-100">
+                  {{ dia.diaSemana }}
+                </div>
+                <div class="text-sm opacity-75 text-gray-300">
+                  {{ dia.diaNumero }}
+                </div>
               </div>
-              <svg *ngIf="i === activeDay()" class="h-5 w-5 text-red-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+              <svg
+                *ngIf="i === activeDay()"
+                class="h-5 w-5 text-red-400 flex-shrink-0"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                ></path>
               </svg>
             </button>
           </div>
         </div>
       </div>
-      
+
       <!-- Category Filter Dropdown -->
       <div class="relative dropdown-container" *ngIf="showCategoryFilter()">
         <button
@@ -63,29 +89,44 @@
           class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600 rounded-xl text-white font-semibold hover:from-gray-700 hover:to-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-lg"
         >
           <div class="flex items-center space-x-3">
-            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"></path>
+            <svg
+              class="h-5 w-5 text-red-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                clip-rule="evenodd"
+              ></path>
             </svg>
             <span>{{ getCategoryButtonText() }}</span>
-            <span *ngIf="selectedCategories().size > 0" class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+            <span
+              *ngIf="selectedCategories().size > 0"
+              class="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full"
+            >
               {{ selectedCategories().size }}
             </span>
           </div>
-          <svg 
+          <svg
             class="h-5 w-5 transition-transform duration-200"
             [class.rotate-180]="isCategoryDropdownOpen()"
-            fill="currentColor" 
+            fill="currentColor"
             viewBox="0 0 20 20"
           >
-            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            <path
+              fill-rule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            ></path>
           </svg>
         </button>
-        
+
         <!-- Category Dropdown Menu -->
-        <div 
+        <div
           *ngIf="isCategoryDropdownOpen()"
           class="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-600 rounded-xl shadow-2xl max-h-64 overflow-y-auto backdrop-blur-sm category-dropdown"
-          style="z-index: 50;"
+          style="z-index: 50"
         >
           <div class="py-2">
             <button
@@ -94,25 +135,48 @@
               class="w-full text-left px-4 py-3 hover:bg-gray-700/80 transition-colors duration-200 flex items-center justify-between text-white"
             >
               <span class="text-gray-100">Todas las categorías</span>
-              <svg *ngIf="isAllCategoriesSelected()" class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+              <svg
+                *ngIf="isAllCategoriesSelected()"
+                class="h-5 w-5 text-red-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                ></path>
               </svg>
             </button>
             <button
-              *ngFor="let category of availableCategories(); trackBy: trackByCategory"
+              *ngFor="
+                let category of availableCategories();
+                trackBy: trackByCategory
+              "
               (click)="selectCategory(category)"
               [class]="getCategoryDropdownItemClasses(category)"
               class="w-full text-left px-4 py-3 hover:bg-gray-700/80 transition-colors duration-200 flex items-center justify-between text-white"
             >
-              <span class="text-gray-100">{{ getCategoryDisplayName(category) }}</span>
-              <svg *ngIf="isCategorySelected(category)" class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+              <span class="text-gray-100">{{
+                getCategoryDisplayName(category)
+              }}</span>
+              <svg
+                *ngIf="isCategorySelected(category)"
+                class="h-5 w-5 text-red-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                ></path>
               </svg>
             </button>
           </div>
         </div>
       </div>
-      
+
       <!-- Time Slot Dropdown -->
       <div class="relative dropdown-container">
         <button
@@ -121,37 +185,64 @@
           class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600 rounded-xl text-white font-semibold hover:from-gray-700 hover:to-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-lg"
         >
           <div class="flex items-center space-x-3">
-            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+            <svg
+              class="h-5 w-5 text-red-400"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                clip-rule="evenodd"
+              ></path>
             </svg>
             <span>{{ getCurrentSelectedTimeSlot() }}</span>
           </div>
-          <svg 
+          <svg
             class="h-5 w-5 transition-transform duration-200"
             [class.rotate-180]="isTimeSlotDropdownOpen()"
-            fill="currentColor" 
+            fill="currentColor"
             viewBox="0 0 20 20"
           >
-            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            <path
+              fill-rule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            ></path>
           </svg>
         </button>
-        
+
         <!-- Time Slot Dropdown Menu -->
-        <div 
+        <div
           *ngIf="isTimeSlotDropdownOpen()"
           class="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-600 rounded-xl shadow-2xl max-h-64 overflow-y-auto backdrop-blur-sm"
-          style="z-index: 50;"
+          style="z-index: 50"
         >
           <div class="py-2">
             <button
-              *ngFor="let franja of currentTimeSlots(); let i = index; trackBy: trackByTimeSlot"
+              *ngFor="
+                let franja of currentTimeSlots();
+                let i = index;
+                trackBy: trackByTimeSlot
+              "
               (click)="selectTimeSlot(i)"
               [class]="getTimeSlotDropdownItemClasses(franja[0])"
               class="w-full text-left px-4 py-3 hover:bg-gray-700/80 transition-colors duration-200 flex items-center justify-between text-white"
             >
-              <span class="text-gray-100">{{ franja[0] }} - {{ franja[franja.length - 1] }}</span>
-              <svg *ngIf="franja[0] === currentTimeSlot()" class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+              <span class="text-gray-100"
+                >{{ franja[0] }} - {{ franja[franja.length - 1] }}</span
+              >
+              <svg
+                *ngIf="franja[0] === currentTimeSlot()"
+                class="h-5 w-5 text-red-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                ></path>
               </svg>
             </button>
           </div>
@@ -161,11 +252,12 @@
   </div>
 
   <!-- Programming Grid -->
-  <div class="bg-gray-900 rounded-xl shadow-2xl overflow-hidden relative w-full">
-    
+  <div
+    class="bg-gray-900 rounded-xl shadow-2xl overflow-hidden relative w-full"
+  >
     <!-- Current Time Indicator -->
-    <div 
-      *ngIf="showTimeIndicator()" 
+    <div
+      *ngIf="showTimeIndicator()"
       class="absolute w-0.5 bg-gradient-to-b from-red-400 via-red-500 to-red-600 shadow-2xl shadow-red-500/50 time-indicator pointer-events-none"
       [style.left.px]="timeIndicatorPositionPx()"
       [style.height]="'calc(100% - 60px)'"
@@ -173,29 +265,45 @@
       [style.z-index]="getTimeIndicatorZIndex()"
       aria-label="Hora actual"
     >
-      <div class="absolute -top-2 w-4 h-4 bg-red-500 rounded-full -translate-x-1.5 animate-pulse shadow-xl shadow-red-500/60 border-2 border-white pointer-events-none">
+      <div
+        class="absolute -top-2 w-4 h-4 bg-red-500 rounded-full -translate-x-1.5 animate-pulse shadow-xl shadow-red-500/60 border-2 border-white pointer-events-none"
+      >
         <div class="absolute inset-1 w-2 h-2 bg-white rounded-full"></div>
       </div>
-      <div class="absolute -top-10 -translate-x-1/2 left-1/2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xl shadow-red-500/50 whitespace-nowrap border border-red-400/50 backdrop-blur-sm time-indicator-label pointer-events-none">
+      <div
+        class="absolute -top-10 -translate-x-1/2 left-1/2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xl shadow-red-500/50 whitespace-nowrap border border-red-400/50 backdrop-blur-sm time-indicator-label pointer-events-none"
+      >
         {{ getCurrentTime() }}
       </div>
     </div>
 
     <!-- Time Header -->
-    <div class="sticky top-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 border-b-2 border-red-500/30 shadow-lg time-header">
+    <div
+      class="sticky top-0 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 border-b-2 border-red-500/30 shadow-lg time-header"
+    >
       <div class="flex">
         <!-- Logo Column Header -->
-        <div class="w-32 lg:w-40 flex-shrink-0 bg-gray-800 border-r border-gray-600 p-3 flex items-center justify-center">
-          <span class="text-white font-semibold text-sm tracking-wide">Canales</span>
+        <div
+          class="w-32 lg:w-40 flex-shrink-0 bg-gray-800 border-r border-gray-600 p-3 flex items-center justify-center"
+        >
+          <span class="text-white font-semibold text-sm tracking-wide"
+            >Canales</span
+          >
         </div>
         <!-- Time Slots Header (Fixed width, no scroll) -->
         <div class="flex-1 overflow-hidden">
-          <div class="grid grid-cols-7 h-full w-full" style="display: grid !important;">
-            <div 
-              *ngFor="let hora of currentHours(); trackBy: trackByHour" 
+          <div
+            class="grid grid-cols-7 h-full w-full"
+            style="display: grid !important"
+          >
+            <div
+              *ngFor="let hora of currentHours(); trackBy: trackByHour"
               class="px-2 py-3 text-center border-r border-gray-600/50 last:border-r-0 hover:bg-gray-600/30 transition-colors duration-200 flex items-center justify-center"
             >
-              <span class="text-white text-xs lg:text-sm font-medium tracking-wide whitespace-nowrap">{{ hora }}</span>
+              <span
+                class="text-white text-xs lg:text-sm font-medium tracking-wide whitespace-nowrap"
+                >{{ hora }}</span
+              >
             </div>
           </div>
         </div>
@@ -203,30 +311,34 @@
     </div>
 
     <!-- Programs Content with Virtual Scrolling -->
-    <div 
-      class="relative overflow-hidden"
-      style="height: 700px;"
-    >
-      
+    <div class="relative overflow-hidden" style="height: 700px">
       <!-- Loading State -->
-      <div 
-        *ngIf="uiState().isLoading" 
+      <div
+        *ngIf="uiState().isLoading"
         class="absolute inset-0 z-30 flex items-center justify-center bg-gray-900/95 backdrop-blur-sm"
-        role="status" 
+        role="status"
         aria-label="Cargando programación"
       >
         <div class="flex flex-col items-center space-y-4">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
-          <p class="text-white text-lg font-medium">Cargando Guía Programación TV</p>
-          <p class="text-gray-400 text-sm">Preparando la programación más actualizada...</p>
+          <div
+            class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"
+          ></div>
+          <p class="text-white text-lg font-medium">
+            Cargando Guía Programación TV
+          </p>
+          <p class="text-gray-400 text-sm">
+            Preparando la programación más actualizada...
+          </p>
         </div>
       </div>
 
       <!-- Error State -->
       <div *ngIf="uiState().hasError" class="p-8 text-center text-red-400">
-        <h3 class="text-lg font-semibold mb-2">Error al cargar la programación</h3>
+        <h3 class="text-lg font-semibold mb-2">
+          Error al cargar la programación
+        </h3>
         <p class="text-gray-400 mb-4">{{ error() }}</p>
-        <button 
+        <button
           (click)="facade.refreshData()"
           class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
         >
@@ -236,33 +348,39 @@
 
       <!-- Empty State -->
       <div *ngIf="uiState().showEmpty" class="p-8 text-center text-gray-400">
-        <h3 class="text-lg font-semibold mb-2">No hay programación disponible</h3>
+        <h3 class="text-lg font-semibold mb-2">
+          No hay programación disponible
+        </h3>
         <p class="text-gray-400">No se encontraron programas para mostrar.</p>
       </div>
-      
+
       <!-- Programs List with CDK Virtual Scrolling -->
-      <cdk-virtual-scroll-viewport 
+      <cdk-virtual-scroll-viewport
         *ngIf="uiState().showContent"
         #virtualScrollViewport
         [itemSize]="getItemSize()"
         class="h-full"
       >
-        <div 
-          class="overflow-hidden"
-        >
+        <div class="overflow-hidden">
           <div
-            *cdkVirtualFor="let canal of filteredChannels(); let canalIndex = index; trackBy: trackByChannelId"
+            *cdkVirtualFor="
+              let canal of filteredChannels();
+              let canalIndex = index;
+              trackBy: trackByChannelId
+            "
             class="channel-row border-b border-gray-700 last:border-b-0 hover:bg-gray-800/30 transition-colors duration-200"
             [style.height.px]="getChannelHeight(canal, canalIndex)"
           >
             <!-- Channel Row -->
             <div class="flex channel-programs-container h-full">
               <!-- Channel Logo (Fixed) -->
-              <div 
+              <div
                 class="w-32 lg:w-40 flex-shrink-0 bg-gradient-to-br from-gray-800 to-gray-900 border-r border-gray-600 p-3 flex items-center justify-center cursor-pointer"
                 (click)="onChannelToggle(canalIndex)"
               >
-                <div class="relative w-full h-16 flex items-center justify-center">
+                <div
+                  class="relative w-full h-16 flex items-center justify-center"
+                >
                   <img
                     *ngIf="getChannelLogoUrl(canal)"
                     [src]="getChannelLogoUrl(canal)"
@@ -272,7 +390,7 @@
                     loading="lazy"
                     (error)="onChannelLogoError($event)"
                   />
-                  <div 
+                  <div
                     class="channel-name-fallback text-white text-center font-medium text-sm leading-tight break-words px-2"
                     [class.hidden]="getChannelLogoUrl(canal)"
                   >
@@ -283,58 +401,97 @@
 
               <!-- Programs Row (Fixed grid, no horizontal scroll) -->
               <div class="flex-1 programs-container relative">
-                <div class="programs-grid grid grid-cols-7 gap-0 w-full h-full">
-                  <ng-container *ngFor="let layer of getProgramLayers(canal.channels); let layerIndex = index">
+                <div
+                  class="programs-grid grid gap-0 w-full h-full"
+                  [style.gridTemplateColumns]="gridTemplateColumns"
+                >
+                  <ng-container
+                    *ngFor="
+                      let layer of getProgramLayers(canal);
+                      let layerIndex = index
+                    "
+                  >
                     <div
-                      *ngFor="let programa of layer; let i = index; trackBy: trackByProgramId"
+                      *ngFor="
+                        let programa of layer;
+                        let i = index;
+                        trackBy: trackByProgramId
+                      "
                       class="border-r border-gray-600/30 cursor-pointer hover:bg-red-600/20 transition-all duration-200 group bg-gray-800/60 overflow-hidden"
                       [style.grid-column-start]="getProgramGridColumn(programa)"
-                      [style.grid-column-end]="getProgramGridColumnEnd(programa)"
+                      [style.grid-column-end]="
+                        getProgramGridColumnEnd(programa)
+                      "
                       [style.grid-row]="layerIndex + 1"
                       [style.z-index]="15 + layerIndex"
                       [class]="getProgramCutClasses(programa)"
                       (click)="onProgramSelected(canalIndex, programa)"
                       [attr.title]="getProgramTitle(programa)"
                     >
-                      <div class="h-full p-1.5 flex flex-col justify-between overflow-hidden relative">
+                      <div
+                        class="h-full p-1.5 flex flex-col justify-between overflow-hidden relative"
+                      >
                         <!-- Indicador visual de programa cortado al inicio -->
-                        <div 
+                        <div
                           *ngIf="isProgramCutAtStart(programa)"
                           class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-400 to-orange-500 opacity-75"
                           title="Programa cortado al inicio"
                         ></div>
-                        
+
                         <!-- Indicador visual de programa cortado al final -->
-                        <div 
+                        <div
                           *ngIf="isProgramCutAtEnd(programa)"
                           class="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-400 to-orange-500 opacity-75"
                           title="Programa cortado al final"
                         ></div>
-                        
+
                         <!-- Program Title and Time -->
                         <div class="flex-1 min-h-0">
-                          <h3 class="text-white text-xs font-medium line-clamp-1 leading-tight group-hover:text-red-200 transition-colors">
-                            <span *ngIf="isProgramCutAtStart(programa)" class="text-yellow-400 mr-1">↻</span>
+                          <h3
+                            class="text-white text-xs font-medium line-clamp-1 leading-tight group-hover:text-red-200 transition-colors"
+                          >
+                            <span
+                              *ngIf="isProgramCutAtStart(programa)"
+                              class="text-yellow-400 mr-1"
+                              >↻</span
+                            >
                             {{ getProgramTitle(programa) }}
-                            <span *ngIf="isProgramCutAtEnd(programa)" class="text-yellow-400 ml-1">↻</span>
+                            <span
+                              *ngIf="isProgramCutAtEnd(programa)"
+                              class="text-yellow-400 ml-1"
+                              >↻</span
+                            >
                           </h3>
-                          <p class="text-gray-400 text-xs group-hover:text-red-300 transition-colors mt-0.5">
-                            <span [class.text-yellow-300]="isProgramCutAtStart(programa)">{{ getProgramVisibleStartTime(programa) }}</span>
+                          <p
+                            class="text-gray-400 text-xs group-hover:text-red-300 transition-colors mt-0.5"
+                          >
+                            <span
+                              [class.text-yellow-300]="
+                                isProgramCutAtStart(programa)
+                              "
+                              >{{ getProgramVisibleStartTime(programa) }}</span
+                            >
                             -
-                            <span [class.text-yellow-300]="isProgramCutAtEnd(programa)">{{ getProgramVisibleEndTime(programa) }}</span>
+                            <span
+                              [class.text-yellow-300]="
+                                isProgramCutAtEnd(programa)
+                              "
+                              >{{ getProgramVisibleEndTime(programa) }}</span
+                            >
                           </p>
                         </div>
-                        
+
                         <!-- Program Category Badge (simplified for short programs) -->
-                        <div 
-                          *ngIf="programa?.category?.value" 
-                          class="mt-1"
-                        >
-                          <span 
+                        <div *ngIf="programa?.category?.value" class="mt-1">
+                          <span
                             class="inline-block px-1.5 py-0.5 text-xs rounded-full truncate max-w-full leading-tight"
-                            [class]="getCategoryBadgeClasses(programa.category.value)"
+                            [class]="
+                              getCategoryBadgeClasses(programa.category.value)
+                            "
                           >
-                            {{ getCategoryDisplayName(programa.category.value) }}
+                            {{
+                              getCategoryDisplayName(programa.category.value)
+                            }}
                           </span>
                         </div>
                       </div>
@@ -343,16 +500,18 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Expanded Channel Banner -->
-            <div 
-              *ngIf="isChannelExpanded(canalIndex) && selectedProgram()" 
+            <div
+              *ngIf="isChannelExpanded(canalIndex) && selectedProgram()"
               class="bg-gray-800/95 backdrop-blur-sm border-t border-gray-700 shadow-2xl relative"
-              style="z-index: 60;"
+              style="z-index: 60"
               [@expandCollapse]="'expanded'"
             >
               <div class="p-4">
-                <app-banner [data]="getSelectedProgramBannerData()"></app-banner>
+                <app-banner
+                  [data]="getSelectedProgramBannerData()"
+                ></app-banner>
               </div>
             </div>
           </div>
@@ -363,46 +522,89 @@
 </section>
 
 <!-- Mobile Bottom Navigation -->
-<div class="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-700 p-3 z-40 lg:hidden" *ngIf="uiState().showContent">
+<div
+  class="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-700 p-3 z-40 lg:hidden"
+  *ngIf="uiState().showContent"
+>
   <div class="flex justify-around items-center">
-    <button 
+    <button
       class="flex flex-col items-center text-gray-400 hover:text-white transition-colors"
     >
-      <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+      <svg
+        class="w-6 h-6 mb-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+        ></path>
       </svg>
       <span class="text-xs">Filtrar</span>
     </button>
-    
-    <button 
+
+    <button
       (click)="scrollToNow()"
       class="flex flex-col items-center text-gray-400 hover:text-white transition-colors"
       *ngIf="activeDay() === 0"
     >
-      <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      <svg
+        class="w-6 h-6 mb-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+        ></path>
       </svg>
       <span class="text-xs">Ahora</span>
     </button>
-    
-    <button 
+
+    <button
       (click)="previousTimeSlot()"
       class="flex flex-col items-center text-gray-400 hover:text-white transition-colors"
       [disabled]="activeTimeSlot() === 0"
     >
-      <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      <svg
+        class="w-6 h-6 mb-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 19l-7-7 7-7"
+        ></path>
       </svg>
       <span class="text-xs">Anterior</span>
     </button>
-    
-    <button 
+
+    <button
       (click)="nextTimeSlot()"
       class="flex flex-col items-center text-gray-400 hover:text-white transition-colors"
       [disabled]="activeTimeSlot() === 7"
     >
-      <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+      <svg
+        class="w-6 h-6 mb-1"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M9 5l7 7-7 7"
+        ></path>
       </svg>
       <span class="text-xs">Siguiente</span>
     </button>

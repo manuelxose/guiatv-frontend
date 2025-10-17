@@ -29,13 +29,29 @@ cdk-virtual-scroll-viewport {
 // Grid específico para programas - asegurar que no haya overflow y separación de canales
 .programs-grid {
   display: grid !important;
-  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 0 !important;
+  grid-auto-rows: 75px !important; // cada fila de grid mide 75px
   width: 100% !important;
   overflow: hidden !important;
   min-height: 75px !important;
-  max-height: 75px !important; // Altura fija para evitar solapamientos
   position: relative !important;
-  
+
+  /* evitar que los hijos forcen anchura y rompan el layout */
+  > * {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  > .program-item {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    position: relative !important;
+    display: block !important; /* dejar que el grid controle su anchura */
+    height: 100% !important; /* usar la altura de la fila del grid */
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
   // Asegurar que cada programa ocupe exactamente el espacio del grid
   > div {
     width: 100% !important;
@@ -57,7 +73,7 @@ cdk-virtual-scroll-viewport {
   overflow: visible !important; // Permitir que el banner se muestre
   isolation: isolate !important;
   width: 100% !important;
-  
+
   // Asegurar que el grid ocupe exactamente el mismo ancho que el header
   .programs-grid {
     width: 100% !important;
@@ -73,7 +89,7 @@ cdk-virtual-scroll-viewport {
 .channel-row {
   border-bottom: 1px solid rgba(75, 85, 99, 0.4) !important;
   isolation: isolate;
-  
+
   &:last-child {
     border-bottom: none !important;
   }
@@ -83,7 +99,7 @@ cdk-virtual-scroll-viewport {
 .program-item {
   transform: translateZ(0);
   will-change: transform;
-  
+
   &:hover {
     transform: translateZ(0) scale(1.01);
   }
@@ -111,7 +127,7 @@ cdk-virtual-scroll-viewport {
 .dropdown-container {
   position: relative;
   z-index: 45 !important;
-  
+
   // Menús dropdown específicos con prioridad sobre marcador de tiempo
   > div:last-child {
     z-index: 50 !important; // Mayor que el marcador cuando hay dropdowns abiertos
@@ -125,11 +141,11 @@ cdk-virtual-scroll-viewport {
 .time-indicator {
   position: absolute !important;
   pointer-events: none !important;
-  
+
   // Z-index será controlado dinámicamente por getTimeIndicatorZIndex()
   // Cuando no hay dropdowns: z-index: 10000 (alta prioridad)
   // Cuando hay dropdowns abiertos: z-index: 30 (baja prioridad)
-  
+
   // Elementos del marcador
   .time-indicator-label,
   > div {
@@ -141,10 +157,16 @@ cdk-virtual-scroll-viewport {
 // Programas con z-index bajos pero escalonados
 .program-item {
   z-index: 10 !important;
-  
-  &.layer-1 { z-index: 11 !important; }
-  &.layer-2 { z-index: 12 !important; }
-  &.layer-3 { z-index: 13 !important; }
+
+  &.layer-1 {
+    z-index: 11 !important;
+  }
+  &.layer-2 {
+    z-index: 12 !important;
+  }
+  &.layer-3 {
+    z-index: 13 !important;
+  }
 }
 
 // Header fijo con z-index medio
@@ -157,12 +179,12 @@ cdk-virtual-scroll-viewport {
   position: fixed !important;
   z-index: 999999 !important;
   pointer-events: none !important;
-  
+
   // Calculamos la posición considerando el offset del contenedor
   transform: translateX(var(--time-indicator-offset, 0px));
-  
+
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -178,7 +200,7 @@ cdk-virtual-scroll-viewport {
   position: sticky !important;
   top: 0 !important;
   z-index: 35 !important;
-  
+
   // El marcador debe estar por encima del header
   ~ .time-indicator {
     z-index: 999999 !important;
@@ -189,7 +211,7 @@ cdk-virtual-scroll-viewport {
 cdk-virtual-scroll-viewport {
   position: relative !important;
   z-index: 10 !important;
-  
+
   // Asegurar que el marcador sea visible sobre el viewport
   .time-indicator {
     z-index: 999999 !important;
@@ -202,7 +224,7 @@ cdk-virtual-scroll-viewport {
     grid-template-columns: repeat(7, 1fr) !important;
     gap: 0 !important;
   }
-  
+
   :host {
     padding-left: 0 !important;
     padding-right: 0 !important;
@@ -220,34 +242,50 @@ cdk-virtual-scroll-viewport {
 
 // Estilos específicos para programas cortados
 .program-cut-start {
-  border-left: 2px solid theme('colors.yellow.400') !important;
-  background: linear-gradient(90deg, theme('colors.yellow.400/10') 0%, transparent 20%) !important;
-  
+  border-left: 2px solid theme("colors.yellow.400") !important;
+  background: linear-gradient(
+    90deg,
+    theme("colors.yellow.400/10") 0%,
+    transparent 20%
+  ) !important;
+
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
     width: 3px;
-    background: linear-gradient(to bottom, theme('colors.yellow.400'), theme('colors.orange.500'));
+    background: linear-gradient(
+      to bottom,
+      theme("colors.yellow.400"),
+      theme("colors.orange.500")
+    );
     opacity: 0.8;
     z-index: 10;
   }
 }
 
 .program-cut-end {
-  border-right: 2px solid theme('colors.yellow.400') !important;
-  background: linear-gradient(270deg, theme('colors.yellow.400/10') 0%, transparent 20%) !important;
-  
+  border-right: 2px solid theme("colors.yellow.400") !important;
+  background: linear-gradient(
+    270deg,
+    theme("colors.yellow.400/10") 0%,
+    transparent 20%
+  ) !important;
+
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     right: 0;
     top: 0;
     bottom: 0;
     width: 3px;
-    background: linear-gradient(to bottom, theme('colors.yellow.400'), theme('colors.orange.500'));
+    background: linear-gradient(
+      to bottom,
+      theme("colors.yellow.400"),
+      theme("colors.orange.500")
+    );
     opacity: 0.8;
     z-index: 10;
   }
@@ -255,11 +293,13 @@ cdk-virtual-scroll-viewport {
 
 // Programa cortado en ambos extremos
 .program-cut-start.program-cut-end {
-  background: linear-gradient(90deg, 
-    theme('colors.yellow.400/10') 0%, 
-    transparent 20%, 
-    transparent 80%, 
-    theme('colors.yellow.400/10') 100%) !important;
+  background: linear-gradient(
+    90deg,
+    theme("colors.yellow.400/10") 0%,
+    transparent 20%,
+    transparent 80%,
+    theme("colors.yellow.400/10") 100%
+  ) !important;
 }
 
 // Animación sutil para programas cortados
@@ -269,8 +309,13 @@ cdk-virtual-scroll-viewport {
 }
 
 @keyframes subtle-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.95; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.95;
+  }
 }
 
 // Estilos específicos para selección múltiple de categorías
@@ -280,12 +325,13 @@ cdk-virtual-scroll-viewport {
 }
 
 @keyframes pulse-soft {
-  0%, 100% { 
-    opacity: 1; 
+  0%,
+  100% {
+    opacity: 1;
     transform: scale(1);
   }
-  50% { 
-    opacity: 0.8; 
+  50% {
+    opacity: 0.8;
     transform: scale(1.05);
   }
 }
@@ -294,23 +340,23 @@ cdk-virtual-scroll-viewport {
 .dropdown-container {
   .category-dropdown {
     scrollbar-width: thin;
-    scrollbar-color: theme('colors.red.500') theme('colors.gray.800');
-    
+    scrollbar-color: theme("colors.red.500") theme("colors.gray.800");
+
     &::-webkit-scrollbar {
       width: 4px;
     }
-    
+
     &::-webkit-scrollbar-track {
-      background: theme('colors.gray.800');
+      background: theme("colors.gray.800");
       border-radius: 2px;
     }
-    
+
     &::-webkit-scrollbar-thumb {
-      background: theme('colors.red.500');
+      background: theme("colors.red.500");
       border-radius: 2px;
-      
+
       &:hover {
-        background: theme('colors.red.400');
+        background: theme("colors.red.400");
       }
     }
   }
@@ -319,7 +365,7 @@ cdk-virtual-scroll-viewport {
 // Mejorar contraste para elementos seleccionados múltiples
 .bg-red-600\/30 {
   background-color: rgba(220, 38, 38, 0.4) !important;
-  border-left-color: theme('colors.red.400') !important;
+  border-left-color: theme("colors.red.400") !important;
 }
 // Grid específico para programas - asegurar que no haya overflow y separación de canales
 .programs-grid-container {
@@ -331,12 +377,15 @@ cdk-virtual-scroll-viewport {
 
 .programs-grid-layer {
   display: grid !important;
-  grid-template-columns: repeat(42, 1fr) !important; // 7 slots × 6 subdivisiones de 5 min
+  grid-template-columns: repeat(
+    42,
+    1fr
+  ) !important; // 7 slots × 6 subdivisiones de 5 min
   width: 100% !important;
   overflow: hidden !important;
   height: 75px !important;
   position: absolute !important;
-  
+
   // Asegurar que cada programa ocupe exactamente el espacio del grid
   > .program-item {
     width: 100% !important;
@@ -347,7 +396,7 @@ cdk-virtual-scroll-viewport {
     height: 75px !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
-    
+
     // Para programas muy pequeños (5-10 minutos), hacer el texto aún más pequeño
     &[style*="grid-column-end: 2"],
     &[style*="grid-column-end: 3"] {
@@ -355,7 +404,7 @@ cdk-virtual-scroll-viewport {
         font-size: 0.625rem !important;
         line-height: 0.75rem !important;
       }
-      
+
       // Ocultar hora en programas de 5-10 minutos
       p {
         display: none !important;
@@ -369,7 +418,7 @@ cdk-virtual-scroll-viewport {
   .grid {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr) !important;
-    
+
     > div {
       display: flex !important;
       align-items: center !important;

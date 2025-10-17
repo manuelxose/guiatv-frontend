@@ -1,121 +1,47 @@
 <!-- Menu - MODERNIZADO CON MEJORES ESTILOS DE SELECCIÓN -->
-<nav class="pt-12 flex flex-col gap-y-2 text-gray-400 fill-gray-400 text-sm h-full">
-  
+<nav
+  class="pt-12 flex flex-col gap-y-2 text-gray-400 fill-gray-400 text-sm h-full"
+>
   <!-- Menu Header -->
-  <div class="text-gray-500/70 font-medium uppercase text-xs tracking-wider mb-4 px-3">Menu</div>
+  <div
+    class="text-gray-500/70 font-medium uppercase text-xs tracking-wider mb-4 px-3"
+  >
+    Menu
+  </div>
 
   <!-- Menu Items -->
-  <div class="space-y-1">
-    <a
-      class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
-      [ngClass]="{ 'active-link': isHome }"
-      routerLink="/"
+  <div class="space-y-1 px-2">
+    <button
+      *ngFor="let r of routes"
+      class="w-full text-left px-3 py-2 rounded flex items-center gap-3 hover:bg-gray-800"
+      [attr.aria-current]="router.url === r.path ? 'page' : null"
+      (click)="navigate(r.path, r.key)"
+      type="button"
     >
-      <svg
-        class="h-5 w-5 transition-colors duration-200 group-hover:fill-red-400"
-        [ngClass]="{ 'active-icon': isHome }"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
+      <span class="flex-1">{{ r.label }}</span>
+      <span
+        *ngIf="
+          (r.key === 'que-ver-hoy' && hoy) ||
+          (r.key === 'home' && isHome) ||
+          (r.key === 'guia-canales' && isGuiaCanales) ||
+          (r.key === 'series' && isSeries) ||
+          (r.key === 'peliculas' && isPeliculas) ||
+          (r.key === 'top-10' && top) ||
+          (r.key === 'en-directo' && isDirecto)
+        "
+        class="text-sm text-indigo-400"
+        >●</span
       >
-        <path
-          d="M5 22h14v0c1.1 0 2-.9 2-2v-9 0c0-.27-.11-.53-.29-.71l-8-8v0c-.4-.39-1.02-.39-1.41 0l-8 8h0c-.2.18-.3.44-.3.71v9 0c0 1.1.89 2 2 2Zm5-2v-5h4v5Zm-5-8.59l7-7 7 7V20h-3v-5 0c0-1.11-.9-2-2-2h-4v0c-1.11 0-2 .89-2 2v5H5Z"
-        ></path>
-      </svg>
-      <span class="font-medium">Guía TV</span>
-    </a>
-
-    <a
-      class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
-      routerLink="/programacion-tv/guia-canales"
-      [ngClass]="{ 'active-link': isGuiaCanales }"
-    >
-      <svg
-        class="h-5 w-5 transition-colors duration-200 group-hover:fill-red-400"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        [ngClass]="{ 'active-icon': isGuiaCanales }"
-      >
-        <g>
-          <path
-            d="M19 2H9c-1.11 0-2 .89-2 2v5.586l-4.707 4.7v0c-.4.39-.4 1.02 0 1.41 .18.18.44.29.7.29v5 0c0 .55.44 1 1 1h16v0c.55 0 1-.45 1-1v-17c0-1.11-.9-2-2-2Zm-8 18H5v-5.586l3-3 3 3V20Zm8 0h-6v-4 0c.55 0 .99-.45 1-1 0-.27-.11-.53-.3-.72L8.99 9.57V3.984h10v16Z"
-          ></path>
-          <path
-            d="M11 6h2v2h-2Zm4 0h2v2h-2Zm0 4.03h2v1.96h-2Zm0 3.96h2v2h-2Zm-8 1h2v2H7Z"
-          ></path>
-        </g>
-      </svg>
-      <span class="font-medium">Canales</span>
-    </a>
-    
-    <a
-      class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
-      routerLink="/programacion-tv/peliculas"
-      [ngClass]="{ 'active-link': isPeliculas }"
-    >
-      <svg
-        class="h-5 w-5 transition-colors duration-200 group-hover:fill-red-400"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        [ngClass]="{ 'active-icon': isPeliculas }"
-      >
-        <g>
-          <path
-            d="M12 2C6.48 2 2 6.48 2 12c0 5.51 4.48 10 10 10 5.51 0 10-4.49 10-10 0-5.52-4.49-10-10-10Zm0 18c-4.42 0-8-3.59-8-8 0-4.42 3.58-8 8-8 4.41 0 8 3.58 8 8 0 4.41-3.59 8-8 8Z"
-          ></path>
-          <path d="M8 16l5.991-2 2-6 -6 2Z"></path>
-        </g>
-      </svg>
-      <span class="font-medium">Películas</span>
-    </a>
-    
-    <a
-      class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
-      routerLink="/programacion-tv/series"
-      [ngClass]="{ 'active-link': isSeries }"
-    >
-      <svg
-        class="h-5 w-5 transition-colors duration-200 group-hover:fill-red-400"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        [ngClass]="{ 'active-icon': isSeries }"
-      >
-        <g>
-          <path
-            d="M12 2C6.48 2 2 6.48 2 12c0 5.51 4.48 10 10 10 5.51 0 10-4.49 10-10 0-5.52-4.49-10-10-10Zm0 18c-4.42 0-8-3.59-8-8 0-4.42 3.58-8 8-8 4.41 0 8 3.58 8 8 0 4.41-3.59 8-8 8Z"
-          ></path>
-          <path
-            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-          ></path>
-        </g>
-      </svg>
-      <span class="font-medium">TV Series</span>
-    </a>
-    
-    <a
-      class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
-      routerLink="/programacion-tv/en-directo"
-      [ngClass]="{ 'active-link': isDirecto }"
-    >
-      <svg
-        class="h-5 w-5 transition-colors duration-200 group-hover:fill-red-400"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        [ngClass]="{ 'active-icon': isDirecto }"
-      >
-        <g>
-          <path
-            d="M12 2C6.48 2 2 6.48 2 12c0 5.51 4.48 10 10 10 5.51 0 10-4.49 10-10 0-5.52-4.49-10-10-10Zm0 18c-4.42 0-8-3.59-8-8 0-4.42 3.58-8 8-8 4.41 0 8 3.58 8 8 0 4.41-3.59 8-8 8Z"
-          ></path>
-          <path d="M13 7h-2v5.414l3.29 3.29 1.41-1.42 -2.71-2.71Z"></path>
-        </g>
-      </svg>
-      <span class="font-medium">Ahora en TV</span>
-    </a>
+    </button>
   </div>
 
   <!-- Lists Section -->
-  <div class="mt-8 text-gray-500/70 font-medium uppercase text-xs tracking-wider mb-4 px-3">Listas</div>
-  
+  <div
+    class="mt-8 text-gray-500/70 font-medium uppercase text-xs tracking-wider mb-4 px-3"
+  >
+    Listas
+  </div>
+
   <div class="space-y-1">
     <a
       class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
@@ -134,7 +60,7 @@
       </svg>
       <span class="font-medium">Top 10</span>
     </a>
-    
+
     <a
       class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30 cursor-pointer"
       (click)="navigateTo()"
@@ -157,7 +83,7 @@
       </svg>
       <span class="font-medium">Destacados</span>
     </a>
-    
+
     <a
       class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
       routerLink="/programacion-tv/noticias"
@@ -181,8 +107,12 @@
   </div>
 
   <!-- General Section -->
-  <div class="mt-8 text-gray-500/70 font-medium uppercase text-xs tracking-wider mb-4 px-3">General</div>
-  
+  <div
+    class="mt-8 text-gray-500/70 font-medium uppercase text-xs tracking-wider mb-4 px-3"
+  >
+    General
+  </div>
+
   <div class="space-y-1">
     <a
       class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
@@ -209,7 +139,7 @@
       </svg>
       <span class="font-medium">Configuración</span>
     </a>
-    
+
     <a
       class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
       href="#"

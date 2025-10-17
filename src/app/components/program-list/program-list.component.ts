@@ -73,6 +73,7 @@ const UI_CONFIG = {
   LAYER_HEIGHT: 75, // Altura de cada capa de programas
   EXPANDED_BANNER_HEIGHT: 320,
   MINUTES_PER_SLOT: 30,
+  MINUTES_PER_COLUMN: 5, // <-- nueva unidad de columna (granularidad de 5 min)
   MAX_GRID_COLUMNS: 7,
   NIGHT_SLOT_END_MINUTES: 30, // 00:30
   MAX_LAYERS: 5, // Máximo de capas para evitar overflow
@@ -89,6 +90,10 @@ interface ProgramWithPosition extends IProgramItem {
   visibleEndTime: string;
   isCutAtStart: boolean;
   isCutAtEnd: boolean;
+
+  // ADICIÓN: guardar minutos normalizados para detección fiable de solapamientos
+  _normStartMinutes?: number;
+  _normEndMinutes?: number;
 }
 
 @Component({
@@ -106,6 +111,9 @@ interface ProgramWithPosition extends IProgramItem {
   ],
 })
 export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
+  //DEBUG: habilitar logs de depuración
+  private readonly DEBUG = true;
+
   // ===============================================
   // DEPENDENCY INJECTION
   // ===============================================
@@ -247,20 +255,41 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   public readonly timeIndicatorPositionPx = computed(() => {
     if (!this.showTimeIndicator()) return 0;
 
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const slotStartTime = this.currentTimeSlot();
-    const [slotHour, slotMinute] = slotStartTime.split(':').map(Number);
-    const slotStartMinutes = slotHour * 60 + (slotMinute || 0);
+    const currentHours = this.currentHours();
+    if (!currentHours.length) return 0;
 
-    let minutesFromSlotStart = currentMinutes - slotStartMinutes;
+    // usar hora LOCAL para alinear con las etiquetas del header
+    const now = new Date();
+    const localMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const slotStartMinutes = this.parseTimeToMinutes(this.currentTimeSlot());
+    const slotEndMinutes = this.getSlotEndMinutes(currentHours);
+    const slotDuration = slotEndMinutes - slotStartMinutes;
+
+    let minutesFromSlotStart = localMinutes - slotStartMinutes;
     if (minutesFromSlotStart < 0) minutesFromSlotStart += 24 * 60;
+
+    // limitar al rango visible de la franja
+    if (minutesFromSlotStart < 0) minutesFromSlotStart = 0;
+    if (minutesFromSlotStart > slotDuration)
+      minutesFromSlotStart = slotDuration;
 
     return (
       UI_CONFIG.LOGO_COLUMN_WIDTH +
       (minutesFromSlotStart / 60) * UI_CONFIG.PIXELS_PER_HOUR
     );
   });
+
+  /**
+   * Devuelve el valor CSS para grid-template-columns basado en MINUTES_PER_COLUMN.
+   * Uso en template: [style.gridTemplateColumns]="gridTemplateColumns"
+   */
+  public get gridTemplateColumns(): string {
+    const columnsPerSlot =
+      UI_CONFIG.MINUTES_PER_SLOT / UI_CONFIG.MINUTES_PER_COLUMN; // e.g. 6
+    const totalColumns = UI_CONFIG.MAX_GRID_COLUMNS * columnsPerSlot; // e.g. 42
+    return `repeat(${totalColumns}, 1fr)`;
+  }
 
   // ===============================================
   // COMPONENT PROPERTIES
@@ -323,7 +352,11 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       this.currentTimeSlot.set(timeSlots[currentSlot][0]);
     }
 
-    this.showTimeIndicator.set(this.activeDay() === 0);
+    // Mostrar indicador SOLO si es hoy y la franja seleccionada es la franja actual
+    this.showTimeIndicator.set(
+      this.activeDay() === 0 &&
+        this.activeTimeSlot() === this.facade.getCurrentTimeSlot()
+    );
   }
 
   /**
@@ -391,8 +424,19 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
         (canal) => canal && canal.channel && Array.isArray(canal.channels)
       );
       this.canalesConProgramas.set(validChannels);
+
+      // DEBUG: volcado resumido de los programas recibidos
+      if (this.DEBUG) {
+        this.debugLogChannels(validChannels, 'handleDataUpdate');
+      }
     } else {
       this.canalesConProgramas.set([]);
+      if (this.DEBUG) {
+        console.debug('PL: handleDataUpdate -> no channels received', {
+          activeDay: this.activeDay(),
+          activeTimeSlot: this.activeTimeSlot(),
+        });
+      }
     }
 
     this.cdr.markForCheck();
@@ -413,6 +457,28 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   // ===============================================
   // CORE GRID CALCULATION METHODS
   // ===============================================
+
+  /**
+   * Convierte minutos relativos a columna de grid (1-based) usando MINUTES_PER_COLUMN.
+   * Maneja offsets negativos en franjas nocturnas añadiendo 1440 cuando procede.
+   */
+  private minutesToGridColumn(
+    minutes: number,
+    slotStartMinutes: number,
+    totalColumns: number,
+    isNightSlot: boolean
+  ): number {
+    const unit = UI_CONFIG.MINUTES_PER_COLUMN;
+    let delta = minutes - slotStartMinutes;
+
+    if (delta < 0 && isNightSlot) {
+      delta += 1440;
+    }
+
+    if (delta < 0) delta = 0;
+    const colIndex = Math.floor(delta / unit); // 0-based
+    return Math.max(1, Math.min(totalColumns, colIndex + 1));
+  }
 
   /**
    * Verifica si la franja horaria actual es nocturna
@@ -437,18 +503,15 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const lastHour = currentHours[currentHours.length - 1];
     const [hours, minutes] = lastHour.split(':').map(Number);
-    const lastHourMinutes = hours * 60 + (minutes || 0);
+    let lastHourMinutes = hours * 60 + (minutes || 0);
 
-    const isNightSlot = this.isNightTimeSlot(currentHours);
-
-    if (isNightSlot && lastHour === '00:00') {
-      return 3 * 60; // 03:00 = 180 minutos
-    }
-
+    // fin nominal de la franja
     let slotEndMinutes = lastHourMinutes + UI_CONFIG.MINUTES_PER_SLOT;
 
-    if (slotEndMinutes >= 1440) {
-      slotEndMinutes = slotEndMinutes - 1440;
+    // Si la franja atraviesa medianoche, normalizamos para que sea > slotStartMinutes
+    const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
+    if (slotEndMinutes <= slotStartMinutes) {
+      slotEndMinutes += 1440;
     }
 
     return slotEndMinutes;
@@ -468,39 +531,127 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!currentHours.length) return programs;
 
     const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
-    const isNightSlot = this.isNightTimeSlot(currentHours);
     const slotEndMinutes = this.getSlotEndMinutes(currentHours);
 
-    const visiblePrograms = programs.filter((programa) => {
-      const programStart = this.getProgramStartMinutes(programa);
-      const programEnd = this.getProgramEndMinutes(programa);
-      const crossesMidnight = this.programCrossesMidnight(programa);
+    // NUEVO: Obtener timestamp del slot para el día activo
+    const slotStartTs = this.getSlotStartTimestamp(
+      this.activeDay(),
+      slotStartMinutes
+    );
+    const slotEndTs =
+      slotStartTs + (slotEndMinutes - slotStartMinutes) * 60_000;
 
-      let isVisible = false;
+    const DAY_MS = 24 * 60 * 60 * 1000;
 
-      if (isNightSlot) {
-        isVisible = this.isProgramVisibleInNightSlot(
-          programa,
-          programStart,
-          programEnd,
-          crossesMidnight,
-          slotStartMinutes,
-          slotEndMinutes
-        );
-      } else {
-        isVisible = this.isProgramVisibleInDaySlot(
-          programStart,
-          programEnd,
-          slotStartMinutes,
-          slotEndMinutes
-        );
+    return programs.filter((programa) => {
+      // Si el programa trae fecha completa (ISO-like), usar timestamps y activeDay
+      const hasDate = /\d{4}-\d{2}-\d{2}T/.test(String(programa.start));
+      if (hasDate) {
+        const startTs = Date.parse(String(programa.start));
+        let endTs = Date.parse(String(programa.stop));
+        if (isNaN(startTs) || isNaN(endTs)) {
+          return false; // Si no se puede parsear, excluir
+        }
+        if (endTs <= startTs) endTs += DAY_MS;
+
+        // CORREGIDO: Verificar que el programa pertenece al día activo
+        const programIntersectsSlot =
+          startTs < slotEndTs && endTs > slotStartTs;
+
+        if (!programIntersectsSlot) {
+          // Probar shifts de días cercanos (por si hay desfase de zona horaria)
+          const approxShiftDays = Math.round((slotStartTs - startTs) / DAY_MS);
+          for (let k = approxShiftDays - 1; k <= approxShiftDays + 1; k++) {
+            const adjStart = startTs + k * DAY_MS;
+            const adjEnd = endTs + k * DAY_MS;
+            if (adjStart < slotEndTs && adjEnd > slotStartTs) {
+              return true;
+            }
+          }
+          return false;
+        }
+
+        return true;
       }
 
-      return isVisible;
-    });
+      // Si no trae fecha, usar la lógica por minutos normalizados
+      const programStartMinutes = this.getProgramStartMinutes(programa);
+      const programEndMinutes = this.getProgramEndMinutes(programa);
 
-    return visiblePrograms;
+      const { start: normStart, end: normEnd } = this.normalizeProgramRange(
+        programStartMinutes,
+        programEndMinutes,
+        slotStartMinutes
+      );
+
+      return normEnd > slotStartMinutes && normStart < slotEndMinutes;
+    });
   }
+  /**
+   * Devuelve timestamp UTC de inicio del slot para el día dado (activeDay)
+   * @param dayOffset - 0=hoy,1=mañana,...
+   * @param slotStartMinutes - minutos desde medianoche (HH:MM) del slot
+   * @returns número ms UTC
+   * @private
+   */
+  private getSlotStartTimestamp(
+    dayOffset: number,
+    slotStartMinutes: number
+  ): number {
+    const now = new Date();
+    // Fecha base en UTC (00:00 UTC del día actual)
+    const year = now.getUTCFullYear();
+    const month = now.getUTCMonth();
+    const date = now.getUTCDate() + dayOffset;
+    const hours = Math.floor(slotStartMinutes / 60);
+    const minutes = slotStartMinutes % 60;
+    return Date.UTC(year, month, date, hours, minutes, 0, 0);
+  }
+
+  /**
+   * Obtiene timestamp UTC de inicio real del programa
+   * @private
+   */
+  private getProgramStartTimestamp(programa: IProgramItem): number {
+    try {
+      return Date.parse(programa.start);
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
+   * Obtiene timestamp UTC de fin real del programa.
+   * Si el stop <= start asume día siguiente y suma 24h.
+   * @private
+   */
+  private getProgramEndTimestamp(programa: IProgramItem): number {
+    try {
+      const startTs = Date.parse(programa.start);
+      let endTs = Date.parse(programa.stop);
+      if (isNaN(endTs) || isNaN(startTs)) return endTs || startTs;
+      if (endTs <= startTs) {
+        endTs += 24 * 60 * 60 * 1000; // sumar 1 día
+      }
+      return endTs;
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
+   * Convierte minutos (posiblemente >1440) a "HH:MM" donde 1440 -> "00:00"
+   * @private
+   */
+  private formatMinutesToHHMM(totalMinutes: number): string {
+    const norm = ((Math.floor(totalMinutes) % 1440) + 1440) % 1440;
+    const hh = Math.floor(norm / 60)
+      .toString()
+      .padStart(2, '0');
+    const mm = (norm % 60).toString().padStart(2, '0');
+    return `${hh}:${mm}`;
+  }
+
   /**
    * Verifica si un programa es visible en franja nocturna
    * @param programa - Programa a evaluar
@@ -520,43 +671,17 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     slotStartMinutes: number,
     slotEndMinutes: number
   ): boolean {
-    if (slotStartMinutes === 0) {
-      if (crossesMidnight && programEnd <= slotEndMinutes) {
-        return true;
-      }
+    // Normalizar ambos extremos respecto a slotStart para comparar en la misma escala
+    const { start: normStart, end: normEnd } = this.normalizeProgramRange(
+      programStart,
+      programEnd,
+      slotStartMinutes
+    );
 
-      if (
-        !crossesMidnight &&
-        programStart >= 0 &&
-        programStart < slotEndMinutes
-      ) {
-        return true;
-      }
-
-      return false;
-    }
-
-    if (
-      !crossesMidnight &&
-      programStart >= slotStartMinutes &&
-      programStart < 1440
-    ) {
-      return true;
-    }
-
-    if (
-      !crossesMidnight &&
-      programStart < slotStartMinutes &&
-      programEnd > slotStartMinutes
-    ) {
-      return true;
-    }
-
-    if (crossesMidnight && programStart >= slotStartMinutes) {
-      return true;
-    }
-
-    return false;
+    // Si la franja comienza a medianoche (slotStartMinutes === 0),
+    // el slotEndMinutes puede ser por ejemplo 180 (03:00). norm* ya están en la
+    // escala [slotStart, slotStart + 1440), así que basta comprobar la intersección.
+    return normEnd > slotStartMinutes && normStart < slotEndMinutes;
   }
 
   /**
@@ -588,62 +713,28 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
     const programStartMinutes = this.getProgramStartMinutes(programa);
+    const programEndMinutes = this.getProgramEndMinutes(programa);
     const isNightSlot = this.isNightTimeSlot(currentHours);
-    const crossesMidnight = this.programCrossesMidnight(programa);
 
-    if (isNightSlot && slotStartMinutes === 0) {
-      if (crossesMidnight) {
-        return 1;
-      } else if (programStartMinutes >= 0 && programStartMinutes < 180) {
-        const slotIndex = Math.floor(
-          programStartMinutes / UI_CONFIG.MINUTES_PER_SLOT
-        );
-        return Math.max(1, Math.min(UI_CONFIG.MAX_GRID_COLUMNS, slotIndex + 1));
-      } else {
-        return 1;
-      }
-    }
+    const columnsPerSlot =
+      UI_CONFIG.MINUTES_PER_SLOT / UI_CONFIG.MINUTES_PER_COLUMN; // e.g. 6
+    const totalColumns = UI_CONFIG.MAX_GRID_COLUMNS * columnsPerSlot; // e.g. 42
 
-    if (isNightSlot && slotStartMinutes === 1260) {
-      if (programStartMinutes >= 1260) {
-        const minutesFromSlotStart = programStartMinutes - slotStartMinutes;
-        const columnIndex = Math.floor(
-          minutesFromSlotStart / UI_CONFIG.MINUTES_PER_SLOT
-        );
-        return Math.max(
-          1,
-          Math.min(UI_CONFIG.MAX_GRID_COLUMNS, columnIndex + 1)
-        );
-      } else if (
-        programStartMinutes < UI_CONFIG.NIGHT_SLOT_END_MINUTES &&
-        crossesMidnight
-      ) {
-        const minutesFromMidnight = programStartMinutes;
-        const slotIndex = Math.floor(
-          minutesFromMidnight / UI_CONFIG.MINUTES_PER_SLOT
-        );
-        const midnightColumn =
-          Math.floor((1440 - slotStartMinutes) / UI_CONFIG.MINUTES_PER_SLOT) +
-          1;
-        return Math.max(
-          midnightColumn,
-          Math.min(UI_CONFIG.MAX_GRID_COLUMNS, midnightColumn + slotIndex)
-        );
-      }
-    }
-
-    if (programStartMinutes < slotStartMinutes) {
-      return 1;
-    }
-
-    const minutesFromSlotStart = programStartMinutes - slotStartMinutes;
-    const columnIndex = Math.floor(
-      minutesFromSlotStart / UI_CONFIG.MINUTES_PER_SLOT
+    // Normalizar rango relativo al inicio de la franja para cubrir cruces de medianoche
+    const { start: normalizedStart } = this.normalizeProgramRange(
+      programStartMinutes,
+      programEndMinutes,
+      slotStartMinutes
     );
 
-    return Math.max(1, Math.min(UI_CONFIG.MAX_GRID_COLUMNS, columnIndex + 1));
+    // Usa la función helper para mapear minutos a columna en la rejilla fina
+    return this.minutesToGridColumn(
+      normalizedStart,
+      slotStartMinutes,
+      totalColumns,
+      isNightSlot
+    );
   }
-
   /**
    * Calcula la columna de fin en el grid para un programa
    * @param programa - Programa a posicionar
@@ -661,6 +752,14 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     const programEndMinutes = this.getProgramEndMinutes(programa);
     const crossesMidnight = this.programCrossesMidnight(programa);
 
+    // Normalizar inicio/fin respecto al slot para evitar inconsistencias al cruzar medianoche
+    const { start: normalizedStart, end: normalizedEnd } =
+      this.normalizeProgramRange(
+        programStartMinutes,
+        programEndMinutes,
+        slotStartMinutes
+      );
+
     let effectiveProgramEndMinutes: number;
 
     const programInVisibleSlot = this.isProgramInVisibleSlot(
@@ -671,30 +770,20 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     );
 
     if (!programInVisibleSlot) {
-      effectiveProgramEndMinutes = programEndMinutes;
+      effectiveProgramEndMinutes = normalizedEnd;
     } else if (isNightSlot && crossesMidnight) {
-      effectiveProgramEndMinutes = programEndMinutes;
+      // mantener el end ya normalizado (puede ser >1440)
+      effectiveProgramEndMinutes = normalizedEnd;
     } else if (isNightSlot) {
-      if (crossesMidnight) {
-        effectiveProgramEndMinutes = Math.min(
-          programEndMinutes,
-          slotEndMinutes
-        );
-      } else if (programEndMinutes < 1440) {
-        effectiveProgramEndMinutes = programEndMinutes;
-      } else {
-        effectiveProgramEndMinutes = Math.min(
-          programEndMinutes,
-          slotEndMinutes
-        );
-      }
+      effectiveProgramEndMinutes = Math.min(normalizedEnd, slotEndMinutes);
     } else {
-      effectiveProgramEndMinutes = Math.min(programEndMinutes, slotEndMinutes);
+      effectiveProgramEndMinutes = Math.min(normalizedEnd, slotEndMinutes);
     }
 
+    // Usar normalizedStart para garantizar coherencia entre start y end
     return this.calculateGridColumnEnd(
       programa,
-      programStartMinutes,
+      normalizedStart,
       effectiveProgramEndMinutes,
       slotStartMinutes,
       isNightSlot,
@@ -770,50 +859,27 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     isNightSlot: boolean,
     crossesMidnight: boolean
   ): number {
+    const columnsPerSlot =
+      UI_CONFIG.MINUTES_PER_SLOT / UI_CONFIG.MINUTES_PER_COLUMN;
+    const totalColumns = UI_CONFIG.MAX_GRID_COLUMNS * columnsPerSlot;
+
     const startColumn = this.getProgramGridColumn(programa);
 
-    if (isNightSlot && slotStartMinutes === 0 && crossesMidnight) {
-      const durationInCurrentSlot = Math.min(effectiveEndMinutes, 180);
-      const slotsNeeded = Math.ceil(
-        durationInCurrentSlot / UI_CONFIG.MINUTES_PER_SLOT
-      );
-      const endColumn = startColumn + slotsNeeded;
-
-      return Math.max(startColumn + 1, Math.min(8, endColumn));
+    // Calcular columna final basada en MINUTES_PER_COLUMN (usar ceil para abarcar duración)
+    let endMinutesFromSlotStart = effectiveEndMinutes - slotStartMinutes;
+    if (endMinutesFromSlotStart < 0 && isNightSlot) {
+      endMinutesFromSlotStart += 1440;
     }
+    if (endMinutesFromSlotStart < 1) endMinutesFromSlotStart = 1;
 
-    if (isNightSlot && crossesMidnight) {
-      const durationUntilMidnight =
-        1440 - Math.max(programStartMinutes, slotStartMinutes);
-      const durationAfterMidnight = effectiveEndMinutes;
-      const totalVisibleMinutes = durationUntilMidnight + durationAfterMidnight;
-
-      const totalSlotsNeeded = Math.ceil(
-        totalVisibleMinutes / UI_CONFIG.MINUTES_PER_SLOT
-      );
-      const endColumn = startColumn + totalSlotsNeeded;
-
-      return Math.max(startColumn + 1, Math.min(8, endColumn));
-    }
-
-    const visibleStartMinutes = Math.max(programStartMinutes, slotStartMinutes);
-
-    let endMinutesFromSlotStart: number;
-    if (isNightSlot) {
-      endMinutesFromSlotStart = effectiveEndMinutes - slotStartMinutes;
-      if (endMinutesFromSlotStart < 0) {
-        endMinutesFromSlotStart = 1440 - slotStartMinutes + effectiveEndMinutes;
-      }
-    } else {
-      endMinutesFromSlotStart = effectiveEndMinutes - slotStartMinutes;
-    }
-
-    const endColumnIndex = Math.ceil(
-      endMinutesFromSlotStart / UI_CONFIG.MINUTES_PER_SLOT
+    const unit = UI_CONFIG.MINUTES_PER_COLUMN;
+    const endColIndex = Math.ceil(endMinutesFromSlotStart / unit); // 0-based slots -> ceil
+    const finalEndColumn = Math.max(
+      startColumn + 1,
+      Math.min(totalColumns + 1, endColIndex + 1)
     );
-    const finalEndColumn = endColumnIndex + 1;
 
-    return Math.max(startColumn + 1, Math.min(8, finalEndColumn));
+    return finalEndColumn;
   }
   /**
    * Obtiene programas organizados en capas sin solapamientos
@@ -821,24 +887,55 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
    * @param programs - Array de programas a organizar
    * @returns Array de arrays, cada uno representando una capa
    */
-  public getProgramLayers(programs: IProgramItem[]): ProgramWithPosition[][] {
-    if (!programs?.length) return [];
+  public getProgramLayers(canal: IProgramListData): ProgramWithPosition[][] {
+    if (!canal || !Array.isArray(canal.channels) || canal.channels.length === 0)
+      return [];
 
-    const visiblePrograms = this.getVisiblePrograms(programs);
+    // CRÍTICO: Filtrar primero por día activo
+    const programsForActiveDay = this.filterProgramsByActiveDay(
+      canal.channels || [],
+      this.activeDay()
+    );
+    // Combinar programas del canal con posibles continuaciones del día anterior
+    // mergeContinuationProgramsIfAny espera IProgramListData, pero podemos usar
+    // una versión que acepte programas ya filtrados — reutilizamos la función
+    // existente añadiendo temporalmente los programas filtrados en una copia del canal.
+    const canalCopy: IProgramListData = {
+      ...canal,
+      channels: programsForActiveDay,
+    };
+
+    // Combinar programas del canal con posibles continuaciones del día anterior
+    const combinedPrograms = this.mergeContinuationProgramsIfAny(canalCopy);
+
+    const visiblePrograms = this.getVisiblePrograms(combinedPrograms);
     if (!visiblePrograms.length) return [];
 
     // Calcular posiciones para cada programa
     const programsWithPositions: ProgramWithPosition[] = visiblePrograms.map(
-      (programa) => ({
-        ...programa,
-        gridColumnStart: this.getProgramGridColumn(programa),
-        gridColumnEnd: this.getProgramGridColumnEnd(programa),
-        layerIndex: 0, // Se asignará después
-        visibleStartTime: this.getProgramVisibleStartTime(programa),
-        visibleEndTime: this.getProgramVisibleEndTime(programa),
-        isCutAtStart: this.isProgramCutAtStart(programa),
-        isCutAtEnd: this.isProgramCutAtEnd(programa),
-      })
+      (programa) => {
+        const slotStartMinutes = this.parseTimeToMinutes(
+          this.currentHours()[0]
+        );
+        const { start: normStart, end: normEnd } = this.normalizeProgramRange(
+          this.getProgramStartMinutes(programa),
+          this.getProgramEndMinutes(programa),
+          slotStartMinutes
+        );
+
+        return {
+          ...programa,
+          gridColumnStart: this.getProgramGridColumn(programa),
+          gridColumnEnd: this.getProgramGridColumnEnd(programa),
+          layerIndex: 0, // Se asignará después
+          visibleStartTime: this.getProgramVisibleStartTime(programa),
+          visibleEndTime: this.getProgramVisibleEndTime(programa),
+          isCutAtStart: this.isProgramCutAtStart(programa),
+          isCutAtEnd: this.isProgramCutAtEnd(programa),
+          _normStartMinutes: normStart,
+          _normEndMinutes: normEnd,
+        };
+      }
     );
 
     // Ordenar por columna de inicio y duración
@@ -892,6 +989,128 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
+   * Filtra un array de programas para que pertenezcan al día indicado (UTC).
+   * Incluye programas que intersectan el día (si empiezan el día anterior y continúan).
+   * @param programs - array de IProgramItem
+   * @param dayIndex - 0 = hoy, 1 = mañana, ...
+   * @returns programas que pertenecen (o intersectan) ese día
+   * @private
+   */
+  private filterProgramsByActiveDay(
+    programs: IProgramItem[],
+    dayIndex: number
+  ): IProgramItem[] {
+    if (!Array.isArray(programs) || programs.length === 0) return [];
+
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = now.getUTCMonth();
+    const date = now.getUTCDate() + dayIndex;
+    const dayStartTs = Date.UTC(year, month, date, 0, 0, 0, 0);
+    const dayEndTs = dayStartTs + DAY_MS;
+
+    return programs.filter((p) => {
+      let startTs = Date.parse(String(p.start));
+      let endTs = Date.parse(String(p.stop));
+
+      // Si no hay fechas parseables, intentar interpretar como HH:MM en la fecha del dayIndex
+      if (isNaN(startTs)) {
+        const [sh = '0', sm = '0'] = String(p.start || '00:00').split(':');
+        const sTs = Date.UTC(year, month, date, Number(sh), Number(sm), 0, 0);
+        // para stop intentamos lo mismo
+        if (isNaN(endTs)) {
+          const [eh = '0', em = '0'] = String(p.stop || sh + ':00').split(':');
+          endTs = Date.UTC(year, month, date, Number(eh), Number(em), 0, 0);
+          if (endTs <= sTs) endTs += DAY_MS;
+        }
+        // usar sTs como start
+        if (!isNaN(sTs)) {
+          // reasignar startTs para comparación
+          // @ts-ignore — reasignamos local var para comparar
+          (startTs as unknown) = sTs;
+        }
+      }
+
+      if (isNaN(endTs)) {
+        // si tampoco hay endTs válidos, ignorar (no incluir)
+        return false;
+      }
+
+      // normalizar si end <= start (paso a día siguiente)
+      if (endTs <= startTs) endTs += DAY_MS;
+
+      // incluir si el intervalo intersecta [dayStartTs, dayEndTs)
+      return startTs < dayEndTs && endTs > dayStartTs;
+    });
+  }
+
+  /**
+   * Si existen datos del mismo canal que pertenezcan al día anterior y continúan
+   * en la franja actual, los añade (sin duplicados) al array de programas.
+   * @param canal - Entrada del canal actual
+   * @returns Array combinado de programas
+   * @private
+   */
+  private mergeContinuationProgramsIfAny(
+    canal: IProgramListData
+  ): IProgramItem[] {
+    const original = Array.isArray(canal.channels) ? [...canal.channels] : [];
+    if (original.length === 0) return original;
+
+    // slot start en UTC ms para activeDay
+    const currentHours = this.currentHours();
+    if (!currentHours.length) return original;
+    const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
+    const slotStartTs = this.getSlotStartTimestamp(
+      this.activeDay(),
+      slotStartMinutes
+    );
+
+    // clave del canal
+    const key =
+      canal.id ||
+      canal.channel?.id ||
+      (canal.channel ? String(canal.channel) : '');
+
+    const seen = new Set<string>();
+    original.forEach((p) => seen.add(this.programUniqueKey(p)));
+
+    // Buscar en el dataset global programas del mismo canal que puedan pertenecer al día anterior
+    const candidates = this.canalesConProgramas()
+      .filter((c) => (c.id || c.channel?.id) === key)
+      .flatMap((c) => c.channels || []);
+
+    for (const prog of candidates) {
+      const keyProg = this.programUniqueKey(prog);
+      if (seen.has(keyProg)) continue;
+
+      const startTs = this.getProgramStartTimestamp(prog);
+      let endTs = this.getProgramEndTimestamp(prog);
+      const DAY_MS = 24 * 60 * 60 * 1000;
+      if (endTs <= startTs) endTs += DAY_MS;
+
+      // incluir solo si empieza ANTES del slot y termina DESPUÉS del inicio del slot
+      if (startTs < slotStartTs && endTs > slotStartTs) {
+        original.push(prog);
+        seen.add(keyProg);
+      }
+    }
+
+    return original;
+  }
+
+  /**
+   * Genera una clave única simple para identificar un programa (id o start-stop)
+   * @private
+   */
+  private programUniqueKey(p: IProgramItem): string {
+    if (!p) return '';
+    if (p.id) return String(p.id);
+    return `${String(p.start || '')}::${String(p.stop || '')}`;
+  }
+
+  /**
    * Verifica si dos programas se solapan en el grid
    * NUEVO MÉTODO: Verifica solapamiento basado en posiciones del grid
    * @param program1 - Primer programa con posición
@@ -902,11 +1121,36 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     program1: ProgramWithPosition,
     program2: ProgramWithPosition
   ): boolean {
-    // Dos programas se solapan si sus columnas se intersectan
+    // Si disponemos de minutos normalizados, usarlos para evitar errores por redondeo de columnas
+    if (
+      typeof program1._normStartMinutes === 'number' &&
+      typeof program1._normEndMinutes === 'number' &&
+      typeof program2._normStartMinutes === 'number' &&
+      typeof program2._normEndMinutes === 'number'
+    ) {
+      return this.minutesOverlap(
+        program1._normStartMinutes,
+        program1._normEndMinutes,
+        program2._normStartMinutes,
+        program2._normEndMinutes
+      );
+    }
+
+    // Fallback: comprobación por columnas (existente)
     return !(
       program1.gridColumnEnd <= program2.gridColumnStart ||
       program2.gridColumnEnd <= program1.gridColumnStart
     );
+  }
+
+  // ADICIÓN: comprobación de solapamiento en minutos (intervalos [start, end) )
+  private minutesOverlap(
+    aStart: number,
+    aEnd: number,
+    bStart: number,
+    bEnd: number
+  ): boolean {
+    return aStart < bEnd && aEnd > bStart;
   }
 
   /**
@@ -1045,26 +1289,21 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
    * @private
    */
   private getProgramEndMinutes(programa: IProgramItem): number {
-    if (!programa.stop) return 0;
+    if (!programa.stop || !programa.start) return 0;
     try {
       const startDate = new Date(programa.start);
       const endDate = new Date(programa.stop);
 
-      // CORRECCIÓN: Usar UTC en lugar de local para evitar problemas de zona horaria
       const startMinutes =
         startDate.getUTCHours() * 60 + startDate.getUTCMinutes();
-      const endMinutes = endDate.getUTCHours() * 60 + endDate.getUTCMinutes();
+      let endMinutes = endDate.getUTCHours() * 60 + endDate.getUTCMinutes();
 
-      // Verificar si las fechas son diferentes (programa cruza a otro día)
-      const startDay = startDate.getUTCDate();
-      const endDay = endDate.getUTCDate();
-
-      // Si es el día siguiente, añadir 24 horas
+      // Si la hora de fin es igual o anterior a la de inicio, asumimos que es al día siguiente
       if (
-        endDay > startDay ||
-        (endDay < startDay && endMinutes < startMinutes)
+        endDate.getTime() <= startDate.getTime() ||
+        endMinutes <= startMinutes
       ) {
-        return endMinutes + 1440;
+        endMinutes += 1440;
       }
 
       return endMinutes;
@@ -1083,27 +1322,15 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!programa.start || !programa.stop) return false;
 
     try {
-      const startDate = new Date(programa.start);
-      const endDate = new Date(programa.stop);
-
-      // Verificar si las fechas son diferentes (programa cruza a otro día)
-      const startDay = startDate.getUTCDate();
-      const endDay = endDate.getUTCDate();
-
-      // Si es el día siguiente, es porque cruza medianoche
-      if (endDay > startDay) return true;
-
-      // También verificar por diferencia de minutos calculados
       const startMinutes = this.getProgramStartMinutes(programa);
       const endMinutes = this.getProgramEndMinutes(programa);
 
-      // Si endMinutes > 1440, significa que se calculó como día siguiente
-      return endMinutes > 1440;
+      // Si el fin normalizado es mayor que 1440 (o mayor que el inicio), cruza medianoche
+      return endMinutes > 1440 || endMinutes > startMinutes;
     } catch {
       return false;
     }
   }
-
   /**
    * Calcula la duración visible de un programa en la franja actual
    * @param programa - Programa a evaluar
@@ -1183,28 +1410,153 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   // EVENT HANDLERS
   // ===============================================
 
-  /**
-   * Maneja el cambio de día
-   * @param dayIndex - Índice del día seleccionado
-   */
   public onDayChanged(dayIndex: number): void {
     if (this.activeDay() === dayIndex) return;
 
     const dayInfo = this.daysInfo()[dayIndex];
     if (!dayInfo) return;
 
+    // CRÍTICO: Actualizar el día activo ANTES de cualquier recálculo
     this.activeDay.set(dayIndex);
-    this.showTimeIndicator.set(dayIndex === 0);
 
+    // Mostrar indicador SOLO si es hoy y la franja activa coincide con la franja actual
+    this.showTimeIndicator.set(
+      dayIndex === 0 &&
+        this.activeTimeSlot() === this.facade.getCurrentTimeSlot()
+    );
+
+    // Si volvemos a "hoy" actualizamos la franja activa al slot actual
     if (dayIndex === 0) {
       const currentSlot = this.facade.getCurrentTimeSlot();
       this.onTimeSlotChanged(currentSlot);
     }
 
+    // Reset UI state que puede quedar stale (banners/selecciones/scroll)
+    this.selectedProgram.set(null);
+    this.expandedChannels.set(new Set());
+
+    // NUEVO: Solicitar datos del nuevo día al facade
+    try {
+      const f: any = this.facade as any;
+      if (typeof f.loadProgramsForDay === 'function') {
+        f.loadProgramsForDay(dayIndex);
+      } else if (typeof f.fetchProgramsForDay === 'function') {
+        f.fetchProgramsForDay(dayIndex);
+      } else if (typeof f.setActiveDay === 'function') {
+        f.setActiveDay(dayIndex);
+      } else if (typeof f.refreshData === 'function') {
+        // Fallback: si el facade tiene refreshData, úsalo
+        f.refreshData();
+      }
+    } catch (error) {
+      console.warn(
+        'No se pudo solicitar datos del nuevo día al facade:',
+        error
+      );
+    }
+
+    // Forzar recálculo completo del componente
+    this.cdr.detectChanges();
+
+    // Resetear virtual scroll
+    try {
+      this.virtualScrollViewport?.checkViewportSize();
+      this.virtualScrollViewport?.scrollToIndex(0);
+    } catch {
+      // noop
+    }
+
+    // DEBUG: log al cambiar de día
+    if (this.DEBUG) {
+      console.groupCollapsed(`PL: onDayChanged -> day=${dayIndex}`);
+      console.debug('activeDay:', this.activeDay());
+      console.debug('activeTimeSlot:', this.activeTimeSlot());
+      console.debug('currentTimeSlot:', this.currentTimeSlot());
+      this.debugLogChannels(
+        this.canalesConProgramas(),
+        `onDayChanged (day ${dayIndex})`
+      );
+      console.groupEnd();
+    }
+
     this.dayChanged.emit({ dayIndex, dayInfo });
-    this.cdr.markForCheck();
   }
 
+  /**
+   * DEBUG helper: imprime un resumen compacto de los canales y sus primeros programas
+   * @param channels - array de IProgramListData
+   * @param ctx - contexto del log
+   */
+  /**
+   * DEBUG helper: imprime un resumen compacto de los canales y sus primeros programas
+   * @param channels - array de IProgramListData
+   * @param ctx - contexto del log
+   */
+  private debugLogChannels(channels: IProgramListData[], ctx = ''): void {
+    if (!this.DEBUG) return;
+
+    try {
+      const list = channels || this.canalesConProgramas();
+      const first = (list || [])[0];
+
+      const summary = first
+        ? {
+            channelId: first.id || first.channel?.id || 'unknown',
+            channelName: first.channel?.name || 'unknown',
+            programsCount: Array.isArray(first.channels)
+              ? first.channels.length
+              : 0,
+            sample: (first.channels || [])
+              .slice(0, 1)
+              .map((p: IProgramItem) => ({
+                title:
+                  typeof p.title === 'string'
+                    ? p.title
+                    : p.title?.value || 'sin título',
+                start: p.start,
+                stop: p.stop,
+              })),
+          }
+        : null;
+
+      console.debug(`PL DEBUG ${ctx}`, {
+        activeDay: this.activeDay(),
+        activeTimeSlot: this.activeTimeSlot(),
+        currentHours: this.currentHours(),
+        summary,
+      });
+
+      // Mostrar programas visibles del primer canal para diagnosticar cambios de día/franja
+      if (first && Array.isArray(first.channels)) {
+        try {
+          const visible = this.getVisiblePrograms(first.channels);
+          console.debug('PL: visible programs for first channel', {
+            channelId: summary?.channelId,
+            channelName: summary?.channelName,
+            visibleCount: visible.length,
+            sample: visible.slice(0, 5).map((p: IProgramItem) => ({
+              title:
+                typeof p.title === 'string'
+                  ? p.title
+                  : p.title?.value || 'sin título',
+              start: p.start,
+              stop: p.stop,
+            })),
+            activeDay: this.activeDay(),
+            slotStart: this.currentTimeSlot(),
+            currentHours: this.currentHours(),
+          });
+        } catch (e) {
+          console.error(
+            'PL DEBUG: error computing visible programs for first channel',
+            e
+          );
+        }
+      }
+    } catch (e) {
+      console.error('PL DEBUG: error dumping channels', e);
+    }
+  }
   /**
    * Maneja el cambio de franja horaria
    * @param slotIndex - Índice de la franja seleccionada
@@ -1221,93 +1573,14 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.activeTimeSlot.set(slotIndex);
     this.currentTimeSlot.set(selectedSlot[0]);
 
+    // Actualizar visibilidad del indicador: solo si estamos en "hoy" y la franja coincide con la franja actual real
+    this.showTimeIndicator.set(
+      this.activeDay() === 0 && slotIndex === this.facade.getCurrentTimeSlot()
+    );
+
     // Debug simplificado solo para el primer canal en franja 00:00
     if (selectedSlot[0] === '00:00') {
-      console.clear();
-      const canales = this.canalesConProgramas();
-      if (canales.length > 0 && canales[0].channels.length > 0) {
-        const currentHours = this.currentHours();
-        const isNightSlot = this.isNightTimeSlot(currentHours);
-        const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
-        const slotEndMinutes = this.getSlotEndMinutes(currentHours);
-
-        console.log(
-          `📺 DEBUG - Canal: ${
-            canales[0].channel?.name || 'Canal 1'
-          } | Franja: ${
-            selectedSlot[0]
-          } (${slotStartMinutes}-${slotEndMinutes}min) | Noche: ${isNightSlot}`
-        );
-
-        // Mostrar todos los programas RAW para comparar
-        console.log('\n📄 TODOS LOS PROGRAMAS RAW (primeros 10):');
-        canales[0].channels.slice(0, 10).forEach((programa, idx) => {
-          const startTime = new Date(programa.start).toLocaleTimeString(
-            'es-ES',
-            {
-              hour: '2-digit',
-              minute: '2-digit',
-              timeZone: 'UTC',
-            }
-          );
-          const stopTime = new Date(programa.stop).toLocaleTimeString('es-ES', {
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZone: 'UTC',
-          });
-          const programStart = this.getProgramStartMinutes(programa);
-          const programEnd = this.getProgramEndMinutes(programa);
-          const crossesMidnight = this.programCrossesMidnight(programa);
-          const title = this.getProgramTitle(programa);
-
-          console.log(
-            `  ${
-              idx + 1
-            }. ${title} | RAW: ${startTime}-${stopTime} | Min: ${programStart}-${programEnd} | Crosses: ${crossesMidnight}`
-          );
-        });
-
-        // Mostrar programas visibles filtrados
-        const visiblePrograms = this.getVisiblePrograms(canales[0].channels);
-        console.log(
-          `\n🎯 PROGRAMAS VISIBLES FILTRADOS: ${visiblePrograms.length}/${canales[0].channels.length}`
-        );
-
-        if (visiblePrograms.length > 0) {
-          visiblePrograms.forEach((programa, idx) => {
-            const startTime = new Date(programa.start).toLocaleTimeString(
-              'es-ES',
-              {
-                hour: '2-digit',
-                minute: '2-digit',
-                timeZone: 'UTC',
-              }
-            );
-            const stopTime = new Date(programa.stop).toLocaleTimeString(
-              'es-ES',
-              {
-                hour: '2-digit',
-                minute: '2-digit',
-                timeZone: 'UTC',
-              }
-            );
-            const gridColumn = this.getProgramGridColumn(programa);
-            const gridColumnEnd = this.getProgramGridColumnEnd(programa);
-            const title = this.getProgramTitle(programa);
-            const programStart = this.getProgramStartMinutes(programa);
-            const programEnd = this.getProgramEndMinutes(programa);
-            const crossesMidnight = this.programCrossesMidnight(programa);
-
-            console.log(
-              `  ${
-                idx + 1
-              }. ${title} | ${startTime}-${stopTime} | Grid: ${gridColumn}-${gridColumnEnd} | Crosses: ${crossesMidnight}`
-            );
-          });
-        } else {
-          console.log('❌ No hay programas visibles en esta franja');
-        }
-      }
+      // ...existing debug code...
     }
 
     if (this.showTimeIndicator()) {
@@ -1315,6 +1588,41 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     this.cdr.markForCheck();
+  }
+
+  private parseTimestampVariants(timestamp?: string): number[] {
+    if (!timestamp) return [];
+    const variants: number[] = [];
+
+    const tryPush = (v: number | null | undefined) => {
+      if (typeof v === 'number' && !isNaN(v) && !variants.includes(v))
+        variants.push(v);
+    };
+
+    // 1) Tal cual
+    tryPush(Date.parse(timestamp));
+
+    // 2) Si no contiene zona horaria explícita, probar añadiendo 'Z'
+    if (!/[zZ]|[+\-]\d{2}:?\d{2}$/.test(timestamp)) {
+      tryPush(Date.parse(timestamp + 'Z'));
+    }
+
+    // 3) Si el formato es YYYY-MM-DDTHH:MM(:SS), construir con Date.UTC
+    const m = String(timestamp).match(
+      /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
+    );
+    if (m) {
+      const y = Number(m[1]);
+      const mo = Number(m[2]) - 1;
+      const d = Number(m[3]);
+      const hh = Number(m[4]);
+      const mm = Number(m[5]);
+      const ss = Number(m[6] || 0);
+      tryPush(Date.UTC(y, mo, d, hh, mm, ss));
+    }
+
+    // Siempre devolver al menos una variante (puede ser NaN si todo falla)
+    return variants.length ? variants : [Date.parse(timestamp)];
   }
 
   /**
@@ -1470,6 +1778,45 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
           programCategory.toLowerCase() === category.toLowerCase()
       )
     );
+  }
+
+  /**
+   * Normaliza inicio/fin de programa relativos al inicio de la franja (slotStartMinutes).
+   * Devuelve start/end en la misma escala (>= slotStartMinutes), añadiendo 1440 si hace falta.
+   * Esto permite mapear correctamente programas que cruzan medianoche.
+   * @private
+   */
+  private normalizeProgramRange(
+    programStartMinutes: number,
+    programEndMinutes: number,
+    slotStartMinutes: number
+  ): { start: number; end: number } {
+    // Normalizar fin respecto al inicio si el end no es posterior al start (cruce de medianoche)
+    let start = programStartMinutes;
+    let end = programEndMinutes;
+    if (end <= start) {
+      end += 1440;
+    }
+
+    // Asegurar que el intervalo esté en la misma "ventana" relativa al slot:
+    // mover start/end hacia adelante en días completos hasta que end > slotStart
+    while (end <= slotStartMinutes) {
+      start += 1440;
+      end += 1440;
+    }
+
+    // Si el programa empezó antes del inicio de la franja pero continúa dentro de ella,
+    // mostrarlo desde el inicio de la franja (clamp start).
+    if (start < slotStartMinutes && end > slotStartMinutes) {
+      start = slotStartMinutes;
+    }
+
+    // Garantizar end > start
+    if (end <= start) {
+      end = start + 1;
+    }
+
+    return { start, end };
   }
 
   /**
@@ -1655,7 +2002,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Verifica si un programa está cortado al inicio
+   * Verifica si un programa está cortado al inicio (usa timestamps absolutos)
    * @param programa - Programa a verificar
    * @returns true si está cortado
    */
@@ -1664,13 +2011,17 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!currentHours.length) return false;
 
     const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
-    const programStartMinutes = this.getProgramStartMinutes(programa);
+    const slotStartTs = this.getSlotStartTimestamp(
+      this.activeDay(),
+      slotStartMinutes
+    );
+    const progStartTs = this.getProgramStartTimestamp(programa);
 
-    return programStartMinutes < slotStartMinutes;
+    return progStartTs < slotStartTs;
   }
 
   /**
-   * Verifica si un programa está cortado al final
+   * Verifica si un programa está cortado al final (usa timestamps absolutos)
    * @param programa - Programa a verificar
    * @returns true si está cortado
    */
@@ -1678,21 +2029,19 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     const currentHours = this.currentHours();
     if (!currentHours.length) return false;
 
-    const isNightSlot = this.isNightTimeSlot(currentHours);
-    const programEndMinutes = this.getProgramEndMinutes(programa);
-    const crossesMidnight = this.programCrossesMidnight(programa);
+    const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
+    const slotEndMinutes = this.getSlotEndMinutes(currentHours);
 
-    if (isNightSlot) {
-      if (crossesMidnight) {
-        return programEndMinutes > UI_CONFIG.NIGHT_SLOT_END_MINUTES;
-      }
-      return programEndMinutes > 1440;
-    }
+    const slotStartTs = this.getSlotStartTimestamp(
+      this.activeDay(),
+      slotStartMinutes
+    );
+    const slotEndTs =
+      slotStartTs + (slotEndMinutes - slotStartMinutes) * 60_000;
 
-    const lastSlotHour = currentHours[currentHours.length - 1];
-    const slotEndMinutes =
-      this.parseTimeToMinutes(lastSlotHour) + UI_CONFIG.MINUTES_PER_SLOT;
-    return programEndMinutes > slotEndMinutes;
+    const progEndTs = this.getProgramEndTimestamp(programa);
+
+    return progEndTs > slotEndTs;
   }
 
   // ===============================================
@@ -1799,8 +2148,8 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
    */
   public getCurrentTime(): string {
     const now = new Date();
-    const hours = now.getUTCHours().toString().padStart(2, '0');
-    const minutes = now.getUTCMinutes().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0'); // local time
+    const minutes = now.getMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
   }
 
@@ -1810,13 +2159,13 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /**
    * Calcula la altura dinámica de un canal basado en el número de capas
-   * NUEVO MÉTODO: Ajusta la altura según las capas necesarias
+   * Actualizado para usar getProgramLayers(canal)
    * @param canal - Datos del canal
    * @param index - Índice del canal
    * @returns Altura en píxeles
    */
   public getChannelHeight(canal: IProgramListData, index: number): number {
-    const layers = this.getProgramLayers(canal.channels);
+    const layers = this.getProgramLayers(canal);
     const layerCount = layers.length || 1;
     const baseHeight = UI_CONFIG.LAYER_HEIGHT * layerCount;
 
@@ -1828,13 +2177,13 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Obtiene el número de capas para un canal
-   * NUEVO MÉTODO: Para determinar altura del contenedor
+   * Devuelve el número de capas para un canal
+   * Ahora usa la versión que recibe el objeto canal completo
    * @param canal - Datos del canal
    * @returns Número de capas necesarias
    */
   public getLayerCount(canal: IProgramListData): number {
-    const layers = this.getProgramLayers(canal.channels);
+    const layers = this.getProgramLayers(canal);
     return Math.max(1, layers.length);
   }
 
@@ -1861,7 +2210,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Obtiene tiempo visible de inicio de programa
+   * Obtiene tiempo visible de inicio de programa (usa timestamps absolutos)
    * @param programa - Programa a evaluar
    * @returns Tiempo formateado
    */
@@ -1869,18 +2218,14 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     const currentHours = this.currentHours();
     if (!currentHours.length) return this.formatProgramTime(programa.start);
 
-    const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
-    const programStartMinutes = this.getProgramStartMinutes(programa);
-
-    if (programStartMinutes < slotStartMinutes) {
-      return currentHours[0];
-    }
-
+    // Mostrar SIEMPRE la hora real de inicio del programa.
+    // La indicación de "cortado al inicio" se gestiona con isProgramCutAtStart()
     return this.formatProgramTime(programa.start);
   }
 
   /**
    * Obtiene tiempo visible de fin de programa
+   * CORRECCIÓN: formatear correctamente minutos > 1440 como 00:xx y usar timestamps
    * @param programa - Programa a evaluar
    * @returns Tiempo formateado
    */
@@ -1889,23 +2234,30 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!currentHours.length) return this.formatProgramTime(programa.stop);
 
     const isNightSlot = this.isNightTimeSlot(currentHours);
-    const programEndMinutes = this.getProgramEndMinutes(programa);
+    const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
+    const slotEndMinutes = this.getSlotEndMinutes(currentHours);
+
+    const progEndMinutes = this.getProgramEndMinutes(programa);
     const crossesMidnight = this.programCrossesMidnight(programa);
 
-    // CORRECCIÓN: Solo limitar visualmente programas que realmente cruzan medianoche
-    // Y que terminan después del final de la franja nocturna visible
+    // Si programa cruza medianoche y supera la franja, mostrar límite de la franja con formateo correcto
     if (isNightSlot && crossesMidnight) {
-      // Para programas que cruzan medianoche en franja nocturna,
-      // mostrar el tiempo real del programa, no limitarlo artificialmente
-      const slotEndMinutes = this.getSlotEndMinutes(currentHours);
-      if (programEndMinutes > slotEndMinutes) {
-        // Solo mostrar la hora límite de la franja si el programa se extiende más allá
-        const slotEndHour = Math.floor(slotEndMinutes / 60);
-        const slotEndMin = slotEndMinutes % 60;
-        return `${slotEndHour.toString().padStart(2, '0')}:${slotEndMin
-          .toString()
-          .padStart(2, '0')}`;
+      if (progEndMinutes > slotEndMinutes) {
+        return this.formatMinutesToHHMM(slotEndMinutes);
       }
+    }
+
+    // Si el programa termina después del slot (en cualquier caso), limitar a slotEndMinutes formateado
+    const progEndTs = this.getProgramEndTimestamp(programa);
+    const slotStartTs = this.getSlotStartTimestamp(
+      this.activeDay(),
+      slotStartMinutes
+    );
+    const slotEndTs =
+      slotStartTs + (slotEndMinutes - slotStartMinutes) * 60_000;
+
+    if (progEndTs > slotEndTs) {
+      return this.formatMinutesToHHMM(slotEndMinutes);
     }
 
     return this.formatProgramTime(programa.stop);
