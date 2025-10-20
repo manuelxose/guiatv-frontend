@@ -1,0 +1,222 @@
+/* Post detail styles: make WP-generated HTML look good within the app theme */
+
+:host {
+  display: block;
+}
+
+.main-article {
+  max-width: 65ch;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+  color: #e5e7eb; /* text-gray-200 */
+}
+
+/* Headings */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: #ffffff;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose h1 {
+  font-size: 2.25rem;
+}
+.prose h2 {
+  font-size: 1.75rem;
+}
+.prose h3 {
+  font-size: 1.25rem;
+}
+
+/* Paragraphs */
+.prose p {
+  color: #d1d5db; /* text-gray-300 */
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+/* Images */
+.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  margin: 1rem 0;
+}
+
+/* Lists */
+.prose ul,
+.prose ol {
+  margin-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.prose li {
+  margin-bottom: 0.5rem;
+}
+
+/* Blockquotes */
+.prose blockquote {
+  border-left: 4px solid #ef4444; /* red-500 */
+  padding-left: 1rem;
+  color: #f3f4f6;
+  background: rgba(248, 113, 113, 0.03);
+  margin: 1rem 0;
+}
+
+/* Code blocks */
+.prose pre,
+.prose code {
+  background: #0f172a; /* slate-900 */
+  color: #fde68a; /* amber-300 */
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  overflow: auto;
+}
+
+/* Author bio */
+.author-bio {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+}
+
+.author-bio img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 9999px;
+}
+
+.author-bio h3 {
+  margin: 0 0 0.25rem 0;
+  color: #fff;
+}
+
+.author-bio p {
+  margin: 0;
+  color: #d1d5db;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .main-article {
+    padding: 2rem 1rem;
+  }
+  .prose h1 {
+    font-size: 1.75rem;
+  }
+}
+
+/* Additional WP block styles and edge cases */
+.prose figure {
+  margin: 1.25rem 0;
+}
+
+.prose figcaption {
+  color: #9ca3af; /* text-gray-400 */
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.prose .wp-block-gallery,
+.prose .gallery {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin: 1rem 0;
+}
+
+.prose .wp-block-image,
+.prose .entry-content img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0.75rem 0;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.prose .embed-responsive,
+.prose iframe,
+.prose .wp-block-embed {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.prose th,
+.prose td {
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.prose thead th {
+  background: rgba(255, 255, 255, 0.03);
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.prose pre {
+  background: #020617;
+  color: #fef3c7;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow: auto;
+  margin: 1rem 0;
+}
+
+.prose code {
+  background: rgba(255, 255, 255, 0.03);
+  color: #fca5a5; /* red-300 */
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+    "Courier New", monospace;
+}
+
+.prose details {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.prose .blockquote {
+  margin: 1rem 0;
+}
+
+/* Utility to make images responsive inside wide containers */
+.prose img[src$=".svg"] {
+  max-width: 60%;
+}
+
+/* Tweak for smaller viewports */
+@media (max-width: 640px) {
+  .prose {
+    font-size: 1rem;
+  }
+  .prose h2 {
+    font-size: 1.5rem;
+  }
+}

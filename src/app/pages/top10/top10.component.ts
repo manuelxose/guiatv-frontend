@@ -1,114 +1,163 @@
-import { Component } from '@angular/core';
-import { BlogService } from 'src/app/services/blog.service';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  PLATFORM_ID,
+  Inject,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
-import { first, pipe } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
-import { PostCardComponent } from 'src/app/components/post-card/post-card.component';
+import { PostCardComponent } from '../../components/post-card/post-card.component';
+import { Subject, first, takeUntil } from 'rxjs';
+import { BlogService } from 'src/app/services/blog.service';
+import { MetaService } from 'src/app/services/meta.service';
+import { slugify } from 'src/app/utils/utils';
+
 @Component({
   selector: 'app-top10',
+  standalone: true,
+  imports: [CommonModule, PostCardComponent],
   templateUrl: './top10.component.html',
   styleUrls: ['./top10.component.scss'],
-  standalone: true,
-  imports: [CommonModule,NavBarComponent,PostCardComponent],
 })
-export class Top10Component {
-  public top10: any[] = [];
-  public post_list: any[] = [];
-  public page: number = 1;
-  public destacada: any = {};
-  public show_more: number = 10;
-  public index_section: number = 0;
-  public offset: number = 0;
-  public data_slider: any[] = [];
-  scrollIndex = 0;
-  scrollInterval = 20; // Cambia este valor para ajustar la frecuencia de desplazamiento
-  scrollSpeed = 1; // Cambia este valor para ajustar la velocidad de desplazamiento
-  constructor(private blogSvc: BlogService, private routes: Router) {}
+export class Top10Component implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  private isBrowser: boolean;
+
+  // Data
+  posts: any[] = [];
+  featuredPosts: any[] = [];
+  displayedPosts: any[] = [];
+
+  // Carousel
+  carouselIndex = 0;
+  postsPerView = 3;
+
+  // Pagination
+  currentPage = 1;
+  postsPerPage = 10;
+
+  // Loading
+  isLoading = true;
+
+  constructor(
+    private blogSvc: BlogService,
+    private metaSvc: MetaService,
+    private router: Router,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   ngOnInit(): void {
+    this.setMetaTags();
+    this.calculatePostsPerView();
+    this.loadData();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private setMetaTags(): void {
+    this.metaSvc.setMetaTags({
+      title: 'Top 10 - Los Mejores Rankings de Cine, Series y Anime',
+      description:
+        'Descubre los mejores rankings y listas de cine, series y anime. Obras maestras, joyas ocultas y sorpresas de cada temporada.',
+      image: '/assets/images/top10-og-image.jpg',
+      canonicalUrl: '/blog/top10',
+      type: 'website',
+    });
+  }
+
+  private calculatePostsPerView(): void {
+    if (!this.isBrowser) {
+      this.postsPerView = 3;
+      return;
+    }
+
+    const width = window.innerWidth;
+    if (width < 640) {
+      this.postsPerView = 1;
+    } else if (width < 1024) {
+      this.postsPerView = 2;
+    } else {
+      this.postsPerView = 3;
+    }
+  }
+
+  private loadData(): void {
     this.blogSvc
       .getAllPosts()
-      .pipe(first())
-      .subscribe((data) => {
-        this.post_list = data;
-        this.managePosts();
+      .pipe(first(), takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.posts = this.blogSvc.sortPostsByDate(data);
+          this.featuredPosts = this.posts.slice(0, 6);
+          this.updateDisplayedPosts();
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error loading posts:', err);
+          this.isLoading = false;
+        },
       });
 
     this.blogSvc.setProgramsFromApi();
   }
 
-  ngAfterViewInit() {
-    const scroll = (container: Element, direction: 'up' | 'down') => {
-      if (direction === 'up') {
-        container.scrollTop += this.scrollSpeed;
-        if (container.scrollTop >= container.scrollHeight / 2) {
-          container.scrollTop = 0;
-        }
-      } else {
-        container.scrollTop -= this.scrollSpeed;
-        if (container.scrollTop <= 0) {
-          container.scrollTop = container.scrollHeight / 2;
-        }
-      }
-    };
-
-    const startScrolling = (selector: string, direction: 'up' | 'down') => {
-      const containers = document.querySelectorAll(selector);
-      containers.forEach((container) => {
-        setInterval(
-          () => scroll(container as Element, direction),
-          this.scrollInterval
-        );
-      });
-    };
-
-    startScrolling('.autoscroll', 'up');
-    startScrolling('.autoscroll1', 'down');
+  private updateDisplayedPosts(): void {
+    const start = 0;
+    const end = this.currentPage * this.postsPerPage;
+    this.displayedPosts = this.posts.slice(start, end);
   }
 
-  private isMobile() {
-    if (window.innerWidth < 768) {
-      this.offset = 2;
-    } else {
-      this.offset = 3;
+  // Carousel Controls
+  nextSlide(): void {
+    if (this.carouselIndex < this.posts.length - this.postsPerView) {
+      this.carouselIndex++;
     }
   }
 
-  private managePosts() {
-    console.log('All posts from Wordpress: ', this.post_list);
-    this.data_slider = this.post_list;
-    // ordenar los posts por fecha
-    this.post_list.sort((a, b) => {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
-    });
-    this.blogSvc.setPosts(this.post_list);
-
-    this.isMobile();
+  prevSlide(): void {
+    if (this.carouselIndex > 0) {
+      this.carouselIndex--;
+    }
   }
 
-  public showMore() {
-    this.show_more += 10;
+  get visiblePosts(): any[] {
+    return this.posts.slice(
+      this.carouselIndex,
+      this.carouselIndex + this.postsPerView
+    );
   }
 
-  // control del slider horizontal
-  public _next() {
-    console.log('Next');
-    this.data_slider.push(this.data_slider[0]);
-    this.data_slider.shift();
+  get canGoPrev(): boolean {
+    return this.carouselIndex > 0;
   }
 
-  public _prev() {
-    console.log('Prev');
-    this.data_slider.unshift(this.data_slider[this.data_slider.length - 1]);
-    this.data_slider.pop();
+  get canGoNext(): boolean {
+    return this.carouselIndex < this.posts.length - this.postsPerView;
   }
 
-  public moveTo(post: any) {
-    this.blogSvc.setPosts(post);
-    this.routes.navigate([
-      'programacion-tv/ver-mas/detalles',
-      post.slug.replace(/ /g, '-'),
-    ]);
+  // Pagination
+  loadMore(): void {
+    this.currentPage++;
+    this.updateDisplayedPosts();
+  }
+
+  get hasMorePosts(): boolean {
+    return this.currentPage * this.postsPerPage < this.posts.length;
+  }
+
+  // Navigation
+  navigateToPost(post: any): void {
+    const slug = slugify(post.slug || post.title?.rendered || '');
+    this.router.navigate(['/blog', slug]);
+  }
+
+  trackByPostId(index: number, post: any): number {
+    return post.id || index;
   }
 }

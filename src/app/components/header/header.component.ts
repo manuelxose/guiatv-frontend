@@ -8,13 +8,14 @@ import {
 import { NavigationEnd, Router } from '@angular/router';
 import { AutocompleteComponent } from '../autocomplete/autocomplete.component';
 import { MenuComponent } from '../menu/menu.component';
+import { MenuStateService } from '../../services/menu-state.service';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone: true,
-  imports: [CommonModule,AutocompleteComponent,MenuComponent],
+  imports: [CommonModule, AutocompleteComponent, MenuComponent],
 })
 export class HeaderComponent {
   menuVisible = false; // Propiedad para controlar la visibilidad del menú
@@ -32,7 +33,8 @@ export class HeaderComponent {
 
   constructor(
     private rendererFactory: RendererFactory2,
-    private router: Router
+    private router: Router,
+    private menuState: MenuStateService
   ) {
     this.renderer = rendererFactory.createRenderer(null, null);
 
@@ -45,27 +47,16 @@ export class HeaderComponent {
         this.isSeries = false;
         this.isPeliculas = false;
 
-        // Activar el booleano correspondiente a la ruta actual
-        switch (this.router.url.split('/')[2]) {
-          case 'home':
-            this.isHome = true;
-            break;
-          case 'guia-canales':
-            this.isGuiaCanales = true;
-            break;
-          case 'series':
-            this.isSeries = true;
-            break;
-          case 'peliculas':
-            this.isPeliculas = true;
-            break;
-          default:
-            this.isHome = true;
-            break;
-        }
+        // Activar el key del menú compartido según la URL
+        const parts = this.router.url.split('/').filter(Boolean);
+        const key = parts.length ? parts[parts.length - 1] : 'home';
+        // Actualizar servicio compartido
+        this.menuState?.setActive(key || 'home');
       }
     });
   }
+
+  // menuState se inyecta en el constructor
 
   @HostListener('window:scroll', ['$event'])
   handleScroll(event: Event) {
@@ -78,38 +69,32 @@ export class HeaderComponent {
   }
 
   ngOnInit() {
-    this.items = [
-      {
-        label: 'Inicio',
-        icon: 'pi pi-home',
-        routerLink: '/',
-      },
-      {
-        label: 'Canales',
-        icon: 'pi pi-video',
-        routerLink: '/programacion-tv/guia-canales',
-      },
-      {
-        label: 'Series',
-        icon: 'pi pi-clock',
-        routerLink: '/programacion-tv/series',
-      },
-      {
-        label: 'Películas',
-        icon: 'pi pi-television',
-        routerLink: '/programacion-tv/peliculas',
-      },
-      // {
-      //   label: 'Top 10',
-      //   icon: 'pi pi-video',
-      //   routerLink: '/top-10',
-      // },
-      // {
-      //   label: 'Mi Lista',
-      //   icon: 'pi pi-info',
-      //   routerLink: '/acerca-de',
-      // },
-    ];
+    // Obtener subset de rutas para el header desde el servicio compartido
+    this.items = this.menuState.getHeaderRoutes().map((r) => ({
+      label: r.label,
+      icon: '',
+      routerLink: r.path,
+      key: r.key,
+    }));
+
+    // suscribirse al activeKey para reflejar estado en el header
+    this.menuState.getActive().subscribe((k) => {
+      // actualizar banderas simples si las necesitas en el template
+      this.isHome = k === 'home';
+      this.isGuiaCanales = k === 'guia-canales';
+      this.isSeries = k === 'series';
+      this.isPeliculas = k === 'peliculas';
+    });
+
+    // Subscribe to mobile open state from MenuStateService
+    this.menuState.getMobile().subscribe((open) => {
+      this.isViewable = !!open;
+      if (this.isViewable) {
+        this.renderer.setStyle(document.body, 'overflow', 'hidden');
+      } else {
+        this.renderer.removeStyle(document.body, 'overflow');
+      }
+    });
   }
 
   openMenu() {
@@ -120,11 +105,15 @@ export class HeaderComponent {
   }
 
   toggleMenu() {
-    this.isViewable = !this.isViewable;
-    if (this.isViewable) {
-      this.renderer.setStyle(document.body, 'overflow', 'hidden');
-    } else {
-      this.renderer.removeStyle(document.body, 'overflow');
-    }
+    // keep local toggle but propagate to shared state
+    this.menuState.toggleMobile();
+  }
+
+  // Navegar desde header y actualizar estado compartido
+  public navigateFromHeader(item: any) {
+    if (!item || !item.routerLink) return;
+    this.router.navigateByUrl(item.routerLink).then(() => {
+      if (item.key) this.menuState.setActive(item.key);
+    });
   }
 }

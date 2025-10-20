@@ -5,11 +5,28 @@ html,
 body {
   height: 100%;
   margin: 0;
-  font-family: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  /* Prevent horizontal scroll on mobile by default */
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #__next {
   height: 100%;
+}
+
+/* Mobile-first: ensure consistent box-sizing and enable easier responsive rules */
+:root {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Make sizing predictable across elements */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 @tailwind base;
@@ -29,6 +46,13 @@ body {
     font-family: Montserrat, sans-serif;
   }
 
+  /* Allow flex children to shrink on small viewports to avoid overflow */
+  .flex,
+  .flex-1,
+  .flex-auto {
+    min-width: 0;
+  }
+
   .text-xxs {
     font-size: 0.65rem;
   }
@@ -40,7 +64,7 @@ body {
     @apply border-red-600;
   }
 
-  .toggle-checkbox:checked+.toggle-label {
+  .toggle-checkbox:checked + .toggle-label {
     @apply bg-red-600;
   }
 
@@ -90,7 +114,7 @@ body {
   /* Utilidades para dropdowns */
   .dropdown-shadow {
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
-                0 10px 20px -5px rgba(220, 38, 38, 0.1);
+      0 10px 20px -5px rgba(220, 38, 38, 0.1);
   }
 
   /* Animaciones para dropdowns */
@@ -137,10 +161,12 @@ body {
 
   /* Shimmer loading effect */
   .shimmer {
-    background: linear-gradient(90deg, 
-      rgba(55, 65, 81, 0.3) 25%, 
-      rgba(75, 85, 99, 0.5) 50%, 
-      rgba(55, 65, 81, 0.3) 75%);
+    background: linear-gradient(
+      90deg,
+      rgba(55, 65, 81, 0.3) 25%,
+      rgba(75, 85, 99, 0.5) 50%,
+      rgba(55, 65, 81, 0.3) 75%
+    );
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
   }
@@ -212,4 +238,126 @@ body {
   }
 }
 
+/* Global responsive helpers */
+.img-responsive,
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Make large tables scroll horizontally on small screens */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure main layout doesn't force horizontal overflow */
+.container-safe,
+.app-root,
+main {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Small helper to trim long words/URLs that cause overflow */
+.break-words {
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
 /* stylelint-enable at-rule-no-unknown */
+
+/* Global post content styling for innerHTML output */
+.post-content {
+  --tw-prose-body: #d1d5db; /* text-gray-300 */
+  --tw-prose-headings: #ffffff;
+  --tw-prose-links: #f43f5e; /* red-400 */
+  --tw-prose-pre-bg: #0b1220;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4 {
+  color: #ffffff;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.post-content p {
+  color: #d1d5db;
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+.post-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  margin: 0.75rem 0;
+}
+
+.post-content figure {
+  margin: 1rem 0;
+}
+
+.post-content figcaption {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.post-content blockquote {
+  border-left: 4px solid #ef4444;
+  padding-left: 1rem;
+  color: #f3f4f6;
+  background: rgba(248, 113, 113, 0.03);
+  margin: 1rem 0;
+}
+
+.post-content pre {
+  background: #020617;
+  color: #fef3c7;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow: auto;
+  margin: 1rem 0;
+}
+
+.post-content code {
+  background: rgba(255, 255, 255, 0.03);
+  color: #fca5a5;
+  padding: 0.15rem 0.4rem;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono",
+    "Courier New", monospace;
+}
+
+.post-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.post-content th,
+.post-content td {
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.post-content thead th {
+  background: rgba(255, 255, 255, 0.03);
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .post-content h2 {
+    font-size: 1.25rem;
+  }
+}

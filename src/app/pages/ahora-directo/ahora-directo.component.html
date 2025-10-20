@@ -1,61 +1,301 @@
+<!-- Skip link para accesibilidad -->
+<a class="sr-only focus:not-sr-only" href="#main-content">
+  Saltar al contenido
+</a>
+
 <main
-  class="flex-1 py-10 px-5 sm:px-10 max-w-[100vh] h-[100vh] overflow-y-auto lg:min-w-[100vh]"
+  id="main-content"
+  class="ahora-directo w-full max-w-full mx-auto py-6 px-4 sm:py-8 sm:px-6 lg:py-10 lg:px-8 overflow-x-hidden"
+  role="main"
+  aria-label="Películas y series en directo"
 >
-  <section>
-    <app-nav-bar></app-nav-bar>
+  <!-- Navegación global -->
+  <app-nav-bar></app-nav-bar>
 
-    <div class="mt-9">
-      <div class="flex items-center justify-between">
-        <!-- Añade una etiqueta <h1> para indicar el encabezado principal de tu página -->
-        <h1 class="font-semibold text-gray-700 text-base dark:text-white">
-          Películas y series en directo hoy en televisión
-        </h1>
-      </div>
-    </div>
-  </section>
-
-  <section class="mt-9">
-    <div class="flex items-center justify-between">
-      <!-- Añade una etiqueta <h2> para indicar el encabezado secundario de tu página -->
-      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
-        Películas y Series Ahora en Directo
-      </h2>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="mt-4 text-sm text-gray-600">
-      En directo, en esta página puedes ver la programación de películas y
-      series en directo en televisión. Puedes ver la programación de hoy y de
-      los próximos días. También puedes ver la programación de películas y
-      series en directo de los canales de televisión en abierto y de pago.
+  <!-- Header SEO optimizado -->
+  <section
+    class="intro mt-4 max-w-4xl mx-auto"
+    itemscope
+    itemtype="https://schema.org/WebPage"
+  >
+    <h1
+      id="page-title"
+      class="text-2xl font-semibold text-white"
+      itemprop="headline"
+    >
+      Películas y series en directo ahora en TV
+    </h1>
+    <p
+      class="mt-3 text-sm leading-relaxed text-gray-300"
+      itemprop="description"
+    >
+      Descubre qué se emite ahora mismo en la televisión española: películas,
+      series, documentales y más. Información actualizada en tiempo real con
+      canales, horarios y detalles de cada programa. Usa los filtros para
+      encontrar rápidamente películas o series que están en emisión en este
+      momento.
     </p>
+    <p class="mt-2 text-xs text-gray-400">
+      Actualizado constantemente para mostrar la programación en directo más
+      precisa.
+    </p>
+
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json" *ngIf="ldJson">
+      {{ ldJson }}
+    </script>
   </section>
 
-  <section class="mt-9">
-    <nav class="flex space-x-6 text-gray-400 font-medium justify-center">
-      <a
-        (click)="isPelicula = true; isSerie = false; getPeliculasAhora()"
-        class="hover:text-gray-700 dark:hover:text-white font-semibold cursor-pointer"
-        [ngClass]="{
-          'text-gray-700 dark:text-white border-b-2 border-red-600': isPelicula
-        }"
-        >Películas Ahora en Televisión</a
-      >
-      <a
-        (click)="isPelicula = false; isSerie = true; getSeriesAhora()"
-        class="dark:hover:text-white font-semibold cursor-pointer"
-        [ngClass]="{
-          'text-gray-700 dark:text-white border-b-2 border-red-600': isSerie
-        }"
-        >Series Ahora en Televisón</a
-      >
-    </nav>
-  </section>
-
-  <section>
-    <div *ngFor="let destacada of programs" class="">
-      <!-- Añade una etiqueta <img> para indicar las imágenes de tu página -->
-
-      <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
+  <!-- Estados de carga -->
+  <div
+    *ngIf="loading"
+    class="mt-6 sm:mt-8"
+    role="status"
+    aria-live="polite"
+    aria-label="Cargando contenido"
+  >
+    <div class="animate-pulse space-y-4">
+      <div
+        class="h-6 bg-gray-300 dark:bg-gray-700 rounded w-3/4 sm:w-1/2 mb-4"
+      ></div>
+      <div
+        class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full sm:w-3/4 mb-6"
+      ></div>
+      <div
+        class="h-40 sm:h-48 md:h-64 bg-gray-300 dark:bg-gray-700 rounded"
+      ></div>
     </div>
-  </section>
+    <span class="sr-only">Cargando programación en directo...</span>
+  </div>
+
+  <!-- Estado de error -->
+  <div
+    *ngIf="!loading && error"
+    class="mt-6 sm:mt-8"
+    role="alert"
+    aria-live="assertive"
+  >
+    <div class="error-box glass-card-mobile p-6 rounded-lg">
+      <h2 class="text-lg font-semibold text-red-400 mb-2">
+        Error al cargar datos
+      </h2>
+      <p class="text-responsive text-gray-300">{{ error }}</p>
+      <p class="text-xs text-gray-400 mt-2">
+        Intentando recuperar la información. Si el problema persiste, intenta
+        recargar la página.
+      </p>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <article *ngIf="!loading && !error">
+    <!-- Filtros de contenido -->
+    <section class="mt-6 sm:mt-8" aria-label="Filtros de contenido">
+      <div
+        class="flex items-center justify-center gap-3"
+        role="tablist"
+        aria-label="Tipo de contenido en directo"
+      >
+        <button
+          type="button"
+          role="tab"
+          class="filter-btn touch-target"
+          [class.active]="isPelicula"
+          [attr.aria-selected]="isPelicula"
+          [attr.aria-controls]="'peliculas-panel'"
+          (click)="getPeliculasAhora()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5 mr-2"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              d="M4 6.414L0.586 3 2 1.586 5.414 5 8.828 1.586 10.243 3 6.828 6.414 10.243 9.828 8.828 11.243 5.414 7.828 2 11.243 0.586 9.828 4 6.414z"
+            />
+            <rect x="12" y="2" width="10" height="2" />
+            <rect x="12" y="6" width="10" height="2" />
+            <rect x="12" y="10" width="10" height="2" />
+            <rect x="2" y="14" width="20" height="8" rx="1" />
+          </svg>
+          <span>Películas Ahora</span>
+          <span class="badge-count" *ngIf="peliculas_live.length > 0">{{
+            peliculas_live.length
+          }}</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          class="filter-btn touch-target"
+          [class.active]="isSerie"
+          [attr.aria-selected]="isSerie"
+          [attr.aria-controls]="'series-panel'"
+          (click)="getSeriesAhora()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5 mr-2"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <rect x="2" y="3" width="9" height="9" rx="1" />
+            <rect x="13" y="3" width="9" height="9" rx="1" />
+            <rect x="2" y="14" width="9" height="9" rx="1" />
+            <rect x="13" y="14" width="9" height="9" rx="1" />
+          </svg>
+          <span>Series Ahora</span>
+          <span class="badge-count" *ngIf="series_live.length > 0">{{
+            series_live.length
+          }}</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Grid de programas en directo -->
+    <section
+      class="mt-8 sm:mt-10 lg:mt-12"
+      [attr.aria-labelledby]="
+        isPelicula ? 'peliculas-heading' : 'series-heading'
+      "
+      role="tabpanel"
+      [attr.id]="isPelicula ? 'peliculas-panel' : 'series-panel'"
+    >
+      <header class="mb-4">
+        <h2
+          [id]="isPelicula ? 'peliculas-heading' : 'series-heading'"
+          class="text-base sm:text-lg lg:text-xl font-semibold text-white leading-tight"
+        >
+          {{ isPelicula ? "Películas" : "Series" }} en emisión ahora
+        </h2>
+        <p class="mt-2 text-sm sm:text-base text-gray-400 leading-relaxed">
+          {{
+            isPelicula
+              ? "Películas que están emitiéndose en este momento en televisión"
+              : "Series que están emitiéndose en este momento en televisión"
+          }}
+        </p>
+      </header>
+
+      <!-- Grid responsivo -->
+      <div
+        *ngIf="programs && programs.length > 0"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6"
+        role="list"
+      >
+        <article
+          *ngFor="let programa of programs; trackBy: trackById"
+          class="program-card-live glass-card-mobile touch-target gpu-accelerated"
+          role="listitem"
+          tabindex="0"
+          [attr.aria-label]="
+            'Ver detalles de ' +
+            (programa?.title?.value || programa?.name) +
+            ' en ' +
+            (programa?.channel || programa?.network)
+          "
+        >
+          <!-- Media container -->
+          <div class="program-media-wrapper">
+            <app-banner [data]="programa" [attr.loading]="'lazy'"></app-banner>
+
+            <!-- Live indicator -->
+            <div class="live-indicator" aria-hidden="true">
+              <span class="live-dot"></span>
+              <span class="live-text">EN DIRECTO</span>
+            </div>
+          </div>
+
+          <!-- Program info -->
+          <div class="program-info-wrapper">
+            <div class="program-channel">
+              <img
+                *ngIf="programa?.channelIcon"
+                [src]="programa.channelIcon"
+                [alt]="programa?.channel || 'Canal'"
+                class="channel-icon"
+                loading="lazy"
+                (error)="onLogoError($event, programa)"
+              />
+              <span class="channel-name text-truncate-mobile">
+                {{
+                  programa?.channel || programa?.network || "Canal desconocido"
+                }}
+              </span>
+            </div>
+
+            <h3 class="program-title line-clamp-2">
+              {{ programa?.title?.value || programa?.name || "Sin título" }}
+            </h3>
+
+            <div class="program-meta">
+              <time class="program-time" [attr.datetime]="programa?.start">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-4 h-4 mr-1"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  />
+                  <path
+                    d="M12 6v6l4 2"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    fill="none"
+                  />
+                </svg>
+                {{ horaInicio(programa) }}
+              </time>
+
+              <span
+                *ngIf="programa?.category"
+                class="program-category text-truncate-mobile"
+              >
+                {{ programa.category }}
+              </span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Empty state -->
+      <div
+        *ngIf="!programs || programs.length === 0"
+        class="empty-state-card glass-card-mobile text-center py-12"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-16 h-16 mx-auto mb-4 text-gray-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+          />
+        </svg>
+        <p class="text-responsive text-gray-400 mb-2">
+          No hay {{ isPelicula ? "películas" : "series" }} en directo ahora
+        </p>
+        <p class="text-sm text-gray-500">
+          Prueba a cambiar de filtro o vuelve más tarde
+        </p>
+      </div>
+    </section>
+  </article>
 </main>

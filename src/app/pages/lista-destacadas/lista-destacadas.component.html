@@ -1,62 +1,282 @@
-<main
-  class="flex-1 py-10 px-5 sm:px-10 max-w-[100vh] h-[100vh] overflow-y-auto lg:min-w-[100vh]"
+<!-- Skip link para accesibilidad -->
+<a class="sr-only focus:not-sr-only" href="#main-content"
+  >Saltar al contenido</a
 >
-  <section>
-    <app-nav-bar></app-nav-bar>
 
-    <div class="mt-9">
-      <div class="flex items-center justify-between">
-        <!-- Añade una etiqueta <h1> para indicar el encabezado principal de tu página -->
-        <h1 class="font-semibold text-gray-700 text-base dark:text-white">
-          Películas y series destacadas hoy en televisión
-        </h1>
-      </div>
-    </div>
-  </section>
+<main
+  id="main-content"
+  class="ahora-directo w-full max-w-full mx-auto py-6 px-4 sm:py-8 sm:px-6 lg:py-10 lg:px-8 overflow-x-hidden"
+  role="main"
+  aria-label="Películas y series destacadas"
+>
+  <!-- Navegación global -->
+  <app-nav-bar></app-nav-bar>
 
-  <section class="mt-9">
-    <div class="flex items-center justify-between">
-      <!-- Añade una etiqueta <h2> para indicar el encabezado secundario de tu página -->
-      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
-        Mejores Películas y Series
-      </h2>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="mt-4 text-sm text-gray-600">
-      En esta página encontrarás una selección de las mejores películas y series
-      que se emiten hoy en televisión. Podrás ver los horarios, las sinopsis y
-      los tráilers de las películas y series más destacadas del momento.
-      Disfruta de un buen rato de entretenimiento con las mejores opciones que
-      te ofrece la televisión.
+  <!-- Header SEO optimizado -->
+  <section
+    class="intro mt-4 max-w-4xl mx-auto"
+    itemscope
+    itemtype="https://schema.org/WebPage"
+  >
+    <h1
+      id="page-title"
+      class="text-2xl font-semibold text-white"
+      itemprop="headline"
+    >
+      Películas y series destacadas
+    </h1>
+    <p
+      class="mt-3 text-sm leading-relaxed text-gray-300"
+      itemprop="description"
+    >
+      Selección de películas y series destacadas. Usa los filtros para alternar
+      entre películas y series.
     </p>
+    <p class="mt-2 text-xs text-gray-400">Actualizado periódicamente.</p>
   </section>
 
-  <section class="mt-9">
-    <nav class="flex space-x-6 text-gray-400 font-medium justify-center">
-      <a
-        (click)="isPelicula = true; isSerie = false; getPeliculasDestacadas()"
-        class="hover:text-gray-700 dark:hover:text-white font-semibold cursor-pointer"
-        [ngClass]="{
-          'text-gray-700 dark:text-white border-b-2 border-red-600': isPelicula
-        }"
-        >Películas Destacadas</a
-      >
-      <a
-        (click)="isPelicula = false; isSerie = true; getSeriesDestacadas()"
-        class="dark:hover:text-white font-semibold cursor-pointer"
-        [ngClass]="{
-          'text-gray-700 dark:text-white border-b-2 border-red-600': isSerie
-        }"
-        >Series Destacadas</a
-      >
-    </nav>
-  </section>
-
-  <section>
-    <div *ngFor="let destacada of destacados" class="">
-      <!-- Añade una etiqueta <img> para indicar las imágenes de tu página -->
-
-      <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
+  <!-- Estados de carga -->
+  <div
+    *ngIf="loading"
+    class="mt-6 sm:mt-8"
+    role="status"
+    aria-live="polite"
+    aria-label="Cargando contenido"
+  >
+    <div class="animate-pulse space-y-4">
+      <div
+        class="h-6 bg-gray-300 dark:bg-gray-700 rounded w-3/4 sm:w-1/2 mb-4"
+      ></div>
+      <div
+        class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full sm:w-3/4 mb-6"
+      ></div>
+      <div
+        class="h-40 sm:h-48 md:h-64 bg-gray-300 dark:bg-gray-700 rounded"
+      ></div>
     </div>
-  </section>
+    <span class="sr-only">Cargando destacados...</span>
+  </div>
+
+  <!-- Estado de error -->
+  <div
+    *ngIf="!loading && error"
+    class="mt-6 sm:mt-8"
+    role="alert"
+    aria-live="assertive"
+  >
+    <div class="error-box glass-card-mobile p-6 rounded-lg">
+      <h2 class="text-lg font-semibold text-red-400 mb-2">
+        Error al cargar datos
+      </h2>
+      <p class="text-responsive text-gray-300">{{ error }}</p>
+      <p class="text-xs text-gray-400 mt-2">
+        Si el problema persiste, intenta recargar la página.
+      </p>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <article *ngIf="!loading && !error">
+    <!-- Filtros de contenido -->
+    <section class="mt-6 sm:mt-8" aria-label="Filtros de contenido">
+      <div
+        class="flex items-center justify-center gap-3"
+        role="tablist"
+        aria-label="Tipo de contenido"
+      >
+        <button
+          type="button"
+          role="tab"
+          class="filter-btn touch-target"
+          [class.active]="isPelicula"
+          [attr.aria-selected]="isPelicula"
+          [attr.aria-controls]="'peliculas-panel'"
+          (click)="getPeliculasAhora()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5 mr-2"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <rect x="2" y="7" width="20" height="10" rx="2" />
+          </svg>
+          <span>Películas</span>
+          <span class="badge-count" *ngIf="peliculasDestacadas?.length">{{
+            peliculasDestacadas.length
+          }}</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          class="filter-btn touch-target"
+          [class.active]="isSerie"
+          [attr.aria-selected]="isSerie"
+          [attr.aria-controls]="'series-panel'"
+          (click)="getSeriesAhora()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-5 h-5 mr-2"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <rect x="2" y="3" width="9" height="9" rx="1" />
+            <rect x="13" y="3" width="9" height="9" rx="1" />
+            <rect x="2" y="14" width="9" height="9" rx="1" />
+            <rect x="13" y="14" width="9" height="9" rx="1" />
+          </svg>
+          <span>Series</span>
+          <span class="badge-count" *ngIf="seriesDestacadas?.length">{{
+            seriesDestacadas.length
+          }}</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Grid de destacados -->
+    <section
+      class="mt-8 sm:mt-10 lg:mt-12"
+      role="tabpanel"
+      [attr.id]="isPelicula ? 'peliculas-panel' : 'series-panel'"
+      [attr.aria-labelledby]="
+        isPelicula ? 'peliculas-heading' : 'series-heading'
+      "
+    >
+      <header class="mb-4">
+        <h2
+          [id]="isPelicula ? 'peliculas-heading' : 'series-heading'"
+          class="text-base sm:text-lg lg:text-xl font-semibold text-white leading-tight"
+        >
+          {{ isPelicula ? "Películas" : "Series" }} destacadas
+        </h2>
+        <p class="mt-2 text-sm sm:text-base text-gray-400 leading-relaxed">
+          {{
+            isPelicula
+              ? "Películas destacadas de hoy"
+              : "Series destacadas de hoy"
+          }}
+        </p>
+      </header>
+
+      <ng-container
+        *ngIf="isPelicula ? peliculasDestacadas : seriesDestacadas as programs"
+      >
+        <div
+          *ngIf="programs && programs.length > 0"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6"
+          role="list"
+        >
+          <article
+            *ngFor="let programa of programs; trackBy: trackById"
+            class="program-card-live glass-card-mobile touch-target gpu-accelerated"
+            role="listitem"
+            role="link"
+            tabindex="0"
+            (click)="openDetails(programa)"
+            (keydown.enter)="openDetails(programa)"
+            [attr.aria-label]="
+              'Ver detalles de ' +
+              (programa?.title?.value || programa?.name) +
+              ' en ' +
+              getChannelName(programa)
+            "
+          >
+            <!-- Imagen del programa (NO usar app-banner aquí) -->
+            <div class="program-media-wrapper">
+              <img
+                [src]="
+                  programa?.poster ||
+                  programa?.image ||
+                  programa?.icon ||
+                  '/assets/images/default-movie-poster.svg'
+                "
+                [alt]="programa?.title?.value || programa?.name || 'Programa'"
+                class="program-poster"
+                loading="lazy"
+                (error)="
+                  $any($event.target).src =
+                    '/assets/images/default-movie-poster.svg'
+                "
+              />
+
+              <div class="live-indicator" aria-hidden="true">
+                <span class="live-dot"></span>
+                <span class="live-text">DESTACADO</span>
+              </div>
+            </div>
+
+            <div class="program-info-wrapper">
+              <div class="program-channel">
+                <img
+                  *ngIf="programa?.channelIcon"
+                  [src]="programa.channelIcon"
+                  [alt]="getChannelName(programa) + ' logo'"
+                  class="channel-icon"
+                  loading="lazy"
+                  (error)="onLogoError($event, programa)"
+                />
+                <span class="channel-name">{{ getChannelName(programa) }}</span>
+              </div>
+
+              <h3 class="program-title">
+                {{ programa?.title?.value || programa?.name || "Sin título" }}
+              </h3>
+
+              <p
+                class="program-description"
+                *ngIf="
+                  programa?.summary || programa?.description || programa?.plot
+                "
+              >
+                {{
+                  programa?.summary || programa?.description || programa?.plot
+                    | slice : 0 : 500
+                }}
+              </p>
+
+              <div class="program-meta">
+                <time class="program-time" [attr.datetime]="programa?.start">{{
+                  horaInicio(programa)
+                }}</time>
+                <span *ngIf="getCategory(programa)" class="program-category">{{
+                  getCategory(programa)
+                }}</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div
+          *ngIf="!programs || programs.length === 0"
+          class="empty-state-card glass-card-mobile text-center py-12"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-16 h-16 mx-auto mb-4 text-gray-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
+          </svg>
+          <p class="text-responsive text-gray-400 mb-2">
+            No hay {{ isPelicula ? "películas" : "series" }} destacadas
+          </p>
+          <p class="text-sm text-gray-500">
+            Prueba a cambiar de filtro o vuelve más tarde
+          </p>
+        </div>
+      </ng-container>
+    </section>
+  </article>
 </main>

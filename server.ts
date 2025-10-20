@@ -11,26 +11,41 @@ export function app(): express.Express {
   const commonEngine = new CommonEngine();
 
   const PORT = process.env['PORT'] || 4000;
-  
+
   // Para Angular 20, los archivos están directamente en dist/guiatv
   const serverDistPath = dirname(fileURLToPath(import.meta.url));
   const distFolder = resolve(serverDistPath, '..');
   const indexHtml = join(distFolder, 'index.html');
 
   // Servir archivos estáticos desde dist/guiatv
-  server.get('*.*', express.static(distFolder, {
-    maxAge: '1y'
-  }));
+  server.get(
+    '*.*',
+    express.static(distFolder, {
+      maxAge: '1y',
+    })
+  );
 
   // Todas las rutas regulares usan el motor Universal
   server.get('*', (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
+    const serverPort = String(PORT);
+
+    // Evitar construir una URL con un puerto de host que no corresponde al puerto donde corre este servidor
+    // Esto previene que el motor SSR haga fetch a http://localhost:4200/ cuando el proceso corre en otro puerto
+    let incomingHost = headers.host || `localhost:${serverPort}`;
+    const [hostname] = incomingHost.split(':');
+    const hostPort = incomingHost.split(':')[1] || serverPort;
+
+    const finalHost =
+      hostPort === serverPort ? incomingHost : `${hostname}:${serverPort}`;
+
+    const renderUrl = `${protocol}://${finalHost}${originalUrl}`;
 
     commonEngine
       .render({
         bootstrap,
         documentFilePath: indexHtml,
-        url: `${protocol}://${headers.host}${originalUrl}`,
+        url: renderUrl,
         publicPath: distFolder,
         providers: [
           // Los providers adicionales van aquí si son necesarios

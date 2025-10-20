@@ -50,7 +50,10 @@
       {{ program?.desc?.category }} En Directo
     </p>
 
-    <app-slider [programas]="programas_similares"></app-slider>
+    <app-slider
+      variant="peliculas"
+      [programas]="programas_similares"
+    ></app-slider>
   </div>
 </div>
 
@@ -62,7 +65,7 @@
       Más del Canal
     </p>
 
-    <app-slider [programas]="programas_canal"></app-slider>
+    <app-slider variant="canales" [programas]="programas_canal"></app-slider>
   </div>
 </div>
 
@@ -74,6 +77,6 @@
       Ahora en Directo - Resto de Canales
     </p>
 
-    <app-slider [programas]="programas_ahora"></app-slider>
+    <app-slider variant="canales" [programas]="programas_ahora"></app-slider>
   </div>
 </div>

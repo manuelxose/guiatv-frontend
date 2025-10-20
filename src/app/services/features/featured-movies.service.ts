@@ -6,7 +6,7 @@
 import { Injectable, Inject } from '@angular/core';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
-import { 
+import {
   IProgramDataProvider,
   IMovieProvider,
   IContentFilter,
@@ -15,7 +15,7 @@ import {
   ILogger,
   ITvProgram,
   IFeaturedMovie,
-  Result
+  Result,
 } from '../../interfaces';
 import {
   PROGRAM_PROVIDER_TOKEN,
@@ -23,16 +23,16 @@ import {
   CONTENT_FILTER_TOKEN,
   DATA_TRANSFORMER_TOKEN,
   CACHE_MANAGER_TOKEN,
-  LOGGER_TOKEN
+  LOGGER_TOKEN,
 } from '../../config/di-tokens';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FeaturedMoviesService {
-  
   constructor(
-    @Inject(PROGRAM_PROVIDER_TOKEN) private programProvider: IProgramDataProvider,
+    @Inject(PROGRAM_PROVIDER_TOKEN)
+    private programProvider: IProgramDataProvider,
     @Inject(MOVIE_PROVIDER_TOKEN) private movieProvider: IMovieProvider,
     @Inject(CONTENT_FILTER_TOKEN) private contentFilter: IContentFilter,
     @Inject(DATA_TRANSFORMER_TOKEN) private dataTransformer: IDataTransformer,
@@ -43,35 +43,42 @@ export class FeaturedMoviesService {
   /**
    * Obtiene películas destacadas desde programación de TV
    */
-  getFeaturedMoviesFromPrograms(programs: ITvProgram[]): Observable<Result<IFeaturedMovie[], string>> {
+  getFeaturedMoviesFromPrograms(
+    programs: ITvProgram[]
+  ): Observable<Result<IFeaturedMovie[], string>> {
     try {
-      this.logger.info(`Processing ${programs.length} programs for featured movies`);
+      this.logger.info(
+        `Processing ${programs.length} programs for featured movies`
+      );
 
       if (!Array.isArray(programs) || programs.length === 0) {
         return of({
           success: false,
-          error: 'No programs provided or empty array'
+          error: 'No programs provided or empty array',
         });
       }
 
       // Usar el filtro específico para películas destacadas (incluye horario prime time)
-      const featuredMoviePrograms = this.contentFilter.filterFeaturedMovies(programs);
-      
+      const featuredMoviePrograms =
+        this.contentFilter.filterFeaturedMovies(programs);
+
       if (featuredMoviePrograms.length === 0) {
-        this.logger.warn('No featured movies found in prime time (21:00-23:59). Trying to find any movies...');
-        
+        this.logger.warn(
+          'No featured movies found in prime time (21:00-23:59). Trying to find any movies...'
+        );
+
         // Fallback: usar filtro normal de películas si no hay películas en prime time
         const allMoviePrograms = this.contentFilter.filterMovies(programs);
-        
+
         if (allMoviePrograms.length === 0) {
           return of({
             success: false,
-            error: 'No movies found in program data'
+            error: 'No movies found in program data',
           });
         }
 
         // Para fallback, al menos intentemos evitar películas de madrugada
-        const betterMovies = allMoviePrograms.filter(program => {
+        const betterMovies = allMoviePrograms.filter((program) => {
           if (!program.start) return false;
           try {
             const hour = new Date(program.start).getHours();
@@ -82,34 +89,65 @@ export class FeaturedMoviesService {
           }
         });
 
-        const fallbackPrograms = (betterMovies.length > 0 ? betterMovies : allMoviePrograms).slice(0, 3);
-        
-        this.logger.info(`Using ${fallbackPrograms.length} movies as fallback (excluding early morning)`);
-        fallbackPrograms.forEach(program => {
-          const title = typeof program.title === 'string' ? program.title : program.title?.value || 'Unknown';
-          const startTime = program.start ? new Date(program.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 'Unknown';
-          this.logger.info(`Fallback movie: "${title}" at ${startTime} on ${program.channel?.name}`);
+        const fallbackPrograms = (
+          betterMovies.length > 0 ? betterMovies : allMoviePrograms
+        ).slice(0, 3);
+
+        this.logger.info(
+          `Using ${fallbackPrograms.length} movies as fallback (excluding early morning)`
+        );
+        fallbackPrograms.forEach((program) => {
+          const title =
+            typeof program.title === 'string'
+              ? program.title
+              : program.title?.value || 'Unknown';
+          const startTime = program.start
+            ? new Date(program.start).toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+            : 'Unknown';
+          this.logger.info(
+            `Fallback movie: "${title}" at ${startTime} on ${program.channel?.name}`
+          );
         });
-        
+
         return this.processMoviePrograms(fallbackPrograms);
       }
 
-      this.logger.info(`Found ${featuredMoviePrograms.length} movies in prime time`);
-      featuredMoviePrograms.forEach(program => {
-        const title = typeof program.title === 'string' ? program.title : program.title?.value || 'Unknown';
-        const startTime = program.start ? new Date(program.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 'Unknown';
-        this.logger.info(`Prime time movie: "${title}" at ${startTime} on ${program.channel?.name}`);
+      this.logger.info(
+        `Found ${featuredMoviePrograms.length} movies in prime time`
+      );
+      featuredMoviePrograms.forEach((program) => {
+        const title =
+          typeof program.title === 'string'
+            ? program.title
+            : program.title?.value || 'Unknown';
+        const startTime = program.start
+          ? new Date(program.start).toLocaleTimeString('es-ES', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          : 'Unknown';
+        this.logger.info(
+          `Prime time movie: "${title}" at ${startTime} on ${program.channel?.name}`
+        );
       });
-      
-      return this.processMoviePrograms(featuredMoviePrograms);
 
+      return this.processMoviePrograms(featuredMoviePrograms);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error processing programs';
-      this.logger.error('Error processing featured movies from programs', error);
-      
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Unknown error processing programs';
+      this.logger.error(
+        'Error processing featured movies from programs',
+        error
+      );
+
       return of({
         success: false,
-        error: errorMessage
+        error: errorMessage,
       });
     }
   }
@@ -117,22 +155,29 @@ export class FeaturedMoviesService {
   /**
    * Procesa los programas de películas y los transforma
    */
-  private processMoviePrograms(moviePrograms: ITvProgram[]): Observable<Result<IFeaturedMovie[], string>> {
+  private processMoviePrograms(
+    moviePrograms: ITvProgram[]
+  ): Observable<Result<IFeaturedMovie[], string>> {
     return this.dataTransformer.transformToFeaturedMovies(moviePrograms).pipe(
-      map(featuredMovies => {
-        this.logger.info(`Successfully processed ${featuredMovies.length} featured movies`);
+      map((featuredMovies) => {
+        this.logger.info(
+          `Successfully processed ${featuredMovies.length} featured movies`
+        );
         return {
           success: true as const,
-          data: featuredMovies
+          data: featuredMovies,
         };
       }),
-      catchError(error => {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error processing programs';
+      catchError((error) => {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'Unknown error processing programs';
         this.logger.error('Error transforming featured movies', error);
-        
+
         return of({
           success: false as const,
-          error: errorMessage
+          error: errorMessage,
         });
       })
     );
@@ -145,20 +190,21 @@ export class FeaturedMoviesService {
     this.logger.info('Fetching featured movies from TMDb as fallback');
 
     return this.movieProvider.getPopularMovies().pipe(
-      map(movies => {
+      map((movies) => {
         this.logger.info(`Retrieved ${movies.length} movies from TMDb`);
         return {
           success: true as const,
-          data: movies
+          data: movies,
         };
       }),
-      catchError(error => {
-        const errorMessage = error instanceof Error ? error.message : 'TMDb fetch failed';
+      catchError((error) => {
+        const errorMessage =
+          error instanceof Error ? error.message : 'TMDb fetch failed';
         this.logger.error('Error fetching movies from TMDb', error);
-        
+
         return of({
           success: false as const,
-          error: errorMessage
+          error: errorMessage,
         });
       })
     );
@@ -179,7 +225,9 @@ export class FeaturedMoviesService {
   /**
    * Enriquece películas con datos adicionales de TMDb
    */
-  enrichMoviesWithTMDbData(movies: IFeaturedMovie[]): Observable<IFeaturedMovie[]> {
+  enrichMoviesWithTMDbData(
+    movies: IFeaturedMovie[]
+  ): Observable<IFeaturedMovie[]> {
     if (!Array.isArray(movies) || movies.length === 0) {
       this.logger.info('No movies to enrich');
       return of([]);
@@ -196,26 +244,26 @@ export class FeaturedMoviesService {
     }
 
     // Crear observables para enriquecer cada película
-    const enrichmentObservables = moviesToEnrich.map(movie => 
+    const enrichmentObservables = moviesToEnrich.map((movie) =>
       this.movieProvider.searchMovie(movie.title).pipe(
         map((response: any) => {
           if (response?.results?.[0]) {
             const tmdbMovie = response.results[0];
-            
+
             return {
               ...movie,
               rating: tmdbMovie.vote_average || movie.rating,
               description: tmdbMovie.overview || movie.description,
-              poster: tmdbMovie.poster_path ? 
-                `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}` : 
-                movie.poster,
+              poster: tmdbMovie.poster_path
+                ? `https://image.tmdb.org/t/p/w500${tmdbMovie.poster_path}`
+                : movie.poster,
               tmdbId: tmdbMovie.id,
-              releaseDate: tmdbMovie.release_date
+              releaseDate: tmdbMovie.release_date,
             };
           }
           return movie;
         }),
-        catchError(error => {
+        catchError((error) => {
           this.logger.warn(`Error enriching movie "${movie.title}":`, error);
           return of(movie);
         })
@@ -224,12 +272,14 @@ export class FeaturedMoviesService {
 
     // Combinar todos los observables
     return forkJoin(enrichmentObservables).pipe(
-      map(enrichedMovies => {
+      map((enrichedMovies) => {
         const result = [...enrichedMovies, ...remainingMovies];
-        this.logger.info(`Successfully enriched ${enrichedMovies.length} movies`);
+        this.logger.info(
+          `Successfully enriched ${enrichedMovies.length} movies`
+        );
         return result;
       }),
-      catchError(error => {
+      catchError((error) => {
         this.logger.error('Error in global movie enrichment:', error);
         return of(movies);
       })
@@ -240,30 +290,32 @@ export class FeaturedMoviesService {
    * Obtiene películas destacadas con estrategia híbrida
    * Primero intenta desde programas, luego fallback a TMDb
    */
-  getFeaturedMoviesHybrid(programs: ITvProgram[]): Observable<Result<IFeaturedMovie[], string>> {
+  getFeaturedMoviesHybrid(
+    programs: ITvProgram[]
+  ): Observable<Result<IFeaturedMovie[], string>> {
     this.logger.info('Starting hybrid featured movies strategy');
-    
+
     // Intentar primero desde programas
     return this.getFeaturedMoviesFromPrograms(programs).pipe(
-      map(programResult => {
+      map((programResult) => {
         if (programResult.success && programResult.data.length > 0) {
           this.logger.info('Using featured movies from program data');
           return programResult;
         }
-        
+
         this.logger.info('No movies found in programs, will fallback to TMDb');
         return null; // Indicar que necesitamos fallback
       }),
       // Si el resultado es null, hacer fallback a TMDb
-      switchMap(result => {
+      switchMap((result) => {
         if (result !== null) {
           return of(result);
         }
-        
+
         this.logger.info('Falling back to TMDb for featured movies');
         return this.getFeaturedMoviesFromTMDb();
       }),
-      catchError(error => {
+      catchError((error) => {
         this.logger.error('Error in hybrid featured movies strategy', error);
         // En caso de error, intentar TMDb como último recurso
         return this.getFeaturedMoviesFromTMDb();
@@ -277,5 +329,64 @@ export class FeaturedMoviesService {
   clearCache(): void {
     this.cache.clear();
     this.logger.info('Featured movies cache cleared');
+  }
+
+  /**
+   * Devuelve la película destacada y una lista de películas populares.
+   * Primero intenta extraerlas desde la programación, y si no hay resultados
+   * cae en TMDb. Siempre intenta enriquecer las películas populares con datos de TMDb.
+   */
+  public getFeaturedAndPopularMovies(
+    programs: ITvProgram[]
+  ): Observable<{
+    featured: IFeaturedMovie | null;
+    popular: IFeaturedMovie[];
+  }> {
+    // Intentar obtener desde la programación
+    return this.getFeaturedMoviesFromPrograms(programs).pipe(
+      switchMap((res) => {
+        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const movies = res.data;
+          const featured = this.selectFeaturedMovie(movies);
+          const popular = movies.filter((m) => m !== featured).slice(0, 5);
+
+          return this.enrichMoviesWithTMDbData(popular).pipe(
+            map((enriched) => ({
+              featured: featured || null,
+              popular: enriched,
+            }))
+          );
+        }
+
+        // Si no hay resultados desde programación, fallback a TMDb
+        return this.getFeaturedMoviesFromTMDb().pipe(
+          switchMap((tmdbRes) => {
+            if (
+              tmdbRes.success &&
+              Array.isArray(tmdbRes.data) &&
+              tmdbRes.data.length > 0
+            ) {
+              const movies = tmdbRes.data;
+              const featured = this.selectFeaturedMovie(movies);
+              const popular = movies.filter((m) => m !== featured).slice(0, 5);
+
+              return this.enrichMoviesWithTMDbData(popular).pipe(
+                map((enriched) => ({
+                  featured: featured || null,
+                  popular: enriched,
+                }))
+              );
+            }
+
+            // No hay nada en TMDb tampoco
+            return of({ featured: null, popular: [] });
+          })
+        );
+      }),
+      catchError((err) => {
+        this.logger.error('Error getting featured and popular movies', err);
+        return of({ featured: null, popular: [] });
+      })
+    );
   }
 }

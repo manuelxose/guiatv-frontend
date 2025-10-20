@@ -3,160 +3,195 @@ import * as admin from 'firebase-admin';
 
 // ... Configuración e inicialización de Firebase ...
 //añadir  settings: {
-  //   ignoreUndefinedProperties: true,
-  // },
+//   ignoreUndefinedProperties: true,
+// },
 // en el archivo firebase.json
-  const tdt = [  "La 1",  "La 2",  "Antena 3",  "Cuatro",  "Telecinco",  "La Sexta",  "Mega",  "Factoría de Ficción",  "Neox",  "Nova",  "Boing",  "Divinity",  "Energy",  "Paramount Network",  "DMAX",  "Disney Channel",  "Ten",  "Clan",  "Teledeporte",  "Be Mad",  "TRECE",  "DKISS",  "Atreseries",  "GOL PLAY"];
-  const autonomicos: any[] = [
-    {
-      nombre: 'Canal Sur Andalucía',
-      comunidad: 'Andalucía'
-    },
-    {
-      nombre: '7TV Andalucia',
-      comunidad: 'Andalucía'
-    },
-    {
-      nombre: 'Andalucía TV',
-      comunidad: 'Andalucía'
-    },
-    {
-      nombre: 'Aragón TV',
-      comunidad: 'Aragón'
-    },
-    {
-      nombre: 'IB3 RTV Illes Balears',
-      comunidad: 'Baleares'
-    },
-    {
-      nombre: 'TV Canaria',
-      comunidad: 'Canarias'
-    },
-    {
-      nombre: 'Castilla la Mancha TV',
-      comunidad: 'Castilla-La Mancha'
-    },
-    {
-      nombre: 'CYLTV',
-      comunidad: 'Castilla y León'
-    },
-    {
-      nombre: 'La 8',
-      comunidad: 'Castilla y León'
-    },
-    {
-      nombre: 'TV3',
-      comunidad: 'Cataluña'
-    },
-    {
-      nombre: 'Telemadrid',
-      comunidad: 'Madrid'
-    },
-    {
-      nombre: 'La Otra',
-      comunidad: 'Madrid'
-    },
-    {
-      nombre: 'À Punt',
-      comunidad: 'Comunidad Valenciana'
-    },
-    {
-      nombre: '8 Mediterráneo',
-      comunidad: 'Comunidad Valenciana'
-    },
-    {
-      nombre: 'Canal Extremadura',
-      comunidad: 'Extremadura'
-    },
-    {
-      nombre: 'TVG - TV Galicia',
-      comunidad: 'Galicia'
-    },
-    {
-      nombre: 'TVG 2',
-      comunidad: 'Galicia'
-    },
-    {
-      nombre: 'TVR',
-      comunidad: 'La Rioja'
-    },
-    {
-      nombre: 'La 7 Rioja',
-      comunidad: 'La Rioja'
-    },
-    {
-      nombre: '7RM',
-      comunidad: 'Murcia'
-    },
-    {
-      nombre: 'TV Murciana',
-      comunidad: 'Murcia'
-    },
-    {
-      nombre: 'Navarra Televisión',
-      comunidad: 'Navarra'
-    },
-    {
-      nombre: 'Navarra 2 TV',
-      comunidad: 'Navarra'
-    },
-    {
-      nombre: 'ETB1',
-      comunidad: 'País Vasco'
-    }
-  ];
-  const  cable = [
-    "FOX",
-    "FOX Life",
-    "FOX Crime",
-    "AXN",
-    "AXN White",
-    "TNT",
-    "Syfy",
-    "AMC",
-    "HBO",
-    "DARK",
-    "TCM",
-    "Comedy Central",
-    "Calle 13",
-    "Cosmo",
-    "Canal Hollywood",
-    "Sundance TV",
-    "XTRM",
-    "Somos",
-  ];
-  const movistar = [
-  "M+ #0",
-  "M+ #Vamos",
-  "M+ Estrenos",
-  "M+ Estrenos 2",
-  "M+ Clásicos",
-  "M+ Acción",
-  "M+ Comedia",
-  "M+ Drama",
-  "M+ Cine Español",
-  "M+ Fest",
-  "M+ Series",
-  "M+ Series 2",
-  ];
+const tdt = [
+  'La 1',
+  'La 2',
+  'Antena 3',
+  'Cuatro',
+  'Telecinco',
+  'La Sexta',
+  'Mega',
+  'Factoría de Ficción',
+  'Neox',
+  'Nova',
+  'Boing',
+  'Divinity',
+  'Energy',
+  'Paramount Network',
+  'DMAX',
+  'Disney Channel',
+  'Ten',
+  'Clan',
+  'Teledeporte',
+  'Be Mad',
+  'TRECE',
+  'DKISS',
+  'Atreseries',
+  'GOL PLAY',
+];
+const autonomicos: any[] = [
+  {
+    nombre: 'Canal Sur Andalucía',
+    comunidad: 'Andalucía',
+  },
+  {
+    nombre: '7TV Andalucia',
+    comunidad: 'Andalucía',
+  },
+  {
+    nombre: 'Andalucía TV',
+    comunidad: 'Andalucía',
+  },
+  {
+    nombre: 'Aragón TV',
+    comunidad: 'Aragón',
+  },
+  {
+    nombre: 'IB3 RTV Illes Balears',
+    comunidad: 'Baleares',
+  },
+  {
+    nombre: 'TV Canaria',
+    comunidad: 'Canarias',
+  },
+  {
+    nombre: 'Castilla la Mancha TV',
+    comunidad: 'Castilla-La Mancha',
+  },
+  {
+    nombre: 'CYLTV',
+    comunidad: 'Castilla y León',
+  },
+  {
+    nombre: 'La 8',
+    comunidad: 'Castilla y León',
+  },
+  {
+    nombre: 'TV3',
+    comunidad: 'Cataluña',
+  },
+  {
+    nombre: 'Telemadrid',
+    comunidad: 'Madrid',
+  },
+  {
+    nombre: 'La Otra',
+    comunidad: 'Madrid',
+  },
+  {
+    nombre: 'À Punt',
+    comunidad: 'Comunidad Valenciana',
+  },
+  {
+    nombre: '8 Mediterráneo',
+    comunidad: 'Comunidad Valenciana',
+  },
+  {
+    nombre: 'Canal Extremadura',
+    comunidad: 'Extremadura',
+  },
+  {
+    nombre: 'TVG - TV Galicia',
+    comunidad: 'Galicia',
+  },
+  {
+    nombre: 'TVG 2',
+    comunidad: 'Galicia',
+  },
+  {
+    nombre: 'TVR',
+    comunidad: 'La Rioja',
+  },
+  {
+    nombre: 'La 7 Rioja',
+    comunidad: 'La Rioja',
+  },
+  {
+    nombre: '7RM',
+    comunidad: 'Murcia',
+  },
+  {
+    nombre: 'TV Murciana',
+    comunidad: 'Murcia',
+  },
+  {
+    nombre: 'Navarra Televisión',
+    comunidad: 'Navarra',
+  },
+  {
+    nombre: 'Navarra 2 TV',
+    comunidad: 'Navarra',
+  },
+  {
+    nombre: 'ETB1',
+    comunidad: 'País Vasco',
+  },
+];
+const cable = [
+  'FOX',
+  'FOX Life',
+  'FOX Crime',
+  'AXN',
+  'AXN White',
+  'TNT',
+  'Syfy',
+  'AMC',
+  'HBO',
+  'DARK',
+  'TCM',
+  'Comedy Central',
+  'Calle 13',
+  'Cosmo',
+  'Canal Hollywood',
+  'Sundance TV',
+  'XTRM',
+  'Somos',
+];
+const movistar = [
+  'M+ #0',
+  'M+ #Vamos',
+  'M+ Estrenos',
+  'M+ Estrenos 2',
+  'M+ Clásicos',
+  'M+ Acción',
+  'M+ Comedia',
+  'M+ Drama',
+  'M+ Cine Español',
+  'M+ Fest',
+  'M+ Series',
+  'M+ Series 2',
+];
 
-admin.initializeApp();
+if (!admin.apps || admin.apps.length === 0) {
+  admin.initializeApp();
+}
 const db = admin.firestore();
-db.settings({
-  ignoreUndefinedProperties: true,
-});
+try {
+  db.settings({
+    ignoreUndefinedProperties: true,
+  });
+} catch (e) {
+  // some environments may not allow settings on import-time; swallow safely
+  console.warn('Could not set Firestore settings at import time:', e);
+}
 
-
-export async function guardarCanalesEnFirestore(canales: Canal[]): Promise<Map<string, string>> {
+export async function guardarCanalesEnFirestore(
+  canales: Canal[]
+): Promise<Map<string, string>> {
   try {
     const canalIdMap = new Map<string, string>();
 
     // Comprobar si los canales ya existen
     const canalesExistentes = await db.collection('canales').get();
-    const nombresCanalesExistentes = canalesExistentes.docs.map((doc: any) => doc.data().name);
+    const nombresCanalesExistentes = canalesExistentes.docs.map(
+      (doc: any) => doc.data().name
+    );
 
     // Dividir el array de canales en grupos de 500
-    const canalesChunks:any = [];
+    const canalesChunks: any = [];
     for (let i = 0; i < canales.length; i += 500) {
       canalesChunks.push(canales.slice(i, i + 500));
     }
@@ -165,7 +200,6 @@ export async function guardarCanalesEnFirestore(canales: Canal[]): Promise<Map<s
     for (const canalesChunk of canalesChunks) {
       const batch = db.batch();
       for (const canal of canalesChunk) {
-
         if (!nombresCanalesExistentes.includes(canal.name)) {
           const docRef = db.collection('canales').doc();
           canalIdMap.set(canal.name, docRef.id);
@@ -183,13 +217,16 @@ export async function guardarCanalesEnFirestore(canales: Canal[]): Promise<Map<s
   }
 }
 
-
-
-export async function guardarProgramasEnFirestore(programacionPorCanal: Record<string, Programa[]>, canalIdMap: Map<string, string>): Promise<void> {
+export async function guardarProgramasEnFirestore(
+  programacionPorCanal: Record<string, Programa[]>,
+  canalIdMap: Map<string, string>
+): Promise<void> {
   for (const [nombreCanal, programas] of Object.entries(programacionPorCanal)) {
     const canalId = canalIdMap.get(nombreCanal);
     if (!canalId) {
-      console.warn(`No se encontró el canal ${nombreCanal} en el mapa de ID de canales. No se guardarán los programas de este canal.`);
+      console.warn(
+        `No se encontró el canal ${nombreCanal} en el mapa de ID de canales. No se guardarán los programas de este canal.`
+      );
       continue;
     }
 
@@ -205,11 +242,12 @@ export async function guardarProgramasEnFirestore(programacionPorCanal: Record<s
 
     // Guardar los programas agrupados por fecha en el documento del canal
     try {
-
       const canalDocRef = db.collection('canales').doc(canalId);
       const batch = db.batch();
 
-      for (const [fecha, programasPorDia] of Object.entries(programasPorFecha)) {
+      for (const [fecha, programasPorDia] of Object.entries(
+        programasPorFecha
+      )) {
         batch.update(canalDocRef, { [`programas_${fecha}`]: programasPorDia });
       }
 
@@ -217,13 +255,15 @@ export async function guardarProgramasEnFirestore(programacionPorCanal: Record<s
 
       console.log(`Guardado exitoso de programas para el canal ${nombreCanal}`);
     } catch (error) {
-      console.error(`Error al guardar programas para el canal ${nombreCanal}:`, error);
+      console.error(
+        `Error al guardar programas para el canal ${nombreCanal}:`,
+        error
+      );
     }
   }
 
   console.log('Proceso de guardado de programas en Firestore finalizado.');
 }
-
 
 export async function datosInicialesCargados() {
   try {
@@ -233,7 +273,9 @@ export async function datosInicialesCargados() {
     // Verifica si existe la subcolección 'programas' en al menos un canal
     for (const canalDoc of canalesSnapshot.docs) {
       const subcolecciones = await canalDoc.ref.listCollections();
-      const programasSubcoleccion = subcolecciones.find((subcoleccion) => subcoleccion.id === 'programas');
+      const programasSubcoleccion = subcolecciones.find(
+        (subcoleccion) => subcoleccion.id === 'programas'
+      );
 
       if (programasSubcoleccion) {
         return true; // Si al menos un canal tiene la subcolección 'programas', retorna verdadero
@@ -243,11 +285,13 @@ export async function datosInicialesCargados() {
     // Si ningún canal tiene la subcolección 'programas', retorna falso
     return false;
   } catch (error) {
-    console.error('Error al verificar si los datos iniciales están cargados 1:', error);
+    console.error(
+      'Error al verificar si los datos iniciales están cargados 1:',
+      error
+    );
     return false;
   }
 }
-
 
 //una vez guardados los canales y programas, mover los que se correspondan a la coleccion canales_españa
 
@@ -256,7 +300,7 @@ export async function moverCanalesEspana() {
     ...tdt,
     ...movistar,
     ...cable,
-    ...autonomicos.map(autonomico => autonomico.nombre),
+    ...autonomicos.map((autonomico) => autonomico.nombre),
   ];
 
   try {
@@ -303,99 +347,124 @@ export async function moverCanalesEspana() {
     // Si ningún canal tiene la subcolección 'programas', retorna falso
     return false;
   } catch (error) {
-    console.error('Error al verificar si los datos iniciales están cargados:', error);
+    console.error(
+      'Error al verificar si los datos iniciales están cargados:',
+      error
+    );
     return false;
   }
 }
 
 //una vez copiado los canales en canales_españa, formatear el contenido de cada programa
 
-
-
-  async function procesarCanales(canal: any): Promise<any> {
-    const canalProcesado = { ...canal };
-    const clasificacion = clasificarCanal(canal.name);
-    canalProcesado.tipo = clasificacion.tipo;
-    if (clasificacion.tipo === 'Autonomico') {
-      canalProcesado.comunidad = clasificacion.comunidad;
-    }
-
-    // Incluir el nombre del canal
-
-    for (const [key, value] of Object.entries(canal)) {
-      if (key.startsWith('programas_') && Array.isArray(value)) {
-        canalProcesado[key] = await Promise.all(value.map((programa: any) => procesarProgramas(programa)));
-      }
-    }
-    return canalProcesado;
+async function procesarCanales(canal: any): Promise<any> {
+  const canalProcesado = { ...canal };
+  const clasificacion = clasificarCanal(canal.name);
+  canalProcesado.tipo = clasificacion.tipo;
+  if (clasificacion.tipo === 'Autonomico') {
+    canalProcesado.comunidad = clasificacion.comunidad;
   }
 
-  async function procesarProgramas(programa: any) {
-      const array_tipo:any = [];
-      const array_subTipo: any = [];
+  // Incluir el nombre del canal
 
-      const { start, end, description: descripcion, title, image } = programa;
-      const imagen = image;
-      const nombre = title;
-      const inicio = parseCustomDate(start);
-      const fin = parseCustomDate(end);
-      const duracion = (fin.getTime() - inicio.getTime()) / 1000 / 60;
-      const [primera = '', segunda = '', ...resto] = descripcion ? descripcion.split('\n') : [];
-      const [ano = '', edad = '', votos = ''] = primera.split('|').map((s: any) => s.trim());
-      const [genero = '', des_programa = ''] = segunda.split('·').map((s: any) => s.trim());
-      const detalles = resto.join('\n').split('·').reduce((acc: any, item: string) => {
-        const [clave, valor] = item.split(/: (.+)/)
-        valor && (acc[clave.trim()?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")] = valor.trim());
-        return acc;
-      }, {});
-      const [tipo = '', subtipo = ''] = genero.split("/");
-
-    if (!array_tipo.includes(tipo)) {
-        array_tipo.push(tipo);
+  for (const [key, value] of Object.entries(canal)) {
+    if (key.startsWith('programas_') && Array.isArray(value)) {
+      canalProcesado[key] = await Promise.all(
+        value.map((programa: any) => procesarProgramas(programa))
+      );
     }
-    if (!array_subTipo.includes(subtipo)) {
-        array_subTipo.push(subtipo);
-    }
+  }
+  return canalProcesado;
+}
 
-    return {
-      duracion,
-      inicio: inicio.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-      fin: fin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
-      ano,
-      edad,
-      des_programa,
-      clasificacion: /^\d\/\d/.test(votos) ? votos : '',
-      genero,
-      detalles,
-      tipo,
-      subtipo,
-      nombre,
-      imagen
-    };
+async function procesarProgramas(programa: any) {
+  const array_tipo: any = [];
+  const array_subTipo: any = [];
+
+  const { start, end, description: descripcion, title, image } = programa;
+  const imagen = image;
+  const nombre = title;
+  const inicio = parseCustomDate(start);
+  const fin = parseCustomDate(end);
+  const duracion = (fin.getTime() - inicio.getTime()) / 1000 / 60;
+  const [primera = '', segunda = '', ...resto] = descripcion
+    ? descripcion.split('\n')
+    : [];
+  const [ano = '', edad = '', votos = ''] = primera
+    .split('|')
+    .map((s: any) => s.trim());
+  const [genero = '', des_programa = ''] = segunda
+    .split('·')
+    .map((s: any) => s.trim());
+  const detalles = resto
+    .join('\n')
+    .split('·')
+    .reduce((acc: any, item: string) => {
+      const [clave, valor] = item.split(/: (.+)/);
+      valor &&
+        (acc[
+          clave
+            .trim()
+            ?.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+        ] = valor.trim());
+      return acc;
+    }, {});
+  const [tipo = '', subtipo = ''] = genero.split('/');
+
+  if (!array_tipo.includes(tipo)) {
+    array_tipo.push(tipo);
+  }
+  if (!array_subTipo.includes(subtipo)) {
+    array_subTipo.push(subtipo);
   }
 
+  return {
+    duracion,
+    inicio: inicio.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    fin: fin.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    ano,
+    edad,
+    des_programa,
+    clasificacion: /^\d\/\d/.test(votos) ? votos : '',
+    genero,
+    detalles,
+    tipo,
+    subtipo,
+    nombre,
+    imagen,
+  };
+}
 
-  function parseCustomDate(dateString: string): Date {
-    //el formato de fechas es de 24h la diferencia entre
-    const [day, month, year, hour, minute] = dateString.split(/[/ :]/).map(Number);
-    return new Date(year, month - 1, day, hour, minute);
+function parseCustomDate(dateString: string): Date {
+  //el formato de fechas es de 24h la diferencia entre
+  const [day, month, year, hour, minute] = dateString
+    .split(/[/ :]/)
+    .map(Number);
+  return new Date(year, month - 1, day, hour, minute);
+}
+
+function clasificarCanal(nombreCanal: string) {
+  if (tdt.includes(nombreCanal)) {
+    return { tipo: 'TDT' };
   }
-
-
-  function clasificarCanal(nombreCanal: string) {
-    if (tdt.includes(nombreCanal)) {
-      return { tipo: 'TDT' };
-    }
-    if (movistar.includes(nombreCanal)) {
-      return { tipo: 'Movistar' };
-    }
-    if (cable.includes(nombreCanal)) {
-      return { tipo: 'Cable' };
-    }
-    for (const canalAutonomico of autonomicos) {
-      if (canalAutonomico.nombre === nombreCanal) {
-        return { tipo: 'Autonomico', comunidad: canalAutonomico.comunidad };
-      }
-    }
-    return { tipo: 'Desconocido' };
+  if (movistar.includes(nombreCanal)) {
+    return { tipo: 'Movistar' };
   }
+  if (cable.includes(nombreCanal)) {
+    return { tipo: 'Cable' };
+  }
+  for (const canalAutonomico of autonomicos) {
+    if (canalAutonomico.nombre === nombreCanal) {
+      return { tipo: 'Autonomico', comunidad: canalAutonomico.comunidad };
+    }
+  }
+  return { tipo: 'Desconocido' };
+}

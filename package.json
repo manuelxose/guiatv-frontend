@@ -4,15 +4,17 @@
   "private": true,
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "start:ssr": "ng serve --port 4200",
+  "start": "ng serve",
+  "start:ssr": "node functions/dist/guiatv/server/server.mjs",
     "build": "ng build",
-    "build:ssr": "ng build",
-    "serve:ssr": "node dist/guiatv/server/server.mjs",
+  "build:ssr": "ng build --configuration production && node ./scripts/copy-dist-to-functions.js",
+  "serve:ssr": "node functions/dist/guiatv/server/server.mjs",
+  "start-and-build:ssr": "npm run build:ssr && npm run serve:ssr",
     "dev:ssr": "ng serve --port 4200",
     "prerender": "ng build --prerender"
   },
   "dependencies": {
+    "embla-carousel": "^7.0.0",
     "@angular/animations": "^20.0.0",
     "@angular/cdk": "^20.0.1",
     "@angular/common": "^20.0.0",

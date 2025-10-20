@@ -1,8 +1,33 @@
+/* Let the CDK compute positioning. Avoid forcing `top` which can make the
+   overlay be placed incorrectly and get clipped by ancestor overflow rules. */
 ::ng-deep .cdk-overlay-pane {
-  position: absolute !important;
-  top: calc(0% + 5rem) !important;
-  z-index: 1000 !important;
+  /* Use fixed positioning to avoid clipping by transformed/overflowing ancestors */
+  position: fixed !important;
+  /* CDK will compute left/top for the pane when fixed as well */
+  z-index: 5000 !important;
   background-color: white !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure the overlay container itself sits above most app stacking contexts */
+::ng-deep .cdk-overlay-container {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 5000 !important;
+  pointer-events: none !important; /* allow clicks through container except on panes */
+}
+
+/* Keep the autocomplete host fixed so the input doesn't move */
+:host {
+  position: fixed;
+  top: 1rem; /* adjust as needed */
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 2rem);
+  max-width: 640px;
+  z-index: 6000;
+  pointer-events: auto;
+  display: block;
 }
 
 ::ng-deep .mat-mdc-autocomplete-panel {

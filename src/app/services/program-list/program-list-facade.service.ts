@@ -6,21 +6,25 @@
 import { Injectable, ElementRef } from '@angular/core';
 import { Observable, combineLatest, map } from 'rxjs';
 
-
 // Servicios especializados
 import { TimeManagerService } from './time-manager.service';
 import { DimensionCalculatorService } from './dimension-calculator.service';
 import { CategoryStyleManagerService } from './category-style-manager.service';
 import { ChannelLogoManagerService } from './channel-logo-manager.service';
 import { HomeDataService } from '../features/home-data.service';
-import { IProgramListData, IOperationResult, ITimeIndicatorState, IDayInfo, IProgramItem } from 'src/app/interfaces';
+import {
+  IProgramListData,
+  IOperationResult,
+  ITimeIndicatorState,
+  IDayInfo,
+  IProgramItem,
+} from 'src/app/interfaces';
 import { ViewportManagerService } from './viewport-manager.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ProgramListFacadeService {
-
   constructor(
     private timeManager: TimeManagerService,
     private dimensionCalculator: DimensionCalculatorService,
@@ -60,10 +64,10 @@ export class ProgramListFacadeService {
    */
   refreshData(): Observable<IOperationResult<boolean>> {
     return this.homeDataService.refreshData().pipe(
-      map(result => ({
+      map((result) => ({
         success: result.success,
         data: result.success ? true : false,
-        error: result.success ? undefined : (result as any).error
+        error: result.success ? undefined : (result as any).error,
       }))
     );
   }
@@ -103,19 +107,24 @@ export class ProgramListFacadeService {
   /**
    * Calcula el estado del indicador de tiempo actual
    */
-  calculateTimeIndicatorState(activeDay: number, currentTimeSlot: string): Observable<ITimeIndicatorState> {
-    return new Observable(subscriber => {
-      const visible = this.timeManager.shouldShowCurrentTimeIndicator(activeDay);
+  calculateTimeIndicatorState(
+    activeDay: number,
+    currentTimeSlot: string
+  ): Observable<ITimeIndicatorState> {
+    return new Observable((subscriber) => {
+      const visible =
+        this.timeManager.shouldShowCurrentTimeIndicator(activeDay);
       const currentTime = this.timeManager.getCurrentTime();
-      const leftPosition = this.dimensionCalculator.calculateCurrentTimeIndicatorPosition(
-        currentTime, 
-        currentTimeSlot
-      );
+      const leftPosition =
+        this.dimensionCalculator.calculateCurrentTimeIndicatorPosition(
+          currentTime,
+          currentTimeSlot
+        );
 
       subscriber.next({
         visible,
         leftPosition,
-        currentTime
+        currentTime,
       });
     });
   }
@@ -135,7 +144,10 @@ export class ProgramListFacadeService {
    * Calcula la posición izquierda de un programa
    */
   calculateLeftPosition(programTime: string, baseTime: string): string {
-    return this.dimensionCalculator.calculateLeftPosition(programTime, baseTime);
+    return this.dimensionCalculator.calculateLeftPosition(
+      programTime,
+      baseTime
+    );
   }
 
   /**
@@ -266,6 +278,20 @@ export class ProgramListFacadeService {
   }
 
   /**
+   * Carga datos para un día específico
+   * @param dayIndex - 0 = today, 1 = tomorrow, 2 = after_tomorrow
+   */
+  loadProgramsForDay(dayIndex: number): Observable<IOperationResult<boolean>> {
+    return this.homeDataService.loadDataForDay(dayIndex).pipe(
+      map((result: IOperationResult<any>) => ({
+        success: result.success,
+        data: result.success ? true : false,
+        error: result.success ? undefined : result.error,
+      }))
+    );
+  }
+
+  /**
    * Calcula la duración de un programa
    */
   calculateProgramDuration(startTime: string, endTime: string): number {
@@ -278,9 +304,13 @@ export class ProgramListFacadeService {
   generateProgramAriaLabel(programa: IProgramItem): string {
     const startTime = this.formatDisplayTime(programa.start);
     const endTime = this.formatDisplayTime(programa.stop);
-    const category = this.getCategoryDisplayName(programa.category?.value || '');
-    
-    return `${programa.title || 'Programa'}, ${startTime} a ${endTime}, ${category}`;
+    const category = this.getCategoryDisplayName(
+      programa.category?.value || ''
+    );
+
+    return `${
+      programa.title || 'Programa'
+    }, ${startTime} a ${endTime}, ${category}`;
   }
 
   /**
@@ -288,18 +318,18 @@ export class ProgramListFacadeService {
    */
   diagnoseState(): void {
     console.log('🔍 PROGRAM LIST FACADE - Diagnosing state...');
-    
+
     // Diagnóstico de dimensiones
     const dimensionsValid = this.dimensionCalculator.areDimensionsValid();
     console.log('📐 Dimensions valid:', dimensionsValid);
-    
+
     // Diagnóstico de viewport
     this.viewportManager.diagnoseViewportState();
-    
+
     // Diagnóstico de logos
     const logoStats = this.logoManager.getCacheStats();
     console.log('🖼️ Logo cache stats:', logoStats);
-    
+
     // Estado de datos
     this.homeDataService.debugState();
   }

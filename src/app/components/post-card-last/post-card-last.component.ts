@@ -1,6 +1,6 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
 import { BlogService } from 'src/app/services/blog.service';
-import { truncateTitle } from 'src/app/utils/utils';
+import { truncateTitle, slugify } from 'src/app/utils/utils';
 import { Router } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 
@@ -9,7 +9,7 @@ import { CommonModule, DatePipe } from '@angular/common';
   templateUrl: './post-card-last.component.html',
   styleUrls: ['./post-card-last.component.scss'],
   standalone: true,
-  imports: [CommonModule,DatePipe],
+  imports: [CommonModule, DatePipe],
   encapsulation: ViewEncapsulation.None,
 })
 export class PostCardLastComponent {
@@ -30,8 +30,8 @@ export class PostCardLastComponent {
     this.setBlog(post);
     this.blogSvc.setPosts(post);
     this.routes.navigate([
-      'programacion-tv/ver-mas/detalles',
-      post.slug.replace(/ /g, '-'),
+      'blog',
+      slugify(post.slug || post.title?.rendered || ''),
     ]);
   }
 

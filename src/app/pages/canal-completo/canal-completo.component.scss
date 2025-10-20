@@ -1,20 +1,1018 @@
+// ===================================================================
+// CANAL COMPLETO COMPONENT - APP CONSISTENT STYLES
+// ===================================================================
+
+// Variables matching app design
+$red-primary: #dc2626;
+$red-secondary: #ef4444;
+$red-dark: #991b1b;
+$gray-dark: #1f2937;
+$gray-darker: #111827;
+
+@use "sass:color";
+
+// ===================================================================
+// LIVE INDICATOR - Enhanced
+// ===================================================================
+
 .live-dot {
   height: 10px;
   width: 10px;
-  background-color: red;
+  background-color: $red-secondary;
   border-radius: 50%;
   display: inline-block;
-  animation: blink 1s linear infinite;
+  position: relative;
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: $red-secondary;
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    box-shadow: none;
+
+    &::before {
+      display: none;
+    }
+  }
 }
 
-@keyframes blink {
-  0% {
-    opacity: 0.2;
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
   }
   50% {
-    opacity: 1;
+    opacity: 0.7;
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
   }
   100% {
-    opacity: 0.2;
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
   }
+}
+
+// ===================================================================
+// LAYOUT & SECTIONS
+// ===================================================================
+
+main {
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  animation: fadeIn 0.4s ease-out;
+  contain: layout style;
+
+  @media (min-width: 1024px) {
+    contain: layout style paint;
+  }
+}
+
+section {
+  contain: layout style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+  scroll-margin-top: 5rem;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ===================================================================
+// HERO SECTION
+// ===================================================================
+
+section[aria-labelledby="hero-heading"] {
+  position: relative;
+
+  .absolute.inset-0 {
+    background: linear-gradient(
+      to top,
+      rgba(17, 24, 39, 0.98) 0%,
+      rgba(17, 24, 39, 0.85) 40%,
+      rgba(17, 24, 39, 0.5) 70%,
+      transparent 100%
+    );
+  }
+
+  h1,
+  h2 {
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+}
+
+// ===================================================================
+// STAT CARDS - Consistent with app gradients
+// ===================================================================
+
+[class*="bg-gradient-to-br"] {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15),
+    0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s ease;
+
+  /* Improve text contrast inside stat cards */
+  color: #fff !important;
+
+  &:hover {
+    @media (hover: hover) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2),
+        0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  // Subtle shimmer effect
+  &::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    bottom: -50%;
+    left: -50%;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 70%
+    );
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    transition: transform 0.6s ease;
+  }
+
+  &:hover::after {
+    @media (hover: hover) {
+      transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &::after {
+      display: none;
+    }
+  }
+
+  .text-2xl,
+  .text-3xl {
+    color: #fff !important;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  }
+}
+
+// New semantic stat-card styles for Quick Stats section
+.stat-card {
+  @extend .glass-effect;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  min-width: 180px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  .stat-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    color: #fff;
+  }
+
+  .stat-card__value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+  }
+
+  .stat-card__label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+  }
+}
+
+.stat-card--red {
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.12),
+    rgba(220, 38, 38, 0.04)
+  );
+  border: 1px solid rgba(220, 38, 38, 0.08);
+}
+
+.stat-card--blue {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.12),
+    rgba(59, 130, 246, 0.04)
+  );
+  border: 1px solid rgba(59, 130, 246, 0.08);
+}
+
+.stat-card--purple {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.12),
+    rgba(139, 92, 246, 0.04)
+  );
+  border: 1px solid rgba(139, 92, 246, 0.08);
+}
+
+.stat-card--green {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.12),
+    rgba(34, 197, 94, 0.04)
+  );
+  border: 1px solid rgba(34, 197, 94, 0.08);
+}
+
+// ===================================================================
+// STICKY NAVIGATION - App consistent
+// ===================================================================
+
+section[aria-labelledby="day-navigation-heading"] {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.scrolled {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15),
+      0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  // Day selector buttons
+  button {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+
+    /* Pill style to match app primary controls */
+    padding: 0.45rem 0.9rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.02),
+      rgba(255, 255, 255, 0.01)
+    );
+    color: #111827;
+
+    @media (prefers-color-scheme: dark) {
+      background: rgba(255, 255, 255, 0.02);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    &[class*="bg-red-600"],
+    &.active,
+    &[aria-pressed="true"] {
+      background: linear-gradient(135deg, $red-primary 0%, $red-dark 100%);
+      color: white !important;
+      box-shadow: 0 6px 16px rgba(220, 38, 38, 0.28);
+      border-color: rgba(220, 38, 38, 0.25);
+    }
+  }
+}
+
+// ===================================================================
+// BUTTONS & INTERACTIVE - App style
+// ===================================================================
+
+button,
+a {
+  font-family: "Montserrat", sans-serif;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    @media (hover: hover) {
+      transform: translateY(-1px) translateZ(0);
+    }
+  }
+
+  &:active {
+    transform: translateY(0) translateZ(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    transform: none !important;
+  }
+}
+
+// Navigation buttons
+button[class*="rounded-full"] {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.15);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+  }
+
+  &:hover::before {
+    @media (hover: hover) {
+      width: 180%;
+      height: 180%;
+    }
+  }
+
+  svg {
+    position: relative;
+    z-index: 1;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover svg {
+    @media (hover: hover) {
+      transform: scale(1.15);
+    }
+  }
+}
+
+// Time slot buttons
+button[class*="rounded-xl"][class*="border-2"] {
+  border-color: rgba(229, 231, 235, 0.3);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (prefers-color-scheme: dark) {
+    border-color: rgba(55, 65, 81, 0.4);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  // Ensure headings use the correct dark-on-light color with higher specificity
+  @media (prefers-color-scheme: light) {
+    :host,
+    :host * {
+      /* Increase specificity to override Angular component attribute selectors */
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        color: #0f172a !important;
+      }
+    }
+  }
+
+  &[class*="border-red-600"] {
+    background: linear-gradient(
+      135deg,
+      rgba(220, 38, 38, 0.15) 0%,
+      rgba(220, 38, 38, 0.05) 100%
+    );
+    border-color: $red-primary;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  }
+
+  &:hover {
+    @media (hover: hover) {
+      background: linear-gradient(
+        135deg,
+        rgba(239, 68, 68, 0.1) 0%,
+        rgba(239, 68, 68, 0.05) 100%
+      );
+      border-color: $red-secondary;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// ===================================================================
+// TYPOGRAPHY - Montserrat & Readability
+// ===================================================================
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-rendering: optimizeLegibility;
+  color: #ffffff; // High contrast for dark mode
+
+  @media (prefers-color-scheme: light) {
+    color: #0f172a; // stronger dark for better contrast in light mode
+  }
+}
+
+h1 {
+  font-size: clamp(1.5rem, 4vw + 1rem, 2.5rem);
+  font-weight: 800;
+}
+
+h2 {
+  font-size: clamp(1.25rem, 3vw + 0.5rem, 2rem);
+  font-weight: 700;
+}
+
+h3 {
+  font-size: clamp(1.125rem, 2vw + 0.5rem, 1.5rem);
+  font-weight: 600;
+}
+
+// Body text - improved readability
+p,
+span,
+div {
+  font-family: "Montserrat", sans-serif;
+  line-height: 1.6;
+
+  /* Normalize color classes to stronger contrasts on this page */
+  &[class*="text-gray-300"] {
+    color: #e5e7eb; /* slightly brighter */
+  }
+
+  &[class*="text-gray-400"] {
+    color: #9ca3af; /* keep as-is but clearer on dark */
+  }
+
+  &[class*="text-gray-500"],
+  &[class*="text-gray-600"] {
+    color: #374151; /* darker on light mode */
+
+    @media (prefers-color-scheme: dark) {
+      color: #d1d5db; /* lighter for dark mode */
+    }
+  }
+
+  /* Ensure small meta text remains readable */
+  &.text-xs,
+  &.text-sm {
+    color: #6b7280; /* neutral readable gray on light */
+
+    @media (prefers-color-scheme: dark) {
+      color: #c7cbd1;
+    }
+  }
+}
+
+// -------------------------------------------------------------------
+// Page-scoped text color normalization
+// Ensures Tailwind utilities used in templates don't produce cold/incorrect tones
+// Scoped to this component using the top-level selector to increase specificity
+// -------------------------------------------------------------------
+:host,
+main,
+#main-content {
+  /* Light mode defaults: dark text for readability */
+  @media (prefers-color-scheme: light) {
+    color: #0f172a; /* slate-900 */
+
+    /* Ensure headings and strong text are darker */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong {
+      color: #0f172a !important;
+    }
+
+    /* Normalize common Tailwind utilities to readable darks */
+    [class*="text-gray-900"],
+    [class*="text-gray-800"],
+    [class*="text-gray-700"],
+    [class*="text-gray-600"] {
+      color: #0f172a !important;
+    }
+  }
+
+  /* Dark mode defaults: warm off-white base */
+  @media (prefers-color-scheme: dark) {
+    color: #fff6f5; /* warm off-white base */
+
+    /* Headings stronger warm tone */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      color: #fff6f5 !important;
+    }
+
+    /* Neutralize Tailwind gray/blue utilities that may be too cold */
+    [class*="text-gray-"],
+    [class*="text-blue-"],
+    [class*="text-green-"],
+    [class*="text-purple-"],
+    [class*="text-slate-"],
+    [class*="text-cool-"] {
+      color: #efe6e4 !important; /* warm muted */
+    }
+
+    /* Keep important CTAs in app red */
+    a,
+    a:link,
+    a:visited {
+      color: $red-secondary !important;
+    }
+
+    a:hover {
+      color: color.adjust($red-secondary, $lightness: 8%) !important;
+    }
+  }
+}
+
+// Small text
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+// ===================================================================
+// IMAGES - Optimized
+// ===================================================================
+
+img {
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  transform: translateZ(0);
+  user-drag: none;
+  -webkit-user-drag: none;
+  user-select: none;
+
+  &[class*="rounded-full"] {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      @media (hover: hover) {
+        transform: scale(1.08) translateZ(0);
+        box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.3);
+      }
+    }
+  }
+
+  // Ring effect on channel logos
+  &[class*="ring-2"] {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2),
+      0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// ===================================================================
+// SVG ICONS
+// ===================================================================
+
+svg {
+  display: block;
+  transform: translateZ(0);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    fill 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+// ===================================================================
+// CARDS & CONTAINERS
+// ===================================================================
+
+// Category cards
+article {
+  &[class*="scroll-mt-24"] {
+    > header {
+      margin-bottom: 1.5rem;
+
+      .rounded-lg {
+        background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+        box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.2);
+
+        @media (prefers-color-scheme: dark) {
+          background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+        }
+      }
+    }
+  }
+}
+
+// Time slot headers
+.bg-gradient-to-br.from-red-500.to-red-700 {
+  background: linear-gradient(135deg, $red-secondary 0%, $red-dark 100%);
+  box-shadow: 0 4px 12px -2px rgba(220, 38, 38, 0.4);
+}
+
+// ===================================================================
+// PROSE/CONTENT - App consistent
+// ===================================================================
+
+.prose {
+  font-family: "Montserrat", sans-serif;
+
+  p {
+    margin-bottom: 1.25em;
+    line-height: 1.75;
+    color: #d1d5db;
+
+    @media (prefers-color-scheme: light) {
+      color: #374151;
+    }
+  }
+
+  ul {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+    padding-left: 1.75em;
+
+    li {
+      margin-top: 0.75em;
+      margin-bottom: 0.75em;
+      line-height: 1.75;
+      color: #d1d5db;
+
+      @media (prefers-color-scheme: light) {
+        color: #374151;
+      }
+
+      &::marker {
+        color: $red-secondary;
+      }
+    }
+  }
+
+  strong {
+    font-weight: 600;
+    color: $red-secondary;
+
+    @media (prefers-color-scheme: light) {
+      color: $red-primary;
+    }
+  }
+
+  h2,
+  h3 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    font-weight: 700;
+  }
+}
+
+// ===================================================================
+// SCROLLBAR - App consistent
+// ===================================================================
+
+[role="region"],
+.overflow-x-auto {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.8) rgba(31, 41, 55, 0.3);
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(31, 41, 55, 0.3);
+    border-radius: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #6b7280, #9ca3af);
+    border-radius: 8px;
+    transition: background 0.3s ease;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #9ca3af, #d1d5db);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}
+
+// ===================================================================
+// FOCUS STATES - Accessible
+// ===================================================================
+
+:focus-visible {
+  outline: 2px solid $red-secondary;
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+
+  @media (prefers-contrast: high) {
+    outline-width: 3px;
+  }
+}
+
+.focus-ring-red:focus {
+  outline: 2px solid rgba(220, 38, 38, 0.5);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+}
+
+// ===================================================================
+// LOADING STATES - App consistent
+// ===================================================================
+
+.loading-skeleton,
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(55, 65, 81, 0.3) 25%,
+    rgba(75, 85, 99, 0.5) 50%,
+    rgba(55, 65, 81, 0.3) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 0.5rem;
+
+  @media (prefers-color-scheme: light) {
+    background: linear-gradient(
+      90deg,
+      rgba(229, 231, 235, 0.4) 25%,
+      rgba(229, 231, 235, 0.8) 50%,
+      rgba(229, 231, 235, 0.4) 75%
+    );
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// ===================================================================
+// GLASSMORPHISM - App style
+// ===================================================================
+
+.glass-effect {
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+// ===================================================================
+// RESPONSIVE
+// ===================================================================
+
+@media (min-width: 640px) {
+  section {
+    contain-intrinsic-size: auto 600px;
+  }
+}
+
+@media (min-width: 768px) {
+  main {
+    contain: layout style paint;
+  }
+}
+
+@media (min-width: 1024px) {
+  section {
+    contain-intrinsic-size: auto 700px;
+  }
+}
+
+// ===================================================================
+// DARK MODE OPTIMIZATIONS
+// ===================================================================
+
+@media (prefers-color-scheme: dark) {
+  * {
+    -webkit-font-smoothing: auto;
+  }
+
+  img {
+    opacity: 0.95;
+  }
+
+  // Dark mode: use warmer off-whites and red accents to match the app palette
+  // This avoids cold/bluish tones and keeps text legible over dark gradients.
+  $warm-offwhite: #fff6f5;
+  $warm-muted: #efe6e4;
+  $warm-subtle: #e7dbd8;
+
+  :host,
+  main,
+  #main-content,
+  section,
+  article,
+  header,
+  footer {
+    color: $warm-muted !important; /* warm readable base */
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: $warm-offwhite !important; /* headings use warm off-white */
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+
+  p,
+  span,
+  div,
+  a,
+  li,
+  strong {
+    color: $warm-subtle !important; /* body text slightly muted */
+  }
+
+  /* Normalize Tailwind text utility classes to warm tones */
+  [class*="text-gray-900"],
+  [class*="text-gray-700"],
+  [class*="text-gray-600"],
+  [class*="text-gray-500"],
+  [class*="text-gray-400"],
+  [class*="text-gray-300"] {
+    color: $warm-muted !important;
+  }
+
+  .text-xs,
+  .text-sm {
+    color: #dccfcf !important; /* meta text warm tone */
+  }
+
+  /* Subtitles on stat cards use a light warm tint */
+  .text-red-100,
+  .text-blue-100,
+  .text-purple-100,
+  .text-green-100 {
+    color: $warm-offwhite !important;
+  }
+
+  /* Links and interactive text should use the app red (warmer) */
+  a,
+  a:link,
+  a:visited {
+    color: $red-secondary !important;
+  }
+
+  a:hover {
+    color: color.adjust($red-secondary, $lightness: 8%) !important;
+  }
+}
+
+// ===================================================================
+// ACCESSIBILITY
+// ===================================================================
+
+@media (prefers-contrast: high) {
+  button,
+  a {
+    border: 2px solid currentColor;
+  }
+
+  .live-dot {
+    border: 2px solid #ffffff;
+  }
+
+  // Higher contrast text
+  p,
+  span,
+  div {
+    &[class*="text-gray"] {
+      color: #ffffff !important;
+    }
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .backdrop-blur-lg {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: rgba(17, 24, 39, 0.98);
+
+    @media (prefers-color-scheme: light) {
+      background-color: rgba(255, 255, 255, 0.98);
+    }
+  }
+}
+
+// ===================================================================
+// PRINT
+// ===================================================================
+
+@media print {
+  .live-dot,
+  nav button,
+  svg[class*="cursor-pointer"],
+  button {
+    display: none !important;
+  }
+
+  main {
+    padding: 0;
+  }
+
+  section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  * {
+    background: white !important;
+    color: black !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  h1,
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}
+
+// ===================================================================
+// UTILITIES
+// ===================================================================
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.container-safe {
+  max-width: 100vw;
+  overflow-x: hidden;
 }

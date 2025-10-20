@@ -1,0 +1,50 @@
+// Animaciones para scroll infinito
+@keyframes scroll-up {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes scroll-down {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-scroll-up {
+  animation: scroll-up 20s linear infinite;
+
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+.animate-scroll-down {
+  animation: scroll-down 20s linear infinite;
+
+  &:hover {
+    animation-play-state: paused;
+  }
+}
+
+// Mejoras de accesibilidad para animaciones
+@media (prefers-reduced-motion: reduce) {
+  .animate-scroll-up,
+  .animate-scroll-down {
+    animation: none;
+  }
+}
+
+// Optimización para mobile
+@media (max-width: 768px) {
+  .animate-scroll-up,
+  .animate-scroll-down {
+    animation-duration: 15s;
+  }
+}

@@ -1,18 +1,21 @@
 <!-- app.component.html - ESTRUCTURA PRINCIPAL CORREGIDA SIN ESPACIOS EN BLANCO -->
-<div class="font-montserrat bg-gradient-to-br from-gray-900 via-gray-800 to-black h-screen overflow-hidden">
+<div
+  class="font-montserrat bg-gradient-to-br from-gray-900 via-gray-800 to-black min-h-screen flex flex-col"
+>
   <!-- Layout Principal: Sidebar + Content + Sidebar -->
-  <div class="flex h-full w-full">
-    
+  <div class="flex flex-1 w-full">
     <!-- Left Sidebar -->
     <app-left-sidebar></app-left-sidebar>
-    
+
     <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-auto">
       <router-outlet></router-outlet>
     </main>
-    
+
     <!-- Right Sidebar -->
     <app-right-sidebar></app-right-sidebar>
-    
   </div>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
 </div>

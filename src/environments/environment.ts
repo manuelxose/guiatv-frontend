@@ -14,6 +14,7 @@ export const environment = {
     measurementId: 'G-P6Z3BY2DVW',
   },
   API_BLOG: 'https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/blog',
+  SITE_URL: 'http://localhost:4200',
 };
 
 /*

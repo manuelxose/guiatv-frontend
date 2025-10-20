@@ -1,149 +1,283 @@
+<!-- Skip link para accesibilidad -->
+<a class="sr-only focus:not-sr-only" href="#main-content">
+  Saltar al contenido
+</a>
+
 <main
-  class="flex-1 py-10 px-5 sm:px-10 lg:min-w-[100vh] h-[100vh] overflow-y-auto max-w-[24.5rem] lg:max-w-[100vh]"
+  id="main-content"
+  class="peliculas w-full max-w-full mx-auto py-6 px-4 sm:py-8 sm:px-6 lg:py-10 lg:px-8 overflow-x-hidden overflow-y-auto"
+  role="main"
+  aria-label="Página de películas de televisión"
+  style="max-height: calc(100vh - 4rem)"
 >
+  <!-- Navegación global -->
   <app-nav-bar></app-nav-bar>
 
-  <div class="mt-9">
-    <div class="flex items-center justify-between">
-      <!-- Añade una etiqueta <h1> para indicar el encabezado principal de tu página -->
-      <h1 class="font-semibold text-gray-700 text-base dark:text-white">
-        Película destacada esta noche
-      </h1>
+  <!-- Header SEO optimizado -->
+  <section
+    class="intro mt-4 max-w-4xl mx-auto"
+    itemscope
+    itemtype="https://schema.org/WebPage"
+  >
+    <h1
+      id="page-title"
+      class="text-2xl font-semibold text-white"
+      itemprop="headline"
+    >
+      Películas en televisión
+    </h1>
+    <p
+      class="mt-3 text-sm leading-relaxed text-gray-300"
+      itemprop="description"
+    >
+      Encuentra las películas que se emiten hoy en la televisión de España:
+      estrenos, clásicos y selecciones por género (acción, comedia, drama,
+      thriller y más). Nuestra guía actualizada muestra canales, horarios y
+      detalles de cada emisión para ayudarte a elegir qué ver.
+    </p>
+    <p class="mt-2 text-xs text-gray-400">
+      Información actualizada varias veces al día para reflejar cambios en la
+      programación.
+    </p>
+  </section>
+
+  <!-- Featured banner -->
+  <section
+    *ngIf="destacada"
+    class="relative overflow-hidden mt-6"
+    itemscope
+    itemtype="https://schema.org/Movie"
+  >
+    <app-banner [data]="destacada" loading="eager"></app-banner>
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json" *ngIf="ldJson">
+      {{ ldJson }}
+    </script>
+  </section>
+
+  <!-- Loading State -->
+  <div
+    *ngIf="isLoading"
+    class="mt-6 sm:mt-8"
+    role="status"
+    aria-live="polite"
+    aria-label="Cargando contenido"
+  >
+    <div class="animate-pulse space-y-4">
+      <div
+        class="h-6 bg-gray-300 dark:bg-gray-700 rounded w-3/4 sm:w-1/2 mb-4"
+      ></div>
+      <div
+        class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full sm:w-3/4 mb-6"
+      ></div>
+      <div
+        class="h-40 sm:h-48 md:h-64 bg-gray-300 dark:bg-gray-700 rounded"
+      ></div>
     </div>
-    <h3 class="mt-4 text-sm text-gray-600">
-      La mejor opcion para ver una buena pélicula esta noche en la televisión.
-    </h3>
-    <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
+    <span class="sr-only">Cargando películas de televisión...</span>
   </div>
 
-  <section class="mt-9">
-    <div class="flex items-center justify-between">
-      <!-- Cambia la etiqueta <span> por <h2> para indicar el encabezado secundario de tu página -->
-      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
-        Películas en Ahora en televisión
-      </h2>
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent.onPrevClick()"
-        >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent.onNextClick()"
-        >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
-      </div>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="“mt-4" class="text-sm text-gray-600">
-      ¿Te apetece ver una buena película en la tele? En nuestra web te ofrecemos
-      una guía completa de las mejores películas en TV hoy, para que no te
-      pierdas nada de lo que se está emitiendo en los canales más vistos.
-      Tenemos películas para todos los gustos y edades, desde comedias que te
-      harán reír hasta thrillers que te mantendrán en vilo, pasando por dramas,
-      romances, acción y mucho más. Además, te mostramos las películas más
-      populares, las más galardonadas y las más valoradas por la crítica, para
-      que puedas disfrutar de la mejor calidad cinematográfica. Con nuestra
-      selección de películas en TV hoy, solo tienes que elegir la que más te
-      guste y prepararte para pasar un buen rato.
-    </p>
-    <div class="mt-4 text-sm text-gray-600">
-      <app-slider #sliderComponent [programas]="en_emision"></app-slider>
-    </div>
-  </section>
+  <!-- Content -->
+  <article *ngIf="!isLoading">
+    <!-- Películas en emisión ahora -->
+    <section
+      class="mt-8 sm:mt-10 lg:mt-12"
+      aria-labelledby="en-emision-heading"
+    >
+      <header class="mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2
+            id="en-emision-heading"
+            class="text-base sm:text-lg lg:text-xl font-semibold text-white leading-tight"
+          >
+            Películas ahora en televisión
+          </h2>
+          <nav
+            class="hidden sm:flex items-center gap-2"
+            aria-label="Navegación de películas en emisión"
+          >
+            <button
+              type="button"
+              aria-label="Ver películas anteriores en emisión"
+              class="btn-nav-control"
+              (click)="enEmisionSlider?.prev()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+                ></path>
+              </svg>
+            </button>
+            <button
+              type="button"
+              aria-label="Ver más películas en emisión"
+              class="btn-nav-control"
+              (click)="enEmisionSlider?.next()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+                ></path>
+              </svg>
+            </button>
+          </nav>
+        </div>
+        <p class="text-sm sm:text-base text-gray-400 leading-relaxed">
+          Descubre las películas que están en emisión ahora mismo. Desde
+          comedias hasta thrillers, dramas, romances y acción.
+        </p>
+      </header>
 
-  <section class="mt-9">
-    <div class="flex items-center justify-between">
-      <!-- Cambia la etiqueta <span> por <h2> para indicar el encabezado secundario de tu página -->
-      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
-        Todas las Películas en televisión hoy
-      </h2>
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent.onPrevClick()"
+      <div role="region" aria-label="Carrusel de películas en emisión">
+        <app-slider
+          ngSkipHydration
+          #enEmisionSlider
+          [programas]="en_emision"
+          variant="peliculas"
+          *ngIf="en_emision.length > 0"
+        ></app-slider>
+        <div
+          *ngIf="en_emision.length === 0"
+          class="empty-state glass-card-mobile text-center py-12 rounded-lg"
         >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent.onNextClick()"
-        >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-16 h-16 mx-auto mb-4 text-gray-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"
+            />
+          </svg>
+          <p class="text-responsive text-gray-400">
+            No hay películas en emisión en este momento
+          </p>
+        </div>
       </div>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="mt-4 text-sm text-gray-600">
-      Si te gustan las películas, no te pierdas nuestra selección de las mejores
-      películas que se emiten hoy en la televisión. Podrás ver películas de
-      todos los géneros y para todos los gustos, desde comedias hasta thrillers,
-      pasando por dramas, romances, acción y más. Disfruta de las películas más
-      taquilleras, las más premiadas y las más aclamadas por la crítica en los
-      canales de televisión más populares. Con nuestro listado de películas en
-      TV hoy podrás elegir la que más te apetezca ver y no perderte ningún
-      detalle.
-    </p>
-    <div class="mt-4 text-sm text-gray-600">
-      <app-slider #sliderComponent [programas]="peliculas"></app-slider>
-    </div>
-  </section>
+    </section>
 
-  <section *ngFor="let cat of categorias" class="">
-    <div class="flex items-center justify-between">
-      <!-- Cambia la etiqueta <span> por <h2> para indicar el encabezado secundario de tu página -->
-      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
-        Películas {{ cat }} en TV hoy
-      </h2>
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent1.onPrevClick()"
-        >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent1.onNextClick()"
-        >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
-      </div>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
+    <!-- Todas las películas de hoy -->
+    <section
+      class="mt-8 sm:mt-10 lg:mt-12"
+      aria-labelledby="all-movies-heading"
+    >
+      <header class="mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2
+            id="all-movies-heading"
+            class="text-base sm:text-lg lg:text-xl font-semibold text-white leading-tight"
+          >
+            Todas las películas en televisión hoy
+          </h2>
+          <nav
+            class="hidden sm:flex items-center gap-2"
+            aria-label="Navegación de todas las películas"
+          >
+            <button
+              type="button"
+              aria-label="Ver películas anteriores"
+              class="btn-nav-control"
+              (click)="allSlider?.prev()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+                ></path>
+              </svg>
+            </button>
+            <button
+              type="button"
+              aria-label="Ver más películas"
+              class="btn-nav-control"
+              (click)="allSlider?.next()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+                ></path>
+              </svg>
+            </button>
+          </nav>
+        </div>
+        <p class="text-sm sm:text-base text-gray-400 leading-relaxed">
+          Consulta nuestra guía completa con todas las películas que se emiten
+          hoy en los principales canales de España.
+        </p>
+      </header>
 
-    <div class="mt-4 text-sm text-gray-600">
       <app-slider
-        #sliderComponent1
-        [programas]="getPeliculasByCategory(cat)"
+        ngSkipHydration
+        #allSlider
+        [programas]="peliculas"
+        variant="peliculas"
+        *ngIf="peliculas.length > 0"
       ></app-slider>
-    </div>
-  </section>
+    </section>
+
+    <!-- Películas por categoría -->
+    <section
+      *ngFor="let cat of categorias; let i = index; trackBy: trackByCategory"
+      class="mt-8 sm:mt-10 lg:mt-12"
+      [attr.aria-labelledby]="'cat-heading-' + i"
+    >
+      <header class="mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2
+            [id]="'cat-heading-' + i"
+            class="text-base sm:text-lg lg:text-xl font-semibold text-white leading-tight capitalize"
+          >
+            Películas de <span class="text-red-600">{{ cat }}</span> en TV hoy
+          </h2>
+        </div>
+        <p class="text-sm sm:text-base text-gray-400 leading-relaxed">
+          Explora las mejores películas de la categoría {{ cat }} emitidas hoy.
+        </p>
+      </header>
+
+      <app-slider
+        ngSkipHydration
+        [programas]="getPeliculasByCategory(cat)"
+        variant="peliculas"
+      ></app-slider>
+    </section>
+  </article>
+
+  <!-- Debug panel: muestra en UI el objeto debugPayload (solo en desarrollo) -->
+  <!-- <aside
+    *ngIf="debugPayload"
+    class="debug-panel mt-6 max-w-4xl mx-auto p-4 bg-gray-800 rounded text-sm text-gray-200"
+  >
+    <h3 class="font-semibold mb-2">Debug payload (PeliculasComponent)</h3>
+    <pre class="whitespace-pre-wrap text-xs">{{ debugPayload | json }}</pre>
+  </aside> -->
 </main>

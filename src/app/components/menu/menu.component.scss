@@ -1,10 +1,17 @@
 /* Active link styling - modernized with better background and spacing */
 .active-link {
-  background: linear-gradient(135deg, rgba(220, 38, 38, 0.15), rgba(239, 68, 68, 0.1));
-  color: #f87171; /* Red-400 */
+  /* default active color comes from inline --active-color set in template, fallback to red */
+  --c: var(--active-color, #dc2626);
+
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.15),
+    rgba(239, 68, 68, 0.1)
+  );
+  color: #ffffff; /* High contrast color for active link */
   font-weight: 600;
   border-right-width: 3px;
-  border-right-color: #dc2626;
+  border-right-color: var(--c);
   border-radius: 0.5rem;
   padding-left: 0.75rem;
   padding-right: 0.5rem;
@@ -14,11 +21,17 @@
 }
 
 .active-link:hover {
-  background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.15));
-  color: #fca5a5; /* Red-300 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 122, 24, 0.12),
+    rgba(255, 160, 82, 0.08)
+  );
+  color: var(--c);
   transform: translateX(2px);
 }
 
+/* Use currentColor so SVGs inherit the inline color (allows orange home) */
 .active-icon {
-  fill: #dc2626;
+  fill: currentColor;
+  stroke: currentColor;
 }

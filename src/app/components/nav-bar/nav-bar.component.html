@@ -1,81 +1,204 @@
 <!-- nav-bar.component.html - MODERNIZADO CON TAILWIND -->
 <header class="relative z-50">
-  <nav class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 backdrop-blur-sm border-b border-gray-700/50 shadow-xl shadow-black/20">
+  <nav
+    class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 backdrop-blur-sm border-b border-gray-700/50 shadow-xl shadow-black/20"
+  >
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 lg:h-20">
-        
         <!-- Mobile Logo (visible on small screens) -->
         <div class="md:hidden flex items-center space-x-3">
-          <svg class="h-8 w-8 fill-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M10 15.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4Zm11.96-4.45c.58 6.26-4.64 11.48-10.9 10.9 -4.43-.41-8.12-3.85-8.9-8.23 -.26-1.42-.19-2.78.12-4.04 .14-.58.76-.9 1.31-.7v0c.47.17.75.67.63 1.16 -.2.82-.27 1.7-.19 2.61 .37 4.04 3.89 7.25 7.95 7.26 4.79.01 8.61-4.21 7.94-9.12 -.51-3.7-3.66-6.62-7.39-6.86 -.83-.06-1.63.02-2.38.2 -.49.11-.99-.16-1.16-.64v0c-.2-.56.12-1.17.69-1.31 1.79-.43 3.75-.41 5.78.37 3.56 1.35 6.15 4.62 6.5 8.4ZM5.5 4C4.67 4 4 4.67 4 5.5 4 6.33 4.67 7 5.5 7 6.33 7 7 6.33 7 5.5 7 4.67 6.33 4 5.5 4Z"></path>
+          <svg
+            class="h-8 w-8 fill-red-500"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M10 15.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4Zm11.96-4.45c.58 6.26-4.64 11.48-10.9 10.9 -4.43-.41-8.12-3.85-8.9-8.23 -.26-1.42-.19-2.78.12-4.04 .14-.58.76-.9 1.31-.7v0c.47.17.75.67.63 1.16 -.2.82-.27 1.7-.19 2.61 .37 4.04 3.89 7.25 7.95 7.26 4.79.01 8.61-4.21 7.94-9.12 -.51-3.7-3.66-6.62-7.39-6.86 -.83-.06-1.63.02-2.38.2 -.49.11-.99-.16-1.16-.64v0c-.2-.56.12-1.17.69-1.31 1.79-.43 3.75-.41 5.78.37 3.56 1.35 6.15 4.62 6.5 8.4ZM5.5 4C4.67 4 4 4.67 4 5.5 4 6.33 4.67 7 5.5 7 6.33 7 7 6.33 7 5.5 7 4.67 6.33 4 5.5 4Z"
+            ></path>
           </svg>
-          <span class="text-white font-bold text-lg">GPTV<span class="text-red-500">.</span></span>
+          <span class="text-white font-bold text-lg"
+            >GPTV<span class="text-red-500">.</span></span
+          >
         </div>
-        
+
         <!-- Navigation Links -->
         <nav class="hidden md:flex space-x-8 text-gray-300 font-medium">
-          <a routerLink="/"
-             class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-500/50"
-             [ngClass]="{
-               'text-white bg-red-500/20 border-b-2 border-red-500': isHome,
-               'hover:text-red-300': !isHome
-             }">
+          <a
+            routerLink="/"
+            class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-red-500/10 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+            [ngClass]="{
+              'text-white bg-red-500/20 border-b-2 border-red-500': isHome,
+              'hover:text-red-300': !isHome
+            }"
+          >
             <span class="relative z-10">Guía TV</span>
-            <div *ngIf="isHome" class="absolute inset-0 bg-gradient-to-r from-red-500/20 to-red-600/20 rounded-lg"></div>
+            <div
+              *ngIf="isHome"
+              class="absolute inset-0 bg-gradient-to-r from-red-500/20 to-red-600/20 rounded-lg"
+            ></div>
           </a>
-          
-          <a routerLink="/programacion-tv/guia-canales"
-             class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-             [ngClass]="{
-               'text-white bg-blue-500/20 border-b-2 border-blue-500': isGuiaCanales,
-               'hover:text-blue-300': !isGuiaCanales
-             }">
+
+          <a
+            routerLink="/programacion-tv/guia-canales"
+            class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            [ngClass]="{
+              'text-white bg-blue-500/20 border-b-2 border-blue-500':
+                isGuiaCanales,
+              'hover:text-blue-300': !isGuiaCanales
+            }"
+          >
             <span class="relative z-10">Canales</span>
-            <div *ngIf="isGuiaCanales" class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-lg"></div>
+            <div
+              *ngIf="isGuiaCanales"
+              class="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-lg"
+            ></div>
           </a>
-          
-          <a routerLink="/programacion-tv/peliculas"
-             class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-purple-500/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-             [ngClass]="{
-               'text-white bg-purple-500/20 border-b-2 border-purple-500': isPeliculas,
-               'hover:text-purple-300': !isPeliculas
-             }">
+
+          <a
+            routerLink="/programacion-tv/peliculas"
+            class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-purple-500/10 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+            [ngClass]="{
+              'text-white bg-purple-500/20 border-b-2 border-purple-500':
+                isPeliculas,
+              'hover:text-purple-300': !isPeliculas
+            }"
+          >
             <span class="relative z-10">Películas</span>
-            <div *ngIf="isPeliculas" class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-lg"></div>
+            <div
+              *ngIf="isPeliculas"
+              class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-purple-600/20 rounded-lg"
+            ></div>
           </a>
-          
-          <a routerLink="/programacion-tv/series"
-             class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-green-500/10 focus:outline-none focus:ring-2 focus:ring-green-500/50"
-             [ngClass]="{
-               'text-white bg-green-500/20 border-b-2 border-green-500': isSeries,
-               'hover:text-green-300': !isSeries
-             }">
+
+          <a
+            routerLink="/programacion-tv/series"
+            class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-green-500/10 focus:outline-none focus:ring-2 focus:ring-green-500/50"
+            [ngClass]="{
+              'text-white bg-green-500/20 border-b-2 border-green-500':
+                isSeries,
+              'hover:text-green-300': !isSeries
+            }"
+          >
             <span class="relative z-10">Series</span>
-            <div *ngIf="isSeries" class="absolute inset-0 bg-gradient-to-r from-green-500/20 to-green-600/20 rounded-lg"></div>
+            <div
+              *ngIf="isSeries"
+              class="absolute inset-0 bg-gradient-to-r from-green-500/20 to-green-600/20 rounded-lg"
+            ></div>
           </a>
-          
-          <a routerLink="/programacion-tv/en-directo"
-             class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-orange-500/10 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
-             [ngClass]="{
-               'text-white bg-orange-500/20 border-b-2 border-orange-500': isDirecto,
-               'hover:text-orange-300': !isDirecto
-             }">
+
+          <a
+            routerLink="/blog"
+            class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-violet-500/10 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+            [ngClass]="{
+              'text-white bg-violet-500/20 border-b-2 border-violet-500':
+                isBlog,
+              'hover:text-violet-300': !isBlog
+            }"
+          >
+            <span class="relative z-10">Blog</span>
+            <div
+              *ngIf="isBlog"
+              class="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-violet-600/20 rounded-lg"
+            ></div>
+          </a>
+
+          <a
+            routerLink="/programacion-tv/en-directo"
+            class="relative px-3 py-2 rounded-lg transition-all duration-300 hover:text-white hover:bg-orange-500/10 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+            [ngClass]="{
+              'text-white bg-orange-500/20 border-b-2 border-orange-500':
+                isDirecto,
+              'hover:text-orange-300': !isDirecto
+            }"
+          >
             <span class="relative z-10 flex items-center space-x-2">
               <span>En Vivo</span>
               <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             </span>
-            <div *ngIf="isDirecto" class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-orange-600/20 rounded-lg"></div>
+            <div
+              *ngIf="isDirecto"
+              class="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-orange-600/20 rounded-lg"
+            ></div>
           </a>
         </nav>
-        
+
         <!-- Mobile Menu Button -->
-        <button class="md:hidden p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        <button
+          class="md:hidden p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-colors"
+          (click)="$any(menuState).toggleMobile()"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16"
+            ></path>
           </svg>
         </button>
-        
       </div>
     </div>
   </nav>
+  <!-- Mobile overlay: shown when MenuStateService.mobileOpen is true -->
+  <aside
+    *ngIf="menuState.getMobile() | async"
+    class="mobile-drawer fixed inset-0 z-50 lg:hidden"
+    (click)="$any(menuState).toggleMobile()"
+  >
+    <div class="drawer-backdrop" aria-hidden="true"></div>
+
+    <div
+      class="drawer-panel w-11/12 max-w-xs h-full bg-gradient-to-b from-white/95 to-white/90 dark:from-zinc-900 dark:to-zinc-800 p-4"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-3">
+          <!-- Small logo -->
+          <svg
+            class="h-8 w-8 fill-red-500"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M10 15.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4Zm11.96-4.45c.58 6.26-4.64 11.48-10.9 10.9 -4.43-.41-8.12-3.85-8.9-8.23 -.26-1.42-.19-2.78.12-4.04 .14-.58.76-.9 1.31-.7v0c.47.17.75.67.63 1.16 -.2.82-.27 1.7-.19 2.61 .37 4.04 3.89 7.25 7.95 7.26 4.79.01 8.61-4.21 7.94-9.12 -.51-3.7-3.66-6.62-7.39-6.86 -.83-.06-1.63.02-2.38.2 -.49.11-.99-.16-1.16-.64v0c-.2-.56.12-1.17.69-1.31 1.79-.43 3.75-.41 5.78.37 3.56 1.35 6.15 4.62 6.5 8.4ZM5.5 4C4.67 4 4 4.67 4 5.5 4 6.33 4.67 7 5.5 7 6.33 7 7 6.33 7 5.5 7 4.67 6.33 4 5.5 4Z"
+            ></path>
+          </svg>
+          <span class="text-white font-bold text-lg"
+            >GPTV<span class="text-red-500">.</span></span
+          >
+        </div>
+
+        <button
+          (click)="$any(menuState).toggleMobile()"
+          class="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500/40"
+          aria-label="Cerrar menú"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Use the app-menu but style links via CSS for better active state -->
+      <div class="mobile-menu overflow-auto h-[calc(100vh-88px)] pr-2">
+        <app-menu (click)="$event.stopPropagation()"></app-menu>
+      </div>
+    </div>
+  </aside>
 </header>

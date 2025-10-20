@@ -1,14 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { MenuComponent } from '../menu/menu.component';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { MenuStateService } from '../../services/menu-state.service';
 
 @Component({
   selector: 'app-nav-bar',
   templateUrl: './nav-bar.component.html',
   styleUrls: ['./nav-bar.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MenuComponent],
 })
 export class NavBarComponent {
   // Booleanos para saber en qué ruta estamos
@@ -16,45 +18,23 @@ export class NavBarComponent {
   public isGuiaCanales: boolean = false;
   public isSeries: boolean = false;
   public isPeliculas: boolean = false;
+  public isBlog: boolean = false;
   public isDirecto: boolean = false;
 
   private unsuscribe$ = new Subject<void>();
 
-  constructor(private router: Router) {
-    // Suscribirse a los eventos del router
-    this.router.events
+  constructor(private router: Router, public menuState: MenuStateService) {
+    // Suscribirse al estado compartido del menú para mantener sincronía
+    this.menuState
+      .getActive()
       .pipe(takeUntil(this.unsuscribe$))
-      .subscribe((event: any) => {
-        if (event instanceof NavigationEnd) {
-          // Resetear todos los booleanos
-          this.isHome = false;
-          this.isGuiaCanales = false;
-          this.isSeries = false;
-          this.isPeliculas = false;
-          this.isDirecto = false;
-
-          // Activar el booleano correspondiente a la ruta actual
-          switch (this.router.url.split('/')[2]) {
-            case 'home':
-              this.isHome = true;
-              break;
-            case 'guia-canales':
-              this.isGuiaCanales = true;
-              break;
-            case 'series':
-              this.isSeries = true;
-              break;
-            case 'peliculas':
-              this.isPeliculas = true;
-              break;
-            case 'en-directo':
-              this.isDirecto = true;
-              break;
-            default:
-              this.isHome = true;
-              break;
-          }
-        }
+      .subscribe((k) => {
+        this.isHome = k === 'home';
+        this.isGuiaCanales = k === 'guia-canales';
+        this.isSeries = k === 'series';
+        this.isPeliculas = k === 'peliculas';
+        this.isBlog = k === 'blog';
+        this.isDirecto = k === 'en-directo';
       });
   }
 

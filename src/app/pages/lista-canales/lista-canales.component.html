@@ -1,255 +1,137 @@
-<main
-  class="flex-1 py-10 px-5 sm:px-10 lg:min-w-[100vh] h-[100vh] overflow-y-auto lg:max-w-[100vh] max-w-[24.5rem]"
+<!-- Skip link for keyboard users -->
+<a class="skip-link sr-only focus:not-sr-only" href="#main-content"
+  >Saltar al contenido</a
 >
-  <section>
+
+<main
+  id="main-content"
+  class="lista-canales root flex-1 py-8 px-4 sm:px-8 lg:px-12"
+  role="main"
+  aria-labelledby="page-title"
+>
+  <section class="top">
     <app-nav-bar></app-nav-bar>
-
-    <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
+    <app-banner *ngIf="destacada" [data]="destacada" lazy="true"></app-banner>
   </section>
 
-  <!-- Seccion de listado de canales en España -->
-
-  <!-- CAROUSEL PARA CADA UNO DE LOS CANALES -->
-
-  <section class="mt-9">
-    <div class="flex items-center justify-between">
-      <!-- Añade una etiqueta <h1> para indicar el encabezado principal de tu página -->
-      <h1 class="font-semibold text-gray-700 text-base dark:text-white">
-        Listado de canales de televisión en España
-      </h1>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="mt-4 text-sm text-gray-600">
-      En esta página podrás ver el listado de canales de televisión en España y
-      la programación de hoy en la tele. Podrás elegir entre los canales de TDT,
-      Movistar+, Televisión Digital y otros. Además, podrás ver las sinopsis,
-      los horarios y los tráilers de los programas que más te interesen.
-      Disfruta de la mejor oferta televisiva con nuestro listado de canales de
-      televisión en España.
+  <section class="intro mt-6 max-w-4xl mx-auto text-gray-600">
+    <h1 id="page-title" class="text-xl font-semibold text-gray-100">
+      Listado de canales de televisión en España
+    </h1>
+    <p class="mt-3 text-sm leading-relaxed">
+      Consulta la programación de los principales canales españoles. Filtra por
+      TDT, Movistar+, canales online o autonómicos.
     </p>
   </section>
 
-  <section class="mt-9">
-    <div class="flex items-center justify-between">
-      <!-- Añade una etiqueta <h2> para indicar el encabezado secundario de tu página -->
-      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
-        Canales TDT España
-      </h2>
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent.onPrevClick()"
+  <!-- JSON-LD para SEO -->
+  <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
+
+  <!-- Top channels (crawlable list for SEO) -->
+  <section
+    *ngIf="topChannels?.length"
+    class="top-channels mt-6 max-w-4xl mx-auto text-sm text-gray-300"
+    aria-labelledby="top-channels-title"
+  >
+    <h2 id="top-channels-title" class="text-base font-semibold text-gray-100">
+      Canales populares
+    </h2>
+    <p class="sr-only">
+      Listado de canales populares para facilitar el rastreo a buscadores
+    </p>
+    <ul class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <li *ngFor="let c of topChannels">
+        <a
+          [href]="
+            (url_web && (url_web[c.id]?.url || url_web[c.name]?.url)) || '#'
+          "
+          rel="noopener noreferrer"
+          class="text-gray-300 hover:text-red-400 underline-offset-2 focus:outline-none focus:ring-2 focus:ring-red-400"
+          >{{ c.name || c.nombre || c.title || c.titulo }}</a
         >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent.onNextClick()"
+      </li>
+    </ul>
+  </section>
+
+  <!-- Reusable section template: title, description, navigation and lazy slider -->
+  <ng-container
+    *ngFor="
+      let s of [
+        { key: 'tdt', title: 'Canales TDT España', list: canales_tdt },
+        {
+          key: 'movistar',
+          title: 'Canales exclusivos de Movistar+',
+          list: canales_m
+        },
+        {
+          key: 'online',
+          title: 'Canales de TV online en España',
+          list: canales_cable
+        },
+        {
+          key: 'autonomo',
+          title: 'Canales Autonómicos España',
+          list: canales_auto
+        },
+        { key: 'deporte', title: 'Canales Deportes España', list: canales_dep }
+      ]
+    "
+  >
+    <section
+      #channelSection
+      class="channel-section mt-8"
+      [attr.data-key]="s.key"
+      [attr.aria-labelledby]="'section-' + s.key + '-title'"
+    >
+      <div class="flex items-center justify-between">
+        <h2
+          id="{{ 'section-' + s.key + '-title' }}"
+          class="font-semibold text-gray-100 text-base"
         >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
+          {{ s.title }}
+        </h2>
+        <div class="controls flex items-center space-x-2 text-gray-400">
+          <button
+            aria-label="Anterior"
+            class="btn-nav"
+            (click)="prevFor(s.key)"
+          >
+            ‹
+          </button>
+          <button
+            aria-label="Siguiente"
+            class="btn-nav"
+            (click)="nextFor(s.key)"
+          >
+            ›
+          </button>
+        </div>
       </div>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="mt-4 text-sm text-gray-600">
-      Los canales TDT España son los que se emiten por la televisión digital
-      terrestre, que es el sistema de transmisión de señales de televisión en
-      formato digital. Los canales TDT España ofrecen una gran variedad de
-      contenidos, desde informativos y entretenimiento hasta cultura y deportes.
-      Algunos de los canales TDT España más populares son La 1, Antena 3,
-      Telecinco, Cuatro, La Sexta, TVE Internacional y Canal 24 Horas. Con
-      nuestro listado de canales TDT España podrás ver la programación de todos
-      estos canales y muchos más.
-    </p>
-    <div class="mt-4 text-sm text-gray-600">
-      <app-slider #sliderComponent [programas]="canales_tdt"></app-slider>
-    </div>
-  </section>
 
-  <section class="">
-    <div class="flex items-center justify-between">
-      <!-- Cambia el texto por "Canales exclusivos de Movistar+" para resaltar la exclusividad de estos canales -->
-      <span class="font-semibold text-gray-700 text-base dark:text-white"
-        >Canales exclusivos de Movistar+</span
-      >
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent1.onPrevClick()"
-        >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent1.onNextClick()"
-        >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
-      </div>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="mt-4 text-sm text-gray-600">
-      Los canales exclusivos de Movistar+ son los que solo puedes ver si estás
-      suscrito a esta plataforma de televisión de pago. Los canales exclusivos
-      de Movistar+ te ofrecen una programación de calidad, con películas,
-      series, documentales, deportes y mucho más. Algunos de los canales
-      exclusivos de Movistar+ son Movistar Estrenos, Movistar Series, Movistar
-      LaLiga, Movistar Fórmula 1 y Movistar Golf. Con nuestro listado de canales
-      exclusivos de Movistar+ podrás ver la programación de todos estos canales
-      y muchos más.
-    </p>
-    <div class="mt-4 text-sm text-gray-600">
-      <app-slider #sliderComponent1 [programas]="canales_m"></app-slider>
-    </div>
-  </section>
+      <p class="mt-3 text-sm text-gray-400">
+        {{ s.title }} — explora la programación y encuentra tus canales
+        favoritos.
+      </p>
 
-  <section class="">
-    <div class="flex items-center justify-between">
-      <!-- Cambia el texto por "Canales de TV online en España" para incluir una palabra clave más específica y actual -->
-      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
-        Canales de TV online en España
-      </h2>
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent2.onPrevClick()"
-        >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent2.onNextClick()"
-        >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
-      </div>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="mt-4 text-sm text-gray-600">
-      Los canales de TV online en España son los que se pueden ver a través de
-      internet, sin necesidad de una antena o un cable. Los canales de TV online
-      en España ofrecen una programación variada y adaptada a los gustos de los
-      espectadores, desde series y películas hasta documentales y deportes.
-      Algunos de los canales de TV online en España más populares son Fox, AXN,
-      TNT, Comedy Central y Calle 13. Con nuestro listado de canales de TV
-      online en España podrás ver la programación de todos estos canales y
-      muchos más.
-    </p>
-    <div class="mt-4 text-sm text-gray-600">
-      <app-slider #sliderComponent2 [programas]="canales_cable"></app-slider>
-    </div>
-  </section>
+      <div class="mt-4">
+        <!-- skeleton while loading -->
+        <div *ngIf="cargando" class="skeleton-grid" aria-hidden="true">
+          <div class="s-item" *ngFor="let i of [1, 2, 3, 4, 5]"></div>
+        </div>
 
-  <section class="">
-    <div class="flex items-center justify-between">
-      <!-- Cambia la etiqueta <span> por <h2> para indicar el encabezado secundario de tu página -->
-      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
-        Canales Autonómicos España
-      </h2>
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent3.onPrevClick()"
+        <!-- Lazy render slider only on browser and when sliderVisible flag is true -->
+        <ng-container
+          *ngIf="!cargando && (isBrowser ? sliderVisible[s.key] : true)"
         >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent3.onNextClick()"
-        >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
+          <app-slider
+            [key]="s.key"
+            [programas]="s.list"
+            variant="canales"
+            [attr.data-lazy]="isBrowser ? 'true' : 'false'"
+            [attr.aria-label]="'Carrusel de ' + s.title"
+          ></app-slider>
+        </ng-container>
       </div>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="mt-4 text-sm text-gray-600">
-      Los canales autonómicos de España son los que se emiten por las
-      televisiones públicas de cada comunidad autónoma. Los canales autonómicos
-      de España ofrecen una programación cercana y diversa, con contenidos de
-      actualidad, cultura, ocio, deportes y más. Algunos de los canales
-      autonómicos de España más vistos son TV3, Aragón TV, TVG, Canal Sur y
-      ETB2[^1^][1]. Con nuestro listado de canales autonómicos de España podrás
-      ver la programación de todos estos canales y muchos más.
-    </p>
-    <div class="mt-4 text-sm text-gray-600">
-      <app-slider #sliderComponent3 [programas]="canales_auto"></app-slider>
-    </div>
-  </section>
-
-  <section class="">
-    <div class="flex items-center justify-between">
-      <!-- Cambia la etiqueta <span> por <h2> para indicar el encabezado secundario de tu página -->
-      <h2 class="font-semibold text-gray-700 text-base dark:text-white">
-        Canales Deportes España
-      </h2>
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent4.onPrevClick()"
-        >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent4.onNextClick()"
-        >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
-      </div>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="mt-4 text-sm text-gray-600">
-      Los canales de deportes en España son los que te ofrecen la mejor
-      cobertura de las competiciones deportivas más importantes del mundo. Los
-      canales de deportes en España te permiten disfrutar de fútbol, baloncesto,
-      tenis, motor, golf y mucho más. Algunos de los canales de deportes en
-      España más destacados son Movistar LaLiga, Movistar Liga de Campeones,
-      Movistar Deportes, Eurosport, Gol TV y DAZN[^1^][1]. Con nuestro listado
-      de canales de deportes en España podrás ver la programación de todos estos
-      canales y muchos más.
-    </p>
-    <div class="mt-4 text-sm text-gray-600">
-      <app-slider #sliderComponent4 [programas]="canales_dep"></app-slider>
-    </div>
-  </section>
+    </section>
+  </ng-container>
 </main>

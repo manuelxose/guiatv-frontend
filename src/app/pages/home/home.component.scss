@@ -1,209 +1,436 @@
 /**
- * Home Component Styles - Moderno y Responsivo
- * Complementa las clases de Tailwind CSS con estilos personalizados
+ * Home Component Styles - SEO & Mobile-First Optimizado
+ * Enfoque en Core Web Vitals y UX móvil
  */
 
 // ===============================================
-// VARIABLES Y MIXINS
+// VARIABLES OPTIMIZADAS
 // ===============================================
 
 :root {
+  // Colores principales
+  --tv-red-primary: #ef4444;
+  --tv-red-hover: #dc2626;
+  --tv-red-active: #b91c1c;
+
+  // Gradientes optimizados
   --tv-gradient-primary: linear-gradient(135deg, #ef4444, #dc2626, #b91c1c);
-  --tv-gradient-secondary: linear-gradient(135deg, #374151, #1f2937, #111827);
-  --tv-shadow-glow: 0 20px 60px -12px rgba(239, 68, 68, 0.25);
-  --tv-shadow-card: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-  --tv-border-glass: rgba(255, 255, 255, 0.1);
+  --tv-gradient-dark: linear-gradient(135deg, #1f2937, #111827, #000000);
+
+  // Sombras con mejor rendimiento
+  --tv-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --tv-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+  --tv-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --tv-shadow-glow: 0 0 20px rgba(239, 68, 68, 0.3);
+
+  // Espaciado móvil-first
+  --spacing-xs: 0.5rem; // 8px
+  --spacing-sm: 0.75rem; // 12px
+  --spacing-md: 1rem; // 16px
+  --spacing-lg: 1.5rem; // 24px
+  --spacing-xl: 2rem; // 32px
+
+  // Transiciones optimizadas
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-// Smooth scrolling para toda la aplicación
+// ===============================================
+// BASE OPTIMIZATIONS
+// ===============================================
+
+// Smooth scrolling con mejoras de rendimiento
 html {
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+// Optimización de body para móviles
+body {
+  overscroll-behavior-y: none; // Evita bounce en iOS
+  -webkit-tap-highlight-color: transparent; // Quita highlight azul en móviles
+  touch-action: manipulation; // Mejora respuesta táctil
 }
 
 // ===============================================
-// UTILIDADES PERSONALIZADAS
+// MOBILE-FIRST UTILITY CLASSES
 // ===============================================
 
-// Line clamp para textos largos
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+// Touch-optimized buttons
+.touch-target {
+  min-height: 44px; // WCAG AAA touch target
+  min-width: 44px;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+// GPU-accelerated animations
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+// Optimized text truncation
+.text-truncate-mobile {
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
-// Backdrop blur fallback para navegadores antiguos
-.backdrop-blur-fallback {
-  background: rgba(0, 0, 0, 0.8);
-  
-  @supports (backdrop-filter: blur(20px)) {
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(20px);
+// Responsive line clamp (fallback para navegadores antiguos)
+@supports not (-webkit-line-clamp: 2) {
+  .line-clamp-2 {
+    display: block;
+    max-height: 3em;
+    overflow: hidden;
   }
 }
 
 // ===============================================
-// COMPONENTES ESPECÍFICOS
+// LOADING OPTIMIZATIONS
 // ===============================================
 
-// Loading states mejorados
+// Shimmer effect más eficiente
+@keyframes shimmer-optimized {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
 .loading-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(75, 85, 99, 0.3) 0%,
-    rgba(107, 114, 128, 0.5) 50%,
-    rgba(75, 85, 99, 0.3) 100%
+    rgba(75, 85, 99, 0.2) 0%,
+    rgba(107, 114, 128, 0.4) 50%,
+    rgba(75, 85, 99, 0.2) 100%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  animation: shimmer-optimized 2s ease-in-out infinite;
+  will-change: background-position;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+// Spinner optimizado para móviles
+.spinner-mobile {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--tv-red-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  will-change: transform;
 }
 
-// Glass morphism effect
-.glass-card {
-  background: rgba(31, 41, 55, 0.8);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--tv-border-glass);
-  box-shadow: var(--tv-shadow-card);
-}
-
-// Floating elements
-.floating-element {
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-// Gradient text effect
-.gradient-text {
+// ===============================================
+// GLASS MORPHISM OPTIMIZADO
+// ===============================================
+
+.glass-card-mobile {
+  background: rgba(31, 41, 55, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--tv-shadow-md);
+
+  @supports (backdrop-filter: blur(16px)) {
+    backdrop-filter: blur(16px) saturate(180%);
+  }
+
+  @supports not (backdrop-filter: blur(16px)) {
+    background: rgba(31, 41, 55, 0.95);
+  }
+}
+
+// ===============================================
+// MOBILE BUTTON OPTIMIZATIONS
+// ===============================================
+
+.btn-primary-mobile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 12px;
+  background: linear-gradient(
+    135deg,
+    var(--tv-red-primary),
+    var(--tv-red-hover)
+  );
+  color: white;
+  transition: all var(--transition-fast);
+  touch-action: manipulation;
+  user-select: none;
+
+  &:active {
+    transform: scale(0.95);
+    background: var(--tv-red-active);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (min-width: 640px) {
+    min-height: 48px;
+    padding: 14px 28px;
+    font-size: 1rem;
+  }
+}
+
+.btn-secondary-mobile {
+  @extend .btn-primary-mobile;
+  background: rgba(75, 85, 99, 0.3);
+  border: 1px solid rgba(156, 163, 175, 0.3);
+
+  &:hover {
+    background: rgba(75, 85, 99, 0.4);
+    border-color: rgba(156, 163, 175, 0.5);
+  }
+}
+
+// Floating Action Button optimizado
+.fab-mobile {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
   background: var(--tv-gradient-primary);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+  touch-action: manipulation;
+  z-index: 40;
 
-// ===============================================
-// RESPONSIVE BREAKPOINTS PERSONALIZADOS
-// ===============================================
-
-// Mobile First approach con breakpoints específicos
-@media (max-width: 480px) {
-  .mobile-optimized {
-    padding: 1rem;
+  &:active {
+    transform: scale(0.9);
   }
-  
-  .mobile-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+
+  @media (min-width: 640px) {
+    width: 64px;
+    height: 64px;
   }
 }
 
-@media (min-width: 481px) and (max-width: 768px) {
-  .tablet-optimized {
-    padding: 1.5rem;
+// ===============================================
+// CARD OPTIMIZATIONS
+// ===============================================
+
+.card-mobile {
+  background: rgba(31, 41, 55, 0.6);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 16px;
+  padding: var(--spacing-lg);
+  transition: all var(--transition-normal);
+
+  @supports (backdrop-filter: blur(12px)) {
+    backdrop-filter: blur(12px);
   }
-  
-  .tablet-grid {
+
+  &:active {
+    transform: translateY(2px);
+  }
+
+  @media (min-width: 640px) {
+    padding: var(--spacing-xl);
+    border-radius: 20px;
+  }
+}
+
+// ===============================================
+// FAQ ACCORDION OPTIMIZATIONS
+// ===============================================
+
+details {
+  summary {
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::marker {
+      display: none;
+    }
+
+    // Mejora área táctil
+    padding: 1rem 1.25rem;
+
+    @media (min-width: 640px) {
+      padding: 1.25rem 1.5rem;
+    }
+  }
+
+  // Animación suave de apertura
+  &[open] {
+    > div {
+      animation: slideDown 0.2s ease-out;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ===============================================
+// MOBILE GRID SYSTEMS
+// ===============================================
+
+// Grid de 2 columnas para móviles
+.grid-mobile-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-md);
+
+  @media (min-width: 640px) {
+    gap: var(--spacing-lg);
+  }
+
+  @media (min-width: 768px) {
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
   }
-}
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .desktop-small-optimized {
-    padding: 2rem;
-  }
-  
-  .desktop-small-grid {
+  @media (min-width: 1024px) {
     grid-template-columns: repeat(4, 1fr);
-    gap: 1.25rem;
-  }
-}
-
-@media (min-width: 1025px) and (max-width: 1440px) {
-  .desktop-optimized {
-    padding: 2.5rem;
-  }
-  
-  .desktop-grid {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1.5rem;
-  }
-}
-
-@media (min-width: 1441px) {
-  .desktop-large-optimized {
-    padding: 3rem;
-  }
-  
-  .desktop-large-grid {
-    grid-template-columns: repeat(6, 1fr);
-    gap: 2rem;
   }
 }
 
 // ===============================================
-// ACCESSIBILITY IMPROVEMENTS
+// TYPOGRAPHY MOBILE-FIRST
 // ===============================================
 
-// Focus styles mejorados
-.focus-enhanced:focus {
-  outline: 2px solid #ef4444;
+// Headings responsivos
+.heading-responsive {
+  &-h1 {
+    font-size: 1.875rem; // 30px
+    line-height: 1.2;
+
+    @media (min-width: 640px) {
+      font-size: 2.25rem; // 36px
+    }
+
+    @media (min-width: 1024px) {
+      font-size: 3rem; // 48px
+    }
+  }
+
+  &-h2 {
+    font-size: 1.5rem; // 24px
+    line-height: 1.3;
+
+    @media (min-width: 640px) {
+      font-size: 1.875rem; // 30px
+    }
+
+    @media (min-width: 1024px) {
+      font-size: 2.25rem; // 36px
+    }
+  }
+
+  &-h3 {
+    font-size: 1.25rem; // 20px
+    line-height: 1.4;
+
+    @media (min-width: 640px) {
+      font-size: 1.5rem; // 24px
+    }
+
+    @media (min-width: 1024px) {
+      font-size: 1.875rem; // 30px
+    }
+  }
+}
+
+// Body text responsive
+.text-responsive {
+  font-size: 0.875rem; // 14px
+  line-height: 1.5;
+
+  @media (min-width: 640px) {
+    font-size: 1rem; // 16px
+  }
+
+  @media (min-width: 1024px) {
+    font-size: 1.125rem; // 18px
+    line-height: 1.6;
+  }
+}
+
+// ===============================================
+// ACCESSIBILITY ENHANCEMENTS
+// ===============================================
+
+// Focus visible mejorado
+*:focus-visible {
+  outline: 2px solid var(--tv-red-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  border-radius: 4px;
 }
 
-// Reduced motion para usuarios con preferencias de accesibilidad
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+*:focus:not(:focus-visible) {
+  outline: none;
 }
 
 // High contrast mode support
 @media (prefers-contrast: high) {
-  .glass-card {
-    background: rgba(0, 0, 0, 0.9);
+  .glass-card-mobile,
+  .card-mobile {
+    background: rgba(0, 0, 0, 0.95);
     border: 2px solid #ffffff;
   }
-  
-  .gradient-text {
-    background: #ffffff;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+
+  .btn-primary-mobile {
+    border: 2px solid currentColor;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Dark mode support (aunque ya es dark por defecto)
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
   }
 }
 
@@ -211,31 +438,93 @@ html {
 // PERFORMANCE OPTIMIZATIONS
 // ===============================================
 
-// GPU acceleration para elementos que se animan frecuentemente
-.gpu-accelerated {
-  transform: translateZ(0);
-  will-change: transform;
-}
-
 // Lazy loading placeholder
 .lazy-placeholder {
   background: linear-gradient(
     135deg,
-    rgba(75, 85, 99, 0.3),
-    rgba(107, 114, 128, 0.2)
+    rgba(75, 85, 99, 0.2),
+    rgba(107, 114, 128, 0.3)
   );
-  animation: pulse 2s ease-in-out infinite;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: opacity;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// Contenedor con will-change para animaciones
+.will-animate {
+  will-change: transform, opacity;
+}
+
+// Después de la animación, remover will-change
+.animated-done {
+  will-change: auto;
 }
 
 // ===============================================
-// DARK MODE ENHANCEMENTS
+// MOBILE-SPECIFIC OVERRIDES
 // ===============================================
 
-// Mejoras específicas para el modo oscuro
-@media (prefers-color-scheme: dark) {
-  .auto-dark-enhance {
+// Mejorar área táctil en móviles
+@media (max-width: 640px) {
+  // Aumentar padding de elementos clickeables
+  a,
+  button,
+  [role="button"] {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // Espaciado generoso para evitar clics accidentales
+  .interactive-list > * + * {
+    margin-top: 0.75rem;
+  }
+
+  // Sticky elements con mejor z-index
+  .sticky-mobile {
+    position: sticky;
+    top: 0;
+    z-index: 30;
     background: rgba(17, 24, 39, 0.95);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(12px);
+  }
+}
+
+// Tablet landscape optimizations
+@media (min-width: 641px) and (max-width: 1023px) and (orientation: landscape) {
+  // Reducir espaciado vertical en landscape
+  section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  // Grid más compacto
+  .grid-mobile-2 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+// ===============================================
+// SAFE AREA INSETS (iPhone notch, etc)
+// ===============================================
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+
+  .fab-mobile {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -244,13 +533,398 @@ html {
 // ===============================================
 
 @media print {
-  .no-print {
+  // Ocultar elementos no necesarios
+  .fab-mobile,
+  .btn-primary-mobile,
+  nav,
+  button {
     display: none !important;
   }
-  
-  .print-optimized {
+
+  // Optimizar para impresión
+  body {
     background: white !important;
     color: black !important;
-    box-shadow: none !important;
   }
+
+  .card-mobile,
+  .glass-card-mobile {
+    background: white !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  a {
+    text-decoration: underline;
+    color: #000 !important;
+  }
+
+  // Mostrar URLs después de links
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+  }
+}
+
+// ===============================================
+// SKELETON LOADING STATES
+// ===============================================
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(75, 85, 99, 0.2) 25%,
+    rgba(107, 114, 128, 0.3) 50%,
+    rgba(75, 85, 99, 0.2) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 8px;
+
+  &-text {
+    height: 1em;
+    margin-bottom: 0.5em;
+
+    &:last-child {
+      margin-bottom: 0;
+      width: 80%;
+    }
+  }
+
+  &-heading {
+    height: 2em;
+    margin-bottom: 1em;
+  }
+
+  &-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+  }
+
+  &-card {
+    height: 200px;
+    width: 100%;
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// ===============================================
+// GRADIENT TEXT EFFECTS
+// ===============================================
+
+.gradient-text-mobile {
+  background: var(--tv-gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+
+  // Fallback para navegadores antiguos
+  @supports not (-webkit-background-clip: text) {
+    color: var(--tv-red-primary);
+  }
+}
+
+// ===============================================
+// SCROLL OPTIMIZATIONS
+// ===============================================
+
+// Smooth scroll con snap points para secciones
+.scroll-snap-container {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+
+  > section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+}
+
+// Custom scrollbar para webkit
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(239, 68, 68, 0.5);
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.7);
+  }
+}
+
+// Firefox scrollbar
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(239, 68, 68, 0.5) rgba(31, 41, 55, 0.3);
+}
+
+// ===============================================
+// RESPONSIVE IMAGES
+// ===============================================
+
+.img-responsive {
+  max-width: 100%;
+  height: auto;
+  display: block;
+
+  &-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &-contain {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+// ===============================================
+// MOBILE MENU OPTIMIZATIONS
+// ===============================================
+
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+
+  &.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  &-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 80%;
+    max-width: 320px;
+    background: rgba(17, 24, 39, 0.98);
+    transform: translateX(100%);
+    transition: transform var(--transition-slow);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+
+    .mobile-menu.open & {
+      transform: translateX(0);
+    }
+  }
+}
+
+// ===============================================
+// NOTIFICATION/TOAST STYLES
+// ===============================================
+
+.toast-mobile {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+  padding: 1rem;
+  background: rgba(31, 41, 55, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(156, 163, 175, 0.3);
+  border-radius: 12px;
+  box-shadow: var(--tv-shadow-lg);
+  z-index: 100;
+  animation: slideUp 0.3s ease-out;
+
+  @media (min-width: 640px) {
+    left: auto;
+    right: 1rem;
+    max-width: 400px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// ===============================================
+// MOBILE BOTTOM NAVIGATION
+// ===============================================
+
+.bottom-nav-mobile {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(75, 85, 99, 0.3);
+  padding: 0.75rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0));
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 0.5rem;
+
+  @media (min-width: 1024px) {
+    display: none;
+  }
+
+  &-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-height: 48px;
+    color: rgba(156, 163, 175, 1);
+    transition: color var(--transition-fast);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+
+    &.active {
+      color: var(--tv-red-primary);
+    }
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    span {
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+  }
+}
+
+// ===============================================
+// UTILITY CLASSES - MOBILE SPACING
+// ===============================================
+
+// Responsive padding utilities
+.p-responsive {
+  padding: var(--spacing-md);
+
+  @media (min-width: 640px) {
+    padding: var(--spacing-lg);
+  }
+
+  @media (min-width: 1024px) {
+    padding: var(--spacing-xl);
+  }
+}
+
+.px-responsive {
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
+
+  @media (min-width: 640px) {
+    padding-left: var(--spacing-lg);
+    padding-right: var(--spacing-lg);
+  }
+
+  @media (min-width: 1024px) {
+    padding-left: var(--spacing-xl);
+    padding-right: var(--spacing-xl);
+  }
+}
+
+.py-responsive {
+  padding-top: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+
+  @media (min-width: 640px) {
+    padding-top: var(--spacing-xl);
+    padding-bottom: var(--spacing-xl);
+  }
+
+  @media (min-width: 1024px) {
+    padding-top: calc(var(--spacing-xl) * 2);
+    padding-bottom: calc(var(--spacing-xl) * 2);
+  }
+}
+
+// ===============================================
+// CHROME/EDGE SPECIFIC OPTIMIZATIONS
+// ===============================================
+
+@supports (-webkit-appearance: none) {
+  // Optimizaciones específicas para Chrome/Edge
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+// ===============================================
+// SAFARI SPECIFIC OPTIMIZATIONS
+// ===============================================
+
+@supports (-webkit-touch-callout: none) {
+  // Optimizaciones para Safari iOS
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; // Evita zoom en iOS
+  }
+
+  .fab-mobile {
+    // Ajuste para notch en iPhone
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0));
+  }
+}
+
+// ===============================================
+// FINAL OPTIMIZATIONS
+// ===============================================
+
+// Contenedor principal optimizado
+.main-container-mobile {
+  min-height: 100vh;
+  min-height: -webkit-fill-available; // Safari iOS fix
+  display: flex;
+  flex-direction: column;
+}
+
+// Evitar selección de texto en elementos UI
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+// Optimización de rendimiento para listas largas
+.virtualized-list {
+  contain: layout style paint;
+  content-visibility: auto;
 }

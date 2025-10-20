@@ -3,6 +3,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TvGuideService } from '../../services/tv-guide.service';
+import { MenuStateService } from '../../services/menu-state.service';
 
 @Component({
   selector: 'app-menu',
@@ -12,40 +13,33 @@ import { TvGuideService } from '../../services/tv-guide.service';
   imports: [CommonModule, RouterModule],
 })
 export class MenuComponent implements OnInit, OnDestroy {
-  public isHome: boolean = false;
-  public isGuiaCanales: boolean = false;
-  public isSeries: boolean = false;
-  public isPeliculas: boolean = false;
-  public hoy: boolean = false;
-  public top: boolean = false;
-  public isDirecto: boolean = false;
+  // estado activo (clave) compartido vía servicio
+  public activeKey: string = 'home';
 
-  // rutas expuestas al template
-  public readonly routes = [
-    { label: 'Inicio', path: '/', key: 'home' },
-    {
-      label: 'Guía canales',
-      path: '/guia-canales',
-      key: 'guia-canales',
-    },
-    {
-      label: 'Qué ver hoy',
-      path: '/programacion-tv/que-ver-hoy',
-      key: 'que-ver-hoy',
-    },
-    { label: 'Series', path: '/series', key: 'series' },
-    { label: 'Películas', path: '/peliculas', key: 'peliculas' },
-    { label: 'Top 10', path: '/top-10', key: 'top-10' },
-    { label: 'En directo', path: '/en-directo', key: 'en-directo' },
-  ];
+  // rutas expuestas al template (compartidas desde el servicio)
+  public get routes() {
+    return this.menuState.routes;
+  }
 
   private unsuscribe$ = new Subject<void>();
 
-  constructor(public router: Router, private guiaTvService: TvGuideService) {}
+  constructor(
+    public router: Router,
+    private guiaTvService: TvGuideService,
+    private menuState: MenuStateService
+  ) {}
 
   ngOnInit(): void {
     // Inicializar flags según la URL actual
     this.setActiveFromUrl(this.router.url);
+
+    // suscribirse al estado global del menú
+    this.menuState
+      .getActive()
+      .pipe(takeUntil(this.unsuscribe$))
+      .subscribe((k) => {
+        if (k) this.activeKey = k;
+      });
 
     // Suscribirse a los eventos del router para actualizar en cambios posteriores
     this.router.events.pipe(takeUntil(this.unsuscribe$)).subscribe((event) => {
@@ -61,13 +55,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   private resetFlags(): void {
-    this.isHome = false;
-    this.isGuiaCanales = false;
-    this.isSeries = false;
-    this.isPeliculas = false;
-    this.top = false;
-    this.hoy = false;
-    this.isDirecto = false;
+    this.activeKey = '';
   }
 
   public navigateTo(): void {
@@ -75,37 +63,20 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   private setActiveFromUrl(url: string): void {
-    this.resetFlags();
-
     // obtener segmentos no vacíos y tomar el último segmento como clave
     const parts = (url || '').split('/').filter(Boolean);
     const key = parts.length ? parts[parts.length - 1] : 'home';
 
-    switch (key) {
-      case 'home':
-        this.isHome = true;
-        break;
-      case 'guia-canales':
-        this.isGuiaCanales = true;
-        break;
-      case 'series':
-        this.isSeries = true;
-        break;
-      case 'peliculas':
-        this.isPeliculas = true;
-        break;
-      case 'que-ver-hoy':
-        this.hoy = true;
-        break;
-      case 'top-10':
-        this.top = true;
-        break;
-      case 'en-directo':
-        this.isDirecto = true;
-        break;
-      default:
-        if (!parts.length) this.isHome = true;
-        break;
+    this.activeKey = key || 'home';
+
+    // actualizar estado compartido
+    this.menuState.setActive(this.activeKey);
+
+    // Actualizar flags del servicio de guía para películas/series si corresponde
+    if (this.activeKey === 'peliculas') {
+      this.guiaTvService.setIsMovies();
+    } else if (this.activeKey === 'series') {
+      this.guiaTvService.setIsSeries();
     }
   }
 
@@ -123,6 +94,31 @@ export class MenuComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(path).then(() => {
       // forzar sync del estado activo con la nueva URL
       this.setActiveFromUrl(this.router.url);
+      if (key) this.menuState.setActive(key);
     });
+  }
+
+  /**
+   * Handler usado desde la plantilla mejorada: navega y aplica efectos secundarios
+   */
+  public onItemClick(path: string, key?: string): void {
+    // mantener comportamiento previo (movies/series flags)
+    if (key === 'peliculas') {
+      this.guiaTvService.setIsMovies();
+    } else if (key === 'series') {
+      this.guiaTvService.setIsSeries();
+    }
+
+    // delegar en navigate para navegación y sincronización de estado
+    this.navigate(path, key);
+  }
+
+  // helper usado desde template
+  public isActive(key: string): boolean {
+    return !!key && this.activeKey === key;
+  }
+
+  public getColor(key: string): string | undefined {
+    return this.menuState.getColorForKey(key);
   }
 }

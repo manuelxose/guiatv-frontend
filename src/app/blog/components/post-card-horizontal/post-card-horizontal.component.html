@@ -1,0 +1,84 @@
+<article
+  class="group flex flex-col sm:flex-row gap-4 bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-all duration-300 cursor-pointer border border-gray-700/50 hover:border-red-500/50"
+  [attr.aria-label]="'Artículo: ' + post.title?.rendered"
+>
+  <!-- Image -->
+  <div
+    class="relative sm:w-48 h-48 sm:h-auto flex-shrink-0 overflow-hidden bg-gray-700"
+  >
+    <img
+      [src]="
+        post.featured_image?.source_url || '/assets/images/placeholder.jpg'
+      "
+      [alt]="post.title?.rendered || 'Imagen del artículo'"
+      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+      loading="lazy"
+      width="192"
+      height="192"
+    />
+    <div
+      class="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-gray-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+    ></div>
+  </div>
+
+  <!-- Content -->
+  <div class="flex-1 p-5 flex flex-col justify-between">
+    <div class="space-y-3">
+      <!-- Categories -->
+      <div class="flex flex-wrap gap-2" *ngIf="post.categories_name?.length">
+        <span
+          *ngFor="let cat of post.categories_name.slice(0, 2)"
+          class="inline-block px-3 py-1 text-xs font-medium text-red-400 bg-red-400/10 rounded-full"
+        >
+          {{ cat.name }}
+        </span>
+      </div>
+
+      <!-- Title -->
+      <h3
+        class="text-xl font-bold text-white line-clamp-2 group-hover:text-red-400 transition-colors duration-200"
+      >
+        {{ post.title?.rendered }}
+      </h3>
+
+      <!-- Excerpt -->
+      <p
+        class="text-sm text-gray-400 line-clamp-2"
+        *ngIf="post.excerpt?.rendered"
+      >
+        {{ stripHtml(post.excerpt.rendered) }}
+      </p>
+    </div>
+
+    <!-- Meta -->
+    <div
+      class="flex items-center justify-between mt-4 pt-3 border-t border-gray-700"
+    >
+      <div class="flex items-center gap-3 text-xs text-gray-500">
+        <time [dateTime]="post.date">
+          {{ post.date | date : "dd MMM yyyy" }}
+        </time>
+        <span>•</span>
+        <span>{{ getReadingTime(post.content?.rendered) }} min</span>
+      </div>
+      <span
+        class="text-xs text-red-400 font-medium group-hover:translate-x-1 transition-transform duration-200 inline-flex items-center"
+      >
+        Leer más
+        <svg
+          class="ml-1 w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </span>
+    </div>
+  </div>
+</article>

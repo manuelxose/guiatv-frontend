@@ -1,0 +1,820 @@
+/**
+ * Shared Styles for Películas & Series Pages
+ * Mobile-First, SEO & Performance Optimized
+ */
+
+// ===============================================
+// VARIABLES
+// ===============================================
+
+$primary-color: #dc2626;
+$primary-hover: #b91c1c;
+$text-primary: #e5e7eb;
+$text-secondary: #9ca3af;
+$border-radius: 0.75rem;
+$transition-speed: 0.2s;
+
+// ===============================================
+// BASE CONTAINER
+// ===============================================
+
+.peliculas,
+.series {
+  min-height: 100vh;
+  background: transparent;
+  color: $text-primary;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+// ===============================================
+// INTRO SECTION
+// ===============================================
+
+.intro {
+  animation: fadeInUp 0.4s ease-out;
+
+  h1 {
+    line-height: 1.3;
+    letter-spacing: -0.025em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #ffffff !important;
+
+    @media (max-width: 640px) {
+      font-size: 1.5rem; // 24px en móvil
+    }
+  }
+
+  p {
+    line-height: 1.6;
+    max-width: 65ch;
+
+    &.text-sm {
+      line-height: 1.5;
+    }
+  }
+}
+
+// ===============================================
+// LOADING STATES
+// ===============================================
+
+.animate-pulse {
+  > div {
+    background: linear-gradient(
+      90deg,
+      rgba(209, 213, 219, 0.3) 25%,
+      rgba(209, 213, 219, 0.5) 50%,
+      rgba(209, 213, 219, 0.3) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// ===============================================
+// SECTION HEADERS
+// ===============================================
+
+section {
+  header {
+    h2 {
+      color: #ffffff !important;
+      font-weight: 600;
+
+      span.text-red-600 {
+        color: $primary-color;
+      }
+    }
+
+    p {
+      color: $text-secondary;
+    }
+  }
+}
+
+// ===============================================
+// NAVIGATION CONTROLS
+// ===============================================
+
+.btn-nav-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  transition: all $transition-speed ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  svg {
+    transition: transform $transition-speed ease;
+    pointer-events: none;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    background: rgba(220, 38, 38, 0.12);
+    border-color: rgba(220, 38, 38, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+
+    svg {
+      transform: scale(1.1);
+    }
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.18);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (min-width: 640px) {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+// ===============================================
+// EMPTY STATE
+// ===============================================
+
+.empty-state {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(0, 0, 0, 0.15)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  svg {
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+// ===============================================
+// APP-SLIDER OVERRIDES (scoped)
+// ===============================================
+
+.peliculas,
+.series {
+  // Ensure sliders use full width
+  app-slider {
+    display: block;
+    width: 100%;
+    min-height: 180px;
+
+    // Prevent layout shift
+    &:empty::after {
+      content: "";
+      display: block;
+      height: 180px;
+      background: linear-gradient(
+        90deg,
+        rgba(209, 213, 219, 0.2) 0%,
+        rgba(209, 213, 219, 0.4) 50%,
+        rgba(209, 213, 219, 0.2) 100%
+      );
+      border-radius: $border-radius;
+      animation: shimmer 1.5s infinite;
+    }
+  }
+
+  // Ensure images in sliders use proper sizing
+  app-slider ::ng-deep {
+    .slide-poster,
+    .slide-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+    }
+
+    // For series, prefer center-top positioning
+    &.slider--series .slide-poster {
+      object-position: center top;
+    }
+  }
+
+  // Ensure banner has proper sizing
+  app-banner {
+    display: block;
+    margin-top: 1rem;
+    min-height: 200px;
+    color: #ffffff;
+
+    @media (min-width: 768px) {
+      min-height: 300px;
+    }
+
+    @media (min-width: 1024px) {
+      min-height: 400px;
+    }
+  }
+}
+
+// ===============================================
+// ANIMATIONS
+// ===============================================
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ===============================================
+// ACCESSIBILITY
+// ===============================================
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 1rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: $primary-color;
+  color: white;
+  z-index: 1000;
+}
+
+*:focus-visible {
+  outline: 2px solid $primary-color;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+// ===============================================
+// DARK MODE
+// ===============================================
+
+@media (prefers-color-scheme: dark) {
+  .peliculas,
+  .series {
+    color: #e5e7eb;
+  }
+
+  .animate-pulse > div {
+    background: linear-gradient(
+      90deg,
+      rgba(55, 65, 81, 0.3) 25%,
+      rgba(55, 65, 81, 0.5) 50%,
+      rgba(55, 65, 81, 0.3) 75%
+    );
+  }
+}
+
+// ===============================================
+// REDUCED MOTION
+// ===============================================
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  section {
+    animation: none;
+  }
+
+  .btn-nav-control:hover {
+    transform: none !important;
+  }
+}
+
+// ===============================================
+// PERFORMANCE OPTIMIZATIONS
+// ===============================================
+
+@supports (content-visibility: auto) {
+  section {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+}
+
+// ===============================================
+// PRINT STYLES
+// ===============================================
+
+@media print {
+  .btn-nav-control,
+  nav,
+  button {
+    display: none !important;
+  }
+
+  section {
+    page-break-inside: avoid;
+  }
+
+  .empty-state,
+  app-slider,
+  app-banner {
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+  }
+}
+
+// ===============================================
+// HIGH CONTRAST MODE
+// ===============================================
+
+@media (prefers-contrast: high) {
+  .empty-state,
+  .glass-card-mobile {
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #ffffff;
+  }
+
+  .btn-nav-control {
+    border: 2px solid currentColor;
+  }
+}
+
+// ===============================================
+// RESPONSIVE OPTIMIZATIONS
+// ===============================================
+
+@media (min-width: 640px) {
+  .intro h1 {
+    font-size: 1.875rem; // 30px
+  }
+}
+
+@media (min-width: 1024px) {
+  .intro h1 {
+    font-size: 2.25rem; // 36px
+  }
+
+  section:not(:first-child) {
+    margin-top: 5rem;
+  }
+}
+
+// Tablet landscape
+@media (min-width: 641px) and (max-width: 1023px) and (orientation: landscape) {
+  section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+// Safe area insets (iPhone notch)
+@supports (padding: env(safe-area-inset-bottom)) {
+  .peliculas,
+  .series {
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+  }
+}
+
+// ===============================================
+// SMOOTH SCROLLING
+// ===============================================
+
+html {
+  scroll-behavior: smooth;
+}
+
+// ===============================================
+// GLASS MORPHISM UTILITY
+// ===============================================
+
+.glass-card-mobile {
+  background: rgba(31, 41, 55, 0.6);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: $border-radius;
+
+  @supports (backdrop-filter: blur(12px)) {
+    backdrop-filter: blur(12px) saturate(180%);
+  }
+
+  @supports not (backdrop-filter: blur(12px)) {
+    background: rgba(31, 41, 55, 0.95);
+  }
+}
+
+// ===============================================
+// TEXT UTILITIES
+// ===============================================
+
+.text-responsive {
+  font-size: 0.875rem; // 14px
+  line-height: 1.5;
+
+  @media (min-width: 640px) {
+    font-size: 1rem; // 16px
+  }
+
+  @media (min-width: 1024px) {
+    font-size: 1.125rem; // 18px
+    line-height: 1.6;
+  }
+}
+
+.text-truncate-mobile {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ===============================================
+// TOUCH OPTIMIZATIONS
+// ===============================================
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+// ===============================================
+// GPU ACCELERATION
+// ===============================================
+
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+/**
+ * Series Component Styles
+ * Imports shared styles and adds series-specific overrides
+ */
+
+// ===============================================
+// SERIES-SPECIFIC VARIABLES
+// ===============================================
+
+$primary-color: #dc2626;
+$primary-hover: #b91c1c;
+$text-primary: #e5e7eb;
+$text-secondary: #9ca3af;
+$border-radius: 0.75rem;
+$transition-speed: 0.2s;
+
+// ===============================================
+// SERIES BASE
+// ===============================================
+
+.series {
+  min-height: 100vh;
+  background: transparent;
+  color: $text-primary;
+
+  // Force white text for headings
+  h1,
+  h2,
+  h3 {
+    color: #ffffff !important;
+  }
+}
+
+// ===============================================
+// INTRO SECTION
+// ===============================================
+
+.intro {
+  animation: fadeInUp 0.4s ease-out;
+
+  h1 {
+    line-height: 1.3;
+    letter-spacing: -0.025em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    color: #fff !important;
+  }
+
+  p {
+    line-height: 1.6;
+    max-width: 65ch;
+  }
+}
+
+// ===============================================
+// LOADING STATES
+// ===============================================
+
+.animate-pulse {
+  > div {
+    background: linear-gradient(
+      90deg,
+      rgba(209, 213, 219, 0.3) 25%,
+      rgba(209, 213, 219, 0.5) 50%,
+      rgba(209, 213, 219, 0.3) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ===============================================
+// NAVIGATION CONTROLS
+// ===============================================
+
+.btn-nav-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+  user-select: none;
+
+  svg {
+    transition: transform $transition-speed ease;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    background: rgba(220, 38, 38, 0.12);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+
+    svg {
+      transform: scale(1.1);
+    }
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.18);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// ===============================================
+// EMPTY STATE
+// ===============================================
+
+.empty-state {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(0, 0, 0, 0.15)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card-mobile {
+  background: rgba(31, 41, 55, 0.6);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+
+  @supports (backdrop-filter: blur(12px)) {
+    backdrop-filter: blur(12px);
+  }
+}
+
+// ===============================================
+// APP-SLIDER INTEGRATION
+// ===============================================
+
+.series {
+  app-slider {
+    display: block;
+    min-height: 180px;
+
+    &:empty::after {
+      content: "";
+      display: block;
+      height: 180px;
+      background: linear-gradient(
+        90deg,
+        rgba(209, 213, 219, 0.2) 0%,
+        rgba(209, 213, 219, 0.4) 50%,
+        rgba(209, 213, 219, 0.2) 100%
+      );
+      border-radius: $border-radius;
+      animation: shimmer 1.5s infinite;
+    }
+  }
+
+  // SERIES-SPECIFIC: prefer center-top for posters
+  app-slider ::ng-deep {
+    .slide-poster {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top; // Series posters often have titles at top
+    }
+
+    .slide-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+    }
+  }
+
+  // Banner styling
+  app-banner {
+    display: block;
+    margin-top: 1rem;
+    color: #ffffff;
+    min-height: 200px;
+
+    @media (min-width: 768px) {
+      min-height: 300px;
+    }
+
+    @media (min-width: 1024px) {
+      min-height: 400px;
+    }
+  }
+}
+
+// ===============================================
+// ACCESSIBILITY
+// ===============================================
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only.focus\:not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 1rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: $primary-color;
+  color: white;
+  z-index: 1000;
+}
+
+*:focus-visible {
+  outline: 2px solid $primary-color;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+// ===============================================
+// RESPONSIVE & MEDIA QUERIES
+// ===============================================
+
+@media (prefers-color-scheme: dark) {
+  .animate-pulse > div {
+    background: linear-gradient(
+      90deg,
+      rgba(55, 65, 81, 0.3) 25%,
+      rgba(55, 65, 81, 0.5) 50%,
+      rgba(55, 65, 81, 0.3) 75%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .btn-nav-control:hover {
+    transform: none !important;
+  }
+}
+
+@supports (content-visibility: auto) {
+  section {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+}
+
+@media print {
+  .btn-nav-control,
+  nav {
+    display: none;
+  }
+
+  section {
+    page-break-inside: avoid;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .glass-card-mobile {
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #ffffff;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}

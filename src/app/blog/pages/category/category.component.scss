@@ -1,0 +1,29 @@
+// Category Component Styles
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+// Animación suave para el scroll
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
+// Estilos específicos para el grid de categorías
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+// Hover effect mejorado para las tarjetas de categoría
+button[aria-pressed="true"] {
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.1),
+    rgba(220, 38, 38, 0.05)
+  );
+}

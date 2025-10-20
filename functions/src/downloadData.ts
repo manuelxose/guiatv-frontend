@@ -6,18 +6,18 @@ import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import zlib from 'zlib';
 
-const storage = new Storage();
-const bucketName = "guia-tv-8fe3c.appspot.com";
-const fechaActual = format(new Date(), 'yyyyMMdd');
-const nombreArchivo = `archivo_xml/${fechaActual}_archivo.xml`;
-
 export async function downloadData() {
-  const url = "https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz";
+  const storage = new Storage();
+  const bucketName = 'guia-tv-8fe3c.appspot.com';
+  const fechaActual = format(new Date(), 'yyyyMMdd');
+  const nombreArchivo = `archivo_xml/${fechaActual}_archivo.xml`;
+  const url =
+    'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz';
 
   try {
-    const response = await axios.get(url, { responseType: "arraybuffer" });
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
 
-    const existe = await archivoExiste();
+    const existe = await archivoExiste(storage, bucketName, nombreArchivo);
 
     if (existe) {
       await storage.bucket(bucketName).file(nombreArchivo).delete();
@@ -30,14 +30,20 @@ export async function downloadData() {
     };
 
     const gunzip = zlib.createGunzip();
-    const writeStream = storage.bucket(bucketName).file(nombreArchivo).createWriteStream(archivoMetadata);
+    const writeStream = storage
+      .bucket(bucketName)
+      .file(nombreArchivo)
+      .createWriteStream(archivoMetadata);
 
     // Descomprimir el archivo usando pipeline
     await pipeline(archivoBuffer, gunzip, writeStream);
 
     console.log('Archivo guardado:', nombreArchivo);
 
-    const archivoDescargado = await storage.bucket(bucketName).file(nombreArchivo).download();
+    const archivoDescargado = await storage
+      .bucket(bucketName)
+      .file(nombreArchivo)
+      .download();
     const xmlData = archivoDescargado.toString();
 
     const json = await parseStringPromise(xmlData, { mergeAttrs: true });
@@ -53,14 +59,19 @@ export async function downloadData() {
       throw new Error('La respuesta de la API no contiene canales o programas');
     }
 
-    console.log('Archivo descargado, descomprimido y guardado en Firebase Storage');
-
+    console.log(
+      'Archivo descargado, descomprimido y guardado en Firebase Storage'
+    );
   } catch (error) {
-    console.error("Error al leer el archivo:", error);
+    console.error('Error al leer el archivo:', error);
   }
 }
 
-async function archivoExiste() {
+async function archivoExiste(
+  storage: Storage,
+  bucketName: string,
+  nombreArchivo: string
+) {
   try {
     await storage.bucket(bucketName).file(nombreArchivo).getMetadata();
     return true;

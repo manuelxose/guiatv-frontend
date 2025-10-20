@@ -1,0 +1,80 @@
+<!-- program-detail-modal.component.html -->
+<div
+  *ngIf="program"
+  class="program-detail-modal-container"
+  @backdropAnimation
+  (click)="onClose()"
+  (keydown)="onEscapeKey($event)"
+  tabindex="0"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="'Detalles de ' + (program.title || 'programa')"
+>
+  <!-- Backdrop -->
+  <div class="modal-backdrop"></div>
+
+  <!-- Modal Content -->
+  <div class="modal-content" @modalAnimation (click)="onContentClick($event)">
+    <!-- Header con botón de cierre -->
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <!-- Channel Info -->
+        <div class="channel-info">
+          <img
+            *ngIf="channelLogo"
+            [src]="channelLogo"
+            [alt]="channelName"
+            class="channel-logo"
+            loading="lazy"
+          />
+          <div class="channel-text">
+            <span class="channel-name">{{ channelName }}</span>
+            <span class="program-time">
+              {{ formatTime(program.start) }} - {{ formatTime(program.stop) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Close Button -->
+        <button
+          (click)="onClose()"
+          class="close-button"
+          aria-label="Cerrar detalles"
+        >
+          <svg
+            class="close-icon"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Body con Banner -->
+    <div class="modal-body">
+      <app-banner *ngIf="bannerData()" [data]="bannerData()"></app-banner>
+    </div>
+
+    <!-- Footer con acciones (opcional) -->
+    <div class="modal-footer">
+      <button (click)="onClose()" class="action-button action-button-primary">
+        <svg class="button-icon" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fill-rule="evenodd"
+            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+            clip-rule="evenodd"
+          ></path>
+        </svg>
+        Entendido
+      </button>
+    </div>
+  </div>
+</div>

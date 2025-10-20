@@ -4,6 +4,7 @@
  */
 
 import { ApplicationConfig, Provider } from '@angular/core';
+import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideHttpClient, withFetch } from '@angular/common/http';
@@ -24,18 +25,20 @@ export const appConfig: ApplicationConfig = {
   providers: [
     // Providers básicos de Angular para standalone
     provideRouter(routes),
+    // Habilitar animaciones en el cliente (necesario para triggers @expandCollapse)
+    provideAnimations(),
     provideClientHydration(),
     provideHttpClient(withFetch()),
-    
+
     // Providers SOLID para toda la aplicación (INCLUYE ProgramList)
     ...allProviders,
-    
+
     // Providers condicionales según el entorno
     ...getEnvironmentProviders(environment),
-    
+
     // Providers de validación en desarrollo
-    ...getValidationProviders(environment)
-  ]
+    ...getValidationProviders(environment),
+  ],
 };
 
 /**
@@ -49,7 +52,7 @@ function getEnvironmentProviders(env: any): Provider[] {
     console.log('🏭 SOLID App - Configurando providers para PRODUCCIÓN');
     providers.push({
       provide: 'ENVIRONMENT_MODE',
-      useValue: 'production'
+      useValue: 'production',
     });
   } else {
     // Configuraciones para desarrollo
@@ -57,11 +60,11 @@ function getEnvironmentProviders(env: any): Provider[] {
     providers.push(
       {
         provide: 'ENVIRONMENT_MODE',
-        useValue: 'development'
+        useValue: 'development',
       },
       {
         provide: 'DEBUG_ENABLED',
-        useValue: true
+        useValue: true,
       }
     );
   }
@@ -84,13 +87,17 @@ function getValidationProviders(env: any): Provider[] {
         // Validar providers en desarrollo
         const isValid = validateProviders(allProviders);
         if (isValid) {
-          console.log('✅ SOLID Validation - All providers are correctly configured');
+          console.log(
+            '✅ SOLID Validation - All providers are correctly configured'
+          );
         } else {
-          console.error('❌ SOLID Validation - Provider configuration issues detected');
+          console.error(
+            '❌ SOLID Validation - Provider configuration issues detected'
+          );
         }
         return isValid;
-      }
-    }
+      },
+    },
   ];
 }
 
@@ -104,15 +111,15 @@ if (!environment.production && typeof window !== 'undefined') {
     validateProviders: () => validateProviders(allProviders),
     getProviderCount: () => allProviders.length,
     getProviderTypes: () => {
-      return allProviders.map(p => {
+      return allProviders.map((p) => {
         if (typeof p === 'function') return `Class: ${p.name}`;
         if (typeof p === 'object' && 'provide' in p) {
           return `Token: ${p.provide.toString()}`;
         }
         return 'Unknown provider type';
       });
-    }
+    },
   };
-  
+
   console.log('🛠️ SOLID Debug tools available at window.SOLID_DEBUG');
 }

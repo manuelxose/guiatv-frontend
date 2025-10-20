@@ -1,151 +1,267 @@
+<!-- Skip link para accesibilidad -->
+<a class="sr-only focus:not-sr-only" href="#main-content">
+  Saltar al contenido
+</a>
+
 <main
-  class="flex-1 py-10 px-5 sm:px-10 lg:min-w-[100vh] h-[100vh] overflow-y-auto max-w-[24.5rem] lg:max-w-[100vh]"
+  id="main-content"
+  class="series w-full max-w-full mx-auto py-6 px-4 sm:py-8 sm:px-6 lg:py-10 lg:px-8 overflow-x-hidden overflow-y-auto"
+  role="main"
+  aria-label="Página de series de televisión"
+  style="max-height: calc(100vh - 4rem)"
 >
-  <section>
-    <app-nav-bar></app-nav-bar>
+  <!-- Navegación global -->
+  <app-nav-bar></app-nav-bar>
 
-    <div class="mt-9">
-      <div class="flex items-center justify-between">
-        <!-- Añade una etiqueta <h1> para indicar el encabezado principal de tu página -->
-        <h1 class="font-semibold text-gray-700 text-base dark:text-white">
-          Serie destacada esta noche
-        </h1>
-      </div>
-      <h3 class="mt-4 text-sm text-gray-600">
-        La mejor opcion para ver una buena serie esta noche en la televisión.
-      </h3>
-      <app-banner *ngIf="destacada" [data]="destacada"></app-banner>
-    </div>
-  </section>
-
-  <!-- Seccion de listado de canales en España -->
-
-  <!-- CAROUSEL PARA CADA UNO DE LOS CANALES -->
-
-  <section class="mt-9">
-    <div class="flex items-center justify-between">
-      <span class="font-semibold text-gray-700 text-base dark:text-white">
-        Series ahora en televisión
-      </span>
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent23.onPrevClick()"
-        >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent23.onNextClick()"
-        >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
-      </div>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="“mt-4" class="text-sm text-gray-600">
-      ¿Te gustan las series? En nuestra web te mostramos las mejores series en
-      TV hoy, para que no te pierdas ningún capítulo de tus ficciones favoritas.
-      Tenemos series de todos los géneros y para todos los públicos, desde
-      comedias que te harán pasar un buen rato hasta dramas que te emocionarán,
-      pasando por thrillers, ciencia ficción, acción y mucho más. Además, te
-      informamos de las series más recientes12, las más premiadas y las más
-      aclamadas por la crítica y el público, para que puedas disfrutar de la
-      mejor calidad televisiva. Con nuestra selección de series en TV hoy, solo
-      tienes que elegir la que más te apetezca ver y prepararte para vivir una
-      experiencia única.
+  <!-- Header SEO optimizado -->
+  <section
+    class="intro mt-4 max-w-4xl mx-auto"
+    itemscope
+    itemtype="https://schema.org/WebPage"
+  >
+    <h1
+      id="page-title"
+      class="text-2xl font-semibold text-white"
+      itemprop="headline"
+    >
+      Series en televisión
+    </h1>
+    <p
+      class="mt-3 text-sm leading-relaxed text-gray-300"
+      itemprop="description"
+    >
+      Encuentra las series que se emiten hoy en la televisión de España: dramas,
+      comedias, thrillers y más. Nuestra guía muestra canales, episodios y
+      horarios para que no te pierdas ningún capítulo.
     </p>
-    <div class="mt-4 text-sm text-gray-600">
-      <app-slider #sliderComponent23 [programas]="en_emision"></app-slider>
-    </div>
-  </section>
-
-  <section class="mt-9">
-    <div class="flex items-center justify-between">
-      <span class="font-semibold text-gray-700 text-base dark:text-white">
-        Series en TV hoy
-      </span>
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent.onPrevClick()"
-        >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent.onNextClick()"
-        >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
-      </div>
-    </div>
-    <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-    <p class="mt-4 text-sm text-gray-600">
-      <!-- Añade una etiqueta <p> para indicar el párrafo de texto de tu página -->
-
-      Si te gustan las series, no te pierdas nuestra selección de las mejores
-      series que se emiten hoy en la televisión. Podrás ver series de todos los
-      géneros y para todos los gustos, desde comedias hasta thrillers, pasando
-      por dramas, romances, acción y más. Disfruta de las series más
-      taquilleras, las más premiadas y las más aclamadas por la crítica en los
-      canales de televisión más populares. Con nuestro listado de series en TV
-      hoy podrás elegir la que más te apetezca ver y no perderte ningún detalle.
+    <p class="mt-2 text-xs text-gray-400">
+      Información actualizada constantemente para reflejar la programación más
+      reciente.
     </p>
-    <div class="mt-4 text-sm text-gray-600">
-      <app-slider #sliderComponent [programas]="series"></app-slider>
-    </div>
   </section>
 
-  <section *ngFor="let cat of categorias" class="">
-    <div class="flex items-center justify-between">
-      <span class="font-semibold text-gray-700 text-base dark:text-white">
-        Series {{ cat }} en TV hoy
-      </span>
-      <div class="flex items-center space-x-2 fill-gray-500">
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent1.onPrevClick()"
-        >
-          <path
-            d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
-          ></path>
-        </svg>
-        <svg
-          class="h-7 w-7 rounded-full border p-1 hover:border-red-600 hover:fill-red-600 dark:fill-white dark:hover:fill-red-600 cursor-pointer"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          (click)="sliderComponent1.onNextClick()"
-        >
-          <path
-            d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
-          ></path>
-        </svg>
-      </div>
+  <!-- Featured banner -->
+  <section
+    *ngIf="destacada"
+    class="relative overflow-hidden mt-6"
+    itemscope
+    itemtype="https://schema.org/TVSeries"
+  >
+    <app-banner [data]="destacada" loading="eager"></app-banner>
+    <!-- JSON-LD structured data -->
+    <script type="application/ld+json" *ngIf="ldJson">
+      {{ ldJson }}
+    </script>
+  </section>
+
+  <!-- Loading State -->
+  <div
+    *ngIf="isLoading"
+    class="mt-6 sm:mt-8"
+    role="status"
+    aria-live="polite"
+    aria-label="Cargando contenido"
+  >
+    <div class="animate-pulse space-y-4">
+      <div
+        class="h-6 bg-gray-300 dark:bg-gray-700 rounded w-3/4 sm:w-1/2 mb-4"
+      ></div>
+      <div
+        class="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full sm:w-3/4 mb-6"
+      ></div>
+      <div
+        class="h-40 sm:h-48 md:h-64 bg-gray-300 dark:bg-gray-700 rounded"
+      ></div>
     </div>
-    <div class="mt-4 text-sm text-gray-600">
+    <span class="sr-only">Cargando series de televisión...</span>
+  </div>
+
+  <!-- Content -->
+  <article *ngIf="!isLoading">
+    <!-- Series en emisión ahora -->
+    <section
+      class="mt-8 sm:mt-10 lg:mt-12"
+      aria-labelledby="live-series-heading"
+    >
+      <header class="mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2
+            id="live-series-heading"
+            class="text-base sm:text-lg lg:text-xl font-semibold text-white leading-tight"
+          >
+            Series ahora en televisión
+          </h2>
+          <nav
+            class="hidden sm:flex items-center gap-2"
+            aria-label="Navegación de series en emisión"
+          >
+            <button
+              type="button"
+              aria-label="Ver series anteriores en emisión"
+              class="btn-nav-control"
+              (click)="sliderComponent23?.prev()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+                ></path>
+              </svg>
+            </button>
+            <button
+              type="button"
+              aria-label="Ver más series en emisión"
+              class="btn-nav-control"
+              (click)="sliderComponent23?.next()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+                ></path>
+              </svg>
+            </button>
+          </nav>
+        </div>
+        <p class="text-sm sm:text-base text-gray-400 leading-relaxed">
+          Descubre las mejores series que se están emitiendo en este momento.
+          Desde comedias hasta dramas emocionantes, thrillers y ciencia ficción.
+        </p>
+      </header>
+
+      <div role="region" aria-label="Carrusel de series en emisión">
+        <app-slider
+          #sliderComponent23
+          [programas]="en_emision"
+          variant="series"
+          *ngIf="en_emision.length > 0"
+        ></app-slider>
+        <div
+          *ngIf="en_emision.length === 0"
+          class="empty-state glass-card-mobile text-center py-12 rounded-lg"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-16 h-16 mx-auto mb-4 text-gray-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+            />
+          </svg>
+          <p class="text-responsive text-gray-400">
+            No hay series en emisión en este momento
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Todas las series de hoy -->
+    <section
+      class="mt-8 sm:mt-10 lg:mt-12"
+      aria-labelledby="all-series-heading"
+    >
+      <header class="mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2
+            id="all-series-heading"
+            class="text-base sm:text-lg lg:text-xl font-semibold text-white leading-tight"
+          >
+            Series en TV hoy
+          </h2>
+          <nav
+            class="hidden sm:flex items-center gap-2"
+            aria-label="Navegación de todas las series"
+          >
+            <button
+              type="button"
+              aria-label="Ver series anteriores"
+              class="btn-nav-control"
+              (click)="sliderComponent?.prev()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M13.293 6.293L7.58 12l5.7 5.7 1.41-1.42 -4.3-4.3 4.29-4.293Z"
+                ></path>
+              </svg>
+            </button>
+            <button
+              type="button"
+              aria-label="Ver más series"
+              class="btn-nav-control"
+              (click)="sliderComponent?.next()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="w-5 h-5"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M10.7 17.707l5.7-5.71 -5.71-5.707L9.27 7.7l4.29 4.293 -4.3 4.29Z"
+                ></path>
+              </svg>
+            </button>
+          </nav>
+        </div>
+        <p class="text-sm sm:text-base text-gray-400 leading-relaxed">
+          Consulta nuestra guía completa con todas las series que se emiten hoy
+          en los canales más populares de España.
+        </p>
+      </header>
+
       <app-slider
-        #sliderComponent1
-        [programas]="getSeriesByCategory(cat)"
+        #sliderComponent
+        [programas]="series"
+        variant="series"
+        *ngIf="series.length > 0"
       ></app-slider>
-    </div>
-  </section>
+    </section>
+
+    <!-- Series por categoría -->
+    <section
+      *ngFor="let cat of categorias; trackBy: trackByCategory; let i = index"
+      class="mt-8 sm:mt-10 lg:mt-12"
+      [attr.aria-labelledby]="'category-heading-' + i"
+    >
+      <header class="mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2
+            [id]="'category-heading-' + i"
+            class="text-base sm:text-lg lg:text-xl font-semibold text-white leading-tight capitalize"
+          >
+            Series de <span class="text-red-600">{{ cat }}</span> en TV hoy
+          </h2>
+        </div>
+      </header>
+
+      <app-slider
+        [programas]="getSeriesByCategory(cat)"
+        variant="series"
+      ></app-slider>
+    </section>
+  </article>
 </main>

@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, Optional } from '@angular/core';
 import { HttpService } from './http.service';
+import { HomeDataService } from './features/home-data.service';
 import { getHoraInicio } from '../utils/utils';
 import { BehaviorSubject, lastValueFrom } from 'rxjs';
 
@@ -11,7 +12,7 @@ export class TvGuideService {
   private listaProgramas: any[] = [];
   private isSerires: boolean = false;
   private isMovies: boolean = false;
-  
+
   // Contador de llamadas a APIs externas (TMDb)
   private static externalApiCallCounter = 0;
 
@@ -20,7 +21,7 @@ export class TvGuideService {
   private static seriesCacheLoaded = false;
   private static moviesCache: any[] = [];
   private static seriesCache: any[] = [];
-  
+
   // Flags para prevenir ejecuciones concurrentes
   private static isLoadingMovies = false;
   private static isLoadingSeries = false;
@@ -39,7 +40,42 @@ export class TvGuideService {
   private detallesProgramaSource = new BehaviorSubject<any[]>([]);
   detallesPrograma$ = this.detallesProgramaSource.asObservable();
 
-  constructor(private http: HttpService) {}
+  constructor(
+    private http: HttpService,
+    @Optional() private homeDataService?: HomeDataService
+  ) {
+    // If HomeDataService is present, keep HttpService.programas$ in sync
+    try {
+      if (this.homeDataService && this.homeDataService.getProgramListData$) {
+        this.homeDataService.getProgramListData$().subscribe((data: any[]) => {
+          if (Array.isArray(data) && data.length > 0) {
+            console.log(
+              '🔁 TvGuideService - syncing programListData to HttpService.programas$ (count=',
+              data.length,
+              ')'
+            );
+            // Ensure the http service has the same programas value (date 'today')
+            try {
+              // setProgramas returns a promise; fire-and-forget is fine here
+              // @ts-ignore - handle both Promise and synchronous implementations
+              this.http.setProgramas(data, 'today');
+            } catch (err) {
+              console.warn(
+                '⚠️ TvGuideService - failed to set programas in HttpService',
+                err
+              );
+            }
+          }
+        });
+      }
+    } catch (err) {
+      // Defensive: do not break service if HomeDataService isn't available
+      console.warn(
+        '⚠️ TvGuideService init: could not subscribe to HomeDataService',
+        err
+      );
+    }
+  }
 
   // GESTION DE LOS DETALLES DE LOS PROGRMAS
 
@@ -53,28 +89,44 @@ export class TvGuideService {
   // GESTION DE LAS PELICULAS DESTACADAS
   public async setPeliculasDestacadas() {
     // Si ya tenemos las películas en caché, usarlas
-    if (TvGuideService.moviesCacheLoaded && TvGuideService.moviesCache.length > 0) {
-      console.log(`💾 CACHE (Movies) - Usando datos en cache de películas destacadas (NO se llama a TMDb API)`);
+    if (
+      TvGuideService.moviesCacheLoaded &&
+      TvGuideService.moviesCache.length > 0
+    ) {
+      console.log(
+        `💾 CACHE (Movies) - Usando datos en cache de películas destacadas (NO se llama a TMDb API)`
+      );
+      console.log(
+        '💾 Emitting peliculas desde cache, count=',
+        TvGuideService.moviesCache.length
+      );
       this.peliculasDestacadasSource.next(TvGuideService.moviesCache);
       return;
     }
 
     // Si ya se está cargando, esperar
     if (TvGuideService.isLoadingMovies) {
-      console.log(`⏳ WAITING (Movies) - Ya hay una carga de películas en progreso, esperando...`);
+      console.log(
+        `⏳ WAITING (Movies) - Ya hay una carga de películas en progreso, esperando...`
+      );
       return;
     }
 
     // Marcar como cargando
     TvGuideService.isLoadingMovies = true;
-    console.log(`🎬 LOADING (Movies) - Iniciando carga de películas destacadas`);
+    console.log(
+      `🎬 LOADING (Movies) - Iniciando carga de películas destacadas`
+    );
 
     try {
       const peliculas = await this.getBestRatedMovies();
       TvGuideService.moviesCache = peliculas;
       TvGuideService.moviesCacheLoaded = true;
+      console.log('💾 Saving peliculas to cache, count=', peliculas.length);
       this.peliculasDestacadasSource.next(peliculas);
-      console.log(`✅ CACHE SAVED (Movies) - ${peliculas.length} películas guardadas en cache`);
+      console.log(
+        `✅ CACHE SAVED (Movies) - ${peliculas.length} películas guardadas en cache`
+      );
     } catch (error) {
       console.error(`❌ ERROR (Movies) - Error cargando películas:`, error);
     } finally {
@@ -83,6 +135,7 @@ export class TvGuideService {
   }
 
   public getPeliculasDestacadas() {
+    console.log('📡 getPeliculasDestacadas called - returning observable');
     return this.peliculasDestacadas$;
   }
 
@@ -97,15 +150,26 @@ export class TvGuideService {
   // GESTION DE LAS SERIES DESTACADAS
   public async setSeriesDestacadas() {
     // Si ya tenemos las series en caché, usarlas
-    if (TvGuideService.seriesCacheLoaded && TvGuideService.seriesCache.length > 0) {
-      console.log(`💾 CACHE (Series) - Usando datos en cache de series destacadas (NO se llama a TMDb API)`);
+    if (
+      TvGuideService.seriesCacheLoaded &&
+      TvGuideService.seriesCache.length > 0
+    ) {
+      console.log(
+        `💾 CACHE (Series) - Usando datos en cache de series destacadas (NO se llama a TMDb API)`
+      );
+      console.log(
+        '💾 Emitting series desde cache, count=',
+        TvGuideService.seriesCache.length
+      );
       this.seriesDestacadasSource.next(TvGuideService.seriesCache);
       return;
     }
 
     // Si ya se está cargando, esperar
     if (TvGuideService.isLoadingSeries) {
-      console.log(`⏳ WAITING (Series) - Ya hay una carga de series en progreso, esperando...`);
+      console.log(
+        `⏳ WAITING (Series) - Ya hay una carga de series en progreso, esperando...`
+      );
       return;
     }
 
@@ -117,8 +181,11 @@ export class TvGuideService {
       const series = await this.getBestRatedSeries();
       TvGuideService.seriesCache = series;
       TvGuideService.seriesCacheLoaded = true;
+      console.log('💾 Saving series to cache, count=', series.length);
       this.seriesDestacadasSource.next(series);
-      console.log(`✅ CACHE SAVED (Series) - ${series.length} series guardadas en cache`);
+      console.log(
+        `✅ CACHE SAVED (Series) - ${series.length} series guardadas en cache`
+      );
     } catch (error) {
       console.error(`❌ ERROR (Series) - Error cargando series:`, error);
     } finally {
@@ -127,6 +194,7 @@ export class TvGuideService {
   }
 
   public getSeriesDestacadas() {
+    console.log('📡 getSeriesDestacadas called - returning observable');
     return this.seriesDestacadas$;
   }
 
@@ -147,6 +215,7 @@ export class TvGuideService {
   }
 
   public setData(programs: any[]) {
+    console.log('📥 setData called - programs length=', programs?.length || 0);
     this.setProgramsAndChannels(programs);
   }
 
@@ -155,11 +224,31 @@ export class TvGuideService {
   }
 
   private extractChannels(programs: any[]): any[] {
-    return programs.flatMap((data) => data.channel);
+    if (!Array.isArray(programs)) return [];
+    return programs.flatMap((data) => {
+      try {
+        if (!data) return [];
+        // data.channel can be an object or an array; normalize to array
+        if (Array.isArray(data.channel)) return data.channel.filter(Boolean);
+        return data.channel ? [data.channel] : [];
+      } catch (err) {
+        return [];
+      }
+    });
   }
 
   private extractPrograms(programs: any[]): any[] {
-    return programs.flatMap((data) => data.programs);
+    if (!Array.isArray(programs)) return [];
+    return programs.flatMap((data) => {
+      try {
+        if (!data) return [];
+        return Array.isArray(data.programs)
+          ? data.programs.filter(Boolean)
+          : [];
+      } catch (err) {
+        return [];
+      }
+    });
   }
 
   public getListaCanales() {
@@ -167,7 +256,7 @@ export class TvGuideService {
   }
 
   private getListaProgramas() {
-    return this.listaProgramas;
+    return this.listaProgramas || [];
   }
 
   // Obtener los programas de la API
@@ -227,24 +316,32 @@ export class TvGuideService {
         !movie.title.value.match(/T\d/)
     );
 
-    console.log(`🎬 TMDb API - Preparando ${moviesAfter22.length} llamadas para obtener ratings de películas`);
+    console.log(
+      `🎬 TMDb API - Preparando ${moviesAfter22.length} llamadas para obtener ratings de películas`
+    );
 
     // obtener las calificaciones de las películas de la API
     const ratings = (await Promise.all(
       moviesAfter22.map(async (movie, index) => {
         TvGuideService.externalApiCallCounter++;
-        console.log(`🔥 TMDb API CALL #${TvGuideService.externalApiCallCounter} - Obteniendo rating para: ${movie.title.value}`);
-        
+        console.log(
+          `🔥 TMDb API CALL #${TvGuideService.externalApiCallCounter} - Obteniendo rating para: ${movie.title.value}`
+        );
+
         const response = (await lastValueFrom(
           this.http.getMovieId(movie.title.value)
         )) as any;
-        
-        console.log(`✅ TMDb API RESPONSE #${TvGuideService.externalApiCallCounter} - Rating obtenido para: ${movie.title.value}`);
+
+        console.log(
+          `✅ TMDb API RESPONSE #${TvGuideService.externalApiCallCounter} - Rating obtenido para: ${movie.title.value}`
+        );
         return response.results[0];
       })
     )) as any[];
 
-    console.log(`📊 TMDb API - TOTAL de llamadas realizadas hasta ahora: ${TvGuideService.externalApiCallCounter}`);
+    console.log(
+      `📊 TMDb API - TOTAL de llamadas realizadas hasta ahora: ${TvGuideService.externalApiCallCounter}`
+    );
 
     // crear un nuevo array con las películas y sus calificaciones
     const moviesWithRatings = moviesAfter22.map((movie) => {
@@ -293,25 +390,33 @@ export class TvGuideService {
       }
     );
 
-    console.log(`📺 TMDb API (Series) - Preparando ${seriesAfter22.length} llamadas para obtener ratings de series`);
+    console.log(
+      `📺 TMDb API (Series) - Preparando ${seriesAfter22.length} llamadas para obtener ratings de series`
+    );
 
     // obtener las calificaciones de las películas de la API
     const ratings = (await Promise.all(
       seriesAfter22.map(async (serie) => {
         TvGuideService.externalApiCallCounter++;
         const serieTitle = serie.title.value.replace(/T\d+.*/, '');
-        console.log(`🔥 TMDb API CALL #${TvGuideService.externalApiCallCounter} - Obteniendo rating para serie: ${serieTitle}`);
-        
+        console.log(
+          `🔥 TMDb API CALL #${TvGuideService.externalApiCallCounter} - Obteniendo rating para serie: ${serieTitle}`
+        );
+
         const response = (await lastValueFrom(
           this.http.getSeriesId(serieTitle)
         )) as any;
-        
-        console.log(`✅ TMDb API RESPONSE #${TvGuideService.externalApiCallCounter} - Rating obtenido para serie: ${serieTitle}`);
+
+        console.log(
+          `✅ TMDb API RESPONSE #${TvGuideService.externalApiCallCounter} - Rating obtenido para serie: ${serieTitle}`
+        );
         return response.results[0];
       })
     )) as any[];
 
-    console.log(`📊 TMDb API (Series) - TOTAL de llamadas realizadas hasta ahora: ${TvGuideService.externalApiCallCounter}`);
+    console.log(
+      `📊 TMDb API (Series) - TOTAL de llamadas realizadas hasta ahora: ${TvGuideService.externalApiCallCounter}`
+    );
 
     // crear un nuevo array con las películas y sus calificaciones
     const seriesWithRatings = seriesAfter22.map((serie) => {
@@ -391,21 +496,33 @@ export class TvGuideService {
   }
 
   private programsByChannel(channelId: string, categoryType: string) {
-    return this.getListaCanales().filter(
-      (programa: any) =>
-        programa?.category?.value?.split(',')[0] === categoryType &&
-        programa.channel.id === channelId
-    );
+    return (this.getListaCanales() || []).filter((programa: any) => {
+      try {
+        const cat = programa?.category?.value?.split(',')[0];
+        const channelIdMatch =
+          programa?.channel?.id === channelId ||
+          programa?.channel === channelId ||
+          programa?.id === channelId;
+        return cat === categoryType && channelIdMatch;
+      } catch (err) {
+        return false;
+      }
+    });
   }
 
   private programsByDate(date: string, categoryType: string) {
-    return this.getListaCanales()
-      .flatMap((canal: any) => canal.programs)
-      .filter(
-        (programa: any) =>
-          programa?.category?.value?.split(',')[0] === categoryType &&
-          programa.start.split('T')[0] === date
-      );
+    return (this.getListaCanales() || [])
+      .flatMap((canal: any) => canal?.programs || [])
+      .filter((programa: any) => {
+        try {
+          return (
+            programa?.category?.value?.split(',')[0] === categoryType &&
+            programa?.start?.split('T')[0] === date
+          );
+        } catch (err) {
+          return false;
+        }
+      });
   }
 
   private getUniqueCategories(categoryType: string) {
@@ -455,9 +572,24 @@ export class TvGuideService {
   // Obtener los programas del canal por canal name
 
   private getProgramsByChannelName(channelName: string) {
-    return this.getListaProgramas().filter(
-      (program: any) => program.channel === channelName
-    );
+    return (this.getListaProgramas() || []).filter((program: any) => {
+      try {
+        if (!program) return false;
+        // Support several possible shapes: program.channel may be a string, an id, or an object with name/id
+        const channelVal = program.channel;
+        if (typeof channelVal === 'string') return channelVal === channelName;
+        if (channelVal && typeof channelVal === 'object') {
+          return (
+            channelVal.name === channelName || channelVal.id === channelName
+          );
+        }
+        // Fallback to channel_id field
+        if (program.channel_id) return program.channel_id === channelName;
+        return false;
+      } catch (err) {
+        return false;
+      }
+    });
   }
 
   private getAllProgramsByCategory(category: string, channel?: string) {
@@ -487,7 +619,8 @@ export class TvGuideService {
   }
   getDeportesCanales() {
     return this.listaCanales.slice(93, 103);
-  }  getCableCanales() {
+  }
+  getCableCanales() {
     return this.listaCanales.filter((canal: any) => canal.type === 'cable');
   }
   /**
@@ -495,9 +628,19 @@ export class TvGuideService {
    */
   public getExternalApiCallSummary(): void {
     console.log(`📊 RESUMEN DE LLAMADAS A APIs EXTERNAS:`);
-    console.log(`🔥 Total de llamadas a TMDb API (películas y series): ${TvGuideService.externalApiCallCounter}`);
-    console.log(`💾 Cache de películas cargado: ${TvGuideService.moviesCacheLoaded ? 'Sí' : 'No'} (${TvGuideService.moviesCache.length} elementos)`);
-    console.log(`💾 Cache de series cargado: ${TvGuideService.seriesCacheLoaded ? 'Sí' : 'No'} (${TvGuideService.seriesCache.length} elementos)`);
+    console.log(
+      `🔥 Total de llamadas a TMDb API (películas y series): ${TvGuideService.externalApiCallCounter}`
+    );
+    console.log(
+      `💾 Cache de películas cargado: ${
+        TvGuideService.moviesCacheLoaded ? 'Sí' : 'No'
+      } (${TvGuideService.moviesCache.length} elementos)`
+    );
+    console.log(
+      `💾 Cache de series cargado: ${
+        TvGuideService.seriesCacheLoaded ? 'Sí' : 'No'
+      } (${TvGuideService.seriesCache.length} elementos)`
+    );
   }
   /**
    * Reinicia el contador de llamadas a APIs externas (TMDb)
@@ -509,7 +652,9 @@ export class TvGuideService {
     TvGuideService.seriesCacheLoaded = false;
     TvGuideService.moviesCache = [];
     TvGuideService.seriesCache = [];
-    console.log(`🔄 Contador de llamadas a APIs externas reiniciado y cache limpiado`);
+    console.log(
+      `🔄 Contador de llamadas a APIs externas reiniciado y cache limpiado`
+    );
   }
 
   /**

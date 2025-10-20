@@ -1,91 +1,125 @@
-<swiper-container
-  #swiperRef
-  slides-per-view="4"
-  space-between="5"
-  breakpoints='{
-    "320": {"slidesPerView": 2, "spaceBetween": 5},
-    "480": {"slidesPerView": 3, "spaceBetween": 5},
-    "640": {"slidesPerView": 4, "spaceBetween": 5}
-  }'
+<!-- Native Slider - Optimizado para datos reales -->
+<section
+  class="native-slider"
+  [ngClass]="'slider--' + (variant || 'default')"
+  [attr.aria-label]="
+    'Carrusel de ' +
+    (variant === 'peliculas'
+      ? 'películas'
+      : variant === 'series'
+      ? 'series'
+      : 'programas')
+  "
 >
-  <swiper-slide *ngFor="let program of programas; index as i">
-    <div
-      class="relative group cursor-pointer rounded-xl overflow-hidden"
-      (click)="manageData(program)"
+  <!-- Scroll Container -->
+  <div #scrollContainer class="slider-scroll-container" role="list">
+    <article
+      *ngFor="let program of programas; index as i; trackBy: trackByProgram"
+      class="slider-item"
+      role="listitem"
     >
-      <img
-        *ngIf="program?.channel"
-        class="object-cover w-full h-full -z-10"
-        src="https://wsrv.nl/?url={{ program?.icon }}&w=300&h=300"
-        alt="{{ program?.name || program?.title?.value }}"
-        loading="lazy"
-        width="100%"
-        height="100%"
-      />
-      <img
-        *ngIf="!program?.channel"
-        class="object-cover w-full h-full -z-10"
-        src="https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/{{
-          program?.name
-        }}.png&w=300&h=300"
-        alt="{{ program?.name || program?.title?.value }}"
-        loading="lazy"
-        width="100%"
-        height="100%"
-      />
-
-      <div
-        class="absolute top-0 h-full w-full bg-gradient-to-t from-black/50 p-3 flex flex-col justify-between"
+      <a
+        class="slider-item-inner"
+        role="button"
+        tabindex="0"
+        (click)="manageData(program)"
+        (keydown.enter)="manageData(program)"
+        (keydown.space)="$event.preventDefault(); manageData(program)"
+        [attr.aria-label]="
+          'Ver ' + (program?.title?.value || program?.name || 'programa')
+        "
       >
-        <div class="flex justify-between items-center w-full">
-          <div class="flex items-center">
-            <img
-              *ngIf="logo !== ''"
-              class="object-cover w-10 h-10"
-              src="{{ logo }}"
-              alt="{{ program?.name || program?.title?.value }}"
-              loading="lazy"
-              width="100%"
-              height="100%"
-            />
-            <span
-              *ngIf="logo === ''"
-              class="text-white ml-2 p-2.5 bg-gray-800/80 rounded-lg"
-            >
-              {{ program?.channel || program?.name }}
-            </span>
-          </div>
-        </div>
-      </div>
+        <figure class="slide-media">
+          <!-- Imagen principal del programa (icon es la imagen del programa) -->
+          <img
+            class="slide-image"
+            [attr.data-src]="buildWsrvUrl(program?.icon, 800, 450)"
+            [src]="
+              isFirst(i)
+                ? buildWsrvUrl(program?.icon, 800, 450)
+                : posterPlaceholder
+            "
+            [srcset]="
+              isFirst(i) ? buildSrcset(program?.icon, [400, 600, 800]) : ''
+            "
+            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 32vw, 19vw"
+            [attr.alt]="program?.title?.value || 'Programa'"
+            [attr.loading]="isFirst(i) ? 'eager' : 'lazy'"
+            [attr.decoding]="isFirst(i) ? 'sync' : 'async'"
+            width="800"
+            height="450"
+            (error)="onLogoError($event, program)"
+          />
 
-      <div class="self-center flex flex-col items-center space-y-1">
-        <h3
-          *ngIf="program?.title?.value"
-          class="capitalize text-white font-medium drop-shadow-md overflow-hidden whitespace-nowrap text-overflow-ellipsis"
-          style="max-width: 200px"
-        >
-          {{ program?.title?.value }}
-        </h3>
+          <!-- Overlay gradient -->
+          <div class="slide-overlay"></div>
 
-        <p *ngIf="program?.title?.value" class="text-white">
-          {{ horaInicio(i) }}
-        </p>
-      </div>
+          <!-- Información del programa -->
+          <figcaption class="slide-caption">
+            <!-- Hora arriba izquierda -->
+            <div class="time-badge">
+              <time *ngIf="program?.start" [attr.datetime]="program.start">
+                {{ horaInicio(i) }}
+              </time>
+            </div>
 
-      <div
-        *ngIf="!program?.title?.value"
-        class="self-center flex flex-col items-center space-y-2"
-      >
-        <h3 class="capitalize text-white font-medium drop-shadow-md">
-          {{ program?.name }}
-        </h3>
-      </div>
+            <!-- Info abajo -->
+            <div class="program-info">
+              <!-- Canal -->
+              <div class="channel-badge">
+                {{ program?.channel || "Canal" }}
+              </div>
 
-      <div
-        *ngIf="!program?.name"
-        class="capitalize text-white font-medium drop-shadow-md"
-      >
-      </div>
-    </div>
-  </swiper-slide>
-</swiper-container>
+              <!-- Título -->
+              <h3 class="program-title">
+                {{ program?.title?.value || "Título desconocido" }}
+              </h3>
+
+              <!-- Metadata -->
+              <div class="program-meta">
+                <span *ngIf="program?.desc?.year" class="meta-item">{{
+                  program.desc.year
+                }}</span>
+                <span *ngIf="program?.starRating" class="meta-item rating"
+                  >★ {{ program.starRating }}</span
+                >
+                <span
+                  *ngIf="program?.desc?.rate"
+                  class="meta-item age-rating"
+                  >{{ program.desc.rate }}</span
+                >
+              </div>
+            </div>
+          </figcaption>
+        </figure>
+      </a>
+    </article>
+  </div>
+
+  <!-- Controles de navegación -->
+  <div
+    class="slider-nav"
+    role="group"
+    aria-label="Controles"
+    *ngIf="isBrowser && hasMultipleSlides()"
+  >
+    <button
+      class="slider-nav-btn slider-nav-prev"
+      type="button"
+      aria-label="Anterior"
+      [disabled]="!canScrollPrev()"
+      (click)="prev()"
+    >
+      ‹
+    </button>
+    <button
+      class="slider-nav-btn slider-nav-next"
+      type="button"
+      aria-label="Siguiente"
+      [disabled]="!canScrollNext()"
+      (click)="next()"
+    >
+      ›
+    </button>
+  </div>
+</section>

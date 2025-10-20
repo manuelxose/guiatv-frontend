@@ -1,7 +1,173 @@
-<div class="footer relative -bottom-20 z-30">
-  <p>
-    Diseñado por
-    <a href="https://tecnoriasl.com/" target="_blank">TecnoRia</a> ©
-    {{ currentYear }}
-  </p>
-</div>
+<footer
+  class="footer mt-8 z-30 w-full"
+  role="contentinfo"
+  aria-label="Pie de página"
+>
+  <div class="footer-inner" itemscope itemtype="https://schema.org/WPFooter">
+    <div
+      class="brand"
+      itemprop="publisher"
+      itemscope
+      itemtype="https://schema.org/Organization"
+    >
+      <svg
+        class="logo"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          d="M10 15.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4Zm11.96-4.45c.58 6.26-4.64 11.48-10.9 10.9 -4.43-.41-8.12-3.85-8.9-8.23 -.26-1.42-.19-2.78.12-4.04 .14-.58.76-.9 1.31-.7v0c.47.17.75.67.63 1.16 -.2.82-.27 1.7-.19 2.61 .37 4.04 3.89 7.25 7.95 7.26 4.79.01 8.61-4.21 7.94-9.12 -.51-3.7-3.66-6.62-7.39-6.86 -.83-.06-1.63.02-2.38.2 -.49.11-.99-.16-1.16-.64v0c-.2-.56.12-1.17.69-1.31 1.79-.43 3.75-.41 5.78.37 3.56 1.35 6.15 4.62 6.5 8.4ZM5.5 4C4.67 4 4 4.67 4 5.5 4 6.33 4.67 7 5.5 7 6.33 7 7 6.33 7 5.5 7 4.67 6.33 4 5.5 4Z"
+        ></path>
+      </svg>
+      <div class="brand-text" itemprop="name">
+        GPTV<span class="dot">.</span>
+      </div>
+      <meta itemprop="url" content="https://guiatv.example.com/" />
+    </div>
+
+    <div
+      class="footer-columns"
+      style="
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        flex: 1;
+        justify-content: space-between;
+      "
+    >
+      <div class="col col-site" style="min-width: 200px; max-width: 320px">
+        <h3 class="text-sm font-semibold">Explorar</h3>
+        <nav aria-label="Enlaces principales">
+          <ul style="list-style: none; padding: 0; margin: 0">
+            <li><a class="footer-link" href="/">Inicio</a></li>
+            <li>
+              <a class="footer-link" href="/guia-canales">Guía de Canales</a>
+            </li>
+            <li><a class="footer-link" href="/que-ver-hoy">Qué ver hoy</a></li>
+            <li><a class="footer-link" href="/en-directo">En directo</a></li>
+            <li><a class="footer-link" href="/blog">Blog</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="col col-legal" style="min-width: 200px; max-width: 320px">
+        <h3 class="text-sm font-semibold">Legal & Políticas</h3>
+        <nav aria-label="Enlaces legales">
+          <ul style="list-style: none; padding: 0; margin: 0">
+            <li><a class="footer-link" href="/avisolegal">Aviso Legal</a></li>
+            <li>
+              <a class="footer-link" href="/privacidad"
+                >Política de Privacidad</a
+              >
+            </li>
+            <li>
+              <a class="footer-link" href="/cookies">Política de Cookies</a>
+            </li>
+            <li>
+              <a class="footer-link" href="/terminos">Términos y Condiciones</a>
+            </li>
+            <li>
+              <a class="footer-link" href="/accesibilidad"
+                >Declaración de Accesibilidad</a
+              >
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="col col-contact" style="min-width: 220px; max-width: 360px">
+        <h3 class="text-sm font-semibold">Contacto</h3>
+        <address style="font-style: normal; color: inherit">
+          <div>
+            Soporte:
+            <a class="footer-link" href="mailto:soporte@tecnoriasl.com"
+              >soporte&#64;tecnoriasl.com</a
+            >
+          </div>
+          <div>
+            Legal:
+            <a class="footer-link" href="mailto:legal@tecnoriasl.com"
+              >legal&#64;tecnoriasl.com</a
+            >
+          </div>
+          <div class="mt-2">Síguenos:</div>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem">
+            <a
+              class="footer-link"
+              href="https://twitter.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Twitter"
+              >Twitter</a
+            >
+            <a
+              class="footer-link"
+              href="https://facebook.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              >Facebook</a
+            >
+            <a
+              class="footer-link"
+              href="https://instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              >Instagram</a
+            >
+          </div>
+        </address>
+      </div>
+    </div>
+
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      "
+    >
+      <div class="copyright" style="flex: 1; min-width: 220px">
+        © {{ currentYear }} GPTV • Diseñado por
+        <a href="https://tecnoriasl.com/" target="_blank" rel="noopener"
+          >TecnoRia</a
+        >
+      </div>
+
+      <div style="text-align: right; min-width: 220px">
+        <a class="footer-link" href="/sitemap">Mapa del sitio</a>
+        <span style="margin: 0 0.5rem; color: rgba(230, 238, 246, 0.5)">|</span>
+        <a class="footer-link" href="/rss.xml">RSS</a>
+      </div>
+    </div>
+
+    <!-- JSON-LD Organization Structured Data for SEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "GPTV",
+        "url": "https://guiatv.example.com/",
+        "logo": "https://guiatv.example.com/assets/logo.svg",
+        "sameAs": [
+          "https://twitter.com/",
+          "https://facebook.com/",
+          "https://instagram.com/"
+        ],
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "soporte\u0040tecnoriasl.com"
+          }
+        ]
+      }
+    </script>
+  </div>
+</footer>

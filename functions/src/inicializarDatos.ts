@@ -1,12 +1,14 @@
 import axios from 'axios';
 import { Programa, obtenerProgramacion } from './api.js';
-import { guardarProgramasEnFirestore, datosInicialesCargados, guardarCanalesEnFirestore } from './firestore.js';
-import  * as admin from 'firebase-admin';
+import {
+  guardarProgramasEnFirestore,
+  datosInicialesCargados,
+  guardarCanalesEnFirestore,
+} from './firestore.js';
+import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-
-const storage = admin.storage();
 interface ProgramaPorCanal {
   [key: string]: Programa[];
 }
@@ -23,7 +25,6 @@ async function verificarDisponibilidad(url: string): Promise<boolean> {
   }
 }
 
-
 async function downloadImage(url: string, path: string): Promise<void> {
   if (fs.existsSync(path)) {
     console.log('La imagen ya está descargada:', path);
@@ -38,9 +39,12 @@ async function downloadImage(url: string, path: string): Promise<void> {
   }
 }
 
-async function uploadImageToStorage(localPath: string, remotePath: string): Promise<string> {
+async function uploadImageToStorage(
+  storage: any,
+  localPath: string,
+  remotePath: string
+): Promise<string> {
   try {
-
     const bucket = storage.bucket();
     const file = bucket.file(remotePath);
 
@@ -64,8 +68,6 @@ async function uploadImageToStorage(localPath: string, remotePath: string): Prom
   }
 }
 
-
-
 export async function inicializarDatos() {
   try {
     // Verifica si los datos iniciales ya han sido cargados
@@ -74,71 +76,84 @@ export async function inicializarDatos() {
       return;
     }
 
+    const programacion = await obtenerProgramacion();
 
-const programacion = await obtenerProgramacion();
+    console.log('Datos de programación obtenidos de la API.');
 
-  console.log('Datos de programación obtenidos de la API.');
+    // Verifica si hay datos de programación para cargar
+    if (!programacion || Object.keys(programacion).length === 0) {
+      console.log('No hay datos de programación para cargar.');
+      return;
+    }
 
-// Verifica si hay datos de programación para cargar
-if (!programacion || Object.keys(programacion).length === 0) {
-  console.log('No hay datos de programación para cargar.');
-  return;
-}
+    console.log('Cargando datos de programación en Firestore...');
+    // Prepara los datos de los canales
+    const canales = Object.entries(programacion).map(
+      ([nombreCanal, programas]) => ({
+        name: nombreCanal,
+        image: programas[0]?.chanelImage || null,
+      })
+    );
 
-console.log('Cargando datos de programación en Firestore...');
-// Prepara los datos de los canales
-const canales = Object.entries(programacion).map(([nombreCanal, programas]) => ({
-  name: nombreCanal,
-  image: programas[0]?.chanelImage || null,
-}));
+    console.log('Busca los iconos de los canales en la API...');
+    // Descarga y almacena los iconos de los canales en Firebase Storage
+    const storage = admin.storage();
+    for (const canal of canales) {
+      if (!canal.image) continue;
 
-console.log('Busca los iconos de los canales en la API...');
-// Descarga y almacena los iconos de los canales en Firebase Storage
-for (const canal of canales) {
-  if (!canal.image) continue;
+      const imagePath = path.join(os.tmpdir(), `${canal.name}.png`);
+      const storagePath = `canales/${canal.name}/icono.png`;
 
-  const imagePath = path.join(os.tmpdir(), `${canal.name}.png`);
-  const storagePath = `canales/${canal.name}/icono.png`;
+      try {
+        await downloadImage(canal.image, imagePath);
+        canal.image = await uploadImageToStorage(
+          storage,
+          imagePath,
+          storagePath
+        );
+      } catch (error: any) {
+        console.warn(
+          `Error al descargar y subir la imagen del canal ${canal.name}:`,
+          error.message
+        );
+        canal.image = null;
+      }
+    }
+    console.log('Iconos de canales cargados exitosamente.');
+    // Guarda los canales en Firestore
+    const canalIdMap = await guardarCanalesEnFirestore(canales);
+    const programacionPorCanal: ProgramaPorCanal = {};
 
-  try {
-    await downloadImage(canal.image, imagePath);
-    canal.image = await uploadImageToStorage(imagePath, storagePath);
-  } catch (error:any) {
-    console.warn(`Error al descargar y subir la imagen del canal ${canal.name}:`, error.message);
-    canal.image = null;
-  }
-}
-console.log('Iconos de canales cargados exitosamente.');
-// Guarda los canales en Firestore
-const canalIdMap = await guardarCanalesEnFirestore(canales);
-const programacionPorCanal: ProgramaPorCanal = {};
+    // Guarda la programación en Firestore
+    for (const [nombreCanal, programas] of Object.entries(programacion)) {
+      const channelId = canalIdMap.get(nombreCanal);
 
-// Guarda la programación en Firestore
-for (const [nombreCanal, programas] of Object.entries(programacion)) {
-  const channelId = canalIdMap.get(nombreCanal);
+      if (!channelId) {
+        console.warn(
+          `No se encontró el ID del canal para ${nombreCanal}. No se procesarán los programas de este canal.`
+        );
+        continue;
+      }
 
-  if (!channelId) {
-    console.warn(`No se encontró el ID del canal para ${nombreCanal}. No se procesarán los programas de este canal.`);
-    continue;
-  }
+      programacionPorCanal[nombreCanal] = programas.map((programa: any) => ({
+        channelId,
+        channelName: programa.channelName,
+        start: programa.start,
+        end: programa.end,
+        title: programa.title,
+        description: programa.description,
+        image: programa.image,
+        chanelImage: programa.chanelImage,
+        programName: programa.programName,
+        programImage: programa.programImage,
+      }));
+    }
 
-  programacionPorCanal[nombreCanal] = programas.map((programa: any) => ({
-    channelId,
-    channelName: programa.channelName,
-    start: programa.start,
-    end: programa.end,
-    title: programa.title,
-    description: programa.description,
-    image: programa.image,
-    chanelImage: programa.chanelImage,
-    programName: programa.programName,
-    programImage: programa.programImage,
-  }));
-}
+    await guardarProgramasEnFirestore(programacionPorCanal, canalIdMap);
 
-await guardarProgramasEnFirestore(programacionPorCanal, canalIdMap);
-
-console.log('Datos iniciales de programas y canales cargados exitosamente.');
+    console.log(
+      'Datos iniciales de programas y canales cargados exitosamente.'
+    );
   } catch (error) {
     console.error(error);
   }

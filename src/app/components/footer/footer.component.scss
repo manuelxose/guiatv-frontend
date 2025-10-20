@@ -4,87 +4,81 @@
  */
 
 .footer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #1f2937, #374151);
-  color: #f9fafb;
-  padding: 2rem 1rem;
-  font-size: 14px;
+  display: block;
+  background: linear-gradient(
+    135deg,
+    rgba(17, 24, 39, 0.9),
+    rgba(31, 41, 55, 0.95)
+  );
+  color: #e6eef6;
+  padding: 1.25rem 1rem;
+  font-size: 13px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  margin-top: 1.75rem; /* separación desde el contenido */
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 
-  // Modern backdrop effect
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  /* Inner layout */
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: space-between;
+    flex-wrap: wrap;
   }
 
-  // Subtle animation on load
-  &.footer-loaded {
-    animation: fadeInUp 0.6s ease-out;
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
 
-  p {
-    margin: 0;
-    text-align: center;
-    line-height: 1.6;
-    font-weight: 400;
-    
-    // Better text rendering
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  .logo {
+    width: 28px;
+    height: 28px;
+    fill: #ef4444;
+    opacity: 0.95;
   }
 
-  a {
-    color: #fbbf24;
+  .brand-text {
+    color: #fff;
+    font-weight: 700;
+  }
+  .brand-text .dot {
+    color: #ef4444;
+    margin-left: 2px;
+  }
+
+  .footer-nav {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .footer-link {
+    color: rgba(230, 238, 246, 0.8);
     text-decoration: none;
-    margin-left: 0.25rem;
     font-weight: 600;
-    position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-    // Underline effect
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background: linear-gradient(90deg, #fbbf24, #f59e0b);
-      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    &:hover {
-      color: #f59e0b;
-      transform: translateY(-1px);
-
-      &::after {
-        width: 100%;
-      }
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-
-    &:focus-visible {
-      outline: 2px solid #fbbf24;
-      outline-offset: 2px;
-      border-radius: 0.25rem;
-    }
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+  }
+  .footer-link:hover {
+    background: rgba(255, 255, 255, 0.03);
   }
 
-  // Dark mode support
+  .copyright {
+    color: rgba(230, 238, 246, 0.7);
+    font-size: 12px;
+  }
+
+  // Slight adjustment for dark mode (keeps same palette)
   @media (prefers-color-scheme: dark) {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: #e2e8f0;
+    background: linear-gradient(
+      135deg,
+      rgba(2, 6, 23, 0.9),
+      rgba(14, 23, 35, 0.95)
+    );
   }
 }
 
@@ -97,7 +91,7 @@
   line-height: 1.5;
   background: rgba(0, 0, 0, 0.02);
   border-top: 1px solid rgba(0, 0, 0, 0.05);
-  
+
   @media (prefers-color-scheme: dark) {
     background: rgba(255, 255, 255, 0.02);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -118,7 +112,7 @@
       position: relative;
 
       &::before {
-        content: '';
+        content: "";
         position: absolute;
         inset: 0;
         background: rgba(239, 68, 68, 0.1);
@@ -129,7 +123,7 @@
 
       &:hover {
         color: #374151;
-        
+
         &::before {
           opacity: 1;
         }
@@ -177,7 +171,7 @@
 
   .footer-links {
     font-size: 0.7rem;
-    
+
     .footer-links-content {
       padding: 0.75rem;
     }
@@ -240,7 +234,7 @@
     background: none !important;
     color: #000 !important;
     box-shadow: none !important;
-    
+
     a {
       color: #000 !important;
       text-decoration: underline !important;
