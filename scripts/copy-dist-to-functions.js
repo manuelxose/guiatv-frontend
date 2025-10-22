@@ -29,6 +29,24 @@ try {
   // copy entire dist/guiatv into functions/dist/guiatv (includes browser & server bundles)
   copyFolderSync(distGuiatv, functionsDist);
 
+  // Además, para facilitar que el index.html copiado al root resuelva los assets
+  // (styles-*.css, chunk-*.js, media, etc.), copiar también el contenido de
+  // dist/guiatv/browser directamente en el root de functions/dist/guiatv.
+  const browserFolder = path.join(distGuiatv, 'browser');
+  if (fs.existsSync(browserFolder)) {
+    // copy browser/* -> functionsDist/*
+    const entries = fs.readdirSync(browserFolder, { withFileTypes: true });
+    for (const entry of entries) {
+      const src = path.join(browserFolder, entry.name);
+      const dest = path.join(functionsDist, entry.name);
+      if (entry.isDirectory()) {
+        copyFolderSync(src, dest);
+      } else {
+        copyFileSync(src, dest);
+      }
+    }
+  }
+
   // Ensure the server bundle can find index.html at the expected root path
   // Angular builds sometimes emit index.html, index.csr.html or index.server.html.
   // Try a few common locations and copy the first one we find to functions/dist/guiatv/index.html

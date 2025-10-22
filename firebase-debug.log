@@ -1,0 +1,251 @@
+[debug] [2025-10-21T23:50:27.148Z] ----------------------------------------------------------------------
+[debug] [2025-10-21T23:50:27.170Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\mgonzalezv.INDRA\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start
+[debug] [2025-10-21T23:50:27.171Z] CLI Version:   14.20.0
+[debug] [2025-10-21T23:50:27.172Z] Platform:      win32
+[debug] [2025-10-21T23:50:27.172Z] Node Version:  v22.13.1
+[debug] [2025-10-21T23:50:27.173Z] Time:          Wed Oct 22 2025 01:50:27 GMT+0200 (hora de verano de Europa central)
+[debug] [2025-10-21T23:50:27.174Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-10-21T23:50:28.177Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-10-21T23:50:28.179Z] > authorizing via signed-in user (oficina@tecnoriasl.com)
+[debug] [2025-10-21T23:50:29.204Z] openjdk version "17.0.15" 2025-04-15 LTS
+OpenJDK Runtime Environment Microsoft-11369865 (build 17.0.15+6-LTS)
+
+[debug] [2025-10-21T23:50:29.206Z] OpenJDK 64-Bit Server VM Microsoft-11369865 (build 17.0.15+6-LTS, mixed mode, sharing)
+
+[debug] [2025-10-21T23:50:29.223Z] Parsed Java major version: 17
+[warn] !!  emulators: firebase-tools will drop support for Java version < 21 soon in firebase-tools@15. Please install a JDK at version 21 or above to get a compatible runtime. 
+[info] i  emulators: Starting emulators: functions, firestore, database, hosting, storage, extensions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions, firestore, database, hosting, storage, extensions"}}
+[debug] [2025-10-21T23:50:29.237Z] Checked if tokens are valid: false, expires at: 1761082133082
+[debug] [2025-10-21T23:50:29.237Z] Checked if tokens are valid: false, expires at: 1761082133082
+[debug] [2025-10-21T23:50:29.238Z] > refreshing access token with scopes: []
+[debug] [2025-10-21T23:50:29.242Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-10-21T23:50:29.243Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-10-21T23:50:29.419Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-10-21T23:50:29.420Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-10-21T23:50:29.507Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/guia-tv-8fe3c [none]
+[debug] [2025-10-21T23:50:30.290Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/guia-tv-8fe3c 200
+[debug] [2025-10-21T23:50:30.291Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/guia-tv-8fe3c {"projectNumber":"533857766582","projectId":"guia-tv-8fe3c","lifecycleState":"ACTIVE","name":"guia-tv","labels":{"firebase":"enabled"},"createTime":"2023-04-05T10:07:33.896796Z","parent":{"type":"organization","id":"510592724240"}}
+[debug] [2025-10-21T23:50:30.384Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-10-21T23:50:30.385Z] [firestore] Firestore Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-10-21T23:50:30.385Z] [firestore.websocket] websocket server for firestore only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-10-21T23:50:30.385Z] [database] Database Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-10-21T23:50:30.386Z] [hosting] Hosting Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-10-21T23:50:30.386Z] [storage] Storage Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-10-21T23:50:30.386Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"database":[{"address":"127.0.0.1","family":"IPv4","port":9000}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2025-10-21T23:50:30.401Z] Emulator locator file path: C:\Users\MGONZA~1.IND\AppData\Local\Temp\hub-guia-tv-8fe3c.json
+[debug] [2025-10-21T23:50:30.402Z] [hub] writing locator at C:\Users\MGONZA~1.IND\AppData\Local\Temp\hub-guia-tv-8fe3c.json
+[debug] [2025-10-21T23:50:30.439Z] [Extensions] Started Extensions emulator, this is a noop.
+[debug] [2025-10-21T23:50:30.470Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-10-21T23:50:30.470Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-10-21T23:50:30.470Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-10-21T23:50:30.471Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"database":[{"address":"127.0.0.1","family":"IPv4","port":9000}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] !  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, pubsub, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, auth, pubsub, dataconnect\u001b[22m"}}
+[debug] [2025-10-21T23:50:30.546Z] defaultcredentials: writing to file C:\Users\mgonzalezv.INDRA\AppData\Roaming\firebase\oficina_tecnoriasl_com_application_default_credentials.json
+[debug] [2025-10-21T23:50:30.564Z] Setting GAC to C:\Users\mgonzalezv.INDRA\AppData\Roaming\firebase\oficina_tecnoriasl_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\mgonzalezv.INDRA\\AppData\\Roaming\\firebase\\oficina_tecnoriasl_com_application_default_credentials.json"}}
+[debug] [2025-10-21T23:50:30.565Z] Checked if tokens are valid: true, expires at: 1761094228420
+[debug] [2025-10-21T23:50:30.565Z] Checked if tokens are valid: true, expires at: 1761094228420
+[debug] [2025-10-21T23:50:30.566Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c/adminSdkConfig [none]
+[debug] [2025-10-21T23:50:31.322Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c/adminSdkConfig 200
+[debug] [2025-10-21T23:50:31.322Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c/adminSdkConfig {"projectId":"guia-tv-8fe3c","storageBucket":"guia-tv-8fe3c.appspot.com","locationId":"europe-west"}
+[warn] !  firestore: Cloud Firestore Emulator does not support multiple databases yet. {"metadata":{"emulator":{"name":"firestore"},"message":"Cloud Firestore Emulator does not support multiple databases yet."}}
+[warn] !  firestore: Did not find a Cloud Firestore rules file specified in a firebase.json config file. {"metadata":{"emulator":{"name":"firestore"},"message":"Did not find a Cloud Firestore rules file specified in a firebase.json config file."}}
+[warn] !  firestore: The emulator will default to allowing all reads and writes. Learn more about this option: https://firebase.google.com/docs/emulator-suite/install_and_configure#security_rules_configuration. {"metadata":{"emulator":{"name":"firestore"},"message":"The emulator will default to allowing all reads and writes. Learn more about this option: https://firebase.google.com/docs/emulator-suite/install_and_configure#security_rules_configuration."}}
+[info] i  firestore: downloading cloud-firestore-emulator-v1.19.8.jar... {"metadata":{"emulator":{"name":"firestore"},"message":"downloading cloud-firestore-emulator-v1.19.8.jar..."}}
+[debug] [2025-10-21T23:50:31.424Z] >>> [apiv2][query] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.19.8.jar 
+[debug] [2025-10-21T23:50:31.676Z] <<< [apiv2][status] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.19.8.jar 200
+[debug] [2025-10-21T23:50:31.676Z] <<< [apiv2][body] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.19.8.jar [stream]
+[debug] [2025-10-21T23:50:46.294Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2025-10-21T23:50:46.295Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
+[debug] [2025-10-21T23:50:46.295Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","C:\\Users\\mgonzalezv.INDRA\\.cache\\firebase\\emulators\\cloud-firestore-emulator-v1.19.8.jar","--host","127.0.0.1","--port",8080,"--websocket_port",9150,"--project_id","guia-tv-8fe3c","--single_project_mode",true,"--functions_emulator","127.0.0.1:5001"],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false,"shell":false,"port":8080} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"C:\\\\Users\\\\mgonzalezv.INDRA\\\\.cache\\\\firebase\\\\emulators\\\\cloud-firestore-emulator-v1.19.8.jar\",\"--host\",\"127.0.0.1\",\"--port\",8080,\"--websocket_port\",9150,\"--project_id\",\"guia-tv-8fe3c\",\"--single_project_mode\",true,\"--functions_emulator\",\"127.0.0.1:5001\"],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":8080}"}}
+[info] i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[debug] [2025-10-21T23:50:50.932Z] Oct 22, 2025 1:50:50 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:9150
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Oct 22, 2025 1:50:50 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start\r\nINFO: Started WebSocket server on ws://127.0.0.1:9150\r\n"}}
+[debug] [2025-10-21T23:50:52.077Z] API endpoint: http://127.0.0.1:8080
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+
+If you are running a Firestore in Datastore Mode project, run:
+
+   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080
+
+Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
+Dev App Server is now running.
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"API endpoint: http://127.0.0.1:8080\nIf you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:\r\n\n   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080\n\nIf you are running a Firestore in Datastore Mode project, run:\r\n\n   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080\n\nNote: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.\r\nDev App Server is now running.\n\r\n"}}
+[info] +  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+[debug] [2025-10-21T23:50:52.183Z] Checked if tokens are valid: true, expires at: 1761094228420
+[debug] [2025-10-21T23:50:52.183Z] Checked if tokens are valid: true, expires at: 1761094228420
+[debug] [2025-10-21T23:50:52.187Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c [none]
+[debug] [2025-10-21T23:50:52.536Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c 200
+[debug] [2025-10-21T23:50:52.537Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c {"projectId":"guia-tv-8fe3c","projectNumber":"533857766582","displayName":"guia-tv","name":"projects/guia-tv-8fe3c","resources":{"hostingSite":"guia-tv-8fe3c","locationId":"europe-west"},"state":"ACTIVE","etag":"1_6e817ca8-7da7-4cee-a2ec-69858b2447ae"}
+[debug] [2025-10-21T23:50:52.538Z] database rules config:  []
+[warn] !  database: Did not find a Realtime Database rules file specified in a firebase.json config file. The emulator will default to allowing all reads and writes. Learn more about this option: https://firebase.google.com/docs/emulator-suite/install_and_configure#security_rules_configuration. {"metadata":{"emulator":{"name":"database"},"message":"Did not find a Realtime Database rules file specified in a firebase.json config file. The emulator will default to allowing all reads and writes. Learn more about this option: https://firebase.google.com/docs/emulator-suite/install_and_configure#security_rules_configuration."}}
+[info] i  database: downloading firebase-database-emulator-v4.11.2.jar... {"metadata":{"emulator":{"name":"database"},"message":"downloading firebase-database-emulator-v4.11.2.jar..."}}
+[debug] [2025-10-21T23:50:52.573Z] >>> [apiv2][query] GET https://storage.googleapis.com/firebase-preview-drop/emulator/firebase-database-emulator-v4.11.2.jar 
+[debug] [2025-10-21T23:50:52.809Z] <<< [apiv2][status] GET https://storage.googleapis.com/firebase-preview-drop/emulator/firebase-database-emulator-v4.11.2.jar 200
+[debug] [2025-10-21T23:50:52.810Z] <<< [apiv2][body] GET https://storage.googleapis.com/firebase-preview-drop/emulator/firebase-database-emulator-v4.11.2.jar [stream]
+[debug] [2025-10-21T23:50:59.199Z] Ignoring unsupported arg: projectId {"metadata":{"emulator":{"name":"database"},"message":"Ignoring unsupported arg: projectId"}}
+[debug] [2025-10-21T23:50:59.199Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"database"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2025-10-21T23:50:59.200Z] Ignoring unsupported arg: rules {"metadata":{"emulator":{"name":"database"},"message":"Ignoring unsupported arg: rules"}}
+[debug] [2025-10-21T23:50:59.200Z] Starting Database Emulator with command {"binary":"java","args":["-Duser.language=en","-jar","C:\\Users\\mgonzalezv.INDRA\\.cache\\firebase\\emulators\\firebase-database-emulator-v4.11.2.jar","--host","127.0.0.1","--port",9000,"--single_project_mode","Warning","--functions_emulator_host","127.0.0.1","--functions_emulator_port",5001],"optionalArgs":["port","host","functions_emulator_port","functions_emulator_host","single_project_mode"],"joinArgs":false,"shell":false,"port":9000} {"metadata":{"emulator":{"name":"database"},"message":"Starting Database Emulator with command {\"binary\":\"java\",\"args\":[\"-Duser.language=en\",\"-jar\",\"C:\\\\Users\\\\mgonzalezv.INDRA\\\\.cache\\\\firebase\\\\emulators\\\\firebase-database-emulator-v4.11.2.jar\",\"--host\",\"127.0.0.1\",\"--port\",9000,\"--single_project_mode\",\"Warning\",\"--functions_emulator_host\",\"127.0.0.1\",\"--functions_emulator_port\",5001],\"optionalArgs\":[\"port\",\"host\",\"functions_emulator_port\",\"functions_emulator_host\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":9000}"}}
+[info] i  database: Database Emulator logging to database-debug.log {"metadata":{"emulator":{"name":"database"},"message":"Database Emulator logging to \u001b[1mdatabase-debug.log\u001b[22m"}}
+[debug] [2025-10-21T23:51:01.610Z] 01:51:01.609 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+ {"metadata":{"emulator":{"name":"database"},"message":"01:51:01.609 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started\r\n"}}
+[debug] [2025-10-21T23:51:02.004Z] 01:51:02.004 [main] INFO com.firebase.server.forge.App$ - Listening at 127.0.0.1:9000
+ {"metadata":{"emulator":{"name":"database"},"message":"01:51:02.004 [main] INFO com.firebase.server.forge.App$ - Listening at 127.0.0.1:9000\r\n"}}
+[info] i  storage: downloading cloud-storage-rules-runtime-v1.1.3.jar... {"metadata":{"emulator":{"name":"storage"},"message":"downloading cloud-storage-rules-runtime-v1.1.3.jar..."}}
+[debug] [2025-10-21T23:51:02.285Z] >>> [apiv2][query] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-storage-rules-runtime-v1.1.3.jar 
+[debug] [2025-10-21T23:51:02.449Z] <<< [apiv2][status] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-storage-rules-runtime-v1.1.3.jar 200
+[debug] [2025-10-21T23:51:02.449Z] <<< [apiv2][body] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-storage-rules-runtime-v1.1.3.jar [stream]
+[debug] [2025-10-21T23:51:13.109Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"storage"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2025-10-21T23:51:14.543Z] Temp file directory for storage emulator: C:\Users\MGONZA~1.IND\AppData\Local\Temp/firebase/storage/blobs {"metadata":{"emulator":{"name":"storage"},"message":"Temp file directory for storage emulator: C:\\Users\\MGONZA~1.IND\\AppData\\Local\\Temp/firebase/storage/blobs"}}
+[debug] [2025-10-21T23:51:14.560Z] Checked if tokens are valid: true, expires at: 1761094228420
+[debug] [2025-10-21T23:51:14.560Z] Checked if tokens are valid: true, expires at: 1761094228420
+[debug] [2025-10-21T23:51:14.560Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/guia-tv-8fe3c/sites 
+[debug] [2025-10-21T23:51:15.574Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/guia-tv-8fe3c/sites 200
+[debug] [2025-10-21T23:51:15.574Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/guia-tv-8fe3c/sites {"sites":[{"name":"projects/guia-tv-8fe3c/sites/guia-tv-8fe3c","defaultUrl":"https://guia-tv-8fe3c.web.app","appId":"1:533857766582:web:4dfb40ca1ac9bb39346a17","type":"DEFAULT_SITE"}]}
+[debug] [2025-10-21T23:51:15.574Z] Checked if tokens are valid: true, expires at: 1761094228420
+[debug] [2025-10-21T23:51:15.574Z] Checked if tokens are valid: true, expires at: 1761094228420
+[debug] [2025-10-21T23:51:15.574Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c/webApps/1:533857766582:web:4dfb40ca1ac9bb39346a17/config [none]
+[debug] [2025-10-21T23:51:16.284Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c/webApps/1:533857766582:web:4dfb40ca1ac9bb39346a17/config 200
+[debug] [2025-10-21T23:51:16.285Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c/webApps/1:533857766582:web:4dfb40ca1ac9bb39346a17/config {"projectId":"guia-tv-8fe3c","appId":"1:533857766582:web:4dfb40ca1ac9bb39346a17","storageBucket":"guia-tv-8fe3c.appspot.com","locationId":"europe-west","apiKey":"AIzaSyCK_jTongKez-uHqn0Inoh19DicWNPAv_o","authDomain":"guia-tv-8fe3c.firebaseapp.com","messagingSenderId":"533857766582","measurementId":"G-P6Z3BY2DVW","projectNumber":"533857766582","version":"2"}
+[debug] [2025-10-21T23:51:16.350Z] Checked if tokens are valid: true, expires at: 1761094228420
+[debug] [2025-10-21T23:51:16.350Z] Checked if tokens are valid: true, expires at: 1761094228420
+[debug] [2025-10-21T23:51:16.351Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c [none]
+[debug] [2025-10-21T23:51:16.581Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c 200
+[debug] [2025-10-21T23:51:16.581Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/guia-tv-8fe3c {"projectId":"guia-tv-8fe3c","projectNumber":"533857766582","displayName":"guia-tv","name":"projects/guia-tv-8fe3c","resources":{"hostingSite":"guia-tv-8fe3c","locationId":"europe-west"},"state":"ACTIVE","etag":"1_6e817ca8-7da7-4cee-a2ec-69858b2447ae"}
+[info] i  hosting[guia-tv-8fe3c]: Serving hosting files from: functions/dist/guiatv {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1mfunctions/dist/guiatv\u001b[22m"}}
+[info] +  hosting[guia-tv-8fe3c]: Local server: http://127.0.0.1:5000 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://127.0.0.1:5000\u001b[22m\u001b[24m"}}
+[debug] [2025-10-21T23:51:16.789Z] [Extensions] Connecting Extensions emulator, this is a noop.
+[info] i  functions: Watching "C:\Users\mgonzalezv.INDRA\Documents\private-workspace\guia-tv\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"C:\\Users\\mgonzalezv.INDRA\\Documents\\private-workspace\\guia-tv\\functions\" for Cloud Functions..."}}
+[debug] [2025-10-21T23:51:16.809Z] Validating nodejs source
+[debug] [2025-10-21T23:51:26.878Z] checkFunctionsSDKVersion was unable to fetch information from NPM Error: spawnSync C:\WINDOWS\system32\cmd.exe ETIMEDOUT
+    at Object.spawnSync (node:internal/child_process:1120:20)
+    at Object.spawnSync (node:child_process:868:24)
+    at Function.spawnSync [as sync] (C:\Users\mgonzalezv.INDRA\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\cross-spawn\index.js:26:23)
+    at Object.getLatestSDKVersion (C:\Users\mgonzalezv.INDRA\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\runtimes\node\versioning.js:54:25)
+    at Object.checkFunctionsSDKVersion (C:\Users\mgonzalezv.INDRA\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\runtimes\node\versioning.js:74:32)
+    at Delegate.validate (C:\Users\mgonzalezv.INDRA\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\runtimes\node\index.js:89:20)
+    at FunctionsEmulator.discoverTriggers (C:\Users\mgonzalezv.INDRA\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\functionsEmulator.js:320:35)
+    at async FunctionsEmulator.loadTriggers (C:\Users\mgonzalezv.INDRA\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\functionsEmulator.js:362:34)
+    at async FunctionsEmulator.connect (C:\Users\mgonzalezv.INDRA\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\functionsEmulator.js:282:13)
+    at async Object.startAll (C:\Users\mgonzalezv.INDRA\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\controller.js:678:13)
+[debug] [2025-10-21T23:51:26.882Z] > [functions] package.json contents: {
+  "name": "functions",
+  "version": "1.0.0",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "serve:v2": "npm run build && node lib/v2/server.js",
+    "start:v2": "node lib/v2/server.js",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/v2/server.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "test:redis": "node test_redis.js",
+    "deploy": "npm run build && firebase deploy --only functions",
+    "deploy:v2": "npm run build && firebase deploy --only functions:apiv2"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "async-retry": "^1.3.3",
+    "axios": "^1.3.4",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "date-fns": "^2.29.3",
+    "esm": "^3.2.25",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.10.0",
+    "firebase-functions": "^5.1.0",
+    "gunzip": "^1.2.2",
+    "gunzip-file": "^0.1.1",
+    "p-retry": "^5.1.2",
+    "redis": "^5.8.3",
+    "retry": "^0.13.1",
+    "swagger-ui-express": "^5.0.1",
+    "xml2js": "^0.4.23"
+  },
+  "devDependencies": {
+    "swagger-jsdoc": "^6.2.8",
+    "tsconfig-paths": "^3.14.0",
+    "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.13",
+    "@types/date-fns": "^2.6.0",
+    "@types/express": "^4.17.17",
+    "@types/node": "^18.15.5",
+    "@types/node-fetch": "^2.6.3",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/xml2js": "^0.4.11",
+    "firebase-functions-test": "^3.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
+  },
+  "private": true
+}
+[debug] [2025-10-21T23:51:26.882Z] Building nodejs source
+[debug] [2025-10-21T23:51:26.883Z] Failed to find version of module node: reached end of search path C:\Users\mgonzalezv.INDRA\Documents\private-workspace\guia-tv\functions\node_modules
+[warn] !  functions: Your requested "node" version "20" doesn't match your global version "22". Using node@22 from host. 
+[error] !!  functions: Failed to load function definition from source: FirebaseError: Failed to load environment variables from .env. {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: Failed to load environment variables from .env."}}
+[debug] [2025-10-21T23:51:26.909Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: . If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────┬────────────────┬──────────────────────────────────┐
+│ Emulator   │ Host:Port      │ View in Emulator UI              │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Functions  │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions  │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Firestore  │ 127.0.0.1:8080 │ http://127.0.0.1:4000/firestore  │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Database   │ 127.0.0.1:9000 │ http://127.0.0.1:4000/database   │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Hosting    │ 127.0.0.1:5000 │ n/a                              │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Storage    │ 127.0.0.1:9199 │ http://127.0.0.1:4000/storage    │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Extensions │ 127.0.0.1:5001 │ http://127.0.0.1:4000/extensions │
+└────────────┴────────────────┴──────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+┌─────────────────────────┬───────────────┬─────────────────────┐
+│ Extension Instance Name │ Extension Ref │ View in Emulator UI │
+└─────────────────────────┴───────────────┴─────────────────────┘
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[warn] !  emulators: firebase-tools will drop support for Java version < 21 soon in firebase-tools@15. Please install a JDK at version 21 or above to get a compatible runtime. 
+[debug] [2025-10-21T23:56:43.384Z] Received signal SIGHUP 1
+[info]  
+[info] i  emulators: Received SIGHUP for the first time. Starting a clean shutdown. 
+[info] i  emulators: Please wait for a clean shutdown or send the SIGHUP signal again to stop right now. 
+[info] i  emulators: Shutting down emulators. {"metadata":{"emulator":{"name":"hub"},"message":"Shutting down emulators."}}
+[info] i  ui: Stopping Emulator UI {"metadata":{"emulator":{"name":"ui"},"message":"Stopping Emulator UI"}}
+[info] i  extensions: Stopping Extensions Emulator {"metadata":{"emulator":{"name":"extensions"},"message":"Stopping Extensions Emulator"}}
+[debug] [2025-10-21T23:56:43.531Z] [Extensions] Stopping Extensions emulator, this is a noop.
+[info] i  functions: Stopping Functions Emulator {"metadata":{"emulator":{"name":"functions"},"message":"Stopping Functions Emulator"}}
+[info] i  hosting: Stopping Hosting Emulator {"metadata":{"emulator":{"name":"hosting"},"message":"Stopping Hosting Emulator"}}
+[info] i  database: Stopping Database Emulator {"metadata":{"emulator":{"name":"database"},"message":"Stopping Database Emulator"}}
+[warn] !  Database Emulator has exited upon receiving signal: SIGKILL 
+[info] i  firestore: Stopping Firestore Emulator {"metadata":{"emulator":{"name":"firestore"},"message":"Stopping Firestore Emulator"}}
+[warn] !  Firestore Emulator has exited upon receiving signal: SIGKILL 
+[info] i  storage: Stopping Storage Emulator {"metadata":{"emulator":{"name":"storage"},"message":"Stopping Storage Emulator"}}
+[debug] [2025-10-21T23:56:43.893Z] Stopping rules runtime. {"metadata":{"emulator":{"name":"storage"},"message":"Stopping rules runtime."}}
+[info] i  eventarc: Stopping Eventarc Emulator {"metadata":{"emulator":{"name":"eventarc"},"message":"Stopping Eventarc Emulator"}}
+[info] i  tasks: Stopping Cloud Tasks Emulator {"metadata":{"emulator":{"name":"tasks"},"message":"Stopping Cloud Tasks Emulator"}}
+[info] i  hub: Stopping emulator hub {"metadata":{"emulator":{"name":"hub"},"message":"Stopping emulator hub"}}
+[debug] [2025-10-21T23:56:43.909Z] Emulator locator file path: C:\Users\MGONZA~1.IND\AppData\Local\Temp\hub-guia-tv-8fe3c.json
+[info] i  logging: Stopping Logging Emulator {"metadata":{"emulator":{"name":"logging"},"message":"Stopping Logging Emulator"}}
+[debug] [2025-10-21T23:56:43.941Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: . If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
