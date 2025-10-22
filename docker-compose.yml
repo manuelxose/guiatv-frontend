@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7
+    container_name: guiatv-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  functions:
+    build:
+      context: ./functions
+      dockerfile: Dockerfile
+    container_name: guiatv-functions
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - CACHE_TYPE=redis
+      - API_VERSION=2.0.0
+      - NODE_ENV=development
+      - PORT=3000
+      - FIREBASE_PROJECT=guia-tv-8fe3c
+      - FIREBASE_STORAGE_BUCKET=guia-tv-8fe3c.appspot.com
+    ports:
+      - "3000:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    # Uncomment to mount source for live development
+    # volumes:
+    #   - ./functions:/usr/src/app
+    # If you prefer the dev server with ts-node, change the command accordingly.
+    command: ["node", "lib/v2/server.js"]

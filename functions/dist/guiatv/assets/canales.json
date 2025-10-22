@@ -1,0 +1,282 @@
+{
+  "la1": {
+    "url_web": "http://www.rtve.es",
+    "url_live": "https://www.rtve.es/play/videos/directo/"
+  },
+  "la2": {
+    "url_web": "http://www.rtve.es",
+    "url_live": "https://www.rtve.es/play/videos/directo/"
+  },
+  "antena3": {
+    "url_web": "https://www.atresplayer.com/directos/television/antena-3/",
+    "url_live": "https://www.atresplayer.com/directos/television/antena-3/"
+  },
+  "cuatro": {
+    "url_web": "https://www.cuatro.com/",
+    "url_live": "https://www.cuatro.com/en-directo/"
+  },
+  "telecinco": {
+    "url_web": "https://www.telecinco.es/",
+    "url_live": "https://www.telecinco.es/endirecto/"
+  },
+  "lasexta": {
+    "url_web": "https://www.lasexta.com/",
+    "url_live": "https://www.atresplayer.com/directos/lasexta/"
+  },
+  "la7": {
+    "url_web": "https://www.la7.it/",
+    "url_live": "https://www.la7.it/dirette-tv"
+  },
+  "tv3": {
+    "url_web": "https://www.ccma.cat/tv3/",
+    "url_live": "https://www.ccma.cat/tv3/directe/tv3/"
+  },
+  "8tv": {
+    "url_web": "https://www.ccma.cat/8tv/",
+    "url_live": "https://www.ccma.cat/8tv/directe/8tv/"
+  },
+  "energy": {
+    "url_web": "https://www.energytv.es/",
+    "url_live": "https://www.energytv.es/en-directo/"
+  },
+  "ten":{
+    "url_web": "https://tentv.es/",
+    "url_live": "#"
+  },
+  "divinity": {
+    "url_web": "https://www.divinity.es/",
+    "url_live": "https://www.divinity.es/endirecto/"
+  },
+  "dmax": {
+    "url_web": "https://dmax.marca.com/",
+    "url_live": "#"
+  },
+  "factoríadeficción": {
+    "url_web": "https://www.factoriadeficcion.com/",
+    "url_live": "https://www.factoriadeficcion.com/endirecto/"
+  },
+  "nova": {
+    "url_web": "https://www.atresplayer.com/nova/",
+    "url_live": "https://www.atresplayer.com/directos/nova/"
+  },
+  "mega": {
+    "url_web": "https://www.atresplayer.com/mega/",
+    "url_live": "https://www.atresplayer.com/directos/mega/"
+  },
+  "neox":{
+    "url_web": "https://www.atresplayer.com/neox/",
+    "url_live": "https://www.atresplayer.com/directos/neox/"
+  },
+  "atreseries": {
+    "url_web": "https://www.atresplayer.com/directos/atreseries/",
+    "url_live": "https://www.atresplayer.com/atreseries/"
+  },
+  "bemad": {
+    "url_web": "https://www.bemad.es/",
+    "url_live": "https://www.bemad.es/endirecto/"
+  },
+  "paramountnetwork": {
+    "url_web": "https://www.paramountnetwork.es/",
+    "url_live": "#"
+  },
+  "disneychannel": {
+    "url_web": "https://www.disney.es/disney-channel/",
+    "url_live": "#"
+  },
+  "disneyjunior": {
+    "url_web": "https://www.disney.es/disney-junior/",
+    "url_live": "https://www.disney.es/disney-junior/"
+  },
+  "disneyxd": {
+    "url_web": "https://www.disney.es/disney-xd/",
+    "url_live": "https://www.disney.es/disney-xd/"
+  },
+  "nickelodeon": {
+    "url_web": "https://www.nickelodeon.es/",
+    "url_live": "https://www.nickelodeon.es/"
+  },
+  "boing": {
+    "url_web": "https://www.boing.es/",
+    "url_live": "https://www.mitele.es/directo/boing/"
+  },
+  "clan": {
+    "url_web": "https://www.rtve.es/infantil/",
+    "url_live": "https://www.rtve.es/infantil/directo/"
+  },
+  "trece": {
+    "url_web": "https://www.trecetv.es/",
+    "url_live": "https://www.cope.es/directos/trece"
+  },
+  "dkiss": {
+    "url_web": "https://www.dkiss.es/",
+    "url_live": "#"
+  },
+  "discoverychannel": {
+    "url_web": "https://www.discoverychannel.es/",
+    "url_live": "https://www.discoverychannel.es/directo/"
+  },
+  "nationalgeographic": {
+    "url_web": "https://www.natgeotv.com/es/",
+    "url_live": "https://www.natgeotv.com/es/directo"
+  },
+  "nationalgeographicwild": {
+    "url_web": "https://www.natgeotv.com/es/",
+    "url_live": "https://www.natgeotv.com/es/directo"
+  },
+  "viajar": {
+    "url_web": "https://www.viajar.es/",
+    "url_live": "https://www.viajar.es/directo/"
+  },
+  "teledeporte": {
+    "url_web": "https://www.rtve.es/deportes/",
+    "url_live": "https://www.rtve.es/play/videos/directo/"
+  },
+  "golplay": {
+    "url_web": "https://www.goltelevision.com/",
+    "url_live": "https://www.goltelevision.com/en-directo/"
+  },
+  "mtv": {
+    "url_web": "https://www.mtv.es/",
+    "url_live": "https://www.mtv.es/directo/"
+  },
+  "amc": {
+    "url_web": "https://www.amctv.es/",
+    "url_live": "#"
+  },
+  "calle13": {
+    "url_web": "https://www.calle13tv.com/",
+    "url_live": "#"
+  },
+  "cosmo": {
+    "url_web": "https://www.cosmopolitantv.es/",
+    "url_live": "#"
+  },
+  "fox": {
+    "url_web": "https://www.foxtv.es/",
+    "url_live": "#"
+  },
+  "foxlife": {
+    "url_web": "https://www.foxtv.es/",
+    "url_live": "https://www.foxtv.es/directo/"
+  },
+  "canalhollywood": {
+    "url_web": "https://canalhollywood.es/",
+    "url_live": "#"
+  },
+  "tcm": {
+    "url_web": "https://www.tcm.es/",
+    "url_live": "#"
+  },
+  "tnt": {
+    "url_web": "https://www.tntdrama.com/",
+    "url_live": "#"
+  },
+  "sundancetv": {
+    "url_web": "https://www.sundancetv.es/",
+    "url_live": "#"
+  },
+  "comedycentral": {
+    "url_web": "https://www.comedycentral.es/",
+    "url_live": "#"
+  },
+  "axn": {
+    "url_web": "https://www.axn.es/",
+    "url_live": "#"
+  },
+  "somos": {
+    "url_web": "https://www.somos.tv/",
+    "url_live": "#"
+  },
+  "axnwhite": {
+    "url_web": "https://www.axnwhite.es/",
+    "url_live": "https://www.axnwhite.es/directo/"
+  },
+  "axnblack": {
+    "url_web": "https://www.axnblack.es/",
+    "url_live": "https://www.axnblack.es/directo/"
+  },
+  "xtrm": {
+    "url_web": "#",
+    "url_live": "#"
+  },
+  "syfy": {
+    "url_web": "https://www.syfy.es/",
+    "url_live": "https://www.syfy.es/directo/"
+  },
+  "dark": {
+    "url_web": "https://www.darktv.es/",
+    "url_live": "#"
+  },
+  "tvg2":
+  {
+    "url_web": "https://www.crtvg.es/",
+    "url_live": "http://www.crtvg.es/tvg/tvg-en-directo"
+  },
+  "tvg":
+  {
+    "url_web": "https://www.crtvg.es/",
+    "url_live": "http://www.crtvg.es/tvg/tvg-en-directo"
+  },
+  "canalextremadura":
+  {
+    "url_web": "https://www.canalextremadura.es/",
+    "url_live": "https://www.canalextremadura.es/directo/television"
+  },
+  "aragóntv":
+  {
+    "url_web": "https://www.aragontelevision.es/",
+    "url_live": "https://www.aragontelevision.es/directo"
+  },
+  "7tvandalucia":
+  {
+    "url_web": "https://www.7tvandalucia.es/",
+    "url_live": "https://7tvandalucia.es/7tv/informacion-y-tarifas/"
+  },
+  "castillalaManchatv":
+  {
+    "url_web": "https://www.cmmedia.es/",
+    "url_live": "https://www.cmmedia.es/directo/tv/"
+  },
+  "canalsurandalucía":
+  {
+    "url_web": "https://www.canalsur.es/",
+    "url_live": "https://www.canalsur.es/tv_directo-1193.html"
+  },
+  "laotra":
+  {
+    "url_web": "https://www.telemadrid.es/laotra/",
+    "url_live": "https://www.telemadrid.es/emision-en-directo-laotra/"
+  },
+  "telemadrid":
+  {
+    "url_web": "https://www.telemadrid.es/",
+    "url_live": "https://www.telemadrid.es/emision-en-directo/"
+  },
+  "tvcanaria":
+  {
+    "url_web": "https://www.rtvc.es/",
+    "url_live": "https://rtvc.es/en-directo/"
+  },
+  "ib3rtvillesbalears":
+  {
+    "url_web": "https://www.ib3.org/",
+    "url_live": "https://ib3.org/directe"
+  },
+  "àpunt":
+  {
+    "url_web": "https://www.apuntmedia.es/",
+    "url_live": "https://www.apuntmedia.es/va/directe"
+  },
+  "andalucíatv":
+  {
+    "url_web": "https://www.canalsur.es/",
+    "url_live": "https://www.canalsur.es/tv_directo-1193.html"
+  },
+  "la8":
+  {
+    "url_web": "https://www.cyltv.es/",
+    "url_live": "#"
+  }
+
+}
+

@@ -8,6 +8,19 @@
     "strict": true,
     "target": "es2017",
     "rootDir": "src",
+  "baseUrl": "./src",
+  "ignoreDeprecations": "6.0",
+  "skipLibCheck": true,
+  "types": ["node"],
+    "paths": {
+      "@v2/*": ["v2/*"],
+      "@v2/domain/*": ["v2/domain/*"],
+      "@v2/application/*": ["v2/application/*"],
+      "@v2/infrastructure/*": ["v2/infrastructure/*"],
+      "@v2/presentation/*": ["v2/presentation/*"],
+      "@v2/shared/*": ["v2/shared/*"],
+      "@v2/config/*": ["v2/config/*"]
+    },
     "typeRoots": ["node_modules/@types"],
     "esModuleInterop": true
   },
