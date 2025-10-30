@@ -34,6 +34,14 @@
         "function": "api"
       },
       {
+        "source": "/v1/**",
+        "function": "api"
+      },
+      {
+        "source": "/v2/**",
+        "function": "apiv2"
+      },
+      {
         "source": "**",
         "function": "ssr"
       }

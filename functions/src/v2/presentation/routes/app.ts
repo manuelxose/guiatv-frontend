@@ -19,7 +19,10 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
   app.use(requestLogger);
 
   // Rutas v2
-  app.use('/v2', createV2Routes(dependencies));
+  // Montar rutas v2 en /v2 y también como alias en la raíz '/' para compatibilidad con Hosting rewrites
+  const v2Router = createV2Routes(dependencies);
+  app.use('/v2', v2Router);
+  app.use('/', v2Router);
 
   // 404 handler
   app.use(notFoundHandler);
