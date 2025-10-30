@@ -10,7 +10,7 @@ const apiApp = express();
 apiApp.use(cors());
 
 // Scheduled function for updating programacion
-exports.actualizarProgramacion = functions
+export const actualizarProgramacion = functions
   .runWith({ memory: '2GB', timeoutSeconds: 540 })
   .pubsub.schedule('0 0 */5 * *')
   .timeZone('Europe/Madrid')
@@ -344,7 +344,7 @@ apiApp.get('/actualizarProgramacion1', async (req: any, res: any) => {
   }
 });
 
-exports.api = functions
+export const api = functions
   .runWith({ memory: '2GB', timeoutSeconds: 540 })
   .https.onRequest(apiApp);
 
@@ -352,9 +352,8 @@ exports.api = functions
 // Provide an alias so requests to /app/... (existing deployed clients) are
 // handled by the same Express app (and therefore the same CORS middleware).
 // This keeps the deployed surface backward-compatible without changing routes.
-// Note: the compiled output will include `exports.app = exports.api`.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(exports as any).app = (exports as any).api;
+// Provide a named export `app` that references the same function as `api`.
+export const app = api;
 
 // SSR function: delegate to the server bundle placed at functions/dist/guiatv
 const distFolder = join(process.cwd(), 'dist', 'guiatv');
@@ -408,7 +407,7 @@ async function loadSsr() {
   }
 }
 
-exports.ssr = functions.https.onRequest(async (req: any, res: any) => {
+export const ssr = functions.https.onRequest(async (req: any, res: any) => {
   try {
     const fn = await loadSsr();
     return fn(req, res);
