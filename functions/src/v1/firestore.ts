@@ -1,5 +1,9 @@
 import { Programa, Canal } from './api.js';
-import * as admin from 'firebase-admin';
+
+function getAdmin() {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  return require('firebase-admin');
+}
 
 const tdt = [
   'La 1',
@@ -37,25 +41,43 @@ const movistar: string[] = [
   /* original movistar entries omitted for brevity */
 ];
 
-if (!admin.apps || admin.apps.length === 0) {
-  admin.initializeApp();
-}
-const db = admin.firestore();
-try {
-  db.settings({
-    ignoreUndefinedProperties: true,
-  });
-} catch (e) {
-  console.warn('Could not set Firestore settings at import time:', e);
+let _db: FirebaseFirestore.Firestore | null = null;
+
+function getDb(): FirebaseFirestore.Firestore {
+  if (!_db) {
+    const skip = process.env.SKIP_FIRESTORE_INIT === '1' || process.env.SKIP_FIRESTORE_INIT === 'true';
+    if (skip) {
+      console.info('Skipping Firestore initialization due to SKIP_FIRESTORE_INIT');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (null as any) as FirebaseFirestore.Firestore;
+    }
+
+    const admin = getAdmin();
+    if (!admin.apps || admin.apps.length === 0) {
+      admin.initializeApp();
+    }
+    _db = admin.firestore();
+    try {
+      if (_db) {
+        _db.settings({
+          ignoreUndefinedProperties: true,
+        });
+      }
+    } catch (e) {
+      console.warn('Could not set Firestore settings at init time:', e);
+    }
+  }
+  return _db as FirebaseFirestore.Firestore;
 }
 
 export async function guardarCanalesEnFirestore(
   canales: Canal[]
 ): Promise<Map<string, string>> {
   try {
+    const db = getDb();
     const canalIdMap = new Map<string, string>();
 
-    const canalesExistentes = await db.collection('canales').get();
+    const canalesExistentes = await getDb().collection('canales').get();
     const nombresCanalesExistentes = canalesExistentes.docs.map(
       (doc: any) => doc.data().name
     );
@@ -103,6 +125,7 @@ export async function guardarProgramasEnFirestore(
     }
 
     try {
+      const db = getDb();
       const canalDocRef = db.collection('canales').doc(canalId);
       const batch = db.batch();
 
@@ -128,7 +151,7 @@ export async function guardarProgramasEnFirestore(
 
 export async function datosInicialesCargados() {
   try {
-    const canalesSnapshot = await admin.firestore().collection('canales').get();
+    const canalesSnapshot = await getDb().collection('canales').get();
 
     for (const canalDoc of canalesSnapshot.docs) {
       const subcolecciones = await canalDoc.ref.listCollections();
@@ -165,8 +188,8 @@ export async function moverCanalesEspana() {
     let hasMore = true;
 
     while (hasMore) {
-      let query: FirebaseFirestore.Query = admin
-        .firestore()
+      const db = getDb();
+      let query: FirebaseFirestore.Query = db
         .collection('canales')
         .limit(pageSize);
 

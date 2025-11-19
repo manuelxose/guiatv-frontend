@@ -9,6 +9,7 @@ import {
   validatePaginationQuery,
   validateTimeQuery,
 } from '../middlewares/validator';
+import { cacheMiddleware } from '../middlewares/cache';
 
 export const createProgramRoutes = (controller: ProgramController): Router => {
   const router = Router();
@@ -20,6 +21,7 @@ export const createProgramRoutes = (controller: ProgramController): Router => {
    */
   router.get(
     '/date/:date',
+    cacheMiddleware(20),
     validateDateParam,
     validatePaginationQuery,
     asyncHandler(controller.getByDate.bind(controller))

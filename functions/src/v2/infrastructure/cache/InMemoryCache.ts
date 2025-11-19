@@ -91,4 +91,9 @@ export class InMemoryCache implements ICacheRepository {
   keys(): string[] {
     return Array.from(this.cache.keys());
   }
+
+  // In-memory cache is always 'connected' in the sense it is usable
+  getConnectionStatus(): boolean {
+    return true;
+  }
 }

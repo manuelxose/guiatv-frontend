@@ -16,7 +16,12 @@ export class CacheFactory {
   }): ICacheRepository {
     if (config.type === 'redis') {
       if (!config.redisUrl) {
-        throw new Error('Redis URL is required for Redis cache');
+        // Fallback to in-memory cache if no URL provided
+        // This makes Redis optional for local/emulator environments
+        // and avoids throwing during DI initialization.
+        // eslint-disable-next-line no-console
+        console.warn('CacheFactory: redis requested but redisUrl not provided - using InMemoryCache fallback');
+        return new InMemoryCache();
       }
       return new RedisCache(config.redisUrl, config.redisOptions);
     }

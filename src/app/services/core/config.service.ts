@@ -44,7 +44,7 @@ export class AppConfigurationService {
   private config: AppConfig = {
     api: {
       firebase: {
-        baseUrl: 'https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app',
+        baseUrl: (environment as any).API_BASE_URL,
         timeout: 10000
       },
       tmdb: {

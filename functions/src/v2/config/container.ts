@@ -1,43 +1,15 @@
 // src/v2/config/container.ts
 
-import * as admin from 'firebase-admin';
+// Avoid top-level import of firebase-admin; require lazily when initializing Firebase
 import { Firestore } from '@google-cloud/firestore';
-
-// Repositories
-import { IChannelRepository } from '../domain/repositories/IChannelRepository';
-import { IProgramRepository } from '../domain/repositories/IProgramRepository';
-import { ICacheRepository } from '../domain/repositories/ICacheRepository';
-import { FirestoreChannelRepository } from '../infrastructure/repositories/FirestoreChannelRepository';
-import { FirestoreProgramRepository } from '../infrastructure/repositories/FirestoreProgramRepository';
-import { InMemoryCache } from '../infrastructure/cache/InMemoryCache';
-import { RedisCache } from '../infrastructure/cache/RedisCache';
-import { CacheFactory } from '../infrastructure/cache/CacheFactory';
-
-// Services
-import { ChannelService } from '../domain/services/ChannelService';
-import { ProgramService } from '../domain/services/ProgramService';
-
-// Use Cases
-import { GetAllChannels } from '../application/use-cases/GetAllChannels';
-import { GetChannelById } from '../application/use-cases/GetChannelById';
-import { GetProgramsByDate } from '../application/use-cases/GetProgramsByDate';
-import { GetChannelPrograms } from '../application/use-cases/GetChannelPrograms';
-import { SyncProgramData } from '../application/use-cases/SyncProgramData';
-
-// Controllers
-import { ChannelController } from '../presentation/controllers/ChannelController';
-import { ProgramController } from '../presentation/controllers/ProgramController';
-import { ScheduleController } from '../presentation/controllers/ScheduleController';
-
 import { logger } from '../shared/utils/logger';
-import { CleanOldPrograms } from '@v2/application/use-cases/CleanOldPrograms';
-import { PrecomputeSchedule } from '@v2/application/use-cases/PrecomputeSchedule';
-import { SyncEPGData } from '@v2/application/use-cases/SyncEPGData';
-import { ProgramDataParser } from '@v2/infrastructure/parsers/ProgramDataParser';
-import { XMLParser } from '@v2/infrastructure/parsers/XMLParser';
-import { CloudStorageRepository } from '@v2/infrastructure/repositories/CloudStorageRepository';
-import { AdminController } from '@v2/presentation/controllers/AdminController';
-import { IStorageRepository } from '@v2/domain/repositories/IStorageRepository';
+
+// Lightweight local type aliases to avoid compile-time coupling while
+// preserving clearer intent in the container implementation. Replace with
+// proper interfaces if available elsewhere in the codebase.
+type ICacheRepository = any;
+type IChannelRepository = any;
+type IProgramRepository = any;
 
 export class Container {
   private static instance: Container;
@@ -60,30 +32,34 @@ export class Container {
     }
 
     logger.info('Initializing DI Container...');
+    const start = Date.now();
 
     // 1. Inicializar Firebase
     const db = this.initializeFirebase();
 
     // 2. Inicializar Cache
     const cache = await this.initializeCache();
+    logger.info('Container: Firebase + Cache init completed', { elapsedMs: Date.now() - start });
 
     // 3. Registrar Repositories
-    this.registerRepositories(db, cache);
+    await this.registerRepositories(db, cache);
 
     // 4. Registrar Services
-    this.registerServices();
+    await this.registerServices();
 
     // 5. Registrar Use Cases
-    this.registerUseCases();
+    await this.registerUseCases();
 
     // 6. Registrar Controllers
-    this.registerControllers();
+    await this.registerControllers();
 
     this.initialized = true;
-    logger.info('DI Container initialized successfully');
+    logger.info('DI Container initialized successfully', { totalMs: Date.now() - start });
   }
 
   private initializeFirebase(): Firestore {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const admin = require('firebase-admin') as typeof import('firebase-admin');
     if (!admin.apps || admin.apps.length === 0) {
       admin.initializeApp();
       logger.info('Firebase Admin initialized');
@@ -111,6 +87,7 @@ export class Container {
 
     if (cacheType === 'redis' && redisUrl) {
       logger.info('Initializing Redis cache', { url: redisUrl });
+      const { CacheFactory } = await import('../infrastructure/cache/CacheFactory');
       cache = CacheFactory.create({
         type: 'redis',
         redisUrl,
@@ -121,51 +98,67 @@ export class Container {
       });
 
       // Conectar Redis
-      if (cache instanceof RedisCache) {
+      // If the returned cache exposes a `connect` method, try to connect but
+      // don't throw — fall back silently to in-memory if connection fails.
+      if (typeof (cache as any).connect === 'function') {
         try {
-          await cache.connect();
-          logger.info('Redis cache connected');
+          // Avoid attempting to connect when running in the Functions emulator
+          // discovery phase. Honor an explicit env var to skip connections.
+          const skipConnect = process.env.SKIP_CACHE_CONNECT === '1' || process.env.SKIP_CACHE_CONNECT === 'true';
+          if (!skipConnect) {
+            const cacheConnectTimeout = Number(process.env.CACHE_CONNECT_TIMEOUT_MS) || 8000;
+            logger.info('Attempting Redis connect', { timeoutMs: cacheConnectTimeout });
+            await Promise.race([
+              (cache as any).connect(),
+              new Promise((_, rej) => setTimeout(() => rej(new Error(`Redis connect timed out after ${cacheConnectTimeout}ms`)), cacheConnectTimeout)),
+            ]);
+            logger.info('Redis cache connected');
+          } else {
+            logger.info('Skipping cache connect due to SKIP_CACHE_CONNECT');
+          }
         } catch (error) {
-          logger.error(
-            'Failed to connect Redis, falling back to in-memory',
-            error as Error
-          );
+          logger.error('Failed to connect Redis, falling back to in-memory', error as Error);
+          const { InMemoryCache } = await import('../infrastructure/cache/InMemoryCache');
           cache = new InMemoryCache();
         }
       }
     } else {
       logger.info('Using in-memory cache');
+      const { InMemoryCache } = await import('../infrastructure/cache/InMemoryCache');
       cache = new InMemoryCache();
     }
 
-    this.dependencies.set('cache', cache);
+    // Store under `cacheRepository` key to match consumers below
+    this.dependencies.set('cacheRepository', cache);
     return cache;
   }
+  private async registerRepositories(db: Firestore, cache: ICacheRepository): Promise<void> {
+    // Load repository implementations lazily to avoid import-time costs
+    const { FirestoreChannelRepository } = await import('../infrastructure/repositories/FirestoreChannelRepository');
+    const { FirestoreProgramRepository } = await import('../infrastructure/repositories/FirestoreProgramRepository');
+    const { CloudStorageRepository } = await import('@v2/infrastructure/repositories/CloudStorageRepository');
 
-  private registerRepositories(db: Firestore, cache: ICacheRepository): void {
     // Channel Repository
-    const channelRepository: IChannelRepository =
-      new FirestoreChannelRepository(db);
+    const channelRepository = new FirestoreChannelRepository(db);
     this.dependencies.set('channelRepository', channelRepository);
 
     // Program Repository
-    const programRepository: IProgramRepository =
-      new FirestoreProgramRepository(db);
+    const programRepository = new FirestoreProgramRepository(db);
     this.dependencies.set('programRepository', programRepository);
 
-    // Cache Repository
+    // Cache Repository (already stored by initializeCache, ensure consistent key)
     this.dependencies.set('cacheRepository', cache);
 
     // Storage Repository
-    const storageRepository: IStorageRepository = new CloudStorageRepository(
-      process.env.FIREBASE_STORAGE_BUCKET || 'guia-tv-8fe3c.appspot.com'
-    );
+    const storageRepository = new CloudStorageRepository(process.env.STORAGE_BUCKET || 'guia-tv-8fe3c.appspot.com');
     this.dependencies.set('storageRepository', storageRepository);
 
     logger.info('Repositories registered');
   }
+  private async registerServices(): Promise<void> {
+    const { ChannelService } = await import('../domain/services/ChannelService');
+    const { ProgramService } = await import('../domain/services/ProgramService');
 
-  private registerServices(): void {
     const channelRepository = this.get<IChannelRepository>('channelRepository');
     const channelService = new ChannelService(channelRepository);
     this.dependencies.set('channelService', channelService);
@@ -176,51 +169,44 @@ export class Container {
     logger.info('Services registered');
   }
 
-  private registerUseCases(): void {
+  private async registerUseCases(): Promise<void> {
     const channelRepository = this.get<IChannelRepository>('channelRepository');
     const programRepository = this.get<IProgramRepository>('programRepository');
     const cacheRepository = this.get<ICacheRepository>('cacheRepository');
-    const channelService = this.get<ChannelService>('channelService');
-    const programService = this.get<ProgramService>('programService');
+    const channelService = this.get<any>('channelService');
+    const programService = this.get<any>('programService');
+
+    const { GetAllChannels } = await import('../application/use-cases/GetAllChannels');
+    const { GetChannelById } = await import('../application/use-cases/GetChannelById');
+    const { GetProgramsByDate } = await import('../application/use-cases/GetProgramsByDate');
+    const { GetChannelPrograms } = await import('../application/use-cases/GetChannelPrograms');
+    const { SyncProgramData } = await import('../application/use-cases/SyncProgramData');
+    const { CloudStorageRepository } = await import('@v2/infrastructure/repositories/CloudStorageRepository');
+    const { XMLParser } = await import('@v2/infrastructure/parsers/XMLParser');
+    const { ProgramDataParser } = await import('@v2/infrastructure/parsers/ProgramDataParser');
+    const { SyncEPGData } = await import('@v2/application/use-cases/SyncEPGData');
+    const { PrecomputeSchedule } = await import('@v2/application/use-cases/PrecomputeSchedule');
+    const { CleanOldPrograms } = await import('@v2/application/use-cases/CleanOldPrograms');
 
     // Channel Use Cases
-    const getAllChannels = new GetAllChannels(
-      channelRepository,
-      cacheRepository,
-      channelService
-    );
+    const getAllChannels = new GetAllChannels(channelRepository, cacheRepository, channelService);
     this.dependencies.set('getAllChannels', getAllChannels);
 
-    const getChannelById = new GetChannelById(
-      channelRepository,
-      cacheRepository
-    );
+    const getChannelById = new GetChannelById(channelRepository, cacheRepository);
     this.dependencies.set('getChannelById', getChannelById);
 
     // Program Use Cases
-    const getProgramsByDate = new GetProgramsByDate(
-      programRepository,
-      cacheRepository
-    );
+    const getProgramsByDate = new GetProgramsByDate(programRepository, cacheRepository);
     this.dependencies.set('getProgramsByDate', getProgramsByDate);
 
-    const getChannelPrograms = new GetChannelPrograms(
-      programRepository,
-      cacheRepository,
-      programService
-    );
+    const getChannelPrograms = new GetChannelPrograms(programRepository, cacheRepository, programService);
     this.dependencies.set('getChannelPrograms', getChannelPrograms);
 
-    const syncProgramData = new SyncProgramData(
-      programRepository,
-      cacheRepository
-    );
+    const syncProgramData = new SyncProgramData(programRepository, cacheRepository);
     this.dependencies.set('syncProgramData', syncProgramData);
 
     // ETL Use Cases
-    const storageRepository = new CloudStorageRepository(
-      process.env.FIREBASE_STORAGE_BUCKET || 'guia-tv-8fe3c.appspot.com'
-    );
+    const storageRepository = new CloudStorageRepository(process.env.STORAGE_BUCKET || 'guia-tv-8fe3c.appspot.com');
     this.dependencies.set('storageRepository', storageRepository);
 
     const xmlParser = new XMLParser();
@@ -229,23 +215,10 @@ export class Container {
     const programParser = new ProgramDataParser();
     this.dependencies.set('programParser', programParser);
 
-    const syncEPGData = new SyncEPGData(
-      channelRepository,
-      programRepository,
-      cacheRepository,
-      storageRepository,
-      xmlParser,
-      programParser
-    );
+    const syncEPGData = new SyncEPGData(channelRepository, programRepository, cacheRepository, storageRepository, xmlParser, programParser);
     this.dependencies.set('syncEPGData', syncEPGData);
 
-    const precomputeSchedule = new PrecomputeSchedule(
-      this.get('getProgramsByDate'),
-      this.get('getAllChannels'),
-      programService,
-      storageRepository
-    );
-
+    const precomputeSchedule = new PrecomputeSchedule(this.get('getProgramsByDate'), this.get('getAllChannels'), programService, storageRepository);
     this.dependencies.set('precomputeSchedule', precomputeSchedule);
 
     const cleanOldPrograms = new CleanOldPrograms(programRepository);
@@ -254,44 +227,32 @@ export class Container {
     logger.info('Use Cases registered');
   }
 
-  private registerControllers(): void {
-    const getAllChannels = this.get<GetAllChannels>('getAllChannels');
-    const getChannelById = this.get<GetChannelById>('getChannelById');
-    const getProgramsByDate = this.get<GetProgramsByDate>('getProgramsByDate');
-    const getChannelPrograms =
-      this.get<GetChannelPrograms>('getChannelPrograms');
-    const programService = this.get<ProgramService>('programService');
+  private async registerControllers(): Promise<void> {
+    const getAllChannels = this.get<any>('getAllChannels');
+    const getChannelById = this.get<any>('getChannelById');
+    const getProgramsByDate = this.get<any>('getProgramsByDate');
+    const getChannelPrograms = this.get<any>('getChannelPrograms');
+    const programService = this.get<any>('programService');
+
+    const { ChannelController } = await import('../presentation/controllers/ChannelController');
+    const { ProgramController } = await import('../presentation/controllers/ProgramController');
+    const { ScheduleController } = await import('../presentation/controllers/ScheduleController');
+    const { AdminController } = await import('@v2/presentation/controllers/AdminController');
 
     // Channel Controller
-    const channelController = new ChannelController(
-      getAllChannels,
-      getChannelById
-    );
+    const channelController = new ChannelController(getAllChannels, getChannelById);
     this.dependencies.set('channelController', channelController);
 
     // Program Controller
-    const programController = new ProgramController(
-      getProgramsByDate,
-      getChannelPrograms,
-      getChannelById
-    );
+    const programController = new ProgramController(getProgramsByDate, getChannelPrograms, getChannelById);
     this.dependencies.set('programController', programController);
 
     // Schedule Controller
-    const scheduleController = new ScheduleController(
-      getProgramsByDate,
-      getAllChannels,
-      programService
-    );
+    const scheduleController = new ScheduleController(getProgramsByDate, getAllChannels, programService);
     this.dependencies.set('scheduleController', scheduleController);
 
     // Admin Controller
-    const adminController = new AdminController(
-      this.get('syncEPGData'),
-      this.get('precomputeSchedule'),
-      this.get('cleanOldPrograms'),
-      this.get('cacheRepository')
-    );
+    const adminController = new AdminController(this.get('syncEPGData'), this.get('precomputeSchedule'), this.get('cleanOldPrograms'), this.get('cacheRepository'));
     this.dependencies.set('adminController', adminController);
 
     logger.info('Controllers registered');
@@ -315,12 +276,22 @@ export class Container {
     logger.info('Cleaning up container...');
 
     const cache = this.dependencies.get('cache');
-    if (cache && cache instanceof RedisCache) {
-      await cache.disconnect();
+    // Avoid relying on concrete class identity; instead check for
+    // lifecycle methods and call them if present.
+    if (cache && typeof (cache as any).disconnect === 'function') {
+      try {
+        await (cache as any).disconnect();
+      } catch (e) {
+        logger.warn('Error while disconnecting cache', { error: e });
+      }
     }
 
-    if (cache && cache instanceof InMemoryCache) {
-      cache.destroy();
+    if (cache && typeof (cache as any).destroy === 'function') {
+      try {
+        (cache as any).destroy();
+      } catch (e) {
+        logger.warn('Error while destroying cache', { error: e });
+      }
     }
 
     this.dependencies.clear();
@@ -328,4 +299,14 @@ export class Container {
 
     logger.info('Container cleaned up');
   }
+}
+
+// Export a factory helper instead of creating or initializing the container
+// at module import time. Callers should obtain the instance and call
+// `initialize()` when they actually handle a request or when running the
+// scheduled task. Example:
+// const container = createContainer();
+// await container.initialize();
+export function createContainer(): Container {
+  return Container.getInstance();
 }

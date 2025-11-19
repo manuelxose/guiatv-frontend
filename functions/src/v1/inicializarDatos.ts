@@ -5,7 +5,7 @@ import {
   datosInicialesCargados,
   guardarCanalesEnFirestore,
 } from './firestore.js';
-import * as admin from 'firebase-admin';
+// lazy require firebase-admin when needed
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -86,6 +86,8 @@ export async function inicializarDatos() {
       })
     );
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const admin = require('firebase-admin');
     const storage = admin.storage();
     for (const canal of canales) {
       if (!canal.image) continue;

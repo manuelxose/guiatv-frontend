@@ -11,4 +11,6 @@ export const environment = {
   },
   // REEMPLAZA este valor por tu dominio en producción
   SITE_URL: 'https://www.guia-tv.com',
+  API_BLOG: 'https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/blog',
+  API_BASE_URL: 'https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app',
 };

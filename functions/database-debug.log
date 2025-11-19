@@ -1,3 +1,0 @@
-17:13:58.966 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
-17:13:59.310 [main] INFO com.firebase.server.forge.App$ - Listening at 127.0.0.1:9000
-17:14:03.106 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO com.firebase.core.namespace.NamespaceActor - guia-tv-8fe3c successfully activated FBKV (SurveyIdle(0)) wait: 119ms, init: 0ms
