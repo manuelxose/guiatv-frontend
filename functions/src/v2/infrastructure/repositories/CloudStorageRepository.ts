@@ -1,6 +1,5 @@
 // src/v2/infrastructure/storage/CloudStorageRepository.ts
 
-import { Storage, Bucket } from '@google-cloud/storage';
 import { logger } from '../../shared/utils/logger';
 import { IStorageRepository } from '@v2/domain/repositories/IStorageRepository';
 
@@ -15,20 +14,26 @@ export interface DownloadOptions {
 }
 
 export class CloudStorageRepository implements IStorageRepository {
-  private readonly storage: Storage;
-  private readonly bucket: Bucket;
+  private readonly storage: any;
+  private readonly bucket: any;
   private readonly storageLogger = logger.child('CloudStorage');
 
   constructor(bucketName: string) {
     // If running with the Storage emulator, set apiEndpoint so @google-cloud/storage
     // connects to the emulator instead of production.
-    const emulatorHost = process.env.FIREBASE_STORAGE_EMULATOR_HOST;
-    if (emulatorHost) {
-      // emulatorHost is like 'localhost:9199' - pass as apiEndpoint
-      this.storage = new Storage({ apiEndpoint: emulatorHost });
-    } else {
-      this.storage = new Storage();
+    // Dynamically require to avoid hard dependency on @google-cloud/storage at build time.
+    // If not installed, throw a descriptive error when used.
+    let StoragePkg: any;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      StoragePkg = require('@google-cloud/storage');
+    } catch (e) {
+      throw new Error('Module @google-cloud/storage is not installed. Install it or use STORAGE_ADAPTER=s3|local');
     }
+
+    const { Storage } = StoragePkg;
+    const emulatorHost = process.env.FIREBASE_STORAGE_EMULATOR_HOST;
+    this.storage = emulatorHost ? new Storage({ apiEndpoint: emulatorHost }) : new Storage();
     this.bucket = this.storage.bucket(bucketName);
     this.storageLogger.info('CloudStorageRepository initialized', {
       bucketName,
@@ -136,7 +141,7 @@ export class CloudStorageRepository implements IStorageRepository {
   async list(prefix?: string): Promise<string[]> {
     try {
       const [files] = await this.bucket.getFiles({ prefix });
-      return files.map((file) => file.name);
+      return files.map((file: any) => file.name);
     } catch (error) {
       this.storageLogger.error('Failed to list files', error as Error, {
         prefix,

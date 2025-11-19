@@ -1,0 +1,1 @@
+{"version":3,"file":"FirestoreClient.js","sourceRoot":"","sources":["../../../../src/v2/infrastructure/database/FirestoreClient.ts"],"names":[],"mappings":";;;AAAA,sDAAmD;AAEnD,qEAAqE;AACrE,0EAA0E;AACnE,MAAM,YAAY,GAAG,GAAG,EAAE;IAC/B,eAAM,CAAC,IAAI,CAAC,sEAAsE,CAAC,CAAC;IACpF,MAAM,IAAI,KAAK,CAAC,wEAAwE,CAAC,CAAC;AAC5F,CAAC,CAAC;AAHW,QAAA,YAAY,gBAGvB"}

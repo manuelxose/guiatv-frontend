@@ -1,8 +1,9 @@
 // src/v2/config/container.ts
 
-// Avoid top-level import of firebase-admin; require lazily when initializing Firebase
-import { Firestore } from '@google-cloud/firestore';
 import { logger } from '../shared/utils/logger';
+
+// Mongo configuration (mongoose) lazy import
+import { connectMongoDB, mongoose as mongooseInstance } from '../../config/mongodb';
 
 // Lightweight local type aliases to avoid compile-time coupling while
 // preserving clearer intent in the container implementation. Replace with
@@ -34,8 +35,8 @@ export class Container {
     logger.info('Initializing DI Container...');
     const start = Date.now();
 
-    // 1. Inicializar Firebase
-    const db = this.initializeFirebase();
+    // 1. Inicializar DB (Mongo por defecto)
+    const db = await this.initializeDatabase();
 
     // 2. Inicializar Cache
     const cache = await this.initializeCache();
@@ -57,26 +58,29 @@ export class Container {
     logger.info('DI Container initialized successfully', { totalMs: Date.now() - start });
   }
 
-  private initializeFirebase(): Firestore {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const admin = require('firebase-admin') as typeof import('firebase-admin');
-    if (!admin.apps || admin.apps.length === 0) {
-      admin.initializeApp();
-      logger.info('Firebase Admin initialized');
+  private async initializeDatabase(): Promise<any> {
+    const adapter = (process.env.DB_ADAPTER || 'mongo').toLowerCase();
+
+    if (adapter === 'mongo') {
+      try {
+        // Initialize mongoose connection for repositories which use Mongoose models
+        await connectMongoDB();
+
+        // Register both mongoose instance and native Db for consumers
+        this.dependencies.set('mongoose', mongooseInstance);
+        const nativeDb = mongooseInstance.connection.db;
+        this.dependencies.set('mongoDb', nativeDb);
+
+        logger.info('MongoDB (mongoose) initialized and registered in container');
+        return mongooseInstance;
+      } catch (e) {
+        logger.error('Failed to initialize MongoDB (mongoose)', { error: e });
+        throw e;
+      }
     }
 
-    const db = admin.firestore();
-
-    try {
-      db.settings({
-        ignoreUndefinedProperties: true,
-      });
-    } catch (e) {
-      logger.warn('Could not set Firestore settings', { error: e });
-    }
-
-    this.dependencies.set('firestore', db);
-    return db;
+    // If a different adapter is requested, fail fast: Firestore support removed.
+    throw new Error('Only MongoDB adapter is supported. Set DB_ADAPTER=mongo or unset DB_ADAPTER.');
   }
 
   private async initializeCache(): Promise<ICacheRepository> {
@@ -132,26 +136,52 @@ export class Container {
     this.dependencies.set('cacheRepository', cache);
     return cache;
   }
-  private async registerRepositories(db: Firestore, cache: ICacheRepository): Promise<void> {
-    // Load repository implementations lazily to avoid import-time costs
-    const { FirestoreChannelRepository } = await import('../infrastructure/repositories/FirestoreChannelRepository');
-    const { FirestoreProgramRepository } = await import('../infrastructure/repositories/FirestoreProgramRepository');
-    const { CloudStorageRepository } = await import('@v2/infrastructure/repositories/CloudStorageRepository');
+  private async registerRepositories(db: any, cache: ICacheRepository): Promise<void> {
+    // Register repositories depending on DB_ADAPTER
+    const adapter = (process.env.DB_ADAPTER || 'mongo').toLowerCase();
 
-    // Channel Repository
-    const channelRepository = new FirestoreChannelRepository(db);
-    this.dependencies.set('channelRepository', channelRepository);
+    if (adapter === 'mongo') {
+      const { MongoChannelRepository } = await import('../infrastructure/repositories/MongoChannelRepository');
+      const { MongoProgramRepository } = await import('../infrastructure/repositories/MongoProgramRepository');
 
-    // Program Repository
-    const programRepository = new FirestoreProgramRepository(db);
-    this.dependencies.set('programRepository', programRepository);
+      const channelRepository = new MongoChannelRepository();
+      this.dependencies.set('channelRepository', channelRepository);
+
+      const programRepository = new MongoProgramRepository();
+      this.dependencies.set('programRepository', programRepository);
+    } else {
+      // Other adapters (legacy Firestore support removed). Attempt to load
+      // Firestore-backed repositories if present, but call constructors
+      // without passing a DB object to match the runtime stubs.
+      const { FirestoreChannelRepository } = await import('../infrastructure/repositories/FirestoreChannelRepository');
+      const { FirestoreProgramRepository } = await import('../infrastructure/repositories/FirestoreProgramRepository');
+
+      const channelRepository = new FirestoreChannelRepository();
+      this.dependencies.set('channelRepository', channelRepository);
+
+      const programRepository = new FirestoreProgramRepository();
+      this.dependencies.set('programRepository', programRepository);
+    }
 
     // Cache Repository (already stored by initializeCache, ensure consistent key)
     this.dependencies.set('cacheRepository', cache);
 
-    // Storage Repository
-    const storageRepository = new CloudStorageRepository(process.env.STORAGE_BUCKET || 'guia-tv-8fe3c.appspot.com');
-    this.dependencies.set('storageRepository', storageRepository);
+    // Storage Repository selection
+    const storageAdapter = (process.env.STORAGE_ADAPTER || 'gcs').toLowerCase();
+    if (storageAdapter === 's3') {
+      const { S3StorageRepository } = await import('../infrastructure/storage/S3StorageRepository');
+      const bucket = process.env.AWS_S3_BUCKET || process.env.STORAGE_BUCKET || 'guia-tv-8fe3c';
+      const repo = new S3StorageRepository(bucket, process.env.AWS_REGION);
+      this.dependencies.set('storageRepository', repo);
+    } else if (storageAdapter === 'local') {
+      const { LocalStorageRepository } = await import('../infrastructure/storage/LocalStorageRepository');
+      const repo = new LocalStorageRepository(process.env.STORAGE_LOCAL_PATH);
+      this.dependencies.set('storageRepository', repo);
+    } else {
+      const { CloudStorageRepository } = await import('@v2/infrastructure/repositories/CloudStorageRepository');
+      const storageRepository = new CloudStorageRepository(process.env.STORAGE_BUCKET || 'guia-tv-8fe3c.appspot.com');
+      this.dependencies.set('storageRepository', storageRepository);
+    }
 
     logger.info('Repositories registered');
   }
@@ -181,7 +211,6 @@ export class Container {
     const { GetProgramsByDate } = await import('../application/use-cases/GetProgramsByDate');
     const { GetChannelPrograms } = await import('../application/use-cases/GetChannelPrograms');
     const { SyncProgramData } = await import('../application/use-cases/SyncProgramData');
-    const { CloudStorageRepository } = await import('@v2/infrastructure/repositories/CloudStorageRepository');
     const { XMLParser } = await import('@v2/infrastructure/parsers/XMLParser');
     const { ProgramDataParser } = await import('@v2/infrastructure/parsers/ProgramDataParser');
     const { SyncEPGData } = await import('@v2/application/use-cases/SyncEPGData');
@@ -205,9 +234,8 @@ export class Container {
     const syncProgramData = new SyncProgramData(programRepository, cacheRepository);
     this.dependencies.set('syncProgramData', syncProgramData);
 
-    // ETL Use Cases
-    const storageRepository = new CloudStorageRepository(process.env.STORAGE_BUCKET || 'guia-tv-8fe3c.appspot.com');
-    this.dependencies.set('storageRepository', storageRepository);
+    // ETL Use Cases — use the storage repository already registered in registerRepositories
+    const storageRepository = this.get<any>('storageRepository');
 
     const xmlParser = new XMLParser();
     this.dependencies.set('xmlParser', xmlParser);

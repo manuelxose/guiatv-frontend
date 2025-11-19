@@ -44,16 +44,35 @@ export class Logger {
     return base;
   }
 
-  error(message: string, error?: Error, metadata?: LogMetadata): void {
+  // Accept either (message, Error, metadata) or (message, metadata)
+  error(message: string, errorOrMetadata?: Error | LogMetadata, maybeMetadata?: LogMetadata): void {
     if (!this.shouldLog(LogLevel.ERROR)) return;
+
+    let errorObj: Error | undefined;
+    let metadata: LogMetadata | undefined;
+
+    if (errorOrMetadata instanceof Error) {
+      errorObj = errorOrMetadata;
+      metadata = maybeMetadata;
+    } else {
+      metadata = errorOrMetadata as LogMetadata | undefined;
+    }
+
+    // If metadata itself contains an `error` key that's an Error, prefer that
+    if (metadata && (metadata as any).error instanceof Error) {
+      errorObj = (metadata as any).error as Error;
+      // remove the error object from metadata to avoid circular/duplicate info
+      const { error: _e, ...rest } = metadata as any;
+      metadata = rest;
+    }
 
     const meta = {
       ...metadata,
-      ...(error && {
+      ...(errorObj && {
         error: {
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
+          name: errorObj.name,
+          message: errorObj.message,
+          stack: errorObj.stack,
         },
       }),
     };

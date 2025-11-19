@@ -366,4 +366,23 @@ const options: swaggerJsdoc.Options = {
   ],
 };
 
-export const swaggerSpec = swaggerJsdoc(options);
+let cachedSpec: any = null;
+
+export const getSwaggerSpec = () => {
+  if (!cachedSpec) {
+    cachedSpec = swaggerJsdoc(options);
+  }
+  return cachedSpec;
+};
+
+// Export a proxy/getter for backward compatibility if needed, 
+// but better to update consumers to call the function.
+// For now, we'll export a dummy object that triggers the build on access if possible,
+// or just export the function and update the consumer.
+// Let's update the consumer (swagger.routes.ts) instead.
+export const swaggerSpec = new Proxy({}, {
+  get: (_target, prop) => {
+    const spec = getSwaggerSpec();
+    return (spec as any)[prop];
+  }
+});
