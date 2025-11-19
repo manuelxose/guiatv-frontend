@@ -32,3 +32,5 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
 
   return app;
 };
+
+export { RoutesDependencies };
