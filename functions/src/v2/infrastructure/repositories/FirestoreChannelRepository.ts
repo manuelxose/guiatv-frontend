@@ -1,6 +1,6 @@
 // src/v2/infrastructure/repositories/FirestoreChannelRepository.ts
 
-import * as admin from 'firebase-admin';
+// Avoid importing firebase-admin at module load; require only when needed.
 import { Channel, ChannelType } from '../../domain/entities/Channel';
 import {
   IChannelRepository,
@@ -58,6 +58,9 @@ export class FirestoreChannelRepository implements IChannelRepository {
   }
 
   async save(channel: Channel): Promise<void> {
+    // lazy require
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const admin = require('firebase-admin');
     const data = {
       name: channel.name,
       normalizedName: channel.normalizedName,

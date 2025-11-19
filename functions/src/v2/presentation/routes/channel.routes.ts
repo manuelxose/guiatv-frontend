@@ -4,6 +4,7 @@ import { Router } from 'express';
 import { ChannelController } from '../controllers/ChannelController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { validateChannelIdParam } from '../middlewares/validator';
+import { cacheMiddleware } from '../middlewares/cache';
 
 export const createChannelRoutes = (controller: ChannelController): Router => {
   const router = Router();
@@ -12,7 +13,7 @@ export const createChannelRoutes = (controller: ChannelController): Router => {
    * GET /v2/channels
    * Query params: type, region, isActive
    */
-  router.get('/', asyncHandler(controller.getAll.bind(controller)));
+  router.get('/', cacheMiddleware(30), asyncHandler(controller.getAll.bind(controller)));
 
   /**
    * GET /v2/channels/:id

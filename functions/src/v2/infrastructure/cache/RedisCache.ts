@@ -63,7 +63,8 @@ export class RedisCache implements ICacheRepository {
       this.isConnected = true;
     } catch (error) {
       console.error('[RedisCache] Failed to connect:', error);
-      throw error;
+      // Do not throw to avoid breaking initialization flow; caller can decide fallback
+      this.isConnected = false;
     }
   }
 

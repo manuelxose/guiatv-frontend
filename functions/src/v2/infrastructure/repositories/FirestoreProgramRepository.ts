@@ -1,6 +1,6 @@
 // src/v2/infrastructure/repositories/FirestoreProgramRepository.ts
 
-import * as admin from 'firebase-admin';
+// Avoid importing firebase-admin at module load; require lazily when needed
 import { Program } from '../../domain/entities/Program';
 import {
   IProgramRepository,
@@ -121,6 +121,9 @@ export class FirestoreProgramRepository implements IProgramRepository {
   }
 
   private mapToFirestore(program: Program): any {
+    // lazy require
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const admin = require('firebase-admin');
     return {
       channelId: program.channelId,
       date: program.date,

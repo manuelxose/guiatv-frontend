@@ -20,7 +20,15 @@ export class CloudStorageRepository implements IStorageRepository {
   private readonly storageLogger = logger.child('CloudStorage');
 
   constructor(bucketName: string) {
-    this.storage = new Storage();
+    // If running with the Storage emulator, set apiEndpoint so @google-cloud/storage
+    // connects to the emulator instead of production.
+    const emulatorHost = process.env.FIREBASE_STORAGE_EMULATOR_HOST;
+    if (emulatorHost) {
+      // emulatorHost is like 'localhost:9199' - pass as apiEndpoint
+      this.storage = new Storage({ apiEndpoint: emulatorHost });
+    } else {
+      this.storage = new Storage();
+    }
     this.bucket = this.storage.bucket(bucketName);
     this.storageLogger.info('CloudStorageRepository initialized', {
       bucketName,

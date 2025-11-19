@@ -13,7 +13,8 @@ export const environment = {
     appId: '1:533857766582:web:4dfb40ca1ac9bb39346a17',
     measurementId: 'G-P6Z3BY2DVW',
   },
-  API_BLOG: 'https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/blog',
+  API_BLOG: 'http://localhost:5001/guia-tv-8fe3c/us-central1/app/blog',
+  API_BASE_URL: 'http://localhost:5001/guia-tv-8fe3c/us-central1/app',
   SITE_URL: 'http://localhost:4200',
 };
 

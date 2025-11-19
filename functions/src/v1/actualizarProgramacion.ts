@@ -1,9 +1,14 @@
 import { downloadData } from './downloadData';
 import { moverCanalesEspana } from './firestore';
 import { inicializarDatos } from './inicializarDatos';
-const admin = require('firebase-admin');
+
+function getAdmin() {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  return require('firebase-admin');
+}
 
 async function borrarDocumentos(coleccion: string) {
+  const admin = getAdmin();
   const db = admin.firestore();
   const documentosSnapshot = await db.collection(coleccion).get();
 

@@ -1,41 +1,19 @@
-import * as functions from 'firebase-functions';
 import express from 'express';
 import cors from 'cors';
-// Avoid importing heavy modules at top-level in functions: lazy-load inside handlers
-// (actualizarProgramacion, moverCanalesEspana, inicializarDatos, downloadData)
 import { join } from 'path';
 import { Storage } from '@google-cloud/storage';
+import { existsSync } from 'fs';
 
 const apiApp = express();
 apiApp.use(cors());
 
-// Scheduled function for updating programacion
-export const actualizarProgramacion = functions
-  .runWith({ memory: '2GB', timeoutSeconds: 540 })
-  .pubsub.schedule('0 0 */5 * *')
-  .timeZone('Europe/Madrid')
-  .onRun(async () => {
-    console.log('Actualizando la programación... (lazy import)');
-    try {
-      const mod = await import('./actualizarProgramacion');
-      if (mod && typeof mod.actualizarProgramacion === 'function') {
-        await mod.actualizarProgramacion();
-      } else {
-        console.warn('actualizarProgramacion implementation not found');
-      }
-      console.log('Programación actualizada');
-    } catch (err) {
-      console.error('Error in scheduled actualizarProgramacion:', err);
-      throw err;
-    }
-  });
+// API endpoints
 
-// API endpoints preserved
 apiApp.get('/inicializarDatos', async (req: any, res: any) => {
   try {
-    const mod = await import('./inicializarDatos');
-    await (mod.inicializarDatos
-      ? mod.inicializarDatos()
+    const { inicializarDatos } = await import('./inicializarDatos');
+    await (inicializarDatos
+      ? inicializarDatos()
       : Promise.reject(new Error('inicializarDatos not found')));
     res
       .status(200)
@@ -48,9 +26,9 @@ apiApp.get('/inicializarDatos', async (req: any, res: any) => {
 
 apiApp.get('/actualizarProgramacion', async (req: any, res: any) => {
   try {
-    const mod = await import('./firestore');
-    await (mod.moverCanalesEspana
-      ? mod.moverCanalesEspana()
+    const { moverCanalesEspana } = await import('./firestore');
+    await (moverCanalesEspana
+      ? moverCanalesEspana()
       : Promise.reject(new Error('moverCanalesEspana not found')));
     res
       .status(200)
@@ -64,9 +42,9 @@ apiApp.get('/actualizarProgramacion', async (req: any, res: any) => {
 apiApp.get('/downloadData', async (req: any, res: any) => {
   try {
     console.log('Descargando datos...');
-    const mod = await import('./downloadData');
-    await (mod.downloadData
-      ? mod.downloadData()
+    const { downloadData } = await import('./downloadData');
+    await (downloadData
+      ? downloadData()
       : Promise.reject(new Error('downloadData not found')));
     res.status(200).json({ message: 'Se descargo el fichero Correctamente' });
   } catch (error) {
@@ -75,12 +53,8 @@ apiApp.get('/downloadData', async (req: any, res: any) => {
   }
 });
 
-// API endpoints expected by the frontend
-// Return programacion grouped by channel for a given day (e.g. 'today')
 apiApp.get('/programas/date/:day', async (req: any, res: any) => {
   try {
-    const api = await import('./api');
-
     // Map friendly aliases to yyyyMMdd. Support: 'today', 'tomorrow', 'after_tomorrow', or explicit yyyyMMdd
     const requestedDay =
       req.params && req.params.day ? String(req.params.day) : 'today';
@@ -100,18 +74,13 @@ apiApp.get('/programas/date/:day', async (req: any, res: any) => {
     else if (/^[0-9]{8}$/.test(requestedDay)) fechaParam = requestedDay;
     else fechaParam = toYyyyMmDd(0);
 
-    const programacion = await (api.obtenerProgramacion
-      ? api.obtenerProgramacion(fechaParam)
+    const apiModule = await import('./api');
+    const programacion = await (apiModule.obtenerProgramacion
+      ? apiModule.obtenerProgramacion(fechaParam)
       : Promise.reject(new Error('obtenerProgramacion not found')));
 
-    // The frontend (FirebaseProgramProvider) expects an array of channel
-    // entries of the shape: { channel: { id, name, icon }, programs: [...] }
-    // Our obtenerProgramacion currently returns a Record<channelName, Programa[]>
-    // so convert that map into the expected array shape.
     let channelDataArray: any[] = [];
     if (Array.isArray(programacion)) {
-      // If for some reason obtenerProgramacion returned an array of programs,
-      // group them by channelName into the expected structure.
       const grouped: Record<string, any[]> = {};
       (programacion as any[]).forEach((p: any) => {
         const name = p?.channelName || p?.channel?.name || 'unknown';
@@ -161,8 +130,6 @@ apiApp.get('/programas/date/:day', async (req: any, res: any) => {
       });
     }
 
-    // Remove any malformed entries that would break the frontend (missing
-    // channel.id or missing programs array). Log counts for diagnostics.
     const beforeCount = channelDataArray.length;
     const filtered = channelDataArray.filter((ch) => {
       try {
@@ -181,9 +148,6 @@ apiApp.get('/programas/date/:day', async (req: any, res: any) => {
       `/programas/date/:day - channels before=${beforeCount}, after=${afterCount}`
     );
 
-    // Attempt to precompute JSON in Cloud Storage and return a small manifest
-    // with a signed URL. If anything fails, fall back to returning the inline
-    // filtered array for backward compatibility.
     try {
       const storage = new Storage();
       const bucketName =
@@ -191,7 +155,6 @@ apiApp.get('/programas/date/:day', async (req: any, res: any) => {
       const filePath = `archivo_json/${fechaParam}.json`;
       const file = storage.bucket(bucketName).file(filePath);
 
-      // If file doesn't exist, write it (best-effort)
       const [exists] = await file.exists();
       if (!exists) {
         console.log(`Precomputing and uploading ${filePath} to ${bucketName}`);
@@ -200,7 +163,6 @@ apiApp.get('/programas/date/:day', async (req: any, res: any) => {
         });
       }
 
-      // Generate a signed URL valid for 6 hours
       const expires = Date.now() + 1000 * 60 * 60 * 6;
       const [signedUrl] = await file.getSignedUrl({ action: 'read', expires });
 
@@ -238,12 +200,11 @@ apiApp.get('/programas/date/:day', async (req: any, res: any) => {
 
 apiApp.get('/canales', async (req: any, res: any) => {
   try {
-    const api = await import('./api');
-    const programacion = await (api.obtenerProgramacion
-      ? api.obtenerProgramacion()
+    const apiModule = await import('./api');
+    const programacion = await (apiModule.obtenerProgramacion
+      ? apiModule.obtenerProgramacion()
       : Promise.reject(new Error('obtenerProgramacion not found')));
 
-    // derive canales list from programacion keys and first-item metadata
     const canales = Object.keys(programacion).map((channelName) => {
       const items = programacion[channelName] || [];
       const sample = items[0] || {};
@@ -263,19 +224,15 @@ apiApp.get('/canales', async (req: any, res: any) => {
       (err.code === 404 ||
         /not found|No such object|No such file/i.test(message));
     if (isNotFound) {
-      // Same as above: respond 200 with empty array for channels when missing.
       return res.status(200).json([]);
     }
     res.status(500).json({ error: 'Error fetching canales' });
   }
 });
 
-// Return programs for a specific channel id or normalized name
 apiApp.get('/canales/:id', async (req: any, res: any) => {
   try {
-    const api = await import('./api');
     const requestedDay = req.query.day ? String(req.query.day) : 'today';
-    // convert same aliases as above
     function toYyyyMmDd(offsetDays = 0) {
       const d = new Date();
       d.setDate(d.getDate() + offsetDays);
@@ -291,8 +248,9 @@ apiApp.get('/canales/:id', async (req: any, res: any) => {
     else if (/^[0-9]{8}$/.test(requestedDay)) fechaParam = requestedDay;
     else fechaParam = toYyyyMmDd(0);
 
-    const programacion = await (api.obtenerProgramacion
-      ? api.obtenerProgramacion(fechaParam)
+    const apiModule = await import('./api');
+    const programacion = await (apiModule.obtenerProgramacion
+      ? apiModule.obtenerProgramacion(fechaParam)
       : Promise.reject(new Error('obtenerProgramacion not found')));
 
     const id = String(req.params.id || '').toLowerCase();
@@ -331,9 +289,9 @@ apiApp.get('/canales/:id', async (req: any, res: any) => {
 
 apiApp.get('/actualizarProgramacion1', async (req: any, res: any) => {
   try {
-    const mod = await import('./actualizarProgramacion');
-    await (mod.actualizarProgramacion
-      ? mod.actualizarProgramacion()
+    const { actualizarProgramacion: actualizarProgramacionHandler } = await import('./actualizarProgramacion');
+    await (actualizarProgramacionHandler
+      ? actualizarProgramacionHandler()
       : Promise.reject(new Error('actualizarProgramacion not found')));
     res
       .status(200)
@@ -344,75 +302,54 @@ apiApp.get('/actualizarProgramacion1', async (req: any, res: any) => {
   }
 });
 
-export const api = functions
-  .runWith({ memory: '2GB', timeoutSeconds: 540 })
-  .https.onRequest(apiApp);
+// Export the Express app directly
+export const api = apiApp;
 
-// Backwards-compatibility: some clients expect a function named `app`.
-// Provide an alias so requests to /app/... (existing deployed clients) are
-// handled by the same Express app (and therefore the same CORS middleware).
-// This keeps the deployed surface backward-compatible without changing routes.
-// Provide a named export `app` that references the same function as `api`.
-export const app = api;
-
-// SSR function: delegate to the server bundle placed at functions/dist/guiatv
+// SSR function
 const distFolder = join(process.cwd(), 'dist', 'guiatv');
 const serverBundleJs = join(distFolder, 'server', 'main.js');
 const serverBundleMjs = join(distFolder, 'server', 'server.mjs');
 
-let ssrFunction: any = null;
-
-async function loadSsr() {
-  if (ssrFunction) return ssrFunction;
+async function loadSsrHandler(req: any, res: any) {
   try {
-    let mod;
-    try {
-      mod = await import(serverBundleJs as any);
-    } catch (e) {
-      mod = await import(serverBundleMjs as any);
+    // Firebase Functions v7: No longer using runtimeConfigShim
+
+    const jsExists = existsSync(serverBundleJs);
+    const mjsExists = existsSync(serverBundleMjs);
+    if (!jsExists && !mjsExists) {
+      console.warn('SSR bundle not found at', serverBundleJs, 'or', serverBundleMjs);
+      return res.status(503).send('SSR bundle not built. Run the build step (e.g. `npm run build`) and ensure files exist in dist/guiatv/server/');
     }
 
-    // Preferred: the server bundle may export a request handler (e.g. `reqHandler`) created
-    // with `createNodeRequestHandler(app)` from @angular/ssr/node. Use it when available.
+    let mod;
+    try {
+      if (jsExists) {
+        mod = await import(serverBundleJs as any);
+      } else {
+        mod = await import(serverBundleMjs as any);
+      }
+    } catch (e) {
+      throw e;
+    }
+
     const exportedReqHandler =
       mod.reqHandler ||
-      // sometimes default export wraps the handler
       (mod.default &&
         (mod.default.reqHandler || mod.default.reqHandler?.reqHandler)) ||
       null;
 
     if (exportedReqHandler && typeof exportedReqHandler === 'function') {
-      ssrFunction = functions
-        .runWith({ memory: '1GB', timeoutSeconds: 540 })
-        .https.onRequest(exportedReqHandler as any);
-      return ssrFunction;
+      return exportedReqHandler(req, res);
     }
 
-    // Fallbacks: the bundle might export an express `app`, a factory that returns an app,
-    // or the module might itself be the express handler.
     const serverApp = mod.app || mod.default || mod.AppServerModule || mod;
+    const expressApp = typeof serverApp === 'function' ? serverApp() : serverApp;
+    return expressApp(req, res);
 
-    // If serverApp is a function returning an express app or an express handler
-    const expressApp =
-      typeof serverApp === 'function' ? serverApp() : serverApp;
-
-    ssrFunction = functions
-      .runWith({ memory: '1GB', timeoutSeconds: 540 })
-      .https.onRequest(expressApp as any);
-
-    return ssrFunction;
   } catch (err) {
     console.error('Error loading SSR bundle:', err);
-    throw err;
+    res.status(500).send('SSR server error');
   }
 }
 
-export const ssr = functions.https.onRequest(async (req: any, res: any) => {
-  try {
-    const fn = await loadSsr();
-    return fn(req, res);
-  } catch (err) {
-    console.error('SSR invocation error:', err);
-    res.status(500).send('SSR server error');
-  }
-});
+export const ssr = loadSsrHandler;
