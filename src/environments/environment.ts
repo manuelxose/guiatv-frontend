@@ -4,17 +4,8 @@
 
 export const environment = {
   production: false,
-  firebaseConfig: {
-    apiKey: 'AIzaSyCK_jTongKez-uHqn0Inoh19DicWNPAv_o',
-    authDomain: 'guia-tv-8fe3c.firebaseapp.com',
-    projectId: 'guia-tv-8fe3c',
-    storageBucket: 'guia-tv-8fe3c.appspot.com',
-    messagingSenderId: '533857766582',
-    appId: '1:533857766582:web:4dfb40ca1ac9bb39346a17',
-    measurementId: 'G-P6Z3BY2DVW',
-  },
-  API_BLOG: 'http://localhost:5001/guia-tv-8fe3c/us-central1/app/blog',
-  API_BASE_URL: 'http://localhost:5001/guia-tv-8fe3c/us-central1/app',
+  API_BASE_URL: 'http://localhost:4000/v2',
+  API_BLOG: 'http://localhost:4000/blog',
   SITE_URL: 'http://localhost:4200',
 };
 

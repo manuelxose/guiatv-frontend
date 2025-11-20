@@ -2,7 +2,6 @@
  * Configuración de providers SOLID actualizada con ProgramList
  * Ubicación: src/app/config/providers.config.ts
  */
-
 import { Provider } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
@@ -23,7 +22,7 @@ import { ConsoleLoggerService } from '../services/core/logger.service';
 import { MemoryCacheService } from '../services/core/cache.service';
 import { AppConfigurationService } from '../services/core/config.service';
 import { InitializationManagerService } from '../services/core/initialization-manager.service';
-import { FirebaseProgramProvider } from '../services/providers/firebase-program.provider';
+import { ApiProgramProvider } from '../services/providers/api-program.provider';
 import { TMDbMovieProvider } from '../services/providers/tmdb-movie.provider';
 import { TMDbPosterProvider } from '../services/providers/tmdb-poster.provider';
 import { ContentFilterService } from '../services/providers/content-filter.service';
@@ -44,9 +43,6 @@ import { ProgramListFacadeService } from '../services/program-list/program-list-
 import { ILogger, ICacheManager } from '../interfaces';
 import { ViewportManagerService } from '../services/program-list/viewport-manager.service';
 
-/**
- * Providers fundamentales - se cargan primero
- */
 export const coreProviders: Provider[] = [
   // Logger service - base para toda la aplicación
   {
@@ -99,7 +95,8 @@ export const programListProviders: Provider[] = [
       CategoryStyleManagerService,
       ChannelLogoManagerService,
       ViewportManagerService,
-      HomeDataService
+      INITIALIZATION_MANAGER_TOKEN,
+      LOGGER_TOKEN
     ]
   }
 ];
@@ -108,7 +105,7 @@ export const programListProviders: Provider[] = [
  * Providers para data sources - dependen de los core providers
  */
 export const dataProviders: Provider[] = [
-  // Program Provider - datos de programación desde Firebase
+  // Program Provider - datos de programación desde API Standard
   {
     provide: PROGRAM_PROVIDER_TOKEN,
     useFactory: (
@@ -116,7 +113,7 @@ export const dataProviders: Provider[] = [
       cache: ICacheManager<any>, 
       logger: ILogger, 
       config: AppConfigurationService
-    ) => new FirebaseProgramProvider(http, cache, logger, config),
+    ) => new ApiProgramProvider(http, cache, logger, config),
     deps: [HttpClient, CACHE_MANAGER_TOKEN, LOGGER_TOKEN, AppConfigurationService]
   },
   

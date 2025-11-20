@@ -40,7 +40,7 @@ import {
   LOGGER_TOKEN,
 } from '../../config/di-tokens';
 import { FeaturedMoviesService } from './featured-movies.service';
-import { FirebaseProgramProvider } from '../providers/firebase-program.provider';
+import { ApiProgramProvider } from '../providers/api-program.provider';
 
 @Injectable({
   providedIn: 'root',
@@ -313,10 +313,10 @@ export class HomeDataService {
    * Obtiene datos específicamente para ProgramListComponent - SIN CAMBIOS
    */
   private getProgramListData(date: string): Observable<any[]> {
-    const firebaseProvider = this.programProvider as FirebaseProgramProvider;
+    const apiProvider = this.programProvider as ApiProgramProvider;
 
-    if (firebaseProvider.getProgramsForProgramList) {
-      return firebaseProvider.getProgramsForProgramList(date);
+    if (apiProvider.getProgramsForProgramList) {
+      return apiProvider.getProgramsForProgramList(date);
     } else {
       return this.programProvider
         .getPrograms(date)
