@@ -1,4 +1,0 @@
-21:27:02.252 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
-21:27:02.658 [main] INFO com.firebase.server.forge.App$ - Listening at 0.0.0.0:9000
-21:28:16.985 [NamespaceSystem-akka.actor.default-dispatcher-6] INFO com.firebase.core.namespace.NamespaceActor - guia-tv-8fe3c-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 811ms, init: 0ms
-21:28:17.283 [NamespaceSystem-blocking-namespace-operation-dispatcher-8] INFO com.firebase.core.namespace.StateManager - Namespace guia-tv-8fe3c-default-rtdb status Active to Active

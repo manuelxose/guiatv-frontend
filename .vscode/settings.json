@@ -70,5 +70,6 @@
             ],
             "url": "./node_modules/@angular/cli/lib/config/schema.json"
         }
-    ]
+    ],
+    "postman.settings.dotenv-detection-notification-visibility": false
 }

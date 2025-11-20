@@ -13,10 +13,10 @@ export interface ITvProgram {
   category?: ICategory;
   desc?: IDescription;
   starRating?: number;
+  duration?: number;
+  image?: string;
   error?: string;
   channels?: any[];
-
-
 }
 
 /**

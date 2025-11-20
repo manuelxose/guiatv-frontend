@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 
 export interface AppConfig {
   api: {
-    firebase: {
+    backend: {
       baseUrl: string;
       timeout: number;
     };
@@ -43,8 +43,8 @@ export class AppConfigurationService {
   
   private config: AppConfig = {
     api: {
-      firebase: {
-        baseUrl: (environment as any).API_BASE_URL,
+      backend: {
+        baseUrl: (environment as any).API_BASE_URL || 'http://localhost:4000/v2',
         timeout: 10000
       },
       tmdb: {

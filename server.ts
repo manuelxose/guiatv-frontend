@@ -10,17 +10,18 @@ export function app(): express.Express {
   const server = express();
   const commonEngine = new CommonEngine();
 
-  const PORT = process.env['PORT'] || 4000;
+  const PORT = process.env['PORT'] || 3000;
 
-  // Para Angular 20, los archivos están directamente en dist/guiatv
+  // Para Angular 20, el output se divide en dist/guiatv/browser y dist/guiatv/server
   const serverDistPath = dirname(fileURLToPath(import.meta.url));
   const distFolder = resolve(serverDistPath, '..');
-  const indexHtml = join(distFolder, 'index.html');
+  const browserDistPath = resolve(distFolder, 'browser');
+  const indexHtml = join(browserDistPath, 'index.html');
 
-  // Servir archivos estáticos desde dist/guiatv
+  // Servir archivos estáticos desde dist/guiatv/browser
   server.get(
     '*.*',
-    express.static(distFolder, {
+    express.static(browserDistPath, {
       maxAge: '1y',
     })
   );
@@ -46,7 +47,7 @@ export function app(): express.Express {
         bootstrap,
         documentFilePath: indexHtml,
         url: renderUrl,
-        publicPath: distFolder,
+        publicPath: browserDistPath,
         providers: [
           // Los providers adicionales van aquí si son necesarios
         ],
@@ -62,7 +63,7 @@ export function app(): express.Express {
 }
 
 function run(): void {
-  const port = process.env['PORT'] || 4000;
+  const port = process.env['PORT'] || 3000;
 
   // Iniciar el servidor Express
   const server = app();
