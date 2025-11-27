@@ -863,6 +863,10 @@ export class ProgramListTransformService {
 
     const activeSlotIndex = this.findActiveSlotIndex(currentHours);
     const precomputed: ProgramWithPosition[] = [];
+    const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
+    const slotEndMinutes = this.getSlotEndMinutes(currentHours);
+    const isNightSlot = this.isNightTimeSlot(currentHours);
+    const crossesMidnight = (p: IProgramItem) => this.programCrossesMidnight(p);
 
     programsForActiveDay.forEach((programa) => {
       const layout = this.pickPrecomputedLayout(programa as any, activeSlotIndex);
@@ -870,10 +874,37 @@ export class ProgramListTransformService {
         return;
       }
       if (layout) {
+        // Normalize ranges to avoid tiny overlaps from backend rounding.
+        const startMin = this.getProgramStartMinutes(programa);
+        const endMin = this.getProgramEndMinutes(programa);
+        const { start: normStart, end: normEnd } = this.normalizeProgramRange(
+          startMin,
+          endMin,
+          slotStartMinutes
+        );
+
+        // Recompute grid columns aligned to the current slot.
+        const columnsPerSlot = UI_CONFIG.MINUTES_PER_SLOT / UI_CONFIG.MINUTES_PER_COLUMN;
+        const totalColumns = UI_CONFIG.MAX_GRID_COLUMNS * columnsPerSlot;
+        const recomputedGridStart = this.minutesToGridColumn(
+          normStart,
+          slotStartMinutes,
+          totalColumns,
+          isNightSlot
+        );
+        const recomputedGridEnd = this.calculateGridColumnEnd(
+          programa,
+          normStart,
+          normEnd,
+          slotStartMinutes,
+          isNightSlot,
+          crossesMidnight(programa)
+        );
+
         precomputed.push({
           ...programa,
-          gridColumnStart: layout.gridColumnStart ?? 1,
-          gridColumnEnd: layout.gridColumnEnd ?? 2,
+          gridColumnStart: layout.gridColumnStart ?? recomputedGridStart ?? 1,
+          gridColumnEnd: layout.gridColumnEnd ?? recomputedGridEnd ?? 2,
           layerIndex: layout.layerIndex ?? 0,
           visibleStartTime:
             layout.visibleStartTime ??
@@ -886,18 +917,91 @@ export class ProgramListTransformService {
           pxStart: layout.pxStart,
           pxWidth: layout.pxWidth,
           timeSlotIndex: layout.timeSlotIndex,
+          _normStartMinutes: normStart,
+          _normEndMinutes: normEnd,
         });
       }
     });
 
     if (precomputed.length) {
+      // Compact precomputed programs so they don't visually cross at boundaries.
+      precomputed
+        .sort((a, b) => a.gridColumnStart - b.gridColumnStart)
+        .forEach((program, idx, arr) => {
+          if (idx === 0) return;
+          const prev = arr[idx - 1];
+          const prevEnd = prev.gridColumnEnd ?? 2;
+          if (program.gridColumnStart < prevEnd) {
+            program.gridColumnStart = prevEnd;
+            if (!program.gridColumnEnd || program.gridColumnEnd <= program.gridColumnStart) {
+              program.gridColumnEnd = program.gridColumnStart + 1;
+            }
+
+            // Keep normalized minutes aligned to adjusted columns to avoid false overlaps.
+            const minutesPerCol = UI_CONFIG.MINUTES_PER_COLUMN;
+            const adjustedStart =
+              slotStartMinutes + (program.gridColumnStart - 1) * minutesPerCol;
+            let adjustedEnd =
+              slotStartMinutes + (program.gridColumnEnd - 1) * minutesPerCol;
+            if (adjustedEnd <= adjustedStart && isNightSlot) {
+              adjustedEnd += 1440;
+            }
+            program._normStartMinutes = adjustedStart;
+            program._normEndMinutes = adjustedEnd;
+            program.isCutAtStart = program.isCutAtStart ?? false;
+            program.isCutAtEnd = program.isCutAtEnd ?? false;
+          }
+        });
+
+      // Final clamp to grid bounds to avoid tiny residual overlaps.
+      const totalColumns =
+        UI_CONFIG.MAX_GRID_COLUMNS *
+        (UI_CONFIG.MINUTES_PER_SLOT / UI_CONFIG.MINUTES_PER_COLUMN);
+      precomputed.forEach((program) => {
+        program.gridColumnStart = Math.max(
+          1,
+          Math.min(program.gridColumnStart, totalColumns)
+        );
+        program.gridColumnEnd = Math.max(
+          program.gridColumnStart + 1,
+          Math.min(program.gridColumnEnd ?? program.gridColumnStart + 1, totalColumns + 1)
+        );
+      });
+
       const layers: ProgramWithPosition[][] = [];
       precomputed
         .sort((a, b) => a.gridColumnStart - b.gridColumnStart)
         .forEach((program) => {
-          const targetLayer = program.layerIndex ?? 0;
-          if (!layers[targetLayer]) layers[targetLayer] = [];
-          layers[targetLayer].push(program);
+          // Re-pack layers ourselves to avoid unnecessary extra rows.
+          // Always try from layer 0 upwards to keep a compact grid.
+          let placed = false;
+          for (let layer = 0; layer < UI_CONFIG.MAX_LAYERS; layer++) {
+            if (!layers[layer]) {
+              layers[layer] = [];
+            }
+
+            const hasOverlap = layers[layer].some((existing) =>
+              this.programsOverlapInGrid(
+                program as ProgramWithPosition,
+                existing as ProgramWithPosition
+              )
+            );
+
+            if (!hasOverlap) {
+              program.layerIndex = layer;
+              layers[layer].push(program);
+              placed = true;
+              break;
+            }
+          }
+
+          if (!placed) {
+            // Fallback: force push into a new layer (best effort)
+            const layer = layers.length;
+            if (!layers[layer]) layers[layer] = [];
+            program.layerIndex = layer;
+            layers[layer].push(program);
+          }
         });
       return layers.filter((layer) => Array.isArray(layer) && layer.length);
     }
@@ -980,4 +1084,3 @@ export class ProgramListTransformService {
     return layers;
   }
 }
-
