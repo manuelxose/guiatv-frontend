@@ -1,4 +1,4 @@
-<!-- Native Slider - Optimizado para datos reales -->
+﻿<!-- Native Slider - Optimizado para datos reales -->
 <section
   class="native-slider"
   [ngClass]="'slider--' + (variant || 'default')"
@@ -67,12 +67,12 @@
             <div class="program-info">
               <!-- Canal -->
               <div class="channel-badge">
-                {{ program?.channel || "Canal" }}
+                {{ program?.channel?.name || program?.channel || "Canal" }}
               </div>
 
               <!-- Título -->
               <h3 class="program-title">
-                {{ program?.title?.value || "Título desconocido" }}
+                {{ program?.title?.value || program?.title || "Titulo desconocido" }}
               </h3>
 
               <!-- Metadata -->
@@ -123,3 +123,9 @@
     </button>
   </div>
 </section>
+
+
+
+
+
+

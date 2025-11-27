@@ -32,6 +32,11 @@ class DateUtils {
         tomorrow.setDate(tomorrow.getDate() + 1);
         return this.formatYYYYMMDD(tomorrow);
     }
+    static getYesterdayYYYYMMDD() {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        return this.formatYYYYMMDD(yesterday);
+    }
     static getAfterTomorrowYYYYMMDD() {
         const afterTomorrow = new Date();
         afterTomorrow.setDate(afterTomorrow.getDate() + 2);
@@ -39,6 +44,8 @@ class DateUtils {
     }
     static parseDateAlias(alias) {
         switch (alias.toLowerCase()) {
+            case 'yesterday':
+                return this.getYesterdayYYYYMMDD();
             case 'today':
                 return this.getTodayYYYYMMDD();
             case 'tomorrow':

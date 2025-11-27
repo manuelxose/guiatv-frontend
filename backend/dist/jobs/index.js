@@ -13,8 +13,8 @@ const cleanOldPrograms_1 = require("./cleanOldPrograms");
  */
 function initializeJobs() {
     console.log('[Jobs] Configurando jobs programados...');
-    // Sincronizar EPG cada 1 hora (minuto 0 de cada hora)
-    node_cron_1.default.schedule('0 * * * *', async () => {
+    // Sincronizar EPG cada 6 horas (00:00, 06:00, 12:00, 18:00)
+    node_cron_1.default.schedule('0 */6 * * *', async () => {
         try {
             await (0, syncEPG_1.syncEPGJob)();
         }
@@ -24,9 +24,9 @@ function initializeJobs() {
     }, {
         timezone: 'Europe/Madrid',
     });
-    console.log('  - syncEPG: cada 1 hora (0 * * * *)');
+    console.log('  - syncEPG: cada 6 horas (0 */6 * * *)');
     // Precomputar horarios cada 6 horas (00:00, 06:00, 12:00, 18:00)
-    node_cron_1.default.schedule('0 */6 * * *', async () => {
+    node_cron_1.default.schedule('15 */6 * * *', async () => {
         try {
             await (0, precomputeSchedules_1.precomputeSchedulesJob)();
         }
@@ -36,7 +36,7 @@ function initializeJobs() {
     }, {
         timezone: 'Europe/Madrid',
     });
-    console.log('  - precomputeSchedules: cada 6 horas (0 */6 * * *)');
+    console.log('  - precomputeSchedules: cada 6 horas (15 */6 * * *)');
     // Limpiar programas antiguos cada 24 horas a las 3:00 AM
     node_cron_1.default.schedule('0 3 * * *', async () => {
         try {

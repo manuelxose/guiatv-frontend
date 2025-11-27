@@ -1,4 +1,16 @@
 const PROXY_CONFIG = {
+    "/v2/*": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+    "/storage": {
+        "target": "http://localhost:4000",
+        "secure": false,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
     "/api/tmdb/*": {
         "target": "https://api.themoviedb.org",
         "secure": false,

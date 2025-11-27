@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createHealthRoutes = void 0;
 const express_1 = require("express");
 const asyncHandler_1 = require("../../shared/utils/asyncHandler");
-const apiResponse_1 = require("../../shared/utils/apiResponse");
+const ApiResponse_1 = require("../../shared/types/ApiResponse");
 const createHealthRoutes = () => {
     const router = (0, express_1.Router)();
     /**
@@ -39,7 +39,7 @@ const createHealthRoutes = () => {
     router.get('/', (0, asyncHandler_1.asyncHandler)(async (req, res) => {
         const uptime = process.uptime();
         const memoryUsage = process.memoryUsage();
-        res.status(200).json((0, apiResponse_1.createSuccessResponse)({
+        res.status(200).json((0, ApiResponse_1.successResponse)({
             status: 'healthy',
             timestamp: new Date().toISOString(),
             uptime: `${Math.floor(uptime)}s`,
@@ -49,7 +49,7 @@ const createHealthRoutes = () => {
                 heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
                 heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`,
             },
-        }));
+        }, { cached: false }));
     }));
     return router;
 };

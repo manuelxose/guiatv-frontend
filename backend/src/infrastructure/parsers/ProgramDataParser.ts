@@ -24,7 +24,9 @@ export class ProgramDataParser {
     channelMap: Map<string, string>
   ): Program | null {
     try {
-      const channelId = channelMap.get(parsed.channelId);
+      const channelId =
+        channelMap.get(parsed.channelId) ||
+        channelMap.get(parsed.channelId.trim());
 
       if (!channelId) {
         this.parserLogger.warn('Channel not found for program', {
@@ -35,7 +37,31 @@ export class ProgramDataParser {
       }
 
       const startTime = this.parseXMLDateToDate(parsed.start);
-      const endTime = this.parseXMLDateToDate(parsed.stop);
+      let endTime = this.parseXMLDateToDate(parsed.stop);
+
+      // Some feeds wrap past midnight without bumping the date; fix common cases
+      if (endTime <= startTime) {
+        // If the difference is small (<= 12h), assume it crosses midnight
+        const bumped = new Date(endTime.getTime() + 24 * 60 * 60 * 1000);
+        if (bumped.getTime() - startTime.getTime() > 0 && bumped.getTime() - startTime.getTime() <= 12 * 60 * 60 * 1000) {
+          endTime = bumped;
+        } else {
+          this.parserLogger.warn('Skipping program with invalid time range', {
+            title: parsed.title,
+            channelId,
+            start: parsed.start,
+            stop: parsed.stop,
+          });
+          return null;
+        }
+      }
+
+      let image: string | undefined;
+      if (Array.isArray(parsed.icon)) {
+        image = parsed.icon[0];
+      } else {
+        image = parsed.icon;
+      }
 
       return Program.create({
         id: this.generateProgramId(parsed),
@@ -44,7 +70,7 @@ export class ProgramDataParser {
         startTime,
         endTime,
         description: parsed.description,
-        image: parsed.icon,
+        image,
         genre: parsed.category,
         year: parsed.year,
         rating: parsed.rating,

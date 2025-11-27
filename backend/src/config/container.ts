@@ -1,5 +1,6 @@
 import { logger } from '../shared/utils/logger';
 import { connectMongoDB, mongoose as mongooseInstance } from './mongodb';
+import { ensureMongoCollectionsAndIndexes } from '../infrastructure/database/initializeMongoCollections';
 
 // Lightweight local type aliases to avoid compile-time coupling while
 // preserving clearer intent in the container implementation.
@@ -48,6 +49,8 @@ export class Container {
       this.dependencies.set('mongoose', mongooseInstance);
       const nativeDb = mongooseInstance.connection.db;
       this.dependencies.set('mongoDb', nativeDb);
+
+      await ensureMongoCollectionsAndIndexes();
 
       logger.info('MongoDB (mongoose) initialized and registered in container');
     } catch (e) {
@@ -142,6 +145,7 @@ export class Container {
   private async registerServices(): Promise<void> {
     const { ChannelService } = await import('../domain/services/ChannelService');
     const { ProgramService } = await import('../domain/services/ProgramService');
+    const { TMDBService } = await import('../infrastructure/external/TMDBService');
 
     const channelRepository = this.get<IChannelRepository>('channelRepository');
     const channelService = new ChannelService(channelRepository);
@@ -149,6 +153,11 @@ export class Container {
 
     const programService = new ProgramService();
     this.dependencies.set('programService', programService);
+
+    // Use env var or fallback to the known token (temporary)
+    const tmdbApiKey = process.env.TMDB_API_KEY || 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8';
+    const tmdbService = new TMDBService(tmdbApiKey);
+    this.dependencies.set('tmdbService', tmdbService);
 
     logger.info('Services registered');
   }
@@ -158,12 +167,13 @@ export class Container {
     const programRepository = this.get<IProgramRepository>('programRepository');
     const cacheRepository = this.get<ICacheRepository>('cacheRepository');
     const channelService = this.get<any>('channelService');
-    const programService = this.get<any>('programService');
+    const tmdbService = this.get<any>('tmdbService');
 
     const { GetAllChannels } = await import('../application/use-cases/GetAllChannels');
     const { GetChannelById } = await import('../application/use-cases/GetChannelById');
-    const { GetProgramsByDate } = await import('../application/use-cases/GetProgramsByDate');
-    const { GetChannelPrograms } = await import('../application/use-cases/GetChannelPrograms');
+    const { GetPrograms } = await import('../application/use-cases/GetPrograms');
+    const { GetProgramLayouts } = await import('../application/use-cases/GetProgramLayouts');
+    const { GetProgramById } = await import('../application/use-cases/GetProgramById');
     const { SyncProgramData } = await import('../application/use-cases/SyncProgramData');
     const { XMLParser } = await import('../infrastructure/parsers/XMLParser');
     const { ProgramDataParser } = await import('../infrastructure/parsers/ProgramDataParser');
@@ -171,6 +181,7 @@ export class Container {
     const { PrecomputeSchedule } = await import('../application/use-cases/PrecomputeSchedule');
     const { CleanOldPrograms } = await import('../application/use-cases/CleanOldPrograms');
     const { GetNowPlaying } = await import('../application/use-cases/GetNowPlaying');
+    const { ResetSystem } = await import('../application/use-cases/ResetSystem');
 
     const getAllChannels = new GetAllChannels(channelRepository, cacheRepository, channelService);
     this.dependencies.set('getAllChannels', getAllChannels);
@@ -178,11 +189,14 @@ export class Container {
     const getChannelById = new GetChannelById(channelRepository, cacheRepository);
     this.dependencies.set('getChannelById', getChannelById);
 
-    const getProgramsByDate = new GetProgramsByDate(programRepository, cacheRepository);
-    this.dependencies.set('getProgramsByDate', getProgramsByDate);
+    const getPrograms = new GetPrograms(programRepository, channelRepository, cacheRepository);
+    this.dependencies.set('getPrograms', getPrograms);
 
-    const getChannelPrograms = new GetChannelPrograms(programRepository, cacheRepository, programService);
-    this.dependencies.set('getChannelPrograms', getChannelPrograms);
+    const getProgramLayouts = new GetProgramLayouts(cacheRepository, getPrograms);
+    this.dependencies.set('getProgramLayouts', getProgramLayouts);
+
+    const getProgramById = new GetProgramById(programRepository);
+    this.dependencies.set('getProgramById', getProgramById);
 
     const syncProgramData = new SyncProgramData(programRepository, cacheRepository);
     this.dependencies.set('syncProgramData', syncProgramData);
@@ -195,10 +209,15 @@ export class Container {
     const programParser = new ProgramDataParser();
     this.dependencies.set('programParser', programParser);
 
-    const syncEPGData = new SyncEPGData(channelRepository, programRepository, cacheRepository, storageRepository, xmlParser, programParser);
+    const syncEPGData = new SyncEPGData(channelRepository, programRepository, cacheRepository, storageRepository, xmlParser, programParser, tmdbService);
     this.dependencies.set('syncEPGData', syncEPGData);
 
-    const precomputeSchedule = new PrecomputeSchedule(this.get('getProgramsByDate'), this.get('getAllChannels'), programService, storageRepository);
+    const precomputeSchedule = new PrecomputeSchedule(
+      getPrograms,
+      this.get('getAllChannels'),
+      storageRepository,
+      cacheRepository
+    );
     this.dependencies.set('precomputeSchedule', precomputeSchedule);
 
     const cleanOldPrograms = new CleanOldPrograms(programRepository);
@@ -207,32 +226,55 @@ export class Container {
     const getNowPlaying = new GetNowPlaying(channelRepository, programRepository);
     this.dependencies.set('getNowPlaying', getNowPlaying);
 
+    const resetSystem = new ResetSystem(
+      cacheRepository,
+      storageRepository,
+      syncEPGData,
+      precomputeSchedule
+    );
+    this.dependencies.set('resetSystem', resetSystem);
+
     logger.info('Use Cases registered');
   }
 
   private async registerControllers(): Promise<void> {
     const getAllChannels = this.get<any>('getAllChannels');
     const getChannelById = this.get<any>('getChannelById');
-    const getProgramsByDate = this.get<any>('getProgramsByDate');
-    const getChannelPrograms = this.get<any>('getChannelPrograms');
-    const programService = this.get<any>('programService');
+    const getPrograms = this.get<any>('getPrograms');
+    const getProgramLayouts = this.get<any>('getProgramLayouts');
+    const getProgramById = this.get<any>('getProgramById');
 
     const { ChannelController } = await import('../presentation/controllers/ChannelController');
     const { ProgramController } = await import('../presentation/controllers/ProgramController');
     const { ScheduleController } = await import('../presentation/controllers/ScheduleController');
+    const { LayoutController } = await import('../presentation/controllers/LayoutController');
     const { AdminController } = await import('../presentation/controllers/AdminController');
     const { SSRController } = await import('../presentation/controllers/SSRController');
 
     const channelController = new ChannelController(getAllChannels, getChannelById);
     this.dependencies.set('channelController', channelController);
 
-    const programController = new ProgramController(getProgramsByDate, getChannelPrograms, getChannelById);
+
+    const programController = new ProgramController(
+      getPrograms,
+      getChannelById,
+      getProgramById
+    );
     this.dependencies.set('programController', programController);
 
-    const scheduleController = new ScheduleController(getProgramsByDate, getAllChannels, programService);
+    const scheduleController = new ScheduleController(getPrograms, getAllChannels);
     this.dependencies.set('scheduleController', scheduleController);
 
-    const adminController = new AdminController(this.get('syncEPGData'), this.get('precomputeSchedule'), this.get('cleanOldPrograms'), this.get('cacheRepository'));
+    const layoutController = new LayoutController(getProgramLayouts);
+    this.dependencies.set('layoutController', layoutController);
+
+    const adminController = new AdminController(
+      this.get('syncEPGData'),
+      this.get('precomputeSchedule'),
+      this.get('cleanOldPrograms'),
+      this.get('cacheRepository'),
+      this.get('resetSystem')
+    );
     this.dependencies.set('adminController', adminController);
 
     const ssrController = new SSRController(this.get('getNowPlaying'));

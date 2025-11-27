@@ -9,7 +9,9 @@ export interface IChannelDocument {
   id: string;
   name: string;
   logo?: string;
+  type?: string;
   country?: string;
+  countryCode?: string;
   language?: string;
   category?: string;
   url?: string;
@@ -39,7 +41,17 @@ const ChannelSchema = new Schema<IChannelDocument>(
       type: String,
       trim: true,
     },
+    type: {
+      type: String,
+      trim: true,
+      index: true,
+    },
     country: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    countryCode: {
       type: String,
       trim: true,
       index: true,

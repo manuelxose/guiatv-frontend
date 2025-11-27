@@ -12,6 +12,8 @@ class CleanOldPrograms {
     }
     async execute(request = {}) {
         const daysToKeep = request.daysToKeep || 7;
+        const backfillBeforeCleanup = request.backfillBeforeCleanup ?? true;
+        const backfillDays = request.backfillDays || 3;
         const errors = [];
         const datesRemoved = [];
         try {
@@ -22,6 +24,25 @@ class CleanOldPrograms {
             this.cleanLogger.info('Removing programs before date', {
                 cutoffDate: cutoffDateStr,
             });
+            if (backfillBeforeCleanup) {
+                this.cleanLogger.info('Backfilling computed fields before cleanup', {
+                    days: backfillDays,
+                });
+                for (let i = 0; i < backfillDays; i++) {
+                    const dateToFill = dateUtils_1.DateUtils.addDays(today, -i);
+                    const dateStr = dateUtils_1.DateUtils.formatYYYYMMDD(dateToFill);
+                    try {
+                        const updated = await this.programRepository.backfillComputedFields(dateStr);
+                        this.cleanLogger.info('Backfill done', { date: dateStr, updated });
+                    }
+                    catch (error) {
+                        this.cleanLogger.warn('Backfill failed', {
+                            date: dateStr,
+                            error: error.message,
+                        });
+                    }
+                }
+            }
             // Eliminar programas día por día
             for (let i = 30; i > daysToKeep; i--) {
                 const dateToRemove = dateUtils_1.DateUtils.addDays(today, -i);

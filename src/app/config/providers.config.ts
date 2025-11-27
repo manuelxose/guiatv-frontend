@@ -2,7 +2,7 @@
  * Configuración de providers SOLID actualizada con ProgramList
  * Ubicación: src/app/config/providers.config.ts
  */
-import { Provider } from '@angular/core';
+import { Provider, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 // Tokens de inyección existentes
@@ -77,27 +77,18 @@ export const programListProviders: Provider[] = [
   // Viewport Manager - manejo del viewport virtual
   ViewportManagerService,
   
-  // Dimension Calculator - depende de TimeManager
+  // Dimension Calculator - depende de TimeManager y PLATFORM_ID
   {
     provide: DimensionCalculatorService,
-    useFactory: (timeManager: TimeManagerService) => 
-      new DimensionCalculatorService(undefined as any, timeManager),
-    deps: [TimeManagerService]
+    useFactory: (platformId: Object, timeManager: TimeManagerService) => 
+      new DimensionCalculatorService(platformId, timeManager),
+    deps: [PLATFORM_ID, TimeManagerService]
   },
   
   // Facade Service - orquesta todos los servicios de ProgramList
   {
     provide: ProgramListFacadeService,
-    useClass: ProgramListFacadeService,
-    deps: [
-      TimeManagerService,
-      DimensionCalculatorService,
-      CategoryStyleManagerService,
-      ChannelLogoManagerService,
-      ViewportManagerService,
-      INITIALIZATION_MANAGER_TOKEN,
-      LOGGER_TOKEN
-    ]
+    useClass: ProgramListFacadeService
   }
 ];
 

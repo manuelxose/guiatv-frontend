@@ -8,6 +8,8 @@ import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
 import { DateUtils } from '../../shared/utils/dateUtils';
 import { logger } from '../../shared/utils/logger';
 import { ValidationError } from '../../shared/errors';
+import { successResponse } from '../../shared/types/ApiResponse';
+import { ResetSystem } from '../../application/use-cases/ResetSystem';
 
 export class AdminController {
   private readonly adminLogger = logger.child('AdminController');
@@ -16,7 +18,8 @@ export class AdminController {
     private readonly syncEPGData: SyncEPGData,
     private readonly precomputeSchedule: PrecomputeSchedule,
     private readonly cleanOldPrograms: CleanOldPrograms,
-    private readonly cacheRepository: ICacheRepository
+    private readonly cacheRepository: ICacheRepository,
+    private readonly resetSystem: ResetSystem
   ) {}
 
   /**
@@ -48,35 +51,35 @@ export class AdminController {
    *         $ref: '#/components/responses/InternalServerError'
    */
   async triggerSync(req: Request, res: Response): Promise<void> {
-    const { date, forceRefresh } = req.body;
+    const { date, forceRefresh, sourceUrl } = req.body;
 
-    this.adminLogger.info('Manual sync triggered', { date, forceRefresh });
+    this.adminLogger.info('Manual sync triggered', {
+      date,
+      forceRefresh,
+      sourceUrl,
+    });
 
-    const dateToSync = date || DateUtils.getTodayYYYYMMDD();
-
-    if (date && !DateUtils.isValidYYYYMMDD(date)) {
-      throw new ValidationError('Invalid date format', [
-        {
-          field: 'date',
-          message: 'Expected YYYYMMDD format',
-          value: date,
-        },
-      ]);
-    }
+    const dateToSync = DateUtils.parseDateAlias(date || 'today');
 
     const result = await this.syncEPGData.execute({
       sourceUrl:
+        sourceUrl ||
         'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz',
       date: dateToSync,
       forceRefresh: forceRefresh === true,
     });
 
-    res.status(200).json({
-      message: result.success
-        ? 'Sync completed successfully'
-        : 'Sync completed with errors',
-      result,
-    });
+    res.status(200).json(
+      successResponse(
+        {
+          message: result.success
+            ? 'Sync completed successfully'
+            : 'Sync completed with errors',
+          result,
+        },
+        { cached: false }
+      )
+    );
   }
 
   /**
@@ -105,24 +108,61 @@ export class AdminController {
    *         $ref: '#/components/responses/InternalServerError'
    */
   async triggerPrecompute(req: Request, res: Response): Promise<void> {
-    const { date } = req.body;
+    const { date, fields } = req.body;
 
-    this.adminLogger.info('Manual precompute triggered', { date });
+    this.adminLogger.info('Manual precompute triggered', { date, fields });
 
-    const dateToPrecompute = date || DateUtils.getTodayYYYYMMDD();
-
-    if (date && !DateUtils.isValidYYYYMMDD(date)) {
-      throw new ValidationError('Invalid date format');
-    }
+    const dateToPrecompute = DateUtils.parseDateAlias(date || 'today');
 
     const result = await this.precomputeSchedule.execute({
       date: dateToPrecompute,
+      fields: (fields as any) || 'full',
     });
 
-    res.status(200).json({
-      message: 'Precompute completed successfully',
-      result,
+    res.status(200).json(
+      successResponse(
+        {
+          message: 'Precompute completed successfully',
+          result,
+        },
+        { cached: false }
+      )
+    );
+  }
+
+  /**
+   * @openapi
+   * /v2/admin/precompute-window:
+   *   post:
+   *     tags:
+   *       - Admin
+   *     summary: Precomputar el rango ayer/hoy/mañana/pasado
+   *     requestBody:
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               fields:
+   *                 type: string
+   *                 enum: [minimal, full]
+   *                 default: full
+   *     responses:
+   *       200:
+   *         description: Precomputación completada
+   */
+  async triggerPrecomputeWindow(req: Request, res: Response): Promise<void> {
+    const { fields } = req.body || {};
+    this.adminLogger.info('Triggering precompute for canonical window', {
+      fields: fields || 'full',
     });
+    await this.precomputeSchedule.precomputeCanonicalWindow(
+      (fields as any) || 'full'
+    );
+
+    res
+      .status(200)
+      .json(successResponse({ message: 'Window precompute completed' }));
   }
 
   /**
@@ -170,12 +210,17 @@ export class AdminController {
       daysToKeep: daysToKeep || 7,
     });
 
-    res.status(200).json({
-      message: result.success
-        ? 'Cleanup completed successfully'
-        : 'Cleanup completed with errors',
-      result,
-    });
+    res.status(200).json(
+      successResponse(
+        {
+          message: result.success
+            ? 'Cleanup completed successfully'
+            : 'Cleanup completed with errors',
+          result,
+        },
+        { cached: false }
+      )
+    );
   }
 
   /**
@@ -208,10 +253,39 @@ export class AdminController {
 
     await this.cacheRepository.clear(pattern);
 
-    res.status(200).json({
-      message: 'Cache cleared successfully',
-      pattern: pattern || 'all',
+    res.status(200).json(
+      successResponse(
+        {
+          message: 'Cache cleared successfully',
+          pattern: pattern || 'all',
+        },
+        { cached: false }
+      )
+    );
+  }
+
+  /**
+   * POST /v2/admin/reset
+   * Borra cache, colecciones, ficheros EPG/schedules y reconstruye (sync + precompute window)
+   */
+  async triggerReset(req: Request, res: Response): Promise<void> {
+    const { sourceUrl, fields } = req.body || {};
+    this.adminLogger.warn('Full reset triggered', { sourceUrl, fields });
+
+    const result = await this.resetSystem.execute({
+      sourceUrl: sourceUrl as string | undefined,
+      fields: (fields as any) || 'full',
     });
+
+    res.status(200).json(
+      successResponse(
+        {
+          message: 'Reset completed successfully',
+          result,
+        },
+        { cached: false }
+      )
+    );
   }
 
   /**
@@ -247,18 +321,23 @@ export class AdminController {
       cache: await this.checkCacheHealth(),
     };
 
-    res.status(200).json({
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      uptime: `${Math.floor(uptime)}s`,
-      version: process.env.API_VERSION || '2.0.0',
-      memory: {
-        rss: `${Math.round(memoryUsage.rss / 1024 / 1024)}MB`,
-        heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
-        heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`,
-      },
-      services,
-    });
+    res.status(200).json(
+      successResponse(
+        {
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          uptime: `${Math.floor(uptime)}s`,
+          version: process.env.API_VERSION || '2.0.0',
+          memory: {
+            rss: `${Math.round(memoryUsage.rss / 1024 / 1024)}MB`,
+            heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
+            heapTotal: `${Math.round(memoryUsage.heapTotal / 1024 / 1024)}MB`,
+          },
+          services,
+        },
+        { cached: false }
+      )
+    );
   }
 
   private async checkCacheHealth(): Promise<{ status: string; details?: any }> {
@@ -280,3 +359,4 @@ export class AdminController {
     }
   }
 }
+

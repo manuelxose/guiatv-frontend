@@ -3,41 +3,21 @@
 import { Router } from 'express';
 import { ProgramController } from '../controllers/ProgramController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
-import {
-  validateDateParam,
-  validateChannelIdParam,
-  validatePaginationQuery,
-  validateTimeQuery,
-} from '../middlewares/validator';
 import { cacheMiddleware } from '../middlewares/cache';
 
 export const createProgramRoutes = (controller: ProgramController): Router => {
   const router = Router();
 
   /**
-   * GET /v2/programs/date/:date
-   * Params: date (YYYYMMDD | today | tomorrow | after_tomorrow)
-   * Query: channelId, genre, limit, offset
+   * GET /v2/programs
+   * Query: date (YYYYMMDD | today | tomorrow | after_tomorrow), channels, timeSlot, fields, page, limit
    */
-  router.get(
-    '/date/:date',
-    cacheMiddleware(20),
-    validateDateParam,
-    validatePaginationQuery,
-    asyncHandler(controller.getByDate.bind(controller))
-  );
+  router.get('/', cacheMiddleware(300), asyncHandler(controller.getProgramsHandler.bind(controller)));
 
   /**
-   * GET /v2/programs/channel/:channelId
-   * Params: channelId
-   * Query: date, fromTime, toTime
+   * GET /v2/programs/:id
    */
-  router.get(
-    '/channel/:channelId',
-    validateChannelIdParam,
-    validateTimeQuery,
-    asyncHandler(controller.getByChannel.bind(controller))
-  );
+  router.get('/:id', asyncHandler(controller.getById.bind(controller)));
 
   return router;
 };

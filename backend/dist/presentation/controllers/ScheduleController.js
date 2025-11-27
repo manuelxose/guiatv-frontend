@@ -2,16 +2,15 @@
 // src/v2/presentation/controllers/ScheduleController.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ScheduleController = void 0;
-const ProgramMapper_1 = require("../../application/mappers/ProgramMapper");
 const ChannelMapper_1 = require("../../application/mappers/ChannelMapper");
 const errors_1 = require("../../shared/errors");
 const logger_1 = require("../../shared/utils/logger");
 const dateUtils_1 = require("../../shared/utils/dateUtils");
+const ApiResponse_1 = require("../../shared/types/ApiResponse");
 class ScheduleController {
-    constructor(getProgramsByDate, getAllChannels, programService) {
-        this.getProgramsByDate = getProgramsByDate;
+    constructor(getPrograms, getAllChannels) {
+        this.getPrograms = getPrograms;
         this.getAllChannels = getAllChannels;
-        this.programService = programService;
         this.logger = logger_1.logger.child('ScheduleController');
     }
     /**
@@ -24,17 +23,6 @@ class ScheduleController {
      *     description: Retorna la programación de todos los canales para una fecha específica
      *     parameters:
      *       - $ref: '#/components/parameters/DateParam'
-     *     responses:
-     *       200:
-     *         description: Programación completa del día
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/Schedule'
-     *       400:
-     *         $ref: '#/components/responses/BadRequest'
-     *       500:
-     *         $ref: '#/components/responses/InternalServerError'
      */
     async getByDate(req, res) {
         const { date } = req.params;
@@ -47,12 +35,19 @@ class ScheduleController {
             throw new errors_1.ValidationError('Invalid date format or alias');
         }
         // Obtener todos los programas del día
-        const programs = await this.getProgramsByDate.execute({
+        const programsResponse = await this.getPrograms.execute({
             date: normalizedDate,
-            limit: 10000, // Sin límite para schedule completo
+            limit: 10000,
+            fields: 'full',
         });
+        const programs = programsResponse.programs;
         // Agrupar por canal
-        const programsByChannel = this.programService.groupByChannel(programs);
+        const programsByChannel = new Map();
+        programs.forEach((p) => {
+            const list = programsByChannel.get(p.channelId) || [];
+            list.push(p);
+            programsByChannel.set(p.channelId, list);
+        });
         // Obtener información de canales
         const channels = await this.getAllChannels.execute({ isActive: true });
         // Construir respuesta
@@ -61,18 +56,17 @@ class ScheduleController {
             const channel = channels.find((c) => c.id === channelId);
             return {
                 channel: channel ? ChannelMapper_1.ChannelMapper.toDTO(channel) : null,
-                programs: ProgramMapper_1.ProgramMapper.toDTOList(channelPrograms),
+                programs: channelPrograms,
             };
         })
-            .filter((cs) => cs.channel !== null); // Solo canales válidos
-        res.status(200).json({
+            .filter((cs) => cs.channel !== null);
+        res.status(200).json((0, ApiResponse_1.successResponse)({
             date: normalizedDate,
             channels: channelSchedules,
-            meta: {
-                totalChannels: channelSchedules.length,
-                totalPrograms: programs.length,
-            },
-        });
+        }, {
+            totalChannels: channelSchedules.length,
+            totalPrograms: programs.length,
+        }));
     }
     /**
      * @openapi
@@ -81,43 +75,6 @@ class ScheduleController {
      *     tags:
      *       - Schedules
      *     summary: Obtener resumen de canales por fecha
-     *     description: Retorna un resumen de la actividad de los canales para una fecha (número de programas, horario)
-     *     parameters:
-     *       - $ref: '#/components/parameters/DateParam'
-     *     responses:
-     *       200:
-     *         description: Resumen de canales
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 date:
-     *                   type: string
-     *                 channels:
-     *                   type: array
-     *                   items:
-     *                     type: object
-     *                     properties:
-     *                       channel:
-     *                         $ref: '#/components/schemas/Channel'
-     *                       programCount:
-     *                         type: integer
-     *                       firstProgram:
-     *                         type: string
-     *                         format: date-time
-     *                       lastProgram:
-     *                         type: string
-     *                         format: date-time
-     *                 meta:
-     *                   type: object
-     *                   properties:
-     *                     totalChannels:
-     *                       type: integer
-     *       400:
-     *         $ref: '#/components/responses/BadRequest'
-     *       500:
-     *         $ref: '#/components/responses/InternalServerError'
      */
     async getChannelsSummary(req, res) {
         const { date } = req.params;
@@ -129,11 +86,17 @@ class ScheduleController {
         catch (error) {
             throw new errors_1.ValidationError('Invalid date format or alias');
         }
-        const programs = await this.getProgramsByDate.execute({
+        const { programs } = await this.getPrograms.execute({
             date: normalizedDate,
             limit: 10000,
+            fields: 'minimal',
         });
-        const programsByChannel = this.programService.groupByChannel(programs);
+        const programsByChannel = new Map();
+        programs.forEach((p) => {
+            const list = programsByChannel.get(p.channelId) || [];
+            list.push(p);
+            programsByChannel.set(p.channelId, list);
+        });
         const channels = await this.getAllChannels.execute({ isActive: true });
         const summary = Array.from(programsByChannel.entries())
             .map(([channelId, channelPrograms]) => {
@@ -141,18 +104,17 @@ class ScheduleController {
             return {
                 channel: channel ? ChannelMapper_1.ChannelMapper.toDTO(channel) : null,
                 programCount: channelPrograms.length,
-                firstProgram: channelPrograms[0]?.startTime.toISOString(),
-                lastProgram: channelPrograms[channelPrograms.length - 1]?.endTime.toISOString(),
+                firstProgram: channelPrograms[0]?.start,
+                lastProgram: channelPrograms[channelPrograms.length - 1]?.end,
             };
         })
             .filter((s) => s.channel !== null);
-        res.status(200).json({
+        res.status(200).json((0, ApiResponse_1.successResponse)({
             date: normalizedDate,
             channels: summary,
-            meta: {
-                totalChannels: summary.length,
-            },
-        });
+        }, {
+            totalChannels: summary.length,
+        }));
     }
 }
 exports.ScheduleController = ScheduleController;

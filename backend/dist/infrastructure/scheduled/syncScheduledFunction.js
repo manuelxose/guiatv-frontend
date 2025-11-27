@@ -37,6 +37,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.cleanOldProgramsHandler = exports.precomputeSchedulesHandler = exports.syncEPGDataHandler = void 0;
 const dateUtils_1 = require("../../shared/utils/dateUtils");
 const logger_1 = require("../../shared/utils/logger");
+const EPGDataSource_1 = require("../external/EPGDataSource");
+const XMLParser_1 = require("../parsers/XMLParser");
 /**
  * Sincronización diaria de datos EPG
  * Se ejecuta cada 6 horas
@@ -64,14 +66,30 @@ const syncEPGDataHandler = async (context) => {
             dateUtils_1.DateUtils.getTomorrowYYYYMMDD(),
             dateUtils_1.DateUtils.getAfterTomorrowYYYYMMDD(),
         ];
+        // Descargar y parsear el XML una sola vez para reutilizar en todas las fechas
+        const sourceUrl = 'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz';
+        const dataSource = new EPGDataSource_1.EPGDataSource({
+            url: sourceUrl,
+            timeout: 60000,
+            compressed: sourceUrl.endsWith('.gz'),
+        });
+        syncLogger.info('Fetching EPG once for all dates', { sourceUrl });
+        const xmlContent = await dataSource.fetchWithRetry(3);
+        const xmlParser = new XMLParser_1.XMLParser();
+        const parsedData = await xmlParser.parse(xmlContent);
         const results = [];
+        let isFirstDate = true;
         for (const date of datesToSync) {
             syncLogger.info('Syncing date', { date });
             const result = await syncUseCase.execute({
-                sourceUrl: 'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz',
+                sourceUrl,
                 date,
                 forceRefresh: true,
+                xmlContent,
+                parsedData,
+                skipSaveXml: !isFirstDate,
             });
+            isFirstDate = false;
             results.push({ date, ...result });
             if (result.success) {
                 syncLogger.info('Sync completed for date', {

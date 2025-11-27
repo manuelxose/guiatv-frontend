@@ -1,4 +1,4 @@
-import { Injectable, inject, Optional } from '@angular/core';
+﻿import { Injectable, inject, Optional } from '@angular/core';
 import { HttpService } from './http.service';
 import { HomeDataService } from './features/home-data.service';
 import { getHoraInicio } from '../utils/utils';
@@ -46,8 +46,8 @@ export class TvGuideService {
   ) {
     // If HomeDataService is present, keep HttpService.programas$ in sync
     try {
-      if (this.homeDataService && this.homeDataService.getProgramListData$) {
-        this.homeDataService.getProgramListData$().subscribe((data: any[]) => {
+      if (this.homeDataService && this.homeDataService.programListData$) {
+        this.homeDataService.programListData$.subscribe((data: any[]) => {
           if (Array.isArray(data) && data.length > 0) {
             console.log(
               '🔁 TvGuideService - syncing programListData to HttpService.programas$ (count=',
@@ -74,6 +74,26 @@ export class TvGuideService {
         '⚠️ TvGuideService init: could not subscribe to HomeDataService',
         err
       );
+    }
+
+    // Nueva suscripción: usa programas planos para que otras páginas reciban datos correctos
+    if (this.homeDataService && (this.homeDataService as any).programs$) {
+      (this.homeDataService as any).programs$.subscribe((programs: any[]) => {
+        if (Array.isArray(programs) && programs.length > 0) {
+          console.log(
+            `[TvGuideService] Syncing raw programs to HttpService.programas$ (count=${programs.length})`
+          );
+          try {
+            // @ts-ignore soporta implementación async/sync
+            this.http.setProgramas(programs, 'today');
+          } catch (err) {
+            console.warn(
+              '[TvGuideService] Failed to set programas in HttpService',
+              err
+            );
+          }
+        }
+      });
     }
   }
 
@@ -242,9 +262,28 @@ export class TvGuideService {
     return programs.flatMap((data) => {
       try {
         if (!data) return [];
-        return Array.isArray(data.programs)
+        const list = Array.isArray(data.programs)
           ? data.programs.filter(Boolean)
           : [];
+        return list.map((p: any) => ({
+          ...p,
+          // Normalizar campos para evitar [object Object] en templates legacy
+          title:
+            typeof p?.title === 'object'
+              ? p.title?.value ?? ''
+              : p?.title ?? '',
+          channel:
+            p?.channel?.name ?? p?.channel ?? data?.channel?.name ?? '',
+          channel_id: p?.channel_id ?? p?.channelId ?? data?.channel?.id ?? '',
+          desc:
+            typeof p?.desc === 'string' || !p?.desc
+              ? p?.desc
+              : {
+                  value: p?.desc?.value ?? p?.description ?? '',
+                  details: p?.desc?.details ?? p?.details,
+                  category: p?.desc?.category ?? p?.category,
+                },
+        }));
       } catch (err) {
         return [];
       }
@@ -373,18 +412,22 @@ export class TvGuideService {
       return (
         getHoraInicio(serie.start) > '22:00' &&
         serie.starRating !== null &&
-        serie.title.value !== 'Cine'
+        (typeof serie?.title === "object" ? serie.title.value : serie.title) !== 'Cine'
       );
     });
 
     // Filtrar las series duplicadas
     seriesAfter22 = seriesAfter22.filter(
       (serie: any, index: number, self: any[]) => {
-        const title = serie.title.value.replace(/T\d+.*/, '');
+        const rawTitle = (typeof serie?.title === "object" ? serie.title.value : serie.title) || '';
+        const title = rawTitle.replace(/T\d+.*/, '');
         return (
           index ===
           self.findIndex(
-            (s: any) => s.title.value.replace(/T\d+.*/, '') === title
+            (s: any) => {
+              const sTitle = (typeof s?.title === "object" ? s.title.value : s.title) || '';
+              return sTitle.replace(/T\d+.*/, '') === title;
+            }
           )
         );
       }
@@ -398,7 +441,8 @@ export class TvGuideService {
     const ratings = (await Promise.all(
       seriesAfter22.map(async (serie) => {
         TvGuideService.externalApiCallCounter++;
-        const serieTitle = serie.title.value.replace(/T\d+.*/, '');
+        const serieTitle = ((typeof serie?.title === "object" ? serie.title.value : serie.title) || '').replace(/T\d+.*/, '');
+        if (!serieTitle) return null;
         console.log(
           `🔥 TMDb API CALL #${TvGuideService.externalApiCallCounter} - Obteniendo rating para serie: ${serieTitle}`
         );
@@ -425,9 +469,13 @@ export class TvGuideService {
         if (!rating) {
           return false;
         }
+        const serieTitle =
+          ((typeof serie?.title === "object" ? serie.title.value : serie.title) || "")
+            .replace(/T\d+.*/, '')
+            .toLowerCase();
+        if (!serieTitle) return false;
         return (
-          rating.name.toLowerCase() ===
-          serie.title.value.replace(/T\d+.*/, '').toLowerCase()
+          rating.name.toLowerCase() === serieTitle
         );
       });
       const rating = ratingData?.vote_average ?? null;
@@ -605,23 +653,53 @@ export class TvGuideService {
 
   // Otros métodos para obtener canales según el tipo (tdt, movistar, autonomico)
   getTDTCanales() {
-    return this.listaCanales.filter((canal: any) => canal.type === 'tdt');
+    return this.listaCanales.filter(
+      (canal: any) =>
+        (canal.type || canal.channel?.type || '').toString().toUpperCase() ===
+        'TDT'
+    );
   }
 
   getMovistarCanales() {
-    return this.listaCanales.filter((canal: any) => canal.type === 'movistar');
+    return this.listaCanales.filter(
+      (canal: any) =>
+        (canal.type || canal.channel?.type || '')
+          .toString()
+          .toUpperCase() === 'MOVISTAR'
+    );
   }
 
   getAutonomicoCanales() {
-    return this.listaCanales.filter(
-      (canal: any) => canal.type === 'autonomico'
-    );
+    return this.listaCanales.filter((canal: any) => {
+      const type = (canal.type || canal.channel?.type || '')
+        .toString()
+        .toUpperCase();
+      return type === 'AUTONOMICO';
+    });
   }
   getDeportesCanales() {
     return this.listaCanales.slice(93, 103);
   }
   getCableCanales() {
     return this.listaCanales.filter((canal: any) => canal.type === 'cable');
+  }
+
+  getCanalesPorPais(country: string) {
+    const target = (country || '').toLowerCase();
+    return this.listaCanales.filter((canal: any) => {
+      const countryVal =
+        (canal.channel?.country || canal.country || '').toString().toLowerCase();
+      return target ? countryVal === target : !!countryVal;
+    });
+  }
+
+  getCanalesPorPaisYTipo(country: string, type?: string) {
+    const byCountry = this.getCanalesPorPais(country);
+    if (!type) return byCountry;
+    const t = type.toUpperCase();
+    return byCountry.filter(
+      (canal: any) => (canal.channel?.type || canal.type || '').toUpperCase() === t
+    );
   }
   /**
    * Obtiene el resumen de todas las llamadas a APIs externas
@@ -667,3 +745,4 @@ export class TvGuideService {
     console.log(`📊 ================================================\n`);
   }
 }
+

@@ -16,7 +16,8 @@ export function app(): express.Express {
   const serverDistPath = dirname(fileURLToPath(import.meta.url));
   const distFolder = resolve(serverDistPath, '..');
   const browserDistPath = resolve(distFolder, 'browser');
-  const indexHtml = join(browserDistPath, 'index.html');
+  const indexHtml = join(serverDistPath, 'index.server.html');
+  const mainServerBundle = join(serverDistPath, 'main.server.mjs');
 
   // Servir archivos estáticos desde dist/guiatv/browser
   server.get(

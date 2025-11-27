@@ -2,11 +2,15 @@
 
 import { Router } from 'express';
 import { ChannelController } from '../controllers/ChannelController';
+import { ProgramController } from '../controllers/ProgramController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { validateChannelIdParam } from '../middlewares/validator';
 import { cacheMiddleware } from '../middlewares/cache';
 
-export const createChannelRoutes = (controller: ChannelController): Router => {
+export const createChannelRoutes = (
+  controller: ChannelController,
+  programController?: ProgramController
+): Router => {
   const router = Router();
 
   /**
@@ -23,6 +27,18 @@ export const createChannelRoutes = (controller: ChannelController): Router => {
     validateChannelIdParam,
     asyncHandler(controller.getById.bind(controller))
   );
+
+  /**
+   * GET /v2/channels/:id/programs
+   */
+  if (programController) {
+    router.get(
+      '/:id/programs',
+      validateChannelIdParam,
+      cacheMiddleware(120),
+      asyncHandler(programController.getByChannel.bind(programController))
+    );
+  }
 
   return router;
 };

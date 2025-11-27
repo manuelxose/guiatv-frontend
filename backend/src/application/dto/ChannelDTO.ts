@@ -6,6 +6,8 @@ export interface ChannelDTO {
   normalizedName: string;
   icon: string | null;
   type: string;
+  country?: string;
+  countryCode?: string;
   region?: string;
   isActive: boolean;
 }

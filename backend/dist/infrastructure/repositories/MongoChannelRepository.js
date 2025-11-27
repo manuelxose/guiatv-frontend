@@ -99,8 +99,10 @@ class MongoChannelRepository {
             id: doc.id,
             name: doc.name,
             icon: doc.logo || null,
-            type: doc.category || 'TDT', // Map category to type
-            region: doc.country,
+            type: doc.type || doc.category || 'TDT',
+            country: doc.country,
+            countryCode: doc.countryCode,
+            region: doc.type === 'Autonomico' ? doc.country : undefined,
             isActive: doc.active,
         };
         return Channel_1.Channel.create(props);
@@ -113,8 +115,10 @@ class MongoChannelRepository {
             id: channel.id,
             name: channel.name,
             logo: channel.icon || undefined,
+            type: channel.type,
             category: channel.type,
-            country: channel.region,
+            country: channel.country || channel.region,
+            countryCode: channel.countryCode,
             active: channel.isActive,
             order: 0, // Default order, can be customized
         };

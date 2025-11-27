@@ -26,7 +26,7 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, filter } from 'rxjs/operators';
+import { debounceTime, filter, tap } from 'rxjs/operators';
 import {
   CdkVirtualScrollViewport,
   ScrollingModule,
@@ -161,6 +161,8 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   public readonly selectedCategories = signal<Set<string>>(new Set());
   public readonly showCategoryFilter = signal<boolean>(true);
   public readonly showTimeIndicator = signal<boolean>(true);
+  public readonly channelTypeFilter = signal<string>('Todos');
+  public readonly isChannelTypeDropdownOpen = signal<boolean>(false);
 
   // ===============================================
   // COMPUTED PROPERTIES
@@ -409,6 +411,13 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private initializeComponent(): void {
+    //Sincronizar activeDay con HomeDataService
+    const currentDayIndex = this.facade.getCurrentDayIndex();
+    // Mapear dayIndex (-1..2) a índice de array UI (0..3)
+    // Array es [-1, 0, 1, 2] -> activeDay = currentDayIndex + 1
+    const uiDayIndex = Math.max(0, Math.min(3, currentDayIndex + 1));
+    this.activeDay.set(uiDayIndex);
+
     const currentSlot = this.facade.getCurrentTimeSlot();
     this.activeTimeSlot.set(currentSlot);
 
@@ -417,37 +426,59 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       this.currentTimeSlot.set(timeSlots[currentSlot][0]);
     }
 
+    // Verificar si es hoy usando el dayIndex real
     this.showTimeIndicator.set(
-      this.activeDay() === 0 &&
+      currentDayIndex === 0 &&
         this.activeTimeSlot() === this.facade.getCurrentTimeSlot()
     );
   }
 
   private initializeDataStreams(): void {
-    // Stream de programas - MEJORADO
+    // Stream de programas - MEJORADO CON LOGS DETALLADOS
+    console.log('🔧 [ProgramList] Setting up data stream subscription');
     this.facade
       .getProgramListData()
       .pipe(
+        tap((rawData) => {
+          console.log('📊 [ProgramList] RAW data emission (before filter):', {
+            hasData: !!rawData,
+            isNull: rawData === null,
+            isUndefined: rawData === undefined,
+            length: rawData?.length,
+            sample: rawData?.[0]?.channel?.name,
+          });
+        }),
         filter((data) => data !== null && data !== undefined),
+        tap((filteredData) => {
+          console.log('✅ [ProgramList] Data PASSED filter:', {
+            length: filteredData?.length,
+            sample: filteredData?.[0]?.channel?.name,
+          });
+        }),
         debounceTime(100),
+        tap((debouncedData) => {
+          console.log('⏱️ [ProgramList] Data after debounce:', {
+            length: debouncedData?.length,
+          });
+        }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: (data) => {
-          console.log(
-            '✅ Datos recibidos del facade:',
-            data?.length,
-            'activeDay=',
-            this.activeDay()
-          );
+          console.log('✅ [ProgramList] Data stream NEXT called:', {
+            hasData: !!data,
+            length: data?.length,
+            activeDay: this.activeDay(),
+            timestamp: new Date().toISOString(),
+          });
           this.handleDataUpdate(data);
         },
         error: (error) => {
-          console.error('❌ Error en stream de datos:', error);
+          console.error('❌ [ProgramList] Data stream ERROR:', error);
           this.handleDataError(error);
         },
         complete: () => {
-          console.log('🏁 Stream de datos completado');
+          console.log('🏁 [ProgramList] Data stream COMPLETE (unexpected!)');
           // NUEVO: Si el stream se completa sin datos, forzar loading false
           if (!this.hasChannels() && this.isLoading()) {
             console.warn('⚠️ Stream completado sin datos, deteniendo loading');
@@ -823,7 +854,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public onDayChanged(dayIndex: number): void {
     console.log(
-      '[ProgramList] onDayChanged called with',
+      '[ProgramList] onDayChanged called with UI index',
       dayIndex,
       'current activeDay=',
       this.activeDay()
@@ -831,15 +862,24 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.activeDay() === dayIndex) return;
 
     const dayInfo = this.daysInfo()[dayIndex];
-    if (!dayInfo) return;
+    if (!dayInfo) {
+      console.error('[ProgramList] No dayInfo for index', dayIndex);
+      return;
+    }
+
+    console.log('[ProgramList] Day info:', { 
+      uiIndex: dayIndex, 
+      dayAlias: dayInfo.index, 
+      label: `${dayInfo.diaSemana} ${dayInfo.diaNumero}` 
+    });
 
     this.activeDay.set(dayIndex);
     this.showTimeIndicator.set(
-      dayIndex === 0 &&
+      dayInfo.index === 0 &&
         this.activeTimeSlot() === this.facade.getCurrentTimeSlot()
     );
 
-    if (dayIndex === 0) {
+    if (dayInfo.index === 0) {
       const currentSlot = this.facade.getCurrentTimeSlot();
       this.onTimeSlotChanged(currentSlot);
     }
@@ -853,11 +893,19 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.isLoading.set(true);
     this.error.set(null);
 
+    // CRITICAL FIX: Use dayInfo.index (actual day offset) not dayIndex (UI index)
+    console.log('[ProgramList] Loading data for day offset:', dayInfo.index);
     this.facade
-      .loadProgramsForDay(dayIndex)
+      .loadProgramsForDay(dayInfo.index)  // ← Use dayInfo.index, not dayIndex!
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
+          console.log('[ProgramList] loadProgramsForDay result:', {
+            uiIndex: dayIndex,
+            dayAlias: dayInfo.index,
+            success: result.success,
+            error: result.error,
+          });
           if (!result.success) {
             this.error.set(result.error || 'Error al cargar datos');
           }
@@ -876,6 +924,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
           }
         },
         error: (err) => {
+          console.error('[ProgramList] Error loading day data:', err);
           this.error.set('Error al cambiar de día');
           this.isLoading.set(false);
           this.cdr.detectChanges();
@@ -1484,6 +1533,142 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
         next: (data) => this.facade.updateChannelData(data || {}),
         error: (error) => console.error('Error loading channel data:', error),
       });
+  }
+
+  // ===============================================
+  // MOBILE HELPER METHODS
+  // ===============================================
+
+  public getMobileCompactPrograms(canal: IProgramListData): IProgramItem[] {
+    if (!canal.channels || canal.channels.length === 0) return [];
+
+    const now = new Date();
+    const programs = canal.channels;
+
+    const currentIndex = programs.findIndex((p) => {
+      const start = new Date(p.start);
+      const end = new Date(p.stop);
+      return now >= start && now < end;
+    });
+
+    if (currentIndex !== -1) {
+      return programs.slice(currentIndex, currentIndex + 2);
+    }
+
+    const nextIndex = programs.findIndex((p) => new Date(p.start) > now);
+    if (nextIndex !== -1) {
+      return programs.slice(nextIndex, nextIndex + 2);
+    }
+
+    return programs.slice(0, 2);
+  }
+
+  public isProgramLive(programa: IProgramItem): boolean {
+    const now = new Date();
+    const start = new Date(programa.start);
+    const end = new Date(programa.stop);
+    return now >= start && now < end;
+  }
+
+  public getProgramProgress(programa: IProgramItem): number {
+    const now = new Date();
+    const start = new Date(programa.start);
+    const end = new Date(programa.stop);
+    const total = end.getTime() - start.getTime();
+    const elapsed = now.getTime() - start.getTime();
+    if (total <= 0) return 0;
+    return Math.min(100, Math.max(0, (elapsed / total) * 100));
+  }
+
+  public getProgramLayout(programa: IProgramItem) {
+    const currentHours = this.currentHours();
+    const layout = this.transform.getLayoutForProgram(programa, currentHours);
+
+    if (layout) {
+      return {
+        gridColumnStart: layout.gridColumnStart ?? 1,
+        gridColumnEnd: layout.gridColumnEnd ?? 2,
+        layerIndex: layout.layerIndex ?? 0,
+        isCutAtStart: !!layout.isCutAtStart,
+        isCutAtEnd: !!layout.isCutAtEnd,
+        visibleStartTime:
+          layout.visibleStartTime ||
+          this.transform.formatMinutesToHHMM(
+            this.transform.getProgramStartMinutes(programa)
+          ),
+        visibleEndTime:
+          layout.visibleEndTime ||
+          this.transform.formatMinutesToHHMM(
+            this.transform.getProgramEndMinutes(programa)
+          ),
+      };
+    }
+
+    // Legacy fallback
+    const gridColumnStart = this.transform.getProgramGridColumn(
+      programa,
+      currentHours
+    );
+    const gridColumnEnd = this.transform.getProgramGridColumnEnd(
+      programa,
+      currentHours
+    );
+
+    const slotStartMinutes = currentHours.length
+      ? this.parseTimeToMinutes(currentHours[0])
+      : 0;
+    const { start: normStart, end: normEnd } =
+      this.transform.normalizeProgramRange(
+        this.transform.getProgramStartMinutes(programa),
+        this.transform.getProgramEndMinutes(programa),
+        slotStartMinutes
+      );
+
+    return {
+      gridColumnStart,
+      gridColumnEnd,
+      layerIndex: 0,
+      isCutAtStart: normStart > this.transform.getProgramStartMinutes(programa),
+      isCutAtEnd: normEnd < this.transform.getProgramEndMinutes(programa),
+      visibleStartTime: this.transform.formatMinutesToHHMM(normStart),
+      visibleEndTime: this.transform.formatMinutesToHHMM(normEnd),
+    };
+  }
+
+  // ===============================================
+  // CHANNEL TYPE FILTER METHODS
+  // ===============================================
+
+  public toggleChannelTypeDropdown(): void {
+    this.isChannelTypeDropdownOpen.set(!this.isChannelTypeDropdownOpen());
+    this.isDayDropdownOpen.set(false);
+    this.isCategoryDropdownOpen.set(false);
+    this.isTimeSlotDropdownOpen.set(false);
+    this.cdr.markForCheck();
+  }
+
+  public setChannelTypeFilter(type: string): void {
+    this.channelTypeFilter.set(type);
+    this.isChannelTypeDropdownOpen.set(false);
+    this.cdr.markForCheck();
+  }
+
+  public isAnyDropdownOpen(): boolean {
+    return (
+      this.isDayDropdownOpen() ||
+      this.isCategoryDropdownOpen() ||
+      this.isTimeSlotDropdownOpen() ||
+      this.isChannelTypeDropdownOpen()
+    );
+  }
+
+  // ===============================================
+  // TEMPLATE HELPER METHODS
+  // ===============================================
+
+  public getCurrentSelectedDayShort(): string {
+    const dayInfo = this.daysInfo()[this.activeDay()];
+    return dayInfo ? dayInfo.diaSemana.substring(0, 3) : 'Día';
   }
 
   private cleanup(): void {

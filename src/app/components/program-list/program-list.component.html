@@ -75,30 +75,289 @@
             "
             class="mobile-channel"
           >
-            <!-- Channel Header -->
+            <!-- Channel Header (Compact) -->
             <div
-              class="mobile-channel-header"
+              class="mobile-channel-header sticky top-0 z-10 backdrop-blur-md bg-opacity-90"
               (click)="onChannelToggle(canalIndex); $event.stopPropagation()"
             >
-              <ng-container>
-                <img
-                  *ngIf="getChannelLogoUrl(canal)"
-                  [src]="getChannelLogoUrl(canal)"
-                  [alt]="canal.channel.name"
-                  class="mobile-channel-logo"
-                  loading="lazy"
-                  (error)="onChannelLogoError($event)"
-                />
-                <span
-                  class="mobile-channel-name channel-name-fallback"
-                  [class.hidden]="getChannelLogoUrl(canal)"
-                >
+              <div class="flex items-center gap-2 flex-1 min-w-0">
+                <div class="mobile-channel-logo-container">
+                  <img
+                    *ngIf="getChannelLogoUrl(canal)"
+                    [src]="getChannelLogoUrl(canal)"
+                    [alt]="canal.channel.name"
+                    class="mobile-channel-logo"
+                    loading="lazy"
+                    (error)="onChannelLogoError($event)"
+                  />
+                  <span
+                    class="mobile-channel-name-fallback"
+                    [class.hidden]="getChannelLogoUrl(canal)"
+                  >
+                    {{ canal.channel.name.charAt(0) }}
+                  </span>
+                </div>
+                <span class="mobile-channel-name text-truncate">
                   {{ canal.channel.name }}
                 </span>
-              </ng-container>
+              </div>
+            </div>
+
+            <!-- Programs List (Now & Next) -->
+            <div
+              class="mobile-programs-list"
+              [@expandCollapse]="isChannelExpanded(canalIndex) ? 'expanded' : 'collapsed'"
+            >
+              <div
+                *ngFor="
+                  let programa of getMobileCompactPrograms(canal);
+                  trackBy: trackByProgramId
+                "
+                (click)="
+                  onProgramSelected(canalIndex, programa);
+                  $event.stopPropagation()
+                "
+                class="mobile-program-card group"
+                [class.active]="selectedProgram()?.id === programa.id"
+                [class.live]="isProgramLive(programa)"
+              >
+                <!-- Time Column -->
+                <div class="mobile-program-time-col">
+                  <span class="text-sm font-bold text-white">
+                    {{ getProgramLayout(programa).visibleStartTime }}
+                  </span>
+                </div>
+
+                <!-- Content Column -->
+                <div class="mobile-program-content">
+                  <h4 class="mobile-program-title group-hover:text-red-400 transition-colors">
+                    {{ getProgramTitle(programa) }}
+                  </h4>
+                  
+                  <!-- Progress Bar for Live Programs -->
+                  <div *ngIf="isProgramLive(programa)" class="mobile-progress-bar mt-1">
+                    <div 
+                      class="mobile-progress-fill"
+                      [style.width.%]="getProgramProgress(programa)"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Bottom Navigation Bar (Glassmorphism) -->
+      <div class="mobile-bottom-nav">
+        <!-- Channel Type Selector -->
+        <button
+          (click)="toggleChannelTypeDropdown(); $event.stopPropagation()"
+          class="mobile-nav-item"
+          [class.active]="isChannelTypeDropdownOpen()"
+        >
+          <div class="mobile-nav-icon-wrapper">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+          </div>
+          <span class="mobile-nav-label">{{ channelTypeFilter() }}</span>
+        </button>
+
+        <!-- Day Selector -->
+        <button
+          (click)="toggleDayDropdown(); $event.stopPropagation()"
+          class="mobile-nav-item"
+          [class.active]="isDayDropdownOpen()"
+        >
+          <div class="mobile-nav-icon-wrapper">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <span class="mobile-nav-label">{{ getCurrentSelectedDayShort() }}</span>
+        </button>
+
+        <!-- Time Slot Selector -->
+        <button
+          (click)="toggleTimeSlotDropdown(); $event.stopPropagation()"
+          class="mobile-nav-item"
+          [class.active]="isTimeSlotDropdownOpen()"
+        >
+          <div class="mobile-nav-icon-wrapper">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <span class="mobile-nav-label">Horario</span>
+        </button>
+
+        <!-- Category Filter -->
+        <button
+          (click)="toggleCategoryDropdown(); $event.stopPropagation()"
+          class="mobile-nav-item"
+          [class.active]="isCategoryDropdownOpen() || selectedCategories().size > 0"
+        >
+          <div class="mobile-nav-icon-wrapper relative">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            <span *ngIf="selectedCategories().size > 0" class="mobile-nav-badge">
+              {{ selectedCategories().size }}
+            </span>
+          </div>
+          <span class="mobile-nav-label">Filtros</span>
+        </button>
+      </div>
+
+      <!-- Dropdowns (Overlay) -->
+      <div *ngIf="isAnyDropdownOpen()" class="mobile-dropdown-overlay" (click)="closeAllDropdowns()">
+        
+        <!-- Channel Type Dropdown -->
+        <div *ngIf="isChannelTypeDropdownOpen()" class="mobile-bottom-sheet" (click)="$event.stopPropagation()">
+          <div class="mobile-sheet-header">
+            <h3>Tipo de Canal</h3>
+            <button (click)="closeAllDropdowns()" class="mobile-close-btn">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="mobile-sheet-content">
+            <button
+              *ngFor="let type of ['TDT', 'Movistar', 'Autonomico', 'Cable', 'OTT', 'Todos']"
+              (click)="setChannelTypeFilter(type); toggleChannelTypeDropdown()"
+              [class.active]="channelTypeFilter() === type"
+              class="mobile-sheet-item"
+            >
+              <span>{{ type }}</span>
+              <svg *ngIf="channelTypeFilter() === type" class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Day Dropdown -->
+        <div *ngIf="isDayDropdownOpen()" class="mobile-bottom-sheet" (click)="$event.stopPropagation()">
+          <div class="mobile-sheet-header">
+            <h3>Seleccionar Día</h3>
+            <button (click)="closeAllDropdowns()" class="mobile-close-btn">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="mobile-sheet-content">
+            <button
+              *ngFor="let dia of daysInfo(); let i = index"
+              (click)="selectDay(i, $event)"
+              [class.active]="i === activeDay()"
+              class="mobile-sheet-item"
+            >
+              <div class="flex flex-col items-start">
+                <span class="font-bold">{{ dia.diaSemana }}</span>
+                <span class="text-xs opacity-70">{{ dia.diaNumero }}</span>
+              </div>
+              <svg *ngIf="i === activeDay()" class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Time Slot Dropdown -->
+        <div *ngIf="isTimeSlotDropdownOpen()" class="mobile-bottom-sheet" (click)="$event.stopPropagation()">
+          <div class="mobile-sheet-header">
+            <h3>Franja Horaria</h3>
+            <button (click)="closeAllDropdowns()" class="mobile-close-btn">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="mobile-sheet-content">
+            <button
+              *ngFor="let franja of currentTimeSlots(); let i = index"
+              (click)="selectTimeSlot(i); $event.stopPropagation()"
+              [class.active]="franja[0] === currentTimeSlot()"
+              class="mobile-sheet-item"
+            >
+              <span>{{ franja[0] }} - {{ franja[franja.length - 1] }}</span>
+              <svg *ngIf="franja[0] === currentTimeSlot()" class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Category Dropdown -->
+        <div *ngIf="isCategoryDropdownOpen()" class="mobile-bottom-sheet" (click)="$event.stopPropagation()">
+          <div class="mobile-sheet-header">
+            <h3>Categorías</h3>
+            <button (click)="closeAllDropdowns()" class="mobile-close-btn">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="mobile-sheet-content">
+            <button
+              (click)="selectCategory(null); $event.stopPropagation()"
+              [class.active]="isAllCategoriesSelected()"
+              class="mobile-sheet-item"
+            >
+              <span>Todas las categorías</span>
+              <svg *ngIf="isAllCategoriesSelected()" class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
+            <button
+              *ngFor="let category of availableCategories(); trackBy: trackByCategory"
+              (click)="selectCategory(category); $event.stopPropagation()"
+              [class.active]="isCategorySelected(category)"
+              class="mobile-sheet-item"
+            >
+              <span>{{ getCategoryDisplayName(category) }}</span>
+              <svg *ngIf="isCategorySelected(category)" class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal para Móvil -->
+      <app-program-detail-modal
+        *ngIf="selectedProgram() && modalChannelInfo()"
+        [program]="selectedProgram()!"
+        [channelName]="modalChannelInfo()!.channelName"
+        [channelLogo]="modalChannelInfo()!.channelLogo"
+        (close)="closeMobileProgram()"
+      ></app-program-detail-modal>
+    </section>
+  </ng-container>
+  <ng-container *ngIf="!isMobile()">
+    <section class="pt-6 pb-4 px-4 lg:px-6 w-full min-h-screen">
+      <!-- Controls Row -->
+      <div class="mb-8 space-y-4 w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
+          <!-- Channel Type Filter Dropdown -->
+          <div class="relative dropdown-container">
+            <button
+              type="button"
+              (click)="toggleChannelTypeDropdown(); $event.stopPropagation()"
+              class="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600 rounded-xl text-white font-semibold hover:from-gray-700 hover:to-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-lg"
+            >
+              <div class="flex items-center space-x-3">
+                <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <span>{{ channelTypeFilter() }}</span>
+              </div>
               <svg
-                class="mobile-icon-sm mobile-chevron"
-                [class.rotate-180]="isChannelExpanded(canalIndex)"
+                class="h-5 w-5 transition-transform duration-200"
+                [class.rotate-180]="isChannelTypeDropdownOpen()"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -108,256 +367,37 @@
                   clip-rule="evenodd"
                 ></path>
               </svg>
-            </div>
-
-            <!-- Programs List (Collapsible) -->
+            </button>
             <div
-              class="mobile-programs-compact"
-              [class.expanded]="isChannelExpanded(canalIndex)"
+              *ngIf="isChannelTypeDropdownOpen()"
+              class="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-600 rounded-xl shadow-2xl max-h-64 overflow-y-auto backdrop-blur-sm"
+              style="z-index: 50"
             >
-              <div
-                *ngFor="
-                  let programa of getMobileVisiblePrograms(canal);
-                  trackBy: trackByProgramId
-                "
-                (click)="
-                  onProgramSelected(canalIndex, programa);
-                  $event.stopPropagation()
-                "
-                class="mobile-program-card"
-                [class.mobile-program-active]="
-                  selectedProgram()?.id === programa.id
-                "
-              >
-                <div class="mobile-program-header">
-                  <h4 class="mobile-program-title">
-                    {{ getProgramTitle(programa) }}
-                  </h4>
-                  <span class="mobile-program-time">
-                    {{ getProgramVisibleStartTime(programa) }} -
-                    {{ getProgramVisibleEndTime(programa) }}
-                  </span>
-                </div>
-                <span
-                  *ngIf="programa?.category?.value"
-                  class="mobile-category-badge"
-                  [class]="getCategoryBadgeClasses(programa.category.value)"
+              <div class="py-2">
+                <button
+                  *ngFor="let type of ['TDT', 'Movistar', 'Autonomico', 'Cable', 'OTT', 'Todos']"
+                  (click)="setChannelTypeFilter(type); toggleChannelTypeDropdown()"
+                  [class.bg-red-600_30]="channelTypeFilter() === type"
+                  [class.text-red-200]="channelTypeFilter() === type"
+                  class="w-full text-left px-4 py-3 hover:bg-gray-700/80 transition-colors duration-200 flex items-center justify-between text-white"
                 >
-                  {{ getCategoryDisplayName(programa.category.value) }}
-                </span>
+                  <span class="text-gray-100">{{ type }}</span>
+                  <svg
+                    *ngIf="channelTypeFilter() === type"
+                    class="h-5 w-5 text-red-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
-        </cdk-virtual-scroll-viewport>
-      </div>
-
-      <!-- Bottom Header con controles -->
-      <div class="mobile-bottom-header">
-        <!-- Day Selector -->
-        <div class="mobile-control">
-          <button
-            (click)="toggleDayDropdown(); $event.stopPropagation()"
-            class="mobile-btn mobile-btn-primary"
-          >
-            <svg class="mobile-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-            <span class="mobile-text-truncate">{{
-              getCurrentSelectedDay()
-            }}</span>
-            <svg
-              class="mobile-icon-sm"
-              [class.rotate-180]="isDayDropdownOpen()"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-          </button>
-          <div
-            *ngIf="isDayDropdownOpen()"
-            class="mobile-dropdown mobile-dropdown-up"
-            (click)="$event.stopPropagation()"
-          >
-            <button
-              *ngFor="let dia of daysInfo(); let i = index"
-              (click)="selectDay(i, $event)"
-              [class.mobile-dropdown-active]="i === activeDay()"
-              class="mobile-dropdown-item"
-            >
-              <div class="mobile-dropdown-content">
-                <span class="mobile-dropdown-title">{{ dia.diaSemana }}</span>
-                <span class="mobile-dropdown-subtitle">{{
-                  dia.diaNumero
-                }}</span>
-              </div>
-              <svg
-                *ngIf="i === activeDay()"
-                class="mobile-icon-sm mobile-check"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Time Slot Selector -->
-        <div class="mobile-control">
-          <button
-            (click)="toggleTimeSlotDropdown(); $event.stopPropagation()"
-            class="mobile-btn mobile-btn-secondary"
-          >
-            <svg class="mobile-icon" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-            <span class="mobile-text-truncate">{{
-              getCurrentSelectedTimeSlot()
-            }}</span>
-            <svg
-              class="mobile-icon-sm"
-              [class.rotate-180]="isTimeSlotDropdownOpen()"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-          </button>
-          <div
-            *ngIf="isTimeSlotDropdownOpen()"
-            class="mobile-dropdown mobile-dropdown-up"
-            (click)="$event.stopPropagation()"
-          >
-            <button
-              *ngFor="let franja of currentTimeSlots(); let i = index"
-              (click)="selectTimeSlot(i); $event.stopPropagation()"
-              [class.mobile-dropdown-active]="franja[0] === currentTimeSlot()"
-              class="mobile-dropdown-item"
-            >
-              <span>{{ franja[0] }} - {{ franja[franja.length - 1] }}</span>
-              <svg
-                *ngIf="franja[0] === currentTimeSlot()"
-                class="mobile-icon-sm mobile-check"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- Category Filter -->
-        <button
-          *ngIf="showCategoryFilter()"
-          (click)="toggleCategoryDropdown(); $event.stopPropagation()"
-          class="mobile-btn-icon"
-        >
-          <svg class="mobile-icon" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fill-rule="evenodd"
-              d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-              clip-rule="evenodd"
-            ></path>
-          </svg>
-          <span *ngIf="selectedCategories().size > 0" class="mobile-badge">{{
-            selectedCategories().size
-          }}</span>
-        </button>
-        <div
-          *ngIf="isCategoryDropdownOpen()"
-          class="mobile-dropdown mobile-dropdown-up mobile-dropdown-right"
-          (click)="$event.stopPropagation()"
-        >
-          <button
-            (click)="selectCategory(null); $event.stopPropagation()"
-            [class.mobile-dropdown-active]="isAllCategoriesSelected()"
-            class="mobile-dropdown-item"
-          >
-            <span>Todas las categorías</span>
-            <svg
-              *ngIf="isAllCategoriesSelected()"
-              class="mobile-icon-sm mobile-check"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-          </button>
-          <button
-            *ngFor="
-              let category of availableCategories();
-              trackBy: trackByCategory
-            "
-            (click)="selectCategory(category); $event.stopPropagation()"
-            [class.mobile-dropdown-active]="isCategorySelected(category)"
-            class="mobile-dropdown-item"
-          >
-            <span>{{ getCategoryDisplayName(category) }}</span>
-            <svg
-              *ngIf="isCategorySelected(category)"
-              class="mobile-icon-sm mobile-check"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Modal para Móvil -->
-    <app-program-detail-modal
-      *ngIf="selectedProgram() && modalChannelInfo()"
-      [program]="selectedProgram()!"
-      [channelName]="modalChannelInfo()!.channelName"
-      [channelLogo]="modalChannelInfo()!.channelLogo"
-      (close)="closeMobileProgram()"
-    ></app-program-detail-modal>
-  </ng-container>
-
-  <!-- ========================================== -->
-  <!-- VERSIÓN DESKTOP (>= 768px) -->
-  <!-- ========================================== -->
-  <ng-container *ngIf="!isMobile()">
-    <section class="pt-6 pb-4 px-4 lg:px-6 w-full min-h-screen">
-      <!-- Controls Row -->
-      <div class="mb-8 space-y-4 w-full">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
           <!-- Day Selector Dropdown -->
           <div class="relative dropdown-container">
             <button
@@ -768,14 +808,17 @@
                           "
                           class="border-r border-gray-600/30 cursor-pointer hover:bg-red-600/20 transition-all duration-200 group bg-gray-800/60 overflow-hidden relative"
                           [style.gridColumnStart]="
-                            getProgramGridColumn(programa)
+                            getProgramLayout(programa).gridColumnStart
                           "
                           [style.gridColumnEnd]="
-                            getProgramGridColumnEnd(programa)
+                            getProgramLayout(programa).gridColumnEnd
                           "
                           [style.gridRow]="layerIndex + 1"
                           [style.zIndex]="15 + layerIndex"
-                          [class]="getProgramCutClasses(programa)"
+                          [ngClass]="{
+                            'program-cut-start': getProgramLayout(programa).isCutAtStart,
+                            'program-cut-end': getProgramLayout(programa).isCutAtEnd
+                          }"
                           (click)="
                             onProgramSelected(canalIndex, programa);
                             $event.stopPropagation()
@@ -787,13 +830,13 @@
                           >
                             <!-- Indicador de corte inicio -->
                             <div
-                              *ngIf="isProgramCutAtStart(programa)"
+                              *ngIf="getProgramLayout(programa).isCutAtStart"
                               class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-400 to-orange-500 opacity-75"
                             ></div>
 
                             <!-- Indicador de corte final -->
                             <div
-                              *ngIf="isProgramCutAtEnd(programa)"
+                              *ngIf="getProgramLayout(programa).isCutAtEnd"
                               class="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-yellow-400 to-orange-500 opacity-75"
                             ></div>
 
@@ -803,13 +846,13 @@
                                 class="text-white text-xs font-medium line-clamp-1 leading-tight group-hover:text-red-200 transition-colors"
                               >
                                 <span
-                                  *ngIf="isProgramCutAtStart(programa)"
+                                  *ngIf="getProgramLayout(programa).isCutAtStart"
                                   class="text-yellow-400 mr-1"
                                   >↻</span
                                 >
                                 {{ getProgramTitle(programa) }}
                                 <span
-                                  *ngIf="isProgramCutAtEnd(programa)"
+                                  *ngIf="getProgramLayout(programa).isCutAtEnd"
                                   class="text-yellow-400 ml-1"
                                   >↻</span
                                 >
@@ -819,19 +862,19 @@
                               >
                                 <span
                                   [class.text-yellow-300]="
-                                    isProgramCutAtStart(programa)
+                                    getProgramLayout(programa).isCutAtStart
                                   "
                                   >{{
-                                    getProgramVisibleStartTime(programa)
+                                    getProgramLayout(programa).visibleStartTime
                                   }}</span
                                 >
                                 -
                                 <span
                                   [class.text-yellow-300]="
-                                    isProgramCutAtEnd(programa)
+                                    getProgramLayout(programa).isCutAtEnd
                                   "
                                   >{{
-                                    getProgramVisibleEndTime(programa)
+                                    getProgramLayout(programa).visibleEndTime
                                   }}</span
                                 >
                               </p>
@@ -979,3 +1022,5 @@
     ></app-program-detail-modal>
   </ng-container>
 </ng-container>
+
+

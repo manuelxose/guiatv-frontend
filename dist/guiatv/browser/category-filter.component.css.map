@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/blog/components/category-filter/category-filter.component.ts"],
+  "sourcesContent": ["\n      :host {\n        display: block;\n        width: 100%;\n      }\n\n      .filter-btn {\n        transform: scale(1);\n      }\n\n      .filter-btn:hover {\n        transform: scale(1.05);\n      }\n\n      .filter-btn.active {\n        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);\n      }\n\n      /* Scroll behavior optimizado */\n      nav {\n        -webkit-overflow-scrolling: touch;\n        scroll-behavior: smooth;\n      }\n\n      @media (max-width: 640px) {\n        .filter-btn {\n          font-size: 0.875rem;\n          padding: 0.5rem 1rem;\n        }\n      }\n    "],
+  "mappings": ";AACM;AACE,WAAA;AACA,SAAA;;AAGF,CAAA;AACE,aAAA,MAAA;;AAGF,CAJA,UAIA;AACE,aAAA,MAAA;;AAGF,CARA,UAQA,CAAA;AACE,cAAA,EAAA,IAAA,KAAA,KAAA,GAAA,EAAA,EAAA,EAAA,EAAA,EAAA;;AAIF;AACE,8BAAA;AACA,mBAAA;;AAGF,OAAA,CAAA,SAAA,EAAA;AACE,GAnBF;AAoBI,eAAA;AACA,aAAA,OAAA;;;",
+  "names": []
+}

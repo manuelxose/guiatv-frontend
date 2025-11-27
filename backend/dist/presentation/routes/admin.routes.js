@@ -20,6 +20,11 @@ const createAdminRoutes = (controller) => {
      */
     router.post('/precompute', rateLimit_1.strictRateLimit, (0, asyncHandler_1.asyncHandler)(controller.triggerPrecompute.bind(controller)));
     /**
+     * POST /v2/admin/precompute-window
+     * Body: { fields?: 'minimal' | 'full' }
+     */
+    router.post('/precompute-window', rateLimit_1.strictRateLimit, (0, asyncHandler_1.asyncHandler)(controller.triggerPrecomputeWindow.bind(controller)));
+    /**
      * POST /v2/admin/cleanup
      * Body: { daysToKeep?: number }
      */
@@ -29,6 +34,11 @@ const createAdminRoutes = (controller) => {
      * Body: { pattern?: string }
      */
     router.post('/cache/clear', rateLimit_1.strictRateLimit, (0, asyncHandler_1.asyncHandler)(controller.clearCache.bind(controller)));
+    /**
+     * POST /v2/admin/reset
+     * Body: { sourceUrl?: string, fields?: 'minimal' | 'full' }
+     */
+    router.post('/reset', rateLimit_1.strictRateLimit, (0, asyncHandler_1.asyncHandler)(controller.triggerReset.bind(controller)));
     /**
      * GET /v2/admin/health
      */

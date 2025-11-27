@@ -65,8 +65,9 @@ exports.config = {
     },
     // ===== PATHS =====
     paths: {
-        // Carpeta donde está el bundle SSR de Angular
-        distFolder: process.env.DIST_FOLDER || path.join(process.cwd(), 'dist', 'guiatv'),
+        // Carpeta raíz del build SSR de Angular (contiene /browser e /server)
+        distFolder: process.env.DIST_FOLDER ||
+            path.resolve(__dirname, '../../dist/guiatv'),
     },
     // ===== OTRAS CONFIGURACIONES =====
     // Añade aquí otras variables de entorno que necesites

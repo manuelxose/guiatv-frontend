@@ -5,6 +5,7 @@ exports.ChannelController = void 0;
 const ChannelMapper_1 = require("../../application/mappers/ChannelMapper");
 const errors_1 = require("../../shared/errors");
 const logger_1 = require("../../shared/utils/logger");
+const ApiResponse_1 = require("../../shared/types/ApiResponse");
 class ChannelController {
     constructor(getAllChannels, getChannelById) {
         this.getAllChannels = getAllChannels;
@@ -69,12 +70,11 @@ class ChannelController {
             isActive: isActive === 'true' ? true : isActive === 'false' ? false : undefined,
         });
         const dto = ChannelMapper_1.ChannelMapper.toDTOList(channels);
-        res.status(200).json({
+        res.status(200).json((0, ApiResponse_1.successResponse)({
             channels: dto,
-            meta: {
-                total: dto.length,
-            },
-        });
+        }, {
+            total: dto.length,
+        }));
     }
     /**
      * @openapi
@@ -108,9 +108,9 @@ class ChannelController {
         if (!channel) {
             throw new errors_1.NotFoundError('Channel', id);
         }
-        res.status(200).json({
+        res.status(200).json((0, ApiResponse_1.successResponse)({
             channel: ChannelMapper_1.ChannelMapper.toDTO(channel),
-        });
+        }));
     }
 }
 exports.ChannelController = ChannelController;

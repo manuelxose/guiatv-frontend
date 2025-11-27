@@ -6,6 +6,7 @@ const express_1 = require("express");
 const channel_routes_1 = require("./channel.routes");
 const program_routes_1 = require("./program.routes");
 const schedule_routes_1 = require("./schedule.routes");
+const layout_routes_1 = require("./layout.routes");
 const health_routes_1 = require("./health.routes");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const admin_routes_1 = require("./admin.routes");
@@ -20,9 +21,10 @@ const createV2Routes = (dependencies) => {
     // Aplicar rate limiting general
     router.use(rateLimit_1.generalRateLimit);
     // Rutas de recursos
-    router.use('/channels', (0, channel_routes_1.createChannelRoutes)(dependencies.channelController));
+    router.use('/channels', (0, channel_routes_1.createChannelRoutes)(dependencies.channelController, dependencies.programController));
     router.use('/programs', (0, program_routes_1.createProgramRoutes)(dependencies.programController));
     router.use('/schedules', (0, schedule_routes_1.createScheduleRoutes)(dependencies.scheduleController));
+    router.use('/layouts', (0, layout_routes_1.createLayoutRoutes)(dependencies.layoutController));
     router.use('/admin', (0, admin_routes_1.createAdminRoutes)(dependencies.adminController));
     router.use('/ssr', (0, ssr_routes_1.createSSRRoutes)(dependencies.ssrController));
     return router;

@@ -56,7 +56,17 @@ const ChannelSchema = new mongoose_1.Schema({
         type: String,
         trim: true,
     },
+    type: {
+        type: String,
+        trim: true,
+        index: true,
+    },
     country: {
+        type: String,
+        trim: true,
+        index: true,
+    },
+    countryCode: {
         type: String,
         trim: true,
         index: true,

@@ -37,6 +37,7 @@ exports.Container = void 0;
 exports.createContainer = createContainer;
 const logger_1 = require("../shared/utils/logger");
 const mongodb_1 = require("./mongodb");
+const initializeMongoCollections_1 = require("../infrastructure/database/initializeMongoCollections");
 class Container {
     constructor() {
         this.dependencies = new Map();
@@ -70,6 +71,7 @@ class Container {
             this.dependencies.set('mongoose', mongodb_1.mongoose);
             const nativeDb = mongodb_1.mongoose.connection.db;
             this.dependencies.set('mongoDb', nativeDb);
+            await (0, initializeMongoCollections_1.ensureMongoCollectionsAndIndexes)();
             logger_1.logger.info('MongoDB (mongoose) initialized and registered in container');
         }
         catch (e) {
@@ -155,11 +157,16 @@ class Container {
     async registerServices() {
         const { ChannelService } = await Promise.resolve().then(() => __importStar(require('../domain/services/ChannelService')));
         const { ProgramService } = await Promise.resolve().then(() => __importStar(require('../domain/services/ProgramService')));
+        const { TMDBService } = await Promise.resolve().then(() => __importStar(require('../infrastructure/external/TMDBService')));
         const channelRepository = this.get('channelRepository');
         const channelService = new ChannelService(channelRepository);
         this.dependencies.set('channelService', channelService);
         const programService = new ProgramService();
         this.dependencies.set('programService', programService);
+        // Use env var or fallback to the known token (temporary)
+        const tmdbApiKey = process.env.TMDB_API_KEY || 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8';
+        const tmdbService = new TMDBService(tmdbApiKey);
+        this.dependencies.set('tmdbService', tmdbService);
         logger_1.logger.info('Services registered');
     }
     async registerUseCases() {
@@ -167,11 +174,12 @@ class Container {
         const programRepository = this.get('programRepository');
         const cacheRepository = this.get('cacheRepository');
         const channelService = this.get('channelService');
-        const programService = this.get('programService');
+        const tmdbService = this.get('tmdbService');
         const { GetAllChannels } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/GetAllChannels')));
         const { GetChannelById } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/GetChannelById')));
-        const { GetProgramsByDate } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/GetProgramsByDate')));
-        const { GetChannelPrograms } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/GetChannelPrograms')));
+        const { GetPrograms } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/GetPrograms')));
+        const { GetProgramLayouts } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/GetProgramLayouts')));
+        const { GetProgramById } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/GetProgramById')));
         const { SyncProgramData } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/SyncProgramData')));
         const { XMLParser } = await Promise.resolve().then(() => __importStar(require('../infrastructure/parsers/XMLParser')));
         const { ProgramDataParser } = await Promise.resolve().then(() => __importStar(require('../infrastructure/parsers/ProgramDataParser')));
@@ -179,14 +187,17 @@ class Container {
         const { PrecomputeSchedule } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/PrecomputeSchedule')));
         const { CleanOldPrograms } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/CleanOldPrograms')));
         const { GetNowPlaying } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/GetNowPlaying')));
+        const { ResetSystem } = await Promise.resolve().then(() => __importStar(require('../application/use-cases/ResetSystem')));
         const getAllChannels = new GetAllChannels(channelRepository, cacheRepository, channelService);
         this.dependencies.set('getAllChannels', getAllChannels);
         const getChannelById = new GetChannelById(channelRepository, cacheRepository);
         this.dependencies.set('getChannelById', getChannelById);
-        const getProgramsByDate = new GetProgramsByDate(programRepository, cacheRepository);
-        this.dependencies.set('getProgramsByDate', getProgramsByDate);
-        const getChannelPrograms = new GetChannelPrograms(programRepository, cacheRepository, programService);
-        this.dependencies.set('getChannelPrograms', getChannelPrograms);
+        const getPrograms = new GetPrograms(programRepository, channelRepository, cacheRepository);
+        this.dependencies.set('getPrograms', getPrograms);
+        const getProgramLayouts = new GetProgramLayouts(cacheRepository, getPrograms);
+        this.dependencies.set('getProgramLayouts', getProgramLayouts);
+        const getProgramById = new GetProgramById(programRepository);
+        this.dependencies.set('getProgramById', getProgramById);
         const syncProgramData = new SyncProgramData(programRepository, cacheRepository);
         this.dependencies.set('syncProgramData', syncProgramData);
         const storageRepository = this.get('storageRepository');
@@ -194,34 +205,39 @@ class Container {
         this.dependencies.set('xmlParser', xmlParser);
         const programParser = new ProgramDataParser();
         this.dependencies.set('programParser', programParser);
-        const syncEPGData = new SyncEPGData(channelRepository, programRepository, cacheRepository, storageRepository, xmlParser, programParser);
+        const syncEPGData = new SyncEPGData(channelRepository, programRepository, cacheRepository, storageRepository, xmlParser, programParser, tmdbService);
         this.dependencies.set('syncEPGData', syncEPGData);
-        const precomputeSchedule = new PrecomputeSchedule(this.get('getProgramsByDate'), this.get('getAllChannels'), programService, storageRepository);
+        const precomputeSchedule = new PrecomputeSchedule(getPrograms, this.get('getAllChannels'), storageRepository, cacheRepository);
         this.dependencies.set('precomputeSchedule', precomputeSchedule);
         const cleanOldPrograms = new CleanOldPrograms(programRepository);
         this.dependencies.set('cleanOldPrograms', cleanOldPrograms);
         const getNowPlaying = new GetNowPlaying(channelRepository, programRepository);
         this.dependencies.set('getNowPlaying', getNowPlaying);
+        const resetSystem = new ResetSystem(cacheRepository, storageRepository, syncEPGData, precomputeSchedule);
+        this.dependencies.set('resetSystem', resetSystem);
         logger_1.logger.info('Use Cases registered');
     }
     async registerControllers() {
         const getAllChannels = this.get('getAllChannels');
         const getChannelById = this.get('getChannelById');
-        const getProgramsByDate = this.get('getProgramsByDate');
-        const getChannelPrograms = this.get('getChannelPrograms');
-        const programService = this.get('programService');
+        const getPrograms = this.get('getPrograms');
+        const getProgramLayouts = this.get('getProgramLayouts');
+        const getProgramById = this.get('getProgramById');
         const { ChannelController } = await Promise.resolve().then(() => __importStar(require('../presentation/controllers/ChannelController')));
         const { ProgramController } = await Promise.resolve().then(() => __importStar(require('../presentation/controllers/ProgramController')));
         const { ScheduleController } = await Promise.resolve().then(() => __importStar(require('../presentation/controllers/ScheduleController')));
+        const { LayoutController } = await Promise.resolve().then(() => __importStar(require('../presentation/controllers/LayoutController')));
         const { AdminController } = await Promise.resolve().then(() => __importStar(require('../presentation/controllers/AdminController')));
         const { SSRController } = await Promise.resolve().then(() => __importStar(require('../presentation/controllers/SSRController')));
         const channelController = new ChannelController(getAllChannels, getChannelById);
         this.dependencies.set('channelController', channelController);
-        const programController = new ProgramController(getProgramsByDate, getChannelPrograms, getChannelById);
+        const programController = new ProgramController(getPrograms, getChannelById, getProgramById);
         this.dependencies.set('programController', programController);
-        const scheduleController = new ScheduleController(getProgramsByDate, getAllChannels, programService);
+        const scheduleController = new ScheduleController(getPrograms, getAllChannels);
         this.dependencies.set('scheduleController', scheduleController);
-        const adminController = new AdminController(this.get('syncEPGData'), this.get('precomputeSchedule'), this.get('cleanOldPrograms'), this.get('cacheRepository'));
+        const layoutController = new LayoutController(getProgramLayouts);
+        this.dependencies.set('layoutController', layoutController);
+        const adminController = new AdminController(this.get('syncEPGData'), this.get('precomputeSchedule'), this.get('cleanOldPrograms'), this.get('cacheRepository'), this.get('resetSystem'));
         this.dependencies.set('adminController', adminController);
         const ssrController = new SSRController(this.get('getNowPlaying'));
         this.dependencies.set('ssrController', ssrController);

@@ -9,9 +9,9 @@ import { cleanOldProgramsJob } from './cleanOldPrograms';
 export function initializeJobs(): void {
   console.log('[Jobs] Configurando jobs programados...');
 
-  // Sincronizar EPG cada 1 hora (minuto 0 de cada hora)
+  // Sincronizar EPG cada 6 horas (00:00, 06:00, 12:00, 18:00)
   cron.schedule(
-    '0 * * * *',
+    '0 */6 * * *',
     async () => {
       try {
         await syncEPGJob();
@@ -23,11 +23,11 @@ export function initializeJobs(): void {
       timezone: 'Europe/Madrid',
     }
   );
-  console.log('  - syncEPG: cada 1 hora (0 * * * *)');
+  console.log('  - syncEPG: cada 6 horas (0 */6 * * *)');
 
   // Precomputar horarios cada 6 horas (00:00, 06:00, 12:00, 18:00)
   cron.schedule(
-    '0 */6 * * *',
+    '15 */6 * * *',
     async () => {
       try {
         await precomputeSchedulesJob();
@@ -39,7 +39,7 @@ export function initializeJobs(): void {
       timezone: 'Europe/Madrid',
     }
   );
-  console.log('  - precomputeSchedules: cada 6 horas (0 */6 * * *)');
+  console.log('  - precomputeSchedules: cada 6 horas (15 */6 * * *)');
 
   // Limpiar programas antiguos cada 24 horas a las 3:00 AM
   cron.schedule(
