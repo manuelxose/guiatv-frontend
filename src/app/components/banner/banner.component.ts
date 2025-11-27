@@ -44,6 +44,8 @@ export class BannerComponent
   @Input() compactLogo: boolean = false;
   /** If true, hide the top-right time display */
   @Input() hideTopTime: boolean = false;
+  /** If true, shows the full description without truncation */
+  @Input() showFullDescription: boolean = false;
 
   public bannerData: IBannerData | null = null;
   public logo: string = '';
@@ -176,21 +178,28 @@ export class BannerComponent
   }
 
   getChannelLogoUrl(channelName: string): string {
-    return `https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${channelName}.png`;
+    if (!channelName) return this.getFallbackImageUrl();
+    return `https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${globalThis.encodeURIComponent(
+      channelName
+    )}.png`;
   }
 
   getProgramPosterUrl(programData: any): string {
+    if (!programData) return this.getFallbackImageUrl();
     return (
-      programData?.poster || programData?.icon || this.getFallbackImageUrl()
+      programData?.poster ||
+      programData?.icon ||
+      programData?.background ||
+      this.getFallbackImageUrl()
     );
   }
 
   // Template helper: wrapper for encodeURIComponent so the template can call it
-  encodeURIComponent(v: any): string {
+  encodeURIComponent(value: any): string {
     try {
-      return globalThis.encodeURIComponent(String(v || ''));
+      return globalThis.encodeURIComponent(String(value ?? ''));
     } catch (_) {
-      return String(v || '');
+      return String(value ?? '');
     }
   }
 

@@ -88,7 +88,11 @@
       </ul>
 
       <!-- Descripción -->
-      <p class="program-description" itemprop="description">
+      <p
+        class="program-description"
+        [class.line-clamp-none]="showFullDescription"
+        itemprop="description"
+      >
         {{ bannerData.desc?.details }}
       </p>
 

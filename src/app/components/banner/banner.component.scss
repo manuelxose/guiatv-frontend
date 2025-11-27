@@ -37,6 +37,13 @@ $transition: cubic-bezier(0.4, 0, 0.2, 1);
   margin: 1rem 0;
   animation: fadeInUp 0.4s ease-out;
 
+  @media (max-width: 640px) {
+    min-height: 250px; // Reduced from 280px
+    height: 45vh; // Reduced from 60vh
+    border-radius: 0; // Full width on mobile
+    margin: 0;
+  }
+
   @media (min-width: 1024px) {
     min-height: 400px;
     height: clamp(400px, 45vw, 600px);
@@ -259,6 +266,12 @@ $transition: cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (min-width: 1024px) {
     font-size: 1rem;
+  }
+
+  &.line-clamp-none {
+    -webkit-line-clamp: unset !important;
+    max-height: none;
+    overflow: visible;
   }
 }
 
