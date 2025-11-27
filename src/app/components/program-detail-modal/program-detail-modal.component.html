@@ -60,7 +60,11 @@
 
     <!-- Body con Banner -->
     <div class="modal-body">
-      <app-banner *ngIf="bannerData()" [data]="bannerData()"></app-banner>
+      <app-banner
+        *ngIf="bannerData()"
+        [data]="bannerData()"
+        [showFullDescription]="true"
+      ></app-banner>
     </div>
 
     <!-- Footer con acciones (opcional) -->

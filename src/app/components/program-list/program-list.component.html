@@ -134,8 +134,13 @@
                     {{ getProgramTitle(programa) }}
                   </h4>
                   
+                  <!-- Category Badge -->
+                  <span *ngIf="programa.category?.value" class="text-xs text-gray-400 mt-1 block">
+                    {{ programa.category.value }}
+                  </span>
+
                   <!-- Progress Bar for Live Programs -->
-                  <div *ngIf="isProgramLive(programa)" class="mobile-progress-bar mt-1">
+                  <div *ngIf="isProgramLive(programa)" class="mobile-progress-bar mt-2">
                     <div 
                       class="mobile-progress-fill"
                       [style.width.%]="getProgramProgress(programa)"
@@ -167,7 +172,7 @@
         <!-- Day Selector -->
         <button
           (click)="toggleDayDropdown(); $event.stopPropagation()"
-          class="mobile-nav-item"
+          class="mobile-nav-item touch-target"
           [class.active]="isDayDropdownOpen()"
         >
           <div class="mobile-nav-icon-wrapper">
@@ -175,13 +180,13 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <span class="mobile-nav-label">{{ getCurrentSelectedDayShort() }}</span>
+          <span class="mobile-nav-label text-xs mt-1">{{ getCurrentSelectedDayShort() }}</span>
         </button>
 
         <!-- Time Slot Selector -->
         <button
           (click)="toggleTimeSlotDropdown(); $event.stopPropagation()"
-          class="mobile-nav-item"
+          class="mobile-nav-item touch-target"
           [class.active]="isTimeSlotDropdownOpen()"
         >
           <div class="mobile-nav-icon-wrapper">
@@ -189,13 +194,13 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <span class="mobile-nav-label">Horario</span>
+          <span class="mobile-nav-label text-xs mt-1">Horario</span>
         </button>
 
         <!-- Category Filter -->
         <button
           (click)="toggleCategoryDropdown(); $event.stopPropagation()"
-          class="mobile-nav-item"
+          class="mobile-nav-item touch-target"
           [class.active]="isCategoryDropdownOpen() || selectedCategories().size > 0"
         >
           <div class="mobile-nav-icon-wrapper relative">
@@ -206,7 +211,7 @@
               {{ selectedCategories().size }}
             </span>
           </div>
-          <span class="mobile-nav-label">Filtros</span>
+          <span class="mobile-nav-label text-xs mt-1">Filtros</span>
         </button>
       </div>
 
@@ -217,7 +222,7 @@
         <div *ngIf="isChannelTypeDropdownOpen()" class="mobile-bottom-sheet" (click)="$event.stopPropagation()">
           <div class="mobile-sheet-header">
             <h3>Tipo de Canal</h3>
-            <button (click)="closeAllDropdowns()" class="mobile-close-btn">
+            <button (click)="closeAllDropdowns(); $event.stopPropagation()" class="mobile-close-btn">
               <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -242,7 +247,7 @@
         <div *ngIf="isDayDropdownOpen()" class="mobile-bottom-sheet" (click)="$event.stopPropagation()">
           <div class="mobile-sheet-header">
             <h3>Seleccionar Día</h3>
-            <button (click)="closeAllDropdowns()" class="mobile-close-btn">
+            <button (click)="closeAllDropdowns(); $event.stopPropagation()" class="mobile-close-btn">
               <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -270,7 +275,7 @@
         <div *ngIf="isTimeSlotDropdownOpen()" class="mobile-bottom-sheet" (click)="$event.stopPropagation()">
           <div class="mobile-sheet-header">
             <h3>Franja Horaria</h3>
-            <button (click)="closeAllDropdowns()" class="mobile-close-btn">
+            <button (click)="closeAllDropdowns(); $event.stopPropagation()" class="mobile-close-btn">
               <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -295,7 +300,7 @@
         <div *ngIf="isCategoryDropdownOpen()" class="mobile-bottom-sheet" (click)="$event.stopPropagation()">
           <div class="mobile-sheet-header">
             <h3>Categorías</h3>
-            <button (click)="closeAllDropdowns()" class="mobile-close-btn">
+            <button (click)="closeAllDropdowns(); $event.stopPropagation()" class="mobile-close-btn">
               <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>

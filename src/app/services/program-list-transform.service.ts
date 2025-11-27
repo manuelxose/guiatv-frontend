@@ -903,6 +903,7 @@ export class ProgramListTransformService {
 
         precomputed.push({
           ...programa,
+          // Prefer backend layout when present; fallback to recomputed grid.
           gridColumnStart: layout.gridColumnStart ?? recomputedGridStart ?? 1,
           gridColumnEnd: layout.gridColumnEnd ?? recomputedGridEnd ?? 2,
           layerIndex: layout.layerIndex ?? 0,
@@ -924,7 +925,7 @@ export class ProgramListTransformService {
     });
 
     if (precomputed.length) {
-      // Compact precomputed programs so they don't visually cross at boundaries.
+      // Compact consecutive programs so they never overlap within the same channel/slot.
       precomputed
         .sort((a, b) => a.gridColumnStart - b.gridColumnStart)
         .forEach((program, idx, arr) => {
@@ -937,7 +938,7 @@ export class ProgramListTransformService {
               program.gridColumnEnd = program.gridColumnStart + 1;
             }
 
-            // Keep normalized minutes aligned to adjusted columns to avoid false overlaps.
+            // Align normalized minutes to adjusted columns for overlap checks.
             const minutesPerCol = UI_CONFIG.MINUTES_PER_COLUMN;
             const adjustedStart =
               slotStartMinutes + (program.gridColumnStart - 1) * minutesPerCol;
@@ -948,28 +949,32 @@ export class ProgramListTransformService {
             }
             program._normStartMinutes = adjustedStart;
             program._normEndMinutes = adjustedEnd;
-            program.isCutAtStart = program.isCutAtStart ?? false;
-            program.isCutAtEnd = program.isCutAtEnd ?? false;
           }
         });
 
-      // Final clamp to grid bounds to avoid tiny residual overlaps.
+      // Clamp to grid bounds after adjustment
       const totalColumns =
         UI_CONFIG.MAX_GRID_COLUMNS *
         (UI_CONFIG.MINUTES_PER_SLOT / UI_CONFIG.MINUTES_PER_COLUMN);
       precomputed.forEach((program) => {
-        program.gridColumnStart = Math.max(
-          1,
-          Math.min(program.gridColumnStart, totalColumns)
-        );
+        program.gridColumnStart = Math.max(1, program.gridColumnStart);
         program.gridColumnEnd = Math.max(
           program.gridColumnStart + 1,
-          Math.min(program.gridColumnEnd ?? program.gridColumnStart + 1, totalColumns + 1)
+          program.gridColumnEnd ?? program.gridColumnStart + 1
         );
+        if (program.gridColumnEnd > totalColumns + 1) {
+          program.gridColumnEnd = totalColumns + 1;
+        }
       });
 
+      // Filter out programs that have been pushed completely out of the grid
+      // This prevents invisible programs from creating unnecessary extra rows (layer 2+)
+      const visiblePrecomputed = precomputed.filter(
+        (p) => p.gridColumnStart <= totalColumns
+      );
+
       const layers: ProgramWithPosition[][] = [];
-      precomputed
+      visiblePrecomputed
         .sort((a, b) => a.gridColumnStart - b.gridColumnStart)
         .forEach((program) => {
           // Re-pack layers ourselves to avoid unnecessary extra rows.

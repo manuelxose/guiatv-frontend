@@ -46,6 +46,7 @@ import { ProgramListTransformService } from '../../services/program-list-transfo
 import { DeviceDetectorService } from '../../services/device-detector.service';
 import {
   IDayChangedEvent,
+  IDayInfo,
   IProgramListData,
   IProgramItem,
 } from 'src/app/interfaces';
@@ -376,6 +377,10 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   // INITIALIZATION METHODS
   // ===============================================
 
+  // ===============================================
+  // INITIALIZATION METHODS
+  // ===============================================
+
   /**
    * NUEVO: Método para inicializar detección de dispositivo
    */
@@ -611,6 +616,14 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       console.log('✅ Canales válidos:', validChannels.length);
       this.canalesConProgramas.set(validChannels);
 
+      // En móvil, expandir todos los canales por defecto
+      if (this.isMobile()) {
+        const allIndices = new Set(validChannels.map((_, index) => index));
+        this.expandedChannels.set(allIndices);
+      } else {
+        this.expandedChannels.set(new Set());
+      }
+
       // Forzar actualización del viewport después de cargar datos
       this.cdr.markForCheck();
 
@@ -629,6 +642,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     } else {
       console.log('⚠️ No hay datos válidos');
       this.canalesConProgramas.set([]);
+      this.expandedChannels.set(new Set()); // Clear expanded channels if no data
 
       // NUEVO: Si no hay datos válidos, considerar si esto es un error
       setTimeout(() => {
@@ -651,6 +665,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.isLoading.set(false);
     this.error.set(error?.message || 'Error cargando datos');
     this.canalesConProgramas.set([]);
+    this.expandedChannels.set(new Set()); // Clear expanded channels on error
     this.cdr.markForCheck();
   }
 
@@ -829,118 +844,6 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     return layers;
   }
 
-  public getProgramGridColumn(programa: IProgramItem): number {
-    const col = this.transform.getProgramGridColumn(
-      programa,
-      this.currentHours()
-    );
-    if (this.DEBUG) {
-      console.log(
-        `Program "${this.getProgramTitle(programa)}" - gridColumnStart: ${col}`
-      );
-    }
-    return col;
-  }
-
-  public getProgramGridColumnEnd(programa: IProgramItem): number {
-    const col = this.transform.getProgramGridColumnEnd(
-      programa,
-      this.currentHours()
-    );
-    if (this.DEBUG) {
-      console.log(
-        `Program "${this.getProgramTitle(programa)}" - gridColumnEnd: ${col}`
-      );
-    }
-    return col;
-  }
-
-  // ===============================================
-  // EVENT HANDLERS
-  // ===============================================
-
-  public onDayChanged(dayIndex: number): void {
-    console.log(
-      '[ProgramList] onDayChanged called with UI index',
-      dayIndex,
-      'current activeDay=',
-      this.activeDay()
-    );
-    if (this.activeDay() === dayIndex) return;
-
-    const dayInfo = this.daysInfo()[dayIndex];
-    if (!dayInfo) {
-      console.error('[ProgramList] No dayInfo for index', dayIndex);
-      return;
-    }
-
-    console.log('[ProgramList] Day info:', { 
-      uiIndex: dayIndex, 
-      dayAlias: dayInfo.index, 
-      label: `${dayInfo.diaSemana} ${dayInfo.diaNumero}` 
-    });
-
-    this.activeDay.set(dayIndex);
-    this.showTimeIndicator.set(
-      dayInfo.index === 0 &&
-        this.activeTimeSlot() === this.facade.getCurrentTimeSlot()
-    );
-
-    if (dayInfo.index === 0) {
-      const currentSlot = this.facade.getCurrentTimeSlot();
-      this.onTimeSlotChanged(currentSlot);
-    }
-
-    this.selectedProgram.set(null);
-    this.expandedChannels.set(new Set());
-    this.channelIndexCache.clear();
-
-    // Mark the time we started loading to avoid auto-refresh races
-    this.lastLoadTimestamp = Date.now();
-    this.isLoading.set(true);
-    this.error.set(null);
-
-    // CRITICAL FIX: Use dayInfo.index (actual day offset) not dayIndex (UI index)
-    console.log('[ProgramList] Loading data for day offset:', dayInfo.index);
-    this.facade
-      .loadProgramsForDay(dayInfo.index)  // ← Use dayInfo.index, not dayIndex!
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (result) => {
-          console.log('[ProgramList] loadProgramsForDay result:', {
-            uiIndex: dayIndex,
-            dayAlias: dayInfo.index,
-            success: result.success,
-            error: result.error,
-          });
-          if (!result.success) {
-            this.error.set(result.error || 'Error al cargar datos');
-          }
-          this.isLoading.set(false);
-          this.cdr.detectChanges();
-
-          if (this.isBrowser) {
-            setTimeout(() => {
-              try {
-                this.virtualScrollViewport?.checkViewportSize();
-                this.virtualScrollViewport?.scrollToIndex(0);
-              } catch (e) {
-                console.warn('Error reseteando scroll:', e);
-              }
-            }, 100);
-          }
-        },
-        error: (err) => {
-          console.error('[ProgramList] Error loading day data:', err);
-          this.error.set('Error al cambiar de día');
-          this.isLoading.set(false);
-          this.cdr.detectChanges();
-        },
-      });
-
-    this.dayChanged.emit({ dayIndex, dayInfo });
-  }
-
   public onTimeSlotChanged(slotIndex: number): void {
     if (this.activeTimeSlot() === slotIndex || slotIndex < 0 || slotIndex >= 8)
       return;
@@ -1115,6 +1018,24 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       return this.getCategoryDisplayName(category);
     }
     return `${selectedCategories.size} categorías`;
+  }
+
+  public onDayChanged(dayIndex: number): void {
+    const days = this.daysInfo();
+    const maxIndex = Math.max(0, days.length - 1);
+    const clampedIndex = Math.max(0, Math.min(dayIndex, maxIndex));
+
+    this.activeDay.set(clampedIndex);
+    const dayInfo: IDayInfo =
+      days[clampedIndex] || { diaSemana: 'Hoy', diaNumero: '', index: 0 };
+
+    this.showTimeIndicator.set(
+      dayInfo.index === 0 &&
+        this.activeTimeSlot() === this.facade.getCurrentTimeSlot()
+    );
+
+    this.dayChanged.emit({ dayIndex: clampedIndex, dayInfo });
+    this.cdr.markForCheck();
   }
 
   public selectDay(dayIndex: number, event?: MouseEvent): void {
