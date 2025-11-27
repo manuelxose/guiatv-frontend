@@ -415,6 +415,21 @@ export class HomeDataService {
         starRating: program.starRating,
         image: program.image,
         rating: (program as any)?.rating,
+        // Layout fields from backend (keep for precomputed grid/slots)
+        gridColumnStart: (program as any)?.gridColumnStart,
+        gridColumnEnd: (program as any)?.gridColumnEnd,
+        layerIndex: (program as any)?.layerIndex,
+        isCutAtStart: (program as any)?.isCutAtStart,
+        isCutAtEnd: (program as any)?.isCutAtEnd,
+        visibleStartTime: (program as any)?.visibleStartTime,
+        visibleEndTime: (program as any)?.visibleEndTime,
+        crossesMidnight: (program as any)?.crossesMidnight,
+        layoutsBySlot: (program as any)?.layoutsBySlot,
+        fieldsProvided: (program as any)?.fieldsProvided,
+        pxStart: (program as any)?.pxStart,
+        pxWidth: (program as any)?.pxWidth,
+        timeSlotIndex:
+          (program as any)?.timeSlotIndex ?? (program as any)?.slotIndex,
       };
 
       channelData.channels.push(normalizedProgram);

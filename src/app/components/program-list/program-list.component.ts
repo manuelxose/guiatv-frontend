@@ -176,6 +176,13 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.facade.generateHoursForSlot(this.activeTimeSlot())
   );
   public readonly daysInfo = computed(() => this.facade.generateDaysInfo());
+  public readonly activeDayInfo = computed(() => {
+    const days = this.daysInfo();
+    return Array.isArray(days) ? days[this.activeDay()] : null;
+  });
+  public readonly activeDayOffset = computed(
+    () => this.activeDayInfo()?.index ?? 0
+  );
 
   public readonly filteredChannels = computed(() => {
     const channels = this.transform.getFilteredChannels(
@@ -765,7 +772,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     const programs = this.transform.getVisiblePrograms(
       canal.channels,
       this.currentHours(),
-      this.activeDay()
+      this.activeDayOffset()
     );
 
     // Si el canal no está expandido, mostrar solo 3 programas
@@ -806,7 +813,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   public getProgramLayers(canal: IProgramListData): ProgramWithPosition[][] {
     const layers = this.transform.getProgramLayers(
       canal,
-      this.activeDay(),
+      this.activeDayOffset(),
       this.currentHours()
     );
 
@@ -946,7 +953,8 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.currentTimeSlot.set(selectedSlot[0]);
 
     this.showTimeIndicator.set(
-      this.activeDay() === 0 && slotIndex === this.facade.getCurrentTimeSlot()
+      this.activeDayOffset() === 0 &&
+        slotIndex === this.facade.getCurrentTimeSlot()
     );
 
     if (this.showTimeIndicator() && this.isBrowser) {
@@ -1167,7 +1175,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
     const slotStartTs = this.transform.getSlotStartTimestamp(
-      this.activeDay(),
+      this.activeDayOffset(),
       slotStartMinutes
     );
     const progStartTs = this.transform.getProgramStartTimestamp(programa);
@@ -1183,7 +1191,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     const slotEndMinutes = this.getSlotEndMinutes(currentHours);
 
     const slotStartTs = this.transform.getSlotStartTimestamp(
-      this.activeDay(),
+      this.activeDayOffset(),
       slotStartMinutes
     );
     const slotEndTs =
@@ -1320,7 +1328,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     const progEndTs = this.transform.getProgramEndTimestamp(programa);
     const slotStartTs = this.transform.getSlotStartTimestamp(
-      this.activeDay(),
+      this.activeDayOffset(),
       slotStartMinutes
     );
     const slotEndTs =
@@ -1416,7 +1424,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   public scrollToNow(): void {
-    if (this.activeDay() !== 0) return;
+    if (this.activeDayOffset() !== 0) return;
 
     const currentSlot = this.facade.getCurrentTimeSlot();
     this.onTimeSlotChanged(currentSlot);
@@ -1449,7 +1457,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   onScroll(event: Event): void {
     // NO cerrar el programa seleccionado al hacer scroll
     // Solo actualizar el indicador de tiempo si es necesario
-    if (this.showTimeIndicator() && this.activeDay() === 0) {
+    if (this.showTimeIndicator() && this.activeDayOffset() === 0) {
       this.updateTimeIndicator();
     }
   }
@@ -1517,7 +1525,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.isBrowser) return;
 
     this.updateInterval = setInterval(() => {
-      if (this.showTimeIndicator() && this.activeDay() === 0) {
+      if (this.showTimeIndicator() && this.activeDayOffset() === 0) {
         this.updateTimeIndicator();
       }
     }, 60000);
@@ -1581,6 +1589,37 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   public getProgramLayout(programa: IProgramItem) {
+    // Prefer inline layout coming from transformer (already normalized to the current slot)
+    if (
+      typeof (programa as any).gridColumnStart === 'number' &&
+      typeof (programa as any).gridColumnEnd === 'number'
+    ) {
+      const p: any = programa;
+      const normStart = p._normStartMinutes;
+      const normEnd = p._normEndMinutes;
+      return {
+        gridColumnStart: p.gridColumnStart,
+        gridColumnEnd: p.gridColumnEnd,
+        layerIndex: typeof p.layerIndex === 'number' ? p.layerIndex : 0,
+        isCutAtStart: !!p.isCutAtStart,
+        isCutAtEnd: !!p.isCutAtEnd,
+        visibleStartTime:
+          p.visibleStartTime ||
+          this.transform.formatMinutesToHHMM(
+            typeof normStart === 'number'
+              ? normStart
+              : this.transform.getProgramStartMinutes(programa)
+          ),
+        visibleEndTime:
+          p.visibleEndTime ||
+          this.transform.formatMinutesToHHMM(
+            typeof normEnd === 'number'
+              ? normEnd
+              : this.transform.getProgramEndMinutes(programa)
+          ),
+      };
+    }
+
     const currentHours = this.currentHours();
     const layout = this.transform.getLayoutForProgram(programa, currentHours);
 
