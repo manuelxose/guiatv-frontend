@@ -174,7 +174,6 @@ export class ChannelLogoManagerService implements IChannelLogoManager {
     const alternatives = [
       `https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${encodeURIComponent(channelName)}.png`,
       `https://graph.facebook.com/${encodeURIComponent(channelName)}/picture?type=large`,
-      // Add more alternative sources as needed
     ];
     
     // Return the first alternative (simple strategy)
@@ -182,6 +181,8 @@ export class ChannelLogoManagerService implements IChannelLogoManager {
   }
 
   private isValidUrl(url: string): boolean {
+    if (!url) return false;
+    if (url.startsWith('/')) return true; // Allow relative paths
     try {
       new URL(url);
       return true;

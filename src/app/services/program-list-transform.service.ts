@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+﻿import { Injectable } from '@angular/core';
 import { IProgramListData, IProgramItem } from 'src/app/interfaces';
 
 /*
@@ -29,13 +29,86 @@ interface ProgramWithPosition extends IProgramItem {
   visibleEndTime: string;
   isCutAtStart: boolean;
   isCutAtEnd: boolean;
+  pxStart?: number;
+  pxWidth?: number;
+  timeSlotIndex?: number;
   _normStartMinutes?: number;
   _normEndMinutes?: number;
+}
+
+interface SlotLayout {
+  timeSlotIndex: number;
+  gridColumnStart: number;
+  gridColumnEnd: number;
+  layerIndex?: number;
+  isCutAtStart?: boolean;
+  isCutAtEnd?: boolean;
+  visibleStartTime?: string;
+  visibleEndTime?: string;
+  crossesMidnight?: boolean;
+  pxStart?: number;
+  pxWidth?: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ProgramListTransformService {
   constructor() {}
+
+  private findActiveSlotIndex(currentHours: string[]): number | null {
+    if (!Array.isArray(currentHours) || currentHours.length === 0) return null;
+    const start = currentHours[0];
+    const [startH, startM] = start.split(':').map(Number);
+    const startMinutes = (startH || 0) * 60 + (startM || 0);
+
+    const SLOT_STARTS = [
+      0, 180, 360, 540, 720, 900, 1080, 1260,
+    ];
+
+    const idx = SLOT_STARTS.indexOf(startMinutes);
+    return idx === -1 ? null : idx;
+  }
+
+  private pickPrecomputedLayout(
+    programa: any,
+    activeSlotIndex: number | null
+  ): SlotLayout | null {
+    const slotLayouts: SlotLayout[] =
+      programa?.layoutsBySlot || programa?.slotLayouts || [];
+    if (Array.isArray(slotLayouts) && slotLayouts.length) {
+      if (activeSlotIndex !== null) {
+        const matched = slotLayouts.find(
+          (l) => l.timeSlotIndex === activeSlotIndex
+        );
+        if (matched) return matched;
+        // avoid showing in unrelated slot if precomputed slots exist
+        return null;
+      }
+      return slotLayouts[0] || null;
+    }
+
+    const hasInlineLayout =
+      typeof programa?.gridColumnStart === 'number' &&
+      typeof programa?.gridColumnEnd === 'number';
+    if (hasInlineLayout) {
+      return {
+        timeSlotIndex: typeof programa?.timeSlotIndex === 'number'
+          ? programa.timeSlotIndex
+          : activeSlotIndex ?? 0,
+        gridColumnStart: programa.gridColumnStart,
+        gridColumnEnd: programa.gridColumnEnd,
+        layerIndex: programa.layerIndex,
+        isCutAtStart: programa.isCutAtStart,
+        isCutAtEnd: programa.isCutAtEnd,
+        visibleStartTime: programa.visibleStartTime,
+        visibleEndTime: programa.visibleEndTime,
+        crossesMidnight: programa.crossesMidnight,
+        pxStart: programa.pxStart,
+        pxWidth: programa.pxWidth,
+      };
+    }
+
+    return null;
+  }
 
   parseTimeToMinutes(timeString: string): number {
     const [hours, minutes] = String(timeString || '00:00')
@@ -335,6 +408,10 @@ export class ProgramListTransformService {
   }
 
   getProgramGridColumn(programa: IProgramItem, currentHours: string[]): number {
+    const activeSlotIndex = this.findActiveSlotIndex(currentHours);
+    const layout = this.pickPrecomputedLayout(programa as any, activeSlotIndex);
+    if (layout?.gridColumnStart) return layout.gridColumnStart || 1;
+
     if (!currentHours.length) return 1;
 
     const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
@@ -364,6 +441,10 @@ export class ProgramListTransformService {
     programa: IProgramItem,
     currentHours: string[]
   ): number {
+    const activeSlotIndex = this.findActiveSlotIndex(currentHours);
+    const layout = this.pickPrecomputedLayout(programa as any, activeSlotIndex);
+    if (layout?.gridColumnEnd) return layout.gridColumnEnd || 2;
+
     if (!currentHours.length) return 2;
 
     const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
@@ -410,6 +491,14 @@ export class ProgramListTransformService {
     );
   }
 
+  getLayoutForProgram(
+    programa: IProgramItem,
+    currentHours: string[]
+  ): SlotLayout | null {
+    const activeSlotIndex = this.findActiveSlotIndex(currentHours);
+    return this.pickPrecomputedLayout(programa as any, activeSlotIndex);
+  }
+
   getVisiblePrograms(
     programs: IProgramItem[],
     currentHours: string[],
@@ -437,14 +526,18 @@ export class ProgramListTransformService {
         if (isNaN(startTs) || isNaN(endTs)) return false;
         if (endTs <= startTs) endTs += DAY_MS;
 
-        const programIntersectsSlot =
-          startTs < slotEndTs && endTs > slotStartTs;
-        if (programIntersectsSlot) return true;
+        // Logic for cross-midnight programs
+        // Check direct intersection
+        if (startTs < slotEndTs && endTs > slotStartTs) return true;
 
+        // Check if program is from previous day crossing into this day's slot
         const approxShiftDays = Math.round((slotStartTs - startTs) / DAY_MS);
         for (let k = approxShiftDays - 1; k <= approxShiftDays + 1; k++) {
           const adjStart = startTs + k * DAY_MS;
-          const adjEnd = endTs + k * DAY_MS;
+          let adjEnd = endTs + k * DAY_MS;
+          
+          if (adjEnd <= adjStart) adjEnd += DAY_MS;
+
           if (adjStart < slotEndTs && adjEnd > slotStartTs) return true;
         }
 
@@ -529,7 +622,7 @@ export class ProgramListTransformService {
     // - Accepts ISO datetimes (with or without timezone) and time-only strings 'HH:MM'
     // - Normalizes all comparisons to UTC epoch milliseconds
     // - Handles programs that cross midnight by adding 24h when necessary
-    // - Tries small day shifts (±1) for ISO datetimes when necessary to match the target day
+    // - Tries small day shifts (Â±1) for ISO datetimes when necessary to match the target day
     if (!Array.isArray(programs) || programs.length === 0) return [];
 
     const DAY_MS = 24 * 60 * 60 * 1000;
@@ -587,7 +680,7 @@ export class ProgramListTransformService {
         // Quick check: intersects directly
         if (startTs < dayEndTs && endTs > dayStartTs) return true;
 
-        // Try shifting the program by ±1 day in case feed uses local dates or different day base
+        // Try shifting the program by Â±1 day in case feed uses local dates or different day base
         const approxShift = Math.round((dayStartTs - startTs) / DAY_MS);
         for (let k = approxShift - 1; k <= approxShift + 1; k++) {
           const adjStart = startTs + k * DAY_MS;
@@ -632,9 +725,9 @@ export class ProgramListTransformService {
     const normalizedCategory = category.toLowerCase().trim();
 
     const categoryMappings: Record<string, string> = {
-      pelicula: 'Películas',
-      peliculas: 'Películas',
-      cine: 'Películas',
+      pelicula: 'PelÃ­culas',
+      peliculas: 'PelÃ­culas',
+      cine: 'PelÃ­culas',
       serie: 'Series',
       series: 'Series',
       drama: 'Series',
@@ -666,13 +759,13 @@ export class ProgramListTransformService {
 
   sortCategories(categories: string[]): string[] {
     const categoryOrder = [
-      'Películas',
+      'PelÃ­culas',
       'Series',
       'Documentales',
       'Noticias',
       'Deportes',
       'Entretenimiento',
-      'Música',
+      'MÃºsica',
       'Infantil',
     ];
 
@@ -707,7 +800,7 @@ export class ProgramListTransformService {
   }
 
   /**
-   * Extrae y normaliza la lista de categorías disponibles a partir de los canales
+   * Extrae y normaliza la lista de categorÃ­as disponibles a partir de los canales
    */
   getAvailableCategories(channels: IProgramListData[] | undefined): string[] {
     if (!Array.isArray(channels) || channels.length === 0) return [];
@@ -730,7 +823,7 @@ export class ProgramListTransformService {
   }
 
   /**
-   * Filtra canales por las categorías seleccionadas (Set<string>), devolviendo solo
+   * Filtra canales por las categorÃ­as seleccionadas (Set<string>), devolviendo solo
    * canales que tengan al menos un programa que coincida.
    */
   getFilteredChannels(
@@ -762,33 +855,56 @@ export class ProgramListTransformService {
   ): ProgramWithPosition[][] {
     if (!canal || !Array.isArray(canal.channels) || canal.channels.length === 0)
       return [];
-    let programsForActiveDay = this.filterProgramsByActiveDay(
+
+    const programsForActiveDay = this.filterProgramsByActiveDay(
       canal.channels || [],
       activeDay
     );
 
-    // Fallback: si el filtrado por día devuelve vacío (posible problema de fechas/UTC),
-    // usar la lista completa de programas como fallback para mantener consistencia
-    // entre la versión móvil (que llama a getVisiblePrograms directamente) y
-    // la versión desktop.
-    if (!programsForActiveDay || programsForActiveDay.length === 0) {
-      // Log para facilitar debugging en entorno de desarrollo
-      try {
-        // eslint-disable-next-line no-console
-        console.warn(
-          '[ProgramListTransform] filterProgramsByActiveDay devolvió vacío, aplicando fallback con canal.channels for',
-          canal?.channel?.name || canal?.id || '<unknown>'
-        );
-      } catch (e) {
-        /* ignore */
+    const activeSlotIndex = this.findActiveSlotIndex(currentHours);
+    const precomputed: ProgramWithPosition[] = [];
+
+    programsForActiveDay.forEach((programa) => {
+      const layout = this.pickPrecomputedLayout(programa as any, activeSlotIndex);
+      if (!layout && programa && (programa as any).layoutsBySlot) {
+        return;
       }
-      programsForActiveDay = canal.channels || [];
+      if (layout) {
+        precomputed.push({
+          ...programa,
+          gridColumnStart: layout.gridColumnStart ?? 1,
+          gridColumnEnd: layout.gridColumnEnd ?? 2,
+          layerIndex: layout.layerIndex ?? 0,
+          visibleStartTime:
+            layout.visibleStartTime ??
+            this.formatMinutesToHHMM(this.getProgramStartMinutes(programa)),
+          visibleEndTime:
+            layout.visibleEndTime ??
+            this.formatMinutesToHHMM(this.getProgramEndMinutes(programa)),
+          isCutAtStart: !!layout.isCutAtStart,
+          isCutAtEnd: !!layout.isCutAtEnd,
+          pxStart: layout.pxStart,
+          pxWidth: layout.pxWidth,
+          timeSlotIndex: layout.timeSlotIndex,
+        });
+      }
+    });
+
+    if (precomputed.length) {
+      const layers: ProgramWithPosition[][] = [];
+      precomputed
+        .sort((a, b) => a.gridColumnStart - b.gridColumnStart)
+        .forEach((program) => {
+          const targetLayer = program.layerIndex ?? 0;
+          if (!layers[targetLayer]) layers[targetLayer] = [];
+          layers[targetLayer].push(program);
+        });
+      return layers.filter((layer) => Array.isArray(layer) && layer.length);
     }
 
-    const combinedPrograms = programsForActiveDay; // keep simple
-
+    // Fallback legacy path when backend doesn't provide layout
     const cleanedPrograms = this.removeOverlappingPrograms(
-      combinedPrograms,
+      programsForActiveDay,
       currentHours
     );
 
@@ -864,3 +980,4 @@ export class ProgramListTransformService {
     return layers;
   }
 }
+

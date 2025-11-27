@@ -61,7 +61,13 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true
+              "namedChunks": true,
+              "ssr": false,
+              "prerender": false,
+              "index": {
+                "input": "src/index.html",
+                "output": "index.html"
+              }
             }
           },
           "defaultConfiguration": "production"

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/blog/pages/category/category.component.scss"],
+  "sourcesContent": ["// Category Component Styles\r\n\r\n:host {\r\n  display: block;\r\n  width: 100%;\r\n}\r\n\r\n// Animación suave para el scroll\r\n@media (prefers-reduced-motion: no-preference) {\r\n  * {\r\n    scroll-behavior: smooth;\r\n  }\r\n}\r\n\r\n// Estilos específicos para el grid de categorías\r\n.categories-grid {\r\n  display: grid;\r\n  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\r\n  gap: 1rem;\r\n}\r\n\r\n// Hover effect mejorado para las tarjetas de categoría\r\nbutton[aria-pressed=\"true\"] {\r\n  background: linear-gradient(\r\n    135deg,\r\n    rgba(220, 38, 38, 0.1),\r\n    rgba(220, 38, 38, 0.05)\r\n  );\r\n}\r\n"],
+  "mappings": ";AAEA;AACE,WAAA;AACA,SAAA;;AAIF,OAAA,CAAA,sBAAA,EAAA;AACE;AACE,qBAAA;;;AAKJ,CAAA;AACE,WAAA;AACA,yBAAA,OAAA,SAAA,EAAA,OAAA,KAAA,EAAA;AACA,OAAA;;AAIF,MAAA,CAAA;AACE;IAAA;MAAA,MAAA;MAAA,KAAA,GAAA,EAAA,EAAA,EAAA,EAAA,EAAA,IAAA;MAAA,KAAA,GAAA,EAAA,EAAA,EAAA,EAAA,EAAA;;",
+  "names": []
+}

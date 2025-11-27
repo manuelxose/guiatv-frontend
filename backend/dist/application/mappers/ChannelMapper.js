@@ -11,12 +11,24 @@ class ChannelMapper {
             normalizedName: channel.normalizedName,
             icon: channel.icon,
             type: channel.type,
+            country: channel.country,
+            countryCode: channel.countryCode,
             region: channel.region,
             isActive: channel.isActive,
         };
     }
     static toDTOList(channels) {
         return channels.map((c) => this.toDTO(c));
+    }
+    static toMetaDTO(channel) {
+        return {
+            id: channel.id,
+            name: channel.name,
+            icon: channel.icon,
+            type: channel.type?.toString().toUpperCase(),
+            country: channel.country,
+            countryCode: channel.countryCode,
+        };
     }
     static toDomain(dto) {
         return Channel_1.Channel.create({

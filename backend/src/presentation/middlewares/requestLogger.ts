@@ -18,6 +18,8 @@ export const requestLogger = (
     requestLogger.info('Request completed', {
       method: req.method,
       path: req.path,
+      originalUrl: req.originalUrl,
+      query: req.query,
       statusCode: res.statusCode,
       duration: `${duration}ms`,
       ip: req.ip,

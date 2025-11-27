@@ -32,6 +32,16 @@ export const createAdminRoutes = (controller: AdminController): Router => {
   );
 
   /**
+   * POST /v2/admin/precompute-window
+   * Body: { fields?: 'minimal' | 'full' }
+   */
+  router.post(
+    '/precompute-window',
+    strictRateLimit,
+    asyncHandler(controller.triggerPrecomputeWindow.bind(controller))
+  );
+
+  /**
    * POST /v2/admin/cleanup
    * Body: { daysToKeep?: number }
    */
@@ -49,6 +59,16 @@ export const createAdminRoutes = (controller: AdminController): Router => {
     '/cache/clear',
     strictRateLimit,
     asyncHandler(controller.clearCache.bind(controller))
+  );
+
+  /**
+   * POST /v2/admin/reset
+   * Body: { sourceUrl?: string, fields?: 'minimal' | 'full' }
+   */
+  router.post(
+    '/reset',
+    strictRateLimit,
+    asyncHandler(controller.triggerReset.bind(controller))
   );
 
   /**

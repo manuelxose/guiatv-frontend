@@ -10,6 +10,7 @@
  */
 
 import { Injectable, Inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   BehaviorSubject,
   Observable,
@@ -67,6 +68,11 @@ export class HomeDataService {
 
   // NUEVO: Flag para tracking de inicialización
   private initializationStarted = false;
+  private _currentDayIndex = 0;
+
+  public get currentDayIndex(): number {
+    return this._currentDayIndex;
+  }
 
   // Watchdog subscription for loading timeout
   private loadingWatchTimerSub: Subscription | null = null;
@@ -108,44 +114,37 @@ export class HomeDataService {
     this.setLoadingState(true);
     this.clearError();
 
-    // Cargar ambos tipos de datos en paralelo con timeout
-    const standardPrograms$ = this.programProvider.getPrograms('today').pipe(
-      timeout(15000), // 15 segundos de timeout
+    // Cargar una sola vez programas y derivar programList desde ahí
+    const today = this.getDateForDayIndex(0);
+    const standardPrograms$ = this.programProvider.getPrograms(today.date).pipe(
+      timeout(45000), // backend puede tardar precomputando, ampliamos margen
       catchError((err) => {
         this.logger.error('Timeout o error cargando programas estándar:', err);
         throw err;
       })
     );
 
-    const programListData$ = this.getProgramListData('today').pipe(
-      timeout(15000), // 15 segundos de timeout
-      catchError((err) => {
-        this.logger.error(
-          'Timeout o error cargando datos de ProgramList:',
-          err
-        );
-        throw err;
-      })
-    );
-
-    return forkJoin({
-      programs: standardPrograms$,
-      programListData: programListData$,
-    }).pipe(
-      tap(({ programs, programListData }) => {
-        this.logger.info(
-          `✅ Data loaded - Programs: ${programs.length}, ProgramList channels: ${programListData.length}`
-        );
-      }),
-      switchMap(({ programs, programListData }) => {
-        // Validar que tengamos datos
+    return standardPrograms$.pipe(
+      switchMap((programs) => {
         if (!programs || programs.length === 0) {
           throw new Error('No programs received from provider');
         }
 
-        // Establecer ambos tipos de datos ANTES de procesar featured movies
+        // Derivar programListData localmente para evitar segunda llamada
+        const programListData = this.convertProgramsToListFormat(programs);
+
         this.programsSubject.next(programs);
         this.programListDataSubject.next(programListData);
+        const featured = this.featuredMovieSubject.value;
+        const sampleChannel = programListData?.[0];
+        console.log(
+          `[HomeData] Programs: ${programs.length} | ProgramList channels: ${programListData.length} | Featured: ${
+            featured?.title || 'none'
+          } | Sample channel: ${sampleChannel?.channel?.name || 'n/a'}`
+        );
+        console.log(
+          `[HomeData] programListData set: ${programListData.length} channels`
+        );
 
         this.logger.debug(
           '📊 Data set in subjects, processing featured movies...'
@@ -179,11 +178,12 @@ export class HomeDataService {
         };
       }),
       catchError((error) => {
-        const errorMessage =
-          error instanceof Error
-            ? error.message
-            : 'Unknown initialization error';
-        this.logger.error('❌ Home data initialization failed:', error);
+        const errorMessage = this.formatErrorMessage(error);
+        this.logger.error(
+          '❌ Home data initialization failed:',
+          errorMessage,
+          error
+        );
 
         // Manejar fallo de inicialización
         this.initManager.failInitialization(errorMessage);
@@ -329,78 +329,170 @@ export class HomeDataService {
    */
   private convertProgramsToListFormat(programs: ITvProgram[]): any[] {
     const channelMap = new Map<string, any>();
+    const typeOrder: Record<string, number> = {
+      TDT: 0,
+      AUTONOMICO: 1,
+      MOVISTAR: 2,
+      CABLE: 3,
+      OTT: 4,
+    };
+    const tdtPriority = [
+      'LA 1',
+      'LA 2',
+      'ANTENA 3',
+      'CUATRO',
+      'TELECINCO',
+      'LA SEXTA',
+      'PARAMOUNT NETWORK',
+      'DIVINITY',
+      'DKISS',
+      'TEN',
+      'BE MAD',
+      'MEGA',
+      'DMAX',
+      'ENERGY',
+      'FDF',
+      'ATRESERIES',
+      'NEOX',
+      'NOVA',
+    ];
 
     programs.forEach((program) => {
       const channelId = program.channel.id;
+      const normalizedTitle =
+        typeof program.title === 'object'
+          ? program.title
+          : { value: program.title, lang: 'es' };
+      const normalizedCategory = program.category
+        ? (program.category as any).value
+          ? program.category
+          : { value: program.category as any, lang: 'es' }
+        : undefined;
+      const normalizedDesc = program.desc
+        ? typeof program.desc === 'string'
+          ? {
+              value: program.desc,
+              lang: 'es',
+              category: (normalizedCategory as any)?.value,
+            }
+          : program.desc
+        : normalizedCategory
+        ? { value: '', lang: 'es', category: (normalizedCategory as any).value }
+        : undefined;
+
+      const normalizedType = (program.channel as any)?.type
+        ? String((program.channel as any).type).trim().toUpperCase()
+        : undefined;
+
+      const channelInfo = {
+        ...program.channel,
+        type: normalizedType,
+      };
 
       if (!channelMap.has(channelId)) {
         channelMap.set(channelId, {
           id: channelId,
-          channel: program.channel,
+          channel: channelInfo,
+          type: normalizedType,
           channels: [],
+          programs: [],
         });
       }
 
       const channelData = channelMap.get(channelId);
-      channelData.channels.push({
+      const normalizedProgram = {
         id: program.id,
-        title: program.title,
+        title: normalizedTitle,
         start: program.start,
         stop: program.end,
-        category: program.category,
-        description: program.desc,
+        channel_id: program.channel.id,
+        channel: channelInfo,
+        category: normalizedCategory,
+        desc: normalizedDesc,
+        description: normalizedDesc,
+        duracion: program.duration,
+        duration: program.duration,
+        starRating: program.starRating,
+        image: program.image,
+        rating: (program as any)?.rating,
+      };
+
+      channelData.channels.push(normalizedProgram);
+      channelData.programs = channelData.channels;
+    });
+
+    const sortedChannels = Array.from(channelMap.values()).sort((a, b) => {
+      const tA = (a.type || '').toUpperCase();
+      const tB = (b.type || '').toUpperCase();
+      const oA = typeOrder[tA] ?? 99;
+      const oB = typeOrder[tB] ?? 99;
+      if (oA !== oB) return oA - oB;
+
+      if (tA === 'TDT' && tB === 'TDT') {
+        const idxA = tdtPriority.indexOf((a.channel?.name || '').toUpperCase());
+        const idxB = tdtPriority.indexOf((b.channel?.name || '').toUpperCase());
+        if (idxA !== -1 || idxB !== -1) {
+          if (idxA === -1) return 1;
+          if (idxB === -1) return -1;
+          if (idxA !== idxB) return idxA - idxB;
+        }
+      }
+
+      return (a.channel?.name || '').localeCompare(b.channel?.name || '', 'es', {
+        sensitivity: 'base',
       });
     });
 
-    return Array.from(channelMap.values());
+    // Ordenar programas de cada canal por hora de inicio
+    sortedChannels.forEach((c: any) => {
+      c.channels = (c.channels || []).sort((p1: any, p2: any) => {
+        const t1 = new Date(p1.start).getTime();
+        const t2 = new Date(p2.start).getTime();
+        return t1 - t2;
+      });
+      c.programs = c.channels;
+    });
+
+    return sortedChannels;
   }
 
   /**
    * Carga datos para un día específico - MEJORADO
    */
   loadDataForDay(dayIndex: number): Observable<Result<boolean, string>> {
-    this.logger.info(`Loading data for day ${dayIndex}`);
+    const { alias: dateAlias, date: dateParam } =
+      this.getDateForDayIndex(dayIndex);
+    this.logger.info(
+      `Loading data for day ${dayIndex} (${dateAlias} -> ${dateParam})`
+    );
+
+    // Update current day index
+    this._currentDayIndex = dayIndex;
 
     // CRÍTICO: Establecer loading state
     this.setLoadingState(true);
     this.clearError();
 
-    const dateParam = this.getDayParam(dayIndex);
-
     const standardPrograms$ = this.programProvider.getPrograms(dateParam).pipe(
-      timeout(15000),
+      timeout(45000),
       catchError((err) => {
         this.logger.error(`Error loading programs for day ${dayIndex}:`, err);
         throw err;
       })
     );
 
-    const programListData$ = this.getProgramListData(dateParam).pipe(
-      timeout(15000),
-      catchError((err) => {
-        this.logger.error(
-          `Error loading program list for day ${dayIndex}:`,
-          err
-        );
-        throw err;
-      })
-    );
+    return standardPrograms$.pipe(
+      switchMap((programs) => {
+        // Derivar programListData localmente
+        const programListData = this.convertProgramsToListFormat(programs);
 
-    return forkJoin({
-      programs: standardPrograms$,
-      programListData: programListData$,
-    }).pipe(
-      tap(({ programs, programListData }) => {
-        this.logger.info(
-          `Day ${dayIndex} data loaded - Programs: ${programs.length}, Channels: ${programListData.length}`
-        );
-      }),
-      switchMap(({ programs, programListData }) => {
         // Push data into subjects so subscribers react
         this.programsSubject.next(programs);
         this.programListDataSubject.next(programListData);
+        console.log(
+          `[HomeData] programListData set (day ${dayIndex}): ${programListData.length} channels`
+        );
 
-        // If both arrays are empty, treat this as a failure so callers can react
         const noPrograms = !programs || programs.length === 0;
         const noProgramList = !programListData || programListData.length === 0;
 
@@ -422,9 +514,8 @@ export class HomeDataService {
         };
       }),
       catchError((error) => {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Error loading day data';
-        this.logger.error(`❌ Day ${dayIndex} loading failed:`, error);
+        const errorMessage = this.formatErrorMessage(error);
+        this.logger.error(`❌ Day ${dayIndex} loading failed:`, errorMessage, error);
 
         // CRÍTICO: Establecer loading a false incluso en error
         this.setLoadingState(false);
@@ -464,14 +555,31 @@ export class HomeDataService {
    * NUEVO: Obtiene el parámetro de fecha para un día
    */
   private getDayParam(dayIndex: number): string {
-    const params = ['today', 'tomorrow', 'after_tomorrow'];
-    return params[dayIndex] || 'today';
+    if (dayIndex === -1) return 'yesterday';
+    if (dayIndex === 0) return 'today';
+    if (dayIndex === 1) return 'tomorrow';
+    if (dayIndex === 2) return 'after_tomorrow';
+    return 'today';
   }
 
   /**
-   * Método específico para obtener datos para ProgramListComponent
+   * Devuelve alias y fecha YYYYMMDD para un índice relativo.
+   * Evita peticiones ambiguas sin fecha y deja claro qué día se está consultando.
    */
-  getProgramListData$(): Observable<any[]> {
+  private getDateForDayIndex(dayIndex: number): { alias: string; date: string } {
+    const alias = this.getDayParam(dayIndex);
+    const base = new Date();
+    base.setDate(base.getDate() + dayIndex);
+
+    const year = base.getFullYear();
+    const month = `${base.getMonth() + 1}`.padStart(2, '0');
+    const day = `${base.getDate()}`.padStart(2, '0');
+
+    return { alias, date: `${year}${month}${day}` };
+  }
+
+  // Alias de compatibilidad (algunos consumidores esperan método sin $)
+  getProgramListDataStream(): Observable<any[]> {
     return this.programListData$;
   }
 
@@ -498,6 +606,7 @@ export class HomeDataService {
 
     this.initManager.resetInitialization();
     this.initializationStarted = false;
+    this._currentDayIndex = 0;
   }
 
   /**
@@ -601,5 +710,49 @@ export class HomeDataService {
    */
   private clearError(): void {
     this.errorSubject.next(null);
+  }
+
+  /**
+   * Formatea errores para logs y UI con contexto HTTP cuando aplica
+   */
+  private formatErrorMessage(error: any): string {
+    if (error instanceof HttpErrorResponse) {
+      const body = this.stringifyErrorBody(error.error);
+      const base = `HTTP ${error.status} ${error.statusText || ''}`.trim();
+      const url = error.url ? ` @ ${error.url}` : '';
+      const message = error.message ? ` - ${error.message}` : '';
+      const payload = body ? ` | body: ${body}` : '';
+      return `${base}${url}${message}${payload}`;
+    }
+
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return 'Unknown error';
+    }
+  }
+
+  private stringifyErrorBody(body: any): string {
+    if (body === undefined || body === null) {
+      return '';
+    }
+
+    if (typeof body === 'string') {
+      return body;
+    }
+
+    try {
+      return JSON.stringify(body);
+    } catch {
+      return '';
+    }
   }
 }

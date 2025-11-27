@@ -13,9 +13,21 @@ export interface IProgramDocument {
   description?: string;
   startTime: Date;
   endTime: Date;
+  startUtc?: string;
+  endUtc?: string;
+  date?: string;
+  startMinutes?: number;
+  endMinutes?: number;
+  durationMinutes?: number;
+  timeSlotIndex?: number;
   category?: string;
   image?: string;
   rating?: string;
+  // Optional layout cache to avoid recomputation on hot paths
+  layoutVersion?: string;
+  precomputedLayout?: boolean;
+  precomputedLayouts?: Record<string, any>;
+  layoutsBySlot?: Array<Record<string, any>>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +67,30 @@ const ProgramSchema = new Schema<IProgramDocument>(
       required: true,
       index: true,
     },
+    startUtc: {
+      type: String,
+    },
+    endUtc: {
+      type: String,
+    },
+    date: {
+      type: String,
+      index: true,
+    },
+    startMinutes: {
+      type: Number,
+      index: true,
+    },
+    endMinutes: {
+      type: Number,
+    },
+    durationMinutes: {
+      type: Number,
+    },
+    timeSlotIndex: {
+      type: Number,
+      index: true,
+    },
     category: {
       type: String,
       trim: true,
@@ -66,6 +102,18 @@ const ProgramSchema = new Schema<IProgramDocument>(
     rating: {
       type: String,
       trim: true,
+    },
+    layoutVersion: {
+      type: String,
+    },
+    precomputedLayout: {
+      type: Boolean,
+    },
+    precomputedLayouts: {
+      type: Schema.Types.Mixed,
+    },
+    layoutsBySlot: {
+      type: [Schema.Types.Mixed],
     },
   },
   {
@@ -80,6 +128,13 @@ ProgramSchema.index({ channelId: 1, endTime: 1 });
 ProgramSchema.index({ startTime: 1, endTime: 1 });
 ProgramSchema.index({ channelId: 1, startTime: 1, endTime: 1 });
 ProgramSchema.index({ category: 1 });
+ProgramSchema.index({ date: 1, channelId: 1, startMinutes: 1 });
+ProgramSchema.index({ date: 1, startMinutes: 1 });
+ProgramSchema.index({ date: 1, channelId: 1, startTime: 1 });
+ProgramSchema.index({ date: 1, channelId: 1, startUtc: 1 });
+ProgramSchema.index({ channelId: 1, startUtc: 1 });
+ProgramSchema.index({ date: 1, timeSlotIndex: 1 });
+ProgramSchema.index({ startUtc: 1 });
 
 /**
  * Program model

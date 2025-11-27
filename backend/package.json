@@ -15,6 +15,7 @@
     "job:syncEPG": "node dist/jobs/cli/syncEPG.cli.js",
     "job:precompute": "node dist/jobs/cli/precomputeSchedules.cli.js",
     "job:clean": "node dist/jobs/cli/cleanOldPrograms.cli.js",
+    "create-indexes": "npm run build && node dist/scripts/create-indexes.js",
     "migrate:firestore-to-mongo": "node dist/scripts/migrate-firestore-to-mongodb.js"
   },
   "engines": {
@@ -35,6 +36,7 @@
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
     "redis": "^5.10.0",
+    "sharp": "^0.33.5",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "xml2js": "^0.6.2"

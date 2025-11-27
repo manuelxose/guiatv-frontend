@@ -39,18 +39,22 @@ const fs_1 = require("fs");
 const config_1 = require("../server/config");
 /**
  * Handler para Server-Side Rendering (SSR)
- * Migrado desde src/v1/index.ts (función loadSsrHandler)
+ * Carga el bundle generado por `ng build --ssr`
  */
 async function ssrHandler(req, res, next) {
     try {
         const distFolder = config_1.config.paths.distFolder;
-        const serverBundleJs = (0, path_1.join)(distFolder, 'server', 'main.js');
         const serverBundleMjs = (0, path_1.join)(distFolder, 'server', 'server.mjs');
+        const serverBundleMainMjs = (0, path_1.join)(distFolder, 'server', 'main.server.mjs');
+        const serverBundleJs = (0, path_1.join)(distFolder, 'server', 'main.server.js');
         const jsExists = (0, fs_1.existsSync)(serverBundleJs);
         const mjsExists = (0, fs_1.existsSync)(serverBundleMjs);
-        if (!jsExists && !mjsExists) {
-            console.warn('⚠️  SSR bundle not found at', serverBundleJs, 'or', serverBundleMjs);
-            res.status(503).send('SSR bundle not built. Run the build step (e.g. `npm run build`) and ensure files exist in dist/guiatv/server/');
+        const mainMjsExists = (0, fs_1.existsSync)(serverBundleMainMjs);
+        if (!jsExists && !mjsExists && !mainMjsExists) {
+            console.warn('SSR bundle not found at', serverBundleJs, serverBundleMjs, 'or', serverBundleMainMjs);
+            res
+                .status(503)
+                .send('SSR bundle not built. Run `npm run build:ssr` in frontend and set DIST_FOLDER to dist/guiatv');
             return;
         }
         // Cargar el bundle SSR
@@ -58,6 +62,9 @@ async function ssrHandler(req, res, next) {
         try {
             if (jsExists) {
                 mod = await Promise.resolve(`${serverBundleJs}`).then(s => __importStar(require(s)));
+            }
+            else if (mainMjsExists) {
+                mod = await Promise.resolve(`${serverBundleMainMjs}`).then(s => __importStar(require(s)));
             }
             else {
                 mod = await Promise.resolve(`${serverBundleMjs}`).then(s => __importStar(require(s)));
@@ -68,8 +75,7 @@ async function ssrHandler(req, res, next) {
         }
         // Buscar el handler exportado
         const exportedReqHandler = mod.reqHandler ||
-            (mod.default &&
-                (mod.default.reqHandler || mod.default.reqHandler?.reqHandler)) ||
+            (mod.default && (mod.default.reqHandler || mod.default.reqHandler?.reqHandler)) ||
             null;
         if (exportedReqHandler && typeof exportedReqHandler === 'function') {
             exportedReqHandler(req, res);
@@ -86,7 +92,7 @@ async function ssrHandler(req, res, next) {
         throw new Error('No se encontró un handler SSR válido en el bundle');
     }
     catch (err) {
-        console.error('❌ Error loading SSR bundle:', err);
+        console.error('Error loading SSR bundle:', err);
         res.status(500).send('SSR server error');
     }
 }

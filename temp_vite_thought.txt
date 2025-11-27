@@ -1,0 +1,8 @@
+import { defineConfig } from 'vite';
+import angular from '@angular/analog/vite-plugin'; // Or standard angular plugin if available, but usually for standard CLI we rely on angular.json.
+// Actually, for standard Angular CLI + Vite, we don't usually need a vite.config.ts unless we are using Analog or custom builders.
+// But since Angular 17+ uses Vite, we can try to force it.
+// However, the standard @angular-devkit/build-angular:dev-server DOES read proxy.conf.js.
+
+// Let's try to fix proxy.conf.js first to be ESM compatible just in case.
+// But first, let's update environment.ts as that is definitely wrong for proxying.

@@ -6,6 +6,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createApp = void 0;
 const express_1 = __importDefault(require("express"));
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 const index_1 = require("./index");
 const cors_1 = require("../middlewares/cors");
 const compression_1 = require("../middlewares/compression");
@@ -14,10 +16,26 @@ const errorHandler_1 = require("../middlewares/errorHandler");
 const notFoundHandler_1 = require("../middlewares/notFoundHandler");
 const createApp = (dependencies) => {
     const app = (0, express_1.default)();
+    // Evitar respuestas 304 por etag en datos dinámicos
+    app.disable('etag');
+    // Forzar que los datos de la API no se sirvan desde cache del navegador
+    app.use((req, res, next) => {
+        delete req.headers['if-none-match'];
+        delete req.headers['if-modified-since'];
+        res.set('Cache-Control', 'no-store');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        next();
+    });
+    // Servir iconos/archivos desde /storage (carpeta raíz del proyecto)
+    // __dirname en build apunta a dist/presentation/routes -> subir 3 niveles hasta /backend/storage
+    const storagePath = path_1.default.join(__dirname, '../../../storage');
+    console.log('📂 Serving storage from:', storagePath);
+    console.log('📂 Directory exists:', fs_1.default.existsSync(storagePath));
+    app.use('/storage', express_1.default.static(storagePath));
     // Middlewares globales
     app.use(cors_1.corsMiddleware);
     app.use(compression_1.compressionMiddleware);
-    app.use(express_1.default.json());
     app.use(express_1.default.urlencoded({ extended: true }));
     app.use(requestLogger_1.requestLogger);
     // Rutas v2
@@ -28,24 +46,6 @@ const createApp = (dependencies) => {
      * @openapi
      * /:
      *   get:
-     *     tags:
-     *       - General
-     *     summary: Bienvenida a la API
-     *     description: Retorna información básica y versión de la API
-     *     responses:
-     *       200:
-     *         description: Bienvenida
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 success:
-     *                   type: boolean
-     *                   example: true
-     *                 data:
-     *                   type: object
-     *                   properties:
      *                     message:
      *                       type: string
      *                       example: Welcome to Guía TV API

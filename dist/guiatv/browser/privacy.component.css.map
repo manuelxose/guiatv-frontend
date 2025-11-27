@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/pages/legal/privacy/privacy.component.scss"],
+  "sourcesContent": ["/* Styles for Privacy page */\r\n:host {\r\n  display: block;\r\n}\r\nmain {\r\n  color: #e6eef6;\r\n}\r\n.prose h1 {\r\n  color: #fff;\r\n}\r\n.prose p {\r\n  color: #cbd5e1;\r\n}\r\n"],
+  "mappings": ";AACA;AACE,WAAA;;AAEF;AACE,SAAA;;AAEF,CAAA,MAAA;AACE,SAAA;;AAEF,CAHA,MAGA;AACE,SAAA;;",
+  "names": []
+}

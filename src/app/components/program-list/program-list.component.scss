@@ -1,1004 +1,609 @@
 /**
- * ESTILOS OPTIMIZADOS PARA MÓVIL - CORREGIDOS
- * - Menú fijo en la parte inferior
- * - Dropdowns que aparecen hacia arriba
- * - Desktop visible correctamente
+ * Program List Component Styles
+ * Premium Dark Theme & Mobile Optimization
  */
 
 @use "sass:color";
 
 // ===============================================
-// VARIABLES
+// VARIABLES & THEME
 // ===============================================
-
-$mobile-bottom-header-height: 120px;
-$mobile-padding: 0.75rem;
-$mobile-gap: 0.5rem;
 
 $color-primary: #ef4444;
-$color-secondary: #dc2626;
-$color-bg-dark: #111827;
-$color-bg-card: #1f2937;
-$color-border: #374151;
+$color-primary-dark: #b91c1c;
+$color-primary-light: #f87171;
+$color-bg-dark: #0f172a; // Slate 900
+$color-bg-darker: #020617; // Slate 950
+$color-bg-card: #1e293b; // Slate 800
+$color-text-main: #f1f5f9; // Slate 100
+$color-text-muted: #94a3b8; // Slate 400
+$color-border: #334155; // Slate 700
+
+$glass-bg: rgba(15, 23, 42, 0.85);
+$glass-border: rgba(255, 255, 255, 0.1);
+$glass-blur: 12px;
+
+$mobile-nav-height: 70px;
+$header-height: 60px;
+$mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
 
 // ===============================================
-// OCULTAR MÓVIL EN DESKTOP
+// MIXINS
 // ===============================================
 
-.mobile-tv-guide {
-  display: none; // Por defecto oculto
+@mixin glassmorphism {
+  background: $glass-bg;
+  backdrop-filter: blur($glass-blur);
+  -webkit-backdrop-filter: blur($glass-blur);
+  border: 1px solid $glass-border;
 }
 
-// Solo mostrar en móvil
-@media (max-width: 767px) {
-  .mobile-tv-guide {
-    display: flex !important;
-    flex-direction: column;
-    height: 100vh;
-    background: linear-gradient(to bottom, $color-bg-dark, #000);
-    overflow: hidden;
-    -webkit-overflow-scrolling: touch;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-}
-
-// ===============================================
-// OCULTAR DESKTOP EN MÓVIL
-// ===============================================
-
-.desktop-tv-guide {
-  display: block; // Por defecto visible
-}
-
-@media (max-width: 767px) {
-  .desktop-tv-guide {
-    display: none !important;
-  }
-}
-
-// ===============================================
-// BOTTOM HEADER FIJO (ANTES ERA TOP)
-// ===============================================
-
-.mobile-bottom-header {
-  position: fixed;
-  bottom: 0; // CORREGIDO: Ahora en la parte inferior
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: rgba($color-bg-dark, 0.98);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid rgba($color-border, 0.3); // CORREGIDO: border-top en lugar de border-bottom
-  padding: $mobile-padding;
-  padding-bottom: calc($mobile-padding + env(safe-area-inset-bottom, 0));
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: $mobile-gap;
-  box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1); // CORREGIDO: sombra hacia arriba
-}
-
-.mobile-control {
-  position: relative;
-}
-
-// ===============================================
-// BOTONES
-// ===============================================
-
-.mobile-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba($color-border, 0.3);
-  background: rgba($color-bg-card, 0.8);
-  color: white;
-  min-height: 44px;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-.mobile-btn-primary {
-  background: linear-gradient(135deg, $color-primary, $color-secondary);
-  border-color: $color-primary;
-
-  &:active {
-    background: linear-gradient(
-      135deg,
-      $color-secondary,
-      color.adjust($color-secondary, $lightness: -5%)
-    );
-  }
-}
-
-.mobile-btn-secondary {
-  background: rgba($color-bg-card, 0.9);
-  border-color: rgba($color-border, 0.5);
-
-  &:active {
-    background: rgba($color-bg-card, 1);
-  }
-}
-
-.mobile-btn-icon {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.75rem;
-  background: rgba($color-bg-card, 0.8);
-  border: 1px solid rgba($color-border, 0.3);
-  color: white;
-  -webkit-tap-highlight-color: transparent;
-
-  &:active {
-    transform: scale(0.95);
-  }
-}
-
-// ===============================================
-// ICONOS
-// ===============================================
-
-.mobile-icon {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.mobile-icon-sm {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-
-  &.rotate-180 {
-    transform: rotate(180deg);
-  }
-}
-
-.mobile-check {
-  color: $color-primary;
-}
-
-.mobile-chevron {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-// ===============================================
-// TEXTO
-// ===============================================
-
-.mobile-text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-  min-width: 0;
-}
-
-// ===============================================
-// BADGE
-// ===============================================
-
-.mobile-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: $color-primary;
-  color: white;
-  border-radius: 9px;
-  font-size: 0.625rem;
-  font-weight: 700;
-  padding: 0 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-// ===============================================
-// DROPDOWNS - CORREGIDOS PARA APARECER HACIA ARRIBA
-// ===============================================
-
-.mobile-dropdown {
-  position: absolute;
-  z-index: 200;
-  background: rgba($color-bg-dark, 0.98);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba($color-border, 0.3);
-  border-radius: 0.75rem;
-  max-height: 280px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  box-shadow: 0 -12px 24px rgba(0, 0, 0, 0.3); // CORREGIDO: sombra hacia arriba
-
-  // CORREGIDO: Por defecto aparece hacia arriba
-  bottom: calc(100% + 0.5rem);
-  left: 0;
-  right: 0;
-
-  // Custom scrollbar
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba($color-primary, 0.5);
-    border-radius: 2px;
-  }
-}
-
-// NUEVO: Variante para dropdown que aparece desde la derecha
-.mobile-dropdown-right {
-  left: auto;
-  right: 0;
-  min-width: 200px;
-}
-
-// NUEVO: Clase específica para dropdowns hacia arriba (redundante pero explícito)
-.mobile-dropdown-up {
-  top: auto;
-  bottom: calc(100% + 0.5rem);
-}
-
-.mobile-dropdown-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.875rem;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 0.875rem;
-  transition: background-color 0.15s ease;
-  border-bottom: 1px solid rgba($color-border, 0.15);
-  min-height: 48px;
-  -webkit-tap-highlight-color: transparent;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:active {
-    background: rgba($color-bg-card, 0.5);
-  }
-
-  &.mobile-dropdown-active {
-    background: rgba($color-primary, 0.15);
-    color: white;
-    font-weight: 600;
-  }
-}
-
-.mobile-dropdown-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  flex: 1;
-}
-
-.mobile-dropdown-title {
-  font-weight: 600;
-  color: white;
-}
-
-.mobile-dropdown-subtitle {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-// ===============================================
-// CONTENIDO PRINCIPAL - CORREGIDO
-// ===============================================
-
-.mobile-content {
-  flex: 1;
-  margin-bottom: $mobile-bottom-header-height; // CORREGIDO: margen inferior en lugar de superior
-  overflow: hidden;
-}
-
-.mobile-scroll {
-  height: 100%;
-  width: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-}
-
-// ===============================================
-// LOADING & ERROR STATES
-// ===============================================
-
-.mobile-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - $mobile-bottom-header-height);
-  gap: 1rem;
-}
-
-.mobile-spinner {
-  width: 48px;
-  height: 48px;
-  border: 3px solid rgba($color-primary, 0.2);
-  border-top-color: $color-primary;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.mobile-loading-text {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.875rem;
-}
-
-.mobile-error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - $mobile-bottom-header-height);
-  gap: 1rem;
-  padding: 2rem;
-  text-align: center;
-}
-
-.mobile-error-title {
-  color: $color-primary;
-  font-size: 1.125rem;
-  font-weight: 700;
-}
-
-.mobile-error-text {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
-}
-
-// ===============================================
-// CHANNEL
-// ===============================================
-
-.mobile-channel {
-  background: rgba($color-bg-card, 0.4);
-  border-bottom: 1px solid rgba($color-border, 0.2);
-
-  &:last-child {
-    border-bottom: none;
-  }
-}
-
-.mobile-channel-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.875rem;
-  background: rgba($color-bg-card, 0.6);
-  border-bottom: 1px solid rgba($color-border, 0.2);
-  -webkit-tap-highlight-color: transparent;
-  min-height: 56px;
-
-  &:active {
-    background: rgba($color-bg-card, 0.8);
-  }
-}
-
-.mobile-channel-logo {
-  width: 48px;
-  height: 32px;
-  object-fit: contain;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 0.375rem;
-  padding: 0.25rem;
-}
-
-.mobile-channel-name {
-  flex: 1;
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: white;
-}
-
-// ===============================================
-// PROGRAMS
-// ===============================================
-
-.mobile-programs-compact {
-  display: none; // Por defecto oculto
-  flex-direction: column;
-
-  &.expanded {
-    display: flex; // Mostrar cuando está expandido
-  }
-}
-
-.mobile-program-card {
-  padding: 0.875rem;
-  border-bottom: 1px solid rgba($color-border, 0.1);
-  transition: background-color 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-  min-height: 68px;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:active {
-    background: rgba($color-bg-card, 0.5);
-  }
-
-  &.mobile-program-active {
-    background: rgba($color-primary, 0.1);
-    border-left: 3px solid $color-primary;
-    padding-left: calc(0.875rem - 3px);
-  }
-}
-
-.mobile-program-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.5rem;
-}
-
-.mobile-program-title {
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: white;
-  line-height: 1.3;
+@mixin text-truncate($lines: 1) {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: $lines;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.mobile-program-time {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-weight: 500;
-}
-
-.mobile-category-badge {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.625rem;
-  font-weight: 600;
-  border-radius: 0.375rem;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
+  text-overflow: ellipsis;
 }
 
 // ===============================================
-// PROGRAM DETAILS - STICKY BOTTOM
+// GLOBAL RESETS & UTILITIES
 // ===============================================
 
-.mobile-program-details {
-  position: fixed;
-  bottom: $mobile-bottom-header-height;
-  left: 0;
-  right: 0;
-  z-index: 90;
-  padding: 0.875rem;
-  background: rgba($color-bg-dark, 0.98);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid rgba($color-border, 0.2);
-  max-height: 50vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  animation: slideUp 0.3s ease-out;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// ===============================================
-// PERFORMANCE OPTIMIZATIONS
-// ===============================================
-
-* {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  backface-visibility: hidden;
-}
-
-.mobile-scroll,
-.mobile-dropdown {
-  transform: translateZ(0);
-  will-change: scroll-position;
-}
-
-.mobile-btn,
-.mobile-program-card,
-.mobile-channel-header {
-  transform: translateZ(0);
-}
-
-// ===============================================
-// SAFE AREA INSETS
-// ===============================================
-
-@supports (padding: env(safe-area-inset-bottom)) {
-  .mobile-bottom-header {
-    padding-bottom: calc($mobile-padding + env(safe-area-inset-bottom));
-  }
-
-  .mobile-program-details {
-    bottom: calc($mobile-bottom-header-height + env(safe-area-inset-bottom));
-  }
-}
-
-// ===============================================
-// REDUCED MOTION
-// ===============================================
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-// ===============================================
-// HIGH CONTRAST MODE
-// ===============================================
-
-@media (prefers-contrast: high) {
-  .mobile-channel,
-  .mobile-program-card {
-    border: 1px solid currentColor;
-  }
-
-  .mobile-btn {
-    border-width: 2px;
-  }
-}
-
-// ===============================================
-// LANDSCAPE ORIENTATION
-// ===============================================
-
-@media (orientation: landscape) and (max-height: 500px) {
-  .mobile-bottom-header {
-    padding: 0.5rem;
-    gap: 0.375rem;
-  }
-
-  .mobile-btn {
-    padding: 0.5rem;
-    font-size: 0.75rem;
-    min-height: 36px;
-  }
-
-  .mobile-program-card {
-    padding: 0.625rem;
-    min-height: 56px;
-  }
-
-  .mobile-program-details {
-    max-height: 40vh;
-  }
-}
-
-// ===============================================
-// TABLET ADJUSTMENTS (768px - 1024px)
-// ===============================================
-
-@media (min-width: 768px) {
-  // En tablet, ocultar móvil y mostrar desktop
-  .mobile-tv-guide {
-    display: none !important;
-  }
-
-  .desktop-tv-guide {
-    display: block !important;
-  }
-}
-
-// ===============================================
-// DARK MODE ENHANCEMENTS
-// ===============================================
-
-@media (prefers-color-scheme: dark) {
-  .mobile-tv-guide {
-    background: linear-gradient(to bottom, #0a0a0a, #000);
-  }
-
-  .mobile-bottom-header {
-    background: rgba(#0a0a0a, 0.98);
-  }
-}
-
-// ===============================================
-// TOUCH OPTIMIZATIONS
-// ===============================================
-
-@media (hover: none) and (pointer: coarse) {
-  .mobile-btn,
-  .mobile-dropdown-item,
-  .mobile-program-card,
-  .mobile-channel-header {
-    min-height: 48px;
-  }
-
-  .mobile-btn:active,
-  .mobile-program-card:active,
-  .mobile-channel-header:active {
-    opacity: 0.8;
-  }
-}
-
-// ===============================================
-// SCROLLBAR STYLING
-// ===============================================
-
-.mobile-scroll,
-.mobile-program-details {
-  scrollbar-width: thin;
-  scrollbar-color: rgba($color-primary, 0.4) transparent;
-
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba($color-primary, 0.4);
-    border-radius: 2px;
-
-    &:hover {
-      background: rgba($color-primary, 0.6);
-    }
-  }
-}
-
-// ===============================================
-// HIDDEN CLASS UTILITY
-// ===============================================
 
 .hidden {
   display: none !important;
 }
 
 // ===============================================
-// CHANNEL NAME FALLBACK
+// MOBILE STYLES (< 768px)
 // ===============================================
 
-.channel-name-fallback {
-  &.hidden {
+@media (max-width: 767px) {
+  // Hide Desktop View
+  .desktop-tv-guide {
+    display: none !important;
+  }
+
+  // Mobile Container
+  .mobile-tv-guide {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: linear-gradient(to bottom, $color-bg-darker, $color-bg-dark);
+    color: $color-text-main;
+    overflow: hidden;
+    position: relative;
+  }
+
+  // Error State
+  .mobile-error {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    gap: 1rem;
+
+    &-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: $color-primary;
+    }
+
+    &-text {
+      color: $color-text-muted;
+    }
+  }
+
+  // Content Area
+  .mobile-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    padding-bottom: calc($mobile-nav-height + $mobile-safe-bottom); // Space for bottom nav + safe area
+  }
+
+  .mobile-scroll {
+    height: calc(100% - $mobile-safe-bottom);
+    width: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    padding-bottom: $mobile-safe-bottom;
+  }
+
+  // Channel Row
+  .mobile-channel {
+    border-bottom: 1px solid rgba($color-border, 0.3);
+  }
+
+  // Sticky Channel Header (Compact)
+  .mobile-channel-header {
+    @include glassmorphism;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    padding: 0.5rem 0.75rem; // Reduced padding
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 44px; // Reduced height
+    transition: background 0.3s ease;
+
+    &:active {
+      background: rgba($color-bg-card, 0.9);
+    }
+  }
+
+  .mobile-channel-logo-container {
+    width: 32px; // Smaller logo
+    height: 32px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .mobile-channel-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 2px;
+  }
+
+  .mobile-channel-name-fallback {
+    font-weight: 700;
+    font-size: 1rem;
+    color: $color-text-muted;
+  }
+
+  .mobile-channel-name {
+    font-weight: 600;
+    font-size: 0.9rem; // Smaller font
+    color: white;
+    @include text-truncate(1);
+  }
+
+  .mobile-chevron {
+    display: none; // Hide chevron for compact view
+  }
+
+  // Programs List (Collapsible)
+  .mobile-programs-list {
+    overflow: hidden;
+    background: rgba($color-bg-darker, 0.5);
+  }
+
+  // Program Card (Compact)
+  .mobile-program-card {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem; // Compact padding
+    border-bottom: 1px solid rgba($color-border, 0.1);
+    position: relative;
+    transition: background 0.2s ease;
+    min-height: auto; // Remove min-height constraint
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:active {
+      background: rgba($color-bg-card, 0.6);
+    }
+
+    &.active {
+      background: rgba($color-primary, 0.1);
+      border-left: 3px solid $color-primary;
+      padding-left: calc(0.75rem - 3px);
+    }
+
+    &.live {
+      background: linear-gradient(to right, rgba($color-primary, 0.05), transparent);
+    }
+  }
+
+  .mobile-program-time-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 40px;
+    padding-top: 2px;
+  }
+
+  .mobile-program-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .mobile-program-title {
+    font-size: 0.85rem; // Compact font
+    font-weight: 500;
+    color: $color-text-main;
+    margin-bottom: 0;
+    @include text-truncate(1); // Single line title
+    line-height: 1.2;
+  }
+
+  // Badges (Hidden in compact view mostly)
+  .mobile-live-badge {
     display: none;
   }
-}
 
-/**
- * FIX DESKTOP - Estilos adicionales para program-list.component.scss
- * AÑADIR al archivo existente
- */
+  .mobile-category-badge {
+    display: none;
+  }
 
-// ===============================================
-// FIX: ASEGURAR VISUALIZACIÓN EN DESKTOP
-// ===============================================
+  // Progress Bar (Compact)
+  .mobile-progress-bar {
+    height: 2px; // Thinner progress bar
+    background: rgba($color-border, 0.5);
+    border-radius: 1px;
+    overflow: hidden;
+    width: 100%;
+    margin-top: 4px;
+  }
 
-// Ocultar móvil por defecto
-.mobile-tv-guide {
-  display: none !important;
-}
+  .mobile-progress-fill {
+    height: 100%;
+    background: $color-primary;
+    border-radius: 1px;
+  }
 
-// Solo mostrar móvil en pantallas pequeñas
-@media (max-width: 767px) {
-  .mobile-tv-guide {
-    display: flex !important;
+  // Bottom Navigation
+  .mobile-bottom-nav {
+    @include glassmorphism;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: $mobile-nav-height;
+    z-index: 30;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .mobile-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: $color-text-muted;
+    transition: color 0.3s ease;
+    height: 100%;
+    background: transparent;
+    border: none;
+
+    &.active {
+      color: $color-primary;
+      
+      .mobile-nav-icon-wrapper {
+        background: rgba($color-primary, 0.15);
+        
+        svg {
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+
+  .mobile-nav-icon-wrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .mobile-nav-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: $color-primary;
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid $color-bg-dark;
+  }
+
+  .mobile-nav-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+
+  // Dropdowns (Bottom Sheets)
+  .mobile-dropdown-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .mobile-bottom-sheet {
+    background: $color-bg-card;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: $mobile-safe-bottom;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-sheet-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba($color-border, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: white;
+      margin: 0;
+    }
+  }
+
+  .mobile-close-btn {
+    color: $color-text-muted;
+    padding: 4px;
+    background: transparent;
+    border: none;
+  }
+
+  .mobile-sheet-content {
+    overflow-y: auto;
+    padding: 0.5rem 0;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-sheet-item {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+    color: $color-text-main;
+    font-size: 1rem;
+    transition: background 0.2s;
+    border-bottom: 1px solid rgba($color-border, 0.1);
+
+    &:active {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &.active {
+      color: $color-primary;
+      background: rgba($color-primary, 0.05);
+      font-weight: 600;
+    }
+  }
+
+  // Button Styles
+  .mobile-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    transition: transform 0.1s;
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  .mobile-btn-primary {
+    background: $color-primary;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba($color-primary, 0.3);
   }
 }
 
-// Asegurar que desktop se muestre correctamente
+// ===============================================
+// ANIMATIONS
+// ===============================================
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+// ===============================================
+// DESKTOP STYLES (>= 768px)
+// ===============================================
+
 @media (min-width: 768px) {
+  // Hide Mobile View
   .mobile-tv-guide {
     display: none !important;
   }
-}
 
-// ===============================================
-// FIX: GRID DE PROGRAMAS VISIBLE
-// ===============================================
-
-.programs-grid {
-  display: grid !important;
-  gap: 0 !important;
-  grid-auto-rows: 75px !important;
-  width: 100% !important;
-  overflow: visible !important; // CAMBIO CRÍTICO: de hidden a visible
-  min-height: 75px !important;
-  position: relative !important;
-
-  // Asegurar que los programas se muestren
-  > div {
-    width: auto !important; // CAMBIO: permitir que el grid calcule
-    min-width: 0 !important;
-    max-width: 100% !important;
-    position: relative !important;
-    display: block !important; // CAMBIO CRÍTICO: block en lugar de flex
-    height: 75px !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
-
-    // Asegurar visibilidad
-    visibility: visible !important;
-    opacity: 1 !important;
-
-    // Asegurar que el contenido interno se vea
-    > div {
-      display: flex !important;
-      flex-direction: column !important;
-      height: 100% !important;
-      width: 100% !important;
-    }
+  // Show Desktop View
+  .desktop-tv-guide {
+    display: block !important;
   }
-}
 
-// ===============================================
-// FIX: CONTENEDOR DE PROGRAMAS
-// ===============================================
+  // ===============================================
+  // FIX: GRID DE PROGRAMAS VISIBLE
+  // ===============================================
 
-.programs-container {
-  overflow: visible !important; // CAMBIO CRÍTICO
-  position: relative !important;
-  flex: 1;
-  min-width: 0;
-
-  // Asegurar que el grid hijo se vea
   .programs-grid {
-    position: relative !important; // CAMBIO: relative en lugar de absolute
+    display: grid !important;
+    gap: 0 !important;
+    grid-auto-rows: 75px !important;
     width: 100% !important;
-    height: 100% !important;
-  }
-}
+    overflow: visible !important;
+    min-height: 75px !important;
+    position: relative !important;
+    
+    // Dynamic columns based on screen size
+    grid-template-columns: repeat(42, minmax(15px, 1fr)) !important;
 
-.channel-programs-container {
-  position: relative !important;
-  display: flex !important;
-  min-height: 75px !important;
-  overflow: visible !important; // CAMBIO CRÍTICO
-  isolation: isolate;
-
-  // Asegurar que los hijos se vean
-  > * {
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-}
-
-// ===============================================
-// FIX: CHANNEL ROW
-// ===============================================
-
-.channel-row {
-  border-bottom: 1px solid rgba(75, 85, 99, 0.4) !important;
-  isolation: isolate;
-  min-height: 75px !important;
-  position: relative !important;
-  display: block !important; // CAMBIO CRÍTICO
-  visibility: visible !important;
-
-  // Asegurar que todo el contenido sea visible
-  * {
-    visibility: inherit;
-  }
-
-  &:last-child {
-    border-bottom: none !important;
-  }
-}
-
-// ===============================================
-// FIX: PROGRAM ITEMS
-// ===============================================
-
-// Asegurar que los items de programa sean visibles
-div[class*="border-r"][class*="cursor-pointer"] {
-  visibility: visible !important;
-  opacity: 1 !important;
-  display: block !important;
-
-  // Contenido interno
-  > div {
-    visibility: visible !important;
-    opacity: 1 !important;
-    display: flex !important;
-  }
-}
-
-// ===============================================
-// FIX: VIRTUAL SCROLL VIEWPORT
-// ===============================================
-
-cdk-virtual-scroll-viewport {
-  contain: layout style paint !important; // CAMBIO: no usar strict
-  will-change: scroll-position;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  width: 100% !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-
-  // Asegurar que el contenido se vea
-  .cdk-virtual-scroll-content-wrapper {
-    width: 100% !important;
-    contain: layout style !important; // CAMBIO: no usar paint
-
-    > * {
+    > div {
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      position: relative !important;
+      display: block !important;
+      height: 75px !important;
+      overflow: hidden !important;
+      box-sizing: border-box !important;
       visibility: visible !important;
       opacity: 1 !important;
+
+      > div {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        width: 100% !important;
+      }
     }
   }
-}
 
-// ===============================================
-// FIX: TIME HEADER GRID
-// ===============================================
-
-.time-header {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 40 !important;
-  background: linear-gradient(to right, #1f2937, #374151, #1f2937) !important;
-
-  .grid {
-    display: grid !important;
-    grid-template-columns: repeat(7, 1fr) !important;
-    width: 100% !important;
-
-    > div {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      visibility: visible !important;
+  @media (min-width: 1024px) {
+    .programs-grid {
+      grid-template-columns: repeat(42, minmax(20px, 1fr)) !important;
     }
   }
-}
 
-// ===============================================
-// FIX: DEBUGGING HELPERS (Remover en producción)
-// ===============================================
-
-// Descomenta esto para debug visual
-/*
-.programs-grid > div {
-  outline: 1px dashed rgba(255, 0, 0, 0.3) !important;
-  background: rgba(255, 255, 0, 0.05) !important;
-}
-
-.channel-row {
-  outline: 2px solid rgba(0, 255, 0, 0.3) !important;
-}
-
-.programs-container {
-  outline: 2px solid rgba(0, 0, 255, 0.3) !important;
-}
-*/
-
-// ===============================================
-// FIX: GRID TEMPLATE COLUMNS DYNAMIC
-// ===============================================
-
-// Asegurar que el grid use las 42 columnas correctamente
-.programs-grid {
-  grid-template-columns: repeat(42, minmax(0, 1fr)) !important;
-
-  // Items del grid
-  > div[style*="grid-column-start"] {
-    // El style inline manejará grid-column-start y grid-column-end
-    // Solo asegurar que sea visible
-    min-width: 10px !important; // NUEVO: ancho mínimo para programas cortos
-    visibility: visible !important;
-    opacity: 1 !important;
+  @media (min-width: 1440px) {
+    .programs-grid {
+      grid-template-columns: repeat(42, minmax(25px, 1fr)) !important;
+    }
   }
-}
 
-// ===============================================
-// FIX: RESPONSIVE ADJUSTMENTS
-// ===============================================
+  // ===============================================
+  // FIX: CONTENEDORES
+  // ===============================================
 
-@media (min-width: 768px) {
-  // En desktop, asegurar que todo se vea
-  .programs-grid,
-  .programs-container,
-  .channel-programs-container,
+  .programs-container {
+    overflow: visible !important;
+    position: relative !important;
+    flex: 1;
+    min-width: 0;
+
+    .programs-grid {
+      position: relative !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  }
+
+  .channel-programs-container {
+    position: relative !important;
+    display: flex !important;
+    min-height: 75px !important;
+    overflow: visible !important;
+  }
+
   .channel-row {
+    border-bottom: 1px solid rgba(75, 85, 99, 0.4) !important;
+    isolation: isolate;
+    min-height: 75px !important;
+    position: relative !important;
+    display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
+
+    &:last-child {
+      border-bottom: none !important;
+    }
   }
 
-  // Grid específico para desktop
-  .programs-grid {
-    grid-template-columns: repeat(42, minmax(15px, 1fr)) !important;
+  // ===============================================
+  // FIX: TIME HEADER
+  // ===============================================
+
+  .time-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+    background: linear-gradient(to right, #1f2937, #374151, #1f2937) !important;
+
+    .grid {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      width: 100% !important;
+
+      > div {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        visibility: visible !important;
+      }
+    }
   }
-}
 
-@media (min-width: 1024px) {
-  .programs-grid {
-    grid-template-columns: repeat(42, minmax(20px, 1fr)) !important;
-  }
-}
+  // ===============================================
+  // FIX: VIRTUAL SCROLL
+  // ===============================================
 
-@media (min-width: 1440px) {
-  .programs-grid {
-    grid-template-columns: repeat(42, minmax(25px, 1fr)) !important;
-  }
-}
+  cdk-virtual-scroll-viewport {
+    contain: layout style paint !important;
+    will-change: scroll-position;
+    scroll-behavior: smooth;
+    width: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 
-// ===============================================
-// FIX: Z-INDEX HIERARCHY
-// ===============================================
+    .cdk-virtual-scroll-content-wrapper {
+      width: 100% !important;
+      contain: layout style !important;
 
-// Jerarquía correcta de z-index
-.time-header {
-  z-index: 40 !important;
-}
-
-.dropdown-container {
-  z-index: 50 !important;
-}
-
-.time-indicator {
-  z-index: 30 !important; // Por debajo de dropdowns
-
-  &.time-indicator-priority {
-    z-index: 10000 !important; // Cuando no hay dropdowns
-  }
-}
-
-.channel-row {
-  z-index: 1 !important;
-}
-
-.programs-grid {
-  z-index: auto !important;
-
-  > div {
-    z-index: auto !important;
-
-    &:hover {
-      z-index: 20 !important;
+      > * {
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
     }
   }
 }

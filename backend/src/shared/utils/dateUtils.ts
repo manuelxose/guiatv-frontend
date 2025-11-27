@@ -40,6 +40,12 @@ export class DateUtils {
     return this.formatYYYYMMDD(tomorrow);
   }
 
+  static getYesterdayYYYYMMDD(): string {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    return this.formatYYYYMMDD(yesterday);
+  }
+
   static getAfterTomorrowYYYYMMDD(): string {
     const afterTomorrow = new Date();
     afterTomorrow.setDate(afterTomorrow.getDate() + 2);
@@ -48,6 +54,8 @@ export class DateUtils {
 
   static parseDateAlias(alias: string): string {
     switch (alias.toLowerCase()) {
+      case 'yesterday':
+        return this.getYesterdayYYYYMMDD();
       case 'today':
         return this.getTodayYYYYMMDD();
       case 'tomorrow':

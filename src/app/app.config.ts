@@ -27,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     // Habilitar animaciones en el cliente (necesario para triggers @expandCollapse)
     provideAnimations(),
-    provideClientHydration(),
+    // provideClientHydration(),
     provideHttpClient(withFetch()),
 
     // Providers SOLID para toda la aplicación (INCLUYE ProgramList)

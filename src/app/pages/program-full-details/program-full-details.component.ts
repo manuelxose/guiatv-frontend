@@ -143,17 +143,19 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
   }
 
   private getProgramaById(): void {
-    const idParam = this.route.snapshot.params['id'];
-    
-    if (!this.programas?.length) return;
+    const routeParam =
+      this.route.snapshot.params['id'] ?? this.route.snapshot.params['slug'];
+    if (!routeParam || !this.programas?.length) return;
 
-    const allPrograms = this.programas.flatMap((programa: any) => programa.programs);
-    
-    // Encontrar programa principal
-    this.program = allPrograms.find((program: any) =>
-      program?.title?.value?.replace(/ /g, '-').trim() === 
-      idParam.replace(/ /g, '-').trim()
-    );
+    const allPrograms = this.flattenPrograms(this.programas);
+    const targetSlug = this.slugify(routeParam);
+
+    // Encontrar programa principal por slug o id
+    this.program = allPrograms.find((program: any) => {
+      const titleValue = this.extractTitle(program);
+      const slug = this.slugify(titleValue);
+      return slug === targetSlug || program?.id === routeParam;
+    });
 
     if (!this.program) return;
 
@@ -177,8 +179,10 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
 
   private getSimilarPrograms(allPrograms: any[]): any[] {
     return allPrograms.filter((programa: any) => {
-      const programCategory = this.program?.desc?.category;
-      const currentCategory = programa?.desc?.category;
+      const programCategory =
+        this.program?.desc?.category || this.program?.category?.value;
+      const currentCategory =
+        programa?.desc?.category || programa?.category?.value;
       
       if (!programCategory || !currentCategory) return false;
 
@@ -230,5 +234,27 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
     if (console && console.log) {
       console.log(message);
     }
+  }
+
+  private flattenPrograms(data: any[]): any[] {
+    return data.flatMap((programa: any) => {
+      if (Array.isArray(programa?.programs)) return programa.programs;
+      if (Array.isArray(programa?.channels)) return programa.channels;
+      return [];
+    });
+  }
+
+  private extractTitle(program: any): string {
+    if (!program) return '';
+    if (typeof program.title === 'string') return program.title;
+    return program?.title?.value ?? '';
+  }
+
+  private slugify(value: string | undefined | null): string {
+    return String(value || '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9\-]/g, '-');
   }
 }

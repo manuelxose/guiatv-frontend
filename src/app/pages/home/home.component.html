@@ -111,7 +111,7 @@
 
   <!-- Main Content Container -->
   <main
-    *ngIf="uiState().showContent"
+    [hidden]="!uiState().showContent"
     class="relative overflow-y-auto"
     style="max-height: calc(100vh - 4rem)"
   >

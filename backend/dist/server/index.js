@@ -51,6 +51,7 @@ async function startServer() {
             channelController: container.get('channelController'),
             programController: container.get('programController'),
             scheduleController: container.get('scheduleController'),
+            layoutController: container.get('layoutController'),
             adminController: container.get('adminController'),
             ssrController: container.get('ssrController'),
         });

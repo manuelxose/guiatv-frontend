@@ -12,9 +12,10 @@ import { environment } from '../../../environments/environment';
 })
 export class ConsoleLoggerService implements ILogger {
   private isDevelopment = !environment.production;
+  private enableVerbose = false; // Desactiva info/debug para evitar ruido en consola
 
   info(message: string, ...args: any[]): void {
-    if (this.isDevelopment) {
+    if (this.isDevelopment && this.enableVerbose) {
       console.log(`ℹ️ ${this.formatMessage(message)}`, ...args);
     }
   }
@@ -28,7 +29,7 @@ export class ConsoleLoggerService implements ILogger {
   }
 
   debug(message: string, ...args: any[]): void {
-    if (this.isDevelopment) {
+    if (this.isDevelopment && this.enableVerbose) {
       console.debug(`🔍 ${this.formatMessage(message)}`, ...args);
     }
   }

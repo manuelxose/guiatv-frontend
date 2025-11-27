@@ -3,7 +3,8 @@
  * Ubicación: src/app/services/core/config.service.ts
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
 export interface AppConfig {
@@ -41,35 +42,60 @@ export interface AppConfig {
 })
 export class AppConfigurationService {
   
-  private config: AppConfig = {
-    api: {
-      backend: {
-        baseUrl: (environment as any).API_BASE_URL || 'http://localhost:4000/v2',
-        timeout: 10000
-      },
-      tmdb: {
-        baseUrl: 'https://api.themoviedb.org/3',
-        apiKey: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
-        language: 'es-ES'
-      }
-    },
-    cache: {
-      defaultTTL: 5 * 60 * 1000, // 5 minutos
-      maxSize: 100,
-      enablePersistence: !environment.production
-    },
-    ui: {
-      maxFeaturedMovies: 10,
-      autoRefreshInterval: 5 * 60 * 1000,
-      enableAnimations: !environment.production
-    },
-    features: {
-      enableMovies: true,
-      enableSeries: true,
-      enableTMDbFallback: true,
-      enableOfflineMode: false
+  private config: AppConfig;
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    const isBrowser = isPlatformBrowser(this.platformId);
+    const envBaseUrl = (environment as any).API_BASE_URL?.trim();
+    
+    // Respect explicit environment base URL always.
+    let baseUrl = envBaseUrl;
+    
+    // Fallbacks only when not provided
+    if (!baseUrl) {
+      // Browser: Use relative path to allow proxying
+      // Server: Use 127.0.0.1 instead of localhost for better resolution
+      baseUrl = isBrowser ? '/v2' : 'http://127.0.0.1:4000/v2';
     }
-  };
+
+    // Normalize trailing slash and ensure leading slash for relative URLs
+    if (baseUrl.endsWith('/')) {
+      baseUrl = baseUrl.slice(0, -1);
+    }
+    if (!baseUrl.startsWith('http') && !baseUrl.startsWith('/')) {
+      baseUrl = `/${baseUrl}`;
+    }
+
+    this.config = {
+      api: {
+        backend: {
+          baseUrl: baseUrl,
+          timeout: 10000
+        },
+        tmdb: {
+          baseUrl: 'https://api.themoviedb.org/3',
+          apiKey: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+          language: 'es-ES'
+        }
+      },
+      cache: {
+        defaultTTL: 5 * 60 * 1000, // 5 minutos
+        maxSize: 100,
+        enablePersistence: !environment.production
+      },
+      ui: {
+        maxFeaturedMovies: 10,
+        autoRefreshInterval: 5 * 60 * 1000,
+        enableAnimations: !environment.production
+      },
+      features: {
+        enableMovies: true,
+        enableSeries: true,
+        enableTMDbFallback: true,
+        enableOfflineMode: false
+      }
+    };
+  }
 
   getConfig(): AppConfig {
     return { ...this.config };

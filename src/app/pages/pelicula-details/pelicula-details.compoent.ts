@@ -157,9 +157,9 @@ export class PeliculaDetailsComponent {
 
   private updateProperties(): void {
     if (this.data?.channel_id) {
-      this.httpSvc.getChannel(this.data.channel_id).subscribe((data: any) => {
-        this.logo = data.icon;
-      });
+      // this.httpSvc.getChannel(this.data.channel_id).subscribe((data: any) => {
+      //   this.logo = data.icon;
+      // });
     }
 
     if (this.data && Object.keys(this.data).length > 0) {

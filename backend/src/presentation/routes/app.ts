@@ -1,6 +1,8 @@
 // src/v2/presentation/routes/app.ts
 
 import express, { Application } from 'express';
+import path from 'path';
+import fs from 'fs';
 import { createV2Routes, RoutesDependencies } from './index';
 import { corsMiddleware } from '../middlewares/cors';
 import { compressionMiddleware } from '../middlewares/compression';
@@ -11,10 +13,29 @@ import { notFoundHandler } from '../middlewares/notFoundHandler';
 export const createApp = (dependencies: RoutesDependencies): Application => {
   const app = express();
 
+  // Evitar respuestas 304 por etag en datos dinámicos
+  app.disable('etag');
+
+  // Forzar que los datos de la API no se sirvan desde cache del navegador
+  app.use((req, res, next) => {
+    delete req.headers['if-none-match'];
+    delete req.headers['if-modified-since'];
+    res.set('Cache-Control', 'no-store');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+  });
+
+  // Servir iconos/archivos desde /storage (carpeta raíz del proyecto)
+  // __dirname en build apunta a dist/presentation/routes -> subir 3 niveles hasta /backend/storage
+  const storagePath = path.join(__dirname, '../../../storage');
+  console.log('📂 Serving storage from:', storagePath);
+  console.log('📂 Directory exists:', fs.existsSync(storagePath));
+  app.use('/storage', express.static(storagePath));
+
   // Middlewares globales
   app.use(corsMiddleware);
   app.use(compressionMiddleware);
-  app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(requestLogger);
 
@@ -27,24 +48,6 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
    * @openapi
    * /:
    *   get:
-   *     tags:
-   *       - General
-   *     summary: Bienvenida a la API
-   *     description: Retorna información básica y versión de la API
-   *     responses:
-   *       200:
-   *         description: Bienvenida
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 success:
-   *                   type: boolean
-   *                   example: true
-   *                 data:
-   *                   type: object
-   *                   properties:
    *                     message:
    *                       type: string
    *                       example: Welcome to Guía TV API

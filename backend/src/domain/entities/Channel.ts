@@ -1,12 +1,19 @@
 // src/v2/domain/entities/Channel.ts
 
-export type ChannelType = 'TDT' | 'Cable' | 'Movistar' | 'Autonomico';
+export type ChannelType =
+  | 'TDT'
+  | 'Cable'
+  | 'Movistar'
+  | 'Autonomico'
+  | 'OTT';
 
 export interface ChannelProps {
   id: string;
   name: string;
   icon: string | null;
   type: ChannelType;
+  country?: string;
+  countryCode?: string;
   region?: string;
   isActive: boolean;
 }
@@ -29,6 +36,9 @@ export class Channel {
     }
     if (this.props.type === 'Autonomico' && !this.props.region) {
       throw new Error('Autonomico channels must have a region');
+    }
+    if (this.props.country && this.props.country.trim() === '') {
+      throw new Error('Country, if provided, cannot be empty');
     }
   }
 
@@ -59,6 +69,14 @@ export class Channel {
 
   get region(): string | undefined {
     return this.props.region;
+  }
+
+  get country(): string | undefined {
+    return this.props.country;
+  }
+
+  get countryCode(): string | undefined {
+    return this.props.countryCode;
   }
 
   get isActive(): boolean {

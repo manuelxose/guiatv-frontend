@@ -291,21 +291,21 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
 
       // Get channel information
       if (this.program?.channel_id) {
-        this.http
-          .getChannel(this.program.channel_id)
-          .pipe(first(), takeUntil(this.destroy$))
-          .subscribe({
-            next: (data: any) => {
-              this.logo = data.icon;
-              this.channel = data;
-              this.isLoading = false;
-              this.cdr.markForCheck();
-            },
-            error: (error) => {
-              console.error('Error loading channel data:', error);
-              this.isLoading = false;
-            },
-          });
+        // this.http
+        //   .getChannel(this.program.channel_id)
+        //   .pipe(first(), takeUntil(this.destroy$))
+        //   .subscribe({
+        //     next: (data: any) => {
+        //       this.logo = data.icon;
+        //       this.channel = data;
+        //       this.isLoading = false;
+        //       this.cdr.markForCheck();
+        //     },
+        //     error: (error) => {
+        //       console.error('Error loading channel data:', error);
+        //       this.isLoading = false;
+        //     },
+        //   });
       } else {
         this.isLoading = false;
       }

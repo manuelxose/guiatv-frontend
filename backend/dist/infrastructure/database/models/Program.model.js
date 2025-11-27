@@ -71,6 +71,30 @@ const ProgramSchema = new mongoose_1.Schema({
         required: true,
         index: true,
     },
+    startUtc: {
+        type: String,
+    },
+    endUtc: {
+        type: String,
+    },
+    date: {
+        type: String,
+        index: true,
+    },
+    startMinutes: {
+        type: Number,
+        index: true,
+    },
+    endMinutes: {
+        type: Number,
+    },
+    durationMinutes: {
+        type: Number,
+    },
+    timeSlotIndex: {
+        type: Number,
+        index: true,
+    },
     category: {
         type: String,
         trim: true,
@@ -83,6 +107,18 @@ const ProgramSchema = new mongoose_1.Schema({
         type: String,
         trim: true,
     },
+    layoutVersion: {
+        type: String,
+    },
+    precomputedLayout: {
+        type: Boolean,
+    },
+    precomputedLayouts: {
+        type: mongoose_1.Schema.Types.Mixed,
+    },
+    layoutsBySlot: {
+        type: [mongoose_1.Schema.Types.Mixed],
+    },
 }, {
     timestamps: true,
     collection: 'programs',
@@ -93,6 +129,13 @@ ProgramSchema.index({ channelId: 1, endTime: 1 });
 ProgramSchema.index({ startTime: 1, endTime: 1 });
 ProgramSchema.index({ channelId: 1, startTime: 1, endTime: 1 });
 ProgramSchema.index({ category: 1 });
+ProgramSchema.index({ date: 1, channelId: 1, startMinutes: 1 });
+ProgramSchema.index({ date: 1, startMinutes: 1 });
+ProgramSchema.index({ date: 1, channelId: 1, startTime: 1 });
+ProgramSchema.index({ date: 1, channelId: 1, startUtc: 1 });
+ProgramSchema.index({ channelId: 1, startUtc: 1 });
+ProgramSchema.index({ date: 1, timeSlotIndex: 1 });
+ProgramSchema.index({ startUtc: 1 });
 /**
  * Program model
  */

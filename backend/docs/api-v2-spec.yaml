@@ -1,5 +1,401 @@
 openapi: 3.0.0
 info:
   title: Guia TV API v2
-  version: 0.1.0
-paths: {}
+  version: 0.3.0
+servers:
+  - url: http://localhost:4000/v2
+paths:
+  /programs:
+    get:
+      summary: Obtener programación con layout precomputado
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "20251231"
+            description: "YYYYMMDD o alias: yesterday | today | tomorrow | after_tomorrow"
+        - name: channels
+          in: query
+          required: false
+          description: Lista de IDs separados por coma
+          schema:
+            type: string
+        - name: timeSlot
+          in: query
+          required: false
+          description: Índice de franja horaria (0-7) para rellenar campos principales
+          schema:
+            type: string
+        - name: fields
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [minimal, full]
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: country
+          in: query
+          required: false
+          description: Filtrar por país (ej. ES, Reino Unido)
+          schema:
+            type: string
+        - name: channelTypes
+          in: query
+          required: false
+          description: Lista de tipos separados por coma (TDT, Movistar, Autonomico, Cable, OTT)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Listado de programas con layout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      date:
+                        type: string
+                      timeSlots:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TimeSlot'
+                      channels:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ChannelMeta'
+                      programs:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProgramLayout'
+                  meta:
+                    type: object
+  /programs/{id}:
+    get:
+      summary: Obtener un programa por ID
+      tags:
+        - Programs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Programa encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      program:
+                        $ref: '#/components/schemas/ProgramLayout'
+        '404':
+          description: No encontrado
+components:
+  schemas:
+    ChannelMeta:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        icon:
+          type: string
+        type:
+          type: string
+        country:
+          type: string
+        countryCode:
+          type: string
+    TimeSlot:
+      type: object
+      properties:
+        index:
+          type: integer
+        start:
+          type: string
+          example: "09:00"
+        end:
+          type: string
+          example: "12:30"
+        startMinutes:
+          type: integer
+        endMinutes:
+          type: integer
+    SlotLayout:
+      type: object
+      properties:
+        timeSlotIndex:
+          type: integer
+        gridColumnStart:
+          type: integer
+        gridColumnEnd:
+          type: integer
+        layerIndex:
+          type: integer
+        isCutAtStart:
+          type: boolean
+        isCutAtEnd:
+          type: boolean
+        visibleStartTime:
+          type: string
+        visibleEndTime:
+          type: string
+        crossesMidnight:
+          type: boolean
+        pxStart:
+          type: number
+        pxWidth:
+          type: number
+    ProgramLayout:
+      type: object
+      properties:
+        id:
+          type: string
+        channelId:
+          type: string
+        title:
+          type: string
+        start:
+          type: string
+        end:
+          type: string
+        durationMinutes:
+          type: integer
+        category:
+          type: string
+        image:
+          type: string
+        rating:
+          type: string
+        description:
+          type: string
+        timeSlotIndex:
+          type: integer
+          nullable: true
+        gridColumnStart:
+          type: integer
+        gridColumnEnd:
+          type: integer
+        layerIndex:
+          type: integer
+        isCutAtStart:
+          type: boolean
+        isCutAtEnd:
+          type: boolean
+        visibleStartTime:
+          type: string
+        visibleEndTime:
+          type: string
+        crossesMidnight:
+          type: boolean
+        fieldsProvided:
+          type: string
+          enum: [minimal, full]
+        pxStart:
+          type: number
+        pxWidth:
+          type: number
+        layoutsBySlot:
+          type: array
+          items:
+            $ref: '#/components/schemas/SlotLayout'
+
+  /schedules/precompute:
+    post:
+      summary: Precomputar y cachear schedule completo (ayer/hoy/mañana/pasado)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  description: YYYYMMDD o alias (yesterday|today|tomorrow|after_tomorrow)
+                fields:
+                  type: string
+                  enum: [minimal, full]
+      responses:
+        '200':
+          description: Precomputado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      filePath:
+                        type: string
+                      signedUrl:
+                        type: string
+                      fileSize:
+                        type: integer
+                      cachedKey:
+                        type: string
+  /admin/sync:
+    post:
+      summary: Sincronizar EPG manualmente (descargar y parsear XML)
+      tags:
+        - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  description: YYYYMMDD o alias
+                forceRefresh:
+                  type: boolean
+                sourceUrl:
+                  type: string
+                  description: URL del XML/XML.GZ a descargar (puede ser endpoint remoto)
+      responses:
+        '200':
+          description: Sincronización lanzada
+  /admin/cleanup:
+    post:
+      summary: Limpiar programas antiguos
+      tags:
+        - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                daysToKeep:
+                  type: integer
+                  description: Días de historial a mantener (por defecto 7)
+      responses:
+        '200':
+          description: Limpieza completada
+  /admin/cache/clear:
+    post:
+      summary: Limpiar cache según patrón
+      tags:
+        - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pattern:
+                  type: string
+                  description: Patrón de claves a eliminar (ej. "program:*")
+      responses:
+        '200':
+          description: Cache limpiada
+
+  /admin/precompute:
+    post:
+      summary: Precomputar y cachear una fecha concreta
+      tags:
+        - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  description: YYYYMMDD o alias
+                fields:
+                  type: string
+                  enum: [minimal, full]
+      responses:
+        '200':
+          description: Precomputo lanzado
+
+  /admin/precompute-window:
+    post:
+      summary: Precomputar ayer/hoy/mañana/pasado cacheando /programs
+      tags:
+        - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fields:
+                  type: string
+                  enum: [minimal, full]
+                  default: full
+      responses:
+        '200':
+          description: Ventana precomputada
+
+  /admin/reset:
+    post:
+      summary: Reset completo (cache + colecciones + ficheros + re-sync/precompute)
+      tags:
+        - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sourceUrl:
+                  type: string
+                  description: URL del XML/XML.GZ opcional para ingesta forzada
+                fields:
+                  type: string
+                  enum: [minimal, full]
+                  default: full
+      responses:
+        '200':
+          description: Reset ejecutado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      cacheCleared:
+                        type: boolean
+                      dbCleared:
+                        type: object
+                      storageCleared:
+                        type: object
+                      syncedDates:
+                        type: array
+                        items:
+                          type: string
+                      precomputed:
+                        type: boolean

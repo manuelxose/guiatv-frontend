@@ -5,6 +5,8 @@ import { PrecomputeSchedule } from '../../application/use-cases/PrecomputeSchedu
 import { CleanOldPrograms } from '../../application/use-cases/CleanOldPrograms';
 import { DateUtils } from '../../shared/utils/dateUtils';
 import { logger } from '../../shared/utils/logger';
+import { EPGDataSource } from '../external/EPGDataSource';
+import { XMLParser } from '../parsers/XMLParser';
 
 /**
  * Sincronización diaria de datos EPG
@@ -37,17 +39,34 @@ export const syncEPGDataHandler = async (context: any) => {
       DateUtils.getAfterTomorrowYYYYMMDD(),
     ];
 
+    // Descargar y parsear el XML una sola vez para reutilizar en todas las fechas
+    const sourceUrl =
+      'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz';
+    const dataSource = new EPGDataSource({
+      url: sourceUrl,
+      timeout: 60000,
+      compressed: sourceUrl.endsWith('.gz'),
+    });
+    syncLogger.info('Fetching EPG once for all dates', { sourceUrl });
+    const xmlContent = await dataSource.fetchWithRetry(3);
+    const xmlParser = new XMLParser();
+    const parsedData = await xmlParser.parse(xmlContent);
+
     const results = [];
+    let isFirstDate = true;
 
     for (const date of datesToSync) {
       syncLogger.info('Syncing date', { date });
 
       const result = await syncUseCase.execute({
-        sourceUrl:
-          'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz',
+        sourceUrl,
         date,
         forceRefresh: true,
+        xmlContent,
+        parsedData,
+        skipSaveXml: !isFirstDate,
       });
+      isFirstDate = false;
 
       results.push({ date, ...result });
 

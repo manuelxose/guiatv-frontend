@@ -19,6 +19,48 @@ export class ProgramMapper {
     };
   }
 
+  /**
+   * Normalized client-facing DTO for the unified Programs API.
+   */
+  static toClientDTO(
+    program: Program,
+    fields: 'minimal' | 'full' = 'full'
+  ): {
+    id: string;
+    channelId: string;
+    title: string;
+    start: string;
+    end: string;
+    duration: number;
+    category?: string;
+    image?: string;
+    rating?: string;
+    description?: string;
+  } {
+    const base = {
+      id: program.id,
+      channelId: program.channelId,
+      title: program.title,
+      start: program.startTime.toISOString(),
+      end: program.endTime.toISOString(),
+      duration: program.duration,
+      category: program.genre,
+      image: program.image,
+      description: program.description,
+      rating: (program as any).rating,
+    };
+
+    if (fields === 'minimal') {
+      const { description, ...rest } = base;
+      return rest;
+    }
+
+    return {
+      ...base,
+      description: program.description,
+    };
+  }
+
   static toDTOList(programs: Program[]): ProgramDTO[] {
     return programs.map((p) => this.toDTO(p));
   }

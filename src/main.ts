@@ -1,6 +1,5 @@
 /**
- * Bootstrap principal de la aplicación standalone con SOLID
- * Ubicación: src/main.ts
+ * Bootstrap principal de la aplicación standalone
  */
 
 /// <reference types="@angular/localize" />
@@ -8,13 +7,26 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
+import { environment } from './environments/environment';
 
-// Inicializar aplicación con configuración SOLID
-bootstrapApplication(AppComponent, appConfig)
-  .then(() => {
-    console.log('🚀 Aplicación iniciada con arquitectura SOLID');
-    console.log('✅ SSR y standalone components configurados');
-  })
-  .catch((err) => {
-    console.error('❌ Error al iniciar la aplicación:', err);
-  });
+// Arranque principal
+bootstrapApplication(AppComponent, appConfig).catch((err) => {
+  console.error('Error al iniciar la aplicación:', err);
+});
+
+// Filtro de logs en desarrollo: solo mostramos etiquetas relevantes
+if (!environment.production && typeof window !== 'undefined') {
+  const allowedPrefixes = [
+    '[HomeData]',
+    '[ProgramListComponent]',
+    '[ProgramListFacade]',
+    '[ApiProgramProvider]',
+  ];
+  const originalLog = console.log.bind(console);
+  console.log = (...args: any[]) => {
+    const text = typeof args[0] === 'string' ? args[0] : '';
+    if (allowedPrefixes.some((p) => text.startsWith(p))) {
+      originalLog(...args);
+    }
+  };
+}

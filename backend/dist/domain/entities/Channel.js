@@ -20,6 +20,9 @@ class Channel {
         if (this.props.type === 'Autonomico' && !this.props.region) {
             throw new Error('Autonomico channels must have a region');
         }
+        if (this.props.country && this.props.country.trim() === '') {
+            throw new Error('Country, if provided, cannot be empty');
+        }
     }
     get id() {
         return this.props.id;
@@ -43,6 +46,12 @@ class Channel {
     }
     get region() {
         return this.props.region;
+    }
+    get country() {
+        return this.props.country;
+    }
+    get countryCode() {
+        return this.props.countryCode;
     }
     get isActive() {
         return this.props.isActive;

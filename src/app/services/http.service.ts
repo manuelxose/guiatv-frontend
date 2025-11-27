@@ -1,7 +1,8 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+﻿import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Programme } from '../models/programa.interface';
-import { BehaviorSubject, Observable, of, tap, catchError } from 'rxjs';
+import { BehaviorSubject, Observable, of, tap, catchError, map } from 'rxjs';
+import { AppConfigurationService } from './core/config.service';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +33,7 @@ export class HttpService {
   // Flag para evitar emisiones múltiples
   private isUpdating = false;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private configService: AppConfigurationService) {}
 
   // metodos para conectarse a la api de guia de programacion tv
 
@@ -82,13 +83,8 @@ export class HttpService {
   }
 
   public getProgramacion(dia: string): Observable<any[]> {
-    // Comprueba si estan los datos en las variables temporales
+        // Cache ignorada temporalmente para asegurar petici�n fresca
     const programas = this.getProgramasByDay(dia);
-    
-    if (programas && programas.length > 0) {
-      console.log(`💾 CACHE - Usando datos en cache para ${dia} (NO se llama a la base de datos)`);
-      return of(programas);
-    }
 
     // Verificar si ya hay una llamada en progreso para este día
     if (HttpService.isLoadingData[dia]) {
@@ -118,18 +114,101 @@ export class HttpService {
     // Incrementar contador de llamadas a la base de datos
     HttpService.databaseCallCounter++;
     
+    // Use configured API URL
+    const baseUrl = this.configService.getApiConfig().backend.baseUrl;
+    const apiUrl = `${baseUrl}/layouts/${dia}`;
+    
     return this.http
-      .get<any[]>(
-        `https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/programas/date/${dia}`
-      )
+      .get<any>(apiUrl, { params: { fields: 'full', limit: 5000 } as any })
       .pipe(
+        map((response) => (response?.data ?? response)?.channels ?? []),
+        map((channels: any[]) =>
+          channels.map((entry: any) => {
+            const channelInfo = entry?.channel || entry?.channelInfo || entry || {};
+            const channel = {
+              id: channelInfo.id ?? entry?.id ?? '',
+              name: channelInfo.name ?? '',
+              icon: channelInfo.icon || channelInfo.logo || channelInfo.logoUrl || '',
+              type: channelInfo.type,
+            };
+
+            const programsRaw: any[] = Array.isArray(entry?.programs)
+              ? entry.programs
+              : Array.isArray(entry?.channels)
+              ? entry.channels
+              : [];
+
+            const programs = programsRaw.map((p: any) => {
+              const title =
+                typeof p?.title === 'object'
+                  ? p.title
+                  : { value: p?.title ?? '', lang: 'es' };
+              const start = p?.start ?? (p as any)?.startTime ?? '';
+              const end = p?.end ?? (p as any)?.stop ?? (p as any)?.endTime ?? '';
+              const category =
+                p?.category && typeof p.category === 'string'
+                  ? { value: p.category, lang: 'es' }
+                  : p?.category;
+              const desc =
+                p?.description || p?.details
+                  ? {
+                      value: p.description || '',
+                      details: p?.details?.summary || p?.details?.longText,
+                      lang: 'es',
+                      category: (category as any)?.value,
+                    }
+                  : undefined;
+
+              return {
+                id: p.id,
+                title,
+                start,
+                stop: end,
+                channel_id: p.channelId ?? channel.id,
+                channel,
+                category,
+                desc,
+                description: desc,
+                duracion: p.durationMinutes ?? (p as any)?.duration ?? this.calculateDuration(start, end),
+                duration: p.durationMinutes ?? (p as any)?.duration ?? this.calculateDuration(start, end),
+                starRating: p.rating ? Number(p.rating) : undefined,
+                rating: p.rating,
+                image: p.image,
+                gridColumnStart: p.gridColumnStart,
+                gridColumnEnd: p.gridColumnEnd,
+                layerIndex: p.layerIndex,
+                isCutAtStart: p.isCutAtStart,
+                isCutAtEnd: p.isCutAtEnd,
+                visibleStartTime: p.visibleStartTime,
+                visibleEndTime: p.visibleEndTime,
+                crossesMidnight: p.crossesMidnight,
+                layoutsBySlot: p.layoutsBySlot,
+                pxStart: p.pxStart,
+                pxWidth: p.pxWidth,
+                timeSlotIndex: p.timeSlotIndex,
+              };
+            });
+
+            return {
+              id: channel.id,
+              channel,
+              programs,
+              channels: programs, // alias for compatibility
+            };
+          })
+        ),
         tap((data) => {
-          console.log(`✅ DATABASE RESPONSE #${HttpService.databaseCallCounter} - Recibidos ${data.length} programas para ${dia}`);
+          const programCount = data.reduce(
+            (acc, c) => acc + (c?.programs?.length ?? 0),
+            0
+          );
+          console.log(`[HttpService] DATABASE RESPONSE #${HttpService.databaseCallCounter} - Recibidos ${programCount} programas para ${dia} en ${data.length} canales`);
           this.setProgramasByDay(data, dia);
           // Limpiar el flag de carga
           HttpService.isLoadingData[dia] = false;
         }),
         catchError((error) => {
+          console.error('Error fetching programs:', error);
           // Limpiar el flag de carga en caso de error
           HttpService.isLoadingData[dia] = false;
           throw error;
@@ -137,10 +216,14 @@ export class HttpService {
       );
   }
 
-  public getChannel(id: string) {
-    return this.http.get<any[]>(
-      `https://us-central1-guia-tv-8fe3c.cloudfunctions.net/app/canales/${id}`
-    );
+  private calculateDuration(start: string, end: string): number {
+    try {
+      const startTime = new Date(start).getTime();
+      const endTime = new Date(end).getTime();
+      return Math.max(1, Math.floor((endTime - startTime) / (1000 * 60)));
+    } catch {
+      return 30;
+    }
   }
 
   public setToLocalStorage(key: string, value: any): void {
@@ -346,3 +429,7 @@ export class HttpService {
     console.log(`🔄 Contador de llamadas a la base de datos reiniciado`);
   }
 }
+
+
+
+

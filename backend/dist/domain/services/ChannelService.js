@@ -25,7 +25,13 @@ class ChannelService {
         return channel;
     }
     sortChannelsByRelevance(channels) {
-        const typeOrder = { TDT: 1, Movistar: 2, Cable: 3, Autonomico: 4 };
+        const typeOrder = {
+            TDT: 1,
+            Movistar: 2,
+            Cable: 3,
+            Autonomico: 4,
+            OTT: 5,
+        };
         return channels.sort((a, b) => {
             const orderDiff = typeOrder[a.type] - typeOrder[b.type];
             if (orderDiff !== 0)

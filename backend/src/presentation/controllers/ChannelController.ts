@@ -7,6 +7,7 @@ import { ChannelMapper } from '../../application/mappers/ChannelMapper';
 import { NotFoundError } from '../../shared/errors';
 import { logger } from '../../shared/utils/logger';
 import { ChannelType } from '../../domain/entities/Channel';
+import { successResponse } from '../../shared/types/ApiResponse';
 
 export class ChannelController {
   /**
@@ -79,12 +80,16 @@ export class ChannelController {
 
     const dto = ChannelMapper.toDTOList(channels);
 
-    res.status(200).json({
-      channels: dto,
-      meta: {
-        total: dto.length,
-      },
-    });
+    res.status(200).json(
+      successResponse(
+        {
+          channels: dto,
+        },
+        {
+          total: dto.length,
+        }
+      )
+    );
   }
 
   /**
@@ -124,8 +129,10 @@ export class ChannelController {
       throw new NotFoundError('Channel', id);
     }
 
-    res.status(200).json({
-      channel: ChannelMapper.toDTO(channel),
-    });
+    res.status(200).json(
+      successResponse({
+        channel: ChannelMapper.toDTO(channel),
+      })
+    );
   }
 }

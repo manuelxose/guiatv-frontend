@@ -1,199 +1,118 @@
-// src/v2/presentation/controllers/ProgramController.ts
-
 import { Request, Response } from 'express';
-import { GetProgramsByDate } from '../../application/use-cases/GetProgramsByDate';
-import { GetChannelPrograms } from '../../application/use-cases/GetChannelPrograms';
-import { ProgramMapper } from '../../application/mappers/ProgramMapper';
+import { GetPrograms, GetProgramsRequest } from '../../application/use-cases/GetPrograms';
 import { ChannelMapper } from '../../application/mappers/ChannelMapper';
 import { GetChannelById } from '../../application/use-cases/GetChannelById';
 import { NotFoundError, ValidationError } from '../../shared/errors';
-import { logger } from '../../shared/utils/logger';
-import { DateUtils } from '../../shared/utils/dateUtils';
+import { successResponse } from '../../shared/types/ApiResponse';
+import { GetProgramById } from '../../application/use-cases/GetProgramById';
 
 export class ProgramController {
-  private readonly logger = logger.child('ProgramController');
 
   constructor(
-    private readonly getProgramsByDate: GetProgramsByDate,
-    private readonly getChannelPrograms: GetChannelPrograms,
-    private readonly getChannelById: GetChannelById
+    private readonly getPrograms: GetPrograms,
+    private readonly getChannelById: GetChannelById,
+    private readonly getProgramById: GetProgramById
   ) {}
 
   /**
-   * @openapi
-   * /v2/programs/date/{date}:
-   *   get:
-   *     tags:
-   *       - Programs
-   *     summary: Obtener programas por fecha
-   *     description: Retorna los programas de una fecha específica con filtros opcionales
-   *     parameters:
-   *       - $ref: '#/components/parameters/DateParam'
-   *       - name: channelId
-   *         in: query
-   *         description: Filtrar por ID de canal
-   *         schema:
-   *           type: string
-   *       - name: genre
-   *         in: query
-   *         description: Filtrar por género
-   *         schema:
-   *           type: string
-   *       - $ref: '#/components/parameters/LimitQuery'
-   *       - $ref: '#/components/parameters/OffsetQuery'
-   *     responses:
-   *       200:
-   *         description: Lista de programas
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 programs:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/Program'
-   *                 meta:
-   *                   type: object
-   *                   properties:
-   *                     total:
-   *                       type: integer
-   *                     date:
-   *                       type: string
-   *       400:
-   *         $ref: '#/components/responses/BadRequest'
-   *       500:
-   *         $ref: '#/components/responses/InternalServerError'
+   * GET /v2/programs
    */
-  async getByDate(req: Request, res: Response): Promise<void> {
-    const { date } = req.params;
-    const { channelId, genre, limit, offset } = req.query;
+  async getProgramsHandler(req: Request, res: Response): Promise<void> {
+    const { date, channels, timeSlot, fields, page, limit, country, channelTypes } = req.query;
 
-    this.logger.info('Getting programs by date', { date, channelId, genre });
-
-    let normalizedDate: string;
-    try {
-      normalizedDate = DateUtils.parseDateAlias(date);
-    } catch (error) {
-      throw new ValidationError('Invalid date format or alias', [
-        {
-          field: 'date',
-          message:
-            'Expected YYYYMMDD format or alias (today, tomorrow, after_tomorrow)',
-          value: date,
-        },
-      ]);
+    if (!date || typeof date !== 'string') {
+      throw new ValidationError('Date is required');
     }
 
-    const programs = await this.getProgramsByDate.execute({
-      date: normalizedDate,
-      channelId: channelId as string,
-      genre: genre as string,
-      limit: limit ? parseInt(limit as string, 10) : 100,
-      offset: offset ? parseInt(offset as string, 10) : 0,
-    });
+    const request: GetProgramsRequest = {
+      date,
+      channels: channels
+        ? (channels as string).split(',').map((id) => id.trim())
+        : undefined,
+      timeSlot: timeSlot as string,
+      fields: fields as any,
+      page: page ? parseInt(page as string, 10) : undefined,
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      country: country as string,
+      channelTypes: channelTypes
+        ? String(channelTypes)
+            .split(',')
+            .map((id) => id.trim())
+        : undefined,
+    };
 
-    const dto = ProgramMapper.toDTOList(programs);
+    const result = await this.getPrograms.execute(request);
 
-    res.status(200).json({
-      programs: dto,
-      meta: {
-        total: dto.length,
-        date: normalizedDate,
-      },
-    });
+    res
+      .status(200)
+      .json(
+        successResponse(
+          {
+            date: result.date,
+            timeSlots: result.timeSlots,
+            channels: result.channels,
+            programs: result.programs,
+          },
+          result.meta
+        )
+      );
   }
 
   /**
-   * @openapi
-   * /v2/programs/channel/{channelId}:
-   *   get:
-   *     tags:
-   *       - Programs
-   *     summary: Obtener programas por canal
-   *     description: Retorna la programación de un canal específico
-   *     parameters:
-   *       - name: channelId
-   *         in: path
-   *         required: true
-   *         description: ID del canal
-   *         schema:
-   *           type: string
-   *       - name: date
-   *         in: query
-   *         description: Fecha (YYYYMMDD o alias)
-   *         schema:
-   *           type: string
-   *           default: today
-   *       - name: fromTime
-   *         in: query
-   *         description: Hora inicio (HH:mm)
-   *         schema:
-   *           type: string
-   *       - name: toTime
-   *         in: query
-   *         description: Hora fin (HH:mm)
-   *         schema:
-   *           type: string
-   *     responses:
-   *       200:
-   *         description: Programación del canal
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 channel:
-   *                   $ref: '#/components/schemas/Channel'
-   *                 programs:
-   *                   type: array
-   *                   items:
-   *                     $ref: '#/components/schemas/Program'
-   *                 meta:
-   *                   type: object
-   *                   properties:
-   *                     total:
-   *                       type: integer
-   *                     date:
-   *                       type: string
-   *       404:
-   *         $ref: '#/components/responses/NotFound'
-   *       500:
-   *         $ref: '#/components/responses/InternalServerError'
+   * GET /v2/channels/:id/programs
    */
   async getByChannel(req: Request, res: Response): Promise<void> {
-    const { channelId } = req.params;
-    const { date, fromTime, toTime } = req.query;
+    const { id } = req.params;
+    const { date, timeSlot, fields, page, limit, country, channelTypes } = req.query;
 
-    this.logger.info('Getting programs by channel', { channelId, date });
-
-    // Validar que el canal existe
-    const channel = await this.getChannelById.execute(channelId);
+    const channel = await this.getChannelById.execute(id);
     if (!channel) {
-      throw new NotFoundError('Channel', channelId);
+      throw new NotFoundError('Channel', id);
     }
 
-    let normalizedDate: string;
-    try {
-      normalizedDate = DateUtils.parseDateAlias((date as string) || 'today');
-    } catch (error) {
-      throw new ValidationError('Invalid date format or alias');
-    }
+    const request: GetProgramsRequest = {
+      date: (date as string) || 'today',
+      channels: [id],
+      timeSlot: timeSlot as string,
+      fields: fields as any,
+      page: page ? parseInt(page as string, 10) : undefined,
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      country: country as string,
+      channelTypes: channelTypes
+        ? String(channelTypes)
+            .split(',')
+            .map((id) => id.trim())
+        : undefined,
+    };
 
-    const programs = await this.getChannelPrograms.execute({
-      channelId,
-      date: normalizedDate,
-      fromTime: fromTime as string,
-      toTime: toTime as string,
-    });
+    const result = await this.getPrograms.execute(request);
 
-    res.status(200).json({
-      channel: ChannelMapper.toDTO(channel),
-      programs: ProgramMapper.toDTOList(programs),
-      meta: {
-        total: programs.length,
-        date: normalizedDate,
-      },
-    });
+    res.status(200).json(
+      successResponse(
+        {
+          channel: ChannelMapper.toDTO(channel),
+          date: result.date,
+          programs: result.programs,
+        },
+        {
+          ...result.meta,
+          totalChannels: 1,
+        }
+      )
+    );
+  }
+
+  /**
+   * GET /v2/programs/:id
+   */
+  async getById(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    const result = await this.getProgramById.execute(id);
+
+    res.status(200).json(
+      successResponse({
+        program: result.program,
+      })
+    );
   }
 }
