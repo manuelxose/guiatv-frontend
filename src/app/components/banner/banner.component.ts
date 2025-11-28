@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { slugify } from 'src/app/utils/utils';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
 import {
   diffHour,
   getHoraInicio,
@@ -21,6 +20,7 @@ import {
   IBannerDataService,
   ITimeUtilsService,
 } from '../../interfaces/banner.interface';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-banner',
@@ -50,8 +50,9 @@ export class BannerComponent
   public bannerData: IBannerData | null = null;
   public logo: string = '';
   public time: string = '';
+  private lastLoggedSignature: string | null = null;
 
-  constructor(private router: Router, private guiatvSvc: TvGuideService) {}
+  constructor(private router: Router) {}
 
   ngOnInit(): void {
     this.processBannerData();
@@ -68,7 +69,7 @@ export class BannerComponent
       this.bannerData = null;
       return;
     }
-    console.log('[BannerComponent] processBannerData:', this.data);
+    this.logBannerData(this.data);
 
     if (this.isMovieData(this.data)) {
       this.bannerData = this.convertMovieToBannerData(this.data);
@@ -83,6 +84,30 @@ export class BannerComponent
         this.bannerData.start,
         this.bannerData.stop
       );
+    }
+  }
+
+  /**
+   * Dev-only logging, deduped per data signature to avoid console spam when
+   * multiple banners render the same payload.
+   */
+  private logBannerData(data: IBannerInputData): void {
+    if (environment.production) return;
+    try {
+      const signature = JSON.stringify({
+        id: data.id,
+        title: typeof data.title === 'string' ? data.title : data.title?.value,
+        channel: (data as any)?.channel || (data as any)?.channelName,
+        start: (data as any)?.start || (data as any)?.startTime,
+        stop: (data as any)?.stop || (data as any)?.endTime,
+        poster: (data as any)?.poster || (data as any)?.icon,
+      });
+      if (this.lastLoggedSignature === signature) return;
+      this.lastLoggedSignature = signature;
+      console.log('[BannerComponent] processBannerData:', data);
+    } catch {
+      // Fallback to a single log without dedupe info
+      console.log('[BannerComponent] processBannerData:', data);
     }
   }
 
@@ -180,7 +205,7 @@ export class BannerComponent
 
   getChannelLogoUrl(channelName: string): string {
     if (!channelName) return this.getFallbackImageUrl();
-    return `https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${globalThis.encodeURIComponent(
+    return `https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${globalThis.encodeURIComponent(
       channelName
     )}.png`;
   }
@@ -206,16 +231,8 @@ export class BannerComponent
 
   // Build srcset for the large banner background (desktop sizes)
   getBannerSrcset(raw: string): string {
-    if (!raw) return '';
-    const sizes = [768, 1024, 1280, 1600, 1920];
-    return sizes
-      .map(
-        (w) =>
-          `https://wsrv.nl/?url=${this.encodeURIComponent(
-            raw
-          )}&w=${w}&h=${Math.round(w * 0.416)}&output=webp ${w}w`
-      )
-      .join(', ');
+    // Evitar proxys que disparan CORB; usar una sola fuente directa
+    return raw || '';
   }
 
   // Stub for reminder action — keep minimal to avoid runtime errors; can be extended later
@@ -248,9 +265,6 @@ export class BannerComponent
 
   public navigateTo(): void {
     if (!this.bannerData) return;
-
-    // Use the normalized bannerData so the details component gets a consistent shape
-    this.guiatvSvc.setDetallesPrograma(this.bannerData);
 
     const titleValue = this.bannerData.title?.value || 'unknown';
     const slug = slugify(titleValue);

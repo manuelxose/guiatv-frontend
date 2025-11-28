@@ -1,137 +1,170 @@
-<!-- Skip link for keyboard users -->
-<a class="skip-link sr-only focus:not-sr-only" href="#main-content"
-  >Saltar al contenido</a
->
+<!-- Skip link para accesibilidad -->
+<a class="sr-only focus:not-sr-only focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 px-4 py-2 bg-red-600 text-white rounded-md" href="#main-content">
+  Saltar al contenido principal
+</a>
 
 <main
   id="main-content"
-  class="lista-canales root flex-1 py-8 px-4 sm:px-8 lg:px-12"
+  class="lista-canales w-full max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-6 2xl:px-8 overflow-x-hidden"
   role="main"
   aria-labelledby="page-title"
 >
-  <section class="top">
-    <app-nav-bar></app-nav-bar>
-    <app-banner *ngIf="destacada" [data]="destacada" lazy="true"></app-banner>
+  <!-- Navigation Bar -->
+  <app-nav-bar></app-nav-bar>
+
+  <!-- Hero Banner (si existe destacada) -->
+  <section *ngIf="destacada" class="mt-4">
+    <app-banner [data]="destacada" lazy="true"></app-banner>
   </section>
 
-  <section class="intro mt-6 max-w-4xl mx-auto text-gray-600">
-    <h1 id="page-title" class="text-xl font-semibold text-gray-100">
-      Listado de canales de televisión en España
+  <!-- SEO Optimized Header -->
+  <header class="intro mt-6 max-w-4xl mx-auto">
+    <h1 id="page-title" class="text-xl lg:text-2xl font-bold text-white leading-tight">
+      Guía de Canales de Televisión en España 2024
     </h1>
-    <p class="mt-3 text-sm leading-relaxed">
-      Consulta la programación de los principales canales españoles. Filtra por
-      TDT, Movistar+, canales online o autonómicos.
+    <p class="mt-3 text-sm lg:text-base leading-relaxed text-gray-300">
+      Descubre la programación completa de más de <strong class="text-white">{{ totalCanales }}</strong> canales de televisión españoles. 
+      Encuentra tus canales favoritos de TDT, Movistar+, plataformas online y televisiones autonómicas.
     </p>
-  </section>
+    <p class="mt-2 text-xs text-gray-400">
+      Actualizado en tiempo real · Programación verificada · Acceso gratuito
+    </p>
+  </header>
 
-  <!-- JSON-LD para SEO -->
+  <!-- JSON-LD Structured Data para SEO -->
   <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
 
-  <!-- Top channels (crawlable list for SEO) -->
+  <!-- Quick Access: Top Channels (SEO crawlable) -->
   <section
     *ngIf="topChannels?.length"
-    class="top-channels mt-6 max-w-4xl mx-auto text-sm text-gray-300"
+    class="top-channels mt-8 max-w-4xl mx-auto"
     aria-labelledby="top-channels-title"
   >
-    <h2 id="top-channels-title" class="text-base font-semibold text-gray-100">
-      Canales populares
+    <h2 id="top-channels-title" class="text-base lg:text-lg font-semibold text-white mb-4">
+      Canales más populares
     </h2>
-    <p class="sr-only">
-      Listado de canales populares para facilitar el rastreo a buscadores
-    </p>
-    <ul class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-      <li *ngFor="let c of topChannels">
-        <a
-          [href]="
-            (url_web && (url_web[c.id]?.url || url_web[c.name]?.url)) || '#'
-          "
-          rel="noopener noreferrer"
-          class="text-gray-300 hover:text-red-400 underline-offset-2 focus:outline-none focus:ring-2 focus:ring-red-400"
-          >{{ c.name || c.nombre || c.title || c.titulo }}</a
-        >
-      </li>
-    </ul>
+    <nav aria-label="Acceso rápido a canales populares">
+      <ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-sm">
+        <li *ngFor="let c of topChannels">
+          <a
+            [href]="(url_web && (url_web[c.id]?.url || url_web[c.name]?.url)) || '#'"
+            rel="noopener noreferrer"
+            class="block px-3 py-2 rounded-lg bg-gray-800/50 border border-gray-700/30 text-gray-300 hover:text-white hover:bg-gray-700/50 hover:border-red-500/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+          >
+            {{ c.name || c.nombre || c.title || c.titulo }}
+          </a>
+        </li>
+      </ul>
+    </nav>
   </section>
 
-  <!-- Reusable section template: title, description, navigation and lazy slider -->
+  <!-- Channel Categories -->
   <ng-container
     *ngFor="
-      let s of [
-        { key: 'tdt', title: 'Canales TDT España', list: canales_tdt },
+      let section of [
+        { 
+          key: 'tdt', 
+          title: 'Canales TDT España', 
+          description: 'Televisión Digital Terrestre gratuita en España',
+          list: canales_tdt 
+        },
         {
           key: 'movistar',
-          title: 'Canales exclusivos de Movistar+',
+          title: 'Canales Movistar+',
+          description: 'Programación exclusiva de la plataforma Movistar Plus',
           list: canales_m
         },
         {
           key: 'online',
-          title: 'Canales de TV online en España',
+          title: 'Canales Online',
+          description: 'Televisión por internet y plataformas de streaming',
           list: canales_cable
         },
         {
           key: 'autonomo',
-          title: 'Canales Autonómicos España',
+          title: 'Canales Autonómicos',
+          description: 'Televisiones regionales de las comunidades autónomas',
           list: canales_auto
         },
-        { key: 'deporte', title: 'Canales Deportes España', list: canales_dep }
+        { 
+          key: 'deporte', 
+          title: 'Canales Deportivos',
+          description: 'Deportes en directo, fútbol, baloncesto y más',
+          list: canales_dep 
+        }
       ]
     "
   >
     <section
       #channelSection
-      class="channel-section mt-8"
-      [attr.data-key]="s.key"
-      [attr.aria-labelledby]="'section-' + s.key + '-title'"
+      *ngIf="section.list && section.list.length > 0"
+      class="channel-section mt-10"
+      [attr.data-key]="section.key"
+      [attr.aria-labelledby]="'section-' + section.key + '-title'"
     >
-      <div class="flex items-center justify-between">
-        <h2
-          id="{{ 'section-' + s.key + '-title' }}"
-          class="font-semibold text-gray-100 text-base"
+      <!-- Section Header -->
+      <header class="flex items-start justify-between mb-4">
+        <div class="flex-1">
+          <h2
+            [id]="'section-' + section.key + '-title'"
+            class="text-lg lg:text-xl font-bold text-white"
+          >
+            {{ section.title }}
+            <span class="ml-2 text-sm font-normal text-gray-400">({{ section.list.length }})</span>
+          </h2>
+          <p class="mt-1 text-xs lg:text-sm text-gray-400 leading-relaxed">
+            {{ section.description }}
+          </p>
+        </div>
+      </header>
+
+      <!-- Loading Skeleton -->
+      <div *ngIf="cargando" class="skeleton-grid" aria-hidden="true" aria-busy="true">
+        <div class="s-item" *ngFor="let i of [1, 2, 3, 4, 5, 6]"></div>
+      </div>
+
+      <!-- Channel Grid (Mobile-First) -->
+      <div
+        *ngIf="!cargando && (isBrowser ? sliderVisible[section.key] : true)"
+        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4"
+        role="list"
+        [attr.aria-label]="'Lista de ' + section.title"
+      >
+        <div
+          *ngFor="let channel of section.list; trackBy: trackByChannel"
+          role="listitem"
         >
-          {{ s.title }}
-        </h2>
-        <div class="controls flex items-center space-x-2 text-gray-400">
-          <button
-            aria-label="Anterior"
-            class="btn-nav"
-            (click)="prevFor(s.key)"
-          >
-            ‹
-          </button>
-          <button
-            aria-label="Siguiente"
-            class="btn-nav"
-            (click)="nextFor(s.key)"
-          >
-            ›
-          </button>
+          <app-card-channel
+            [name]="channel?.name || channel?.nombre || channel?.title || 'Canal'"
+            [icon]="channel?.icon || channel?.logo || channel?.image"
+            [type]="channel?.type || channel?.tipo || 'TDT'"
+            [region]="channel?.region"
+            [isActive]="channel?.isActive !== false"
+            (cardClick)="navigateToChannel(channel)"
+          ></app-card-channel>
         </div>
       </div>
 
-      <p class="mt-3 text-sm text-gray-400">
-        {{ s.title }} — explora la programación y encuentra tus canales
-        favoritos.
-      </p>
-
-      <div class="mt-4">
-        <!-- skeleton while loading -->
-        <div *ngIf="cargando" class="skeleton-grid" aria-hidden="true">
-          <div class="s-item" *ngFor="let i of [1, 2, 3, 4, 5]"></div>
+      <!-- Empty State -->
+      <div
+        *ngIf="!cargando && section.list.length === 0"
+        class="text-center py-12 px-4"
+      >
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-800/50 mb-4">
+          <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
         </div>
-
-        <!-- Lazy render slider only on browser and when sliderVisible flag is true -->
-        <ng-container
-          *ngIf="!cargando && (isBrowser ? sliderVisible[s.key] : true)"
-        >
-          <app-slider
-            [key]="s.key"
-            [programas]="s.list"
-            variant="canales"
-            [attr.data-lazy]="isBrowser ? 'true' : 'false'"
-            [attr.aria-label]="'Carrusel de ' + s.title"
-          ></app-slider>
-        </ng-container>
+        <p class="text-gray-400 text-sm">No hay canales disponibles en esta categoría</p>
       </div>
     </section>
   </ng-container>
+
+  <!-- Footer Info -->
+  <footer class="mt-12 pt-8 border-t border-gray-800/50 max-w-4xl mx-auto">
+    <div class="text-center text-xs text-gray-500">
+      <p>Información actualizada automáticamente desde fuentes oficiales</p>
+      <p class="mt-1">¿Falta algún canal? <a href="/contacto" class="text-red-400 hover:text-red-300 underline">Contáctanos</a></p>
+    </div>
+  </footer>
 </main>

@@ -1,5 +1,5 @@
 /**
- * HomeComponent refactorizado con principios SOLID - VERSIÓN COMPLETA CORREGIDA
+ * HomeComponent refactorizado con principios SOLID - Migrado a nueva capa de servicios
  * Ubicación: src/app/pages/home/home.component.ts
  */
 
@@ -15,27 +15,30 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { map } from 'rxjs/operators';
 
 // Components
 import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
+import { ProgramListComponent } from 'src/app/components/program-list/program-list.component';
+import { BannerComponent } from 'src/app/components/banner/banner.component';
 
 // Services and Interfaces
 import { MetaService } from 'src/app/services/meta.service';
-import { HomeDataService } from 'src/app/services/features/home-data.service';
+import { TvDataService } from 'src/app/state/tv-data.service';
+import { ContentService, ContentItem } from 'src/app/state/content.service';
 import { CategoryFilterService } from 'src/app/services/program-list/category-filter.service';
 import {
   IFeaturedMovie,
   ITvProgram,
-  ILogger,
   IDayChangedEvent,
 } from 'src/app/interfaces';
 import { ConsoleLoggerService } from 'src/app/services/core/logger.service';
-import { ProgramListComponent } from 'src/app/components/program-list/program-list.component';
-import { BannerComponent } from 'src/app/components/banner/banner.component';
 import { DeviceDetectorService } from 'src/app/services/device-detector.service';
 
+const DEFAULT_CHANNEL_TYPES = ['TDT', 'CABLE', 'MOVISTAR', 'AUTONOMICO', 'OTT'];
+
 /**
- * HomeComponent - REFACTORIZADO CON PRINCIPIOS SOLID
+ * HomeComponent - REFACTORIZADO CON NUEVA CAPA DE SERVICIOS
  */
 @Component({
   selector: 'app-home',
@@ -52,13 +55,14 @@ import { DeviceDetectorService } from 'src/app/services/device-detector.service'
 })
 export class HomeComponent implements OnInit {
   // ===============================================
-  // DEPENDENCY INJECTION - DEPENDENCY INVERSION PRINCIPLE
+  // DEPENDENCY INJECTION - NUEVA ARQUITECTURA
   // ===============================================
   public readonly deviceDetector = inject(DeviceDetectorService);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly metaService = inject(MetaService);
-  private readonly homeDataService = inject(HomeDataService);
+  private readonly tvDataService = inject(TvDataService);
+  private readonly contentService = inject(ContentService);
   private readonly categoryFilterService = inject(CategoryFilterService);
   private readonly logger = inject(ConsoleLoggerService);
 
@@ -66,8 +70,8 @@ export class HomeComponent implements OnInit {
   // COMPONENT STATE - REACTIVE SIGNALS
   // ===============================================
 
-  // Datos principales - se sincronizan con el servicio
-  public readonly programs = signal<ITvProgram[]>([]);
+  // Datos principales - se sincronizan con los servicios
+  public readonly programs = signal<any[]>([]);
   public readonly featuredMovie = signal<IFeaturedMovie | null>(null);
   public readonly popularMovies = signal<IFeaturedMovie[]>([]);
 
@@ -105,14 +109,13 @@ export class HomeComponent implements OnInit {
   // ===============================================
 
   ngOnInit(): void {
-    this.logger.info('HomeComponent initializing');
-    // NUEVO: Asegurar que DeviceDetector está inicializado
+    this.logger.info('HomeComponent initializing with new service layer');
 
     this.setupMetaTags();
     this.initializeDataStreams();
     this.initializeData();
 
-    // AÑADIDO: Exponer métodos de debug en desarrollo
+    // Exponer métodos de debug en desarrollo
     if (!this.isProduction()) {
       this.exposeDebugMethods();
 
@@ -128,7 +131,7 @@ export class HomeComponent implements OnInit {
   // ===============================================
 
   /**
-   * Configura los meta tags SEO - responsabilidad específica
+   * Configura los meta tags SEO
    */
   private setupMetaTags(): void {
     this.metaService.setMetaTags({
@@ -140,80 +143,106 @@ export class HomeComponent implements OnInit {
   }
 
   /**
-   * Inicializa los streams de datos reactivos - responsabilidad específica
+   * Inicializa los streams de datos reactivos usando nueva arquitectura
    */
   private initializeDataStreams(): void {
-    this.logger.debug('Initializing reactive data streams');
+    this.logger.debug('Initializing reactive data streams from TvDataService and ContentService');
 
-    // Stream de programas
-    this.homeDataService.programs$
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    // Stream de programas desde /programs (incluye canales)
+    this.tvDataService.programs$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map((programsResp) => {
+          const channels = programsResp?.channels ?? [];
+          const channelMap = new Map(channels.map((c: any) => [c.id, c]));
+          const programs = programsResp?.programs ?? [];
+          return programs.map((prog: any) => ({
+            ...prog,
+            channel_id: prog.channelId || prog.channel?.id || '',
+            channel:
+              prog.channel ||
+              channelMap.get(prog.channelId) || { id: '', name: '', icon: '' },
+          }));
+        })
+      )
       .subscribe((programs) => {
         this.logger.debug(`Programs updated: ${programs.length} items`);
         this.programs.set(programs);
 
         // Actualizar programas en el servicio de categorías
         this.categoryFilterService.updatePrograms(programs);
+
+        // Loading completo cuando llegan programas
+        if (programs.length > 0) {
+          this.isLoading.set(false);
+        }
       });
 
-    // Stream de película destacada
-    this.homeDataService.featuredMovie$
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    // Stream de película destacada desde ContentService
+    this.contentService
+      .loadContent('movies', 'today')
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map((snapshot) => this.convertContentItemToFeaturedMovie(snapshot.featured))
+      )
       .subscribe((movie) => {
         this.logger.debug(`Featured movie updated: ${movie?.title || 'none'}`);
-        this.logger.debug(`Featured movie details:`, movie);
         this.featuredMovie.set(movie);
       });
 
-    // Stream de películas populares
-    this.homeDataService.popularMovies$
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    // Stream de películas populares desde ContentService
+    this.contentService
+      .loadContent('movies', 'today')
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        map((snapshot) =>
+          snapshot.items
+            .slice(0, 10)
+            .map((item) => this.convertContentItemToFeaturedMovie(item))
+            .filter((m): m is IFeaturedMovie => m !== null)
+        )
+      )
       .subscribe((movies) => {
         this.logger.debug(`Popular movies updated: ${movies.length} items`);
         this.popularMovies.set(movies);
       });
-
-    // Stream de estado de carga
-    this.homeDataService.loading$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((loading) => {
-        this.logger.debug(`Loading state: ${loading}`);
-        this.isLoading.set(loading);
-      });
-
-    // Stream de errores
-    this.homeDataService.error$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((error) => {
-        this.logger.debug(`Error state: ${error || 'none'}`);
-        this.error.set(error);
-      });
   }
 
   /**
-   * Inicializa los datos del componente - delegación al servicio
+   * Inicializa los datos del componente usando TvDataService
    */
   private initializeData(): void {
-    this.logger.info('Starting data initialization');
+    this.logger.info('Starting data initialization with TvDataService');
+    this.isLoading.set(true);
 
-    this.homeDataService
-      .initializeData()
+    this.tvDataService
+      .loadPrograms({
+        date: 'today',
+        fields: 'minimal',
+        limit: 5000,
+        channelTypes: DEFAULT_CHANNEL_TYPES,
+      })
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((result) => {
-        if (result.success) {
+      .subscribe({
+        next: () => {
           this.logger.info('Home data initialization successful');
-        } else {
-          this.logger.error(`Home data initialization failed: ${result}`);
-        }
+          this.isLoading.set(false);
+          this.error.set(null);
+        },
+        error: (err) => {
+          this.logger.error('Home data initialization failed:', err);
+          this.isLoading.set(false);
+          this.error.set(err?.message || 'Error loading data');
+        },
       });
   }
 
   // ===============================================
-  // EVENT HANDLERS - INTERFACE SEGREGATION (CORREGIDOS)
+  // EVENT HANDLERS
   // ===============================================
 
   /**
-   * Maneja el cambio de día en la programación - CORREGIDO
+   * Maneja el cambio de día en la programación
    */
   public onDayChanged(event: IDayChangedEvent): void {
     const { dayIndex, dayInfo } = event;
@@ -224,35 +253,44 @@ export class HomeComponent implements OnInit {
 
     // Actualizar el título de la página según el día seleccionado
     if (dayIndex === 0) {
-      // Hoy
       this.updatePageTitle('Guía TV - Programación de Hoy');
     } else if (dayIndex === 1) {
-      // Mañana
       this.updatePageTitle(
         `Guía TV - Programación de Mañana (${dayInfo.diaSemana} ${dayInfo.diaNumero})`
       );
     } else {
-      // Pasado mañana
       this.updatePageTitle(
         `Guía TV - Programación ${dayInfo.diaSemana} ${dayInfo.diaNumero}`
       );
     }
 
-    // CRITICAL FIX: Reload data for the selected day
-    this.homeDataService.loadDataForDay(dayIndex).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (result) => {
-        if (!result.success) {
-          this.logger.error('Failed to load data for day change', (result as any).error);
-        }
-      },
-      error: (err) => this.logger.error('Error reloading data', err)
-    });
+    // Reload data for the selected day
+    const dayAlias = this.getDayAlias(dayIndex);
+    this.isLoading.set(true);
+    this.tvDataService
+      .loadPrograms({
+        date: dayAlias,
+        fields: 'minimal',
+        limit: 5000,
+        channelTypes: DEFAULT_CHANNEL_TYPES,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.logger.info(`Day change successful: loaded programs for ${dayAlias}`);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          this.logger.error('Error reloading data for day change', err);
+          this.isLoading.set(false);
+          this.error.set(err?.message || 'Error loading data');
+        },
+      });
   }
 
   public onMovieSelected(movie: any): void {
     this.logger.info(`Movie selected: ${movie.title}`);
     // Aquí se podría navegar a detalles o abrir modal
-    // this.router.navigate(['/movie', movie.id]);
   }
 
   /**
@@ -261,14 +299,7 @@ export class HomeComponent implements OnInit {
   public onRetry(): void {
     this.logger.info('Retry requested by user');
     this.error.set(null);
-    this.homeDataService
-      .refreshData()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((result) => {
-        if (!result.success) {
-          this.logger.error(`Retry failed: ${result}`);
-        }
-      });
+    this.initializeData();
   }
 
   /**
@@ -276,20 +307,11 @@ export class HomeComponent implements OnInit {
    */
   public onRefresh(): void {
     this.logger.info('Manual refresh requested');
-    this.homeDataService
-      .refreshData()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((result) => {
-        if (result.success) {
-          this.logger.info('Manual refresh completed');
-        } else {
-          this.logger.error(`Manual refresh failed: ${result}`);
-        }
-      });
+    this.initializeData();
   }
 
   // ===============================================
-  // UTILITY METHODS - PURE FUNCTIONS (CORREGIDOS)
+  // UTILITY METHODS - PURE FUNCTIONS
   // ===============================================
 
   /**
@@ -309,26 +331,22 @@ export class HomeComponent implements OnInit {
   }
 
   /**
-   * Formatea el rating para mostrar - CORREGIDO PARA STRINGS
+   * Formatea el rating para mostrar
    */
   public formatRating(rating: number | string | null): string {
     if (!rating) return 'N/A';
 
-    // Si ya es una string con formato (ej: "6.0/10"), devolverla tal como está
     if (typeof rating === 'string') {
-      // Si contiene "/10" o "/", devolverlo tal como está
       if (rating.includes('/10') || rating.includes('/')) {
         return rating;
       }
-      // Si es una string pero solo número, convertir a número
       const numRating = parseFloat(rating);
       if (!isNaN(numRating)) {
         return `${numRating.toFixed(1)}`;
       }
-      return rating; // Devolver la string original si no se puede procesar
+      return rating;
     }
 
-    // Si es número, formatear normalmente
     if (typeof rating === 'number') {
       return `${rating.toFixed(1)}`;
     }
@@ -351,20 +369,19 @@ export class HomeComponent implements OnInit {
   }
 
   // ===============================================
-  // TEMPLATE HELPER METHODS - NUEVOS MÉTODOS AGREGADOS
+  // TEMPLATE HELPER METHODS
   // ===============================================
 
   /**
-   * CORREGIDO: Convierte la película destacada al formato que espera el Banner
+   * Convierte la película destacada al formato que espera el Banner
    */
   public getBannerData(): any {
     const featured = this.featuredMovie();
     if (!featured) return null;
 
-    // Convertir del formato IFeaturedMovie al formato que espera BannerComponent
     return {
       title: { value: featured.title },
-      channel: featured.channelName || 'Canal desconocido', // Usar el nombre real del canal
+      channel: featured.channelName || 'Canal desconocido',
       channelName: featured.channelName,
       icon: featured.poster || 'assets/images/default-movie-poster.svg',
       poster: featured.poster || 'assets/images/default-movie-poster.svg',
@@ -391,7 +408,7 @@ export class HomeComponent implements OnInit {
   }
 
   /**
-   * Obtiene la URL del poster con fallback mejorado
+   * Obtiene la URL del poster con fallback
    */
   public getPosterUrl(movie: IFeaturedMovie): string {
     return (
@@ -439,12 +456,50 @@ export class HomeComponent implements OnInit {
     return false; // Por ahora siempre false para debug
   }
 
+  /**
+   * Convierte índice de día a alias de API
+   */
+  private getDayAlias(dayIndex: number): 'yesterday' | 'today' | 'tomorrow' | 'after_tomorrow' {
+    switch (dayIndex) {
+      case -1:
+        return 'yesterday';
+      case 0:
+        return 'today';
+      case 1:
+        return 'tomorrow';
+      case 2:
+        return 'after_tomorrow';
+      default:
+        return 'today';
+    }
+  }
+
+  /**
+   * Convierte ContentItem a IFeaturedMovie para compatibilidad
+   */
+  private convertContentItemToFeaturedMovie(item: ContentItem | null): IFeaturedMovie | null {
+    if (!item) return null;
+
+    return {
+      id: item.id,
+      title: item.title,
+      description: item.description || '',
+      poster: item.image || '',
+      rating: typeof item.rating === 'number' ? item.rating : parseFloat(item.rating?.toString() || '0') || 0,
+      category: item.category || '',
+      channelName: item.channel?.name || '',
+      startTime: item.start,
+      endTime: item.end,
+      releaseDate: '', // No disponible en ContentItem
+    };
+  }
+
   // ===============================================
-  // DEBUG METHODS MEJORADOS (solo en desarrollo)
+  // DEBUG METHODS (solo en desarrollo)
   // ===============================================
 
   /**
-   * Debug del estado actual del componente y servicios
+   * Debug del estado actual del componente
    */
   public debugComponentState(): void {
     if (this.logger) {
@@ -455,82 +510,50 @@ export class HomeComponent implements OnInit {
         `Featured Movie: ${this.featuredMovie()?.title || 'none'}`
       );
       this.logger.debug(`Popular Movies: ${this.popularMovies().length}`);
-
-      // Debug del servicio de datos
-      this.homeDataService.debugState();
-
       this.logger.debug('=== END COMPONENT STATE ===');
     }
   }
 
   /**
-   * Método para forzar sincronización de datos si algo falla
+   * Método para forzar sincronización de datos
    */
   public forceSyncData(): void {
     this.logger.info('🔄 FORCE SYNC - Forcing data synchronization');
-
-    const currentState = this.homeDataService.getCurrentState();
-
-    // Si hay datos en el servicio pero no en el componente, forzar sincronización
-    if (
-      currentState.programListData.length > 0 &&
-      this.programs().length === 0
-    ) {
-      this.logger.warn('⚠️ FORCE SYNC - Data mismatch detected, forcing sync');
-
-      // Forzar actualización de datos en ProgramList
-      this.homeDataService.updateProgramListData(currentState.programListData);
-
-      // Forzar change detection
-      setTimeout(() => {
-        this.logger.info('🔄 FORCE SYNC - Forcing change detection');
-      }, 100);
-    }
+    this.initializeData();
   }
 
   /**
    * Verificación de consistencia de datos
    */
   public checkDataConsistency(): void {
-    const serviceState = this.homeDataService.getCurrentState();
     const componentState = {
       programs: this.programs().length,
       featuredMovie: this.featuredMovie()?.title || 'none',
       popularMovies: this.popularMovies().length,
+      isLoading: this.isLoading(),
+      hasError: this.error() !== null,
     };
 
     console.log('🔍 DATA CONSISTENCY CHECK:');
-    console.log('Service State:', {
-      programs: serviceState.programs.length,
-      programListData: serviceState.programListData.length,
-      featuredMovie: serviceState.featuredMovie?.title || 'none',
-      popularMovies: serviceState.popularMovies.length,
-      isLoading: serviceState.isLoading,
-      hasData: serviceState.hasData,
-    });
-
     console.log('Component State:', componentState);
 
     // Detectar inconsistencias
-    if (
-      serviceState.programListData.length > 0 &&
-      this.programs().length === 0
-    ) {
+    if (this.isLoading() && this.programs().length > 0) {
       console.warn(
-        '🚨 INCONSISTENCY: Service has ProgramList data but component has no programs'
+        '🚨 INCONSISTENCY: Loading flag is true but component has programs'
       );
-      this.forceSyncData();
+      this.isLoading.set(false);
     }
 
-    if (serviceState.featuredMovie && !this.featuredMovie()) {
+    if (!this.isLoading() && this.programs().length === 0 && !this.error()) {
       console.warn(
-        '🚨 INCONSISTENCY: Service has featured movie but component does not'
+        '🚨 INCONSISTENCY: Not loading, no programs, no error - may need refresh'
       );
     }
   }
 
   /**
-   * Método para exponer en consola para debugging manual
+   * Expone métodos en consola para debugging manual
    */
   public exposeDebugMethods(): void {
     if (typeof window !== 'undefined') {
@@ -539,7 +562,6 @@ export class HomeComponent implements OnInit {
         sync: () => this.forceSyncData(),
         check: () => this.checkDataConsistency(),
         refresh: () => this.onRefresh(),
-        serviceState: () => this.homeDataService.getCurrentState(),
         componentState: () => ({
           programs: this.programs().length,
           featuredMovie: this.featuredMovie()?.title,
@@ -554,7 +576,6 @@ export class HomeComponent implements OnInit {
       console.log('- homeComponentDebug.sync() - Forzar sincronización');
       console.log('- homeComponentDebug.check() - Verificar consistencia');
       console.log('- homeComponentDebug.refresh() - Refrescar datos');
-      console.log('- homeComponentDebug.serviceState() - Estado del servicio');
       console.log(
         '- homeComponentDebug.componentState() - Estado del componente'
       );
@@ -565,47 +586,35 @@ export class HomeComponent implements OnInit {
   }
 
   // ===============================================
-  // MÉTODOS PARA FILTRADO DE CATEGORÍAS - PRINCIPIO SINGLE RESPONSIBILITY
+  // MÉTODOS PARA FILTRADO DE CATEGORÍAS
   // ===============================================
 
   /**
    * Maneja la selección de categorías desde el componente hijo
-   * Principio: Single Responsibility - Delega al servicio especializado
-   * ACTUALIZADO: Ahora maneja selección múltiple
    */
   public onCategorySelected(categories: string[]): void {
     this.logger.info(
       `HomeComponent: Categorías seleccionadas: ${categories.join(', ')}`
     );
 
-    // Si no hay categorías seleccionadas, limpiar filtro
     if (categories.length === 0) {
       this.categoryFilterService.clearCategoryFilter();
       return;
     }
 
     // Por ahora, el CategoryFilterService maneja una sola categoría
-    // Usamos la primera categoría seleccionada como principal
-    // TODO: Actualizar CategoryFilterService para soportar múltiples categorías
     const primaryCategory = categories[0];
     this.categoryFilterService.selectCategory(primaryCategory);
 
-    // Log adicional para múltiples categorías
     if (categories.length > 1) {
       this.logger.info(
         `HomeComponent: Múltiples categorías seleccionadas, usando como principal: ${primaryCategory}`
-      );
-      this.logger.debug(
-        `HomeComponent: Categorías adicionales: ${categories
-          .slice(1)
-          .join(', ')}`
       );
     }
   }
 
   /**
    * Limpia el filtro de categoría
-   * Principio: Single Responsibility - Delega al servicio
    */
   public clearCategoryFilter(): void {
     this.categoryFilterService.clearCategoryFilter();
@@ -614,8 +623,6 @@ export class HomeComponent implements OnInit {
 
   /**
    * Obtiene el número de programas de las categorías seleccionadas
-   * Principio: Single Responsibility - Delega al servicio especializado
-   * NOTA: Actualmente funciona con la categoría principal debido a limitaciones del servicio
    */
   public getCategoryProgramCount(): number {
     const category = this.selectedCategory();
@@ -627,8 +634,6 @@ export class HomeComponent implements OnInit {
 
   /**
    * Obtiene el número de canales que tienen programas de las categorías seleccionadas
-   * Principio: Single Responsibility - Delega al servicio especializado
-   * NOTA: Actualmente funciona con la categoría principal debido a limitaciones del servicio
    */
   public getCategoryChannelCount(): number {
     const category = this.selectedCategory();
@@ -640,8 +645,6 @@ export class HomeComponent implements OnInit {
 
   /**
    * Obtiene el número de programas actualmente en emisión de las categorías seleccionadas
-   * Principio: Single Responsibility - Delega al servicio especializado
-   * NOTA: Actualmente funciona con la categoría principal debido a limitaciones del servicio
    */
   public getCurrentCategoryPrograms(): number {
     const category = this.selectedCategory();
@@ -653,8 +656,6 @@ export class HomeComponent implements OnInit {
 
   /**
    * Obtiene información del próximo programa de las categorías seleccionadas
-   * Principio: Single Responsibility - Delega al servicio especializado
-   * NOTA: Actualmente funciona con la categoría principal debido a limitaciones del servicio
    */
   public getNextCategoryProgram(): string {
     const category = this.selectedCategory();
@@ -664,3 +665,4 @@ export class HomeComponent implements OnInit {
     return stats.nextProgramTime;
   }
 }
+

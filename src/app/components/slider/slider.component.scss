@@ -58,23 +58,27 @@ $transition: cubic-bezier(0.5, 0, 0.1, 1);
   scroll-snap-align: start;
   list-style: none;
 
-  // Full screen móvil
+  // Mobile: casi full screen
   width: 90vw;
 
   @media (min-width: 640px) {
     width: 45vw;
+    max-width: 320px;
   }
 
   @media (min-width: 1024px) {
-    width: 30vw;
+    width: 280px;
+    max-width: 280px;
   }
 
   @media (min-width: 1280px) {
-    width: 24vw;
+    width: 260px;
+    max-width: 260px;
   }
 
   @media (min-width: 1536px) {
-    width: 19vw;
+    width: 240px;
+    max-width: 240px;
   }
 }
 

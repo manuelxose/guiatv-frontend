@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/blog/pages/blog-home/blog-home.component.scss"],
-  "sourcesContent": ["// Animaciones para scroll infinito\r\n@keyframes scroll-up {\r\n  0% {\r\n    transform: translateY(0);\r\n  }\r\n  100% {\r\n    transform: translateY(-50%);\r\n  }\r\n}\r\n\r\n@keyframes scroll-down {\r\n  0% {\r\n    transform: translateY(-50%);\r\n  }\r\n  100% {\r\n    transform: translateY(0);\r\n  }\r\n}\r\n\r\n.animate-scroll-up {\r\n  animation: scroll-up 20s linear infinite;\r\n\r\n  &:hover {\r\n    animation-play-state: paused;\r\n  }\r\n}\r\n\r\n.animate-scroll-down {\r\n  animation: scroll-down 20s linear infinite;\r\n\r\n  &:hover {\r\n    animation-play-state: paused;\r\n  }\r\n}\r\n\r\n// Mejoras de accesibilidad para animaciones\r\n@media (prefers-reduced-motion: reduce) {\r\n  .animate-scroll-up,\r\n  .animate-scroll-down {\r\n    animation: none;\r\n  }\r\n}\r\n\r\n// Optimización para mobile\r\n@media (max-width: 768px) {\r\n  .animate-scroll-up,\r\n  .animate-scroll-down {\r\n    animation-duration: 15s;\r\n  }\r\n}\r\n"],
-  "mappings": ";AACA,WAAA;AACE;AACE,eAAA,WAAA;;AAEF;AACE,eAAA,WAAA;;;AAIJ,WAAA;AACE;AACE,eAAA,WAAA;;AAEF;AACE,eAAA,WAAA;;;AAIJ,CAAA;AACE,aAAA,UAAA,IAAA,OAAA;;AAEA,CAHF,iBAGE;AACE,wBAAA;;AAIJ,CAAA;AACE,aAAA,YAAA,IAAA,OAAA;;AAEA,CAHF,mBAGE;AACE,wBAAA;;AAKJ,OAAA,CAAA,sBAAA,EAAA;AACE,GAlBF;EAkBE,CAVF;AAYI,eAAA;;;AAKJ,OAAA,CAAA,SAAA,EAAA;AACE,GA1BF;EA0BE,CAlBF;AAoBI,wBAAA;;;",
-  "names": []
-}

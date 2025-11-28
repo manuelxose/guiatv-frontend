@@ -1,79 +1,131 @@
-/* Scoped styles for ListaCanalesComponent */
+/**
+ * Lista Canales Component - Mobile-First Styles
+ * Optimizado para SEO, UX y rendimiento
+ */
+
+// ===============================================
+// VARIABLES
+// ===============================================
+
+$primary-color: #dc2626;
+$primary-hover: #b91c1c;
+$text-primary: #ffffff;
+$text-secondary: #9ca3af;
+$bg-dark: #1f2937;
+$bg-darker: #111827;
+$border-color: rgba(255, 255, 255, 0.05);
+$border-radius: 0.75rem;
+$transition-speed: 0.2s;
+
+// ===============================================
+// CONTAINER
+// ===============================================
+
 .lista-canales {
   background: transparent;
-  color: var(--color-text, #e5e7eb); // fallback to Tailwind gray-200
+  color: $text-primary;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  
+  // Prevenir overflow horizontal
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
-.intro h1 {
-  color: #fff;
+// ===============================================
+// HEADER & INTRO
+// ===============================================
+
+.intro {
+  animation: fadeInUp 0.4s ease-out;
+  
+  h1 {
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  p {
+    line-height: 1.6;
+    max-width: 65ch;
+  }
 }
+
+// ===============================================
+// CHANNEL SECTIONS
+// ===============================================
 
 .channel-section {
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
-  padding-top: 1.25rem;
+  border-top: 1px solid $border-color;
+  padding-top: 1.5rem;
+  
+  header {
+    margin-bottom: 1rem;
+  }
 }
 
-.controls .btn-nav {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.03),
-    rgba(255, 255, 255, 0.01)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.95);
-  width: 44px;
-  height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
-}
-.controls .btn-nav:hover {
-  transform: translateY(-2px) scale(1.02);
-  background: rgba(220, 38, 38, 0.12);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
-}
+// ===============================================
+// SKELETON LOADING
+// ===============================================
 
-.controls .btn-nav:focus {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.18);
-}
-
-/* Skeleton grid while loading (lightweight, CSS-only shimmer) */
 .skeleton-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  @media (min-width: 1280px) {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  
+  @media (min-width: 1536px) {
+    grid-template-columns: repeat(7, 1fr);
+  }
 }
+
 .s-item {
-  height: 84px;
-  border-radius: 12px;
+  aspect-ratio: 1;
+  border-radius: $border-radius;
   background: linear-gradient(
-    90deg,
+    135deg,
     rgba(255, 255, 255, 0.03) 0%,
     rgba(255, 255, 255, 0.06) 50%,
     rgba(255, 255, 255, 0.03) 100%
   );
   position: relative;
   overflow: hidden;
+  
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.08),
+      transparent
+    );
+    animation: shimmer 1.5s infinite;
+  }
 }
-.s-item::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.04),
-    transparent
-  );
-  animation: shimmer 1.2s infinite;
-}
+
 @keyframes shimmer {
   0% {
     left: -100%;
@@ -83,13 +135,69 @@
   }
 }
 
-/* Responsive tweaks */
-@media (min-width: 1024px) {
-  .lista-canales {
-    padding-left: 2rem;
-    padding-right: 2rem;
+// ===============================================
+// ANIMATIONS
+// ===============================================
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  .s-item {
-    height: 96px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
+
+// ===============================================
+// RESPONSIVE OPTIMIZATIONS
+// ===============================================
+
+@media (max-width: 640px) {
+  .lista-canales {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lista-canales {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+// ===============================================
+// ACCESSIBILITY
+// ===============================================
+
+.skip-link {
+  &:focus {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 9999;
+  }
+}
+
+// Mejora de contraste para accesibilidad
+@media (prefers-contrast: high) {
+  .channel-section {
+    border-top-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .s-item {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+// Reducir animaciones si el usuario lo prefiere
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

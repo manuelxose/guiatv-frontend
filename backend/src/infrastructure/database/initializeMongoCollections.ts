@@ -2,6 +2,7 @@ import { logger } from '../../shared/utils/logger';
 import { ProgramModel } from './models/Program.model';
 import { ChannelModel } from './models/Channel.model';
 import { ScheduleModel } from './models/Schedule.model';
+import { UserModel } from './models/User.model';
 
 /**
  * Ensure required Mongo collections exist and indexes are in place.
@@ -14,6 +15,7 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     { name: 'channels', model: ChannelModel },
     { name: 'programs', model: ProgramModel },
     { name: 'schedules', model: ScheduleModel },
+    { name: 'users', model: UserModel },
   ] as const;
 
   for (const { name, model } of resources) {

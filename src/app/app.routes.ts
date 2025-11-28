@@ -9,6 +9,22 @@ export const routes: Routes = [
     title: 'Inicio - Guía TV',
   },
   {
+    path: 'iniciar-sesion',
+    loadComponent: () =>
+      import('./pages/auth/login/login.component').then(
+        (m) => m.LoginComponent
+      ),
+    title: 'Iniciar sesión - Guía TV',
+  },
+  {
+    path: 'mi-cuenta',
+    loadComponent: () =>
+      import('./pages/user-area/user-area.component').then(
+        (m) => m.UserAreaComponent
+      ),
+    title: 'Mi cuenta - Comunidad GPTV',
+  },
+  {
     path: 'series',
     loadComponent: () =>
       import('./pages/content-page/content-page.component').then((m) => m.ContentPageComponent),
@@ -176,3 +192,5 @@ export const routes: Routes = [
     title: 'Mapa del sitio - Guía TV',
   },
 ];
+
+

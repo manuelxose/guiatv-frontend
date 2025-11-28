@@ -54,6 +54,7 @@ async function startServer() {
             layoutController: container.get('layoutController'),
             adminController: container.get('adminController'),
             ssrController: container.get('ssrController'),
+            authController: container.get('authController'),
         });
         const { initializeJobs } = await Promise.resolve().then(() => __importStar(require('../jobs')));
         initializeJobs();

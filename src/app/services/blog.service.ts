@@ -99,8 +99,8 @@ export class BlogService {
     this.tvService.getProgramsAndChannels().subscribe((data) => {
       if (data.length === 0) {
         this.tvService.getFromApi().subscribe((apiData) => {
-          this.httpService.setProgramas(apiData, 'today').then(() => {
-            this.tvService.setData(apiData);
+          this.httpService.setProgramas(apiData as any[], 'today').then(() => {
+            this.tvService.setData(apiData as any[]);
           });
         });
       }

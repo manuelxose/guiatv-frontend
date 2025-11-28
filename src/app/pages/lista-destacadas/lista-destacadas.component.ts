@@ -7,13 +7,15 @@ import { Subject } from 'rxjs';
 import { HttpService } from 'src/app/services/http.service';
 import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { CardListComponent } from 'src/app/components/card-list/card-list.component';
+import { getHoraInicio } from 'src/app/utils/utils';
 
 @Component({
   selector: 'app-lista-destacadas',
   templateUrl: './lista-destacadas.component.html',
   styleUrls: ['./lista-destacadas.component.scss'],
   standalone: true,
-  imports: [CommonModule, NavBarComponent],
+  imports: [CommonModule, NavBarComponent, CardListComponent],
 })
 export class ListaDestacadasComponent implements OnInit, OnDestroy {
   // Separar arrays para películas y series
@@ -50,6 +52,28 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
 
     // Inicializar datos de programación primero
     this.inicializarDatos();
+  }
+
+  public goToDetails(item: any): void {
+    const title =
+      (item?.title && item.title.value) || item?.title || 'contenido';
+    const slug = slugify(title);
+    // Navegar segun si es pelicula o serie destacada
+    this.router.navigate(
+      this.isPelicula ? ['/peliculas', slug] : ['/programas', slug],
+      { state: { item } }
+    );
+  }
+
+  public horaInicio(item: any): string {
+    try {
+      const start =
+        item?.start || item?.startDate || item?.date || item?.start_time;
+      if (!start) return '';
+      return getHoraInicio(start);
+    } catch {
+      return '';
+    }
   }
 
   ngOnDestroy(): void {
@@ -245,21 +269,6 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
 
   public trackById(index: number, item: any): any {
     return item?.id || item?.uuid || index;
-  }
-
-  public horaInicio(programa: any): string {
-    if (!programa) return '';
-    const start = programa?.start || programa?.start_time || programa?.time;
-    if (!start) return '';
-    try {
-      const d = new Date(start);
-      return d.toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch (e) {
-      return String(start);
-    }
   }
 
   public getChannelName(programa: any): string {
