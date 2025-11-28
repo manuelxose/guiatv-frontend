@@ -21,6 +21,8 @@ if (!environment.production && typeof window !== 'undefined') {
     '[ProgramListComponent]',
     '[ProgramListFacade]',
     '[ApiProgramProvider]',
+    '[BannerComponent]',
+    '[ContentPage]'
   ];
   const originalLog = console.log.bind(console);
   console.log = (...args: any[]) => {

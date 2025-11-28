@@ -170,65 +170,64 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  /**
+   * Load channels data from /v2/channels API endpoint
+   * This gets the complete list of channels with their metadata
+   */
   private loadProgramsData(): void {
+    console.log('[ListaCanales] Fetching channels from /v2/channels');
+    
     try {
-      this.programasSubscription = this.httpService.programas$
-        .pipe(first())
-        .subscribe(async (data) => {
-          if (data.length === 0) {
-            await this.loadFromApi();
-          } else {
-            this.manageCanales(data);
-          }
-        });
-    } catch (error) {
-      console.error('Error loading programs data:', error);
-      this.cargando = false;
-    }
-  }
-  private async loadFromApi(): Promise<void> {
-    try {
-      console.log(
-        `⏳ LISTA-CANALES - No hay datos, esperando a que se carguen desde HomeComponent...`
-      );
-      // En lugar de hacer una llamada API directa, suscribirse al observable para esperar datos
-      // Si no hay datos, intentar forzar la carga desde la API (fall back)
-      // Llamamos a getProgramacion('today') para obtener datos y emitirlos
-      this.httpService
-        .getProgramacion('today')
-        .pipe(first())
+      const apiUrl = `${this.httpService['configService'].getApiConfig().backend.baseUrl}/channels`;
+      
+      this.programasSubscription = this.http
+        .get<any>(apiUrl)
+        .pipe(
+          filter((response) => response !== null && response !== undefined)
+        )
         .subscribe({
-          next: async (data) => {
-            try {
-              if (Array.isArray(data) && data.length > 0) {
-                console.log(
-                  '📡 LISTA-CANALES - Datos recibidos desde API (today)'
-                );
-                // Emitir al observable global para mantener consistencia
-                await this.httpService.setProgramas(data, 'today');
-                // Ahora manageCanales puede leer desde el servicio
-                this.manageCanales(data);
-              } else {
-                console.warn(
-                  '⚠️ LISTA-CANALES - La API devolvió datos vacíos para today'
-                );
-                this.cargando = false;
-              }
-            } catch (err) {
-              console.error('Error processing data from API:', err);
+          next: (response) => {
+            console.log('[ListaCanales] Received response from /v2/channels:', response);
+            
+            // Extract channels from response
+            const channels = response?.data?.channels || response?.channels || [];
+            
+            if (channels && channels.length > 0) {
+              console.log('[ListaCanales] Processing', channels.length, 'channels');
+              
+              // Transform channels to the format expected by TvGuideService
+              // TvGuideService expects objects with either 'type' or 'channel.type'
+              const transformedData = channels.map((channel: any) => ({
+                id: channel.id,
+                name: channel.name,
+                icon: channel.icon || '',
+                type: (channel.type || 'TDT').toUpperCase(), // Ensure uppercase for filtering
+                country: channel.country,
+                countryCode: channel.countryCode,
+                region: channel.region,
+                isActive: channel.isActive !== false,
+                // Also include as nested channel for compatibility
+                channel: {
+                  id: channel.id,
+                  name: channel.name,
+                  icon: channel.icon || '',
+                  type: (channel.type || 'TDT').toUpperCase(),
+                },
+              }));
+              
+              this.manageCanales(transformedData);
+            } else {
+              console.warn('[ListaCanales] No channels received from API');
               this.cargando = false;
             }
           },
           error: (error) => {
-            console.error(
-              'Error loading programacion from API fallback:',
-              error
-            );
+            console.error('[ListaCanales] Error loading channels from API:', error);
             this.cargando = false;
           },
         });
     } catch (error) {
-      console.error('Error in loadFromApi:', error);
+      console.error('[ListaCanales] Error setting up channels subscription:', error);
       this.cargando = false;
     }
   }

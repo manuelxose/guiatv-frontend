@@ -30,20 +30,20 @@
         "
       >
         <figure class="slide-media">
-          <!-- Imagen principal del programa (icon es la imagen del programa) -->
+          <!-- Imagen principal del programa (image para películas/series, icon para canales) -->
           <img
             class="slide-image"
-            [attr.data-src]="buildWsrvUrl(program?.icon, 800, 450)"
+            [attr.data-src]="buildWsrvUrl(program?.image || program?.icon, 800, 450)"
             [src]="
               isFirst(i)
-                ? buildWsrvUrl(program?.icon, 800, 450)
+                ? buildWsrvUrl(program?.image || program?.icon, 800, 450)
                 : posterPlaceholder
             "
             [srcset]="
-              isFirst(i) ? buildSrcset(program?.icon, [400, 600, 800]) : ''
+              isFirst(i) ? buildSrcset(program?.image || program?.icon, [400, 600, 800]) : ''
             "
             sizes="(max-width: 640px) 92vw, (max-width: 1024px) 32vw, 19vw"
-            [attr.alt]="program?.title?.value || 'Programa'"
+            [attr.alt]="program?.title?.value || program?.title || 'Programa'"
             [attr.loading]="isFirst(i) ? 'eager' : 'lazy'"
             [attr.decoding]="isFirst(i) ? 'sync' : 'async'"
             width="800"
@@ -67,7 +67,7 @@
             <div class="program-info">
               <!-- Canal -->
               <div class="channel-badge">
-                {{ program?.channel?.name || program?.channel || "Canal" }}
+                {{ program?.channel?.name || program?.channelName || "Canal" }}
               </div>
 
               <!-- Título -->

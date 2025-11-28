@@ -79,9 +79,22 @@ export class TvGuideService {
     // Nueva suscripción: usa programas planos para que otras páginas reciban datos correctos
     if (this.homeDataService && (this.homeDataService as any).programs$) {
       (this.homeDataService as any).programs$.subscribe((programs: any[]) => {
-        if (Array.isArray(programs) && programs.length > 0) {
+        // Evitar sobreescribir la lista de canales con un array plano de programas
+        // Solo sincronizar si los elementos ya vienen en formato de canales (programs/channels + channel info)
+        const looksLikeChannelList =
+          Array.isArray(programs) &&
+          programs.length > 0 &&
+          programs.every(
+            (p) =>
+              typeof p === 'object' &&
+              (Array.isArray((p as any).programs) ||
+                Array.isArray((p as any).channels) ||
+                (p as any).channel)
+          );
+
+        if (looksLikeChannelList) {
           console.log(
-            `[TvGuideService] Syncing raw programs to HttpService.programas$ (count=${programs.length})`
+            `[TvGuideService] Syncing channel list to HttpService.programas$ (count=${programs.length})`
           );
           try {
             // @ts-ignore soporta implementación async/sync
@@ -92,6 +105,11 @@ export class TvGuideService {
               err
             );
           }
+        } else {
+          // Mantener datos existentes (ya llegan en programListData$ con el formato correcto)
+          console.log(
+            '[TvGuideService] Ignoring raw programs sync to keep channel list shape intact'
+          );
         }
       });
     }

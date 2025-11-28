@@ -140,7 +140,7 @@ export class ApiProgramProvider implements IProgramDataProvider {
         date,
         fields: 'minimal',
         limit: 5000,
-        channelTypes: 'TDT,Cable,Movistar,Autonomico,OTT',
+        channelTypes: 'TDT,CABLE,MOVISTAR,AUTONOMICO,OTT',
       } as any,
     })
       .pipe(
@@ -306,7 +306,7 @@ export class ApiProgramProvider implements IProgramDataProvider {
       // Exclude Autonomico channels as they require region validation
       params: {
         fields: 'full',
-        channelTypes: 'TDT,Cable,Movistar,Autonomico,OTT',
+        channelTypes: 'TDT,CABLE,MOVISTAR,AUTONOMICO,OTT',
       } as any,
     })
       .pipe(

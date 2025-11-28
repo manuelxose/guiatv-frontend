@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  API_BASE_URL: '/v2',
+  API_BASE_URL: 'http://localhost:4000/v2',  // ✅ URL absoluta al backend
   API_BLOG: 'http://localhost:4000/blog',
   SITE_URL: 'http://localhost:4200',
 };
