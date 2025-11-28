@@ -1,20 +1,17 @@
-<!-- Menu - MODERNIZADO CON MEJORES ESTILOS DE SELECCIÓN -->
 <nav class="pt-12 flex flex-col gap-y-2 text-gray-200 fill-gray-200 text-sm">
-  <!-- Menu Header -->
   <div
     class="text-gray-500/70 font-medium uppercase text-xs tracking-wider mb-4 px-3"
   >
-    Menu
+    Navegación
   </div>
 
-  <!-- Menu Items -->
   <div class="space-y-1 px-2">
     <a
       *ngFor="let r of routes"
       [routerLink]="r.path"
       routerLinkActive="active-link"
       [routerLinkActiveOptions]="{ exact: true }"
-      class="w-full text-left px-3 py-2 rounded flex items-center gap-3 hover:bg-gray-800"
+      class="w-full text-left px-3 py-2 rounded flex items-center gap-3 hover:bg-gray-800 transition-colors duration-150"
       [attr.aria-current]="router.url === r.path ? 'page' : null"
       (click)="onItemClick(r.path, r.key)"
       [ngClass]="{ 'active-link': isActive(r.key) }"
@@ -23,17 +20,14 @@
       [style.--active-color]="isActive(r.key) ? getColor(r.key) : null"
     >
       <span class="flex-1 text-gray-200 font-semibold">{{ r.label }}</span>
-      <!-- Indicador circular coloreado según el color de la key -->
       <span
         *ngIf="isActive(r.key)"
-        class="text-sm"
-        [style.color]="getColor(r.key)"
-        >●</span
-      >
+        class="w-2 h-2 rounded-full"
+        [style.backgroundColor]="getColor(r.key)"
+      ></span>
     </a>
   </div>
 
-  <!-- Lists Section -->
   <div
     class="mt-8 text-gray-500/70 font-medium uppercase text-xs tracking-wider mb-4 px-3"
   >
@@ -112,43 +106,82 @@
     </a>
   </div>
 
-  <!-- General Section -->
   <div
     class="mt-8 text-gray-500/70 font-medium uppercase text-xs tracking-wider mb-4 px-3"
   >
-    General
+    Comunidad y cuenta
   </div>
 
   <div class="space-y-1">
     <a
+      *ngFor="let r of userRoutes"
       class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
-      href="#"
+      [routerLink]="r.path"
+      (click)="onItemClick(r.path, r.key)"
+      [ngClass]="{ 'active-link': isActive(r.key) }"
+      [style.border-right-color]="isActive(r.key) ? getColor(r.key) : null"
+      [style.color]="isActive(r.key) ? getColor(r.key) : null"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-5 w-5 transition-colors duration-200 group-hover:stroke-red-400"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-        />
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-        />
-      </svg>
-      <span class="font-semibold text-gray-200">Configuración</span>
+      <ng-container [ngSwitch]="r.key">
+        <svg
+          *ngSwitchCase="'mi-cuenta'"
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 transition-colors duration-200 group-hover:stroke-red-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M4 20c0-2.761 2.686-5 6-5h4c3.314 0 6 2.239 6 5"
+          />
+        </svg>
+        <svg
+          *ngSwitchDefault
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 transition-colors duration-200 group-hover:stroke-red-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 11c1.657 0 3-1.567 3-3.5S13.657 4 12 4 9 5.567 9 7.5 10.343 11 12 11z"
+          />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M6 20c0-3.03 2.91-5.5 6-5.5 1.008 0 1.96.227 2.797.629"
+          />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M17 16l2 2 4-4"
+          />
+        </svg>
+      </ng-container>
+      <span class="font-semibold text-gray-200">{{ r.label }}</span>
+      <span
+        *ngIf="isActive(r.key)"
+        class="ml-auto h-2 w-2 rounded-full"
+        [style.backgroundColor]="getColor(r.key)"
+      ></span>
     </a>
 
-    <a
-      class="flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30"
-      href="#"
+    <button
+      *ngIf="(isAuthenticated$ | async)"
+      type="button"
+      class="w-full flex items-center space-x-3 py-3 px-3 rounded-lg group hover:bg-gray-700/30 hover:text-red-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/30 text-left"
+      (click)="logout()"
     >
       <svg
         class="h-5 w-5 transition-colors duration-200 group-hover:fill-red-400"
@@ -162,7 +195,7 @@
           ></path>
         </g>
       </svg>
-      <span class="font-semibold text-gray-200">Cerrar Sesión</span>
-    </a>
+      <span class="font-semibold text-gray-200">Cerrar sesión</span>
+    </button>
   </div>
 </nav>

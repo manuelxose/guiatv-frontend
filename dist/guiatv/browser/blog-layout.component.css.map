@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/blog/layout/blog-layout.component.scss"],
-  "sourcesContent": [":host {\r\n  display: block;\r\n  width: 100%;\r\n  min-height: 100vh;\r\n}\r\n"],
-  "mappings": ";AAAA;AACE,WAAA;AACA,SAAA;AACA,cAAA;;",
-  "names": []
-}

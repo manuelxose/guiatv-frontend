@@ -112,12 +112,16 @@ export class Container {
   private async registerRepositories(cache: ICacheRepository): Promise<void> {
     const { MongoChannelRepository } = await import('../infrastructure/repositories/MongoChannelRepository');
     const { MongoProgramRepository } = await import('../infrastructure/repositories/MongoProgramRepository');
+    const { MongoUserRepository } = await import('../infrastructure/repositories/MongoUserRepository');
 
     const channelRepository = new MongoChannelRepository();
     this.dependencies.set('channelRepository', channelRepository);
 
     const programRepository = new MongoProgramRepository();
     this.dependencies.set('programRepository', programRepository);
+
+    const userRepository = new MongoUserRepository();
+    this.dependencies.set('userRepository', userRepository);
 
     // Cache Repository (already stored by initializeCache, ensure consistent key)
     this.dependencies.set('cacheRepository', cache);
@@ -146,6 +150,7 @@ export class Container {
     const { ChannelService } = await import('../domain/services/ChannelService');
     const { ProgramService } = await import('../domain/services/ProgramService');
     const { TMDBService } = await import('../infrastructure/external/TMDBService');
+    const { AuthService } = await import('../domain/services/AuthService');
 
     const channelRepository = this.get<IChannelRepository>('channelRepository');
     const channelService = new ChannelService(channelRepository);
@@ -158,6 +163,15 @@ export class Container {
     const tmdbApiKey = process.env.TMDB_API_KEY || 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8';
     const tmdbService = new TMDBService(tmdbApiKey);
     this.dependencies.set('tmdbService', tmdbService);
+
+    const googleClientId = process.env.GOOGLE_CLIENT_ID;
+    const jwtSecret = process.env.JWT_SECRET || 'dev-secret-change-me';
+    const authService = new AuthService(
+      googleClientId,
+      jwtSecret,
+      this.get('userRepository')
+    );
+    this.dependencies.set('authService', authService);
 
     logger.info('Services registered');
   }
@@ -250,6 +264,7 @@ export class Container {
     const { LayoutController } = await import('../presentation/controllers/LayoutController');
     const { AdminController } = await import('../presentation/controllers/AdminController');
     const { SSRController } = await import('../presentation/controllers/SSRController');
+    const { AuthController } = await import('../presentation/controllers/AuthController');
 
     const channelController = new ChannelController(getAllChannels, getChannelById);
     this.dependencies.set('channelController', channelController);
@@ -279,6 +294,9 @@ export class Container {
 
     const ssrController = new SSRController(this.get('getNowPlaying'));
     this.dependencies.set('ssrController', ssrController);
+
+    const authController = new AuthController(this.get('authService'));
+    this.dependencies.set('authController', authController);
 
     logger.info('Controllers registered');
   }

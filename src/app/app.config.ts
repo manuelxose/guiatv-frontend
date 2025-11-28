@@ -13,7 +13,7 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { routes } from './app.routes';
 
 // Configuración SOLID de providers - ACTUALIZADA
-import { allProviders, validateProviders } from './config/providers.config';
+import { allProviders } from './config/providers.config';
 
 // Environment para configuración condicional
 import { environment } from '../environments/environment';
@@ -83,20 +83,7 @@ function getValidationProviders(env: any): Provider[] {
   return [
     {
       provide: 'SOLID_VALIDATION',
-      useFactory: () => {
-        // Validar providers en desarrollo
-        const isValid = validateProviders(allProviders);
-        if (isValid) {
-          console.log(
-            '✅ SOLID Validation - All providers are correctly configured'
-          );
-        } else {
-          console.error(
-            '❌ SOLID Validation - Provider configuration issues detected'
-          );
-        }
-        return isValid;
-      },
+      useValue: true,
     },
   ];
 }
@@ -108,7 +95,6 @@ if (!environment.production && typeof window !== 'undefined') {
   (window as any).SOLID_DEBUG = {
     providers: allProviders,
     environment: environment,
-    validateProviders: () => validateProviders(allProviders),
     getProviderCount: () => allProviders.length,
     getProviderTypes: () => {
       return allProviders.map((p) => {

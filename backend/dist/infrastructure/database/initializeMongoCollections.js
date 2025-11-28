@@ -5,6 +5,7 @@ const logger_1 = require("../../shared/utils/logger");
 const Program_model_1 = require("./models/Program.model");
 const Channel_model_1 = require("./models/Channel.model");
 const Schedule_model_1 = require("./models/Schedule.model");
+const User_model_1 = require("./models/User.model");
 /**
  * Ensure required Mongo collections exist and indexes are in place.
  * This runs at boot to avoid lazy collection/index creation in runtime traffic.
@@ -15,6 +16,7 @@ async function ensureMongoCollectionsAndIndexes() {
         { name: 'channels', model: Channel_model_1.ChannelModel },
         { name: 'programs', model: Program_model_1.ProgramModel },
         { name: 'schedules', model: Schedule_model_1.ScheduleModel },
+        { name: 'users', model: User_model_1.UserModel },
     ];
     for (const { name, model } of resources) {
         try {

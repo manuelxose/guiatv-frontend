@@ -1,7 +1,7 @@
 "use strict";
 // src/v2/shared/errors/index.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ServiceUnavailableError = exports.TooManyRequestsError = exports.ConflictError = exports.ForbiddenError = exports.UnauthorizedError = exports.ValidationError = exports.NotFoundError = exports.AppError = void 0;
+exports.BadRequestError = exports.ServiceUnavailableError = exports.TooManyRequestsError = exports.ConflictError = exports.ForbiddenError = exports.UnauthorizedError = exports.ValidationError = exports.NotFoundError = exports.AppError = void 0;
 const AppError_1 = require("./AppError");
 var AppError_2 = require("./AppError");
 Object.defineProperty(exports, "AppError", { enumerable: true, get: function () { return AppError_2.AppError; } });
@@ -40,4 +40,10 @@ class ServiceUnavailableError extends AppError_1.AppError {
     }
 }
 exports.ServiceUnavailableError = ServiceUnavailableError;
+class BadRequestError extends AppError_1.AppError {
+    constructor(message = 'Bad request') {
+        super(message, 400, true, 'BAD_REQUEST');
+    }
+}
+exports.BadRequestError = BadRequestError;
 //# sourceMappingURL=index.js.map

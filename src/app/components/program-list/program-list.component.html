@@ -691,7 +691,7 @@
                 style="display: grid !important"
               >
                 <div
-                  *ngFor="let hora of currentHours(); trackBy: trackByHour"
+                  *ngFor="let hora of getTimeHeaderLabels(); trackBy: trackByHour"
                   class="px-2 py-3 text-center border-r border-gray-600/50 last:border-r-0 hover:bg-gray-600/30 transition-colors duration-200 flex items-center justify-center"
                 >
                   <span

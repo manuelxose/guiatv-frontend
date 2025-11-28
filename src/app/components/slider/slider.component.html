@@ -18,81 +18,16 @@
       class="slider-item"
       role="listitem"
     >
-      <a
-        class="slider-item-inner"
-        role="button"
-        tabindex="0"
-        (click)="manageData(program)"
-        (keydown.enter)="manageData(program)"
-        (keydown.space)="$event.preventDefault(); manageData(program)"
-        [attr.aria-label]="
-          'Ver ' + (program?.title?.value || program?.name || 'programa')
-        "
-      >
-        <figure class="slide-media">
-          <!-- Imagen principal del programa (image para películas/series, icon para canales) -->
-          <img
-            class="slide-image"
-            [attr.data-src]="buildWsrvUrl(program?.image || program?.icon, 800, 450)"
-            [src]="
-              isFirst(i)
-                ? buildWsrvUrl(program?.image || program?.icon, 800, 450)
-                : posterPlaceholder
-            "
-            [srcset]="
-              isFirst(i) ? buildSrcset(program?.image || program?.icon, [400, 600, 800]) : ''
-            "
-            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 32vw, 19vw"
-            [attr.alt]="program?.title?.value || program?.title || 'Programa'"
-            [attr.loading]="isFirst(i) ? 'eager' : 'lazy'"
-            [attr.decoding]="isFirst(i) ? 'sync' : 'async'"
-            width="800"
-            height="450"
-            (error)="onLogoError($event, program)"
-          />
-
-          <!-- Overlay gradient -->
-          <div class="slide-overlay"></div>
-
-          <!-- Información del programa -->
-          <figcaption class="slide-caption">
-            <!-- Hora arriba izquierda -->
-            <div class="time-badge">
-              <time *ngIf="program?.start" [attr.datetime]="program.start">
-                {{ horaInicio(i) }}
-              </time>
-            </div>
-
-            <!-- Info abajo -->
-            <div class="program-info">
-              <!-- Canal -->
-              <div class="channel-badge">
-                {{ program?.channel?.name || program?.channelName || "Canal" }}
-              </div>
-
-              <!-- Título -->
-              <h3 class="program-title">
-                {{ program?.title?.value || program?.title || "Titulo desconocido" }}
-              </h3>
-
-              <!-- Metadata -->
-              <div class="program-meta">
-                <span *ngIf="program?.desc?.year" class="meta-item">{{
-                  program.desc.year
-                }}</span>
-                <span *ngIf="program?.starRating" class="meta-item rating"
-                  >★ {{ program.starRating }}</span
-                >
-                <span
-                  *ngIf="program?.desc?.rate"
-                  class="meta-item age-rating"
-                  >{{ program.desc.rate }}</span
-                >
-              </div>
-            </div>
-          </figcaption>
-        </figure>
-      </a>
+      <app-card-slider
+        [title]="program?.title?.value || program?.title || 'Programa'"
+        [subtitle]="program?.channel?.name || program?.channelName || 'Canal'"
+        [time]="program?.start ? horaInicio(i) : ''"
+        [image]="program?.image || program?.poster || program?.background || program?.icon"
+        [badge]="''"
+        badgeColor="gray"
+        [live]="false"
+        (cardClick)="manageData(program)"
+      ></app-card-slider>
     </article>
   </div>
 

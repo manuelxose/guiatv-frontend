@@ -51,6 +51,7 @@ import {
   IProgramItem,
 } from 'src/app/interfaces';
 import { ProgramDetailModalComponent } from '../program-detail-modal/program-detail-modal.component';
+import { ApiConfigService } from 'src/app/api/api-config.service';
 
 const UI_CONFIG = {
   PIXELS_PER_HOUR: 240,
@@ -114,6 +115,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly platformId = inject(PLATFORM_ID);
   public readonly deviceDetector = inject(DeviceDetectorService);
   private readonly injector = inject(Injector);
+  private readonly apiConfig = inject(ApiConfigService);
 
   // ===============================================
   // SSR COMPATIBILITY
@@ -1150,8 +1152,32 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   public getChannelLogoUrl(channelData: any): string {
-    if (channelData?.channel?.icon) return channelData.channel.icon;
-    if (channelData?.icon) return channelData.icon;
+    const fromApi =
+      channelData?.channel?.icon ||
+      channelData?.channel?.logo ||
+      channelData?.icon ||
+      channelData?.logo;
+    if (fromApi) {
+      if (typeof fromApi === 'string' && fromApi.startsWith('/storage')) {
+        const assetBase =
+          this.apiConfig.getAssetBaseUrl() ||
+          (typeof window !== 'undefined' ? window.location.origin : '');
+        // Para assets propios no proxificamos para evitar bucles de error
+        return `${assetBase}${fromApi}`;
+      }
+      return this.proxyImage(fromApi);
+    }
+
+    const name =
+      channelData?.channel?.name ||
+      channelData?.name ||
+      channelData?.channelName ||
+      '';
+    if (name) {
+      const encoded = encodeURIComponent(name.toUpperCase());
+      return `https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${encoded}.png`;
+    }
+
     return this.facade.getChannelLogoUrl(channelData) || '';
   }
 
@@ -1276,6 +1302,11 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   public getTimeIndicatorZIndex(): number {
+    // Si hay modal/banda expandida, no superponer la línea de tiempo
+    if (this.selectedProgram()) {
+      return 10;
+    }
+
     const hasOpenDropdown =
       this.isDayDropdownOpen() ||
       this.isCategoryDropdownOpen() ||
@@ -1285,6 +1316,26 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public getSelectedProgramBannerData(): any {
     return this.selectedProgram();
+  }
+
+  /**
+   * Devuelve las etiquetas horarias alineadas con las 7 columnas de 30min.
+   */
+  public getTimeHeaderLabels(): string[] {
+    const start = this.currentTimeSlot();
+    if (!start) return [];
+    const startMinutes = this.parseTimeToMinutes(start);
+    const labels: string[] = [];
+    for (let i = 0; i < UI_CONFIG.MAX_GRID_COLUMNS; i++) {
+      const minutes = startMinutes + i * UI_CONFIG.MINUTES_PER_SLOT;
+      labels.push(this.transform.formatMinutesToHHMM(minutes));
+    }
+    return labels;
+  }
+
+  private proxyImage(url: string): string {
+    // Evitar CORB: no proxificamos, devolvemos la URL original
+    return url || '';
   }
 
   // ===============================================

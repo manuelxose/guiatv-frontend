@@ -14,7 +14,7 @@ import {
   debounceTime,
   distinctUntilChanged,
 } from 'rxjs/operators';
-import { TvGuideService } from '../../services/tv-guide.service';
+import { ProgramListService } from 'src/app/state/program-list.service';
 
 @Component({
   selector: 'app-autocomplete',
@@ -35,7 +35,10 @@ export class AutocompleteComponent {
   public filteredData: Observable<any[]>;
   public dataInput: FormControl;
 
-  constructor(private tvSvc: TvGuideService, private router: Router) {
+  constructor(
+    private programList: ProgramListService,
+    private router: Router
+  ) {
     this.data = [];
     this.filteredData = new Observable<any[]>();
     this.dataInput = new FormControl();
@@ -56,9 +59,11 @@ export class AutocompleteComponent {
 
     // Subscribe to the global programas$ to populate the underlying data
     // used by the filter function. The subscription only updates `this.data`.
-    this.tvSvc.getProgramsAndChannels().subscribe((data: any) => {
-      this.data = data || [];
-      // console.log('Autocomplete: programas$ emitted, data length=', this.data.length);
+    this.programList.loadProgramList('today').subscribe({
+      next: (snap) => {
+        this.data = snap.channels || [];
+      },
+      error: (err) => console.error('Error fetching autocomplete data', err),
     });
   }
 
@@ -95,7 +100,6 @@ export class AutocompleteComponent {
       ]);
       return;
     }
-    this.tvSvc.setDetallesPrograma(data);
     const title = data?.title?.value || data?.title || '';
     const slug = slugify(title);
     // Heurística: si tiene poster or rating or releaseDate considerarla película

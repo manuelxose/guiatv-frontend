@@ -36,6 +36,11 @@ export interface IProgramItem {
   title: string | { lang?: string; value: any };
   start: string;
   stop: string;
+  // Medios
+  image?: string;
+  poster?: string;
+  icon?: string;
+  background?: string;
   category?: {
     value: string;
     lang?: string;
@@ -47,6 +52,19 @@ export interface IProgramItem {
   };
   duracion?: number; // Duración en minutos
   starRating?: number;
+  // Layout opcional desde /v2/layouts
+  gridColumnStart?: number;
+  gridColumnEnd?: number;
+  layerIndex?: number;
+  isCutAtStart?: boolean;
+  isCutAtEnd?: boolean;
+  visibleStartTime?: string;
+  visibleEndTime?: string;
+  crossesMidnight?: boolean;
+  layoutsBySlot?: any[];
+  pxStart?: number;
+  pxWidth?: number;
+  timeSlotIndex?: number;
 }
 
 /**

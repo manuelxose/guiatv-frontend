@@ -12,6 +12,13 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Global scaling for laptop screens to simulate 67% zoom */
+@media (min-width: 1024px) and (max-width: 1600px) {
+  html {
+    font-size: 11px; /* ~68% of 16px */
+  }
+}
+
 #__next {
   height: 100%;
 }

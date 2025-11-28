@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/pages/legal/legal-notice/legal-notice.component.scss"],
-  "sourcesContent": ["/* Styles for Legal Notice page */\r\n:host {\r\n  display: block;\r\n}\r\nmain {\r\n  color: #e6eef6;\r\n}\r\n"],
-  "mappings": ";AACA;AACE,WAAA;;AAEF;AACE,SAAA;;",
-  "names": []
-}

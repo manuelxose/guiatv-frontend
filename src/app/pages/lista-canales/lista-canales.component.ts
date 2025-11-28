@@ -19,23 +19,22 @@ import { first, filter, Subscription } from 'rxjs';
 
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { HttpService } from 'src/app/services/http.service';
 import { MetaService } from 'src/app/services/meta.service';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { BannerComponent } from 'src/app/components/banner/banner.component';
 import { SliderComponent } from 'src/app/components/slider/slider.component';
+import { CardChannelComponent } from 'src/app/components/card-channel/card-channel.component';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
+import { TvApiService } from 'src/app/api/tv-api.service';
+import { slugify } from 'src/app/utils/utils';
 
 @Component({
   selector: 'app-lista-canales',
   templateUrl: './lista-canales.component.html',
   styleUrls: ['./lista-canales.component.scss'],
   standalone: true,
-  imports: [CommonModule, NavBarComponent, BannerComponent, SliderComponent],
+  imports: [CommonModule, BannerComponent, CardChannelComponent,NavBarComponent],
 })
 export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
-  @Output() nextClicked = new EventEmitter<void>();
-  @Output() prevClicked = new EventEmitter<void>();
-
   // Datos principales
   public categorias: string[] = ['TDT', 'Cable', 'Autonomico'];
   public canales: any = [];
@@ -85,7 +84,7 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(
     private guideSvc: TvGuideService,
-    private httpService: HttpService,
+    private tvApi: TvApiService,
     private metaSvc: MetaService,
     private router: Router,
     private http: HttpClient,
@@ -177,59 +176,39 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
   private loadProgramsData(): void {
     console.log('[ListaCanales] Fetching channels from /v2/channels');
     
-    try {
-      const apiUrl = `${this.httpService['configService'].getApiConfig().backend.baseUrl}/channels`;
-      
-      this.programasSubscription = this.http
-        .get<any>(apiUrl)
-        .pipe(
-          filter((response) => response !== null && response !== undefined)
-        )
-        .subscribe({
-          next: (response) => {
-            console.log('[ListaCanales] Received response from /v2/channels:', response);
-            
-            // Extract channels from response
-            const channels = response?.data?.channels || response?.channels || [];
-            
-            if (channels && channels.length > 0) {
-              console.log('[ListaCanales] Processing', channels.length, 'channels');
-              
-              // Transform channels to the format expected by TvGuideService
-              // TvGuideService expects objects with either 'type' or 'channel.type'
-              const transformedData = channels.map((channel: any) => ({
+    this.programasSubscription = this.tvApi
+      .getChannels()
+      .pipe(filter((resp) => !!resp))
+      .subscribe({
+        next: (response) => {
+          const channels = (response as any)?.data?.channels || (response as any)?.channels || [];
+          if (channels && channels.length > 0) {
+            const transformedData = channels.map((channel: any) => ({
+              id: channel.id,
+              name: channel.name,
+              icon: channel.icon || '',
+              type: (channel.type || 'TDT').toUpperCase(),
+              country: channel.country,
+              countryCode: channel.countryCode,
+              region: channel.region,
+              isActive: channel.isActive !== false,
+              channel: {
                 id: channel.id,
                 name: channel.name,
                 icon: channel.icon || '',
-                type: (channel.type || 'TDT').toUpperCase(), // Ensure uppercase for filtering
-                country: channel.country,
-                countryCode: channel.countryCode,
-                region: channel.region,
-                isActive: channel.isActive !== false,
-                // Also include as nested channel for compatibility
-                channel: {
-                  id: channel.id,
-                  name: channel.name,
-                  icon: channel.icon || '',
-                  type: (channel.type || 'TDT').toUpperCase(),
-                },
-              }));
-              
-              this.manageCanales(transformedData);
-            } else {
-              console.warn('[ListaCanales] No channels received from API');
-              this.cargando = false;
-            }
-          },
-          error: (error) => {
-            console.error('[ListaCanales] Error loading channels from API:', error);
+                type: (channel.type || 'TDT').toUpperCase(),
+              },
+            }));
+            this.manageCanales(transformedData);
+          } else {
             this.cargando = false;
-          },
-        });
-    } catch (error) {
-      console.error('[ListaCanales] Error setting up channels subscription:', error);
-      this.cargando = false;
-    }
+          }
+        },
+        error: (error) => {
+          console.error('[ListaCanales] Error loading channels from API:', error);
+          this.cargando = false;
+        },
+      });
   }
 
   private manageCanales(data: any): void {
@@ -322,13 +301,13 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.canales.filter((canal: any) => canal.tipo === categoria);
   }
 
-  onNextClick(): void {
-    this.nextClicked.emit();
-  }
+  // onNextClick(): void {
+  //   this.nextClicked.emit();
+  // }
 
-  onPrevClick(): void {
-    this.prevClicked.emit();
-  }
+  // onPrevClick(): void {
+  //   this.prevClicked.emit();
+  // }
 
   // Parent controls to navigate a specific slider by its key
   public prevFor(key: string): void {
@@ -368,5 +347,26 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
       this.canales_dep.length +
       this.canales_cable.length
     );
+  }
+
+  /**
+   * Navigate to channel detail page
+   */
+  public navigateToChannel(channel: any): void {
+    if (!channel) return;
+    
+    const channelName = channel?.name || channel?.nombre || channel?.title || channel?.id || '';
+    const slug = slugify(channelName);
+    
+    if (slug) {
+      this.router.navigate(['programacion-tv/ver-canal', slug]);
+    }
+  }
+
+  /**
+   * TrackBy function for channel lists to optimize rendering
+   */
+  public trackByChannel(index: number, channel: any): string {
+    return channel?.id || channel?.name || `channel-${index}`;
   }
 }

@@ -1,0 +1,300 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+  <app-nav-bar></app-nav-bar>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <header class="space-y-2">
+      <p class="text-sm text-gray-400 uppercase tracking-[0.2em]">
+        Comunidad GPTV
+      </p>
+      <h1 class="text-3xl sm:text-4xl font-extrabold">
+        Inicia sesión y comparte lo que estás viendo
+      </h1>
+      <p class="text-gray-300 max-w-3xl">
+        Accede a tu perfil, publica recomendaciones de pelis y series y sigue de
+        cerca lo que ven tus amigos. Esta pantalla es 100% client-side y lista
+        para conectar con el backend.
+      </p>
+    </header>
+
+    <div class="grid lg:grid-cols-2 gap-6">
+      <section
+        class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-sm text-gray-400">Acceso seguro</p>
+            <h2 class="text-xl font-semibold">Inicio de sesión</h2>
+          </div>
+          <span
+            class="px-3 py-1 rounded-full text-xs bg-green-500/20 text-green-300 border border-green-500/40"
+            *ngIf="isAuthenticated$ | async"
+          >
+            Sesión activa
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg bg-white text-gray-900 font-semibold shadow hover:shadow-lg transition-all duration-200 mb-4"
+          (click)="onGoogleLogin()"
+          [disabled]="loading"
+        >
+          <svg
+            class="h-5 w-5"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 48 48"
+          >
+            <path
+              fill="#EA4335"
+              d="M24 9.5c3.54 0 6 1.54 7.38 2.83l5.4-5.4C33.64 3.91 29.14 2 24 2 14.82 2 6.91 7.66 3.44 15.26l6.58 5.11C12.23 13.2 17.59 9.5 24 9.5z"
+            />
+            <path
+              fill="#4285F4"
+              d="M46.5 24.5c0-1.6-.14-3.11-.4-4.5H24v9h12.7c-.5 2.6-2 4.8-4.3 6.3l6.6 5.1C43.9 37.5 46.5 31.5 46.5 24.5z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M9.02 28.65a14.9 14.9 0 0 1 0-9.3L2.44 14.2a22.46 22.46 0 0 0 0 19.6l6.58-5.15z"
+            />
+            <path
+              fill="#34A853"
+              d="M24 46c6.14 0 11.3-2.02 15.07-5.4l-6.6-5.1C30.39 36.5 27.39 37.5 24 37.5c-6.41 0-11.77-3.7-13.98-9.1l-6.58 5.1C6.91 40.34 14.82 46 24 46z"
+            />
+            <path fill="none" d="M2 2h44v44H2z" />
+          </svg>
+          <span>Continuar con Google</span>
+        </button>
+
+        <form
+          [formGroup]="loginForm"
+          (ngSubmit)="submitLogin()"
+          class="space-y-4"
+        >
+          <div class="space-y-2">
+            <label class="text-sm text-gray-300">Correo electrónico</label>
+            <input
+              type="email"
+              formControlName="email"
+              class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder="tu@email.com"
+              autocomplete="email"
+            />
+            <p
+              class="text-xs text-red-400"
+              *ngIf="
+                loginForm.get('email')?.invalid &&
+                loginForm.get('email')?.touched
+              "
+            >
+              Introduce un correo válido.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm text-gray-300">Contraseña</label>
+            <input
+              type="password"
+              formControlName="password"
+              class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder="Mínimo 6 caracteres"
+              autocomplete="current-password"
+            />
+            <p
+              class="text-xs text-red-400"
+              *ngIf="
+                loginForm.get('password')?.invalid &&
+                loginForm.get('password')?.touched
+              "
+            >
+              Usa al menos 6 caracteres.
+            </p>
+          </div>
+
+          <label class="inline-flex items-center gap-2 text-sm text-gray-300">
+            <input
+              type="checkbox"
+              formControlName="remember"
+              class="rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-900"
+            />
+            Recordarme en este dispositivo
+          </label>
+
+          <button
+            type="submit"
+            [disabled]="loading"
+            class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:bg-gray-600 font-semibold transition-all duration-200"
+          >
+            <svg
+              *ngIf="loading"
+              class="w-5 h-5 animate-spin"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            <span>{{ loading ? 'Entrando...' : 'Iniciar sesión' }}</span>
+          </button>
+
+          <p class="text-xs text-gray-400">
+            Al continuar aceptas conectar tu actividad social con GPTV. El
+            backend validará credenciales y persistirá tu sesión.
+          </p>
+        </form>
+
+        <p
+          *ngIf="statusMessage"
+          class="mt-4 text-sm text-green-300 bg-green-500/10 border border-green-500/20 rounded-lg px-4 py-3"
+        >
+          {{ statusMessage }}
+        </p>
+      </section>
+
+      <section
+        class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm space-y-5"
+      >
+        <div>
+          <p class="text-sm text-gray-400">Perfil social</p>
+          <h2 class="text-xl font-semibold">Configura tu cuenta</h2>
+        </div>
+
+        <form
+          [formGroup]="quickProfileForm"
+          (ngSubmit)="saveQuickProfile()"
+          class="space-y-3"
+        >
+          <div class="grid sm:grid-cols-2 gap-3">
+            <label class="text-sm text-gray-300 space-y-1">
+              Nombre
+              <input
+                type="text"
+                formControlName="name"
+                class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
+            </label>
+            <label class="text-sm text-gray-300 space-y-1">
+              Usuario
+              <input
+                type="text"
+                formControlName="username"
+                class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder="tu_alias"
+              />
+            </label>
+          </div>
+
+          <label class="text-sm text-gray-300 space-y-1">
+            Géneros favoritos (coma separada)
+            <input
+              type="text"
+              formControlName="favoriteGenres"
+              class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder="Sci-Fi, Drama, Thriller"
+            />
+          </label>
+
+          <label class="text-sm text-gray-300 space-y-1">
+            Bio corta
+            <textarea
+              rows="3"
+              formControlName="bio"
+              class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder="Cuenta quién eres y qué te gusta ver"
+            ></textarea>
+          </label>
+
+          <label class="inline-flex items-center gap-2 text-sm text-gray-300">
+            <input
+              type="checkbox"
+              formControlName="shareActivity"
+              class="rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-900"
+            />
+            Compartir mi actividad con amigos
+          </label>
+
+          <button
+            type="submit"
+            class="w-full px-4 py-3 rounded-lg bg-white/10 hover:bg-white/15 border border-gray-600 text-sm font-semibold transition-all duration-200"
+          >
+            Guardar preferencias
+          </button>
+        </form>
+
+        <div class="grid sm:grid-cols-2 gap-3 text-sm text-gray-300">
+          <div class="flex items-start gap-2">
+            <span
+              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
+              >1</span
+            >
+            <p>
+              Prepara tu perfil: nombre, alias y géneros preferidos para
+              recomendaciones personalizadas.
+            </p>
+          </div>
+          <div class="flex items-start gap-2">
+            <span
+              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
+              >2</span
+            >
+            <p>
+              Decide qué compartir: actividad, listas y estado “viendo ahora”.
+            </p>
+          </div>
+          <div class="flex items-start gap-2">
+            <span
+              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
+              >3</span
+            >
+            <p>
+              Una vez conectado al backend, tus datos quedarán sincronizados y
+              listos para el feed social.
+            </p>
+          </div>
+          <div class="flex items-start gap-2">
+            <span
+              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
+              >4</span
+            >
+            <p>
+              Invita amigos, comparte listas y avisa en tiempo real qué estás
+              viendo.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section
+      class="bg-gray-800/50 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20"
+    >
+      <h3 class="text-lg font-semibold mb-3">¿Qué desbloqueas al entrar?</h3>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-300">
+        <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-700/40">
+          <p class="font-semibold text-white">Feed social</p>
+          <p class="text-gray-400">
+            Publica reseñas, comenta con amigos y ve en directo qué están
+            viendo.
+          </p>
+        </div>
+        <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-700/40">
+          <p class="font-semibold text-white">Listas colaborativas</p>
+          <p class="text-gray-400">
+            Crea listas de pelis y series compartidas para maratones en grupo.
+          </p>
+        </div>
+        <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-700/40">
+          <p class="font-semibold text-white">Alertas y avisos</p>
+          <p class="text-gray-400">
+            Recibe alertas cuando un amigo recomienda algo nuevo o empieza una
+            serie.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

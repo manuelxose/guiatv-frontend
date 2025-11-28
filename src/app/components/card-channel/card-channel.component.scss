@@ -1,0 +1,24 @@
+:host {
+  display: block;
+}
+
+.card-channel {
+  // Optimización táctil para móvil
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  
+  // Mejora de rendimiento
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+// Estados de accesibilidad
+.card-channel:focus-visible {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+}
+
+.card-channel:active:not(.cursor-not-allowed) {
+  transform: scale(0.98);
+}

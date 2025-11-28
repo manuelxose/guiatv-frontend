@@ -7,8 +7,6 @@ import { Provider, PLATFORM_ID } from '@angular/core';
 import { TimeManagerService } from '../services/program-list/time-manager.service';
 import { DimensionCalculatorService } from '../services/program-list/dimension-calculator.service';
 import { CategoryStyleManagerService } from '../services/program-list/category-style-manager.service';
-import { ChannelLogoManagerService } from '../services/program-list/channel-logo-manager.service';
-import { ViewportManagerService } from '../services/program-list/viewport-manager.service';
 import { ProgramListFacadeService } from '../services/program-list/program-list-facade.service';
 
 /**
@@ -17,8 +15,6 @@ import { ProgramListFacadeService } from '../services/program-list/program-list-
 export const allProgramListProviders: Provider[] = [
   TimeManagerService,
   CategoryStyleManagerService,
-  ChannelLogoManagerService,
-  ViewportManagerService,
   {
     provide: DimensionCalculatorService,
     useFactory: (platformId: Object, timeManager: TimeManagerService) =>

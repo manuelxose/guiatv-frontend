@@ -12,6 +12,7 @@ const rateLimit_1 = require("../middlewares/rateLimit");
 const admin_routes_1 = require("./admin.routes");
 const swagger_routes_1 = require("./swagger.routes");
 const ssr_routes_1 = require("./ssr.routes");
+const auth_routes_1 = require("./auth.routes");
 const createV2Routes = (dependencies) => {
     const router = (0, express_1.Router)();
     // Documentación Swagger
@@ -27,6 +28,7 @@ const createV2Routes = (dependencies) => {
     router.use('/layouts', (0, layout_routes_1.createLayoutRoutes)(dependencies.layoutController));
     router.use('/admin', (0, admin_routes_1.createAdminRoutes)(dependencies.adminController));
     router.use('/ssr', (0, ssr_routes_1.createSSRRoutes)(dependencies.ssrController));
+    router.use('/auth', (0, auth_routes_1.createAuthRoutes)(dependencies.authController));
     return router;
 };
 exports.createV2Routes = createV2Routes;

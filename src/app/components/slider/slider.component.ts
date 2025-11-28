@@ -16,12 +16,11 @@ import { isPlatformBrowser } from '@angular/common';
 import { getHoraInicio, formatCorrectTime, slugify } from 'src/app/utils/utils';
 import { CommonModule } from '@angular/common';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { CardSliderComponent } from '../card-slider/card-slider.component';
 
 /**
  * SliderComponent - Native Implementation
  * - Sin dependencias externas (NO Embla)
-      !this._loggedFirst &&
-      this.variant === 'peliculas' // only auto-log when slider is for movies
  * - SSR-friendly con hidratación progresiva
  * - Lazy loading de imágenes optimizado
  * - Touch gestures nativos
@@ -31,7 +30,7 @@ import { TvGuideService } from 'src/app/services/tv-guide.service';
   templateUrl: './slider.component.html',
   styleUrls: ['./slider.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CardSliderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -48,7 +47,6 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
   private resizeObserver?: ResizeObserver;
   private intersectionObserver?: IntersectionObserver;
 
-  // Placeholders para lazy loading
   public readonly posterPlaceholder =
     'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 800 450%27%3E%3Crect width=%27800%27 height=%27450%27 fill=%27%23111827%27/%3E%3C/svg%3E';
   public readonly logoPlaceholder =
@@ -67,11 +65,7 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!this.isBrowser || !this.scrollContainer) return;
-
-    // Setup Intersection Observer para lazy loading
     this.setupIntersectionObserver();
-
-    // Setup Resize Observer para mantener scroll position
     this.setupResizeObserver();
   }
 
@@ -106,7 +100,6 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     );
 
-    // Observar todas las imágenes con data-src
     setTimeout(() => {
       const images =
         this.scrollContainer?.nativeElement.querySelectorAll('img[data-src]');
@@ -116,24 +109,18 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private setupResizeObserver(): void {
     if (!('ResizeObserver' in window)) return;
-
     this.resizeObserver = new ResizeObserver(() => {
-      // Revalidar scroll cuando cambia el tamaño
       this.cdr.markForCheck();
     });
-
     if (this.scrollContainer?.nativeElement) {
       this.resizeObserver.observe(this.scrollContainer.nativeElement);
     }
   }
 
-  // Navegación con smooth scroll
   public scrollTo(direction: 'prev' | 'next'): void {
     if (!this.scrollContainer?.nativeElement) return;
-
     const container = this.scrollContainer.nativeElement;
-    const scrollAmount = container.clientWidth * 0.8; // 80% del ancho visible
-
+    const scrollAmount = container.clientWidth * 0.8;
     container.scrollBy({
       left: direction === 'next' ? scrollAmount : -scrollAmount,
       behavior: 'smooth',
@@ -148,7 +135,6 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.scrollTo('prev');
   }
 
-  // Backwards-compatible
   public onNextClick(): void {
     this.next();
   }
@@ -197,7 +183,6 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   manageData(programa: any): void {
     if (!programa) return;
-    // Heuristics to detect type: movie, series, program or channel-only
     const titleValue =
       (programa?.title && (programa.title.value || programa.title)) ||
       programa?.name ||
@@ -214,7 +199,6 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
         !programa?.stop &&
         (programa?.name || programa?.id));
 
-    // If it's clearly a channel object (no program fields), navigate to channel page
     if (looksLikeChannelOnly) {
       const slug = slugify(
         programa?.name || programa?.channel || programa?.id || ''
@@ -223,84 +207,68 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Otherwise treat as program-like (may be movie or series)
-    // Build a normalized bannerData object similar to BannerComponent
-    if (programa) {
-      // Build a normalized bannerData object similar to BannerComponent
-      const bannerData: any = {
-        title:
-          typeof titleValue === 'string' ? { value: titleValue } : titleValue,
-        channel:
-          (typeof programa.channel === 'string'
-            ? programa.channel
-            : programa.channel?.name ||
-              programa.channel?.channel ||
-              programa.channel?.title) ||
-          programa.channel ||
-          'Canal desconocido',
-        poster: programa?.poster || programa?.icon,
-        icon: programa?.icon,
-        start:
-          this.normalizeTimeString?.(programa.start) ?? (programa.start || ''),
-        stop:
-          this.normalizeTimeString?.(programa.stop) ?? (programa.stop || ''),
-        desc:
-          typeof programa.desc === 'string'
-            ? { details: programa.desc }
-            : programa.desc,
-        category:
-          typeof programa.category === 'string'
-            ? { value: programa.category }
-            : programa.category,
-        starRating: programa.starRating,
-        id: programa.id || programa.uuid || null,
-        channel_id:
-          typeof programa.channel === 'object'
-            ? programa.channel.id || programa.channel_id
-            : programa.channel_id || null,
-      };
+    const bannerData: any = {
+      title:
+        typeof titleValue === 'string' ? { value: titleValue } : titleValue,
+      channel:
+        (typeof programa.channel === 'string'
+          ? programa.channel
+          : programa.channel?.name ||
+            programa.channel?.channel ||
+            programa.channel?.title) ||
+        programa.channel ||
+        'Canal desconocido',
+      poster: programa?.poster || programa?.icon,
+      icon: programa?.icon,
+      start: this.normalizeTimeString?.(programa.start) ?? (programa.start || ''),
+      stop: this.normalizeTimeString?.(programa.stop) ?? (programa.stop || ''),
+      desc:
+        typeof programa.desc === 'string'
+          ? { details: programa.desc }
+          : programa.desc,
+      category:
+        typeof programa.category === 'string'
+          ? { value: programa.category }
+          : programa.category,
+      starRating: programa.starRating,
+      id: programa.id || programa.uuid || null,
+      channel_id:
+        typeof programa.channel === 'object'
+          ? programa.channel.id || programa.channel_id
+          : programa.channel_id || null,
+    };
 
-      // Save normalized data in the shared service
-      try {
-        this.guiatvSvc.setDetallesPrograma(bannerData);
-      } catch (_) {}
-      // Decide route using improved heuristics
-      const cat = String(categoryValue || '').toLowerCase();
-      const isMovieData =
-        cat.includes('cine') ||
-        !!programa?.poster ||
-        !!programa?.icon ||
-        !!programa?.tmdbId ||
-        !!programa?.release_date ||
-        !!programa?.releaseDate;
-      const isSeriesData =
-        cat.includes('series') ||
-        /T\d/.test(String(titleValue)) ||
-        (programa?.type &&
-          String(programa.type).toLowerCase().includes('series'));
-      const isProgramData =
-        !!programa?.start && !!programa?.stop && !!programa?.channel;
+    try {
+      this.guiatvSvc.setDetallesPrograma(bannerData);
+    } catch (_) {}
 
-      const slug = slugify((bannerData.title && bannerData.title.value) || '');
+    const cat = String(categoryValue || '').toLowerCase();
+    const isMovieData =
+      cat.includes('cine') ||
+      !!programa?.poster ||
+      !!programa?.icon ||
+      !!programa?.tmdbId ||
+      !!programa?.release_date ||
+      !!programa?.releaseDate;
+    const isSeriesData =
+      cat.includes('series') ||
+      /T\d/.test(String(titleValue)) ||
+      (programa?.type &&
+        String(programa.type).toLowerCase().includes('series'));
+    const isProgramData =
+      !!programa?.start && !!programa?.stop && !!programa?.channel;
 
-      if (isMovieData) {
-        this.router.navigate(['/peliculas', slug], { state: { bannerData } });
-      } else if (isSeriesData || isProgramData) {
-        this.router.navigate(['/programas', slug], { state: { bannerData } });
-      } else {
-        // Fallback: send to peliculas detail if unsure
-        this.router.navigate(['/peliculas', slug], { state: { bannerData } });
-      }
+    const slug = slugify((bannerData.title && bannerData.title.value) || '');
+
+    if (isMovieData) {
+      this.router.navigate(['/peliculas', slug], { state: { bannerData } });
+    } else if (isSeriesData || isProgramData) {
+      this.router.navigate(['/programas', slug], { state: { bannerData } });
     } else {
-      // No program data at all - fallback to channel navigation if possible
-      const slug = slugify(
-        programa?.name || programa?.channel || programa?.id || ''
-      );
-      this.router.navigate(['programacion-tv/ver-canal', slug]);
+      this.router.navigate(['/peliculas', slug], { state: { bannerData } });
     }
   }
 
-  // Local helper: normalize time values safely
   private normalizeTimeString(time: any): string {
     if (!time) return '';
     try {
@@ -311,7 +279,6 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // Image helpers optimizados
   public buildWsrvUrl(rawUrl?: string, w = 400, h = 225): string {
     if (!rawUrl) return '';
     try {
@@ -370,25 +337,21 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const attempts = Number(img.dataset['attempts'] || '0');
 
-    // Primer intento: usar icon directamente sin transformación
     if (attempts === 0 && program?.icon) {
       img.dataset['attempts'] = '1';
-      img.src = program.icon; // URL original sin wsrv
+      img.src = program.icon;
       return;
     }
 
-    // Segundo intento: placeholder gris
     if (attempts === 1) {
       img.dataset['attempts'] = '2';
       img.src = this.posterPlaceholder;
       return;
     }
 
-    // Si todo falla, ocultar
     img.style.display = 'none';
   }
 
-  // TrackBy para mejor performance
   public trackByProgram(index: number, program: any): string {
     return program?.id || program?.uuid || `${program?.title?.value}-${index}`;
   }

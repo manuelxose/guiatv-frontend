@@ -16,6 +16,8 @@ import { createAdminRoutes } from './admin.routes';
 import { createSwaggerRoutes } from './swagger.routes';
 import { SSRController } from '../controllers/SSRController';
 import { createSSRRoutes } from './ssr.routes';
+import { AuthController } from '../controllers/AuthController';
+import { createAuthRoutes } from './auth.routes';
 
 export interface RoutesDependencies {
   channelController: ChannelController;
@@ -24,6 +26,7 @@ export interface RoutesDependencies {
   layoutController: LayoutController;
   adminController: AdminController;
   ssrController: SSRController;
+  authController: AuthController;
 }
 
 export const createV2Routes = (dependencies: RoutesDependencies): Router => {
@@ -39,19 +42,23 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   router.use(generalRateLimit);
 
   // Rutas de recursos
-  router.use('/channels', createChannelRoutes(dependencies.channelController, dependencies.programController));
+  router.use(
+    '/channels',
+    createChannelRoutes(
+      dependencies.channelController,
+      dependencies.programController
+    )
+  );
   router.use('/programs', createProgramRoutes(dependencies.programController));
   router.use(
     '/schedules',
     createScheduleRoutes(dependencies.scheduleController)
   );
-  router.use(
-    '/layouts',
-    createLayoutRoutes(dependencies.layoutController)
-  );
+  router.use('/layouts', createLayoutRoutes(dependencies.layoutController));
 
   router.use('/admin', createAdminRoutes(dependencies.adminController));
   router.use('/ssr', createSSRRoutes(dependencies.ssrController));
+  router.use('/auth', createAuthRoutes(dependencies.authController));
 
   return router;
 };

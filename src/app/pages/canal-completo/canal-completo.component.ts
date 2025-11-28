@@ -14,7 +14,7 @@ import { Subject, takeUntil, first, filter, tap } from 'rxjs';
 import { BannerComponent } from 'src/app/components/banner/banner.component';
 import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { SliderComponent } from 'src/app/components/slider/slider.component';
-import { HttpService } from 'src/app/services/http.service';
+import { TvDataService } from 'src/app/state/tv-data.service';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 
@@ -56,10 +56,10 @@ interface PerformanceMetrics {
   ],
 })
 export class CanalCompletoComponent implements OnInit, OnDestroy {
-  // Dependency Injection
+  // Dependency Injection - Migrated to new services
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private http = inject(HttpService);
+  private tvDataService = inject(TvDataService);
   private svcGuide = inject(TvGuideService);
   private metaSvc = inject(MetaService);
   private cdr = inject(ChangeDetectorRef);
@@ -73,6 +73,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   // Public Properties
   public query: string = '';
   public diaSeleccionado: string = 'Hoy';
+  public activeDayAlias: 'yesterday' | 'today' | 'tomorrow' | 'after_tomorrow' = 'today';
   public canal: string = '';
   public programs: any[] = [];
   public program: any = {};
@@ -92,6 +93,8 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   ];
 
   public timeSlots: TimeSlot[] = [];
+  public selectedTimeSlot: number | null = null;
+  public selectedCategory: string | null = null;
   public relatedChannels: RelatedChannel[] = [];
 
   // Private Properties
@@ -175,65 +178,48 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Load program data from service
+   * Load program data using TvDataService
    */
   private loadProgramData(): void {
+    this.isLoading = true;
     const dataFetchStart = performance.now();
 
     try {
-      this.http.programas$.pipe(first(), takeUntil(this.destroy$)).subscribe({
-        next: async (data) => {
-          if (data.length === 0) {
-            console.log(
-              `⏳ CANAL-COMPLETO - Esperando datos desde HomeComponent...`
-            );
-            this.http.programas$
-              .pipe(
-                filter((programs) => programs.length > 0),
-                first(),
-                takeUntil(this.destroy$)
-              )
-              .subscribe({
-                next: (programs) => {
-                  console.log(`📦 CANAL-COMPLETO - Datos recibidos`);
-                  this.performanceMetrics.dataFetchTime =
-                    performance.now() - dataFetchStart;
-                  this.managePrograms(programs);
-                },
-                error: (error) => this.handleError(error),
-              });
-          } else {
-            console.log(`📋 CANAL-COMPLETO - Usando datos en cache`);
+      this.svcGuide
+        .getFromApi(this.activeDayAlias)
+        .pipe(first(), takeUntil(this.destroy$))
+        .subscribe({
+          next: (data) => {
+            console.log(`📦 CANAL-COMPLETO - Data loaded from API`);
             this.performanceMetrics.dataFetchTime =
               performance.now() - dataFetchStart;
             this.managePrograms(data);
-          }
-        },
-        error: (error) => this.handleError(error),
-      });
+          },
+          error: (error) => this.handleError(error),
+        });
     } catch (error) {
       this.handleError(error);
     }
   }
 
   /**
-   * Change day and reload data
+   * Change day and reload data using TvDataService
    */
   public async cambiarDia(dia: string): Promise<void> {
     this.isLoading = true;
     this.diaSeleccionado = this.formatDayName(dia);
+    this.activeDayAlias = dia as any;
 
     try {
-      (await this.http.getProgramacion(dia))
+      this.svcGuide
+        .getFromApi(this.activeDayAlias)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (data) => {
-            this.http.setProgramas(data, dia).then(() => {
-              this.managePrograms(data);
-              this.setupMetaTags();
-              this.isLoading = false;
-              this.cdr.markForCheck();
-            });
+            this.managePrograms(data);
+            this.setupMetaTags();
+            this.isLoading = false;
+            this.cdr.markForCheck();
           },
           error: (error) => {
             this.handleError(error);
@@ -278,9 +264,12 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       // Get categories
       this.categorias = this.svcGuide.getChannelCategories(this.programs);
 
-      // Set default category
-      if (this.program?.category?.value) {
-        this.categoriaSeleccionada = this.program.category.value.split(',')[0];
+      // Set default category to "Películas" if available
+      if (this.selectedCategory === null) {
+        const peliculasCategory = this.categorias.find(cat => 
+          cat.toLowerCase().includes('película') || cat.toLowerCase().includes('cine')
+        );
+        this.selectedCategory = peliculasCategory || (this.categorias.length > 0 ? this.categorias[0] : null);
       }
 
       // Organize programs by time slots
@@ -289,27 +278,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       // Get related channels
       this.relatedChannels = this.getRelatedChannelsList();
 
-      // Get channel information
-      if (this.program?.channel_id) {
-        // this.http
-        //   .getChannel(this.program.channel_id)
-        //   .pipe(first(), takeUntil(this.destroy$))
-        //   .subscribe({
-        //     next: (data: any) => {
-        //       this.logo = data.icon;
-        //       this.channel = data;
-        //       this.isLoading = false;
-        //       this.cdr.markForCheck();
-        //     },
-        //     error: (error) => {
-        //       console.error('Error loading channel data:', error);
-        //       this.isLoading = false;
-        //     },
-        //   });
-      } else {
-        this.isLoading = false;
-      }
-
+      this.isLoading = false;
       this.performanceMetrics.renderTime = performance.now() - renderStart;
       this.cdr.markForCheck();
     } catch (error) {
@@ -339,14 +308,22 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
         return hour >= slot.range[0] && hour < slot.range[1];
       });
 
+      const isActive = currentHour >= slot.range[0] && currentHour < slot.range[1];
+
       return {
         hour: slot.hour,
         label: slot.label,
         programs: programs,
         count: programs.length,
-        isActive: currentHour >= slot.range[0] && currentHour < slot.range[1],
+        isActive: isActive,
       };
     });
+
+    // Set current time slot as default selection
+    const activeSlot = this.timeSlots.find(slot => slot.isActive);
+    if (activeSlot && this.selectedTimeSlot === null) {
+      this.selectedTimeSlot = activeSlot.hour;
+    }
   }
 
   /**
@@ -497,13 +474,39 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Scroll to specific time slot
+   * Select time slot to filter programs
    */
-  public scrollToTimeSlot(hour: number): void {
-    const element = document.getElementById(`time-slot-${hour}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  public selectTimeSlot(hour: number | null): void {
+    this.selectedTimeSlot = hour;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Get filtered time slots based on selection
+   */
+  public getFilteredTimeSlots(): TimeSlot[] {
+    if (this.selectedTimeSlot === null) {
+      return this.timeSlots;
     }
+    return this.timeSlots.filter(slot => slot.hour === this.selectedTimeSlot);
+  }
+
+  /**
+   * Select category to filter programs
+   */
+  public selectCategory(category: string | null): void {
+    this.selectedCategory = category;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Get filtered categories based on selection
+   */
+  public getFilteredCategories(): string[] {
+    if (this.selectedCategory === null) {
+      return this.categorias;
+    }
+    return this.categorias.filter(cat => cat === this.selectedCategory);
   }
 
   /**

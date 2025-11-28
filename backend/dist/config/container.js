@@ -128,10 +128,13 @@ class Container {
     async registerRepositories(cache) {
         const { MongoChannelRepository } = await Promise.resolve().then(() => __importStar(require('../infrastructure/repositories/MongoChannelRepository')));
         const { MongoProgramRepository } = await Promise.resolve().then(() => __importStar(require('../infrastructure/repositories/MongoProgramRepository')));
+        const { MongoUserRepository } = await Promise.resolve().then(() => __importStar(require('../infrastructure/repositories/MongoUserRepository')));
         const channelRepository = new MongoChannelRepository();
         this.dependencies.set('channelRepository', channelRepository);
         const programRepository = new MongoProgramRepository();
         this.dependencies.set('programRepository', programRepository);
+        const userRepository = new MongoUserRepository();
+        this.dependencies.set('userRepository', userRepository);
         // Cache Repository (already stored by initializeCache, ensure consistent key)
         this.dependencies.set('cacheRepository', cache);
         const storageAdapter = (process.env.STORAGE_ADAPTER || 'local').toLowerCase();
@@ -158,6 +161,7 @@ class Container {
         const { ChannelService } = await Promise.resolve().then(() => __importStar(require('../domain/services/ChannelService')));
         const { ProgramService } = await Promise.resolve().then(() => __importStar(require('../domain/services/ProgramService')));
         const { TMDBService } = await Promise.resolve().then(() => __importStar(require('../infrastructure/external/TMDBService')));
+        const { AuthService } = await Promise.resolve().then(() => __importStar(require('../domain/services/AuthService')));
         const channelRepository = this.get('channelRepository');
         const channelService = new ChannelService(channelRepository);
         this.dependencies.set('channelService', channelService);
@@ -167,6 +171,10 @@ class Container {
         const tmdbApiKey = process.env.TMDB_API_KEY || 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8';
         const tmdbService = new TMDBService(tmdbApiKey);
         this.dependencies.set('tmdbService', tmdbService);
+        const googleClientId = process.env.GOOGLE_CLIENT_ID;
+        const jwtSecret = process.env.JWT_SECRET || 'dev-secret-change-me';
+        const authService = new AuthService(googleClientId, jwtSecret, this.get('userRepository'));
+        this.dependencies.set('authService', authService);
         logger_1.logger.info('Services registered');
     }
     async registerUseCases() {
@@ -229,6 +237,7 @@ class Container {
         const { LayoutController } = await Promise.resolve().then(() => __importStar(require('../presentation/controllers/LayoutController')));
         const { AdminController } = await Promise.resolve().then(() => __importStar(require('../presentation/controllers/AdminController')));
         const { SSRController } = await Promise.resolve().then(() => __importStar(require('../presentation/controllers/SSRController')));
+        const { AuthController } = await Promise.resolve().then(() => __importStar(require('../presentation/controllers/AuthController')));
         const channelController = new ChannelController(getAllChannels, getChannelById);
         this.dependencies.set('channelController', channelController);
         const programController = new ProgramController(getPrograms, getChannelById, getProgramById);
@@ -241,6 +250,8 @@ class Container {
         this.dependencies.set('adminController', adminController);
         const ssrController = new SSRController(this.get('getNowPlaying'));
         this.dependencies.set('ssrController', ssrController);
+        const authController = new AuthController(this.get('authService'));
+        this.dependencies.set('authController', authController);
         logger_1.logger.info('Controllers registered');
     }
     get(key) {

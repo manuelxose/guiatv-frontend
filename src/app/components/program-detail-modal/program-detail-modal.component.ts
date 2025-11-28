@@ -16,12 +16,11 @@ import {
 import { CommonModule } from '@angular/common';
 import { trigger, style, transition, animate } from '@angular/animations';
 import { IProgramItem } from 'src/app/interfaces';
-import { BannerComponent } from '../banner/banner.component';
 
 @Component({
   selector: 'app-program-detail-modal',
   standalone: true,
-  imports: [CommonModule, BannerComponent],
+  imports: [CommonModule],
   templateUrl: './program-detail-modal.component.html',
   styleUrls: ['./program-detail-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,8 +62,15 @@ export class ProgramDetailModalComponent {
   public readonly bannerData = computed(() => {
     const prog = this.program;
     if (!prog) return null;
-    // Ensure poster is always a string (banner expects poster?: string)
-    const posterFromProg = (prog as any).poster || prog.desc?.value || '';
+
+    // Prefer program-provided imagery; fallback to channel logo
+    const posterFromProg =
+      (prog as any).image ||
+      (prog as any).poster ||
+      (prog as any).background ||
+      (prog as any).icon ||
+      this.channelLogo ||
+      '';
 
     const descObj = prog.desc
       ? prog.desc
@@ -75,7 +81,7 @@ export class ProgramDetailModalComponent {
       channel: this.channelName,
       channelName: this.channelName,
       icon: this.channelLogo,
-      poster: posterFromProg || this.channelLogo || '',
+      poster: posterFromProg,
       start: prog.start,
       stop: prog.stop,
       startTime: prog.start,
@@ -93,8 +99,22 @@ export class ProgramDetailModalComponent {
           : '',
       category: prog.category?.value || '',
       id: prog.id,
+      background: posterFromProg,
     };
   });
+
+  public getProgramTitle(): string {
+    const t = this.program?.title as any;
+    if (!t) return '';
+    if (typeof t === 'string') return t;
+    if (typeof t === 'object' && 'value' in t) return String(t.value ?? '');
+    return String(t);
+  }
+
+  public onPosterError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = this.channelLogo || 'assets/images/default-movie-poster.svg';
+  }
 
   // Helper para formatear tiempo desde la plantilla (usa en template)
   public formatTime(timeString: string | undefined | null): string {

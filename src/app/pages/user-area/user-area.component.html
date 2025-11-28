@@ -1,0 +1,480 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+  <app-nav-bar></app-nav-bar>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <ng-container *ngIf="isAuthenticated$ | async; else loginCTA">
+      <section
+        *ngIf="profile$ | async as profile"
+        class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm"
+      >
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div
+              class="h-16 w-16 rounded-2xl bg-gradient-to-br from-red-500/50 to-red-700/50 flex items-center justify-center text-xl font-bold"
+            >
+              {{ profile.name.slice(0, 2).toUpperCase() }}
+            </div>
+            <div>
+              <p class="text-sm text-gray-400">Perfil social</p>
+              <h1 class="text-2xl font-extrabold leading-tight">
+                {{ profile.name }}
+              </h1>
+              <p class="text-gray-300">
+                {{ '@' + profile.username }} · {{ profile.location }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="text-center">
+              <p class="text-gray-400 text-xs">Seguidores</p>
+              <p class="text-lg font-bold">{{ profile.stats.followers }}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-gray-400 text-xs">Siguiendo</p>
+              <p class="text-lg font-bold">{{ profile.stats.following }}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-gray-400 text-xs">Recomendaciones</p>
+              <p class="text-lg font-bold">{{ profile.stats.recommendations }}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-gray-400 text-xs">Lista</p>
+              <p class="text-lg font-bold">{{ profile.stats.watchlist }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 grid gap-4 lg:grid-cols-3">
+          <div class="lg:col-span-2">
+            <p class="text-sm text-gray-400 mb-1">Viendo ahora</p>
+            <div
+              class="rounded-xl bg-gray-900/60 border border-gray-700/70 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+            >
+              <div>
+                <p class="font-semibold">{{ profile.watchingNow.title }}</p>
+                <p class="text-gray-400 text-sm">
+                  Estado: {{ profile.watchingNow.mood || 'Sin estado' }} · Visibilidad:
+                  {{ profile.watchingNow.visibility }}
+                </p>
+              </div>
+              <a
+                routerLink="/iniciar-sesion"
+                class="text-sm text-red-300 hover:text-red-200 underline"
+              >
+                Ver actividad completa
+              </a>
+            </div>
+          </div>
+          <div class="bg-green-500/10 border border-green-500/30 rounded-xl p-4">
+            <p class="text-sm text-green-300 font-semibold">Modo social activo</p>
+            <p class="text-gray-300 text-sm">
+              Comparte recomendaciones, listas y lo que estás viendo en tiempo real.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid lg:grid-cols-3 gap-6">
+        <section
+          class="lg:col-span-2 bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 space-y-6"
+        >
+          <div>
+            <p class="text-sm text-gray-400">Estado social</p>
+            <h2 class="text-xl font-semibold">Comparte qué ves ahora</h2>
+          </div>
+          <form
+            [formGroup]="statusForm"
+            (ngSubmit)="updateStatus()"
+            class="grid sm:grid-cols-3 gap-4 items-end"
+          >
+            <label class="sm:col-span-2 text-sm text-gray-300 space-y-1">
+              Título o episodio
+              <input
+                type="text"
+                formControlName="title"
+                class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder="Ej. The Bear T3E02"
+              />
+            </label>
+            <label class="text-sm text-gray-300 space-y-1">
+              Mood
+              <input
+                type="text"
+                formControlName="mood"
+                class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder="Enganchado, relajado..."
+              />
+            </label>
+            <label class="text-sm text-gray-300 space-y-1">
+              Visibilidad
+              <select
+                formControlName="visibility"
+                class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              >
+                <option value="public">Público</option>
+                <option value="friends">Solo amigos</option>
+                <option value="private">Privado</option>
+              </select>
+            </label>
+            <button
+              type="submit"
+              class="sm:col-span-3 w-full sm:w-auto px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 active:bg-red-800 font-semibold transition-all duration-200"
+            >
+              Actualizar estado
+            </button>
+          </form>
+
+          <div class="border-t border-gray-700/60 pt-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-sm text-gray-400">Recomendaciones</p>
+                <h3 class="text-lg font-semibold">Comparte algo con tus amigos</h3>
+              </div>
+            </div>
+            <form
+              [formGroup]="recommendationForm"
+              (ngSubmit)="publishRecommendation()"
+              class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+              <label class="text-sm text-gray-300 space-y-1 lg:col-span-2">
+                Título
+                <input
+                  type="text"
+                  formControlName="title"
+                  class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  placeholder="Nombre de la peli o serie"
+                />
+              </label>
+              <label class="text-sm text-gray-300 space-y-1">
+                Tipo
+                <select
+                  formControlName="type"
+                  class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="movie">Película</option>
+                  <option value="series">Serie</option>
+                </select>
+              </label>
+              <label class="text-sm text-gray-300 space-y-1">
+                Nota (1-10)
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  step="0.5"
+                  formControlName="rating"
+                  class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                />
+              </label>
+              <label class="text-sm text-gray-300 space-y-1 lg:col-span-2">
+                Comentario
+                <textarea
+                  rows="2"
+                  formControlName="note"
+                  class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  placeholder="¿Por qué la recomiendas?"
+                ></textarea>
+              </label>
+              <label class="text-sm text-gray-300 space-y-1">
+                Visibilidad
+                <select
+                  formControlName="visibility"
+                  class="w-full rounded-lg bg-gray-900/70 border border-gray-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="public">Público</option>
+                  <option value="friends">Solo amigos</option>
+                  <option value="private">Privado</option>
+                </select>
+              </label>
+              <button
+                type="submit"
+                class="lg:col-span-3 w-full px-4 py-3 rounded-lg bg-white/10 hover:bg-white/15 border border-gray-600 text-sm font-semibold transition-all duration-200"
+              >
+                Publicar recomendación
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <section
+          class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 space-y-4"
+        >
+          <div>
+            <p class="text-sm text-gray-400">Privacidad y avisos</p>
+            <h2 class="text-lg font-semibold">Controla tu cuenta</h2>
+          </div>
+          <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="space-y-3">
+            <label class="flex items-center justify-between text-sm text-gray-300">
+              Perfil público
+              <input
+                type="checkbox"
+                formControlName="profilePublic"
+                class="rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-900"
+              />
+            </label>
+            <label class="flex items-center justify-between text-sm text-gray-300">
+              Compartir actividad
+              <input
+                type="checkbox"
+                formControlName="shareActivity"
+                class="rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-900"
+              />
+            </label>
+            <label class="flex items-center justify-between text-sm text-gray-300">
+              Compartir listas
+              <input
+                type="checkbox"
+                formControlName="shareWatchlist"
+                class="rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-900"
+              />
+            </label>
+            <label class="flex items-center justify-between text-sm text-gray-300">
+              Mostrar en línea
+              <input
+                type="checkbox"
+                formControlName="showOnline"
+                class="rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-900"
+              />
+            </label>
+            <div class="border-t border-gray-700/60 pt-3 space-y-2">
+              <label class="flex items-center justify-between text-sm text-gray-300">
+                Notificaciones de recomendaciones
+                <input
+                  type="checkbox"
+                  formControlName="recommendations"
+                  class="rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-900"
+                />
+              </label>
+              <label class="flex items-center justify-between text-sm text-gray-300">
+                Cuando te sigan
+                <input
+                  type="checkbox"
+                  formControlName="followers"
+                  class="rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-900"
+                />
+              </label>
+              <label class="flex items-center justify-between text-sm text-gray-300">
+                Resumen semanal
+                <input
+                  type="checkbox"
+                  formControlName="weeklySummary"
+                  class="rounded border-gray-600 text-red-500 focus:ring-red-500 bg-gray-900"
+                />
+              </label>
+            </div>
+            <button
+              type="submit"
+              class="w-full px-4 py-3 rounded-lg bg-green-600/80 hover:bg-green-600 font-semibold transition-all duration-200"
+            >
+              Guardar ajustes
+            </button>
+          </form>
+          <p class="text-xs text-gray-400">
+            Estos ajustes quedarán listos para persistir en backend. Ahora mismo
+            se mantienen en el estado local de la app.
+          </p>
+        </section>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-6">
+        <section
+          class="lg:col-span-2 bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 space-y-4"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Actividad reciente</p>
+              <h2 class="text-lg font-semibold">Feed personal</h2>
+            </div>
+          </div>
+          <div class="space-y-3" *ngIf="activities$ | async as activities">
+            <div
+              *ngFor="let activity of activities"
+              class="p-4 rounded-xl bg-gray-900/60 border border-gray-700/50 flex items-start gap-3"
+            >
+              <div
+                class="h-10 w-10 rounded-full bg-red-500/15 text-red-300 flex items-center justify-center text-sm font-bold"
+              >
+                {{ activity.badge || 'Feed' }}
+              </div>
+              <div class="flex-1">
+                <p class="text-sm text-gray-400">{{ activity.createdAt }}</p>
+                <p class="font-semibold">{{ activity.title }}</p>
+                <p class="text-gray-300 text-sm">{{ activity.description }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 space-y-4"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Amigos</p>
+              <h2 class="text-lg font-semibold">Conecta y sigue</h2>
+            </div>
+          </div>
+
+          <div class="space-y-3" *ngIf="friends$ | async as friends">
+            <div
+              *ngFor="let friend of friends"
+              class="p-3 rounded-xl bg-gray-900/60 border border-gray-700/50 flex items-center gap-3"
+            >
+              <div
+                class="h-10 w-10 rounded-full bg-gradient-to-br from-gray-500/40 to-gray-700/40 flex items-center justify-center text-sm font-semibold"
+              >
+                {{ friend.name.slice(0, 2).toUpperCase() }}
+              </div>
+              <div class="flex-1">
+                <p class="font-semibold">{{ friend.name }}</p>
+                <p class="text-gray-400 text-xs">
+                  {{ '@' + friend.username }} · {{ friend.lastActivity }}
+                </p>
+                <p class="text-gray-300 text-xs">
+                  {{ friend.favoriteGenres.join(', ') }}
+                </p>
+              </div>
+              <span
+                class="h-2 w-2 rounded-full"
+                [ngClass]="friend.isOnline ? 'bg-green-400' : 'bg-gray-500'"
+                [title]="friend.isOnline ? 'En línea' : 'Desconectado'"
+              ></span>
+              <button
+                type="button"
+                (click)="toggleFollow(friend.id)"
+                class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-200"
+                [ngClass]="
+                  friend.following
+                    ? 'bg-white/10 border-gray-600'
+                    : 'bg-red-600 border-red-500'
+                "
+              >
+                {{ friend.following ? 'Siguiendo' : 'Seguir' }}
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-6">
+        <section
+          class="lg:col-span-2 bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 space-y-4"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Tus recomendaciones</p>
+              <h2 class="text-lg font-semibold">Lo que has compartido</h2>
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3" *ngIf="recommendations$ | async as recs">
+            <article
+              *ngFor="let rec of recs"
+              class="p-4 rounded-xl bg-gray-900/60 border border-gray-700/50 flex flex-col gap-2"
+            >
+              <div class="flex items-center justify-between">
+                <p class="text-xs uppercase tracking-wide text-gray-400">
+                  {{ rec.type === 'movie' ? 'Película' : 'Serie' }}
+                </p>
+                <span
+                  class="px-2 py-1 rounded-full text-[10px] uppercase"
+                  [ngClass]="{
+                    'bg-green-500/15 text-green-300': rec.visibility === 'friends',
+                    'bg-red-500/20 text-red-200': rec.visibility === 'public',
+                    'bg-gray-600/30 text-gray-200': rec.visibility === 'private'
+                  }"
+                >
+                  {{ rec.visibility }}
+                </span>
+              </div>
+              <h3 class="font-semibold text-white">{{ rec.title }}</h3>
+              <p class="text-sm text-gray-300">{{ rec.note }}</p>
+              <div class="flex items-center justify-between text-sm text-gray-400">
+                <span>{{ rec.createdAt }}</span>
+                <span class="text-red-300 font-semibold">Nota: {{ rec.rating || 'N/A' }}</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section
+          class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 space-y-4"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-400">Mi lista</p>
+              <h2 class="text-lg font-semibold">Pendientes y en curso</h2>
+            </div>
+          </div>
+
+          <div class="space-y-3" *ngIf="watchlist$ | async as list">
+            <div
+              *ngFor="let item of list"
+              class="p-3 rounded-xl bg-gray-900/60 border border-gray-700/50 space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-semibold">{{ item.title }}</p>
+                  <p class="text-xs text-gray-400">
+                    {{ item.type === 'movie' ? 'Película' : 'Serie' }} ·
+                    {{ item.visibility === 'public' ? 'Pública' : item.visibility === 'friends' ? 'Amigos' : 'Privada' }}
+                  </p>
+                </div>
+                <span
+                  class="px-2 py-1 rounded-full text-[10px] uppercase"
+                  [ngClass]="{
+                    'bg-yellow-500/20 text-yellow-200': item.state === 'pending',
+                    'bg-blue-500/20 text-blue-200': item.state === 'watching',
+                    'bg-green-500/20 text-green-200': item.state === 'finished'
+                  }"
+                >
+                  {{ item.state }}
+                </span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-gray-700 overflow-hidden">
+                <div
+                  class="h-full bg-red-500"
+                  [style.width.%]="item.progress"
+                ></div>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  class="px-3 py-2 rounded-lg text-xs bg-white/10 hover:bg-white/15 border border-gray-600"
+                  (click)="updateListItem(item.id, 'watching')"
+                >
+                  Viendo
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-2 rounded-lg text-xs bg-red-600 border border-red-500"
+                  (click)="updateListItem(item.id, 'finished')"
+                >
+                  Terminado
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </ng-container>
+
+    <ng-template #loginCTA>
+      <div
+        class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 text-center space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Conéctate para ver tu área privada</h2>
+        <p class="text-gray-300">
+          Gestiona tu perfil, tus listas y las recomendaciones a tus amigos. Todo
+          está listo para conectarse con el backend de autenticación.
+        </p>
+        <a
+          routerLink="/iniciar-sesion"
+          class="inline-flex items-center justify-center px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 font-semibold transition-colors duration-200"
+        >
+          Ir a iniciar sesión
+        </a>
+      </div>
+    </ng-template>
+  </div>
+</div>
