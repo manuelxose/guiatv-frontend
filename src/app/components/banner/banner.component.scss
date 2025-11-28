@@ -45,8 +45,8 @@ $transition: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   @media (min-width: 1024px) {
-    min-height: 400px;
-    height: clamp(400px, 45vw, 600px);
+    min-height: 350px;
+    height: clamp(350px, 35vw, 450px);
   }
 
   &.banner-compact {

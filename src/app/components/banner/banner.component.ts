@@ -68,6 +68,7 @@ export class BannerComponent
       this.bannerData = null;
       return;
     }
+    console.log('[BannerComponent] processBannerData:', this.data);
 
     if (this.isMovieData(this.data)) {
       this.bannerData = this.convertMovieToBannerData(this.data);

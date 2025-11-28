@@ -237,11 +237,18 @@ export class HomeComponent implements OnInit {
         `Guía TV - Programación ${dayInfo.diaSemana} ${dayInfo.diaNumero}`
       );
     }
+
+    // CRITICAL FIX: Reload data for the selected day
+    this.homeDataService.loadDataForDay(dayIndex).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (result) => {
+        if (!result.success) {
+          this.logger.error('Failed to load data for day change', (result as any).error);
+        }
+      },
+      error: (err) => this.logger.error('Error reloading data', err)
+    });
   }
 
-  /**
-   * Maneja la selección de una película
-   */
   public onMovieSelected(movie: any): void {
     this.logger.info(`Movie selected: ${movie.title}`);
     // Aquí se podría navegar a detalles o abrir modal

@@ -11,16 +11,18 @@ export const routes: Routes = [
   {
     path: 'series',
     loadComponent: () =>
-      import('./pages/series/series.component').then((m) => m.SeriesComponent),
+      import('./pages/content-page/content-page.component').then((m) => m.ContentPageComponent),
     title: 'Series - Guía TV',
+    data: { type: 'series' }
   },
   {
     path: 'peliculas',
     loadComponent: () =>
-      import('./pages/peliculas/peliculas.component').then(
-        (m) => m.PeliculasComponent
+      import('./pages/content-page/content-page.component').then(
+        (m) => m.ContentPageComponent
       ),
     title: 'Películas - Guía TV',
+    data: { type: 'movies' }
   },
   {
     path: 'guia-canales',
