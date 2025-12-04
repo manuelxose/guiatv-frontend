@@ -5,13 +5,16 @@ import { Subject, takeUntil } from 'rxjs';
 import { MenuStateService } from '../../services/menu-state.service';
 import { UserService } from '../../services/user.service';
 import { MenuComponent } from '../menu/menu.component';
+import { AutocompleteComponent } from '../autocomplete/autocomplete.component';
+import { TvGuideService } from '../../services/tv-guide.service';
+
 
 @Component({
   selector: 'app-nav-bar',
   templateUrl: './nav-bar.component.html',
   styleUrls: ['./nav-bar.component.scss'],
   standalone: true,
-  imports: [CommonModule, MenuComponent, RouterModule],
+  imports: [CommonModule, MenuComponent, RouterModule, AutocompleteComponent],
 })
 export class NavBarComponent implements OnDestroy {
   public isHome = false;
@@ -27,9 +30,10 @@ export class NavBarComponent implements OnDestroy {
   private unsuscribe$ = new Subject<void>();
 
   constructor(
-    private router: Router,
+    public router: Router,
     public menuState: MenuStateService,
-    private userService: UserService
+    private userService: UserService,
+    private tvGuideService: TvGuideService
   ) {
     this.menuState
       .getActive()
@@ -44,6 +48,21 @@ export class NavBarComponent implements OnDestroy {
         this.isCuenta = key === 'mi-cuenta';
         this.isLogin = key === 'iniciar-sesion';
       });
+  }
+
+  navigateTo(path: string, key: string): void {
+    // Set the active state
+    this.menuState.setActive(key);
+    
+    // Set TV guide mode
+    if (key === 'peliculas') {
+      this.tvGuideService.setIsMovies();
+    } else if (key === 'series') {
+      this.tvGuideService.setIsSeries();
+    }
+    
+    // Navigate
+    this.router.navigateByUrl(path);
   }
 
   ngOnDestroy(): void {

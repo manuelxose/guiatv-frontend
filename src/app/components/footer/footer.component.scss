@@ -1,251 +1,68 @@
-/**
- * Footer Component Styles
- * Modern, accessible, and performance-optimized footer
- */
+/* Footer GPTV - Premium Dark Theme */
 
-.footer {
+:host {
   display: block;
-  background: linear-gradient(
-    135deg,
-    rgba(17, 24, 39, 0.9),
-    rgba(31, 41, 55, 0.95)
-  );
-  color: #e6eef6;
-  padding: 1.25rem 1rem;
-  font-size: 13px;
+}
+
+/* Smooth transitions */
+nav, div {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Accordion animation */
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Link hover effects */
+a {
   position: relative;
-  overflow: visible;
-  margin-top: 1.75rem; /* separación desde el contenido */
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-
-  /* Inner layout */
-  .footer-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .logo {
-    width: 28px;
-    height: 28px;
-    fill: #ef4444;
-    opacity: 0.95;
-  }
-
-  .brand-text {
-    color: #fff;
-    font-weight: 700;
-  }
-  .brand-text .dot {
-    color: #ef4444;
-    margin-left: 2px;
-  }
-
-  .footer-nav {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-  }
-  .footer-link {
-    color: rgba(230, 238, 246, 0.8);
-    text-decoration: none;
-    font-weight: 600;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-  }
-  .footer-link:hover {
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .copyright {
-    color: rgba(230, 238, 246, 0.7);
-    font-size: 12px;
-  }
-
-  // Slight adjustment for dark mode (keeps same palette)
-  @media (prefers-color-scheme: dark) {
-    background: linear-gradient(
-      135deg,
-      rgba(2, 6, 23, 0.9),
-      rgba(14, 23, 35, 0.95)
-    );
-  }
 }
 
-// Enhanced footer links section
-.footer-links {
-  width: 100%;
-  margin: 1rem 0;
-  font-size: 0.75rem;
-  color: #9ca3af;
-  line-height: 1.5;
-  background: rgba(0, 0, 0, 0.02);
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-
-  @media (prefers-color-scheme: dark) {
-    background: rgba(255, 255, 255, 0.02);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .footer-links-content {
-    max-width: 850px;
-    margin: 0 auto;
-    padding: 1rem;
-    text-align: center;
-
-    a {
-      color: #6b7280;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      padding: 0.125rem 0.25rem;
-      border-radius: 0.25rem;
-      position: relative;
-
-      &::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: rgba(239, 68, 68, 0.1);
-        border-radius: 0.25rem;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-      }
-
-      &:hover {
-        color: #374151;
-
-        &::before {
-          opacity: 1;
-        }
-
-        @media (prefers-color-scheme: dark) {
-          color: #d1d5db;
-        }
-      }
-
-      &:focus-visible {
-        outline: 2px solid #ef4444;
-        outline-offset: 2px;
-      }
-    }
-
-    br {
-      display: block;
-      margin: 0.5rem 0;
-    }
-  }
+/* Social icons glow on hover */
+a[aria-label]:hover svg {
+  filter: drop-shadow(0 0 8px currentColor);
 }
 
-// Keyframe animations
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
+/* Scrollbar for mobile accordion content if needed */
+nav ul {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Custom scrollbar */
+nav ul::-webkit-scrollbar {
+  width: 4px;
+}
+
+nav ul::-webkit-scrollbar-track {
+  background: rgba(55, 65, 81, 0.3);
+  border-radius: 2px;
+}
+
+nav ul::-webkit-scrollbar-thumb {
+  background: rgba(107, 114, 128, 0.5);
+  border-radius: 2px;
+}
+
+/* Focus states for accessibility */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid rgba(239, 68, 68, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Animate pulse for live indicator */
+@keyframes pulse {
+  0%, 100% {
     opacity: 1;
-    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.5;
   }
 }
 
-// Responsive design
-@media (max-width: 640px) {
-  .footer {
-    padding: 1.5rem 1rem;
-    font-size: 13px;
-
-    p {
-      line-height: 1.4;
-    }
-  }
-
-  .footer-links {
-    font-size: 0.7rem;
-
-    .footer-links-content {
-      padding: 0.75rem;
-    }
-  }
-}
-
-// High contrast mode support
-@media (prefers-contrast: high) {
-  .footer {
-    background: #000;
-    color: #fff;
-    border-top: 2px solid #fff;
-
-    a {
-      color: #ffff00;
-      font-weight: 700;
-
-      &:hover {
-        background-color: #ffff00;
-        color: #000;
-      }
-    }
-  }
-
-  .footer-links {
-    background: #000;
-    border-top: 1px solid #fff;
-
-    .footer-links-content a {
-      color: #fff;
-      border: 1px solid transparent;
-
-      &:hover {
-        border-color: #fff;
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-    }
-  }
-}
-
-// Reduced motion support
-@media (prefers-reduced-motion: reduce) {
-  .footer,
-  .footer a,
-  .footer-links a {
-    animation: none !important;
-    transition: none !important;
-  }
-
-  .footer a {
-    &::after {
-      transition: none !important;
-    }
-  }
-}
-
-// Print styles
-@media print {
-  .footer {
-    background: none !important;
-    color: #000 !important;
-    box-shadow: none !important;
-
-    a {
-      color: #000 !important;
-      text-decoration: underline !important;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .footer-links {
-    .footer-links-content {
-      padding: 0.5rem;
-    }
-  }
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

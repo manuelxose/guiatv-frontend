@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GetPrograms = void 0;
-const ChannelMapper_1 = require("../mappers/ChannelMapper");
 const dateUtils_1 = require("../../shared/utils/dateUtils");
 const ProgramFilter_1 = require("../../domain/services/ProgramFilter");
 const cacheKeyBuilder_1 = require("../../shared/utils/cacheKeyBuilder");
 const Schedule_model_1 = require("../../infrastructure/database/models/Schedule.model");
 const ProgramLayoutBuilder_1 = require("../services/ProgramLayoutBuilder");
+const ProgramDeduplicator_1 = require("../services/ProgramDeduplicator");
 class GetPrograms {
     constructor(programRepository, channelRepository, cacheRepository) {
         this.programRepository = programRepository;
@@ -14,6 +14,7 @@ class GetPrograms {
         this.cacheRepository = cacheRepository;
         this.layoutBuilder = new ProgramLayoutBuilder_1.ProgramLayoutBuilder();
         this.timeSlots = this.layoutBuilder.buildTimeSlots();
+        this.deduplicator = new ProgramDeduplicator_1.ProgramDeduplicator();
         this.cacheTtlSeconds = Number(process.env.PROGRAMS_CACHE_TTL_SEC || 300) || 300;
         this.layoutVersion = process.env.LAYOUT_VERSION || 'v1';
         this.typeOrder = {
@@ -42,6 +43,29 @@ class GetPrograms {
             'ATRESERIES',
             'NEOX',
             'NOVA',
+        ];
+        this.spanishNationalTdtOrder = [
+            'la_1',
+            'la_2',
+            'antena_3',
+            'cuatro',
+            'telecinco',
+            'la_sexta',
+            'neox',
+            'nova',
+            'mega',
+            'energy',
+            'dmax',
+            'boing',
+            'clan',
+            'atreseries',
+            'fdf',
+            'divinity',
+            'dkiss',
+            'ten',
+            'be_mad',
+            'paramount_network',
+            'trece',
         ];
     }
     async execute(request) {
@@ -102,6 +126,7 @@ class GetPrograms {
         const channelOrder = this.buildChannelOrder(sortedChannelMeta);
         const programs = await this.programRepository.findByDate(normalized.date, normalized.fields);
         let filteredPrograms = this.filterPrograms(programs, normalized, channelFilter, allowedChannelIds);
+        filteredPrograms = this.deduplicator.dedupe(filteredPrograms);
         const totalPrograms = filteredPrograms.length;
         filteredPrograms = this.paginate(filteredPrograms, normalized.page, normalized.limit);
         const sortedPrograms = this.sortProgramsRaw(filteredPrograms, channelOrder);
@@ -176,6 +201,7 @@ class GetPrograms {
                 programs = programs.filter((p) => p.timeSlotIndex === slotIndex || p.layoutsBySlot?.some((l) => l.timeSlotIndex === slotIndex));
             }
         }
+        programs = this.dedupeProgramLayouts(programs);
         return {
             date: snapshot.date,
             timeSlots: snapshot.timeSlots,
@@ -217,43 +243,190 @@ class GetPrograms {
         // Enrichments (TMDB) already happen at ingestion (SyncEPGData)
         return result;
     }
+    dedupeProgramLayouts(programs) {
+        const grouped = new Map();
+        const firstIndex = new Map();
+        programs.forEach((program, index) => {
+            const key = `${program.channelId}|${this.startKey(program.start)}`;
+            if (!grouped.has(key)) {
+                grouped.set(key, []);
+                firstIndex.set(key, index);
+            }
+            grouped.get(key).push(program);
+        });
+        const cleaned = [];
+        grouped.forEach((bucket) => {
+            if (bucket.length === 1) {
+                cleaned.push(bucket[0]);
+                return;
+            }
+            const winner = bucket.reduce((best, candidate) => this.pickBetterLayout(best, candidate));
+            cleaned.push(winner);
+        });
+        return cleaned.sort((a, b) => {
+            const keyA = `${a.channelId}|${this.startKey(a.start)}`;
+            const keyB = `${b.channelId}|${this.startKey(b.start)}`;
+            const idxA = firstIndex.get(keyA) ?? 0;
+            const idxB = firstIndex.get(keyB) ?? 0;
+            if (idxA !== idxB)
+                return idxA - idxB;
+            return new Date(a.start).getTime() - new Date(b.start).getTime();
+        });
+    }
+    pickBetterLayout(current, candidate) {
+        const currentScore = this.scoreLayout(current);
+        const candidateScore = this.scoreLayout(candidate);
+        if (candidateScore > currentScore)
+            return candidate;
+        if (currentScore > candidateScore)
+            return current;
+        const currentDesc = (current.description || '').length;
+        const candidateDesc = (candidate.description || '').length;
+        if (candidateDesc !== currentDesc) {
+            return candidateDesc > currentDesc ? candidate : current;
+        }
+        const currentDuration = current.durationMinutes || 0;
+        const candidateDuration = candidate.durationMinutes || 0;
+        if (candidateDuration !== currentDuration) {
+            return candidateDuration > currentDuration ? candidate : current;
+        }
+        const currentTitleLen = (current.title || '').length;
+        const candidateTitleLen = (candidate.title || '').length;
+        if (candidateTitleLen !== currentTitleLen) {
+            return candidateTitleLen > currentTitleLen ? candidate : current;
+        }
+        return candidateScore >= currentScore ? candidate : current;
+    }
+    scoreLayout(program) {
+        let score = 0;
+        const title = program.title || '';
+        const normalizedTitle = ProgramDeduplicator_1.ProgramDeduplicator.normalizeTitle(title);
+        const isGeneric = ProgramDeduplicator_1.ProgramDeduplicator.isGenericTitle(title);
+        score += isGeneric ? -10 : 50;
+        if (program.description) {
+            score += Math.min(program.description.length / 40, 10);
+        }
+        if (program.image)
+            score += 5;
+        if (program.category)
+            score += 3;
+        if (program.rating)
+            score += 2;
+        score += Math.min((program.durationMinutes || 0) / 30, 4);
+        score += Math.min(normalizedTitle.length / 8, 4);
+        return score;
+    }
     paginate(items, page, limit) {
         const offset = (page - 1) * limit;
         return items.slice(offset, offset + limit);
     }
+    normalizeChannelType(rawType, channelName, channelId, region) {
+        const base = (rawType || '').toString().trim();
+        const normalizedBase = base
+            .toUpperCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+        let type = normalizedBase || 'TDT';
+        const isRegionalVariant = this.isRegionalNationalVariant(channelName || '', channelId || '', region);
+        if (type.startsWith('AUTONOM'))
+            type = 'AUTONOMICO';
+        if (type === 'MOVISTAR+' || type === 'M+')
+            type = 'MOVISTAR';
+        if (type === 'CABLE')
+            type = 'CABLE';
+        if (type === 'OTT')
+            type = 'OTT';
+        if (type === 'TDT') {
+            if (isRegionalVariant) {
+                type = 'AUTONOMICO';
+            }
+        }
+        return { type, isRegionalVariant };
+    }
+    isRegionalNationalVariant(channelName, channelId, region) {
+        const normalizedName = (channelName || '').toLowerCase();
+        const normalizedId = (channelId || '').toLowerCase();
+        const normalizedRegion = (region || '').toLowerCase();
+        const regionKeywords = ['canarias', 'canaria', 'cataluna', 'catalunya', 'catalan', 'catalonia'];
+        const mentionsRegion = regionKeywords.some((kw) => normalizedName.includes(kw) ||
+            normalizedId.includes(kw) ||
+            normalizedRegion.includes(kw));
+        if (!mentionsRegion)
+            return false;
+        const isLa1OrLa2 = /(la[\s\-_]?1|la[\s\-_]?2)/.test(normalizedName) ||
+            /(la[\s\-_]?1|la[\s\-_]?2)/.test(normalizedId);
+        return isLa1OrLa2;
+    }
+    isSpainContext(country) {
+        if (!country)
+            return false;
+        const value = country.toLowerCase();
+        return value === 'es' || value === 'es-es' || value.includes('espa');
+    }
+    isSpanishChannel(channel, normalizedType, isRegionalVariant) {
+        const id = (channel.id || '').toLowerCase();
+        const countryCode = (channel.countryCode || '').toUpperCase();
+        const countryName = (channel.country || '').toLowerCase();
+        const isEsCountry = countryCode === 'ES' || countryName.includes('espa');
+        const inNationalList = normalizedType === 'TDT' &&
+            this.spanishNationalTdtOrder.includes(id);
+        const isAutonomico = normalizedType === 'AUTONOMICO';
+        return isEsCountry || inNationalList || isAutonomico || isRegionalVariant;
+    }
+    startKey(start) {
+        const date = new Date(start);
+        const minute = Math.floor(date.getTime() / 60000);
+        if (Number.isNaN(minute))
+            return start || '';
+        return String(minute);
+    }
     async getChannelMeta(channelFilter, country, channelTypes) {
-        const cacheKey = 'channels:meta';
+        const cacheKey = 'channels:meta:v2';
         const cached = await this.cacheRepository.get(cacheKey);
         if (cached && !channelFilter && !country && !channelTypes?.length) {
-            return cached;
+            return this.sortChannels(cached);
         }
-        const channels = await this.channelRepository.findAll(country || channelTypes?.length
-            ? {
-                type: channelTypes && channelTypes.length ? channelTypes[0] : undefined,
-                region: undefined,
-                isActive: true,
-            }
-            : undefined);
+        const channels = await this.channelRepository.findAll({
+            isActive: true,
+        });
         const typeFilter = channelTypes && channelTypes.length
             ? new Set(channelTypes.map((t) => t.toUpperCase()))
             : null;
+        const isSpainContext = this.isSpainContext(country);
         const meta = channels
-            .filter((ch) => {
+            .map((ch) => {
+            const { type: normalizedType, isRegionalVariant } = this.normalizeChannelType(ch.type, ch.name, ch.id, ch.region || ch.region);
+            return { ch, normalizedType, isRegionalVariant };
+        })
+            .filter(({ ch, normalizedType, isRegionalVariant }) => {
             if (channelFilter && !channelFilter.has(ch.id))
                 return false;
-            if (country && ch.country && ch.country.toLowerCase() !== country.toLowerCase())
+            if (typeFilter && !typeFilter.has(normalizedType))
                 return false;
-            if (country && !ch.country)
+            if (isSpainContext && !this.isSpanishChannel(ch, normalizedType, isRegionalVariant)) {
                 return false;
-            if (typeFilter && !typeFilter.has(String(ch.type).toUpperCase()))
-                return false;
+            }
+            if (!isSpainContext && country) {
+                if (!ch.country)
+                    return false;
+                if (ch.country.toLowerCase() !== country.toLowerCase())
+                    return false;
+            }
             return true;
         })
-            .map((ch) => ChannelMapper_1.ChannelMapper.toMetaDTO(ch));
+            .map(({ ch, normalizedType }) => ({
+            id: ch.id,
+            name: ch.name,
+            icon: ch.icon,
+            type: normalizedType,
+            country: ch.country,
+            countryCode: ch.countryCode,
+        }));
+        const sortedMeta = this.sortChannels(meta);
         if (!channelFilter && !country && !channelTypes?.length) {
-            await this.cacheRepository.set(cacheKey, meta, this.cacheTtlSeconds);
+            await this.cacheRepository.set(cacheKey, sortedMeta, this.cacheTtlSeconds);
         }
-        return this.sortChannels(meta);
+        return sortedMeta;
     }
     sortChannels(channels) {
         return [...channels].sort((a, b) => {
@@ -264,6 +437,16 @@ class GetPrograms {
             if (oA !== oB)
                 return oA - oB;
             if (tA === 'TDT' && tB === 'TDT') {
+                const idIdxA = this.spanishNationalTdtOrder.indexOf((a.id || '').toLowerCase());
+                const idIdxB = this.spanishNationalTdtOrder.indexOf((b.id || '').toLowerCase());
+                if (idIdxA !== -1 || idIdxB !== -1) {
+                    if (idIdxA === -1)
+                        return 1;
+                    if (idIdxB === -1)
+                        return -1;
+                    if (idIdxA !== idIdxB)
+                        return idIdxA - idIdxB;
+                }
                 const idxA = this.tdtPriority.indexOf((a.name || '').toUpperCase());
                 const idxB = this.tdtPriority.indexOf((b.name || '').toUpperCase());
                 if (idxA !== -1 || idxB !== -1) {

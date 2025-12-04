@@ -1,0 +1,139 @@
+<app-nav-bar></app-nav-bar>
+
+<main class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black pb-20">
+  
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 animate-pulse">
+    <div class="bg-gray-800/60 rounded-2xl h-96 mb-8"></div>
+    <div class="space-y-4">
+      <div class="bg-gray-800/60 h-8 rounded w-3/4"></div>
+      <div class="bg-gray-800/60 h-4 rounded"></div>
+      <div class="bg-gray-800/60 h-4 rounded"></div>
+      <div class="bg-gray-800/60 h-4 rounded w-5/6"></div>
+    </div>
+  </div>
+
+  <!-- Article Content -->
+  <article *ngIf="!isLoading && article" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    
+    <!-- Cover Image -->
+    <div class="relative h-96 rounded-3xl overflow-hidden mb-10 shadow-2xl shadow-black/40">
+      <img 
+        [src]="article.featured_image?.source_url || '/assets/images/placeholder.jpg'" 
+        [alt]="article.title?.rendered"
+        class="w-full h-full object-cover">
+      <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent"></div>
+      
+      <!-- Category Badge -->
+      <span *ngIf="article.categories_name?.[0]" 
+        class="absolute top-6 left-6 px-4 py-2 bg-black/60 backdrop-blur-md text-red-300 text-sm font-bold uppercase tracking-wider rounded-full border border-red-500/30">
+        {{ article.categories_name[0].name }}
+      </span>
+    </div>
+
+    <!-- Header -->
+    <header class="mb-10">
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-white mb-6 leading-tight">
+        {{ article.title?.rendered }}
+      </h1>
+      
+      <div class="flex items-center gap-6 text-sm text-gray-400">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+          </svg>
+          <span>Equipo Editorial</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+          </svg>
+          <span>{{ formatDate(article.date) }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Article Body -->
+    <div class="prose prose-invert prose-lg max-w-none mb-12">
+      <div [innerHTML]="article.content?.rendered" class="article-content"></div>
+    </div>
+
+    <!-- Social Actions -->
+    <div class="border-y border-gray-700/50 py-8 mb-12">
+      <div class="flex items-center justify-center gap-4">
+        <button 
+          (click)="toggleLike()"
+          class="flex items-center gap-2 px-6 py-3 rounded-xl transition-all"
+          [ngClass]="liked ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-gray-800/60 text-gray-400 border border-gray-700/60 hover:bg-gray-800 hover:text-white'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" [ngClass]="liked ? 'fill-current' : ''" viewBox="0 0 20 20" [attr.fill]="liked ? 'currentColor' : 'none'" stroke="currentColor">
+            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+          </svg>
+          <span class="font-medium">Me gusta</span>
+        </button>
+        
+        <button class="flex items-center gap-2 px-6 py-3 bg-gray-800/60 text-gray-400 border border-gray-700/60 hover:bg-gray-800 hover:text-white rounded-xl transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" />
+          </svg>
+          <span class="font-medium">Comentar</span>
+          <span class="text-xs bg-gray-700 px-2 py-0.5 rounded-full">{{ commentsCount }}</span>
+        </button>
+        
+        <button class="flex items-center gap-2 px-6 py-3 bg-gray-800/60 text-gray-400 border border-gray-700/60 hover:bg-gray-800 hover:text-white rounded-xl transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+          </svg>
+          <span class="font-medium">Añadir a lista</span>
+        </button>
+        
+        <button 
+          (click)="shareArticle()"
+          class="flex items-center gap-2 px-6 py-3 bg-gray-800/60 text-gray-400 border border-gray-700/60 hover:bg-gray-800 hover:text-white rounded-xl transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+          </svg>
+          <span class="font-medium">Compartir</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Related Articles -->
+    <section *ngIf="relatedArticles.length > 0">
+      <h2 class="text-2xl font-bold text-white mb-6">Artículos Relacionados</h2>
+      
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <article 
+          *ngFor="let related of relatedArticles; trackBy: trackByArticleId"
+          (click)="navigateToArticle(related)"
+          class="group bg-gray-800/40 border border-gray-700/40 rounded-2xl overflow-hidden hover:bg-gray-800/60 hover:border-gray-600/60 transition-all cursor-pointer shadow-lg shadow-black/20">
+          
+          <div class="relative h-40 overflow-hidden">
+            <img 
+              [src]="related.featured_image?.source_url || '/assets/images/placeholder.jpg'" 
+              [alt]="related.title?.rendered"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+          </div>
+
+          <div class="p-5 space-y-2">
+            <span *ngIf="related.categories_name?.[0]" 
+              class="inline-block px-2 py-1 bg-red-500/20 text-red-300 text-xs font-bold uppercase tracking-wider rounded-full">
+              {{ related.categories_name[0].name }}
+            </span>
+            
+            <h3 class="text-base font-bold text-white leading-tight line-clamp-2 group-hover:text-red-400 transition-colors">
+              {{ related.title?.rendered }}
+            </h3>
+            
+            <p class="text-sm text-gray-500">
+              {{ formatDate(related.date) }}
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+  </article>
+
+</main>

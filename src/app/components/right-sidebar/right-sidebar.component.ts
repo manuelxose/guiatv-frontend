@@ -7,7 +7,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { slugify } from 'src/app/utils/utils';
-import { AutocompleteComponent } from '../autocomplete/autocomplete.component';
 import { ContentService, ContentItem } from 'src/app/state/content.service';
 import { environment } from 'src/environments/environment';
 
@@ -24,7 +23,7 @@ interface ISidebarItem {
   templateUrl: './right-sidebar.component.html',
   styleUrls: ['./right-sidebar.component.scss'],
   standalone: true,
-  imports: [CommonModule, AutocompleteComponent],
+  imports: [CommonModule],
 })
 export class RightSidebarComponent implements OnInit {
   private readonly contentService = inject(ContentService);

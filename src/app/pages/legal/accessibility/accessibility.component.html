@@ -1,26 +1,174 @@
-<main
-  class="prose max-w-4xl mx-auto py-12 px-4"
-  role="main"
-  aria-labelledby="accessibility-title"
->
-  <h1 id="accessibility-title">Declaración de Accesibilidad</h1>
-  <p class="lead">
-    En GPTV trabajamos para que nuestro sitio sea accesible para la mayor
-    cantidad de usuarios posible.
-  </p>
+<!-- Declaración de Accesibilidad - GPTV -->
+<main class="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-gray-800/50 via-gray-900 to-gray-800/50 border-b border-gray-800/50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <nav class="mb-6">
+        <a routerLink="/" class="text-gray-400 hover:text-white text-sm flex items-center gap-2 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Volver al inicio
+        </a>
+      </nav>
+      <h1 class="text-3xl md:text-4xl font-bold text-white mb-4">Declaración de Accesibilidad</h1>
+      <p class="text-gray-400 text-lg">Nuestro compromiso con la accesibilidad web.</p>
+      <p class="text-gray-500 text-sm mt-4">Última actualización: Diciembre 2024</p>
+    </div>
+  </div>
 
-  <section>
-    <h2>Conformidad</h2>
-    <p>
-      Estado de conformidad con las pautas WCAG y medidas de mejora continua.
-    </p>
-  </section>
+  <!-- Content -->
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="space-y-10">
 
-  <section>
-    <h2>Contacto para accesibilidad</h2>
-    <p>
-      Si detectas barreras de accesibilidad, escribe a
-      accesibilidad&#64;tecnoriasl.com
-    </p>
-  </section>
+      <!-- Compromiso -->
+      <section class="bg-blue-500/10 rounded-2xl p-6 md:p-8 border border-blue-500/20">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+          </div>
+          <h2 class="text-xl font-semibold text-white">Nuestro Compromiso</h2>
+        </div>
+        <p class="text-gray-300">
+          En GPTV estamos comprometidos con garantizar la accesibilidad digital para personas con diversas capacidades. Trabajamos continuamente para mejorar la experiencia de usuario y aplicar los estándares de accesibilidad relevantes.
+        </p>
+      </section>
+
+      <!-- Estándares -->
+      <section class="space-y-4">
+        <h2 class="text-xl font-semibold text-white flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 text-sm font-bold">1</span>
+          Estándares de Accesibilidad
+        </h2>
+        <div class="text-gray-400 space-y-4 pl-11">
+          <p>Nuestro objetivo es cumplir con las Pautas de Accesibilidad para el Contenido Web (WCAG) 2.1 nivel AA. Esto incluye:</p>
+          <div class="grid sm:grid-cols-2 gap-4 mt-4">
+            <div class="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
+              <h3 class="text-white font-medium mb-2 flex items-center gap-2">
+                <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                Perceptible
+              </h3>
+              <p class="text-sm">Texto alternativo en imágenes, contraste adecuado, contenido adaptable.</p>
+            </div>
+            <div class="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
+              <h3 class="text-white font-medium mb-2 flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
+                </svg>
+                Operable
+              </h3>
+              <p class="text-sm">Navegación por teclado, tiempo suficiente, sin contenido que cause convulsiones.</p>
+            </div>
+            <div class="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
+              <h3 class="text-white font-medium mb-2 flex items-center gap-2">
+                <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                Comprensible
+              </h3>
+              <p class="text-sm">Texto legible, navegación predecible, ayuda para evitar errores.</p>
+            </div>
+            <div class="bg-gray-800/30 rounded-xl p-4 border border-gray-700/30">
+              <h3 class="text-white font-medium mb-2 flex items-center gap-2">
+                <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Robusto
+              </h3>
+              <p class="text-sm">Compatible con tecnologías de asistencia actuales y futuras.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Características -->
+      <section class="space-y-4">
+        <h2 class="text-xl font-semibold text-white flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 text-sm font-bold">2</span>
+          Características de Accesibilidad
+        </h2>
+        <div class="text-gray-400 space-y-4 pl-11">
+          <ul class="space-y-3">
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span>Navegación completa mediante teclado</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span>Etiquetas ARIA para lectores de pantalla</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span>Contraste de color que cumple estándares WCAG</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span>Texto escalable sin pérdida de funcionalidad</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span>Indicadores de foco visibles</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span>Estructura semántica HTML5</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Contacto -->
+      <section class="bg-gray-800/30 rounded-2xl p-6 md:p-8 border border-gray-700/30">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+          </div>
+          <h2 class="text-xl font-semibold text-white">¿Problemas de Accesibilidad?</h2>
+        </div>
+        <p class="text-gray-400 mb-4">
+          Si encuentras barreras de accesibilidad o tienes sugerencias para mejorar, por favor contáctanos:
+        </p>
+        <a href="mailto:accesibilidad@tecnoriasl.com" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg text-purple-300 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          accesibilidad&#64;tecnoriasl.com
+        </a>
+      </section>
+
+    </div>
+
+    <!-- Footer Links -->
+    <div class="mt-16 pt-8 border-t border-gray-800/50">
+      <div class="flex flex-wrap gap-4 text-sm">
+        <a routerLink="/avisolegal" class="text-gray-400 hover:text-white transition-colors">Aviso Legal</a>
+        <span class="text-gray-700">•</span>
+        <a routerLink="/privacidad" class="text-gray-400 hover:text-white transition-colors">Privacidad</a>
+        <span class="text-gray-700">•</span>
+        <a routerLink="/cookies" class="text-gray-400 hover:text-white transition-colors">Cookies</a>
+        <span class="text-gray-700">•</span>
+        <a routerLink="/terminos" class="text-gray-400 hover:text-white transition-colors">Términos</a>
+      </div>
+    </div>
+  </div>
 </main>

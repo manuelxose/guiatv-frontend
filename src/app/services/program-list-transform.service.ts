@@ -224,11 +224,19 @@ export class ProgramListTransformService {
     return { start, end };
   }
 
+  // Helper to parse date treating it as local time (ignoring Z or timezone offset)
+  private parseDateIgnoringTimezone(dateStr: string): Date {
+    if (!dateStr) return new Date();
+    // Remove Z or timezone offset to force local interpretation
+    const cleanStr = dateStr.replace(/Z$|[+-]\d{2}:?\d{2}$/, '');
+    return new Date(cleanStr);
+  }
+
   getProgramStartMinutes(programa: IProgramItem): number {
     if (!programa?.start) return 0;
     try {
-      const date = new Date(String(programa.start));
-      return date.getUTCHours() * 60 + date.getUTCMinutes();
+      const date = this.parseDateIgnoringTimezone(String(programa.start));
+      return date.getHours() * 60 + date.getMinutes();
     } catch {
       return 0;
     }
@@ -237,12 +245,12 @@ export class ProgramListTransformService {
   getProgramEndMinutes(programa: IProgramItem): number {
     if (!programa?.stop || !programa?.start) return 0;
     try {
-      const startDate = new Date(String(programa.start));
-      const endDate = new Date(String(programa.stop));
+      const startDate = this.parseDateIgnoringTimezone(String(programa.start));
+      const endDate = this.parseDateIgnoringTimezone(String(programa.stop));
 
       const startMinutes =
-        startDate.getUTCHours() * 60 + startDate.getUTCMinutes();
-      let endMinutes = endDate.getUTCHours() * 60 + endDate.getUTCMinutes();
+        startDate.getHours() * 60 + startDate.getMinutes();
+      let endMinutes = endDate.getHours() * 60 + endDate.getMinutes();
 
       if (
         endDate.getTime() <= startDate.getTime() ||

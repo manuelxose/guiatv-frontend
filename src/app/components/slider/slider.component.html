@@ -21,11 +21,14 @@
       <app-card-slider
         [title]="program?.title?.value || program?.title || 'Programa'"
         [subtitle]="program?.channel?.name || program?.channelName || 'Canal'"
+        [channelIcon]="program?.channelIcon || program?.icon || program?.channel?.icon || ''"
         [time]="program?.start ? horaInicio(i) : ''"
         [image]="program?.image || program?.poster || program?.background || program?.icon"
         [badge]="''"
         badgeColor="gray"
         [live]="false"
+        [id]="program?.id || program?.uuid || ''"
+        [type]="variant === 'series' ? 'series' : (variant === 'peliculas' ? 'movie' : 'program')"
         (cardClick)="manageData(program)"
       ></app-card-slider>
     </article>

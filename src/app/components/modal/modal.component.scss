@@ -1,0 +1,451 @@
+/* ============================================
+   MODAL DESKTOP - DISEÑO MODERNO Y PREMIUM
+   ============================================ */
+
+/* Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Modal Container */
+.modal-container {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8),
+              0 0 0 1px rgba(255, 255, 255, 0.05);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hero Section */
+.modal-hero {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.7);
+}
+
+.hero-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0.6) 50%,
+    rgba(26, 26, 46, 0.95) 100%
+  );
+  pointer-events: none;
+}
+
+/* Close Button */
+.close-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 10;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  svg {
+    width: 24px;
+    height: 24px;
+    color: white;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover {
+    background: rgba(220, 38, 38, 0.9);
+    border-color: rgba(220, 38, 38, 0.5);
+    transform: scale(1.1);
+
+    svg {
+      transform: rotate(90deg);
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Hero Content */
+.hero-content {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  right: 2rem;
+  z-index: 5;
+}
+
+.program-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.02em;
+}
+
+.program-meta {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+
+  svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.9;
+  }
+}
+
+/* Modal Body */
+.modal-body {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Social Actions Bar */
+.social-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.social-btn {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.25rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+
+  span {
+    position: relative;
+    z-index: 1;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.2));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    border-color: rgba(220, 38, 38, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(220, 38, 38, 0.2);
+
+    &::before {
+      opacity: 1;
+    }
+
+    svg {
+      transform: scale(1.1);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &--primary {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    border-color: transparent;
+
+    &:hover {
+      box-shadow: 0 12px 24px rgba(220, 38, 38, 0.4);
+      transform: translateY(-3px);
+    }
+
+    &::before {
+      display: none;
+    }
+  }
+}
+
+/* Program Details */
+.program-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.detail-section {
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid rgba(220, 38, 38, 0.3);
+  }
+}
+
+/* Detail Grid */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(220, 38, 38, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .detail-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .detail-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+/* Rating Stars */
+.rating-stars {
+  display: flex;
+  gap: 0.25rem;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: rgba(255, 255, 255, 0.2);
+    transition: fill 0.2s ease;
+
+    &.filled {
+      fill: #fbbf24;
+    }
+  }
+}
+
+/* Description */
+.description-text {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid #dc2626;
+  border-radius: 8px;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+  }
+
+  &--primary {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    border: none;
+    color: white;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+
+    &:hover {
+      box-shadow: 0 8px 24px rgba(220, 38, 38, 0.6);
+      transform: translateY(-2px);
+
+      svg {
+        transform: scale(1.2);
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &--secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(220, 38, 38, 0.5);
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 1rem;
+  }
+
+  .modal-container {
+    max-height: 95vh;
+  }
+
+  .modal-hero {
+    height: 300px;
+  }
+
+  .program-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-content {
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
+  .social-actions {
+    flex-direction: column;
+  }
+
+  .social-btn {
+    min-width: unset;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+
+/* Scrollbar Styling */
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(220, 38, 38, 0.5);
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(220, 38, 38, 0.7);
+  }
+}

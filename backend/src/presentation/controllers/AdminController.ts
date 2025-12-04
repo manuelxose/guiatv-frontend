@@ -269,23 +269,64 @@ export class AdminController {
    * Borra cache, colecciones, ficheros EPG/schedules y reconstruye (sync + precompute window)
    */
   async triggerReset(req: Request, res: Response): Promise<void> {
-    const { sourceUrl, fields } = req.body || {};
-    this.adminLogger.warn('Full reset triggered', { sourceUrl, fields });
+    const { sourceUrl, fields, async = false } = req.body || {};
+    this.adminLogger.warn('Full reset triggered', { sourceUrl, fields, async });
 
-    const result = await this.resetSystem.execute({
-      sourceUrl: sourceUrl as string | undefined,
-      fields: (fields as any) || 'full',
-    });
+    // Deshabilitar timeout de respuesta mientras se ejecuta el reset
+    res.setTimeout(0);
 
-    res.status(200).json(
-      successResponse(
-        {
-          message: 'Reset completed successfully',
-          result,
-        },
-        { cached: false }
-      )
-    );
+    if (async) {
+      // Ejecutar en background y responder rápido
+      void this.resetSystem
+        .execute({
+          sourceUrl: sourceUrl as string | undefined,
+          fields: (fields as any) || 'full',
+        })
+        .then((result) => {
+          this.adminLogger.info('Async reset completed', { result });
+        })
+        .catch((error) => {
+          this.adminLogger.error('Async reset failed', error as Error);
+        });
+
+      res.status(202).json(
+        successResponse(
+          {
+            message: 'Reset started asynchronously',
+          },
+          { cached: false }
+        )
+      );
+      return;
+    }
+
+    try {
+      const result = await this.resetSystem.execute({
+        sourceUrl: sourceUrl as string | undefined,
+        fields: (fields as any) || 'full',
+      });
+
+      res.status(200).json(
+        successResponse(
+          {
+            message: 'Reset completed successfully',
+            result,
+          },
+          { cached: false }
+        )
+      );
+    } catch (error) {
+      this.adminLogger.error('Reset failed', error as Error);
+      res.status(500).json(
+        successResponse(
+          {
+            message: 'Reset failed',
+            error: (error as Error).message,
+          },
+          { cached: false }
+        )
+      );
+    }
   }
 
   /**

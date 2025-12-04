@@ -60,10 +60,11 @@ export const routes: Routes = [
   {
     path: 'que-ver-hoy',
     loadComponent: () =>
-      import('./pages/lista-destacadas/lista-destacadas.component').then(
-        (m) => m.ListaDestacadasComponent
+      import('./pages/program-explorer/program-explorer.component').then(
+        (m) => m.ProgramExplorerComponent
       ),
     title: 'Qué Ver Hoy - Guía TV',
+    data: { mode: 'featured' }
   },
   {
     path: 'ver-canal/:id',
@@ -73,7 +74,6 @@ export const routes: Routes = [
       ),
     title: 'Canal - Guía TV',
   },
-
   // Legacy single-parameter detail routes (kept for backwards compatibility)
   {
     path: 'detalles/:id',
@@ -100,6 +100,7 @@ export const routes: Routes = [
         (m) => m.PeliculaDetailsComponent
       ),
     title: 'Películas - Detalle - Guía TV',
+    data: { type: 'movies' }
   },
 
   // SEO-friendly program route: slug-only (no id exposed)
@@ -107,18 +108,20 @@ export const routes: Routes = [
     path: 'programas/:slug',
     loadComponent: () =>
       import(
-        './pages/program-full-details/program-full-details.component'
-      ).then((m) => m.ProgramFullDetailsComponent),
+        './pages/pelicula-details/pelicula-details.compoent'
+      ).then((m) => m.PeliculaDetailsComponent),
     title: 'Programas - Detalle - Guía TV',
+    data: { type: 'programs' }
   },
 
   {
     path: 'en-directo',
     loadComponent: () =>
-      import('./pages/ahora-directo/ahora-directo.component').then(
-        (m) => m.AhoraDirectoComponent
+      import('./pages/program-explorer/program-explorer.component').then(
+        (m) => m.ProgramExplorerComponent
       ),
     title: 'En Directo - Guía TV',
+    data: { mode: 'live' }
   },
   {
     path: 'blog',

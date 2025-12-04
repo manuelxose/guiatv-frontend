@@ -125,8 +125,10 @@
           [category]="programa?.category?.value || programa?.category || ''"
           [description]="programa?.desc?.details || programa?.desc?.value || ''"
           [image]="programa?.image || programa?.poster || programa?.background || programa?.channelIcon"
+          [channelIcon]="programa?.channelIcon"
           [live]="true"
-          [progress]="50"
+          [startTime]="getProgressDate(programa?.start)"
+          [endTime]="getProgressDate(programa?.end)"
           role="listitem"
         ></app-card-list>
       </div>

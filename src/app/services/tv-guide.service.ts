@@ -49,18 +49,35 @@ export class TvGuideService {
     return this.tvData
       .loadPrograms({
         date,
-        fields: 'minimal',
+        fields: 'full', // Changed from 'minimal' to get complete data
         limit: 5000,
         channelTypes: DEFAULT_CHANNEL_TYPES,
       })
       .pipe(
         map((resp) => {
+          console.log('TvGuideService.getFromApi raw response:', { 
+            channelsCount: resp.channels?.length, 
+            programsCount: resp.programs?.length 
+          });
           const channels = resp.channels || [];
           const programs = resp.programs || [];
-          const grouped = channels.map((c) => ({
-            channel: c,
-            programs: programs.filter((p) => p.channelId === c.id),
-          }));
+          
+          const grouped = channels.map((c) => {
+            const channelPrograms = programs.filter((p) => p.channelId === c.id);
+            if (c.id === 'la_1') {
+              console.log('🔍 Programs for La 1:', {
+                channelId: c.id,
+                channelName: c.name,
+                totalPrograms: programs.length,
+                filteredCount: channelPrograms.length,
+                sample: channelPrograms[0]
+              });
+            }
+            return {
+              channel: c,
+              programs: channelPrograms,
+            };
+          });
           return grouped;
         }),
         tap((channels) => this.setData(channels))

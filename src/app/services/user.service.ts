@@ -9,6 +9,10 @@ import {
   UserNotifications,
   UserPrivacy,
   WatchingNow,
+  UserList,
+  Top10Category,
+  Top10Item,
+  NewsItem,
 } from '../interfaces/user.interface';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
@@ -27,6 +31,9 @@ export class UserService {
   private watchlistSubject = new BehaviorSubject<UserListItem[]>(
     INITIAL_WATCHLIST
   );
+  private listsSubject = new BehaviorSubject<UserList[]>(INITIAL_LISTS);
+  private top10Subject = new BehaviorSubject<Top10Category[]>(INITIAL_TOP10_CATEGORIES);
+  private newsSubject = new BehaviorSubject<NewsItem[]>(INITIAL_NEWS);
   private authenticatedSubject = new BehaviorSubject<boolean>(false);
 
   public readonly isAuthenticated$ = this.authenticatedSubject.asObservable();
@@ -56,6 +63,18 @@ export class UserService {
 
   getWatchlist(): Observable<UserListItem[]> {
     return this.watchlistSubject.asObservable();
+  }
+
+  getLists(): Observable<UserList[]> {
+    return this.listsSubject.asObservable();
+  }
+
+  getTop10(): Observable<Top10Category[]> {
+    return this.top10Subject.asObservable();
+  }
+
+  getNews(): Observable<NewsItem[]> {
+    return this.newsSubject.asObservable();
   }
 
   /**
@@ -189,6 +208,8 @@ export class UserService {
       createdAt: 'Hace un momento',
       mood: payload.mood || 'Entusiasmado',
       platform: payload.platform || 'Streaming',
+      likes: 0,
+      comments: 0
     };
 
     this.recommendationsSubject.next([
@@ -241,6 +262,72 @@ export class UserService {
       createdAt: 'Ahora',
     });
   }
+
+  addListItem(listId: string, item: { title: string; type: 'movie' | 'series'; state: 'pending' | 'watching' | 'finished' }): void {
+    const newItem: UserListItem = {
+      id: this.generateId(),
+      title: item.title,
+      type: item.type,
+      state: item.state,
+      progress: 0,
+      visibility: 'public',
+      poster: '/assets/default-poster.jpg' // Mock poster
+    };
+
+    // In a real app, we would add to the specific list
+    const currentList = this.watchlistSubject.value;
+    this.watchlistSubject.next([newItem, ...currentList]);
+
+    this.pushActivity({
+      id: this.generateId(),
+      type: 'list',
+      title: 'Elemento añadido',
+      description: `Has añadido "${item.title}" a tu lista`,
+      createdAt: 'Ahora',
+    });
+  }
+
+  removeListItem(listId: string, itemId: string): void {
+    // In a real app, this would make an API call
+    // For now, we'll just update the local state if it's the watchlist
+    // or we would need to manage items per list in a more complex mock
+    
+    // Assuming we are removing from the main watchlist for now as that's what getWatchlist returns
+    const currentList = this.watchlistSubject.value;
+    const updatedList = currentList.filter(item => item.id !== itemId);
+    this.watchlistSubject.next(updatedList);
+
+    this.pushActivity({
+      id: this.generateId(),
+      type: 'list',
+      title: 'Elemento eliminado',
+      description: 'Has eliminado un elemento de tu lista',
+      createdAt: 'Ahora',
+    });
+  }
+
+  createList(data: { title: string; description: string; visibility: 'public' | 'friends' | 'private' }): void {
+    const newList: UserList = {
+      id: this.generateId(),
+      title: data.title,
+      description: data.description,
+      itemsCount: 0,
+      visibility: data.visibility,
+      createdAt: new Date().toISOString().split('T')[0],
+      updatedAt: new Date().toISOString().split('T')[0],
+    };
+
+    this.listsSubject.next([newList, ...this.listsSubject.value]);
+
+    this.pushActivity({
+      id: this.generateId(),
+      type: 'list',
+      title: 'Nueva lista creada',
+      description: `Has creado la lista "${data.title}"`,
+      createdAt: 'Ahora',
+    });
+  }
+
 
   private updateStats(stats: Partial<UserProfile['stats']>): void {
     const profile = this.profileSubject.value;
@@ -306,17 +393,23 @@ const INITIAL_PROFILE: UserProfile = {
     shareActivity: true,
     shareWatchlist: true,
     showOnline: true,
+    allowMessages: 'all',
+    publicLists: true
   },
   notifications: {
     recommendations: true,
     followers: true,
     weeklySummary: false,
+    chatMessages: true,
+    groupActivity: true
   },
   stats: {
     followers: 48,
     following: 32,
     recommendations: 14,
     watchlist: 18,
+    listsCreated: 5,
+    ratings: 23
   },
 };
 
@@ -333,6 +426,8 @@ const INITIAL_RECOMMENDATIONS: UserRecommendation[] = [
     createdAt: 'Hace 1 día',
     mood: 'Entusiasmada',
     platform: 'Cine / HBO Max',
+    likes: 12,
+    comments: 3
   },
   {
     id: 'rec-02',
@@ -346,6 +441,8 @@ const INITIAL_RECOMMENDATIONS: UserRecommendation[] = [
     createdAt: 'Hace 3 días',
     mood: 'Intrigada',
     platform: 'Apple TV+',
+    likes: 8,
+    comments: 1
   },
   {
     id: 'rec-03',
@@ -359,6 +456,8 @@ const INITIAL_RECOMMENDATIONS: UserRecommendation[] = [
     createdAt: 'Hace 5 días',
     mood: 'Intensa',
     platform: 'Disney+',
+    likes: 24,
+    comments: 5
   },
 ];
 
@@ -460,4 +559,109 @@ const INITIAL_WATCHLIST: UserListItem[] = [
     progress: 0,
     visibility: 'private',
   },
+];
+
+const INITIAL_LISTS: UserList[] = [
+  {
+    id: 'pending-list',
+    title: 'Pendientes de ver',
+    description: 'Mi lista por defecto para guardar lo que quiero ver.',
+    itemsCount: 2,
+    visibility: 'private',
+    createdAt: '2024-01-01',
+    updatedAt: '2024-03-15',
+    cover: '/assets/covers/pending.jpg',
+    isDefault: true
+  },
+  {
+    id: 'l-01',
+    title: 'Favoritas de Sci-Fi',
+    description: 'Mis películas favoritas del género.',
+    itemsCount: 12,
+    visibility: 'public',
+    createdAt: '2024-01-15',
+    updatedAt: '2024-03-10',
+    cover: '/assets/covers/scifi.jpg'
+  },
+  {
+    id: 'l-02',
+    title: 'Maratón de fin de semana',
+    description: 'Para ver con amigos.',
+    itemsCount: 5,
+    visibility: 'friends',
+    createdAt: '2024-03-01',
+    updatedAt: '2024-03-01',
+  }
+];
+
+const INITIAL_TOP10_CATEGORIES: Top10Category[] = [
+  {
+    id: 'top-movies',
+    title: 'Top Películas',
+    items: [
+      {
+        id: 't-01',
+        title: 'Dune: Parte Dos',
+        image: '/assets/posters/dune2.jpg',
+        rank: 1,
+        change: 'same',
+        type: 'movie',
+        rating: 9.5
+      },
+      {
+        id: 't-04',
+        title: 'Oppenheimer',
+        image: '/assets/posters/oppenheimer.jpg',
+        rank: 2,
+        change: 'down',
+        type: 'movie',
+        rating: 9.4
+      }
+    ]
+  },
+  {
+    id: 'top-series',
+    title: 'Top Series',
+    items: [
+      {
+        id: 't-02',
+        title: 'Shogun',
+        image: '/assets/posters/shogun.jpg',
+        rank: 1,
+        change: 'up',
+        type: 'series',
+        rating: 9.3
+      },
+      {
+        id: 't-03',
+        title: 'The Bear',
+        image: '/assets/posters/bear.jpg',
+        rank: 2,
+        change: 'down',
+        type: 'series',
+        rating: 9.0
+      }
+    ]
+  }
+];
+
+const INITIAL_NEWS: NewsItem[] = [
+  {
+    id: 'n-01',
+    title: 'Estreno de "House of the Dragon" T2',
+    summary: 'Todo lo que necesitas saber antes del estreno.',
+    image: '/assets/news/hotd.jpg',
+    date: 'Hace 2 horas',
+    read: false,
+    category: 'Estrenos'
+  },
+  {
+    id: 'n-02',
+    title: 'Nuevas funciones en la app',
+    summary: 'Ahora puedes crear listas colaborativas con amigos.',
+    image: '/assets/news/update.jpg',
+    date: 'Hace 1 día',
+    read: true,
+    category: 'App'
+  }
 ];

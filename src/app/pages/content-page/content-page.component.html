@@ -30,19 +30,51 @@
   <ng-template #contentTemplate>
     <article>
       <!-- SEO Header -->
-      <header class="px-4 sm:px-6 lg:px-8 mb-10 mt-6">
+      <header class="px-4 sm:px-6 lg:px-8 mb-6 mt-6">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/15 text-red-300 text-sm font-semibold mb-3">
           En emision hoy
         </div>
         <h1 class="text-3xl sm:text-4xl font-bold text-white mb-3">
           {{ contentTitle }} en television
         </h1>
-        <p class="text-gray-300 text-lg max-w-4xl">
-          {{ contentType === 'series' 
-            ? 'Explora las series que se emiten hoy en la television espanola: dramas, comedias, thrillers y mas. Horarios claros y sinopsis rapidas para decidir que ver.' 
-            : 'Encuentra las mejores peliculas en emision hoy en TV: estrenos, clasicos, accion, comedia y drama. Horarios detallados y fichas breves para elegir rapido.' }}
-        </p>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 text-sm text-gray-300">
+        
+        <!-- Search & Filter Section -->
+        <div class="mt-6 mb-8 space-y-4">
+          <div class="relative max-w-2xl">
+            <input
+              [formControl]="searchControl"
+              type="text"
+              class="w-full bg-gray-800/80 border border-gray-700 text-white rounded-xl px-5 py-4 pl-12 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent placeholder-gray-400 shadow-lg backdrop-blur-sm transition-all"
+              [placeholder]="'Buscar ' + (contentType === 'series' ? 'series' : 'películas') + ' por título...'"
+            />
+            <svg
+              class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+
+          <!-- Category Chips -->
+          <div class="flex flex-wrap gap-2">
+            <button
+              *ngFor="let cat of categorias"
+              (click)="toggleCategoryFilter(cat)"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border"
+              [ngClass]="
+                activeCategoryFilter === cat
+                  ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-900/30'
+                  : 'bg-gray-800/60 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white'
+              "
+            >
+              {{ cat }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="!isSearching" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 text-sm text-gray-300">
           <div class="p-3 rounded-xl bg-gray-800/60 border border-gray-700/60">
             <p class="font-semibold text-white">En vivo ahora</p>
             <p class="text-lg font-bold text-red-300">{{ en_emision.length }}</p>
@@ -57,6 +89,44 @@
           </div>
         </div>
       </header>
+
+      <!-- Search Results Grid -->
+      <section *ngIf="isSearching" class="px-4 sm:px-6 lg:px-8 animate-fade-in">
+        <h2 class="text-xl font-semibold text-white mb-6">
+          Resultados de búsqueda
+          <span class="text-gray-400 text-base font-normal ml-2">({{ searchResults.length }})</span>
+        </h2>
+        
+        <div *ngIf="searchResults.length > 0; else noResults" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <app-card-list
+            *ngFor="let item of searchResults"
+            [title]="item.title"
+            [channelIcon]="$any(item).icon || $any(item).channelIcon || item.channel?.icon || ''"
+            [image]="item.image"
+            [description]="item.description"
+            [category]="item.category"
+            [time]="item.start ? (item.start | date:'HH:mm') : ''"
+            (cardClick)="router.navigate([contentType === 'series' ? '/series' : '/peliculas', item.id])"
+          ></app-card-list>
+        </div>
+
+        <ng-template #noResults>
+          <div class="text-center py-20">
+            <div class="bg-gray-800/50 p-6 rounded-full inline-block mb-4">
+              <svg class="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+            <p class="text-gray-400 text-lg">No encontramos nada con esos filtros.</p>
+            <button (click)="activeCategoryFilter = null; searchControl.setValue('')" class="mt-4 text-red-400 hover:text-red-300 underline">
+              Limpiar filtros
+            </button>
+          </div>
+        </ng-template>
+      </section>
+
+      <!-- Default Browse Content -->
+      <ng-container *ngIf="!isSearching">
 
       <!-- Empty State -->
       <div *ngIf="items.length === 0" class="flex flex-col items-center justify-center py-20 text-center px-4">
@@ -150,6 +220,7 @@
             </p>
           </div>
         </section>
+      </ng-container>
       </ng-container>
     </article>
   </ng-template>

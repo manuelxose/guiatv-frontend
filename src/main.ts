@@ -15,20 +15,21 @@ bootstrapApplication(AppComponent, appConfig).catch((err) => {
 });
 
 // Filtro de logs en desarrollo: solo mostramos etiquetas relevantes
-if (!environment.production && typeof window !== 'undefined') {
-  const allowedPrefixes = [
-    '[HomeData]',
-    '[ProgramListComponent]',
-    '[ProgramListFacade]',
-    '[ApiProgramProvider]',
-    '[BannerComponent]',
-    '[ContentPage]'
-  ];
-  const originalLog = console.log.bind(console);
-  console.log = (...args: any[]) => {
-    const text = typeof args[0] === 'string' ? args[0] : '';
-    if (allowedPrefixes.some((p) => text.startsWith(p))) {
-      originalLog(...args);
-    }
-  };
-}
+// if (!environment.production && typeof window !== 'undefined') {
+//   const allowedPrefixes = [
+//     '[HomeData]',
+//     '[ProgramListComponent]',
+//     '[ProgramListFacade]',
+//     '[ApiProgramProvider]',
+//     '[BannerComponent]',
+//     '[ContentPage]',
+//     '[CardListComponent]',
+//   ];
+//   const originalLog = console.log.bind(console);
+//   console.log = (...args: any[]) => {
+//     const text = typeof args[0] === 'string' ? args[0] : '';
+//     if (allowedPrefixes.some((p) => text.startsWith(p))) {
+//       originalLog(...args);
+//     }
+//   };
+// }

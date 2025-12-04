@@ -24,6 +24,7 @@ import { Subject } from 'rxjs';
 // Componentes originales
 import { LeftSidebarComponent } from './components/left-sidebar/left-sidebar.component';
 import { RightSidebarComponent } from './components/right-sidebar/right-sidebar.component';
+import { ModalComponent } from './components/modal/modal.component';
 
 // Servicios SOLID (opcional - solo para logging mejorado)
 import { ConsoleLoggerService } from './services/core/logger.service';
@@ -38,6 +39,7 @@ import { FooterComponent } from './components/footer/footer.component';
     LeftSidebarComponent,
     RightSidebarComponent,
     FooterComponent,
+    ModalComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],

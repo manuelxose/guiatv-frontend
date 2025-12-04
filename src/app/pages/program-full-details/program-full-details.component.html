@@ -38,6 +38,11 @@
         <i class="bi bi-info-circle text-white text-sm pr-1"></i>
         <span class="text-white text-sm">Más Info</span>
       </button>
+      <app-interaction-buttons
+        [itemId]="program?.id || ''"
+        [title]="program?.title?.value || ''"
+        [type]="'program'"
+      ></app-interaction-buttons>
     </div>
   </div>
 </div>

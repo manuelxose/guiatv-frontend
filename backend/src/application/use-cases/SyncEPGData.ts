@@ -12,6 +12,7 @@ import { logger } from '../../shared/utils/logger';
 import { IStorageRepository } from '../../domain/repositories/IStorageRepository';
 import { TMDBService } from '../../infrastructure/external/TMDBService';
 import { Program } from '../../domain/entities/Program';
+import { ProgramDeduplicator } from '../services/ProgramDeduplicator';
 import axios from 'axios';
 import https from 'https';
 
@@ -34,6 +35,7 @@ export interface SyncEPGDataResult {
 
 export class SyncEPGData {
   private readonly syncLogger = logger.child('SyncEPGData');
+  private readonly deduplicator = new ProgramDeduplicator();
 
   constructor(
     private readonly channelRepository: IChannelRepository,
@@ -357,10 +359,10 @@ export class SyncEPGData {
     });
 
     // Convertir a entidades del dominio
-    let programs = this.programParser.batchConvert(
-      filteredPrograms,
-      channelMap
-    );
+    let programs = this.programParser.batchConvert(filteredPrograms, channelMap);
+
+    // Deduplicar versiones genericas vs especificas antes de enriquecer
+    programs = this.deduplicator.dedupe(programs);
 
     // Enriquecer con datos de TMDB (Cine y Series)
     programs = await this.enrichProgramsWithTMDB(programs);
@@ -478,19 +480,27 @@ export class SyncEPGData {
     const tdtChannels = ['La 1', 'La 2', 'Antena 3', 'Cuatro', 'Telecinco', 'La Sexta', 'Mega', 'Neox', 'Nova', 'FDF', 'Energy', 'DMAX', 'Clan', 'Boing'];
     const movistarChannels = ['M+', 'Movistar'];
     const cableChannels = ['FOX', 'AXN', 'TNT', 'HBO', 'Syfy', 'Sky', 'TNT Sports', 'ESPN'];
+    const inferredRegion = this.inferRegion(name);
+    const isRegionalNationalVariant =
+      inferredRegion &&
+      /(la\s*1|la\s*2|la_1|la_2)/i.test(name);
 
     const isSpain = (country || '').toLowerCase().includes('espa');
+
+    if (isRegionalNationalVariant) {
+      return 'Autonomico';
+    }
 
     if (isSpain) {
       if (tdtChannels.some((ch) => name.includes(ch))) return 'TDT';
       if (movistarChannels.some((ch) => name.includes(ch))) return 'Movistar';
-      if (this.inferRegion(name)) return 'Autonomico';
+      if (inferredRegion) return 'Autonomico';
     }
 
     if (tdtChannels.some((ch) => name.includes(ch))) return 'TDT';
     if (movistarChannels.some((ch) => name.includes(ch))) return 'Movistar';
     if (cableChannels.some((ch) => name.includes(ch))) return 'Cable';
-    if (this.inferRegion(name)) return 'Autonomico';
+    if (inferredRegion) return 'Autonomico';
     return 'OTT';
   }
 

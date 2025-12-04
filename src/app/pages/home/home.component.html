@@ -1,893 +1,109 @@
-<!-- home.component.html - SEO OPTIMIZADO Y MOBILE-FIRST -->
-<div
-  class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black"
-  itemscope
-  itemtype="https://schema.org/WebApplication"
-  [attr.data-state]="
-    uiState().isLoading ? 'loading' : uiState().hasError ? 'error' : 'loaded'
-  "
->
-  <!-- Schema.org Metadata -->
-  <meta
-    itemprop="name"
-    content="Guía de Programación TV - Toda la televisión española"
-  />
-  <meta
-    itemprop="description"
-    content="Consulta la programación completa de TV en España. Descubre qué ver en La 1, Antena 3, Telecinco, La Sexta y todos los canales. Actualización en tiempo real."
-  />
-  <meta itemprop="applicationCategory" content="Entertainment" />
+<!-- 
+  Home Component - REBUILD
+  Objetivo: ProgramList es el elemento PRINCIPAL
+  - El banner featured es secundario y compacto en móvil
+  - La parrilla de canales ocupa el máximo espacio
+-->
 
-  <!-- Navigation integrada -->
-  <app-nav-bar></app-nav-bar>
+<!-- Skip Link for Accessibility -->
+<a href="#programacion" class="skip-link">
+  Ir al contenido principal
+</a>
 
-  <!-- Loading State - Optimizado para Core Web Vitals -->
-  <div
-    *ngIf="uiState().isLoading"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/95 backdrop-blur-sm"
-    role="status"
-    aria-live="polite"
-    aria-label="Cargando contenido"
-  >
-    <div class="flex flex-col items-center space-y-4 text-center px-4">
-      <div class="relative">
-        <div
-          class="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-2 border-red-500"
-          aria-hidden="true"
-        ></div>
-        <div
-          class="absolute inset-0 rounded-full border-2 border-gray-600 opacity-25"
-          aria-hidden="true"
-        ></div>
-      </div>
-      <div class="space-y-2">
-        <h2 class="text-white text-lg sm:text-xl font-semibold">
-          Cargando Guía TV
-        </h2>
-        <p class="text-gray-400 text-sm max-w-md">
-          Obteniendo la programación más actualizada de todos los canales...
-        </p>
-      </div>
+<!-- NavBar (ya existente) -->
+<app-nav-bar></app-nav-bar>
+
+<!-- Main Content -->
+<main class="home">
+
+  <!-- ============================================ -->
+  <!-- LOADING STATE                               -->
+  <!-- ============================================ -->
+  <div *ngIf="uiState().isLoading" class="home__loading">
+    <div class="home__loading-content">
+      <div class="home__loading-spinner"></div>
+      <p>Cargando Guía TV...</p>
     </div>
   </div>
 
-  <!-- Error State - Mejorado para móviles -->
-  <div
-    *ngIf="uiState().showError"
-    class="min-h-screen flex items-center justify-center px-4 py-8"
-    role="alert"
-    aria-live="assertive"
-  >
-    <div
-      class="max-w-md w-full bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 sm:p-8 text-center border border-red-500/20"
-    >
-      <div
-        class="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 bg-red-500/20 rounded-full flex items-center justify-center"
-        aria-hidden="true"
-      >
-        <svg
-          class="w-6 h-6 sm:w-8 sm:h-8 text-red-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-          />
-        </svg>
-      </div>
-      <h2 class="text-lg sm:text-xl font-bold text-white mb-2">
-        Error al cargar los datos
-      </h2>
-      <p class="text-gray-400 mb-6 text-sm sm:text-base">{{ error() }}</p>
-      <button
-        (click)="onRetry()"
-        class="w-full px-6 py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900 touch-manipulation"
-        aria-label="Reintentar carga de datos"
-      >
-        <span class="flex items-center justify-center space-x-2">
-          <svg
-            class="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          <span>Reintentar</span>
-        </span>
+  <!-- ============================================ -->
+  <!-- ERROR STATE                                 -->
+  <!-- ============================================ -->
+  <div *ngIf="uiState().showError" class="home__error">
+    <div class="home__error-content">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8v4m0 4h.01"/>
+      </svg>
+      <h2>Error al cargar</h2>
+      <p>{{ error() }}</p>
+      <button (click)="onRefresh()" class="home__error-btn">
+        Reintentar
       </button>
     </div>
   </div>
 
-  <!-- Main Content Container -->
-  <main
-    [hidden]="!uiState().showContent"
-    class="relative overflow-y-auto"
-    style="max-height: calc(100vh - 4rem)"
-  >
-    <!-- Category Filter Banner - Optimizado móvil -->
-    <div
-      *ngIf="selectedCategory()"
-      class="bg-gradient-to-r from-gray-800/90 via-gray-700/90 to-gray-800/90 backdrop-blur-sm border-b border-gray-600/30 sticky top-0 z-30"
-      role="status"
-      aria-live="polite"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div
-          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-        >
-          <div class="flex items-center space-x-3 min-w-0">
-            <div
-              class="w-8 h-8 flex-shrink-0 bg-red-500/20 rounded-lg flex items-center justify-center"
-              aria-hidden="true"
-            >
-              <svg
-                class="w-4 h-4 text-red-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                />
-              </svg>
-            </div>
-            <div class="min-w-0 flex-1">
-              <p class="text-xs sm:text-sm text-gray-300 truncate">
-                Filtrando por categoría
-              </p>
-              <p class="font-semibold text-white text-base sm:text-lg truncate">
-                {{ selectedCategory() }}
-              </p>
-            </div>
-          </div>
-          <button
-            (click)="clearCategoryFilter()"
-            class="inline-flex items-center justify-center px-4 py-2 bg-red-600/20 hover:bg-red-600/30 active:bg-red-600/40 text-red-400 hover:text-red-300 rounded-lg transition-all duration-200 text-sm font-medium touch-manipulation whitespace-nowrap"
-            aria-label="Limpiar filtro de categoría"
-          >
-            <svg
-              class="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-            <span class="hidden xs:inline">Limpiar filtro</span>
-            <span class="xs:hidden">Limpiar</span>
-          </button>
-        </div>
-      </div>
-    </div>
+  <!-- ============================================ -->
+  <!-- MAIN CONTENT                                -->
+  <!-- ============================================ -->
+  <div *ngIf="uiState().showContent" class="home__content">
 
-    <!-- Featured Movie Banner - Con lazy loading -->
-    <section
-      *ngIf="uiState().hasFeaturedMovie && !selectedCategory()"
-      class="relative overflow-hidden"
-      itemscope
-      itemtype="https://schema.org/Movie"
+    <!-- Mobile: Mini header con stats (muy compacto) -->
+    <header class="home__header home__header--mobile" *ngIf="deviceDetector.isMobile()">
+      <h1 class="home__title">Guía TV</h1>
+      <div class="home__stats">
+        <span class="home__stat">
+          <span class="home__stat-icon">📺</span>
+          <span class="home__stat-value">{{ programs().length || '80+' }}</span>
+          <span class="home__stat-label">canales</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- Desktop: Hero section (compacto) -->
+    <header class="home__header home__header--desktop" *ngIf="!deviceDetector.isMobile()">
+      <div class="home__hero">
+        <h1 class="home__hero-title">Guía de Programación TV España</h1>
+        <p class="home__hero-subtitle">
+          Consulta toda la programación de televisión actualizada en tiempo real
+        </p>
+      </div>
+    </header>
+
+    <!-- Featured Banner (SOLO si hay película destacada y NO hay filtro de categoría) -->
+    <section 
+      *ngIf="uiState().hasFeaturedMovie && !selectedCategory()" 
+      class="home__featured"
+      aria-label="Película destacada"
     >
       <app-banner
         [data]="getBannerData()"
+        [compact]="deviceDetector.isMobile()"
         (movieSelected)="onMovieSelected($event)"
-        loading="eager"
-      >
-      </app-banner>
+      ></app-banner>
     </section>
 
-    <!-- SEO Hero Section - Above the fold -->
-    <section class="relative py-6 sm:py-8 lg:py-12 px-4">
-      <div class="max-w-4xl mx-auto text-center">
-        <!-- H1 Principal - SEO Critical -->
-        <h1
-          class="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-red-400 via-red-500 to-red-600 bg-clip-text text-transparent mb-3 sm:mb-4 leading-tight"
-          itemprop="name"
-        >
-          Guía de Programación TV España
-        </h1>
+    <!-- Active Category Filter Indicator -->
+    <div *ngIf="selectedCategory()" class="home__filter-active">
+      <span>Filtrando por: <strong>{{ selectedCategory() }}</strong></span>
+      <button (click)="clearCategoryFilter()" aria-label="Limpiar filtro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+        Limpiar
+      </button>
+    </div>
 
-        <!-- Descripción Principal - SEO Critical -->
-        <p
-          class="text-gray-400 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto mb-4 sm:mb-6 leading-relaxed"
-        >
-          Consulta toda la
-          <strong>programación de televisión</strong> actualizada en tiempo
-          real. La mejor <strong>guía TV</strong> para todos los canales
-          españoles.
-        </p>
-
-        <!-- Quick Stats - Mobile Friendly -->
-        <div
-          class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 max-w-2xl mx-auto mb-6 sm:mb-8"
-        >
-          <div
-            class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-gray-700/30 flex flex-col items-center justify-center text-center touch-target"
-          >
-            <div
-              class="text-xl sm:text-2xl font-bold text-red-400"
-              aria-label="Más de 100 canales"
-            >
-              100+
-            </div>
-            <div class="text-xs sm:text-sm text-gray-400">Canales</div>
-          </div>
-          <div
-            class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-gray-700/30 flex flex-col items-center justify-center text-center touch-target"
-          >
-            <div
-              class="text-xl sm:text-2xl font-bold text-red-400"
-              aria-label="Actualización cada 24 horas"
-            >
-              24/7
-            </div>
-            <div class="text-xs sm:text-sm text-gray-400">Actualizado</div>
-          </div>
-          <div
-            class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-gray-700/30 col-span-2 sm:col-span-1 flex flex-col items-center justify-center text-center touch-target"
-          >
-            <div
-              class="text-xl sm:text-2xl font-bold text-red-400"
-              aria-label="Totalmente gratis"
-            >
-              Gratis
-            </div>
-            <div class="text-xs sm:text-sm text-gray-400">100% Gratuito</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Program List Section - Componente Principal -->
-    <section class="relative" aria-label="Parrilla de programación televisiva">
+    <!-- ============================================ -->
+    <!-- PROGRAM LIST - EL ELEMENTO PRINCIPAL       -->
+    <!-- ============================================ -->
+    <section id="programacion" class="home__programs" aria-label="Programación de televisión">
       <app-program-list
         (dayChanged)="onDayChanged($event)"
         (categorySelected)="onCategorySelected($event)"
-      >
-      </app-program-list>
+      ></app-program-list>
     </section>
 
-    <!-- SEO Content - Rich Content Section -->
-    <section
-      class="py-8 sm:py-12 lg:py-16 bg-gray-800/20"
-      itemscope
-      itemtype="https://schema.org/Article"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- SEO H2 Principal -->
-        <header class="text-center mb-8 sm:mb-12">
-          <h2
-            class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4"
-            itemprop="headline"
-          >
-            Tu Guía Completa de
-            <span class="text-red-400">Televisión en España</span>
-          </h2>
-          <p
-            class="text-gray-300 text-sm sm:text-base lg:text-lg max-w-3xl mx-auto leading-relaxed"
-            itemprop="description"
-          >
-            Descubre toda la programación TV de los principales canales
-            españoles. Información detallada, sinopsis, horarios y mucho más en
-            la mejor <strong>guía televisión online</strong>.
-          </p>
-        </header>
-
-        <!-- Content Grid - Mobile Optimizado -->
-        <div
-          class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12"
-        >
-          <!-- Card 1: Canales Principales -->
-          <article
-            class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-5 sm:p-6 border border-gray-700/30 hover:border-red-500/30 transition-all duration-300"
-            itemscope
-            itemtype="https://schema.org/ItemList"
-          >
-            <h3
-              class="text-lg sm:text-xl font-bold text-white mb-4 flex items-center"
-            >
-              <svg
-                class="w-5 h-5 sm:w-6 sm:h-6 text-red-400 mr-2 sm:mr-3 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                ></path>
-              </svg>
-              <span itemprop="name">Canales Principales</span>
-            </h3>
-            <div
-              class="space-y-3 text-xs sm:text-sm text-gray-300 leading-relaxed"
-            >
-              <p>
-                <strong class="text-white">Canales Nacionales:</strong> La 1, La
-                2, Antena 3, Cuatro, Telecinco, La Sexta
-              </p>
-              <p>
-                <strong class="text-white">Autonómicos:</strong> TV3, ETB, Canal
-                Sur, Telemadrid, À Punt, TVG
-              </p>
-              <p>
-                <strong class="text-white">Temáticos:</strong> Neox, Nova, Mega,
-                FDF, Energy, Divinity, Be Mad
-              </p>
-              <p>
-                <strong class="text-white">Infantiles:</strong> Clan, Disney
-                Channel, Nickelodeon, Boing
-              </p>
-            </div>
-          </article>
-
-          <!-- Card 2: Categorías de Contenido -->
-          <article
-            class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-5 sm:p-6 border border-gray-700/30 hover:border-red-500/30 transition-all duration-300"
-          >
-            <h3
-              class="text-lg sm:text-xl font-bold text-white mb-4 flex items-center"
-            >
-              <svg
-                class="w-5 h-5 sm:w-6 sm:h-6 text-red-400 mr-2 sm:mr-3 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                ></path>
-              </svg>
-              Contenido por Categorías
-            </h3>
-            <div
-              class="space-y-3 text-xs sm:text-sm text-gray-300 leading-relaxed"
-            >
-              <p>
-                <strong class="text-white">Películas:</strong> Estrenos, cine
-                español, clásicos, blockbusters internacionales
-              </p>
-              <p>
-                <strong class="text-white">Series:</strong> Dramas, comedias,
-                thrillers, series españolas e internacionales
-              </p>
-              <p>
-                <strong class="text-white">Deportes:</strong> Fútbol,
-                baloncesto, tenis, motor, olimpiadas
-              </p>
-              <p>
-                <strong class="text-white">Documentales:</strong> Naturaleza,
-                historia, ciencia, biografías
-              </p>
-              <p>
-                <strong class="text-white">Entretenimiento:</strong> Reality
-                shows, talent shows, programas de actualidad
-              </p>
-            </div>
-          </article>
-
-          <!-- Card 3: Franjas Horarias -->
-          <article
-            class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-5 sm:p-6 border border-gray-700/30 hover:border-red-500/30 transition-all duration-300 sm:col-span-2 lg:col-span-1"
-          >
-            <h3
-              class="text-lg sm:text-xl font-bold text-white mb-4 flex items-center"
-            >
-              <svg
-                class="w-5 h-5 sm:w-6 sm:h-6 text-red-400 mr-2 sm:mr-3 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-              Programación por Horas
-            </h3>
-            <div
-              class="space-y-3 text-xs sm:text-sm text-gray-300 leading-relaxed"
-            >
-              <p>
-                <strong class="text-white">Prime Time (20:00-00:00):</strong>
-                Las mejores películas, series de estreno y programas principales
-              </p>
-              <p>
-                <strong class="text-white">Mañana (06:00-14:00):</strong>
-                Informativos, magazines matinales y programas de debate
-              </p>
-              <p>
-                <strong class="text-white">Tarde (14:00-20:00):</strong>
-                Telenovelas, series, concursos y entretenimiento familiar
-              </p>
-              <p>
-                <strong class="text-white">Madrugada (00:00-06:00):</strong>
-                Cine de culto, repeticiones y programación nocturna
-              </p>
-            </div>
-          </article>
-        </div>
-
-        <!-- CTA Section - Mobile Optimizado -->
-        <div class="text-center">
-          <div
-            class="bg-gradient-to-r from-red-600/20 to-red-700/20 backdrop-blur-sm rounded-2xl p-6 sm:p-8 lg:p-10 border border-red-500/30"
-          >
-            <h3
-              class="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-3 sm:mb-4"
-            >
-              La Mejor <span class="text-red-400">Guía TV Online</span> de
-              España
-            </h3>
-            <p
-              class="text-gray-300 text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 max-w-3xl mx-auto leading-relaxed"
-            >
-              Encuentra fácilmente qué ver en televisión hoy. Nuestra
-              <strong>parrilla de programación</strong>
-              se actualiza constantemente para ofrecerte la información más
-              precisa. Filtra por canal, categoría u horario y descubre
-              películas de estreno, series populares y programas de
-              entretenimiento.
-            </p>
-            <div
-              class="flex flex-wrap justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-400"
-            >
-              <span class="flex items-center">
-                <svg
-                  class="w-4 h-4 mr-1 text-red-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                Actualización continua
-              </span>
-              <span class="flex items-center">
-                <svg
-                  class="w-4 h-4 mr-1 text-red-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                100% gratuito
-              </span>
-              <span class="flex items-center">
-                <svg
-                  class="w-4 h-4 mr-1 text-red-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                Todos los dispositivos
-              </span>
-              <span class="flex items-center">
-                <svg
-                  class="w-4 h-4 mr-1 text-red-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                Sin registro
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ Section - SEO Boost -->
-    <section
-      class="py-8 sm:py-12 lg:py-16 bg-gray-900/50"
-      itemscope
-      itemtype="https://schema.org/FAQPage"
-    >
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2
-          class="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8 text-center"
-        >
-          Preguntas Frecuentes sobre la
-          <span class="text-red-400">Guía TV</span>
-        </h2>
-
-        <div class="space-y-4">
-          <!-- FAQ Item 1 -->
-          <details
-            class="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/30 overflow-hidden group"
-            itemscope
-            itemprop="mainEntity"
-            itemtype="https://schema.org/Question"
-          >
-            <summary
-              class="cursor-pointer px-5 sm:px-6 py-4 font-semibold text-white hover:bg-gray-700/30 transition-colors list-none flex justify-between items-center touch-manipulation"
-              itemprop="name"
-            >
-              <span class="text-sm sm:text-base"
-                >¿Cada cuánto se actualiza la programación?</span
-              >
-              <svg
-                class="w-5 h-5 text-red-400 transition-transform group-open:rotate-180"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </summary>
-            <div
-              class="px-5 sm:px-6 py-4 text-xs sm:text-sm text-gray-300 bg-gray-800/20"
-              itemscope
-              itemprop="acceptedAnswer"
-              itemtype="https://schema.org/Answer"
-            >
-              <p itemprop="text">
-                Sí, puedes filtrar la programación por múltiples categorías:
-                películas, series, deportes, documentales, noticias, infantil,
-                entretenimiento y más. Simplemente usa los filtros en la parte
-                superior para ver solo el contenido que te interesa.
-              </p>
-            </div>
-          </details>
-
-          <!-- FAQ Item 4 -->
-          <details
-            class="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/30 overflow-hidden group"
-            itemscope
-            itemprop="mainEntity"
-            itemtype="https://schema.org/Question"
-          >
-            <summary
-              class="cursor-pointer px-5 sm:px-6 py-4 font-semibold text-white hover:bg-gray-700/30 transition-colors list-none flex justify-between items-center touch-manipulation"
-              itemprop="name"
-            >
-              <span class="text-sm sm:text-base"
-                >¿Es compatible con dispositivos móviles?</span
-              >
-              <svg
-                class="w-5 h-5 text-red-400 transition-transform group-open:rotate-180"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </summary>
-            <div
-              class="px-5 sm:px-6 py-4 text-xs sm:text-sm text-gray-300 bg-gray-800/20"
-              itemscope
-              itemprop="acceptedAnswer"
-              itemtype="https://schema.org/Answer"
-            >
-              <p itemprop="text">
-                Totalmente. Nuestra guía TV está optimizada para funcionar
-                perfectamente en smartphones, tablets y ordenadores. El diseño
-                responsive se adapta automáticamente a cualquier tamaño de
-                pantalla para ofrecerte la mejor experiencia de usuario.
-              </p>
-            </div>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <!-- Category Statistics - Solo cuando hay filtro -->
-    <section
-      *ngIf="selectedCategory()"
-      class="py-8 sm:py-12 lg:py-16 bg-gray-800/30"
-    >
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <header class="text-center mb-6 sm:mb-8 lg:mb-12">
-          <h3
-            class="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-3 sm:mb-4"
-          >
-            Estadísticas de
-            <span
-              class="bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent"
-            >
-              {{ selectedCategory() }}
-            </span>
-          </h3>
-          <p class="text-gray-400 text-sm sm:text-base lg:text-lg">
-            Resumen de la programación filtrada por esta categoría
-          </p>
-        </header>
-
-        <!-- Stats Grid - Optimizado móvil -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-          <!-- Total Programs -->
-          <div
-            class="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-gray-700/30 hover:border-red-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-red-500/10 text-center group"
-          >
-            <div
-              class="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 mx-auto mb-3 sm:mb-4 bg-red-500/20 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:bg-red-500/30 transition-colors duration-300"
-              aria-hidden="true"
-            >
-              <svg
-                class="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-red-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h4a1 1 0 110 2h-1v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h4z"
-                />
-              </svg>
-            </div>
-            <p
-              class="text-2xl sm:text-3xl lg:text-4xl font-bold text-red-500 mb-1 sm:mb-2"
-            >
-              {{ getCategoryProgramCount() }}
-            </p>
-            <p
-              class="text-xs sm:text-sm lg:text-base text-gray-400 font-medium"
-            >
-              Programas
-            </p>
-          </div>
-
-          <!-- Channels -->
-          <div
-            class="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 text-center group"
-          >
-            <div
-              class="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 mx-auto mb-3 sm:mb-4 bg-blue-500/20 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:bg-blue-500/30 transition-colors duration-300"
-              aria-hidden="true"
-            >
-              <svg
-                class="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-blue-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-            </div>
-            <p
-              class="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-500 mb-1 sm:mb-2"
-            >
-              {{ getCategoryChannelCount() }}
-            </p>
-            <p
-              class="text-xs sm:text-sm lg:text-base text-gray-400 font-medium"
-            >
-              Canales
-            </p>
-          </div>
-
-          <!-- Currently Airing -->
-          <div
-            class="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-gray-700/30 hover:border-green-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/10 text-center group"
-          >
-            <div
-              class="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 mx-auto mb-3 sm:mb-4 bg-green-500/20 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:bg-green-500/30 transition-colors duration-300"
-              aria-hidden="true"
-            >
-              <svg
-                class="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-green-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <p
-              class="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-500 mb-1 sm:mb-2"
-            >
-              {{ getCurrentCategoryPrograms() }}
-            </p>
-            <p
-              class="text-xs sm:text-sm lg:text-base text-gray-400 font-medium"
-            >
-              En Emisión
-            </p>
-          </div>
-
-          <!-- Next Program -->
-          <div
-            class="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border border-gray-700/30 hover:border-purple-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10 text-center group"
-          >
-            <div
-              class="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 mx-auto mb-3 sm:mb-4 bg-purple-500/20 rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:bg-purple-500/30 transition-colors duration-300"
-              aria-hidden="true"
-            >
-              <svg
-                class="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-purple-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <p
-              class="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-500 mb-1 sm:mb-2"
-            >
-              {{ getNextCategoryProgram() }}
-            </p>
-            <p
-              class="text-xs sm:text-sm lg:text-base text-gray-400 font-medium"
-            >
-              Próximo
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Floating Action Button - Mejorado táctil -->
-  <!-- <button
-    *ngIf="uiState().showContent"
-    (click)="onRefresh()"
-    [disabled]="uiState().isLoading"
-    class="fixed bottom-6 right-6 z-40 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 active:from-red-800 active:to-red-900 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-full shadow-2xl hover:shadow-red-500/25 transition-all duration-200 hover:scale-110 active:scale-95 disabled:scale-100 focus:outline-none focus:ring-4 focus:ring-red-500/50 flex items-center justify-center touch-manipulation lg:hidden"
-    aria-label="Actualizar programación"
-  >
-    <svg
-      *ngIf="!uiState().isLoading"
-      class="w-6 h-6"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-      />
-    </svg>
-    <div
-      *ngIf="uiState().isLoading"
-      class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"
-      aria-hidden="true"
-    ></div>
-  </button>
-
-  <button
-    *ngIf="uiState().showContent"
-    (click)="onRefresh()"
-    [disabled]="uiState().isLoading"
-    class="hidden lg:inline-flex fixed bottom-8 right-8 z-40 items-center px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 active:from-red-800 active:to-red-900 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-xl shadow-2xl hover:shadow-red-500/25 transition-all duration-200 hover:scale-105 active:scale-95 disabled:scale-100 focus:outline-none focus:ring-4 focus:ring-red-500/50 touch-manipulation"
-    aria-label="Actualizar programación de televisión"
-  >
-    <svg
-      *ngIf="!uiState().isLoading"
-      class="w-5 h-5 mr-2"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-      />
-    </svg>
-    <div
-      *ngIf="uiState().isLoading"
-      class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"
-      aria-hidden="true"
-    ></div>
-    <span>{{
-      uiState().isLoading ? "Actualizando..." : "Actualizar Programación"
-    }}</span>
-  </button>
-
-  <!-- Empty State - Mejorado -->
-  <div
-    *ngIf="uiState().showEmpty"
-    class="min-h-screen flex items-center justify-center px-4 py-8"
-    role="status"
-    aria-live="polite"
-  >
-    <div class="max-w-lg w-full text-center">
-      <div
-        class="w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gray-800/50 rounded-full flex items-center justify-center"
-        aria-hidden="true"
-      >
-        <svg
-          class="w-8 h-8 sm:w-12 sm:h-12 text-gray-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-          />
-        </svg>
-        <span>Cargar Programación</span>
-      </div>
-    </div>
   </div>
-</div>
+
+</main>

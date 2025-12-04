@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
+import { map, tap, catchError, filter } from 'rxjs/operators';
 import { ProgramListService, ProgramListSnapshot } from '../../state/program-list.service';
 import { IProgramListData, ITimeIndicatorState, IDayInfo, IProgramItem } from 'src/app/interfaces';
 
@@ -16,44 +16,48 @@ export class ProgramListFacadeService {
   private error$ = new BehaviorSubject<string | null>(null);
   private snapshot$ = new BehaviorSubject<ProgramListSnapshot | null>(null);
   private currentDayIndex = 0; // -1..2; default today=0
-  private currentLoad$: Observable<IProgramListData[]> | null = null;
+  private currentLoad$: any = null; // Changed to any or Subscription to avoid type errors with previous usage
 
   constructor(private programList: ProgramListService) {}
 
   getProgramListData(): Observable<IProgramListData[]> {
-    // If we already have data, emit immediately
-    const cached = this.snapshot$.value;
-    if (cached) {
-      // Ensure loading is false when returning cached data
-      this.loading$.next(false);
-      return of(cached.channels);
+    // Trigger initial load if no data exists
+    if (!this.snapshot$.value && !this.currentLoad$) {
+      this.loadInitialData();
     }
 
-    // Reuse in-flight load to avoid duplicate HTTP calls
-    if (this.currentLoad$) {
-      return this.currentLoad$;
-    }
+    // Return reactive stream that emits whenever snapshot changes
+    return this.snapshot$.pipe(
+      filter((snap): snap is ProgramListSnapshot => snap !== null),
+      map((snap) => snap.channels)
+    );
+  }
 
+  /**
+   * Load initial data for current day index
+   */
+  private loadInitialData(): void {
     this.loading$.next(true);
     this.error$.next(null);
+    
     this.currentLoad$ = this.programList
       .loadProgramList(this.aliasForIndex(this.currentDayIndex))
       .pipe(
         tap((snap) => {
+          console.log('[Facade] Initial data loaded:', snap.channels.length, 'channels');
           this.snapshot$.next(snap);
           this.loading$.next(false);
           this.currentLoad$ = null;
         }),
-        map((snap) => snap.channels),
         catchError((err) => {
+          console.error('[Facade] Initial load error:', err);
           this.loading$.next(false);
           this.error$.next(err?.message || 'Error loading program list');
           this.currentLoad$ = null;
-          return of([]);
+          return of(null);
         })
-      );
-
-    return this.currentLoad$;
+      )
+      .subscribe();
   }
 
   getLoadingState(): Observable<boolean> {
