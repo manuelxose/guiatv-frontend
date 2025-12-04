@@ -1,12 +1,28 @@
 
-# TypeScript v1 declaration files
+# Dependencies
+node_modules/
 typings/
 
-# Node.js dependency directory
-node_modules/
-package-lock.json
-
+# Build output
+dist/
 lib/
+*.tsbuildinfo
 
-#Omitir archivos de la carpeta storage
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+logs/
+*.log
+
+# Environment files
+.env
+.env.*.local
+!.env.example
+
+# Coverage and temp files
+coverage/
+temp/
+
+# Storage folder (runtime artifacts)
 storage/
