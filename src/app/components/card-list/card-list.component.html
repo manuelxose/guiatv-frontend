@@ -1,17 +1,17 @@
 <div
-  class="card-list group relative flex w-full cursor-pointer flex-col overflow-hidden rounded-xl bg-gray-900 shadow-lg transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 sm:flex-row sm:h-[11.25rem]"
+  class="card-list group relative flex w-full cursor-pointer flex-col overflow-hidden rounded-xl bg-gray-900 shadow-lg transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 h-full"
   (click)="onClick()"
   role="article"
   [attr.aria-label]="title"
 >
   <!-- Image Section -->
-  <div class="relative h-48 w-full sm:h-full sm:w-[13.75rem] lg:w-[16.25rem] flex-shrink-0 overflow-hidden">
+  <div class="relative h-48 sm:h-56 w-full flex-shrink-0 overflow-hidden">
     <div
       class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
       [style.background-image]="backgroundImage"
     ></div>
     <div
-      class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent sm:bg-gradient-to-r sm:from-transparent sm:via-transparent sm:to-gray-900"
+      class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"
     ></div>
 
     <!-- Live Badge -->
@@ -31,6 +31,18 @@
       </span>
     </div>
 
+    <!-- Channel Logo (Top Right) -->
+    <div *ngIf="channelIcon" class="absolute top-3 right-3 z-10">
+      <div class="bg-white/10 backdrop-blur-md p-1.5 rounded-lg shadow-lg">
+        <img 
+          [src]="channelIcon" 
+          [alt]="subtitle"
+          class="h-8 w-8 object-contain"
+          (error)="$any($event.target).style.display='none'"
+        />
+      </div>
+    </div>
+
     <!-- Category Badge -->
     <div *ngIf="category" class="absolute bottom-3 left-3 z-10">
       <span
@@ -42,16 +54,19 @@
   </div>
 
   <!-- Content Section -->
-  <div class="flex flex-1 flex-col justify-between p-4 sm:p-5 min-w-0">
+  <div class="flex flex-1 flex-col justify-between p-4 min-w-0">
     <div>
       <!-- Header -->
       <div class="mb-2 flex items-center justify-between">
-        <span
-          class="text-xs font-bold text-red-400 uppercase tracking-wide"
-          *ngIf="subtitle"
-        >
-          {{ subtitle }}
-        </span>
+        <div class="flex items-center gap-2">
+          <!-- Removed small channel logo from here -->
+          <span
+            class="text-xs font-bold text-red-400 uppercase tracking-wide"
+            *ngIf="subtitle"
+          >
+            {{ subtitle }}
+          </span>
+        </div>
         <span *ngIf="time" class="flex items-center gap-1 text-xs text-gray-400">
           <svg
             class="h-3 w-3"
@@ -72,71 +87,40 @@
 
       <!-- Title -->
       <h3
-        class="mb-2 text-lg lg:text-xl font-bold leading-tight text-white group-hover:text-red-400 transition-colors"
+        class="mb-2 text-base font-bold leading-tight text-white group-hover:text-red-400 transition-colors line-clamp-2"
       >
         {{ title }}
       </h3>
 
       <!-- Description -->
-      <p class="line-clamp-2 text-xs lg:text-sm text-gray-400 leading-relaxed">
+      <p class="line-clamp-3 text-xs lg:text-sm text-gray-400 leading-relaxed">
         {{ description }}
       </p>
     </div>
 
     <!-- Footer / Actions -->
-    <div class="mt-4 flex items-center justify-between">
+    <div class="mt-4 flex flex-col gap-3">
       <!-- Progress Bar (if live) -->
-      <div *ngIf="live" class="flex-1 mr-4">
-        <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-700">
+      <div *ngIf="live" class="w-full">
+        <div class="flex justify-between items-end mb-1.5">
+          <span class="text-[10px] font-medium text-red-400 uppercase tracking-wider">En emision</span>
+          <span class="text-[10px] text-gray-400 font-mono">{{ timeText }}</span>
+        </div>
+        <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-700/50">
           <div
-            class="h-full bg-red-500 transition-all duration-1000"
-            [style.width.%]="progress || 50"
+            class="h-full bg-gradient-to-r from-red-600 to-red-500 shadow-[0_0_10px_rgba(220,38,38,0.5)] transition-all duration-1000"
+            [style.width.%]="progressPercentage"
           ></div>
         </div>
-        <p class="mt-1 text-[10px] text-gray-400 text-right">Emitiendo ahora</p>
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center gap-2" [class.ml-auto]="!live">
-        <button
-          class="group/btn flex items-center gap-1.5 rounded-lg bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-700 hover:text-white"
-          (click)="onRemind($event)"
-          title="Recordar"
-        >
-          <svg
-            class="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-            />
-          </svg>
-          <span class="hidden sm:inline">Recordar</span>
-        </button>
-
-        <button
-          class="flex items-center gap-1.5 rounded-lg bg-red-600/10 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors group-hover:bg-red-600 group-hover:text-white"
-        >
-          <span>Ver Detalles</span>
-          <svg
-            class="h-3 w-3"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
+      <div class="flex items-center justify-end w-full">
+        <app-interaction-buttons
+          [itemId]="id"
+          [title]="title"
+          [type]="type"
+        ></app-interaction-buttons>
       </div>
     </div>
   </div>

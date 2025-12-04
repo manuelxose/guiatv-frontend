@@ -44,6 +44,7 @@ import { BannerComponent } from '../banner/banner.component';
 import { ProgramListFacadeService } from '../../services/program-list/program-list-facade.service';
 import { ProgramListTransformService } from '../../services/program-list-transform.service';
 import { DeviceDetectorService } from '../../services/device-detector.service';
+import { ModalService } from '../../services/modal.service';
 import {
   IDayChangedEvent,
   IDayInfo,
@@ -66,6 +67,14 @@ const UI_CONFIG = {
   MAX_LAYERS: 5,
   MOBILE_ITEM_SIZE: 60,
   TABLET_ITEM_SIZE: 70,
+} as const;
+
+
+const MOBILE_CONFIG = {
+  ITEM_SIZE_DEFAULT: 88, // Altura base de cada canal
+  ITEM_SIZE_EXPANDED: 300, // Altura cuando está expandido
+  MAX_UPCOMING_PROGRAMS: 3,
+  PROGRESS_UPDATE_INTERVAL: 60000, // 1 minuto
 } as const;
 
 interface ProgramWithPosition extends IProgramItem {
@@ -116,6 +125,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   public readonly deviceDetector = inject(DeviceDetectorService);
   private readonly injector = inject(Injector);
   private readonly apiConfig = inject(ApiConfigService);
+  private readonly modalService = inject(ModalService);
 
   // ===============================================
   // SSR COMPATIBILITY
@@ -229,9 +239,9 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     };
   });
 
-  public readonly availableCategories = computed(() => {
-    return this.transform.getAvailableCategories(this.canalesConProgramas());
-  });
+  // public readonly availableCategories = computed(() => {
+  //   return this.transform.getAvailableCategories(this.canalesConProgramas());
+  // });
 
   public readonly uiState = computed(() => ({
     hasData: this.hasChannels(),
@@ -604,6 +614,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private handleDataUpdate(data: IProgramListData[]): void {
     console.log('📊 handleDataUpdate recibió datos:', data?.length);
+    this.debugLogCount = 0; // Reset debug logs for new data
 
     // CRÍTICO: SIEMPRE establecer isLoading a false cuando se reciben datos
     this.isLoading.set(false);
@@ -886,24 +897,35 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       this.selectedProgram.set(null);
       if (!this.isMobile()) {
         this.onChannelToggle(channelIndex);
+        // También cerrar el modal en desktop
+        this.modalService.clearPrograma();
       }
       return;
     }
 
-    // Expandir canal si no está expandido
+    // En desktop, abrir el modal directamente
+    if (!this.isMobile()) {
+      console.log('🖥️ Desktop: Abriendo modal para programa:', program);
+      this.modalService.setPrograma(program);
+      this.selectedProgram.set(program);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    // En móvil, comportamiento original (expandir canal)
     if (!this.isChannelExpanded(channelIndex)) {
       this.onChannelToggle(channelIndex);
     }
 
-    // En desktop, cerrar otros canales expandidos
-    if (!this.isMobile()) {
-      const expandedChannels = this.expandedChannels();
-      expandedChannels.forEach((expandedIndex) => {
-        if (expandedIndex !== channelIndex) {
-          this.onChannelToggle(expandedIndex);
-        }
-      });
-    }
+    // En desktop, cerrar otros canales expandidos (este bloque ya no es necesario aquí para desktop)
+    // if (!this.isMobile()) {
+    //   const expandedChannels = this.expandedChannels();
+    //   expandedChannels.forEach((expandedIndex) => {
+    //     if (expandedIndex !== channelIndex) {
+    //       this.onChannelToggle(expandedIndex);
+    //     }
+    //   });
+    // }
 
     this.selectedProgram.set(program);
     this.cdr.markForCheck();
@@ -1035,6 +1057,25 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       dayInfo.index === 0 &&
         this.activeTimeSlot() === this.facade.getCurrentTimeSlot()
     );
+
+    // Load programs for the selected day
+    console.log(`🔄 Loading programs for day ${dayInfo.index} (${dayInfo.diaSemana})`);
+    this.isLoading.set(true);
+    this.facade
+      .loadProgramsForDay(dayInfo.index)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          console.log(`✅ Day ${dayInfo.index} data loaded successfully`);
+          this.isLoading.set(false);
+          this.error.set(null);
+        },
+        error: (err) => {
+          console.error(`❌ Error loading day ${dayInfo.index}:`, err);
+          this.error.set(err?.message || 'Error loading day');
+          this.isLoading.set(false);
+        },
+      });
 
     this.dayChanged.emit({ dayIndex: clampedIndex, dayInfo });
     this.cdr.markForCheck();
@@ -1543,19 +1584,51 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     return programs.slice(0, 2);
   }
 
+  // Helper to parse date treating it as local time (ignoring Z or timezone offset)
+  private parseDateIgnoringTimezone(dateStr: string): Date {
+    if (!dateStr) return new Date();
+    // Remove Z or timezone offset to force local interpretation
+    const cleanStr = dateStr.replace(/Z$|[+-]\d{2}:?\d{2}$/, '');
+    return new Date(cleanStr);
+  }
+
+  // Counter for debug logs to avoid flooding
+  private debugLogCount = 0;
+
   public isProgramLive(programa: IProgramItem): boolean {
-    const now = new Date();
-    const start = new Date(programa.start);
-    const end = new Date(programa.stop);
-    return now >= start && now < end;
+    const now = Date.now();
+    const start = this.parseDateIgnoringTimezone(programa.start).getTime();
+    const end = this.parseDateIgnoringTimezone(programa.stop).getTime();
+    
+    const isLive = now >= start && now < end;
+
+    // Log first 50 live programs found to debug timezone issues
+    if (isLive && this.debugLogCount < 50) {
+      this.debugLogCount++;
+      const duration = (end - start) / 60000;
+      const elapsed = (now - start) / 60000;
+      
+      console.log(`🔴 [ProgramList] LIVE #${this.debugLogCount}:`, {
+        title: programa.title,
+        start: new Date(start).toLocaleTimeString(),
+        end: new Date(end).toLocaleTimeString(),
+        now: new Date(now).toLocaleTimeString(),
+        durationMin: Math.round(duration),
+        elapsedMin: Math.round(elapsed),
+        rawStart: programa.start
+      });
+    }
+
+    return isLive;
   }
 
   public getProgramProgress(programa: IProgramItem): number {
-    const now = new Date();
-    const start = new Date(programa.start);
-    const end = new Date(programa.stop);
-    const total = end.getTime() - start.getTime();
-    const elapsed = now.getTime() - start.getTime();
+    const now = Date.now();
+    const start = this.parseDateIgnoringTimezone(programa.start).getTime();
+    const end = this.parseDateIgnoringTimezone(programa.stop).getTime();
+    const total = end - start;
+    const elapsed = now - start;
+    
     if (total <= 0) return 0;
     return Math.min(100, Math.max(0, (elapsed / total) * 100));
   }
@@ -1688,4 +1761,176 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     this.channelIndexCache.clear();
   }
+
+
+
+
+
+
+// 2. Obtener programa actual de un canal
+// public getCurrentProgram(canal: IProgramListData): IProgramItem | null {
+//   if (!canal.channels || canal.channels.length === 0) return null;
+//   const now = new Date();
+//   return canal.channels.find(program => {
+//     const start = new Date(program.start);
+//     const end = new Date(program.stop);
+//     return now >= start && now < end;
+//   }) || null;
+// }
+
+// 3. Obtener próximos programas
+// public getUpcomingPrograms(canal: IProgramListData): IProgramItem[] {
+//   if (!canal.channels || canal.channels.length === 0) return [];
+//   const now = new Date();
+//   const currentIndex = canal.channels.findIndex(program => {
+//     const start = new Date(program.start);
+//     const end = new Date(program.stop);
+//     return now >= start && now < end;
+//   });
+//   if (currentIndex === -1) {
+//     return canal.channels.filter(p => new Date(p.start) > now).slice(0, 3);
+//   }
+//   return canal.channels.slice(currentIndex + 1, currentIndex + 4);
+// }
+
+// 4. Duración del programa
+// public getProgramDuration(program: IProgramItem): string {
+//   const start = new Date(program.start);
+//   const end = new Date(program.stop);
+//   const minutes = Math.round((end.getTime() - start.getTime()) / 60000);
+//   if (minutes < 60) return `${minutes} min`;
+//   const hours = Math.floor(minutes / 60);
+//   const rem = minutes % 60;
+//   return rem === 0 ? `${hours}h` : `${hours}h ${rem}m`;
+// }
+
+
+/**
+ * Categorías disponibles para filtrar
+ * Se obtiene del servicio CategoryFilterService o se extrae de los programas
+ */
+public readonly availableCategories = computed(() => {
+  // Opción 1: Si tienes CategoryFilterService inyectado
+  // return this.categoryFilterService.availableCategories();
+  
+  // Opción 2: Extraer de los canales cargados
+  const channels = this.canalesConProgramas();
+  const categories = new Set<string>();
+  
+  channels.forEach(channel => {
+    channel.channels?.forEach(program => {
+      const category = (program.category as any)?.value || program.category;
+      if (category && typeof category === 'string') {
+        categories.add(category);
+      }
+    });
+  });
+  
+  return Array.from(categories).sort();
+});
+
+// ============================================
+// MÉTODOS A AÑADIR EN program-list.component.ts
+// ============================================
+
+/**
+ * Obtiene el programa actual (en emisión) de un canal
+ */
+public getCurrentProgram(canal: IProgramListData): IProgramItem | null {
+  if (!canal.channels || canal.channels.length === 0) return null;
+  
+  const now = new Date();
+  
+  return canal.channels.find(program => {
+    const start = new Date(program.start);
+    const end = new Date(program.stop);
+    return now >= start && now < end;
+  }) || null;
+}
+
+/**
+ * Obtiene los próximos programas (excluyendo el actual)
+ * Retorna máximo 3 programas para mantener la UI compacta
+ */
+public getUpcomingPrograms(canal: IProgramListData): IProgramItem[] {
+  if (!canal.channels || canal.channels.length === 0) return [];
+  
+  const now = new Date();
+  
+  // Encontrar el índice del programa actual
+  const currentIndex = canal.channels.findIndex(program => {
+    const start = new Date(program.start);
+    const end = new Date(program.stop);
+    return now >= start && now < end;
+  });
+  
+  if (currentIndex === -1) {
+    // Si no hay programa actual, devolver los primeros 3 futuros
+    return canal.channels
+      .filter(p => new Date(p.start) > now)
+      .slice(0, 3);
+  }
+  
+  // Devolver los siguientes 3 programas después del actual
+  return canal.channels.slice(currentIndex + 1, currentIndex + 4);
+}
+
+/**
+ * Obtiene los programas visibles para la vista desktop
+ * Usa el método existente o implementa uno nuevo
+ */
+public getVisiblePrograms(canal: IProgramListData): IProgramItem[] {
+  // Si ya existe un método similar, usar ese
+  // De lo contrario, devolver todos los programas del slot actual
+  return this.getMobileCompactPrograms(canal);
+}
+
+/**
+ * Calcula la duración de un programa en formato legible
+ */
+public getProgramDuration(program: IProgramItem): string {
+  const start = new Date(program.start);
+  const end = new Date(program.stop);
+  const durationMs = end.getTime() - start.getTime();
+  const minutes = Math.round(durationMs / (1000 * 60));
+  
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
+  
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  if (remainingMinutes === 0) {
+    return `${hours}h`;
+  }
+  
+  return `${hours}h ${remainingMinutes}m`;
+}
+
+/**
+ * Selecciona un programa y expande el canal en móvil
+ * NOTA: Este método puede reemplazar o complementar al existente
+ */
+public onProgramSelectedMobile(channelIndex: number, program: IProgramItem): void {
+  // Si ya está seleccionado, deseleccionar
+  if (this.selectedProgram()?.id === program.id) {
+    this.selectedProgram.set(null);
+    return;
+  }
+  
+  this.selectedProgram.set(program);
+  
+  // En móvil, expandir el canal automáticamente
+  if (this.isMobile()) {
+    const expanded = new Set(this.expandedChannels());
+    expanded.add(channelIndex);
+    this.expandedChannels.set(expanded);
+  }
+  
+  this.cdr.markForCheck();
+}
+
+
+
 }

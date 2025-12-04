@@ -444,3 +444,430 @@ $transition: cubic-bezier(0.4, 0, 0.2, 1);
     page-break-inside: avoid;
   }
 }
+
+
+
+
+/**
+ * Banner Component - MOBILE RESPONSIVE OVERRIDES
+ * 
+ * Estos estilos complementan o reemplazan los del banner existente
+ * para mejorar la experiencia móvil sin romper el desktop
+ */
+
+// ============================================
+// VARIABLES
+// ============================================
+
+$color-primary: #ef4444;
+$color-bg-dark: #0f172a;
+$color-text-primary: #f8fafc;
+$color-text-secondary: #94a3b8;
+
+$space-sm: 8px;
+$space-md: 12px;
+$space-lg: 16px;
+$space-xl: 24px;
+
+$bp-sm: 640px;
+$bp-md: 768px;
+$bp-lg: 1024px;
+
+// ============================================
+// BANNER HERO - RESPONSIVE
+// ============================================
+
+.banner-hero {
+  position: relative;
+  width: 100%;
+  min-height: 180px;
+  max-height: var(--banner-max-height, 400px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  // Mobile: más compacto
+  @media (max-width: #{$bp-md - 1px}) {
+    min-height: 160px;
+    max-height: 200px;
+  }
+
+  // Variante compacta (para uso dentro de Home en móvil)
+  &.banner-compact {
+    min-height: 140px;
+    max-height: 180px;
+
+    .banner-content {
+      padding: $space-md;
+    }
+
+    .program-title {
+      font-size: 1.125rem;
+      -webkit-line-clamp: 1;
+    }
+
+    .program-metadata {
+      font-size: 0.6875rem;
+    }
+
+    .program-description {
+      display: none;
+    }
+
+    .channel-logo,
+    .channel-logo-small {
+      max-height: 28px;
+    }
+  }
+}
+
+// ============================================
+// BACKGROUND IMAGE
+// ============================================
+
+.banner-background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.banner-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.7) 30%,
+    rgba(0, 0, 0, 0.3) 60%,
+    transparent 100%
+  );
+}
+
+// ============================================
+// BANNER CONTENT
+// ============================================
+
+.banner-content {
+  position: relative;
+  z-index: 1;
+  padding: $space-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  @media (min-width: $bp-md) {
+    padding: $space-xl $space-xl * 1.5;
+    gap: $space-md;
+  }
+
+  @media (min-width: $bp-lg) {
+    padding: $space-xl * 1.5 $space-xl * 2;
+  }
+}
+
+// ============================================
+// HEADER (Canal + Hora)
+// ============================================
+
+.banner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-md;
+  flex-wrap: wrap;
+}
+
+.channel-info {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+}
+
+.channel-logo,
+.channel-logo-small {
+  max-height: 32px;
+  width: auto;
+  object-fit: contain;
+
+  @media (min-width: $bp-md) {
+    max-height: 40px;
+  }
+
+  @media (min-width: $bp-lg) {
+    max-height: 48px;
+  }
+}
+
+.channel-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $color-text-secondary;
+
+  @media (min-width: $bp-md) {
+    font-size: 0.875rem;
+  }
+}
+
+.time-badge {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $color-text-secondary;
+  background: rgba(255, 255, 255, 0.1);
+  padding: $space-sm $space-md;
+  border-radius: 20px;
+
+  @media (min-width: $bp-md) {
+    font-size: 0.875rem;
+  }
+}
+
+.time-separator {
+  opacity: 0.5;
+}
+
+// ============================================
+// PROGRAM INFO
+// ============================================
+
+.banner-info {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.program-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $color-text-primary;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  @media (min-width: $bp-md) {
+    font-size: 1.75rem;
+    -webkit-line-clamp: 2;
+  }
+
+  @media (min-width: $bp-lg) {
+    font-size: 2.25rem;
+  }
+}
+
+.program-metadata {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: $color-text-secondary;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+
+    &:not(:last-child)::after {
+      content: "•";
+      margin-left: $space-sm;
+      opacity: 0.5;
+    }
+  }
+
+  @media (min-width: $bp-md) {
+    font-size: 0.875rem;
+  }
+}
+
+.program-description {
+  font-size: 0.8125rem;
+  color: $color-text-secondary;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  // Ocultar en móvil para ahorrar espacio
+  @media (max-width: #{$bp-md - 1px}) {
+    display: none;
+  }
+
+  @media (min-width: $bp-md) {
+    font-size: 0.875rem;
+    -webkit-line-clamp: 3;
+  }
+}
+
+// ============================================
+// LIVE BADGE
+// ============================================
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: $color-primary;
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 4px;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+// ============================================
+// PROGRESS BAR
+// ============================================
+
+.progress-container {
+  width: 100%;
+  max-width: 200px;
+  margin-top: $space-sm;
+
+  @media (min-width: $bp-md) {
+    max-width: 300px;
+  }
+}
+
+.progress-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: $color-primary;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.6875rem;
+  color: $color-text-secondary;
+  margin-top: 4px;
+}
+
+// ============================================
+// ACTIONS (CTA Buttons)
+// ============================================
+
+.banner-actions {
+  display: flex;
+  gap: $space-sm;
+  flex-wrap: wrap;
+  margin-top: $space-md;
+
+  @media (min-width: $bp-md) {
+    gap: $space-md;
+  }
+}
+
+.banner-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-sm;
+  padding: $space-sm $space-lg;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+  min-height: 40px;
+  border: none;
+
+  @media (min-width: $bp-md) {
+    padding: $space-md $space-xl;
+    font-size: 0.875rem;
+    min-height: 44px;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &--primary {
+    background: $color-primary;
+    color: white;
+
+    &:hover {
+      background: darken($color-primary, 8%);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  &--secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: $color-text-primary;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+// ============================================
+// ACCESSIBILITY
+// ============================================
+
+@media (prefers-reduced-motion: reduce) {
+  .live-badge::before,
+  .progress-fill {
+    animation: none;
+    transition: none;
+  }
+}
+
+// ============================================
+// SAFE AREAS (Notch support)
+// ============================================
+
+@supports (padding: env(safe-area-inset-left)) {
+  .banner-content {
+    padding-left: max($space-lg, env(safe-area-inset-left));
+    padding-right: max($space-lg, env(safe-area-inset-right));
+
+    @media (min-width: $bp-md) {
+      padding-left: max($space-xl * 1.5, env(safe-area-inset-left));
+      padding-right: max($space-xl * 1.5, env(safe-area-inset-right));
+    }
+  }
+}

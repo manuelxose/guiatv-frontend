@@ -9,6 +9,7 @@ import {
   QueryList,
   ViewChild,
 } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil, first, filter, tap } from 'rxjs';
 import { BannerComponent } from 'src/app/components/banner/banner.component';
@@ -17,6 +18,8 @@ import { SliderComponent } from 'src/app/components/slider/slider.component';
 import { TvDataService } from 'src/app/state/tv-data.service';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { isLive } from 'src/app/utils/utils';
+import { ApiConfigService } from 'src/app/api/api-config.service';
 
 interface DayOption {
   label: string;
@@ -63,6 +66,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   private svcGuide = inject(TvGuideService);
   private metaSvc = inject(MetaService);
   private cdr = inject(ChangeDetectorRef);
+  private apiConfig = inject(ApiConfigService);
 
   // ViewChildren for slider controls
   @ViewChildren('timeSlotSlider') timeSlotSliders!: QueryList<SliderComponent>;
@@ -137,6 +141,21 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.logPerformanceMetrics();
+  }
+
+  /**
+   * Resolve image URL to absolute path
+   */
+  private resolveImageUrl(url?: string | null): string | undefined {
+    if (!url) return undefined;
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    const base = this.apiConfig.getAssetBaseUrl();
+    if (url.startsWith('/')) {
+      return `${base}${url}`;
+    }
+    return `${base}/${url}`;
   }
 
   /**
@@ -239,27 +258,133 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     const renderStart = performance.now();
 
     try {
+      // Store data in legacy service for compatibility
       this.svcGuide.setData(programas);
-      this.programs = this.svcGuide.getProgramsByChannel(
-        this.canal.replace('-', ' ')
-      );
+      
+      // Normalize search term
+      const normalizeChannelName = (name: string) => {
+        return name.toLowerCase()
+          .replace(/\s+/g, '_')  // spaces to underscores
+          .replace(/-/g, '_')    // hyphens to underscores
+          .replace(/\./g, '')    // remove dots
+          .trim();
+      };
+      
+      const searchTerm = normalizeChannelName(this.canal);
+      
+      // Log available channels for debugging
+      console.log('🔍 CANAL-COMPLETO - Buscando canal:', {
+        original: this.canal,
+        normalized: searchTerm,
+        availableChannels: programas.slice(0, 10).map((g: any) => ({
+          name: g.channel?.name,
+          id: g.channel?.id,
+          normalized: normalizeChannelName(g.channel?.name || g.channel?.id || '')
+        }))
+      });
+      
+      // Find the channel group that matches this canal (by name or ID)
+      const channelGroup = programas.find((group: any) => {
+        const groupName = normalizeChannelName(group.channel?.name || '');
+        const groupId = normalizeChannelName(group.channel?.id || '');
+        
+        return groupName === searchTerm || 
+               groupId === searchTerm ||
+               groupName.includes(searchTerm) ||
+               groupId.includes(searchTerm);
+      });
+      
+      // Extract programs from the found channel group
+      if (channelGroup) {
+        console.log('🔎 Canal Group structure:', {
+          hasChannel: !!channelGroup.channel,
+          hasPrograms: !!channelGroup.programs,
+          programsLength: channelGroup.programs?.length || 0,
+          programsIsArray: Array.isArray(channelGroup.programs),
+          keys: Object.keys(channelGroup),
+          sample: channelGroup
+        });
+        
+        if (channelGroup.programs && channelGroup.programs.length > 0) {
+          this.programs = channelGroup.programs.map((p: any) => {
+            const imageUrl = p.poster || p.icon || p.image;
+            return {
+              ...p,
+              stop: p.stop || p.end,
+              icon: this.resolveImageUrl(imageUrl),
+              poster: this.resolveImageUrl(imageUrl),
+              channel: channelGroup.channel?.name || channelGroup.channel?.id || this.canal
+            };
+          });
+          
+          console.log('✅ Canal encontrado:', channelGroup.channel?.name, 'con', this.programs.length, 'programas');
+        } else {
+          console.warn('⚠️ Canal encontrado pero sin programas:', channelGroup.channel?.name);
+          this.programs = [];
+        }
+      } else {
+        console.warn('⚠️ No se encontró el canal:', this.canal, 'normalizado:', searchTerm);
+        this.programs = [];
+      }
 
       // Find current live program
-      this.program = this.programs.find((programa: any) => {
-        return this.compareDate(programa.start, programa.stop);
+      let foundProgram = this.programs.find((programa: any) => {
+        const end = programa.end || programa.stop;
+        return isLive(programa.start, end);
       });
+      
+      // Normalize the program object for the banner component
+      if (foundProgram) {
+        const imageUrl = foundProgram.poster || foundProgram.icon || foundProgram.image;
+        this.program = {
+          ...foundProgram,
+          stop: foundProgram.stop || foundProgram.end,
+          channel: typeof foundProgram.channel === 'string' 
+            ? foundProgram.channel 
+            : foundProgram.channel?.name || foundProgram.channel?.id || this.canal,
+          icon: this.resolveImageUrl(imageUrl),
+          poster: this.resolveImageUrl(imageUrl)
+        };
+      } else {
+        console.warn('⚠️ No se encontró programa en directo para', this.canal);
+      }
 
-      // Reset and populate live programs
+      // Reset and populate live programs from OTHER channels
       this.live_programs = [];
-      for (let program of programas) {
-        let liveProgram = program.programs.find((programa: any) => {
-          return this.compareDate(programa.start, programa.stop);
+      for (let group of programas) {
+        // Skip the current channel
+        if (group.channel?.name?.toLowerCase() === this.canal.replace('-', ' ').toLowerCase()) {
+          continue;
+        }
+        
+        let liveProgram = group.programs.find((p: any) => {
+          const end = p.end || p.stop;
+          return isLive(p.start, end);
         });
 
         if (liveProgram && liveProgram.title?.value !== 'Cine') {
-          this.live_programs.push(liveProgram);
+          // Enrich program with channel info for the slider
+          const imageUrl = liveProgram.poster || liveProgram.icon || liveProgram.image || group.channel?.icon;
+          const enrichedProgram = {
+            ...liveProgram,
+            stop: liveProgram.stop || liveProgram.end,
+            channel: group.channel?.name || group.channel?.id || group.channel,
+            channelId: group.channel?.id,
+            channelName: group.channel?.name,
+            icon: this.resolveImageUrl(imageUrl),
+            poster: this.resolveImageUrl(imageUrl)
+          };
+          this.live_programs.push(enrichedProgram);
         }
       }
+      
+      console.log('📦 CANAL-COMPLETO - Processed Data:', {
+        canal: this.canal,
+        programsCount: this.programs.length,
+        currentProgram: this.program,
+        liveProgramsCount: this.live_programs.length,
+        sampleLiveProgram: this.live_programs[0]
+      });
 
       // Get categories
       this.categorias = this.svcGuide.getChannelCategories(this.programs);
@@ -338,7 +463,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
    */
   public compareDate(dateIni: string, dateFin: string): boolean {
     let horaActual = new Date();
-    horaActual.setHours(horaActual.getHours() + 1);
+    // horaActual.setHours(horaActual.getHours() + 1); // Removed incorrect offset
 
     const horaInicio = new Date(dateIni);
     const horaFin = new Date(dateFin);
@@ -399,40 +524,48 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   /**
    * Get icon SVG for category
    */
-  public getCategoryIcon(categoria: string): string {
+  private sanitizer = inject(DomSanitizer);
+
+  /**
+   * Get icon SVG for category
+   */
+  public getCategoryIcon(categoria: string): SafeHtml {
     const normalizedCategory = categoria.toLowerCase();
+    let icon = '';
 
     if (
       normalizedCategory.includes('película') ||
       normalizedCategory.includes('cine')
     ) {
-      return this.categoryIcons['Películas'];
+      icon = this.categoryIcons['Películas'];
     } else if (normalizedCategory.includes('serie')) {
-      return this.categoryIcons['Series'];
+      icon = this.categoryIcons['Series'];
     } else if (normalizedCategory.includes('deporte')) {
-      return this.categoryIcons['Deportes'];
+      icon = this.categoryIcons['Deportes'];
     } else if (normalizedCategory.includes('documental')) {
-      return this.categoryIcons['Documentales'];
+      icon = this.categoryIcons['Documentales'];
     } else if (
       normalizedCategory.includes('infantil') ||
       normalizedCategory.includes('niños')
     ) {
-      return this.categoryIcons['Infantil'];
+      icon = this.categoryIcons['Infantil'];
     } else if (
       normalizedCategory.includes('noticia') ||
       normalizedCategory.includes('informativo')
     ) {
-      return this.categoryIcons['Noticias'];
+      icon = this.categoryIcons['Noticias'];
     } else if (
       normalizedCategory.includes('entretenimiento') ||
       normalizedCategory.includes('show')
     ) {
-      return this.categoryIcons['Entretenimiento'];
+      icon = this.categoryIcons['Entretenimiento'];
     } else if (normalizedCategory.includes('cultura')) {
-      return this.categoryIcons['Cultura'];
+      icon = this.categoryIcons['Cultura'];
+    } else {
+      icon = this.categoryIcons['default'];
     }
 
-    return this.categoryIcons['default'];
+    return this.sanitizer.bypassSecurityTrustHtml(icon);
   }
 
   /**

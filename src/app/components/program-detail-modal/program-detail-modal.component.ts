@@ -116,7 +116,9 @@ export class ProgramDetailModalComponent {
     img.src = this.channelLogo || 'assets/images/default-movie-poster.svg';
   }
 
-  // Helper para formatear tiempo desde la plantilla (usa en template)
+  /**
+   * Helper para formatear tiempo desde la plantilla
+   */
   public formatTime(timeString: string | undefined | null): string {
     if (!timeString) return '';
     try {
@@ -127,6 +129,20 @@ export class ProgramDetailModalComponent {
       return `${hh}:${mm}`;
     } catch {
       return String(timeString);
+    }
+  }
+
+  /**
+   * Calcula la duración del programa en minutos
+   */
+  public getDuration(): number {
+    if (!this.program?.start || !this.program?.stop) return 0;
+    try {
+      const start = new Date(this.program.start);
+      const stop = new Date(this.program.stop);
+      return Math.round((stop.getTime() - start.getTime()) / 60000);
+    } catch {
+      return 0;
     }
   }
 

@@ -1,162 +1,144 @@
-import { Component } from '@angular/core';
-import { HttpService } from 'src/app/services/http.service';
-import { diffHour } from '../../utils/utils';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Subject, takeUntil, first } from 'rxjs';
+import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
+import { BlogService } from 'src/app/services/blog.service';
+import { slugify } from 'src/app/utils/utils';
+
 @Component({
-  selector: 'app-pelicula-details',
+  selector: 'app-blog-details',
   templateUrl: './blog-details.component.html',
   styleUrls: ['./blog-details.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NavBarComponent],
 })
-export class PeliculaDetailsComponent {
-  public post: any = {};
-  public post_list: any[] = [];
-  public blog: any = {};
-  public headers: any = [];
-  public alt: string = '';
-  public data: any = {};
-  public actors: any[] = [];
-  public actor: any = {};
-  public relatedMovies: any[] = [];
-  public actorStartIndex = 0;
-  public movieStartIndex = 0;
-  public popular_movies: any[] = [];
-  public movie: any = {};
-  public movieId: string = '';
-  public time: string = '';
-  public logo: string = '';
-  public tipo = '';
-  public destacada: any = {};
+export class BlogDetailsComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  
+  article: any = null;
+  relatedArticles: any[] = [];
+  isLoading = true;
+  liked = false;
+  commentsCount = 0;
 
-  constructor(private guiaSvc: TvGuideService, private httpSvc: HttpService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private blogSvc: BlogService
+  ) {}
 
   ngOnInit(): void {
-    this.guiaSvc.getDetallesPrograma().subscribe((data: any) => {
-      this.data = data;
-      this.destacada = data;
-      this.time = diffHour(data.start, data.stop);
-      this.tipo = this.getTipo();
-
-      // Actualiza las propiedades de la clase
-      this.updateProperties();
-    });
+    this.route.params
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        const slug = params['slug'];
+        if (slug) {
+          this.loadArticle(slug);
+        }
+      });
   }
 
-  private updateProperties(): void {
-      // this.httpSvc.getChannel(this.data.channel_id).subscribe((data: any) => {
-      //   this.logo = data.icon;
-    // });
-
-    if (this.data && Object.keys(this.data).length > 0) {
-      this.getActors();
-      if (this.tipo === 'Series') {
-        this.getSeriesDetails();
-        this.getRelatedSeries();
-        this.getPopularSeries();
-      } else {
-        this.getRelatedMovies();
-        this.getMovieDetails();
-        this.getPopularMovies();
-      }
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  private getTipo() {
-    if (/T\d/.test(this.data.title.value)) {
-      return 'Series';
-    } else {
-      return 'Peliculas';
-    }
+  private loadArticle(slug: string): void {
+    this.isLoading = true;
+    
+    this.blogSvc
+      .getPostBySlug(slug)
+      .pipe(first(), takeUntil(this.destroy$))
+      .subscribe({
+        next: (posts) => {
+          if (posts && posts.length > 0) {
+            this.article = posts[0];
+            this.loadRelatedArticles();
+          } else {
+            this.router.navigate(['/blog']);
+          }
+        },
+        error: (err) => {
+          console.error('Error loading article:', err);
+          this.router.navigate(['/blog']);
+        }
+      });
   }
 
-  ngAfterViewInit(): void {}
-
-  private getActors() {
-    this.actors = [];
-    if (this.data.desc.cast === null) {
+  private loadRelatedArticles(): void {
+    if (!this.article?.categories_name?.[0]?.id) {
+      this.isLoading = false;
       return;
     }
-    for (let actor of this.data.desc.cast.split(',')) {
-      this.httpSvc.getPerson(actor).subscribe((data) => {
-        this.actor = data;
-        this.actors.push(this.actor.results[0]);
+
+    const categoryId = this.article.categories_name[0].id;
+    
+    this.blogSvc
+      .getRelatedPosts(categoryId, 3)
+      .pipe(first(), takeUntil(this.destroy$))
+      .subscribe({
+        next: (posts) => {
+          // Filter out current article
+          this.relatedArticles = posts
+            .filter(p => p.id !== this.article.id)
+            .slice(0, 3);
+          this.isLoading = false;
+        },
+        error: () => {
+          this.isLoading = false;
+        }
       });
+  }
+
+  toggleLike(): void {
+    this.liked = !this.liked;
+  }
+
+  shareArticle(): void {
+    if (navigator.share) {
+      navigator.share({
+        title: this.article.title?.rendered,
+        text: this.getExcerpt(this.article),
+        url: window.location.href
+      }).catch(() => {
+        // Fallback: copy to clipboard
+        this.copyToClipboard(window.location.href);
+      });
+    } else {
+      this.copyToClipboard(window.location.href);
     }
   }
 
-  private getRelatedSeries() {
-    const title = this.data.title.value.replace(/T\d+.*/, '');
-    this.httpSvc.getSeriesId(title).subscribe((data: any) => {
-      this.httpSvc
-        .getSimilarSeries(data.results[0].id)
-        .subscribe((data: any) => {
-          this.relatedMovies = data.results;
-        });
+  private copyToClipboard(text: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+      console.log('Link copied to clipboard');
     });
   }
 
-  private getPopularSeries() {
-    this.httpSvc.getPopularSeries().subscribe((data: any) => {
-      this.popular_movies = data.results;
+  navigateToArticle(article: any): void {
+    const slug = slugify(article.slug || article.title?.rendered || '');
+    this.router.navigate(['/blog', slug]);
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
     });
   }
 
-  private getSeriesDetails() {
-    const title = this.data.title.value.replace(/T\d+.*/, '');
-    this.httpSvc.getSeriesId(title).subscribe((data: any) => {
-      this.httpSvc
-        .getSeriesDetails(data.results[0].id)
-        .subscribe((data: any) => {
-          this.movie = data;
-        });
-    });
+  getExcerpt(article: any): string {
+    const excerpt = article.excerpt?.rendered || '';
+    const text = excerpt.replace(/<[^>]*>/g, '');
+    return text.length > 150 ? text.substring(0, 150) + '...' : text;
   }
 
-  private getRelatedMovies() {
-    this.httpSvc.getMovieId(this.data.title.value).subscribe((data: any) => {
-      this.httpSvc
-        .getSimilarMovie(data.results[0].id)
-        .subscribe((data: any) => {
-          this.relatedMovies = data.results;
-        });
-    });
-  }
-
-  private getPopularMovies() {
-    this.httpSvc.getPopularMovies().subscribe((data: any) => {
-      this.popular_movies = data.results;
-    });
-  }
-
-  private getMovieDetails() {
-    this.httpSvc.getMovieId(this.data.title.value).subscribe((data: any) => {
-      this.httpSvc
-        .getMovieDetails(data.results[0].id)
-        .subscribe((data: any) => {
-          this.movie = data;
-        });
-    });
-  }
-
-  public nextActors(): void {
-    if (this.actorStartIndex + 4 < this.actors.length) {
-      this.actorStartIndex += 4;
-    }
-  }
-  public previousActors(): void {
-    if (this.actorStartIndex > 0) {
-      this.actorStartIndex -= 4;
-    }
-  }
-
-  public nextMovies(): void {
-    if (this.movieStartIndex + 6 < this.relatedMovies.length) {
-      this.movieStartIndex += 6;
-    }
-  }
-  public previousMovies(): void {
-    this.movieStartIndex = Math.max(this.movieStartIndex - 6, 0);
+  trackByArticleId(index: number, article: any): any {
+    return article.id || index;
   }
 }

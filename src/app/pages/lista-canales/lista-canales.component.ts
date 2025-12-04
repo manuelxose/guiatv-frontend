@@ -63,6 +63,7 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
   public time: any;
   public logo: any;
   public destacada: any;
+  public API_BASE_URL = 'http://localhost:4000';
 
   // Suscripciones
   private programasSubscription!: Subscription;
@@ -173,20 +174,44 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
    * Load channels data from /v2/channels API endpoint
    * This gets the complete list of channels with their metadata
    */
-  private loadProgramsData(): void {
-    console.log('[ListaCanales] Fetching channels from /v2/channels');
-    
-    this.programasSubscription = this.tvApi
-      .getChannels()
-      .pipe(filter((resp) => !!resp))
-      .subscribe({
-        next: (response) => {
-          const channels = (response as any)?.data?.channels || (response as any)?.channels || [];
-          if (channels && channels.length > 0) {
-            const transformedData = channels.map((channel: any) => ({
+private loadProgramsData(): void {
+  // 1. Define la URL de tu backend (cámbiala si subes a producción)
+  const API_BASE_URL = 'http://localhost:4000';
+
+  this.programasSubscription = this.tvApi
+    .getChannels()
+    .pipe(filter((resp) => !!resp))
+    .subscribe({
+      next: (response) => {
+        const channels = (response as any)?.data?.channels || (response as any)?.channels || [];
+
+        if (channels && channels.length > 0) {
+          const transformedData = channels.map((channel: any) => {
+            
+            // --- LÓGICA DE ICONOS CORREGIDA ---
+            
+            // 1. Buscamos si viene algún icono en la respuesta
+            let iconPath = channel.icon || channel.logo || channel.image;
+
+            // 2. Si NO viene icono (caso de La 1), construimos la ruta manualmente
+            // Usamos el ID del canal (ej: 'la_1') para formar '/storage/channel_icons/la_1.webp'
+            if (!iconPath) {
+               iconPath = `/storage/channel_icons/${channel.id}.webp`;
+            }
+
+            // 3. Añadimos el dominio http://localhost:4000 si falta
+            if (iconPath && !iconPath.startsWith('http')) {
+               // Nos aseguramos de que empiece por '/'
+               const cleanPath = iconPath.startsWith('/') ? iconPath : `/${iconPath}`;
+               iconPath = `${API_BASE_URL}${cleanPath}`;
+            }
+
+            // ----------------------------------
+
+            return {
               id: channel.id,
               name: channel.name,
-              icon: channel.icon || '',
+              icon: iconPath, // ¡Aquí ya va la URL completa y correcta!
               type: (channel.type || 'TDT').toUpperCase(),
               country: channel.country,
               countryCode: channel.countryCode,
@@ -195,30 +220,36 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
               channel: {
                 id: channel.id,
                 name: channel.name,
-                icon: channel.icon || '',
+                icon: iconPath,
                 type: (channel.type || 'TDT').toUpperCase(),
               },
-            }));
-            this.manageCanales(transformedData);
-          } else {
-            this.cargando = false;
-          }
-        },
-        error: (error) => {
-          console.error('[ListaCanales] Error loading channels from API:', error);
-          this.cargando = false;
-        },
-      });
-  }
+            };
+          });
 
+          this.manageCanales(transformedData);
+        } else {
+          this.cargando = false;
+        }
+      },
+      error: (error) => {
+        console.error('[ListaCanales] Error cargando canales:', error);
+        this.cargando = false;
+      },
+    });
+}
   private manageCanales(data: any): void {
     this.guideSvc.setData(data);
 
-    this.canales_auto = this.guideSvc.getAutonomicoCanales();
-    this.canales_tdt = this.guideSvc.getTDTCanales();
-    this.canales_m = this.guideSvc.getMovistarCanales();
-    this.canales_dep = this.guideSvc.getDeportesCanales();
-    this.canales_cable = this.guideSvc.getCableCanales();
+    // Use transformed data directly to ensure icons are correct
+    this.canales_auto = data.filter((c: any) => c.type === 'AUTONOMICO');
+    this.canales_tdt = data.filter((c: any) => c.type === 'TDT');
+    this.canales_m = data.filter((c: any) => c.type === 'MOVISTAR');
+    this.canales_dep = data.filter((c: any) => c.type === 'DEPORTES');
+    this.canales_cable = data.filter((c: any) => c.type === 'CABLE');
+
+    // Debug: Log sample channels to verify data structure
+    console.log('[ListaCanales] Sample TDT channels:', this.canales_tdt.slice(0, 2));
+    console.log('[ListaCanales] Sample Autonomico channels:', this.canales_auto.slice(0, 2));
 
     this.cargando = false;
     // when data available on browser, enable sliders for rendering

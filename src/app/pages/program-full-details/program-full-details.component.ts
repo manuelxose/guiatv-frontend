@@ -7,6 +7,7 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import { ModalService } from 'src/app/services/modal.service';
 import { MetaService } from 'src/app/services/meta.service';
 import { SliderComponent } from 'src/app/components/slider/slider.component';
+import { InteractionButtonsComponent } from 'src/app/components/interaction-buttons/interaction-buttons.component';
 
 // Importaciones modernas de Swiper
 import { SwiperOptions } from 'swiper/types';
@@ -17,7 +18,7 @@ import { Navigation, Pagination, A11y } from 'swiper/modules';
   templateUrl: './program-full-details.component.html',
   styleUrls: ['./program-full-details.component.scss'],
   standalone: true,
-  imports: [CommonModule, SliderComponent],
+  imports: [CommonModule, SliderComponent, InteractionButtonsComponent],
 })
 export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
   @ViewChild(HeaderComponent) header!: HeaderComponent;

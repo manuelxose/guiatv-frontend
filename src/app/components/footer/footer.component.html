@@ -1,173 +1,248 @@
-<footer
-  class="footer mt-8 z-30 w-full"
-  role="contentinfo"
-  aria-label="Pie de página"
->
-  <div class="footer-inner" itemscope itemtype="https://schema.org/WPFooter">
-    <div
-      class="brand"
-      itemprop="publisher"
-      itemscope
-      itemtype="https://schema.org/Organization"
-    >
-      <svg
-        class="logo"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          d="M10 15.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4Zm11.96-4.45c.58 6.26-4.64 11.48-10.9 10.9 -4.43-.41-8.12-3.85-8.9-8.23 -.26-1.42-.19-2.78.12-4.04 .14-.58.76-.9 1.31-.7v0c.47.17.75.67.63 1.16 -.2.82-.27 1.7-.19 2.61 .37 4.04 3.89 7.25 7.95 7.26 4.79.01 8.61-4.21 7.94-9.12 -.51-3.7-3.66-6.62-7.39-6.86 -.83-.06-1.63.02-2.38.2 -.49.11-.99-.16-1.16-.64v0c-.2-.56.12-1.17.69-1.31 1.79-.43 3.75-.41 5.78.37 3.56 1.35 6.15 4.62 6.5 8.4ZM5.5 4C4.67 4 4 4.67 4 5.5 4 6.33 4.67 7 5.5 7 6.33 7 7 6.33 7 5.5 7 4.67 6.33 4 5.5 4Z"
-        ></path>
-      </svg>
-      <div class="brand-text" itemprop="name">
-        GPTV<span class="dot">.</span>
-      </div>
-      <meta itemprop="url" content="https://guiatv.example.com/" />
-    </div>
-
-    <div
-      class="footer-columns"
-      style="
-        display: flex;
-        gap: 1rem;
-        align-items: flex-start;
-        flex: 1;
-        justify-content: space-between;
-      "
-    >
-      <div class="col col-site" style="min-width: 200px; max-width: 320px">
-        <h3 class="text-sm font-semibold">Explorar</h3>
-        <nav aria-label="Enlaces principales">
-          <ul style="list-style: none; padding: 0; margin: 0">
-            <li><a class="footer-link" href="/">Inicio</a></li>
-            <li>
-              <a class="footer-link" href="/guia-canales">Guía de Canales</a>
-            </li>
-            <li><a class="footer-link" href="/que-ver-hoy">Qué ver hoy</a></li>
-            <li><a class="footer-link" href="/en-directo">En directo</a></li>
-            <li><a class="footer-link" href="/blog">Blog</a></li>
-          </ul>
-        </nav>
-      </div>
-
-      <div class="col col-legal" style="min-width: 200px; max-width: 320px">
-        <h3 class="text-sm font-semibold">Legal & Políticas</h3>
-        <nav aria-label="Enlaces legales">
-          <ul style="list-style: none; padding: 0; margin: 0">
-            <li><a class="footer-link" href="/avisolegal">Aviso Legal</a></li>
-            <li>
-              <a class="footer-link" href="/privacidad"
-                >Política de Privacidad</a
-              >
-            </li>
-            <li>
-              <a class="footer-link" href="/cookies">Política de Cookies</a>
-            </li>
-            <li>
-              <a class="footer-link" href="/terminos">Términos y Condiciones</a>
-            </li>
-            <li>
-              <a class="footer-link" href="/accesibilidad"
-                >Declaración de Accesibilidad</a
-              >
-            </li>
-          </ul>
-        </nav>
-      </div>
-
-      <div class="col col-contact" style="min-width: 220px; max-width: 360px">
-        <h3 class="text-sm font-semibold">Contacto</h3>
-        <address style="font-style: normal; color: inherit">
-          <div>
-            Soporte:
-            <a class="footer-link" href="mailto:soporte@tecnoriasl.com"
-              >soporte&#64;tecnoriasl.com</a
-            >
-          </div>
-          <div>
-            Legal:
-            <a class="footer-link" href="mailto:legal@tecnoriasl.com"
-              >legal&#64;tecnoriasl.com</a
-            >
-          </div>
-          <div class="mt-2">Síguenos:</div>
-          <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem">
-            <a
-              class="footer-link"
-              href="https://twitter.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Twitter"
-              >Twitter</a
-            >
-            <a
-              class="footer-link"
-              href="https://facebook.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Facebook"
-              >Facebook</a
-            >
-            <a
-              class="footer-link"
-              href="https://instagram.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-              >Instagram</a
-            >
-          </div>
-        </address>
-      </div>
-    </div>
-
-    <div
-      style="
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-top: 1rem;
-        width: 100%;
-        justify-content: space-between;
-        flex-wrap: wrap;
-      "
-    >
-      <div class="copyright" style="flex: 1; min-width: 220px">
-        © {{ currentYear }} GPTV • Diseñado por
-        <a href="https://tecnoriasl.com/" target="_blank" rel="noopener"
-          >TecnoRia</a
+<!-- Footer GPTV - Mobile-First Premium Design -->
+<footer class="bg-gradient-to-b from-gray-900 via-gray-900 to-black border-t border-gray-800/50" role="contentinfo" aria-label="Pie de página">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    
+    <!-- Logo & Tagline -->
+    <div class="flex flex-col items-center md:items-start mb-10">
+      <a routerLink="/" class="flex items-center gap-3 group mb-3">
+        <svg
+          class="h-10 w-10 fill-red-500 group-hover:fill-red-400 transition-colors"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
         >
+          <path
+            d="M10 15.5v-7c0-.41.47-.65.8-.4l4.67 3.5c.27.2.27.6 0 .8l-4.67 3.5c-.33.25-.8.01-.8-.4Zm11.96-4.45c.58 6.26-4.64 11.48-10.9 10.9 -4.43-.41-8.12-3.85-8.9-8.23 -.26-1.42-.19-2.78.12-4.04 .14-.58.76-.9 1.31-.7v0c.47.17.75.67.63 1.16 -.2.82-.27 1.7-.19 2.61 .37 4.04 3.89 7.25 7.95 7.26 4.79.01 8.61-4.21 7.94-9.12 -.51-3.7-3.66-6.62-7.39-6.86 -.83-.06-1.63.02-2.38.2 -.49.11-.99-.16-1.16-.64v0c-.2-.56.12-1.17.69-1.31 1.79-.43 3.75-.41 5.78.37 3.56 1.35 6.15 4.62 6.5 8.4ZM5.5 4C4.67 4 4 4.67 4 5.5 4 6.33 4.67 7 5.5 7 6.33 7 7 6.33 7 5.5 7 4.67 6.33 4 5.5 4Z"
+          ></path>
+        </svg>
+        <span class="text-2xl font-extrabold text-white tracking-tight">
+          GPTV<span class="text-red-500">.</span>
+        </span>
+      </a>
+      <p class="text-gray-400 text-sm text-center md:text-left max-w-md">
+        Tu guía social de televisión. Descubre, comparte y conecta con lo que el mundo está viendo.
+      </p>
+    </div>
+
+    <!-- Mobile Accordion / Desktop Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 md:gap-8 mb-10">
+      
+      <!-- Explorar Section -->
+      <div class="border-b border-gray-800/50 md:border-none">
+        <button 
+          (click)="toggleSection('explorar')"
+          class="w-full flex items-center justify-between py-4 md:py-0 md:mb-4 md:cursor-default"
+          [attr.aria-expanded]="isOpen('explorar')"
+        >
+          <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Explorar</h3>
+          <svg 
+            class="w-5 h-5 text-gray-400 md:hidden transition-transform"
+            [ngClass]="{'rotate-180': isOpen('explorar')}"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <nav 
+          [ngClass]="{'hidden md:block': !isOpen('explorar'), 'block': isOpen('explorar')}"
+          class="pb-4 md:pb-0"
+          aria-label="Enlaces de navegación"
+        >
+          <ul class="space-y-3">
+            <li><a routerLink="/" class="text-gray-400 hover:text-white transition-colors text-sm">Inicio</a></li>
+            <li><a routerLink="/guia-canales" class="text-gray-400 hover:text-white transition-colors text-sm">Guía de Canales</a></li>
+            <li><a routerLink="/peliculas" class="text-gray-400 hover:text-white transition-colors text-sm">Películas</a></li>
+            <li><a routerLink="/series" class="text-gray-400 hover:text-white transition-colors text-sm">Series</a></li>
+            <li><a routerLink="/que-ver-hoy" class="text-gray-400 hover:text-white transition-colors text-sm">Qué ver hoy</a></li>
+            <li><a routerLink="/en-directo" class="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-2">
+              En directo
+              <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+            </a></li>
+            <li><a routerLink="/blog" class="text-gray-400 hover:text-white transition-colors text-sm">Blog</a></li>
+            <li><a routerLink="/top10" class="text-gray-400 hover:text-white transition-colors text-sm">Top 10</a></li>
+          </ul>
+        </nav>
       </div>
 
-      <div style="text-align: right; min-width: 220px">
-        <a class="footer-link" href="/sitemap">Mapa del sitio</a>
-        <span style="margin: 0 0.5rem; color: rgba(230, 238, 246, 0.5)">|</span>
-        <a class="footer-link" href="/rss.xml">RSS</a>
+      <!-- Legal Section -->
+      <div class="border-b border-gray-800/50 md:border-none">
+        <button 
+          (click)="toggleSection('legal')"
+          class="w-full flex items-center justify-between py-4 md:py-0 md:mb-4 md:cursor-default"
+          [attr.aria-expanded]="isOpen('legal')"
+        >
+          <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Legal & Políticas</h3>
+          <svg 
+            class="w-5 h-5 text-gray-400 md:hidden transition-transform"
+            [ngClass]="{'rotate-180': isOpen('legal')}"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <nav 
+          [ngClass]="{'hidden md:block': !isOpen('legal'), 'block': isOpen('legal')}"
+          class="pb-4 md:pb-0"
+          aria-label="Enlaces legales"
+        >
+          <ul class="space-y-3">
+            <li><a routerLink="/avisolegal" class="text-gray-400 hover:text-white transition-colors text-sm">Aviso Legal</a></li>
+            <li><a routerLink="/privacidad" class="text-gray-400 hover:text-white transition-colors text-sm">Política de Privacidad</a></li>
+            <li><a routerLink="/cookies" class="text-gray-400 hover:text-white transition-colors text-sm">Política de Cookies</a></li>
+            <li><a routerLink="/terminos" class="text-gray-400 hover:text-white transition-colors text-sm">Términos y Condiciones</a></li>
+            <li><a routerLink="/accesibilidad" class="text-gray-400 hover:text-white transition-colors text-sm">Accesibilidad</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Contacto Section -->
+      <div class="border-b border-gray-800/50 md:border-none">
+        <button 
+          (click)="toggleSection('contacto')"
+          class="w-full flex items-center justify-between py-4 md:py-0 md:mb-4 md:cursor-default"
+          [attr.aria-expanded]="isOpen('contacto')"
+        >
+          <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Contacto</h3>
+          <svg 
+            class="w-5 h-5 text-gray-400 md:hidden transition-transform"
+            [ngClass]="{'rotate-180': isOpen('contacto')}"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div 
+          [ngClass]="{'hidden md:block': !isOpen('contacto'), 'block': isOpen('contacto')}"
+          class="pb-4 md:pb-0 space-y-4"
+        >
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <div>
+                <span class="text-gray-500 text-xs block">Soporte</span>
+                <a href="mailto:soporte@tecnoriasl.com" class="text-gray-400 hover:text-white transition-colors text-sm">soporte&#64;tecnoriasl.com</a>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16l-3-3m3 3l3-3"/>
+              </svg>
+              <div>
+                <span class="text-gray-500 text-xs block">Legal</span>
+                <a href="mailto:legal@tecnoriasl.com" class="text-gray-400 hover:text-white transition-colors text-sm">legal&#64;tecnoriasl.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Section -->
+      <div class="py-4 md:py-0">
+        <h3 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Síguenos</h3>
+        <div class="flex items-center gap-4">
+          <!-- Twitter/X -->
+          <a 
+            href="https://twitter.com/gptv" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-10 h-10 rounded-xl bg-gray-800/60 hover:bg-gray-700/80 flex items-center justify-center transition-all hover:scale-110"
+            aria-label="Twitter"
+          >
+            <svg class="w-5 h-5 text-gray-400 hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+          <!-- Facebook -->
+          <a 
+            href="https://facebook.com/gptv" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-10 h-10 rounded-xl bg-gray-800/60 hover:bg-blue-600/20 flex items-center justify-center transition-all hover:scale-110"
+            aria-label="Facebook"
+          >
+            <svg class="w-5 h-5 text-gray-400 hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+          </a>
+          <!-- Instagram -->
+          <a 
+            href="https://instagram.com/gptv" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-10 h-10 rounded-xl bg-gray-800/60 hover:bg-pink-600/20 flex items-center justify-center transition-all hover:scale-110"
+            aria-label="Instagram"
+          >
+            <svg class="w-5 h-5 text-gray-400 hover:text-pink-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </a>
+          <!-- YouTube -->
+          <a 
+            href="https://youtube.com/gptv" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-10 h-10 rounded-xl bg-gray-800/60 hover:bg-red-600/20 flex items-center justify-center transition-all hover:scale-110"
+            aria-label="YouTube"
+          >
+            <svg class="w-5 h-5 text-gray-400 hover:text-red-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+          </a>
+        </div>
       </div>
     </div>
 
-    <!-- JSON-LD Organization Structured Data for SEO -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": "GPTV",
-        "url": "https://guiatv.example.com/",
-        "logo": "https://guiatv.example.com/assets/logo.svg",
-        "sameAs": [
-          "https://twitter.com/",
-          "https://facebook.com/",
-          "https://instagram.com/"
-        ],
-        "contactPoint": [
-          {
-            "@type": "ContactPoint",
-            "contactType": "customer support",
-            "email": "soporte\u0040tecnoriasl.com"
-          }
-        ]
-      }
-    </script>
+    <!-- Divider -->
+    <div class="border-t border-gray-800/50 pt-8">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <!-- Copyright -->
+        <div class="text-gray-500 text-sm text-center md:text-left">
+          © {{ currentYear }} <span class="text-gray-400 font-medium">GPTV</span> • Diseñado con 
+          <span class="text-red-500">♥</span> por 
+          <a href="https://tecnoriasl.com/" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">TecnoRia</a>
+        </div>
+
+        <!-- Secondary Links -->
+        <div class="flex items-center gap-4 text-sm">
+          <a routerLink="/sitemap" class="text-gray-500 hover:text-white transition-colors">Mapa del sitio</a>
+          <span class="text-gray-700">|</span>
+          <a href="/rss.xml" class="text-gray-500 hover:text-white transition-colors flex items-center gap-1">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/>
+            </svg>
+            RSS
+          </a>
+        </div>
+      </div>
+    </div>
+
   </div>
+
+  <!-- JSON-LD Organization Structured Data for SEO -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "GPTV",
+      "url": "https://gptv.es/",
+      "logo": "https://gptv.es/assets/logo.svg",
+      "description": "Tu guía social de televisión. Descubre, comparte y conecta con lo que el mundo está viendo.",
+      "sameAs": [
+        "https://twitter.com/gptv",
+        "https://facebook.com/gptv",
+        "https://instagram.com/gptv",
+        "https://youtube.com/gptv"
+      ],
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "customer support",
+          "email": "soporte@tecnoriasl.com"
+        }
+      ]
+    }
+  </script>
 </footer>

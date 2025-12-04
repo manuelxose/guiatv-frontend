@@ -6,7 +6,7 @@ import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { CardListComponent } from 'src/app/components/card-list/card-list.component';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
-import { isLive, getHoraInicio } from 'src/app/utils/utils';
+import { isLive } from 'src/app/utils/utils';
 import { TvDataService } from 'src/app/state/tv-data.service';
 import { ProgramsResponse, ProgramLayoutDTO, ChannelMetaDTO } from 'src/app/api/models';
 
@@ -103,6 +103,7 @@ export class AhoraDirectoComponent implements OnInit, OnDestroy {
   }
 
   private processProgramsResponse(resp: ProgramsResponse): void {
+    console.log('AHORA-DIRECTO - Programs Response:', resp);
     try {
       const programs = resp?.programs || [];
       const channelMap = new Map<string, ChannelMetaDTO>(
@@ -149,6 +150,12 @@ export class AhoraDirectoComponent implements OnInit, OnDestroy {
     this.peliculas_live = this.peliculas_live.slice(0, 30);
     this.series_live = this.series_live.slice(0, 30);
     this.programs = [...this.peliculas_live];
+    
+    console.log('[AhoraDirecto] Extracted programs:', {
+      peliculas: this.peliculas_live.length,
+      series: this.series_live.length,
+      sample: this.programs[0]
+    });
   }
 
   // Switch to movies view
@@ -184,9 +191,48 @@ export class AhoraDirectoComponent implements OnInit, OnDestroy {
       const start =
         item?.start || item?.startDate || item?.date || item?.start_time;
       if (!start) return '';
-      return getHoraInicio(start);
+      
+      // The API returns times in UTC, but they represent local Spanish time
+      // So we need to subtract 1 hour to display correctly
+      const date = new Date(start);
+      date.setHours(date.getHours() - 1);
+      
+      return date.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
     } catch {
       return '';
+    }
+  }
+
+  public getCorrectedDate(dateStr: string): Date {
+    try {
+      if (!dateStr) return new Date();
+      // No longer applying -2 hour correction, just return the date as-is
+      return new Date(dateStr);
+    } catch {
+      return new Date();
+    }
+  }
+
+  public getProgressDate(dateStr: string): Date {
+    // console.log('[AhoraDirecto] getProgressDate called with:', dateStr);
+    try {
+      if (!dateStr) {
+        console.log('[AhoraDirecto] getProgressDate: dateStr is empty, returning new Date()');
+        return new Date();
+      }
+      const date = new Date(dateStr);
+      // isLive logic uses +1h on current time, which is equivalent to -1h on program time
+      // relative to current time.
+      date.setHours(date.getHours() - 1);
+      // console.log('[AhoraDirecto] getProgressDate returning:', date);
+      return date;
+    } catch (e) {
+      console.error('[AhoraDirecto] getProgressDate error:', e);
+      return new Date();
     }
   }
 

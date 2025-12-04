@@ -302,18 +302,15 @@ export function getHoraInicio(inicio: string) {
 }
 
 export function isLive(dateIni: string, dateFin: string): boolean {
-  // Obtiene la hora actual, la hora de inicio y la hora de fin
+  // Get current time in UTC (no timezone adjustments)
+  const now = new Date();
+  const start = new Date(dateIni);
+  const end = new Date(dateFin);
 
-  let horaActual = new Date(); // Suma 1 hora en milisegundos (3600000 ms)
-  horaActual.setHours(horaActual.getHours() + 1);
-  const horaInicio = new Date(dateIni);
-  const horaFin = new Date(dateFin);
-
-  // Obtén las horas y minutos de la hora actual y las horas de inicio y fin
-  if (horaActual >= horaInicio && horaActual <= horaFin) {
-    return true;
-  }
-  return false;
+  // Check if current time is between start and end
+  const isCurrentlyLive = now >= start && now <= end;
+  
+  return isCurrentlyLive;
 }
 
 /**

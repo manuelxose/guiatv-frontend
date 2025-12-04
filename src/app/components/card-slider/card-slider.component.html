@@ -16,7 +16,7 @@
   ></div>
 
   <!-- Live Badge -->
-  <div *ngIf="live" class="absolute top-3 right-3 z-10">
+  <div *ngIf="live" class="absolute top-3 left-3 z-10">
     <span
       class="flex items-center gap-1.5 rounded-full bg-red-600/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-sm"
     >
@@ -32,12 +32,31 @@
     </span>
   </div>
 
+  <!-- Channel Logo (Top Right) -->
+  <div *ngIf="channelIcon" class="absolute top-3 right-3 z-10">
+    <img 
+      [src]="channelIcon" 
+      [alt]="subtitle"
+      class="h-8 w-8 rounded-md object-contain bg-white/20 backdrop-blur-sm p-1 shadow-lg border border-white/20"
+      (error)="$any($event.target).style.display='none'"
+    />
+  </div>
+
+  <!-- Social Actions (Top Left) -->
+  <div class="absolute top-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" (click)="$event.stopPropagation()">
+    <app-interaction-buttons
+      [itemId]="id"
+      [title]="title"
+      [type]="type"
+    ></app-interaction-buttons>
+  </div>
+
   <!-- Content -->
   <div class="absolute bottom-0 left-0 w-full p-4">
     <!-- Channel/Subtitle -->
-    <div class="mb-1 flex items-center gap-2">
+    <div class="mb-2 flex items-center gap-2">
       <span
-        class="text-xs font-medium text-red-400 uppercase tracking-wide"
+        class="text-sm font-semibold text-red-400 uppercase tracking-wide"
         *ngIf="subtitle"
       >
         {{ subtitle }}
@@ -46,16 +65,16 @@
 
     <!-- Title -->
     <h3
-      class="mb-2 text-base lg:text-lg font-bold leading-tight text-white line-clamp-2 group-hover:text-red-100"
+      class="mb-2 text-lg font-bold leading-tight text-white line-clamp-2 group-hover:text-red-100"
     >
       {{ title }}
     </h3>
 
     <!-- Time/Metadata -->
-    <div class="flex items-center justify-between text-xs text-gray-300">
+    <div class="flex items-center justify-between text-sm text-gray-300">
       <span *ngIf="time" class="flex items-center gap-1">
         <svg
-          class="h-3 w-3"
+          class="h-4 w-4"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

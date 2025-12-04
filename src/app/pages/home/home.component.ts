@@ -113,7 +113,7 @@ export class HomeComponent implements OnInit {
 
     this.setupMetaTags();
     this.initializeDataStreams();
-    this.initializeData();
+    // NOTE: Data loading removed - ProgramListComponent handles initial load
 
     // Exponer métodos de debug en desarrollo
     if (!this.isProduction()) {
@@ -208,34 +208,8 @@ export class HomeComponent implements OnInit {
       });
   }
 
-  /**
-   * Inicializa los datos del componente usando TvDataService
-   */
-  private initializeData(): void {
-    this.logger.info('Starting data initialization with TvDataService');
-    this.isLoading.set(true);
-
-    this.tvDataService
-      .loadPrograms({
-        date: 'today',
-        fields: 'minimal',
-        limit: 5000,
-        channelTypes: DEFAULT_CHANNEL_TYPES,
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.logger.info('Home data initialization successful');
-          this.isLoading.set(false);
-          this.error.set(null);
-        },
-        error: (err) => {
-          this.logger.error('Home data initialization failed:', err);
-          this.isLoading.set(false);
-          this.error.set(err?.message || 'Error loading data');
-        },
-      });
-  }
+  // REMOVED: initializeData() - ProgramListComponent now handles all data loading
+  // Data is consumed via tvDataService.programs$ stream subscription in initializeDataStreams()
 
   // ===============================================
   // EVENT HANDLERS
@@ -264,28 +238,9 @@ export class HomeComponent implements OnInit {
       );
     }
 
-    // Reload data for the selected day
-    const dayAlias = this.getDayAlias(dayIndex);
-    this.isLoading.set(true);
-    this.tvDataService
-      .loadPrograms({
-        date: dayAlias,
-        fields: 'minimal',
-        limit: 5000,
-        channelTypes: DEFAULT_CHANNEL_TYPES,
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.logger.info(`Day change successful: loaded programs for ${dayAlias}`);
-          this.isLoading.set(false);
-        },
-        error: (err) => {
-          this.logger.error('Error reloading data for day change', err);
-          this.isLoading.set(false);
-          this.error.set(err?.message || 'Error loading data');
-        },
-      });
+    // NOTE: Day change is handled by ProgramListComponent's facade
+    // No need to reload data here - the facade will update the shared stream
+    this.logger.info(`Day change event propagated to ProgramListComponent`);
   }
 
   public onMovieSelected(movie: any): void {
@@ -299,7 +254,8 @@ export class HomeComponent implements OnInit {
   public onRetry(): void {
     this.logger.info('Retry requested by user');
     this.error.set(null);
-    this.initializeData();
+    // NOTE: Data loading is handled by ProgramListComponent
+    this.logger.info('Error cleared, ProgramListComponent will handle reload');
   }
 
   /**
@@ -307,7 +263,8 @@ export class HomeComponent implements OnInit {
    */
   public onRefresh(): void {
     this.logger.info('Manual refresh requested');
-    this.initializeData();
+    // NOTE: Data loading is handled by ProgramListComponent
+    this.logger.info('Refresh request logged, ProgramListComponent manages data');
   }
 
   // ===============================================
@@ -519,7 +476,8 @@ export class HomeComponent implements OnInit {
    */
   public forceSyncData(): void {
     this.logger.info('🔄 FORCE SYNC - Forcing data synchronization');
-    this.initializeData();
+    // NOTE: Data loading is handled by ProgramListComponent
+    this.logger.info('Sync request logged, ProgramListComponent manages data');
   }
 
   /**

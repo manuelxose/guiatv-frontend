@@ -21,13 +21,14 @@ import {
   ITimeUtilsService,
 } from '../../interfaces/banner.interface';
 import { environment } from 'src/environments/environment';
+import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
 
 @Component({
   selector: 'app-banner',
   templateUrl: './banner.component.html',
   styleUrls: ['./banner.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InteractionButtonsComponent],
 })
 export class BannerComponent
   implements

@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import {
   Component,
   OnDestroy,
@@ -11,6 +12,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { BannerComponent } from 'src/app/components/banner/banner.component';
 import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { SliderComponent } from 'src/app/components/slider/slider.component';
+import { CardListComponent } from 'src/app/components/card-list/card-list.component';
 import { MetaService } from 'src/app/services/meta.service';
 import {
   ContentService,
@@ -26,7 +28,7 @@ type ContentType = 'series' | 'movies';
   templateUrl: './content-page.component.html',
   styleUrls: ['./content-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, SliderComponent, NavBarComponent, BannerComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SliderComponent, NavBarComponent, BannerComponent, CardListComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContentPageComponent implements OnInit, OnDestroy {
@@ -48,13 +50,59 @@ export class ContentPageComponent implements OnInit, OnDestroy {
   public itemsPorCategoria = new Map<string, ContentItem[]>();
   private destroy$ = new Subject<void>();
 
+  // Search & Filter
+  public searchControl = new FormControl('');
+  public searchResults: ContentItem[] = [];
+  public isSearching = false;
+  public activeCategoryFilter: string | null = null;
+
   constructor(
     private contentSvc: ContentService,
     private metaSvc: MetaService,
-    private router: Router,
+    public router: Router,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    this.setupSearch();
+  }
+
+  private setupSearch(): void {
+    this.searchControl.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((term) => {
+        this.performSearch(term || '');
+      });
+  }
+
+  public performSearch(term: string): void {
+    const query = term.toLowerCase().trim();
+    this.isSearching = !!query || !!this.activeCategoryFilter;
+
+    if (!this.isSearching) {
+      this.searchResults = [];
+      return;
+    }
+
+    this.searchResults = this.items.filter((item) => {
+      const matchesTerm = !query || item.title.toLowerCase().includes(query);
+      const matchesCategory =
+        !this.activeCategoryFilter ||
+        (item.category &&
+          item.category
+            .toLowerCase()
+            .includes(this.activeCategoryFilter.toLowerCase()));
+      return matchesTerm && matchesCategory;
+    });
+  }
+
+  public toggleCategoryFilter(cat: string): void {
+    if (this.activeCategoryFilter === cat) {
+      this.activeCategoryFilter = null;
+    } else {
+      this.activeCategoryFilter = cat;
+    }
+    this.performSearch(this.searchControl.value || '');
+  }
 
   ngOnInit(): void {
     this.route.data.pipe(takeUntil(this.destroy$)).subscribe((data) => {

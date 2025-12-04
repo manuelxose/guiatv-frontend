@@ -46,6 +46,13 @@ export class HttpService {
    * Sustituye antiguos métodos de Firebase/legacy.
    */
   getProgramacion(dia: 'yesterday' | 'today' | 'tomorrow' | 'after_tomorrow' | string): Observable<any[]> {
+    // 1. Try to get cached programs for the day (any fields)
+    const cached = this.tvData.getCachedPrograms(dia as any);
+    if (cached && cached.programs?.length) {
+      return of(this.mapProgramsResponse(cached));
+    }
+
+    // 2. If not found, load with minimal fields
     return this.tvData
       .loadPrograms({
         date: dia as any,
@@ -54,15 +61,17 @@ export class HttpService {
         channelTypes: DEFAULT_CHANNEL_TYPES,
       })
       .pipe(
-        map((resp: ProgramsResponse) => {
-          const channels = resp.channels || [];
-          const programs = resp.programs || [];
-          return channels.map((c) => ({
-            channel: c,
-            programs: programs.filter((p) => p.channelId === c.id),
-          }));
-        })
+        map((resp: ProgramsResponse) => this.mapProgramsResponse(resp))
       );
+  }
+
+  private mapProgramsResponse(resp: ProgramsResponse): any[] {
+    const channels = resp.channels || [];
+    const programs = resp.programs || [];
+    return channels.map((c) => ({
+      channel: c,
+      programs: programs.filter((p) => p.channelId === c.id),
+    }));
   }
 
   // Compatibilidad: setProgramas actualiza el BehaviorSubject
@@ -98,5 +107,11 @@ export class HttpService {
   }
   getPopularMovies(): Observable<any> {
     return of({ results: [] });
+  }
+  getMovieCredits(_id: string): Observable<any> {
+    return of({ cast: [], crew: [] });
+  }
+  getSeriesCredits(_id: string): Observable<any> {
+    return of({ cast: [], crew: [] });
   }
 }

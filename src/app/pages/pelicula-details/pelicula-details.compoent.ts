@@ -1,279 +1,327 @@
-import { Component, inject } from '@angular/core';
-import { HttpService } from 'src/app/services/http.service';
-import { diffHour } from '../../utils/utils';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { HttpService } from 'src/app/services/http.service';
+import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { MetaService } from 'src/app/services/meta.service';
 import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
-import { BannerComponent } from 'src/app/components/banner/banner.component';
-import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { diffHour } from '../../utils/utils';
+
 @Component({
   selector: 'app-pelicula-details',
   templateUrl: './pelicula-details.compoent.html',
   styleUrls: ['./pelicula-details.compoent.scss'],
   standalone: true,
-  imports: [CommonModule, NavBarComponent, BannerComponent],
+  imports: [CommonModule, NavBarComponent, RouterModule],
 })
-export class PeliculaDetailsComponent {
+export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private httpSvc = inject(HttpService);
+  private guiaSvc = inject(TvGuideService);
+  private metaSvc = inject(MetaService);
 
-  public post: any = {};
-  public post_list: any[] = [];
-  public blog: any = {};
-  public headers: any = [];
-  public alt: string = '';
-  public data: any = {};
+  public data: any = { genres: [] };
+  public movie: any = {}; // Holds raw API response
   public actors: any[] = [];
-  public actor: any = {};
-  public relatedMovies: any[] = [];
+  public relatedContent: any[] = [];
+  public popularContent: any[] = [];
+  
+  public contentType: 'movies' | 'series' | 'programs' = 'movies';
+  public isLoading = true;
+  
+  // Navigation state
   public actorStartIndex = 0;
-  public movieStartIndex = 0;
-  public popular_movies: any[] = [];
-  public movie: any = {};
-  public movieId: string = '';
-  public time: string = '';
-  public logo: string = '';
-  public tipo = '';
-  public destacada: any = {};
-  // If we received bannerData via navigation state, skip the first param-based fetch
-  private skipInitialRouteFetch = false;
+  public relatedStartIndex = 0;
 
-  constructor(private guiaSvc: TvGuideService, private httpSvc: HttpService) {}
+  private subs: Subscription = new Subscription();
 
   ngOnInit(): void {
-    // Prefer navigation state (router.navigate(..., { state: { bannerData } })) when available
-    try {
-      const navBanner = (history && (history.state as any)?.bannerData) || null;
-      if (navBanner) {
-        this.data = navBanner;
-        this.destacada = navBanner;
-        this.time = diffHour(navBanner.start || '', navBanner.stop || '');
-        this.tipo = this.getTipo();
-        this.updateProperties();
-        this.skipInitialRouteFetch = true;
-      }
-    } catch (_) {}
+    console.log('PeliculaDetailsComponent ngOnInit');
 
-    // React to route param changes so navigation between slugs reloads
-    this.route.paramMap.subscribe((params) => {
-      if (this.skipInitialRouteFetch) {
-        // We've already populated from navigation state; allow subsequent param changes
-        this.skipInitialRouteFetch = false;
-        return;
-      }
-      const slugParam = params.get('slug');
-      const idParam = params.get('id');
+    // 1. Determine content type from route data
+    this.subs.add(
+      this.route.data.subscribe((data) => {
+        if (data['type']) {
+          this.contentType = data['type'];
+        }
+      })
+    );
 
-      // Reset state
-      this.movie = {};
-      this.data = {};
-      this.destacada = {};
-      this.actors = [];
-      this.actorStartIndex = 0;
-      this.movieStartIndex = 0;
+    // 2. Listen to params
+    this.subs.add(
+      this.route.paramMap.subscribe((params) => {
+        const slug = params.get('slug');
+        const id = params.get('id');
+        this.resetState();
+        
+        if (slug) {
+          this.loadBySlug(slug);
+        } else if (id) {
+          this.loadById(id);
+        }
+      })
+    );
+  }
 
-      if (slugParam) {
-        this.httpSvc.getMovieId(slugParam).subscribe((res: any) => {
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
+  private resetState() {
+    this.data = {};
+    this.movie = {};
+    this.actors = [];
+    this.relatedContent = [];
+    this.popularContent = [];
+    this.actorStartIndex = 0;
+    this.relatedStartIndex = 0;
+    this.isLoading = true;
+  }
+
+  private loadBySlug(slug: string) {
+    if (this.contentType === 'programs') {
+      this.loadProgramBySlug(slug);
+    } else {
+      const searchMethod = this.contentType === 'series' 
+        ? this.httpSvc.getSeriesId(slug) 
+        : this.httpSvc.getMovieId(slug);
+
+      searchMethod.subscribe({
+        next: (res: any) => {
           const first = res?.results?.[0];
           if (first?.id) {
-            this.httpSvc
-              .getMovieDetails(String(first.id))
-              .subscribe((m: any) => {
-                this.movie = m;
-                this.data = this.transformMovieToData(m);
-                this.destacada = this.data;
-                this.time = diffHour(
-                  this.data.start || '',
-                  this.data.stop || ''
-                );
-                this.tipo = this.getTipo();
-                this.updateProperties();
-              });
+            this.loadDetails(String(first.id));
+          } else {
+            console.warn('No results found for slug:', slug, 'Falling back to programs...');
+            this.loadProgramBySlug(slug);
           }
-        });
-      } else if (idParam) {
-        if (/^\d+$/.test(idParam)) {
-          this.httpSvc.getMovieDetails(idParam).subscribe((m: any) => {
-            this.movie = m;
-            this.data = this.transformMovieToData(m);
-            this.destacada = this.data;
-            this.time = diffHour(this.data.start || '', this.data.stop || '');
-            this.tipo = this.getTipo();
-            this.updateProperties();
-          });
-        } else {
-          this.httpSvc.getMovieId(idParam).subscribe((res: any) => {
-            const first = res?.results?.[0];
-            if (first?.id) {
-              this.httpSvc
-                .getMovieDetails(String(first.id))
-                .subscribe((m: any) => {
-                  this.movie = m;
-                  this.data = this.transformMovieToData(m);
-                  this.destacada = this.data;
-                  this.time = diffHour(
-                    this.data.start || '',
-                    this.data.stop || ''
-                  );
-                  this.tipo = this.getTipo();
-                  this.updateProperties();
-                });
-            }
-          });
+        },
+        error: (err) => {
+          console.error('loadBySlug error:', err, 'Falling back to programs...');
+          this.loadProgramBySlug(slug);
         }
-      }
-    });
-
-    // Still listen to in-app navigation which pushes into the service
-    this.guiaSvc.getDetallesPrograma().subscribe((data: any) => {
-      if (!data) return;
-      this.data = data;
-      this.destacada = data;
-      this.time = diffHour(data.start, data.stop);
-      this.tipo = this.getTipo();
-
-      // Actualiza las propiedades de la clase
-      this.updateProperties();
-    });
-  }
-
-  private transformMovieToData(m: any) {
-    return {
-      title: { value: m.title || m.name || '' },
-      desc: {
-        cast: (m.credits?.cast || [])
-          .slice(0, 10)
-          .map((c: any) => c.name)
-          .join(','),
-      },
-      start: m.release_date || '',
-      stop: '',
-      id: m.id,
-      poster: m.poster_path
-        ? `https://image.tmdb.org/t/p/w500${m.poster_path}`
-        : undefined,
-      category: { value: 'Cine' },
-    };
-  }
-
-  private updateProperties(): void {
-    if (this.data?.channel_id) {
-      // this.httpSvc.getChannel(this.data.channel_id).subscribe((data: any) => {
-      //   this.logo = data.icon;
-      // });
-    }
-
-    if (this.data && Object.keys(this.data).length > 0) {
-      this.getActors();
-      if (this.tipo === 'Series') {
-        this.getSeriesDetails();
-        this.getRelatedSeries();
-        this.getPopularSeries();
-      } else {
-        this.getRelatedMovies();
-        this.getMovieDetails();
-        this.getPopularMovies();
-      }
-    }
-  }
-
-  private getTipo() {
-    if (/T\d/.test(this.data.title.value)) {
-      return 'Series';
-    } else {
-      return 'Peliculas';
-    }
-  }
-
-  ngAfterViewInit(): void {}
-
-  private getActors() {
-    this.actors = [];
-    const castString = this.data?.desc?.cast;
-    if (!castString) return;
-
-    const castArray = String(castString)
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
-    for (let actorName of castArray) {
-      this.httpSvc.getPerson(actorName).subscribe((resp: any) => {
-        const person = resp?.results?.[0];
-        if (person) this.actors.push(person);
       });
     }
   }
 
-  private getRelatedSeries() {
-    const title = this.data.title.value.replace(/T\d+.*/, '');
-    this.httpSvc.getSeriesId(title).subscribe((data: any) => {
-      this.httpSvc
-        .getSimilarSeries(data.results[0].id)
-        .subscribe((data: any) => {
-          this.relatedMovies = data.results;
-        });
-    });
-  }
-
-  private getPopularSeries() {
-    this.httpSvc.getPopularSeries().subscribe((data: any) => {
-      this.popular_movies = data.results;
-    });
-  }
-
-  private getSeriesDetails() {
-    const title = this.data.title.value.replace(/T\d+.*/, '');
-    this.httpSvc.getSeriesId(title).subscribe((data: any) => {
-      this.httpSvc
-        .getSeriesDetails(data.results[0].id)
-        .subscribe((data: any) => {
-          this.movie = data;
-        });
-    });
-  }
-
-  private getRelatedMovies() {
-    this.httpSvc.getMovieId(this.data.title.value).subscribe((data: any) => {
-      this.httpSvc
-        .getSimilarMovie(data.results[0].id)
-        .subscribe((data: any) => {
-          this.relatedMovies = data.results;
-        });
-    });
-  }
-
-  private getPopularMovies() {
-    this.httpSvc.getPopularMovies().subscribe((data: any) => {
-      this.popular_movies = data.results;
-    });
-  }
-
-  private getMovieDetails() {
-    this.httpSvc.getMovieId(this.data.title.value).subscribe((data: any) => {
-      this.httpSvc
-        .getMovieDetails(data.results[0].id)
-        .subscribe((data: any) => {
-          this.movie = data;
-        });
-    });
-  }
-
-  public nextActors(): void {
-    if (this.actorStartIndex + 4 < this.actors.length) {
-      this.actorStartIndex += 4;
-    }
-  }
-  public previousActors(): void {
-    if (this.actorStartIndex > 0) {
-      this.actorStartIndex -= 4;
+  private loadById(id: string) {
+    if (this.contentType === 'programs') {
+       this.loadProgramById(id);
+    } else {
+      this.loadDetails(id);
     }
   }
 
-  public nextMovies(): void {
-    if (this.movieStartIndex + 6 < this.relatedMovies.length) {
-      this.movieStartIndex += 6;
+  private loadDetails(id: string) {
+    const detailsMethod = this.contentType === 'series'
+      ? this.httpSvc.getSeriesDetails(id)
+      : this.httpSvc.getMovieDetails(id);
+
+    detailsMethod.subscribe({
+      next: (res: any) => {
+        this.movie = res;
+        this.data = this.transformToUnifiedData(res);
+        this.updateMetaTags();
+        this.loadAdditionalInfo(id);
+        this.isLoading = false;
+      },
+      error: () => this.isLoading = false
+    });
+  }
+
+  // --- Program Specific Logic ---
+  private loadProgramBySlug(slug: string) {
+    this.httpSvc.getProgramacion('today').subscribe((programs: any[]) => {
+        const flatPrograms = this.flattenPrograms(programs);
+        const found = flatPrograms.find((p: any) => this.slugify(p.title?.value || p.title) === slug);
+        
+        if (found) {
+            this.movie = found;
+            this.data = this.transformProgramToData(found);
+            this.updateMetaTags();
+            this.isLoading = false;
+            this.relatedContent = this.getSimilarPrograms(flatPrograms, found);
+        } else {
+            this.isLoading = false;
+        }
+    });
+  }
+
+  private loadProgramById(id: string) {
+      this.httpSvc.getProgramacion('today').subscribe((programs: any[]) => {
+        const flatPrograms = this.flattenPrograms(programs);
+        const found = flatPrograms.find((p: any) => String(p.id) === id);
+        
+        if (found) {
+            this.movie = found;
+            this.data = this.transformProgramToData(found);
+            this.updateMetaTags();
+            this.isLoading = false;
+             this.relatedContent = this.getSimilarPrograms(flatPrograms, found);
+        } else {
+             this.isLoading = false;
+        }
+    });
+  }
+
+  private flattenPrograms(data: any[]): any[] {
+    return data.flatMap((item: any) => {
+      if (Array.isArray(item?.programs)) return item.programs;
+      if (Array.isArray(item?.channels)) return item.channels; // Adjust based on actual structure
+      return [];
+    });
+  }
+
+  private getSimilarPrograms(allPrograms: any[], current: any): any[] {
+      // Simple similarity based on category
+      const category = current.category?.value || current.desc?.category;
+      if (!category) return [];
+      return allPrograms.filter(p => {
+          const pCat = p.category?.value || p.desc?.category;
+          return pCat && pCat === category && p.id !== current.id;
+      }).slice(0, 10);
+  }
+
+  // --- Data Transformation ---
+
+  private transformToUnifiedData(m: any) {
+    console.log('transformToUnifiedData input:', m);
+    const isSeries = this.contentType === 'series';
+    const result = {
+      id: m.id,
+      title: m.title || m.name || '',
+      overview: m.overview || '',
+      poster: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : '',
+      backdrop: m.backdrop_path ? `https://image.tmdb.org/t/p/original${m.backdrop_path}` : '',
+      year: (m.release_date || m.first_air_date || '').split('-')[0],
+      rating: m.vote_average,
+      duration: m.runtime || (m.episode_run_time?.length ? m.episode_run_time[0] : 0),
+      genres: m.genres?.map((g: any) => g.name) || [],
+      directors: isSeries ? (m.created_by || []).map((c: any) => c.name).join(', ') : '',
+      cast: m.credits?.cast || [],
+      type: this.contentType
+    };
+    console.log('transformToUnifiedData result:', result);
+    return result;
+  }
+
+  private transformProgramToData(p: any) {
+      console.log('transformProgramToData input:', p);
+      
+      // Handle category which can be a string or object
+      let genres: string[] = [];
+      if (typeof p.category === 'string') {
+          genres = p.category.split(',').map((c: string) => c.trim());
+      } else if (p.category?.value) {
+          genres = [p.category.value];
+      }
+
+      // Handle description
+      const overview = p.desc?.value || p.desc?.details || p.description || '';
+
+      const result = {
+          id: p.id,
+          title: p.title?.value || p.title || '',
+          overview: overview,
+          poster: p.image || '', 
+          backdrop: p.image || '',
+          year: p.start ? new Date(p.start).getFullYear().toString() : '',
+          rating: p.starRating,
+          duration: diffHour(p.start, p.end || p.stop), // Use end or stop
+          genres: genres,
+          directors: '',
+          cast: [],
+          type: 'programs',
+          start: p.start,
+          stop: p.end || p.stop // Use end or stop
+      };
+      console.log('transformProgramToData result:', result);
+      return result;
+  }
+
+  private loadAdditionalInfo(id: string) {
+    if (this.contentType === 'movies') {
+        // Get Credits (Cast/Crew)
+        this.httpSvc.getMovieCredits(id).subscribe((res: any) => {
+            if (res) {
+                this.actors = res.cast || [];
+                const directors = res.crew?.filter((c: any) => c.job === 'Director').map((c: any) => c.name).join(', ');
+                if (this.data) this.data.directors = directors;
+            }
+        });
+        // Get Similar
+        this.httpSvc.getSimilarMovie(id).subscribe((res: any) => {
+            this.relatedContent = res?.results || [];
+        });
+
+    } else if (this.contentType === 'series') {
+         // Get Credits
+         this.httpSvc.getSeriesCredits(id).subscribe((res: any) => {
+             if (res) {
+                 this.actors = res.cast || [];
+             }
+         });
+         // Get Similar
+         this.httpSvc.getSimilarSeries(id).subscribe((res: any) => {
+             this.relatedContent = res?.results || [];
+         });
     }
   }
-  public previousMovies(): void {
-    this.movieStartIndex = Math.max(this.movieStartIndex - 6, 0);
+
+  private updateMetaTags() {
+    if (!this.data) return;
+    
+    const title = `${this.data.title} - Guía TV`;
+    const description = this.data.overview || `Detalles de ${this.data.title}`;
+    const image = this.data.backdrop || this.data.poster;
+
+    this.metaSvc.setMetaTags({
+      title,
+      description,
+      image,
+      url: this.router.url,
+      type: 'website' // or video.movie / video.tv_show
+    });
+  }
+
+  // --- UI Helpers ---
+  
+  public getDuration(): string {
+      if (!this.data.duration) return '';
+      if (typeof this.data.duration === 'string') return this.data.duration; // Already formatted
+      const hours = Math.floor(this.data.duration / 60);
+      const minutes = this.data.duration % 60;
+      return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+  }
+
+  public nextActors() {
+    if (this.actorStartIndex + 6 < this.actors.length) {
+      this.actorStartIndex += 6;
+    }
+  }
+
+  public prevActors() {
+    this.actorStartIndex = Math.max(0, this.actorStartIndex - 6);
+  }
+
+  public nextRelated() {
+    if (this.relatedStartIndex + 6 < this.relatedContent.length) {
+      this.relatedStartIndex += 6;
+    }
+  }
+
+  public prevRelated() {
+    this.relatedStartIndex = Math.max(0, this.relatedStartIndex - 6);
+  }
+
+  public slugify(text: string): string {
+    return text.toString().toLowerCase()
+      .replace(/\s+/g, '-')           // Replace spaces with -
+      .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+      .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+      .replace(/^-+/, '')             // Trim - from start of text
+      .replace(/-+$/, '');            // Trim - from end of text
   }
 }

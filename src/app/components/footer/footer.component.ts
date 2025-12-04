@@ -1,36 +1,33 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-footer',
   templateUrl: './footer.component.html',
   styleUrls: ['./footer.component.scss'],
   standalone: true,
+  imports: [CommonModule, RouterModule],
 })
 export class FooterComponent {
   currentYear: number;
-  tdt = [  "La 1",  "La 2",  "Antena 3",  "Cuatro",  "Telecinco",  "La Sexta",  "Mega",  "Factoría de Ficción",  "Neox",  "Nova",  "Boing",  "Divinity",  "Energy",  "Paramount Network",  "DMAX",  "Disney Channel",  "Ten",  "Clan",  "Teledeporte",  "Be Mad",  "TRECE",  "DKISS",  "Atreseries",  "GOL PLAY"];
-  movistar = [
-    "M+ #0",
-    "M+ #Vamos",
-    "M+ Estrenos",
-    "M+ Estrenos 2",
-    "M+ Oscars",
-    "M+ Clásicos",
-    "M+ Acción",
-    "M+ Comedia",
-    "M+ Drama",
-    "M+ Cine Español",
-    "M+ Fest",
-    "M+ Series",
-    "M+ Series 2",
-  ];
-  urls: string[];
+  
+  // Accordion state for mobile
+  openSections: { [key: string]: boolean } = {
+    explorar: false,
+    legal: false,
+    contacto: false
+  };
 
   constructor() {
     this.currentYear = new Date().getFullYear();
-    //unir tdt y movistar en un array,
-    this.urls = this.tdt.concat(this.movistar);
   }
 
-  ngOnInit(): void {}
+  toggleSection(section: string): void {
+    this.openSections[section] = !this.openSections[section];
+  }
+
+  isOpen(section: string): boolean {
+    return this.openSections[section] || false;
+  }
 }

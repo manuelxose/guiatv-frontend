@@ -1,20 +1,24 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
 
 @Component({
   selector: 'app-card-slider',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InteractionButtonsComponent],
   templateUrl: './card-slider.component.html',
   styleUrls: ['./card-slider.component.scss'],
 })
 export class CardSliderComponent {
   @Input() title: string = '';
   @Input() subtitle: string = '';
+  @Input() channelIcon: string = '';
   @Input() image: string = '';
   @Input() live: boolean = false;
   @Input() time: string = '';
   @Input() link: string = '';
+  @Input() id: string = '';
+  @Input() type: 'movie' | 'series' | 'program' = 'program';
   @Input() badge: string = '';
   @Input() badgeColor: 'red' | 'green' | 'blue' | 'gray' = 'gray';
 
