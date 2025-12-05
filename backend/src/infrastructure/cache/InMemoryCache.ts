@@ -7,6 +7,9 @@ interface CacheEntry<T> {
   expiresAt: number;
 }
 
+/**
+ * Minimal in-process cache implementation used in development or as a Redis fallback.
+ */
 export class InMemoryCache implements ICacheRepository {
   private cache: Map<string, CacheEntry<any>> = new Map();
   private cleanupInterval: NodeJS.Timeout;

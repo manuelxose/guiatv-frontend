@@ -4,7 +4,13 @@ import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
 import { InMemoryCache } from './InMemoryCache';
 import { RedisCache } from './RedisCache';
 
+/**
+ * Factory to instantiate the configured cache backend.
+ */
 export class CacheFactory {
+  /**
+   * Creates a cache repository based on configuration, with safe fallbacks.
+   */
   static create(config: {
     type: 'memory' | 'redis';
     redisUrl?: string;

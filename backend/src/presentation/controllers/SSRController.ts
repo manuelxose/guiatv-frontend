@@ -4,6 +4,9 @@ import { ChannelMapper } from '@/application/mappers/ChannelMapper';
 import { ProgramMapper } from '@/application/mappers/ProgramMapper';
 import { logger } from '@/shared/utils/logger';
 
+/**
+ * Controller for server-side rendered widgets (fast, cacheable responses).
+ */
 export class SSRController {
   private readonly log = logger.child('SSRController');
 
@@ -47,6 +50,9 @@ export class SSRController {
    *                         nullable: true
    *       500:
    *         $ref: '#/components/responses/InternalServerError'
+   */
+  /**
+   * Returns the now-playing snapshot for SSR contexts.
    */
   async nowPlaying(req: Request, res: Response): Promise<void> {
     const atParam = (req.query.at as string | undefined) ?? undefined;

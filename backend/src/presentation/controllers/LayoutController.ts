@@ -3,12 +3,17 @@ import { GetProgramLayouts } from '../../application/use-cases/GetProgramLayouts
 import { successResponse } from '../../shared/types/ApiResponse';
 import { ValidationError } from '../../shared/errors';
 
+/**
+ * Controller responsible for returning layout information for the TV grid.
+ */
 export class LayoutController {
   constructor(private readonly getProgramLayouts: GetProgramLayouts) {}
 
   /**
    * GET /v2/layouts/:date
    * Query: channels (csv), timeSlot, fields
+   *
+   * Returns channel lineup layouts for a specific date.
    */
   async getByDate(req: Request, res: Response): Promise<void> {
     const { date } = req.params;

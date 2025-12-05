@@ -17,11 +17,17 @@ export interface CleanOldProgramsResult {
   errors: string[];
 }
 
+/**
+ * Removes stale program data and optionally backfills derived fields beforehand.
+ */
 export class CleanOldPrograms {
   private readonly cleanLogger = logger.child('CleanOldPrograms');
 
   constructor(private readonly programRepository: IProgramRepository) {}
 
+  /**
+   * Deletes programs older than the configured retention window.
+   */
   async execute(
     request: CleanOldProgramsRequest = {}
   ): Promise<CleanOldProgramsResult> {

@@ -5,12 +5,16 @@ import { AppError } from '../../shared/errors';
 import { logger } from '../../shared/utils/logger';
 import { createErrorResponse } from '../../shared/utils/apiResponse';
 
+/**
+ * Centralized error middleware that converts thrown errors into consistent API responses.
+ */
 export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
+  void next;
   const errorLogger = logger.child('ErrorHandler');
 
   // Error operacional conocido (AppError)

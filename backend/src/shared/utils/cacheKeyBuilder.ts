@@ -1,6 +1,12 @@
 import { GetProgramsRequest } from '../../application/use-cases/GetPrograms';
 
+/**
+ * Utility to centralize cache key generation across layers.
+ */
 export class CacheKeyBuilder {
+  /**
+   * Builds a deterministic cache key for program queries.
+   */
   static forPrograms(request: GetProgramsRequest): string {
     const parts = ['programs', request.date];
 

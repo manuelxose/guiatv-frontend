@@ -4,12 +4,18 @@ import { SearchDiscoveryContent } from '@/application/use-cases/SearchDiscoveryC
 import { successResponse } from '@/shared/types/ApiResponse';
 import { ValidationError } from '@/shared/errors';
 
+/**
+ * Controller for discovery experiences such as home feed and search.
+ */
 export class DiscoveryController {
   constructor(
     private readonly getDiscoveryHome: GetDiscoveryHome,
     private readonly searchDiscoveryContent: SearchDiscoveryContent
   ) {}
 
+  /**
+   * Builds the discovery home view with curated sections.
+   */
   async home(req: Request, res: Response): Promise<void> {
     const { date, country, channelTypes, timeSlot, fields } = req.query;
 
@@ -37,6 +43,9 @@ export class DiscoveryController {
       );
   }
 
+  /**
+   * Performs full-text search across discovery content.
+   */
   async search(req: Request, res: Response): Promise<void> {
     const { q, date, genre, platform, type, limit, country, channelTypes, page } =
       req.query;

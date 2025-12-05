@@ -4,12 +4,18 @@ import { GetPrograms } from '@/application/use-cases/GetPrograms';
 import { successResponse } from '@/shared/types/ApiResponse';
 import { MediaMapper } from '@/application/mappers/MediaMapper';
 
+/**
+ * Controller for lightweight TV endpoints (now playing and schedule).
+ */
 export class TvController {
   constructor(
     private readonly getNowPlaying: GetNowPlaying,
     private readonly getPrograms: GetPrograms
   ) {}
 
+  /**
+   * Returns a list of programs currently airing.
+   */
   async now(req: Request, res: Response): Promise<void> {
     const atParam = (req.query.at as string | undefined) ?? undefined;
     const at = atParam ? new Date(atParam) : new Date();
@@ -31,6 +37,9 @@ export class TvController {
     );
   }
 
+  /**
+   * Retrieves the schedule with optional filters for channels and time slots.
+   */
   async schedule(req: Request, res: Response): Promise<void> {
     const {
       date,

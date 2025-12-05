@@ -20,6 +20,9 @@ export interface PrecomputeScheduleResult {
   cachedKey?: string;
 }
 
+/**
+ * Precomputes schedule snapshots and stores them in persistent storage and cache.
+ */
 export class PrecomputeSchedule {
   private readonly precomputeLogger = logger.child('PrecomputeSchedule');
   private readonly layoutVersion =
@@ -49,6 +52,9 @@ export class PrecomputeSchedule {
     }
   }
 
+  /**
+   * Generates and stores a precomputed schedule snapshot for a given date.
+   */
   async execute(
     request: PrecomputeScheduleRequest
   ): Promise<PrecomputeScheduleResult> {

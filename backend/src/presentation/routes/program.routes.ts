@@ -5,6 +5,9 @@ import { ProgramController } from '../controllers/ProgramController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { cacheMiddleware } from '../middlewares/cache';
 
+/**
+ * Registers program endpoints used by clients and admin tools.
+ */
 export const createProgramRoutes = (controller: ProgramController): Router => {
   const router = Router();
 

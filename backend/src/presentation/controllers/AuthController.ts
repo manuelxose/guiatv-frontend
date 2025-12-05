@@ -2,12 +2,17 @@ import { Request, Response } from 'express';
 import { AuthService } from '../../domain/services/AuthService';
 import { BadRequestError, UnauthorizedError } from '../../shared/errors';
 
+/**
+ * HTTP controller for authentication endpoints.
+ */
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   /**
    * POST /v2/auth/google
    * Body: { idToken: string }
+   *
+   * Exchanges a Google token for an application session.
    */
   async loginWithGoogle(req: Request, res: Response): Promise<void> {
     const idToken = req.body?.idToken;
@@ -25,6 +30,8 @@ export class AuthController {
   /**
    * GET /v2/auth/me
    * Header: Authorization: Bearer <jwt>
+   *
+   * Returns the user associated with the provided JWT.
    */
   async me(req: Request, res: Response): Promise<void> {
     const token = extractToken(req);
@@ -48,6 +55,9 @@ export class AuthController {
   }
 }
 
+/**
+ * Extracts a bearer token from header, query or body.
+ */
 function extractToken(req: Request): string | null {
   const authHeader = req.headers.authorization || '';
   if (authHeader.startsWith('Bearer ')) {

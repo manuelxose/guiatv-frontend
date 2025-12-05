@@ -1,3 +1,6 @@
+/**
+ * Ensures required environment variables are present, seeding safe defaults in non-production.
+ */
 export const ensureProjectEnv = () => {
   const requiredEnvs = ['PROJECT_ID'];
   const missingEnvs = requiredEnvs.filter((key) => !process.env[key]);

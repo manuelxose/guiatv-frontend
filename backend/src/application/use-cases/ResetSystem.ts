@@ -21,6 +21,9 @@ export interface ResetSystemResult {
   precomputed: boolean;
 }
 
+/**
+ * Resets caches, database collections and storage before reimporting EPG data.
+ */
 export class ResetSystem {
   private readonly resetLogger = logger.child('ResetSystem');
   private readonly defaultSource =
@@ -33,6 +36,9 @@ export class ResetSystem {
     private readonly precomputeSchedule: PrecomputeSchedule
   ) {}
 
+  /**
+   * Orchestrates the full reset workflow and returns a summary of affected resources.
+   */
   async execute(request: ResetSystemRequest = {}): Promise<ResetSystemResult> {
     const syncedDates: string[] = [];
 

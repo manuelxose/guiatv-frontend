@@ -12,11 +12,14 @@ export interface NowPlayingResult {
  * Fetch all active channels and their current program in a single, efficient query.
  */
 export class GetNowPlaying {
-  constructor(
+ constructor(
     private readonly channelRepository: IChannelRepository,
     private readonly programRepository: IProgramRepository
   ) {}
 
+  /**
+   * Resolves the current airing program for each active channel at a specific time.
+   */
   async execute(at: Date = new Date()): Promise<NowPlayingResult[]> {
     const channels = await this.channelRepository.findAll({ isActive: true });
     const channelIds = channels.map((c) => c.id);

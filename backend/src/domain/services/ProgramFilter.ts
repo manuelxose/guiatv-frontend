@@ -1,6 +1,9 @@
 import { Program } from '../entities/Program';
 import { TimeSlot } from '../value-objects/TimeSlot';
 
+/**
+ * Default time-slot buckets used across discovery endpoints.
+ */
 const DEFAULT_TIME_SLOTS: Array<TimeSlot> = [
   new TimeSlot('06:00', '12:00'),
   new TimeSlot('12:00', '18:00'),
@@ -8,9 +11,16 @@ const DEFAULT_TIME_SLOTS: Array<TimeSlot> = [
   new TimeSlot('00:00', '06:00'),
 ];
 
+/**
+ * Utility helpers to slice program lists using common filters.
+ */
 export class ProgramFilter {
   /**
-   * Filter programs by a time slot index string ("0", "1", etc.)
+   * Filters programs by a time slot index string ("0", "1", etc.).
+   *
+   * @param programs - Program list to filter.
+   * @param slotIndex - Index of the {@link TimeSlot} in `timeSlots`.
+   * @param timeSlots - Custom time slots; defaults to {@link DEFAULT_TIME_SLOTS}.
    */
   static byTimeSlot(
     programs: Program[],

@@ -27,12 +27,18 @@ export interface DiscoverySearchResponse {
   };
 }
 
+/**
+ * Performs search across programs to power the discovery results page.
+ */
 export class SearchDiscoveryContent {
   constructor(
     private readonly programRepository: IProgramRepository,
     private readonly channelRepository: IChannelRepository
   ) {}
 
+  /**
+   * Executes the search with pagination and channel filtering.
+   */
   async execute(
     request: DiscoverySearchRequest
   ): Promise<DiscoverySearchResponse> {

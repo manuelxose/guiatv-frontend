@@ -55,6 +55,9 @@ type NormalizedRequest = GetProgramsRequest & {
   channelTypes: string[];
 };
 
+/**
+ * Core use case that fetches, filters and paginates programs for a given date.
+ */
 export class GetPrograms {
   private readonly layoutBuilder = new ProgramLayoutBuilder();
   private readonly timeSlots = this.layoutBuilder.buildTimeSlots();
@@ -120,6 +123,9 @@ export class GetPrograms {
     private readonly cacheRepository: ICacheRepository
   ) {}
 
+  /**
+   * Retrieves program layouts using cache, precomputations, or live queries.
+   */
   async execute(request: GetProgramsRequest): Promise<GetProgramsResponse> {
     const normalized = this.normalizeRequest(request);
     const fields = normalized.fields;

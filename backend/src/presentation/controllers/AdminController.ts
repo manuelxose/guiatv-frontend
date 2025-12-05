@@ -11,6 +11,9 @@ import { ValidationError } from '../../shared/errors';
 import { successResponse } from '../../shared/types/ApiResponse';
 import { ResetSystem } from '../../application/use-cases/ResetSystem';
 
+/**
+ * Administrative controller that orchestrates maintenance and data workflows.
+ */
 export class AdminController {
   private readonly adminLogger = logger.child('AdminController');
 
@@ -50,16 +53,42 @@ export class AdminController {
    *       500:
    *         $ref: '#/components/responses/InternalServerError'
    */
+  /**
+   * Executes an on-demand EPG sync, optionally asynchronous.
+   */
   async triggerSync(req: Request, res: Response): Promise<void> {
-    const { date, forceRefresh, sourceUrl } = req.body;
+    const { date, forceRefresh, sourceUrl, async = false } = req.body;
 
     this.adminLogger.info('Manual sync triggered', {
       date,
       forceRefresh,
       sourceUrl,
+      async,
     });
 
     const dateToSync = DateUtils.parseDateAlias(date || 'today');
+
+    if (async) {
+      void this.syncEPGData
+        .execute({
+          sourceUrl:
+            sourceUrl ||
+            'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz',
+          date: dateToSync,
+          forceRefresh: forceRefresh === true,
+        })
+        .then((result) => {
+          this.adminLogger.info('Async sync completed', { result });
+        })
+        .catch((error) => {
+          this.adminLogger.error('Async sync failed', error as Error);
+        });
+
+      res.status(202).json(
+        successResponse({ message: 'Sync started asynchronously' })
+      );
+      return;
+    }
 
     const result = await this.syncEPGData.execute({
       sourceUrl:
@@ -107,12 +136,34 @@ export class AdminController {
    *       500:
    *         $ref: '#/components/responses/InternalServerError'
    */
+  /**
+   * Starts precomputation for a specific date.
+   */
   async triggerPrecompute(req: Request, res: Response): Promise<void> {
-    const { date, fields } = req.body;
+    const { date, fields, async = false } = req.body;
 
-    this.adminLogger.info('Manual precompute triggered', { date, fields });
+    this.adminLogger.info('Manual precompute triggered', { date, fields, async });
 
     const dateToPrecompute = DateUtils.parseDateAlias(date || 'today');
+
+    if (async) {
+      void this.precomputeSchedule
+        .execute({
+          date: dateToPrecompute,
+          fields: (fields as any) || 'full',
+        })
+        .then((result) => {
+          this.adminLogger.info('Async precompute completed', { result });
+        })
+        .catch((error) => {
+          this.adminLogger.error('Async precompute failed', error as Error);
+        });
+
+      res.status(202).json(
+        successResponse({ message: 'Precompute started asynchronously' })
+      );
+      return;
+    }
 
     const result = await this.precomputeSchedule.execute({
       date: dateToPrecompute,
@@ -151,11 +202,35 @@ export class AdminController {
    *       200:
    *         description: Precomputación completada
    */
+  /**
+   * Precomputes the canonical rolling window of schedules.
+   */
   async triggerPrecomputeWindow(req: Request, res: Response): Promise<void> {
-    const { fields } = req.body || {};
+    const { fields, async = false } = req.body || {};
     this.adminLogger.info('Triggering precompute for canonical window', {
       fields: fields || 'full',
+      async,
     });
+
+    if (async) {
+      void this.precomputeSchedule
+        .precomputeCanonicalWindow((fields as any) || 'full')
+        .then(() => {
+          this.adminLogger.info('Async window precompute completed');
+        })
+        .catch((error) => {
+          this.adminLogger.error(
+            'Async window precompute failed',
+            error as Error
+          );
+        });
+
+      res.status(202).json(
+        successResponse({ message: 'Window precompute started asynchronously' })
+      );
+      return;
+    }
+
     await this.precomputeSchedule.precomputeCanonicalWindow(
       (fields as any) || 'full'
     );
@@ -191,10 +266,13 @@ export class AdminController {
    *       500:
    *         $ref: '#/components/responses/InternalServerError'
    */
+  /**
+   * Removes historical program data beyond a configurable retention window.
+   */
   async triggerCleanup(req: Request, res: Response): Promise<void> {
-    const { daysToKeep } = req.body;
+    const { daysToKeep, async = false } = req.body;
 
-    this.adminLogger.info('Manual cleanup triggered', { daysToKeep });
+    this.adminLogger.info('Manual cleanup triggered', { daysToKeep, async });
 
     if (daysToKeep && (typeof daysToKeep !== 'number' || daysToKeep < 1)) {
       throw new ValidationError('Invalid daysToKeep parameter', [
@@ -204,6 +282,24 @@ export class AdminController {
           value: daysToKeep,
         },
       ]);
+    }
+
+    if (async) {
+      void this.cleanOldPrograms
+        .execute({
+          daysToKeep: daysToKeep || 7,
+        })
+        .then((result) => {
+          this.adminLogger.info('Async cleanup completed', { result });
+        })
+        .catch((error) => {
+          this.adminLogger.error('Async cleanup failed', error as Error);
+        });
+
+      res.status(202).json(
+        successResponse({ message: 'Cleanup started asynchronously' })
+      );
+      return;
     }
 
     const result = await this.cleanOldPrograms.execute({
@@ -246,6 +342,9 @@ export class AdminController {
    *       500:
    *         $ref: '#/components/responses/InternalServerError'
    */
+  /**
+   * Clears cache entries optionally filtered by pattern.
+   */
   async clearCache(req: Request, res: Response): Promise<void> {
     const { pattern } = req.body;
 
@@ -267,6 +366,9 @@ export class AdminController {
   /**
    * POST /v2/admin/reset
    * Borra cache, colecciones, ficheros EPG/schedules y reconstruye (sync + precompute window)
+   */
+  /**
+   * Executes a full reset by re-importing the source EPG and clearing caches.
    */
   async triggerReset(req: Request, res: Response): Promise<void> {
     const { sourceUrl, fields, async = false } = req.body || {};
@@ -353,7 +455,11 @@ export class AdminController {
    *       500:
    *         $ref: '#/components/responses/InternalServerError'
    */
+  /**
+   * Returns operational health for internal services (DB, cache).
+   */
   async healthCheck(req: Request, res: Response): Promise<void> {
+    void req;
     const uptime = process.uptime();
     const memoryUsage = process.memoryUsage();
 
@@ -400,4 +506,3 @@ export class AdminController {
     }
   }
 }
-

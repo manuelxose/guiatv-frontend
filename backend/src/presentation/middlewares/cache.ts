@@ -9,6 +9,11 @@ type CacheEntry = {
 
 const cache = new Map<string, CacheEntry>();
 
+/**
+ * In-memory cache middleware useful for low-traffic or static endpoints.
+ *
+ * @param ttlSeconds - Time to live for cached responses.
+ */
 export const cacheMiddleware = (ttlSeconds = 30) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (req.method !== 'GET') return next();
@@ -34,4 +39,7 @@ export const cacheMiddleware = (ttlSeconds = 30) => {
   };
 };
 
+/**
+ * Clears the in-process cache store.
+ */
 export const clearCache = () => cache.clear();

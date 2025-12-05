@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { DiscoveryController } from '../controllers/DiscoveryController';
 
+/**
+ * Discovery endpoints for home and search views.
+ */
 export const createDiscoveryRoutes = (
   controller: DiscoveryController
 ): Router => {

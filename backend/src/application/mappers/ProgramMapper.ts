@@ -3,7 +3,13 @@
 import { Program } from '../../domain/entities/Program';
 import { ProgramDTO } from '../dto/ProgramDTO';
 
+/**
+ * Maps program entities to DTOs used in the presentation layer.
+ */
 export class ProgramMapper {
+  /**
+   * Serializes a single program.
+   */
   static toDTO(program: Program): ProgramDTO {
     return {
       id: program.id,
@@ -61,10 +67,16 @@ export class ProgramMapper {
     };
   }
 
+  /**
+   * Maps a list of programs into DTOs.
+   */
   static toDTOList(programs: Program[]): ProgramDTO[] {
     return programs.map((p) => this.toDTO(p));
   }
 
+  /**
+   * Rehydrates a domain entity from a DTO payload.
+   */
   static toDomain(dto: ProgramDTO): Program {
     return Program.create({
       id: dto.id,

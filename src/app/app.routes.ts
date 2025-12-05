@@ -25,14 +25,14 @@ export const routes: Routes = [
     title: 'Mi cuenta - Comunidad GPTV',
   },
   {
-    path: 'series',
+    path: 'programacion-tv/series',
     loadComponent: () =>
       import('./pages/content-page/content-page.component').then((m) => m.ContentPageComponent),
     title: 'Series - Guía TV',
     data: { type: 'series' }
   },
   {
-    path: 'peliculas',
+    path: 'programacion-tv/peliculas',
     loadComponent: () =>
       import('./pages/content-page/content-page.component').then(
         (m) => m.ContentPageComponent
@@ -41,7 +41,7 @@ export const routes: Routes = [
     data: { type: 'movies' }
   },
   {
-    path: 'guia-canales',
+    path: 'programacion-tv/guia-canales',
     loadComponent: () =>
       import('./pages/lista-canales/lista-canales.component').then(
         (m) => m.ListaCanalesComponent
@@ -58,7 +58,7 @@ export const routes: Routes = [
     title: 'Canal - Guía TV',
   },
   {
-    path: 'que-ver-hoy',
+    path: 'programacion-tv/que-ver-hoy',
     loadComponent: () =>
       import('./pages/program-explorer/program-explorer.component').then(
         (m) => m.ProgramExplorerComponent
@@ -115,7 +115,7 @@ export const routes: Routes = [
   },
 
   {
-    path: 'en-directo',
+    path: 'programacion-tv/en-directo',
     loadComponent: () =>
       import('./pages/program-explorer/program-explorer.component').then(
         (m) => m.ProgramExplorerComponent

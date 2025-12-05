@@ -8,6 +8,9 @@ type AsyncFunction = (
   next: NextFunction
 ) => Promise<any>;
 
+/**
+ * Express helper to forward promise rejections to the error middleware.
+ */
 export const asyncHandler = (fn: AsyncFunction) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);

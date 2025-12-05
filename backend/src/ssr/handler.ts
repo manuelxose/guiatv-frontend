@@ -8,6 +8,7 @@ import { config } from '../server/config';
  * Carga el bundle generado por `ng build --ssr`
  */
 export async function ssrHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  void next;
   try {
     const distFolder = config.paths.distFolder;
     const serverBundleMjs = join(distFolder, 'server', 'server.mjs');

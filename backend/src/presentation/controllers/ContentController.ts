@@ -4,12 +4,18 @@ import { GetContentBatch } from '@/application/use-cases/GetContentBatch';
 import { successResponse } from '@/shared/types/ApiResponse';
 import { ValidationError } from '@/shared/errors';
 
+/**
+ * Controller that returns media content cards and batches.
+ */
 export class ContentController {
   constructor(
     private readonly getContentDetail: GetContentDetail,
     private readonly getContentBatch: GetContentBatch
   ) {}
 
+  /**
+   * Returns detailed content information by id.
+   */
   async getContent(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const { expand } = req.query;
@@ -29,6 +35,9 @@ export class ContentController {
     res.status(200).json(successResponse(result.item));
   }
 
+  /**
+   * Retrieves a batch of content items specified by comma-separated IDs.
+   */
   async getBatch(req: Request, res: Response): Promise<void> {
     const idsParam = req.query.ids as string | undefined;
     if (!idsParam) {

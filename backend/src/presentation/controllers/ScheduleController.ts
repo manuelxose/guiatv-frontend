@@ -9,6 +9,9 @@ import { logger } from '../../shared/utils/logger';
 import { DateUtils } from '../../shared/utils/dateUtils';
 import { successResponse } from '../../shared/types/ApiResponse';
 
+/**
+ * Controller that exposes schedule aggregations grouped by date.
+ */
 export class ScheduleController {
   private readonly logger = logger.child('ScheduleController');
 
@@ -27,6 +30,9 @@ export class ScheduleController {
    *     description: Retorna la programación de todos los canales para una fecha específica
    *     parameters:
    *       - $ref: '#/components/parameters/DateParam'
+   */
+  /**
+   * Returns the full schedule for the provided date alias or YYYYMMDD.
    */
   async getByDate(req: Request, res: Response): Promise<void> {
     const { date } = req.params;
@@ -91,6 +97,9 @@ export class ScheduleController {
    *     tags:
    *       - Schedules
    *     summary: Obtener resumen de canales por fecha
+   */
+  /**
+   * Summarizes the number of programs per channel for a date.
    */
   async getChannelsSummary(req: Request, res: Response): Promise<void> {
     const { date } = req.params;

@@ -7,6 +7,12 @@ import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { validateChannelIdParam } from '../middlewares/validator';
 import { cacheMiddleware } from '../middlewares/cache';
 
+/**
+ * Factory for channel-related HTTP routes.
+ *
+ * @param controller - Channel controller instance.
+ * @param programController - Optional program controller to expose nested routes.
+ */
 export const createChannelRoutes = (
   controller: ChannelController,
   programController?: ProgramController

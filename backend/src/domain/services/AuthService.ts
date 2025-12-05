@@ -4,6 +4,9 @@ import { UnauthorizedError } from '../../shared/errors';
 import { MongoUserRepository } from '../../infrastructure/repositories/MongoUserRepository';
 import { logger } from '../../shared/utils/logger';
 
+/**
+ * Minimal user info provided by Google after verifying an idToken.
+ */
 export interface GoogleUser {
   id: string;
   email: string;
@@ -11,6 +14,9 @@ export interface GoogleUser {
   picture?: string;
 }
 
+/**
+ * Shape of the authenticated user stored in JWT sessions.
+ */
 export interface SessionUser {
   id: string;
   email: string;
@@ -18,11 +24,17 @@ export interface SessionUser {
   picture?: string;
 }
 
+/**
+ * Response issued after a successful authentication flow.
+ */
 export interface AuthResult {
   user: SessionUser;
   token: string;
 }
 
+/**
+ * Handles authentication concerns such as Google login and JWT issuance.
+ */
 export class AuthService {
   private googleClient?: OAuth2Client;
 
@@ -41,6 +53,8 @@ export class AuthService {
    * - Verifies Google token
    * - Upserts user in Mongo
    * - Issues JWT signed with backend secret
+   *
+   * @param idToken - Google identity token from the client.
    */
   async loginWithGoogle(idToken: string): Promise<AuthResult> {
     const googleUser = await this.verifyGoogleToken(idToken);
@@ -60,6 +74,8 @@ export class AuthService {
 
   /**
    * Validate JWT and return associated user.
+   *
+   * @param token - Signed JWT issued by this service.
    */
   async getSession(token: string): Promise<SessionUser> {
     try {
@@ -82,6 +98,9 @@ export class AuthService {
     }
   }
 
+  /**
+   * Validates the Google token and extracts the user profile.
+   */
   private async verifyGoogleToken(idToken: string): Promise<GoogleUser> {
     if (!this.googleClient || !this.googleClientId) {
       throw new UnauthorizedError('Google client ID is not configured');
@@ -112,6 +131,9 @@ export class AuthService {
     }
   }
 
+  /**
+   * Signs a short-lived JWT for API consumption.
+   */
   private signSessionToken(userId: string, email: string): string {
     const expiresIn = '7d';
     return jwt.sign(

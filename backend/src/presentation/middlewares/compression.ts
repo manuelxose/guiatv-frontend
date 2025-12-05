@@ -3,6 +3,9 @@
 import compression from 'compression';
 import { Request, Response } from 'express';
 
+/**
+ * Compression middleware with sane defaults for API responses.
+ */
 export const compressionMiddleware = compression({
   filter: (req: Request, res: Response) => {
     if (req.headers['x-no-compression']) {

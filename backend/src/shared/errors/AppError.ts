@@ -1,8 +1,11 @@
 // src/v2/shared/errors/AppError.ts
 
+/**
+ * Base error used to express operational failures with HTTP-friendly metadata.
+ */
 export class AppError extends Error {
   constructor(
-    public readonly message: string,
+    override readonly message: string,
     public readonly statusCode: number = 500,
     public readonly isOperational: boolean = true,
     public readonly code?: string

@@ -1,5 +1,8 @@
 // src/v2/domain/entities/Program.ts
 
+/**
+ * Shape of a program persisted in the database and exposed in the API.
+ */
 export interface ProgramProps {
   id: string;
   channelId: string;
@@ -15,15 +18,27 @@ export interface ProgramProps {
   details?: Record<string, string>;
 }
 
+/**
+ * Immutable domain aggregate for a TV program with consistency checks.
+ */
 export class Program {
   private constructor(private readonly props: ProgramProps) {
     this.validate();
   }
 
+  /**
+   * Factory helper that validates fields and returns a new program entity.
+   *
+   * @param props - Raw program properties coming from repositories.
+   * @returns A validated {@link Program} instance.
+   */
   static create(props: ProgramProps): Program {
     return new Program(props);
   }
 
+  /**
+   * Guard clauses to keep invariants such as time ranges and required fields.
+   */
   private validate(): void {
     if (!this.props.id?.trim()) {
       throw new Error('Program ID cannot be empty');
@@ -89,6 +104,9 @@ export class Program {
     return this.props.genre;
   }
 
+  /**
+   * Serializes the program with derived fields ready for transport.
+   */
   toJSON() {
     return {
       ...this.props,

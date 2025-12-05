@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { LayoutController } from '../controllers/LayoutController';
 import { asyncHandler } from '../middlewares/asyncHandler';
 
+/**
+ * Registers endpoints to retrieve layout/rendering information.
+ */
 export const createLayoutRoutes = (
   layoutController: LayoutController
 ): Router => {

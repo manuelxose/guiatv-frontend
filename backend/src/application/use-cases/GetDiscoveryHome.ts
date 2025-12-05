@@ -17,6 +17,9 @@ export interface GetDiscoveryHomeRequest {
 
 type ChannelMeta = GetProgramsResponse['channels'][number];
 
+/**
+ * Builds the discovery home view combining curated hero, recommendations and live now.
+ */
 export class GetDiscoveryHome {
   private readonly ttlSeconds =
     Number(process.env.DISCOVERY_HOME_CACHE_TTL_SEC || 120) || 120;
@@ -28,6 +31,9 @@ export class GetDiscoveryHome {
     private readonly blogService?: BlogService
   ) {}
 
+  /**
+   * Generates or retrieves from cache the discovery home payload.
+   */
   async execute(
     request: GetDiscoveryHomeRequest = {}
   ): Promise<{ view: HomeViewDTO; cached: boolean }> {
@@ -68,7 +74,7 @@ export class GetDiscoveryHome {
       channelMap,
       now
     );
-    const liveNow = await this.buildLiveNow(channelMap, now);
+    const liveNow = await this.buildLiveNow(now);
     const blogHighlights = await this.blogService?.getHighlights(4);
 
     const response: HomeViewDTO = {
@@ -83,10 +89,7 @@ export class GetDiscoveryHome {
     return { view: response, cached: false };
   }
 
-  private async buildLiveNow(
-    channelMap: Map<string, ChannelMeta>,
-    now: Date
-  ): Promise<MediaCardDTO[]> {
+  private async buildLiveNow(now: Date): Promise<MediaCardDTO[]> {
     const results = await this.getNowPlaying.execute(now);
     return results
       .filter(({ program }) => !!program)

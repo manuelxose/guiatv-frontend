@@ -5,6 +5,9 @@ import { ScheduleController } from '../controllers/ScheduleController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { validateDateParam } from '../middlewares/validator';
 
+/**
+ * Factory that exposes schedule-centric endpoints.
+ */
 export const createScheduleRoutes = (
   controller: ScheduleController
 ): Router => {

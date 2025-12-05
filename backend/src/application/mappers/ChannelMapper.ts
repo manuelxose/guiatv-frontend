@@ -3,7 +3,13 @@
 import { Channel } from '../../domain/entities/Channel';
 import { ChannelDTO } from '../dto/ChannelDTO';
 
+/**
+ * Transforms channel entities into transport-friendly DTOs and back.
+ */
 export class ChannelMapper {
+  /**
+   * Maps a single domain entity to a DTO.
+   */
   static toDTO(channel: Channel): ChannelDTO {
     return {
       id: channel.id,
@@ -18,10 +24,16 @@ export class ChannelMapper {
     };
   }
 
+  /**
+   * Maps a list of channel entities into DTOs.
+   */
   static toDTOList(channels: Channel[]): ChannelDTO[] {
     return channels.map((c) => this.toDTO(c));
   }
 
+  /**
+   * Lightweight DTO used for metadata sections where full normalization is not needed.
+   */
   static toMetaDTO(channel: Channel): Pick<ChannelDTO, 'id' | 'name' | 'icon' | 'type' | 'country' | 'countryCode'> {
     return {
       id: channel.id,
@@ -33,6 +45,9 @@ export class ChannelMapper {
     };
   }
 
+  /**
+   * Rebuilds a domain entity from a DTO.
+   */
   static toDomain(dto: ChannelDTO): Channel {
     return Channel.create({
       id: dto.id,

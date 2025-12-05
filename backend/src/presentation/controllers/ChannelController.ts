@@ -9,6 +9,9 @@ import { logger } from '../../shared/utils/logger';
 import { ChannelType } from '../../domain/entities/Channel';
 import { successResponse } from '../../shared/types/ApiResponse';
 
+/**
+ * Controller exposing channel queries to HTTP handlers.
+ */
 export class ChannelController {
   /**
    * @openapi
@@ -66,6 +69,9 @@ export class ChannelController {
     private readonly getChannelById: GetChannelById
   ) {}
 
+  /**
+   * Handles listing channels with optional filters.
+   */
   async getAll(req: Request, res: Response): Promise<void> {
     const { type, region, isActive } = req.query;
 
@@ -117,7 +123,9 @@ export class ChannelController {
    *       429:
    *         $ref: '#/components/responses/TooManyRequests'
    */
-
+  /**
+   * Fetches a single channel by identifier.
+   */
   async getById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
 

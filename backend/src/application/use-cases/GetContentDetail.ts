@@ -17,6 +17,9 @@ export interface GetContentDetailResponse {
   item: MediaDetailDTO;
 }
 
+/**
+ * Returns an enriched media detail card with optional related and schedule expansions.
+ */
 export class GetContentDetail {
   private readonly ttlSeconds =
     Number(process.env.CONTENT_DETAIL_CACHE_TTL_SEC || 1800) || 1800;
@@ -27,6 +30,9 @@ export class GetContentDetail {
     private readonly cacheRepository: ICacheRepository
   ) {}
 
+  /**
+   * Loads the content detail using cache when possible.
+   */
   async execute(
     request: GetContentDetailRequest
   ): Promise<GetContentDetailResponse> {

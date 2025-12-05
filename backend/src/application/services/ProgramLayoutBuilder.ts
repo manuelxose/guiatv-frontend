@@ -69,7 +69,13 @@ const TIME_SLOTS: readonly string[][] = [
   ['21:00', '21:30', '22:00', '22:30', '23:00', '23:30', '00:00'],
 ] as const;
 
+/**
+ * Builds time-slot aware layouts used by the discovery grid and TV guide.
+ */
 export class ProgramLayoutBuilder {
+  /**
+   * Generates the canonical set of 30-minute time slots for the grid.
+   */
   buildTimeSlots(): TimeSlotDTO[] {
     return TIME_SLOTS.map((slot, index) => {
       const startMinutes = this.parseTimeToMinutes(slot[0]);
@@ -84,6 +90,15 @@ export class ProgramLayoutBuilder {
     });
   }
 
+  /**
+   * Computes grid-friendly layout information for every program of a day.
+   *
+   * @param programs - Domain programs for a single date.
+   * @param date - Target date in YYYYMMDD.
+   * @param timeSlots - Slots produced by {@link buildTimeSlots}.
+   * @param requestedSlot - Optional slot id to prioritize when exposing top-level layout fields.
+   * @param fields - Determines whether to populate `image` and `description`.
+   */
   buildProgramLayouts(
     programs: Program[],
     date: string,
@@ -166,7 +181,7 @@ export class ProgramLayoutBuilder {
     });
 
     // Assign layers per channel per slot and propagate to layouts
-    Object.entries(perChannelPerSlot).forEach(([channelId, slots]) => {
+    Object.entries(perChannelPerSlot).forEach(([, slots]) => {
       Object.entries(slots).forEach(([slotIndexStr, entries]) => {
         const slotIndex = Number(slotIndexStr);
         const sorted = entries.sort((a, b) =>

@@ -135,6 +135,16 @@ Base URL local: `http://localhost:<PORT>/v2`
 - `POST /admin/reset`
 - `GET /admin/health`
 
+> **Nota sobre Timeouts**: Los procesos de sync, precompute y reset pueden ser muy largos (> 60s).  
+> Para evitar errores de timeout HTTP (504) o bloqueo, **se recomienda usar el parámetro `async: true`** en el body JSON.  
+> Esto devolverá inmediatamente un `202 Accepted` y el proceso continuará en background.
+> Ejemplo:
+> ```bash
+> curl -X POST "http://localhost:8080/v2/admin/reset" \
+>      -H "Content-Type: application/json" \
+>      -d '{"async":true}'
+> ```
+
 ### Auth (Google OAuth)
 - Ejemplos:
   - `curl -X POST "http://localhost:8080/v2/auth/google" -H "Content-Type: application/json" -d '{"token":"<google_id_token>"}'`

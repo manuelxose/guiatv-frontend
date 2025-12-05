@@ -2,12 +2,18 @@
 
 import { AppError } from './AppError';
 
+/**
+ * Fine-grained validation error details.
+ */
 export interface ValidationErrorDetail {
   field: string;
   message: string;
   value?: any;
 }
 
+/**
+ * Error representing request validation failures.
+ */
 export class ValidationError extends AppError {
   constructor(
     message: string,
@@ -16,7 +22,7 @@ export class ValidationError extends AppError {
     super(message, 400, true, 'VALIDATION_ERROR');
   }
 
-  toJSON() {
+  override toJSON() {
     return {
       error: {
         name: this.name,
