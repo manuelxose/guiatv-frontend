@@ -27,6 +27,7 @@ async function startServer() {
       discoveryController: container.get('discoveryController'),
       contentController: container.get('contentController'),
       tvController: container.get('tvController'),
+      blogController: container.get('blogController'),
     });
 
     const { initializeJobs } = await import('../jobs');

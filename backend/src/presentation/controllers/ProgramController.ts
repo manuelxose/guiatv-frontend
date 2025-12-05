@@ -6,6 +6,9 @@ import { NotFoundError, ValidationError } from '../../shared/errors';
 import { successResponse } from '../../shared/types/ApiResponse';
 import { GetProgramById } from '../../application/use-cases/GetProgramById';
 
+/**
+ * Controller that delegates program-related HTTP requests to use cases.
+ */
 export class ProgramController {
 
   constructor(
@@ -16,6 +19,8 @@ export class ProgramController {
 
   /**
    * GET /v2/programs
+   *
+   * Handles queries for the unified programs endpoint.
    */
   async getProgramsHandler(req: Request, res: Response): Promise<void> {
     const { date, channels, timeSlot, fields, page, limit, country, channelTypes } = req.query;
@@ -60,6 +65,8 @@ export class ProgramController {
 
   /**
    * GET /v2/channels/:id/programs
+   *
+   * Returns programs for a single channel combining channel metadata and layout.
    */
   async getByChannel(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
@@ -104,6 +111,8 @@ export class ProgramController {
 
   /**
    * GET /v2/programs/:id
+   *
+   * Fetches program detail by identifier.
    */
   async getById(req: Request, res: Response): Promise<void> {
     const { id } = req.params;

@@ -5,12 +5,18 @@ import { IChannelRepository } from '../../domain/repositories/IChannelRepository
 import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
 import { ChannelId } from '../../domain/value-objects/ChannelId';
 
+/**
+ * Fetches a channel by id with short-lived caching.
+ */
 export class GetChannelById {
   constructor(
     private readonly channelRepository: IChannelRepository,
     private readonly cacheRepository: ICacheRepository
   ) {}
 
+  /**
+   * Executes the lookup returning `null` when missing.
+   */
   async execute(channelId: string): Promise<Channel | null> {
     const cacheKey = `channel:${channelId}`;
 

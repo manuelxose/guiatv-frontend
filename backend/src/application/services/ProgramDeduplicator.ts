@@ -9,6 +9,12 @@ import { logger } from '../../shared/utils/logger';
 export class ProgramDeduplicator {
   private readonly dedupeLogger = logger.child('ProgramDeduplicator');
 
+  /**
+   * Groups overlapping programs and keeps the highest quality candidate.
+   *
+   * @param programs - Raw program list that may contain duplicates.
+   * @returns Deduplicated list preserving deterministic order.
+   */
   dedupe(programs: Program[]): Program[] {
     const grouped = new Map<string, Program[]>();
     const firstIndex = new Map<string, number>();

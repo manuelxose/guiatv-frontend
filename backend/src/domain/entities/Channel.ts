@@ -1,5 +1,8 @@
 // src/v2/domain/entities/Channel.ts
 
+/**
+ * Allowed distribution types for a channel.
+ */
 export type ChannelType =
   | 'TDT'
   | 'Cable'
@@ -7,6 +10,9 @@ export type ChannelType =
   | 'Autonomico'
   | 'OTT';
 
+/**
+ * Properties required to build a {@link Channel} aggregate.
+ */
 export interface ChannelProps {
   id: string;
   name: string;
@@ -18,15 +24,27 @@ export interface ChannelProps {
   isActive: boolean;
 }
 
+/**
+ * Domain aggregate that represents a TV channel with lightweight validation helpers.
+ */
 export class Channel {
   private constructor(private readonly props: ChannelProps) {
     this.validate();
   }
 
+  /**
+   * Factory helper that validates and instantiates a channel.
+   *
+   * @param props - Channel attributes coming from the repository or DTO.
+   * @returns A fully validated {@link Channel} instance.
+   */
   static create(props: ChannelProps): Channel {
     return new Channel(props);
   }
 
+  /**
+   * Ensures required fields are present and coherent before exposing the entity.
+   */
   private validate(): void {
     if (!this.props.id || this.props.id.trim() === '') {
       throw new Error('Channel ID cannot be empty');
@@ -83,6 +101,9 @@ export class Channel {
     return this.props.isActive;
   }
 
+  /**
+   * Serializes the entity to be safely exposed to the presentation layer.
+   */
   toJSON() {
     return {
       ...this.props,

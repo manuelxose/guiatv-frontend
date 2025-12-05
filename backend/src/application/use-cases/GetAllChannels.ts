@@ -5,12 +5,18 @@ import { IChannelRepository } from '../../domain/repositories/IChannelRepository
 import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
 import { ChannelService } from '../../domain/services/ChannelService';
 
+/**
+ * Filters for retrieving a subset of channels.
+ */
 export interface GetAllChannelsRequest {
   type?: ChannelType;
   region?: string;
   isActive?: boolean;
 }
 
+/**
+ * Use case that fetches channels with optional filtering and caching.
+ */
 export class GetAllChannels {
   constructor(
     private readonly channelRepository: IChannelRepository,
@@ -18,6 +24,9 @@ export class GetAllChannels {
     private readonly channelService: ChannelService
   ) {}
 
+  /**
+   * Executes the query, reading from cache when available.
+   */
   async execute(request: GetAllChannelsRequest = {}): Promise<Channel[]> {
     const cacheKey = this.buildCacheKey(request);
 

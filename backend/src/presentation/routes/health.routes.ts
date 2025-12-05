@@ -4,6 +4,9 @@ import { Router, Request, Response } from 'express';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { successResponse } from '../../shared/types/ApiResponse';
 
+/**
+ * Simple health-check routes used by uptime monitors and load balancers.
+ */
 export const createHealthRoutes = (): Router => {
   const router = Router();
 
@@ -39,6 +42,7 @@ export const createHealthRoutes = (): Router => {
   router.get(
     '/',
     asyncHandler(async (req: Request, res: Response) => {
+      void req;
       const uptime = process.uptime();
       const memoryUsage = process.memoryUsage();
 

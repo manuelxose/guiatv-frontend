@@ -4,11 +4,15 @@ import { Request, Response, NextFunction } from 'express';
 import { ValidationError, ValidationErrorDetail } from '../../shared/errors';
 import { DateUtils } from '../../shared/utils/dateUtils';
 
+/**
+ * Validates :date parameters accepting aliases (today, tomorrow).
+ */
 export const validateDateParam = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
+  void res;
   const { date } = req.params;
 
   if (!date) {
@@ -35,11 +39,15 @@ export const validateDateParam = (
   }
 };
 
+/**
+ * Ensures :channelId or :id params are present and non-empty.
+ */
 export const validateChannelIdParam = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
+  void res;
   const { channelId, id } = req.params;
   const channelIdentifier = channelId || id;
 
@@ -55,11 +63,15 @@ export const validateChannelIdParam = (
   next();
 };
 
+/**
+ * Validates pagination query params (limit/offset).
+ */
 export const validatePaginationQuery = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
+  void res;
   const { limit, offset } = req.query;
   const errors: ValidationErrorDetail[] = [];
 
@@ -92,11 +104,15 @@ export const validatePaginationQuery = (
   next();
 };
 
+/**
+ * Validates optional fromTime/toTime query parameters in HH:mm format.
+ */
 export const validateTimeQuery = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
+  void res;
   const { fromTime, toTime } = req.query;
   const errors: ValidationErrorDetail[] = [];
   const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;

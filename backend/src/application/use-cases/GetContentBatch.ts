@@ -14,12 +14,18 @@ export interface GetContentBatchResponse {
   notFound: string[];
 }
 
+/**
+ * Retrieves multiple media cards by program ids, returning missing ids separately.
+ */
 export class GetContentBatch {
   constructor(
     private readonly programRepository: IProgramRepository,
     private readonly channelRepository: IChannelRepository
   ) {}
 
+  /**
+   * Fetches the requested items preserving the input order minus duplicates.
+   */
   async execute(
     request: GetContentBatchRequest
   ): Promise<GetContentBatchResponse> {

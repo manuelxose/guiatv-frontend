@@ -23,8 +23,13 @@ import { createDiscoveryRoutes } from './discovery.routes';
 import { ContentController } from '../controllers/ContentController';
 import { createContentRoutes } from './content.routes';
 import { TvController } from '../controllers/TvController';
-import { createTvRoutes } from './tv.routes';
 
+import { createTvRoutes } from './tv.routes';
+import { BlogController } from '../controllers/BlogController';
+
+/**
+ * Dependencies required by every route factory.
+ */
 export interface RoutesDependencies {
   channelController: ChannelController;
   programController: ProgramController;
@@ -35,9 +40,14 @@ export interface RoutesDependencies {
   authController: AuthController;
   discoveryController: DiscoveryController;
   contentController: ContentController;
+
   tvController: TvController;
+  blogController: BlogController;
 }
 
+/**
+ * Registers all v2 routers and shared middlewares.
+ */
 export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   const router = Router();
 

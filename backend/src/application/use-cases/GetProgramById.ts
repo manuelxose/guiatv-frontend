@@ -6,9 +6,15 @@ export interface GetProgramByIdResponse {
   program: ReturnType<typeof ProgramMapper.toClientDTO>;
 }
 
+/**
+ * Retrieves a single program with full details.
+ */
 export class GetProgramById {
   constructor(private readonly programRepository: IProgramRepository) {}
 
+  /**
+   * Looks up a program by id or throws when missing.
+   */
   async execute(id: string): Promise<GetProgramByIdResponse> {
     const program = await this.programRepository.findById(id);
     if (!program) {

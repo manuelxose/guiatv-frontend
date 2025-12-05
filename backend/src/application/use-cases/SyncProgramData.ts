@@ -18,12 +18,18 @@ export interface SyncProgramDataRequest {
   clearCache?: boolean;
 }
 
+/**
+ * Persists batches of program data and optionally clears related caches.
+ */
 export class SyncProgramData {
   constructor(
     private readonly programRepository: IProgramRepository,
     private readonly cacheRepository: ICacheRepository
   ) {}
 
+  /**
+   * Saves the provided programs and triggers cache invalidation when requested.
+   */
   async execute(request: SyncProgramDataRequest): Promise<void> {
     const programs = request.programs.map((p) => Program.create(p));
 

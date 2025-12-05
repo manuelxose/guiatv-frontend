@@ -2,13 +2,25 @@
 
 import { Program } from '../entities/Program';
 
+/**
+ * Lightweight utility service to query program lists.
+ */
 export class ProgramService {
+  /**
+   * Returns the program airing at the current time.
+   */
   getCurrentProgram(programs: Program[]): Program | null {
     const now = new Date();
 
     return programs.find((p) => p.startTime <= now && p.endTime > now) || null;
   }
 
+  /**
+   * Retrieves the next N upcoming programs sorted by start time.
+   *
+   * @param programs - Full program list.
+   * @param count - Amount of items to return (default 3).
+   */
   getNextPrograms(programs: Program[], count: number = 3): Program[] {
     const now = new Date();
 
@@ -18,6 +30,9 @@ export class ProgramService {
       .slice(0, count);
   }
 
+  /**
+   * Filters the given programs that overlap the provided range.
+   */
   filterByTimeRange(
     programs: Program[],
     startTime: Date,
@@ -31,6 +46,9 @@ export class ProgramService {
     );
   }
 
+  /**
+   * Groups programs by channel identifier.
+   */
   groupByChannel(programs: Program[]): Map<string, Program[]> {
     const grouped = new Map<string, Program[]>();
 

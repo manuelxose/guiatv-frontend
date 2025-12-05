@@ -29,6 +29,9 @@ export interface GetProgramLayoutsResponse {
   };
 }
 
+/**
+ * Returns per-channel layout metadata for the TV grid, using cached snapshots when available.
+ */
 export class GetProgramLayouts {
   private readonly layoutVersion = process.env.LAYOUT_VERSION || 'v1';
 
@@ -37,6 +40,9 @@ export class GetProgramLayouts {
     private readonly getPrograms: GetPrograms
   ) {}
 
+  /**
+   * Resolves the layout snapshot for a date applying optional filters.
+   */
   async execute(
     request: GetProgramLayoutsRequest
   ): Promise<GetProgramLayoutsResponse> {

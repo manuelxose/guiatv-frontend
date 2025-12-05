@@ -56,6 +56,7 @@ export class EPGDataSource {
       const chunks: Buffer[] = [];
       const writable = new (require('stream').Writable)({
         write(chunk: Buffer, encoding: string, callback: () => void) {
+          void encoding;
           chunks.push(chunk);
           callback();
         },

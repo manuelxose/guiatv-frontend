@@ -8,6 +8,9 @@ type ICacheRepository = any;
 type IChannelRepository = any;
 type IProgramRepository = any;
 
+/**
+ * Lightweight service container responsible for wiring dependencies manually.
+ */
 export class Container {
   private static instance: Container;
   private dependencies: Map<string, any> = new Map();
@@ -22,6 +25,9 @@ export class Container {
     return Container.instance;
   }
 
+  /**
+   * Bootstraps all infrastructure, repositories, services, and controllers.
+   */
   async initialize(): Promise<void> {
     if (this.initialized) {
       logger.info('Container already initialized');
@@ -312,6 +318,7 @@ export class Container {
     const { DiscoveryController } = await import('../presentation/controllers/DiscoveryController');
     const { ContentController } = await import('../presentation/controllers/ContentController');
     const { TvController } = await import('../presentation/controllers/TvController');
+    const { BlogController } = await import('../presentation/controllers/BlogController');
 
     const channelController = new ChannelController(getAllChannels, getChannelById);
     this.dependencies.set('channelController', channelController);
@@ -359,6 +366,9 @@ export class Container {
 
     const tvController = new TvController(this.get('getNowPlaying'), getPrograms);
     this.dependencies.set('tvController', tvController);
+
+    const blogController = new BlogController();
+    this.dependencies.set('blogController', blogController);
 
     logger.info('Controllers registered');
   }

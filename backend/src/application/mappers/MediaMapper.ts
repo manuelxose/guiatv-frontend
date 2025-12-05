@@ -7,6 +7,9 @@ import {
 } from '../dto/MediaDTO';
 import { ProgramLayoutDTO } from '../services/ProgramLayoutBuilder';
 
+/**
+ * Minimal channel information required to render media cards.
+ */
 type ChannelMeta = {
   id: string;
   name: string;
@@ -16,6 +19,9 @@ type ChannelMeta = {
 
 type ChannelLike = Channel | ChannelMeta | null | undefined;
 
+/**
+ * Normalized input contract used by the card builder.
+ */
 interface CardSource {
   id: string;
   title: string;
@@ -31,7 +37,13 @@ interface CardSource {
   now?: Date;
 }
 
+/**
+ * Utilities to translate domain/program data into discovery-friendly DTOs.
+ */
 export class MediaMapper {
+  /**
+   * Builds a media card from a pre-computed program layout item.
+   */
   static fromProgramLayout(
     program: ProgramLayoutDTO,
     channelLookup: Map<string, ChannelMeta>,
@@ -53,6 +65,9 @@ export class MediaMapper {
     });
   }
 
+  /**
+   * Builds a media card directly from a domain program.
+   */
   static fromProgram(
     program: Program,
     channel: ChannelLike,
@@ -73,6 +88,9 @@ export class MediaMapper {
     });
   }
 
+  /**
+   * Builds a fully enriched detail DTO with related content and schedule.
+   */
   static toDetail(
     program: Program,
     channel: ChannelLike,

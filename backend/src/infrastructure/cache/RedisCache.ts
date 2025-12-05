@@ -3,6 +3,9 @@
 import { createClient, RedisClientType } from 'redis';
 import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
 
+/**
+ * Redis-backed cache repository with resilience defaults.
+ */
 export class RedisCache implements ICacheRepository {
   private client: RedisClientType;
   private isConnected: boolean = false;

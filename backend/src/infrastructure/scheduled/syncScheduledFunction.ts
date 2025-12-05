@@ -13,6 +13,7 @@ import { XMLParser } from '../parsers/XMLParser';
  * Se ejecuta cada 6 horas
  */
 export const syncEPGDataHandler = async (context: any) => {
+  void context;
   const syncLogger = logger.child('SyncScheduled');
 
   try {
@@ -103,6 +104,7 @@ export const syncEPGDataHandler = async (context: any) => {
  * Se ejecuta 15 minutos después del sync
  */
 export const precomputeSchedulesHandler = async (context: any) => {
+  void context;
   const precomputeLogger = logger.child('PrecomputeScheduled');
 
   try {
@@ -160,6 +162,7 @@ export const precomputeSchedulesHandler = async (context: any) => {
  * Se ejecuta diariamente a las 3 AM
  */
 export const cleanOldProgramsHandler = async (context: any) => {
+  void context;
   const cleanLogger = logger.child('CleanScheduled');
 
   try {

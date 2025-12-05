@@ -2,6 +2,9 @@
 
 import cors from 'cors';
 
+/**
+ * Parses allowed origins from environment variable.
+ */
 const parseAllowedOrigins = (): string[] | null => {
   const raw = process.env.ALLOWED_ORIGINS;
   if (!raw) return null;
@@ -10,6 +13,9 @@ const parseAllowedOrigins = (): string[] | null => {
 
 const allowedOrigins = parseAllowedOrigins();
 
+/**
+ * CORS middleware that supports configurable origins and sensible local defaults.
+ */
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
     // Allow non-browser requests (Postman, curl) and same-origin

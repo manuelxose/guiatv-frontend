@@ -2,6 +2,9 @@ import { Router } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { getSwaggerSpec } from '../swagger/swagger.config';
 
+/**
+ * Serves Swagger UI and JSON spec for v2 API.
+ */
 export const createSwaggerRoutes = (): Router => {
   const router = Router();
   const spec = getSwaggerSpec();
@@ -25,6 +28,7 @@ export const createSwaggerRoutes = (): Router => {
 
   // JSON spec
   router.get('/json', (req, res) => {
+    void req;
     res.setHeader('Content-Type', 'application/json');
     res.send(spec);
   });

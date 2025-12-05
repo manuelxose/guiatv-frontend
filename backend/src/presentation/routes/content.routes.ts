@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { ContentController } from '../controllers/ContentController';
 
+/**
+ * Routes for content aggregation endpoints.
+ */
 export const createContentRoutes = (
   controller: ContentController
 ): Router => {

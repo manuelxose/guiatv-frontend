@@ -1,5 +1,8 @@
 // src/v2/shared/utils/dateUtils.ts
 
+/**
+ * Utility helpers to parse, format and manipulate dates used by the EPG domain.
+ */
 export class DateUtils {
   static parseYYYYMMDD(dateStr: string): Date {
     if (!/^\d{8}$/.test(dateStr)) {

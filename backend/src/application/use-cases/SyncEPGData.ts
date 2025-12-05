@@ -33,6 +33,9 @@ export interface SyncEPGDataResult {
   duration: number;
 }
 
+/**
+ * Downloads, parses and persists EPG data from external XML sources.
+ */
 export class SyncEPGData {
   private readonly syncLogger = logger.child('SyncEPGData');
   private readonly deduplicator = new ProgramDeduplicator();
@@ -47,6 +50,9 @@ export class SyncEPGData {
     private readonly tmdbService: TMDBService
   ) {}
 
+  /**
+   * Executes the ingest pipeline including optional caching and enrichment.
+   */
   async execute(request: SyncEPGDataRequest): Promise<SyncEPGDataResult> {
     const startTime = Date.now();
     const errors: string[] = [];

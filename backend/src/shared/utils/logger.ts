@@ -11,6 +11,9 @@ export interface LogMetadata {
   [key: string]: any;
 }
 
+/**
+ * Minimal console-based logger with contextual namespacing and severity filtering.
+ */
 export class Logger {
   constructor(
     private readonly context: string,
@@ -100,7 +103,7 @@ export class Logger {
   }
 }
 
-// Instancia global
+/** Global logger instance scoped to the application root. */
 export const logger = new Logger(
   'App',
   (process.env.LOG_LEVEL as LogLevel) || LogLevel.INFO

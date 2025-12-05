@@ -1,5 +1,8 @@
 // src/v2/domain/value-objects/DateRange.ts
 
+/**
+ * Value object that represents an inclusive time window.
+ */
 export class DateRange {
   private constructor(
     private readonly _start: Date,
@@ -10,10 +13,21 @@ export class DateRange {
     }
   }
 
+  /**
+   * Builds a new range from two Date instances.
+   *
+   * @param start - Range inclusive lower bound.
+   * @param end - Range inclusive upper bound.
+   */
   static create(start: Date, end: Date): DateRange {
     return new DateRange(start, end);
   }
 
+  /**
+   * Builds a range for a single day using a YYYYMMDD string.
+   *
+   * @param dateStr - Date in YYYYMMDD format.
+   */
   static fromString(dateStr: string): DateRange {
     // Format: YYYYMMDD
     if (!/^\d{8}$/.test(dateStr)) {
@@ -38,6 +52,11 @@ export class DateRange {
     return this._end;
   }
 
+  /**
+   * Checks if a given date falls within the range.
+   *
+   * @param date - Date to evaluate.
+   */
   contains(date: Date): boolean {
     return date >= this._start && date <= this._end;
   }

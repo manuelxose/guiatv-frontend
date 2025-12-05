@@ -5,6 +5,9 @@ import { AdminController } from '../controllers/AdminController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { strictRateLimit } from '../middlewares/rateLimit';
 
+/**
+ * Admin/maintenance endpoints used for operational tasks.
+ */
 export const createAdminRoutes = (controller: AdminController): Router => {
   const router = Router();
 

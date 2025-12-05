@@ -2,10 +2,19 @@
 
 import { Channel, ChannelType } from '../entities/Channel';
 import { IChannelRepository } from '../repositories/IChannelRepository';
+import { ChannelId } from '../value-objects/ChannelId';
 
+/**
+ * Domain service with helpers to search and order channels.
+ */
 export class ChannelService {
   constructor(private readonly channelRepository: IChannelRepository) {}
 
+  /**
+   * Returns active channels of a given type ordered by relevance.
+   *
+   * @param type - Distribution type to filter by.
+   */
   async getActiveChannelsByType(type: ChannelType): Promise<Channel[]> {
     const channels = await this.channelRepository.findAll({
       type,
@@ -15,13 +24,15 @@ export class ChannelService {
     return this.sortChannelsByRelevance(channels);
   }
 
+  /**
+   * Finds a channel either by ID or by its normalized name.
+   *
+   * @param idOrName - Identifier or human-readable name.
+   */
   async findChannelByIdOrName(idOrName: string): Promise<Channel | null> {
-    // Intentar primero por ID
-    let channel = await this.channelRepository.findById({
-      value: idOrName,
-    } as any);
+    const channelId = ChannelId.create(idOrName);
+    let channel = await this.channelRepository.findById(channelId);
 
-    // Si no existe, intentar por nombre normalizado
     if (!channel) {
       channel = await this.channelRepository.findByNormalizedName(
         this.normalizeChannelName(idOrName)

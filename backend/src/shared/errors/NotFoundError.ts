@@ -2,6 +2,9 @@
 
 import { AppError } from './AppError';
 
+/**
+ * Error thrown when a requested resource cannot be found.
+ */
 export class NotFoundError extends AppError {
   constructor(resource: string, identifier?: string) {
     const message = identifier

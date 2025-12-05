@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { TvController } from '../controllers/TvController';
 
+/**
+ * TV endpoints exposing now-playing and schedule summaries.
+ */
 export const createTvRoutes = (controller: TvController): Router => {
   const router = Router();
 

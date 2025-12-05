@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { AuthController } from '../controllers/AuthController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 
+/**
+ * Authentication endpoints (Google login + session validation).
+ */
 export const createAuthRoutes = (controller: AuthController): Router => {
   const router = Router();
 

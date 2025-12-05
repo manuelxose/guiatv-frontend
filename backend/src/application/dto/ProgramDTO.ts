@@ -2,6 +2,9 @@
 
 import { ChannelDTO } from './ChannelDTO';
 
+/**
+ * Transport-friendly representation of a program.
+ */
 export interface ProgramDTO {
   id: string;
   channelId: string;
@@ -19,6 +22,9 @@ export interface ProgramDTO {
   details?: Record<string, string>;
 }
 
+/**
+ * Paginated list response for programs.
+ */
 export interface ProgramListDTO {
   programs: ProgramDTO[];
   meta: {
@@ -29,6 +35,9 @@ export interface ProgramListDTO {
   };
 }
 
+/**
+ * API response model for a day schedule grouped by channel.
+ */
 export interface ScheduleDTO {
   date: string;
   channels: Array<{

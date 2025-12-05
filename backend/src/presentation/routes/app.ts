@@ -4,12 +4,18 @@ import express, { Application } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { createV2Routes, RoutesDependencies } from './index';
+import { createBlogRoutes } from './blog.routes';
 import { corsMiddleware } from '../middlewares/cors';
 import { compressionMiddleware } from '../middlewares/compression';
 import { requestLogger } from '../middlewares/requestLogger';
 import { errorHandler } from '../middlewares/errorHandler';
 import { notFoundHandler } from '../middlewares/notFoundHandler';
 
+/**
+ * Builds and configures the Express application with middlewares and v2 routes.
+ *
+ * @param dependencies - Controllers and shared dependencies injected from the container.
+ */
 export const createApp = (dependencies: RoutesDependencies): Application => {
   const app = express();
 
@@ -38,6 +44,9 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
   app.use(compressionMiddleware);
   app.use(express.urlencoded({ extended: true }));
   app.use(requestLogger);
+
+  // Rutas Blog (Legacy / separate from V2)
+  app.use('/blog', createBlogRoutes(dependencies.blogController));
 
   // Rutas v2
   const v2Router = createV2Routes(dependencies);
@@ -79,6 +88,7 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
    *         $ref: '#/components/responses/InternalServerError'
    */
   app.get('/', (req, res) => {
+    void req;
     res.json({
       success: true,
       data: {

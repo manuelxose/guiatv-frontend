@@ -1,5 +1,8 @@
 // src/v2/application/dto/ChannelDTO.ts
 
+/**
+ * Serializable representation of a channel for API responses.
+ */
 export interface ChannelDTO {
   id: string;
   name: string;
@@ -12,6 +15,9 @@ export interface ChannelDTO {
   isActive: boolean;
 }
 
+/**
+ * Paginated response shape for lists of channels.
+ */
 export interface ChannelListDTO {
   channels: ChannelDTO[];
   meta: {
