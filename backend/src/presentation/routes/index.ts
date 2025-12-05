@@ -18,6 +18,12 @@ import { SSRController } from '../controllers/SSRController';
 import { createSSRRoutes } from './ssr.routes';
 import { AuthController } from '../controllers/AuthController';
 import { createAuthRoutes } from './auth.routes';
+import { DiscoveryController } from '../controllers/DiscoveryController';
+import { createDiscoveryRoutes } from './discovery.routes';
+import { ContentController } from '../controllers/ContentController';
+import { createContentRoutes } from './content.routes';
+import { TvController } from '../controllers/TvController';
+import { createTvRoutes } from './tv.routes';
 
 export interface RoutesDependencies {
   channelController: ChannelController;
@@ -27,6 +33,9 @@ export interface RoutesDependencies {
   adminController: AdminController;
   ssrController: SSRController;
   authController: AuthController;
+  discoveryController: DiscoveryController;
+  contentController: ContentController;
+  tvController: TvController;
 }
 
 export const createV2Routes = (dependencies: RoutesDependencies): Router => {
@@ -55,6 +64,12 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
     createScheduleRoutes(dependencies.scheduleController)
   );
   router.use('/layouts', createLayoutRoutes(dependencies.layoutController));
+  router.use(
+    '/discovery',
+    createDiscoveryRoutes(dependencies.discoveryController)
+  );
+  router.use('/content', createContentRoutes(dependencies.contentController));
+  router.use('/tv', createTvRoutes(dependencies.tvController));
 
   router.use('/admin', createAdminRoutes(dependencies.adminController));
   router.use('/ssr', createSSRRoutes(dependencies.ssrController));

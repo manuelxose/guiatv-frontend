@@ -151,6 +151,7 @@ export class Container {
     const { ProgramService } = await import('../domain/services/ProgramService');
     const { TMDBService } = await import('../infrastructure/external/TMDBService');
     const { AuthService } = await import('../domain/services/AuthService');
+    const { BlogService } = await import('../infrastructure/external/BlogService');
 
     const channelRepository = this.get<IChannelRepository>('channelRepository');
     const channelService = new ChannelService(channelRepository);
@@ -172,6 +173,18 @@ export class Container {
       this.get('userRepository')
     );
     this.dependencies.set('authService', authService);
+
+    const blogBaseUrl =
+      process.env.BLOG_API_URL ||
+      process.env.API_BLOG ||
+      process.env.BLOG_BASE_URL;
+    if (blogBaseUrl) {
+      const blogService = new BlogService({
+        baseUrl: blogBaseUrl,
+        timeoutMs: Number(process.env.BLOG_API_TIMEOUT_MS) || 5000,
+      });
+      this.dependencies.set('blogService', blogService);
+    }
 
     logger.info('Services registered');
   }
@@ -196,6 +209,10 @@ export class Container {
     const { CleanOldPrograms } = await import('../application/use-cases/CleanOldPrograms');
     const { GetNowPlaying } = await import('../application/use-cases/GetNowPlaying');
     const { ResetSystem } = await import('../application/use-cases/ResetSystem');
+    const { GetDiscoveryHome } = await import('../application/use-cases/GetDiscoveryHome');
+    const { SearchDiscoveryContent } = await import('../application/use-cases/SearchDiscoveryContent');
+    const { GetContentDetail } = await import('../application/use-cases/GetContentDetail');
+    const { GetContentBatch } = await import('../application/use-cases/GetContentBatch');
 
     const getAllChannels = new GetAllChannels(channelRepository, cacheRepository, channelService);
     this.dependencies.set('getAllChannels', getAllChannels);
@@ -248,6 +265,33 @@ export class Container {
     );
     this.dependencies.set('resetSystem', resetSystem);
 
+    const getDiscoveryHome = new GetDiscoveryHome(
+      getPrograms,
+      getNowPlaying,
+      cacheRepository,
+      this.dependencies.get('blogService')
+    );
+    this.dependencies.set('getDiscoveryHome', getDiscoveryHome);
+
+    const searchDiscoveryContent = new SearchDiscoveryContent(
+      programRepository,
+      channelRepository
+    );
+    this.dependencies.set('searchDiscoveryContent', searchDiscoveryContent);
+
+    const getContentDetail = new GetContentDetail(
+      programRepository,
+      channelRepository,
+      cacheRepository
+    );
+    this.dependencies.set('getContentDetail', getContentDetail);
+
+    const getContentBatch = new GetContentBatch(
+      programRepository,
+      channelRepository
+    );
+    this.dependencies.set('getContentBatch', getContentBatch);
+
     logger.info('Use Cases registered');
   }
 
@@ -265,6 +309,9 @@ export class Container {
     const { AdminController } = await import('../presentation/controllers/AdminController');
     const { SSRController } = await import('../presentation/controllers/SSRController');
     const { AuthController } = await import('../presentation/controllers/AuthController');
+    const { DiscoveryController } = await import('../presentation/controllers/DiscoveryController');
+    const { ContentController } = await import('../presentation/controllers/ContentController');
+    const { TvController } = await import('../presentation/controllers/TvController');
 
     const channelController = new ChannelController(getAllChannels, getChannelById);
     this.dependencies.set('channelController', channelController);
@@ -297,6 +344,21 @@ export class Container {
 
     const authController = new AuthController(this.get('authService'));
     this.dependencies.set('authController', authController);
+
+    const discoveryController = new DiscoveryController(
+      this.get('getDiscoveryHome'),
+      this.get('searchDiscoveryContent')
+    );
+    this.dependencies.set('discoveryController', discoveryController);
+
+    const contentController = new ContentController(
+      this.get('getContentDetail'),
+      this.get('getContentBatch')
+    );
+    this.dependencies.set('contentController', contentController);
+
+    const tvController = new TvController(this.get('getNowPlaying'), getPrograms);
+    this.dependencies.set('tvController', tvController);
 
     logger.info('Controllers registered');
   }

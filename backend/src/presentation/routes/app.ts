@@ -48,6 +48,24 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
    * @openapi
    * /:
    *   get:
+   *     summary: API Health Check and Welcome Message
+   *     description: Returns a welcome message and API version information
+   *     tags:
+   *       - General
+   *     responses:
+   *       200:
+   *         description: Successful response
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
    *                     message:
    *                       type: string
    *                       example: Welcome to Guía TV API

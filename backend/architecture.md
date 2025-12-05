@@ -21,3 +21,9 @@
 - Claves de `/programs` incluyen `date`, `channels`, `timeSlot`, `fields`, `page/limit`, `country`, `channelTypes`.
 - Respuesta estándar: `{ date, timeSlots, channels: [{id,name,icon?,type?,country?,countryCode?}], programs: ProgramLayoutDTO[], meta }`.
 - Ventana canónica (ayer/hoy/mañana/pasado) recomendada para precálculo diario; subir `LAYOUT_VERSION` al cambiar layout y recalentar.
+
+## BFF / Discovery (en progreso)
+- Nuevas rutas sobre la capa existente: /v2/discovery/home, /v2/discovery/search, /v2/content/:id, /v2/content/batch, /v2/tv/now, /v2/tv/schedule.
+- Se apoyan en GetPrograms/GetNowPlaying y entregan DTOs ligeros para vistas (MediaCardDTO, HomeViewDTO, MediaDetailDTO).
+- Cache corto configurable por env: home 120s (DISCOVERY_HOME_CACHE_TTL_SEC), detalle 1800s (CONTENT_DETAIL_CACHE_TTL_SEC).
+

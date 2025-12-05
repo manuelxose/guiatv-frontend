@@ -135,6 +135,12 @@ ProgramSchema.index({ date: 1, channelId: 1, startUtc: 1 });
 ProgramSchema.index({ channelId: 1, startUtc: 1 });
 ProgramSchema.index({ date: 1, timeSlotIndex: 1 });
 ProgramSchema.index({ startUtc: 1 });
+ProgramSchema.index({ channelId: 1, category: 1, startTime: 1 });
+ProgramSchema.index({
+  title: 'text',
+  description: 'text',
+  category: 'text',
+});
 
 /**
  * Program model

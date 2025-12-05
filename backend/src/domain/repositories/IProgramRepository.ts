@@ -19,6 +19,15 @@ export interface IProgramRepository {
   ): Promise<Program[]>;
   findByDate(date: string, fields?: 'minimal' | 'full'): Promise<Program[]>; // YYYYMMDD format
   findNowPlaying(channelIds: string[], at: Date): Promise<Program[]>;
+  search(params: {
+    date: string;
+    text?: string;
+    category?: string;
+    channelIds?: string[];
+    limit: number;
+    offset?: number;
+    fields?: 'minimal' | 'full';
+  }): Promise<{ items: Program[]; total: number }>;
   save(program: Program): Promise<void>;
   saveBatch(programs: Program[]): Promise<void>;
   deleteByDateRange(dateRange: DateRange): Promise<void>;

@@ -205,6 +205,63 @@ export class MongoProgramRepository implements IProgramRepository {
   }
 
   /**
+   * Search programs for discovery/search use case with Mongo filters.
+   */
+  async search(params: {
+    date: string;
+    text?: string;
+    category?: string;
+    channelIds?: string[];
+    limit: number;
+    offset?: number;
+    fields?: 'minimal' | 'full';
+  }): Promise<{ items: Program[]; total: number }> {
+    try {
+      const dateRange = this.parseDateToRange(params.date);
+      const query: any = {
+        startTime: { $lt: dateRange.end },
+        endTime: { $gt: dateRange.start },
+      };
+
+      if (params.channelIds?.length) {
+        query.channelId = { $in: params.channelIds };
+      }
+
+      if (params.category) {
+        query.category = new RegExp(params.category, 'i');
+      }
+
+      if (params.text) {
+        const regex = new RegExp(params.text, 'i');
+        query.$or = [{ title: regex }, { description: regex }];
+      }
+
+      const projection =
+        params.fields === 'minimal'
+          ? { description: 0, image: 0 }
+          : undefined;
+
+      const docs = await ProgramModel.find(query)
+        .sort({ startTime: 1 })
+        .skip(params.offset || 0)
+        .limit(params.limit)
+        .select(projection as any)
+        .lean()
+        .exec() as ProgramDoc[];
+
+      const total = await ProgramModel.countDocuments(query).exec();
+
+      return {
+        items: docs.map((doc: ProgramDoc) => this.mapToDomain(doc)),
+        total,
+      };
+    } catch (error) {
+      logger.error('Error searching programs', { params, error });
+      throw error;
+    }
+  }
+
+  /**
    * Parse YYYYMMDD string to date range (start of day to end of day)
    */
   private parseDateToRange(dateStr: string): { start: Date; end: Date } {
