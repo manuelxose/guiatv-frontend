@@ -4,6 +4,7 @@ import { GetPrograms } from './GetPrograms';
 import { GetAllChannels } from './GetAllChannels';
 import { ChannelMapper } from '../mappers/ChannelMapper';
 import { logger } from '../../shared/utils/logger';
+import { DateUtils } from '../../shared/utils/dateUtils';
 import { IStorageRepository } from '@/domain/repositories/IStorageRepository';
 import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
 
@@ -39,13 +40,14 @@ export class PrecomputeSchedule {
    * Precompute for the canonical 4-day window: yesterday, today, tomorrow, after_tomorrow.
    */
   async precomputeCanonicalWindow(fields: 'minimal' | 'full' = 'full'): Promise<void> {
-    const dates = ['yesterday', 'today', 'tomorrow', 'after_tomorrow'];
-    for (const date of dates) {
+    const aliases = ['yesterday', 'today', 'tomorrow', 'after_tomorrow'];
+    for (const alias of aliases) {
       try {
+        const date = DateUtils.parseDateAlias(alias);
         await this.execute({ date, fields });
       } catch (error) {
         this.precomputeLogger.error('Failed precompute for window', {
-          date,
+          alias,
           error,
         });
       }

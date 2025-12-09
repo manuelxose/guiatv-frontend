@@ -1,325 +1,262 @@
-# Guía TV API v2 (BFF) - README Completo
+# Guía TV API v2 (BFF) - Manual de Referencia
 
-> Estado: Activo. Última actualización: 2025-12-05  
-> Stack: Node.js 22, TypeScript, Express, MongoDB, Redis (opcional), Axios
+> **Estado**: Activo  
+> **Versión**: 2.0.0  
+> **Stack**: Node.js 22, TypeScript, Express, MongoDB, Valkey (opcional), Axios
 
-## Índice rápido
-- [Visión general](#visión-general)
-- [Entorno y configuración](#entorno-y-configuración)
-- [Arranque y scripts](#arranque-y-scripts)
-- [Dominios y endpoints](#dominios-y-endpoints)
-- [Contratos de respuesta](#contratos-de-respuesta)
-- [Cache, precálculo e índices](#cache-precálculo-e-índices)
-- [Arquitectura interna](#arquitectura-interna)
-- [Errores y formato estándar](#errores-y-formato-estándar)
-- [Notas SSR y BFF](#notas-ssr-y-bff)
-- [FAQ de despliegue](#faq-de-despliegue)
+Este documento sirve como referencia completa para la API v2 de Guía TV. Esta API actúa como un **Backend-For-Frontend (BFF)** unificado, optimizado para vistas de cliente modernas, además de mantener compatibilidad con endpoints _legacy_ para funcionalidades del núcleo.
 
 ---
 
-## Visión general
-API unificada orientada a vistas (BFF) para Guía TV. Expone:
-- **Discovery**: home agregada (Now/Qué ver/Blog), búsqueda unificada.
-- **Content**: ficha de contenido lineal (programas) con expansiones.
-- **TV**: parrilla y “qué hay ahora”.
-- **Legacy core**: channels/programs/layouts/schedules, admin y SSR.
+## Índice
 
-### Tech principales
-- Express + middlewares (CORS, compresión, rate limit general).
-- MongoDB con Mongoose (programs, channels, schedules, users).
-- Redis opcional como cache (memoria por defecto).
-- Axios para TMDB y Blog.
-- Jobs cron (sync EPG, precompute, cleanup) cuando se requiere.
-
----
-
-## Entorno y configuración
-Variables clave (ver `.env.example`):
-- `PORT` (por defecto 8080)
-- `MONGODB_URI`
-- `CACHE_TYPE` (`redis` | `memory`), `REDIS_URL`
-- `STORAGE_ADAPTER` (`local`|`s3`) y credenciales S3 si aplica
-- `TMDB_API_KEY` (en ingestion)
-- `JWT_SECRET`, `GOOGLE_CLIENT_ID` (auth)
-- `BLOG_API_URL` (ej: `https://blog.guiatv.com/api`) para highlights
-- TTLs:
-  - `PROGRAMS_CACHE_TTL_SEC` (default 300)
-  - `DISCOVERY_HOME_CACHE_TTL_SEC` (default 120)
-  - `CONTENT_DETAIL_CACHE_TTL_SEC` (default 1800)
-- Layout:
-  - `LAYOUT_VERSION` (para invalidar snapshots)
-
-### Mock de blog
-Si `BLOG_API_URL` falla o devuelve vacío, se sirven 3 posts mock por defecto.
+1. [Visión General](#visión-general)
+2. [Configuración y Despliegue](#configuración-y-despliegue)
+3. [Scripts de Gestión](#scripts-de-gestión)
+4. [Dominios y Endpoints](#dominios-y-endpoints)
+    - [Discovery (Home & Search)](#discovery-home--search)
+    - [Content (Detalle & Batch)](#content-detalle--batch)
+    - [TV (Directo & Parrilla)](#tv-directo--parrilla)
+    - [Interactive (Auth & User)](#interactive-auth--user)
+    - [Blog / CMS](#blog--cms)
+    - [Legacy Core](#legacy-core)
+    - [Admin & Operaciones](#admin--operaciones)
+5. [Contratos de Datos (DTOs)](#contratos-de-datos-dtos)
+6. [Estrategia de Cache y Rendimiento](#estrategia-de-cache-y-rendimiento)
+7. [Manejo de Errores](#manejo-de-errores)
 
 ---
 
-## Arranque y scripts
+## Visión General
+
+La API v2 centraliza la lógica de negocio y presentación para clientes web y móviles.
+
+- **Discovery**: Agrega contenido de diversas fuentes (EPG, Blog, TMDB) para la portada y búsqueda.
+- **Content**: Enriquece la información de programas con metadatos VOD, sociales y relacionados.
+- **TV**: Gestión eficiente de la parrilla lineal y estado "en vivo".
+- **Performance**: Uso intensivo de *precálculo* (JSON estáticos) para ventanas de tiempo canónicas (ayer, hoy, mañana).
+
+---
+
+## Configuración y Despliegue
+
+Variables de entorno críticas (ver `.env.example`):
+
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `PORT` | Puerto de escucha | `8080` |
+| `MONGODB_URI` | Conexión a MongoDB | - |
+| `CACHE_TYPE` | Tipo de caché (`memory` o `valkey`) | `memory` |
+| `REDIS_URL` | URL de conexión Valkey | - |
+| `TMDB_API_KEY` | API Key para enriquecimiento de metadatos | - |
+| `BLOG_API_URL` | URL del CMS externo (WordPress/Headless) | - |
+| `JWT_SECRET` | Secreto para firma de tokens de sesión | - |
+| `STORAGE_ADAPTER`| Almacenamiento de archivos (`local` o `s3`) | `local` |
+
+### Notas de Producción
+- **Indices**: Al arrancar, el sistema verifica y crea los índices de MongoDB necesarios (`metrics.ensureMongoCollectionsAndIndexes`).
+- **Storage**: En modo `local`, los archivos se sirven desde `/storage` (mapeado estáticamente). En `s3`, se generan URLs firmadas o públicas.
+
+---
+
+## Scripts de Gestión
+
 ```bash
-cd backend
+# Instalación y Build
 npm install
-npm run build           # tsc + tsc-alias
-npm start               # node dist/server/index.js
+npm run build           # Compila TS y resuelve alias
 
-# Desarrollo
-npm run dev             # build + start
-npm run build:watch
+# Ejecución
+npm start               # Inicia servidor (dist/server/index.js)
+npm run dev             # Modo desarrollo (watch)
 
-# Jobs
-npm run job:syncEPG
-npm run job:precompute
-npm run job:clean
+# Jobs Manuales (Cron)
+npm run job:syncEPG     # Sincroniza EPG (descarga + parseo + guardado)
+npm run job:precompute  # Genera JSONs estáticos de parrilla
+npm run job:clean       # Limpia programas antiguos
 ```
 
-Swagger: `/v2/docs` (UI) y `/v2/docs/json`.
-Health: `/health` y `/v2/admin/health` (detallado).
+---
+
+## Dominios y Endpoints
+
+Base URL: `http://host:port/v2`  
+Header opcional: `x-api-key` (si se configura protección global).
+
+### Discovery (Home & Search)
+
+Endpoints orientados a la exploración de contenido.
+
+#### `GET /discovery/home`
+Obtiene la vista agregada de la portada.
+- **Query Params**:
+  - `date`: `today` (default), `tomorrow`, `YYYYMMDD`.
+  - `channelTypes`: Filtro de canales (ej: `TDT,AUTONOMICO`).
+- **Respuesta (`HomeViewDTO`)**:
+  - `hero`: Elementos destacados para el carrusel principal.
+  - `whatToWatch`: Recomendaciones del día ("Qué ver hoy").
+  - `liveNow`: Programas destacados en emisión actual.
+  - `blogHighlights`: Últimas noticias del blog.
+- **Cache**: TTL corto (120s).
+
+#### `GET /discovery/search`
+Búsqueda unificada de contenido.
+- **Query Params**:
+  - `q`: Término de búsqueda (requerido).
+  - `limit`: Resultados por página (max 200).
+  - `page`: Paginación.
+  - `genre`, `category`: Filtros opcionales.
+- **Respuesta**: Lista paginada de `MediaCardDTO`.
+
+### Content (Detalle & Batch)
+
+Endpoints para fichas de contenido y listas agregadas.
+
+#### `GET /content/:id`
+Detalle completo de un programa o contenido.
+- **Path Params**: `id` (ID del programa).
+- **Query Params**:
+  - `expand`: CSV opcional (`related,schedule`).
+- **Respuesta (`MediaDetailDTO`)**:
+  - Datos básicos + imágenes de alta calidad (TMDB).
+  - `whereToWatch`: Opciones de visualización (Canal lineal, Plataformas VOD).
+  - `schedule`: Próximas emisiones.
+- **Cache**: TTL medio (30 min).
+
+#### `GET /content/batch`
+Hidratación masiva de tarjetas (para favoritos o historiales).
+- **Query Params**: `ids` (CSV de IDs).
+- **Respuesta**: `{ items: MediaCardDTO[], notFound: string[] }`.
+
+### TV (Directo & Parrilla)
+
+#### `GET /tv/now`
+Estado actual de la parrilla ("Ahora en TV").
+- **Respuesta**: Lista de canales con su programa actual y el siguiente.
+- **Cache**: TTL muy corto (30s) o nulo.
+
+#### `GET /tv/schedule`
+Parrilla de programación completa.
+- **Query Params**:
+  - `date`: `today`, `tomorrow`, `YYYYMMDD`.
+  - `channelTypes`: Filtra canales (TDT, CABLE, etc).
+  - `timeSlot`: Filtro por franja horaria (0-7).
+- **Respuesta**: Estructura optimizada para renderizado de parrilla (TimeSlots + Canales + Programas posicionados).
+- **Optimización**: Intenta servir desde JSON precalculado (`storage/schedules/`) para velocidad máxima.
+
+### Interactive (Auth & User)
+
+#### `POST /auth/google`
+Login social con Google.
+- **Body**: `{ "token": "google_id_token" }`
+- **Respuesta**: `{ "token": "jwt_access_token", "user": { ... } }`
+
+#### `GET /auth/me`
+Obtiene el perfil del usuario actual.
+- **Headers**: `Authorization: Bearer <jwt_token>`
+
+#### `POST /auth/logout`
+Cierra la sesión (idealmente invalida token si se usa lista negra).
+
+### Blog / CMS
+
+Endpoints proxy o mock para contenido editorial. Accesibles bajo ruta raíz `/blog` (no `/v2/blog`).
+
+#### `GET /blog`
+Lista de posts recientes.
+- **Query**: `slug` (para detalle), `limit`.
+
+#### `GET /blog/categories`
+Lista de categorías del blog.
+
+### Legacy Core
+
+Endpoints RESTful clásicos sobre recursos base. Útiles para integraciones directas.
+
+- `GET /channels`: Listado de canales.
+- `GET /programs`: Búsqueda cruda de programas (sin DTOs de vista UI).
+- `GET /schedules/:date`: Raw schedule data.
+
+### Admin & Operaciones
+
+Endpoints de mantenimiento. **Proteger en producción**.
+
+> **Nota Async**: Todos los endpoints de escritura/proceso (`POST`) aceptan el parámetro `"async": true` en el body. Esto devuelve inmediatamente un `202 Accepted` y ejecuta la tarea en segundo plano, evitando timeouts HTTP en operaciones largas.
+
+#### `POST /admin/sync`
+Fuerza la descarga y procesado del EPG.
+- **Body**: `{ "date": "today", "forceRefresh": true, "async": true }`
+
+#### `POST /admin/precompute`
+Genera los JSON estáticos para una fecha.
+- **Body**: `{ "date": "today", "async": true }`
+
+#### `POST /admin/precompute-window`
+Genera JSONs para toda la ventana canónica (Ayer, Hoy, Mañana, Pasado).
+- **Body**: `{ "fields": "full", "async": true }`
+
+#### `POST /admin/reset`
+**Peligroso**. Borra base de datos, caché y almacenamiento, y reinicia la sincronización desde cero.
+- **Body**: `{ "async": true }`
 
 ---
 
-## Dominios y endpoints
-Base URL local: `http://localhost:<PORT>/v2`
+## Contratos de Datos (DTOs)
 
-### Discovery & Content (BFF)
-- Ejemplos:
-  - `curl "http://localhost:8080/v2/discovery/home?date=today&channelTypes=TDT,AUTONOMICO"`
-  - `curl "http://localhost:8080/v2/discovery/search?q=thriller&genre=crime&limit=20&page=1"`
-- `GET /discovery/home`
-  - Query: `date?` (alias `today|yesterday|tomorrow|after_tomorrow|YYYYMMDD`), `country?`, `channelTypes?` (CSV), `timeSlot?`, `fields? (minimal|full)`
-  - Retorna `HomeViewDTO` con hero, qué ver hoy, en directo y `blogHighlights`.
-  - Cache: TTL corto (default 120s).
-- `GET /discovery/search`
-  - Query: `q` (requerido), `date?`, `genre?`, `platform?` (mapea a tipo de canal), `type?` (por ahora solo `program`), `limit?` (<=200), `page?` (>=1), `country?`, `channelTypes?` (CSV)
-  - Busca en Mongo con filtros y devuelve `items: MediaCardDTO[]` + meta `total/page/limit/date`.
-- `GET /content/:id`
-  - Query: `expand?=related,schedule` (CSV)
-  - Retorna `MediaDetailDTO` con `whereToWatch` (lineal + VOD si hay datos), `socialSummary`, `related`, `schedule`.
-  - Cache: TTL default 1800s.
-- `GET /content/batch?ids=1,2,3`
-  - Hidratación rápida de tarjetas; devuelve `{ items: MediaCardDTO[], notFound: [] }`.
-
-### TV (lineal)
-- Ejemplos:
-  - `curl "http://localhost:8080/v2/tv/now"`
-  - `curl "http://localhost:8080/v2/tv/schedule?date=today&channelTypes=TDT&timeSlot=6&limit=500"`
-- `GET /tv/now`
-  - Programas en emisión por canal. Usa `GetNowPlaying`.
-- `GET /tv/schedule`
-  - Query: `date` (alias/fecha), `channel?`, `channels?` (CSV), `time_window?` o `timeSlot?`, `fields?`, `limit?`, `country?`, `channelTypes?`
-  - Retorna `timeSlots`, canales y `ProgramLayoutDTO[]` (misma forma que `/programs`).
-
-### Legacy core (v2 ya existente)
-- Ejemplos:
-  - `curl "http://localhost:8080/v2/programs?date=today&channelTypes=TDT&limit=5000"`
-  - `curl "http://localhost:8080/v2/channels/la-1/programs?date=today&fields=minimal"`
-  - `curl "http://localhost:8080/v2/programs/prog-123"`
-- `GET /channels`
-- `GET /channels/:id/programs`
-- `GET /programs`
-  - Query: `date` (required), `channels?`, `timeSlot?`, `fields? (minimal|full)`, `page?`, `limit?`, `country?`, `channelTypes?`
-- `GET /programs/:id`
-- `GET /schedules/:date`
-- `GET /schedules/:date/channels`
-- `GET /layouts/:date`
-- `GET /ssr/now-playing`
-
-### Admin (proteger en prod)
-- Ejemplos (requieren protección en producción):
-  - `curl -X POST "http://localhost:8080/v2/admin/sync" -H "Content-Type: application/json" -d '{"date":"today","forceRefresh":true}'`
-  - `curl -X POST "http://localhost:8080/v2/admin/precompute-window" -H "Content-Type: application/json" -d '{"fields":"minimal"}'`
-  - `curl -X POST "http://localhost:8080/v2/admin/cache/clear" -H "Content-Type: application/json" -d '{"pattern":"precomputed:*"}'`
-- `POST /admin/sync` (ingesta XML EPG)
-- `POST /admin/precompute`
-- `POST /admin/precompute-window`
-- `POST /admin/cleanup`
-- `POST /admin/cache/clear`
-- `POST /admin/reset`
-- `GET /admin/health`
-
-> **Nota sobre Timeouts**: Los procesos de sync, precompute y reset pueden ser muy largos (> 60s).  
-> Para evitar errores de timeout HTTP (504) o bloqueo, **se recomienda usar el parámetro `async: true`** en el body JSON.  
-> Esto devolverá inmediatamente un `202 Accepted` y el proceso continuará en background.
-> Ejemplo:
-> ```bash
-> curl -X POST "http://localhost:8080/v2/admin/reset" \
->      -H "Content-Type: application/json" \
->      -d '{"async":true}'
-> ```
-
-### Auth (Google OAuth)
-- Ejemplos:
-  - `curl -X POST "http://localhost:8080/v2/auth/google" -H "Content-Type: application/json" -d '{"token":"<google_id_token>"}'`
-  - `curl "http://localhost:8080/v2/auth/me" -H "Authorization: Bearer <jwt>" `
-- `POST /auth/google` (intercambio token Google -> JWT local)
-- `GET /auth/me` (perfil usando JWT)
-
----
-
-## Contratos de respuesta
-Formato estándar:
+Formato de respuesta estándar:
 ```json
 {
   "success": true,
-  "data": { ... },
-  "meta": {
-    "timestamp": "ISO",
+  "data": { ... }, // Objeto o Array principal
+  "meta": {        // Metadatos de paginación, cache, timestamp
+    "total": 100,
     "cached": true,
-    "total": 123
-  },
-  "error": { "code": "...", "message": "...", "details": {} }
-}
-```
-
-### DTOs BFF
-`MediaCardDTO`
-```json
-{
-  "id": "movie_123",
-  "type": "program",
-  "title": "Inception",
-  "subtitle": "22:00-00:10 • Antena 3 • Sci-Fi",
-  "image": { "url": "https://...", "aspectRatio": 0.67 },
-  "badges": ["TDT", "Sci-Fi"],
-  "rating": { "average": 8.8, "count": 2500 },
-  "context": {
-    "schedule": {
-      "channel": "Antena 3",
-      "channelId": "antena_3",
-      "start": "2025-11-27T21:00:00.000Z",
-      "end": "2025-11-27T23:00:00.000Z",
-      "live": true,
-      "progressPercent": 45
-    },
-    "userInteraction": { "inWatchlist": false, "seen": false, "liked": false }
+    "timestamp": "ISO-8601"
   }
 }
 ```
 
-`MediaDetailDTO`
-```json
-{
-  "id": "prog_123",
-  "type": "program",
-  "title": "Inception",
-  "subtitle": "22:00-00:10 • Antena 3 • Sci-Fi",
-  "image": { "url": "...", "aspectRatio": 0.67 },
-  "whereToWatch": [
-    { "provider": "Antena 3", "price": "linear" },
-    { "provider": "Netflix", "link": "https://...", "price": "flatrate" }
-  ],
-  "socialSummary": {
-    "friendsRating": 8.3,
-    "topReview": { "user": "jdoe", "text": "Muy buena" }
-  },
-  "related": [/* MediaCardDTO[] */],
-  "schedule": [/* MediaCardDTO[] */],
-  "ratings": { "average": 8.8, "count": 2500 }
-}
-```
-
-`HomeViewDTO`
-```json
-{
-  "hero": [/* MediaCardDTO[] */],
-  "whatToWatch": { "title": "Qué ver hoy", "items": [/* MediaCardDTO[] */] },
-  "liveNow": { "title": "En directo", "items": [/* MediaCardDTO[] */] },
-  "blogHighlights": [
-    { "title": "Top 10 series...", "slug": "top-10-series-maraton", "excerpt": "...", "image": { "url": "...", "aspectRatio": 1.6 } }
-  ],
-  "generatedAt": "ISO"
-}
-```
-
-`ProgramLayoutDTO` (resumen)
-- Campos principales: `id`, `channelId`, `title`, `start`, `end`, `durationMinutes`, `category`, `image?`, `description?`, `rating?`, `timeSlotIndex`, `gridColumnStart/End`, `layerIndex`, `visibleStartTime/visibleEndTime`, `crossesMidnight`, `pxStart/pxWidth`, `layoutsBySlot[]`.
-
----
-
-## Cache, precálculo e índices
-### Cache HTTP / CDN (recomendado)
-- `/tv/now`: 30s
-- `/discovery/home`: 1-5 min (TTL corto)
-- `/content/{id}`: 1h + SWR
-- `/tv/schedule` y `/programs`: 5-10 min (o controlado por env)
-
-### Cache server (Redis/memoria)
-- `precomputed:programs:<date>:<fields>` (programas completos)
-- `schedule:json:<date>:<fields>` (snapshot precalculado)
-- `channels:meta:v2`
-- TTL por defecto 300s (ajustable)
-
-### Precálculo
-- Jobs `/admin/precompute` y `/admin/precompute-window` generan:
-  - JSON en `storage/schedules/<date>.json`
-  - Documentos en colección `schedules`
-  - Calientan cache `precomputed:*` y `schedule:json:*`
-
-### Índices Mongo (programs)
-- Básicos: `{id}`, `{channelId,startTime}`, `{startTime,endTime}`, `{date,startMinutes}`, `{date,channelId,startTime}`, `{timeSlotIndex}`, `{channelId,category,startTime}`
-- Texto: `{ title: 'text', description: 'text', category: 'text' }` (para search)
-
----
-
-## Arquitectura interna
-- **Presentación**: controllers + routes. Nuevos controllers BFF: `DiscoveryController`, `ContentController`, `TvController`. Legacy: `ProgramController`, `ChannelController`, `LayoutController`, `ScheduleController`, `AdminController`, `SSRController`, `AuthController`.
-- **Aplicación (use-cases)**:
-  - `GetDiscoveryHome` (home agregada + blog)
-  - `SearchDiscoveryContent` (búsqueda Mongo)
-  - `GetContentDetail`, `GetContentBatch`
-  - `GetPrograms`, `GetProgramById`, `GetProgramLayouts`
-  - `GetNowPlaying`
-  - `SyncEPGData`, `PrecomputeSchedule`, `ResetSystem`, `CleanOldPrograms`
-- **Servicios**:
-  - `ProgramLayoutBuilder` (layouts CSS grid + px)
-  - `ProgramDeduplicator`
-  - Externos: `TMDBService`, `BlogService`
-- **Infraestructura**:
-  - Repos Mongo: `MongoProgramRepository`, `MongoChannelRepository`
-  - Cache: Redis o InMemory
-  - Storage: local o S3
-  - Parsers: XML EPG
-- **DI Container**: registra repos, servicios, use-cases, controllers; sync de índices en arranque.
-
----
-
-## Errores y formato estándar
-- `ValidationError` → 400
-- `NotFoundError` → 404
-- `Unauthorized` → 401, `Forbidden` → 403, `Conflict` → 409, `TooManyRequests` → 429
-- `ServiceUnavailable` → 503
-- Respuesta de error:
-```json
-{
-  "success": false,
-  "error": { "code": "NOT_FOUND", "message": "Program not found", "details": { "id": "x" } },
-  "meta": { "timestamp": "ISO" }
+### MediaCardDTO
+Usado en listados (Home, Search, Batch).
+```typescript
+interface MediaCardDTO {
+  id: string;
+  type: 'program' | 'movie' | 'series';
+  title: string;
+  subtitle: string; // Ej: "22:00 - Antena 3"
+  image: { url: string; aspectRatio: number };
+  badges: string[]; // Ej: ["Directo", "Cine"]
+  context?: {
+    schedule?: { start: string; end: string; live: boolean; progress: number };
+  }
 }
 ```
 
 ---
 
-## Notas SSR y BFF
-- Para SSR, inyectar `HomeViewDTO` en `window.__INITIAL_STATE__` para evitar doble fetch.
-- `/discovery/home` ya agrega `blogHighlights` (usa mocks si el blog no responde).
-- Componentes de comentarios/reviews deben cargarse lazy en cliente para no bloquear SSR.
-- Interacciones sociales (like/follow/rate) se esperan optimistas en cliente; la API expone `/interactions` en el futuro (no implementado aún).
+## Estrategia de Cache y Rendimiento
+
+La API utiliza una estrategia de caché en capas:
+
+1.  **Static Storage (Nivel 1)**: Los `schedules` (parrillas) se pre-calculan en archivos JSON almacenados fisicamente (o en S3). Esto permite lecturas O(1) casi instantáneas sin tocar la BD.
+2.  **Application Cache (Nivel 2)**: Valkey o Memoria. Almacena:
+    - Resultados de `discovery/home`.
+    - Datos de canales (`channels:meta`).
+    - Snapshots de `schedules` calientes.
+3.  **HTTP Cache (Nivel 3)**: Headers `Cache-Control` agresivos para recursos estáticos (imágenes) y controlados para datos dinámicos (`stale-while-revalidate`).
 
 ---
 
-## FAQ de despliegue
-- **¿Qué necesito para que funcione el blog?**  
-  Exporta `BLOG_API_URL=https://blog.guiatv.com/api`. Si no responde, se devuelven 3 posts mock; no rompe la home.
+## Manejo de Errores
 
-- **¿Cómo valido que los índices están aplicados?**  
-  El arranque llama `ensureMongoCollectionsAndIndexes()`. Si despliegas con procesos separados, ejecuta una vez el servidor o corre `ProgramModel.syncIndexes()` manualmente.
+| Código | Error | Descripción |
+|--------|-------|-------------|
+| 400 | `ValidationError` | Parámetros de entrada inválidos. |
+| 401 | `Unauthorized` | Token faltante o inválido. |
+| 404 | `NotFoundError` | Recurso no encontrado. |
+| 429 | `TooManyRequests` | Exceso de peticiones (Rate Limit). |
+| 500 | `InternalServerError` | Error no controlado del servidor. |
+| 503 | `ServiceUnavailable` | Sistema en mantenimiento o sobrecarga. |
 
-- **¿Qué datos guarda VOD/social?**  
-  Guarda en `program.details`:
-  - `vodProviders: [{ provider, link?, price? }]`
-  - `socialMetrics: { friendsRating?, topReview?, ratingCount?, average? }`
-  El mapper de detalle los consume automáticamente.
-
-- **¿Cómo recaliento precálculo?**  
-  `POST /v2/admin/precompute-window` con `fields=minimal` y luego limpiar cache con `/v2/admin/cache/clear` (`pattern=precomputed:*`).
-
-- **¿Dónde cambian las constantes de layout?**  
-  `ProgramLayoutBuilder` define slots (8 bloques de 3h), `MINUTES_PER_COLUMN=5`, `PIXELS_PER_HOUR=240`, etc. Cambia `LAYOUT_VERSION` para invalidar snapshots.
+---
+*Documentación generada automáticamente para Guía TV API v2.*

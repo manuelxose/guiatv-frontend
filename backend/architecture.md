@@ -1,4 +1,4 @@
-# TV Guide Backend (v2) - Arquitectura y flujos clave
+l1# TV Guide Backend (v2) - Arquitectura y flujos clave
 
 ## Capas principales
 - **Presentación (routes/controllers)**: delegan en casos de uso. `ProgramController` sirve `/programs`, `/programs/:id`, `/channels/:id/programs`. `AdminController` expone `/admin/sync`, `/admin/precompute`, `/admin/precompute-window`, `/admin/cleanup`, `/admin/cache/clear` y `/admin/reset`.
@@ -9,7 +9,7 @@
   - `ResetSystem`: reseteo completo (cache + colecciones + ficheros `epg_xml/` y `schedules/`), re-sincroniza ventana y precalcula.
   - `CleanOldPrograms`: limpia histórico con backfill opcional.
 - **Dominio**: `Channel` (id, name, icon, type, country/countryCode, region, isActive), `Program`. Repositorios `IChannelRepository`, `IProgramRepository`, `ICacheRepository`, `IStorageRepository`.
-- **Infraestructura**: repos Mongo, cache (Redis/InMemory), storage (local/S3), parsers XML/ProgramData, `TMDBService`.
+- **Infraestructura**: repos Mongo, cache (Valkey/InMemory), storage (local/S3), parsers XML/ProgramData, `TMDBService`.
 
 ## Flujo de datos
 1) **Ingesta (SyncEPGData)**: descarga y guarda XML, parsea canales/programas, infiere país/tipo, enriquece TMDB, persiste en Mongo, limpia backups antiguos.

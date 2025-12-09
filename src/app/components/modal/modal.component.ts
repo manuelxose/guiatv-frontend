@@ -3,12 +3,14 @@ import { Component, OnInit } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { ModalService } from '../../services/modal.service';
 
+import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
+
 @Component({
   selector: 'app-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, InteractionButtonsComponent],
   animations: [
     trigger('fadeIn', [
       transition(':enter', [

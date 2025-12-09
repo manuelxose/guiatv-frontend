@@ -24,8 +24,8 @@ export const config = {
     storageBucket: process.env.STORAGE_BUCKET || process.env.AWS_S3_BUCKET || 'guia-tv-storage',
   },
 
-  // ===== REDIS =====
-  redis: {
+  // ===== VALKEY (Redis Compatible) =====
+  valkey: {
     url: process.env.REDIS_URL,
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379', 10),

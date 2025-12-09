@@ -341,11 +341,16 @@ $bp-xl: 1280px;
   &__header {
     position: sticky;
     top: 0;
-    z-index: 20;
-    @include glassmorphism;
+    z-index: 30; // Mayor z-index para estar por encima del contenido
+    background: rgba($color-bg-base, 0.95); // Más opaco para evitar mezcla visual
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid $color-border;
-    padding: $space-sm $space-md;
+    padding: $space-xs $space-sm; // Reducir padding
     flex-shrink: 0;
+    height: $header-height-mobile;
+    display: flex;
+    align-items: center;
   }
 
   &__filters {

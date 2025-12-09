@@ -71,11 +71,11 @@ export class Container {
 
     let cache: ICacheRepository;
 
-    if (cacheType === 'redis' && redisUrl) {
-      logger.info('Initializing Redis cache', { url: redisUrl });
+    if ((cacheType === 'redis' || cacheType === 'valkey') && redisUrl) {
+      logger.info(`Initializing ${cacheType} cache`, { url: redisUrl });
       const { CacheFactory } = await import('../infrastructure/cache/CacheFactory');
       cache = CacheFactory.create({
-        type: 'redis',
+        type: cacheType as 'redis' | 'valkey',
         redisUrl,
         redisOptions: {
           maxRetries: 10,
@@ -92,15 +92,15 @@ export class Container {
             await Promise.race([
               (cache as any).connect(),
               new Promise((_, rej) =>
-                setTimeout(() => rej(new Error(`Redis connect timed out after ${cacheConnectTimeout}ms`)), cacheConnectTimeout)
+                setTimeout(() => rej(new Error(`${cacheType} connect timed out after ${cacheConnectTimeout}ms`)), cacheConnectTimeout)
               ),
             ]);
-            logger.info('Redis cache connected');
+            logger.info(`${cacheType} cache connected`);
           } else {
             logger.info('Skipping cache connect due to SKIP_CACHE_CONNECT');
           }
         } catch (error) {
-          logger.error('Failed to connect Redis, falling back to in-memory', error as Error);
+          logger.error(`Failed to connect ${cacheType}, falling back to in-memory`, error as Error);
           const { InMemoryCache } = await import('../infrastructure/cache/InMemoryCache');
           cache = new InMemoryCache();
         }
