@@ -14,7 +14,7 @@ export const appConfig = {
   apiVersion: process.env.API_VERSION || '2.0.0',
 
   cache: {
-    type: (process.env.CACHE_TYPE || 'memory') as 'memory' | 'redis',
+    type: (process.env.CACHE_TYPE || 'memory') as 'memory' | 'redis' | 'valkey',
     redisUrl: process.env.REDIS_URL,
   },
 

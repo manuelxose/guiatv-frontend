@@ -70,14 +70,31 @@ export class ResetSystem {
     this.resetLogger.info('Storage cleaned', storageStats);
 
     // 4) Re-synchronize EPG for canonical window
+    const sourceUrl = request.sourceUrl || this.defaultSource;
+    this.resetLogger.info('Downloading EPG data once for all dates', { sourceUrl });
+    
+    // Import dynamically to avoid circular deps or verify if safe. 
+    // Actually EPGDataSource is infra/external, ResetSystem is application. Safe.
+    const { EPGDataSource } = await import('../../infrastructure/external/EPGDataSource');
+    const dataSource = new EPGDataSource({
+      url: sourceUrl,
+      timeout: 60000,
+      compressed: sourceUrl.endsWith('.gz'),
+    });
+    const xmlContent = await dataSource.fetchWithRetry(3);
+
     const windowDates = ['yesterday', 'today', 'tomorrow', 'after_tomorrow'];
+    let isFirst = true;
     for (const alias of windowDates) {
       const date = DateUtils.parseDateAlias(alias);
       await this.syncEPGData.execute({
-        sourceUrl: request.sourceUrl || this.defaultSource,
+        sourceUrl,
         date,
         forceRefresh: true,
+        xmlContent,
+        skipSaveXml: !isFirst,
       });
+      isFirst = false;
       syncedDates.push(date);
     }
 

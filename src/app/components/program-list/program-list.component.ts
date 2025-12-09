@@ -22,6 +22,7 @@ import {
   PLATFORM_ID,
   afterNextRender,
   Injector,
+  effect,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -313,6 +314,22 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       };
       console.log('🛠️ Debug disponible: programListDebug.state()');
     }
+
+    // NUEVO: Efecto para reaccionar a cambios en layout
+    effect(() => {
+      const isMobile = this.isMobile();
+      const channels = this.canalesConProgramas();
+      
+      // Si cambia a móvil y tenemos canales, expandir todo
+      if (isMobile && channels.length > 0) {
+        // Solo si no están ya expandidos (para evitar bucles o redibujados innecesarios)
+        if (this.expandedChannels().size !== channels.length) {
+          console.log('📱 Cambio a móvil detectado: expandiendo canales');
+          const allIndices = new Set(channels.map((_, index) => index));
+          this.expandedChannels.set(allIndices);
+        }
+      }
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit(): void {
@@ -629,13 +646,17 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       console.log('✅ Canales válidos:', validChannels.length);
       this.canalesConProgramas.set(validChannels);
 
-      // En móvil, expandir todos los canales por defecto
-      if (this.isMobile()) {
-        const allIndices = new Set(validChannels.map((_, index) => index));
-        this.expandedChannels.set(allIndices);
-      } else {
-        this.expandedChannels.set(new Set());
-      }
+      // En móvil, SIEMPRE expandir todos los canales por defecto
+      // Usamos setTimeout para asegurar que la detección de dispositivo sea correcta
+      setTimeout(() => {
+        if (this.isMobile()) {
+          console.log('📱 Mobile detected in handleDataUpdate - Expanding all channels');
+          const allIndices = new Set(validChannels.map((_, index) => index));
+          this.expandedChannels.set(allIndices);
+        } else {
+          this.expandedChannels.set(new Set());
+        }
+      }, 0);
 
       // Forzar actualización del viewport después de cargar datos
       this.cdr.markForCheck();
@@ -979,6 +1000,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.isTimeSlotDropdownOpen.set(!this.isTimeSlotDropdownOpen());
     this.isDayDropdownOpen.set(false);
     this.isCategoryDropdownOpen.set(false);
+    this.isChannelTypeDropdownOpen.set(false);
     this.cdr.markForCheck();
   }
 
@@ -986,12 +1008,21 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.isDayDropdownOpen.set(false);
     this.isCategoryDropdownOpen.set(false);
     this.isTimeSlotDropdownOpen.set(false);
+    this.isChannelTypeDropdownOpen.set(false);
     this.cdr.markForCheck();
   }
 
   // ===============================================
   // CATEGORY FILTERING
   // ===============================================
+
+  public toggleChannelTypeDropdown(): void {
+    this.isChannelTypeDropdownOpen.set(!this.isChannelTypeDropdownOpen());
+    this.isDayDropdownOpen.set(false);
+    this.isCategoryDropdownOpen.set(false);
+    this.isTimeSlotDropdownOpen.set(false);
+    this.cdr.markForCheck();
+  }
 
   public onCategorySelected(category: string): void {
     const selectedCategories = new Set(this.selectedCategories());
@@ -1723,13 +1754,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   // CHANNEL TYPE FILTER METHODS
   // ===============================================
 
-  public toggleChannelTypeDropdown(): void {
-    this.isChannelTypeDropdownOpen.set(!this.isChannelTypeDropdownOpen());
-    this.isDayDropdownOpen.set(false);
-    this.isCategoryDropdownOpen.set(false);
-    this.isTimeSlotDropdownOpen.set(false);
-    this.cdr.markForCheck();
-  }
+
 
   public setChannelTypeFilter(type: string): void {
     this.channelTypeFilter.set(type);

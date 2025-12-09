@@ -26,6 +26,7 @@ import { TvController } from '../controllers/TvController';
 
 import { createTvRoutes } from './tv.routes';
 import { BlogController } from '../controllers/BlogController';
+import { createBlogRoutes } from './blog.routes';
 
 /**
  * Dependencies required by every route factory.
@@ -84,6 +85,7 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   router.use('/admin', createAdminRoutes(dependencies.adminController));
   router.use('/ssr', createSSRRoutes(dependencies.ssrController));
   router.use('/auth', createAuthRoutes(dependencies.authController));
+  router.use('/blog', createBlogRoutes(dependencies.blogController));
 
   return router;
 };

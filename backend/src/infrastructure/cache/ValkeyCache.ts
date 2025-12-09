@@ -1,12 +1,12 @@
-// src/v2/infrastructure/cache/RedisCache.ts
+// src/v2/infrastructure/cache/ValkeyCache.ts
 
 import { createClient, RedisClientType } from 'redis';
 import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
 
 /**
- * Redis-backed cache repository with resilience defaults.
+ * Valkey-backed cache repository (Redis compatible) with resilience defaults.
  */
-export class RedisCache implements ICacheRepository {
+export class ValkeyCache implements ICacheRepository {
   private client: RedisClientType;
   private isConnected: boolean = false;
 
@@ -24,7 +24,7 @@ export class RedisCache implements ICacheRepository {
         reconnectStrategy: (retries: number) => {
           const maxRetries = this.options?.maxRetries || 10;
           if (retries >= maxRetries) {
-            return new Error('Redis max retries reached');
+            return new Error('Valkey/Redis max retries reached');
           }
           return Math.min(retries * 50, 2000);
         },
@@ -37,21 +37,21 @@ export class RedisCache implements ICacheRepository {
 
   private setupEventHandlers(): void {
     this.client.on('connect', () => {
-      console.log('[RedisCache] Connecting to Redis...');
+      console.log('[ValkeyCache] Connecting to Valkey...');
     });
 
     this.client.on('ready', () => {
-      console.log('[RedisCache] Redis connection ready');
+      console.log('[ValkeyCache] Valkey connection ready');
       this.isConnected = true;
     });
 
     this.client.on('error', (err: Error) => {
-      console.error('[RedisCache] Redis error:', err);
+      console.error('[ValkeyCache] Valkey error:', err);
       this.isConnected = false;
     });
 
     this.client.on('end', () => {
-      console.log('[RedisCache] Redis connection closed');
+      console.log('[ValkeyCache] Valkey connection closed');
       this.isConnected = false;
     });
   }
@@ -65,9 +65,9 @@ export class RedisCache implements ICacheRepository {
       await this.client.connect();
       this.isConnected = true;
     } catch (error) {
-      console.error('[RedisCache] Failed to connect:', error);
-      // Do not throw to avoid breaking initialization flow; caller can decide fallback
+      console.error('[ValkeyCache] Failed to connect:', error);
       this.isConnected = false;
+      throw error; // Throw so container can fallback to InMemory
     }
   }
 
@@ -80,7 +80,7 @@ export class RedisCache implements ICacheRepository {
       await this.client.quit();
       this.isConnected = false;
     } catch (error) {
-      console.error('[RedisCache] Error disconnecting:', error);
+      console.error('[ValkeyCache] Error disconnecting:', error);
       await this.client.disconnect();
     }
   }
@@ -88,7 +88,7 @@ export class RedisCache implements ICacheRepository {
   async get<T>(key: string): Promise<T | null> {
     try {
       if (!this.isConnected) {
-        console.warn('[RedisCache] Not connected, skipping get');
+        console.warn('[ValkeyCache] Not connected, skipping get');
         return null;
       }
 
@@ -100,7 +100,7 @@ export class RedisCache implements ICacheRepository {
 
       return JSON.parse(value) as T;
     } catch (error) {
-      console.error(`[RedisCache] Error getting key ${key}:`, error);
+      console.error(`[ValkeyCache] Error getting key ${key}:`, error);
       return null;
     }
   }
@@ -108,7 +108,7 @@ export class RedisCache implements ICacheRepository {
   async set<T>(key: string, value: T, ttlSeconds: number = 300): Promise<void> {
     try {
       if (!this.isConnected) {
-        console.warn('[RedisCache] Not connected, skipping set');
+        console.warn('[ValkeyCache] Not connected, skipping set');
         return;
       }
 
@@ -116,7 +116,7 @@ export class RedisCache implements ICacheRepository {
 
       await this.client.setEx(key, ttlSeconds, serialized);
     } catch (error) {
-      console.error(`[RedisCache] Error setting key ${key}:`, error);
+      console.error(`[ValkeyCache] Error setting key ${key}:`, error);
       // No lanzar error para no romper el flujo de la aplicación
     }
   }
@@ -124,20 +124,20 @@ export class RedisCache implements ICacheRepository {
   async delete(key: string): Promise<void> {
     try {
       if (!this.isConnected) {
-        console.warn('[RedisCache] Not connected, skipping delete');
+        console.warn('[ValkeyCache] Not connected, skipping delete');
         return;
       }
 
       await this.client.del(key);
     } catch (error) {
-      console.error(`[RedisCache] Error deleting key ${key}:`, error);
+      console.error(`[ValkeyCache] Error deleting key ${key}:`, error);
     }
   }
 
   async clear(pattern?: string): Promise<void> {
     try {
       if (!this.isConnected) {
-        console.warn('[RedisCache] Not connected, skipping clear');
+        console.warn('[ValkeyCache] Not connected, skipping clear');
         return;
       }
 
@@ -158,7 +158,7 @@ export class RedisCache implements ICacheRepository {
         }
       }
     } catch (error) {
-      console.error(`[RedisCache] Error clearing pattern ${pattern}:`, error);
+      console.error(`[ValkeyCache] Error clearing pattern ${pattern}:`, error);
     }
   }
 
@@ -190,7 +190,7 @@ export class RedisCache implements ICacheRepository {
       const result = await this.client.exists(key);
       return result === 1;
     } catch (error) {
-      console.error(`[RedisCache] Error checking existence of ${key}:`, error);
+      console.error(`[ValkeyCache] Error checking existence of ${key}:`, error);
       return false;
     }
   }
@@ -203,7 +203,7 @@ export class RedisCache implements ICacheRepository {
 
       return await this.client.ttl(key);
     } catch (error) {
-      console.error(`[RedisCache] Error getting TTL of ${key}:`, error);
+      console.error(`[ValkeyCache] Error getting TTL of ${key}:`, error);
       return -1;
     }
   }
@@ -220,7 +220,7 @@ export class RedisCache implements ICacheRepository {
         v ? (JSON.parse(v) as T) : null
       );
     } catch (error) {
-      console.error('[RedisCache] Error in mget:', error);
+      console.error('[ValkeyCache] Error in mget:', error);
       return keys.map(() => null);
     }
   }
@@ -247,7 +247,7 @@ export class RedisCache implements ICacheRepository {
 
       await pipeline.exec();
     } catch (error) {
-      console.error('[RedisCache] Error in mset:', error);
+      console.error('[ValkeyCache] Error in mset:', error);
     }
   }
 
@@ -261,7 +261,7 @@ export class RedisCache implements ICacheRepository {
       const result = await this.client.ping();
       return result === 'PONG';
     } catch (error) {
-      console.error('[RedisCache] Ping failed:', error);
+      console.error('[ValkeyCache] Ping failed:', error);
       return false;
     }
   }

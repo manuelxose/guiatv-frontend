@@ -37,13 +37,14 @@
   width: 100%;
   height: 400px;
   overflow: hidden;
+  background-color: #000; /* Fondo negro para cuando la imagen no cubra todo */
 }
 
 .hero-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  filter: brightness(0.7);
+  object-fit: contain; /* Ajustar imagen completa sin recortar */
+  /* filter: brightness(0.7); Eliminamos el filtro para ver la imagen clara */
 }
 
 .hero-gradient {
