@@ -4,7 +4,11 @@
  */
 
 import mongoose from 'mongoose';
+import path from 'node:path';
+import dotenv from 'dotenv';
 import { logger } from '../shared/utils/logger';
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/guiatv';
 

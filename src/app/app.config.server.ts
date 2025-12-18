@@ -1,18 +1,16 @@
 import { mergeApplicationConfig, ApplicationConfig } from '@angular/core';
 import { provideServerRendering } from '@angular/platform-server';
-import { provideClientHydration } from '@angular/platform-browser';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { APP_BASE_HREF } from '@angular/common';
+import { provideNoopAnimations } from '@angular/platform-browser/animations'; // 👈 IMPORTANTE
 import { appConfig } from './app.config';
 
 const serverConfig: ApplicationConfig = {
   providers: [
     provideServerRendering(),
-    // Desactivar animaciones en el servidor para evitar errores al procesar triggers
+    // 🛑 Desactivamos animaciones en el servidor para evitar el crash de injectRenderer2
     provideNoopAnimations(),
-    provideClientHydration(),
-    { provide: APP_BASE_HREF, useValue: '/' },
-  ],
+  ]
 };
 
+// Fusionamos la config del cliente (appConfig) con la del servidor (serverConfig)
+// La del servidor tiene prioridad en los providers que coinciden.
 export const config = mergeApplicationConfig(appConfig, serverConfig);
