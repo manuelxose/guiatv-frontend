@@ -6,7 +6,8 @@
 import { ApplicationConfig, Provider } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
-import { provideClientHydration } from '@angular/platform-browser';
+// Importamos withEventReplay para que si el usuario hace clic antes de cargar JS, se guarde el evento
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 
 // Rutas de la aplicación
@@ -25,12 +26,19 @@ export const appConfig: ApplicationConfig = {
   providers: [
     // Providers básicos de Angular para standalone
     provideRouter(routes),
-    // Habilitar animaciones en el cliente (necesario para triggers @expandCollapse)
+    
+    // Habilitar animaciones en el cliente
     provideAnimations(),
-    // provideClientHydration(),
+    
+    // ✅ CRÍTICO PARA SSR: Habilitar Hidratación
+    // Esto hace que Angular "reutilice" el HTML del servidor en lugar de borrarlo.
+    // withEventReplay() asegura que los clics del usuario durante la carga no se pierdan.
+    provideClientHydration(withEventReplay()),
+    
+    // Fetch API es requerida para SSR moderno
     provideHttpClient(withFetch()),
 
-    // Providers SOLID para toda la aplicación (INCLUYE ProgramList)
+    // Providers SOLID para toda la aplicación
     ...allProviders,
 
     // Providers condicionales según el entorno
@@ -48,24 +56,16 @@ function getEnvironmentProviders(env: any): Provider[] {
   const providers: Provider[] = [];
 
   if (env.production) {
-    // Configuraciones específicas para producción
     console.log('🏭 SOLID App - Configurando providers para PRODUCCIÓN');
     providers.push({
       provide: 'ENVIRONMENT_MODE',
       useValue: 'production',
     });
   } else {
-    // Configuraciones para desarrollo
     console.log('🛠️ SOLID App - Configurando providers para DESARROLLO');
     providers.push(
-      {
-        provide: 'ENVIRONMENT_MODE',
-        useValue: 'development',
-      },
-      {
-        provide: 'DEBUG_ENABLED',
-        useValue: true,
-      }
+      { provide: 'ENVIRONMENT_MODE', useValue: 'development' },
+      { provide: 'DEBUG_ENABLED', useValue: true }
     );
   }
 
@@ -79,12 +79,8 @@ function getValidationProviders(env: any): Provider[] {
   if (env.production) {
     return [];
   }
-
   return [
-    {
-      provide: 'SOLID_VALIDATION',
-      useValue: true,
-    },
+    { provide: 'SOLID_VALIDATION', useValue: true },
   ];
 }
 
@@ -106,6 +102,5 @@ if (!environment.production && typeof window !== 'undefined') {
       });
     },
   };
-
   console.log('🛠️ SOLID Debug tools available at window.SOLID_DEBUG');
 }

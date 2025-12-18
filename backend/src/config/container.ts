@@ -67,7 +67,11 @@ export class Container {
 
   private async initializeCache(): Promise<ICacheRepository> {
     const cacheType = process.env.CACHE_TYPE || 'memory';
-    const redisUrl = process.env.REDIS_URL;
+    // Valkey is Redis-compatible; prefer VALKEY_URL when CACHE_TYPE=valkey, fallback to REDIS_URL for compatibility.
+    const redisUrl =
+      cacheType === 'valkey'
+        ? process.env.VALKEY_URL || process.env.REDIS_URL
+        : process.env.REDIS_URL;
 
     let cache: ICacheRepository;
 
@@ -88,7 +92,7 @@ export class Container {
           const skipConnect = process.env.SKIP_CACHE_CONNECT === '1' || process.env.SKIP_CACHE_CONNECT === 'true';
           if (!skipConnect) {
             const cacheConnectTimeout = Number(process.env.CACHE_CONNECT_TIMEOUT_MS) || 8000;
-            logger.info('Attempting Redis connect', { timeoutMs: cacheConnectTimeout });
+            logger.info(`Attempting ${cacheType} connect`, { timeoutMs: cacheConnectTimeout });
             await Promise.race([
               (cache as any).connect(),
               new Promise((_, rej) =>

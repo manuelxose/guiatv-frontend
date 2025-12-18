@@ -21,7 +21,9 @@ export async function connectMongoDB(): Promise<void> {
   }
 
   const config: MongoDBConfig = {
-    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/guiatv',
+    uri:
+      process.env.MONGODB_URI ||
+      'mongodb+srv://<user>:<password>@cluster.mongodb.net/guiatv',
     dbName: process.env.MONGODB_DB_NAME,
   };
 

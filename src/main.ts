@@ -1,35 +1,19 @@
-/**
- * Bootstrap principal de la aplicación standalone
- */
-
 /// <reference types="@angular/localize" />
 
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
-import { environment } from './environments/environment';
 
-// Arranque principal
-bootstrapApplication(AppComponent, appConfig).catch((err) => {
-  console.error('Error al iniciar la aplicación:', err);
-});
+// Función de arranque encapsulada
+function bootstrap() {
+  bootstrapApplication(AppComponent, appConfig)
+    .catch((err) => console.error('Error al iniciar la aplicación:', err));
+}
 
-// Filtro de logs en desarrollo: solo mostramos etiquetas relevantes
-// if (!environment.production && typeof window !== 'undefined') {
-//   const allowedPrefixes = [
-//     '[HomeData]',
-//     '[ProgramListComponent]',
-//     '[ProgramListFacade]',
-//     '[ApiProgramProvider]',
-//     '[BannerComponent]',
-//     '[ContentPage]',
-//     '[CardListComponent]',
-//   ];
-//   const originalLog = console.log.bind(console);
-//   console.log = (...args: any[]) => {
-//     const text = typeof args[0] === 'string' ? args[0] : '';
-//     if (allowedPrefixes.some((p) => text.startsWith(p))) {
-//       originalLog(...args);
-//     }
-//   };
-// }
+// Lógica para asegurar que el DOM está listo antes de hidratar
+// Esto previene parpadeos y errores de "múltiples instancias" al usar SSR
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  bootstrap();
+} else {
+  document.addEventListener('DOMContentLoaded', bootstrap);
+}

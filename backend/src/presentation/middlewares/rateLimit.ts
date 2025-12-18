@@ -2,6 +2,7 @@
 
 import rateLimit from 'express-rate-limit';
 import { TooManyRequestsError } from '../../shared/errors';
+import { Request, Response } from 'express';
 
 /**
  * Creates a typed rate limiter that throws domain errors instead of generic responses.
@@ -16,7 +17,7 @@ export const createRateLimiter = (options?: {
     max: options?.max || 100, // 100 requests por ventana
     standardHeaders: true,
     legacyHeaders: false,
-    handler: (req, res) => {
+    handler: (req: Request, res: Response) => {
       void req;
       void res;
       throw new TooManyRequestsError(
