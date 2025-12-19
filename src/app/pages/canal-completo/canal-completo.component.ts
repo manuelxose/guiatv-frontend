@@ -560,16 +560,27 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get the single active time slot for display
-   */
-  public getActiveTimeSlot(): TimeSlot | undefined {
-    // If a time slot is selected, return it.
-    if (this.selectedTimeSlot) {
-      return this.timeSlots.find(slot => slot.hour === this.selectedTimeSlot);
-    }
-    // Fallback to active (current hour) slot
-    return this.timeSlots.find(slot => slot.isActive) || this.timeSlots[0];
+ * Get the single active time slot for display
+ */
+public getActiveTimeSlot(): TimeSlot | undefined {
+  // If a time slot is selected, return it.
+  if (this.selectedTimeSlot) {
+    return this.timeSlots.find(slot => slot.hour === this.selectedTimeSlot);
   }
+  // Dynamically calculate current hour (don't rely on potentially stale isActive flag)
+  const currentHour = new Date().getHours().toString();
+  const currentSlot = this.timeSlots.find(slot => slot.hour === currentHour);
+  
+  // If current hour slot exists, return it
+  if (currentSlot) {
+    return currentSlot;
+  }
+  
+  // If no slot for current hour, find nearest future slot or first slot
+  const sortedSlots = [...this.timeSlots].sort((a, b) => parseInt(a.hour) - parseInt(b.hour));
+  const futureSlot = sortedSlots.find(slot => parseInt(slot.hour) >= parseInt(currentHour));
+  return futureSlot || sortedSlots[0];
+}
 
   /**
    * Select time slot to filter programs

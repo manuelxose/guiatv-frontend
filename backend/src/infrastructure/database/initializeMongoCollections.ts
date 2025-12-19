@@ -3,6 +3,8 @@ import { ProgramModel } from './models/Program.model';
 import { ChannelModel } from './models/Channel.model';
 import { ScheduleModel } from './models/Schedule.model';
 import { UserModel } from './models/User.model';
+import { AnalyticsSessionModel } from './models/AnalyticsSession.model';
+import { AnalyticsEventModel } from './models/AnalyticsEvent.model';
 
 /**
  * Ensure required Mongo collections exist and indexes are in place.
@@ -16,6 +18,8 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     { name: 'programs', model: ProgramModel },
     { name: 'schedules', model: ScheduleModel },
     { name: 'users', model: UserModel },
+    { name: 'analytics_sessions', model: AnalyticsSessionModel },
+    { name: 'analytics_events', model: AnalyticsEventModel },
   ] as const;
 
   for (const { name, model } of resources) {

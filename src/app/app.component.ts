@@ -29,6 +29,7 @@ import { ModalComponent } from './components/modal/modal.component';
 // Servicios SOLID (opcional - solo para logging mejorado)
 import { ConsoleLoggerService } from './services/core/logger.service';
 import { FooterComponent } from './components/footer/footer.component';
+import { AnalyticsService } from './services/analytics.service';
 
 @Component({
   selector: 'app-root',
@@ -53,6 +54,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   // Integración opcional con SOLID logging
   private logger = inject(ConsoleLoggerService, { optional: true });
+  private analytics = inject(AnalyticsService);
 
   constructor(
     @Inject(PLATFORM_ID) private readonly platformId: Object,
@@ -115,6 +117,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.logDebug(`✅ Navegación completada: ${event.url}`);
 
           // Resetear contador después de navegación exitosa
+          this.analytics.trackPageView(event.urlAfterRedirects || event.url);
           setTimeout(() => {
             this.navigationCount = 0;
             this.logDebug('🔄 Contador de navegación reseteado');
@@ -124,6 +127,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.analytics.init();
     this.logInfo(`🚀 APP COMPONENT INIT - Instancia ${this.instanceId}`);
     this.logInfo('✅ Arquitectura SOLID inicializada');
 
@@ -226,3 +230,4 @@ export class AppComponent implements OnInit, OnDestroy {
     this.navigationCount = 0;
   }
 }
+

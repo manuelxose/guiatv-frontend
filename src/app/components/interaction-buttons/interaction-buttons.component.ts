@@ -7,18 +7,21 @@ import { UserService } from '../../services/user.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="flex items-center gap-3">
+    <div class="flex items-center" [class.gap-3]="!compact" [class.gap-1.5]="compact">
       <!-- Watchlist Button -->
       <button
         (click)="toggleWatchlist()"
         class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
-        [ngClass]="{'!bg-red-600/20 !border-red-500/50': isInWatchlist}"
-        title="Añadir a mi lista"
+        [ngClass]="{
+          '!bg-red-600/20 !border-red-500/50': isInWatchlist,
+          'px-2 py-2': compact
+        }"
+        [title]="isInWatchlist ? 'Quitar de mi lista' : 'Añadir a mi lista'"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5 text-gray-300 group-hover:text-white transition-colors"
-          [ngClass]="{'!text-red-400': isInWatchlist}"
+          [ngClass]="{'!text-red-400': isInWatchlist, 'h-4 w-4': compact}"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -30,7 +33,7 @@ import { UserService } from '../../services/user.service';
             d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
           />
         </svg>
-        <span class="text-sm font-medium text-gray-300 group-hover:text-white" [ngClass]="{'!text-red-300': isInWatchlist}">
+        <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white" [ngClass]="{'!text-red-300': isInWatchlist}">
           {{ isInWatchlist ? 'En lista' : 'Mi lista' }}
         </span>
       </button>
@@ -39,11 +42,13 @@ import { UserService } from '../../services/user.service';
       <button
         (click)="showModal = true"
         class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
+        [ngClass]="{'px-2 py-2': compact}"
         title="Recomendar a amigos"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5 text-gray-300 group-hover:text-white transition-colors"
+          [ngClass]="{'h-4 w-4': compact}"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -55,18 +60,20 @@ import { UserService } from '../../services/user.service';
             d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
           />
         </svg>
-        <span class="text-sm font-medium text-gray-300 group-hover:text-white">Recomendar</span>
+        <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white">Recomendar</span>
       </button>
 
       <!-- Rate Button -->
       <button
         (click)="rate()"
         class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
+        [ngClass]="{'px-2 py-2': compact}"
         title="Valorar"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-5 w-5 text-gray-300 group-hover:text-yellow-400 transition-colors"
+          [ngClass]="{'h-4 w-4': compact}"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -128,6 +135,7 @@ export class InteractionButtonsComponent {
   @Input() itemId: string = '';
   @Input() title: string = '';
   @Input() type: 'movie' | 'series' | 'program' = 'program';
+  @Input() compact: boolean = false;
 
   public isInWatchlist = false;
   public showModal = false;

@@ -20,7 +20,7 @@
     >
       <app-card-slider
         [title]="program?.title?.value || program?.title || 'Programa'"
-        [subtitle]="program?.channel?.name || program?.channelName || 'Canal'"
+        [subtitle]="program?.channelName || program?.channel?.name || (program?.channel && !program?.channel?.name ? program.channel : '') || 'Canal'"
         [channelIcon]="program?.channelIcon || program?.icon || program?.channel?.icon || ''"
         [time]="program?.start ? horaInicio(i) : ''"
         [image]="program?.image || program?.poster || program?.background || program?.icon"

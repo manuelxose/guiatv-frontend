@@ -20,6 +20,8 @@ import {
   ContentItem,
   ContentSnapshot,
 } from 'src/app/state/content.service';
+import { DeviceDetectorService } from 'src/app/services/device-detector.service';
+import { DateAlias } from 'src/app/api/models';
 
 type ContentType = 'series' | 'movies';
 
@@ -50,58 +52,71 @@ export class ContentPageComponent implements OnInit, OnDestroy {
   public itemsPorCategoria = new Map<string, ContentItem[]>();
   private destroy$ = new Subject<void>();
 
-  // Search & Filter
-  public searchControl = new FormControl('');
-  public searchResults: ContentItem[] = [];
-  public isSearching = false;
+  // Search & Filter state
   public activeCategoryFilter: string | null = null;
+  public selectedDate: DateAlias = 'today';
+
+  // Dropdown states
+  public isCategoryDropdownOpen = false;
+  public isDayDropdownOpen = false;
+
+  public diasDisponibles: { label: string; value: DateAlias }[] = [
+    { label: 'Ayer', value: 'yesterday' },
+    { label: 'Hoy', value: 'today' },
+    { label: 'Mañana', value: 'tomorrow' },
+    { label: 'Pasado mañana', value: 'day-after-tomorrow' },
+  ];
 
   constructor(
     private contentSvc: ContentService,
     private metaSvc: MetaService,
     public router: Router,
     private route: ActivatedRoute,
+    public deviceDetector: DeviceDetectorService,
     private cdr: ChangeDetectorRef
-  ) {
-    this.setupSearch();
+  ) {}
+
+  public toggleCategoryDropdown(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
+    this.isDayDropdownOpen = false;
   }
 
-  private setupSearch(): void {
-    this.searchControl.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((term) => {
-        this.performSearch(term || '');
-      });
+  public toggleDayDropdown(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.isDayDropdownOpen = !this.isDayDropdownOpen;
+    this.isCategoryDropdownOpen = false;
+  }
+
+  public selectCategory(cat: string | null): void {
+    this.activeCategoryFilter = cat;
+    this.isCategoryDropdownOpen = false;
+    this.applyFilters();
+  }
+
+  public selectDay(day: DateAlias): void {
+    this.selectedDate = day;
+    this.isDayDropdownOpen = false;
+    this.initializePage();
+  }
+
+  public getSelectedDayLabel(): string {
+    return this.diasDisponibles.find(d => d.value === this.selectedDate)?.label || 'Día';
+  }
+
+  private applyFilters(): void {
+    // Basic filter application - more advanced logic could be added to searchResults if needed
+    // For now we use the existing itemsPorCategoria logic in the template
+    this.cdr.markForCheck();
   }
 
   public performSearch(term: string): void {
-    const query = term.toLowerCase().trim();
-    this.isSearching = !!query || !!this.activeCategoryFilter;
-
-    if (!this.isSearching) {
-      this.searchResults = [];
-      return;
-    }
-
-    this.searchResults = this.items.filter((item) => {
-      const matchesTerm = !query || item.title.toLowerCase().includes(query);
-      const matchesCategory =
-        !this.activeCategoryFilter ||
-        (item.category &&
-          item.category
-            .toLowerCase()
-            .includes(this.activeCategoryFilter.toLowerCase()));
-      return matchesTerm && matchesCategory;
-    });
+    // Redundant now, but keeping a minimal implementation for compatibility if needed
+    this.applyFilters();
   }
 
   public toggleCategoryFilter(cat: string): void {
-    if (this.activeCategoryFilter === cat) {
-      this.activeCategoryFilter = null;
-    } else {
-      this.activeCategoryFilter = cat;
-    }
-    this.performSearch(this.searchControl.value || '');
+    this.selectCategory(this.activeCategoryFilter === cat ? null : cat);
   }
 
   ngOnInit(): void {
@@ -126,7 +141,7 @@ export class ContentPageComponent implements OnInit, OnDestroy {
     this.itemsPorCategoria.clear();
 
     this.setupMetaTags();
-    this.loadData();
+    this.loadData(this.selectedDate);
   }
 
   private setupMetaTags(): void {
@@ -155,10 +170,10 @@ export class ContentPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadData(): void {
-    console.log(`[ContentPage] Loading ${this.contentType} data`);
+  private loadData(date: DateAlias = 'today'): void {
+    console.log(`[ContentPage] Loading ${this.contentType} data for ${date}`);
     this.contentSvc
-      .loadContent(this.contentType as ContentKind, 'today')
+      .loadContent(this.contentType as ContentKind, date)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (snapshot) => this.manageData(snapshot),
@@ -184,7 +199,7 @@ export class ContentPageComponent implements OnInit, OnDestroy {
 
     this.categorias = snapshot.categories
       .filter((cat) => cat && cat.toLowerCase().trim() !== 'otros')
-      .slice(0, 8);
+      .slice(0, 12); // Slightly more categories
 
     if (typeof requestIdleCallback !== 'undefined') {
       requestIdleCallback(() => this.precacheCategories(), { timeout: 2000 });

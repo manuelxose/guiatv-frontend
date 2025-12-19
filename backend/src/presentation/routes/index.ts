@@ -27,6 +27,8 @@ import { TvController } from '../controllers/TvController';
 import { createTvRoutes } from './tv.routes';
 import { BlogController } from '../controllers/BlogController';
 import { createBlogRoutes } from './blog.routes';
+import { AnalyticsController } from '../controllers/AnalyticsController';
+import { createAnalyticsRoutes } from './analytics.routes';
 
 /**
  * Dependencies required by every route factory.
@@ -44,6 +46,7 @@ export interface RoutesDependencies {
 
   tvController: TvController;
   blogController: BlogController;
+  analyticsController: AnalyticsController;
 }
 
 /**
@@ -86,6 +89,7 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   router.use('/ssr', createSSRRoutes(dependencies.ssrController));
   router.use('/auth', createAuthRoutes(dependencies.authController));
   router.use('/blog', createBlogRoutes(dependencies.blogController));
+  router.use('/analytics', createAnalyticsRoutes(dependencies.analyticsController));
 
   return router;
 };

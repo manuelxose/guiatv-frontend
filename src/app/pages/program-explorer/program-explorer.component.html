@@ -1,96 +1,135 @@
 <main class="min-h-screen bg-gray-900 text-white pb-20">
   <app-nav-bar></app-nav-bar>
 
-  <!-- Header Section -->
-  <header class="relative pt-8 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-      <div>
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold mb-3"
-             [ngClass]="mode === 'live' ? 'bg-red-600/15 text-red-300' : 'bg-blue-600/15 text-blue-300'">
-          <span class="relative flex h-2 w-2" *ngIf="mode === 'live'">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-          </span>
-          {{ mode === 'live' ? 'En Directo' : 'Destacados Hoy' }}
-        </div>
-        <h1 class="text-3xl sm:text-4xl font-bold text-white">
-          {{ mode === 'live' ? 'Emisión en tiempo real' : 'Qué ver hoy en TV' }}
-        </h1>
-        <p class="mt-2 text-gray-400 max-w-2xl text-lg">
-          {{ mode === 'live' 
-             ? 'Consulta la programación que se está emitiendo ahora mismo en todos los canales.' 
-             : 'Nuestra selección de las mejores películas y series programadas para el día de hoy.' }}
-        </p>
+  <!-- Sticky Header with Dropdowns -->
+  <section 
+    class="mt-6 sticky top-16 bg-gray-900/95 backdrop-blur-md border-b border-gray-800/50 -mx-4 px-4 py-3 shadow-lg flex items-center gap-2 z-40"
+    [class.z-[60]]="isTypeDropdownOpen || isCategoryDropdownOpen"
+  >
+    <!-- Container for alignment: Added pl-2 for mobile separation -->
+    <div class="w-full max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-hide pr-4 pl-2">
+      
+      <!-- Type Filter -->
+      <div class="relative">
+        <button 
+          class="tv-chip flex items-center gap-2"
+          [class.tv-chip--active]="isTypeDropdownOpen || activeType !== 'all'"
+          (click)="toggleTypeDropdown($event)"
+        >
+          <svg *ngIf="activeType === 'movies'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>
+          <svg *ngIf="activeType === 'series'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <svg *ngIf="activeType === 'all'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          
+          <span>{{ getTypeLabel() }}</span>
+          <svg class="w-3 h-3 transition-transform" [class.rotate-180]="isTypeDropdownOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
       </div>
 
-      <!-- Type Toggles (All / Movies / Series) -->
-      <div class="bg-gray-800/50 p-1 rounded-xl flex items-center backdrop-blur-sm border border-gray-700/50">
-        <button
-          (click)="setType('all')"
-          class="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-          [ngClass]="activeType === 'all' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'"
+      <!-- Category Filter -->
+      <div class="relative">
+        <button 
+          class="tv-chip flex items-center gap-2"
+          [class.tv-chip--active]="isCategoryDropdownOpen || activeCategoryFilter"
+          (click)="toggleCategoryDropdown($event)"
         >
-          Todo
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <span class="max-w-[120px] truncate">{{ activeCategoryFilter || 'Categorías' }}</span>
+          <svg class="w-3 h-3 transition-transform" [class.rotate-180]="isCategoryDropdownOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
-        <button
-          (click)="setType('movies')"
-          class="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-          [ngClass]="activeType === 'movies' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'"
-        >
-          Películas
+      </div>
+    </div>
+  </section>
+
+  <!-- PORTAL: Bottom Sheets (Mobile Filters) -->
+  <div *ngIf="isTypeDropdownOpen || isCategoryDropdownOpen" class="tv-overlay" (click)="isTypeDropdownOpen = false; isCategoryDropdownOpen = false">
+    
+    <!-- Type Filter Sheet -->
+    <div *ngIf="isTypeDropdownOpen" class="tv-sheet-isolated shadow-2xl" (click)="$event.stopPropagation()">
+      <div class="tv-sheet-isolated__handle"></div>
+      <div class="tv-sheet-isolated__header">
+        <h3>Filtrar por tipo</h3>
+        <button (click)="isTypeDropdownOpen = false" class="tv-sheet-isolated__close" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
-        <button
-          (click)="setType('series')"
-          class="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-          [ngClass]="activeType === 'series' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'"
-        >
-          Series
+      </div>
+      <div class="tv-sheet-isolated__body">
+        <button (click)="selectType('all')" class="tv-sheet-isolated__option" [class.tv-sheet-isolated__option--selected]="activeType === 'all'">
+          <span>Todo</span>
+          <svg *ngIf="activeType === 'all'" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+        </button>
+        <button (click)="selectType('movies')" class="tv-sheet-isolated__option" [class.tv-sheet-isolated__option--selected]="activeType === 'movies'">
+          <span>Películas</span>
+          <svg *ngIf="activeType === 'movies'" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+        </button>
+        <button (click)="selectType('series')" class="tv-sheet-isolated__option" [class.tv-sheet-isolated__option--selected]="activeType === 'series'">
+          <span>Series</span>
+          <svg *ngIf="activeType === 'series'" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
         </button>
       </div>
     </div>
 
-    <!-- Search & Filter Bar -->
-    <div class="space-y-4">
-      <div class="relative max-w-2xl">
-        <input
-          [formControl]="searchControl"
-          type="text"
-          class="w-full bg-gray-800/80 border border-gray-700 text-white rounded-xl px-5 py-4 pl-12 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent placeholder-gray-400 shadow-lg backdrop-blur-sm transition-all"
-          placeholder="Buscar por título, canal o género..."
-        />
-        <svg
-          class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
+    <!-- Category Filter Sheet -->
+    <div *ngIf="isCategoryDropdownOpen" class="tv-sheet-isolated shadow-2xl" (click)="$event.stopPropagation()">
+      <div class="tv-sheet-isolated__handle"></div>
+      <div class="tv-sheet-isolated__header">
+        <h3>Filtrar por categoría</h3>
+        <button (click)="isCategoryDropdownOpen = false" class="tv-sheet-isolated__close" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       </div>
-
-      <!-- Category Chips -->
-      <div class="flex flex-wrap gap-2" *ngIf="categories.length > 0">
-        <button
+      <div class="tv-sheet-isolated__body">
+        <button 
+          (click)="selectCategory(null)"
+          class="tv-sheet-isolated__option"
+          [class.tv-sheet-isolated__option--selected]="!activeCategoryFilter"
+        >
+          <span>Todas las categorías</span>
+        </button>
+        <button 
           *ngFor="let cat of categories"
-          (click)="toggleCategoryFilter(cat)"
-          class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border"
-          [ngClass]="
-            activeCategoryFilter === cat
-              ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-900/30'
-              : 'bg-gray-800/60 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white'
-          "
+          (click)="selectCategory(cat)"
+          class="tv-sheet-isolated__option"
+          [class.tv-sheet-isolated__option--selected]="activeCategoryFilter === cat"
         >
-          {{ cat }}
+          <span>{{ cat }}</span>
+          <svg *ngIf="activeCategoryFilter === cat" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
         </button>
       </div>
     </div>
-  </header>
+  </div>
 
   <!-- Content Grid -->
-  <section class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-[400px]">
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-12" (click)="isTypeDropdownOpen = false; isCategoryDropdownOpen = false">
+    
+    <!-- Title and Subtitle (Replaces old Header) -->
+    <header class="mb-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold mb-3"
+             [ngClass]="mode === 'live' ? 'bg-red-600/15 text-red-300' : 'bg-blue-600/15 text-blue-300'">
+        <span class="relative flex h-2 w-2" *ngIf="mode === 'live'">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+        </span>
+        {{ mode === 'live' ? 'En Directo' : 'Destacados Hoy' }}
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-black text-white mb-2 uppercase tracking-tight">
+        {{ mode === 'live' ? 'Emisión en tiempo real' : 'Qué ver hoy en TV' }}
+      </h1>
+      <p class="text-gray-400 text-sm sm:text-base max-w-2xl leading-relaxed">
+        {{ mode === 'live' 
+             ? 'Consulta la programación que se está emitiendo ahora mismo en todos los canales.' 
+             : 'Nuestra selección de las mejores películas y series programadas para el día de hoy.' }}
+      </p>
+    </header>
+
     <!-- Loading State -->
-    <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 animate-pulse">
-      <div *ngFor="let i of [1,2,3,4,5,6,7,8]" class="h-48 bg-gray-800 rounded-xl"></div>
+    <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
+      <div *ngFor="let i of [1,2,3,4,5,6]" class="h-48 bg-gray-800 rounded-xl"></div>
     </div>
 
     <!-- Error State -->
@@ -102,20 +141,20 @@
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="!loading && !error && filteredItems.length === 0" class="text-center py-20">
-      <div class="bg-gray-800/50 p-6 rounded-full inline-block mb-4">
-        <svg class="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div *ngIf="!loading && !error && filteredItems.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
+      <div class="bg-gray-800 p-6 rounded-full mb-6">
+        <svg class="w-16 h-16 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
       </div>
       <h3 class="text-xl font-bold text-white mb-2">No encontramos resultados</h3>
-      <p class="text-gray-400 max-w-md mx-auto">
-        Intenta ajustar los filtros o buscar otro término.
+      <p class="text-gray-400 max-w-md mx-auto mb-6">
+        Intenta ajustar los filtros. 
         <span *ngIf="activeCategoryFilter">Estás filtrando por <strong>{{ activeCategoryFilter }}</strong>.</span>
       </p>
       <button 
-        (click)="searchControl.setValue(''); activeCategoryFilter = null" 
-        class="mt-6 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white transition-colors"
+        (click)="selectCategory(null); selectType('all')" 
+        class="px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white transition-colors"
       >
         Limpiar filtros
       </button>
