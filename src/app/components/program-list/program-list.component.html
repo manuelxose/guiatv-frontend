@@ -65,14 +65,16 @@
           <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
         </button>
         
-        <!-- Ahora (solo si es hoy) -->
+        <!-- Franja Horaria (Replaces "Ahora" button) -->
         <button 
-          *ngIf="activeDayOffset() === 0"
-          class="tv-chip tv-chip--highlight"
-          (click)="scrollToNow()"
+          class="tv-chip" 
+          [class.tv-chip--highlight]="showTimeIndicator()"
+          [class.tv-chip--active]="isTimeSlotDropdownOpen()"
+          (click)="toggleTimeSlotDropdown(); $event.stopPropagation()"
         >
-          <span class="tv-live-dot"></span>
-          <span>Ahora</span>
+          <span *ngIf="showTimeIndicator()" class="tv-live-dot"></span>
+          <span>{{ showTimeIndicator() ? 'Ahora' : getCurrentSelectedTimeSlot() }}</span>
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
         </button>
 
         <!-- Filtros categoría -->
