@@ -13,9 +13,11 @@
     "serve:static:open": "node --max-old-space-size=8192 node_modules/browser-sync/dist/bin.js start --config bs-config.js --open",
     "build:ssr": "ng build --configuration production --ssr",
     "serve:ssr": "node scripts/ssr-server.mjs",
+    "serve:ssr:ng": "node dist/guiatv/server/main.server.mjs",
     "start:ssr": "npm run build:ssr && npm run serve:ssr",
-    "dev:ssr": "ng serve --port 4200",
-    "prerender": "ng build --prerender"
+    "dev:ssr": "ng serve --configuration development-ssr --proxy-config proxy.conf.js --port 3000",
+    "prerender": "ng build --prerender",
+    "start:prod": "npm run build:ssr && npm run serve:ssr"
   },
   "dependencies": {
     "@angular/animations": "20.0.0",
@@ -40,7 +42,8 @@
     "leaflet": "^1.9.4",
     "rxjs": "~7.8.0",
     "swiper": "^11.2.10",
-    "zone.js": "~0.15.0"
+    "zone.js": "~0.15.0",
+    "compression": "^1.7.4"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "20.0.4",

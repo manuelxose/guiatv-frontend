@@ -414,7 +414,8 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
    * NUEVO: Método para inicializar detección de dispositivo
    */
   private initializeDeviceDetection(): void {
-    // Check si estamos en el navegador usando múltiples métodos
+    // Check si estamos en el navegador usando multiples metodos
+    const isBrowser = this.isBrowser;
     const hasWindow = typeof window !== 'undefined';
     const hasDocument = typeof document !== 'undefined';
     const hasNavigator = typeof navigator !== 'undefined';
@@ -422,6 +423,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     console.log(
       '[ProgramList - initializeDeviceDetection] Verificando entorno:',
       {
+        isBrowser,
         hasWindow,
         hasDocument,
         hasNavigator,
@@ -429,26 +431,22 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     );
 
-    if (hasWindow && hasDocument) {
-      console.log('✅ Entorno de navegador detectado, inicializando...');
-
-      // Forzar inicialización del DeviceDetector
-
-      // Marcar como hidratado
-
-      // Inicializar features del navegador
-      this.initializeBrowserFeatures();
-
-      // Forzar detección
-      this.cdr.detectChanges();
-
-      console.log('✅ Inicialización completa:', {
-        isMobile: this.isMobile(),
-        deviceInfo: this.deviceInfo(),
-      });
-    } else {
-      console.log('⚠️ No se detectó entorno de navegador');
+    if (!isBrowser || !hasWindow || !hasDocument) {
+      console.log('?? No se detecto entorno de navegador');
+      return;
     }
+
+    console.log('? Entorno de navegador detectado, inicializando...');
+
+    // Inicializar features del navegador
+    this.initializeBrowserFeatures();
+
+    this.cdr.detectChanges();
+
+    console.log('? Inicializacion completa:', {
+      isMobile: this.isMobile(),
+      deviceInfo: this.deviceInfo(),
+    });
   }
 
   private initializeComponent(): void {
