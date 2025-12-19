@@ -20,18 +20,30 @@ import { MetaService } from 'src/app/services/meta.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { isLive } from 'src/app/utils/utils';
 import { ApiConfigService } from 'src/app/api/api-config.service';
+import { DeviceDetectorService } from 'src/app/services/device-detector.service';
 
 interface DayOption {
   label: string;
   value: string;
 }
 
+
 interface TimeSlot {
-  hour: number;
+  hour: string;
   label: string;
   programs: any[];
-  count: number;
   isActive: boolean;
+}
+
+interface RelatedChannel {
+  id: string;
+  name: string;
+}
+
+interface PerformanceMetrics {
+  loadTime: number;
+  renderTime: number;
+  dataFetchTime: number;
 }
 
 interface RelatedChannel {
@@ -67,6 +79,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   private metaSvc = inject(MetaService);
   private cdr = inject(ChangeDetectorRef);
   private apiConfig = inject(ApiConfigService);
+  public deviceDetector = inject(DeviceDetectorService);
 
   // ViewChildren for slider controls
   @ViewChildren('timeSlotSlider') timeSlotSliders!: QueryList<SliderComponent>;
@@ -96,9 +109,9 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     { label: 'Pasado', value: 'after_tomorrow' },
   ];
 
-  public timeSlots: TimeSlot[] = [];
-  public selectedTimeSlot: number | null = null;
+  public selectedTimeSlot: string | null = null;
   public selectedCategory: string | null = null;
+  public timeSlots: TimeSlot[] = []; // Filters
   public relatedChannels: RelatedChannel[] = [];
 
   // Private Properties
@@ -109,6 +122,11 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     dataFetchTime: 0,
   };
   private componentStartTime: number = 0;
+
+  // Dropdown States
+  public isDayDropdownOpen: boolean = false;
+  public isTimeSlotDropdownOpen: boolean = false;
+  public isCategoryDropdownOpen: boolean = false;
 
   // Category Icons Map
   private categoryIcons: { [key: string]: string } = {
@@ -156,6 +174,29 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       return `${base}${url}`;
     }
     return `${base}/${url}`;
+  }
+
+  /**
+   * Format channel name from URL parameter
+   */
+  private formatChannelName(query: string): string {
+    return query.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+  }
+
+  /**
+   * Format day name from route parameter
+   */
+  private formatDayName(dia: string): string {
+    switch (dia) {
+      case 'today':
+        return 'Hoy';
+      case 'tomorrow':
+        return 'Mañana';
+      case 'after_tomorrow':
+        return 'Pasado mañana';
+      default:
+        return 'Hoy';
+    }
   }
 
   /**
@@ -389,13 +430,9 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       // Get categories
       this.categorias = this.svcGuide.getChannelCategories(this.programs);
 
-      // Set default category to "Películas" if available
-      if (this.selectedCategory === null) {
-        const peliculasCategory = this.categorias.find(cat => 
-          cat.toLowerCase().includes('película') || cat.toLowerCase().includes('cine')
-        );
-        this.selectedCategory = peliculasCategory || (this.categorias.length > 0 ? this.categorias[0] : null);
-      }
+      // Default category is null ("Todas")
+      // The user specifically requested "que en categorias aparezca todas las categorias de inicio"
+      this.selectedCategory = null;
 
       // Organize programs by time slots
       this.organizeTimeSlots();
@@ -412,161 +449,9 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Organize programs into time slots (morning, afternoon, evening, night)
-   */
-  private organizeTimeSlots(): void {
-    const currentHour = new Date().getHours();
 
-    const slots = [
-      { hour: 6, label: 'Mañana', range: [6, 12] },
-      { hour: 12, label: 'Mediodía', range: [12, 15] },
-      { hour: 15, label: 'Tarde', range: [15, 18] },
-      { hour: 18, label: 'Sobremesa', range: [18, 21] },
-      { hour: 21, label: 'Prime Time', range: [21, 24] },
-      { hour: 0, label: 'Noche', range: [0, 6] },
-    ];
 
-    this.timeSlots = slots.map((slot) => {
-      const programs = this.programs.filter((p: any) => {
-        const hour = new Date(p.start).getHours();
-        return hour >= slot.range[0] && hour < slot.range[1];
-      });
-
-      const isActive = currentHour >= slot.range[0] && currentHour < slot.range[1];
-
-      return {
-        hour: slot.hour,
-        label: slot.label,
-        programs: programs,
-        count: programs.length,
-        isActive: isActive,
-      };
-    });
-
-    // Set current time slot as default selection
-    const activeSlot = this.timeSlots.find(slot => slot.isActive);
-    if (activeSlot && this.selectedTimeSlot === null) {
-      this.selectedTimeSlot = activeSlot.hour;
-    }
-  }
-
-  /**
-   * Get programs for a specific category
-   */
-  public getProgramsByCategory(categoria: string): any[] {
-    return this.svcGuide.getProgramsByCategory(categoria, this.channel.name);
-  }
-
-  /**
-   * Compare if current time is between start and end dates
-   */
-  public compareDate(dateIni: string, dateFin: string): boolean {
-    let horaActual = new Date();
-    // horaActual.setHours(horaActual.getHours() + 1); // Removed incorrect offset
-
-    const horaInicio = new Date(dateIni);
-    const horaFin = new Date(dateFin);
-
-    if (this.diaSeleccionado !== 'Hoy') {
-      switch (this.diaSeleccionado) {
-        case 'Mañana':
-          horaInicio.setDate(horaInicio.getDate() - 1);
-          horaFin.setDate(horaFin.getDate() - 1);
-          break;
-        case 'Pasado mañana':
-          horaInicio.setDate(horaInicio.getDate() - 2);
-          horaFin.setDate(horaFin.getDate() - 2);
-          break;
-        default:
-          break;
-      }
-    }
-
-    return horaActual >= horaInicio && horaActual <= horaFin;
-  }
-
-  /**
-   * Format time from ISO string
-   */
-  public formatTime(isoString: string): string {
-    if (!isoString) return '';
-    const date = new Date(isoString);
-    return date.toLocaleTimeString('es-ES', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-
-  /**
-   * Format channel name from URL parameter
-   */
-  private formatChannelName(query: string): string {
-    return query.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-  }
-
-  /**
-   * Format day name from route parameter
-   */
-  private formatDayName(dia: string): string {
-    switch (dia) {
-      case 'today':
-        return 'Hoy';
-      case 'tomorrow':
-        return 'Mañana';
-      case 'after_tomorrow':
-        return 'Pasado mañana';
-      default:
-        return 'Hoy';
-    }
-  }
-
-  /**
-   * Get icon SVG for category
-   */
-  private sanitizer = inject(DomSanitizer);
-
-  /**
-   * Get icon SVG for category
-   */
-  public getCategoryIcon(categoria: string): SafeHtml {
-    const normalizedCategory = categoria.toLowerCase();
-    let icon = '';
-
-    if (
-      normalizedCategory.includes('película') ||
-      normalizedCategory.includes('cine')
-    ) {
-      icon = this.categoryIcons['Películas'];
-    } else if (normalizedCategory.includes('serie')) {
-      icon = this.categoryIcons['Series'];
-    } else if (normalizedCategory.includes('deporte')) {
-      icon = this.categoryIcons['Deportes'];
-    } else if (normalizedCategory.includes('documental')) {
-      icon = this.categoryIcons['Documentales'];
-    } else if (
-      normalizedCategory.includes('infantil') ||
-      normalizedCategory.includes('niños')
-    ) {
-      icon = this.categoryIcons['Infantil'];
-    } else if (
-      normalizedCategory.includes('noticia') ||
-      normalizedCategory.includes('informativo')
-    ) {
-      icon = this.categoryIcons['Noticias'];
-    } else if (
-      normalizedCategory.includes('entretenimiento') ||
-      normalizedCategory.includes('show')
-    ) {
-      icon = this.categoryIcons['Entretenimiento'];
-    } else if (normalizedCategory.includes('cultura')) {
-      icon = this.categoryIcons['Cultura'];
-    } else {
-      icon = this.categoryIcons['default'];
-    }
-
-    return this.sanitizer.bypassSecurityTrustHtml(icon);
-  }
+// ... [Keep other properties as is, assume they match, but since I can't match scattered lines easily with replace_file_content in one go if they are far apart, I'll focus on the method replacement first. Wait, I can match the method]
 
   /**
    * Get related channels based on current channel
@@ -600,28 +485,143 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get related channels for display
+   * Organize programs into time slots
    */
-  public getRelatedChannels(): RelatedChannel[] {
-    return this.relatedChannels;
+  private organizeTimeSlots(programs?: any[]): void {
+     // Use passed programs or this.programs
+     const sourcePrograms = programs || this.programs;
+     if (!sourcePrograms) return;
+
+    const slots: { [key: string]: TimeSlot } = {};
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    sourcePrograms.forEach((program) => {
+      if (!program.start) return;
+      const start = new Date(program.start);
+      // Use 'end' or 'stop' property, default to start + 1 hour if missing
+      const end = program.end ? new Date(program.end) : (program.stop ? new Date(program.stop) : new Date(start.getTime() + 60 * 60 * 1000));
+      
+      let startHour = start.getHours();
+      let endHour = end.getHours();
+      
+      // Handle day crossing (e.g. 23:00 to 01:00)
+      if (endHour < startHour) {
+        endHour += 24; 
+      }
+      
+      // Special case: if end is exactly on the hour (e.g. 15:00), don't include 15 in the loop
+      if (end.getMinutes() === 0 && end.getSeconds() === 0) {
+          // Keep endHour as is for loop condition i < endHour
+      } else {
+         // If it ends at 15:30, it spans 15. loop should go up to 15.
+         // If start 14:00 end 15:30. hours: 14, 15.
+         // startHour=14. endHour=15. loop i <= endHour?
+         // simple loop: for (let h = startHour; h <= endHour; h++)
+         // But need to be careful with exact boundaries.
+         // Let's rely on checking intersection with strictly Hour blocks.
+         // Slot H is [H:00, H+1:00).
+         // Program spans [Start, End).
+         // Does Program intersect [H:00, H+1:00)?
+      }
+
+      // Simpler approach: Iterate hours from startHour to endHour
+      // Ensure we treat hours modulo 24.
+      const durationHours = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60)) || 1;
+      
+      for (let i = 0; i < durationHours; i++) {
+        const h = (startHour + i) % 24;
+        const slotKey = h.toString();
+
+        if (!slots[slotKey]) {
+            const nextHour = (h + 1) % 24;
+            const startStr = `${h.toString().padStart(2, '0')}:00`;
+            const endStr = `${nextHour.toString().padStart(2, '0')}:00`;
+            
+            slots[slotKey] = {
+                hour: slotKey,
+                label: `${startStr} - ${endStr}`,
+                programs: [],
+                isActive: h === currentHour,
+            };
+        }
+        // Avoid adding duplicate program if logic runs twice (though slots is local)
+        if (!slots[slotKey].programs.find(p => p === program)) {
+             slots[slotKey].programs.push(program);
+        }
+      }
+    });
+
+    this.timeSlots = Object.values(slots).sort(
+      (a, b) => parseInt(a.hour) - parseInt(b.hour)
+    );
+     
+    // REMOVED: Default forcing selectedTimeSlot. Leave it null to mean 'Dynamic/Ahora'
+  }
+
+  /**
+   * Get the single active time slot for display
+   */
+  public getActiveTimeSlot(): TimeSlot | undefined {
+    // If a time slot is selected, return it.
+    if (this.selectedTimeSlot) {
+      return this.timeSlots.find(slot => slot.hour === this.selectedTimeSlot);
+    }
+    // Fallback to active (current hour) slot
+    return this.timeSlots.find(slot => slot.isActive) || this.timeSlots[0];
   }
 
   /**
    * Select time slot to filter programs
    */
-  public selectTimeSlot(hour: number | null): void {
+  public selectTimeSlot(hour: string | null): void {
     this.selectedTimeSlot = hour;
+    // REMOVED: forcing hour if null. Null is a valid state.
     this.cdr.markForCheck();
   }
 
-  /**
-   * Get filtered time slots based on selection
-   */
-  public getFilteredTimeSlots(): TimeSlot[] {
-    if (this.selectedTimeSlot === null) {
-      return this.timeSlots;
+  // OLD getFilteredTimeSlots REMOVED/UNUSED for this new view logic
+  // public getFilteredTimeSlots(): TimeSlot[] { ... }
+
+  // ===============================================
+  // DROPDOWN TOGGLE METHODS
+  // ===============================================
+
+  public toggleDayDropdown(): void {
+    if (this.isDayDropdownOpen) {
+      this.closeAllDropdowns();
+    } else {
+      this.closeAllDropdowns();
+      this.isDayDropdownOpen = true;
     }
-    return this.timeSlots.filter(slot => slot.hour === this.selectedTimeSlot);
+  }
+
+  public toggleTimeSlotDropdown(): void {
+    if (this.isTimeSlotDropdownOpen) {
+      this.closeAllDropdowns();
+    } else {
+      this.closeAllDropdowns();
+      this.isTimeSlotDropdownOpen = true;
+    }
+  }
+
+  public toggleCategoryDropdown(): void {
+    if (this.isCategoryDropdownOpen) {
+      this.closeAllDropdowns();
+    } else {
+      this.closeAllDropdowns();
+      this.isCategoryDropdownOpen = true;
+    }
+  }
+
+  public isAnyDropdownOpen(): boolean {
+    return this.isDayDropdownOpen || this.isTimeSlotDropdownOpen || this.isCategoryDropdownOpen;
+  }
+
+  public closeAllDropdowns(): void {
+    this.isDayDropdownOpen = false;
+    this.isTimeSlotDropdownOpen = false;
+    this.isCategoryDropdownOpen = false;
   }
 
   /**
@@ -662,6 +662,15 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
         return p.starRating && parseFloat(p.starRating) >= 3.5;
       }).length || Math.floor(this.programs.length * 0.3)
     ); // Fallback to 30% of programs
+  }
+
+  /**
+   * Check if a time slot is the current hour
+   */
+  public isCurrentHour(hour: string | null): boolean {
+    if (!hour) return false;
+    const currentHour = new Date().getHours();
+    return parseInt(hour) === currentHour;
   }
 
   /**

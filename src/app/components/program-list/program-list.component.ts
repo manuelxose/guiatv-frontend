@@ -23,6 +23,7 @@ import {
   afterNextRender,
   Injector,
   effect,
+  untracked,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -316,14 +317,15 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     // NUEVO: Efecto para reaccionar a cambios en layout
-    effect(() => {
+  effect(() => {
       const isMobile = this.isMobile();
       const channels = this.canalesConProgramas();
       
       // Si cambia a móvil y tenemos canales, expandir todo
       if (isMobile && channels.length > 0) {
         // Solo si no están ya expandidos (para evitar bucles o redibujados innecesarios)
-        if (this.expandedChannels().size !== channels.length) {
+        // Usamos untracked para que cambios en expandedChannels NO disparen este efecto de nuevo
+        if (untracked(() => this.expandedChannels()).size !== channels.length) {
           console.log('📱 Cambio a móvil detectado: expandiendo canales');
           const allIndices = new Set(channels.map((_, index) => index));
           this.expandedChannels.set(allIndices);
@@ -1592,24 +1594,63 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   public getMobileCompactPrograms(canal: IProgramListData): IProgramItem[] {
     if (!canal.channels || canal.channels.length === 0) return [];
 
-    const now = new Date();
+    let referenceTime: Date;
+
+    // Lógica para determinar el tiempo de referencia
+    if (this.showTimeIndicator() && this.activeDayOffset() === 0) {
+      // Modo "Ahora" (Live): Usar hora actual del sistema
+      referenceTime = new Date();
+    } else {
+      // Modo filtrado (Franja horaria o día diferente):
+      // Construir fecha basada en el día seleccionado y el inicio de la franja
+      const currentHours = this.currentHours();
+      if (currentHours.length > 0) {
+        const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
+        const now = new Date();
+        referenceTime = new Date(now);
+        // Ajustar al día seleccionado: hoy + offset de días
+        referenceTime.setDate(now.getDate() + this.activeDayOffset());
+        // Ajustar a la hora de inicio de la franja
+        referenceTime.setHours(
+          Math.floor(slotStartMinutes / 60),
+          slotStartMinutes % 60,
+          0,
+          0
+        );
+      } else {
+        // Fallback por si algo falla
+        referenceTime = new Date();
+      }
+    }
+
     const programs = canal.channels;
 
+    // Buscar programa activo en el tiempo de referencia
     const currentIndex = programs.findIndex((p) => {
-      const start = new Date(p.start);
-      const end = new Date(p.stop);
-      return now >= start && now < end;
+      const start = this.parseDateIgnoringTimezone(p.start);
+      const end = this.parseDateIgnoringTimezone(p.stop);
+      // Usamos .getTime() para comparar milisegundos de forma segura
+      return (
+        referenceTime.getTime() >= start.getTime() &&
+        referenceTime.getTime() < end.getTime()
+      );
     });
 
+    // Si encontramos programa activo, devolver ese y el siguiente
     if (currentIndex !== -1) {
       return programs.slice(currentIndex, currentIndex + 2);
     }
 
-    const nextIndex = programs.findIndex((p) => new Date(p.start) > now);
+    // Si no hay activo (hueco), buscar el siguiente más próximo
+    const nextIndex = programs.findIndex(
+      (p) => this.parseDateIgnoringTimezone(p.start).getTime() > referenceTime.getTime()
+    );
+
     if (nextIndex !== -1) {
       return programs.slice(nextIndex, nextIndex + 2);
     }
 
+    // Fallback: primeros 2 programas
     return programs.slice(0, 2);
   }
 
@@ -1629,6 +1670,11 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     const start = this.parseDateIgnoringTimezone(programa.start).getTime();
     const end = this.parseDateIgnoringTimezone(programa.stop).getTime();
     
+    // Solo mostrar badge "LIVE" si realmente es ahora y estamos en modo "Ahora"
+    if (!this.showTimeIndicator() || this.activeDayOffset() !== 0) {
+        return false;
+    }
+
     const isLive = now >= start && now < end;
 
     // Log first 50 live programs found to debug timezone issues
@@ -1828,29 +1874,55 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 // }
 
 
-/**
- * Categorías disponibles para filtrar
- * Se obtiene del servicio CategoryFilterService o se extrae de los programas
- */
-public readonly availableCategories = computed(() => {
-  // Opción 1: Si tienes CategoryFilterService inyectado
-  // return this.categoryFilterService.availableCategories();
-  
-  // Opción 2: Extraer de los canales cargados
-  const channels = this.canalesConProgramas();
-  const categories = new Set<string>();
-  
-  channels.forEach(channel => {
-    channel.channels?.forEach(program => {
-      const category = (program.category as any)?.value || program.category;
-      if (category && typeof category === 'string') {
-        categories.add(category);
-      }
+  // Categorías principales para filtrar y ordenar
+  private readonly MAIN_CATEGORIES = [
+    'Cine',
+    'Series',
+    'Deportes',
+    'Noticias',
+    'Documental',
+    'Infantil',
+    'Concurso',
+    'Magazine',
+    'Entretenimiento',
+    'Música'
+  ];
+
+  /**
+   * Categorías disponibles para filtrar
+   * Se obtiene del servicio CategoryFilterService o se extrae de los programas
+   */
+  public readonly availableCategories = computed(() => {
+    // Opción 2: Extraer de los canales cargados
+    const channels = this.canalesConProgramas();
+    const categories = new Set<string>();
+    
+    channels.forEach(channel => {
+      channel.channels?.forEach(program => {
+        let category = (program.category as any)?.value || program.category;
+        if (category && typeof category === 'string') {
+          // Normalizar categoría (capitalizar primera letra)
+          category = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+          
+          // Verificar si la categoría contiene alguna de las categorías principales
+          const matchedMain = this.MAIN_CATEGORIES.find(main => 
+            category.includes(main) || main.includes(category)
+          );
+
+          if (matchedMain) {
+            categories.add(matchedMain);
+          }
+        }
+      });
+    });
+    
+    // Convertir a array y ordenar según el orden definido en MAIN_CATEGORIES
+    return Array.from(categories).sort((a, b) => {
+      const indexA = this.MAIN_CATEGORIES.indexOf(a);
+      const indexB = this.MAIN_CATEGORIES.indexOf(b);
+      return indexA - indexB; // Ordenar por relevancia predefinida
     });
   });
-  
-  return Array.from(categories).sort();
-});
 
 // ============================================
 // MÉTODOS A AÑADIR EN program-list.component.ts
