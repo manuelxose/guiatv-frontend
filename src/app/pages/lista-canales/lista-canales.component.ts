@@ -25,6 +25,7 @@ import { SliderComponent } from 'src/app/components/slider/slider.component';
 import { CardChannelComponent } from 'src/app/components/card-channel/card-channel.component';
 import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { TvApiService } from 'src/app/api/tv-api.service';
+import { ApiConfigService } from 'src/app/api/api-config.service';
 import { slugify } from 'src/app/utils/utils';
 
 @Component({
@@ -63,8 +64,6 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
   public time: any;
   public logo: any;
   public destacada: any;
-  public API_BASE_URL = 'http://localhost:4000';
-
   // Suscripciones
   private programasSubscription!: Subscription;
   private canalesSubscription!: Subscription;
@@ -89,6 +88,7 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
     private metaSvc: MetaService,
     private router: Router,
     private http: HttpClient,
+    private apiConfig: ApiConfigService,
     private sanitizer: DomSanitizer,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
@@ -174,69 +174,61 @@ export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
    * Load channels data from /v2/channels API endpoint
    * This gets the complete list of channels with their metadata
    */
-private loadProgramsData(): void {
-  // 1. Define la URL de tu backend (cámbiala si subes a producción)
-  const API_BASE_URL = 'http://localhost:4000';
+  private loadProgramsData(): void {
+    const assetBaseUrl = this.apiConfig.getAssetBaseUrl();
 
-  this.programasSubscription = this.tvApi
-    .getChannels()
-    .pipe(filter((resp) => !!resp))
-    .subscribe({
-      next: (response) => {
-        const channels = (response as any)?.data?.channels || (response as any)?.channels || [];
+    this.programasSubscription = this.tvApi
+      .getChannels()
+      .pipe(filter((resp) => !!resp))
+      .subscribe({
+        next: (response) => {
+          const channels = (response as any)?.data?.channels || (response as any)?.channels || [];
 
-        if (channels && channels.length > 0) {
-          const transformedData = channels.map((channel: any) => {
-            
-            // --- LÓGICA DE ICONOS CORREGIDA ---
-            
-            // 1. Buscamos si viene algún icono en la respuesta
-            let iconPath = channel.icon || channel.logo || channel.image;
+          if (channels && channels.length > 0) {
+            const transformedData = channels.map((channel: any) => {
 
-            // 2. Si NO viene icono (caso de La 1), construimos la ruta manualmente
-            // Usamos el ID del canal (ej: 'la_1') para formar '/storage/channel_icons/la_1.webp'
-            if (!iconPath) {
-               iconPath = `/storage/channel_icons/${channel.id}.webp`;
-            }
+              // Icon path normalization
+              let iconPath = channel.icon || channel.logo || channel.image;
 
-            // 3. Añadimos el dominio http://localhost:4000 si falta
-            if (iconPath && !iconPath.startsWith('http')) {
-               // Nos aseguramos de que empiece por '/'
-               const cleanPath = iconPath.startsWith('/') ? iconPath : `/${iconPath}`;
-               iconPath = `${API_BASE_URL}${cleanPath}`;
-            }
+              if (!iconPath) {
+                iconPath = `/storage/channel_icons/${channel.id}.webp`;
+              }
 
-            // ----------------------------------
+              if (iconPath && !iconPath.startsWith('http')) {
+                const cleanPath = iconPath.startsWith('/') ? iconPath : `/${iconPath}`;
+                iconPath = `${assetBaseUrl}${cleanPath}`;
+              }
 
-            return {
-              id: channel.id,
-              name: channel.name,
-              icon: iconPath, // ¡Aquí ya va la URL completa y correcta!
-              type: (channel.type || 'TDT').toUpperCase(),
-              country: channel.country,
-              countryCode: channel.countryCode,
-              region: channel.region,
-              isActive: channel.isActive !== false,
-              channel: {
+              return {
                 id: channel.id,
                 name: channel.name,
                 icon: iconPath,
                 type: (channel.type || 'TDT').toUpperCase(),
-              },
-            };
-          });
+                country: channel.country,
+                countryCode: channel.countryCode,
+                region: channel.region,
+                isActive: channel.isActive !== false,
+                channel: {
+                  id: channel.id,
+                  name: channel.name,
+                  icon: iconPath,
+                  type: (channel.type || 'TDT').toUpperCase(),
+                },
+              };
+            });
 
-          this.manageCanales(transformedData);
-        } else {
+            this.manageCanales(transformedData);
+          } else {
+            this.cargando = false;
+          }
+        },
+        error: (error) => {
+          console.error('[ListaCanales] Error cargando canales:', error);
           this.cargando = false;
-        }
-      },
-      error: (error) => {
-        console.error('[ListaCanales] Error cargando canales:', error);
-        this.cargando = false;
-      },
-    });
-}
+        },
+      });
+  }
+
   private manageCanales(data: any): void {
     this.guideSvc.setData(data);
 
