@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, OnInit, OnDestroy, ChangeDetectorRef, OnChanges, SimpleChanges, NgZone } from '@angular/core';
 import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
+import { DeviceDetectorService } from 'ngx-device-detector';
 
 @Component({
   selector: 'app-card-list',
@@ -34,7 +35,11 @@ export class CardListComponent implements OnInit, OnDestroy, OnChanges {
   private _cachedProgress: number = 0;
   private _cachedTimeText: string = 'Emitiendo ahora';
 
-  constructor(private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
+  constructor(
+    private cdr: ChangeDetectorRef, 
+    private ngZone: NgZone,
+    public deviceDetector: DeviceDetectorService
+  ) {}
 
   get backgroundImage(): string {
     return this.image

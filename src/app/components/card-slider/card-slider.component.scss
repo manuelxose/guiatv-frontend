@@ -1,3 +1,110 @@
 :host {
   display: block;
 }
+
+// ==================================================
+// Netflix/Prime Video Mobile Compact Card Styles
+// ==================================================
+
+.card-slider {
+  // Mobile compact styling
+  @media (max-width: 767px) {
+    border-radius: 8px !important;
+    
+    // Reduce hover scale for mobile
+    &:hover {
+      transform: scale(1.02) !important;
+    }
+    
+    // Smaller play button
+    .flex.h-12.w-12 {
+      width: 32px !important;
+      height: 32px !important;
+      
+      svg {
+        width: 16px !important;
+        height: 16px !important;
+      }
+    }
+  }
+}
+
+// Content area - compact for mobile
+.card-slider > div:last-child {
+  @media (max-width: 767px) {
+    padding: 8px !important;
+  }
+}
+
+// Title - smaller on mobile
+.card-slider h3 {
+  @media (max-width: 767px) {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 4px !important;
+    -webkit-line-clamp: 1 !important;
+  }
+}
+
+// Subtitle/channel
+.card-slider .text-sm.font-semibold {
+  @media (max-width: 767px) {
+    font-size: 0.6rem !important;
+    display: none; // Hide on very small cards
+  }
+}
+
+// Time/metadata
+.card-slider .text-sm.text-gray-300 {
+  @media (max-width: 767px) {
+    font-size: 0.65rem !important;
+    
+    svg {
+      width: 12px !important;
+      height: 12px !important;
+    }
+  }
+}
+
+// Channel logo - smaller
+.card-slider .top-3.right-3 img {
+  @media (max-width: 767px) {
+    width: 20px !important;
+    height: 20px !important;
+    top: 6px !important;
+    right: 6px !important;
+  }
+}
+
+// Positioning and sizing for interaction buttons overlay
+.card-slider .top-3.left-3.z-20 {
+  @media (max-width: 767px) {
+    display: none !important;
+  }
+  
+  // On tablet/desktop, ensure they are positioned elegantly
+  @media (min-width: 768px) {
+    top: 0.5rem !important;
+    left: 0.5rem !important;
+    max-width: calc(100% - 1rem);
+    
+    // Scale down slightly to fit better if needed
+    app-interaction-buttons {
+      transform: scale(0.9);
+      transform-origin: top left;
+    }
+  }
+}
+
+// Live badge - smaller
+.card-slider .top-3.left-3.z-10 {
+  @media (max-width: 767px) {
+    top: 6px !important;
+    left: 6px !important;
+    
+    span {
+      font-size: 8px !important;
+      padding: 2px 6px !important;
+    }
+  }
+}

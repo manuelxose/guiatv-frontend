@@ -29,8 +29,16 @@ import { EditProfileModalComponent } from './components/edit-profile-modal/edit-
 import { AddToListModalComponent } from './components/add-to-list-modal/add-to-list-modal.component';
 import { UserChatComponent } from './components/user-chat/user-chat.component';
 import { UserFavoritesComponent } from './components/user-favorites/user-favorites.component';
+import { AdminAnalyticsComponent } from './components/admin-analytics/admin-analytics.component';
 
-type TabType = 'overview' | 'lists' | 'social' | 'favorites' | 'chat' | 'settings';
+type TabType =
+  | 'overview'
+  | 'lists'
+  | 'social'
+  | 'favorites'
+  | 'chat'
+  | 'settings'
+  | 'admin';
 
 @Component({
   selector: 'app-user-area',
@@ -49,7 +57,8 @@ type TabType = 'overview' | 'lists' | 'social' | 'favorites' | 'chat' | 'setting
     EditProfileModalComponent,
     AddToListModalComponent,
     UserChatComponent,
-    UserFavoritesComponent
+    UserFavoritesComponent,
+    AdminAnalyticsComponent
   ],
   templateUrl: './user-area.component.html',
   styleUrls: ['./user-area.component.scss'],

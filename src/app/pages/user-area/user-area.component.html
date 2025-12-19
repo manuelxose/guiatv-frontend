@@ -55,6 +55,13 @@
         >
           Ajustes
         </button>
+        <button
+          (click)="setActiveTab('admin')"
+          class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
+          [ngClass]="activeTab === 'admin' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+        >
+          Admin
+        </button>
       </div>
 
       <!-- Tab Content -->
@@ -110,6 +117,11 @@
             [notifications]="profile.notifications"
             (saveSettings)="onSaveSettings($event)"
           ></app-user-settings>
+        </div>
+
+        <!-- ADMIN TAB -->
+        <div *ngSwitchCase="'admin'" class="animate-fade-in">
+          <app-admin-analytics></app-admin-analytics>
         </div>
 
       </div>

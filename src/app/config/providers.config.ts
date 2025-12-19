@@ -4,6 +4,7 @@
  */
 import { Provider, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { DeviceDetectorService } from 'ngx-device-detector';
 import { ApiClientService } from '../api/api-client.service';
 import { ApiConfigService } from '../api/api-config.service';
 import { ApiCacheService } from '../api/cache.service';
@@ -22,6 +23,7 @@ export const coreProviders: Provider[] = [
   ApiClientService,
   TvApiService,
   TvDataService,
+  DeviceDetectorService,
 ];
 
 export const stateProviders: Provider[] = [

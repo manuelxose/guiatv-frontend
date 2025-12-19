@@ -42,6 +42,7 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
   // Middlewares globales
   app.use(corsMiddleware);
   app.use(compressionMiddleware);
+  app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
   app.use(requestLogger);
 

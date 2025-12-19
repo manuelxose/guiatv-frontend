@@ -28,200 +28,210 @@
 
   <!-- Content -->
   <ng-template #contentTemplate>
-    <article>
-      <!-- SEO Header -->
-      <header class="px-4 sm:px-6 lg:px-8 mb-6 mt-6">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/15 text-red-300 text-sm font-semibold mb-3">
-          En emision hoy
-        </div>
-        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-3">
-          {{ contentTitle }} en television
-        </h1>
-        
-        <!-- Search & Filter Section -->
-        <div class="mt-6 mb-8 space-y-4">
-          <div class="relative max-w-2xl">
-            <input
-              [formControl]="searchControl"
-              type="text"
-              class="w-full bg-gray-800/80 border border-gray-700 text-white rounded-xl px-5 py-4 pl-12 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent placeholder-gray-400 shadow-lg backdrop-blur-sm transition-all"
-              [placeholder]="'Buscar ' + (contentType === 'series' ? 'series' : 'películas') + ' por título...'"
-            />
-            <svg
-              class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-          </div>
-
-          <!-- Category Chips -->
-          <div class="flex flex-wrap gap-2">
-            <button
-              *ngFor="let cat of categorias"
-              (click)="toggleCategoryFilter(cat)"
-              class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border"
-              [ngClass]="
-                activeCategoryFilter === cat
-                  ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-900/30'
-                  : 'bg-gray-800/60 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white'
-              "
-            >
-              {{ cat }}
-            </button>
-          </div>
-        </div>
-
-        <div *ngIf="!isSearching" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 text-sm text-gray-300">
-          <div class="p-3 rounded-xl bg-gray-800/60 border border-gray-700/60">
-            <p class="font-semibold text-white">En vivo ahora</p>
-            <p class="text-lg font-bold text-red-300">{{ en_emision.length }}</p>
-          </div>
-          <div class="p-3 rounded-xl bg-gray-800/60 border border-gray-700/60">
-            <p class="font-semibold text-white">Titulos listos para ver</p>
-            <p class="text-lg font-bold text-white">{{ items.length }}</p>
-          </div>
-          <div class="p-3 rounded-xl bg-gray-800/60 border border-gray-700/60">
-            <p class="font-semibold text-white">Categorias curadas</p>
-            <p class="text-lg font-bold text-white">{{ categorias.length }}</p>
-          </div>
-        </div>
-      </header>
-
-      <!-- Search Results Grid -->
-      <section *ngIf="isSearching" class="px-4 sm:px-6 lg:px-8 animate-fade-in">
-        <h2 class="text-xl font-semibold text-white mb-6">
-          Resultados de búsqueda
-          <span class="text-gray-400 text-base font-normal ml-2">({{ searchResults.length }})</span>
-        </h2>
-        
-        <div *ngIf="searchResults.length > 0; else noResults" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          <app-card-list
-            *ngFor="let item of searchResults"
-            [title]="item.title"
-            [channelIcon]="$any(item).icon || $any(item).channelIcon || item.channel?.icon || ''"
-            [image]="item.image"
-            [description]="item.description"
-            [category]="item.category"
-            [time]="item.start ? (item.start | date:'HH:mm') : ''"
-            (cardClick)="router.navigate([contentType === 'series' ? '/series' : '/peliculas', item.id])"
-          ></app-card-list>
-        </div>
-
-        <ng-template #noResults>
-          <div class="text-center py-20">
-            <div class="bg-gray-800/50 p-6 rounded-full inline-block mb-4">
-              <svg class="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-            </div>
-            <p class="text-gray-400 text-lg">No encontramos nada con esos filtros.</p>
-            <button (click)="activeCategoryFilter = null; searchControl.setValue('')" class="mt-4 text-red-400 hover:text-red-300 underline">
-              Limpiar filtros
-            </button>
-          </div>
-        </ng-template>
+    <article class="content-animate-in">
+      <!-- Hero Section - Featured Content -->
+      <section *ngIf="destacada" class="mt-4 relative overflow-hidden rounded-xl mx-4 sm:mx-6 max-w-7xl lg:mx-auto">
+        <app-banner 
+          [data]="toBannerData(destacada)" 
+          [compact]="deviceDetector.isMobile()"
+          class="block"
+        ></app-banner>
       </section>
 
-      <!-- Default Browse Content -->
-      <ng-container *ngIf="!isSearching">
+      <!-- Sticky Header with Dropdowns -->
+      <section 
+        class="mt-6 sticky top-16 bg-gray-900/95 backdrop-blur-md border-b border-gray-800/50 -mx-4 px-4 py-3 shadow-lg flex items-center gap-2 z-40"
+        [class.z-[60]]="isDayDropdownOpen || isCategoryDropdownOpen"
+      >
+        <!-- Container for alignment: Added pl-2 for mobile separation -->
+        <div class="w-full max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-hide pr-4 pl-2">
+          
+          <!-- Day Filter -->
+          <div class="relative">
+            <button 
+              class="tv-chip flex items-center gap-2"
+              [class.tv-chip--active]="isDayDropdownOpen"
+              (click)="toggleDayDropdown($event)"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ getSelectedDayLabel() }}</span>
+              <svg class="w-3 h-3 transition-transform" [class.rotate-180]="isDayDropdownOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
 
-      <!-- Empty State -->
-      <div *ngIf="items.length === 0" class="flex flex-col items-center justify-center py-20 text-center px-4">
-        <div class="bg-gray-800 p-6 rounded-full mb-6">
-          <svg class="w-16 h-16 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path>
-          </svg>
+          <!-- Category Filter -->
+          <div class="relative">
+            <button 
+              class="tv-chip flex items-center gap-2"
+              [class.tv-chip--active]="isCategoryDropdownOpen || activeCategoryFilter"
+              (click)="toggleCategoryDropdown($event)"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <span class="max-w-[120px] truncate">{{ activeCategoryFilter || 'Categorías' }}</span>
+              <svg class="w-3 h-3 transition-transform" [class.rotate-180]="isCategoryDropdownOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <h3 class="text-xl font-bold text-white mb-2">No hay contenido disponible</h3>
-        <p class="text-gray-400 max-w-md">
-          No hemos encontrado {{ contentTitle.toLowerCase() }} en la programacion actual. Intenta mas tarde o revisa la guia completa.
-        </p>
+      </section>
+
+      <!-- PORTAL: Bottom Sheets (Mobile Filters) -->
+      <div *ngIf="isDayDropdownOpen || isCategoryDropdownOpen" class="tv-overlay" (click)="isDayDropdownOpen = false; isCategoryDropdownOpen = false">
+        
+        <!-- Day Filter Sheet -->
+        <div *ngIf="isDayDropdownOpen" class="tv-sheet-isolated shadow-2xl" (click)="$event.stopPropagation()">
+          <div class="tv-sheet-isolated__handle"></div>
+          <div class="tv-sheet-isolated__header">
+            <h3>Selecciona un día</h3>
+            <button (click)="isDayDropdownOpen = false" class="tv-sheet-isolated__close" aria-label="Cerrar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="tv-sheet-isolated__body">
+            <button 
+              *ngFor="let day of diasDisponibles"
+              (click)="selectDay(day.value)"
+              class="tv-sheet-isolated__option"
+              [class.tv-sheet-isolated__option--selected]="selectedDate === day.value"
+            >
+              <span>{{ day.label }}</span>
+              <svg *ngIf="selectedDate === day.value" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Category Filter Sheet -->
+        <div *ngIf="isCategoryDropdownOpen" class="tv-sheet-isolated shadow-2xl" (click)="$event.stopPropagation()">
+          <div class="tv-sheet-isolated__handle"></div>
+          <div class="tv-sheet-isolated__header">
+            <h3>Filtrar por categoría</h3>
+            <button (click)="isCategoryDropdownOpen = false" class="tv-sheet-isolated__close" aria-label="Cerrar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="tv-sheet-isolated__body">
+            <button 
+              (click)="selectCategory(null)"
+              class="tv-sheet-isolated__option"
+              [class.tv-sheet-isolated__option--selected]="!activeCategoryFilter"
+            >
+              <span>Todas las categorías</span>
+            </button>
+            <div class="h-px bg-gray-700/50 my-2 mx-4"></div>
+            <button 
+              *ngFor="let cat of categorias"
+              (click)="selectCategory(cat)"
+              class="tv-sheet-isolated__option"
+              [class.tv-sheet-isolated__option--selected]="activeCategoryFilter === cat"
+            >
+              <span>{{ cat }}</span>
+              <svg *ngIf="activeCategoryFilter === cat" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <!-- Content when available -->
-      <ng-container *ngIf="items.length > 0">
-        <!-- Featured Banner -->
-        <section class="relative overflow-hidden mb-12" *ngIf="destacada">
-          <app-banner [data]="toBannerData(destacada)"></app-banner>
-        </section>
+      <!-- Main Content Area -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-12" (click)="isDayDropdownOpen = false; isCategoryDropdownOpen = false">
+        <!-- Title and Subtitle -->
+        <header class="mb-8">
+          <h1 class="text-3xl sm:text-4xl font-black text-white mb-2 uppercase tracking-tight">
+            {{ contentTitle }} <span class="text-red-600">en TV</span>
+          </h1>
+          <p class="text-gray-400 text-sm sm:text-base max-w-2xl leading-relaxed">
+            Explora la cartelera completa de {{ contentTitle.toLowerCase() }} para hoy y los próximos días. Filtra por género y no te pierdas nada.
+          </p>
+        </header>
 
-        <!-- Live Content -->
-        <section class="mt-8 sm:mt-10 lg:mt-12" aria-labelledby="live-heading" *ngIf="en_emision.length > 0">
-          <div class="px-4 sm:px-6 lg:px-8 mb-4 sm:mb-6 flex items-center justify-between">
-            <h2 id="live-heading" class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
-              <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-              {{ contentTitle }} en emision
-            </h2>
-            <span class="text-sm text-gray-400 font-medium hidden sm:block">
-              {{ en_emision.length }} en directo
-            </span>
-          </div>
+        <!-- Browse Content -->
+        <ng-container *ngIf="items.length > 0">
+          <!-- Live Content -->
+          <section class="mt-8 sm:mt-10 lg:mt-12" aria-labelledby="live-heading" *ngIf="en_emision.length > 0">
+            <div class="mb-4 sm:mb-6 flex items-center justify-between">
+              <h2 id="live-heading" class="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                {{ contentTitle }} en emision
+              </h2>
+              <span class="text-sm text-gray-400 font-medium hidden sm:block">
+                {{ en_emision.length }} en directo
+              </span>
+            </div>
 
-          <app-slider
-            #enEmisionSlider
-            [programas]="en_emision"
-            [variant]="sliderVariant"
-            class="block"
-          ></app-slider>
-        </section>
+            <app-slider
+              #enEmisionSlider
+              [programas]="en_emision"
+              [variant]="sliderVariant"
+              class="block"
+            ></app-slider>
+          </section>
 
-        <!-- Categories Sliders -->
-        <div class="space-y-8 mt-12">
-          <ng-container *ngFor="let cat of categorias; trackBy: trackByCategory">
-            <ng-container
-              *ngIf="itemsPorCategoria.has(cat) && getItemsByCategory(cat).length > 0"
-            >
-              <div class="px-4 sm:px-6 lg:px-8 mb-2">
-                <h3 class="text-xl sm:text-2xl font-semibold text-white">
-                  {{ cat }} en TV hoy
-                </h3>
-                <p class="text-gray-400 text-sm sm:text-base max-w-3xl">
-                  {{ getCategoryDescription(cat) }}
-                </p>
-              </div>
-              <app-slider
-                [title]="cat"
-                [programas]="getItemsByCategory(cat)"
-                [variant]="sliderVariant"
-              ></app-slider>
+          <!-- Categories Sliders -->
+          <div class="space-y-8 mt-12">
+            <ng-container *ngFor="let cat of categorias; trackBy: trackByCategory">
+              <ng-container
+                *ngIf="itemsPorCategoria.has(cat) && getItemsByCategory(cat).length > 0"
+              >
+                <div class="mb-2">
+                  <h3 class="text-xl sm:text-2xl font-semibold text-white">
+                    {{ cat }} en TV hoy
+                  </h3>
+                  <p class="text-gray-400 text-sm sm:text-base max-w-3xl">
+                    {{ getCategoryDescription(cat) }}
+                  </p>
+                </div>
+                <!-- Slider handles its own margins, we just provide the container -->
+                <app-slider
+                  [title]="cat"
+                  [programas]="getItemsByCategory(cat)"
+                  [variant]="sliderVariant"
+                  class="block -mx-4 sm:mx-0"
+                ></app-slider>
+              </ng-container>
             </ng-container>
-          </ng-container>
-        </div>
-
-        <!-- SEO copy -->
-        <section class="px-4 sm:px-6 lg:px-8 mt-12 space-y-4 text-gray-300">
-          <h2 class="text-2xl sm:text-3xl font-bold text-white">
-            {{ contentTitle }} en television espanola
-          </h2>
-          <p class="leading-relaxed">
-            Consulta la guia diaria de {{ contentTitle.toLowerCase() }} con horarios actualizados y seleccion por genero para encontrar rapido que ver. Destacamos los contenidos en emision, las categorias mas populares y las sinopsis breves para mejorar tu decision de visualizacion.
-          </p>
-          <p class="leading-relaxed">
-            Cada seccion agrupa {{ contentTitle.toLowerCase() }} por tematica (drama, accion, comedia, documentales, familiar, etc.) e incluye metadatos esenciales como horario de inicio y fin, canal de emision y una breve descripcion, optimizados para SEO y para usuarios que buscan contenidos en directo.
-          </p>
-          <h3 class="text-xl sm:text-2xl font-semibold text-white">
-            Como usar esta guia para encontrar que ver ahora
-          </h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-300">
-            <li>Explora los sliders por categoria para ver rapido lo que esta en emision.</li>
-            <li>Usa el banner destacado para acceder a la ficha completa con sinopsis, horario y canal.</li>
-            <li>Revisa la fila "En emision" para saber que esta empezando ahora mismo.</li>
-          </ul>
-          <h3 class="text-xl sm:text-2xl font-semibold text-white">FAQ rapida</h3>
-          <div class="space-y-2">
-            <p class="leading-relaxed">
-              <strong>Donde ver lo que empieza ya?</strong> La fila de "En emision" muestra los titulos que estan al aire ahora mismo con su canal y horario.
-            </p>
-            <p class="leading-relaxed">
-              <strong>Como filtrar por genero?</strong> Cada carrusel esta agrupado por categoria (drama, accion, comedia, etc.) para que encuentres rapido el contenido que buscas.
-            </p>
           </div>
-        </section>
-      </ng-container>
-      </ng-container>
+
+          <!-- SEO copy -->
+          <section class="mt-12 space-y-4 text-gray-300 border-t border-gray-800 pt-12 pb-20">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white">
+              {{ contentTitle }} en television espanola
+            </h2>
+            <p class="leading-relaxed text-gray-400">
+              Consulta la guia diaria de {{ contentTitle.toLowerCase() }} con horarios actualizados y seleccion por genero para encontrar rapido que ver. Destacamos los contenidos en emision, las categorias mas populares y las sinopsis breves para mejorar tu decision de visualizacion.
+            </p>
+            <p class="leading-relaxed text-gray-400">
+              Cada seccion agrupa {{ contentTitle.toLowerCase() }} por tematica (drama, accion, comedia, documentales, familiar, etc.) e incluye metadatos esenciales como horario de inicio y fin, canal de emision y una breve descripcion, optimizados para SEO y para usuarios que buscan contenidos en directo.
+            </p>
+            <h3 class="text-xl sm:text-2xl font-semibold text-white">
+              Como usar esta guia para encontrar que ver ahora
+            </h3>
+            <ul class="list-disc list-inside space-y-1 text-gray-400">
+              <li>Explora los sliders por categoria para ver rapido lo que esta en emision.</li>
+              <li>Usa el banner destacado para acceder a la ficha completa con sinopsis, horario y canal.</li>
+              <li>Revisa la fila "En emision" para saber que esta empezando ahora mismo.</li>
+            </ul>
+          </section>
+        </ng-container>
+
+        <!-- Empty State -->
+        <div *ngIf="items.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
+          <div class="bg-gray-800 p-6 rounded-full mb-6">
+            <svg class="w-16 h-16 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">No hay contenido disponible</h3>
+          <p class="text-gray-400 max-w-md">
+            No hemos encontrado {{ contentTitle.toLowerCase() }} en la programacion actual para esta categoría o fecha.
+          </p>
+        </div>
+      </div>
     </article>
   </ng-template>
 </main>

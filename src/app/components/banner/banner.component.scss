@@ -77,10 +77,10 @@ $transition: cubic-bezier(0.4, 0, 0.2, 1);
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.3) 0%,
-    rgba(0, 0, 0, 0.4) 40%,
-    rgba(0, 0, 0, 0.7) 70%,
-    rgba(0, 0, 0, 0.95) 100%
+    rgba(0, 0, 0, 0.6) 0%, // Increased top opacity for better header visibility
+    rgba(0, 0, 0, 0.5) 40%,
+    rgba(0, 0, 0, 0.8) 70%,
+    rgba(0, 0, 0, 0.98) 100% // Nearly solid bottom
   );
 }
 
@@ -125,17 +125,17 @@ $transition: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .channel-logo {
-  width: 120px;
-  height: 60px;
-  padding: 0.5rem;
-  background: rgba(31, 41, 55, 0.6);
+  width: 180px; // Substantially larger
+  height: 90px;
+  padding: 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(8px);
   border-radius: 8px;
   object-fit: contain;
 
   @media (min-width: 1024px) {
-    width: 140px;
-    height: 70px;
+    width: 220px;
+    height: 110px;
   }
 }
 
@@ -149,13 +149,18 @@ $transition: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .channel-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: none; // Stylized: no solid background
+  border: none;
+  padding: 0;
 
   @media (min-width: 1024px) {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 }
 
@@ -163,22 +168,25 @@ $transition: cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(10px);
-  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.6) !important; // Reverted to elegant semi-transparent
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important; // Subtle border
+  border-radius: 20px; // More stylized round edges
   font-size: 0.875rem;
   font-weight: 700;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 20;
 
   @media (min-width: 1024px) {
     font-size: 1rem;
-    padding: 0.75rem 1.25rem;
+    padding: 0.625rem 1.25rem;
   }
 
   .time-separator {
     color: rgba(255, 255, 255, 0.5);
+    font-weight: 400;
   }
 }
 
@@ -606,26 +614,27 @@ $bp-lg: 1024px;
 
 .channel-logo,
 .channel-logo-small {
-  max-height: 32px;
+  max-height: 56px; // Prominent on mobile
   width: auto;
   object-fit: contain;
 
   @media (min-width: $bp-md) {
-    max-height: 40px;
+    max-height: 68px;
   }
 
   @media (min-width: $bp-lg) {
-    max-height: 48px;
+    max-height: 80px;
   }
 }
 
 .channel-name {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: $color-text-secondary;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff; // Unified white
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 
   @media (min-width: $bp-md) {
-    font-size: 0.875rem;
+    font-size: 0.95rem;
   }
 }
 
@@ -634,11 +643,12 @@ $bp-lg: 1024px;
   align-items: center;
   gap: $space-sm;
   font-size: 0.75rem;
-  font-weight: 500;
-  color: $color-text-secondary;
-  background: rgba(255, 255, 255, 0.1);
-  padding: $space-sm $space-md;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.6); // Unified semi-transparent dark
+  padding: 6px 12px;
   border-radius: 20px;
+  backdrop-filter: blur(8px);
 
   @media (min-width: $bp-md) {
     font-size: 0.875rem;

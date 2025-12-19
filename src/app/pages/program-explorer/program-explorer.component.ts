@@ -11,6 +11,7 @@ import { TvDataService } from 'src/app/state/tv-data.service';
 import { HttpService } from 'src/app/services/http.service';
 import { isLive, slugify } from 'src/app/utils/utils';
 import { ProgramsResponse, ProgramLayoutDTO, ChannelMetaDTO } from 'src/app/api/models';
+import { DeviceDetectorService } from 'ngx-device-detector';
 
 type ExplorerMode = 'live' | 'featured';
 type ContentType = 'all' | 'movies' | 'series';
@@ -34,10 +35,15 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
   public filteredItems: any[] = [];
   
   // Search & Filter
-  public searchControl = new FormControl('');
+  // public searchControl = new FormControl(''); // Removed legacy search
   public isSearching = false;
   public categories: string[] = [];
   public activeCategoryFilter: string | null = null;
+
+  // Dropdown States
+  public isTypeDropdownOpen = false;
+  public isCategoryDropdownOpen = false;
+  public isMobileMenuOpen = false;
 
   private destroy$ = new Subject<void>();
 
@@ -47,7 +53,8 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
     private metaSvc: MetaService,
     private tvData: TvDataService,
     private guiaSvc: TvGuideService,
-    private http: HttpService
+    private http: HttpService,
+    public deviceDetector: DeviceDetectorService
   ) {}
 
   ngOnInit(): void {
@@ -56,9 +63,41 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
       this.initializeView();
     });
 
-    this.searchControl.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((term) => this.performSearch(term || ''));
+    // this.searchControl.valueChanges... (Removed)
+  }
+
+  // --- Actions ---
+
+  public toggleTypeDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isTypeDropdownOpen = !this.isTypeDropdownOpen;
+    this.isCategoryDropdownOpen = false;
+  }
+
+  public toggleCategoryDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
+    this.isTypeDropdownOpen = false;
+  }
+
+  public selectType(type: ContentType): void {
+    this.activeType = type;
+    this.isTypeDropdownOpen = false;
+    this.applyFilters();
+  }
+
+  public selectCategory(cat: string | null): void {
+    this.activeCategoryFilter = cat;
+    this.isCategoryDropdownOpen = false;
+    this.applyFilters();
+  }
+
+  public getTypeLabel(): string {
+    switch(this.activeType) {
+      case 'movies': return 'Películas';
+      case 'series': return 'Series';
+      default: return 'Todo';
+    }
   }
 
   ngOnDestroy(): void {
@@ -266,11 +305,12 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
 
   public performSearch(term: string): void {
     this.isSearching = !!term;
-    this.applyFilters();
+    // this.applyFilters();
   }
 
   private applyFilters(): void {
-    const term = this.searchControl.value?.toLowerCase().trim() || '';
+    // const term = this.searchControl.value?.toLowerCase().trim() || '';
+    const term = '';
     
     this.filteredItems = this.allItems.filter(item => {
       // 1. Type Filter (All, Movies, or Series)
@@ -280,8 +320,9 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
         typeMatch = itemType === this.activeType;
       }
       
-      // 2. Text Search
-      const textMatch = !term || item.title.toLowerCase().includes(term);
+      // 2. Text Search (Removed legacy search)
+      // const textMatch = !term || item.title.toLowerCase().includes(term);
+      const textMatch = true;
 
       // 3. Category Filter
       const catMatch = !this.activeCategoryFilter || 

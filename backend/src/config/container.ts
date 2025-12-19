@@ -7,6 +7,7 @@ import { ensureMongoCollectionsAndIndexes } from '../infrastructure/database/ini
 type ICacheRepository = any;
 type IChannelRepository = any;
 type IProgramRepository = any;
+type IAnalyticsRepository = any;
 
 /**
  * Lightweight service container responsible for wiring dependencies manually.
@@ -123,6 +124,7 @@ export class Container {
     const { MongoChannelRepository } = await import('../infrastructure/repositories/MongoChannelRepository');
     const { MongoProgramRepository } = await import('../infrastructure/repositories/MongoProgramRepository');
     const { MongoUserRepository } = await import('../infrastructure/repositories/MongoUserRepository');
+    const { MongoAnalyticsRepository } = await import('../infrastructure/repositories/MongoAnalyticsRepository');
 
     const channelRepository = new MongoChannelRepository();
     this.dependencies.set('channelRepository', channelRepository);
@@ -132,6 +134,9 @@ export class Container {
 
     const userRepository = new MongoUserRepository();
     this.dependencies.set('userRepository', userRepository);
+
+    const analyticsRepository = new MongoAnalyticsRepository();
+    this.dependencies.set('analyticsRepository', analyticsRepository);
 
     // Cache Repository (already stored by initializeCache, ensure consistent key)
     this.dependencies.set('cacheRepository', cache);
@@ -162,6 +167,7 @@ export class Container {
     const { TMDBService } = await import('../infrastructure/external/TMDBService');
     const { AuthService } = await import('../domain/services/AuthService');
     const { BlogService } = await import('../infrastructure/external/BlogService');
+    const { AnalyticsService } = await import('../application/services/AnalyticsService');
 
     const channelRepository = this.get<IChannelRepository>('channelRepository');
     const channelService = new ChannelService(channelRepository);
@@ -183,6 +189,10 @@ export class Container {
       this.get('userRepository')
     );
     this.dependencies.set('authService', authService);
+
+    const analyticsRepository = this.get<IAnalyticsRepository>('analyticsRepository');
+    const analyticsService = new AnalyticsService(analyticsRepository);
+    this.dependencies.set('analyticsService', analyticsService);
 
     const blogBaseUrl =
       process.env.BLOG_API_URL ||
@@ -323,6 +333,7 @@ export class Container {
     const { ContentController } = await import('../presentation/controllers/ContentController');
     const { TvController } = await import('../presentation/controllers/TvController');
     const { BlogController } = await import('../presentation/controllers/BlogController');
+    const { AnalyticsController } = await import('../presentation/controllers/AnalyticsController');
 
     const channelController = new ChannelController(getAllChannels, getChannelById);
     this.dependencies.set('channelController', channelController);
@@ -373,6 +384,9 @@ export class Container {
 
     const blogController = new BlogController();
     this.dependencies.set('blogController', blogController);
+
+    const analyticsController = new AnalyticsController(this.get('analyticsService'));
+    this.dependencies.set('analyticsController', analyticsController);
 
     logger.info('Controllers registered');
   }
