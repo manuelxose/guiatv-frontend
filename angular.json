@@ -68,6 +68,18 @@
                 "input": "src/index.html",
                 "output": "index.html"
               }
+            },
+            "development-ssr": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true,
+              "ssr": true,
+              "prerender": false,
+              "index": {
+                "input": "src/index.html",
+                "output": "index.html"
+              }
             }
           },
           "defaultConfiguration": "production"
@@ -83,6 +95,9 @@
             },
             "development": {
               "buildTarget": "guiatv:build:development"
+            },
+            "development-ssr": {
+              "buildTarget": "guiatv:build:development-ssr"
             }
           },
           "defaultConfiguration": "development"
