@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { interval, Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { DeviceDetectorService } from './device-detector.service';
 
 interface AnalyticsEventPayload {
   eventId?: string;
@@ -32,8 +33,17 @@ export class AnalyticsService implements OnDestroy {
   private startedAt: number | null = null;
   private lastPath: string | null = null;
   private hasTrackedFirstPageView = false;
+  private pageStartAt: number | null = null;
+  private lastActivityAt: number = Date.now();
+  private scrollThresholds = new Set([25, 50, 75, 100]);
+  private firedScrollThresholds = new Set<number>();
+  private baseMetadata: Record<string, any> = {};
+  private visibilityState: string = 'visible';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private deviceDetector: DeviceDetectorService
+  ) {}
 
   init(): void {
     if (!this.isBrowser || this.initialized) return;
@@ -43,6 +53,9 @@ export class AnalyticsService implements OnDestroy {
     this.sessionId = this.createSessionId();
     this.startedAt = Date.now();
     this.lastPath = this.getCurrentPath();
+    this.pageStartAt = this.startedAt;
+    this.visibilityState = document.visibilityState || 'visible';
+    this.baseMetadata = this.buildBaseMetadata();
 
     this.postJson('/analytics/session/start', {
       sessionId: this.sessionId,
@@ -50,6 +63,7 @@ export class AnalyticsService implements OnDestroy {
       initialPath: this.lastPath,
       lastPath: this.lastPath,
       referrer: document.referrer || undefined,
+      metadata: this.buildHeartbeatMetadata(),
       screen: {
         width: window.screen?.width,
         height: window.screen?.height,
@@ -65,14 +79,34 @@ export class AnalyticsService implements OnDestroy {
 
     this.startHeartbeat();
     this.bindUnload();
+    this.bindEngagementTracking();
   }
 
   trackPageView(path: string): void {
     const previousPath = this.hasTrackedFirstPageView ? this.lastPath : null;
     this.init();
     if (!this.sessionId || !this.anonId || !this.isBrowser) return;
+    const now = Date.now();
+    if (previousPath && this.pageStartAt) {
+      const durationSec = Math.max(
+        0,
+        Math.floor((now - this.pageStartAt) / 1000)
+      );
+      this.trackEvent(
+        'page_exit',
+        {
+          from: previousPath,
+          to: path,
+          durationSec,
+        },
+        'page_exit'
+      );
+    }
+
     this.lastPath = path;
     this.hasTrackedFirstPageView = true;
+    this.pageStartAt = now;
+    this.resetScrollTracking();
 
     const payload: AnalyticsEventPayload = {
       sessionId: this.sessionId,
@@ -117,6 +151,7 @@ export class AnalyticsService implements OnDestroy {
         sessionId: this.sessionId,
         lastPath: this.lastPath || this.getCurrentPath(),
         lastSeenAt: new Date().toISOString(),
+        metadata: this.buildHeartbeatMetadata(),
       });
     });
   }
@@ -126,6 +161,76 @@ export class AnalyticsService implements OnDestroy {
     const handler = () => this.endSession('pagehide');
     window.addEventListener('pagehide', handler);
     window.addEventListener('beforeunload', handler);
+  }
+
+  private bindEngagementTracking(): void {
+    if (!this.isBrowser) return;
+
+    const activityHandler = () => {
+      this.lastActivityAt = Date.now();
+    };
+
+    const scrollHandler = () => {
+      this.lastActivityAt = Date.now();
+      const depth = this.getScrollDepthPercent();
+      this.scrollThresholds.forEach((threshold) => {
+        if (depth >= threshold && !this.firedScrollThresholds.has(threshold)) {
+          this.firedScrollThresholds.add(threshold);
+          this.trackEvent(
+            'scroll_depth',
+            { depth, threshold },
+            'scroll_depth'
+          );
+        }
+      });
+    };
+
+    const visibilityHandler = () => {
+      this.visibilityState = document.visibilityState || 'visible';
+      this.trackEvent(
+        'visibility',
+        { state: this.visibilityState },
+        'visibility_change'
+      );
+    };
+
+    const clickHandler = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+      const element = target.closest(
+        '[data-analytics-id],[data-analytics-name]'
+      ) as HTMLElement | null;
+      if (!element) return;
+      const tag = element.tagName.toLowerCase();
+      const analyticsId = element.getAttribute('data-analytics-id') || undefined;
+      const analyticsName =
+        element.getAttribute('data-analytics-name') || undefined;
+      const label = analyticsName || analyticsId || tag;
+
+      const link =
+        element instanceof HTMLAnchorElement
+          ? element.getAttribute('href')
+          : undefined;
+      const linkInfo = link ? this.normalizeLink(link) : undefined;
+
+      this.trackEvent(
+        'click',
+        {
+          tag,
+          analyticsId,
+          analyticsName,
+          link: linkInfo,
+        },
+        label
+      );
+    };
+
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+    window.addEventListener('mousemove', activityHandler, { passive: true });
+    window.addEventListener('keydown', activityHandler);
+    window.addEventListener('touchstart', activityHandler, { passive: true });
+    document.addEventListener('visibilitychange', visibilityHandler);
+    document.addEventListener('click', clickHandler);
   }
 
   private endSession(reason: string): void {
@@ -202,5 +307,109 @@ export class AnalyticsService implements OnDestroy {
 
   ngOnDestroy(): void {
     this.heartbeatSub?.unsubscribe();
+  }
+
+  private resetScrollTracking(): void {
+    this.firedScrollThresholds = new Set<number>();
+  }
+
+  private getScrollDepthPercent(): number {
+    const doc = document.documentElement;
+    const scrollTop = window.scrollY || doc.scrollTop || 0;
+    const scrollHeight = doc.scrollHeight || document.body.scrollHeight || 0;
+    const viewportHeight = window.innerHeight || doc.clientHeight || 0;
+    const maxScroll = Math.max(1, scrollHeight - viewportHeight);
+    return Math.min(100, Math.round((scrollTop / maxScroll) * 100));
+  }
+
+  private buildBaseMetadata(): Record<string, any> {
+    const deviceInfo = this.deviceDetector.deviceInfo();
+    const uaData = (navigator as any).userAgentData;
+    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+
+    return {
+      device: {
+        type: deviceInfo.type,
+        isMobile: deviceInfo.isMobile,
+        isTablet: deviceInfo.isTablet,
+        isDesktop: deviceInfo.isDesktop,
+        orientation: deviceInfo.orientation,
+        isTouchDevice: deviceInfo.isTouchDevice,
+      },
+      platform: navigator.platform,
+      vendor: navigator.vendor,
+      languages: navigator.languages || [navigator.language],
+      hardware: {
+        memoryGB: (navigator as any).deviceMemory,
+        cores: navigator.hardwareConcurrency,
+      },
+      connection: connection
+        ? {
+            effectiveType: connection.effectiveType,
+            downlink: connection.downlink,
+            rtt: connection.rtt,
+            saveData: connection.saveData,
+          }
+        : undefined,
+      preferences: {
+        colorScheme: this.matchMediaPref('(prefers-color-scheme: dark)') ? 'dark' : 'light',
+        reducedMotion: this.matchMediaPref('(prefers-reduced-motion: reduce)'),
+        contrast: this.matchMediaPref('(prefers-contrast: more)'),
+      },
+      uaData: uaData
+        ? {
+            brands: uaData.brands,
+            platform: uaData.platform,
+            mobile: uaData.mobile,
+          }
+        : undefined,
+      utm: this.getUtmParams(),
+    };
+  }
+
+  private buildHeartbeatMetadata(): Record<string, any> {
+    const idleSec = Math.max(0, Math.floor((Date.now() - this.lastActivityAt) / 1000));
+    return {
+      ...this.baseMetadata,
+      activity: {
+        lastActivityAt: new Date(this.lastActivityAt).toISOString(),
+        idleSec,
+        isIdle: idleSec >= 60,
+      },
+      visibility: this.visibilityState,
+      viewport: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      },
+    };
+  }
+
+  private matchMediaPref(query: string): boolean {
+    if (!this.isBrowser || !window.matchMedia) return false;
+    return window.matchMedia(query).matches;
+  }
+
+  private getUtmParams(): Record<string, string> | undefined {
+    const params = new URLSearchParams(window.location.search);
+    const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+    const utm: Record<string, string> = {};
+    utmKeys.forEach((key) => {
+      const value = params.get(key);
+      if (value) utm[key] = value;
+    });
+    return Object.keys(utm).length ? utm : undefined;
+  }
+
+  private normalizeLink(href: string): Record<string, string> {
+    try {
+      const url = new URL(href, window.location.origin);
+      return {
+        href: url.href,
+        host: url.host,
+        path: url.pathname,
+      };
+    } catch {
+      return { href };
+    }
   }
 }

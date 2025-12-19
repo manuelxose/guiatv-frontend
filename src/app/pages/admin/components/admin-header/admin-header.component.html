@@ -1,0 +1,42 @@
+<header class="sticky top-0 z-30 bg-gray-950/70 backdrop-blur-xl border-b border-gray-800/70">
+  <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <button
+        class="lg:hidden h-10 w-10 rounded-xl bg-gray-800/70 border border-gray-700/70 text-white"
+        (click)="onToggleSidebar()"
+      >
+        <span class="text-lg">=</span>
+      </button>
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-[0.2em]">Admin Panel</p>
+        <h2 class="text-lg font-semibold text-white">
+          {{ activeGroupLabel }}
+          <span class="text-gray-500">/</span>
+          {{ activeItemLabel }}
+        </h2>
+        <p *ngIf="activeItemDescription" class="text-xs text-gray-500 mt-1">
+          {{ activeItemDescription }}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 w-full lg:w-auto">
+      <div class="relative flex-1 lg:flex-none">
+        <input
+          type="text"
+          placeholder="Search admin"
+          class="w-full lg:w-64 bg-gray-900/70 border border-gray-700/70 rounded-xl px-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-red-500"
+        />
+      </div>
+      <div class="text-xs text-gray-500" *ngIf="lastUpdated">
+        Updated {{ lastUpdated | date: 'shortTime' }}
+      </div>
+      <a
+        [routerLink]="['/']"
+        class="px-3 py-2 rounded-xl border border-gray-700/70 text-xs text-gray-300 hover:text-white hover:border-gray-500"
+      >
+        Back to app
+      </a>
+    </div>
+  </div>
+</header>

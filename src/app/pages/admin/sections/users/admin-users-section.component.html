@@ -1,0 +1,162 @@
+<section class="space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h3 class="text-2xl font-bold text-white">{{ viewTitle }}</h3>
+      <p class="text-sm text-gray-400">{{ viewDescription }}</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        class="px-4 py-2 rounded-xl border border-gray-700/70 text-gray-300 text-sm hover:text-white hover:border-gray-500"
+        (click)="refresh()"
+      >
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-4 space-y-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="relative flex-1 min-w-[200px]">
+        <input
+          type="text"
+          class="w-full bg-gray-900/70 border border-gray-700/70 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-red-500"
+          placeholder="Search by name or email"
+          [value]="search"
+          (input)="onSearchInput($event)"
+          (keydown.enter)="applyFilters()"
+        />
+      </div>
+      <select
+        class="bg-gray-900/70 border border-gray-700/70 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500"
+        [value]="roleFilter"
+        (change)="roleFilter = $any($event.target).value; applyFilters()"
+      >
+        <option *ngFor="let option of roleOptions" [value]="option.id">
+          {{ option.label }}
+        </option>
+      </select>
+      <select
+        class="bg-gray-900/70 border border-gray-700/70 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500"
+        [value]="statusFilter"
+        (change)="statusFilter = $any($event.target).value; applyFilters()"
+      >
+        <option *ngFor="let option of statusOptions" [value]="option.id">
+          {{ option.label }}
+        </option>
+      </select>
+      <button
+        type="button"
+        class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-sm hover:bg-red-500/30"
+        (click)="applyFilters()"
+      >
+        Apply
+      </button>
+    </div>
+
+    <div *ngIf="error" class="bg-red-500/10 border border-red-500/30 text-red-200 px-4 py-3 rounded-xl text-sm">
+      {{ error }}
+    </div>
+
+    <div class="text-xs text-gray-500">
+      Showing {{ users.length }} of {{ total }} users
+    </div>
+
+    <div class="overflow-auto max-h-[520px] border border-gray-800/60 rounded-2xl">
+      <table class="min-w-[900px] w-full text-sm text-left">
+        <thead class="sticky top-0 bg-gray-900/90 text-xs uppercase text-gray-400">
+          <tr>
+            <th class="px-4 py-3">User</th>
+            <th class="px-4 py-3">Role</th>
+            <th class="px-4 py-3">Status</th>
+            <th class="px-4 py-3">Provider</th>
+            <th class="px-4 py-3">Last login</th>
+            <th class="px-4 py-3">Created</th>
+            <th class="px-4 py-3 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800/70">
+          <tr *ngIf="loading">
+            <td colspan="7" class="px-4 py-6 text-center text-gray-400">Loading users...</td>
+          </tr>
+          <tr *ngIf="!loading && users.length === 0">
+            <td colspan="7" class="px-4 py-6 text-center text-gray-400">No users found.</td>
+          </tr>
+          <tr *ngFor="let user of users; trackBy: trackByUser" class="hover:bg-gray-900/40">
+            <td class="px-4 py-4">
+              <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-gray-800/80 overflow-hidden flex items-center justify-center text-xs text-gray-500">
+                  <img *ngIf="user.picture" [src]="user.picture" alt="avatar" class="h-full w-full object-cover" />
+                  <span *ngIf="!user.picture">{{ user.name?.slice(0, 1) || user.email?.slice(0, 1) }}</span>
+                </div>
+                <div>
+                  <p class="text-white font-medium">{{ user.name || 'Unknown' }}</p>
+                  <p class="text-xs text-gray-500">{{ user.email }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-4">
+              <select
+                class="bg-gray-900/70 border border-gray-700/70 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500"
+                [value]="user.role || 'user'"
+                [disabled]="!canSave(user.id)"
+                (change)="changeRole(user, $any($event.target).value)"
+              >
+                <option value="admin">Admin</option>
+                <option value="editor">Editor</option>
+                <option value="user">User</option>
+              </select>
+            </td>
+            <td class="px-4 py-4">
+              <span class="text-xs px-2 py-1 rounded-full border" [ngClass]="getStatusBadge(user.status)">
+                {{ user.status || 'active' }}
+              </span>
+            </td>
+            <td class="px-4 py-4 text-gray-400">
+              {{ user.provider || 'google' }}
+            </td>
+            <td class="px-4 py-4 text-gray-400">
+              {{ formatDate(user.lastLoginAt) }}
+            </td>
+            <td class="px-4 py-4 text-gray-400">
+              {{ formatDate(user.createdAt) }}
+            </td>
+            <td class="px-4 py-4 text-right">
+              <button
+                type="button"
+                class="px-3 py-1.5 rounded-xl text-xs border"
+                [disabled]="!canSave(user.id)"
+                [ngClass]="user.status === 'suspended' ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-amber-500/40 text-amber-200 bg-amber-500/10'"
+                (click)="toggleStatus(user)"
+              >
+                {{ user.status === 'suspended' ? 'Activate' : 'Suspend' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex items-center justify-between text-xs text-gray-500">
+      <span>Page {{ page }} of {{ pages }}</span>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="px-3 py-1.5 rounded-xl border border-gray-700/70 text-gray-300 hover:text-white hover:border-gray-500 disabled:opacity-50"
+          [disabled]="page <= 1 || loading"
+          (click)="prevPage()"
+        >
+          Prev
+        </button>
+        <button
+          type="button"
+          class="px-3 py-1.5 rounded-xl border border-gray-700/70 text-gray-300 hover:text-white hover:border-gray-500 disabled:opacity-50"
+          [disabled]="page >= pages || loading"
+          (click)="nextPage()"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

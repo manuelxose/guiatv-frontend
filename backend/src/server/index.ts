@@ -22,6 +22,7 @@ async function startServer() {
       scheduleController: container.get('scheduleController'),
       layoutController: container.get('layoutController'),
       adminController: container.get('adminController'),
+      adminUsersController: container.get('adminUsersController'),
       ssrController: container.get('ssrController'),
       authController: container.get('authController'),
       discoveryController: container.get('discoveryController'),

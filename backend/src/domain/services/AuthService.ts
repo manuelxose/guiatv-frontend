@@ -1,6 +1,6 @@
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
-import { UnauthorizedError } from '../../shared/errors';
+import { ForbiddenError, UnauthorizedError } from '../../shared/errors';
 import { MongoUserRepository } from '../../infrastructure/repositories/MongoUserRepository';
 import { logger } from '../../shared/utils/logger';
 
@@ -59,6 +59,9 @@ export class AuthService {
   async loginWithGoogle(idToken: string): Promise<AuthResult> {
     const googleUser = await this.verifyGoogleToken(idToken);
     const user = await this.userRepo.findOrCreateFromGoogle(googleUser);
+    if (user.status === 'suspended') {
+      throw new ForbiddenError('User is suspended');
+    }
     const token = this.signSessionToken(user.id, user.email);
 
     return {
@@ -85,6 +88,9 @@ export class AuthService {
 
       const user = await this.userRepo.findById(userId);
       if (!user) throw new UnauthorizedError('User not found');
+      if (user.status === 'suspended') {
+        throw new ForbiddenError('User is suspended');
+      }
 
       return {
         id: user.id,

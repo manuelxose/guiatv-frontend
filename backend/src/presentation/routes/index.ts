@@ -29,6 +29,8 @@ import { BlogController } from '../controllers/BlogController';
 import { createBlogRoutes } from './blog.routes';
 import { AnalyticsController } from '../controllers/AnalyticsController';
 import { createAnalyticsRoutes } from './analytics.routes';
+import { AdminUsersController } from '../controllers/AdminUsersController';
+import { createAdminUsersRoutes } from './admin-users.routes';
 
 /**
  * Dependencies required by every route factory.
@@ -39,6 +41,7 @@ export interface RoutesDependencies {
   scheduleController: ScheduleController;
   layoutController: LayoutController;
   adminController: AdminController;
+  adminUsersController: AdminUsersController;
   ssrController: SSRController;
   authController: AuthController;
   discoveryController: DiscoveryController;
@@ -85,6 +88,7 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   router.use('/content', createContentRoutes(dependencies.contentController));
   router.use('/tv', createTvRoutes(dependencies.tvController));
 
+  router.use('/admin/users', createAdminUsersRoutes(dependencies.adminUsersController));
   router.use('/admin', createAdminRoutes(dependencies.adminController));
   router.use('/ssr', createSSRRoutes(dependencies.ssrController));
   router.use('/auth', createAuthRoutes(dependencies.authController));

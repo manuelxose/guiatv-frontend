@@ -12,7 +12,6 @@ import { Subject, takeUntil } from 'rxjs';
 import { BannerComponent } from 'src/app/components/banner/banner.component';
 import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { SliderComponent } from 'src/app/components/slider/slider.component';
-import { CardListComponent } from 'src/app/components/card-list/card-list.component';
 import { MetaService } from 'src/app/services/meta.service';
 import {
   ContentService,
@@ -30,7 +29,7 @@ type ContentType = 'series' | 'movies';
   templateUrl: './content-page.component.html',
   styleUrls: ['./content-page.component.scss'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SliderComponent, NavBarComponent, BannerComponent, CardListComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, SliderComponent, NavBarComponent, BannerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContentPageComponent implements OnInit, OnDestroy {

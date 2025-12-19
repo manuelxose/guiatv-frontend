@@ -66,16 +66,88 @@ import {
             <div class="space-y-3" *ngIf="liveSessions.length > 0">
               <div
                 *ngFor="let session of liveSessions; trackBy: trackBySession"
-                class="p-3 rounded-xl bg-gray-900/40 border border-gray-700/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                class="p-3 rounded-xl bg-gray-900/40 border border-gray-700/50 flex flex-col gap-3"
               >
-                <div>
-                  <p class="text-white text-sm font-medium">{{ session.lastPath || '/' }}</p>
-                  <p class="text-xs text-gray-500">
-                    {{ session.sessionId.slice(0, 8) }} · {{ formatDuration(session.durationSec || 0) }}
-                  </p>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div>
+                    <p class="text-white text-sm font-medium">{{ session.lastPath || '/' }}</p>
+                    <p class="text-xs text-gray-500">
+                      {{ session.sessionId.slice(0, 8) }} · {{ formatDuration(session.durationSec || 0) }}
+                      <span *ngIf="getIdleLabel(session)" class="ml-2 text-yellow-400">
+                        {{ getIdleLabel(session) }}
+                      </span>
+                    </p>
+                  </div>
+                  <div class="text-xs text-gray-500">
+                    Last seen: {{ session.lastSeenAt | date: 'shortTime' }}
+                  </div>
                 </div>
-                <div class="text-xs text-gray-500">
-                  Last seen: {{ session.lastSeenAt | date: 'shortTime' }}
+
+                <div class="text-xs text-gray-500 flex flex-wrap gap-2">
+                  <span>{{ getDeviceSummary(session) }}</span>
+                  <span *ngIf="getBrowserSummary(session.userAgent)">• {{ getBrowserSummary(session.userAgent) }}</span>
+                  <span *ngIf="getOsSummary(session.userAgent)">• {{ getOsSummary(session.userAgent) }}</span>
+                  <span *ngIf="getConnectionSummary(session)">• {{ getConnectionSummary(session) }}</span>
+                </div>
+
+                <button
+                  type="button"
+                  class="text-xs text-red-400 hover:text-red-300 self-start"
+                  (click)="toggleSession(session.sessionId)"
+                >
+                  {{ isExpanded(session.sessionId) ? 'Hide details' : 'Show details' }}
+                </button>
+
+                <div *ngIf="isExpanded(session.sessionId)" class="text-xs text-gray-400 grid sm:grid-cols-2 gap-2">
+                  <div>
+                    <span class="text-gray-500">IP:</span> {{ session.ip || 'unknown' }}
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Referrer:</span> {{ session.referrer || 'direct' }}
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Language:</span> {{ session.language || '-' }}
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Timezone:</span> {{ session.timezone || '-' }}
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Screen:</span>
+                    {{ session.screen?.width || '-' }}x{{ session.screen?.height || '-' }}
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Viewport:</span>
+                    {{ session.viewport?.width || '-' }}x{{ session.viewport?.height || '-' }}
+                  </div>
+                  <div class="sm:col-span-2">
+                    <span class="text-gray-500">UA:</span>
+                    <span class="break-all">{{ session.userAgent || '-' }}</span>
+                  </div>
+                  <div *ngIf="session.metadata?.utm" class="sm:col-span-2">
+                    <span class="text-gray-500">UTM:</span>
+                    {{ session.metadata?.utm | json }}
+                  </div>
+                  <div class="sm:col-span-2">
+                    <span class="text-gray-500">Events:</span>
+                    <div *ngIf="sessionEvents[session.sessionId] === null" class="text-gray-500">
+                      Loading...
+                    </div>
+                    <div
+                      *ngIf="sessionEvents[session.sessionId]?.length"
+                      class="mt-2 space-y-2"
+                    >
+                      <div
+                        *ngFor="let event of sessionEvents[session.sessionId]; trackBy: trackByEvent"
+                        class="text-xs text-gray-300"
+                      >
+                        {{ event.type }} · {{ event.path || event.name || '-' }} ·
+                        {{ event.occurredAt | date: 'shortTime' }}
+                      </div>
+                    </div>
+                    <div *ngIf="sessionEvents[session.sessionId]?.length === 0" class="text-gray-500">
+                      No events
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -163,6 +235,8 @@ export class AdminAnalyticsComponent implements OnInit, OnDestroy {
   activeNow: number | null = null;
   error: string | null = null;
   lastUpdated: Date | null = null;
+  expandedSessionId: string | null = null;
+  sessionEvents: Record<string, AdminAnalyticsEvent[] | null> = {};
 
   private subs = new Subscription();
 
@@ -202,6 +276,67 @@ export class AdminAnalyticsComponent implements OnInit, OnDestroy {
     if (hours > 0) return `${hours}h ${minutes}m`;
     if (minutes > 0) return `${minutes}m ${seconds}s`;
     return `${seconds}s`;
+  }
+
+  toggleSession(sessionId: string): void {
+    const isOpening = this.expandedSessionId !== sessionId;
+    this.expandedSessionId = isOpening ? sessionId : null;
+
+    if (isOpening && this.sessionEvents[sessionId] === undefined) {
+      this.sessionEvents[sessionId] = null;
+      this.analyticsService.getRecentEvents(20, undefined, sessionId).subscribe({
+        next: (events) => {
+          this.sessionEvents[sessionId] = events;
+        },
+        error: () => {
+          this.sessionEvents[sessionId] = [];
+        },
+      });
+    }
+  }
+
+  isExpanded(sessionId: string): boolean {
+    return this.expandedSessionId === sessionId;
+  }
+
+  getDeviceSummary(session: AdminAnalyticsLiveSession): string {
+    const device = session.metadata?.device;
+    const type = device?.type || (session.metadata?.uaData?.mobile ? 'mobile' : 'desktop');
+    const orientation = device?.orientation;
+    const touch = device?.isTouchDevice ? 'touch' : '';
+    return [type, orientation, touch].filter(Boolean).join(' · ') || 'device';
+  }
+
+  getBrowserSummary(userAgent?: string): string {
+    if (!userAgent) return '';
+    if (userAgent.includes('Edg/')) return 'Edge';
+    if (userAgent.includes('Chrome/') && !userAgent.includes('Edg/')) return 'Chrome';
+    if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/')) return 'Safari';
+    if (userAgent.includes('Firefox/')) return 'Firefox';
+    return '';
+  }
+
+  getOsSummary(userAgent?: string): string {
+    if (!userAgent) return '';
+    if (userAgent.includes('Windows')) return 'Windows';
+    if (userAgent.includes('Mac OS X') && !userAgent.includes('iPhone')) return 'macOS';
+    if (userAgent.includes('Android')) return 'Android';
+    if (userAgent.includes('iPhone') || userAgent.includes('iPad')) return 'iOS';
+    if (userAgent.includes('Linux')) return 'Linux';
+    return '';
+  }
+
+  getConnectionSummary(session: AdminAnalyticsLiveSession): string {
+    const connection = session.metadata?.connection;
+    if (!connection?.effectiveType) return '';
+    return `${connection.effectiveType}${connection.saveData ? ' (save-data)' : ''}`;
+  }
+
+  getIdleLabel(session: AdminAnalyticsLiveSession): string {
+    const activity = session.metadata?.activity;
+    if (!activity) return '';
+    if (activity.isIdle) return `Idle ${activity.idleSec}s`;
+    return '';
   }
 
   private loadAll(): void {

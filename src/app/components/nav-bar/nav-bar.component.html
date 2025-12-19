@@ -71,6 +71,15 @@
             <span class="hidden lg:inline">Mi Cuenta</span>
           </button>
 
+          <!-- Register Button (Desktop) -->
+          <button
+            *ngIf="!(isAuthenticated$ | async)"
+            (click)="navigateTo('/registro', 'registro')"
+            class="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all border border-gray-700/60 text-gray-200 hover:border-red-500/60 hover:text-white hover:bg-red-500/10"
+          >
+            Crear cuenta
+          </button>
+
           <!-- Login Button (Desktop) -->
           <button
             *ngIf="!(isAuthenticated$ | async)"

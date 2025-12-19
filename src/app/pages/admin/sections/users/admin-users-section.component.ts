@@ -1,0 +1,200 @@
+import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  AdminUser,
+  AdminUserRole,
+  AdminUserStatus,
+  AdminUsersService,
+} from '../../../../services/admin-users.service';
+
+@Component({
+  selector: 'app-admin-users-section',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './admin-users-section.component.html',
+  styleUrls: ['./admin-users-section.component.scss'],
+})
+export class AdminUsersSectionComponent implements OnInit {
+  @Input() activeItem = 'accounts';
+  @Output() lastUpdatedChange = new EventEmitter<Date>();
+
+  public users: AdminUser[] = [];
+  public loading = false;
+  public error: string | null = null;
+
+  public search = '';
+  public roleFilter: 'all' | AdminUserRole = 'all';
+  public statusFilter: 'all' | AdminUserStatus = 'all';
+  public page = 1;
+  public limit = 20;
+  public total = 0;
+  public pages = 1;
+
+  public readonly roleOptions: Array<{ id: 'all' | AdminUserRole; label: string }> = [
+    { id: 'all', label: 'All roles' },
+    { id: 'admin', label: 'Admin' },
+    { id: 'editor', label: 'Editor' },
+    { id: 'user', label: 'User' },
+  ];
+
+  public readonly statusOptions: Array<{ id: 'all' | AdminUserStatus; label: string }> = [
+    { id: 'all', label: 'All status' },
+    { id: 'active', label: 'Active' },
+    { id: 'suspended', label: 'Suspended' },
+  ];
+
+  private savingIds = new Set<string>();
+
+  private readonly viewLabels: Record<
+    string,
+    { title: string; description: string }
+  > = {
+    accounts: {
+      title: 'Users',
+      description: 'Manage accounts, roles, and status.',
+    },
+    segments: {
+      title: 'Segments',
+      description: 'Filter and segment users by role and status.',
+    },
+    moderation: {
+      title: 'Moderation',
+      description: 'Review user status changes and enforcement.',
+    },
+    roles: {
+      title: 'Roles & Access',
+      description: 'Assign permissions and manage access levels.',
+    },
+  };
+
+  constructor(private usersService: AdminUsersService) {}
+
+  get viewTitle(): string {
+    return this.viewLabels[this.activeItem]?.title || 'Users';
+  }
+
+  get viewDescription(): string {
+    return this.viewLabels[this.activeItem]?.description || 'Manage users.';
+  }
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  refresh(): void {
+    this.page = 1;
+    this.loadUsers(true);
+  }
+
+  applyFilters(): void {
+    this.page = 1;
+    this.loadUsers(true);
+  }
+
+  onSearchInput(event: Event): void {
+    const target = event.target as HTMLInputElement | null;
+    this.search = target?.value || '';
+  }
+
+  changeRole(user: AdminUser, role: AdminUserRole): void {
+    if (!user.id || user.role === role) return;
+    this.saveUser(user.id, { role }, () => {
+      user.role = role;
+    });
+  }
+
+  toggleStatus(user: AdminUser): void {
+    if (!user.id) return;
+    const nextStatus: AdminUserStatus =
+      user.status === 'suspended' ? 'active' : 'suspended';
+    this.saveUser(user.id, { status: nextStatus }, () => {
+      user.status = nextStatus;
+    });
+  }
+
+  canSave(userId: string): boolean {
+    return !this.savingIds.has(userId);
+  }
+
+  getStatusBadge(status?: AdminUserStatus): string {
+    if (status === 'suspended') {
+      return 'bg-amber-500/20 text-amber-200 border-amber-500/40';
+    }
+    return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40';
+  }
+
+  formatDate(value?: string): string {
+    if (!value) return '-';
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? '-' : date.toLocaleDateString();
+  }
+
+  trackByUser(_index: number, user: AdminUser): string {
+    return user.id;
+  }
+
+  nextPage(): void {
+    if (this.page >= this.pages) return;
+    this.page += 1;
+    this.loadUsers(true);
+  }
+
+  prevPage(): void {
+    if (this.page <= 1) return;
+    this.page -= 1;
+    this.loadUsers(true);
+  }
+
+  private loadUsers(force = false): void {
+    if (this.loading) return;
+    if (!force && this.users.length > 0) return;
+
+    this.loading = true;
+    this.error = null;
+
+    this.usersService
+      .getUsers({
+        search: this.search.trim() || undefined,
+        role: this.roleFilter,
+        status: this.statusFilter,
+        page: this.page,
+        limit: this.limit,
+      })
+      .subscribe({
+        next: (response) => {
+          this.users = response.users || [];
+          this.total = response.pagination?.total || 0;
+          this.page = response.pagination?.page || this.page;
+          this.limit = response.pagination?.limit || this.limit;
+          this.pages = response.pagination?.pages || 1;
+          this.loading = false;
+          this.lastUpdatedChange.emit(new Date());
+        },
+        error: () => {
+          this.loading = false;
+          this.error = 'Failed to load users.';
+        },
+      });
+  }
+
+  private saveUser(
+    userId: string,
+    payload: { role?: AdminUserRole; status?: AdminUserStatus },
+    onSuccess: () => void
+  ): void {
+    if (this.savingIds.has(userId)) return;
+    this.savingIds.add(userId);
+    this.usersService.updateUser(userId, payload).subscribe({
+      next: () => {
+        this.savingIds.delete(userId);
+        this.error = null;
+        onSuccess();
+        this.lastUpdatedChange.emit(new Date());
+      },
+      error: () => {
+        this.savingIds.delete(userId);
+        this.error = 'Failed to update user.';
+      },
+    });
+  }
+}

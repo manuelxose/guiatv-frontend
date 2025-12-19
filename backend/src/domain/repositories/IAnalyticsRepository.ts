@@ -52,6 +52,7 @@ export interface AnalyticsEventQuery {
   from?: Date;
   to?: Date;
   type?: string;
+  sessionId?: string;
   limit?: number;
 }
 

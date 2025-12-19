@@ -334,6 +334,7 @@ export class Container {
     const { TvController } = await import('../presentation/controllers/TvController');
     const { BlogController } = await import('../presentation/controllers/BlogController');
     const { AnalyticsController } = await import('../presentation/controllers/AnalyticsController');
+    const { AdminUsersController } = await import('../presentation/controllers/AdminUsersController');
 
     const channelController = new ChannelController(getAllChannels, getChannelById);
     this.dependencies.set('channelController', channelController);
@@ -387,6 +388,9 @@ export class Container {
 
     const analyticsController = new AnalyticsController(this.get('analyticsService'));
     this.dependencies.set('analyticsController', analyticsController);
+
+    const adminUsersController = new AdminUsersController();
+    this.dependencies.set('adminUsersController', adminUsersController);
 
     logger.info('Controllers registered');
   }

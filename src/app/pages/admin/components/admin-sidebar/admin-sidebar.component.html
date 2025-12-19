@@ -1,0 +1,74 @@
+<aside
+  class="fixed inset-y-0 left-0 z-40 w-72 bg-gray-950/95 border-r border-gray-800/70 backdrop-blur-xl transform transition-transform duration-300 lg:translate-x-0"
+  [class.translate-x-0]="sidebarOpen"
+  [class.-translate-x-full]="!sidebarOpen"
+>
+  <div class="px-6 py-6 border-b border-gray-800/70">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-[0.2em]">Control Center</p>
+        <h1 class="text-xl font-bold text-white">GPTV Admin</h1>
+      </div>
+      <span
+        class="text-[10px] px-2 py-1 rounded-full border"
+        [ngClass]="environmentLabel === 'Production' ? 'border-red-400/40 text-red-300 bg-red-500/10' : 'border-emerald-400/40 text-emerald-300 bg-emerald-500/10'"
+      >
+        {{ environmentLabel }}
+      </span>
+    </div>
+  </div>
+
+  <div class="px-4 py-6 space-y-6 overflow-y-auto h-[calc(100vh-96px)]">
+    <div
+      *ngFor="let group of navGroups; let i = index"
+      class="space-y-2"
+      [ngClass]="{ 'pt-4 border-t border-gray-800/60': i > 0 }"
+    >
+      <div
+        class="flex items-center gap-3 px-3 text-xs uppercase tracking-wider"
+        [ngClass]="group.id === activeGroup ? 'text-red-300' : 'text-gray-500'"
+      >
+        <span
+          class="h-6 w-6 rounded-lg flex items-center justify-center text-[10px]"
+          [ngClass]="group.id === activeGroup ? 'bg-red-500/20 text-red-200' : 'bg-gray-800/70 text-gray-300'"
+        >
+          {{ group.icon }}
+        </span>
+        <span>{{ group.label }}</span>
+      </div>
+      <div class="space-y-1">
+        <button
+          *ngFor="let item of group.items"
+          type="button"
+          class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all"
+          [ngClass]="isActive(group.id, item.id) ? 'bg-red-600/20 text-white border border-red-500/40' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+          (click)="selectSection(group.id, item.id)"
+          [attr.title]="item.description || null"
+          [attr.aria-current]="isActive(group.id, item.id) ? 'page' : null"
+        >
+          <span class="flex items-start gap-3">
+            <span class="h-1.5 w-1.5 rounded-full" [ngClass]="isActive(group.id, item.id) ? 'bg-red-400' : 'bg-gray-600'"></span>
+            <span class="flex flex-col items-start">
+              <span>{{ item.label }}</span>
+              <span *ngIf="item.description && isActive(group.id, item.id)" class="text-[10px] text-gray-500">
+                {{ item.description }}
+              </span>
+            </span>
+          </span>
+          <span *ngIf="item.badge" class="text-[10px] text-gray-400 border border-gray-700/70 px-2 py-0.5 rounded-full">
+            {{ item.badge }}
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="pt-4 border-t border-gray-800/60">
+      <a
+        [routerLink]="['/']"
+        class="w-full inline-flex items-center justify-center px-3 py-2 rounded-xl border border-gray-700/70 text-xs text-gray-300 hover:text-white hover:border-gray-500"
+      >
+        Back to app
+      </a>
+    </div>
+  </div>
+</aside>
