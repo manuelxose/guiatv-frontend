@@ -3,6 +3,8 @@ import { readFileSync, existsSync } from 'node:fs'; // ?? A¤adido existsSync
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import http from 'node:http';
+import https from 'node:https';
 
 // Patch Domino's NYI to avoid SSR crashes on unimplemented features.
 const require = createRequire(import.meta.url);
@@ -32,6 +34,9 @@ const serverDistPath = join(distFolder, 'server');
 const indexHtml = join(serverDistPath, 'index.server.html');
 const port = process.env['PORT'] || 3000;
 const DEFAULT_SSR_ORIGIN = process.env['SSR_ORIGIN'] || `http://localhost:${port}`;
+const backendOrigin = process.env['API_ORIGIN'] || 'http://127.0.0.1:4000';
+const backendUrl = new URL(backendOrigin);
+const backendClient = backendUrl.protocol === 'https:' ? https : http;
 
 // =============================================================================
 // 1. DOM SHIMS (DOMINO) - CORREGIDO
@@ -230,6 +235,36 @@ async function getBootstrap() {
 
 const app = express();
 const commonEngine = new CommonEngine();
+const proxyPaths = ['/v2', '/storage'];
+function proxyToBackend(req, res) {
+  const targetUrl = new URL(req.originalUrl, backendOrigin);
+  const headers = { ...req.headers, host: backendUrl.host };
+  const options = {
+    protocol: backendUrl.protocol,
+    hostname: backendUrl.hostname,
+    port: backendUrl.port || (backendUrl.protocol === 'https:' ? 443 : 80),
+    method: req.method,
+    path: `${targetUrl.pathname}${targetUrl.search}`,
+    headers,
+  };
+  const proxyReq = backendClient.request(options, (proxyRes) => {
+    res.statusCode = proxyRes.statusCode || 502;
+    Object.entries(proxyRes.headers).forEach(([key, value]) => {
+      if (value !== undefined) res.setHeader(key, value);
+    });
+    proxyRes.pipe(res, { end: true });
+  });
+  proxyReq.on('error', (err) => {
+    console.error('[SSR] Proxy error:', err);
+    if (!res.headersSent) {
+      res.status(502).json({ error: 'Bad Gateway' });
+      return;
+    }
+    res.end();
+  });
+  req.pipe(proxyReq, { end: true });
+}
+
 
 app.disable('x-powered-by');
 app.set('trust proxy', true);
@@ -255,6 +290,10 @@ try {
 } catch {
   console.log('[SSR] Compression not enabled (optional dependency missing)');
 }
+
+proxyPaths.forEach((path) => {
+  app.use(path, (req, res) => proxyToBackend(req, res));
+});
 
 app.get('/.well-known/*', (req, res) => {
   res.status(204).end();

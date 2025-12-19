@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ApiConfigService } from 'src/app/api/api-config.service';
 
 @Component({
   selector: 'app-card-channel',
@@ -9,6 +10,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./card-channel.component.scss']
 })
 export class CardChannelComponent implements OnInit, OnChanges {
+  private readonly apiConfig = inject(ApiConfigService);
   @Input() name: string = '';
   @Input() icon: string = '';
   @Input() type: string = '';
@@ -59,11 +61,11 @@ export class CardChannelComponent implements OnInit, OnChanges {
     }
     
     // Convert relative path to absolute URL
-    // Storage paths should point to backend (port 4000)
+    // Storage paths use the asset base URL
     if (icon.startsWith('/storage/')) {
-      const backendUrl = 'http://localhost:4000';
-      const resolved = `${backendUrl}${icon}`;
-      console.log('[CardChannel] Resolved storage path:', { icon, backendUrl, resolved });
+      const assetBaseUrl = this.apiConfig.getAssetBaseUrl();
+      const resolved = `${assetBaseUrl}${icon}`;
+      console.log('[CardChannel] Resolved storage path:', { icon, assetBaseUrl, resolved });
       return resolved;
     }
     
