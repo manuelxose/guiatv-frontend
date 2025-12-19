@@ -25,6 +25,11 @@ export interface AdminAnalyticsLiveSession {
   referrer?: string;
   userAgent?: string;
   ip?: string;
+  language?: string;
+  timezone?: string;
+  screen?: Record<string, any>;
+  viewport?: Record<string, any>;
+  metadata?: Record<string, any>;
 }
 
 export interface AdminAnalyticsEvent {
@@ -85,10 +90,14 @@ export class AdminAnalyticsService {
 
   getRecentEvents(
     limit = 50,
-    type?: string
+    type?: string,
+    sessionId?: string
   ): Observable<AdminAnalyticsEvent[]> {
     const typeParam = type ? `&type=${encodeURIComponent(type)}` : '';
-    const url = `${this.baseUrl}/analytics/events?limit=${limit}${typeParam}`;
+    const sessionParam = sessionId
+      ? `&sessionId=${encodeURIComponent(sessionId)}`
+      : '';
+    const url = `${this.baseUrl}/analytics/events?limit=${limit}${typeParam}${sessionParam}`;
     return this.http
       .get<ApiResponse<{ events: AdminAnalyticsEvent[] }>>(url, {
         headers: this.buildHeaders(),

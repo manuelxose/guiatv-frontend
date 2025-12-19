@@ -17,12 +17,26 @@ export const routes: Routes = [
     title: 'Iniciar sesión - Guía TV',
   },
   {
+    path: 'registro',
+    loadComponent: () =>
+      import('./pages/auth/register/register.component').then(
+        (m) => m.RegisterComponent
+      ),
+    title: 'Registro - Guia TV',
+  },
+  {
     path: 'mi-cuenta',
     loadComponent: () =>
       import('./pages/user-area/user-area.component').then(
         (m) => m.UserAreaComponent
       ),
     title: 'Mi cuenta - Comunidad GPTV',
+  },
+  {
+    path: 'admin',
+    loadComponent: () =>
+      import('./pages/admin/admin.component').then((m) => m.AdminComponent),
+    title: 'Admin - Guia TV',
   },
   {
     path: 'programacion-tv/series',

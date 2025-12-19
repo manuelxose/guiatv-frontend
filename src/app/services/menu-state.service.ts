@@ -28,6 +28,7 @@ export class MenuStateService {
     'en-directo': '#f43f5e',
     'mi-cuenta': '#22c55e',
     'iniciar-sesion': '#0ea5e9',
+    registro: '#38bdf8',
   };
 
   setActive(key: string) {
@@ -80,6 +81,7 @@ export class MenuStateService {
   public readonly userRoutes = [
     { label: 'Mi cuenta', path: '/mi-cuenta', key: 'mi-cuenta' },
     { label: 'Iniciar sesión', path: '/iniciar-sesion', key: 'iniciar-sesion' },
+    { label: 'Crear cuenta', path: '/registro', key: 'registro' },
   ];
 
   // Subset intended for the header (mostrar solo lo más destacado)

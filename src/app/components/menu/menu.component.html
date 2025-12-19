@@ -179,6 +179,25 @@
       <span class="flex-1 font-semibold" [style.color]="isActive('iniciar-sesion') ? getColor('iniciar-sesion') : null">Iniciar Sesión</span>
     </a>
 
+    <!-- Crear cuenta -->
+    <a
+      *ngIf="!(isAuthenticated$ | async)"
+      routerLink="/registro"
+      routerLinkActive="active-route"
+      class="w-full text-left px-3 py-3 rounded-xl flex items-center gap-3 hover:bg-gray-800/60 transition-all duration-200"
+      [ngClass]="{
+        'bg-gray-800/80 border-l-4': isActive('registro'),
+        'hover:bg-gray-800/40': !isActive('registro')
+      }"
+      [style.border-left-color]="isActive('registro') ? getColor('registro') : 'transparent'"
+      (click)="onItemClick('/registro', 'registro')"
+    >
+      <svg class="w-5 h-5" [style.color]="isActive('registro') ? getColor('registro') : '#9ca3af'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      <span class="flex-1 font-semibold" [style.color]="isActive('registro') ? getColor('registro') : null">Crear cuenta</span>
+    </a>
+
     <!-- Cerrar Sesión -->
     <button
       *ngIf="(isAuthenticated$ | async)"

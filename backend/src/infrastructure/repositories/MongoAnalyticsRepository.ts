@@ -262,6 +262,7 @@ export class MongoAnalyticsRepository implements IAnalyticsRepository {
     const filters: Record<string, any> = {};
 
     if (query.type) filters.type = query.type;
+    if (query.sessionId) filters.sessionId = query.sessionId;
     if (query.from || query.to) {
       filters.occurredAt = {};
       if (query.from) filters.occurredAt.$gte = query.from;

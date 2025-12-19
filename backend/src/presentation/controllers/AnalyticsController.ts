@@ -213,11 +213,16 @@ export class AnalyticsController {
     const to = this.parseDate(req.query.to, undefined);
     const limit = this.parseNumber(req.query.limit, 50);
     const type = typeof req.query.type === 'string' ? req.query.type : undefined;
+    const sessionId =
+      typeof req.query.sessionId === 'string'
+        ? req.query.sessionId
+        : undefined;
 
     const events = await this.analyticsService.getRecentEvents({
       from,
       to,
       type,
+      sessionId,
       limit,
     });
 

@@ -8,6 +8,9 @@ export interface UserEntity {
   email: string;
   name?: string;
   picture?: string;
+  role?: 'admin' | 'editor' | 'user';
+  status?: 'active' | 'suspended';
+  lastLoginAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -41,6 +44,8 @@ export class MongoUserRepository {
       picture: user.picture,
       provider: 'google',
       lastLoginAt: new Date(),
+      role: 'user',
+      status: 'active',
     });
 
     await created.save();
@@ -55,6 +60,9 @@ export class MongoUserRepository {
       email: doc.email as string,
       name: doc.name as string | undefined,
       picture: doc.picture as string | undefined,
+      role: doc.role as 'admin' | 'editor' | 'user' | undefined,
+      status: doc.status as 'active' | 'suspended' | undefined,
+      lastLoginAt: doc.lastLoginAt,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     };

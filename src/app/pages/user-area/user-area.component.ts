@@ -29,7 +29,6 @@ import { EditProfileModalComponent } from './components/edit-profile-modal/edit-
 import { AddToListModalComponent } from './components/add-to-list-modal/add-to-list-modal.component';
 import { UserChatComponent } from './components/user-chat/user-chat.component';
 import { UserFavoritesComponent } from './components/user-favorites/user-favorites.component';
-import { AdminAnalyticsComponent } from './components/admin-analytics/admin-analytics.component';
 
 type TabType =
   | 'overview'
@@ -57,8 +56,7 @@ type TabType =
     EditProfileModalComponent,
     AddToListModalComponent,
     UserChatComponent,
-    UserFavoritesComponent,
-    AdminAnalyticsComponent
+    UserFavoritesComponent
   ],
   templateUrl: './user-area.component.html',
   styleUrls: ['./user-area.component.scss'],

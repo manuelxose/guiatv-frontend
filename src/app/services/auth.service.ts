@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { tap, map } from 'rxjs/operators';
-import { Observable, from, of } from 'rxjs';
+import { Observable, from, of, throwError } from 'rxjs';
 import { UserService } from './user.service';
 
 declare global {
@@ -57,46 +57,85 @@ export class AuthService {
    */
   loginWithGoogle(): Observable<AuthResponse> {
     if (!this.isBrowser) {
-      return of({
-        user: { id: 'ssr', email: 'ssr@guiatv', name: 'SSR' },
-        token: '',
-      });
+      return throwError(
+        () => new Error('Google Identity no disponible en SSR')
+      );
     }
 
     const clientId = environment.GOOGLE_CLIENT_ID;
     if (!clientId) {
-      return of({
-        user: { id: 'local', email: 'local@login', name: 'Falta clientId' },
-        token: '',
-      });
+      return throwError(() => new Error('Google client ID no configurado'));
     }
 
     return from(
       this.loadGoogleScript().then(
         () =>
           new Promise<AuthResponse>((resolve, reject) => {
+            let settled = false;
+            const finishResolve = (authResp: AuthResponse) => {
+              if (settled) return;
+              settled = true;
+              resolve(authResp);
+            };
+            const finishReject = (error: unknown) => {
+              if (settled) return;
+              settled = true;
+              reject(error);
+            };
+
             try {
               window.google.accounts.id.initialize({
                 client_id: clientId,
                 callback: (response: any) => {
                   const idToken = response?.credential;
                   if (!idToken) {
-                    reject(new Error('No se recibió credential de Google'));
+                    finishReject(
+                      new Error('No se recibio credential de Google')
+                    );
                     return;
                   }
                   this.exchangeGoogleToken(idToken).subscribe({
                     next: (authResp) => {
                       this.userService.applySession(authResp.user, authResp.token);
-                      resolve(authResp);
+                      finishResolve(authResp);
                     },
-                    error: (err) => reject(err),
+                    error: (err) => finishReject(err),
                   });
                 },
                 cancel_on_tap_outside: true,
+                cookie_policy: 'single_host_origin',
               });
-              window.google.accounts.id.prompt();
+              window.google.accounts.id.prompt((notification: any) => {
+                if (settled || !notification) return;
+
+                if (notification.isNotDisplayed?.()) {
+                  finishReject(
+                    new Error(
+                      this.getPromptErrorMessage(
+                        notification.getNotDisplayedReason?.()
+                      )
+                    )
+                  );
+                  return;
+                }
+
+                if (notification.isSkippedMoment?.()) {
+                  finishReject(
+                    new Error(
+                      this.getPromptErrorMessage(
+                        notification.getSkippedReason?.()
+                      )
+                    )
+                  );
+                  return;
+                }
+
+                if (notification.isDismissedMoment?.()) {
+                  finishReject(new Error('Inicio de sesion cancelado.'));
+                }
+              });
             } catch (e) {
-              reject(e);
+              finishReject(e);
             }
           })
       )
@@ -181,4 +220,26 @@ export class AuthService {
       return null;
     }
   }
+
+  private getPromptErrorMessage(reason?: string): string {
+    switch (reason) {
+      case 'invalid_client':
+      case 'unregistered_origin':
+      case 'unauthorized_origin':
+        return 'Origen no autorizado para este client ID. Revisa Google Cloud.';
+      case 'missing_client_id':
+        return 'Falta el client ID de Google.';
+      case 'browser_not_supported':
+        return 'Tu navegador no soporta el inicio de sesion con Google.';
+      case 'opt_out_or_no_session':
+        return 'No hay sesion activa de Google en el navegador.';
+      case 'suppressed_by_user':
+        return 'Google ha bloqueado el inicio de sesion en este navegador.';
+      case 'issuing_failed':
+        return 'No se pudo emitir el token de Google.';
+      default:
+        return 'No se pudo iniciar sesion con Google. Intenta de nuevo.';
+    }
+  }
+
 }

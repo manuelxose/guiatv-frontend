@@ -5,6 +5,7 @@ import { ScheduleModel } from './models/Schedule.model';
 import { UserModel } from './models/User.model';
 import { AnalyticsSessionModel } from './models/AnalyticsSession.model';
 import { AnalyticsEventModel } from './models/AnalyticsEvent.model';
+import { BlogPostModel } from './models/BlogPost.model';
 
 /**
  * Ensure required Mongo collections exist and indexes are in place.
@@ -20,6 +21,7 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     { name: 'users', model: UserModel },
     { name: 'analytics_sessions', model: AnalyticsSessionModel },
     { name: 'analytics_events', model: AnalyticsEventModel },
+    { name: 'blog_posts', model: BlogPostModel },
   ] as const;
 
   for (const { name, model } of resources) {

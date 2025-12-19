@@ -1,0 +1,143 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+  <app-nav-bar></app-nav-bar>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <header class="space-y-2">
+      <p class="text-sm text-gray-400 uppercase tracking-[0.2em]">
+        Comunidad GPTV
+      </p>
+      <h1 class="text-3xl sm:text-4xl font-extrabold">
+        Crea tu cuenta en segundos
+      </h1>
+      <p class="text-gray-300 max-w-3xl">
+        Registra tu cuenta con Google y empieza a usar la comunidad. La API
+        valida tu identidad y guarda tu sesion automaticamente.
+      </p>
+    </header>
+
+    <div class="grid lg:grid-cols-2 gap-6">
+      <section
+        class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-sm text-gray-400">Registro rapido</p>
+            <h2 class="text-xl font-semibold">Crear cuenta</h2>
+          </div>
+          <span
+            class="px-3 py-1 rounded-full text-xs bg-green-500/20 text-green-300 border border-green-500/40"
+            *ngIf="isAuthenticated$ | async"
+          >
+            Sesion activa
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg bg-white text-gray-900 font-semibold shadow hover:shadow-lg transition-all duration-200 mb-4"
+          (click)="onGoogleRegister()"
+          [disabled]="loading"
+        >
+          <svg
+            class="h-5 w-5"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 48 48"
+          >
+            <path
+              fill="#EA4335"
+              d="M24 9.5c3.54 0 6 1.54 7.38 2.83l5.4-5.4C33.64 3.91 29.14 2 24 2 14.82 2 6.91 7.66 3.44 15.26l6.58 5.11C12.23 13.2 17.59 9.5 24 9.5z"
+            />
+            <path
+              fill="#4285F4"
+              d="M46.5 24.5c0-1.6-.14-3.11-.4-4.5H24v9h12.7c-.5 2.6-2 4.8-4.3 6.3l6.6 5.1C43.9 37.5 46.5 31.5 46.5 24.5z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M9.02 28.65a14.9 14.9 0 0 1 0-9.3L2.44 14.2a22.46 22.46 0 0 0 0 19.6l6.58-5.15z"
+            />
+            <path
+              fill="#34A853"
+              d="M24 46c6.14 0 11.3-2.02 15.07-5.4l-6.6-5.1C30.39 36.5 27.39 37.5 24 37.5c-6.41 0-11.77-3.7-13.98-9.1l-6.58 5.1C6.91 40.34 14.82 46 24 46z"
+            />
+            <path fill="none" d="M2 2h44v44H2z" />
+          </svg>
+          <span>{{ loading ? 'Conectando...' : 'Crear cuenta con Google' }}</span>
+        </button>
+
+        <div class="text-sm text-gray-400">
+          Ya tienes cuenta?
+          <a
+            routerLink="/iniciar-sesion"
+            class="text-red-300 hover:text-red-200 font-semibold"
+          >
+            Iniciar sesion
+          </a>
+        </div>
+
+        <p class="text-xs text-gray-400 mt-4">
+          Al continuar aceptas conectar tu cuenta con GPTV. La API emitira un
+          token para tu sesion.
+        </p>
+
+        <p
+          *ngIf="statusMessage"
+          class="mt-4 text-sm rounded-lg px-4 py-3 border"
+          [ngClass]="{
+            'text-green-300 bg-green-500/10 border-green-500/20':
+              statusTone === 'success',
+            'text-red-300 bg-red-500/10 border-red-500/20':
+              statusTone === 'error',
+            'text-sky-300 bg-sky-500/10 border-sky-500/20':
+              statusTone === 'info'
+          }"
+        >
+          {{ statusMessage }}
+        </p>
+      </section>
+
+      <section
+        class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm space-y-5"
+      >
+        <div>
+          <p class="text-sm text-gray-400">Tu cuenta incluye</p>
+          <h2 class="text-xl font-semibold">Perfil social conectado</h2>
+        </div>
+
+        <div class="space-y-4 text-sm text-gray-300">
+          <div class="flex items-start gap-2">
+            <span
+              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
+              >1</span
+            >
+            <p>
+              Perfil unificado con tus datos de Google y acceso inmediato.
+            </p>
+          </div>
+          <div class="flex items-start gap-2">
+            <span
+              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
+              >2</span
+            >
+            <p>
+              Guardado de listas, recomendaciones y actividad social.
+            </p>
+          </div>
+          <div class="flex items-start gap-2">
+            <span
+              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
+              >3</span
+            >
+            <p>
+              Acceso a funcionalidades privadas dentro de Mi cuenta.
+            </p>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-gray-700/60 bg-gray-900/50 p-4 text-sm text-gray-300">
+          La cuenta se crea automaticamente en la API la primera vez que
+          ingresas con Google.
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,53 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white flex">
+  <app-admin-sidebar
+    [navGroups]="navGroups"
+    [activeGroup]="activeGroup"
+    [activeItem]="activeItem"
+    [sidebarOpen]="sidebarOpen"
+    [environmentLabel]="environmentLabel"
+    (sectionSelected)="selectSection($event.group, $event.item)"
+  ></app-admin-sidebar>
+
+  <div class="flex-1 lg:ml-72">
+    <app-admin-header
+      [activeGroupLabel]="activeGroupLabel"
+      [activeItemLabel]="activeItemLabel"
+      [activeItemDescription]="activeItemDescription"
+      [lastUpdated]="lastUpdated"
+      (toggleSidebar)="toggleSidebar()"
+    ></app-admin-header>
+
+    <main class="px-6 py-8 space-y-8">
+      <app-admin-analytics-section
+        *ngIf="activeGroup === 'analytics'"
+        [activeItem]="activeItem"
+        (lastUpdatedChange)="onLastUpdated($event)"
+      ></app-admin-analytics-section>
+
+      <ng-container *ngIf="activeGroup === 'content'">
+        <app-admin-blog-section
+          *ngIf="activeItem === 'blog'"
+          (lastUpdatedChange)="onLastUpdated($event)"
+        ></app-admin-blog-section>
+        <app-admin-content-section
+          *ngIf="activeItem !== 'blog'"
+          [activeItem]="activeItem"
+        ></app-admin-content-section>
+      </ng-container>
+
+      <app-admin-schedules-section *ngIf="activeGroup === 'schedules'"></app-admin-schedules-section>
+      <app-admin-operations-section *ngIf="activeGroup === 'operations'"></app-admin-operations-section>
+      <app-admin-users-section
+        *ngIf="activeGroup === 'users'"
+        [activeItem]="activeItem"
+        (lastUpdatedChange)="onLastUpdated($event)"
+      ></app-admin-users-section>
+      <app-admin-system-section *ngIf="activeGroup === 'system'"></app-admin-system-section>
+
+      <app-admin-placeholder-section
+        *ngIf="activeGroup !== 'analytics' && activeGroup !== 'content' && activeGroup !== 'schedules' && activeGroup !== 'operations' && activeGroup !== 'users' && activeGroup !== 'system'"
+        [title]="activeGroupLabel"
+      ></app-admin-placeholder-section>
+    </main>
+  </div>
+</div>

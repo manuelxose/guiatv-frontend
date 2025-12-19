@@ -51,6 +51,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private routerEventsDisabled = false;
   private navigationCount = 0;
+  public hideRightSidebar = false;
 
   // Integración opcional con SOLID logging
   private logger = inject(ConsoleLoggerService, { optional: true });
@@ -118,6 +119,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
           // Resetear contador después de navegación exitosa
           this.analytics.trackPageView(event.urlAfterRedirects || event.url);
+          this.updateSidebarState(event.urlAfterRedirects || event.url);
           setTimeout(() => {
             this.navigationCount = 0;
             this.logDebug('🔄 Contador de navegación reseteado');
@@ -128,6 +130,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.analytics.init();
+    this.updateSidebarState(this.router.url);
     this.logInfo(`🚀 APP COMPONENT INIT - Instancia ${this.instanceId}`);
     this.logInfo('✅ Arquitectura SOLID inicializada');
 
@@ -160,6 +163,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.logDebug(
       `📉 Instance count after destroy: ${AppComponent.instanceCount}`
     );
+  }
+
+  private updateSidebarState(url: string): void {
+    const path = (url || '').split('?')[0];
+    this.hideRightSidebar =
+      path.startsWith('/admin') || path.startsWith('/blog');
   }
 
   // ===============================================
