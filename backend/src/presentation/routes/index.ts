@@ -102,12 +102,15 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   router.use('/social', createSocialRoutes(dependencies.socialController, dependencies.authService));
   router.use('/chat', createChatRoutes(dependencies.chatController, dependencies.authService));
 
-  router.use('/admin/users', createAdminUsersRoutes(dependencies.adminUsersController));
-  router.use('/admin', createAdminRoutes(dependencies.adminController));
+  router.use(
+    '/admin/users',
+    createAdminUsersRoutes(dependencies.adminUsersController, dependencies.authService)
+  );
+  router.use('/admin', createAdminRoutes(dependencies.adminController, dependencies.authService));
   router.use('/ssr', createSSRRoutes(dependencies.ssrController));
   router.use('/auth', createAuthRoutes(dependencies.authController));
   router.use('/blog', createBlogRoutes(dependencies.blogController));
-  router.use('/analytics', createAnalyticsRoutes(dependencies.analyticsController));
+  router.use('/analytics', createAnalyticsRoutes(dependencies.analyticsController, dependencies.authService));
 
   return router;
 };

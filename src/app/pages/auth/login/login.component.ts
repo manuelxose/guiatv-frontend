@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NavBarComponent } from '../../../components/nav-bar/nav-bar.component';
 import { MenuStateService } from '../../../services/menu-state.service';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
+import { Subject, filter, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -14,12 +15,14 @@ import { AuthService } from '../../../services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   public statusMessage = '';
   public statusTone: 'success' | 'error' | 'info' = 'info';
   public loading = false;
   public isAuthenticated$ = this.userService.isAuthenticated$;
   public credentials = { email: '', password: '' };
+  private readonly destroy$ = new Subject<void>();
+  private hasRedirected = false;
 
   constructor(
     private userService: UserService,
@@ -30,6 +33,17 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.menuState.setActive('iniciar-sesion');
+    this.isAuthenticated$
+      .pipe(
+        filter((isAuthenticated) => isAuthenticated),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.redirectToAccount());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onPasswordLogin(): void {
@@ -49,8 +63,7 @@ export class LoginComponent implements OnInit {
       next: () => {
         this.statusTone = 'success';
         this.statusMessage = 'Sesion iniciada. Redirigiendo...';
-        this.menuState.setActive('mi-cuenta');
-        this.router.navigateByUrl('/mi-cuenta');
+        this.redirectToAccount();
       },
       error: (err) => {
         this.loading = false;
@@ -72,8 +85,7 @@ export class LoginComponent implements OnInit {
       next: () => {
         this.statusTone = 'success';
         this.statusMessage = 'Sesion iniciada con Google. Redirigiendo...';
-        this.menuState.setActive('mi-cuenta');
-        this.router.navigateByUrl('/mi-cuenta');
+        this.redirectToAccount();
       },
       error: (err) => {
         this.loading = false;
@@ -85,5 +97,12 @@ export class LoginComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  private redirectToAccount(): void {
+    if (this.hasRedirected) return;
+    this.hasRedirected = true;
+    this.menuState.setActive('mi-cuenta');
+    this.router.navigateByUrl('/mi-cuenta');
   }
 }

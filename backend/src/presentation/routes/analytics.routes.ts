@@ -1,12 +1,15 @@
 import { Router } from 'express';
 import { AnalyticsController } from '../controllers/AnalyticsController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
-import { analyticsAdminGuard } from '../middlewares/analyticsAdminGuard';
+import { AuthService } from '../../domain/services/AuthService';
+import { createAdminAccessGuard } from '../middlewares/adminAccessGuard';
 
 export const createAnalyticsRoutes = (
-  controller: AnalyticsController
+  controller: AnalyticsController,
+  authService: AuthService
 ): Router => {
   const router = Router();
+  const adminAccessGuard = createAdminAccessGuard(authService);
 
   router.post(
     '/session/start',
@@ -24,17 +27,17 @@ export const createAnalyticsRoutes = (
 
   router.get(
     '/live',
-    analyticsAdminGuard,
+    adminAccessGuard,
     asyncHandler(controller.getLive.bind(controller))
   );
   router.get(
     '/overview',
-    analyticsAdminGuard,
+    adminAccessGuard,
     asyncHandler(controller.getOverview.bind(controller))
   );
   router.get(
     '/events',
-    analyticsAdminGuard,
+    adminAccessGuard,
     asyncHandler(controller.getEvents.bind(controller))
   );
 

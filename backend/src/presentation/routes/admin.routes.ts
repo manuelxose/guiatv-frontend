@@ -4,12 +4,20 @@ import { Router } from 'express';
 import { AdminController } from '../controllers/AdminController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { strictRateLimit } from '../middlewares/rateLimit';
+import { AuthService } from '../../domain/services/AuthService';
+import { createAdminAccessGuard } from '../middlewares/adminAccessGuard';
 
 /**
  * Admin/maintenance endpoints used for operational tasks.
  */
-export const createAdminRoutes = (controller: AdminController): Router => {
+export const createAdminRoutes = (
+  controller: AdminController,
+  authService: AuthService
+): Router => {
   const router = Router();
+  const adminAccessGuard = createAdminAccessGuard(authService);
+
+  router.use(adminAccessGuard);
 
   // TODO: Agregar middleware de autenticación para producción
   // router.use(authMiddleware);

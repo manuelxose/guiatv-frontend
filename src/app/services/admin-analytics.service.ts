@@ -57,6 +57,7 @@ interface ApiResponse<T> {
 export class AdminAnalyticsService {
   private readonly baseUrl = environment.API_BASE_URL;
   private readonly adminKey = environment.ANALYTICS_ADMIN_KEY || '';
+  private readonly isBrowser = typeof window !== 'undefined';
 
   constructor(private http: HttpClient) {}
 
@@ -107,9 +108,22 @@ export class AdminAnalyticsService {
 
   private buildHeaders(): HttpHeaders {
     const headers: Record<string, string> = {};
+    const token = this.getToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     if (this.adminKey) {
       headers['x-admin-key'] = this.adminKey;
     }
     return new HttpHeaders(headers);
+  }
+
+  private getToken(): string | null {
+    if (!this.isBrowser) return null;
+    try {
+      return localStorage.getItem('gtv_id_token');
+    } catch {
+      return null;
+    }
   }
 }

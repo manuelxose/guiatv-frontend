@@ -38,6 +38,7 @@ export interface SessionUser {
   email: string;
   name?: string;
   picture?: string;
+  role?: 'admin' | 'editor' | 'user';
 }
 
 /**
@@ -86,6 +87,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        role: user.role,
       },
       token,
     };
@@ -149,6 +151,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        role: user.role,
       },
       token,
     };
@@ -197,6 +200,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        role: user.role,
       },
       token,
     };
@@ -224,6 +228,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         picture: user.picture,
+        role: user.role,
       };
     } catch (error) {
       logger.warn('Failed to validate session token', { error });

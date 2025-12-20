@@ -8,6 +8,7 @@ export interface UserProfile {
   avatar: string;
   bio: string;
   location: string;
+  role?: 'admin' | 'editor' | 'user';
   favoriteGenres: string[];
   watchingNow: WatchingNow;
   privacy: UserPrivacy;
