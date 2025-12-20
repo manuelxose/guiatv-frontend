@@ -11,6 +11,9 @@ import { ApiConfigService } from 'src/app/api/api-config.service';
 })
 export class CardChannelComponent implements OnInit, OnChanges {
   private readonly apiConfig = inject(ApiConfigService);
+  private readonly iconWidth = 168;
+  private readonly iconAspectRatio = 55 / 84;
+  private readonly iconQuality = 80;
   @Input() name: string = '';
   @Input() icon: string = '';
   @Input() type: string = '';
@@ -34,16 +37,17 @@ export class CardChannelComponent implements OnInit, OnChanges {
 
   private updateBackgroundImage() {
     const resolvedIcon = this.resolveIconUrl(this.icon);
+    const optimizedIcon = this.buildProxyUrl(resolvedIcon);
     
     console.log('[CardChannel] Updating background:', {
       name: this.name,
       originalIcon: this.icon,
-      resolvedIcon: resolvedIcon,
+      resolvedIcon: optimizedIcon,
       imageError: this.imageError
     });
     
-    if (resolvedIcon && !this.imageError) {
-      this.backgroundImage = `url('${resolvedIcon}')`;
+    if (optimizedIcon && !this.imageError) {
+      this.backgroundImage = `url('${optimizedIcon}')`;
     } else {
       this.backgroundImage = `url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect fill="%23374151" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%239CA3AF" font-size="14" font-family="system-ui"%3E${this.name.substring(0, 2).toUpperCase()}%3C/text%3E%3C/svg%3E')`;
     }
@@ -78,6 +82,23 @@ export class CardChannelComponent implements OnInit, OnChanges {
     }
     
     return icon;
+  }
+
+  private buildProxyUrl(raw?: string): string | undefined {
+    if (!raw) return raw;
+    if (raw.startsWith('data:') || raw.startsWith('blob:')) {
+      return raw;
+    }
+    if (raw.includes('wsrv.nl/?')) {
+      return raw;
+    }
+    const height = Math.max(
+      1,
+      Math.round(this.iconWidth * this.iconAspectRatio)
+    );
+    return `https://wsrv.nl/?url=${encodeURIComponent(
+      raw
+    )}&w=${this.iconWidth}&h=${height}&output=webp&q=${this.iconQuality}`;
   }
 
   onClick() {

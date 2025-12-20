@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { combineLatest, forkJoin, map, take } from 'rxjs';
+import { Subject, combineLatest, forkJoin, map, take, takeUntil } from 'rxjs';
 import {
   UserActivity,
   UserFriend,
@@ -56,7 +56,7 @@ type TabType =
   templateUrl: './user-area.component.html',
   styleUrls: ['./user-area.component.scss'],
 })
-export class UserAreaComponent implements OnInit {
+export class UserAreaComponent implements OnInit, OnDestroy {
   public profile$ = this.userService.getProfile();
   public recommendations$ = this.userService.getRecommendations();
   public activities$ = this.userService.getActivities();
@@ -66,6 +66,7 @@ export class UserAreaComponent implements OnInit {
   public isAuthenticated$ = this.userService.isAuthenticated$;
   public loading$ = this.userService.loading$;
   public error$ = this.userService.error$;
+  public isAdmin$ = this.profile$.pipe(map((profile) => profile?.role === 'admin'));
   
   // Filtered data for RESUMEN (Personal)
   public myActivities$ = combineLatest([this.activities$, this.profile$]).pipe(
@@ -86,6 +87,7 @@ export class UserAreaComponent implements OnInit {
   public isCreateListModalOpen = false;
   public isEditProfileModalOpen = false;
   public isAddToListModalOpen = false;
+  private readonly destroy$ = new Subject<void>();
   
   public selectedList: UserList | null = null;
   public selectedListItems: UserListItem[] = [];
@@ -97,6 +99,18 @@ export class UserAreaComponent implements OnInit {
 
   ngOnInit(): void {
     this.menuState.setActive('mi-cuenta');
+    this.isAdmin$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((isAdmin) => {
+        if (!isAdmin && this.activeTab === 'admin') {
+          this.activeTab = 'overview';
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   setActiveTab(tab: TabType): void {

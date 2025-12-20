@@ -31,6 +31,7 @@ const EMPTY_PROFILE: UserProfile = {
   avatar: '/assets/gpt-avatar.png',
   bio: '',
   location: '-',
+  role: 'user',
   favoriteGenres: [],
   watchingNow: {
     title: '',
@@ -182,6 +183,7 @@ export class UserService {
       watchingNow: { ...current.watchingNow, ...(user.watchingNow || {}) },
       favoriteGenres: user.favoriteGenres || current.favoriteGenres,
       stats: { ...current.stats, ...(user.stats || {}) },
+      role: user.role ?? current.role,
       avatar: user.avatar || (user as any).picture || current.avatar,
       username: user.username || current.username,
       name: user.name || current.name,
@@ -641,6 +643,7 @@ export class UserService {
       watchingNow: { ...current.watchingNow, ...(profile.watchingNow || {}) },
       favoriteGenres: profile.favoriteGenres || current.favoriteGenres,
       stats: { ...current.stats, ...(profile.stats || {}) },
+      role: profile.role ?? current.role,
       avatar: profile.avatar || current.avatar,
     };
   }

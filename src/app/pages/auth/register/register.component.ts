@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NavBarComponent } from '../../../components/nav-bar/nav-bar.component';
 import { MenuStateService } from '../../../services/menu-state.service';
 import { UserService } from '../../../services/user.service';
 import { AuthService } from '../../../services/auth.service';
+import { Subject, filter, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -14,7 +15,7 @@ import { AuthService } from '../../../services/auth.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent implements OnInit, OnDestroy {
   public statusMessage = '';
   public statusTone: 'success' | 'error' | 'info' = 'info';
   public loading = false;
@@ -25,6 +26,8 @@ export class RegisterComponent implements OnInit {
     password: '',
     confirmPassword: '',
   };
+  private readonly destroy$ = new Subject<void>();
+  private hasRedirected = false;
 
   constructor(
     private router: Router,
@@ -35,6 +38,17 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.menuState.setActive('registro');
+    this.isAuthenticated$
+      .pipe(
+        filter((isAuthenticated) => isAuthenticated),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.redirectToAccount());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onPasswordRegister(): void {
@@ -74,8 +88,7 @@ export class RegisterComponent implements OnInit {
         next: () => {
           this.statusTone = 'success';
           this.statusMessage = 'Cuenta creada. Redirigiendo...';
-          this.menuState.setActive('mi-cuenta');
-          this.router.navigateByUrl('/mi-cuenta');
+          this.redirectToAccount();
         },
         error: (err) => {
           this.loading = false;
@@ -97,8 +110,7 @@ export class RegisterComponent implements OnInit {
       next: () => {
         this.statusTone = 'success';
         this.statusMessage = 'Cuenta creada. Redirigiendo...';
-        this.menuState.setActive('mi-cuenta');
-        this.router.navigateByUrl('/mi-cuenta');
+        this.redirectToAccount();
       },
       error: (err) => {
         this.loading = false;
@@ -110,5 +122,12 @@ export class RegisterComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  private redirectToAccount(): void {
+    if (this.hasRedirected) return;
+    this.hasRedirected = true;
+    this.menuState.setActive('mi-cuenta');
+    this.router.navigateByUrl('/mi-cuenta');
   }
 }

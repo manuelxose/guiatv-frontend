@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { BLOG_ROUTES } from './blog/blog.routes';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -37,6 +38,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin/admin.component').then((m) => m.AdminComponent),
     title: 'Admin - Guia TV',
+    canActivate: [adminGuard],
   },
   {
     path: 'programacion-tv/series',

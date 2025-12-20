@@ -550,6 +550,7 @@ export class UserController {
       username: profile.username,
       email: userDoc.email,
       avatar: profile.avatar || userDoc.picture || '/assets/gpt-avatar.png',
+      role: userDoc.role,
       bio: profile.bio || '',
       location: profile.location || '-',
       favoriteGenres: profile.favoriteGenres || [],

@@ -10,16 +10,13 @@
   <div class="banner-background">
     <img
       class="banner-bg-image"
-      [src]="
-        'https://wsrv.nl/?url=' +
-        encodeURIComponent(getProgramPosterUrl(bannerData)) +
-        '&w=1920&h=800&output=webp&q=85'
-      "
+      [src]="getBannerImageUrl(bannerData, 1440)"
       [srcset]="getBannerSrcset(getProgramPosterUrl(bannerData))"
-      sizes="100vw"
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
       [alt]="'Imagen de ' + (bannerData.title?.value || 'programa')"
-      loading="eager"
-  fetchpriority="high"
+      [attr.loading]="compact ? 'lazy' : 'eager'"
+      [attr.fetchpriority]="compact ? 'auto' : 'high'"
+      decoding="async"
       width="1920"
       height="800"
       (error)="onImageError($event)"
@@ -39,6 +36,7 @@
           [src]="getChannelLogoUrl(bannerData.channel)"
           [alt]="bannerData.channel + ' logo'"
           loading="lazy"
+          decoding="async"
           width="240"
           height="120"
           (error)="onImageError($event)"

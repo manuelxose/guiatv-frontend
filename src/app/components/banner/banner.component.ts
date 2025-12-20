@@ -38,6 +38,9 @@ export class BannerComponent
     IBannerDataService,
     ITimeUtilsService
 {
+  private readonly bannerWidths = [480, 640, 768, 960, 1200, 1440, 1920];
+  private readonly bannerAspectRatio = 800 / 1920;
+  private readonly bannerQuality = 80;
   @Input() data: IBannerInputData = {};
   /** If true, the banner adapts to small containers (fills parent) */
   @Input() compact: boolean = false;
@@ -206,9 +209,10 @@ export class BannerComponent
 
   getChannelLogoUrl(channelName: string): string {
     if (!channelName) return this.getFallbackImageUrl();
-    return `https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${globalThis.encodeURIComponent(
+    const raw = `https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${globalThis.encodeURIComponent(
       channelName
     )}.png`;
+    return this.buildProxyUrl(raw, 240, 120);
   }
 
   getProgramPosterUrl(programData: any): string {
@@ -219,6 +223,10 @@ export class BannerComponent
       programData?.background ||
       this.getFallbackImageUrl()
     );
+  }
+
+  getBannerImageUrl(programData: any, width: number = 1440): string {
+    return this.buildProxyUrl(this.getProgramPosterUrl(programData), width);
   }
 
   // Template helper: wrapper for encodeURIComponent so the template can call it
@@ -232,8 +240,21 @@ export class BannerComponent
 
   // Build srcset for the large banner background (desktop sizes)
   getBannerSrcset(raw: string): string {
-    // Evitar proxys que disparan CORB; usar una sola fuente directa
-    return raw || '';
+    if (!raw || raw.startsWith('data:')) return '';
+    return this.bannerWidths
+      .map((width) => `${this.buildProxyUrl(raw, width)} ${width}w`)
+      .join(', ');
+  }
+
+  private buildProxyUrl(raw: string, width: number, height?: number): string {
+    const safeRaw = raw || this.getFallbackImageUrl();
+    if (safeRaw.startsWith('data:')) {
+      return safeRaw;
+    }
+    const encoded = this.encodeURIComponent(safeRaw);
+    const targetHeight =
+      height ?? Math.max(1, Math.round(width * this.bannerAspectRatio));
+    return `https://wsrv.nl/?url=${encoded}&w=${width}&h=${targetHeight}&output=webp&q=${this.bannerQuality}`;
   }
 
   // Stub for reminder action — keep minimal to avoid runtime errors; can be extended later

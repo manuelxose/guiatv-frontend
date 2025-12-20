@@ -59,31 +59,33 @@ export class AnalyticsService implements OnDestroy {
     this.lastPath = this.getCurrentPath();
     this.pageStartAt = this.startedAt;
     this.visibilityState = document.visibilityState || 'visible';
-    this.baseMetadata = this.buildBaseMetadata();
 
-    this.postJson('/analytics/session/start', {
-      sessionId: this.sessionId,
-      anonId: this.anonId,
-      initialPath: this.lastPath,
-      lastPath: this.lastPath,
-      referrer: document.referrer || undefined,
-      metadata: this.buildHeartbeatMetadata(),
-      screen: {
-        width: window.screen?.width,
-        height: window.screen?.height,
-      },
-      viewport: {
-        width: window.innerWidth,
-        height: window.innerHeight,
-      },
-      language: navigator.language,
-      timezone: this.getTimezone(),
-      startedAt: new Date(this.startedAt).toISOString(),
+    this.scheduleIdle(() => {
+      this.baseMetadata = this.buildBaseMetadata();
+      this.postJson('/analytics/session/start', {
+        sessionId: this.sessionId,
+        anonId: this.anonId,
+        initialPath: this.lastPath,
+        lastPath: this.lastPath,
+        referrer: document.referrer || undefined,
+        metadata: this.buildHeartbeatMetadata(),
+        screen: {
+          width: window.screen?.width,
+          height: window.screen?.height,
+        },
+        viewport: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        },
+        language: navigator.language,
+        timezone: this.getTimezone(),
+        startedAt: new Date(this.startedAt).toISOString(),
+      });
+
+      this.startHeartbeat();
+      this.bindUnload();
+      this.bindEngagementTracking();
     });
-
-    this.startHeartbeat();
-    this.bindUnload();
-    this.bindEngagementTracking();
   }
 
   trackPageView(path: string): void {
@@ -391,6 +393,16 @@ export class AnalyticsService implements OnDestroy {
   private matchMediaPref(query: string): boolean {
     if (!this.isBrowser || !window.matchMedia) return false;
     return window.matchMedia(query).matches;
+  }
+
+  private scheduleIdle(task: () => void): void {
+    if (!this.isBrowser) return;
+    const anyWindow = window as any;
+    if (typeof anyWindow.requestIdleCallback === 'function') {
+      anyWindow.requestIdleCallback(() => task(), { timeout: 2000 });
+    } else {
+      setTimeout(task, 1500);
+    }
   }
 
   private getUtmParams(): Record<string, string> | undefined {

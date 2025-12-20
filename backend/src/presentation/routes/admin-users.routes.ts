@@ -1,21 +1,24 @@
 import { Router } from 'express';
 import { AdminUsersController } from '../controllers/AdminUsersController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
-import { analyticsAdminGuard } from '../middlewares/analyticsAdminGuard';
+import { AuthService } from '../../domain/services/AuthService';
+import { createAdminAccessGuard } from '../middlewares/adminAccessGuard';
 
 export const createAdminUsersRoutes = (
-  controller: AdminUsersController
+  controller: AdminUsersController,
+  authService: AuthService
 ): Router => {
   const router = Router();
+  const adminAccessGuard = createAdminAccessGuard(authService);
 
   router.get(
     '/',
-    analyticsAdminGuard,
+    adminAccessGuard,
     asyncHandler(controller.listUsers.bind(controller))
   );
   router.patch(
     '/:id',
-    analyticsAdminGuard,
+    adminAccessGuard,
     asyncHandler(controller.updateUser.bind(controller))
   );
 
