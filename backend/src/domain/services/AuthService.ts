@@ -1,8 +1,24 @@
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { ForbiddenError, UnauthorizedError } from '../../shared/errors';
+import { promisify } from 'util';
+import {
+  ConflictError,
+  ForbiddenError,
+  UnauthorizedError,
+  ValidationError,
+  ValidationErrorDetail,
+} from '../../shared/errors';
 import { MongoUserRepository } from '../../infrastructure/repositories/MongoUserRepository';
 import { logger } from '../../shared/utils/logger';
+
+const scryptAsync = promisify(crypto.scrypt) as (
+  password: string,
+  salt: string,
+  keylen: number
+) => Promise<Buffer>;
+
+const PASSWORD_MIN_LENGTH = 8;
 
 /**
  * Minimal user info provided by Google after verifying an idToken.
@@ -76,6 +92,117 @@ export class AuthService {
   }
 
   /**
+   * Register a local user with email and password.
+   */
+  async registerWithPassword(input: {
+    email: string;
+    password: string;
+    name?: string;
+  }): Promise<AuthResult> {
+    const { email, password, name } = input;
+    const normalizedEmail = this.normalizeEmail(email);
+    const trimmedName = name ? name.trim() : '';
+    const details: ValidationErrorDetail[] = [];
+
+    if (!normalizedEmail) {
+      details.push({ field: 'email', message: 'Email is required', value: email });
+    } else if (!this.isValidEmail(normalizedEmail)) {
+      details.push({ field: 'email', message: 'Email is invalid', value: email });
+    }
+
+    if (!password) {
+      details.push({ field: 'password', message: 'Password is required' });
+    } else if (password.length < PASSWORD_MIN_LENGTH) {
+      details.push({
+        field: 'password',
+        message: `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
+      });
+    }
+
+    if (trimmedName && trimmedName.length < 2) {
+      details.push({ field: 'name', message: 'Name is too short', value: name });
+    }
+
+    if (details.length) {
+      throw new ValidationError('Invalid registration payload', details);
+    }
+
+    const existing = await this.userRepo.findByEmail(normalizedEmail);
+    if (existing) {
+      throw new ConflictError('Email already registered');
+    }
+
+    const { salt, hash } = await this.createPasswordHash(password);
+    const displayName = trimmedName || normalizedEmail.split('@')[0];
+    const user = await this.userRepo.createLocalUser({
+      email: normalizedEmail,
+      name: displayName,
+      passwordHash: hash,
+      passwordSalt: salt,
+    });
+
+    const token = this.signSessionToken(user.id, user.email);
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+      },
+      token,
+    };
+  }
+
+  /**
+   * Login with email and password.
+   */
+  async loginWithPassword(input: { email: string; password: string }): Promise<AuthResult> {
+    const { email, password } = input;
+    const normalizedEmail = this.normalizeEmail(email);
+    const details: ValidationErrorDetail[] = [];
+
+    if (!normalizedEmail) {
+      details.push({ field: 'email', message: 'Email is required', value: email });
+    }
+
+    if (!password) {
+      details.push({ field: 'password', message: 'Password is required' });
+    }
+
+    if (details.length) {
+      throw new ValidationError('Invalid login payload', details);
+    }
+
+    const user = await this.userRepo.findByEmail(normalizedEmail);
+    if (!user || !user.passwordHash || !user.passwordSalt) {
+      throw new UnauthorizedError('Invalid credentials');
+    }
+
+    const valid = await this.verifyPassword(password, user.passwordSalt, user.passwordHash);
+    if (!valid) {
+      throw new UnauthorizedError('Invalid credentials');
+    }
+
+    if (user.status === 'suspended') {
+      throw new ForbiddenError('User is suspended');
+    }
+
+    await this.userRepo.touchLastLogin(user.id);
+
+    const token = this.signSessionToken(user.id, user.email);
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+      },
+      token,
+    };
+  }
+
+  /**
    * Validate JWT and return associated user.
    *
    * @param token - Signed JWT issued by this service.
@@ -135,6 +262,37 @@ export class AuthService {
         error instanceof Error ? error.message : 'Invalid Google token'
       );
     }
+  }
+
+  private normalizeEmail(email: string): string {
+    return String(email || '').trim().toLowerCase();
+  }
+
+  private isValidEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  private async createPasswordHash(password: string): Promise<{ salt: string; hash: string }> {
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = await this.hashPassword(password, salt);
+    return { salt, hash };
+  }
+
+  private async hashPassword(password: string, salt: string): Promise<string> {
+    const derived = (await scryptAsync(password, salt, 64)) as Buffer;
+    return derived.toString('hex');
+  }
+
+  private async verifyPassword(
+    password: string,
+    salt: string,
+    expectedHash: string
+  ): Promise<boolean> {
+    if (!expectedHash) return false;
+    const derived = (await scryptAsync(password, salt, 64)) as Buffer;
+    const expected = Buffer.from(expectedHash, 'hex');
+    if (expected.length !== derived.length) return false;
+    return crypto.timingSafeEqual(expected, derived);
   }
 
   /**

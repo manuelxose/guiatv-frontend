@@ -2,11 +2,13 @@ import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
 
 export interface IUserDocument extends mongoose.Document {
-  googleId: string;
+  googleId?: string;
   email: string;
   name?: string;
   picture?: string;
-  provider: 'google';
+  provider: 'google' | 'local' | 'hybrid';
+  passwordHash?: string;
+  passwordSalt?: string;
   lastLoginAt?: Date;
   role?: 'admin' | 'editor' | 'user';
   status?: 'active' | 'suspended';
@@ -16,11 +18,17 @@ export interface IUserDocument extends mongoose.Document {
 
 const UserSchema = new Schema<IUserDocument>(
   {
-    googleId: { type: String, required: true, unique: true, index: true },
+    googleId: { type: String, unique: true, sparse: true, index: true },
     email: { type: String, required: true, unique: true, index: true },
     name: { type: String, trim: true },
     picture: { type: String, trim: true },
-    provider: { type: String, default: 'google' },
+    provider: {
+      type: String,
+      enum: ['google', 'local', 'hybrid'],
+      default: 'google',
+    },
+    passwordHash: { type: String },
+    passwordSalt: { type: String },
     lastLoginAt: { type: Date },
     role: {
       type: String,

@@ -30,7 +30,7 @@ export class AuthService {
 
   private loadGoogleScript(): Promise<void> {
     if (!this.isBrowser) {
-      return Promise.reject(new Error('Google Identity no está disponible en SSR'));
+      return Promise.reject(new Error('Google Identity no esta disponible en SSR'));
     }
 
     if (this.googleScriptLoaded || typeof window.google !== 'undefined') {
@@ -57,9 +57,7 @@ export class AuthService {
    */
   loginWithGoogle(): Observable<AuthResponse> {
     if (!this.isBrowser) {
-      return throwError(
-        () => new Error('Google Identity no disponible en SSR')
-      );
+      return throwError(() => new Error('Google Identity no disponible en SSR'));
     }
 
     const clientId = environment.GOOGLE_CLIENT_ID;
@@ -89,9 +87,7 @@ export class AuthService {
                 callback: (response: any) => {
                   const idToken = response?.credential;
                   if (!idToken) {
-                    finishReject(
-                      new Error('No se recibio credential de Google')
-                    );
+                    finishReject(new Error('No se recibio credential de Google'));
                     return;
                   }
                   this.exchangeGoogleToken(idToken).subscribe({
@@ -143,7 +139,21 @@ export class AuthService {
   }
 
   /**
-   * Envía el idToken al backend para validación real.
+   * Login con email y contrasena.
+   */
+  loginWithPassword(payload: { email: string; password: string }): Observable<AuthResponse> {
+    return this.exchangePasswordAuth('/auth/login', payload);
+  }
+
+  /**
+   * Registro con email y contrasena.
+   */
+  registerWithPassword(payload: { name?: string; email: string; password: string }): Observable<AuthResponse> {
+    return this.exchangePasswordAuth('/auth/register', payload);
+  }
+
+  /**
+   * Envia el idToken al backend para validacion real.
    */
   private exchangeGoogleToken(idToken: string): Observable<AuthResponse> {
     const url = `${environment.API_BASE_URL}/auth/google`;
@@ -164,6 +174,32 @@ export class AuthService {
           }
         }),
         map((resp) => resp?.data as AuthResponse)
+      );
+  }
+
+  private exchangePasswordAuth(
+    path: string,
+    payload: Record<string, unknown>
+  ): Observable<AuthResponse> {
+    const url = `${environment.API_BASE_URL}${path}`;
+    return this.http
+      .post<{ success: boolean; data: AuthResponse }>(url, payload, {
+        headers: new HttpHeaders({
+          'Content-Type': 'application/json',
+        }),
+      })
+      .pipe(
+        tap((resp) => {
+          if (resp?.data?.token) {
+            this.persistToken(resp.data.token);
+          }
+        }),
+        map((resp) => resp?.data as AuthResponse),
+        tap((authResp) => {
+          if (authResp?.user && authResp?.token) {
+            this.userService.applySession(authResp.user, authResp.token);
+          }
+        })
       );
   }
 
@@ -241,5 +277,4 @@ export class AuthService {
         return 'No se pudo iniciar sesion con Google. Intenta de nuevo.';
     }
   }
-
 }
