@@ -27,6 +27,7 @@ import {
 export class AdminAnalyticsSectionComponent implements OnInit, OnDestroy {
   @Input() activeItem = 'overview';
   @Output() lastUpdatedChange = new EventEmitter<Date>();
+  @Output() activeItemChange = new EventEmitter<string>();
 
   public overview: AdminAnalyticsOverview | null = null;
   public liveSessions: AdminAnalyticsLiveSession[] = [];
@@ -52,6 +53,15 @@ export class AdminAnalyticsSectionComponent implements OnInit, OnDestroy {
     { id: 'scroll_depth', label: 'Scroll', type: 'scroll_depth' },
     { id: 'visibility', label: 'Visibility', type: 'visibility' },
     { id: 'session', label: 'Sessions', type: 'session_start' },
+  ];
+
+  public readonly analyticsTabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'pages', label: 'Pages' },
+    { id: 'live', label: 'Realtime' },
+    { id: 'events', label: 'Events' },
+    { id: 'journeys', label: 'Journeys' },
+    { id: 'retention', label: 'Retention' },
   ];
 
   private subs = new Subscription();
@@ -101,6 +111,11 @@ export class AdminAnalyticsSectionComponent implements OnInit, OnDestroy {
   selectRange(hours: number): void {
     this.rangeHours = hours;
     this.loadOverview();
+  }
+
+  selectTab(tabId: string): void {
+    if (this.activeItem === tabId) return;
+    this.activeItemChange.emit(tabId);
   }
 
   selectEventFilter(type?: string): void {
