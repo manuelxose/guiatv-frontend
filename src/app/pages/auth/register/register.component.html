@@ -10,8 +10,8 @@
         Crea tu cuenta en segundos
       </h1>
       <p class="text-gray-300 max-w-3xl">
-        Registra tu cuenta con Google y empieza a usar la comunidad. La API
-        valida tu identidad y guarda tu sesion automaticamente.
+        Registra tu cuenta con email y contrasena o con Google. La API valida tu
+        identidad y guarda tu sesion automaticamente.
       </p>
     </header>
 
@@ -30,6 +30,89 @@
           >
             Sesion activa
           </span>
+        </div>
+
+        <form class="space-y-4" (ngSubmit)="onPasswordRegister()">
+          <div>
+            <label
+              class="text-xs text-gray-400 uppercase tracking-wide"
+              for="register-name"
+              >Nombre (opcional)</label
+            >
+            <input
+              id="register-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              [(ngModel)]="registerData.name"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-gray-900/60 border border-gray-700/60 px-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Tu nombre"
+            />
+          </div>
+          <div>
+            <label
+              class="text-xs text-gray-400 uppercase tracking-wide"
+              for="register-email"
+              >Email</label
+            >
+            <input
+              id="register-email"
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              [(ngModel)]="registerData.email"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-gray-900/60 border border-gray-700/60 px-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="tu@email.com"
+            />
+          </div>
+          <div>
+            <label
+              class="text-xs text-gray-400 uppercase tracking-wide"
+              for="register-password"
+              >Contrasena</label
+            >
+            <input
+              id="register-password"
+              name="password"
+              type="password"
+              required
+              autocomplete="new-password"
+              [(ngModel)]="registerData.password"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-gray-900/60 border border-gray-700/60 px-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Minimo 8 caracteres"
+            />
+          </div>
+          <div>
+            <label
+              class="text-xs text-gray-400 uppercase tracking-wide"
+              for="register-confirm"
+              >Confirmar contrasena</label
+            >
+            <input
+              id="register-confirm"
+              name="confirmPassword"
+              type="password"
+              required
+              autocomplete="new-password"
+              [(ngModel)]="registerData.confirmPassword"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-gray-900/60 border border-gray-700/60 px-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              placeholder="Repite la contrasena"
+            />
+          </div>
+          <button
+            type="submit"
+            class="w-full min-h-[44px] rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold shadow disabled:opacity-60"
+            [disabled]="loading"
+          >
+            {{ loading ? 'Creando...' : 'Crear cuenta con email' }}
+          </button>
+        </form>
+
+        <div class="flex items-center gap-3 text-xs text-gray-500 my-4">
+          <span class="flex-1 h-px bg-gray-700/60"></span>
+          <span>o</span>
+          <span class="flex-1 h-px bg-gray-700/60"></span>
         </div>
 
         <button
@@ -100,7 +183,7 @@
       >
         <div>
           <p class="text-sm text-gray-400">Tu cuenta incluye</p>
-          <h2 class="text-xl font-semibold">Perfil social conectado</h2>
+          <h2 class="text-xl font-semibold">Cuenta lista para la comunidad</h2>
         </div>
 
         <div class="space-y-4 text-sm text-gray-300">
@@ -110,7 +193,7 @@
               >1</span
             >
             <p>
-              Perfil unificado con tus datos de Google y acceso inmediato.
+              Crea tu cuenta con email y contrasena en minutos.
             </p>
           </div>
           <div class="flex items-start gap-2">
@@ -119,7 +202,7 @@
               >2</span
             >
             <p>
-              Guardado de listas, recomendaciones y actividad social.
+              Usa Google si prefieres un registro rapido y seguro.
             </p>
           </div>
           <div class="flex items-start gap-2">
@@ -134,8 +217,8 @@
         </div>
 
         <div class="rounded-xl border border-gray-700/60 bg-gray-900/50 p-4 text-sm text-gray-300">
-          La cuenta se crea automaticamente en la API la primera vez que
-          ingresas con Google.
+          La cuenta se crea automaticamente en la API al registrarte con email o
+          Google.
         </div>
       </section>
     </div>

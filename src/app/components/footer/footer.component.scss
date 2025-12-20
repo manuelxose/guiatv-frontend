@@ -2,8 +2,12 @@
 
 :host {
   display: block;
+  min-height: 200px; /* Mobile */
+  
+  @media (min-width: 768px) {
+    min-height: 280px; /* Desktop */
+  }
 }
-
 /* Smooth transitions */
 nav, div {
   transition: all 0.3s ease-in-out;

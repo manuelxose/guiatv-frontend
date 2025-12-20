@@ -28,6 +28,46 @@ export class AuthController {
   }
 
   /**
+   * POST /v2/auth/login
+   * Body: { email: string, password: string }
+   */
+  async loginWithPassword(req: Request, res: Response): Promise<void> {
+    const email = typeof req.body?.email === 'string' ? req.body.email : '';
+    const password =
+      typeof req.body?.password === 'string' ? req.body.password : '';
+
+    const result = await this.authService.loginWithPassword({
+      email,
+      password,
+    });
+    res.json({
+      success: true,
+      data: result,
+    });
+  }
+
+  /**
+   * POST /v2/auth/register
+   * Body: { name?: string, email: string, password: string }
+   */
+  async registerWithPassword(req: Request, res: Response): Promise<void> {
+    const email = typeof req.body?.email === 'string' ? req.body.email : '';
+    const password =
+      typeof req.body?.password === 'string' ? req.body.password : '';
+    const name = typeof req.body?.name === 'string' ? req.body.name : undefined;
+
+    const result = await this.authService.registerWithPassword({
+      email,
+      password,
+      name,
+    });
+    res.json({
+      success: true,
+      data: result,
+    });
+  }
+
+  /**
    * GET /v2/auth/me
    * Header: Authorization: Bearer <jwt>
    *
