@@ -11,7 +11,7 @@ export interface SitemapUrl {
   providedIn: 'root'
 })
 export class SitemapService {
-  private readonly baseUrl = 'https://gptv.es';
+  private readonly baseUrl = 'https://guiaprogramaciontv.com';
   
   /**
    * Generate sitemap XML content dynamically
@@ -52,19 +52,15 @@ export class SitemapService {
       { loc: '/', lastmod: today, changefreq: 'daily', priority: 1.0 },
       
       // Content pages - high priority
-      { loc: '/peliculas', lastmod: today, changefreq: 'daily', priority: 0.9 },
-      { loc: '/series', lastmod: today, changefreq: 'daily', priority: 0.9 },
-      { loc: '/guia-canales', lastmod: today, changefreq: 'daily', priority: 0.9 },
-      { loc: '/que-ver-hoy', lastmod: today, changefreq: 'daily', priority: 0.9 },
-      { loc: '/en-directo', lastmod: today, changefreq: 'hourly', priority: 0.9 },
-      { loc: '/top10', lastmod: today, changefreq: 'daily', priority: 0.8 },
+      { loc: '/programacion-tv/que-ver-hoy', lastmod: today, changefreq: 'daily', priority: 0.9 },
+      { loc: '/programacion-tv/en-directo', lastmod: today, changefreq: 'hourly', priority: 0.9 },
+      { loc: '/programacion-tv/peliculas', lastmod: today, changefreq: 'daily', priority: 0.9 },
+      { loc: '/programacion-tv/series', lastmod: today, changefreq: 'daily', priority: 0.9 },
+      { loc: '/programacion-tv/guia-canales', lastmod: today, changefreq: 'daily', priority: 0.9 },
       
       // Blog - medium-high priority
       { loc: '/blog', lastmod: today, changefreq: 'daily', priority: 0.8 },
-      
-      // User pages - medium priority
-      { loc: '/mi-cuenta', lastmod: today, changefreq: 'weekly', priority: 0.6 },
-      { loc: '/iniciar-sesion', lastmod: today, changefreq: 'monthly', priority: 0.5 },
+      { loc: '/blog/top10', lastmod: today, changefreq: 'weekly', priority: 0.7 },
       
       // Legal pages - low priority
       { loc: '/avisolegal', lastmod: today, changefreq: 'monthly', priority: 0.3 },
