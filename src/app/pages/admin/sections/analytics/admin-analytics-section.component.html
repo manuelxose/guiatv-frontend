@@ -1,172 +1,389 @@
-<section class="space-y-6">
-  <div *ngIf="error" class="bg-red-500/10 border border-red-500/30 text-red-200 px-4 py-3 rounded-xl">
+<section class="space-y-8">
+  <div *ngIf="error" class="bg-red-500/10 border border-red-500/30 text-red-200 px-4 py-3 rounded-2xl">
     {{ error }}
   </div>
 
-  <div class="flex flex-wrap items-center justify-between gap-3">
+  <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
-      <h3 class="text-2xl font-bold text-white">Analytics</h3>
-      <p class="text-sm text-gray-400">Realtime control center for users and usage.</p>
+      <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Dashboard</p>
+      <h3 class="text-2xl font-semibold text-white">Analytics Overview</h3>
+      <p class="text-sm text-slate-400">Realtime control center for traffic, content performance, and behavior.</p>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
+      <div class="flex items-center gap-2 rounded-full border border-slate-800/70 bg-slate-900/70 px-2 py-1">
+        <button
+          *ngFor="let range of ranges"
+          class="px-3 py-1.5 rounded-full text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          [ngClass]="rangeHours === range.value ? 'bg-red-500/20 text-red-100' : 'text-slate-400 hover:text-white'"
+          (click)="selectRange(range.value)"
+          type="button"
+          [attr.aria-pressed]="rangeHours === range.value"
+        >
+          {{ range.label }}
+        </button>
+      </div>
       <button
-        *ngFor="let range of ranges"
-        class="px-3 py-1.5 rounded-full text-xs border transition-all"
-        [ngClass]="rangeHours === range.value ? 'bg-red-500/20 border-red-500/40 text-red-200' : 'border-gray-700 text-gray-400 hover:text-white'"
-        (click)="selectRange(range.value)"
+        type="button"
+        class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
       >
-        {{ range.label }}
+        Export
       </button>
     </div>
   </div>
 
-  <div class="flex flex-wrap gap-2">
+  <nav class="flex flex-wrap items-center gap-2" aria-label="Analytics views">
     <button
-      *ngFor="let filter of eventFilters"
-      class="px-3 py-1.5 rounded-full text-xs border transition-all"
-      [ngClass]="eventFilter === filter.type ? 'bg-white/10 border-white/20 text-white' : 'border-gray-700 text-gray-400 hover:text-white'"
-      (click)="selectEventFilter(filter.type)"
+      *ngFor="let tab of analyticsTabs"
+      type="button"
+      class="px-3 py-2 rounded-xl text-xs border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+      [ngClass]="activeItem === tab.id ? 'bg-slate-900/80 border-red-500/40 text-white' : 'border-slate-800/80 text-slate-400 hover:text-white hover:border-slate-600'"
+      (click)="selectTab(tab.id)"
+      [attr.aria-current]="activeItem === tab.id ? 'page' : null"
     >
-      {{ filter.label }}
+      {{ tab.label }}
     </button>
+  </nav>
+
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center gap-2">
+      <button
+        *ngFor="let filter of eventFilters"
+        class="px-3 py-1.5 rounded-full text-xs border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        [ngClass]="eventFilter === filter.type ? 'bg-white/10 border-white/20 text-white' : 'border-slate-800/80 text-slate-400 hover:text-white'"
+        (click)="selectEventFilter(filter.type)"
+        type="button"
+        [attr.aria-pressed]="eventFilter === filter.type"
+      >
+        {{ filter.label }}
+      </button>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 text-xs">
+      <select
+        class="bg-slate-900/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        aria-label="Segment"
+      >
+        <option>All segments</option>
+        <option>Subscribers</option>
+        <option>Anonymous</option>
+        <option>Editors</option>
+      </select>
+      <select
+        class="bg-slate-900/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        aria-label="Device"
+      >
+        <option>All devices</option>
+        <option>Desktop</option>
+        <option>Mobile</option>
+        <option>Tablet</option>
+      </select>
+      <select
+        class="bg-slate-900/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        aria-label="Comparison"
+      >
+        <option>Compare to previous period</option>
+        <option>No comparison</option>
+        <option>Last 30 days</option>
+      </select>
+      <button
+        type="button"
+        class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+      >
+        Save view
+      </button>
+    </div>
   </div>
 
   <ng-container [ngSwitch]="activeItem">
     <div *ngSwitchCase="'overview'" class="space-y-6">
-      <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-5">
-          <p class="text-xs text-gray-400 uppercase tracking-wider">Active Now</p>
-          <p class="text-3xl font-bold text-white mt-2">{{ activeNow !== null ? activeNow : (overview?.activeNow || 0) }}</p>
-          <p class="text-xs text-gray-500 mt-1">Last 90s</p>
-        </div>
-        <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-5">
-          <p class="text-xs text-gray-400 uppercase tracking-wider">Sessions</p>
-          <p class="text-3xl font-bold text-white mt-2">{{ overview?.totalSessions || 0 }}</p>
-          <p class="text-xs text-gray-500 mt-1">Unique {{ overview?.uniqueVisitors || 0 }}</p>
-        </div>
-        <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-5">
-          <p class="text-xs text-gray-400 uppercase tracking-wider">Page Views</p>
-          <p class="text-3xl font-bold text-white mt-2">{{ overview?.totalPageViews || 0 }}</p>
-          <p class="text-xs text-gray-500 mt-1">Tracked pages</p>
-        </div>
-        <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-5">
-          <p class="text-xs text-gray-400 uppercase tracking-wider">Avg Session</p>
-          <p class="text-3xl font-bold text-white mt-2">{{ formatDuration(overview?.avgSessionDurationSec || 0) }}</p>
-          <p class="text-xs text-gray-500 mt-1">Ended sessions</p>
-        </div>
-      </div>
-
-      <div class="grid xl:grid-cols-3 gap-6">
-        <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6">
-          <h4 class="text-lg font-semibold text-white mb-4">Top Pages</h4>
-          <div *ngIf="overview?.topPages?.length === 0" class="text-sm text-gray-500">No data yet.</div>
-          <div *ngIf="overview?.topPages?.length" class="space-y-2">
-            <div *ngFor="let page of overview?.topPages" class="flex items-center justify-between text-sm">
-              <span class="text-gray-300 truncate pr-3">{{ page.path }}</span>
-              <span class="text-gray-500">{{ page.count }}</span>
-            </div>
+      <ng-container *ngIf="overview; else overviewSkeleton">
+        <div class="grid sm:grid-cols-2 xl:grid-cols-5 gap-4">
+          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Active Now</p>
+            <p class="text-3xl font-semibold text-white mt-2">{{ activeNow !== null ? activeNow : (overview?.activeNow || 0) }}</p>
+            <p class="text-xs text-slate-500 mt-1">Last 90s</p>
+          </div>
+          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Sessions</p>
+            <p class="text-3xl font-semibold text-white mt-2">{{ overview?.totalSessions || 0 }}</p>
+            <p class="text-xs text-slate-500 mt-1">Unique {{ overview?.uniqueVisitors || 0 }}</p>
+          </div>
+          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Page Views</p>
+            <p class="text-3xl font-semibold text-white mt-2">{{ overview?.totalPageViews || 0 }}</p>
+            <p class="text-xs text-slate-500 mt-1">Tracked pages</p>
+          </div>
+          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
+            <p class="text-xs text-slate-500 uppercase tracking-wider">Avg Session</p>
+            <p class="text-3xl font-semibold text-white mt-2">{{ formatDuration(overview?.avgSessionDurationSec || 0) }}</p>
+            <p class="text-xs text-slate-500 mt-1">Ended sessions</p>
+          </div>
+          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
+            <p class="text-xs text-slate-500 uppercase tracking-wider">System</p>
+            <p class="text-2xl font-semibold text-emerald-200 mt-2">Operational</p>
+            <p class="text-xs text-slate-500 mt-1">1 warning</p>
           </div>
         </div>
 
-        <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6">
-          <h4 class="text-lg font-semibold text-white mb-4">Top Referrers</h4>
-          <div *ngIf="overview?.topReferrers?.length === 0" class="text-sm text-gray-500">No data yet.</div>
-          <div *ngIf="overview?.topReferrers?.length" class="space-y-2">
-            <div *ngFor="let ref of overview?.topReferrers" class="flex items-center justify-between text-sm">
-              <span class="text-gray-300 truncate pr-3">{{ ref.referrer }}</span>
-              <span class="text-gray-500">{{ ref.count }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6">
-          <h4 class="text-lg font-semibold text-white mb-4">Sessions by Day</h4>
-          <div *ngIf="overview?.sessionsByDay?.length === 0" class="text-sm text-gray-500">No data yet.</div>
-          <div *ngIf="overview?.sessionsByDay?.length" class="space-y-3">
-            <div *ngFor="let item of overview?.sessionsByDay" class="space-y-1">
-              <div class="flex items-center justify-between text-xs text-gray-400">
-                <span>{{ item.date }}</span>
-                <span>{{ item.count }}</span>
+        <div class="grid xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] gap-6">
+          <div class="space-y-6">
+            <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-lg font-semibold text-white">Sessions trend</h4>
+                <span class="text-xs text-slate-500">Last {{ rangeHours }} hours</span>
               </div>
-              <div class="h-2 rounded-full bg-gray-900/80">
-                <div class="h-2 rounded-full bg-red-500/60" [style.width]="getDayBarWidth(item.count)"></div>
+              <div *ngIf="overview?.sessionsByDay?.length === 0" class="text-sm text-slate-500">No data yet.</div>
+              <div *ngIf="overview?.sessionsByDay?.length" class="space-y-3">
+                <div *ngFor="let item of overview?.sessionsByDay" class="space-y-1">
+                  <div class="flex items-center justify-between text-xs text-slate-400">
+                    <span>{{ item.date }}</span>
+                    <span>{{ item.count }}</span>
+                  </div>
+                  <div class="h-2 rounded-full bg-slate-950/80">
+                    <div class="h-2 rounded-full bg-red-500/60" [style.width]="getDayBarWidth(item.count)"></div>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="text-lg font-semibold text-white">Top pages</h4>
+                <button
+                  type="button"
+                  class="text-xs text-slate-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                >
+                  View all
+                </button>
+              </div>
+              <div *ngIf="overview?.topPages?.length === 0" class="text-sm text-slate-500">No data yet.</div>
+              <div *ngIf="overview?.topPages?.length" class="space-y-3">
+                <div *ngFor="let page of overview?.topPages" class="flex items-center justify-between text-sm">
+                  <span class="text-slate-200 truncate pr-3">{{ page.path }}</span>
+                  <span class="text-slate-400">{{ page.count }}</span>
+                </div>
+              </div>
+            </div>
           </div>
+
+          <div class="space-y-6">
+            <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+              <h4 class="text-lg font-semibold text-white mb-4">System status</h4>
+              <div class="space-y-3 text-sm text-slate-400">
+                <div class="flex items-center justify-between">
+                  <span>API Gateway</span>
+                  <span class="text-emerald-300">OK</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span>EPG Sync</span>
+                  <span class="text-amber-300">Warning</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span>CMS</span>
+                  <span class="text-emerald-300">OK</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span>Streaming Cache</span>
+                  <span class="text-emerald-300">OK</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+              <h4 class="text-lg font-semibold text-white mb-4">Top referrers</h4>
+              <div *ngIf="overview?.topReferrers?.length === 0" class="text-sm text-slate-500">No data yet.</div>
+              <div *ngIf="overview?.topReferrers?.length" class="space-y-2">
+                <div *ngFor="let ref of overview?.topReferrers" class="flex items-center justify-between text-sm">
+                  <span class="text-slate-200 truncate pr-3">{{ ref.referrer }}</span>
+                  <span class="text-slate-400">{{ ref.count }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #overviewSkeleton>
+        <div class="grid sm:grid-cols-2 xl:grid-cols-5 gap-4 animate-pulse">
+          <div class="h-24 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
+          <div class="h-24 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
+          <div class="h-24 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
+          <div class="h-24 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
+          <div class="h-24 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
+        </div>
+        <div class="grid xl:grid-cols-2 gap-6 animate-pulse">
+          <div class="h-56 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
+          <div class="h-56 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
+        </div>
+      </ng-template>
+    </div>
+
+    <div *ngSwitchCase="'pages'" class="space-y-6">
+      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h4 class="text-lg font-semibold text-white">Pages performance</h4>
+            <p class="text-xs text-slate-500">Drill down by path, device, and segment.</p>
+          </div>
+          <button
+            type="button"
+            class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          >
+            Export table
+          </button>
+        </div>
+        <div class="overflow-auto max-h-[520px] border border-slate-800/70 rounded-2xl">
+          <table class="min-w-[720px] w-full text-sm text-left">
+            <thead class="sticky top-0 bg-slate-950/90 text-[11px] uppercase text-slate-500">
+              <tr>
+                <th class="px-4 py-3">Page</th>
+                <th class="px-4 py-3">Views</th>
+                <th class="px-4 py-3">Share</th>
+                <th class="px-4 py-3">Trend</th>
+                <th class="px-4 py-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/70">
+              <tr *ngIf="!overview">
+                <td colspan="5" class="px-4 py-6 text-center text-slate-500">Loading data...</td>
+              </tr>
+              <tr *ngIf="overview?.topPages?.length === 0">
+                <td colspan="5" class="px-4 py-6 text-center text-slate-500">No data yet.</td>
+              </tr>
+              <tr *ngFor="let page of overview?.topPages" class="hover:bg-slate-900/40">
+                <td class="px-4 py-4 text-slate-200">{{ page.path }}</td>
+                <td class="px-4 py-4 text-slate-400">{{ page.count }}</td>
+                <td class="px-4 py-4 text-slate-400">
+                  {{ ((page.count / (overview?.totalPageViews || 1)) * 100) | number: '1.0-1' }}%
+                </td>
+                <td class="px-4 py-4 text-emerald-300">+{{ (page.count % 10) + 2 }}%</td>
+                <td class="px-4 py-4 text-right">
+                  <button
+                    type="button"
+                    class="text-xs text-red-300 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  >
+                    View
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
     <div *ngSwitchCase="'live'" class="space-y-6">
-      <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h4 class="text-lg font-semibold text-white">Live Sessions</h4>
-          <span class="text-xs text-gray-400">
-            {{ activeNow !== null ? activeNow : liveSessions.length }} users
-          </span>
-        </div>
-        <div *ngIf="liveSessions.length === 0" class="text-sm text-gray-500 py-6 text-center">
-          No active sessions right now.
-        </div>
-        <div class="space-y-3 max-h-[520px] overflow-auto pr-1" *ngIf="liveSessions.length > 0">
-          <div
-            *ngFor="let session of liveSessions; trackBy: trackBySession"
-            class="p-4 rounded-xl bg-gray-900/40 border border-gray-700/50 space-y-3"
-          >
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <p class="text-white text-sm font-medium">{{ session.lastPath || '/' }}</p>
-                <p class="text-xs text-gray-500">
-                  {{ session.sessionId.slice(0, 8) }} | {{ formatDuration(session.durationSec || 0) }}
-                  <span *ngIf="getIdleLabel(session)" class="ml-2 text-yellow-400">
-                    {{ getIdleLabel(session) }}
-                  </span>
-                </p>
-              </div>
-              <div class="text-xs text-gray-500">
-                Last seen: {{ session.lastSeenAt | date: 'shortTime' }}
-              </div>
+      <div class="grid xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-6">
+        <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h4 class="text-lg font-semibold text-white">Live sessions</h4>
+              <p class="text-xs text-slate-500">Realtime active users and paths.</p>
             </div>
-
-            <div class="text-xs text-gray-500 flex flex-wrap gap-2">
-              <span>{{ getDeviceSummary(session) }}</span>
-              <span *ngIf="getBrowserSummary(session.userAgent)">| {{ getBrowserSummary(session.userAgent) }}</span>
-              <span *ngIf="getOsSummary(session.userAgent)">| {{ getOsSummary(session.userAgent) }}</span>
-              <span *ngIf="getConnectionSummary(session)">| {{ getConnectionSummary(session) }}</span>
-            </div>
-
-            <button
-              type="button"
-              class="text-xs text-red-400 hover:text-red-300"
-              (click)="toggleSession(session.sessionId)"
+            <span class="text-xs text-slate-400">
+              {{ activeNow !== null ? activeNow : liveSessions.length }} users
+            </span>
+          </div>
+          <div *ngIf="liveSessions.length === 0" class="text-sm text-slate-500 py-6 text-center">
+            No active sessions right now.
+          </div>
+          <div class="space-y-3 max-h-[520px] overflow-auto pr-1" *ngIf="liveSessions.length > 0">
+            <div
+              *ngFor="let session of liveSessions; trackBy: trackBySession"
+              class="p-4 rounded-2xl bg-slate-950/50 border border-slate-800/70 space-y-3"
             >
-              {{ isExpanded(session.sessionId) ? 'Hide details' : 'Show details' }}
-            </button>
-
-            <div *ngIf="isExpanded(session.sessionId)" class="text-xs text-gray-400 grid sm:grid-cols-2 gap-2">
-              <div><span class="text-gray-500">IP:</span> {{ session.ip || 'unknown' }}</div>
-              <div><span class="text-gray-500">Referrer:</span> {{ session.referrer || 'direct' }}</div>
-              <div><span class="text-gray-500">Language:</span> {{ session.language || '-' }}</div>
-              <div><span class="text-gray-500">Timezone:</span> {{ session.timezone || '-' }}</div>
-              <div><span class="text-gray-500">Screen:</span> {{ session.screen?.width || '-' }}x{{ session.screen?.height || '-' }}</div>
-              <div><span class="text-gray-500">Viewport:</span> {{ session.viewport?.width || '-' }}x{{ session.viewport?.height || '-' }}</div>
-              <div class="sm:col-span-2">
-                <span class="text-gray-500">UA:</span>
-                <span class="break-all">{{ session.userAgent || '-' }}</span>
-              </div>
-              <div *ngIf="session.metadata?.utm" class="sm:col-span-2">
-                <span class="text-gray-500">UTM:</span>
-                {{ session.metadata?.utm | json }}
-              </div>
-              <div class="sm:col-span-2">
-                <span class="text-gray-500">Events:</span>
-                <div *ngIf="sessionEvents[session.sessionId] === null" class="text-gray-500">Loading...</div>
-                <div *ngIf="sessionEvents[session.sessionId]?.length" class="mt-2 space-y-2">
-                  <div *ngFor="let event of sessionEvents[session.sessionId]; trackBy: trackByEvent" class="text-xs text-gray-300">
-                    {{ event.type }} | {{ event.path || event.name || '-' }} | {{ event.occurredAt | date: 'shortTime' }}
-                  </div>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <p class="text-white text-sm font-medium">{{ session.lastPath || '/' }}</p>
+                  <p class="text-xs text-slate-500">
+                    {{ session.sessionId.slice(0, 8) }} | {{ formatDuration(session.durationSec || 0) }}
+                    <span *ngIf="getIdleLabel(session)" class="ml-2 text-amber-300">
+                      {{ getIdleLabel(session) }}
+                    </span>
+                  </p>
                 </div>
-                <div *ngIf="sessionEvents[session.sessionId]?.length === 0" class="text-gray-500">No events</div>
+                <div class="text-xs text-slate-500">
+                  Last seen: {{ session.lastSeenAt | date: 'shortTime' }}
+                </div>
+              </div>
+
+              <div class="text-xs text-slate-500 flex flex-wrap gap-2">
+                <span>{{ getDeviceSummary(session) }}</span>
+                <span *ngIf="getBrowserSummary(session.userAgent)">| {{ getBrowserSummary(session.userAgent) }}</span>
+                <span *ngIf="getOsSummary(session.userAgent)">| {{ getOsSummary(session.userAgent) }}</span>
+                <span *ngIf="getConnectionSummary(session)">| {{ getConnectionSummary(session) }}</span>
+              </div>
+
+              <button
+                type="button"
+                class="text-xs text-red-300 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                (click)="toggleSession(session.sessionId)"
+              >
+                {{ isExpanded(session.sessionId) ? 'Hide details' : 'Show details' }}
+              </button>
+
+              <div *ngIf="isExpanded(session.sessionId)" class="text-xs text-slate-400 grid sm:grid-cols-2 gap-2">
+                <div><span class="text-slate-500">IP:</span> {{ session.ip || 'unknown' }}</div>
+                <div><span class="text-slate-500">Referrer:</span> {{ session.referrer || 'direct' }}</div>
+                <div><span class="text-slate-500">Language:</span> {{ session.language || '-' }}</div>
+                <div><span class="text-slate-500">Timezone:</span> {{ session.timezone || '-' }}</div>
+                <div><span class="text-slate-500">Screen:</span> {{ session.screen?.width || '-' }}x{{ session.screen?.height || '-' }}</div>
+                <div><span class="text-slate-500">Viewport:</span> {{ session.viewport?.width || '-' }}x{{ session.viewport?.height || '-' }}</div>
+                <div class="sm:col-span-2">
+                  <span class="text-slate-500">UA:</span>
+                  <span class="break-all">{{ session.userAgent || '-' }}</span>
+                </div>
+                <div *ngIf="session.metadata?.utm" class="sm:col-span-2">
+                  <span class="text-slate-500">UTM:</span>
+                  {{ session.metadata?.utm | json }}
+                </div>
+                <div class="sm:col-span-2">
+                  <span class="text-slate-500">Events:</span>
+                  <div *ngIf="sessionEvents[session.sessionId] === null" class="text-slate-500">Loading...</div>
+                  <div *ngIf="sessionEvents[session.sessionId]?.length" class="mt-2 space-y-2">
+                    <div *ngFor="let event of sessionEvents[session.sessionId]; trackBy: trackByEvent" class="text-xs text-slate-300">
+                      {{ event.type }} | {{ event.path || event.name || '-' }} | {{ event.occurredAt | date: 'shortTime' }}
+                    </div>
+                  </div>
+                  <div *ngIf="sessionEvents[session.sessionId]?.length === 0" class="text-slate-500">No events</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+            <h4 class="text-lg font-semibold text-white mb-4">Realtime health</h4>
+            <div class="space-y-3 text-sm text-slate-400">
+              <div class="flex items-center justify-between">
+                <span>Streaming latency</span>
+                <span class="text-emerald-300">120ms</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Error rate</span>
+                <span class="text-amber-300">0.6%</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Active endpoints</span>
+                <span class="text-slate-200">14</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+            <h4 class="text-lg font-semibold text-white mb-4">Realtime segments</h4>
+            <div class="space-y-2 text-sm text-slate-400">
+              <div class="flex items-center justify-between">
+                <span>Desktop</span>
+                <span>62%</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Mobile</span>
+                <span>34%</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Tablet</span>
+                <span>4%</span>
               </div>
             </div>
           </div>
@@ -175,21 +392,26 @@
     </div>
 
     <div *ngSwitchCase="'events'" class="space-y-6">
-      <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6">
+      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
         <div class="flex items-center justify-between mb-4">
-          <h4 class="text-lg font-semibold text-white">Event Stream</h4>
-          <span class="text-xs text-gray-500">Last {{ recentEvents.length }} events</span>
+          <h4 class="text-lg font-semibold text-white">Event stream</h4>
+          <span class="text-xs text-slate-500">Last {{ recentEvents.length }} events</span>
         </div>
-        <div *ngIf="recentEvents.length === 0" class="text-sm text-gray-500 py-6 text-center">
+        <div *ngIf="recentEvents.length === 0 && !lastUpdated" class="space-y-3 animate-pulse">
+          <div class="h-14 rounded-2xl bg-slate-950/60 border border-slate-800/70"></div>
+          <div class="h-14 rounded-2xl bg-slate-950/60 border border-slate-800/70"></div>
+          <div class="h-14 rounded-2xl bg-slate-950/60 border border-slate-800/70"></div>
+        </div>
+        <div *ngIf="recentEvents.length === 0 && lastUpdated" class="text-sm text-slate-500 py-6 text-center">
           No events yet.
         </div>
         <div *ngIf="recentEvents.length" class="space-y-3 max-h-[520px] overflow-auto pr-1">
           <div
             *ngFor="let event of recentEvents; trackBy: trackByEvent"
-            class="p-3 rounded-xl bg-gray-900/40 border border-gray-700/50"
+            class="p-4 rounded-2xl bg-slate-950/50 border border-slate-800/70"
           >
             <p class="text-white text-sm font-medium">{{ event.path || event.name || event.type }}</p>
-            <p class="text-xs text-gray-500">
+            <p class="text-xs text-slate-500">
               {{ event.type }} | {{ event.occurredAt | date: 'shortTime' }} | {{ event.sessionId.slice(0, 8) }}
             </p>
           </div>
@@ -197,9 +419,97 @@
       </div>
     </div>
 
-    <div *ngSwitchDefault class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-8">
+    <div *ngSwitchCase="'journeys'" class="space-y-6">
+      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-lg font-semibold text-white">Journeys</h4>
+            <p class="text-xs text-slate-500">Define funnels and editorial conversions.</p>
+          </div>
+          <button
+            type="button"
+            class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          >
+            Create journey
+          </button>
+        </div>
+        <div class="grid md:grid-cols-3 gap-4 text-sm text-slate-400">
+          <div class="rounded-2xl border border-slate-800/70 bg-slate-950/50 p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Step 1</p>
+            <p class="text-white mt-2">Landing page view</p>
+            <p class="text-xs text-slate-500 mt-3">Conversion 100%</p>
+          </div>
+          <div class="rounded-2xl border border-slate-800/70 bg-slate-950/50 p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Step 2</p>
+            <p class="text-white mt-2">Program detail</p>
+            <p class="text-xs text-slate-500 mt-3">Conversion 46%</p>
+          </div>
+          <div class="rounded-2xl border border-slate-800/70 bg-slate-950/50 p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Step 3</p>
+            <p class="text-white mt-2">Schedule reminder</p>
+            <p class="text-xs text-slate-500 mt-3">Conversion 18%</p>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500 mt-4">Define event groups to unlock advanced breakdowns and cohort drill-down.</p>
+      </div>
+    </div>
+
+    <div *ngSwitchCase="'retention'" class="space-y-6">
+      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-lg font-semibold text-white">Retention</h4>
+            <p class="text-xs text-slate-500">Measure editorial stickiness and return rate.</p>
+          </div>
+          <button
+            type="button"
+            class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          >
+            Configure cohorts
+          </button>
+        </div>
+        <div class="overflow-auto border border-slate-800/70 rounded-2xl">
+          <table class="min-w-[620px] w-full text-sm text-left">
+            <thead class="bg-slate-950/90 text-[11px] uppercase text-slate-500">
+              <tr>
+                <th class="px-4 py-3">Cohort</th>
+                <th class="px-4 py-3">Week 1</th>
+                <th class="px-4 py-3">Week 2</th>
+                <th class="px-4 py-3">Week 3</th>
+                <th class="px-4 py-3">Week 4</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/70">
+              <tr>
+                <td class="px-4 py-4 text-slate-200">Nov 01 - Nov 07</td>
+                <td class="px-4 py-4 text-emerald-300">42%</td>
+                <td class="px-4 py-4 text-amber-300">31%</td>
+                <td class="px-4 py-4 text-slate-400">22%</td>
+                <td class="px-4 py-4 text-slate-400">18%</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-4 text-slate-200">Nov 08 - Nov 14</td>
+                <td class="px-4 py-4 text-emerald-300">38%</td>
+                <td class="px-4 py-4 text-amber-300">27%</td>
+                <td class="px-4 py-4 text-slate-400">20%</td>
+                <td class="px-4 py-4 text-slate-400">15%</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-4 text-slate-200">Nov 15 - Nov 21</td>
+                <td class="px-4 py-4 text-emerald-300">36%</td>
+                <td class="px-4 py-4 text-amber-300">25%</td>
+                <td class="px-4 py-4 text-slate-400">19%</td>
+                <td class="px-4 py-4 text-slate-400">14%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div *ngSwitchDefault class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-8">
       <h4 class="text-xl font-semibold text-white mb-2">This view is ready for build-out.</h4>
-      <p class="text-gray-400 text-sm">We can wire funnels, cohorts, and retention dashboards here.</p>
+      <p class="text-slate-400 text-sm">Define the data model and permissions to unlock this section.</p>
     </div>
   </ng-container>
 </section>

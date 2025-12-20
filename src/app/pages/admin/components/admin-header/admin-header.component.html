@@ -1,42 +1,100 @@
-<header class="sticky top-0 z-30 bg-gray-950/70 backdrop-blur-xl border-b border-gray-800/70">
-  <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <button
-        class="lg:hidden h-10 w-10 rounded-xl bg-gray-800/70 border border-gray-700/70 text-white"
-        (click)="onToggleSidebar()"
-      >
-        <span class="text-lg">=</span>
-      </button>
-      <div>
-        <p class="text-xs text-gray-500 uppercase tracking-[0.2em]">Admin Panel</p>
-        <h2 class="text-lg font-semibold text-white">
-          {{ activeGroupLabel }}
-          <span class="text-gray-500">/</span>
-          {{ activeItemLabel }}
-        </h2>
-        <p *ngIf="activeItemDescription" class="text-xs text-gray-500 mt-1">
-          {{ activeItemDescription }}
-        </p>
+<header class="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
+  <div class="px-5 sm:px-6 lg:px-8 py-4">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <button
+          class="lg:hidden h-10 w-10 rounded-xl bg-slate-900/70 border border-slate-800/70 text-white flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          (click)="onToggleSidebar()"
+          type="button"
+          aria-label="Open navigation"
+        >
+          <span class="text-lg">=</span>
+        </button>
+        <div class="space-y-1">
+          <nav class="flex items-center gap-2 text-xs text-slate-500" aria-label="Breadcrumb">
+            <span>GPTV Admin</span>
+            <span aria-hidden="true">/</span>
+            <span>{{ activeGroupLabel }}</span>
+            <span aria-hidden="true">/</span>
+            <span class="text-slate-200">{{ activeItemLabel }}</span>
+          </nav>
+          <div class="flex items-center gap-2">
+            <h2 class="text-lg font-semibold text-white">{{ activeItemLabel }}</h2>
+            <span class="text-[10px] uppercase tracking-[0.25em] text-slate-400">Live</span>
+          </div>
+          <p *ngIf="activeItemDescription" class="text-xs text-slate-400">
+            {{ activeItemDescription }}
+          </p>
+        </div>
       </div>
-    </div>
 
-    <div class="flex items-center gap-3 w-full lg:w-auto">
-      <div class="relative flex-1 lg:flex-none">
-        <input
-          type="text"
-          placeholder="Search admin"
-          class="w-full lg:w-64 bg-gray-900/70 border border-gray-700/70 rounded-xl px-4 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-red-500"
-        />
+      <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+        <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+          <div class="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
+            <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+            <span>System healthy</span>
+          </div>
+          <div *ngIf="lastUpdated" class="text-slate-500">Updated {{ lastUpdated | date: 'shortTime' }}</div>
+        </div>
+
+        <div class="hidden xl:flex items-center gap-2">
+          <button
+            class="px-3 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-xs text-red-100 hover:bg-red-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            type="button"
+          >
+            New entry
+          </button>
+          <button
+            class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            type="button"
+          >
+            Export
+          </button>
+          <button
+            class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            type="button"
+          >
+            Run sync
+          </button>
+        </div>
+
+        <div class="relative flex-1 lg:flex-none">
+          <label for="admin-search" class="sr-only">Search admin</label>
+          <input
+            id="admin-search"
+            type="text"
+            placeholder="Search admin"
+            class="w-full lg:w-64 bg-slate-900/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          />
+        </div>
+
+        <div class="hidden lg:flex items-center gap-2 text-xs text-slate-500">
+          <span>Density</span>
+          <div class="flex items-center rounded-full border border-slate-800/80 bg-slate-900/70 p-1">
+            <button
+              class="px-2 py-1 rounded-full text-[11px] text-slate-100 bg-slate-700/60"
+              type="button"
+              aria-pressed="true"
+            >
+              Comfort
+            </button>
+            <button
+              class="px-2 py-1 rounded-full text-[11px] text-slate-400 hover:text-slate-200"
+              type="button"
+              aria-pressed="false"
+            >
+              Compact
+            </button>
+          </div>
+        </div>
+
+        <a
+          [routerLink]="['/']"
+          class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        >
+          Back to app
+        </a>
       </div>
-      <div class="text-xs text-gray-500" *ngIf="lastUpdated">
-        Updated {{ lastUpdated | date: 'shortTime' }}
-      </div>
-      <a
-        [routerLink]="['/']"
-        class="px-3 py-2 rounded-xl border border-gray-700/70 text-xs text-gray-300 hover:text-white hover:border-gray-500"
-      >
-        Back to app
-      </a>
     </div>
   </div>
 </header>

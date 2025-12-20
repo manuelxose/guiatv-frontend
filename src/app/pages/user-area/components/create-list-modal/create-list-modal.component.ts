@@ -1,107 +1,100 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { trigger, style, animate, transition } from '@angular/animations';
 
 @Component({
   selector: 'app-create-list-modal',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  animations: [
-    trigger('fadeIn', [
-      transition(':enter', [
-        style({ opacity: 0 }),
-        animate('200ms ease-out', style({ opacity: 1 }))
-      ]),
-      transition(':leave', [
-        animate('150ms ease-in', style({ opacity: 0 }))
-      ])
-    ]),
-    trigger('scaleIn', [
-      transition(':enter', [
-        style({ transform: 'scale(0.95)', opacity: 0 }),
-        animate('200ms ease-out', style({ transform: 'scale(1)', opacity: 1 }))
-      ]),
-      transition(':leave', [
-        animate('150ms ease-in', style({ transform: 'scale(0.95)', opacity: 0 }))
-      ])
-    ])
-  ],
   template: `
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4" *ngIf="isOpen" @fadeIn>
-      <!-- Backdrop -->
-      <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" (click)="close()"></div>
+    <div *ngIf="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black/70" (click)="close()" aria-hidden="true"></div>
 
-      <!-- Modal Content -->
-      <div class="relative w-full max-w-md bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden" @scaleIn>
+      <div
+        class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-list-title"
+      >
+        <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+          <h2 id="create-list-title" class="text-lg font-semibold text-white">Nueva lista</h2>
+          <button
+            type="button"
+            (click)="close()"
+            class="min-h-[44px] px-3 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            aria-label="Cerrar"
+          >
+            Cerrar
+          </button>
+        </div>
+
         <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-white">Nueva Lista</h2>
-            <button (click)="close()" class="text-gray-400 hover:text-white transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
           <form [formGroup]="listForm" (ngSubmit)="onSubmit()" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Nombre de la lista</label>
+            <div class="space-y-2">
+              <label class="text-xs text-slate-400 uppercase tracking-wider">Nombre de la lista</label>
               <input
                 type="text"
                 formControlName="title"
-                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
+                class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 placeholder="Ej. Pelis para llorar"
               />
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Descripción (opcional)</label>
+            <div class="space-y-2">
+              <label class="text-xs text-slate-400 uppercase tracking-wider">Descripcion (opcional)</label>
               <textarea
                 formControlName="description"
                 rows="3"
-                class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all"
-                placeholder="¿De qué va esta lista?"
+                class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                placeholder="Describe la intencion de esta lista"
               ></textarea>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Visibilidad</label>
+            <div class="space-y-2">
+              <label class="text-xs text-slate-400 uppercase tracking-wider">Visibilidad</label>
               <div class="grid grid-cols-3 gap-2">
                 <label class="cursor-pointer">
-                  <input type="radio" formControlName="visibility" value="public" class="sr-only peer">
-                  <div class="text-center p-2 rounded-lg border border-gray-700 bg-gray-800 peer-checked:bg-red-600 peer-checked:border-red-500 peer-checked:text-white text-gray-400 hover:bg-gray-700 transition-all">
-                    <span class="block text-xs font-bold uppercase">Pública</span>
+                  <input type="radio" formControlName="visibility" value="public" class="sr-only peer" />
+                  <div class="text-center p-2 rounded-lg border border-slate-800 bg-slate-950/60 peer-checked:border-red-500 peer-checked:text-white text-slate-400">
+                    <span class="block text-xs font-semibold uppercase">Publico</span>
                   </div>
                 </label>
                 <label class="cursor-pointer">
-                  <input type="radio" formControlName="visibility" value="friends" class="sr-only peer">
-                  <div class="text-center p-2 rounded-lg border border-gray-700 bg-gray-800 peer-checked:bg-red-600 peer-checked:border-red-500 peer-checked:text-white text-gray-400 hover:bg-gray-700 transition-all">
-                    <span class="block text-xs font-bold uppercase">Amigos</span>
+                  <input type="radio" formControlName="visibility" value="friends" class="sr-only peer" />
+                  <div class="text-center p-2 rounded-lg border border-slate-800 bg-slate-950/60 peer-checked:border-red-500 peer-checked:text-white text-slate-400">
+                    <span class="block text-xs font-semibold uppercase">Amigos</span>
                   </div>
                 </label>
                 <label class="cursor-pointer">
-                  <input type="radio" formControlName="visibility" value="private" class="sr-only peer">
-                  <div class="text-center p-2 rounded-lg border border-gray-700 bg-gray-800 peer-checked:bg-red-600 peer-checked:border-red-500 peer-checked:text-white text-gray-400 hover:bg-gray-700 transition-all">
-                    <span class="block text-xs font-bold uppercase">Privada</span>
+                  <input type="radio" formControlName="visibility" value="private" class="sr-only peer" />
+                  <div class="text-center p-2 rounded-lg border border-slate-800 bg-slate-950/60 peer-checked:border-red-500 peer-checked:text-white text-slate-400">
+                    <span class="block text-xs font-semibold uppercase">Privado</span>
                   </div>
                 </label>
               </div>
             </div>
 
             <div class="pt-4 flex gap-3">
-              <button type="button" (click)="close()" class="flex-1 px-4 py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-semibold transition-colors">
+              <button
+                type="button"
+                (click)="close()"
+                class="min-h-[44px] flex-1 px-4 rounded-xl border border-slate-700 text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              >
                 Cancelar
               </button>
-              <button type="submit" [disabled]="listForm.invalid" class="flex-1 px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold transition-colors shadow-lg shadow-red-900/20">
-                Crear Lista
+              <button
+                type="submit"
+                [disabled]="listForm.invalid"
+                class="min-h-[44px] flex-1 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              >
+                Crear lista
               </button>
             </div>
           </form>
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class CreateListModalComponent {
   @Input() isOpen = false;
@@ -111,7 +104,7 @@ export class CreateListModalComponent {
   listForm = this.fb.group({
     title: ['', Validators.required],
     description: [''],
-    visibility: ['public']
+    visibility: ['public'],
   });
 
   constructor(private fb: FormBuilder) {}

@@ -8,106 +8,93 @@ import { UserList } from '../../../../interfaces/user.interface';
   imports: [CommonModule],
   template: `
     <div class="space-y-6">
-      <div class="flex items-center justify-between">
+      <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 class="text-xl font-bold text-white">Mis Listas</h2>
-          <p class="text-gray-400 text-sm">Organiza tu contenido favorito</p>
+          <h2 class="text-xl font-semibold text-white">Mis listas</h2>
+          <p class="text-sm text-slate-400">Organiza tu contenido favorito con control total.</p>
         </div>
         <button
+          type="button"
           (click)="onCreate()"
-          class="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors flex items-center gap-2"
+          class="min-h-[44px] px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          Nueva lista
+          Crear lista
         </button>
       </div>
 
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Create New List Card (Visual placeholder for empty state or quick action) -->
-        <div
+      <div *ngIf="lists.length === 0" class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-8 text-center">
+        <p class="text-white font-medium mb-2">Aun no tienes listas.</p>
+        <p class="text-sm text-slate-400 mb-6">Crea una lista para guardar series, programas y canales.</p>
+        <button
+          type="button"
           (click)="onCreate()"
-          class="group relative aspect-video rounded-2xl border-2 border-dashed border-gray-700 hover:border-red-500/50 bg-gray-800/30 hover:bg-gray-800/60 transition-all cursor-pointer flex flex-col items-center justify-center gap-3"
+          class="min-h-[44px] px-6 py-2.5 rounded-xl border border-slate-700 text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         >
-          <div
-            class="h-12 w-12 rounded-full bg-gray-700/50 group-hover:bg-red-500/20 flex items-center justify-center transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6 text-gray-400 group-hover:text-red-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-          </div>
-          <span class="text-gray-400 group-hover:text-white font-medium transition-colors">Crear nueva lista</span>
-        </div>
+          Crear primera lista
+        </button>
+      </div>
 
-        <!-- List Items -->
+      <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <button
+          type="button"
+          (click)="onCreate()"
+          class="group relative rounded-2xl border border-dashed border-slate-700/80 bg-slate-900/40 hover:bg-slate-900/60 text-left p-5 min-h-[220px] flex flex-col items-center justify-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        >
+          <div class="h-12 w-12 rounded-full border border-slate-700 flex items-center justify-center text-slate-300 text-xl">
+            +
+          </div>
+          <span class="text-sm text-slate-300 font-medium">Crear nueva lista</span>
+        </button>
+
         <div
           *ngFor="let list of lists"
+          role="button"
+          tabindex="0"
           (click)="onSelect(list)"
-          class="group relative aspect-video rounded-2xl overflow-hidden bg-gray-800 border border-gray-700/50 hover:border-gray-600 transition-all cursor-pointer"
+          (keydown.enter)="onSelect(list)"
+          class="group rounded-2xl border border-slate-800/80 bg-slate-900/60 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         >
-          <!-- Cover Image or Gradient -->
-          <div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900">
+          <div class="relative aspect-video bg-slate-900/80">
             <img
               *ngIf="list.cover"
               [src]="list.cover"
-              class="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
-              alt="Cover"
+              class="absolute inset-0 w-full h-full object-cover opacity-80"
+              alt=""
             />
-            <div *ngIf="!list.cover" class="w-full h-full flex items-center justify-center bg-gray-800">
-                <span class="text-4xl">📺</span>
+            <div *ngIf="!list.cover" class="absolute inset-0 flex items-center justify-center text-xs text-slate-400">
+              Sin portada
             </div>
           </div>
-          
-          <!-- Content Overlay -->
-          <div class="absolute inset-0 p-5 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-            <div class="flex items-center justify-between mb-2">
-                <span class="px-2 py-1 rounded-md bg-white/10 backdrop-blur-md text-xs font-medium text-white border border-white/10">
-                    {{ list.itemsCount }} items
-                </span>
-                <span 
-                    class="text-xs font-medium px-2 py-1 rounded-full"
-                    [ngClass]="{
-                        'bg-green-500/20 text-green-300': list.visibility === 'public',
-                        'bg-blue-500/20 text-blue-300': list.visibility === 'friends',
-                        'bg-gray-500/20 text-gray-300': list.visibility === 'private'
-                    }"
-                >
-                    {{ list.visibility === 'public' ? 'Pública' : list.visibility === 'friends' ? 'Amigos' : 'Privada' }}
-                </span>
+          <div class="p-4 space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <h3 class="text-base font-semibold text-white truncate">{{ list.title }}</h3>
+                <p class="text-xs text-slate-500 line-clamp-2" *ngIf="list.description">
+                  {{ list.description }}
+                </p>
+              </div>
+              <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300 whitespace-nowrap">
+                {{ list.itemsCount }} items
+              </span>
             </div>
-            <h3 class="text-lg font-bold text-white leading-tight group-hover:text-red-400 transition-colors">
-              {{ list.title }}
-            </h3>
-            <p class="text-sm text-gray-300 line-clamp-1 mt-1" *ngIf="list.description">
-              {{ list.description }}
-            </p>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500">
+                {{ list.visibility === 'public' ? 'Publico' : list.visibility === 'friends' ? 'Amigos' : 'Privado' }}
+              </span>
+              <button
+                type="button"
+                (click)="$event.stopPropagation(); onSelect(list)"
+                class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              >
+                Abrir
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   `,
-  styles: []
+  styles: [],
 })
 export class UserListsComponent {
   @Input() lists: UserList[] = [];

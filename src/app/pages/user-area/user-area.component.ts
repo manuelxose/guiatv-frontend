@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { Observable, map, of, take } from 'rxjs';
-import { NavBarComponent } from '../../components/nav-bar/nav-bar.component';
+import { map, of, take } from 'rxjs';
 import {
   UserActivity,
   UserFriend,
@@ -45,7 +44,6 @@ type TabType =
   imports: [
     CommonModule,
     RouterModule,
-    NavBarComponent,
     UserProfileHeaderComponent,
     UserListsComponent,
     UserSocialFeedComponent,
@@ -107,11 +105,11 @@ export class UserAreaComponent implements OnInit {
     this.activeTab = tab;
   }
 
-  onUpdateStatus(event: { title: string; mood: string }): void {
+  onUpdateStatus(event: { title: string; mood: string; visibility: 'public' | 'friends' | 'private' }): void {
     this.userService.updateWatchingNow({
       title: event.title,
       mood: event.mood,
-      visibility: 'friends', // Default visibility
+      visibility: event.visibility || 'friends',
     });
   }
 

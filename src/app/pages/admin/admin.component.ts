@@ -40,6 +40,7 @@ export class AdminComponent {
       icon: 'A',
       items: [
         { id: 'overview', label: 'Overview', description: 'KPIs and trends' },
+        { id: 'pages', label: 'Pages', description: 'Top content performance' },
         { id: 'live', label: 'Live', description: 'Realtime sessions' },
         { id: 'events', label: 'Events', description: 'Behavior stream' },
         { id: 'journeys', label: 'Journeys', description: 'Flows and funnels', badge: 'Soon' },

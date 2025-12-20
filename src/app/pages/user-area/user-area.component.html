@@ -1,74 +1,129 @@
-<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white pb-20">
-  <app-nav-bar></app-nav-bar>
+<div class="relative min-h-screen bg-[#0b0f14] text-slate-100 pb-16">
+  <div
+    class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06)_0,_rgba(11,15,20,0)_55%)] opacity-70"
+  ></div>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+  <div class="relative mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8 py-10 space-y-8">
     <ng-container *ngIf="isAuthenticated$ | async; else loginCTA">
-      
       <!-- Profile Header -->
-      <app-user-profile-header 
-        *ngIf="profile$ | async as profile" 
+      <app-user-profile-header
+        *ngIf="profile$ | async as profile"
         [profile]="profile"
-        (editProfile)="openEditProfileModal()">
-      </app-user-profile-header>
+        (editProfile)="openEditProfileModal()"
+      ></app-user-profile-header>
 
       <!-- Navigation Tabs -->
-      <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-gray-700/50">
-        <button
-          (click)="setActiveTab('overview')"
-          class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
-          [ngClass]="activeTab === 'overview' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+      <div class="border-b border-slate-800/80">
+        <div
+          class="flex items-center gap-2 overflow-x-auto pb-3"
+          role="tablist"
+          aria-label="Secciones de cuenta"
         >
-          Resumen
-        </button>
-        <button
-          (click)="setActiveTab('lists')"
-          class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
-          [ngClass]="activeTab === 'lists' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'"
-        >
-          Mis Listas
-        </button>
-        <button
-          (click)="setActiveTab('social')"
-          class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
-          [ngClass]="activeTab === 'social' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'"
-        >
-          Social
-        </button>
-        <button
-          (click)="setActiveTab('favorites')"
-          class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
-          [ngClass]="activeTab === 'favorites' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'"
-        >
-          Favoritos
-        </button>
-        <button
-          (click)="setActiveTab('chat')"
-          class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
-          [ngClass]="activeTab === 'chat' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'"
-        >
-          Chat
-        </button>
-        <button
-          (click)="setActiveTab('settings')"
-          class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
-          [ngClass]="activeTab === 'settings' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'"
-        >
-          Ajustes
-        </button>
-        <button
-          (click)="setActiveTab('admin')"
-          class="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
-          [ngClass]="activeTab === 'admin' ? 'bg-red-600 text-white shadow-lg shadow-red-900/20' : 'text-gray-400 hover:text-white hover:bg-white/5'"
-        >
-          Admin
-        </button>
+          <button
+            id="tab-overview"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'overview'"
+            [attr.aria-controls]="'panel-overview'"
+            [attr.tabindex]="activeTab === 'overview' ? 0 : -1"
+            (click)="setActiveTab('overview')"
+            class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [ngClass]="activeTab === 'overview' ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
+          >
+            Resumen
+          </button>
+          <button
+            id="tab-lists"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'lists'"
+            [attr.aria-controls]="'panel-lists'"
+            [attr.tabindex]="activeTab === 'lists' ? 0 : -1"
+            (click)="setActiveTab('lists')"
+            class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [ngClass]="activeTab === 'lists' ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
+          >
+            Mis Listas
+          </button>
+          <button
+            id="tab-social"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'social'"
+            [attr.aria-controls]="'panel-social'"
+            [attr.tabindex]="activeTab === 'social' ? 0 : -1"
+            (click)="setActiveTab('social')"
+            class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [ngClass]="activeTab === 'social' ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
+          >
+            Social
+          </button>
+          <button
+            id="tab-favorites"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'favorites'"
+            [attr.aria-controls]="'panel-favorites'"
+            [attr.tabindex]="activeTab === 'favorites' ? 0 : -1"
+            (click)="setActiveTab('favorites')"
+            class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [ngClass]="activeTab === 'favorites' ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
+          >
+            Favoritos
+          </button>
+          <button
+            id="tab-chat"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'chat'"
+            [attr.aria-controls]="'panel-chat'"
+            [attr.tabindex]="activeTab === 'chat' ? 0 : -1"
+            (click)="setActiveTab('chat')"
+            class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [ngClass]="activeTab === 'chat' ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
+          >
+            Chat
+          </button>
+          <button
+            id="tab-settings"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'settings'"
+            [attr.aria-controls]="'panel-settings'"
+            [attr.tabindex]="activeTab === 'settings' ? 0 : -1"
+            (click)="setActiveTab('settings')"
+            class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [ngClass]="activeTab === 'settings' ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
+          >
+            Ajustes
+          </button>
+          <button
+            id="tab-admin"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'admin'"
+            [attr.aria-controls]="'panel-admin'"
+            [attr.tabindex]="activeTab === 'admin' ? 0 : -1"
+            (click)="setActiveTab('admin')"
+            class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [ngClass]="activeTab === 'admin' ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
+          >
+            Admin
+          </button>
+        </div>
       </div>
 
       <!-- Tab Content -->
       <div [ngSwitch]="activeTab" class="min-h-[400px]">
-        
         <!-- OVERVIEW TAB -->
-        <div *ngSwitchCase="'overview'" class="space-y-8 animate-fade-in">
+        <div
+          *ngSwitchCase="'overview'"
+          id="panel-overview"
+          role="tabpanel"
+          aria-labelledby="tab-overview"
+          tabindex="0"
+          class="space-y-8"
+        >
           <app-user-stats
             [profile]="profile$ | async"
             [myActivities]="(myActivities$ | async) || []"
@@ -80,7 +135,13 @@
         </div>
 
         <!-- LISTS TAB -->
-        <div *ngSwitchCase="'lists'" class="animate-fade-in">
+        <div
+          *ngSwitchCase="'lists'"
+          id="panel-lists"
+          role="tabpanel"
+          aria-labelledby="tab-lists"
+          tabindex="0"
+        >
           <app-user-lists
             [lists]="(lists$ | async) || []"
             (create)="openCreateListModal()"
@@ -89,7 +150,13 @@
         </div>
 
         <!-- SOCIAL TAB -->
-        <div *ngSwitchCase="'social'" class="animate-fade-in">
+        <div
+          *ngSwitchCase="'social'"
+          id="panel-social"
+          role="tabpanel"
+          aria-labelledby="tab-social"
+          tabindex="0"
+        >
           <app-user-social-feed
             [activities]="(friendsActivities$ | async) || []"
             [friends]="(friends$ | async) || []"
@@ -100,56 +167,204 @@
         </div>
 
         <!-- FAVORITES TAB -->
-        <div *ngSwitchCase="'favorites'" class="animate-fade-in">
+        <div
+          *ngSwitchCase="'favorites'"
+          id="panel-favorites"
+          role="tabpanel"
+          aria-labelledby="tab-favorites"
+          tabindex="0"
+        >
           <app-user-favorites></app-user-favorites>
         </div>
 
         <!-- CHAT TAB -->
-        <div *ngSwitchCase="'chat'" class="animate-fade-in">
+        <div
+          *ngSwitchCase="'chat'"
+          id="panel-chat"
+          role="tabpanel"
+          aria-labelledby="tab-chat"
+          tabindex="0"
+        >
           <app-user-chat></app-user-chat>
         </div>
 
         <!-- SETTINGS TAB -->
-        <div *ngSwitchCase="'settings'" class="animate-fade-in">
+        <div
+          *ngSwitchCase="'settings'"
+          id="panel-settings"
+          role="tabpanel"
+          aria-labelledby="tab-settings"
+          tabindex="0"
+        >
           <app-user-settings
             *ngIf="profile$ | async as profile"
+            [profile]="profile"
             [privacy]="profile.privacy"
             [notifications]="profile.notifications"
             (saveSettings)="onSaveSettings($event)"
+            (editProfile)="openEditProfileModal()"
           ></app-user-settings>
         </div>
 
         <!-- ADMIN TAB -->
-        <div *ngSwitchCase="'admin'" class="animate-fade-in">
-          <div class="bg-gray-800/60 border border-gray-700/60 rounded-3xl p-8 shadow-xl shadow-black/30">
+        <div
+          *ngSwitchCase="'admin'"
+          id="panel-admin"
+          role="tabpanel"
+          aria-labelledby="tab-admin"
+          tabindex="0"
+          class="space-y-6"
+        >
+          <section class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 lg:p-8 shadow-[0_20px_40px_rgba(0,0,0,0.35)]">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              <div>
-                <p class="text-xs text-gray-500 uppercase tracking-[0.25em] mb-2">Admin Control Center</p>
-                <h3 class="text-2xl font-bold text-white mb-3">Panel completo de control</h3>
-                <p class="text-gray-300 text-sm leading-relaxed max-w-xl">
-                  Accede al panel avanzado para gestionar analitica, contenido, operaciones y sistema.
-                  Este panel esta disenado para controlar toda la app desde un solo lugar.
+              <div class="space-y-2">
+                <p class="text-xs text-slate-500 uppercase tracking-[0.3em]">Resumen admin</p>
+                <h3 class="text-xl lg:text-2xl font-semibold text-white">Acceso al panel completo</h3>
+                <p class="text-sm text-slate-300 max-w-xl">
+                  Esta vista resume la capa administrativa. Para acciones avanzadas y gestion completa,
+                  abre la version completa del panel.
                 </p>
               </div>
               <div class="flex flex-col sm:flex-row gap-3">
                 <a
                   routerLink="/admin"
-                  class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold shadow-lg shadow-red-900/30 transition-all"
+                  class="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 >
-                  Abrir panel admin
+                  Ir al panel completo
                 </a>
                 <button
                   type="button"
-                  class="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-gray-700 text-gray-300 hover:text-white hover:border-gray-500 transition-all"
+                  class="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   disabled
                 >
                   Configurar accesos
                 </button>
               </div>
             </div>
+          </section>
+
+          <div class="grid lg:grid-cols-3 gap-6">
+            <div class="space-y-6">
+              <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-lg font-semibold text-white">Accesos administrativos</h4>
+                  <span class="text-xs text-slate-500">Revision hoy</span>
+                </div>
+                <div class="mt-4 space-y-3 text-sm">
+                  <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                    <div>
+                      <p class="text-slate-200 font-medium">Analitica</p>
+                      <p class="text-xs text-slate-500">Lectura y exportacion</p>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Activo</span>
+                  </div>
+                  <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                    <div>
+                      <p class="text-slate-200 font-medium">Contenido</p>
+                      <p class="text-xs text-slate-500">Gestion editorial</p>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Activo</span>
+                  </div>
+                  <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                    <div>
+                      <p class="text-slate-200 font-medium">Usuarios</p>
+                      <p class="text-xs text-slate-500">Moderacion y roles</p>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Limitado</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="bg-slate-900/60 border border-red-500/30 rounded-2xl p-6">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <h4 class="text-lg font-semibold text-white">Informacion sensible</h4>
+                    <p class="text-xs text-slate-400">Acciones criticas requieren confirmacion.</p>
+                  </div>
+                  <span class="text-[10px] uppercase tracking-[0.3em] text-red-200 border border-red-500/40 px-2 py-1 rounded-full">
+                    Sensible
+                  </span>
+                </div>
+                <div class="mt-4 space-y-3 text-sm">
+                  <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                    <div>
+                      <p class="text-slate-200 font-medium">API Keys</p>
+                      <p class="text-xs text-slate-500">************</p>
+                    </div>
+                    <button
+                      type="button"
+                      class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    >
+                      Rotar
+                    </button>
+                  </div>
+                  <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                    <div>
+                      <p class="text-slate-200 font-medium">Tokens de integracion</p>
+                      <p class="text-xs text-slate-500">************</p>
+                    </div>
+                    <button
+                      type="button"
+                      class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    >
+                      Revisar
+                    </button>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 lg:col-span-2">
+              <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <h4 class="text-lg font-semibold text-white">Actividad administrativa</h4>
+                <button
+                  type="button"
+                  class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                >
+                  Ver log completo
+                </button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="text-xs uppercase tracking-wider text-slate-500">
+                    <tr>
+                      <th scope="col" class="text-left py-2">Accion</th>
+                      <th scope="col" class="text-left py-2">Responsable</th>
+                      <th scope="col" class="text-left py-2">Fecha</th>
+                      <th scope="col" class="text-left py-2">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-slate-200">
+                    <tr class="border-t border-slate-800/70">
+                      <td class="py-3">Publicacion destacada</td>
+                      <td class="py-3">Marina G.</td>
+                      <td class="py-3">Hace 2 h</td>
+                      <td class="py-3">
+                        <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Confirmado</span>
+                      </td>
+                    </tr>
+                    <tr class="border-t border-slate-800/70">
+                      <td class="py-3">Cambio de rol</td>
+                      <td class="py-3">Equipo Moderacion</td>
+                      <td class="py-3">Hace 1 d</td>
+                      <td class="py-3">
+                        <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">En revision</span>
+                      </td>
+                    </tr>
+                    <tr class="border-t border-slate-800/70">
+                      <td class="py-3">Borrado de contenido</td>
+                      <td class="py-3">Admin GPTV</td>
+                      <td class="py-3">Hace 3 d</td>
+                      <td class="py-3">
+                        <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Auditoria</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </div>
         </div>
-
       </div>
 
       <app-create-list-modal
@@ -179,24 +394,33 @@
         (closeModal)="closeEditProfileModal()"
         (saveProfile)="onSaveProfile($event)"
       ></app-edit-profile-modal>
-
     </ng-container>
 
     <ng-template #loginCTA>
       <div class="min-h-[60vh] flex items-center justify-center">
-        <div class="bg-gray-800/60 border border-gray-700/60 rounded-3xl p-10 shadow-2xl shadow-black/40 text-center max-w-lg backdrop-blur-md">
-          <div class="h-20 w-20 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <span class="text-4xl">🔒</span>
+        <div class="bg-slate-900/70 border border-slate-800/80 rounded-3xl p-10 shadow-[0_20px_40px_rgba(0,0,0,0.35)] text-center max-w-lg">
+          <div class="h-16 w-16 rounded-2xl border border-slate-700 flex items-center justify-center mx-auto mb-6">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-7 w-7 text-slate-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5s-3 1.343-3 3 1.343 3 3 3z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.5 19a6.5 6.5 0 0113 0" />
+            </svg>
           </div>
-          <h2 class="text-3xl font-bold text-white mb-4">Acceso Privado</h2>
-          <p class="text-gray-300 mb-8 text-lg leading-relaxed">
-            Conéctate para gestionar tu perfil, crear listas personalizadas y compartir tus descubrimientos con amigos.
+          <h2 class="text-2xl font-semibold text-white mb-3">Acceso privado</h2>
+          <p class="text-sm text-slate-300 mb-6">
+            Conectate para gestionar tu perfil, crear listas personalizadas y compartir tus descubrimientos con amigos.
           </p>
           <a
             routerLink="/iniciar-sesion"
-            class="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold text-lg shadow-lg shadow-red-900/30 transition-all transform hover:scale-105"
+            class="inline-flex items-center justify-center min-h-[44px] px-8 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
-            Iniciar Sesión
+            Iniciar sesion
           </a>
         </div>
       </div>

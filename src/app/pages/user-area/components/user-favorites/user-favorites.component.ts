@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable, of } from 'rxjs';
 
 interface FavoriteItem {
   id: string;
@@ -16,49 +15,65 @@ interface FavoriteItem {
   imports: [CommonModule],
   template: `
     <div class="space-y-6">
-      <div class="flex items-center justify-between">
+      <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 class="text-xl font-bold text-white">Favoritos</h2>
-          <p class="text-gray-400 text-sm">Todo lo que te encanta en un solo lugar</p>
+          <h2 class="text-xl font-semibold text-white">Favoritos</h2>
+          <p class="text-sm text-slate-400">Gestiona lo que mas te gusta desde un solo lugar.</p>
         </div>
       </div>
 
-      <!-- Filter Tabs -->
-      <div class="flex items-center gap-2 overflow-x-auto pb-2">
-        <button 
+      <div class="flex items-center gap-2 overflow-x-auto pb-2" role="tablist" aria-label="Filtros de favoritos">
+        <button
           *ngFor="let filter of filters"
+          type="button"
           (click)="activeFilter = filter.id"
-          class="px-4 py-2 rounded-xl text-sm font-semibold transition-all whitespace-nowrap border border-transparent"
-          [ngClass]="activeFilter === filter.id ? 'bg-white/10 text-white border-white/10' : 'text-gray-400 hover:text-white hover:bg-white/5'"
+          class="min-h-[44px] px-4 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          [attr.aria-pressed]="activeFilter === filter.id"
+          [ngClass]="activeFilter === filter.id ? 'border-red-500/60 text-white bg-red-500/10' : 'border-slate-800 text-slate-400 hover:text-white hover:border-slate-600'"
         >
           {{ filter.label }}
         </button>
       </div>
 
-      <!-- Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        <div 
-          *ngFor="let item of getFilteredItems()" 
-          class="group relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 border border-gray-700/50 hover:border-gray-600 transition-all cursor-pointer"
-        >
-          <img [src]="item.image" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" [alt]="item.title">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
-          
-          <div class="absolute inset-0 p-4 flex flex-col justify-end">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-red-400 mb-1">{{ item.type }}</span>
-            <h3 class="font-bold text-white leading-tight line-clamp-2 group-hover:text-red-400 transition-colors">{{ item.title }}</h3>
-            <p *ngIf="item.subtitle" class="text-xs text-gray-400 mt-1 line-clamp-1">{{ item.subtitle }}</p>
-          </div>
+      <div *ngIf="getFilteredItems().length === 0" class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-8 text-center">
+        <p class="text-white font-medium mb-2">No hay favoritos en este filtro.</p>
+        <p class="text-sm text-slate-400">Explora contenido y marca tus favoritos para verlos aqui.</p>
+      </div>
 
-          <button class="absolute top-2 right-2 p-2 rounded-full bg-black/50 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-            </svg>
-          </button>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div
+          *ngFor="let item of getFilteredItems()"
+          class="rounded-2xl border border-slate-800/80 bg-slate-900/60 overflow-hidden flex flex-col"
+        >
+          <div class="aspect-[2/3] bg-slate-900/80">
+            <img [src]="item.image" class="w-full h-full object-cover" [alt]="item.title" />
+          </div>
+          <div class="p-4 space-y-3 flex-1 flex flex-col">
+            <div class="space-y-1">
+              <span class="text-[10px] uppercase tracking-[0.2em] text-slate-500">{{ item.type }}</span>
+              <h3 class="text-sm font-semibold text-white leading-tight line-clamp-2">{{ item.title }}</h3>
+              <p *ngIf="item.subtitle" class="text-xs text-slate-400 line-clamp-1">{{ item.subtitle }}</p>
+            </div>
+            <div class="mt-auto flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                class="min-h-[44px] px-3 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              >
+                Abrir
+              </button>
+              <button
+                type="button"
+                class="min-h-[44px] px-3 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                aria-label="Quitar favorito"
+              >
+                Quitar
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  `
+  `,
 })
 export class UserFavoritesComponent implements OnInit {
   activeFilter: string = 'all';
@@ -67,25 +82,54 @@ export class UserFavoritesComponent implements OnInit {
     { id: 'channels', label: 'Canales' },
     { id: 'programs', label: 'Programas' },
     { id: 'lists', label: 'Listas' },
-    { id: 'users', label: 'Usuarios' }
+    { id: 'users', label: 'Usuarios' },
   ];
 
   items: FavoriteItem[] = [];
 
   ngOnInit() {
-    // Mock data
     this.items = [
-      { id: '1', title: 'Antena 3', image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Antena_3_%282017%29.svg/1200px-Antena_3_%282017%29.svg.png', type: 'channel', subtitle: 'Generalista' },
-      { id: '2', title: 'La Resistencia', image: 'https://img.nbc.com/sites/nbcunbc/files/images/2021/3/31/190215_3905096_La_Resistencia_an_Interview_Show_Like_No_Ot.jpg', type: 'program', subtitle: 'Late Night' },
-      { id: '3', title: 'Cine de Acción', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7zR0s0j1k_1k_1k_1k_1k_1k_1k_1k_1k&s', type: 'list', subtitle: 'Por @alex' },
-      { id: '4', title: 'María López', image: 'https://i.pravatar.cc/150?u=a042581f4e29026024d', type: 'user', subtitle: '@marial' },
-      { id: '5', title: 'Stranger Things', image: 'https://upload.wikimedia.org/wikipedia/en/thumb/7/78/Stranger_Things_season_4.jpg/220px-Stranger_Things_season_4.jpg', type: 'program', subtitle: 'Serie' }
+      {
+        id: '1',
+        title: 'Antena 3',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Antena_3_%282017%29.svg/1200px-Antena_3_%282017%29.svg.png',
+        type: 'channel',
+        subtitle: 'Generalista',
+      },
+      {
+        id: '2',
+        title: 'La Resistencia',
+        image: 'https://img.nbc.com/sites/nbcunbc/files/images/2021/3/31/190215_3905096_La_Resistencia_an_Interview_Show_Like_No_Ot.jpg',
+        type: 'program',
+        subtitle: 'Late Night',
+      },
+      {
+        id: '3',
+        title: 'Cine de Accion',
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7zR0s0j1k_1k_1k_1k_1k_1k_1k_1k_1k&s',
+        type: 'list',
+        subtitle: 'Por @alex',
+      },
+      {
+        id: '4',
+        title: 'Maria Lopez',
+        image: 'https://i.pravatar.cc/150?u=a042581f4e29026024d',
+        type: 'user',
+        subtitle: '@marial',
+      },
+      {
+        id: '5',
+        title: 'Stranger Things',
+        image: 'https://upload.wikimedia.org/wikipedia/en/thumb/7/78/Stranger_Things_season_4.jpg/220px-Stranger_Things_season_4.jpg',
+        type: 'program',
+        subtitle: 'Serie',
+      },
     ];
   }
 
   getFilteredItems() {
     if (this.activeFilter === 'all') return this.items;
-    return this.items.filter(item => {
+    return this.items.filter((item) => {
       if (this.activeFilter === 'channels') return item.type === 'channel';
       if (this.activeFilter === 'programs') return item.type === 'program';
       if (this.activeFilter === 'lists') return item.type === 'list';

@@ -1,22 +1,149 @@
 <section class="space-y-6">
-  <h3 class="text-2xl font-bold text-white">System Health</h3>
-  <div class="grid lg:grid-cols-3 gap-4">
-    <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6">
-      <h4 class="text-lg font-semibold text-white">Health Checks</h4>
-      <p class="text-sm text-gray-400 mt-2">Backend, cache, and storage status.</p>
-      <button class="mt-4 px-4 py-2 rounded-xl bg-gray-700/40 text-gray-400 text-sm border border-gray-700/70" disabled>
-        Connect health checks
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <div>
+      <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Settings / System</p>
+      <h3 class="text-2xl font-semibold text-white">System health</h3>
+      <p class="text-sm text-slate-400">Configuration, service status, and operational safety.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        class="px-4 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+      >
+        Edit config
+      </button>
+      <button
+        type="button"
+        class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-xs text-red-100 hover:bg-red-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+      >
+        View logs
       </button>
     </div>
-    <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6">
-      <h4 class="text-lg font-semibold text-white">Feature Flags</h4>
-      <p class="text-sm text-gray-400 mt-2">Stage new features with safe rollout.</p>
-      <p class="text-xs text-gray-500 mt-4">Planned: experiment toggles.</p>
+  </div>
+
+  <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
+      <p class="text-xs text-slate-500 uppercase tracking-wider">Services healthy</p>
+      <p class="text-2xl font-semibold text-emerald-200 mt-2">4/5</p>
+      <p class="text-xs text-slate-500 mt-1">Last 15m</p>
     </div>
-    <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6">
-      <h4 class="text-lg font-semibold text-white">Status Page</h4>
-      <p class="text-sm text-gray-400 mt-2">Public uptime view for incidents.</p>
-      <p class="text-xs text-gray-500 mt-4">Planned: incident log.</p>
+    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
+      <p class="text-xs text-slate-500 uppercase tracking-wider">Warnings</p>
+      <p class="text-2xl font-semibold text-amber-200 mt-2">1</p>
+      <p class="text-xs text-slate-500 mt-1">Needs review</p>
+    </div>
+    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
+      <p class="text-xs text-slate-500 uppercase tracking-wider">Flags active</p>
+      <p class="text-2xl font-semibold text-white mt-2">2</p>
+      <p class="text-xs text-slate-500 mt-1">Across teams</p>
+    </div>
+    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
+      <p class="text-xs text-slate-500 uppercase tracking-wider">Incidents</p>
+      <p class="text-2xl font-semibold text-white mt-2">0</p>
+      <p class="text-xs text-slate-500 mt-1">Last 24h</p>
+    </div>
+  </div>
+
+  <div class="grid xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-6">
+    <div class="space-y-6">
+      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="text-lg font-semibold text-white">Service status</h4>
+          <span class="text-xs text-slate-500">Updated 2m ago</span>
+        </div>
+        <div class="overflow-auto">
+          <table class="w-full text-sm text-left">
+            <thead class="text-[11px] uppercase text-slate-500">
+              <tr>
+                <th class="px-2 py-2">Service</th>
+                <th class="px-2 py-2">Status</th>
+                <th class="px-2 py-2">Detail</th>
+                <th class="px-2 py-2">Updated</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/70">
+              <tr *ngFor="let service of services" class="hover:bg-slate-900/40">
+                <td class="px-2 py-3 text-white">{{ service.name }}</td>
+                <td class="px-2 py-3">
+                  <span class="text-[11px] px-2 py-1 rounded-full border" [ngClass]="statusClasses[service.status]">
+                    {{ service.status }}
+                  </span>
+                </td>
+                <td class="px-2 py-3 text-slate-400">{{ service.detail }}</td>
+                <td class="px-2 py-3 text-slate-400">{{ service.updated }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+        <div class="flex items-center justify-between">
+          <h4 class="text-lg font-semibold text-white">Recent logs</h4>
+          <button type="button" class="text-xs text-slate-400 hover:text-white">Open stream</button>
+        </div>
+        <div class="mt-4 space-y-3 text-xs">
+          <div *ngFor="let log of logs" class="flex items-start gap-3">
+            <span class="text-slate-500">{{ log.time }}</span>
+            <span
+              class="text-[10px] uppercase tracking-[0.2em]"
+              [ngClass]="log.level === 'error' ? 'text-red-300' : log.level === 'warning' ? 'text-amber-300' : 'text-emerald-300'"
+            >
+              {{ log.level }}
+            </span>
+            <span class="text-slate-400">{{ log.message }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+        <div class="flex items-center justify-between">
+          <h4 class="text-lg font-semibold text-white">Feature flags</h4>
+          <span class="text-xs text-slate-500">Safe rollout</span>
+        </div>
+        <div class="mt-4 space-y-3">
+          <div *ngFor="let flag of flags" class="flex items-center justify-between text-sm">
+            <div>
+              <p class="text-white">{{ flag.name }}</p>
+              <p class="text-xs text-slate-500">Owner: {{ flag.owner }}</p>
+            </div>
+            <button
+              type="button"
+              class="px-3 py-1.5 rounded-full border text-xs"
+              [ngClass]="flag.status === 'on' ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-slate-700/70 text-slate-300 bg-slate-800/40'"
+            >
+              {{ flag.status === 'on' ? 'Enabled' : 'Disabled' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+        <h4 class="text-lg font-semibold text-white">Environments</h4>
+        <div class="mt-4 space-y-3 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Production</span>
+            <span class="text-emerald-300">Stable</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">Staging</span>
+            <span class="text-amber-300">Deploying</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-6">
+        <h4 class="text-lg font-semibold text-white">Danger zone</h4>
+        <p class="text-xs text-red-200 mt-2">Destructive actions require explicit confirmation.</p>
+        <button
+          type="button"
+          class="mt-4 w-full px-4 py-2 rounded-xl border border-red-500/50 text-sm text-red-100 hover:bg-red-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        >
+          Disable ingestion
+        </button>
+      </div>
     </div>
   </div>
 </section>
