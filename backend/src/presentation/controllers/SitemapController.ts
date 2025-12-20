@@ -31,7 +31,7 @@ export class SitemapController {
     private readonly programRepository: IProgramRepository
   ) {}
 
-  async getSitemap(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getSitemap(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const xml = await this.getCachedXml();
       const maxAgeSec = Math.max(60, Math.floor(CACHE_TTL_MS / 1000));
