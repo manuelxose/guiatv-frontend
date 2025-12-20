@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import {
   UserActivity,
   UserFriend,
@@ -11,37 +12,84 @@ import {
   WatchingNow,
   UserList,
   Top10Category,
-  Top10Item,
   NewsItem,
+  UserFavorite,
 } from '../interfaces/user.interface';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+}
+
+const EMPTY_PROFILE: UserProfile = {
+  id: '',
+  name: 'Usuario',
+  username: 'usuario',
+  email: '',
+  avatar: '/assets/gpt-avatar.png',
+  bio: '',
+  location: '-',
+  favoriteGenres: [],
+  watchingNow: {
+    title: '',
+    mood: '',
+    visibility: 'friends',
+  },
+  privacy: {
+    profilePublic: true,
+    shareActivity: true,
+    shareWatchlist: true,
+    showOnline: true,
+    allowMessages: 'all',
+    publicLists: true,
+  },
+  notifications: {
+    recommendations: true,
+    followers: true,
+    weeklySummary: false,
+    chatMessages: true,
+    groupActivity: true,
+  },
+  stats: {
+    followers: 0,
+    following: 0,
+    recommendations: 0,
+    watchlist: 0,
+    listsCreated: 0,
+    ratings: 0,
+  },
+};
+
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private readonly isBrowser = typeof window !== 'undefined';
-  private profileSubject = new BehaviorSubject<UserProfile>(INITIAL_PROFILE);
-  private recommendationsSubject = new BehaviorSubject<UserRecommendation[]>(
-    INITIAL_RECOMMENDATIONS
-  );
-  private activitiesSubject = new BehaviorSubject<UserActivity[]>(
-    INITIAL_ACTIVITIES
-  );
-  private friendsSubject = new BehaviorSubject<UserFriend[]>(INITIAL_FRIENDS);
-  private watchlistSubject = new BehaviorSubject<UserListItem[]>(
-    INITIAL_WATCHLIST
-  );
-  private listsSubject = new BehaviorSubject<UserList[]>(INITIAL_LISTS);
-  private top10Subject = new BehaviorSubject<Top10Category[]>(INITIAL_TOP10_CATEGORIES);
-  private newsSubject = new BehaviorSubject<NewsItem[]>(INITIAL_NEWS);
+  private readonly baseUrl = environment.API_BASE_URL;
+  private profileSubject = new BehaviorSubject<UserProfile>(EMPTY_PROFILE);
+  private recommendationsSubject = new BehaviorSubject<UserRecommendation[]>([]);
+  private activitiesSubject = new BehaviorSubject<UserActivity[]>([]);
+  private friendsSubject = new BehaviorSubject<UserFriend[]>([]);
+  private watchlistSubject = new BehaviorSubject<UserListItem[]>([]);
+  private listsSubject = new BehaviorSubject<UserList[]>([]);
+  private favoritesSubject = new BehaviorSubject<UserFavorite[]>([]);
+  private top10Subject = new BehaviorSubject<Top10Category[]>([]);
+  private newsSubject = new BehaviorSubject<NewsItem[]>([]);
   private authenticatedSubject = new BehaviorSubject<boolean>(false);
+  private loadingSubject = new BehaviorSubject<boolean>(false);
+  private errorSubject = new BehaviorSubject<string | null>(null);
+
+  private defaultListId: string | null = null;
 
   public readonly isAuthenticated$ = this.authenticatedSubject.asObservable();
+  public readonly loading$ = this.loadingSubject.asObservable();
+  public readonly error$ = this.errorSubject.asObservable();
 
   constructor(private http: HttpClient) {
     const token = this.safeGetToken();
     if (token) {
-      this.fetchProfileFromApi(token).subscribe();
+      this.authenticatedSubject.next(true);
+      this.loadUserAreaData().subscribe();
     }
   }
 
@@ -69,6 +117,10 @@ export class UserService {
     return this.listsSubject.asObservable();
   }
 
+  getFavorites(): Observable<UserFavorite[]> {
+    return this.favoritesSubject.asObservable();
+  }
+
   getTop10(): Observable<Top10Category[]> {
     return this.top10Subject.asObservable();
   }
@@ -77,38 +129,46 @@ export class UserService {
     return this.newsSubject.asObservable();
   }
 
-  /**
-   * Refresca perfil real desde backend (autenticación por Google idToken)
-   */
-  fetchProfileFromApi(token: string): Observable<UserProfile | null> {
-    if (!token) return of(null);
+  loadUserAreaData(): Observable<boolean> {
+    const token = this.safeGetToken();
+    if (!token) {
+      this.authenticatedSubject.next(false);
+      return of(false);
+    }
 
-    const url = `${environment.API_BASE_URL}/auth/me`;
+    this.loadingSubject.next(true);
+    this.errorSubject.next(null);
+
+    return forkJoin({
+      profile: this.fetchProfile(),
+      lists: this.fetchLists(),
+      favorites: this.fetchFavorites(),
+      friends: this.fetchFriends(),
+      activities: this.fetchActivities('all'),
+      recommendations: this.fetchRecommendations('friends'),
+    }).pipe(
+      switchMap(() => this.fetchWatchlist()),
+      map(() => true),
+      tap(() => this.loadingSubject.next(false)),
+      catchError(this.handleError(false, 'No se pudo cargar la informacion.'))
+    );
+  }
+
+  fetchProfile(): Observable<UserProfile | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/user/profile`;
     return this.http
-      .get<{ success: boolean; data: Partial<UserProfile> }>(url, {
-        headers: new HttpHeaders({ Authorization: `Bearer ${token}` }),
-      })
+      .get<ApiResponse<{ profile: UserProfile }>>(url, { headers: this.getAuthHeaders() })
       .pipe(
-        // Actualiza estado si llega info válida
-        tapIfProfile((data) => {
-          this.applySession(
-            {
-              id: data.id || data.email || 'user',
-              name: data.name || data.email || 'Usuario',
-              email: data.email || '',
-              username: data.username || data.email?.split('@')[0] || 'user',
-              avatar: data.avatar || '/assets/gpt-avatar.png',
-              bio: data.bio || 'Comparte tus pelis y series favoritas.',
-              location: data.location || '—',
-              favoriteGenres: data.favoriteGenres || [],
-              watchingNow: data.watchingNow || INITIAL_PROFILE.watchingNow,
-              privacy: data.privacy || INITIAL_PROFILE.privacy,
-              notifications: data.notifications || INITIAL_PROFILE.notifications,
-              stats: data.stats || INITIAL_PROFILE.stats,
-            },
-            token
-          );
-        })
+        map((resp) => resp?.data?.profile || null),
+        tap((profile) => {
+          if (profile) {
+            this.profileSubject.next(this.mergeProfile(profile));
+            this.authenticatedSubject.next(true);
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo cargar el perfil.'))
       );
   }
 
@@ -122,6 +182,10 @@ export class UserService {
       watchingNow: { ...current.watchingNow, ...(user.watchingNow || {}) },
       favoriteGenres: user.favoriteGenres || current.favoriteGenres,
       stats: { ...current.stats, ...(user.stats || {}) },
+      avatar: user.avatar || (user as any).picture || current.avatar,
+      username: user.username || current.username,
+      name: user.name || current.name,
+      email: user.email || current.email,
     };
 
     this.profileSubject.next(merged);
@@ -130,9 +194,11 @@ export class UserService {
       try {
         localStorage.setItem('gtv_id_token', token);
       } catch {
-        // ignore storage errors (SSR / private mode)
+        // ignore
       }
     }
+
+    this.loadUserAreaData().subscribe();
   }
 
   logout(): void {
@@ -143,193 +209,464 @@ export class UserService {
         // ignore
       }
     }
+    this.profileSubject.next(EMPTY_PROFILE);
+    this.recommendationsSubject.next([]);
+    this.activitiesSubject.next([]);
+    this.friendsSubject.next([]);
+    this.watchlistSubject.next([]);
+    this.listsSubject.next([]);
+    this.favoritesSubject.next([]);
     this.authenticatedSubject.next(false);
+    this.loadingSubject.next(false);
+    this.errorSubject.next(null);
+    this.defaultListId = null;
   }
 
-  updateProfile(data: Partial<UserProfile>): void {
-    const current = this.profileSubject.value;
-    this.profileSubject.next({
-      ...current,
-      ...data,
-      privacy: { ...current.privacy, ...(data.privacy || {}) },
-      notifications: {
-        ...current.notifications,
-        ...(data.notifications || {}),
-      },
-      watchingNow: { ...current.watchingNow, ...(data.watchingNow || {}) },
-    });
+  updateProfile(data: Partial<UserProfile>): Observable<UserProfile | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/user/profile`;
+    return this.http
+      .patch<ApiResponse<{ profile: UserProfile }>>(url, data, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => resp?.data?.profile || null),
+        tap((profile) => {
+          if (profile) {
+            this.profileSubject.next(this.mergeProfile(profile));
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo actualizar el perfil.'))
+      );
   }
 
-  updatePrivacy(privacy: Partial<UserPrivacy>): void {
-    const profile = this.profileSubject.value;
-    this.profileSubject.next({
-      ...profile,
-      privacy: { ...profile.privacy, ...(privacy || {}) },
-    });
+  updatePrivacy(privacy: Partial<UserPrivacy>): Observable<UserPrivacy | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/user/privacy`;
+    return this.http
+      .patch<ApiResponse<{ privacy: UserPrivacy }>>(url, privacy, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => resp?.data?.privacy || null),
+        tap((privacyData) => {
+          if (privacyData) {
+            const profile = this.profileSubject.value;
+            this.profileSubject.next({ ...profile, privacy: { ...profile.privacy, ...privacyData } });
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo actualizar la privacidad.'))
+      );
   }
 
-  updateNotifications(notifications: Partial<UserNotifications>): void {
-    const profile = this.profileSubject.value;
-    this.profileSubject.next({
-      ...profile,
-      notifications: { ...profile.notifications, ...(notifications || {}) },
-    });
+  updateNotifications(notifications: Partial<UserNotifications>): Observable<UserNotifications | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/user/notifications`;
+    return this.http
+      .patch<ApiResponse<{ notifications: UserNotifications }>>(url, notifications, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => resp?.data?.notifications || null),
+        tap((notificationData) => {
+          if (notificationData) {
+            const profile = this.profileSubject.value;
+            this.profileSubject.next({
+              ...profile,
+              notifications: { ...profile.notifications, ...notificationData },
+            });
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo actualizar las notificaciones.'))
+      );
   }
 
-  updateWatchingNow(data: Partial<WatchingNow>): void {
-    const profile = this.profileSubject.value;
-    this.profileSubject.next({
-      ...profile,
-      watchingNow: { ...profile.watchingNow, ...(data || {}) },
-    });
+  updateWatchingNow(data: Partial<WatchingNow>): Observable<WatchingNow | null> {
+    if (!this.safeGetToken()) return of(null);
 
-    if (data.title) {
-      this.pushActivity({
-        id: this.generateId(),
-        type: 'status',
-        title: 'Nuevo estado',
-        description: `Ahora viendo: ${data.title}`,
-        createdAt: 'Hace un momento',
-        badge: data.visibility === 'private' ? 'Privado' : 'Compartido',
-      });
+    const url = `${this.baseUrl}/user/status`;
+    return this.http
+      .post<ApiResponse<{ watchingNow: WatchingNow }>>(url, data, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => resp?.data?.watchingNow || null),
+        tap((watchingNow) => {
+          if (watchingNow) {
+            const profile = this.profileSubject.value;
+            this.profileSubject.next({ ...profile, watchingNow: { ...profile.watchingNow, ...watchingNow } });
+            this.fetchActivities('all').subscribe();
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo actualizar el estado.'))
+      );
+  }
+
+  fetchLists(): Observable<UserList[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/user/lists`;
+    return this.http
+      .get<ApiResponse<{ lists: UserList[] }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.lists || []),
+        map((lists) => lists.map((list) => this.mapList(list))),
+        tap((lists) => {
+          this.listsSubject.next(lists);
+          const defaultList = lists.find((list) => list.isDefault);
+          this.defaultListId = defaultList?.id || null;
+        }),
+        catchError(this.handleError([], 'No se pudieron cargar las listas.'))
+      );
+  }
+
+  fetchListItems(listId: string): Observable<UserListItem[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/user/lists/${listId}/items`;
+    return this.http
+      .get<ApiResponse<{ items: UserListItem[] }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.items || []),
+        map((items) => items.map((item) => this.mapListItem(item))),
+        tap((items) => {
+          if (this.defaultListId && listId === this.defaultListId) {
+            this.watchlistSubject.next(items);
+          }
+        }),
+        catchError(this.handleError([], 'No se pudieron cargar los items.'))
+      );
+  }
+
+  fetchWatchlist(): Observable<UserListItem[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    return this.ensureDefaultListId().pipe(
+      switchMap((listId) => {
+        if (!listId) return of([]);
+        return this.fetchListItems(listId);
+      }),
+      catchError(this.handleError([], 'No se pudo cargar la watchlist.'))
+    );
+  }
+
+  createList(data: { title: string; description: string; visibility: 'public' | 'friends' | 'private' }): Observable<UserList | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/user/lists`;
+    return this.http
+      .post<ApiResponse<{ list: UserList }>>(url, data, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.list || null),
+        map((list) => (list ? this.mapList(list) : null)),
+        tap((list) => {
+          if (!list) return;
+          const lists = [list, ...this.listsSubject.value.filter((entry) => entry.id !== list.id)];
+          this.listsSubject.next(lists);
+          this.bumpStats({ listsCreated: this.profileSubject.value.stats.listsCreated + 1 });
+          this.fetchActivities('all').subscribe();
+          this.fetchProfile().subscribe();
+        }),
+        catchError(this.handleError(null, 'No se pudo crear la lista.'))
+      );
+  }
+
+  addListItem(
+    listId: string,
+    item: {
+      title: string;
+      type: 'movie' | 'series' | 'program';
+      state: 'pending' | 'watching' | 'finished';
+      contentId?: string;
     }
+  ): Observable<UserListItem | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/user/lists/${listId}/items`;
+    return this.http
+      .post<ApiResponse<{ list: UserList; item: UserListItem }>>(url, item, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data || null),
+        tap((data) => {
+          if (!data) return;
+          const itemData = this.mapListItem(data.item);
+          if (data.list) {
+            this.upsertList(this.mapList(data.list));
+          } else {
+            this.updateListCount(listId, 1);
+          }
+          if (this.defaultListId && listId === this.defaultListId) {
+            this.watchlistSubject.next([itemData, ...this.watchlistSubject.value.filter((entry) => entry.id !== itemData.id)]);
+          }
+          this.fetchProfile().subscribe();
+        }),
+        map((data) => (data?.item ? this.mapListItem(data.item) : null)),
+        catchError(this.handleError(null, 'No se pudo agregar el item.'))
+      );
   }
 
-  addRecommendation(payload: Partial<UserRecommendation>): void {
-    const newRecommendation: UserRecommendation = {
-      id: this.generateId(),
-      title: payload.title || 'Sin título',
-      type: payload.type || 'movie',
-      note: payload.note || '',
-      tags: payload.tags || [],
-      visibility: payload.visibility || 'friends',
-      status: payload.status || 'finished',
-      rating: payload.rating,
-      createdAt: 'Hace un momento',
-      mood: payload.mood || 'Entusiasmado',
-      platform: payload.platform || 'Streaming',
-      likes: 0,
-      comments: 0
-    };
+  removeListItem(listId: string, itemId: string): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
 
-    this.recommendationsSubject.next([
-      newRecommendation,
-      ...this.recommendationsSubject.value,
-    ]);
-
-    this.updateStats({
-      recommendations: this.profileSubject.value.stats.recommendations + 1,
-    });
-
-    this.pushActivity({
-      id: this.generateId(),
-      type: 'recommendation',
-      title: 'Nueva recomendación',
-      description: `${newRecommendation.title} (${newRecommendation.type})`,
-      createdAt: 'Ahora',
-      badge: newRecommendation.visibility === 'public' ? 'Pública' : 'Amigos',
-    });
+    const url = `${this.baseUrl}/user/lists/${listId}/items/${itemId}`;
+    return this.http
+      .delete<ApiResponse<{ deleted: boolean; list?: UserList }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => ({
+          deleted: Boolean(resp?.data?.deleted),
+          list: resp?.data?.list,
+        })),
+        tap((result) => {
+          if (!result.deleted) return;
+          if (this.defaultListId && listId === this.defaultListId) {
+            this.watchlistSubject.next(this.watchlistSubject.value.filter((item) => item.id !== itemId));
+          }
+          if (result.list) {
+            this.upsertList(this.mapList(result.list));
+          } else {
+            this.updateListCount(listId, -1);
+          }
+          this.fetchProfile().subscribe();
+        }),
+        map((result) => result.deleted),
+        catchError(this.handleError(false, 'No se pudo eliminar el item.'))
+      );
   }
 
-  toggleFollow(friendId: string): void {
-    const friends = this.friendsSubject.value.map((friend) =>
-      friend.id === friendId
-        ? { ...friend, following: !friend.following }
-        : friend
+  toggleWatchlistItem(payload: { contentId: string; title: string; type: 'movie' | 'series' | 'program' }): Observable<boolean | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    return this.ensureDefaultListId().pipe(
+      switchMap((listId) => {
+        if (!listId) return of(null);
+        const existing = this.watchlistSubject.value.find((item) => item.contentId === payload.contentId);
+        if (existing) {
+          return this.removeListItem(listId, existing.id).pipe(map((deleted) => (deleted ? false : null)));
+        }
+        return this.addListItem(listId, {
+          title: payload.title,
+          type: payload.type,
+          state: 'pending',
+          contentId: payload.contentId,
+        }).pipe(map((created) => (created ? true : null)));
+      }),
+      catchError(this.handleError(null, 'No se pudo actualizar la lista.'))
     );
-    this.friendsSubject.next(friends);
-
-    const delta = friends.find((f) => f.id === friendId)?.following ? 1 : -1;
-    this.updateStats({
-      following: Math.max(
-        0,
-        this.profileSubject.value.stats.following + delta
-      ),
-    });
   }
 
-  updateListItemState(id: string, state: UserListItem['state']): void {
-    const list = this.watchlistSubject.value.map((item) =>
-      item.id === id ? { ...item, state } : item
+  fetchFavorites(): Observable<UserFavorite[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/user/favorites`;
+    return this.http
+      .get<ApiResponse<{ favorites: UserFavorite[] }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.favorites || []),
+        tap((favorites) => this.favoritesSubject.next(favorites)),
+        catchError(this.handleError([], 'No se pudieron cargar los favoritos.'))
+      );
+  }
+
+  addFavorite(payload: Partial<UserFavorite>): Observable<UserFavorite | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/user/favorites`;
+    return this.http
+      .post<ApiResponse<{ favorite: UserFavorite }>>(url, payload, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.favorite || null),
+        tap((favorite) => {
+          if (favorite) {
+            this.favoritesSubject.next([favorite, ...this.favoritesSubject.value]);
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo agregar a favoritos.'))
+      );
+  }
+
+  removeFavorite(id: string): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
+
+    const url = `${this.baseUrl}/user/favorites/${id}`;
+    return this.http
+      .delete<ApiResponse<{ deleted: boolean }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => Boolean(resp?.data?.deleted)),
+        tap((deleted) => {
+          if (deleted) {
+            this.favoritesSubject.next(this.favoritesSubject.value.filter((fav) => fav.id !== id));
+          }
+        }),
+        catchError(this.handleError(false, 'No se pudo eliminar el favorito.'))
+      );
+  }
+
+  fetchActivities(scope: 'me' | 'friends' | 'all' = 'all'): Observable<UserActivity[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/social/activities?scope=${scope}`;
+    return this.http
+      .get<ApiResponse<{ activities: UserActivity[] }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.activities || []),
+        map((activities) => activities.map((activity) => this.mapActivity(activity))),
+        tap((activities) => this.activitiesSubject.next(activities)),
+        catchError(this.handleError([], 'No se pudo cargar la actividad.'))
+      );
+  }
+
+  fetchFriends(): Observable<UserFriend[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/social/friends`;
+    return this.http
+      .get<ApiResponse<{ friends: UserFriend[] }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.friends || []),
+        tap((friends) => this.friendsSubject.next(friends)),
+        catchError(this.handleError([], 'No se pudo cargar la red social.'))
+      );
+  }
+
+  toggleFollow(userId: string): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
+
+    const url = `${this.baseUrl}/social/follow/${userId}`;
+    return this.http
+      .post<ApiResponse<{ following: boolean; stats?: { followers: number; following: number } }>>(
+        url,
+        { action: 'toggle' },
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => resp?.data || { following: false }),
+        tap((data) => {
+          const following = Boolean(data.following);
+          const friends = this.friendsSubject.value.map((friend) =>
+            friend.id === userId ? { ...friend, following } : friend
+          );
+          this.friendsSubject.next(friends);
+          if (data.stats) {
+            this.bumpStats({ followers: data.stats.followers, following: data.stats.following });
+          }
+          this.fetchActivities('all').subscribe();
+          this.fetchProfile().subscribe();
+        }),
+        map((data) => Boolean(data.following)),
+        catchError(this.handleError(false, 'No se pudo actualizar el seguimiento.'))
+      );
+  }
+
+  addRecommendation(payload: Partial<UserRecommendation>): Observable<UserRecommendation | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/social/recommendations`;
+    return this.http
+      .post<ApiResponse<{ recommendation: UserRecommendation }>>(url, payload, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => resp?.data?.recommendation || null),
+        map((recommendation) => (recommendation ? this.mapRecommendation(recommendation) : null)),
+        tap((recommendation) => {
+          if (recommendation) {
+            this.recommendationsSubject.next([recommendation, ...this.recommendationsSubject.value]);
+            this.fetchActivities('all').subscribe();
+            this.fetchProfile().subscribe();
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo enviar la recomendacion.'))
+      );
+  }
+
+  fetchRecommendations(scope: 'me' | 'friends' | 'all' = 'friends'): Observable<UserRecommendation[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/social/recommendations?scope=${scope}`;
+    return this.http
+      .get<ApiResponse<{ recommendations: UserRecommendation[] }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.recommendations || []),
+        map((recs) => recs.map((rec) => this.mapRecommendation(rec))),
+        tap((recs) => this.recommendationsSubject.next(recs)),
+        catchError(this.handleError([], 'No se pudieron cargar las recomendaciones.'))
+      );
+  }
+
+  private mapList(list: UserList): UserList {
+    return {
+      ...list,
+      createdAt: this.formatDate(list.createdAt),
+      updatedAt: this.formatDate(list.updatedAt),
+    };
+  }
+
+  private mapListItem(item: UserListItem): UserListItem {
+    return {
+      ...item,
+      addedAt: item.addedAt ? this.formatDate(item.addedAt) : item.addedAt,
+      progress: Number(item.progress || 0),
+    };
+  }
+
+  private mapActivity(activity: UserActivity): UserActivity {
+    return {
+      ...activity,
+      description: activity.description || '',
+      createdAt: this.formatRelativeTime(activity.createdAt),
+    };
+  }
+
+  private mapRecommendation(recommendation: UserRecommendation): UserRecommendation {
+    return {
+      ...recommendation,
+      createdAt: this.formatRelativeTime(recommendation.createdAt),
+      note: recommendation.note || '',
+      tags: recommendation.tags || [],
+      likes: recommendation.likes || 0,
+      comments: recommendation.comments || 0,
+    };
+  }
+
+  private mergeProfile(profile: UserProfile): UserProfile {
+    const current = this.profileSubject.value;
+    return {
+      ...current,
+      ...profile,
+      privacy: { ...current.privacy, ...(profile.privacy || {}) },
+      notifications: { ...current.notifications, ...(profile.notifications || {}) },
+      watchingNow: { ...current.watchingNow, ...(profile.watchingNow || {}) },
+      favoriteGenres: profile.favoriteGenres || current.favoriteGenres,
+      stats: { ...current.stats, ...(profile.stats || {}) },
+      avatar: profile.avatar || current.avatar,
+    };
+  }
+
+  private ensureDefaultListId(): Observable<string | null> {
+    if (this.defaultListId) return of(this.defaultListId);
+    return this.fetchLists().pipe(map(() => this.defaultListId));
+  }
+
+  private upsertList(list: UserList): void {
+    const existing = this.listsSubject.value;
+    const hasMatch = existing.some((entry) => entry.id === list.id);
+    const updated = hasMatch
+      ? existing.map((entry) => (entry.id === list.id ? list : entry))
+      : [list, ...existing];
+    this.listsSubject.next(updated);
+  }
+
+  private updateListCount(listId: string, delta: number): void {
+    const lists = this.listsSubject.value.map((list) =>
+      list.id === listId ? { ...list, itemsCount: Math.max(0, list.itemsCount + delta) } : list
     );
-    this.watchlistSubject.next(list);
-
-    this.pushActivity({
-      id: this.generateId(),
-      type: 'list',
-      title: 'Lista actualizada',
-      description: `Has marcado "${list.find((i) => i.id === id)?.title || ''}" como ${state}.`,
-      createdAt: 'Ahora',
-    });
+    this.listsSubject.next(lists);
   }
 
-  addListItem(listId: string, item: { title: string; type: 'movie' | 'series'; state: 'pending' | 'watching' | 'finished' }): void {
-    const newItem: UserListItem = {
-      id: this.generateId(),
-      title: item.title,
-      type: item.type,
-      state: item.state,
-      progress: 0,
-      visibility: 'public',
-      poster: '/assets/default-poster.jpg' // Mock poster
-    };
-
-    // In a real app, we would add to the specific list
-    const currentList = this.watchlistSubject.value;
-    this.watchlistSubject.next([newItem, ...currentList]);
-
-    this.pushActivity({
-      id: this.generateId(),
-      type: 'list',
-      title: 'Elemento añadido',
-      description: `Has añadido "${item.title}" a tu lista`,
-      createdAt: 'Ahora',
-    });
-  }
-
-  removeListItem(listId: string, itemId: string): void {
-    // In a real app, this would make an API call
-    // For now, we'll just update the local state if it's the watchlist
-    // or we would need to manage items per list in a more complex mock
-    
-    // Assuming we are removing from the main watchlist for now as that's what getWatchlist returns
-    const currentList = this.watchlistSubject.value;
-    const updatedList = currentList.filter(item => item.id !== itemId);
-    this.watchlistSubject.next(updatedList);
-
-    this.pushActivity({
-      id: this.generateId(),
-      type: 'list',
-      title: 'Elemento eliminado',
-      description: 'Has eliminado un elemento de tu lista',
-      createdAt: 'Ahora',
-    });
-  }
-
-  createList(data: { title: string; description: string; visibility: 'public' | 'friends' | 'private' }): void {
-    const newList: UserList = {
-      id: this.generateId(),
-      title: data.title,
-      description: data.description,
-      itemsCount: 0,
-      visibility: data.visibility,
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0],
-    };
-
-    this.listsSubject.next([newList, ...this.listsSubject.value]);
-
-    this.pushActivity({
-      id: this.generateId(),
-      type: 'list',
-      title: 'Nueva lista creada',
-      description: `Has creado la lista "${data.title}"`,
-      createdAt: 'Ahora',
-    });
-  }
-
-
-  private updateStats(stats: Partial<UserProfile['stats']>): void {
+  private bumpStats(stats: Partial<UserProfile['stats']>): void {
     const profile = this.profileSubject.value;
     this.profileSubject.next({
       ...profile,
@@ -337,12 +674,31 @@ export class UserService {
     });
   }
 
-  private pushActivity(activity: UserActivity): void {
-    this.activitiesSubject.next([activity, ...this.activitiesSubject.value]);
+  private formatDate(value: string | Date | undefined): string {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
   }
 
-  private generateId(): string {
-    return `user-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  private formatRelativeTime(value: string | Date | undefined): string {
+    if (!value) return '-';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '-';
+
+    const diffMs = Date.now() - date.getTime();
+    const minutes = Math.floor(diffMs / 60000);
+    if (minutes < 1) return 'Ahora';
+    if (minutes < 60) return `Hace ${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `Hace ${hours} h`;
+    const days = Math.floor(hours / 24);
+    return `Hace ${days} d`;
+  }
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.safeGetToken();
+    return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }
 
   private safeGetToken(): string | null {
@@ -353,315 +709,15 @@ export class UserService {
       return null;
     }
   }
-}
 
-function tapIfProfile(fn: (profile: Partial<UserProfile>) => void) {
-  return (source: Observable<any>) =>
-    new Observable<any>((subscriber) => {
-      return source.subscribe({
-        next: (resp) => {
-          try {
-            const profile = resp?.data || resp;
-            if (profile) fn(profile);
-            subscriber.next(resp);
-          } catch (e) {
-            subscriber.error(e);
-          }
-        },
-        error: (err) => subscriber.error(err),
-        complete: () => subscriber.complete(),
-      });
-    });
-}
-
-const INITIAL_PROFILE: UserProfile = {
-  id: 'user-01',
-  name: 'Marina González',
-  username: 'marina.gtv',
-  email: 'marina@guiatv.app',
-  avatar: '/assets/gpt-avatar.png',
-  bio: 'Amante del cine y las series. Comparto lo que veo para que no te pierdas nada.',
-  location: 'Madrid, España',
-  favoriteGenres: ['Sci-Fi', 'Drama', 'Thriller', 'Comedia'],
-  watchingNow: {
-    title: 'The Bear - Temporada 3',
-    mood: 'Enganchada',
-    visibility: 'friends',
-  },
-  privacy: {
-    profilePublic: true,
-    shareActivity: true,
-    shareWatchlist: true,
-    showOnline: true,
-    allowMessages: 'all',
-    publicLists: true
-  },
-  notifications: {
-    recommendations: true,
-    followers: true,
-    weeklySummary: false,
-    chatMessages: true,
-    groupActivity: true
-  },
-  stats: {
-    followers: 48,
-    following: 32,
-    recommendations: 14,
-    watchlist: 18,
-    listsCreated: 5,
-    ratings: 23
-  },
-};
-
-const INITIAL_RECOMMENDATIONS: UserRecommendation[] = [
-  {
-    id: 'rec-01',
-    title: 'Dune: Parte Dos',
-    type: 'movie',
-    note: 'Visualmente brutal, merece la pena en pantalla grande.',
-    tags: ['Ciencia ficción', 'Épica'],
-    visibility: 'public',
-    status: 'finished',
-    rating: 9.5,
-    createdAt: 'Hace 1 día',
-    mood: 'Entusiasmada',
-    platform: 'Cine / HBO Max',
-    likes: 12,
-    comments: 3
-  },
-  {
-    id: 'rec-02',
-    title: 'Severance',
-    type: 'series',
-    note: 'Mind-blowing. Si te gusta Black Mirror, ve directo.',
-    tags: ['Thriller', 'Sci-Fi'],
-    visibility: 'friends',
-    status: 'watching',
-    rating: 9.2,
-    createdAt: 'Hace 3 días',
-    mood: 'Intrigada',
-    platform: 'Apple TV+',
-    likes: 8,
-    comments: 1
-  },
-  {
-    id: 'rec-03',
-    title: 'The Bear',
-    type: 'series',
-    note: 'Personajes increíbles y ritmo perfecto para maratón.',
-    tags: ['Drama', 'Cocina'],
-    visibility: 'friends',
-    status: 'watching',
-    rating: 8.9,
-    createdAt: 'Hace 5 días',
-    mood: 'Intensa',
-    platform: 'Disney+',
-    likes: 24,
-    comments: 5
-  },
-];
-
-const INITIAL_ACTIVITIES: UserActivity[] = [
-  {
-    id: 'act-01',
-    type: 'status',
-    title: 'Ahora viendo',
-    description: 'Ha empezado "The Bear - T3" y va por el episodio 2.',
-    createdAt: 'Hace 15 min',
-    badge: 'En vivo',
-    category: 'series',
-  },
-  {
-    id: 'act-02',
-    type: 'recommendation',
-    title: 'Nueva reseña',
-    description: 'Recomendó "Dune: Parte Dos" con 9.5/10.',
-    createdAt: 'Hace 1 hora',
-    badge: 'Cine',
-    category: 'peliculas',
-  },
-  {
-    id: 'act-03',
-    type: 'follow',
-    title: 'Sigue a @seriefilo',
-    description: 'Ahora sigues a Laura y recibirás sus listas.',
-    createdAt: 'Hace 3 horas',
-    badge: 'Comunidad',
-    category: 'social',
-  },
-];
-
-const INITIAL_FRIENDS: UserFriend[] = [
-  {
-    id: 'friend-01',
-    name: 'Carlos Méndez',
-    username: 'carlos.m',
-    avatar: '/assets/gpt-avatar.png',
-    isOnline: true,
-    lastActivity: 'Viendo "Silo"',
-    favoriteGenres: ['Sci-Fi', 'Acción'],
-    following: true,
-  },
-  {
-    id: 'friend-02',
-    name: 'Laura Serrano',
-    username: 'seriefilo',
-    avatar: '/assets/gpt-avatar.png',
-    isOnline: false,
-    lastActivity: 'Terminó "The Morning Show"',
-    favoriteGenres: ['Drama', 'Documental'],
-    following: false,
-  },
-  {
-    id: 'friend-03',
-    name: 'Andrés Blanco',
-    username: 'andresb',
-    avatar: '/assets/gpt-avatar.png',
-    isOnline: true,
-    lastActivity: 'Comentó "Dune"',
-    favoriteGenres: ['Sci-Fi', 'Fantasia'],
-    following: true,
-  },
-];
-
-const INITIAL_WATCHLIST: UserListItem[] = [
-  {
-    id: 'list-01',
-    title: 'The Bear - Temporada 3',
-    type: 'series',
-    state: 'watching',
-    progress: 45,
-    mood: 'Intensa',
-    visibility: 'friends',
-  },
-  {
-    id: 'list-02',
-    title: 'Dune: Parte Dos',
-    type: 'movie',
-    state: 'finished',
-    progress: 100,
-    mood: 'Épica',
-    visibility: 'public',
-  },
-  {
-    id: 'list-03',
-    title: 'Arcane - Temporada 2',
-    type: 'series',
-    state: 'pending',
-    progress: 0,
-    visibility: 'friends',
-  },
-  {
-    id: 'list-04',
-    title: 'The Creator',
-    type: 'movie',
-    state: 'pending',
-    progress: 0,
-    visibility: 'private',
-  },
-];
-
-const INITIAL_LISTS: UserList[] = [
-  {
-    id: 'pending-list',
-    title: 'Pendientes de ver',
-    description: 'Mi lista por defecto para guardar lo que quiero ver.',
-    itemsCount: 2,
-    visibility: 'private',
-    createdAt: '2024-01-01',
-    updatedAt: '2024-03-15',
-    cover: '/assets/covers/pending.jpg',
-    isDefault: true
-  },
-  {
-    id: 'l-01',
-    title: 'Favoritas de Sci-Fi',
-    description: 'Mis películas favoritas del género.',
-    itemsCount: 12,
-    visibility: 'public',
-    createdAt: '2024-01-15',
-    updatedAt: '2024-03-10',
-    cover: '/assets/covers/scifi.jpg'
-  },
-  {
-    id: 'l-02',
-    title: 'Maratón de fin de semana',
-    description: 'Para ver con amigos.',
-    itemsCount: 5,
-    visibility: 'friends',
-    createdAt: '2024-03-01',
-    updatedAt: '2024-03-01',
-  }
-];
-
-const INITIAL_TOP10_CATEGORIES: Top10Category[] = [
-  {
-    id: 'top-movies',
-    title: 'Top Películas',
-    items: [
-      {
-        id: 't-01',
-        title: 'Dune: Parte Dos',
-        image: '/assets/posters/dune2.jpg',
-        rank: 1,
-        change: 'same',
-        type: 'movie',
-        rating: 9.5
-      },
-      {
-        id: 't-04',
-        title: 'Oppenheimer',
-        image: '/assets/posters/oppenheimer.jpg',
-        rank: 2,
-        change: 'down',
-        type: 'movie',
-        rating: 9.4
+  private handleError<T>(fallback: T, message: string) {
+    return (error: any): Observable<T> => {
+      if (error?.status === 401) {
+        this.logout();
       }
-    ]
-  },
-  {
-    id: 'top-series',
-    title: 'Top Series',
-    items: [
-      {
-        id: 't-02',
-        title: 'Shogun',
-        image: '/assets/posters/shogun.jpg',
-        rank: 1,
-        change: 'up',
-        type: 'series',
-        rating: 9.3
-      },
-      {
-        id: 't-03',
-        title: 'The Bear',
-        image: '/assets/posters/bear.jpg',
-        rank: 2,
-        change: 'down',
-        type: 'series',
-        rating: 9.0
-      }
-    ]
+      this.errorSubject.next(message);
+      this.loadingSubject.next(false);
+      return of(fallback);
+    };
   }
-];
-
-const INITIAL_NEWS: NewsItem[] = [
-  {
-    id: 'n-01',
-    title: 'Estreno de "House of the Dragon" T2',
-    summary: 'Todo lo que necesitas saber antes del estreno.',
-    image: '/assets/news/hotd.jpg',
-    date: 'Hace 2 horas',
-    read: false,
-    category: 'Estrenos'
-  },
-  {
-    id: 'n-02',
-    title: 'Nuevas funciones en la app',
-    summary: 'Ahora puedes crear listas colaborativas con amigos.',
-    image: '/assets/news/update.jpg',
-    date: 'Hace 1 día',
-    read: true,
-    category: 'App'
-  }
-];
+}

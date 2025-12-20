@@ -373,6 +373,9 @@ export class Container {
     const { BlogController } = await import('../presentation/controllers/BlogController');
     const { AnalyticsController } = await import('../presentation/controllers/AnalyticsController');
     const { AdminUsersController } = await import('../presentation/controllers/AdminUsersController');
+    const { UserController } = await import('../presentation/controllers/UserController');
+    const { SocialController } = await import('../presentation/controllers/SocialController');
+    const { ChatController } = await import('../presentation/controllers/ChatController');
 
     const channelController = new ChannelController(getAllChannels, getChannelById);
     this.dependencies.set('channelController', channelController);
@@ -429,6 +432,15 @@ export class Container {
 
     const adminUsersController = new AdminUsersController();
     this.dependencies.set('adminUsersController', adminUsersController);
+
+    const userController = new UserController();
+    this.dependencies.set('userController', userController);
+
+    const socialController = new SocialController();
+    this.dependencies.set('socialController', socialController);
+
+    const chatController = new ChatController();
+    this.dependencies.set('chatController', chatController);
 
     logger.info('Controllers registered');
   }

@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-interaction-buttons',
@@ -131,7 +132,7 @@ import { UserService } from '../../services/user.service';
     }
   `]
 })
-export class InteractionButtonsComponent {
+export class InteractionButtonsComponent implements OnInit, OnDestroy {
   @Input() itemId: string = '';
   @Input() title: string = '';
   @Input() type: 'movie' | 'series' | 'program' = 'program';
@@ -139,25 +140,50 @@ export class InteractionButtonsComponent {
 
   public isInWatchlist = false;
   public showModal = false;
+  private sub = new Subscription();
 
   constructor(private userService: UserService) {}
 
+  ngOnInit() {
+    this.sub.add(
+      this.userService.getWatchlist().subscribe((items) => {
+        if (!this.itemId) return;
+        this.isInWatchlist = items.some((item) => item.contentId === this.itemId);
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.sub.unsubscribe();
+  }
+
   toggleWatchlist() {
-    this.isInWatchlist = !this.isInWatchlist;
-    if (this.isInWatchlist) {
-      this.userService.updateListItemState(this.itemId || 'temp-id', 'pending');
-    }
+    if (!this.title) return;
+    const payload = {
+      contentId: this.itemId || '',
+      title: this.title,
+      type: this.type,
+    };
+    this.userService.toggleWatchlistItem(payload).subscribe((inWatchlist) => {
+      if (inWatchlist !== null) {
+        this.isInWatchlist = inWatchlist;
+      }
+    });
   }
 
   submitRecommendation(note: string) {
-    this.userService.addRecommendation({
-      title: this.title,
-      type: this.type === 'program' ? 'movie' : this.type,
-      visibility: 'friends',
-      note: note
-    });
-    this.showModal = false;
-    // Optional: Show success toast
+    this.userService
+      .addRecommendation({
+        title: this.title,
+        type: this.type,
+        visibility: 'friends',
+        note: note,
+      })
+      .subscribe({
+        next: () => {
+          this.showModal = false;
+        },
+      });
   }
 
   rate() {

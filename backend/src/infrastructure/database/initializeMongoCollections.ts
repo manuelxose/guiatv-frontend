@@ -6,6 +6,14 @@ import { UserModel } from './models/User.model';
 import { AnalyticsSessionModel } from './models/AnalyticsSession.model';
 import { AnalyticsEventModel } from './models/AnalyticsEvent.model';
 import { BlogPostModel } from './models/BlogPost.model';
+import { UserProfileModel } from './models/UserProfile.model';
+import { UserListModel } from './models/UserList.model';
+import { UserListItemModel } from './models/UserListItem.model';
+import { UserFavoriteModel } from './models/UserFavorite.model';
+import { UserActivityModel } from './models/UserActivity.model';
+import { UserFollowModel } from './models/UserFollow.model';
+import { ChatConversationModel } from './models/ChatConversation.model';
+import { ChatMessageModel } from './models/ChatMessage.model';
 
 /**
  * Ensure required Mongo collections exist and indexes are in place.
@@ -19,6 +27,14 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     { name: 'programs', model: ProgramModel },
     { name: 'schedules', model: ScheduleModel },
     { name: 'users', model: UserModel },
+    { name: 'user_profiles', model: UserProfileModel },
+    { name: 'user_lists', model: UserListModel },
+    { name: 'user_list_items', model: UserListItemModel },
+    { name: 'user_favorites', model: UserFavoriteModel },
+    { name: 'user_activities', model: UserActivityModel },
+    { name: 'user_follows', model: UserFollowModel },
+    { name: 'chat_conversations', model: ChatConversationModel },
+    { name: 'chat_messages', model: ChatMessageModel },
     { name: 'analytics_sessions', model: AnalyticsSessionModel },
     { name: 'analytics_events', model: AnalyticsEventModel },
     { name: 'blog_posts', model: BlogPostModel },

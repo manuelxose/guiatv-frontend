@@ -172,6 +172,7 @@ import { UserNotifications, UserPrivacy, UserProfile } from '../../../../interfa
           <div class="pt-6 border-t border-slate-800/80 flex flex-wrap justify-end gap-3">
             <button
               type="button"
+              (click)="onReset()"
               class="min-h-[44px] px-6 py-2.5 rounded-xl border border-slate-700 text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             >
               Cancelar
@@ -189,6 +190,7 @@ import { UserNotifications, UserPrivacy, UserProfile } from '../../../../interfa
       <div class="text-center">
         <button
           type="button"
+          (click)="onLogout()"
           class="min-h-[44px] px-6 py-2.5 rounded-xl border border-slate-800 text-slate-400 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         >
           Cerrar sesion
@@ -204,6 +206,7 @@ export class UserSettingsComponent {
   @Input() notifications!: UserNotifications;
   @Output() saveSettings = new EventEmitter<{ privacy: UserPrivacy; notifications: UserNotifications }>();
   @Output() editProfile = new EventEmitter<void>();
+  @Output() logout = new EventEmitter<void>();
 
   settingsForm = this.fb.group({
     profilePublic: [true],
@@ -220,21 +223,15 @@ export class UserSettingsComponent {
   constructor(private fb: FormBuilder) {}
 
   ngOnChanges() {
-    if (this.privacy && this.notifications) {
-      this.settingsForm.patchValue({
-        profilePublic: this.privacy.profilePublic,
-        shareActivity: this.privacy.shareActivity,
-        shareWatchlist: this.privacy.shareWatchlist,
-        showOnline: this.privacy.showOnline,
-        recommendations: this.notifications.recommendations,
-        followers: this.notifications.followers,
-        weeklySummary: this.notifications.weeklySummary,
-      });
-    }
+    this.resetForm();
   }
 
   onEditProfile() {
     this.editProfile.emit();
+  }
+
+  onLogout() {
+    this.logout.emit();
   }
 
   onSubmit() {
@@ -256,6 +253,24 @@ export class UserSettingsComponent {
           chatMessages: true,
           groupActivity: true,
         },
+      });
+    }
+  }
+
+  onReset() {
+    this.resetForm();
+  }
+
+  private resetForm() {
+    if (this.privacy && this.notifications) {
+      this.settingsForm.patchValue({
+        profilePublic: this.privacy.profilePublic,
+        shareActivity: this.privacy.shareActivity,
+        shareWatchlist: this.privacy.shareWatchlist,
+        showOnline: this.privacy.showOnline,
+        recommendations: this.notifications.recommendations,
+        followers: this.notifications.followers,
+        weeklySummary: this.notifications.weeklySummary,
       });
     }
   }
