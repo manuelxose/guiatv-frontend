@@ -1,4 +1,5 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, Inject, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { interval, Subscription } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -21,7 +22,7 @@ interface AnalyticsEventPayload {
 
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService implements OnDestroy {
-  private readonly isBrowser = typeof window !== 'undefined';
+  private readonly isBrowser: boolean;
   private readonly baseUrl = environment.API_BASE_URL;
   private readonly anonStorageKey = 'gtv_anon_id';
   private readonly heartbeatMs = 15000;
@@ -42,8 +43,11 @@ export class AnalyticsService implements OnDestroy {
 
   constructor(
     private http: HttpClient,
-    private deviceDetector: DeviceDetectorService
-  ) {}
+    private deviceDetector: DeviceDetectorService,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   init(): void {
     if (!this.isBrowser || this.initialized) return;

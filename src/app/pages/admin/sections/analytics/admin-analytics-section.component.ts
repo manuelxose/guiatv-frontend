@@ -1,11 +1,13 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   EventEmitter,
+  Inject,
   Input,
   OnDestroy,
   OnInit,
   Output,
+  PLATFORM_ID,
 } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import {
@@ -53,10 +55,17 @@ export class AdminAnalyticsSectionComponent implements OnInit, OnDestroy {
   ];
 
   private subs = new Subscription();
+  private readonly isBrowser: boolean;
 
-  constructor(private analyticsService: AdminAnalyticsService) {}
+  constructor(
+    private analyticsService: AdminAnalyticsService,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadAnalytics();
 
     this.subs.add(interval(10000).subscribe(() => this.loadLive()));

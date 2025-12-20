@@ -1,6 +1,15 @@
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
 
+const ANALYTICS_TTL_DAYS = Number.parseInt(
+  process.env.ANALYTICS_TTL_DAYS || '14',
+  10
+);
+const ANALYTICS_TTL_SECONDS =
+  Number.isFinite(ANALYTICS_TTL_DAYS) && ANALYTICS_TTL_DAYS > 0
+    ? ANALYTICS_TTL_DAYS * 24 * 60 * 60
+    : null;
+
 export interface IAnalyticsEventDocument {
   eventId: string;
   sessionId: string;
@@ -69,7 +78,6 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEventDocument>(
     occurredAt: {
       type: Date,
       required: true,
-      index: true,
     },
     data: {
       type: Schema.Types.Mixed,
@@ -99,6 +107,12 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEventDocument>(
 
 AnalyticsEventSchema.index({ occurredAt: 1, type: 1 });
 AnalyticsEventSchema.index({ path: 1, occurredAt: 1 });
+if (ANALYTICS_TTL_SECONDS) {
+  AnalyticsEventSchema.index(
+    { occurredAt: 1 },
+    { expireAfterSeconds: ANALYTICS_TTL_SECONDS }
+  );
+}
 
 export const AnalyticsEventModel = mongoose.model<IAnalyticsEventDocument>(
   'AnalyticsEvent',
