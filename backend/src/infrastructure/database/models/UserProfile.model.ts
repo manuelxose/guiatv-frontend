@@ -92,7 +92,6 @@ const UserProfileSchema = new Schema<IUserProfileDocument>(
   }
 );
 
-UserProfileSchema.index({ userId: 1 });
 
 export const UserProfileModel = mongoose.model<IUserProfileDocument>(
   'UserProfile',
