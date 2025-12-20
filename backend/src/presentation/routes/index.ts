@@ -31,6 +31,13 @@ import { AnalyticsController } from '../controllers/AnalyticsController';
 import { createAnalyticsRoutes } from './analytics.routes';
 import { AdminUsersController } from '../controllers/AdminUsersController';
 import { createAdminUsersRoutes } from './admin-users.routes';
+import { UserController } from '../controllers/UserController';
+import { SocialController } from '../controllers/SocialController';
+import { ChatController } from '../controllers/ChatController';
+import { createUserRoutes } from './user.routes';
+import { createSocialRoutes } from './social.routes';
+import { createChatRoutes } from './chat.routes';
+import { AuthService } from '../../domain/services/AuthService';
 
 /**
  * Dependencies required by every route factory.
@@ -44,12 +51,16 @@ export interface RoutesDependencies {
   adminUsersController: AdminUsersController;
   ssrController: SSRController;
   authController: AuthController;
+  authService: AuthService;
   discoveryController: DiscoveryController;
   contentController: ContentController;
 
   tvController: TvController;
   blogController: BlogController;
   analyticsController: AnalyticsController;
+  userController: UserController;
+  socialController: SocialController;
+  chatController: ChatController;
 }
 
 /**
@@ -87,6 +98,9 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   );
   router.use('/content', createContentRoutes(dependencies.contentController));
   router.use('/tv', createTvRoutes(dependencies.tvController));
+  router.use('/user', createUserRoutes(dependencies.userController, dependencies.authService));
+  router.use('/social', createSocialRoutes(dependencies.socialController, dependencies.authService));
+  router.use('/chat', createChatRoutes(dependencies.chatController, dependencies.authService));
 
   router.use('/admin/users', createAdminUsersRoutes(dependencies.adminUsersController));
   router.use('/admin', createAdminRoutes(dependencies.adminController));

@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '../../../../services/chat.service';
+import { UserService } from '../../../../services/user.service';
 import { ChatConversation, ChatMessage } from '../../../../interfaces/user.interface';
 import { Subscription } from 'rxjs';
 
@@ -66,7 +67,7 @@ import { Subscription } from 'rxjs';
                   <span class="text-xs text-slate-500">{{ conv.lastMessage?.createdAt | date: 'shortTime' }}</span>
                 </div>
                 <p class="text-xs text-slate-400 truncate" [ngClass]="{ 'text-white': conv.unreadCount > 0 }">
-                  <span *ngIf="conv.lastMessage?.senderId === 'me'">Tu: </span>
+                  <span *ngIf="conv.lastMessage?.senderId === currentUserId">Tu: </span>
                   {{ conv.lastMessage?.type === 'text' ? conv.lastMessage?.text : 'Adjunto' }}
                 </p>
               </div>
@@ -118,12 +119,12 @@ import { Subscription } from 'rxjs';
           <div
             *ngFor="let msg of messages"
             class="flex"
-            [ngClass]="msg.senderId === 'me' ? 'justify-end' : 'justify-start'"
+            [ngClass]="msg.senderId === currentUserId ? 'justify-end' : 'justify-start'"
           >
             <div class="max-w-[70%] space-y-1">
               <div
                 class="p-3 rounded-2xl border"
-                [ngClass]="msg.senderId === 'me' ? 'bg-red-600 text-white border-red-500/40' : 'bg-slate-800 text-slate-100 border-slate-700'"
+                [ngClass]="msg.senderId === currentUserId ? 'bg-red-600 text-white border-red-500/40' : 'bg-slate-800 text-slate-100 border-slate-700'"
               >
                 <p *ngIf="msg.type === 'text'" class="text-sm leading-relaxed">{{ msg.text }}</p>
                 <div *ngIf="msg.type === 'recommendation' && msg.content" class="bg-black/20 rounded-xl p-3 mt-2">
@@ -142,9 +143,9 @@ import { Subscription } from 'rxjs';
                   </div>
                 </div>
               </div>
-              <div class="flex items-center gap-2 text-[10px] text-slate-500" [ngClass]="msg.senderId === 'me' ? 'justify-end' : 'justify-start'">
+              <div class="flex items-center gap-2 text-[10px] text-slate-500" [ngClass]="msg.senderId === currentUserId ? 'justify-end' : 'justify-start'">
                 <span>{{ msg.createdAt | date: 'shortTime' }}</span>
-                <span *ngIf="msg.senderId === 'me'">{{ msg.readBy.length > 0 ? 'Leido' : 'Enviado' }}</span>
+                <span *ngIf="msg.senderId === currentUserId">{{ msg.readBy.length > 0 ? 'Leido' : 'Enviado' }}</span>
               </div>
             </div>
           </div>
@@ -230,15 +231,22 @@ export class UserChatComponent implements OnInit, OnDestroy {
   selectedConversation: ChatConversation | null = null;
   messages: ChatMessage[] = [];
   newMessage: string = '';
+  currentUserId: string | null = null;
 
   private sub = new Subscription();
 
-  constructor(private chatService: ChatService) {}
+  constructor(private chatService: ChatService, private userService: UserService) {}
 
   ngOnInit() {
     this.sub.add(
       this.chatService.getConversations().subscribe((convs) => {
         this.conversations = convs;
+      })
+    );
+
+    this.sub.add(
+      this.userService.getProfile().subscribe((profile) => {
+        this.currentUserId = profile?.id || null;
       })
     );
   }
@@ -265,7 +273,7 @@ export class UserChatComponent implements OnInit, OnDestroy {
     const tempMsg: ChatMessage = {
       id: 'temp_' + Date.now(),
       conversationId: this.selectedConversation.id,
-      senderId: 'me',
+      senderId: this.currentUserId || 'me',
       text: text,
       type: 'text',
       createdAt: new Date().toISOString(),
@@ -273,6 +281,14 @@ export class UserChatComponent implements OnInit, OnDestroy {
     };
     this.messages.push(tempMsg);
 
-    this.chatService.sendMessage(this.selectedConversation.id, text).subscribe();
+    this.chatService.sendMessage(this.selectedConversation.id, text).subscribe((message) => {
+      if (!message) return;
+      const idx = this.messages.findIndex((msg) => msg.id === tempMsg.id);
+      if (idx >= 0) {
+        this.messages[idx] = message;
+      } else {
+        this.messages.push(message);
+      }
+    });
   }
 }

@@ -100,6 +100,7 @@ export interface UserFriend {
 
 export interface UserListItem {
   id: string;
+  contentId?: string;
   title: string;
   type: 'movie' | 'series' | 'program';
   state: 'pending' | 'watching' | 'finished';
@@ -126,6 +127,15 @@ export interface UserList {
   likes?: number;
   followers?: number;
   items?: UserListItem[]; // Optional for list preview
+}
+
+export interface UserFavorite {
+  id: string;
+  title: string;
+  image?: string;
+  subtitle?: string;
+  type: 'channel' | 'program' | 'list' | 'user';
+  createdAt?: string;
 }
 
 export interface Top10Category {

@@ -1,128 +1,143 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, BehaviorSubject } from 'rxjs';
-import { ChatConversation, ChatMessage, UserFriend } from '../interfaces/user.interface';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
+import { ChatConversation, ChatMessage } from '../interfaces/user.interface';
+import { environment } from '../../environments/environment';
+import { UserService } from './user.service';
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChatService {
+  private readonly isBrowser = typeof window !== 'undefined';
+  private readonly baseUrl = environment.API_BASE_URL;
   private conversationsSubject = new BehaviorSubject<ChatConversation[]>([]);
-  
-  constructor() {
-    this.loadMockConversations();
+  private currentUserId: string | null = null;
+
+  constructor(private http: HttpClient, private userService: UserService) {
+    this.userService.getProfile().subscribe((profile) => {
+      this.currentUserId = profile?.id || null;
+    });
+
+    this.userService.isAuthenticated$.subscribe((isAuthenticated) => {
+      if (isAuthenticated) {
+        this.refreshConversations().subscribe();
+      } else {
+        this.conversationsSubject.next([]);
+      }
+    });
   }
 
   getConversations(): Observable<ChatConversation[]> {
     return this.conversationsSubject.asObservable();
   }
 
+  refreshConversations(): Observable<ChatConversation[]> {
+    if (!this.safeGetToken()) {
+      return of([]);
+    }
+
+    const url = `${this.baseUrl}/chat/conversations`;
+    return this.http
+      .get<ApiResponse<{ conversations: ChatConversation[] }>>(url, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => resp?.data?.conversations || []),
+        map((conversations) => conversations.map((conv) => this.reorderParticipants(conv))),
+        tap((conversations) => this.conversationsSubject.next(conversations)),
+        catchError(() => of([]))
+      );
+  }
+
   getMessages(conversationId: string): Observable<ChatMessage[]> {
-    // Mock messages
-    return of([
-      {
-        id: '1',
-        conversationId,
-        senderId: 'friend1',
-        text: '¡Hola! ¿Has visto el último episodio?',
-        type: 'text',
-        createdAt: new Date(Date.now() - 3600000).toISOString(),
-        readBy: ['me']
-      },
-      {
-        id: '2',
-        conversationId,
-        senderId: 'me',
-        text: 'Sii, ¡estuvo increíble! El final me dejó en shock.',
-        type: 'text',
-        createdAt: new Date(Date.now() - 1800000).toISOString(),
-        readBy: ['friend1']
-      },
-      {
-        id: '3',
-        conversationId,
-        senderId: 'friend1',
-        type: 'recommendation',
-        content: {
-          id: 'rec1',
-          title: 'Inception',
-          image: 'https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg',
-          platform: 'Netflix',
-          type: 'movie'
-        },
-        createdAt: new Date(Date.now() - 900000).toISOString(),
-        readBy: ['me']
-      }
-    ]);
+    if (!this.safeGetToken()) {
+      return of([]);
+    }
+
+    const url = `${this.baseUrl}/chat/conversations/${conversationId}/messages`;
+    return this.http
+      .get<ApiResponse<{ messages: ChatMessage[] }>>(url, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => resp?.data?.messages || []),
+        catchError(() => of([]))
+      );
   }
 
-  sendMessage(conversationId: string, text: string, type: 'text' | 'image' | 'recommendation' | 'list' = 'text', content?: any): Observable<boolean> {
-    // Logic to add message to mock store would go here
-    console.log('Sending message:', { conversationId, text, type, content });
-    return of(true);
+  sendMessage(
+    conversationId: string,
+    text: string,
+    type: 'text' | 'image' | 'recommendation' | 'list' = 'text',
+    content?: any
+  ): Observable<ChatMessage | null> {
+    if (!this.safeGetToken()) {
+      return of(null);
+    }
+
+    const url = `${this.baseUrl}/chat/conversations/${conversationId}/messages`;
+    return this.http
+      .post<ApiResponse<{ message: ChatMessage }>>(
+        url,
+        { text, type, content },
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => resp?.data?.message || null),
+        tap(() => {
+          this.refreshConversations().subscribe();
+        }),
+        catchError(() => of(null))
+      );
   }
 
-  createConversation(friendId: string): Observable<string> {
-    // Logic to create or get existing conversation
-    return of('conv_new');
+  createConversation(participantId: string): Observable<ChatConversation | null> {
+    if (!this.safeGetToken()) {
+      return of(null);
+    }
+
+    const url = `${this.baseUrl}/chat/conversations`;
+    return this.http
+      .post<ApiResponse<{ conversation: ChatConversation }>>(
+        url,
+        { participantId },
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => resp?.data?.conversation || null),
+        tap(() => {
+          this.refreshConversations().subscribe();
+        }),
+        catchError(() => of(null))
+      );
   }
 
-  private loadMockConversations() {
-    const mockConversations: ChatConversation[] = [
-      {
-        id: 'c1',
-        participants: [
-          {
-            id: 'f1',
-            name: 'Ana García',
-            username: 'anag',
-            avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d',
-            isOnline: true,
-            lastActivity: 'Hace 5 min',
-            favoriteGenres: ['Drama', 'Sci-Fi'],
-            following: true
-          }
-        ],
-        lastMessage: {
-            id: 'm1',
-            conversationId: 'c1',
-            senderId: 'f1',
-            text: 'Tienes que ver esta serie...',
-            type: 'text',
-            createdAt: new Date().toISOString(),
-            readBy: []
-        },
-        unreadCount: 1,
-        updatedAt: new Date().toISOString(),
-        isGroup: false
-      },
-      {
-        id: 'c2',
-        participants: [
-          {
-            id: 'f2',
-            name: 'Carlos Ruiz',
-            username: 'cruiz',
-            avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-            isOnline: false,
-            lastActivity: 'Hace 2 horas',
-            favoriteGenres: ['Action', 'Comedy'],
-            following: true
-          }
-        ],
-        lastMessage: {
-            id: 'm2',
-            conversationId: 'c2',
-            senderId: 'me',
-            text: 'Nos vemos luego!',
-            type: 'text',
-            createdAt: new Date(Date.now() - 86400000).toISOString(),
-            readBy: ['f2']
-        },
-        unreadCount: 0,
-        updatedAt: new Date(Date.now() - 86400000).toISOString(),
-        isGroup: false
-      }
-    ];
-    this.conversationsSubject.next(mockConversations);
+  private reorderParticipants(conversation: ChatConversation): ChatConversation {
+    if (!this.currentUserId || !conversation?.participants?.length) return conversation;
+
+    const participants = conversation.participants.slice();
+    participants.sort((a) => (a.id === this.currentUserId ? 1 : -1));
+    return { ...conversation, participants };
+  }
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.safeGetToken();
+    return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
+  }
+
+  private safeGetToken(): string | null {
+    if (!this.isBrowser) return null;
+    try {
+      return localStorage.getItem('gtv_id_token');
+    } catch {
+      return null;
+    }
   }
 }

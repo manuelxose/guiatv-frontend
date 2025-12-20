@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { map, of, take } from 'rxjs';
+import { combineLatest, forkJoin, map, take } from 'rxjs';
 import {
   UserActivity,
   UserFriend,
@@ -10,10 +10,7 @@ import {
   UserNotifications,
   UserPrivacy,
   UserProfile,
-  UserRecommendation,
-  Top10Item,
-  Top10Category,
-  NewsItem
+  UserRecommendation
 } from '../../interfaces/user.interface';
 import { MenuStateService } from '../../services/menu-state.service';
 import { UserService } from '../../services/user.service';
@@ -65,24 +62,25 @@ export class UserAreaComponent implements OnInit {
   public activities$ = this.userService.getActivities();
   public friends$ = this.userService.getFriends();
   public lists$ = this.userService.getLists();
+  public favorites$ = this.userService.getFavorites();
+  public isAuthenticated$ = this.userService.isAuthenticated$;
+  public loading$ = this.userService.loading$;
+  public error$ = this.userService.error$;
   
   // Filtered data for RESUMEN (Personal)
-  public myActivities$ = this.activities$.pipe(
-    map(activities => activities.filter(a => !a.user || a.user.id === 'user-01'))
+  public myActivities$ = combineLatest([this.activities$, this.profile$]).pipe(
+    map(([activities, profile]) => activities.filter((activity) => !activity.user || activity.user.id === profile.id))
   );
   
   // Filtered data for SOCIAL (Community)
-  public friendsActivities$ = this.activities$.pipe(
-    map(activities => activities.filter(a => a.user && a.user.id !== 'user-01'))
+  public friendsActivities$ = combineLatest([this.activities$, this.profile$]).pipe(
+    map(([activities, profile]) => activities.filter((activity) => activity.user && activity.user.id !== profile.id))
   );
   
   // Personal reminders (mock based on pending watchlist items)
   public myReminders$ = this.userService.getWatchlist().pipe(
     map(items => items.filter(item => item.state === 'pending').slice(0, 3))
   );
-
-  // Mock authentication for now
-  public isAuthenticated$ = of(true);
 
   public activeTab: TabType = 'overview';
   public isCreateListModalOpen = false;
@@ -110,16 +108,18 @@ export class UserAreaComponent implements OnInit {
       title: event.title,
       mood: event.mood,
       visibility: event.visibility || 'friends',
-    });
+    }).subscribe();
   }
 
   onToggleFollow(friendId: string): void {
-    this.userService.toggleFollow(friendId);
+    this.userService.toggleFollow(friendId).subscribe();
   }
 
   onSaveSettings(event: { privacy: UserPrivacy; notifications: UserNotifications }): void {
-    this.userService.updatePrivacy(event.privacy);
-    this.userService.updateNotifications(event.notifications);
+    forkJoin([
+      this.userService.updatePrivacy(event.privacy),
+      this.userService.updateNotifications(event.notifications),
+    ]).subscribe();
   }
 
   openCreateListModal(): void {
@@ -131,16 +131,12 @@ export class UserAreaComponent implements OnInit {
   }
 
   onCreateList(event: { title: string; description: string; visibility: 'public' | 'friends' | 'private' }): void {
-    this.userService.createList(event);
+    this.userService.createList(event).subscribe();
   }
 
   onSelectList(list: UserList): void {
     this.selectedList = list;
-    // In a real app, we would fetch items for this specific list
-    // For now, we'll just show the watchlist items as a mock
-    this.userService.getWatchlist().pipe(take(1)).subscribe(items => {
-      this.selectedListItems = items;
-    });
+    this.refreshSelectedListItems();
   }
 
   onCloseListDetails(): void {
@@ -157,16 +153,15 @@ export class UserAreaComponent implements OnInit {
   }
 
   onSaveProfile(profileData: Partial<UserProfile>): void {
-    this.userService.updateProfile(profileData);
-    this.closeEditProfileModal();
+    this.userService.updateProfile(profileData).subscribe(() => {
+      this.closeEditProfileModal();
+    });
   }
 
   onRemoveListItem(itemId: string): void {
     if (this.selectedList) {
-      this.userService.removeListItem(this.selectedList.id, itemId);
-      // Refresh the list items
-      this.userService.getWatchlist().pipe(take(1)).subscribe(items => {
-        this.selectedListItems = items;
+      this.userService.removeListItem(this.selectedList.id, itemId).subscribe(() => {
+        this.refreshSelectedListItems();
       });
     }
   }
@@ -181,11 +176,24 @@ export class UserAreaComponent implements OnInit {
 
   onAddListItem(item: { title: string; type: 'movie' | 'series'; state: 'pending' | 'watching' | 'finished' }): void {
     if (this.selectedList) {
-      this.userService.addListItem(this.selectedList.id, item);
-      // Refresh the list items
-      this.userService.getWatchlist().pipe(take(1)).subscribe(items => {
-        this.selectedListItems = items;
+      this.userService.addListItem(this.selectedList.id, item).subscribe(() => {
+        this.refreshSelectedListItems();
       });
     }
+  }
+
+  onRemoveFavorite(id: string): void {
+    this.userService.removeFavorite(id).subscribe();
+  }
+
+  onLogout(): void {
+    this.userService.logout();
+  }
+
+  private refreshSelectedListItems(): void {
+    if (!this.selectedList) return;
+    this.userService.fetchListItems(this.selectedList.id).pipe(take(1)).subscribe((items) => {
+      this.selectedListItems = items;
+    });
   }
 }

@@ -130,6 +130,8 @@
             [lists]="(lists$ | async) || []"
             [recommendations]="(recommendations$ | async) || []"
             [reminders]="(myReminders$ | async) || []"
+            [loading]="(loading$ | async) || false"
+            [error]="(error$ | async) || null"
             (updateStatus)="onUpdateStatus($event)"
           ></app-user-stats>
         </div>
@@ -174,7 +176,10 @@
           aria-labelledby="tab-favorites"
           tabindex="0"
         >
-          <app-user-favorites></app-user-favorites>
+          <app-user-favorites
+            [favorites]="(favorites$ | async) || []"
+            (removeFavorite)="onRemoveFavorite($event)"
+          ></app-user-favorites>
         </div>
 
         <!-- CHAT TAB -->
@@ -203,6 +208,7 @@
             [notifications]="profile.notifications"
             (saveSettings)="onSaveSettings($event)"
             (editProfile)="openEditProfileModal()"
+            (logout)="onLogout()"
           ></app-user-settings>
         </div>
 

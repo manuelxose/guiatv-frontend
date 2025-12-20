@@ -1,13 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-interface FavoriteItem {
-  id: string;
-  title: string;
-  image: string;
-  subtitle?: string;
-  type: 'channel' | 'program' | 'list' | 'user';
-}
+import { UserFavorite } from '../../../../interfaces/user.interface';
 
 @Component({
   selector: 'app-user-favorites',
@@ -46,7 +39,10 @@ interface FavoriteItem {
           class="rounded-2xl border border-slate-800/80 bg-slate-900/60 overflow-hidden flex flex-col"
         >
           <div class="aspect-[2/3] bg-slate-900/80">
-            <img [src]="item.image" class="w-full h-full object-cover" [alt]="item.title" />
+            <img *ngIf="item.image" [src]="item.image" class="w-full h-full object-cover" [alt]="item.title" />
+            <div *ngIf="!item.image" class="w-full h-full flex items-center justify-center text-xs text-slate-500">
+              Sin imagen
+            </div>
           </div>
           <div class="p-4 space-y-3 flex-1 flex flex-col">
             <div class="space-y-1">
@@ -63,6 +59,7 @@ interface FavoriteItem {
               </button>
               <button
                 type="button"
+                (click)="onRemove(item.id)"
                 class="min-h-[44px] px-3 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 aria-label="Quitar favorito"
               >
@@ -75,7 +72,10 @@ interface FavoriteItem {
     </div>
   `,
 })
-export class UserFavoritesComponent implements OnInit {
+export class UserFavoritesComponent {
+  @Input() favorites: UserFavorite[] = [];
+  @Output() removeFavorite = new EventEmitter<string>();
+
   activeFilter: string = 'all';
   filters = [
     { id: 'all', label: 'Todos' },
@@ -85,56 +85,18 @@ export class UserFavoritesComponent implements OnInit {
     { id: 'users', label: 'Usuarios' },
   ];
 
-  items: FavoriteItem[] = [];
-
-  ngOnInit() {
-    this.items = [
-      {
-        id: '1',
-        title: 'Antena 3',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Antena_3_%282017%29.svg/1200px-Antena_3_%282017%29.svg.png',
-        type: 'channel',
-        subtitle: 'Generalista',
-      },
-      {
-        id: '2',
-        title: 'La Resistencia',
-        image: 'https://img.nbc.com/sites/nbcunbc/files/images/2021/3/31/190215_3905096_La_Resistencia_an_Interview_Show_Like_No_Ot.jpg',
-        type: 'program',
-        subtitle: 'Late Night',
-      },
-      {
-        id: '3',
-        title: 'Cine de Accion',
-        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7zR0s0j1k_1k_1k_1k_1k_1k_1k_1k_1k&s',
-        type: 'list',
-        subtitle: 'Por @alex',
-      },
-      {
-        id: '4',
-        title: 'Maria Lopez',
-        image: 'https://i.pravatar.cc/150?u=a042581f4e29026024d',
-        type: 'user',
-        subtitle: '@marial',
-      },
-      {
-        id: '5',
-        title: 'Stranger Things',
-        image: 'https://upload.wikimedia.org/wikipedia/en/thumb/7/78/Stranger_Things_season_4.jpg/220px-Stranger_Things_season_4.jpg',
-        type: 'program',
-        subtitle: 'Serie',
-      },
-    ];
-  }
-
   getFilteredItems() {
-    if (this.activeFilter === 'all') return this.items;
-    return this.items.filter((item) => {
+    if (this.activeFilter === 'all') return this.favorites;
+    return this.favorites.filter((item) => {
       if (this.activeFilter === 'channels') return item.type === 'channel';
       if (this.activeFilter === 'programs') return item.type === 'program';
       if (this.activeFilter === 'lists') return item.type === 'list';
       if (this.activeFilter === 'users') return item.type === 'user';
       return true;
     });
+  }
+
+  onRemove(id: string) {
+    this.removeFavorite.emit(id);
   }
 }
