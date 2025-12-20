@@ -135,7 +135,45 @@ export class Container {
     const userRepository = new MongoUserRepository();
     this.dependencies.set('userRepository', userRepository);
 
-    const analyticsRepository = new MongoAnalyticsRepository();
+    const analyticsStore = (process.env.ANALYTICS_STORE || 'mongo').toLowerCase();
+    let analyticsRepository: IAnalyticsRepository;
+
+    if (analyticsStore === 'valkey' || analyticsStore === 'redis') {
+      const { ValkeyAnalyticsRepository } = await import('../infrastructure/repositories/ValkeyAnalyticsRepository');
+      const analyticsRedisUrl = process.env.VALKEY_URL || process.env.REDIS_URL;
+
+      if (!analyticsRedisUrl) {
+        logger.error('ANALYTICS_STORE=valkey but no VALKEY_URL/REDIS_URL configured. Falling back to Mongo.');
+        analyticsRepository = new MongoAnalyticsRepository();
+      } else {
+        analyticsRepository = new ValkeyAnalyticsRepository(analyticsRedisUrl, {
+          maxRetries: 10,
+          connectTimeout: 10000,
+        });
+
+        if (typeof (analyticsRepository as any).connect === 'function') {
+          try {
+            const analyticsConnectTimeout = Number(process.env.ANALYTICS_CONNECT_TIMEOUT_MS) || 8000;
+            await Promise.race([
+              (analyticsRepository as any).connect(),
+              new Promise((_, rej) =>
+                setTimeout(
+                  () => rej(new Error(`analytics valkey connect timed out after ${analyticsConnectTimeout}ms`)),
+                  analyticsConnectTimeout
+                )
+              ),
+            ]);
+            logger.info('Analytics Valkey connected');
+          } catch (error) {
+            logger.error('Failed to connect Analytics Valkey, falling back to Mongo', error as Error);
+            analyticsRepository = new MongoAnalyticsRepository();
+          }
+        }
+      }
+    } else {
+      analyticsRepository = new MongoAnalyticsRepository();
+    }
+
     this.dependencies.set('analyticsRepository', analyticsRepository);
 
     // Cache Repository (already stored by initializeCache, ensure consistent key)

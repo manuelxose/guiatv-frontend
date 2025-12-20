@@ -41,12 +41,10 @@ const ProgramSchema = new Schema<IProgramDocument>(
       type: String,
       required: true,
       unique: true,
-      index: true,
     },
     channelId: {
       type: String,
       required: true,
-      index: true,
     },
     title: {
       type: String,
@@ -60,12 +58,10 @@ const ProgramSchema = new Schema<IProgramDocument>(
     startTime: {
       type: Date,
       required: true,
-      index: true,
     },
     endTime: {
       type: Date,
       required: true,
-      index: true,
     },
     startUtc: {
       type: String,
@@ -75,11 +71,9 @@ const ProgramSchema = new Schema<IProgramDocument>(
     },
     date: {
       type: String,
-      index: true,
     },
     startMinutes: {
       type: Number,
-      index: true,
     },
     endMinutes: {
       type: Number,
@@ -89,7 +83,6 @@ const ProgramSchema = new Schema<IProgramDocument>(
     },
     timeSlotIndex: {
       type: Number,
-      index: true,
     },
     category: {
       type: String,
@@ -122,25 +115,9 @@ const ProgramSchema = new Schema<IProgramDocument>(
   }
 );
 
-// Compound indexes for common queries
+// Focus on the indexes used by live queries to keep storage under control.
 ProgramSchema.index({ channelId: 1, startTime: 1 });
-ProgramSchema.index({ channelId: 1, endTime: 1 });
 ProgramSchema.index({ startTime: 1, endTime: 1 });
-ProgramSchema.index({ channelId: 1, startTime: 1, endTime: 1 });
-ProgramSchema.index({ category: 1 });
-ProgramSchema.index({ date: 1, channelId: 1, startMinutes: 1 });
-ProgramSchema.index({ date: 1, startMinutes: 1 });
-ProgramSchema.index({ date: 1, channelId: 1, startTime: 1 });
-ProgramSchema.index({ date: 1, channelId: 1, startUtc: 1 });
-ProgramSchema.index({ channelId: 1, startUtc: 1 });
-ProgramSchema.index({ date: 1, timeSlotIndex: 1 });
-ProgramSchema.index({ startUtc: 1 });
-ProgramSchema.index({ channelId: 1, category: 1, startTime: 1 });
-ProgramSchema.index({
-  title: 'text',
-  description: 'text',
-  category: 'text',
-});
 
 /**
  * Program model

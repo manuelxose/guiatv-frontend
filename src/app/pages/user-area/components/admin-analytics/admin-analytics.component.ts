@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import {
   AdminAnalyticsEvent,
@@ -239,10 +239,17 @@ export class AdminAnalyticsComponent implements OnInit, OnDestroy {
   sessionEvents: Record<string, AdminAnalyticsEvent[] | null> = {};
 
   private subs = new Subscription();
+  private readonly isBrowser: boolean;
 
-  constructor(private analyticsService: AdminAnalyticsService) {}
+  constructor(
+    private analyticsService: AdminAnalyticsService,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadAll();
 
     this.subs.add(

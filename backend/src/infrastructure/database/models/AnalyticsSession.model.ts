@@ -1,6 +1,15 @@
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
 
+const ANALYTICS_TTL_DAYS = Number.parseInt(
+  process.env.ANALYTICS_TTL_DAYS || '14',
+  10
+);
+const ANALYTICS_TTL_SECONDS =
+  Number.isFinite(ANALYTICS_TTL_DAYS) && ANALYTICS_TTL_DAYS > 0
+    ? ANALYTICS_TTL_DAYS * 24 * 60 * 60
+    : null;
+
 export interface IAnalyticsSessionDocument {
   sessionId: string;
   anonId: string;
@@ -49,7 +58,6 @@ const AnalyticsSessionSchema = new Schema<IAnalyticsSessionDocument>(
     lastSeenAt: {
       type: Date,
       required: true,
-      index: true,
     },
     endedAt: {
       type: Date,
@@ -110,6 +118,12 @@ const AnalyticsSessionSchema = new Schema<IAnalyticsSessionDocument>(
 
 AnalyticsSessionSchema.index({ anonId: 1, startedAt: 1 });
 AnalyticsSessionSchema.index({ lastSeenAt: 1, endedAt: 1 });
+if (ANALYTICS_TTL_SECONDS) {
+  AnalyticsSessionSchema.index(
+    { lastSeenAt: 1 },
+    { expireAfterSeconds: ANALYTICS_TTL_SECONDS }
+  );
+}
 
 export const AnalyticsSessionModel = mongoose.model<IAnalyticsSessionDocument>(
   'AnalyticsSession',
