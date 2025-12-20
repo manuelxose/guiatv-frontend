@@ -1,4 +1,13 @@
-<!-- Banner Component - Optimizado SEO & Performance -->
+<!-- 
+  Banner Component - VERSIÓN OPTIMIZADA PARA LCP
+  
+  Optimizaciones aplicadas:
+  1. srcset con tamaños específicos por breakpoint
+  2. Atributo sizes optimizado para cada viewport
+  3. Logo de canal con srcset para retina
+  4. Dimensiones explícitas para evitar CLS
+  5. fetchpriority="high" para imagen principal
+-->
 <article
   *ngIf="bannerData"
   class="banner-hero"
@@ -6,13 +15,15 @@
   itemscope
   itemtype="https://schema.org/VideoObject"
 >
-  <!-- Imagen de fondo optimizada -->
+  <!-- ============================================
+       IMAGEN DE FONDO OPTIMIZADA
+       ============================================ -->
   <div class="banner-background">
     <img
       class="banner-bg-image"
-      [src]="getBannerImageUrl(bannerData, 1440)"
+      [src]="getBannerImageUrl(bannerData, isMobile ? 768 : 1440)"
       [srcset]="getBannerSrcset(getProgramPosterUrl(bannerData))"
-      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+      [sizes]="getBannerSizes()"
       [alt]="'Imagen de ' + (bannerData.title?.value || 'programa')"
       [attr.loading]="compact ? 'lazy' : 'eager'"
       [attr.fetchpriority]="compact ? 'auto' : 'high'"
@@ -21,29 +32,33 @@
       height="800"
       (error)="onImageError($event)"
     />
-    <!-- Gradient overlay -->
+    <!-- Gradient overlay para legibilidad del texto -->
     <div class="banner-overlay"></div>
   </div>
 
-  <!-- Contenido del banner -->
+  <!-- ============================================
+       CONTENIDO DEL BANNER
+       ============================================ -->
   <div class="banner-content">
+    
     <!-- Top section: Canal y horario -->
     <header class="banner-header">
       <div class="channel-info">
-        <!-- Logo del canal -->
+        <!-- Logo del canal OPTIMIZADO -->
         <img
           [class]="compactLogo ? 'channel-logo-small' : 'channel-logo'"
           [src]="getChannelLogoUrl(bannerData.channel)"
+          [srcset]="getChannelLogoSrcset(bannerData.channel)"
           [alt]="bannerData.channel + ' logo'"
           loading="lazy"
           decoding="async"
-          width="240"
-          height="120"
+          width="60"
+          height="40"
           (error)="onImageError($event)"
         />
-        <span class="channel-name" itemprop="provider">{{
-          bannerData.channel
-        }}</span>
+        <span class="channel-name" itemprop="provider">
+          {{ bannerData.channel }}
+        </span>
       </div>
 
       <!-- Horario -->
@@ -70,87 +85,106 @@
         <li *ngIf="bannerData.desc?.year" itemprop="datePublished">
           {{ bannerData.desc.year }}
         </li>
-        <li *ngIf="bannerData.desc?.rate" itemprop="contentRating">
+        <li *ngIf="bannerData.category?.value">
+          <span itemprop="genre">{{ bannerData.category.value }}</span>
+        </li>
+        <li *ngIf="time" class="duration">
+          <svg 
+            class="duration-icon" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+          <span itemprop="duration">{{ time }}</span>
+        </li>
+        <li *ngIf="bannerData.starRating" class="rating">
+          <svg 
+            class="star-icon" 
+            viewBox="0 0 24 24" 
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <span>{{ bannerData.starRating }}</span>
+        </li>
+        <li *ngIf="bannerData.desc?.rate" class="age-rating">
           {{ bannerData.desc.rate }}
-        </li>
-        <li *ngIf="time" itemprop="duration">
-          {{ time }}
-        </li>
-        <li
-          *ngIf="bannerData.starRating"
-          class="rating"
-          itemprop="aggregateRating"
-        >
-          <span aria-label="Valoración">⭐</span> {{ bannerData.starRating }}
         </li>
       </ul>
 
       <!-- Descripción -->
-      <p
+      <p 
+        *ngIf="bannerData.desc?.details" 
         class="program-description"
-        [class.line-clamp-none]="showFullDescription"
+        [class.program-description--full]="showFullDescription"
         itemprop="description"
       >
-        {{ bannerData.desc?.details }}
+        {{ bannerData.desc.details }}
       </p>
 
-      <!-- Acciones -->
+      <!-- Botones de acción -->
       <div class="banner-actions">
-        <button
-          type="button"
-          class="btn-primary"
+        <button 
+          class="btn-primary" 
           (click)="navigateTo()"
-          [attr.aria-label]="
-            'Ver más detalles de ' + (bannerData.title?.value || 'programa')
-          "
+          type="button"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="btn-icon"
-            viewBox="0 0 20 20"
+          <svg 
+            class="btn-icon" 
+            viewBox="0 0 24 24" 
             fill="currentColor"
             aria-hidden="true"
           >
-            <path
-              fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-              clip-rule="evenodd"
-            />
+            <path d="M8 5v14l11-7z"/>
           </svg>
-          <span>Más Detalles</span>
+          <span>Ver más</span>
+        </button>
+        
+        <button 
+          class="btn-secondary" 
+          (click)="addReminder()"
+          type="button"
+          aria-label="Añadir recordatorio"
+        >
+          <svg 
+            class="btn-icon" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span class="btn-text-desktop">Recordatorio</span>
         </button>
 
+        <!-- Interaction buttons component -->
         <app-interaction-buttons
-          [itemId]="bannerData.id || ''"
-          [title]="bannerData.title?.value || ''"
-          [type]="'program'"
+          *ngIf="bannerData.id"
+          [itemId]="bannerData.id"
+          [compact]="true"
+          class="interaction-buttons"
         ></app-interaction-buttons>
       </div>
     </div>
   </div>
 </article>
 
-<!-- Estado vacío optimizado -->
-<div
-  *ngIf="!bannerData"
-  class="banner-empty"
-  role="status"
-  aria-label="No hay datos disponibles"
+<!-- Estado vacío -->
+<div 
+  *ngIf="!bannerData" 
+  class="banner-placeholder"
+  role="img"
+  aria-label="Cargando banner"
 >
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    class="empty-icon"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-    aria-hidden="true"
-  >
-    <path
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-    />
-  </svg>
-  <p class="empty-text">No hay datos disponibles para mostrar</p>
+  <div class="banner-placeholder-content">
+    <div class="banner-placeholder-shimmer"></div>
+  </div>
 </div>
