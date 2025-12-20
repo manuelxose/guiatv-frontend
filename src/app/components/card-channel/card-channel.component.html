@@ -1,48 +1,55 @@
+<!-- card-channel.component.html - VERSIÓN OPTIMIZADA -->
+<!-- Cambios:
+  1. Añadido srcset para soporte retina
+  2. Tamaños de imagen correctos (100x65 en lugar de 368x240)
+  3. Añadido loading="lazy" y decoding="async"
+  4. Dimensiones explícitas para evitar CLS
+-->
 <div
-  class="card-channel group relative cursor-pointer overflow-hidden rounded-xl bg-gray-800/50 backdrop-blur-sm border border-gray-700/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-red-500/10 hover:border-red-500/30"
+  class="card-channel group relative flex flex-col overflow-hidden rounded-xl bg-gray-900 shadow-lg transition-all duration-300 cursor-pointer hover:shadow-2xl hover:shadow-red-500/10"
   [class.opacity-50]="!isActive"
   [class.cursor-not-allowed]="!isActive"
   (click)="onClick()"
-  role="button"
-  [attr.aria-label]="'Ver programación de ' + name"
-  [attr.aria-disabled]="!isActive"
+  role="article"
+  [attr.aria-label]="name"
+  tabindex="0"
+  (keydown.enter)="onClick()"
+  (keydown.space)="onClick()"
 >
-  <!-- Channel Logo/Icon -->
-  <div class="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-gray-700 to-gray-800">
-    <div
-      class="absolute inset-0 bg-contain bg-center bg-no-repeat transition-transform duration-500 group-hover:scale-110"
-      [style.background-image]="backgroundImage"
-    ></div>
+  <!-- Image Section with Optimized Loading -->
+  <div class="relative aspect-[84/55] w-full overflow-hidden bg-gray-800">
+    <!-- Imagen optimizada con srcset para retina -->
+    <img
+      [src]="imageSrc"
+      [srcset]="imageSrcset"
+      [alt]="name"
+      loading="lazy"
+      decoding="async"
+      width="100"
+      height="65"
+      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+      (error)="onImageError($event)"
+    />
     
-    <!-- Gradient Overlay -->
-    <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
-    
+    <!-- Gradient overlay -->
+    <div class="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent"></div>
+
     <!-- Type Badge -->
-    <div class="absolute top-2 right-2 z-10" *ngIf="type">
-      <span
-        class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md backdrop-blur-sm"
-        [ngClass]="{
-          'bg-blue-600/90 text-blue-100': getTypeColor() === 'blue',
-          'bg-purple-600/90 text-purple-100': getTypeColor() === 'purple',
-          'bg-green-600/90 text-green-100': getTypeColor() === 'green',
-          'bg-orange-600/90 text-orange-100': getTypeColor() === 'orange',
-          'bg-red-600/90 text-red-100': getTypeColor() === 'red',
-          'bg-gray-600/90 text-gray-100': getTypeColor() === 'gray'
-        }"
-      >
+    <div *ngIf="type" class="absolute top-2 left-2 z-10">
+      <span class="rounded-md bg-red-600/90 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white shadow-sm backdrop-blur-sm">
         {{ type }}
       </span>
     </div>
 
-    <!-- Region Badge (if applicable) -->
-    <div class="absolute top-2 left-2 z-10" *ngIf="region">
-      <span class="px-2 py-0.5 text-[10px] font-medium bg-black/60 text-gray-200 rounded-md backdrop-blur-sm">
+    <!-- Region Badge -->
+    <div *ngIf="region" class="absolute top-2 right-2 z-10">
+      <span class="rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-medium text-gray-300 backdrop-blur-sm">
         {{ region }}
       </span>
     </div>
 
     <!-- Inactive Overlay -->
-    <div *ngIf="!isActive" class="absolute inset-0 bg-black/60 flex items-center justify-center z-20">
+    <div *ngIf="!isActive" class="absolute inset-0 flex items-center justify-center z-20 bg-black/50">
       <span class="text-xs font-semibold text-gray-300 bg-black/80 px-3 py-1 rounded-full">
         No disponible
       </span>
@@ -58,11 +65,11 @@
 
   <!-- Hover Play Icon -->
   <div
-    class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
     *ngIf="isActive"
+    class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
   >
     <div class="w-12 h-12 bg-red-600/90 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transform scale-90 group-hover:scale-100 transition-transform">
-      <svg class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+      <svg class="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
         <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"></path>
       </svg>
     </div>
