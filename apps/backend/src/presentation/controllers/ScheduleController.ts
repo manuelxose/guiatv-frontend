@@ -14,6 +14,8 @@ import { successResponse } from '../../shared/types/ApiResponse';
  */
 export class ScheduleController {
   private readonly logger = logger.child('ScheduleController');
+  private readonly fullSnapshotLimit =
+    Number(process.env.PROGRAMS_FULL_SNAPSHOT_LIMIT || 100000) || 100000;
 
   constructor(
     private readonly getPrograms: GetPrograms,
@@ -49,7 +51,7 @@ export class ScheduleController {
     // Obtener todos los programas del día
     const programsResponse = await this.getPrograms.execute({
       date: normalizedDate,
-      limit: 10000,
+      limit: this.fullSnapshotLimit,
       fields: 'full',
     });
     const programs = programsResponse.programs;
@@ -115,7 +117,7 @@ export class ScheduleController {
 
     const { programs } = await this.getPrograms.execute({
       date: normalizedDate,
-      limit: 10000,
+      limit: this.fullSnapshotLimit,
       fields: 'minimal',
     });
 

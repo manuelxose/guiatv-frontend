@@ -148,21 +148,21 @@ export class HomeComponent implements OnInit {
   private initializeDataStreams(): void {
     this.logger.debug('Initializing reactive data streams from TvDataService and ContentService');
 
-    // Stream de programas desde /programs (incluye canales)
-    this.tvDataService.programs$
+    // Stream de programas desde /layouts (snapshot completo por canal)
+    this.tvDataService.layouts$
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        map((programsResp) => {
-          const channels = programsResp?.channels ?? [];
-          const channelMap = new Map(channels.map((c: any) => [c.id, c]));
-          const programs = programsResp?.programs ?? [];
-          return programs.map((prog: any) => ({
-            ...prog,
-            channel_id: prog.channelId || prog.channel?.id || '',
-            channel:
-              prog.channel ||
-              channelMap.get(prog.channelId) || { id: '', name: '', icon: '' },
-          }));
+        map((layoutsResp) => {
+          const channelEntries = layoutsResp?.channels ?? [];
+          return channelEntries.flatMap((entry: any) => {
+            const channelMeta = entry?.channel || { id: '', name: '', icon: '' };
+            const channelPrograms = entry?.programs ?? [];
+            return channelPrograms.map((prog: any) => ({
+              ...prog,
+              channel_id: prog.channelId || channelMeta.id || '',
+              channel: prog.channel || channelMeta,
+            }));
+          });
         })
       )
       .subscribe((programs) => {
@@ -623,4 +623,3 @@ export class HomeComponent implements OnInit {
     return stats.nextProgramTime;
   }
 }
-

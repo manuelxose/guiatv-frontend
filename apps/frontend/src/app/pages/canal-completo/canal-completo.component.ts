@@ -199,6 +199,20 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     }
   }
 
+  private normalizeChannelToken(value: string): string {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  }
+
+  private buildLocalChannelIcon(channelRef?: string): string {
+    const token = this.normalizeChannelToken(channelRef || this.query || this.canal);
+    return `/storage/channel_icons/${encodeURIComponent(token)}.webp`;
+  }
+
   /**
    * Initialize component with route params and data
    */
@@ -233,7 +247,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       ogTitle: `Programación ${channelName} ${dayText} - Todos los Programas y Horarios`,
       ogDescription: `Descubre toda la programación de ${channelName} ${dayText}. Películas, series, documentales y mucho más. Guía TV actualizada en tiempo real.`,
       ogType: 'website',
-      ogImage: `https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${this.query}.png&w=1200&h=630&fit=cover&output=webp`,
+      ogImage: `https://guiaprogramaciontv.com${this.buildLocalChannelIcon(this.query)}`,
     });
   }
 
@@ -347,6 +361,9 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
         });
         
         if (channelGroup.programs && channelGroup.programs.length > 0) {
+          this.logo = this.buildLocalChannelIcon(
+            channelGroup.channel?.id || channelGroup.channel?.name || this.query
+          );
           this.programs = channelGroup.programs.map((p: any) => {
             const imageUrl = p.poster || p.icon || p.image;
             return {

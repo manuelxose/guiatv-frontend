@@ -1,11 +1,5 @@
 /**
  * CardChannelComponent - VERSIÓN OPTIMIZADA
- * 
- * Cambios de optimización:
- * 1. Reducido iconWidth de 168 a 100 (tamaño real de visualización: 84x55)
- * 2. Añadido srcset para soporte de pantallas retina
- * 3. Mejorado manejo de errores de imagen
- * 4. Añadido lazy loading nativo
  */
 import { 
   Component, 
@@ -20,20 +14,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiConfigService } from 'src/app/api/api-config.service';
-
-// Configuración de tamaños de imagen optimizados
-const IMAGE_CONFIG = {
-  // Tamaño base para pantallas normales (el display es ~84x55)
-  ICON_WIDTH: 100,
-  ICON_HEIGHT: 65,
-  // Tamaño para pantallas retina (2x)
-  ICON_WIDTH_2X: 200,
-  ICON_HEIGHT_2X: 130,
-  // Calidad WebP
-  QUALITY: 80,
-  // Aspect ratio
-  ASPECT_RATIO: 55 / 84
-} as const;
 
 @Component({
   selector: 'app-card-channel',
@@ -58,9 +38,6 @@ export class CardChannelComponent implements OnInit, OnChanges {
   public imageSrc: string = '';
   public imageSrcset: string = '';
   public imageError: boolean = false;
-  
-  // Placeholder SVG inline para evitar requests adicionales
-  private readonly placeholderSvg = `data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 65"%3E%3Crect fill="%23374151" width="100" height="65"/%3E%3C/svg%3E`;
 
   ngOnInit(): void {
     this.updateOptimizedImage();
@@ -85,15 +62,8 @@ export class CardChannelComponent implements OnInit, OnChanges {
       return;
     }
 
-    // Generar URLs optimizadas con wsrv.nl
-    this.imageSrc = this.buildProxyUrl(
-      resolvedIcon, 
-      IMAGE_CONFIG.ICON_WIDTH, 
-      IMAGE_CONFIG.ICON_HEIGHT
-    );
-    
-    // Srcset para pantallas retina
-    this.imageSrcset = this.buildSrcset(resolvedIcon);
+    this.imageSrc = resolvedIcon;
+    this.imageSrcset = '';
   }
 
   /**
@@ -125,41 +95,6 @@ export class CardChannelComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Construye URL optimizada con wsrv.nl
-   * - Redimensiona la imagen al tamaño exacto necesario
-   * - Convierte a WebP para mejor compresión
-   * - Aplica calidad optimizada
-   */
-  private buildProxyUrl(url: string, width: number, height: number): string {
-    if (!url || url.startsWith('data:')) return url;
-    
-    // Si ya es una URL de wsrv.nl, no re-procesar
-    if (url.includes('wsrv.nl')) {
-      return url;
-    }
-    
-    try {
-      const encodedUrl = encodeURIComponent(url);
-      return `https://wsrv.nl/?url=${encodedUrl}&w=${width}&h=${height}&output=webp&q=${IMAGE_CONFIG.QUALITY}&fit=cover`;
-    } catch (e) {
-      console.warn('[CardChannel] Error building proxy URL:', e);
-      return url;
-    }
-  }
-
-  /**
-   * Construye srcset para diferentes densidades de pantalla
-   */
-  private buildSrcset(url: string): string {
-    if (!url || url.startsWith('data:')) return '';
-    
-    const src1x = this.buildProxyUrl(url, IMAGE_CONFIG.ICON_WIDTH, IMAGE_CONFIG.ICON_HEIGHT);
-    const src2x = this.buildProxyUrl(url, IMAGE_CONFIG.ICON_WIDTH_2X, IMAGE_CONFIG.ICON_HEIGHT_2X);
-    
-    return `${src1x} 1x, ${src2x} 2x`;
-  }
-
-  /**
    * Genera un placeholder SVG con las iniciales del canal
    */
   private generateTextPlaceholder(): string {
@@ -172,19 +107,6 @@ export class CardChannelComponent implements OnInit, OnChanges {
    */
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    const attempts = parseInt(img.dataset['attempts'] || '0', 10);
-    
-    if (attempts === 0) {
-      // Primer intento fallido: probar con el icono original sin proxy
-      img.dataset['attempts'] = '1';
-      const originalIcon = this.resolveIconUrl(this.icon);
-      if (originalIcon && !originalIcon.startsWith('data:')) {
-        img.src = originalIcon;
-        return;
-      }
-    }
-    
-    // Fallback final: placeholder con texto
     this.imageError = true;
     img.src = this.generateTextPlaceholder();
     img.srcset = '';

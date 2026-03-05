@@ -1,6 +1,7 @@
 import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HttpService } from 'src/app/services/http.service';
 import { HeaderComponent } from 'src/app/components/header/header.component';
 import { BehaviorSubject, Subscription } from 'rxjs';
@@ -8,6 +9,7 @@ import { ModalService } from 'src/app/services/modal.service';
 import { MetaService } from 'src/app/services/meta.service';
 import { SliderComponent } from 'src/app/components/slider/slider.component';
 import { InteractionButtonsComponent } from 'src/app/components/interaction-buttons/interaction-buttons.component';
+import { durationToISO8601 } from 'src/app/utils/utils';
 
 // Importaciones modernas de Swiper
 import { SwiperOptions } from 'swiper/types';
@@ -37,6 +39,7 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
   public programas_similares: any[] = [];
   public program_modal: any = {};
   public programas: any[] = [];
+  public ldJson: SafeHtml = '';
 
   // Subscriptions para evitar memory leaks
   private subscriptions: Subscription = new Subscription();
@@ -92,7 +95,8 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
     private http: HttpService,
     private modalService: ModalService,
     private router: Router,
-    private metaSvc: MetaService
+    private metaSvc: MetaService,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -159,6 +163,8 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
     });
 
     if (!this.program) return;
+
+    this.generateJsonLd();
 
     // Filtrar programas relacionados
     this.programas_canal = this.getChannelPrograms(allPrograms);
@@ -249,6 +255,50 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
     if (!program) return '';
     if (typeof program.title === 'string') return program.title;
     return program?.title?.value ?? '';
+  }
+
+  private generateJsonLd(): void {
+    if (!this.program) return;
+    const title = this.extractTitle(this.program);
+    const slug = this.slugify(title);
+    const poster = this.program.icon || this.program.poster || this.program.image || '';
+    const description = this.program.desc?.details || this.program.desc?.value || this.program.description || '';
+    const startTime = this.program.start || '';
+    const stopTime = this.program.stop || '';
+    const isoDuration = durationToISO8601(startTime, stopTime);
+    const contentUrl = `https://guiaprogramaciontv.com/programas/${slug}`;
+
+    const schema: Record<string, any> = {
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+      name: title,
+      description: description || `Detalles de ${title} en la guía de TV española`,
+      thumbnailUrl: poster,
+      uploadDate: startTime ? new Date(startTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      contentUrl,
+      embedUrl: contentUrl,
+      inLanguage: 'es-ES',
+    };
+    if (isoDuration) schema['duration'] = isoDuration;
+    if (this.program.channel) schema['publisher'] = { '@type': 'Organization', name: this.program.channel };
+    if (this.program.category?.value || this.program.desc?.category) {
+      schema['genre'] = this.program.category?.value || this.program.desc?.category;
+    }
+
+    try {
+      this.ldJson = this.sanitizer.bypassSecurityTrustHtml(
+        `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+      );
+    } catch {
+      this.ldJson = '';
+    }
+
+    this.metaSvc.setMetaTags({
+      title: `${title} | Guía Programación TV`,
+      description: description || `Programación de ${title} en televisión española`,
+      canonicalUrl: `/programas/${slug}`,
+      ogImage: poster,
+    });
   }
 
   private slugify(value: string | undefined | null): string {

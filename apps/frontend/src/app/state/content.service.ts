@@ -64,42 +64,25 @@ export class ContentService {
     date: DateAlias = 'today'
   ): Observable<ContentSnapshot> {
     return this.tvData
-      .loadPrograms({
-        date,
-        // Usar full para obtener imágenes/posters necesarias en banner/destacadas
+      .loadLayouts(date, {
         fields: 'full',
-        limit: 5000,
         channelTypes: DEFAULT_CHANNEL_TYPES,
       })
       .pipe(
         map((resp) => {
-          const channelMap = new Map(
-            (resp?.channels || []).map((c) => [c.id, c])
+          const items = (resp?.channels || []).flatMap((entry) =>
+            (entry.programs || []).map((p) =>
+              this.toContentItem(p, entry.channel as ChannelMetaDTO)
+            )
           );
-
-          const items = (resp?.programs || []).map((p) => {
-            const channelMeta = channelMap.get(p.channelId) as
-              | ChannelMetaDTO
-              | undefined;
-            return this.toContentItem(p, channelMeta);
-          });
 
           const filtered = this.filterByKind(items, kind);
           const categories = this.extractCategories(filtered);
           const live = filtered.filter((i) => this.isLive(i.start, i.end));
           const featured = this.pickFeatured(filtered);
 
-          // Cache minimal structure for other methods
-          this.cachedLayouts = {
-            date: resp.date,
-            timeSlots: resp.timeSlots || [],
-            channels: (resp.channels || []).map((c) => ({
-              channel: c,
-              programs: (resp.programs || []).filter(
-                (p) => p.channelId === c.id
-              ) as any,
-            })),
-          } as any;
+          // Cache layout snapshot for helper methods
+          this.cachedLayouts = resp;
           this.cachedDate = resp.date;
 
           return {

@@ -3,6 +3,43 @@
  */
 
 /**
+ * Convierte la diferencia entre dos fechas a duración ISO 8601 para schema.org
+ * @param start - Fecha/hora de inicio (string ISO o Date)
+ * @param stop - Fecha/hora de fin (string ISO o Date)
+ * @returns string en formato PTxHyM (ej. "PT1H45M", "PT30M")
+ */
+export function durationToISO8601(start: string, stop: string): string {
+  try {
+    const startDate = new Date(start);
+    const stopDate = new Date(stop);
+    const diffMs = stopDate.getTime() - startDate.getTime();
+    if (isNaN(diffMs) || diffMs <= 0) return '';
+    const totalMinutes = Math.round(diffMs / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    if (hours > 0 && minutes > 0) return `PT${hours}H${minutes}M`;
+    if (hours > 0) return `PT${hours}H`;
+    return `PT${minutes}M`;
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Convierte una duración en minutos a ISO 8601
+ * @param minutes - Duración en minutos
+ * @returns string en formato PTxHyM
+ */
+export function minutesToISO8601(minutes: number): string {
+  if (!minutes || minutes <= 0) return '';
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours > 0 && mins > 0) return `PT${hours}H${mins}M`;
+  if (hours > 0) return `PT${hours}H`;
+  return `PT${mins}M`;
+}
+
+/**
  * Elimina etiquetas HTML de un string
  * @param html - String con HTML
  * @returns Texto plano

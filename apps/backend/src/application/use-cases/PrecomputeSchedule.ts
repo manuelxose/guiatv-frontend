@@ -28,6 +28,8 @@ export class PrecomputeSchedule {
   private readonly precomputeLogger = logger.child('PrecomputeSchedule');
   private readonly layoutVersion =
     process.env.LAYOUT_VERSION || 'v1';
+  private readonly fullSnapshotLimit =
+    Number(process.env.PROGRAMS_FULL_SNAPSHOT_LIMIT || 100000) || 100000;
 
   constructor(
     private readonly getPrograms: GetPrograms,
@@ -71,8 +73,9 @@ export class PrecomputeSchedule {
       const { programs, channels: channelMeta, timeSlots } =
         await this.getPrograms.execute({
           date: request.date,
-          limit: 10000,
+          limit: this.fullSnapshotLimit,
           fields,
+          skipScheduleSnapshot: true,
         });
 
       // 2. Group by channel

@@ -60,7 +60,16 @@ export class SyncEPGData {
     let programsProcessed = 0;
 
     try {
-      this.syncLogger.info('Starting EPG data sync', { request });
+      this.syncLogger.info('Starting EPG data sync', {
+        request: {
+          date: request.date,
+          sourceUrl: request.sourceUrl,
+          forceRefresh: request.forceRefresh,
+          skipSaveXml: request.skipSaveXml,
+          hasParsedData: Boolean(request.parsedData),
+          xmlContentLength: request.xmlContent?.length,
+        },
+      });
 
       const date = request.date || DateUtils.getTodayYYYYMMDD();
 
@@ -352,16 +361,44 @@ export class SyncEPGData {
       count: parsedPrograms.length,
     });
 
-    // Filtrar programas solo para la fecha solicitada
+    const { start: dayStart, end: dayEnd } = DateUtils.getDayRangeYYYYMMDD(date);
+
+    // Filtrar por solape con el día objetivo:
+    // programStart < dayEnd && programEnd > dayStart
     const filteredPrograms = parsedPrograms.filter((prog) => {
-      const progDate = prog.start.slice(0, 8);
-      return progDate === date;
+      try {
+        const programStart = this.programParser.parseXMLDateToDate(
+          String(prog.start || '')
+        );
+        let programEnd = this.programParser.parseXMLDateToDate(
+          String(prog.stop || '')
+        );
+
+        // Some feeds keep stop date in the same day even when crossing midnight.
+        if (programEnd <= programStart) {
+          programEnd = new Date(programEnd.getTime() + 24 * 60 * 60 * 1000);
+        }
+
+        return programStart < dayEnd && programEnd > dayStart;
+      } catch (error) {
+        this.syncLogger.warn('Skipping program with invalid datetime during date overlap filter', {
+          date,
+          channelId: prog?.channelId || prog?.channel,
+          title: prog?.title,
+          start: prog?.start,
+          stop: prog?.stop,
+          error: (error as Error).message,
+        });
+        return false;
+      }
     });
 
     this.syncLogger.info('Filtered programs for date', {
       total: parsedPrograms.length,
       filtered: filteredPrograms.length,
       date,
+      dayStart: dayStart.toISOString(),
+      dayEnd: dayEnd.toISOString(),
     });
 
     // Convertir a entidades del dominio

@@ -1230,27 +1230,27 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       channelData?.icon ||
       channelData?.logo;
     if (fromApi) {
-      if (typeof fromApi === 'string' && fromApi.startsWith('/storage')) {
+      if (
+        typeof fromApi === 'string' &&
+        (fromApi.startsWith('/storage') || fromApi.startsWith('/assets'))
+      ) {
         const assetBase =
           this.apiConfig.getAssetBaseUrl() ||
           (typeof window !== 'undefined' ? window.location.origin : '');
-        // Para assets propios no proxificamos para evitar bucles de error
         return `${assetBase}${fromApi}`;
       }
-      return this.proxyImage(fromApi);
+      if (typeof fromApi === 'string' && fromApi.startsWith('/')) {
+        const assetBase =
+          this.apiConfig.getAssetBaseUrl() ||
+          (typeof window !== 'undefined' ? window.location.origin : '');
+        return `${assetBase}${fromApi}`;
+      }
+
+      // Evitar recursos de terceros para logos de canal.
+      return this.getLocalIconFallback(channelData);
     }
 
-    const name =
-      channelData?.channel?.name ||
-      channelData?.name ||
-      channelData?.channelName ||
-      '';
-    if (name) {
-      const encoded = encodeURIComponent(name.toUpperCase());
-      return `https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${encoded}.png`;
-    }
-
-    return this.facade.getChannelLogoUrl(channelData) || '';
+    return this.getLocalIconFallback(channelData);
   }
 
   public onChannelLogoError(event: Event): void {
@@ -1405,9 +1405,43 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     return labels;
   }
 
-  private proxyImage(url: string): string {
-    // Evitar CORB: no proxificamos, devolvemos la URL original
-    return url || '';
+  private getLocalIconFallback(channelData: any): string {
+    const channelId =
+      channelData?.channel?.id ||
+      channelData?.id ||
+      channelData?.channelId ||
+      '';
+    if (channelId) {
+      return this.buildStorageIconUrl(channelId);
+    }
+
+    const name =
+      channelData?.channel?.name ||
+      channelData?.name ||
+      channelData?.channelName ||
+      '';
+    if (name) {
+      return this.buildStorageIconUrl(this.normalizeChannelToken(name));
+    }
+
+    return this.facade.getChannelLogoUrl(channelData) || '';
+  }
+
+  private buildStorageIconUrl(channelToken: string): string {
+    const token = encodeURIComponent(String(channelToken).trim());
+    const assetBase =
+      this.apiConfig.getAssetBaseUrl() ||
+      (typeof window !== 'undefined' ? window.location.origin : '');
+    return `${assetBase}/storage/channel_icons/${token}.webp`;
+  }
+
+  private normalizeChannelToken(value: string): string {
+    return String(value)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
   }
 
   // ===============================================
@@ -1624,16 +1658,13 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     const programs = canal.channels;
+    const referenceTimeMs = referenceTime.getTime();
 
     // Buscar programa activo en el tiempo de referencia
     const currentIndex = programs.findIndex((p) => {
-      const start = this.parseDateIgnoringTimezone(p.start);
-      const end = this.parseDateIgnoringTimezone(p.stop);
-      // Usamos .getTime() para comparar milisegundos de forma segura
-      return (
-        referenceTime.getTime() >= start.getTime() &&
-        referenceTime.getTime() < end.getTime()
-      );
+      const { startMs, endMs } = this.getProgramTimeRange(p);
+      if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return false;
+      return referenceTimeMs >= startMs && referenceTimeMs < endMs;
     });
 
     // Si encontramos programa activo, devolver ese y el siguiente
@@ -1642,9 +1673,10 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     // Si no hay activo (hueco), buscar el siguiente más próximo
-    const nextIndex = programs.findIndex(
-      (p) => this.parseDateIgnoringTimezone(p.start).getTime() > referenceTime.getTime()
-    );
+    const nextIndex = programs.findIndex((p) => {
+      const { startMs } = this.getProgramTimeRange(p);
+      return Number.isFinite(startMs) && startMs > referenceTimeMs;
+    });
 
     if (nextIndex !== -1) {
       return programs.slice(nextIndex, nextIndex + 2);
@@ -1654,12 +1686,24 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     return programs.slice(0, 2);
   }
 
-  // Helper to parse date treating it as local time (ignoring Z or timezone offset)
-  private parseDateIgnoringTimezone(dateStr: string): Date {
-    if (!dateStr) return new Date();
-    // Remove Z or timezone offset to force local interpretation
-    const cleanStr = dateStr.replace(/Z$|[+-]\d{2}:?\d{2}$/, '');
-    return new Date(cleanStr);
+  // Parse preserving timezone/offset coming from API payload.
+  private parseProgramDate(dateStr: string): Date {
+    if (!dateStr) return new Date(NaN);
+    const direct = new Date(dateStr);
+    if (!Number.isNaN(direct.getTime())) return direct;
+    return new Date(String(dateStr).replace(' ', 'T'));
+  }
+
+  private getProgramTimeRange(programa: IProgramItem): {
+    startMs: number;
+    endMs: number;
+  } {
+    const startMs = this.parseProgramDate(programa?.start || '').getTime();
+    let endMs = this.parseProgramDate(programa?.stop || '').getTime();
+    if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs <= startMs) {
+      endMs += 24 * 60 * 60 * 1000;
+    }
+    return { startMs, endMs };
   }
 
   // Counter for debug logs to avoid flooding
@@ -1667,26 +1711,26 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public isProgramLive(programa: IProgramItem): boolean {
     const now = Date.now();
-    const start = this.parseDateIgnoringTimezone(programa.start).getTime();
-    const end = this.parseDateIgnoringTimezone(programa.stop).getTime();
+    const { startMs, endMs } = this.getProgramTimeRange(programa);
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return false;
     
     // Solo mostrar badge "LIVE" si realmente es ahora y estamos en modo "Ahora"
     if (!this.showTimeIndicator() || this.activeDayOffset() !== 0) {
         return false;
     }
 
-    const isLive = now >= start && now < end;
+    const isLive = now >= startMs && now < endMs;
 
     // Log first 50 live programs found to debug timezone issues
     if (isLive && this.debugLogCount < 50) {
       this.debugLogCount++;
-      const duration = (end - start) / 60000;
-      const elapsed = (now - start) / 60000;
+      const duration = (endMs - startMs) / 60000;
+      const elapsed = (now - startMs) / 60000;
       
       console.log(`🔴 [ProgramList] LIVE #${this.debugLogCount}:`, {
         title: programa.title,
-        start: new Date(start).toLocaleTimeString(),
-        end: new Date(end).toLocaleTimeString(),
+        start: new Date(startMs).toLocaleTimeString(),
+        end: new Date(endMs).toLocaleTimeString(),
         now: new Date(now).toLocaleTimeString(),
         durationMin: Math.round(duration),
         elapsedMin: Math.round(elapsed),
@@ -1699,10 +1743,10 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public getProgramProgress(programa: IProgramItem): number {
     const now = Date.now();
-    const start = this.parseDateIgnoringTimezone(programa.start).getTime();
-    const end = this.parseDateIgnoringTimezone(programa.stop).getTime();
-    const total = end - start;
-    const elapsed = now - start;
+    const { startMs, endMs } = this.getProgramTimeRange(programa);
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return 0;
+    const total = endMs - startMs;
+    const elapsed = now - startMs;
     
     if (total <= 0) return 0;
     return Math.min(100, Math.max(0, (elapsed / total) * 100));

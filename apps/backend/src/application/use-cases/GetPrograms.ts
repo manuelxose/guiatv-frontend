@@ -22,6 +22,7 @@ export interface GetProgramsRequest {
   limit?: number;
   country?: string;
   channelTypes?: string[];
+  skipScheduleSnapshot?: boolean;
 }
 
 export interface GetProgramsResponse {
@@ -53,6 +54,7 @@ type NormalizedRequest = GetProgramsRequest & {
   page: number;
   limit: number;
   channelTypes: string[];
+  skipScheduleSnapshot: boolean;
 };
 
 /**
@@ -66,6 +68,8 @@ export class GetPrograms {
     Number(process.env.PROGRAMS_CACHE_TTL_SEC || 300) || 300;
   private readonly layoutVersion =
     process.env.LAYOUT_VERSION || 'v1';
+  private readonly fullSnapshotLimit =
+    Number(process.env.PROGRAMS_FULL_SNAPSHOT_LIMIT || 100000) || 100000;
   private readonly typeOrder: Record<string, number> = {
     TDT: 0,
     AUTONOMICO: 1,
@@ -131,10 +135,11 @@ export class GetPrograms {
     const fields = normalized.fields;
 
     const canUsePrecomputed =
+      !normalized.skipScheduleSnapshot &&
       !normalized.channels.length &&
       !normalized.timeSlot &&
       normalized.page === 1 &&
-      normalized.limit >= 10000;
+      normalized.limit >= this.fullSnapshotLimit;
 
     const preKey = `precomputed:programs:${normalized.date}:${fields}`;
     if (canUsePrecomputed) {
@@ -144,35 +149,37 @@ export class GetPrograms {
       }
     }
 
-    // Try schedule cache/collection first to avoid hitting Mongo when data is precomputed
-    const scheduleHit = await this.loadScheduleSnapshot(normalized.date, fields);
-    if (scheduleHit) {
-      const filtered = this.filterSchedulePrograms(scheduleHit, normalized);
-      const totalPrograms = filtered.programs.length;
-      const channelOrder = this.buildChannelOrder(filtered.channels);
-      const sortedLayouts = this.sortProgramLayouts(filtered.programs, channelOrder);
-      const paged = this.paginate(sortedLayouts, normalized.page, normalized.limit);
+    if (!normalized.skipScheduleSnapshot) {
+      // Try schedule cache/collection first to avoid hitting Mongo when data is precomputed
+      const scheduleHit = await this.loadScheduleSnapshot(normalized.date, fields);
+      if (scheduleHit) {
+        const filtered = this.filterSchedulePrograms(scheduleHit, normalized);
+        const totalPrograms = filtered.programs.length;
+        const channelOrder = this.buildChannelOrder(filtered.channels);
+        const sortedLayouts = this.sortProgramLayouts(filtered.programs, channelOrder);
+        const paged = this.paginate(sortedLayouts, normalized.page, normalized.limit);
 
-      const response: GetProgramsResponse = {
-        date: filtered.date,
-        timeSlots: filtered.timeSlots,
-        channels: filtered.channels,
-        programs: paged,
-        meta: {
+        const response: GetProgramsResponse = {
           date: filtered.date,
-          totalChannels: filtered.channels.length,
-          totalPrograms,
-          cached: true,
-          precomputed: true,
-        },
-      };
+          timeSlots: filtered.timeSlots,
+          channels: filtered.channels,
+          programs: paged,
+          meta: {
+            date: filtered.date,
+            totalChannels: filtered.channels.length,
+            totalPrograms,
+            cached: true,
+            precomputed: true,
+          },
+        };
 
-      // Cache the fully resolved response if it matched the canonical no-filter path
-      if (canUsePrecomputed && !filtered.fromCache) {
-        await this.cacheRepository.set(preKey, response, this.cacheTtlSeconds * 4);
+        // Cache the fully resolved response if it matched the canonical no-filter path
+        if (canUsePrecomputed && !filtered.fromCache) {
+          await this.cacheRepository.set(preKey, response, this.cacheTtlSeconds * 4);
+        }
+
+        return response;
       }
-
-      return response;
     }
 
     const cacheKey = CacheKeyBuilder.forPrograms(normalized);
@@ -366,7 +373,9 @@ export class GetPrograms {
       timeSlot: request.timeSlot ?? '',
       fields: request.fields ?? 'full',
       page: request.page ?? 1,
-      limit: request.limit ?? 500,
+      limit:
+        request.limit ??
+        (request.skipScheduleSnapshot ? this.fullSnapshotLimit : 500),
       country: request.country,
       channelTypes:
         request.channelTypes?.filter(Boolean).map((t) => t.toUpperCase()) ?? [
@@ -376,6 +385,7 @@ export class GetPrograms {
           'AUTONOMICO',
           'OTT',
         ],
+      skipScheduleSnapshot: request.skipScheduleSnapshot === true,
     };
   }
 

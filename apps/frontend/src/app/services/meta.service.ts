@@ -39,6 +39,11 @@ export class MetaService {
     if (config.image) {
       this.meta.addTag({ property: 'og:image', content: config.image });
     }
+    const ogImg = config.ogImage || config.image;
+    if (ogImg) {
+      this.meta.removeTag('property="og:image"');
+      this.meta.addTag({ property: 'og:image', content: ogImg });
+    }
     this.meta.addTag({
       property: 'og:type',
       content: config.type || 'article',

@@ -76,6 +76,14 @@ export class SitemapController {
     const todayYmd = this.formatYmd(today);
     const todayIso = this.formatDate(today);
 
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const yesterdayYmd = this.formatYmd(yesterday);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const tomorrowYmd = this.formatYmd(tomorrow);
+
     const urls: SitemapUrlEntry[] = this.getStaticUrls(todayIso);
 
     const channels = await this.channelRepository.findAll({ isActive: true });
@@ -90,9 +98,15 @@ export class SitemapController {
       });
     });
 
-    const programs = await this.programRepository.findByDate(todayYmd, 'minimal');
+    const [programsYesterday, programsToday, programsTomorrow] = await Promise.all([
+      this.programRepository.findByDate(yesterdayYmd, 'minimal'),
+      this.programRepository.findByDate(todayYmd, 'minimal'),
+      this.programRepository.findByDate(tomorrowYmd, 'minimal'),
+    ]);
+
     const seenProgramSlugs = new Set<string>();
-    programs.forEach((program) => {
+    const allPrograms = [...programsYesterday, ...programsToday, ...programsTomorrow];
+    allPrograms.forEach((program) => {
       const slug = this.slugify(program.title);
       if (!slug || seenProgramSlugs.has(slug)) return;
       seenProgramSlugs.add(slug);

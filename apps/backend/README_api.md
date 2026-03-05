@@ -8,6 +8,10 @@
 **Puerto**: 4000  
 **Tecnologías**: Node.js 22, TypeScript, Express, MongoDB, Redis
 
+**Zona horaria operativa recomendada**: `TZ=Europe/Madrid`
+  
+**Límite interno de snapshot completo**: `PROGRAMS_FULL_SNAPSHOT_LIMIT` (default recomendado: `100000`)
+
 ### Formato de Respuesta Estándar
 
 Todas las respuestas de la API siguen este formato unificado:
@@ -876,12 +880,11 @@ Para invalidar cache después de cambios en layout/UI:
 ### Flujo Diario Automático (Cron)
 
 ```bash
-# 1. Sincronizar EPG cada día a las 06:00
-POST /v2/admin/sync
-{
-  "date": "today",
-  "forceRefresh": true
-}
+# 1. Sincronizar ventana canónica (ayer/hoy/mañana/pasado)
+POST /v2/admin/sync {"date":"yesterday","forceRefresh":true}
+POST /v2/admin/sync {"date":"today","forceRefresh":true}
+POST /v2/admin/sync {"date":"tomorrow","forceRefresh":true}
+POST /v2/admin/sync {"date":"after_tomorrow","forceRefresh":true}
 
 # 2. Precalcular ventana de tiempo
 POST /v2/admin/precompute-window

@@ -89,4 +89,28 @@ export class DateUtils {
     result.setDate(result.getDate() + days);
     return result;
   }
+
+  /**
+   * Returns a local half-open day range [start, end) for a YYYYMMDD date.
+   * The effective timezone is controlled by process TZ (set to Europe/Madrid in runtime).
+   */
+  static getDayRangeYYYYMMDD(dateStr: string): { start: Date; end: Date } {
+    const parsed = this.parseYYYYMMDD(dateStr);
+    const year = parsed.getFullYear();
+    const month = parsed.getMonth();
+    const day = parsed.getDate();
+
+    const start = new Date(year, month, day, 0, 0, 0, 0);
+    const end = new Date(year, month, day + 1, 0, 0, 0, 0);
+
+    return { start, end };
+  }
+
+  /**
+   * Resolves alias/YYYMMDD and returns its local half-open day range [start, end).
+   */
+  static getDayRangeFromAlias(aliasOrDate: string): { start: Date; end: Date } {
+    const yyyymmdd = this.parseDateAlias(aliasOrDate);
+    return this.getDayRangeYYYYMMDD(yyyymmdd);
+  }
 }

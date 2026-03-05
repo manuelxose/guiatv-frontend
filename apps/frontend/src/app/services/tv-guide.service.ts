@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { ContentService } from '../state/content.service';
 import { TvDataService } from '../state/tv-data.service';
-import { DateAlias } from '../api/models';
+import { DateAlias, LayoutsResponse } from '../api/models';
 const DEFAULT_CHANNEL_TYPES = ['TDT', 'CABLE', 'MOVISTAR', 'AUTONOMICO', 'OTT'];
 
 /**
@@ -47,41 +47,24 @@ export class TvGuideService {
    */
   getFromApi(date: DateAlias = 'today'): Observable<any[]> {
     return this.tvData
-      .loadPrograms({
-        date,
-        fields: 'full', // Changed from 'minimal' to get complete data
-        limit: 5000,
+      .loadLayouts(date, {
+        fields: 'full',
         channelTypes: DEFAULT_CHANNEL_TYPES,
       })
       .pipe(
-        map((resp) => {
-          console.log('TvGuideService.getFromApi raw response:', { 
-            channelsCount: resp.channels?.length, 
-            programsCount: resp.programs?.length 
-          });
-          const channels = resp.channels || [];
-          const programs = resp.programs || [];
-          
-          const grouped = channels.map((c) => {
-            const channelPrograms = programs.filter((p) => p.channelId === c.id);
-            if (c.id === 'la_1') {
-              console.log('🔍 Programs for La 1:', {
-                channelId: c.id,
-                channelName: c.name,
-                totalPrograms: programs.length,
-                filteredCount: channelPrograms.length,
-                sample: channelPrograms[0]
-              });
-            }
-            return {
-              channel: c,
-              programs: channelPrograms,
-            };
-          });
-          return grouped;
-        }),
+        map((resp) => this.mapLayoutsResponse(resp)),
         tap((channels) => this.setData(channels))
       );
+  }
+
+  private mapLayoutsResponse(resp: LayoutsResponse): any[] {
+    return (resp.channels || []).map((entry) => ({
+      channel: entry.channel,
+      programs: (entry.programs || []).map((p: any) => ({
+        ...p,
+        stop: p.stop || p.end,
+      })),
+    }));
   }
 
   /**
