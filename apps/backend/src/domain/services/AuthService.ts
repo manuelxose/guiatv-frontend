@@ -1,6 +1,8 @@
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
+import nodemailer from 'nodemailer';
 import { promisify } from 'util';
 import {
   ConflictError,
@@ -11,6 +13,8 @@ import {
 } from '../../shared/errors';
 import { MongoUserRepository } from '../../infrastructure/repositories/MongoUserRepository';
 import { logger } from '../../shared/utils/logger';
+import { AuthSessionModel } from '../../infrastructure/database/models/AuthSession.model';
+import { PasswordResetTokenModel } from '../../infrastructure/database/models/PasswordResetToken.model';
 
 const scryptAsync = promisify(crypto.scrypt) as (
   password: string,
@@ -20,9 +24,6 @@ const scryptAsync = promisify(crypto.scrypt) as (
 
 const PASSWORD_MIN_LENGTH = 8;
 
-/**
- * Minimal user info provided by Google after verifying an idToken.
- */
 export interface GoogleUser {
   id: string;
   email: string;
@@ -30,9 +31,6 @@ export interface GoogleUser {
   picture?: string;
 }
 
-/**
- * Shape of the authenticated user stored in JWT sessions.
- */
 export interface SessionUser {
   id: string;
   email: string;
@@ -41,19 +39,53 @@ export interface SessionUser {
   role?: 'admin' | 'editor' | 'user';
 }
 
-/**
- * Response issued after a successful authentication flow.
- */
+export interface AuthSessionView {
+  id: string;
+  expiresAt: string;
+  createdAt: string;
+  lastUsedAt?: string;
+  userAgent?: string;
+  ipAddress?: string;
+  deviceName?: string;
+  current?: boolean;
+}
+
 export interface AuthResult {
   user: SessionUser;
-  token: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  session: AuthSessionView;
+}
+
+export interface SessionContext {
+  userAgent?: string;
+  ipAddress?: string;
+  deviceName?: string;
+}
+
+interface AccessTokenPayload extends jwt.JwtPayload {
+  sub: string;
+  email: string;
+  role?: 'admin' | 'editor' | 'user';
+  sid: string;
+  typ: 'access';
+}
+
+interface RefreshTokenPayload extends jwt.JwtPayload {
+  sub: string;
+  sid: string;
+  typ: 'refresh';
 }
 
 /**
- * Handles authentication concerns such as Google login and JWT issuance.
+ * Handles authentication concerns such as provider login, JWT issuance and session lifecycle.
  */
 export class AuthService {
   private googleClient?: OAuth2Client;
+  private accessTokenTtl = process.env.ACCESS_TOKEN_TTL || '15m';
+  private refreshTokenTtl = process.env.REFRESH_TOKEN_TTL || '30d';
+  private refreshSecret = process.env.JWT_REFRESH_SECRET || this.jwtSecret;
 
   constructor(
     private googleClientId: string | undefined,
@@ -65,42 +97,19 @@ export class AuthService {
     }
   }
 
-  /**
-   * Exchange Google idToken for an app session.
-   * - Verifies Google token
-   * - Upserts user in Mongo
-   * - Issues JWT signed with backend secret
-   *
-   * @param idToken - Google identity token from the client.
-   */
-  async loginWithGoogle(idToken: string): Promise<AuthResult> {
+  async loginWithGoogle(idToken: string, ctx: SessionContext = {}): Promise<AuthResult> {
     const googleUser = await this.verifyGoogleToken(idToken);
     const user = await this.userRepo.findOrCreateFromGoogle(googleUser);
     if (user.status === 'suspended') {
       throw new ForbiddenError('User is suspended');
     }
-    const token = this.signSessionToken(user.id, user.email);
-
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        picture: user.picture,
-        role: user.role,
-      },
-      token,
-    };
+    return this.issueSession(user, ctx);
   }
 
-  /**
-   * Register a local user with email and password.
-   */
-  async registerWithPassword(input: {
-    email: string;
-    password: string;
-    name?: string;
-  }): Promise<AuthResult> {
+  async registerWithPassword(
+    input: { email: string; password: string; name?: string },
+    ctx: SessionContext = {}
+  ): Promise<AuthResult> {
     const { email, password, name } = input;
     const normalizedEmail = this.normalizeEmail(email);
     const trimmedName = name ? name.trim() : '';
@@ -143,24 +152,13 @@ export class AuthService {
       passwordSalt: salt,
     });
 
-    const token = this.signSessionToken(user.id, user.email);
-
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        picture: user.picture,
-        role: user.role,
-      },
-      token,
-    };
+    return this.issueSession(user, ctx);
   }
 
-  /**
-   * Login with email and password.
-   */
-  async loginWithPassword(input: { email: string; password: string }): Promise<AuthResult> {
+  async loginWithPassword(
+    input: { email: string; password: string },
+    ctx: SessionContext = {}
+  ): Promise<AuthResult> {
     const { email, password } = input;
     const normalizedEmail = this.normalizeEmail(email);
     const details: ValidationErrorDetail[] = [];
@@ -192,8 +190,49 @@ export class AuthService {
     }
 
     await this.userRepo.touchLastLogin(user.id);
+    return this.issueSession(user, ctx);
+  }
 
-    const token = this.signSessionToken(user.id, user.email);
+  async refreshSession(refreshToken: string, ctx: SessionContext = {}): Promise<AuthResult> {
+    const payload = this.verifyRefreshToken(refreshToken);
+
+    const session = await AuthSessionModel.findOne({
+      _id: payload.sid,
+      userId: payload.sub,
+      revokedAt: { $exists: false },
+      expiresAt: { $gt: new Date() },
+    }).exec();
+    if (!session) {
+      throw new UnauthorizedError('Session expired');
+    }
+
+    if (session.refreshTokenHash !== this.hashToken(refreshToken)) {
+      throw new UnauthorizedError('Invalid refresh token');
+    }
+
+    const user = await this.userRepo.findById(payload.sub);
+    if (!user) {
+      throw new UnauthorizedError('User not found');
+    }
+    if (user.status === 'suspended') {
+      throw new ForbiddenError('User is suspended');
+    }
+
+    const nextRefreshToken = this.signRefreshToken(user.id, String(session._id));
+    session.refreshTokenHash = this.hashToken(nextRefreshToken);
+    session.lastUsedAt = new Date();
+    session.userAgent = ctx.userAgent || session.userAgent;
+    session.ipAddress = ctx.ipAddress || session.ipAddress;
+    session.deviceName = ctx.deviceName || session.deviceName;
+    await session.save();
+
+    const accessToken = this.signAccessToken(
+      user.id,
+      user.email,
+      user.role || 'user',
+      String(session._id)
+    );
+
     return {
       user: {
         id: user.id,
@@ -202,22 +241,25 @@ export class AuthService {
         picture: user.picture,
         role: user.role,
       },
-      token,
+      accessToken,
+      refreshToken: nextRefreshToken,
+      expiresIn: this.toExpiresInSeconds(this.accessTokenTtl, 900),
+      session: {
+        id: String(session._id),
+        expiresAt: session.expiresAt.toISOString(),
+        createdAt: session.createdAt.toISOString(),
+        lastUsedAt: session.lastUsedAt?.toISOString(),
+        userAgent: session.userAgent,
+        ipAddress: session.ipAddress,
+        deviceName: session.deviceName,
+      },
     };
   }
 
-  /**
-   * Validate JWT and return associated user.
-   *
-   * @param token - Signed JWT issued by this service.
-   */
   async getSession(token: string): Promise<SessionUser> {
     try {
-      const payload = jwt.verify(token, this.jwtSecret) as jwt.JwtPayload;
-      const userId = payload.sub as string;
-      if (!userId) throw new UnauthorizedError('Invalid token payload');
-
-      const user = await this.userRepo.findById(userId);
+      const payload = this.verifyAccessToken(token);
+      const user = await this.userRepo.findById(payload.sub);
       if (!user) throw new UnauthorizedError('User not found');
       if (user.status === 'suspended') {
         throw new ForbiddenError('User is suspended');
@@ -236,9 +278,291 @@ export class AuthService {
     }
   }
 
-  /**
-   * Validates the Google token and extracts the user profile.
-   */
+  getAccessTokenPayload(token: string): AccessTokenPayload {
+    return this.verifyAccessToken(token);
+  }
+
+  async getSessionsForUser(userId: string, currentSessionId?: string): Promise<AuthSessionView[]> {
+    const sessions = await AuthSessionModel.find({
+      userId,
+      revokedAt: { $exists: false },
+      expiresAt: { $gt: new Date() },
+    })
+      .sort({ lastUsedAt: -1, createdAt: -1 })
+      .lean()
+      .exec();
+
+    return sessions.map((session) => ({
+      id: String(session._id),
+      expiresAt: session.expiresAt.toISOString(),
+      createdAt: session.createdAt.toISOString(),
+      lastUsedAt: session.lastUsedAt?.toISOString(),
+      userAgent: session.userAgent,
+      ipAddress: session.ipAddress,
+      deviceName: session.deviceName,
+      current: currentSessionId ? String(session._id) === currentSessionId : false,
+    }));
+  }
+
+  async revokeSessionById(userId: string, sessionId: string): Promise<void> {
+    await AuthSessionModel.updateOne(
+      { _id: sessionId, userId, revokedAt: { $exists: false } },
+      { $set: { revokedAt: new Date() } }
+    ).exec();
+  }
+
+  async revokeSessionByRefreshToken(refreshToken: string): Promise<void> {
+    try {
+      const payload = this.verifyRefreshToken(refreshToken);
+      await AuthSessionModel.updateOne(
+        { _id: payload.sid, userId: payload.sub, revokedAt: { $exists: false } },
+        { $set: { revokedAt: new Date() } }
+      ).exec();
+    } catch {
+      // noop to keep logout idempotent
+    }
+  }
+
+  async revokeAllSessions(userId: string, exceptSessionId?: string): Promise<void> {
+    const query: Record<string, unknown> = { userId, revokedAt: { $exists: false } };
+    if (exceptSessionId) {
+      query._id = { $ne: exceptSessionId };
+    }
+    await AuthSessionModel.updateMany(query, { $set: { revokedAt: new Date() } }).exec();
+  }
+
+  async requestPasswordReset(email: string, resetBaseUrl?: string): Promise<void> {
+    const normalizedEmail = this.normalizeEmail(email);
+    if (!normalizedEmail) {
+      throw new ValidationError('email is required', [
+        { field: 'email', message: 'Email is required', value: email },
+      ]);
+    }
+
+    const user = await this.userRepo.findByEmail(normalizedEmail);
+    if (!user) {
+      return;
+    }
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = this.hashToken(rawToken);
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await PasswordResetTokenModel.create({
+      userId: user.id,
+      tokenHash,
+      expiresAt,
+    });
+
+    const baseUrl =
+      resetBaseUrl ||
+      process.env.PASSWORD_RESET_URL ||
+      process.env.APP_PUBLIC_URL ||
+      'http://localhost:3000/auth/reset-password';
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    const resetLink = `${baseUrl}${separator}token=${encodeURIComponent(rawToken)}`;
+
+    await this.sendPasswordResetEmail(user.email, resetLink);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    if (!token) {
+      throw new ValidationError('token is required', [
+        { field: 'token', message: 'Token is required' },
+      ]);
+    }
+    if (!newPassword || newPassword.length < PASSWORD_MIN_LENGTH) {
+      throw new ValidationError('password is invalid', [
+        {
+          field: 'password',
+          message: `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
+        },
+      ]);
+    }
+
+    const tokenHash = this.hashToken(token);
+    const resetToken = await PasswordResetTokenModel.findOne({
+      tokenHash,
+      usedAt: { $exists: false },
+      expiresAt: { $gt: new Date() },
+    }).exec();
+    if (!resetToken) {
+      throw new UnauthorizedError('Invalid or expired reset token');
+    }
+
+    const user = await this.userRepo.findById(String(resetToken.userId));
+    if (!user) {
+      throw new UnauthorizedError('User not found');
+    }
+
+    const { salt, hash } = await this.createPasswordHash(newPassword);
+    await this.userRepo.updatePassword(user.id, hash, salt);
+    await this.revokeAllSessions(user.id);
+
+    resetToken.usedAt = new Date();
+    await resetToken.save();
+  }
+
+  private async issueSession(user: any, ctx: SessionContext): Promise<AuthResult> {
+    const sessionObjectId = new mongoose.Types.ObjectId();
+    const sessionId = String(sessionObjectId);
+    const refreshToken = this.signRefreshToken(user.id, sessionId);
+    const refreshTokenHash = this.hashToken(refreshToken);
+    const expiresAt = this.buildExpiryDate(this.refreshTokenTtl, 30 * 24 * 60 * 60 * 1000);
+
+    const session = await AuthSessionModel.create({
+      _id: sessionObjectId,
+      userId: user.id,
+      refreshTokenHash,
+      userAgent: ctx.userAgent,
+      ipAddress: ctx.ipAddress,
+      deviceName: ctx.deviceName,
+      lastUsedAt: new Date(),
+      expiresAt,
+    });
+
+    const accessToken = this.signAccessToken(
+      user.id,
+      user.email,
+      user.role || 'user',
+      String(session._id)
+    );
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        role: user.role,
+      },
+      accessToken,
+      refreshToken,
+      expiresIn: this.toExpiresInSeconds(this.accessTokenTtl, 900),
+      session: {
+        id: String(session._id),
+        expiresAt: session.expiresAt.toISOString(),
+        createdAt: session.createdAt.toISOString(),
+        lastUsedAt: session.lastUsedAt?.toISOString(),
+        userAgent: session.userAgent,
+        ipAddress: session.ipAddress,
+        deviceName: session.deviceName,
+      },
+    };
+  }
+
+  private verifyAccessToken(token: string): AccessTokenPayload {
+    const payload = jwt.verify(token, this.jwtSecret) as AccessTokenPayload;
+    if (payload.typ !== 'access' || !payload.sub || !payload.sid) {
+      throw new UnauthorizedError('Invalid access token');
+    }
+    return payload;
+  }
+
+  private verifyRefreshToken(token: string): RefreshTokenPayload {
+    const payload = jwt.verify(token, this.refreshSecret) as RefreshTokenPayload;
+    if (payload.typ !== 'refresh' || !payload.sub || !payload.sid) {
+      throw new UnauthorizedError('Invalid refresh token');
+    }
+    return payload;
+  }
+
+  private signAccessToken(
+    userId: string,
+    email: string,
+    role: 'admin' | 'editor' | 'user',
+    sessionId: string
+  ): string {
+    return jwt.sign(
+      {
+        sub: userId,
+        email,
+        role,
+        sid: sessionId,
+        typ: 'access',
+      },
+      this.jwtSecret,
+      { expiresIn: this.accessTokenTtl as jwt.SignOptions['expiresIn'] }
+    );
+  }
+
+  private signRefreshToken(userId: string, sessionId: string): string {
+    return jwt.sign(
+      {
+        sub: userId,
+        sid: sessionId,
+        typ: 'refresh',
+      },
+      this.refreshSecret,
+      { expiresIn: this.refreshTokenTtl as jwt.SignOptions['expiresIn'] }
+    );
+  }
+
+  private hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
+
+  private buildExpiryDate(value: string, fallbackMs: number): Date {
+    const seconds = this.toExpiresInSeconds(value, Math.floor(fallbackMs / 1000));
+    return new Date(Date.now() + seconds * 1000);
+  }
+
+  private toExpiresInSeconds(value: string, fallback: number): number {
+    const lower = String(value || '').trim().toLowerCase();
+    const parsedInt = Number(lower);
+    if (Number.isFinite(parsedInt) && parsedInt > 0) {
+      return Math.floor(parsedInt);
+    }
+
+    const match = /^(\d+)([smhd])$/.exec(lower);
+    if (!match) {
+      return fallback;
+    }
+
+    const amount = Number(match[1]);
+    const unit = match[2];
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return fallback;
+    }
+
+    if (unit === 's') return amount;
+    if (unit === 'm') return amount * 60;
+    if (unit === 'h') return amount * 60 * 60;
+    if (unit === 'd') return amount * 24 * 60 * 60;
+    return fallback;
+  }
+
+  private async sendPasswordResetEmail(to: string, resetLink: string): Promise<void> {
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = Number(process.env.SMTP_PORT || 587);
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    const smtpFrom = process.env.SMTP_FROM || smtpUser || 'no-reply@guiatv.local';
+
+    if (!smtpHost || !smtpUser || !smtpPass) {
+      logger.warn('SMTP credentials are missing, logging reset link', {
+        to,
+        resetLink,
+      });
+      return;
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: { user: smtpUser, pass: smtpPass },
+    });
+
+    await transporter.sendMail({
+      from: smtpFrom,
+      to,
+      subject: 'Recuperación de contraseña - GuiaTV',
+      text: `Has solicitado restablecer tu contraseña.\n\nAbre este enlace: ${resetLink}\n\nSi no lo pediste, ignora este mensaje.`,
+      html: `<p>Has solicitado restablecer tu contraseña.</p><p><a href="${resetLink}">Restablecer contraseña</a></p><p>Si no lo pediste, ignora este mensaje.</p>`,
+    });
+  }
+
   private async verifyGoogleToken(idToken: string): Promise<GoogleUser> {
     if (!this.googleClient || !this.googleClientId) {
       throw new UnauthorizedError('Google client ID is not configured');
@@ -298,20 +622,5 @@ export class AuthService {
     const expected = Buffer.from(expectedHash, 'hex');
     if (expected.length !== derived.length) return false;
     return crypto.timingSafeEqual(expected, derived);
-  }
-
-  /**
-   * Signs a short-lived JWT for API consumption.
-   */
-  private signSessionToken(userId: string, email: string): string {
-    const expiresIn = '7d';
-    return jwt.sign(
-      {
-        sub: userId,
-        email,
-      },
-      this.jwtSecret,
-      { expiresIn }
-    );
   }
 }

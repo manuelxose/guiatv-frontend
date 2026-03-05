@@ -201,3 +201,43 @@ export interface UserSessionState {
   isAuthenticated: Observable<boolean>;
   profile: Observable<UserProfile>;
 }
+
+export interface AuthSessionInfo {
+  id: string;
+  expiresAt: string;
+  createdAt: string;
+  lastUsedAt?: string;
+  userAgent?: string;
+  ipAddress?: string;
+  deviceName?: string;
+  current?: boolean;
+}
+
+export interface UserNotification {
+  id: string;
+  type: 'follow' | 'message' | 'recommendation' | 'report_status' | 'system';
+  title: string;
+  description?: string;
+  entityType?: string;
+  entityId?: string;
+  actorId?: string;
+  payload?: Record<string, unknown>;
+  readAt?: string;
+  createdAt: string;
+}
+
+export interface UserReport {
+  id: string;
+  reporterId: string;
+  targetUserId?: string;
+  targetMessageId?: string;
+  type: 'user' | 'message' | 'content' | 'other';
+  reason: string;
+  details?: string;
+  status: 'open' | 'reviewing' | 'resolved' | 'dismissed';
+  resolutionNote?: string;
+  resolvedBy?: string;
+  resolvedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}

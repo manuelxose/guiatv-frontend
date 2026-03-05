@@ -4,7 +4,7 @@ import { DateUtils } from '../../shared/utils/dateUtils';
 const UI_UNITS = {
   MINUTES_PER_SLOT: 30,
   MINUTES_PER_COLUMN: 5,
-  MAX_GRID_COLUMNS: 7,
+  MAX_GRID_COLUMNS: 6,
   PIXELS_PER_HOUR: 240,
   LOGO_COLUMN_WIDTH: 160,
   MAX_LAYERS: 5,
@@ -106,7 +106,7 @@ export class ProgramLayoutBuilder {
     requestedSlot?: string,
     fields: 'minimal' | 'full' = 'full'
   ): ProgramLayoutDTO[] {
-    const baseDayStartUtc = this.getDayStartUTC(date);
+    const baseDayStart = this.getDayStartLocal(date);
 
     // Precompute slot layouts per channel to assign layers
     const perChannelPerSlot: Record<
@@ -117,7 +117,7 @@ export class ProgramLayoutBuilder {
     const programLayouts = programs.map((program) => {
       const { startMinutes, endMinutes, crossesMidnight } = this.getProgramMinutes(
         program,
-        baseDayStartUtc
+        baseDayStart
       );
 
       const slotLayouts: SlotLayoutDTO[] = [];
@@ -157,8 +157,8 @@ export class ProgramLayoutBuilder {
         id: program.id,
         channelId: program.channelId,
         title: program.title,
-        start: program.startTime.toISOString(),
-        end: program.endTime.toISOString(),
+        start: this.toLocalISO(program.startTime),
+        end: this.toLocalISO(program.endTime),
         durationMinutes: program.duration,
         category: program.genre,
         image: fields === 'full' ? this.normalizeImageValue(program.image) : undefined,
@@ -299,12 +299,34 @@ export class ProgramLayoutBuilder {
     return undefined;
   }
 
-  private getProgramMinutes(program: Program, baseDayStartUtc: number) {
+  /**
+   * Formats a Date as an ISO 8601 string with the local timezone offset
+   * (e.g. "2026-03-05T22:00:00+01:00") instead of UTC "Z" suffix.
+   * This ensures the frontend always receives explicit timezone information.
+   */
+  private toLocalISO(date: Date): string {
+    const offsetMin = date.getTimezoneOffset(); // negative for east of UTC
+    const sign = offsetMin <= 0 ? '+' : '-';
+    const absOffset = Math.abs(offsetMin);
+    const oh = String(Math.floor(absOffset / 60)).padStart(2, '0');
+    const om = String(absOffset % 60).padStart(2, '0');
+
+    const y = date.getFullYear();
+    const mo = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    const h = String(date.getHours()).padStart(2, '0');
+    const mi = String(date.getMinutes()).padStart(2, '0');
+    const s = String(date.getSeconds()).padStart(2, '0');
+
+    return `${y}-${mo}-${d}T${h}:${mi}:${s}${sign}${oh}:${om}`;
+  }
+
+  private getProgramMinutes(program: Program, baseDayStart: number) {
     const startMinutes = Math.floor(
-      (program.startTime.getTime() - baseDayStartUtc) / 60000
+      (program.startTime.getTime() - baseDayStart) / 60000
     );
     let endMinutes = Math.floor(
-      (program.endTime.getTime() - baseDayStartUtc) / 60000
+      (program.endTime.getTime() - baseDayStart) / 60000
     );
 
     if (endMinutes <= startMinutes) {
@@ -318,9 +340,14 @@ export class ProgramLayoutBuilder {
     };
   }
 
-  private getDayStartUTC(date: string): number {
+  /**
+   * Returns local midnight timestamp for the given YYYYMMDD date.
+   * Uses local time (controlled by process.env.TZ) so that minute offsets
+   * align with the local-time slot definitions (00:00-03:00, etc.).
+   */
+  private getDayStartLocal(date: string): number {
     const d = DateUtils.parseYYYYMMDD(date);
-    return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0).getTime();
   }
 
   private parseTimeToMinutes(time: string): number {
@@ -362,15 +389,8 @@ export class ProgramLayoutBuilder {
       normalizedSlotEnd += 1440;
     }
 
-    let normProgramStart = programStart;
-    let normProgramEnd = programEnd;
-    while (normProgramEnd <= normalizedSlotStart) {
-      normProgramStart += 1440;
-      normProgramEnd += 1440;
-    }
-
-    const visibleStart = Math.max(normProgramStart, normalizedSlotStart);
-    const visibleEnd = Math.min(normProgramEnd, normalizedSlotEnd);
+    const visibleStart = Math.max(programStart, normalizedSlotStart);
+    const visibleEnd = Math.min(programEnd, normalizedSlotEnd);
 
     if (visibleEnd <= visibleStart) return null;
 

@@ -17,6 +17,7 @@ export const createChatRoutes = (controller: ChatController, authService: AuthSe
   router.post('/conversations', asyncHandler(controller.createConversation.bind(controller)));
   router.get('/conversations/:id/messages', asyncHandler(controller.getMessages.bind(controller)));
   router.post('/conversations/:id/messages', asyncHandler(controller.sendMessage.bind(controller)));
+  router.post('/conversations/:id/read', asyncHandler(controller.markConversationRead.bind(controller)));
 
   return router;
 };

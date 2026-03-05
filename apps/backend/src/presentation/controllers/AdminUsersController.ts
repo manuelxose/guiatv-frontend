@@ -2,11 +2,16 @@ import { Request, Response, NextFunction } from 'express';
 import { UserModel } from '../../infrastructure/database/models/User.model';
 import { successResponse } from '../../shared/types/ApiResponse';
 import { NotFoundError, ValidationError } from '../../shared/errors';
+import { UserReportModel } from '../../infrastructure/database/models/UserReport.model';
+import { UserNotificationService } from '../../application/services/UserNotificationService';
 
 const ROLES = new Set(['admin', 'editor', 'user']);
 const STATUSES = new Set(['active', 'suspended']);
+const REPORT_STATUSES = new Set(['open', 'reviewing', 'resolved', 'dismissed']);
 
 export class AdminUsersController {
+  private notificationService = new UserNotificationService();
+
   async listUsers(
     req: Request,
     res: Response,
@@ -123,6 +128,88 @@ export class AdminUsersController {
     }
   }
 
+  async listReports(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { status, page, limit } = req.query;
+      const filters: Record<string, any> = {};
+      if (status && typeof status === 'string' && REPORT_STATUSES.has(status)) {
+        filters.status = status;
+      }
+
+      const limitValue = this.parseNumber(limit, 20, 1, 100);
+      const pageValue = this.parseNumber(page, 1, 1, 1000);
+      const skip = (pageValue - 1) * limitValue;
+
+      const [reports, total] = await Promise.all([
+        UserReportModel.find(filters).sort({ createdAt: -1 }).skip(skip).limit(limitValue).lean().exec(),
+        UserReportModel.countDocuments(filters),
+      ]);
+
+      const pages = Math.max(1, Math.ceil(total / limitValue));
+      res.json(
+        successResponse({
+          reports: reports.map((report) => this.mapReport(report)),
+          pagination: {
+            total,
+            page: pageValue,
+            limit: limitValue,
+            pages,
+          },
+        })
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateReport(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { status, resolutionNote, action } = req.body || {};
+
+      if (!status || typeof status !== 'string' || !REPORT_STATUSES.has(status)) {
+        throw new ValidationError('Invalid report status', [
+          { field: 'status', message: 'Invalid report status', value: status },
+        ]);
+      }
+
+      const updates: Record<string, any> = {
+        status,
+        resolutionNote: resolutionNote ? String(resolutionNote).trim() : undefined,
+        resolvedAt:
+          status === 'resolved' || status === 'dismissed' ? new Date() : undefined,
+      };
+
+      const report = await UserReportModel.findByIdAndUpdate(
+        id,
+        { $set: updates },
+        { new: true }
+      )
+        .lean()
+        .exec();
+      if (!report) {
+        throw new NotFoundError('Report not found');
+      }
+
+      if (action === 'suspend' && report.targetUserId) {
+        await UserModel.findByIdAndUpdate(report.targetUserId, {
+          $set: { status: 'suspended' },
+        }).exec();
+      }
+
+      await this.notificationService.notifyReportStatus({
+        recipientId: String(report.reporterId),
+        reportId: String(report._id),
+        status: status as 'open' | 'reviewing' | 'resolved' | 'dismissed',
+        note: updates.resolutionNote,
+      });
+
+      res.json(successResponse({ report: this.mapReport(report) }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
   private mapUser(user: any): any {
     return {
       id: String(user._id),
@@ -135,6 +222,24 @@ export class AdminUsersController {
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+    };
+  }
+
+  private mapReport(report: any): any {
+    return {
+      id: String(report._id),
+      reporterId: String(report.reporterId),
+      targetUserId: report.targetUserId ? String(report.targetUserId) : undefined,
+      targetMessageId: report.targetMessageId ? String(report.targetMessageId) : undefined,
+      type: report.type,
+      reason: report.reason,
+      details: report.details,
+      status: report.status,
+      resolutionNote: report.resolutionNote,
+      resolvedBy: report.resolvedBy ? String(report.resolvedBy) : undefined,
+      resolvedAt: report.resolvedAt,
+      createdAt: report.createdAt,
+      updatedAt: report.updatedAt,
     };
   }
 

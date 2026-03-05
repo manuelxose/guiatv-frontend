@@ -64,7 +64,7 @@ const UI_CONFIG = {
   EXPANDED_BANNER_HEIGHT: 320,
   MINUTES_PER_SLOT: 30,
   MINUTES_PER_COLUMN: 5,
-  MAX_GRID_COLUMNS: 7,
+  MAX_GRID_COLUMNS: 6,
   NIGHT_SLOT_END_MINUTES: 30,
   MAX_LAYERS: 5,
   MOBILE_ITEM_SIZE: 60,
@@ -200,8 +200,19 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   );
 
   public readonly filteredChannels = computed(() => {
-    const channels = this.transform.getFilteredChannels(
-      this.canalesConProgramas(),
+    let channels = this.canalesConProgramas();
+
+    // 1) Filter by channel type
+    const typeFilter = this.channelTypeFilter();
+    if (typeFilter && typeFilter !== 'Todos') {
+      channels = channels.filter(
+        (canal) => canal.channel?.type?.toLowerCase() === typeFilter.toLowerCase()
+      );
+    }
+
+    // 2) Filter by selected categories
+    channels = this.transform.getFilteredChannels(
+      channels,
       this.selectedCategories()
     );
 
@@ -1365,8 +1376,8 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     try {
       const date = new Date(timestamp);
-      const hours = date.getUTCHours().toString().padStart(2, '0');
-      const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
       return `${hours}:${minutes}`;
     } catch {
       return '';
@@ -1391,7 +1402,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Devuelve las etiquetas horarias alineadas con las 7 columnas de 30min.
+   * Devuelve las etiquetas horarias alineadas con las 6 columnas de 30min.
    */
   public getTimeHeaderLabels(): string[] {
     const start = this.currentTimeSlot();
@@ -1846,8 +1857,17 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public setChannelTypeFilter(type: string): void {
     this.channelTypeFilter.set(type);
+    this.selectedCategories.set(new Set());
     this.isChannelTypeDropdownOpen.set(false);
     this.cdr.markForCheck();
+  }
+
+  public getChannelTypeCount(type: string): number {
+    const channels = this.canalesConProgramas();
+    if (type === 'Todos') return channels.length;
+    return channels.filter(
+      (c) => c.channel?.type?.toLowerCase() === type.toLowerCase()
+    ).length;
   }
 
   public isAnyDropdownOpen(): boolean {
@@ -1918,54 +1938,23 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 // }
 
 
-  // Categorías principales para filtrar y ordenar
-  private readonly MAIN_CATEGORIES = [
-    'Cine',
-    'Series',
-    'Deportes',
-    'Noticias',
-    'Documental',
-    'Infantil',
-    'Concurso',
-    'Magazine',
-    'Entretenimiento',
-    'Música'
-  ];
+  // Category rendering order is now managed by transform.getAvailableCategories().
 
   /**
-   * Categorías disponibles para filtrar
-   * Se obtiene del servicio CategoryFilterService o se extrae de los programas
+   * Categorías disponibles basadas en los canales visibles (tras filtrar por tipo)
    */
   public readonly availableCategories = computed(() => {
-    // Opción 2: Extraer de los canales cargados
-    const channels = this.canalesConProgramas();
-    const categories = new Set<string>();
-    
-    channels.forEach(channel => {
-      channel.channels?.forEach(program => {
-        let category = (program.category as any)?.value || program.category;
-        if (category && typeof category === 'string') {
-          // Normalizar categoría (capitalizar primera letra)
-          category = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
-          
-          // Verificar si la categoría contiene alguna de las categorías principales
-          const matchedMain = this.MAIN_CATEGORIES.find(main => 
-            category.includes(main) || main.includes(category)
-          );
+    let channels = this.canalesConProgramas();
 
-          if (matchedMain) {
-            categories.add(matchedMain);
-          }
-        }
-      });
-    });
-    
-    // Convertir a array y ordenar según el orden definido en MAIN_CATEGORIES
-    return Array.from(categories).sort((a, b) => {
-      const indexA = this.MAIN_CATEGORIES.indexOf(a);
-      const indexB = this.MAIN_CATEGORIES.indexOf(b);
-      return indexA - indexB; // Ordenar por relevancia predefinida
-    });
+    // Apply channel type filter so categories reflect only visible channels
+    const typeFilter = this.channelTypeFilter();
+    if (typeFilter && typeFilter !== 'Todos') {
+      channels = channels.filter(
+        (canal) => canal.channel?.type?.toLowerCase() === typeFilter.toLowerCase()
+      );
+    }
+
+    return this.transform.getAvailableCategories(channels);
   });
 
 // ============================================

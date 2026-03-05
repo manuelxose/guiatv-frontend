@@ -1,9 +1,5 @@
 #!/usr/bin/env node
-
-/**
- * Script CLI para ejecutar syncEPG desde cron del sistema
- * Uso: node dist/jobs/cli/syncEPG.cli.js
- */
+import '../../config/bootstrap';
 
 import { syncEPGJob } from '../syncEPG';
 

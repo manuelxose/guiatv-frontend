@@ -1,7 +1,13 @@
+// Shared bootstrap: sets TZ=Europe/Madrid and loads env vars.
+// Must be the very first import.
+import '../config/bootstrap';
+
+import { createServer } from 'http';
 import { createApp as createRoutesApp } from '../presentation/routes/app';
 import { config, validateConfig } from './config';
 import { createContainer } from '../config/container';
 import { logger } from '../shared/utils/logger';
+import { ChatSocketHub } from '../presentation/realtime/ChatSocketHub';
 
 /**
  * Entry point for the standalone Express server.
@@ -40,7 +46,10 @@ async function startServer() {
     const { initializeJobs } = await import('../jobs');
     initializeJobs();
 
-    const server = app.listen(config.port, () => {
+    const httpServer = createServer(app);
+    ChatSocketHub.getInstance().initialize(httpServer, container.get('authService'));
+
+    const server = httpServer.listen(config.port, () => {
       logger.info(`Server listening on http://localhost:${config.port}`);
     });
 

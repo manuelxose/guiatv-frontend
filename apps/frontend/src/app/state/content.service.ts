@@ -12,6 +12,30 @@ import { ApiConfigService } from '../api/api-config.service';
 export type ContentKind = 'movies' | 'series' | 'all';
 export type ChannelType = 'TDT' | 'AUTONOMICO' | 'MOVISTAR' | 'CABLE' | 'DEPORTES';
 const DEFAULT_CHANNEL_TYPES = ['TDT', 'CABLE', 'MOVISTAR', 'AUTONOMICO', 'OTT'];
+const MAIN_FEATURED_CHANNELS = new Set([
+  'la_1',
+  'la_2',
+  'antena_3',
+  'cuatro',
+  'telecinco',
+  'la_sexta',
+]);
+
+const MAIN_CHANNEL_ALIASES: Record<string, string> = {
+  la1: 'la_1',
+  la_1: 'la_1',
+  tve1: 'la_1',
+  la2: 'la_2',
+  la_2: 'la_2',
+  tve2: 'la_2',
+  antena3: 'antena_3',
+  antena_3: 'antena_3',
+  cuatro: 'cuatro',
+  telecinco: 'telecinco',
+  lasexta: 'la_sexta',
+  la_sexta: 'la_sexta',
+  la6: 'la_sexta',
+};
 
 export interface ContentItem {
   id: string;
@@ -79,7 +103,7 @@ export class ContentService {
           const filtered = this.filterByKind(items, kind);
           const categories = this.extractCategories(filtered);
           const live = filtered.filter((i) => this.isLive(i.start, i.end));
-          const featured = this.pickFeatured(filtered);
+          const featured = this.pickFeatured(filtered, kind);
 
           // Cache layout snapshot for helper methods
           this.cachedLayouts = resp;
@@ -216,7 +240,7 @@ export class ContentService {
     channel?: ChannelMetaDTO
   ): ContentItem {
     const safeChannel = this.normalizeChannel(channel, program);
-    const image = this.resolveImage(program.image);
+    const image = this.resolveProgramImage(program);
     const title =
       typeof program.title === 'object' ? program.title.value : program.title;
     const category = program.category;
@@ -279,6 +303,30 @@ export class ContentService {
     return `${base}/${img}`;
   }
 
+  private resolveProgramImage(program: ProgramLayoutDTO): string | undefined {
+    const rawProgram = program as any;
+    const candidates = [
+      program.image,
+      rawProgram?.poster,
+      rawProgram?.background,
+      rawProgram?.icon,
+    ];
+
+    for (const candidate of candidates) {
+      const normalized = this.resolveImage(candidate);
+      if (this.hasValidImageUrl(normalized)) return normalized;
+    }
+
+    return undefined;
+  }
+
+  private hasValidImageUrl(url?: string | null): boolean {
+    const value = String(url || '').trim();
+    if (!value) return false;
+    if (value.includes('undefined') || value.includes('null')) return false;
+    return /^(https?:\/\/|\/|data:image\/)/i.test(value);
+  }
+
   private filterByKind(items: ContentItem[], kind: ContentKind): ContentItem[] {
     if (kind === 'all') return items;
     return items.filter((i) =>
@@ -325,18 +373,45 @@ export class ContentService {
     return parts[1]?.trim() || parts[0]?.trim() || null;
   }
 
-  private pickFeatured(items: ContentItem[]): ContentItem | null {
+  private pickFeatured(items: ContentItem[], kind: ContentKind): ContentItem | null {
     if (!items.length) return null;
 
-    // Prefer highest rating; fallback to first upcoming
-    const rated = [...items].filter((i) => typeof i.rating === 'number');
-    if (rated.length) {
-      return rated.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0))[0];
+    if (kind === 'movies') {
+      const eligible = items
+        .filter((item) => this.isMainFeaturedChannel(item.channel))
+        .filter((item) => this.hasValidImageUrl(item.image))
+        .sort(
+          (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+        );
+
+      // No fallback to non-main channels for Home featured.
+      return eligible[0] || null;
     }
 
     const upcoming = [...items].sort(
       (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
     );
     return upcoming[0] || null;
+  }
+
+  private isMainFeaturedChannel(channel?: ChannelMetaDTO): boolean {
+    const tokens = [
+      this.normalizeChannelToken(channel?.id),
+      this.normalizeChannelToken(channel?.name),
+    ].filter(Boolean);
+
+    return tokens.some((token) => {
+      const canonical = MAIN_CHANNEL_ALIASES[token] || token;
+      return MAIN_FEATURED_CHANNELS.has(canonical);
+    });
+  }
+
+  private normalizeChannelToken(value?: string | null): string {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
   }
 }

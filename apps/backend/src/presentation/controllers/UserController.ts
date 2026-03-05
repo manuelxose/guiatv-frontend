@@ -9,13 +9,14 @@ import { UserListItemModel } from '../../infrastructure/database/models/UserList
 import { UserFavoriteModel } from '../../infrastructure/database/models/UserFavorite.model';
 import { UserActivityModel } from '../../infrastructure/database/models/UserActivity.model';
 import { UserFollowModel } from '../../infrastructure/database/models/UserFollow.model';
+import { UserNotificationModel } from '../../infrastructure/database/models/UserNotification.model';
 
 const DEFAULT_PRIVACY = {
   profilePublic: true,
   shareActivity: true,
   shareWatchlist: true,
   showOnline: true,
-  allowMessages: 'all' as const,
+  allowMessages: 'followers' as const,
   publicLists: true,
 };
 
@@ -302,35 +303,41 @@ export class UserController {
         throw new NotFoundError('List not found');
       }
 
+      const normalizedTitle = String(title).trim();
+      const existingQuery: Record<string, any> = {
+        listId: id,
+        userId,
+      };
       if (contentId) {
-        const existing = await UserListItemModel.findOne({
-          listId: id,
-          userId,
-          contentId: String(contentId),
-        }).exec();
-        if (existing) {
-          if (state) existing.state = state;
-          if (type) existing.type = type;
-          if (poster !== undefined) existing.poster = String(poster).trim();
-          if (rating !== undefined) existing.rating = Number(rating);
-          if (mood !== undefined) existing.mood = String(mood).trim();
-          await existing.save();
+        existingQuery.contentId = String(contentId);
+      } else {
+        existingQuery.title = normalizedTitle;
+        existingQuery.type = type || 'program';
+      }
 
-          res.json(
-            successResponse({
-              list: this.mapList(list.toObject()),
-              item: this.mapListItem(existing.toObject()),
-            })
-          );
-          return;
-        }
+      const existing = await UserListItemModel.findOne(existingQuery).exec();
+      if (existing) {
+        if (state) existing.state = state;
+        if (type) existing.type = type;
+        if (poster !== undefined) existing.poster = String(poster).trim();
+        if (rating !== undefined) existing.rating = Number(rating);
+        if (mood !== undefined) existing.mood = String(mood).trim();
+        await existing.save();
+
+        res.json(
+          successResponse({
+            list: this.mapList(list.toObject()),
+            item: this.mapListItem(existing.toObject()),
+          })
+        );
+        return;
       }
 
       const item = await UserListItemModel.create({
         userId,
         listId: id,
         contentId: contentId ? String(contentId) : undefined,
-        title: String(title).trim(),
+        title: normalizedTitle,
         type: type || 'program',
         state: state || 'pending',
         visibility: list.visibility,
@@ -443,16 +450,38 @@ export class UserController {
         ]);
       }
 
-      const favorite = await UserFavoriteModel.create({
-        userId,
-        itemId: itemId ? String(itemId) : undefined,
-        title: String(title).trim(),
-        image: image ? String(image).trim() : undefined,
-        subtitle: subtitle ? String(subtitle).trim() : undefined,
-        type,
-      });
+      const normalizedItemId = itemId ? String(itemId).trim() : '';
+      const normalizedTitle = String(title).trim();
+      const normalizedType = String(type).trim();
 
-      res.json(successResponse({ favorite: this.mapFavorite(favorite.toObject()) }));
+      const uniqueFilter: Record<string, any> = {
+        userId,
+        type: normalizedType,
+      };
+      if (normalizedItemId) {
+        uniqueFilter.itemId = normalizedItemId;
+      } else {
+        uniqueFilter.title = normalizedTitle;
+      }
+
+      const favorite = await UserFavoriteModel.findOneAndUpdate(
+        uniqueFilter,
+        {
+          $set: {
+            userId,
+            itemId: normalizedItemId || undefined,
+            title: normalizedTitle,
+            image: image ? String(image).trim() : undefined,
+            subtitle: subtitle ? String(subtitle).trim() : undefined,
+            type: normalizedType,
+          },
+        },
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      )
+        .lean()
+        .exec();
+
+      res.json(successResponse({ favorite: this.mapFavorite(favorite) }));
     } catch (error) {
       next(error);
     }
@@ -467,6 +496,80 @@ export class UserController {
         throw new NotFoundError('Favorite not found');
       }
       res.json(successResponse({ deleted: true }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getNotifications(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const limit = Math.min(Math.max(Number(req.query.limit) || 30, 1), 100);
+      const offset = Math.max(Number(req.query.offset) || 0, 0);
+
+      const notifications = await UserNotificationModel.find({ recipientId: userId })
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit)
+        .lean()
+        .exec();
+
+      res.json(
+        successResponse({
+          notifications: notifications.map((notification) =>
+            this.mapNotification(notification)
+          ),
+        })
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async markNotificationsRead(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const now = new Date();
+      const ids = Array.isArray(req.body?.ids)
+        ? req.body.ids
+            .map((id: unknown) => String(id || '').trim())
+            .filter((id: string) => Boolean(id))
+        : [];
+      const markAll = req.body?.all === true;
+
+      const query: Record<string, any> = {
+        recipientId: userId,
+        readAt: { $exists: false },
+      };
+      if (!markAll && ids.length) {
+        query._id = { $in: ids };
+      }
+
+      await UserNotificationModel.updateMany(query, { $set: { readAt: now } }).exec();
+
+      res.json(successResponse({ updated: true }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getUnreadNotificationsCount(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const unreadCount = await UserNotificationModel.countDocuments({
+        recipientId: userId,
+        readAt: { $exists: false },
+      });
+
+      res.json(successResponse({ unreadCount }));
     } catch (error) {
       next(error);
     }
@@ -600,6 +703,21 @@ export class UserController {
       subtitle: fav.subtitle,
       type: fav.type,
       createdAt: fav.createdAt,
+    };
+  }
+
+  private mapNotification(notification: any) {
+    return {
+      id: String(notification._id),
+      type: notification.type,
+      title: notification.title,
+      description: notification.description || '',
+      entityType: notification.entityType,
+      entityId: notification.entityId,
+      actorId: notification.actorId ? String(notification.actorId) : undefined,
+      payload: notification.payload || {},
+      readAt: notification.readAt,
+      createdAt: notification.createdAt,
     };
   }
 }

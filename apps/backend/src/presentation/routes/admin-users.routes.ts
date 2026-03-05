@@ -21,6 +21,16 @@ export const createAdminUsersRoutes = (
     adminAccessGuard,
     asyncHandler(controller.updateUser.bind(controller))
   );
+  router.get(
+    '/reports',
+    adminAccessGuard,
+    asyncHandler(controller.listReports.bind(controller))
+  );
+  router.patch(
+    '/reports/:id',
+    adminAccessGuard,
+    asyncHandler(controller.updateReport.bind(controller))
+  );
 
   return router;
 };

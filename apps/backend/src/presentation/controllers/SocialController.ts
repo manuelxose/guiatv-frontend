@@ -1,15 +1,28 @@
 import { Request, Response, NextFunction } from 'express';
 import { successResponse } from '../../shared/types/ApiResponse';
-import { NotFoundError, ValidationError } from '../../shared/errors';
+import { ForbiddenError, NotFoundError, ValidationError } from '../../shared/errors';
 import { AuthenticatedRequest } from '../middlewares/authGuard';
 import { UserActivityModel } from '../../infrastructure/database/models/UserActivity.model';
 import { UserFollowModel } from '../../infrastructure/database/models/UserFollow.model';
 import { UserModel } from '../../infrastructure/database/models/User.model';
 import { UserProfileModel } from '../../infrastructure/database/models/UserProfile.model';
+import { UserBlockModel } from '../../infrastructure/database/models/UserBlock.model';
+import { UserReportModel } from '../../infrastructure/database/models/UserReport.model';
+import { UserFavoriteModel } from '../../infrastructure/database/models/UserFavorite.model';
+import { UserListItemModel } from '../../infrastructure/database/models/UserListItem.model';
+import { ProgramModel } from '../../infrastructure/database/models/Program.model';
+import { UserNotificationService } from '../../application/services/UserNotificationService';
 
 type ActivityScope = 'me' | 'friends' | 'all';
 
+interface ScopeResolution {
+  userIds: string[];
+  friendIds: Set<string>;
+}
+
 export class SocialController {
+  private notificationService = new UserNotificationService();
+
   async getActivities(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = this.getUserId(req);
@@ -17,23 +30,26 @@ export class SocialController {
       const limit = Math.min(Number(req.query.limit) || 20, 100);
       const offset = Number(req.query.offset) || 0;
 
-      const userIds = await this.resolveScope(userId, scope);
-      if (!userIds.length) {
+      const scopeData = await this.resolveScope(userId, scope);
+      if (!scopeData.userIds.length) {
         res.json(successResponse({ activities: [] }));
         return;
       }
 
-      const activities = await UserActivityModel.find({ userId: { $in: userIds } })
+      const activities = await UserActivityModel.find({ userId: { $in: scopeData.userIds } })
         .sort({ createdAt: -1 })
         .skip(offset)
-        .limit(limit)
+        .limit(limit * 2)
         .lean()
         .exec();
 
-      const userMap = await this.buildUserSummaryMap(userIds);
-      const mapped = activities.map((activity) =>
-        this.mapActivity(activity, userMap.get(String(activity.userId)))
+      const filtered = activities.filter((activity) =>
+        this.canViewActivity(userId, String(activity.userId), activity.visibility, scopeData.friendIds)
       );
+      const userMap = await this.buildUserSummaryMap(scopeData.userIds);
+      const mapped = filtered
+        .slice(0, limit)
+        .map((activity) => this.mapActivity(activity, userMap.get(String(activity.userId))));
 
       res.json(successResponse({ activities: mapped }));
     } catch (error) {
@@ -44,8 +60,7 @@ export class SocialController {
   async getFriends(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = this.getUserId(req);
-      const followees = await UserFollowModel.find({ followerId: userId }).lean().exec();
-      const friendIds = followees.map((follow) => String(follow.followeeId));
+      const friendIds = await this.getMutualFriendIds(userId);
 
       if (!friendIds.length) {
         res.json(successResponse({ friends: [] }));
@@ -54,7 +69,7 @@ export class SocialController {
 
       const userMap = await this.buildUserSummaryMap(friendIds);
       const friends = friendIds
-        .map((id) => this.mapFriend(userMap.get(id)))
+        .map((id) => this.mapFriend(userMap.get(id), true))
         .filter((friend) => friend !== null);
 
       res.json(successResponse({ friends }));
@@ -78,6 +93,11 @@ export class SocialController {
         throw new ValidationError('Cannot follow yourself', [
           { field: 'userId', message: 'Cannot follow yourself', value: targetId },
         ]);
+      }
+
+      const blocked = await this.isBlockedBetween(userId, targetId);
+      if (blocked) {
+        throw new ForbiddenError('Cannot follow a blocked user');
       }
 
       const targetUser = await UserModel.findById(targetId).lean().exec();
@@ -113,6 +133,9 @@ export class SocialController {
       }
 
       if (following) {
+        const actor = await UserModel.findById(userId).lean().exec();
+        const actorName =
+          actor?.name || actor?.email?.split('@')[0] || 'Usuario';
         const targetName = targetUser.name || targetUser.email || 'Usuario';
         await UserActivityModel.create({
           userId,
@@ -121,6 +144,11 @@ export class SocialController {
           description: `Ahora sigues a ${targetName}`,
           badge: 'Comunidad',
           visibility: 'friends',
+        });
+        await this.notificationService.notifyFollow({
+          recipientId: targetId,
+          actorId: userId,
+          actorName,
         });
       }
 
@@ -149,7 +177,7 @@ export class SocialController {
 
       const payload = {
         title: String(title).trim(),
-        type,
+        type: String(type).trim(),
         note: note ? String(note).trim() : '',
         tags: Array.isArray(tags) ? tags.map((tag) => String(tag)) : [],
         visibility: visibility || 'friends',
@@ -188,28 +216,181 @@ export class SocialController {
       const limit = Math.min(Number(req.query.limit) || 20, 100);
       const offset = Number(req.query.offset) || 0;
 
-      const userIds = await this.resolveScope(userId, scope);
-      if (!userIds.length) {
+      const scopeData = await this.resolveScope(userId, scope);
+      if (!scopeData.userIds.length) {
         res.json(successResponse({ recommendations: [] }));
         return;
       }
 
       const activities = await UserActivityModel.find({
-        userId: { $in: userIds },
+        userId: { $in: scopeData.userIds },
         type: 'recommendation',
       })
         .sort({ createdAt: -1 })
         .skip(offset)
-        .limit(limit)
+        .limit(limit * 2)
         .lean()
         .exec();
 
-      const userMap = await this.buildUserSummaryMap(userIds);
-      const mapped = activities.map((activity) =>
-        this.mapRecommendation(activity, userMap.get(String(activity.userId)))
+      const filtered = activities.filter((activity) =>
+        this.canViewActivity(userId, String(activity.userId), activity.visibility, scopeData.friendIds)
       );
 
+      const userMap = await this.buildUserSummaryMap(scopeData.userIds);
+      const mapped = filtered
+        .slice(0, limit)
+        .map((activity) => this.mapRecommendation(activity, userMap.get(String(activity.userId))));
+
+      if (scope === 'me') {
+        const deterministic = await this.buildDeterministicRecommendations(userId, limit);
+        res.json(successResponse({ recommendations: [...mapped, ...deterministic].slice(0, limit) }));
+        return;
+      }
+
       res.json(successResponse({ recommendations: mapped }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async blockUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const targetId = String(req.params.userId || '').trim();
+      if (!targetId) {
+        throw new ValidationError('userId is required', [
+          { field: 'userId', message: 'userId is required', value: targetId },
+        ]);
+      }
+      if (targetId === userId) {
+        throw new ValidationError('Cannot block yourself', [
+          { field: 'userId', message: 'Cannot block yourself', value: targetId },
+        ]);
+      }
+
+      const target = await UserModel.findById(targetId).lean().exec();
+      if (!target) {
+        throw new NotFoundError('User not found');
+      }
+
+      await UserBlockModel.updateOne(
+        { blockerId: userId, blockedId: targetId },
+        { $setOnInsert: { blockerId: userId, blockedId: targetId } },
+        { upsert: true }
+      ).exec();
+
+      await UserFollowModel.deleteMany({
+        $or: [
+          { followerId: userId, followeeId: targetId },
+          { followerId: targetId, followeeId: userId },
+        ],
+      }).exec();
+
+      res.json(successResponse({ blocked: true, userId: targetId }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async unblockUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const targetId = String(req.params.userId || '').trim();
+      if (!targetId) {
+        throw new ValidationError('userId is required', [
+          { field: 'userId', message: 'userId is required', value: targetId },
+        ]);
+      }
+
+      await UserBlockModel.deleteOne({ blockerId: userId, blockedId: targetId }).exec();
+      res.json(successResponse({ blocked: false, userId: targetId }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getBlocks(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const blocks = await UserBlockModel.find({ blockerId: userId }).lean().exec();
+      const blockedIds = blocks.map((block) => String(block.blockedId));
+      const userMap = await this.buildUserSummaryMap(blockedIds);
+
+      const users = blockedIds
+        .map((id) => userMap.get(id))
+        .filter((entry) => entry)
+        .map((entry) => ({
+          id: entry.id,
+          name: entry.name,
+          username: entry.username,
+          avatar: entry.avatar,
+        }));
+
+      res.json(successResponse({ blocks: users }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createReport(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const targetUserId = req.body?.targetUserId
+        ? String(req.body.targetUserId).trim()
+        : undefined;
+      const targetMessageId = req.body?.targetMessageId
+        ? String(req.body.targetMessageId).trim()
+        : undefined;
+      const type = req.body?.type ? String(req.body.type).trim() : 'user';
+      const reason = req.body?.reason ? String(req.body.reason).trim() : '';
+      const details = req.body?.details ? String(req.body.details).trim() : undefined;
+
+      if (!reason) {
+        throw new ValidationError('reason is required', [
+          { field: 'reason', message: 'reason is required', value: reason },
+        ]);
+      }
+
+      if (!targetUserId && !targetMessageId) {
+        throw new ValidationError('target is required', [
+          {
+            field: 'target',
+            message: 'targetUserId or targetMessageId is required',
+          },
+        ]);
+      }
+
+      if (targetUserId === userId) {
+        throw new ValidationError('Cannot report yourself', [
+          { field: 'targetUserId', message: 'Cannot report yourself', value: targetUserId },
+        ]);
+      }
+
+      const report = await UserReportModel.create({
+        reporterId: userId,
+        targetUserId,
+        targetMessageId,
+        type,
+        reason,
+        details,
+        status: 'open',
+      });
+
+      res.json(successResponse({ report: this.mapReport(report.toObject()) }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMyReports(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const reports = await UserReportModel.find({ reporterId: userId })
+        .sort({ createdAt: -1 })
+        .lean()
+        .exec();
+
+      res.json(successResponse({ reports: reports.map((report) => this.mapReport(report)) }));
     } catch (error) {
       next(error);
     }
@@ -231,19 +412,97 @@ export class SocialController {
     return 'friends';
   }
 
-  private async resolveScope(userId: string, scope: ActivityScope): Promise<string[]> {
+  private async resolveScope(userId: string, scope: ActivityScope): Promise<ScopeResolution> {
+    const blockedIds = await this.getBlockedUserIds(userId);
+
     if (scope === 'me') {
-      return [userId];
+      return {
+        userIds: [userId],
+        friendIds: new Set<string>(),
+      };
     }
 
-    const followees = await UserFollowModel.find({ followerId: userId }).lean().exec();
-    const followeeIds = followees.map((follow) => String(follow.followeeId));
+    const followingDocs = await UserFollowModel.find({ followerId: userId }).lean().exec();
+    const followingIds = followingDocs
+      .map((follow) => String(follow.followeeId))
+      .filter((id) => !blockedIds.has(id));
+    const followingSet = new Set(followingIds);
+
+    const followersDocs = await UserFollowModel.find({ followeeId: userId }).lean().exec();
+    const followersSet = new Set(
+      followersDocs
+        .map((follow) => String(follow.followerId))
+        .filter((id) => !blockedIds.has(id))
+    );
+
+    const friendIds = new Set<string>();
+    for (const id of followingSet) {
+      if (followersSet.has(id)) {
+        friendIds.add(id);
+      }
+    }
 
     if (scope === 'friends') {
-      return followeeIds;
+      return {
+        userIds: Array.from(friendIds),
+        friendIds,
+      };
     }
 
-    return [userId, ...followeeIds];
+    return {
+      userIds: [userId, ...Array.from(followingSet)],
+      friendIds,
+    };
+  }
+
+  private async getMutualFriendIds(userId: string): Promise<string[]> {
+    const scopeData = await this.resolveScope(userId, 'friends');
+    return scopeData.userIds;
+  }
+
+  private canViewActivity(
+    requesterId: string,
+    activityUserId: string,
+    visibility: 'public' | 'friends' | 'private' | undefined,
+    friendIds: Set<string>
+  ): boolean {
+    if (activityUserId === requesterId) {
+      return true;
+    }
+
+    const effectiveVisibility = visibility || 'friends';
+    if (effectiveVisibility === 'private') {
+      return false;
+    }
+    if (effectiveVisibility === 'friends') {
+      return friendIds.has(activityUserId);
+    }
+    return true;
+  }
+
+  private async getBlockedUserIds(userId: string): Promise<Set<string>> {
+    const rows = await UserBlockModel.find({
+      $or: [{ blockerId: userId }, { blockedId: userId }],
+    })
+      .lean()
+      .exec();
+    const blockedIds = new Set<string>();
+    for (const row of rows) {
+      blockedIds.add(String(row.blockerId) === userId ? String(row.blockedId) : String(row.blockerId));
+    }
+    return blockedIds;
+  }
+
+  private async isBlockedBetween(userId: string, targetId: string): Promise<boolean> {
+    const blocked = await UserBlockModel.findOne({
+      $or: [
+        { blockerId: userId, blockedId: targetId },
+        { blockerId: targetId, blockedId: userId },
+      ],
+    })
+      .lean()
+      .exec();
+    return Boolean(blocked);
   }
 
   private async buildUserSummaryMap(userIds: string[]): Promise<Map<string, any>> {
@@ -334,7 +593,7 @@ export class SocialController {
     };
   }
 
-  private mapFriend(user?: any) {
+  private mapFriend(user?: any, following: boolean = true) {
     if (!user) return null;
     const watchingTitle = user.watchingNow?.title;
     const isOnline = Boolean(user.privacy?.showOnline && watchingTitle);
@@ -346,7 +605,118 @@ export class SocialController {
       isOnline,
       lastActivity: watchingTitle ? `Viendo "${watchingTitle}"` : 'Sin actividad reciente',
       favoriteGenres: user.favoriteGenres || [],
-      following: true,
+      following,
     };
+  }
+
+  private mapReport(report: any) {
+    return {
+      id: String(report._id),
+      reporterId: String(report.reporterId),
+      targetUserId: report.targetUserId ? String(report.targetUserId) : undefined,
+      targetMessageId: report.targetMessageId
+        ? String(report.targetMessageId)
+        : undefined,
+      type: report.type,
+      reason: report.reason,
+      details: report.details,
+      status: report.status,
+      resolutionNote: report.resolutionNote,
+      resolvedBy: report.resolvedBy ? String(report.resolvedBy) : undefined,
+      resolvedAt: report.resolvedAt,
+      createdAt: report.createdAt,
+      updatedAt: report.updatedAt,
+    };
+  }
+
+  private async buildDeterministicRecommendations(
+    userId: string,
+    limit: number
+  ): Promise<any[]> {
+    const profile = await UserProfileModel.findOne({ userId }).lean().exec();
+    const favoriteGenres = (profile?.favoriteGenres || []).map((genre: string) =>
+      String(genre).toLowerCase()
+    );
+
+    const [favorites, listItems] = await Promise.all([
+      UserFavoriteModel.find({ userId }).lean().exec(),
+      UserListItemModel.find({ userId }).sort({ createdAt: -1 }).limit(30).lean().exec(),
+    ]);
+
+    const favoriteChannels = new Set(
+      favorites
+        .filter((favorite) => favorite.type === 'channel')
+        .map((favorite) => String(favorite.itemId || '').toLowerCase())
+        .filter(Boolean)
+    );
+
+    const interestTokens = new Set<string>();
+    for (const item of listItems) {
+      const tokens = String(item.title || '')
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((token) => token.length >= 4)
+        .slice(0, 4);
+      for (const token of tokens) interestTokens.add(token);
+    }
+
+    const now = new Date();
+    const horizon = new Date(now.getTime() + 36 * 60 * 60 * 1000);
+    const programs = await ProgramModel.find({
+      startTime: { $lt: horizon },
+      endTime: { $gt: now },
+    })
+      .sort({ startTime: 1 })
+      .limit(400)
+      .lean()
+      .exec();
+
+    const scored = programs
+      .map((program) => {
+        let score = 0;
+        const channelId = String(program.channelId || '').toLowerCase();
+        const category = String(program.category || '').toLowerCase();
+        const title = String(program.title || '').toLowerCase();
+
+        if (favoriteChannels.has(channelId)) score += 45;
+        if (favoriteGenres.some((genre) => category.includes(genre))) score += 20;
+        for (const token of interestTokens) {
+          if (title.includes(token)) {
+            score += 8;
+            break;
+          }
+        }
+        if (category.includes('movie') || category.includes('pelicula')) {
+          score += 10;
+        }
+
+        return { program, score };
+      })
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => b.score - a.score || +new Date(a.program.startTime) - +new Date(b.program.startTime))
+      .slice(0, limit);
+
+    return scored.map((entry) => ({
+      id: `auto-${entry.program.id}`,
+      title: entry.program.title,
+      type: 'program',
+      note: 'Recomendación personalizada',
+      tags: [entry.program.category || 'tv', 'for-you'],
+      visibility: 'private',
+      status: 'pending',
+      rating: undefined,
+      createdAt: now.toISOString(),
+      mood: undefined,
+      platform: entry.program.channelId,
+      image: entry.program.image,
+      likes: 0,
+      comments: 0,
+      score: entry.score,
+      user: {
+        id: 'system',
+        name: 'GuiaTV',
+        avatar: '/assets/gpt-avatar.png',
+      },
+    }));
   }
 }

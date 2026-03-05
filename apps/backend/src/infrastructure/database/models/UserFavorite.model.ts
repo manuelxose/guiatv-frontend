@@ -34,7 +34,15 @@ const UserFavoriteSchema = new Schema<IUserFavoriteDocument>(
 );
 
 UserFavoriteSchema.index({ userId: 1, type: 1, createdAt: -1 });
-UserFavoriteSchema.index({ userId: 1, itemId: 1 }, { unique: false });
+UserFavoriteSchema.index(
+  { userId: 1, type: 1, itemId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      itemId: { $exists: true, $type: 'string' },
+    },
+  }
+);
 
 export const UserFavoriteModel = mongoose.model<IUserFavoriteDocument>(
   'UserFavorite',

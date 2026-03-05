@@ -1,8 +1,5 @@
-import * as dotenv from 'dotenv';
+// Env vars are loaded by config/bootstrap.ts (imported in server/index.ts).
 import * as path from 'path';
-
-// Cargar variables de entorno desde .env
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 /**
  * Configuración centralizada del servidor Express

@@ -6,12 +6,17 @@
     "apps/backend"
   ],
   "scripts": {
-    "build": "npm run build --workspace apps/backend && npm run build:ssr --workspace apps/frontend",
-    "build:frontend": "npm run build:ssr --workspace apps/frontend",
-    "build:backend": "npm run build --workspace apps/backend",
-    "start:api": "npm run start --workspace apps/backend",
-    "start:ssr": "npm run serve:ssr --workspace apps/frontend",
-    "db:bootstrap-local": "npm run create-indexes --workspace apps/backend && npm run job:syncEPG --workspace apps/backend && npm run job:precompute --workspace apps/backend",
+    "build": "npm run build -w apps/backend && npm run build:ssr -w apps/frontend",
+    "build:frontend": "npm run build:ssr -w apps/frontend",
+    "build:backend": "npm run build -w apps/backend",
+    "start:api": "npm run start -w apps/backend",
+    "start:ssr": "npm run serve:ssr -w apps/frontend",
+    "job:syncEPG": "npm run job:syncEPG -w apps/backend",
+    "job:precompute": "npm run job:precompute -w apps/backend",
+    "job:clean": "npm run job:clean -w apps/backend",
+    "migrate:social-data": "npm run migrate:social-data -w apps/backend",
+    "seo:submit-sitemap": "npm run seo:submit-sitemap -w apps/backend",
+    "db:bootstrap": "npm run create-indexes -w apps/backend && npm run job:syncEPG -w apps/backend && npm run job:precompute -w apps/backend",
     "deploy": "bash ./deploy-guiatv.sh"
   },
   "devDependencies": {

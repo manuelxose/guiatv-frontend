@@ -16,6 +16,7 @@ export interface ParsedXMLProgram {
   start: string; // "20251021080000 +0200"
   stop: string;
   title: string;
+  subTitle?: string;
   description?: string;
   icon?: string | string[];
   category?: string;
@@ -95,6 +96,7 @@ export class XMLParser {
       start: this.firstValue(prog.start ?? prog.$?.start) || '',
       stop: this.firstValue(prog.stop ?? prog.$?.stop) || '',
       title: this.firstValue(prog.title) || '',
+      subTitle: this.firstValue(prog['sub-title']),
       description: this.extractDescription(prog),
       icon: this.firstValue(prog.icon?.[0]?.src ?? prog.icon?.[0]?.$?.src),
       category: this.firstValue(prog.category),

@@ -163,6 +163,7 @@ import { Subscription } from 'rxjs';
             <input
               type="text"
               [(ngModel)]="newMessage"
+              (input)="onTyping()"
               (keyup.enter)="sendMessage()"
               placeholder="Escribe un mensaje..."
               aria-label="Mensaje"
@@ -234,6 +235,7 @@ export class UserChatComponent implements OnInit, OnDestroy {
   currentUserId: string | null = null;
 
   private sub = new Subscription();
+  private typingTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private chatService: ChatService, private userService: UserService) {}
 
@@ -252,6 +254,13 @@ export class UserChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.selectedConversation) {
+      this.chatService.sendTyping(this.selectedConversation.id, false);
+    }
+    if (this.typingTimer) {
+      clearTimeout(this.typingTimer);
+      this.typingTimer = null;
+    }
     this.sub.unsubscribe();
   }
 
@@ -260,6 +269,7 @@ export class UserChatComponent implements OnInit, OnDestroy {
     this.sub.add(
       this.chatService.getMessages(conv.id).subscribe((msgs) => {
         this.messages = msgs;
+        this.chatService.markConversationRead(conv.id).subscribe();
       })
     );
   }
@@ -290,5 +300,17 @@ export class UserChatComponent implements OnInit, OnDestroy {
         this.messages.push(message);
       }
     });
+  }
+
+  onTyping() {
+    if (!this.selectedConversation) return;
+    this.chatService.sendTyping(this.selectedConversation.id, true);
+    if (this.typingTimer) {
+      clearTimeout(this.typingTimer);
+    }
+    this.typingTimer = setTimeout(() => {
+      if (!this.selectedConversation) return;
+      this.chatService.sendTyping(this.selectedConversation.id, false);
+    }, 1200);
   }
 }

@@ -20,10 +20,15 @@ interface SitemapUrlEntry {
 }
 
 const DEFAULT_BASE_URL = 'https://guiaprogramaciontv.com';
-const CACHE_TTL_MS = Number(process.env.SITEMAP_CACHE_TTL_MS) || 15 * 60 * 1000;
+const CACHE_TTL_MS = Number(process.env.SITEMAP_CACHE_TTL_MS) || 5 * 60 * 1000;
 
 let cachedXml: { value: string; expiresAt: number } | null = null;
 let inflight: Promise<string> | null = null;
+
+export const invalidateSitemapCache = (): void => {
+  cachedXml = null;
+  inflight = null;
+};
 
 export class SitemapController {
   constructor(

@@ -43,6 +43,7 @@
     "leaflet": "^1.9.4",
     "ngx-device-detector": "^11.0.0",
     "rxjs": "~7.8.0",
+    "socket.io-client": "^4.8.1",
     "swiper": "^11.2.10",
     "zone.js": "~0.15.0"
   },

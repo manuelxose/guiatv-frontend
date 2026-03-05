@@ -16,7 +16,7 @@ const UI_CONFIG = {
   EXPANDED_BANNER_HEIGHT: 320,
   MINUTES_PER_SLOT: 30,
   MINUTES_PER_COLUMN: 5,
-  MAX_GRID_COLUMNS: 7,
+  MAX_GRID_COLUMNS: 6,
   NIGHT_SLOT_END_MINUTES: 30,
   MAX_LAYERS: 5,
 } as const;
@@ -90,6 +90,14 @@ export class ProgramListTransformService {
       typeof programa?.gridColumnStart === 'number' &&
       typeof programa?.gridColumnEnd === 'number';
     if (hasInlineLayout) {
+      // Reject if the inline layout belongs to a different slot
+      if (
+        activeSlotIndex !== null &&
+        typeof programa?.timeSlotIndex === 'number' &&
+        programa.timeSlotIndex !== activeSlotIndex
+      ) {
+        return null;
+      }
       return {
         timeSlotIndex: typeof programa?.timeSlotIndex === 'number'
           ? programa.timeSlotIndex
@@ -733,26 +741,61 @@ export class ProgramListTransformService {
     const normalizedCategory = category.toLowerCase().trim();
 
     const categoryMappings: Record<string, string> = {
-      pelicula: 'PelÃ­culas',
-      peliculas: 'PelÃ­culas',
-      cine: 'PelÃ­culas',
+      pelicula: 'Cine',
+      peliculas: 'Cine',
+      películas: 'Cine',
+      película: 'Cine',
+      cine: 'Cine',
+      movie: 'Cine',
+      film: 'Cine',
+      cinema: 'Cine',
+      telefilm: 'Cine',
       serie: 'Series',
       series: 'Series',
       drama: 'Series',
-      documental: 'Documentales',
-      documentales: 'Documentales',
+      comedia: 'Series',
+      thriller: 'Series',
+      documental: 'Documental',
+      documentales: 'Documental',
+      documentary: 'Documental',
+      naturaleza: 'Documental',
       noticia: 'Noticias',
       noticias: 'Noticias',
       informativo: 'Noticias',
+      informativos: 'Noticias',
+      news: 'Noticias',
+      actualidad: 'Noticias',
       deporte: 'Deportes',
       deportes: 'Deportes',
       futbol: 'Deportes',
+      fútbol: 'Deportes',
+      sport: 'Deportes',
+      sports: 'Deportes',
       entretenimiento: 'Entretenimiento',
+      entertainment: 'Entretenimiento',
       show: 'Entretenimiento',
+      humor: 'Entretenimiento',
+      reality: 'Entretenimiento',
+      concurso: 'Concurso',
+      concursos: 'Concurso',
+      quiz: 'Concurso',
+      magazine: 'Magazine',
+      programa: 'Magazine',
       musica: 'Música',
       música: 'Música',
+      music: 'Música',
+      musical: 'Música',
       infantil: 'Infantil',
       niños: 'Infantil',
+      children: 'Infantil',
+      kids: 'Infantil',
+      dibujos: 'Infantil',
+      animación: 'Infantil',
+      cocina: 'Cocina',
+      gastronomía: 'Cocina',
+      cooking: 'Cocina',
+      religión: 'Religión',
+      religion: 'Religión',
     };
 
     return (
@@ -767,14 +810,17 @@ export class ProgramListTransformService {
 
   sortCategories(categories: string[]): string[] {
     const categoryOrder = [
-      'PelÃ­culas',
+      'Cine',
       'Series',
-      'Documentales',
-      'Noticias',
       'Deportes',
-      'Entretenimiento',
-      'MÃºsica',
+      'Noticias',
+      'Documental',
       'Infantil',
+      'Concurso',
+      'Magazine',
+      'Entretenimiento',
+      'Música',
+      'Cocina',
     ];
 
     return categories.sort((a, b) => {
@@ -932,7 +978,14 @@ export class ProgramListTransformService {
       }
     });
 
-    if (precomputed.length) {
+    // If the data source has precomputed layouts, trust it even when this slot
+    // has no matching programs. Falling to the legacy path would show wrong programs.
+    const hasPrecomputedData = programsForActiveDay.some(
+      (p) => Array.isArray((p as any).layoutsBySlot) && (p as any).layoutsBySlot.length > 0
+    );
+
+    if (precomputed.length || hasPrecomputedData) {
+      if (!precomputed.length) return [];
       // Compact consecutive programs so they never overlap within the same channel/slot.
       precomputed
         .sort((a, b) => a.gridColumnStart - b.gridColumnStart)
