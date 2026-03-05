@@ -73,6 +73,7 @@ export interface IBannerInputData {
   title?: string | IBannerTitle;
   channel?: string;
   channelName?: string;  // Añadido
+  channelId?: string;
   start?: string | Date;
   stop?: string | Date;
   startTime?: string;    // Añadido

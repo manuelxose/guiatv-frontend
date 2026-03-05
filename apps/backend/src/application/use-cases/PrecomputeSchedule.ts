@@ -165,6 +165,7 @@ export class PrecomputeSchedule {
             channelMeta,
             channels: schedule.map((item) => ({
               channelId: item.channel?.id,
+              channel: item.channel,
               programs: item.programs,
             })),
             meta: { totalChannels: schedule.length, totalPrograms: programs.length, fields, generatedAt },
@@ -182,6 +183,26 @@ export class PrecomputeSchedule {
             layoutVersion: this.layoutVersion,
           },
           Number(process.env.SCHEDULE_CACHE_TTL_SEC || 21600) // 6h default
+        );
+
+        // Warm layouts snapshot cache key (versioned) with materialized channels.
+        await this.cacheRepository.set(
+          `precomputed:programs:${request.date}:${fields}:${this.layoutVersion}`,
+          {
+            date: request.date,
+            timeSlots,
+            channelMeta,
+            channels: schedule.map((item) => ({
+              channelId: item.channel?.id,
+              channel: item.channel,
+              programs: item.programs,
+            })),
+            meta: {
+              layoutVersion: this.layoutVersion,
+              generatedAt,
+            },
+          },
+          Number(process.env.SCHEDULE_CACHE_TTL_SEC || 21600)
         );
       } catch (err) {
         this.precomputeLogger.warn('Failed to persist/cache schedule snapshot', { error: (err as Error).message });

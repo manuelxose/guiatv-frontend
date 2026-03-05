@@ -47,6 +47,23 @@ redis-cli --scan --pattern 'schedule:*' | xargs -r redis-cli del
 node dist/jobs/cli/precomputeSchedules.cli.js
 ```
 
+Validación rápida tras rebuild:
+```bash
+curl -s 'http://127.0.0.1:4000/v2/layouts/today?fields=full' | \
+jq --arg ds "$(date -u -d 'today 23:00 -1 day' +%Y-%m-%dT%H:%M:%SZ)" \
+   --arg de "$(date -u -d 'today 23:00' +%Y-%m-%dT%H:%M:%SZ)" '
+  def ts: (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601);
+  . as $root |
+  $root.data.channels as $chs |
+  $chs | map(.programs[]) as $p |
+  {
+    totalPrograms: ($p|length),
+    prevCarry: ($p|map(select((.start|ts) < ($ds|fromdateiso8601) and (.end|ts) > ($ds|fromdateiso8601)))|length),
+    nextCarry: ($p|map(select((.start|ts) < ($de|fromdateiso8601) and (.end|ts) > ($de|fromdateiso8601)))|length),
+    channelsWithoutName: ($chs|map(select((.channel.name//"")==""))|length)
+  }'
+```
+
 ## Bootstrap de datos local
 ```bash
 cd /var/www/guiatv

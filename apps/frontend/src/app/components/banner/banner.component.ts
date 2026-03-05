@@ -196,6 +196,7 @@ export class BannerComponent
   getChannelLogoUrl(channelName: string): string {
     if (!channelName) return this.getFallbackImageUrl();
     const token = this.normalizeChannelToken(channelName);
+    if (!token) return this.getFallbackImageUrl();
     const icon = `${this.apiConfig.getAssetBaseUrl()}/storage/channel_icons/${encodeURIComponent(
       token
     )}.webp`;
@@ -404,7 +405,11 @@ export class BannerComponent
     return {
       title,
       channel:
-        movieData.channelName || movieData.channel || 'Canal desconocido',
+        movieData.channelName ||
+        movieData.channel ||
+        movieData.channel_id ||
+        movieData.channelId ||
+        'Canal desconocido',
       poster: movieData.poster || movieData.icon,
       icon: movieData.icon,
       start: this.normalizeTimeString(movieData.startTime || movieData.start),
@@ -432,7 +437,12 @@ export class BannerComponent
         : programData.title || { value: 'Programa desconocido' };
     return {
       title,
-      channel: programData.channel || 'Canal desconocido',
+      channel:
+        programData.channel ||
+        programData.channelName ||
+        programData.channel_id ||
+        programData.channelId ||
+        'Canal desconocido',
       poster: programData.poster || programData.icon,
       icon: programData.icon,
       start: this.normalizeTimeString(programData.start),

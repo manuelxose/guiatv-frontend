@@ -3,6 +3,7 @@ import { Schema } from 'mongoose';
 
 export interface IScheduleChannel {
   channelId: string;
+  channel?: Record<string, any> | null;
   programs: Array<Record<string, any>>;
 }
 
@@ -21,6 +22,7 @@ export interface IScheduleDocument {
 const ScheduleChannelSchema = new Schema<IScheduleChannel>(
   {
     channelId: { type: String, required: true },
+    channel: { type: Schema.Types.Mixed as any, default: null },
     programs: { type: [Schema.Types.Mixed] as any, default: [] },
   },
   { _id: false }

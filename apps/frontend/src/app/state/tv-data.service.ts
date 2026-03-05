@@ -59,6 +59,12 @@ export class TvDataService {
       tap((data) => {
         this.layoutsByDay.set(String(date), data);
         this.layoutsByKey.set(cacheKey, data);
+        (data.channels || []).forEach((entry) => {
+          this.upsertChannelMeta(
+            entry?.channel,
+            entry?.channel?.id || (entry?.programs || [])[0]?.channelId || ''
+          );
+        });
         this.layoutsSubject.next(data);
       }),
       finalize(() => this.layoutsInFlight.delete(cacheKey)),
@@ -88,7 +94,7 @@ export class TvDataService {
         this.programsByKey.set(cacheKey, data);
         // cache channel metadata (includes icons) for enrichment elsewhere
         (data.channels || []).forEach((c) => {
-          if (c?.id) this.channelsById.set(c.id, c);
+          this.upsertChannelMeta(c, c?.id || '');
         });
         this.programsSubject.next(data);
       }),
@@ -117,7 +123,7 @@ export class TvDataService {
       map((resp) => resp.data?.channels ?? []),
       tap((channels) => {
         channels.forEach((c) => {
-          if (c?.id) this.channelsById.set(c.id, c);
+          this.upsertChannelMeta(c, c?.id || '');
         });
         this.channelsSubject.next(channels);
       }),
@@ -198,5 +204,32 @@ export class TvDataService {
       .filter(Boolean)
       .sort()
       .join(',');
+  }
+
+  private upsertChannelMeta(
+    channel: Partial<ChannelMetaDTO> | null | undefined,
+    fallbackId: string
+  ): void {
+    const id = String(channel?.id || fallbackId || '').trim();
+    if (!id) return;
+
+    const current = this.channelsById.get(id);
+    const merged: ChannelMetaDTO = {
+      id,
+      name:
+        String(channel?.name || current?.name || id).trim() || id,
+      icon:
+        (channel?.icon as string | null | undefined) ||
+        current?.icon ||
+        undefined,
+      type: String(channel?.type || current?.type || '').trim() || undefined,
+      country:
+        String(channel?.country || current?.country || '').trim() || undefined,
+      countryCode:
+        String(channel?.countryCode || current?.countryCode || '').trim() ||
+        undefined,
+    };
+
+    this.channelsById.set(id, merged);
   }
 }

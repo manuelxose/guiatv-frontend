@@ -338,8 +338,9 @@ export class HomeComponent implements OnInit {
 
     return {
       title: { value: featured.title },
-      channel: featured.channelName || 'Canal desconocido',
-      channelName: featured.channelName,
+      channel: featured.channelName || featured.channelId || 'Canal desconocido',
+      channelName: featured.channelName || featured.channelId || 'Canal desconocido',
+      channel_id: featured.channelId,
       icon: featured.poster || 'assets/images/default-movie-poster.svg',
       poster: featured.poster || 'assets/images/default-movie-poster.svg',
       start: featured.startTime || new Date().toISOString(),
@@ -444,7 +445,8 @@ export class HomeComponent implements OnInit {
       poster: item.image || '',
       rating: typeof item.rating === 'number' ? item.rating : parseFloat(item.rating?.toString() || '0') || 0,
       category: item.category || '',
-      channelName: item.channel?.name || '',
+      channelId: item.channel?.id || item.raw?.channelId || '',
+      channelName: item.channel?.name || item.channel?.id || '',
       startTime: item.start,
       endTime: item.end,
       releaseDate: '', // No disponible en ContentItem

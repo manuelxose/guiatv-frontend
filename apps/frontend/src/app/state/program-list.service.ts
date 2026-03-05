@@ -74,7 +74,7 @@ export class ProgramListService {
       .pipe(
         map((resp) => {
           const channels = (resp.channels || [])
-            .filter((entry) => !!entry?.channel?.id)
+            .filter((entry) => !!this.resolveChannelId(entry))
             .map((entry) =>
               this.mapChannel(entry.channel, entry.programs || [])
             );
@@ -101,13 +101,22 @@ export class ProgramListService {
       );
   }
 
-  private mapChannel(channel: ChannelMetaDTO, programs: ProgramLayoutDTO[]): IProgramListData {
-    const enriched = this.tvData.getCachedChannelMeta(channel.id);
+  private mapChannel(
+    channel: Partial<ChannelMetaDTO> | undefined,
+    programs: ProgramLayoutDTO[]
+  ): IProgramListData {
+    const channelId = String(
+      channel?.id || programs.find((p) => !!p?.channelId)?.channelId || ''
+    ).trim();
+    const enriched = this.tvData.getCachedChannelMeta(channelId);
     const channelInfo = {
-      id: channel.id,
-      name: channel.name,
-      icon: channel.icon || enriched?.icon || '',
-      type: channel.type || enriched?.type,
+      id: channelId,
+      name:
+        String(channel?.name || enriched?.name || channelId || 'Canal desconocido').trim() ||
+        'Canal desconocido',
+      icon:
+        String(channel?.icon || enriched?.icon || '').trim(),
+      type: String(channel?.type || enriched?.type || '').trim() || undefined,
     };
 
     const mappedPrograms: IProgramItem[] = programs.map(
@@ -142,10 +151,19 @@ export class ProgramListService {
     );
 
     return {
-      id: channel.id,
+      id: channelId,
       channel: channelInfo,
       channels: mappedPrograms,
     };
+  }
+
+  private resolveChannelId(entry: any): string {
+    return String(
+      entry?.channel?.id ||
+      entry?.channelId ||
+      entry?.programs?.[0]?.channelId ||
+      ''
+    ).trim();
   }
 
   private compareChannels(
