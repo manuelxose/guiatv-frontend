@@ -19,8 +19,12 @@
        IMAGEN DE FONDO OPTIMIZADA
        ============================================ -->
   <div class="banner-background">
+    <!-- Hidden structured data meta tags for VideoObject -->
+    <meta *ngIf="isoTime" itemprop="duration" [attr.content]="isoTime">
+    <meta *ngIf="getContentUrl()" itemprop="contentUrl" [attr.content]="'https://guiaprogramaciontv.com' + getContentUrl()">
     <img
       class="banner-bg-image"
+      itemprop="thumbnailUrl"
       [src]="getBannerImageUrl(bannerData, isMobile ? 768 : 1440)"
       [srcset]="getBannerSrcset(getProgramPosterUrl(bannerData))"
       [sizes]="getBannerSizes()"
@@ -100,7 +104,7 @@
             <circle cx="12" cy="12" r="10"/>
             <path d="M12 6v6l4 2"/>
           </svg>
-          <span itemprop="duration">{{ time }}</span>
+          <span>{{ time }}</span>
         </li>
         <li *ngIf="bannerData.starRating" class="rating">
           <svg 

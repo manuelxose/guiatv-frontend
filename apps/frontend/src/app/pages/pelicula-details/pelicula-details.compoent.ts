@@ -6,7 +6,7 @@ import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { MetaService } from 'src/app/services/meta.service';
 import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { Subscription } from 'rxjs';
-import { diffHour } from '../../utils/utils';
+import { diffHour, durationToISO8601, minutesToISO8601 } from '../../utils/utils';
 
 @Component({
   selector: 'app-pelicula-details',
@@ -30,6 +30,7 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   
   public contentType: 'movies' | 'series' | 'programs' = 'movies';
   public isLoading = true;
+  public ldJson: string = '';
   
   // Navigation state
   public actorStartIndex = 0;
@@ -284,6 +285,59 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
       url: this.router.url,
       type: 'website' // or video.movie / video.tv_show
     });
+
+    this.generateJsonLd();
+  }
+
+  private generateJsonLd(): void {
+    if (!this.data?.title) return;
+    const baseUrl = 'https://guiaprogramaciontv.com';
+    const slug = this.slugify(this.data.title);
+    const schemaType = this.contentType === 'series' ? 'TVSeries'
+      : this.contentType === 'programs' ? 'VideoObject'
+      : 'Movie';
+    const contentPath = this.contentType === 'series' ? 'series'
+      : this.contentType === 'movies' ? 'peliculas'
+      : 'programas';
+    const contentUrl = `${baseUrl}/${contentPath}/${slug}`;
+
+    let isoDuration = '';
+    if (this.contentType === 'programs' && this.data.start && this.data.stop) {
+      isoDuration = durationToISO8601(this.data.start, this.data.stop);
+    } else if (typeof this.data.duration === 'number' && this.data.duration > 0) {
+      isoDuration = minutesToISO8601(this.data.duration);
+    }
+
+    const uploadDate = this.data.year ? `${this.data.year}-01-01` : new Date().toISOString().split('T')[0];
+
+    const schema: Record<string, any> = {
+      '@context': 'https://schema.org',
+      '@type': schemaType,
+      name: this.data.title,
+      description: this.data.overview || `${this.data.title} en la guía de TV española`,
+      image: this.data.poster || this.data.backdrop,
+      uploadDate,
+      url: contentUrl,
+      contentUrl,
+      inLanguage: 'es-ES',
+    };
+    if (isoDuration) schema['duration'] = isoDuration;
+    if (this.data.rating) {
+      schema['aggregateRating'] = {
+        '@type': 'AggregateRating',
+        ratingValue: this.data.rating,
+        bestRating: 10,
+        ratingCount: 1,
+      };
+    }
+    if (this.data.genres?.length) schema['genre'] = this.data.genres;
+    if (this.data.directors) schema['director'] = { '@type': 'Person', name: this.data.directors };
+
+    try {
+      this.ldJson = JSON.stringify(schema);
+    } catch {
+      this.ldJson = '';
+    }
   }
 
   // --- UI Helpers ---

@@ -7,6 +7,7 @@ import {
 } from '@/domain/repositories/IProgramRepository';
 import { ProgramModel, IProgramDocument } from '../database/models/Program.model';
 import { logger } from '../../shared/utils/logger';
+import { DateUtils } from '../../shared/utils/dateUtils';
 
 // Using a local loose type for lean results to avoid depending on specific
 // `mongoose` exported types (which vary between versions). We only access
@@ -37,7 +38,8 @@ export class MongoProgramRepository implements IProgramRepository {
     try {
       const docs = await ProgramModel.find({
         channelId: channelId.value,
-        startTime: { $gte: dateRange.start, $lte: dateRange.end },
+        startTime: { $lt: dateRange.end },
+        endTime: { $gt: dateRange.start },
       })
         .sort({ startTime: 1 })
         .lean()
@@ -63,8 +65,8 @@ export class MongoProgramRepository implements IProgramRepository {
   ): Promise<Program[]> {
     try {
       const query: any = {
-        startTime: { $gte: dateRange.start },
-        endTime: { $lte: dateRange.end },
+        startTime: { $lt: dateRange.end },
+        endTime: { $gt: dateRange.start },
       };
 
       if (filters?.channelId) {
@@ -265,15 +267,7 @@ export class MongoProgramRepository implements IProgramRepository {
    * Parse YYYYMMDD string to date range (start of day to end of day)
    */
   private parseDateToRange(dateStr: string): { start: Date; end: Date } {
-    // Parse YYYYMMDD format
-    const year = parseInt(dateStr.substring(0, 4), 10);
-    const month = parseInt(dateStr.substring(4, 6), 10) - 1; // 0-indexed
-    const day = parseInt(dateStr.substring(6, 8), 10);
-
-    const start = new Date(year, month, day, 0, 0, 0, 0);
-    const end = new Date(year, month, day + 1, 0, 0, 0, 0);
-
-    return { start, end };
+    return DateUtils.getDayRangeYYYYMMDD(dateStr);
   }
 
   /**

@@ -32,6 +32,21 @@ curl -s http://127.0.0.1:4000/v2/health
 curl -s http://127.0.0.1:3000/ | head -n 5
 ```
 
+## Rebuild ventana canónica (ayer/hoy/mañana/pasado)
+```bash
+cd /var/www/guiatv/apps/backend
+
+# 1) Re-sync EPG para 4 días
+node dist/jobs/cli/syncEPG.cli.js
+
+# 2) Limpiar cache materializada de schedules/precomputed
+redis-cli --scan --pattern 'precomputed:*' | xargs -r redis-cli del
+redis-cli --scan --pattern 'schedule:*' | xargs -r redis-cli del
+
+# 3) Re-precompute para 4 días
+node dist/jobs/cli/precomputeSchedules.cli.js
+```
+
 ## Bootstrap de datos local
 ```bash
 cd /var/www/guiatv

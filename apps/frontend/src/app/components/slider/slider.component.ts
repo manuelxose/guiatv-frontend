@@ -280,14 +280,12 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public buildWsrvUrl(rawUrl?: string, w = 400, h = 225): string {
+    void w;
+    void h;
     if (!rawUrl) return '';
     try {
       const s = String(rawUrl);
-      const low = s.toLowerCase();
-      if (low.includes('wsrv.nl') || low.includes('?url=')) return s;
-      return `https://wsrv.nl/?url=${encodeURIComponent(
-        s
-      )}&w=${w}&h=${h}&output=webp`;
+      return s;
     } catch (_) {
       return String(rawUrl);
     }
@@ -316,8 +314,8 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
       program?.channelId ||
       program?.id;
     if (!name) return '';
-    const fallback = `https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${name}.png`;
-    return this.buildWsrvUrl(fallback, w, h);
+    const token = this.normalizeChannelToken(name);
+    return `/storage/channel_icons/${encodeURIComponent(token)}.webp`;
   }
 
   public getOverlayIcon(program: any, size = 120): string {
@@ -354,5 +352,14 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public trackByProgram(index: number, program: any): string {
     return program?.id || program?.uuid || `${program?.title?.value}-${index}`;
+  }
+
+  private normalizeChannelToken(value: string): string {
+    return String(value)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
   }
 }

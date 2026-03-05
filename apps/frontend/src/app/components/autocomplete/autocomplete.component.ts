@@ -110,7 +110,7 @@ export class AutocompleteComponent {
         .map((c) => ({
           type: 'channel' as const,
           title: c.channel?.name || '',
-          image: `https://wsrv.nl/?url=https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${c.channel?.name}.png`,
+          image: this.getChannelImage(c.channel),
           subtitle: 'Canal de televisión',
           data: c,
         }));
@@ -256,6 +256,38 @@ export class AutocompleteComponent {
       case 'program': return 'Programa';
       default: return '';
     }
+  }
+
+  private getChannelImage(channel: any): string {
+    if (channel?.icon && typeof channel.icon === 'string') {
+      if (channel.icon.startsWith('/')) {
+        return channel.icon;
+      }
+      if (
+        channel.icon.startsWith('http://') ||
+        channel.icon.startsWith('https://') ||
+        channel.icon.startsWith('data:')
+      ) {
+        return channel.icon;
+      }
+    }
+
+    const token = channel?.id || channel?.name || '';
+    if (!token) {
+      return '/assets/images/default-movie-poster.svg';
+    }
+    return `/storage/channel_icons/${encodeURIComponent(
+      this.normalizeChannelToken(token)
+    )}.webp`;
+  }
+
+  private normalizeChannelToken(value: string): string {
+    return String(value)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
   }
 
   getTypeBadgeClass(result: SearchResult): string {

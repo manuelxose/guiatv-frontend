@@ -33,8 +33,9 @@ export const syncEPGDataHandler = async (context: any) => {
       syncUseCase = container.get<SyncEPGData>('syncEPGData');
     }
 
-    // Sincronizar hoy, mañana y pasado mañana
+    // Sincronizar ventana canónica: ayer, hoy, mañana y pasado mañana
     const datesToSync = [
+      DateUtils.getYesterdayYYYYMMDD(),
       DateUtils.getTodayYYYYMMDD(),
       DateUtils.getTomorrowYYYYMMDD(),
       DateUtils.getAfterTomorrowYYYYMMDD(),
@@ -123,6 +124,7 @@ export const precomputeSchedulesHandler = async (context: any) => {
     }
 
     const datesToPrecompute = [
+      DateUtils.getYesterdayYYYYMMDD(),
       DateUtils.getTodayYYYYMMDD(),
       DateUtils.getTomorrowYYYYMMDD(),
       DateUtils.getAfterTomorrowYYYYMMDD(),

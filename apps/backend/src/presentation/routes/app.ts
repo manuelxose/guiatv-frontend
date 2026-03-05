@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { createV2Routes, RoutesDependencies } from './index';
 import { createBlogRoutes } from './blog.routes';
+import { createSitemapRoutes } from './sitemap.routes';
 import { corsMiddleware } from '../middlewares/cors';
 import { compressionMiddleware } from '../middlewares/compression';
 import { requestLogger } from '../middlewares/requestLogger';
@@ -21,6 +22,9 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
 
   // Evitar respuestas 304 por etag en datos dinámicos
   app.disable('etag');
+
+  // Sitemap — mounted before the no-store middleware so it can send its own Cache-Control headers
+  app.use('/', createSitemapRoutes(dependencies.sitemapController));
 
   // Forzar que los datos de la API no se sirvan desde cache del navegador
   app.use((req, res, next) => {

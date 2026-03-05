@@ -34,6 +34,7 @@ import { createAdminUsersRoutes } from './admin-users.routes';
 import { UserController } from '../controllers/UserController';
 import { SocialController } from '../controllers/SocialController';
 import { ChatController } from '../controllers/ChatController';
+import { SitemapController } from '../controllers/SitemapController';
 import { createUserRoutes } from './user.routes';
 import { createSocialRoutes } from './social.routes';
 import { createChatRoutes } from './chat.routes';
@@ -61,6 +62,7 @@ export interface RoutesDependencies {
   userController: UserController;
   socialController: SocialController;
   chatController: ChatController;
+  sitemapController: SitemapController;
 }
 
 /**

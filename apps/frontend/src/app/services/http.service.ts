@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TvApiService } from '../api/tv-api.service';
 import { TvDataService } from '../state/tv-data.service';
-import { ProgramsResponse } from '../api/models';
+import { LayoutsResponse } from '../api/models';
 const DEFAULT_CHANNEL_TYPES = ['TDT', 'CABLE', 'MOVISTAR', 'AUTONOMICO', 'OTT'];
 
 /**
@@ -46,31 +46,30 @@ export class HttpService {
    * Sustituye antiguos métodos de Firebase/legacy.
    */
   getProgramacion(dia: 'yesterday' | 'today' | 'tomorrow' | 'after_tomorrow' | string): Observable<any[]> {
-    // 1. Try to get cached programs for the day (any fields)
-    const cached = this.tvData.getCachedPrograms(dia as any);
-    if (cached && cached.programs?.length) {
-      return of(this.mapProgramsResponse(cached));
+    // 1. Intentar cache de layouts (snapshot completo)
+    const cached = this.tvData.getCachedLayouts(dia as any);
+    if (cached && cached.channels?.length) {
+      return of(this.mapLayoutsResponse(cached));
     }
 
-    // 2. If not found, load with minimal fields
+    // 2. Si no existe cache, cargar layouts completos del día
     return this.tvData
-      .loadPrograms({
-        date: dia as any,
+      .loadLayouts(dia as any, {
         fields: 'minimal',
-        limit: 5000,
         channelTypes: DEFAULT_CHANNEL_TYPES,
       })
       .pipe(
-        map((resp: ProgramsResponse) => this.mapProgramsResponse(resp))
+        map((resp: LayoutsResponse) => this.mapLayoutsResponse(resp))
       );
   }
 
-  private mapProgramsResponse(resp: ProgramsResponse): any[] {
-    const channels = resp.channels || [];
-    const programs = resp.programs || [];
-    return channels.map((c) => ({
-      channel: c,
-      programs: programs.filter((p) => p.channelId === c.id),
+  private mapLayoutsResponse(resp: LayoutsResponse): any[] {
+    return (resp.channels || []).map((entry) => ({
+      channel: entry.channel,
+      programs: (entry.programs || []).map((p: any) => ({
+        ...p,
+        stop: p.stop || p.end,
+      })),
     }));
   }
 

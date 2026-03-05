@@ -34,6 +34,8 @@ export interface GetProgramLayoutsResponse {
  */
 export class GetProgramLayouts {
   private readonly layoutVersion = process.env.LAYOUT_VERSION || 'v1';
+  private readonly fullSnapshotLimit =
+    Number(process.env.PROGRAMS_FULL_SNAPSHOT_LIMIT || 100000) || 100000;
 
   constructor(
     private readonly cacheRepository: ICacheRepository,
@@ -91,7 +93,7 @@ export class GetProgramLayouts {
     const flat = await this.getPrograms.execute({
       date: normalizedDate,
       fields,
-      limit: 10000,
+      limit: this.fullSnapshotLimit,
     });
     const grouped = this.groupPrograms(flat.channels, flat.programs, channelFilter, slotFilter);
     const response: GetProgramLayoutsResponse = {

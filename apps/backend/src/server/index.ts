@@ -34,6 +34,7 @@ async function startServer() {
       userController: container.get('userController'),
       socialController: container.get('socialController'),
       chatController: container.get('chatController'),
+      sitemapController: container.get('sitemapController'),
     });
 
     const { initializeJobs } = await import('../jobs');

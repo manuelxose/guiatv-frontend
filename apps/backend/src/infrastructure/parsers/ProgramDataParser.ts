@@ -8,15 +8,37 @@ export class ProgramDataParser {
   private readonly parserLogger = logger.child('ProgramDataParser');
 
   parseXMLDateToDate(dateStr: string): Date {
-    // Format: "20251021080000 +0200"
-    const year = parseInt(dateStr.slice(0, 4), 10);
-    const month = parseInt(dateStr.slice(4, 6), 10) - 1;
-    const day = parseInt(dateStr.slice(6, 8), 10);
-    const hour = parseInt(dateStr.slice(8, 10), 10);
-    const minute = parseInt(dateStr.slice(10, 12), 10);
-    const second = parseInt(dateStr.slice(12, 14), 10);
+    // Accepted formats:
+    // - "20251021080000 +0200"
+    // - "20251021080000+0200"
+    // - "20251021080000"
+    const normalized = String(dateStr || '').trim();
+    const match = normalized.match(
+      /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(?:\s*([+-])(\d{2})(\d{2}))?$/
+    );
 
-    return new Date(Date.UTC(year, month, day, hour, minute, second));
+    if (!match) {
+      throw new Error(`Invalid XML datetime format: "${dateStr}"`);
+    }
+
+    const year = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10) - 1;
+    const day = parseInt(match[3], 10);
+    const hour = parseInt(match[4], 10);
+    const minute = parseInt(match[5], 10);
+    const second = parseInt(match[6], 10);
+
+    const baseUtcMillis = Date.UTC(year, month, day, hour, minute, second);
+    if (!match[7]) {
+      return new Date(baseUtcMillis);
+    }
+
+    const sign = match[7] === '+' ? 1 : -1;
+    const offsetHours = parseInt(match[8], 10);
+    const offsetMinutes = parseInt(match[9], 10);
+    const totalOffsetMinutes = sign * (offsetHours * 60 + offsetMinutes);
+
+    return new Date(baseUtcMillis - totalOffsetMinutes * 60_000);
   }
 
   convertToDomainEntity(

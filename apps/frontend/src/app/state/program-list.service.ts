@@ -5,7 +5,7 @@ import { TvDataService } from './tv-data.service';
 import {
   ChannelMetaDTO,
   DateAlias,
-  ProgramsQuery,
+  LayoutsQuery,
   ProgramLayoutDTO,
   TimeSlotDTO,
 } from '../api/models';
@@ -62,40 +62,22 @@ export class ProgramListService {
    */
   loadProgramList(
     date: DateAlias,
-    query?: Pick<ProgramsQuery, 'channels' | 'timeSlot' | 'channelTypes' | 'fields' | 'limit'>
+    query?: Pick<LayoutsQuery, 'channels' | 'timeSlot' | 'channelTypes' | 'fields'>
   ): Observable<ProgramListSnapshot> {
     return this.tvData
-      .loadPrograms({
-        date,
-        // Usamos 'full' para obtener poster/image del programa y mostrarlo en el modal
+      .loadLayouts(date, {
         fields: query?.fields ?? 'full',
         channels: query?.channels,
         timeSlot: query?.timeSlot,
         channelTypes: query?.channelTypes ?? DEFAULT_CHANNEL_TYPES,
-        limit: query?.limit ?? 5000,
       })
       .pipe(
         map((resp) => {
-          // Map channel meta for quick lookup (includes icon)
-          const channelMap = new Map<string, ChannelMetaDTO>();
-          (resp.channels || []).forEach((c) => {
-            if (c?.id) channelMap.set(c.id, c);
-          });
-
-          // Group programs by channelId
-          const grouped = new Map<string, ProgramLayoutDTO[]>();
-          (resp.programs || []).forEach((p) => {
-            const channelId = p.channelId || 'unknown';
-            if (!grouped.has(channelId)) grouped.set(channelId, []);
-            grouped.get(channelId)!.push(p);
-          });
-
-          const channels = Array.from(grouped.entries()).map(([channelId, programs]) => {
-            const meta =
-              channelMap.get(channelId) ||
-              this.tvData.getCachedChannelMeta(channelId) || { id: channelId, name: channelId };
-            return this.mapChannel(meta, programs);
-          });
+          const channels = (resp.channels || [])
+            .filter((entry) => !!entry?.channel?.id)
+            .map((entry) =>
+              this.mapChannel(entry.channel, entry.programs || [])
+            );
 
           const sorted = channels.sort((a, b) =>
             this.compareChannels(a.channel.type, b.channel.type, a.channel.name, b.channel.name)

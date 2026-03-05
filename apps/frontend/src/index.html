@@ -6,29 +6,6 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     
-    <!-- ========================================
-         OPTIMIZACIONES DE RENDIMIENTO
-         ======================================== -->
-    
-    <!-- 1. Preconnects críticos (en orden de prioridad) -->
-    <link rel="preconnect" href="https://wsrv.nl" crossorigin>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- 2. DNS Prefetch para recursos secundarios -->
-    <link rel="dns-prefetch" href="https://www.movistarplus.es">
-    <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
-    
-    <!-- 3. Preload de fuente crítica (solo el peso usado en above-the-fold) -->
-    <link 
-      rel="preload" 
-      href="https://fonts.gstatic.com/s/montserrat/v26/JTUSjIg1_i6t8kCHKm459WRhyzbi.woff2" 
-      as="font" 
-      type="font/woff2" 
-      crossorigin
-    >
-    
     <!-- SEO Meta Tags -->
     <meta
       name="description"
@@ -44,26 +21,12 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
     
-    <!-- 4. Fuentes con display=swap para evitar FOIT -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Material+Icons&display=swap"
-      rel="stylesheet"
-      media="print"
-      onload="this.media='all'"
-    >
-    <noscript>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Material+Icons&display=swap"
-        rel="stylesheet"
-      >
-    </noscript>
-    
-    <!-- 5. Critical CSS inline (estilos mínimos para above-the-fold) -->
+    <!-- Critical CSS inline (estilos mínimos para above-the-fold) -->
     <style>
       /* Critical CSS - Evita FOUC */
       body {
         margin: 0;
-        font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+        font-family: system-ui, -apple-system, Segoe UI, sans-serif;
         background: linear-gradient(to bottom right, #111827, #1f2937, #000);
         min-height: 100vh;
         color: #fff;
@@ -84,68 +47,7 @@
   </head>
   <body>
     <app-root></app-root>
-    
-    <!-- ========================================
-         GOOGLE TAG MANAGER - CARGA DIFERIDA
-         Ahorro: ~80 KiB de JS no bloqueante
-         ======================================== -->
-    <script>
-      // Cargar GTM después de la primera interacción del usuario
-      // o después de 4 segundos (lo que ocurra primero)
-      (function() {
-        var gtmLoaded = false;
-        
-        function loadGTM() {
-          if (gtmLoaded) return;
-          gtmLoaded = true;
-          
-          // Crear el script de GTM
-          var script = document.createElement('script');
-          script.async = true;
-          script.src = 'https://www.googletagmanager.com/gtag/js?id=G-P6Z3BY2DVW';
-          document.head.appendChild(script);
-          
-          // Inicializar gtag
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-P6Z3BY2DVW', {
-            'send_page_view': true,
-            'anonymize_ip': true
-          });
-          
-          // Exponer gtag globalmente
-          window.gtag = gtag;
-        }
-        
-        // Eventos que disparan la carga de GTM
-        var triggerEvents = ['scroll', 'click', 'touchstart', 'keydown'];
-        
-        function onUserInteraction() {
-          loadGTM();
-          // Limpiar event listeners
-          triggerEvents.forEach(function(event) {
-            document.removeEventListener(event, onUserInteraction, { passive: true });
-          });
-        }
-        
-        // Añadir listeners para interacción del usuario
-        triggerEvents.forEach(function(event) {
-          document.addEventListener(event, onUserInteraction, { passive: true });
-        });
-        
-        // Fallback: cargar después de 4 segundos si no hay interacción
-        setTimeout(loadGTM, 4000);
-        
-        // También cargar si la página ya está visible e idle
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(function() {
-            setTimeout(loadGTM, 2000);
-          });
-        }
-      })();
-    </script>
-    
+
     <!-- Prefetch de rutas probables después de carga inicial -->
     <script>
       // Prefetch de recursos después de que la página esté idle

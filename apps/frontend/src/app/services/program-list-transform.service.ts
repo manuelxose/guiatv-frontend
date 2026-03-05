@@ -224,18 +224,18 @@ export class ProgramListTransformService {
     return { start, end };
   }
 
-  // Helper to parse date treating it as local time (ignoring Z or timezone offset)
-  private parseDateIgnoringTimezone(dateStr: string): Date {
-    if (!dateStr) return new Date();
-    // Remove Z or timezone offset to force local interpretation
-    const cleanStr = dateStr.replace(/Z$|[+-]\d{2}:?\d{2}$/, '');
-    return new Date(cleanStr);
+  // Parse preserving timezone/offset from API payload.
+  private parseProgramDate(dateStr: string): Date {
+    if (!dateStr) return new Date(NaN);
+    const direct = new Date(dateStr);
+    if (!Number.isNaN(direct.getTime())) return direct;
+    return new Date(String(dateStr).replace(' ', 'T'));
   }
 
   getProgramStartMinutes(programa: IProgramItem): number {
     if (!programa?.start) return 0;
     try {
-      const date = this.parseDateIgnoringTimezone(String(programa.start));
+      const date = this.parseProgramDate(String(programa.start));
       return date.getHours() * 60 + date.getMinutes();
     } catch {
       return 0;
@@ -245,8 +245,8 @@ export class ProgramListTransformService {
   getProgramEndMinutes(programa: IProgramItem): number {
     if (!programa?.stop || !programa?.start) return 0;
     try {
-      const startDate = this.parseDateIgnoringTimezone(String(programa.start));
-      const endDate = this.parseDateIgnoringTimezone(String(programa.stop));
+      const startDate = this.parseProgramDate(String(programa.start));
+      const endDate = this.parseProgramDate(String(programa.stop));
 
       const startMinutes =
         startDate.getHours() * 60 + startDate.getMinutes();
@@ -268,9 +268,8 @@ export class ProgramListTransformService {
   programCrossesMidnight(programa: IProgramItem): boolean {
     if (!programa?.start || !programa?.stop) return false;
     try {
-      const startMinutes = this.getProgramStartMinutes(programa);
       const endMinutes = this.getProgramEndMinutes(programa);
-      return endMinutes > 1440 || endMinutes > startMinutes;
+      return endMinutes > 1440;
     } catch {
       return false;
     }
@@ -635,17 +634,14 @@ export class ProgramListTransformService {
 
     const DAY_MS = 24 * 60 * 60 * 1000;
     const now = new Date();
-    const year = now.getUTCFullYear();
-    const month = now.getUTCMonth();
-    const date = now.getUTCDate() + dayIndex;
-    const dayStartTs = Date.UTC(year, month, date, 0, 0, 0, 0);
-    const dayEndTs = dayStartTs + DAY_MS;
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const date = now.getDate() + dayIndex;
+    const dayStartTs = new Date(year, month, date, 0, 0, 0, 0).getTime();
+    const dayEndTs = new Date(year, month, date + 1, 0, 0, 0, 0).getTime();
 
     // Helper: try parse a value as an absolute timestamp (ISO) or as a time-only string
-    const parsePossibleTimestamp = (
-      value: unknown,
-      preferDateForTimeOnly = true
-    ): number | null => {
+    const parsePossibleTimestamp = (value: unknown): number | null => {
       if (value == null) return null;
       const s = String(value).trim();
 
@@ -661,13 +657,13 @@ export class ProgramListTransformService {
         return isNaN(ts) ? null : ts;
       }
 
-      // Accept time-only strings 'HH:MM' -> construct UTC date for the target day
+      // Accept time-only strings 'HH:MM' -> construct local date for the target day
       if (/^\d{1,2}:\d{2}$/.test(s)) {
         const [hStr, mStr] = s.split(':');
         const h = Number(hStr || 0);
         const m = Number(mStr || 0);
         if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
-        return Date.UTC(year, month, date, h, m, 0, 0);
+        return new Date(year, month, date, h, m, 0, 0).getTime();
       }
 
       // Last resort: try Date.parse and return null if invalid

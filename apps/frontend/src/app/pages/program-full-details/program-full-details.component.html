@@ -1,7 +1,7 @@
 <div class="relative lg:h-[36.25vw] md:h-[50vw] h-[100vw]">
   <img
     class="absolute inset-0 w-full h-full object-cover object-center brightness-[60%] lg:w-full"
-    src="https://wsrv.nl/?url={{ program?.icon }}"
+    [src]="program?.icon || program?.poster || '/assets/images/default-movie-poster.svg'"
     alt="{{ program?.title?.value }}"
     width="100%"
     height="100%"
@@ -85,3 +85,7 @@
     <app-slider variant="canales" [programas]="programas_ahora"></app-slider>
   </div>
 </div>
+
+<ng-container *ngIf="ldJson">
+  <div [innerHTML]="ldJson"></div>
+</ng-container>

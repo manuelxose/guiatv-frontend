@@ -27,6 +27,7 @@ import {
   diffHour,
   getHoraInicio,
   formatCorrectTime,
+  durationToISO8601,
 } from 'src/app/utils/utils';
 import {
   IBannerData,
@@ -37,6 +38,7 @@ import {
 } from '../../interfaces/banner.interface';
 import { environment } from 'src/environments/environment';
 import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
+import { ApiConfigService } from 'src/app/api/api-config.service';
 
 // ============================================================
 // CONFIGURACIÓN OPTIMIZADA DE IMÁGENES
@@ -49,27 +51,12 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
 const OPTIMIZED_BANNER_WIDTHS = [480, 768, 1024, 1440, 1920] as const;
 
 /**
- * Calidad WebP optimizada por tamaño
- * Imágenes más pequeñas pueden tener menor calidad sin pérdida visual perceptible
- */
-const QUALITY_BY_WIDTH: Record<number, number> = {
-  480: 70,
-  768: 75,
-  1024: 78,
-  1440: 80,
-  1920: 82,
-};
-
-/**
  * Configuración de logo de canal
  * Tamaño real de visualización: 43x28
  */
 const LOGO_CONFIG = {
-  WIDTH: 60,        // Ligeramente mayor para nitidez
+  WIDTH: 60,
   HEIGHT: 40,
-  WIDTH_2X: 120,    // Para pantallas retina
-  HEIGHT_2X: 80,
-  QUALITY: 80,
 } as const;
 
 @Component({
@@ -90,6 +77,7 @@ export class BannerComponent
 {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
+  private readonly apiConfig = inject(ApiConfigService);
   
   // Aspect ratio del banner (height/width)
   private readonly bannerAspectRatio = 800 / 1920; // ~0.417
@@ -103,6 +91,7 @@ export class BannerComponent
   public bannerData: IBannerData | null = null;
   public logo: string = '';
   public time: string = '';
+  public isoTime: string = '';
   public isMobile: boolean = false;
   
   private lastLoggedSignature: string | null = null;
@@ -146,6 +135,7 @@ export class BannerComponent
         this.bannerData.start,
         this.bannerData.stop
       );
+      this.isoTime = durationToISO8601(this.bannerData.start, this.bannerData.stop);
     }
     
     // Precargar imagen del banner para LCP
@@ -177,15 +167,11 @@ export class BannerComponent
    * Solo incluye los tamaños necesarios para cada breakpoint
    */
   getBannerSrcset(rawUrl: string): string {
-    if (!rawUrl || rawUrl.startsWith('data:')) return '';
-    
+    const safe = this.toSafeImageUrl(rawUrl);
+    if (!safe || safe.startsWith('data:')) return '';
+
     return OPTIMIZED_BANNER_WIDTHS
-      .map(width => {
-        const height = Math.round(width * this.bannerAspectRatio);
-        const quality = QUALITY_BY_WIDTH[width] || 80;
-        const url = this.buildProxyUrlWithQuality(rawUrl, width, height, quality);
-        return `${url} ${width}w`;
-      })
+      .map((width) => `${safe} ${width}w`)
       .join(', ');
   }
 
@@ -209,14 +195,11 @@ export class BannerComponent
    */
   getChannelLogoUrl(channelName: string): string {
     if (!channelName) return this.getFallbackImageUrl();
-    
-    const raw = `https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${encodeURIComponent(channelName)}.png`;
-    return this.buildProxyUrlWithQuality(
-      raw, 
-      LOGO_CONFIG.WIDTH, 
-      LOGO_CONFIG.HEIGHT, 
-      LOGO_CONFIG.QUALITY
-    );
+    const token = this.normalizeChannelToken(channelName);
+    const icon = `${this.apiConfig.getAssetBaseUrl()}/storage/channel_icons/${encodeURIComponent(
+      token
+    )}.webp`;
+    return this.toSafeImageUrl(icon);
   }
 
   /**
@@ -224,12 +207,8 @@ export class BannerComponent
    */
   getChannelLogoSrcset(channelName: string): string {
     if (!channelName) return '';
-    
-    const raw = `https://raw.githubusercontent.com/davidmuma/picons_dobleM/master/icon/${encodeURIComponent(channelName)}.png`;
-    const src1x = this.buildProxyUrlWithQuality(raw, LOGO_CONFIG.WIDTH, LOGO_CONFIG.HEIGHT, LOGO_CONFIG.QUALITY);
-    const src2x = this.buildProxyUrlWithQuality(raw, LOGO_CONFIG.WIDTH_2X, LOGO_CONFIG.HEIGHT_2X, LOGO_CONFIG.QUALITY);
-    
-    return `${src1x} 1x, ${src2x} 2x`;
+    const src = this.getChannelLogoUrl(channelName);
+    return `${src} 1x, ${src} 2x`;
   }
 
   getProgramPosterUrl(programData: any): string {
@@ -243,34 +222,27 @@ export class BannerComponent
   }
 
   /**
-   * Construye URL optimizada con wsrv.nl
+   * Devuelve la URL de imagen segura sin depender de proxys externos.
    */
   private buildProxyUrl(raw: string, width: number, height?: number): string {
-    const safeRaw = raw || this.getFallbackImageUrl();
-    if (safeRaw.startsWith('data:')) {
-      return safeRaw;
-    }
-    
-    const encoded = this.encodeURIComponent(safeRaw);
-    const targetHeight = height ?? Math.max(1, Math.round(width * this.bannerAspectRatio));
-    const quality = QUALITY_BY_WIDTH[width] || 80;
-    
-    return `https://wsrv.nl/?url=${encoded}&w=${width}&h=${targetHeight}&output=webp&q=${quality}&fit=cover`;
+    void width;
+    void height;
+    return this.toSafeImageUrl(raw);
   }
 
   /**
    * Construye URL con calidad específica
    */
   private buildProxyUrlWithQuality(
-    raw: string, 
-    width: number, 
-    height: number, 
+    raw: string,
+    width: number,
+    height: number,
     quality: number
   ): string {
-    if (!raw || raw.startsWith('data:')) return raw;
-    
-    const encoded = this.encodeURIComponent(raw);
-    return `https://wsrv.nl/?url=${encoded}&w=${width}&h=${height}&output=webp&q=${quality}&fit=cover`;
+    void width;
+    void height;
+    void quality;
+    return this.toSafeImageUrl(raw);
   }
 
   /**
@@ -279,7 +251,7 @@ export class BannerComponent
   private preloadBannerImage(): void {
     if (!isPlatformBrowser(this.platformId) || !this.bannerData) return;
     
-    const rawUrl = this.getProgramPosterUrl(this.bannerData);
+    const rawUrl = this.toSafeImageUrl(this.getProgramPosterUrl(this.bannerData));
     if (!rawUrl || rawUrl.startsWith('data:')) return;
     
     // Verificar si ya existe un preload
@@ -296,15 +268,34 @@ export class BannerComponent
     link.setAttribute('data-banner', 'true');
     
     // Usar tamaño apropiado para el dispositivo
-    const width = this.isMobile ? 768 : 1024;
-    const height = Math.round(width * this.bannerAspectRatio);
-    const quality = QUALITY_BY_WIDTH[width] || 80;
-    
-    link.href = this.buildProxyUrlWithQuality(rawUrl, width, height, quality);
+    link.href = rawUrl;
     link.setAttribute('imagesrcset', this.getBannerSrcset(rawUrl));
     link.setAttribute('imagesizes', this.getBannerSizes());
     
     document.head.appendChild(link);
+  }
+
+  private toSafeImageUrl(raw: string | undefined): string {
+    const safeRaw = (raw || '').trim();
+    if (!safeRaw) return this.getFallbackImageUrl();
+
+    if (safeRaw.startsWith('data:')) return safeRaw;
+    if (safeRaw.startsWith('/')) return safeRaw;
+
+    if (safeRaw.startsWith('http://') || safeRaw.startsWith('https://')) {
+      return safeRaw;
+    }
+
+    return this.getFallbackImageUrl();
+  }
+
+  private normalizeChannelToken(value: string): string {
+    return String(value)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
   }
 
   // ============================================================
@@ -337,6 +328,15 @@ export class BannerComponent
 
   public getHora(hora: string): string {
     return this.formatTime(hora);
+  }
+
+  public getContentUrl(): string {
+    if (!this.bannerData?.title?.value) return '';
+    const slug = slugify(this.bannerData.title.value);
+    if (this.isMovieData(this.data)) {
+      return `/peliculas/${slug}`;
+    }
+    return `/programas/${slug}`;
   }
 
   formatTime(timeString: string): string {

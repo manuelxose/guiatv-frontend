@@ -442,6 +442,13 @@ export class Container {
     const chatController = new ChatController();
     this.dependencies.set('chatController', chatController);
 
+    const { SitemapController } = await import('../presentation/controllers/SitemapController');
+    const sitemapController = new SitemapController(
+      this.get('channelRepository'),
+      this.get('programRepository')
+    );
+    this.dependencies.set('sitemapController', sitemapController);
+
     logger.info('Controllers registered');
   }
 
