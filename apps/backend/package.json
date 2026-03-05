@@ -18,7 +18,7 @@
     "job:precompute": "node dist/jobs/cli/precomputeSchedules.cli.js",
     "job:clean": "node dist/jobs/cli/cleanOldPrograms.cli.js",
     "create-indexes": "npm run build && node dist/scripts/create-indexes.js",
-    "migrate:firestore-to-mongo": "node dist/scripts/migrate-firestore-to-mongodb.js"
+    "migrate:firestore-to-mongo": "npm run build:init && node dist/scripts/migrate-firestore-to-mongodb.js"
   },
   "engines": {
     "node": "22"
@@ -60,6 +60,6 @@
     "@types/xml2js": "^0.4.14",
     "nodemon": "^3.0.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.3.3"
+    "typescript": "5.8.3"
   }
 }

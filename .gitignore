@@ -1,49 +1,25 @@
-# See http://help.github.com/ignore-files/ for more about ignoring files.
-
-# Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
-
-# Node
+# Workspace dependencies
 /node_modules
+
+# Frontend artifacts
+/apps/frontend/node_modules
+/apps/frontend/dist
+/apps/frontend/.angular
+
+# Backend artifacts
+/apps/backend/node_modules
+/apps/backend/dist
+/apps/backend/lib
+/apps/backend/storage
+
+# Runtime (kept outside git)
+/.runtime
+
+# Logs and temp
+*.log
 npm-debug.log*
-yarn-error.log
 yarn-debug.log*
+yarn-error.log*
 pnpm-debug.log*
-
-# IDEs and editors
-.idea/
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.history/*
-
-# Miscellaneous
-/.angular/cache
-.sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
-
-# Environment
-.env
-.env.*.local
-
-# System files
 .DS_Store
 Thumbs.db
-

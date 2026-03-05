@@ -32,9 +32,10 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
     next();
   });
 
-  // Servir iconos/archivos desde /storage (carpeta raíz del proyecto)
-  // __dirname en build apunta a dist/presentation/routes -> subir 3 niveles hasta /backend/storage
-  const storagePath = path.join(__dirname, '../../../storage');
+  // Serve storage from configured local path when available.
+  const storagePath = process.env.STORAGE_LOCAL_PATH
+    ? path.resolve(process.env.STORAGE_LOCAL_PATH)
+    : path.join(__dirname, '../../../storage');
   console.log('📂 Serving storage from:', storagePath);
   console.log('📂 Directory exists:', fs.existsSync(storagePath));
   app.use('/storage', express.static(storagePath));
