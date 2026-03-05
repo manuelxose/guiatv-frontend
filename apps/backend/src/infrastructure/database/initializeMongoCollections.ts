@@ -14,6 +14,11 @@ import { UserActivityModel } from './models/UserActivity.model';
 import { UserFollowModel } from './models/UserFollow.model';
 import { ChatConversationModel } from './models/ChatConversation.model';
 import { ChatMessageModel } from './models/ChatMessage.model';
+import { AuthSessionModel } from './models/AuthSession.model';
+import { PasswordResetTokenModel } from './models/PasswordResetToken.model';
+import { UserBlockModel } from './models/UserBlock.model';
+import { UserReportModel } from './models/UserReport.model';
+import { UserNotificationModel } from './models/UserNotification.model';
 
 /**
  * Ensure required Mongo collections exist and indexes are in place.
@@ -33,8 +38,13 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     { name: 'user_favorites', model: UserFavoriteModel },
     { name: 'user_activities', model: UserActivityModel },
     { name: 'user_follows', model: UserFollowModel },
+    { name: 'user_blocks', model: UserBlockModel },
+    { name: 'user_reports', model: UserReportModel },
+    { name: 'user_notifications', model: UserNotificationModel },
     { name: 'chat_conversations', model: ChatConversationModel },
     { name: 'chat_messages', model: ChatMessageModel },
+    { name: 'auth_sessions', model: AuthSessionModel },
+    { name: 'password_reset_tokens', model: PasswordResetTokenModel },
     { name: 'analytics_sessions', model: AnalyticsSessionModel },
     { name: 'analytics_events', model: AnalyticsEventModel },
     { name: 'blog_posts', model: BlogPostModel },
@@ -56,7 +66,21 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
       // Align indexes defined in the schema
       await model.syncIndexes();
       logger.info(`Mongo indexes synced`, { collection: name });
-    } catch (error) {
+    } catch (error: any) {
+      const message = String(error?.message || '');
+      const duplicateIndexError =
+        error?.code === 11000 ||
+        message.includes('E11000') ||
+        message.toLowerCase().includes('duplicate key');
+
+      if (duplicateIndexError) {
+        logger.warn(`Mongo indexes skipped due to duplicate data`, {
+          collection: name,
+          error: message,
+        });
+        continue;
+      }
+
       logger.error(`Failed to sync indexes`, { collection: name, error });
       throw error;
     }

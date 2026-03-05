@@ -7,6 +7,7 @@ import { GetPrograms } from './GetPrograms';
 export interface GetProgramLayoutsRequest {
   date: string;
   channels?: string[];
+  channelTypes?: string[];
   timeSlot?: string;
   fields?: 'minimal' | 'full';
 }
@@ -51,6 +52,7 @@ export class GetProgramLayouts {
     const normalizedDate = DateUtils.parseDateAlias(request.date);
     const fields = request.fields || 'full';
     const channelFilter = request.channels?.filter(Boolean) ?? [];
+    const channelTypeFilter = request.channelTypes?.filter(Boolean) ?? [];
     const slotFilter = request.timeSlot;
 
     const preKey = this.buildPreKey(normalizedDate, fields);
@@ -61,6 +63,7 @@ export class GetProgramLayouts {
       return this.buildResponseFromSnapshot(
         cached,
         channelFilter,
+        channelTypeFilter,
         slotFilter,
         true
       );
@@ -85,6 +88,7 @@ export class GetProgramLayouts {
       return this.buildResponseFromSnapshot(
         snapshot,
         channelFilter,
+        channelTypeFilter,
         slotFilter,
         true
       );
@@ -120,12 +124,16 @@ export class GetProgramLayouts {
   private buildResponseFromSnapshot(
     snapshot: any,
     channelFilter: string[],
+    channelTypeFilter: string[],
     slotFilter: string | undefined,
     cached: boolean
   ): GetProgramLayoutsResponse {
     const channelsData = Array.isArray(snapshot.channels) ? snapshot.channels : [];
     const channelMeta = Array.isArray(snapshot.channelMeta) ? snapshot.channelMeta : [];
     const channelSet = channelFilter.length ? new Set(channelFilter) : null;
+    const typeSet = channelTypeFilter.length
+      ? new Set(channelTypeFilter.map((t: string) => t.toLowerCase()))
+      : null;
     const looksLikeFlatSnapshot =
       channelsData.length > 0 && channelsData.every((entry: any) => !Array.isArray(entry?.programs));
 
@@ -176,6 +184,7 @@ export class GetProgramLayouts {
       })
       .filter((entry: any) => !!entry.channel?.id)
       .filter((entry: any) => !channelSet || channelSet.has(entry.channelId))
+      .filter((entry: any) => !typeSet || typeSet.has((entry.channel?.type || '').toLowerCase()))
       .filter((entry: any) => Array.isArray(entry.programs) && entry.programs.length)
       .map((entry: any) => ({
         channel: entry.channel,

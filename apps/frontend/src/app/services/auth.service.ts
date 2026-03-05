@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { tap, map } from 'rxjs/operators';
+import { tap, map, switchMap, catchError } from 'rxjs/operators';
 import { Observable, from, of, throwError } from 'rxjs';
 import { UserService } from './user.service';
+import { AuthSessionInfo } from '../interfaces/user.interface';
 
 declare global {
   interface Window {
@@ -19,13 +20,18 @@ export interface AuthResponse {
     picture?: string;
     role?: 'admin' | 'editor' | 'user';
   };
-  token: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  session: AuthSessionInfo;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private googleScriptLoaded = false;
   private readonly isBrowser = typeof window !== 'undefined';
+  private readonly accessTokenKey = 'gtv_id_token';
+  private readonly refreshTokenKey = 'gtv_refresh_token';
 
   constructor(private http: HttpClient, private userService: UserService) {}
 
@@ -93,7 +99,7 @@ export class AuthService {
                   }
                   this.exchangeGoogleToken(idToken).subscribe({
                     next: (authResp) => {
-                      this.userService.applySession(authResp.user, authResp.token);
+                      this.userService.applySession(authResp.user, authResp.accessToken);
                       finishResolve(authResp);
                     },
                     error: (err) => finishReject(err),
@@ -170,8 +176,8 @@ export class AuthService {
       )
       .pipe(
         tap((resp) => {
-          if (resp?.data?.token) {
-            this.persistToken(resp.data.token);
+          if (resp?.data?.accessToken) {
+            this.persistSession(resp.data.accessToken, resp.data.refreshToken);
           }
         }),
         map((resp) => resp?.data as AuthResponse)
@@ -191,14 +197,14 @@ export class AuthService {
       })
       .pipe(
         tap((resp) => {
-          if (resp?.data?.token) {
-            this.persistToken(resp.data.token);
+          if (resp?.data?.accessToken) {
+            this.persistSession(resp.data.accessToken, resp.data.refreshToken);
           }
         }),
         map((resp) => resp?.data as AuthResponse),
         tap((authResp) => {
-          if (authResp?.user && authResp?.token) {
-            this.userService.applySession(authResp.user, authResp.token);
+          if (authResp?.user && authResp?.accessToken) {
+            this.userService.applySession(authResp.user, authResp.accessToken);
           }
         })
       );
@@ -208,51 +214,124 @@ export class AuthService {
    * Recupera el perfil desde backend usando el token almacenado.
    */
   fetchProfileFromToken(): Observable<AuthResponse | null> {
-    const token = this.getStoredToken();
-    if (!token) return of(null);
+    const token = this.getStoredAccessToken();
+    const token$ = token
+      ? of(token)
+      : this.refreshAccessToken().pipe(map((resp) => resp?.accessToken || null));
 
-    const url = `${environment.API_BASE_URL}/auth/me`;
+    return token$.pipe(
+      switchMap((resolvedToken) => {
+        if (!resolvedToken) return of(null);
+        const url = `${environment.API_BASE_URL}/auth/me`;
+        return this.http
+          .get<{ success: boolean; data: AuthResponse['user'] }>(url, {
+            headers: new HttpHeaders({
+              Authorization: `Bearer ${resolvedToken}`,
+            }),
+          })
+          .pipe(
+            tap((resp) => {
+              if (resp?.data) {
+                this.userService.applySession(resp.data, resolvedToken);
+              }
+            }),
+            map((resp) => {
+              if (!resp?.data) return null;
+              return {
+                user: resp.data as AuthResponse['user'],
+                accessToken: resolvedToken,
+                refreshToken: this.getStoredRefreshToken() || '',
+                expiresIn: 0,
+                session: {
+                  id: '',
+                  createdAt: new Date().toISOString(),
+                  expiresAt: new Date().toISOString(),
+                },
+              } as AuthResponse;
+            })
+          );
+      }),
+      catchError(() => of(null))
+    );
+  }
+
+  refreshAccessToken(): Observable<AuthResponse | null> {
+    const refreshToken = this.getStoredRefreshToken();
+    if (!refreshToken) {
+      return of(null);
+    }
+
+    const url = `${environment.API_BASE_URL}/auth/refresh`;
     return this.http
-      .get<{ success: boolean; data: AuthResponse['user'] }>(url, {
-        headers: new HttpHeaders({
-          Authorization: `Bearer ${token}`,
-        }),
-      })
+      .post<{ success: boolean; data: AuthResponse }>(
+        url,
+        { refreshToken },
+        {
+          headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+        }
+      )
       .pipe(
+        map((resp) => resp?.data || null),
         tap((resp) => {
-          if (resp?.data) {
-            this.userService.applySession(resp.data, token);
+          if (resp?.accessToken) {
+            this.persistSession(resp.accessToken, resp.refreshToken);
+            this.userService.applySession(resp.user, resp.accessToken);
           }
         }),
-        map((resp) => {
-          if (!resp?.data) return null;
-          return { user: resp.data as AuthResponse['user'], token };
-        })
+        catchError(() => of(null))
       );
   }
 
   logout(): void {
-    this.persistToken('');
+    const refreshToken = this.getStoredRefreshToken();
+    if (refreshToken) {
+      const url = `${environment.API_BASE_URL}/auth/logout`;
+      this.http
+        .post(
+          url,
+          { refreshToken },
+          {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+          }
+        )
+        .pipe(catchError(() => of(null)))
+        .subscribe();
+    }
+
+    this.persistSession('');
     this.userService.logout();
   }
 
-  private persistToken(token: string) {
+  private persistSession(accessToken: string, refreshToken?: string) {
     if (!this.isBrowser) return;
     try {
-      if (!token) {
-        localStorage.removeItem('gtv_id_token');
+      if (!accessToken) {
+        localStorage.removeItem(this.accessTokenKey);
+        localStorage.removeItem(this.refreshTokenKey);
       } else {
-        localStorage.setItem('gtv_id_token', token);
+        localStorage.setItem(this.accessTokenKey, accessToken);
+        if (refreshToken) {
+          localStorage.setItem(this.refreshTokenKey, refreshToken);
+        }
       }
     } catch {
       // ignore storage errors (SSR or privacy mode)
     }
   }
 
-  private getStoredToken(): string | null {
+  private getStoredAccessToken(): string | null {
     if (!this.isBrowser) return null;
     try {
-      return localStorage.getItem('gtv_id_token');
+      return localStorage.getItem(this.accessTokenKey);
+    } catch {
+      return null;
+    }
+  }
+
+  private getStoredRefreshToken(): string | null {
+    if (!this.isBrowser) return null;
+    try {
+      return localStorage.getItem(this.refreshTokenKey);
     } catch {
       return null;
     }

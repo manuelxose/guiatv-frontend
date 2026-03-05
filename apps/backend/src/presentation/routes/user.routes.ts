@@ -33,5 +33,9 @@ export const createUserRoutes = (controller: UserController, authService: AuthSe
   router.post('/favorites', asyncHandler(controller.addFavorite.bind(controller)));
   router.delete('/favorites/:id', asyncHandler(controller.removeFavorite.bind(controller)));
 
+  router.get('/notifications', asyncHandler(controller.getNotifications.bind(controller)));
+  router.post('/notifications/read', asyncHandler(controller.markNotificationsRead.bind(controller)));
+  router.get('/notifications/unread-count', asyncHandler(controller.getUnreadNotificationsCount.bind(controller)));
+
   return router;
 };

@@ -7,6 +7,7 @@ import { DateUtils } from '../../shared/utils/dateUtils';
 import { logger } from '../../shared/utils/logger';
 import { EPGDataSource } from '../external/EPGDataSource';
 import { XMLParser } from '../parsers/XMLParser';
+import { submitSitemapToSearchConsole } from '../../application/services/submitSitemapToSearchConsole';
 
 /**
  * Sincronización diaria de datos EPG
@@ -151,6 +152,20 @@ export const precomputeSchedulesHandler = async (context: any) => {
       total: results.length,
       successful: results.filter((r) => r.success).length,
     });
+
+    const submitResult = await submitSitemapToSearchConsole({
+      throwOnError: false,
+      logger: precomputeLogger,
+    });
+    if (submitResult.skipped) {
+      precomputeLogger.info('Search Console sitemap submit skipped', {
+        result: submitResult,
+      });
+    } else if (!submitResult.submitted) {
+      precomputeLogger.warn('Search Console sitemap submit not completed', {
+        result: submitResult,
+      });
+    }
 
     return { success: true, results };
   } catch (error) {

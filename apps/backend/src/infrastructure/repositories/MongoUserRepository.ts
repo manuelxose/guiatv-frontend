@@ -102,6 +102,24 @@ export class MongoUserRepository {
     await UserModel.findByIdAndUpdate(id, { $set: { lastLoginAt: new Date() } }).exec();
   }
 
+  async updatePassword(
+    id: string,
+    passwordHash: string,
+    passwordSalt: string
+  ): Promise<void> {
+    const user = await UserModel.findById(id).exec();
+    if (!user) return;
+
+    user.passwordHash = passwordHash;
+    user.passwordSalt = passwordSalt;
+    if (user.provider === 'google') {
+      user.provider = 'hybrid';
+    } else if (!user.provider) {
+      user.provider = 'local';
+    }
+    await user.save();
+  }
+
   private map(doc: any): UserEntity {
     return {
       id: String(doc._id),

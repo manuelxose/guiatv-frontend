@@ -55,7 +55,15 @@ const UserListItemSchema = new Schema<IUserListItemDocument>(
 );
 
 UserListItemSchema.index({ listId: 1, createdAt: -1 });
-UserListItemSchema.index({ listId: 1, contentId: 1 });
+UserListItemSchema.index(
+  { listId: 1, contentId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      contentId: { $exists: true, $type: 'string' },
+    },
+  }
+);
 
 export const UserListItemModel = mongoose.model<IUserListItemDocument>(
   'UserListItem',

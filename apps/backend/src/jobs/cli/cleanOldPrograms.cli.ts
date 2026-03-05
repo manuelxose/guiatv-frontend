@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import '../../config/bootstrap';
 
 import { cleanOldProgramsJob } from '../cleanOldPrograms';
 

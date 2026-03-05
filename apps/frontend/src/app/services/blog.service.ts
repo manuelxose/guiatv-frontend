@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import {
   BehaviorSubject,
   Observable,
@@ -11,7 +12,6 @@ import {
   scan,
   concatMap,
   timer,
-  throwError,
 } from 'rxjs';
 import { HttpService } from './http.service';
 import { TvGuideService } from './tv-guide.service';
@@ -35,6 +35,7 @@ export class BlogService {
 
   // URL de la API
   private API_URL = environment.API_BLOG;
+  private readonly isServer: boolean;
 
   // Error state observable for UI consumption
   private _error = new BehaviorSubject<string | null>(null);
@@ -62,8 +63,11 @@ export class BlogService {
 
   constructor(
     private httpService: HttpService,
-    private tvService: TvGuideService
-  ) {}
+    private tvService: TvGuideService,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isServer = isPlatformServer(platformId);
+  }
 
   // ============================================
   // CONTROL DE FLUJO DE DATOS
@@ -134,22 +138,26 @@ export class BlogService {
     // Crear nueva petición con caché
     const maxRetries = 3;
 
-    this.postsCache$ = this.httpService.get<any[]>(this.API_URL).pipe(
-      // retry with exponential backoff
-      retryWhen((errors) =>
-        errors.pipe(
-          scan((retryCount, err) => {
-            const next = retryCount + 1;
-            if (next > maxRetries) {
-              // rethrow so catchError handles it
-              throw err;
-            }
-            return next;
-          }, 0),
-          // wait 2^retryCount * 1000 ms
-          concatMap((retryCount) => timer(Math.pow(2, retryCount) * 1000))
-        )
-      ),
+    const request$ = this.httpService.get<any[]>(this.API_URL);
+    const requestWithRetry$ = this.isServer
+      ? request$
+      : request$.pipe(
+          // retry with exponential backoff on client-side only
+          retryWhen((errors) =>
+            errors.pipe(
+              scan((retryCount, err) => {
+                const next = retryCount + 1;
+                if (next > maxRetries) {
+                  throw err;
+                }
+                return next;
+              }, 0),
+              concatMap((retryCount) => timer(Math.pow(2, retryCount) * 1000))
+            )
+          )
+        );
+
+    this.postsCache$ = requestWithRetry$.pipe(
       tap((posts) => {
         // clear any previous error
         this._error.next(null);

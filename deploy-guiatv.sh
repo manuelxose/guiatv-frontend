@@ -36,10 +36,7 @@ npm install --workspaces --include-workspace-root --legacy-peer-deps --no-audit 
 npm run build
 
 if [ "${BOOTSTRAP_DB:-0}" = "1" ]; then
-  set -a
-  source /etc/guiatv/api.env
-  set +a
-  npm run db:bootstrap-local
+  npm run db:bootstrap
 fi
 
 systemctl daemon-reload
@@ -49,5 +46,8 @@ nginx -t && systemctl reload nginx
 
 wait_http "http://127.0.0.1:${SSR_PORT}/"
 wait_http "http://127.0.0.1:${API_PORT}/v2/health"
+
+# Non-blocking SEO submit (logs and continues on failure).
+npm run seo:submit-sitemap || true
 
 echo "Deploy OK on branch: ${BRANCH}"

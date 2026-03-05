@@ -235,7 +235,7 @@ async function getBootstrap() {
 
 const app = express();
 const commonEngine = new CommonEngine();
-const proxyPaths = ['/v2', '/storage'];
+const proxyPaths = ['/v2', '/storage', '/sitemap.xml'];
 function proxyToBackend(req, res) {
   const targetUrl = new URL(req.originalUrl, backendOrigin);
   const headers = { ...req.headers, host: backendUrl.host };
@@ -322,17 +322,28 @@ app.get('*', async (req, res) => {
 
   try {
     const bootstrapFn = await getBootstrap();
-    const html = await commonEngine.render({
+    let html = await commonEngine.render({
       bootstrap: bootstrapFn,
       documentFilePath: indexHtml,
       url: renderUrl,
       publicPath: browserDistPath,
       providers: [{ provide: REQUEST, useValue: req }],
     });
+
+    // Some legacy globals in this server can lead to successful render execution
+    // but an empty serialized root in `html`. Recover from the Domino window snapshot.
+    if (html.includes('<app-root></app-root>')) {
+      const root = win?.document?.querySelector?.('app-root');
+      const rootInner = root?.innerHTML?.trim?.() || '';
+      if (rootInner.length > 0) {
+        html = `<!DOCTYPE html>${win.document.documentElement.outerHTML}`;
+      }
+    }
     res.setHeader('Cache-Control', 'no-store');
     res.send(html);
   } catch (err) {
     console.error('[SSR] ❌ Render Error:', err);
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     
     // 🔧 FIX: Manejo robusto del Fallback (CSR)
     // Buscamos index.html o index.csr.html

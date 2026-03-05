@@ -8,13 +8,14 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 // Importamos withEventReplay para que si el usuario hace clic antes de cargar JS, se guarde el evento
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 
 // Rutas de la aplicación
 import { routes } from './app.routes';
 
 // Configuración SOLID de providers - ACTUALIZADA
 import { allProviders } from './config/providers.config';
+import { authRefreshInterceptor } from './interceptors/auth-refresh.interceptor';
 
 // Environment para configuración condicional
 import { environment } from '../environments/environment';
@@ -36,7 +37,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     
     // Fetch API es requerida para SSR moderno
-    provideHttpClient(withFetch()),
+    provideHttpClient(withFetch(), withInterceptors([authRefreshInterceptor])),
 
     // Providers SOLID para toda la aplicación
     ...allProviders,

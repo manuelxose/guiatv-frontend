@@ -4,8 +4,33 @@ import { Program } from '../../domain/entities/Program';
 import { ParsedXMLProgram } from './XMLParser';
 import { logger } from '../../shared/utils/logger';
 
+/** Titles that are actually category labels, not real program names. */
+const GENERIC_TITLES = new Set([
+  'cine', 'película', 'pelicula', 'peliculas', 'películas',
+  'cine español', 'cine de barrio', 'cine western',
+  'movie', 'film', 'cinema', 'estreno',
+  'serie', 'series',
+]);
+
 export class ProgramDataParser {
   private readonly parserLogger = logger.child('ProgramDataParser');
+
+  /**
+   * When the EPG title is a generic category label (e.g. "Cine") and
+   * a sub-title carries the real program name, use the sub-title instead.
+   */
+  private resolveTitle(title: string, subTitle?: string): string {
+    if (!subTitle) return title;
+    const normalized = title.toLowerCase().trim();
+    if (GENERIC_TITLES.has(normalized)) {
+      return subTitle;
+    }
+    // Also catch patterns like "Cine de acción" (3 words max)
+    if (normalized.startsWith('cine') && normalized.split(' ').length <= 3) {
+      return subTitle;
+    }
+    return title;
+  }
 
   parseXMLDateToDate(dateStr: string): Date {
     // Accepted formats:
@@ -88,7 +113,7 @@ export class ProgramDataParser {
       return Program.create({
         id: this.generateProgramId(parsed),
         channelId,
-        title: parsed.title,
+        title: this.resolveTitle(parsed.title, parsed.subTitle),
         startTime,
         endTime,
         description: parsed.description,

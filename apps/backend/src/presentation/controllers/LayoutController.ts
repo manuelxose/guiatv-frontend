@@ -11,13 +11,13 @@ export class LayoutController {
 
   /**
    * GET /v2/layouts/:date
-   * Query: channels (csv), timeSlot, fields
+   * Query: channels (csv), channelTypes (csv), timeSlot, fields
    *
    * Returns channel lineup layouts for a specific date.
    */
   async getByDate(req: Request, res: Response): Promise<void> {
     const { date } = req.params;
-    const { channels, timeSlot, fields } = req.query;
+    const { channels, channelTypes, timeSlot, fields } = req.query;
 
     if (!date) {
       throw new ValidationError('date is required');
@@ -30,9 +30,17 @@ export class LayoutController {
           .filter(Boolean)
       : undefined;
 
+    const channelTypeList = channelTypes
+      ? String(channelTypes)
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : undefined;
+
     const result = await this.getProgramLayouts.execute({
       date,
       channels: channelList,
+      channelTypes: channelTypeList,
       timeSlot: timeSlot as string,
       fields: fields as any,
     });

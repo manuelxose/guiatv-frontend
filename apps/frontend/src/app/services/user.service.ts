@@ -14,6 +14,8 @@ import {
   Top10Category,
   NewsItem,
   UserFavorite,
+  UserNotification,
+  UserReport,
 } from '../interfaces/user.interface';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
@@ -74,6 +76,8 @@ export class UserService {
   private watchlistSubject = new BehaviorSubject<UserListItem[]>([]);
   private listsSubject = new BehaviorSubject<UserList[]>([]);
   private favoritesSubject = new BehaviorSubject<UserFavorite[]>([]);
+  private notificationsSubject = new BehaviorSubject<UserNotification[]>([]);
+  private unreadNotificationsSubject = new BehaviorSubject<number>(0);
   private top10Subject = new BehaviorSubject<Top10Category[]>([]);
   private newsSubject = new BehaviorSubject<NewsItem[]>([]);
   private authenticatedSubject = new BehaviorSubject<boolean>(false);
@@ -122,6 +126,14 @@ export class UserService {
     return this.favoritesSubject.asObservable();
   }
 
+  getNotifications(): Observable<UserNotification[]> {
+    return this.notificationsSubject.asObservable();
+  }
+
+  getUnreadNotificationsCount(): Observable<number> {
+    return this.unreadNotificationsSubject.asObservable();
+  }
+
   getTop10(): Observable<Top10Category[]> {
     return this.top10Subject.asObservable();
   }
@@ -144,6 +156,7 @@ export class UserService {
       profile: this.fetchProfile(),
       lists: this.fetchLists(),
       favorites: this.fetchFavorites(),
+      notifications: this.fetchNotifications(),
       friends: this.fetchFriends(),
       activities: this.fetchActivities('all'),
       recommendations: this.fetchRecommendations('friends'),
@@ -218,6 +231,8 @@ export class UserService {
     this.watchlistSubject.next([]);
     this.listsSubject.next([]);
     this.favoritesSubject.next([]);
+    this.notificationsSubject.next([]);
+    this.unreadNotificationsSubject.next(0);
     this.authenticatedSubject.next(false);
     this.loadingSubject.next(false);
     this.errorSubject.next(null);
@@ -503,6 +518,123 @@ export class UserService {
           }
         }),
         catchError(this.handleError(false, 'No se pudo eliminar el favorito.'))
+      );
+  }
+
+  fetchNotifications(): Observable<UserNotification[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/user/notifications`;
+    return this.http
+      .get<ApiResponse<{ notifications: UserNotification[] }>>(url, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => resp?.data?.notifications || []),
+        tap((notifications) => this.notificationsSubject.next(notifications)),
+        switchMap((notifications) =>
+          this.fetchUnreadNotificationsCount().pipe(map(() => notifications))
+        ),
+        catchError(this.handleError([], 'No se pudieron cargar las notificaciones.'))
+      );
+  }
+
+  fetchUnreadNotificationsCount(): Observable<number> {
+    if (!this.safeGetToken()) return of(0);
+
+    const url = `${this.baseUrl}/user/notifications/unread-count`;
+    return this.http
+      .get<ApiResponse<{ unreadCount: number }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => Number(resp?.data?.unreadCount || 0)),
+        tap((count) => this.unreadNotificationsSubject.next(count)),
+        catchError(this.handleError(0, 'No se pudo cargar el contador de notificaciones.'))
+      );
+  }
+
+  markNotificationsRead(ids: string[] = [], all: boolean = false): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
+
+    const url = `${this.baseUrl}/user/notifications/read`;
+    return this.http
+      .post<ApiResponse<{ updated: boolean }>>(
+        url,
+        { ids, all },
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => Boolean(resp?.data?.updated)),
+        tap((updated) => {
+          if (!updated) return;
+          if (all) {
+            const now = new Date().toISOString();
+            this.notificationsSubject.next(
+              this.notificationsSubject.value.map((notification) => ({
+                ...notification,
+                readAt: notification.readAt || now,
+              }))
+            );
+          } else if (ids.length) {
+            const now = new Date().toISOString();
+            const idSet = new Set(ids);
+            this.notificationsSubject.next(
+              this.notificationsSubject.value.map((notification) =>
+                idSet.has(notification.id)
+                  ? { ...notification, readAt: notification.readAt || now }
+                  : notification
+              )
+            );
+          }
+          this.fetchUnreadNotificationsCount().subscribe();
+        }),
+        catchError(this.handleError(false, 'No se pudo actualizar notificaciones.'))
+      );
+  }
+
+  blockUser(userId: string): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
+
+    const url = `${this.baseUrl}/social/block/${userId}`;
+    return this.http
+      .post<ApiResponse<{ blocked: boolean }>>(url, {}, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => Boolean(resp?.data?.blocked)),
+        tap((blocked) => {
+          if (!blocked) return;
+          this.friendsSubject.next(this.friendsSubject.value.filter((friend) => friend.id !== userId));
+          this.fetchActivities('all').subscribe();
+        }),
+        catchError(this.handleError(false, 'No se pudo bloquear al usuario.'))
+      );
+  }
+
+  unblockUser(userId: string): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
+
+    const url = `${this.baseUrl}/social/block/${userId}`;
+    return this.http
+      .delete<ApiResponse<{ blocked: boolean }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => !Boolean(resp?.data?.blocked)),
+        catchError(this.handleError(false, 'No se pudo desbloquear al usuario.'))
+      );
+  }
+
+  reportUser(payload: {
+    targetUserId?: string;
+    targetMessageId?: string;
+    reason: string;
+    details?: string;
+    type?: 'user' | 'message' | 'content' | 'other';
+  }): Observable<UserReport | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/social/reports`;
+    return this.http
+      .post<ApiResponse<{ report: UserReport }>>(url, payload, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.report || null),
+        catchError(this.handleError(null, 'No se pudo enviar el reporte.'))
       );
   }
 

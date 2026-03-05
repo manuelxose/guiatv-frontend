@@ -32,6 +32,27 @@ export interface AdminUsersResponse {
   pagination: AdminUsersPagination;
 }
 
+export interface AdminUserReport {
+  id: string;
+  reporterId: string;
+  targetUserId?: string;
+  targetMessageId?: string;
+  type: 'user' | 'message' | 'content' | 'other';
+  reason: string;
+  details?: string;
+  status: 'open' | 'reviewing' | 'resolved' | 'dismissed';
+  resolutionNote?: string;
+  resolvedBy?: string;
+  resolvedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminUserReportsResponse {
+  reports: AdminUserReport[];
+  pagination: AdminUsersPagination;
+}
+
 export interface AdminUsersQuery {
   search?: string;
   role?: AdminUserRole | 'all';
@@ -43,6 +64,12 @@ export interface AdminUsersQuery {
 export interface AdminUserUpdatePayload {
   role?: AdminUserRole;
   status?: AdminUserStatus;
+}
+
+export interface AdminUserReportUpdatePayload {
+  status: 'open' | 'reviewing' | 'resolved' | 'dismissed';
+  resolutionNote?: string;
+  action?: 'suspend' | 'none';
 }
 
 interface ApiResponse<T> {
@@ -89,6 +116,40 @@ export class AdminUsersService {
             return data?.user || data;
           }
           return resp as AdminUser;
+        })
+      );
+  }
+
+  getReports(query: { status?: string; page?: number; limit?: number } = {}): Observable<AdminUserReportsResponse> {
+    const params = this.serializeParams(query as any);
+    const url = `${this.baseUrl}/admin/users/reports${params ? `?${params}` : ''}`;
+    return this.http
+      .get<ApiResponse<AdminUserReportsResponse> | AdminUserReportsResponse>(url, {
+        headers: this.buildHeaders(),
+      })
+      .pipe(
+        map((resp) => {
+          if (this.isApiResponse(resp)) {
+            return resp.data as AdminUserReportsResponse;
+          }
+          return resp as AdminUserReportsResponse;
+        })
+      );
+  }
+
+  updateReport(reportId: string, payload: AdminUserReportUpdatePayload): Observable<AdminUserReport> {
+    const url = `${this.baseUrl}/admin/users/reports/${encodeURIComponent(reportId)}`;
+    return this.http
+      .patch<ApiResponse<{ report: AdminUserReport }> | AdminUserReport>(url, payload, {
+        headers: this.buildHeaders(),
+      })
+      .pipe(
+        map((resp) => {
+          if (this.isApiResponse(resp)) {
+            const data: any = resp.data;
+            return data?.report || data;
+          }
+          return resp as AdminUserReport;
         })
       );
   }

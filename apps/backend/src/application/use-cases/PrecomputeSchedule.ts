@@ -7,6 +7,7 @@ import { logger } from '../../shared/utils/logger';
 import { DateUtils } from '../../shared/utils/dateUtils';
 import { IStorageRepository } from '@/domain/repositories/IStorageRepository';
 import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
+import { invalidateSitemapCache } from '../../presentation/controllers/SitemapController';
 
 export interface PrecomputeScheduleRequest {
   date: string; // YYYYMMDD or alias
@@ -54,6 +55,8 @@ export class PrecomputeSchedule {
         });
       }
     }
+
+    invalidateSitemapCache();
   }
 
   /**
@@ -214,6 +217,8 @@ export class PrecomputeSchedule {
         fileSize,
         cacheKey: preKey,
       });
+
+      invalidateSitemapCache();
 
       return {
         success: true,

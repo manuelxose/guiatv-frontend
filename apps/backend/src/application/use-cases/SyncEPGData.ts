@@ -13,8 +13,11 @@ import { IStorageRepository } from '../../domain/repositories/IStorageRepository
 import { TMDBService } from '../../infrastructure/external/TMDBService';
 import { Program } from '../../domain/entities/Program';
 import { ProgramDeduplicator } from '../services/ProgramDeduplicator';
+import { normalizeCategory } from '../../shared/constants/categories';
 import axios from 'axios';
 import https from 'https';
+import { readFileSync } from 'fs';
+import { resolve as pathResolve } from 'path';
 
 export interface SyncEPGDataRequest {
   sourceUrl: string;
@@ -39,6 +42,8 @@ export interface SyncEPGDataResult {
 export class SyncEPGData {
   private readonly syncLogger = logger.child('SyncEPGData');
   private readonly deduplicator = new ProgramDeduplicator();
+  private readonly channelTypeOverrides: Record<string, string>;
+  private readonly channelTypePatterns: Array<{ re: RegExp; type: string }>;
 
   constructor(
     private readonly channelRepository: IChannelRepository,
@@ -48,7 +53,21 @@ export class SyncEPGData {
     private readonly xmlParser: XMLParser,
     private readonly programParser: ProgramDataParser,
     private readonly tmdbService: TMDBService
-  ) {}
+  ) {
+    // Load channel-types config
+    try {
+      const cfgPath = pathResolve(__dirname, '../../../config/channel-types.json');
+      const raw = JSON.parse(readFileSync(cfgPath, 'utf-8'));
+      this.channelTypeOverrides = raw.overrides ?? {};
+      this.channelTypePatterns = (raw.patterns ?? []).map((p: any) => ({
+        re: new RegExp(p.match, 'i'),
+        type: p.type,
+      }));
+    } catch {
+      this.channelTypeOverrides = {};
+      this.channelTypePatterns = [];
+    }
+  }
 
   /**
    * Executes the ingest pipeline including optional caching and enrichment.
@@ -316,6 +335,14 @@ export class SyncEPGData {
           channel = Channel.create({
             ...channel.toJSON(),
             icon: iconForChannel || parsed.icon,
+            type: inferredType,
+          });
+          await this.channelRepository.save(channel);
+        } else if (channel.type !== inferredType) {
+          // Actualizar tipo si cambió (e.g. config de canales actualizada)
+          channel = Channel.create({
+            ...channel.toJSON(),
+            type: inferredType,
           });
           await this.channelRepository.save(channel);
         }
@@ -403,6 +430,15 @@ export class SyncEPGData {
 
     // Convertir a entidades del dominio
     let programs = this.programParser.batchConvert(filteredPrograms, channelMap);
+
+    // Normalizar categorías a nombres canónicos
+    programs = programs.map((p) => {
+      const normalized = normalizeCategory(p.genre);
+      if (normalized && normalized !== p.genre) {
+        return Program.create({ ...p.toJSON(), genre: normalized, startTime: p.startTime, endTime: p.endTime });
+      }
+      return p;
+    });
 
     // Deduplicar versiones genericas vs especificas antes de enriquecer
     programs = this.deduplicator.dedupe(programs);
@@ -515,34 +551,30 @@ export class SyncEPGData {
     return undefined;
   }
 
-  // Inferencia enriquecida con información de país
+  // Inferencia enriquecida con información de país y config
   private inferChannelTypeWithGeo(
     name: string,
-    country?: string
+    _country?: string
   ): 'TDT' | 'Cable' | 'Movistar' | 'Autonomico' | 'OTT' {
-    const tdtChannels = ['La 1', 'La 2', 'Antena 3', 'Cuatro', 'Telecinco', 'La Sexta', 'Mega', 'Neox', 'Nova', 'FDF', 'Energy', 'DMAX', 'Clan', 'Boing'];
-    const movistarChannels = ['M+', 'Movistar'];
-    const cableChannels = ['FOX', 'AXN', 'TNT', 'HBO', 'Syfy', 'Sky', 'TNT Sports', 'ESPN'];
+    // 1) Exact override from config
+    const override = this.channelTypeOverrides[name];
+    if (override) return override as any;
+
+    // 2) Pattern match from config
+    for (const { re, type } of this.channelTypePatterns) {
+      if (re.test(name)) return type as any;
+    }
+
+    // 3) Heuristic fallback
     const inferredRegion = this.inferRegion(name);
     const isRegionalNationalVariant =
       inferredRegion &&
       /(la\s*1|la\s*2|la_1|la_2)/i.test(name);
 
-    const isSpain = (country || '').toLowerCase().includes('espa');
-
     if (isRegionalNationalVariant) {
       return 'Autonomico';
     }
 
-    if (isSpain) {
-      if (tdtChannels.some((ch) => name.includes(ch))) return 'TDT';
-      if (movistarChannels.some((ch) => name.includes(ch))) return 'Movistar';
-      if (inferredRegion) return 'Autonomico';
-    }
-
-    if (tdtChannels.some((ch) => name.includes(ch))) return 'TDT';
-    if (movistarChannels.some((ch) => name.includes(ch))) return 'Movistar';
-    if (cableChannels.some((ch) => name.includes(ch))) return 'Cable';
     if (inferredRegion) return 'Autonomico';
     return 'OTT';
   }

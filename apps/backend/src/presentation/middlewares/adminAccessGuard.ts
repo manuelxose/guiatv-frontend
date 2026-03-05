@@ -8,12 +8,6 @@ function extractToken(req: Request): string | null {
   if (authHeader.startsWith('Bearer ')) {
     return authHeader.substring(7);
   }
-  if (req.query?.token && typeof req.query.token === 'string') {
-    return req.query.token;
-  }
-  if (req.body?.token) {
-    return req.body.token;
-  }
   return null;
 }
 

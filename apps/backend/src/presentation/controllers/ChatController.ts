@@ -1,17 +1,26 @@
 import { Request, Response, NextFunction } from 'express';
 import * as mongoose from 'mongoose';
 import { successResponse } from '../../shared/types/ApiResponse';
-import { NotFoundError, ValidationError } from '../../shared/errors';
+import { ForbiddenError, NotFoundError, ValidationError } from '../../shared/errors';
 import { AuthenticatedRequest } from '../middlewares/authGuard';
 import { ChatConversationModel } from '../../infrastructure/database/models/ChatConversation.model';
 import { ChatMessageModel } from '../../infrastructure/database/models/ChatMessage.model';
 import { UserModel } from '../../infrastructure/database/models/User.model';
 import { UserProfileModel } from '../../infrastructure/database/models/UserProfile.model';
+import { UserFollowModel } from '../../infrastructure/database/models/UserFollow.model';
+import { UserBlockModel } from '../../infrastructure/database/models/UserBlock.model';
+import { UserNotificationService } from '../../application/services/UserNotificationService';
+import { ChatSocketHub } from '../realtime/ChatSocketHub';
 
 export class ChatController {
+  private notificationService = new UserNotificationService();
+  private socketHub = ChatSocketHub.getInstance();
+
   async getConversations(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = this.getUserId(req);
+      const blockedIds = await this.getBlockedUserIds(userId);
+      const followSet = await this.getFollowingSet(userId);
       const conversations = await ChatConversationModel.find({ participants: userId })
         .sort({ updatedAt: -1 })
         .lean()
@@ -22,10 +31,17 @@ export class ChatController {
         return;
       }
 
-      const conversationIds = conversations.map((conv) => this.toObjectId(String(conv._id)));
+      const filtered = conversations.filter((conversation) => {
+        const otherIds = conversation.participants
+          .map((participant) => String(participant))
+          .filter((participant) => participant !== userId);
+        return otherIds.every((participant) => !blockedIds.has(participant));
+      });
+
+      const conversationIds = filtered.map((conv) => this.toObjectId(String(conv._id)));
       const userObjectId = this.toObjectId(userId);
       const participantIds = Array.from(
-        new Set(conversations.flatMap((conv) => conv.participants.map((id) => String(id))))
+        new Set(filtered.flatMap((conv) => conv.participants.map((id) => String(id))))
       );
 
       const userMap = await this.buildUserSummaryMap(participantIds);
@@ -58,12 +74,14 @@ export class ChatController {
         unreadMap.set(String(entry._id), entry.count);
       }
 
-      const mapped = conversations.map((conv) => {
+      const mapped = filtered.map((conv) => {
         const convId = String(conv._id);
         const participants = conv.participants
           .map((participant) => userMap.get(String(participant)))
           .filter((participant) => participant !== null)
-          .map((participant) => this.mapParticipant(participant));
+          .map((participant) =>
+            this.mapParticipant(participant, followSet.has(participant.id))
+          );
 
         const lastMessage = lastMessageMap.get(convId);
         return {
@@ -72,7 +90,7 @@ export class ChatController {
           lastMessage: lastMessage ? this.mapMessage(lastMessage) : undefined,
           unreadCount: unreadMap.get(convId) || 0,
           updatedAt: conv.updatedAt,
-          isGroup: conv.participants.length > 2,
+          isGroup: Boolean(conv.isGroup || conv.participants.length > 2),
         };
       });
 
@@ -98,13 +116,22 @@ export class ChatController {
         ]);
       }
 
+      const blocked = await this.isBlockedBetween(userId, participantId);
+      if (blocked) {
+        throw new ForbiddenError('Conversation is blocked');
+      }
+
       const participant = await UserModel.findById(participantId).lean().exec();
       if (!participant) {
         throw new NotFoundError('User not found');
       }
 
+      await this.assertDmPolicy(userId, participantId);
+
+      const pairKey = this.buildPairKey(userId, participantId);
       const existing = await ChatConversationModel.findOne({
-        participants: { $all: [userId, participantId] },
+        pairKey,
+        isGroup: false,
       })
         .lean()
         .exec();
@@ -112,15 +139,29 @@ export class ChatController {
       const conversation = existing
         ? existing
         : await ChatConversationModel.create({
+            pairKey,
+            isGroup: false,
             participants: [userId, participantId],
+            participantStates: [
+              {
+                userId,
+                lastReadAt: new Date(),
+              },
+              {
+                userId: participantId,
+              },
+            ],
           });
 
       const participants = await this.buildUserSummaryMap([userId, participantId]);
+      const followSet = await this.getFollowingSet(userId);
       res.json(
         successResponse({
           conversation: {
             id: String(conversation._id),
-            participants: Array.from(participants.values()).map((entry) => this.mapParticipant(entry)),
+            participants: Array.from(participants.values()).map((entry) =>
+              this.mapParticipant(entry, followSet.has(entry.id))
+            ),
             unreadCount: 0,
             updatedAt: conversation.updatedAt,
             isGroup: false,
@@ -154,12 +195,33 @@ export class ChatController {
         throw new NotFoundError('Conversation not found');
       }
 
-      const messages = await ChatMessageModel.find({ conversationId })
-        .sort({ createdAt: 1 })
+      const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 200);
+      const beforeRaw = typeof req.query.before === 'string' ? req.query.before : '';
+      const beforeDate = beforeRaw ? new Date(beforeRaw) : null;
+
+      const filters: Record<string, any> = { conversationId };
+      if (beforeDate && !Number.isNaN(beforeDate.getTime())) {
+        filters.createdAt = { $lt: beforeDate };
+      }
+
+      const rows = await ChatMessageModel.find(filters)
+        .sort({ createdAt: -1 })
+        .limit(limit + 1)
         .lean()
         .exec();
 
-      res.json(successResponse({ messages: messages.map((message) => this.mapMessage(message)) }));
+      const hasMore = rows.length > limit;
+      const messages = (hasMore ? rows.slice(0, limit) : rows).reverse();
+
+      res.json(
+        successResponse({
+          messages: messages.map((message) => this.mapMessage(message)),
+          page: {
+            hasMore,
+            nextBefore: hasMore ? messages[0]?.createdAt : null,
+          },
+        })
+      );
     } catch (error) {
       next(error);
     }
@@ -182,11 +244,19 @@ export class ChatController {
         throw new NotFoundError('Conversation not found');
       }
 
-      const isParticipant = conversation.participants.some(
-        (participant) => String(participant) === userId
+      const participantIds = conversation.participants.map((participant) =>
+        String(participant)
       );
+      const isParticipant = participantIds.includes(userId);
       if (!isParticipant) {
         throw new NotFoundError('Conversation not found');
+      }
+
+      const peerIds = participantIds.filter((participant) => participant !== userId);
+      for (const peerId of peerIds) {
+        if (await this.isBlockedBetween(userId, peerId)) {
+          throw new ForbiddenError('Conversation is blocked');
+        }
       }
 
       if ((!text || !String(text).trim()) && (!content || type === 'text')) {
@@ -205,9 +275,117 @@ export class ChatController {
       });
 
       conversation.updatedAt = new Date();
+      const senderState = conversation.participantStates.find(
+        (state) => String(state.userId) === userId
+      );
+      if (senderState) {
+        senderState.lastReadAt = new Date();
+      } else {
+        conversation.participantStates.push({
+          userId: new mongoose.Types.ObjectId(userId),
+          lastReadAt: new Date(),
+        });
+      }
       await conversation.save();
 
-      res.json(successResponse({ message: this.mapMessage(message.toObject()) }));
+      const mappedMessage = this.mapMessage(message.toObject());
+      const recipients = participantIds;
+
+      this.socketHub.emitMessageNew(recipients, {
+        conversationId,
+        message: mappedMessage,
+      });
+      this.socketHub.emitConversationUpdate(recipients, {
+        conversationId,
+        updatedAt: conversation.updatedAt,
+      });
+
+      const sender = await UserModel.findById(userId).lean().exec();
+      const senderName = sender?.name || sender?.email?.split('@')[0] || 'Usuario';
+      const preview =
+        message.type === 'text'
+          ? String(message.text || '').slice(0, 120)
+          : 'Nuevo mensaje';
+      for (const recipientId of peerIds) {
+        const profile = await UserProfileModel.findOne({ userId: recipientId }).lean().exec();
+        if (profile?.notifications?.chatMessages === false) continue;
+
+        await this.notificationService.notifyMessage({
+          recipientId,
+          actorId: userId,
+          actorName: senderName,
+          conversationId,
+          preview,
+        });
+      }
+
+      res.json(successResponse({ message: mappedMessage }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async markConversationRead(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const conversationId = String(req.params.id || '').trim();
+      if (!conversationId) {
+        throw new ValidationError('conversation id is required', [
+          { field: 'id', message: 'conversation id is required', value: conversationId },
+        ]);
+      }
+
+      const conversation = await ChatConversationModel.findById(conversationId).exec();
+      if (!conversation) {
+        throw new NotFoundError('Conversation not found');
+      }
+
+      const isParticipant = conversation.participants.some(
+        (participant) => String(participant) === userId
+      );
+      if (!isParticipant) {
+        throw new NotFoundError('Conversation not found');
+      }
+
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+      const update = await ChatMessageModel.updateMany(
+        {
+          conversationId: conversation._id,
+          senderId: { $ne: userObjectId },
+          readBy: { $ne: userObjectId },
+        },
+        { $addToSet: { readBy: userObjectId } }
+      ).exec();
+
+      const now = new Date();
+      const state = conversation.participantStates.find(
+        (entry) => String(entry.userId) === userId
+      );
+      if (state) {
+        state.lastReadAt = now;
+      } else {
+        conversation.participantStates.push({
+          userId: userObjectId,
+          lastReadAt: now,
+        });
+      }
+      await conversation.save();
+
+      const participantIds = conversation.participants.map((participant) =>
+        String(participant)
+      );
+      this.socketHub.emitReadUpdated(participantIds, {
+        conversationId,
+        userId,
+        readAt: now.toISOString(),
+      });
+
+      res.json(
+        successResponse({
+          updated: update.modifiedCount,
+          readAt: now.toISOString(),
+        })
+      );
     } catch (error) {
       next(error);
     }
@@ -223,6 +401,71 @@ export class ChatController {
 
   private toObjectId(id: string): mongoose.Types.ObjectId {
     return new mongoose.Types.ObjectId(id);
+  }
+
+  private buildPairKey(userA: string, userB: string): string {
+    return [userA, userB].sort().join(':');
+  }
+
+  private async getFollowingSet(userId: string): Promise<Set<string>> {
+    const rows = await UserFollowModel.find({ followerId: userId }).lean().exec();
+    return new Set(rows.map((row) => String(row.followeeId)));
+  }
+
+  private async getBlockedUserIds(userId: string): Promise<Set<string>> {
+    const rows = await UserBlockModel.find({
+      $or: [{ blockerId: userId }, { blockedId: userId }],
+    })
+      .lean()
+      .exec();
+    const blockedIds = new Set<string>();
+    for (const row of rows) {
+      blockedIds.add(String(row.blockerId) === userId ? String(row.blockedId) : String(row.blockerId));
+    }
+    return blockedIds;
+  }
+
+  private async isBlockedBetween(userId: string, targetId: string): Promise<boolean> {
+    const blocked = await UserBlockModel.findOne({
+      $or: [
+        { blockerId: userId, blockedId: targetId },
+        { blockerId: targetId, blockedId: userId },
+      ],
+    })
+      .lean()
+      .exec();
+    return Boolean(blocked);
+  }
+
+  private async assertDmPolicy(userId: string, targetId: string): Promise<void> {
+    const targetProfile = await UserProfileModel.findOne({ userId: targetId }).lean().exec();
+    const allowMessages = targetProfile?.privacy?.allowMessages || 'followers';
+
+    if (allowMessages === 'none') {
+      throw new ForbiddenError('User does not accept messages');
+    }
+
+    const followsTarget = await UserFollowModel.findOne({
+      followerId: userId,
+      followeeId: targetId,
+    })
+      .lean()
+      .exec();
+    const followedByTarget = await UserFollowModel.findOne({
+      followerId: targetId,
+      followeeId: userId,
+    })
+      .lean()
+      .exec();
+
+    const related = Boolean(followsTarget || followedByTarget);
+    if (!related) {
+      throw new ForbiddenError('Messaging is only available for followed users or friends');
+    }
+
+    if (allowMessages === 'followers' && !followsTarget) {
+      throw new ForbiddenError('User only accepts messages from followers');
+    }
   }
 
   private async buildUserSummaryMap(userIds: string[]): Promise<Map<string, any>> {
@@ -261,7 +504,7 @@ export class ChatController {
     return userMap;
   }
 
-  private mapParticipant(user: any) {
+  private mapParticipant(user: any, following: boolean) {
     const watchingTitle = user.watchingNow?.title;
     const isOnline = Boolean(user.privacy?.showOnline && watchingTitle);
     return {
@@ -272,7 +515,7 @@ export class ChatController {
       isOnline,
       lastActivity: watchingTitle ? `Viendo "${watchingTitle}"` : 'Sin actividad reciente',
       favoriteGenres: user.favoriteGenres || [],
-      following: true,
+      following,
     };
   }
 
