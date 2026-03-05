@@ -101,11 +101,16 @@ export class ContentService {
    */
   getProgramsByChannel(channelIdOrName: string): ContentItem[] {
     if (!this.cachedLayouts) return [];
+    const token = String(channelIdOrName || '').toLowerCase();
 
     const channelEntry = this.cachedLayouts.channels.find(
-      (entry) =>
-        entry.channel.id === channelIdOrName ||
-        entry.channel.name.toLowerCase() === channelIdOrName.toLowerCase()
+      (entry) => {
+        const normalized = this.normalizeChannel(entry.channel, (entry.programs || [])[0]);
+        return (
+          normalized.id === channelIdOrName ||
+          normalized.name.toLowerCase() === token
+        );
+      }
     );
 
     if (!channelEntry) return [];
@@ -140,7 +145,8 @@ export class ContentService {
 
     return this.cachedLayouts.channels
       .filter((entry) => {
-        const channelType = (entry.channel.type || '').toUpperCase();
+        const normalized = this.normalizeChannel(entry.channel, (entry.programs || [])[0]);
+        const channelType = (normalized.type || '').toUpperCase();
         if (type === 'DEPORTES') {
           // Special case: return first 10 channels for sports
           return true;
@@ -148,14 +154,17 @@ export class ContentService {
         return channelType === type;
       })
       .slice(0, type === 'DEPORTES' ? 10 : undefined)
-      .map((entry) => ({
-        id: entry.channel.id,
-        name: entry.channel.name,
-        type: entry.channel.type || 'UNKNOWN',
-        programs: entry.programs.map((p) =>
-          this.toContentItem(p, entry.channel)
-        ),
-      }));
+      .map((entry) => {
+        const channel = this.normalizeChannel(entry.channel, (entry.programs || [])[0]);
+        return {
+          id: channel.id,
+          name: channel.name,
+          type: channel.type || 'UNKNOWN',
+          programs: entry.programs.map((p) =>
+            this.toContentItem(p, channel)
+          ),
+        };
+      });
   }
 
   /**
@@ -206,7 +215,7 @@ export class ContentService {
     program: ProgramLayoutDTO,
     channel?: ChannelMetaDTO
   ): ContentItem {
-    const safeChannel = channel || { id: program.channelId, name: '' } as any;
+    const safeChannel = this.normalizeChannel(channel, program);
     const image = this.resolveImage(program.image);
     const title =
       typeof program.title === 'object' ? program.title.value : program.title;
@@ -225,6 +234,30 @@ export class ContentService {
       rating,
       description: program.description,
       raw: program,
+    };
+  }
+
+  private normalizeChannel(
+    channel?: Partial<ChannelMetaDTO>,
+    program?: ProgramLayoutDTO
+  ): ChannelMetaDTO {
+    const channelId = String(channel?.id || program?.channelId || '').trim();
+    const cached = this.tvData.getCachedChannelMeta(channelId);
+    return {
+      id: channelId || cached?.id || '',
+      name:
+        String(channel?.name || cached?.name || channelId || 'Canal desconocido').trim() ||
+        'Canal desconocido',
+      icon:
+        (channel?.icon as string | null | undefined) ||
+        cached?.icon ||
+        undefined,
+      type: String(channel?.type || cached?.type || '').trim() || undefined,
+      country:
+        String(channel?.country || cached?.country || '').trim() || undefined,
+      countryCode:
+        String(channel?.countryCode || cached?.countryCode || '').trim() ||
+        undefined,
     };
   }
 

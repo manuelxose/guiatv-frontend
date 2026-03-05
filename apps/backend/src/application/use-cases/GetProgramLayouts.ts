@@ -74,6 +74,7 @@ export class GetProgramLayouts {
       const snapshot = {
         date: doc.date,
         timeSlots: doc.timeSlots as any,
+        channelMeta: doc.channelMeta || [],
         channels: doc.channels || [],
         meta: {
           layoutVersion: doc.layoutVersion,
@@ -122,26 +123,64 @@ export class GetProgramLayouts {
     slotFilter: string | undefined,
     cached: boolean
   ): GetProgramLayoutsResponse {
-    const channelsData = snapshot.channels || [];
+    const channelsData = Array.isArray(snapshot.channels) ? snapshot.channels : [];
+    const channelMeta = Array.isArray(snapshot.channelMeta) ? snapshot.channelMeta : [];
     const channelSet = channelFilter.length ? new Set(channelFilter) : null;
+    const looksLikeFlatSnapshot =
+      channelsData.length > 0 && channelsData.every((entry: any) => !Array.isArray(entry?.programs));
+
+    // Compatibilidad: snapshots legacy en formato { channels: channelMeta[], programs: [...] }.
+    if (looksLikeFlatSnapshot && Array.isArray(snapshot.programs)) {
+      const grouped = this.groupPrograms(
+        channelsData as Array<{ id: string; name: string }>,
+        snapshot.programs as ProgramLayoutDTO[],
+        channelFilter,
+        slotFilter
+      );
+
+      return {
+        date: snapshot.date,
+        timeSlots: snapshot.timeSlots || [],
+        channels: grouped.channels,
+        meta: {
+          date: snapshot.date,
+          totalChannels: grouped.channels.length,
+          totalPrograms: grouped.totalPrograms,
+          cached,
+          precomputed: true,
+          layoutVersion: snapshot.meta?.layoutVersion || this.layoutVersion,
+          uiConstants: snapshot.meta?.uiConstants,
+        },
+      };
+    }
+
+    const channelMetaMap = new Map<string, any>();
+    channelMeta.forEach((ch: any) => {
+      const normalized = this.normalizeChannelMeta(ch, ch?.id);
+      if (normalized?.id) channelMetaMap.set(normalized.id, normalized);
+    });
 
     const filteredChannels = channelsData
-      .filter((entry: any) => !channelSet || channelSet.has(entry.channelId || entry.channel?.id))
       .map((entry: any) => {
-        const programs: ProgramLayoutDTO[] = (entry.programs || []).filter((p: any) => {
-          if (!slotFilter) return true;
-          const num = Number(slotFilter);
-          if (!isNaN(num) && typeof p.timeSlotIndex === 'number') {
-            return p.timeSlotIndex === num;
-          }
-          return true;
-        });
+        const programs: ProgramLayoutDTO[] = this.filterProgramsBySlot(
+          entry?.programs || [],
+          slotFilter
+        );
+        const channelId = this.resolveChannelIdFromEntry(entry, programs);
+        const channel = this.hydrateChannel(entry, channelMetaMap, programs, channelId);
         return {
-          channel: entry.channel || { id: entry.channelId },
+          channelId,
+          channel,
           programs,
         };
       })
-      .filter((c: any) => Array.isArray(c.programs) && c.programs.length);
+      .filter((entry: any) => !!entry.channel?.id)
+      .filter((entry: any) => !channelSet || channelSet.has(entry.channelId))
+      .filter((entry: any) => Array.isArray(entry.programs) && entry.programs.length)
+      .map((entry: any) => ({
+        channel: entry.channel,
+        programs: entry.programs,
+      }));
 
     const totalPrograms = filteredChannels.reduce(
       (acc: number, c: any) => acc + (c.programs?.length || 0),
@@ -162,6 +201,74 @@ export class GetProgramLayouts {
         uiConstants: snapshot.meta?.uiConstants,
       },
     };
+  }
+
+  private filterProgramsBySlot(programs: ProgramLayoutDTO[], slotFilter?: string): ProgramLayoutDTO[] {
+    return (programs || []).filter((p: any) => {
+      if (!slotFilter) return true;
+      const num = Number(slotFilter);
+      if (Number.isNaN(num)) return true;
+      if (typeof p.timeSlotIndex === 'number' && p.timeSlotIndex === num) return true;
+      return !!p.layoutsBySlot?.some((l: any) => l.timeSlotIndex === num);
+    });
+  }
+
+  private resolveChannelIdFromEntry(entry: any, programs: ProgramLayoutDTO[]): string {
+    return (
+      entry?.channel?.id ||
+      entry?.channelId ||
+      programs.find((p: any) => !!p?.channelId)?.channelId ||
+      ''
+    );
+  }
+
+  private normalizeChannelMeta(channel: any, fallbackId: string): any {
+    if (!channel && !fallbackId) return null;
+    const id = channel?.id || fallbackId || '';
+    if (!id) return null;
+    const channelName =
+      typeof channel?.name === 'string' && channel.name.trim()
+        ? channel.name.trim()
+        : undefined;
+    return {
+      id,
+      name: channelName,
+      icon: channel?.icon || undefined,
+      type: channel?.type || undefined,
+      country: channel?.country || undefined,
+      countryCode: channel?.countryCode || undefined,
+    };
+  }
+
+  private hydrateChannel(
+    entry: any,
+    channelMetaMap: Map<string, any>,
+    programs: ProgramLayoutDTO[],
+    channelId: string
+  ): any {
+    const fromEntry = this.normalizeChannelMeta(entry?.channel, channelId);
+    const fromMeta = channelMetaMap.get(channelId);
+    const fromProgram = this.normalizeChannelMeta(
+      (programs.find((p: any) => p?.channel && (p.channel as any).id) as any)?.channel,
+      channelId
+    );
+
+    const merged = {
+      id: channelId || fromEntry?.id || fromMeta?.id || fromProgram?.id || '',
+      name:
+        fromEntry?.name ||
+        fromMeta?.name ||
+        fromProgram?.name ||
+        channelId ||
+        'Canal desconocido',
+      icon: fromEntry?.icon || fromMeta?.icon || fromProgram?.icon,
+      type: fromEntry?.type || fromMeta?.type || fromProgram?.type,
+      country: fromEntry?.country || fromMeta?.country || fromProgram?.country,
+      countryCode:
+        fromEntry?.countryCode || fromMeta?.countryCode || fromProgram?.countryCode,
+    };
+
+    return merged;
   }
 
   private groupPrograms(

@@ -167,12 +167,16 @@ export class ProgramListTransformService {
 
   getSlotStartTimestamp(dayOffset: number, slotStartMinutes: number): number {
     const now = new Date();
-    const year = now.getUTCFullYear();
-    const month = now.getUTCMonth();
-    const date = now.getUTCDate() + dayOffset;
-    const hours = Math.floor(slotStartMinutes / 60);
-    const minutes = slotStartMinutes % 60;
-    return Date.UTC(year, month, date, hours, minutes, 0, 0);
+    const baseDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + dayOffset,
+      0,
+      0,
+      0,
+      0
+    );
+    return baseDay.getTime() + slotStartMinutes * 60_000;
   }
 
   getProgramStartTimestamp(programa: IProgramItem): number {
