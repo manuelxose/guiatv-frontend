@@ -60,6 +60,42 @@
       </div>
     </header>
 
+    <section class="home__quick" *ngIf="deviceDetector.isMobile()" aria-label="Accesos rápidos">
+      <a routerLink="/programacion-tv/en-directo" class="home__quick-item">
+        <span class="home__quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12a7 7 0 0114 0M8 12a4 4 0 018 0M12 12h.01" />
+          </svg>
+        </span>
+        <span class="home__quick-label">En directo</span>
+      </a>
+      <a routerLink="/programacion-tv/peliculas" class="home__quick-item">
+        <span class="home__quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4" />
+          </svg>
+        </span>
+        <span class="home__quick-label">Películas</span>
+      </a>
+      <a routerLink="/programacion-tv/series" class="home__quick-item">
+        <span class="home__quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4-2v8l-4-2M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+        </span>
+        <span class="home__quick-label">Series</span>
+      </a>
+      <a routerLink="/comunidad" class="home__quick-item">
+        <span class="home__quick-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5m10 0v-2a3 3 0 00-3-3H10a3 3 0 00-3 3v2m10-9a3 3 0 11-6 0 3 3 0 016 0zm-8 0a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </span>
+        <span class="home__quick-label">Comunidad</span>
+      </a>
+    </section>
+
     <!-- Desktop: Hero section (compacto) -->
     <header class="home__header home__header--desktop" *ngIf="!deviceDetector.isMobile()">
       <div class="home__hero">

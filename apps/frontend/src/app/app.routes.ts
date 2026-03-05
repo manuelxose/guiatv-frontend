@@ -34,6 +34,15 @@ export const routes: Routes = [
     title: 'Mi cuenta - Comunidad GPTV',
   },
   {
+    path: 'comunidad',
+    loadComponent: () =>
+      import('./pages/user-area/user-area.component').then(
+        (m) => m.UserAreaComponent
+      ),
+    title: 'Comunidad - GPTV',
+    data: { defaultTab: 'chat' },
+  },
+  {
     path: 'admin',
     loadComponent: () =>
       import('./pages/admin/admin.component').then((m) => m.AdminComponent),
@@ -157,11 +166,7 @@ export const routes: Routes = [
         './pages/program-full-details/program-full-details.component'
       ).then((m) => m.ProgramFullDetailsComponent),
     title: 'Detalles del Programa - Guía TV',
-  }, // Eliminar ruta comodín temporalmente para evitar bucles
-  // {
-  //   path: '**',
-  //   redirectTo: ''
-  // }
+  },
   {
     path: 'avisolegal',
     loadComponent: () =>
@@ -210,6 +215,13 @@ export const routes: Routes = [
       ),
     title: 'Mapa del sitio - Guía TV',
   },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./pages/not-found/not-found.component').then(
+        (m) => m.NotFoundComponent
+      ),
+    title: 'Página no encontrada - Guía TV',
+  },
 ];
-
 

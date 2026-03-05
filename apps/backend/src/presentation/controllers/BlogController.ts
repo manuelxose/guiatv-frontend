@@ -27,48 +27,6 @@ interface CreatePostPayload {
  * Blog controller that serves posts from MongoDB with a WordPress-like shape.
  */
 export class BlogController {
-  private readonly mockPosts = [
-    {
-      id: 1,
-      date: new Date().toISOString(),
-      date_gmt: new Date().toISOString(),
-      guid: { rendered: 'http://guiatv.mock/?p=1' },
-      modified: new Date().toISOString(),
-      modified_gmt: new Date().toISOString(),
-      slug: 'top-10-series-maraton',
-      status: 'publish',
-      type: 'post',
-      link: 'http://guiatv.mock/top-10-series-maraton',
-      title: { rendered: 'Top 10 series para maratonear este finde' },
-      content: {
-        rendered:
-          '<p>Descubre las mejores series para ver este fin de semana. Desde thrillers apasionantes hasta comedias ligeras.</p>',
-        protected: false,
-      },
-      excerpt: {
-        rendered:
-          '<p>Selección rápida con thriller, comedia y true crime listas en streaming.</p>',
-        protected: false,
-      },
-      author: 1,
-      featured_media: 10,
-      comment_status: 'open',
-      ping_status: 'open',
-      sticky: false,
-      template: '',
-      format: 'standard',
-      meta: [],
-      categories: [1],
-      tags: [],
-      featured_image: {
-        source_url: 'https://picsum.photos/seed/series/800/600',
-      },
-      categories_name: [
-        { id: 1, name: 'Series', slug: 'series' },
-      ],
-    },
-  ];
-
   public getPosts = async (
     req: Request,
     res: Response,
@@ -101,12 +59,6 @@ export class BlogController {
 
       if (search && typeof search === 'string') {
         filters.$text = { $search: search };
-      }
-
-      const hasDbPosts = await BlogPostModel.exists({});
-      if (!hasDbPosts && !Object.keys(filters).length) {
-        res.json(this.mockPosts);
-        return;
       }
 
       const posts = await BlogPostModel.find(filters)

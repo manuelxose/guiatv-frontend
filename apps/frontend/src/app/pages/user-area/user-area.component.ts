@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subject, combineLatest, forkJoin, map, take, takeUntil } from 'rxjs';
 import {
   UserActivity,
@@ -25,6 +25,7 @@ import { EditProfileModalComponent } from './components/edit-profile-modal/edit-
 import { AddToListModalComponent } from './components/add-to-list-modal/add-to-list-modal.component';
 import { UserChatComponent } from './components/user-chat/user-chat.component';
 import { UserFavoritesComponent } from './components/user-favorites/user-favorites.component';
+import { AuthActionService } from '../../services/auth-action.service';
 
 type TabType =
   | 'overview'
@@ -84,6 +85,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
   );
 
   public activeTab: TabType = 'overview';
+  public isMobileView = false;
   public isCreateListModalOpen = false;
   public isEditProfileModalOpen = false;
   public isAddToListModalOpen = false;
@@ -94,15 +96,51 @@ export class UserAreaComponent implements OnInit, OnDestroy {
 
   constructor(
     private userService: UserService,
-    private menuState: MenuStateService
+    private menuState: MenuStateService,
+    private authActionService: AuthActionService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.menuState.setActive('mi-cuenta');
+    this.updateViewportState();
+    const initialRoutePath = String(this.route.snapshot.routeConfig?.path || '');
+    this.menuState.setActive(initialRoutePath === 'comunidad' ? 'comunidad' : 'mi-cuenta');
     this.isAdmin$
       .pipe(takeUntil(this.destroy$))
       .subscribe((isAdmin) => {
         if (!isAdmin && this.activeTab === 'admin') {
+          this.activeTab = 'overview';
+        }
+      });
+
+    combineLatest([this.route.data, this.route.queryParamMap])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([data, params]) => {
+        const routePath = String(this.route.snapshot.routeConfig?.path || '');
+        this.menuState.setActive(routePath === 'comunidad' ? 'comunidad' : 'mi-cuenta');
+
+        const queryTab = String(params.get('tab') || '')
+          .trim()
+          .toLowerCase();
+        if (this.isTabType(queryTab)) {
+          this.activeTab = queryTab;
+          return;
+        }
+
+        const defaultTab = String(data?.['defaultTab'] || '')
+          .trim()
+          .toLowerCase();
+        if (this.isTabType(defaultTab)) {
+          this.activeTab = defaultTab;
+          return;
+        }
+
+        if (routePath === 'comunidad') {
+          this.activeTab = 'chat';
+          return;
+        }
+
+        if (this.activeTab === 'admin') {
           this.activeTab = 'overview';
         }
       });
@@ -117,6 +155,10 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
   }
 
+  openMoreTab(tab: 'lists' | 'admin'): void {
+    this.activeTab = tab;
+  }
+
   onUpdateStatus(event: { title: string; mood: string; visibility: 'public' | 'friends' | 'private' }): void {
     this.userService.updateWatchingNow({
       title: event.title,
@@ -126,7 +168,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
   }
 
   onToggleFollow(friendId: string): void {
-    this.userService.toggleFollow(friendId).subscribe();
+    this.authActionService.toggleFollow(friendId).subscribe();
   }
 
   onSaveSettings(event: { privacy: UserPrivacy; notifications: UserNotifications }): void {
@@ -209,5 +251,27 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     this.userService.fetchListItems(this.selectedList.id).pipe(take(1)).subscribe((items) => {
       this.selectedListItems = items;
     });
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.updateViewportState();
+  }
+
+  private updateViewportState(): void {
+    const width = typeof window !== 'undefined' ? window.innerWidth : 1280;
+    this.isMobileView = width < 768;
+  }
+
+  private isTabType(value: string): value is TabType {
+    return (
+      value === 'overview' ||
+      value === 'lists' ||
+      value === 'social' ||
+      value === 'favorites' ||
+      value === 'chat' ||
+      value === 'settings' ||
+      value === 'admin'
+    );
   }
 }

@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import {
+  PRIMARY_NAV_ROUTES,
+  USER_NAV_ROUTES,
+  normalizePath,
+} from '../config/route-map';
 
 /**
  * Servicio para compartir el estado del menú entre Header y Menu.
@@ -26,6 +31,7 @@ export class MenuStateService {
     blog: '#8b5cf6',
     'top-10': '#ef4444',
     'en-directo': '#f43f5e',
+    comunidad: '#22c55e',
     'mi-cuenta': '#22c55e',
     'iniciar-sesion': '#0ea5e9',
     registro: '#38bdf8',
@@ -67,22 +73,9 @@ export class MenuStateService {
   }
 
   // Shared routes configuration so Header and Menu use the same source
-  public readonly routes = [
-    { label: 'Inicio', path: '/', key: 'home' },
-    { label: 'Guía canales', path: '/guia-canales', key: 'guia-canales' },
-    { label: 'Qué ver hoy', path: '/que-ver-hoy', key: 'que-ver-hoy' },
-    { label: 'Series', path: '/series', key: 'series' },
-    { label: 'Películas', path: '/peliculas', key: 'peliculas' },
-    { label: 'Blog', path: '/blog', key: 'blog' },
-    { label: 'Top 10', path: '/top-10', key: 'top-10' },
-    { label: 'En directo', path: '/en-directo', key: 'en-directo' },
-  ];
+  public readonly routes = PRIMARY_NAV_ROUTES;
 
-  public readonly userRoutes = [
-    { label: 'Mi cuenta', path: '/mi-cuenta', key: 'mi-cuenta' },
-    { label: 'Iniciar sesión', path: '/iniciar-sesion', key: 'iniciar-sesion' },
-    { label: 'Crear cuenta', path: '/registro', key: 'registro' },
-  ];
+  public readonly userRoutes = USER_NAV_ROUTES;
 
   // Subset intended for the header (mostrar solo lo más destacado)
   public getHeaderRoutes() {
@@ -91,12 +84,73 @@ export class MenuStateService {
       this.routes.find((r) => r.key === 'home')!,
       this.routes.find((r) => r.key === 'guia-canales')!,
       this.routes.find((r) => r.key === 'que-ver-hoy')!,
-      this.routes.find((r) => r.key === 'blog')!,
-      this.routes.find((r) => r.key === 'en-directo')!,
+      this.routes.find((r) => r.key === 'peliculas')!,
+      this.routes.find((r) => r.key === 'series')!,
     ];
   }
 
   public getUserRoutes() {
     return this.userRoutes;
+  }
+
+  public resolveActiveKeyFromUrl(url: string): string {
+    const path = normalizePath(url);
+    const allRoutes = [...this.routes, ...this.userRoutes];
+    const exact = allRoutes.find((route) => normalizePath(route.path) === path);
+    if (exact) {
+      return exact.key;
+    }
+
+    if (
+      path.startsWith('/programacion-tv/ver-canal/') ||
+      path.startsWith('/ver-canal/')
+    ) {
+      return 'guia-canales';
+    }
+
+    if (path.startsWith('/programacion-tv/series')) {
+      return 'series';
+    }
+
+    if (path.startsWith('/programacion-tv/peliculas') || path.startsWith('/peliculas/')) {
+      return 'peliculas';
+    }
+
+    if (
+      path.startsWith('/programacion-tv/que-ver-hoy') ||
+      path.startsWith('/programas/')
+    ) {
+      return 'que-ver-hoy';
+    }
+
+    if (path.startsWith('/programacion-tv/en-directo')) {
+      return 'en-directo';
+    }
+
+    if (path.startsWith('/blog/top10')) {
+      return 'top-10';
+    }
+
+    if (path.startsWith('/blog')) {
+      return 'blog';
+    }
+
+    if (path.startsWith('/comunidad')) {
+      return 'comunidad';
+    }
+
+    if (path.startsWith('/mi-cuenta')) {
+      return 'mi-cuenta';
+    }
+
+    if (path.startsWith('/iniciar-sesion')) {
+      return 'iniciar-sesion';
+    }
+
+    if (path.startsWith('/registro')) {
+      return 'registro';
+    }
+
+    return 'home';
   }
 }

@@ -55,6 +55,7 @@ import {
 } from 'src/app/interfaces';
 import { ProgramDetailModalComponent } from '../program-detail-modal/program-detail-modal.component';
 import { ApiConfigService } from 'src/app/api/api-config.service';
+import { environment } from 'src/environments/environment';
 
 const UI_CONFIG = {
   PIXELS_PER_HOUR: 240,
@@ -78,6 +79,31 @@ const MOBILE_CONFIG = {
   MAX_UPCOMING_PROGRAMS: 3,
   PROGRESS_UPDATE_INTERVAL: 60000, // 1 minuto
 } as const;
+
+/**
+ * User-friendly channel type groups.
+ * Maps UI labels to one or more backend type values.
+ */
+const CHANNEL_GROUPS: { label: string; types: string[] | null }[] = [
+  { label: 'Todos', types: null },
+  { label: 'TDT', types: ['TDT'] },
+  { label: 'Autonómicas', types: ['Autonomico'] },
+  { label: 'TV de Pago', types: ['Movistar', 'OTT', 'Cable'] },
+];
+
+const MAIN_CATEGORIES = ['Cine', 'Series', 'Deportes', 'Noticias', 'Infantil'];
+
+const devConsole = environment.production
+  ? {
+      log: (..._args: unknown[]) => undefined,
+      warn: (..._args: unknown[]) => undefined,
+      error: (..._args: unknown[]) => undefined,
+      debug: (..._args: unknown[]) => undefined,
+      info: (..._args: unknown[]) => undefined,
+      group: (..._args: unknown[]) => undefined,
+      groupEnd: (..._args: unknown[]) => undefined,
+    }
+  : console;
 
 interface ProgramWithPosition extends IProgramItem {
   gridColumnStart: number;
@@ -199,14 +225,18 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     () => this.activeDayInfo()?.index ?? 0
   );
 
+  public readonly channelGroups = CHANNEL_GROUPS;
+
   public readonly filteredChannels = computed(() => {
     let channels = this.canalesConProgramas();
 
-    // 1) Filter by channel type
+    // 1) Filter by channel type group
     const typeFilter = this.channelTypeFilter();
-    if (typeFilter && typeFilter !== 'Todos') {
+    const group = CHANNEL_GROUPS.find(g => g.label === typeFilter);
+    if (group?.types) {
+      const allowed = new Set(group.types.map(t => t.toLowerCase()));
       channels = channels.filter(
-        (canal) => canal.channel?.type?.toLowerCase() === typeFilter.toLowerCase()
+        (canal) => allowed.has((canal.channel?.type || '').toLowerCase())
       );
     }
 
@@ -217,7 +247,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     );
 
     if (this.DEBUG && !this.isMobile()) {
-      console.log(
+      devConsole.log(
         `🔍 Canales filtrados: ${channels.length} de ${
           this.canalesConProgramas().length
         }`
@@ -242,7 +272,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     );
 
     if (!channelData) {
-      console.warn('⚠️ No se encontró canal para el programa:', program.id);
+      devConsole.warn('⚠️ No se encontró canal para el programa:', program.id);
       return null;
     }
 
@@ -313,7 +343,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   // ===============================================
 
   constructor() {
-    console.log('[ProgramList] Constructor - isBrowser:', this.isBrowser);
+    devConsole.log('[ProgramList] Constructor - isBrowser:', this.isBrowser);
 
     // AÑADIR: Exponer debug en consola
     if (typeof window !== 'undefined') {
@@ -324,7 +354,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
         isLoading: () => this.isLoading(),
         uiState: () => this.uiState(),
       };
-      console.log('🛠️ Debug disponible: programListDebug.state()');
+      devConsole.log('🛠️ Debug disponible: programListDebug.state()');
     }
 
     // NUEVO: Efecto para reaccionar a cambios en layout
@@ -337,7 +367,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
         // Solo si no están ya expandidos (para evitar bucles o redibujados innecesarios)
         // Usamos untracked para que cambios en expandedChannels NO disparen este efecto de nuevo
         if (untracked(() => this.expandedChannels()).size !== channels.length) {
-          console.log('📱 Cambio a móvil detectado: expandiendo canales');
+          devConsole.log('📱 Cambio a móvil detectado: expandiendo canales');
           const allIndices = new Set(channels.map((_, index) => index));
           this.expandedChannels.set(allIndices);
         }
@@ -346,8 +376,8 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
-    console.log('[ProgramList] ngOnInit');
-    console.log('[ProgramList] isLoading inicial:', this.isLoading());
+    devConsole.log('[ProgramList] ngOnInit');
+    devConsole.log('[ProgramList] isLoading inicial:', this.isLoading());
 
     this.initializeComponent();
     this.initializeDataStreams();
@@ -357,7 +387,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // NUEVO: Log del estado después de inicialización
     setTimeout(() => {
-      console.log('[ProgramList] Estado después de init:', {
+      devConsole.log('[ProgramList] Estado después de init:', {
         isLoading: this.isLoading(),
         hasChannels: this.hasChannels(),
         uiState: this.uiState(),
@@ -366,8 +396,8 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    console.log('[ProgramList] ngAfterViewInit');
-    console.log('[ProgramList] Estado actual:', {
+    devConsole.log('[ProgramList] ngAfterViewInit');
+    devConsole.log('[ProgramList] Estado actual:', {
       isLoading: this.isLoading(),
       hasChannels: this.hasChannels(),
       canales: this.canalesConProgramas().length,
@@ -377,7 +407,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Inicializar detección de dispositivo
     if (!this.deviceDetector.isInitialized()) {
-      console.warn(
+      devConsole.warn(
         '⚠️ DeviceDetector no inicializado en AfterViewInit, reintentando...'
       );
       setTimeout(() => this.initializeDeviceDetection(), 100);
@@ -385,7 +415,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // CORREGIDO: Verificación del estado de carga
     if (this.hasChannels()) {
-      console.log('✅ Hay canales, inicializando features');
+      devConsole.log('✅ Hay canales, inicializando features');
       this.updateTimeIndicator();
 
       // Forzar redibujado del viewport si existe
@@ -394,7 +424,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
           try {
             this.virtualScrollViewport.checkViewportSize();
           } catch (e) {
-            console.warn('Error inicializando viewport:', e);
+            devConsole.warn('Error inicializando viewport:', e);
           }
         }, 100);
       }
@@ -433,7 +463,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     const hasDocument = typeof document !== 'undefined';
     const hasNavigator = typeof navigator !== 'undefined';
 
-    console.log(
+    devConsole.log(
       '[ProgramList - initializeDeviceDetection] Verificando entorno:',
       {
         isBrowser,
@@ -445,18 +475,18 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     );
 
     if (!isBrowser || !hasWindow || !hasDocument) {
-      console.log('?? No se detecto entorno de navegador');
+      devConsole.log('?? No se detecto entorno de navegador');
       return;
     }
 
-    console.log('? Entorno de navegador detectado, inicializando...');
+    devConsole.log('? Entorno de navegador detectado, inicializando...');
 
     // Inicializar features del navegador
     this.initializeBrowserFeatures();
 
     this.cdr.detectChanges();
 
-    console.log('? Inicializacion completa:', {
+    devConsole.log('? Inicializacion completa:', {
       isMobile: this.isMobile(),
       deviceInfo: this.deviceInfo(),
     });
@@ -487,12 +517,12 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private initializeDataStreams(): void {
     // Stream de programas - MEJORADO CON LOGS DETALLADOS
-    console.log('🔧 [ProgramList] Setting up data stream subscription');
+    devConsole.log('🔧 [ProgramList] Setting up data stream subscription');
     this.facade
       .getProgramListData()
       .pipe(
         tap((rawData) => {
-          console.log('📊 [ProgramList] RAW data emission (before filter):', {
+          devConsole.log('📊 [ProgramList] RAW data emission (before filter):', {
             hasData: !!rawData,
             isNull: rawData === null,
             isUndefined: rawData === undefined,
@@ -502,14 +532,14 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
         }),
         filter((data) => data !== null && data !== undefined),
         tap((filteredData) => {
-          console.log('✅ [ProgramList] Data PASSED filter:', {
+          devConsole.log('✅ [ProgramList] Data PASSED filter:', {
             length: filteredData?.length,
             sample: filteredData?.[0]?.channel?.name,
           });
         }),
         debounceTime(100),
         tap((debouncedData) => {
-          console.log('⏱️ [ProgramList] Data after debounce:', {
+          devConsole.log('⏱️ [ProgramList] Data after debounce:', {
             length: debouncedData?.length,
           });
         }),
@@ -517,7 +547,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       )
       .subscribe({
         next: (data) => {
-          console.log('✅ [ProgramList] Data stream NEXT called:', {
+          devConsole.log('✅ [ProgramList] Data stream NEXT called:', {
             hasData: !!data,
             length: data?.length,
             activeDay: this.activeDay(),
@@ -526,14 +556,14 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
           this.handleDataUpdate(data);
         },
         error: (error) => {
-          console.error('❌ [ProgramList] Data stream ERROR:', error);
+          devConsole.error('❌ [ProgramList] Data stream ERROR:', error);
           this.handleDataError(error);
         },
         complete: () => {
-          console.log('🏁 [ProgramList] Data stream COMPLETE (unexpected!)');
+          devConsole.log('🏁 [ProgramList] Data stream COMPLETE (unexpected!)');
           // NUEVO: Si el stream se completa sin datos, forzar loading false
           if (!this.hasChannels() && this.isLoading()) {
-            console.warn('⚠️ Stream completado sin datos, deteniendo loading');
+            devConsole.warn('⚠️ Stream completado sin datos, deteniendo loading');
             this.isLoading.set(false);
             this.cdr.markForCheck();
           }
@@ -545,7 +575,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       .getLoadingState()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((loading) => {
-        console.log('🔄 Loading state del facade:', loading);
+        devConsole.log('🔄 Loading state del facade:', loading);
 
         // CRÍTICO: Sincronizar con el facade
         this.isLoading.set(loading);
@@ -553,7 +583,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
         // NUEVO: Si facade dice que no está cargando pero tenemos datos, asegurar que estamos en estado correcto
         if (!loading && this.hasChannels()) {
-          console.log('✅ Facade: No loading + Hay datos = Estado correcto');
+          devConsole.log('✅ Facade: No loading + Hay datos = Estado correcto');
         }
 
         // NUEVO: Si facade dice que no está cargando y NO hay datos, verificar si hay error
@@ -562,18 +592,18 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
           const sinceLastLoad = now - this.lastLoadTimestamp;
           // Si la última carga fue hace menos de 2s, evitar forzar un refresh automático
           if (sinceLastLoad < 2000) {
-            console.warn(
+            devConsole.warn(
               '⚠️ Facade: No loading + No datos + No error, pero la última carga fue reciente (' +
                 sinceLastLoad +
                 'ms), ignorando auto-refresh'
             );
           } else {
-            console.warn(
+            devConsole.warn(
               '⚠️ Facade: No loading + No datos + No error = Posible problema, intentando forzar recarga'
             );
             setTimeout(() => {
               if (!this.hasChannels() && !this.error()) {
-                console.log('🔄 Intentando forzar recarga de datos...');
+                devConsole.log('🔄 Intentando forzar recarga de datos...');
                 this.facade.refreshData();
               }
             }, 1000);
@@ -586,12 +616,12 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       .getErrorState()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((error) => {
-        console.log('⚠️ Error state del facade:', error);
+        devConsole.log('⚠️ Error state del facade:', error);
         this.error.set(error);
 
         // CRÍTICO: Si hay error, asegurar que loading está en false
         if (error && this.isLoading()) {
-          console.log('❌ Error detectado, forzando isLoading = false');
+          devConsole.log('❌ Error detectado, forzando isLoading = false');
           this.isLoading.set(false);
         }
 
@@ -610,38 +640,38 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
    * Debug mejorado del estado de carga
    */
   public debugLoadingState(): void {
-    console.group('🔍 DEBUG LOADING STATE');
-    console.log('Component State:');
-    console.log('  isLoading:', this.isLoading());
-    console.log('  hasChannels:', this.hasChannels());
-    console.log('  canalesConProgramas:', this.canalesConProgramas().length);
-    console.log('  error:', this.error());
-    console.log('  uiState:', this.uiState());
+    devConsole.group('🔍 DEBUG LOADING STATE');
+    devConsole.log('Component State:');
+    devConsole.log('  isLoading:', this.isLoading());
+    devConsole.log('  hasChannels:', this.hasChannels());
+    devConsole.log('  canalesConProgramas:', this.canalesConProgramas().length);
+    devConsole.log('  error:', this.error());
+    devConsole.log('  uiState:', this.uiState());
 
-    console.log('\nFacade State:');
+    devConsole.log('\nFacade State:');
     this.facade.getProgramListData().subscribe({
       next: (data) => {
-        console.log('  Facade tiene datos:', data?.length || 0);
+        devConsole.log('  Facade tiene datos:', data?.length || 0);
       },
     });
 
     this.facade.getLoadingState().subscribe({
       next: (loading) => {
-        console.log('  Facade loading state:', loading);
+        devConsole.log('  Facade loading state:', loading);
       },
     });
 
     this.facade.getErrorState().subscribe({
       next: (error) => {
-        console.log('  Facade error state:', error);
+        devConsole.log('  Facade error state:', error);
       },
     });
 
-    console.groupEnd();
+    devConsole.groupEnd();
   }
 
   private handleDataUpdate(data: IProgramListData[]): void {
-    console.log('📊 handleDataUpdate recibió datos:', data?.length);
+    devConsole.log('📊 handleDataUpdate recibió datos:', data?.length);
     this.debugLogCount = 0; // Reset debug logs for new data
 
     // CRÍTICO: SIEMPRE establecer isLoading a false cuando se reciben datos
@@ -654,14 +684,14 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
         (canal) => canal && canal.channel && Array.isArray(canal.channels)
       );
 
-      console.log('✅ Canales válidos:', validChannels.length);
+      devConsole.log('✅ Canales válidos:', validChannels.length);
       this.canalesConProgramas.set(validChannels);
 
       // En móvil, SIEMPRE expandir todos los canales por defecto
       // Usamos setTimeout para asegurar que la detección de dispositivo sea correcta
       setTimeout(() => {
         if (this.isMobile()) {
-          console.log('📱 Mobile detected in handleDataUpdate - Expanding all channels');
+          devConsole.log('📱 Mobile detected in handleDataUpdate - Expanding all channels');
           const allIndices = new Set(validChannels.map((_, index) => index));
           this.expandedChannels.set(allIndices);
         } else {
@@ -677,22 +707,22 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
           if (this.virtualScrollViewport) {
             try {
               this.virtualScrollViewport.checkViewportSize();
-              console.log('✅ Viewport actualizado');
+              devConsole.log('✅ Viewport actualizado');
             } catch (e) {
-              console.warn('Error actualizando viewport:', e);
+              devConsole.warn('Error actualizando viewport:', e);
             }
           }
         }, 100);
       }
     } else {
-      console.log('⚠️ No hay datos válidos');
+      devConsole.log('⚠️ No hay datos válidos');
       this.canalesConProgramas.set([]);
       this.expandedChannels.set(new Set()); // Clear expanded channels if no data
 
       // NUEVO: Si no hay datos válidos, considerar si esto es un error
       setTimeout(() => {
         if (!this.hasChannels() && !this.error()) {
-          console.warn(
+          devConsole.warn(
             '⚠️ No hay datos después de la carga, intentando recargar...'
           );
           this.facade.refreshData();
@@ -704,7 +734,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private handleDataError(error: any): void {
-    console.error('❌ handleDataError:', error);
+    devConsole.error('❌ handleDataError:', error);
 
     // CRÍTICO: Establecer isLoading a false cuando hay error
     this.isLoading.set(false);
@@ -727,13 +757,13 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     // Timeout inicial de 3 segundos para verificación rápida
     setTimeout(() => {
       if (this.isLoading()) {
-        console.warn('⚠️ Loading después de 3s, verificando estado...');
+        devConsole.warn('⚠️ Loading después de 3s, verificando estado...');
         this.debugLoadingState();
 
         // Verificar si el facade tiene datos
         this.facade.getProgramListData().subscribe((data) => {
           if (data && data.length > 0) {
-            console.log('🔄 Facade tiene datos, forzando actualización');
+            devConsole.log('🔄 Facade tiene datos, forzando actualización');
             this.handleDataUpdate(data);
           }
         });
@@ -743,8 +773,8 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     // Timeout de seguridad: si después de 10 segundos sigue cargando, forzar detención
     setTimeout(() => {
       if (this.isLoading()) {
-        console.error('⚠️ TIMEOUT CRÍTICO - 10 segundos de carga');
-        console.error('Estado actual:', {
+        devConsole.error('⚠️ TIMEOUT CRÍTICO - 10 segundos de carga');
+        devConsole.error('Estado actual:', {
           hasChannels: this.hasChannels(),
           channelsLength: this.canalesConProgramas().length,
           error: this.error(),
@@ -769,7 +799,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
    * NUEVO: Verificación del estado de carga
    */
   private verifyLoadingState(): void {
-    console.group('🔍 VERIFY LOADING STATE');
+    devConsole.group('🔍 VERIFY LOADING STATE');
 
     const state = {
       isLoading: this.isLoading(),
@@ -779,45 +809,45 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       error: this.error(),
     };
 
-    console.log('Estado actual:', state);
+    devConsole.log('Estado actual:', state);
 
     // Verificar inconsistencias
     if (state.isLoading && state.hasChannels) {
-      console.warn('⚠️ INCONSISTENCIA: Loading true pero hay canales');
-      console.log('🔧 Corrigiendo: estableciendo loading = false');
+      devConsole.warn('⚠️ INCONSISTENCIA: Loading true pero hay canales');
+      devConsole.log('🔧 Corrigiendo: estableciendo loading = false');
       this.isLoading.set(false);
       this.cdr.markForCheck();
     }
 
     if (state.isLoading && state.hasError) {
-      console.warn('⚠️ INCONSISTENCIA: Loading true pero hay error');
-      console.log('🔧 Corrigiendo: estableciendo loading = false');
+      devConsole.warn('⚠️ INCONSISTENCIA: Loading true pero hay error');
+      devConsole.log('🔧 Corrigiendo: estableciendo loading = false');
       this.isLoading.set(false);
       this.cdr.markForCheck();
     }
 
     if (state.isLoading && !state.hasChannels && !state.hasError) {
-      console.warn('⚠️ Aún cargando sin datos ni errores');
-      console.log('🔄 Verificando estado del facade...');
+      devConsole.warn('⚠️ Aún cargando sin datos ni errores');
+      devConsole.log('🔄 Verificando estado del facade...');
 
       // Verificar estado del facade
       this.facade.getProgramListData().subscribe({
         next: (data) => {
           if (data && data.length > 0) {
-            console.log('✅ Facade tiene datos, actualizando...');
+            devConsole.log('✅ Facade tiene datos, actualizando...');
             this.handleDataUpdate(data);
           } else {
-            console.log('⚠️ Facade tampoco tiene datos');
+            devConsole.log('⚠️ Facade tampoco tiene datos');
           }
         },
         error: (err) => {
-          console.error('❌ Error verificando facade:', err);
+          devConsole.error('❌ Error verificando facade:', err);
           this.handleDataError(err);
         },
       });
     }
 
-    console.groupEnd();
+    devConsole.groupEnd();
   }
 
   // ===============================================
@@ -878,7 +908,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     );
 
     if (this.DEBUG && !this.isMobile()) {
-      console.log(
+      devConsole.log(
         `Canal ${canal.channel?.name}: ${layers.length} capas, ${layers.reduce(
           (sum, layer) => sum + layer.length,
           0
@@ -913,7 +943,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   public onProgramSelected(channelIndex: number, program: IProgramItem): void {
-    console.log(
+    devConsole.log(
       '[ProgramList] onProgramSelected called, channelIndex=',
       channelIndex,
       'programId=',
@@ -937,7 +967,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // En desktop, abrir el modal directamente
     if (!this.isMobile()) {
-      console.log('🖥️ Desktop: Abriendo modal para programa:', program);
+      devConsole.log('🖥️ Desktop: Abriendo modal para programa:', program);
       this.modalService.setPrograma(program);
       this.selectedProgram.set(program);
       this.cdr.markForCheck();
@@ -1101,19 +1131,19 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     );
 
     // Load programs for the selected day
-    console.log(`🔄 Loading programs for day ${dayInfo.index} (${dayInfo.diaSemana})`);
+    devConsole.log(`🔄 Loading programs for day ${dayInfo.index} (${dayInfo.diaSemana})`);
     this.isLoading.set(true);
     this.facade
       .loadProgramsForDay(dayInfo.index)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          console.log(`✅ Day ${dayInfo.index} data loaded successfully`);
+          devConsole.log(`✅ Day ${dayInfo.index} data loaded successfully`);
           this.isLoading.set(false);
           this.error.set(null);
         },
         error: (err) => {
-          console.error(`❌ Error loading day ${dayInfo.index}:`, err);
+          devConsole.error(`❌ Error loading day ${dayInfo.index}:`, err);
           this.error.set(err?.message || 'Error loading day');
           this.isLoading.set(false);
         },
@@ -1131,7 +1161,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       } catch {}
     }
 
-    console.log('[ProgramList] selectDay ->', dayIndex);
+    devConsole.log('[ProgramList] selectDay ->', dayIndex);
     this.onDayChanged(dayIndex);
     this.isDayDropdownOpen.set(false);
 
@@ -1628,7 +1658,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => this.facade.updateChannelData(data || {}),
-        error: (error) => console.error('Error loading channel data:', error),
+        error: (error) => devConsole.error('Error loading channel data:', error),
       });
   }
 
@@ -1738,7 +1768,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       const duration = (endMs - startMs) / 60000;
       const elapsed = (now - startMs) / 60000;
       
-      console.log(`🔴 [ProgramList] LIVE #${this.debugLogCount}:`, {
+      devConsole.log(`🔴 [ProgramList] LIVE #${this.debugLogCount}:`, {
         title: programa.title,
         start: new Date(startMs).toLocaleTimeString(),
         end: new Date(endMs).toLocaleTimeString(),
@@ -1862,11 +1892,13 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.cdr.markForCheck();
   }
 
-  public getChannelTypeCount(type: string): number {
+  public getChannelTypeCount(label: string): number {
     const channels = this.canalesConProgramas();
-    if (type === 'Todos') return channels.length;
+    const group = CHANNEL_GROUPS.find(g => g.label === label);
+    if (!group?.types) return channels.length;
+    const allowed = new Set(group.types.map(t => t.toLowerCase()));
     return channels.filter(
-      (c) => c.channel?.type?.toLowerCase() === type.toLowerCase()
+      (c) => allowed.has((c.channel?.type || '').toLowerCase())
     ).length;
   }
 
@@ -1948,13 +1980,16 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Apply channel type filter so categories reflect only visible channels
     const typeFilter = this.channelTypeFilter();
-    if (typeFilter && typeFilter !== 'Todos') {
+    const group = CHANNEL_GROUPS.find(g => g.label === typeFilter);
+    if (group?.types) {
+      const allowed = new Set(group.types.map(t => t.toLowerCase()));
       channels = channels.filter(
-        (canal) => canal.channel?.type?.toLowerCase() === typeFilter.toLowerCase()
+        (canal) => allowed.has((canal.channel?.type || '').toLowerCase())
       );
     }
 
-    return this.transform.getAvailableCategories(channels);
+    const available = new Set(this.transform.getAvailableCategories(channels));
+    return MAIN_CATEGORIES.filter(cat => available.has(cat));
   });
 
 // ============================================

@@ -21,6 +21,7 @@ import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { isLive } from 'src/app/utils/utils';
 import { ApiConfigService } from 'src/app/api/api-config.service';
 import { DeviceDetectorService } from 'src/app/services/device-detector.service';
+import { environment } from 'src/environments/environment';
 
 interface DayOption {
   label: string;
@@ -45,6 +46,18 @@ interface PerformanceMetrics {
   renderTime: number;
   dataFetchTime: number;
 }
+
+const devConsole = environment.production
+  ? {
+      log: (..._args: unknown[]) => undefined,
+      warn: (..._args: unknown[]) => undefined,
+      error: (..._args: unknown[]) => undefined,
+      debug: (..._args: unknown[]) => undefined,
+      info: (..._args: unknown[]) => undefined,
+      group: (..._args: unknown[]) => undefined,
+      groupEnd: (..._args: unknown[]) => undefined,
+    }
+  : console;
 
 interface RelatedChannel {
   id: string;
@@ -264,7 +277,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
         .pipe(first(), takeUntil(this.destroy$))
         .subscribe({
           next: (data) => {
-            console.log(`📦 CANAL-COMPLETO - Data loaded from API`);
+            devConsole.log(`📦 CANAL-COMPLETO - Data loaded from API`);
             this.performanceMetrics.dataFetchTime =
               performance.now() - dataFetchStart;
             this.managePrograms(data);
@@ -287,7 +300,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     try {
       this.svcGuide
         .getFromApi(this.activeDayAlias)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(first(), takeUntil(this.destroy$))
         .subscribe({
           next: (data) => {
             this.managePrograms(data);
@@ -328,7 +341,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       const searchTerm = normalizeChannelName(this.canal);
       
       // Log available channels for debugging
-      console.log('🔍 CANAL-COMPLETO - Buscando canal:', {
+      devConsole.log('🔍 CANAL-COMPLETO - Buscando canal:', {
         original: this.canal,
         normalized: searchTerm,
         availableChannels: programas.slice(0, 10).map((g: any) => ({
@@ -351,7 +364,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       
       // Extract programs from the found channel group
       if (channelGroup) {
-        console.log('🔎 Canal Group structure:', {
+        devConsole.log('🔎 Canal Group structure:', {
           hasChannel: !!channelGroup.channel,
           hasPrograms: !!channelGroup.programs,
           programsLength: channelGroup.programs?.length || 0,
@@ -375,13 +388,13 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
             };
           });
           
-          console.log('✅ Canal encontrado:', channelGroup.channel?.name, 'con', this.programs.length, 'programas');
+          devConsole.log('✅ Canal encontrado:', channelGroup.channel?.name, 'con', this.programs.length, 'programas');
         } else {
-          console.warn('⚠️ Canal encontrado pero sin programas:', channelGroup.channel?.name);
+          devConsole.warn('⚠️ Canal encontrado pero sin programas:', channelGroup.channel?.name);
           this.programs = [];
         }
       } else {
-        console.warn('⚠️ No se encontró el canal:', this.canal, 'normalizado:', searchTerm);
+        devConsole.warn('⚠️ No se encontró el canal:', this.canal, 'normalizado:', searchTerm);
         this.programs = [];
       }
 
@@ -404,7 +417,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
           poster: this.resolveImageUrl(imageUrl)
         };
       } else {
-        console.warn('⚠️ No se encontró programa en directo para', this.canal);
+        devConsole.warn('⚠️ No se encontró programa en directo para', this.canal);
       }
 
       // Reset and populate live programs from OTHER channels
@@ -436,7 +449,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
         }
       }
       
-      console.log('📦 CANAL-COMPLETO - Processed Data:', {
+      devConsole.log('📦 CANAL-COMPLETO - Processed Data:', {
         canal: this.canal,
         programsCount: this.programs.length,
         currentProgram: this.program,
@@ -724,7 +737,7 @@ public getActiveTimeSlot(): TimeSlot | undefined {
    * Handle errors
    */
   private handleError(error: any): void {
-    console.error('Error in CanalCompletoComponent:', error);
+    devConsole.error('Error in CanalCompletoComponent:', error);
     this.error =
       'Error al cargar la programación. Por favor, intenta de nuevo.';
     this.isLoading = false;
@@ -739,7 +752,7 @@ public getActiveTimeSlot(): TimeSlot | undefined {
       performance.now() - this.componentStartTime;
 
     if (this.performanceMetrics.loadTime > 0) {
-      console.log('📊 Canal Completo Performance:', {
+      devConsole.log('📊 Canal Completo Performance:', {
         Total: `${this.performanceMetrics.loadTime.toFixed(2)}ms`,
         'Data Fetch': `${this.performanceMetrics.dataFetchTime.toFixed(2)}ms`,
         Render: `${this.performanceMetrics.renderTime.toFixed(2)}ms`,
@@ -750,7 +763,7 @@ public getActiveTimeSlot(): TimeSlot | undefined {
 
       // Performance warnings
       if (this.performanceMetrics.loadTime > 3000) {
-        console.warn('⚠️ Load time exceeds 3s');
+        devConsole.warn('⚠️ Load time exceeds 3s');
       }
     }
   }

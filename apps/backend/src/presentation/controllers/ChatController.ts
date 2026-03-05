@@ -9,8 +9,10 @@ import { UserModel } from '../../infrastructure/database/models/User.model';
 import { UserProfileModel } from '../../infrastructure/database/models/UserProfile.model';
 import { UserFollowModel } from '../../infrastructure/database/models/UserFollow.model';
 import { UserBlockModel } from '../../infrastructure/database/models/UserBlock.model';
+import { AuthSessionModel } from '../../infrastructure/database/models/AuthSession.model';
 import { UserNotificationService } from '../../application/services/UserNotificationService';
 import { ChatSocketHub } from '../realtime/ChatSocketHub';
+import { GENERAL_CHAT_PAIR_KEY } from '../realtime/chat.constants';
 
 export class ChatController {
   private notificationService = new UserNotificationService();
@@ -21,27 +23,48 @@ export class ChatController {
       const userId = this.getUserId(req);
       const blockedIds = await this.getBlockedUserIds(userId);
       const followSet = await this.getFollowingSet(userId);
-      const conversations = await ChatConversationModel.find({ participants: userId })
-        .sort({ updatedAt: -1 })
-        .lean()
-        .exec();
 
-      if (!conversations.length) {
+      const [userConversations, generalConversation] = await Promise.all([
+        ChatConversationModel.find({ participants: userId }).sort({ updatedAt: -1 }).lean().exec(),
+        this.ensureGeneralConversation(),
+      ]);
+
+      const byId = new Map<string, any>();
+      for (const conversation of userConversations) {
+        byId.set(String(conversation._id), conversation);
+      }
+      byId.set(String(generalConversation._id), generalConversation);
+
+      const conversations = Array.from(byId.values()).sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+
+      const filtered = conversations.filter((conversation) => {
+        if (this.isGeneralConversation(conversation)) {
+          return true;
+        }
+
+        const otherIds = conversation.participants
+          .map((participant: mongoose.Types.ObjectId) => String(participant))
+          .filter((participant: string) => participant !== userId);
+        return otherIds.every((participant: string) => !blockedIds.has(participant));
+      });
+
+      if (!filtered.length) {
         res.json(successResponse({ conversations: [] }));
         return;
       }
 
-      const filtered = conversations.filter((conversation) => {
-        const otherIds = conversation.participants
-          .map((participant) => String(participant))
-          .filter((participant) => participant !== userId);
-        return otherIds.every((participant) => !blockedIds.has(participant));
-      });
-
       const conversationIds = filtered.map((conv) => this.toObjectId(String(conv._id)));
       const userObjectId = this.toObjectId(userId);
       const participantIds = Array.from(
-        new Set(filtered.flatMap((conv) => conv.participants.map((id) => String(id))))
+        new Set(
+          filtered.flatMap((conv) =>
+            this.isGeneralConversation(conv)
+              ? []
+              : conv.participants.map((id: mongoose.Types.ObjectId) => String(id))
+          )
+        )
       );
 
       const userMap = await this.buildUserSummaryMap(participantIds);
@@ -76,12 +99,19 @@ export class ChatController {
 
       const mapped = filtered.map((conv) => {
         const convId = String(conv._id);
-        const participants = conv.participants
-          .map((participant) => userMap.get(String(participant)))
-          .filter((participant) => participant !== null)
-          .map((participant) =>
-            this.mapParticipant(participant, followSet.has(participant.id))
-          );
+        const isGeneral = this.isGeneralConversation(conv);
+        const participants = isGeneral
+          ? [this.buildGeneralParticipant()]
+          : conv.participants
+              .map((participant: mongoose.Types.ObjectId) => userMap.get(String(participant)))
+              .filter((participant: any) => Boolean(participant))
+              .map((participant: any) =>
+                this.mapParticipant(
+                  participant,
+                  followSet.has(participant.id),
+                  this.socketHub.isUserOnline(participant.id)
+                )
+              );
 
         const lastMessage = lastMessageMap.get(convId);
         return {
@@ -90,11 +120,69 @@ export class ChatController {
           lastMessage: lastMessage ? this.mapMessage(lastMessage) : undefined,
           unreadCount: unreadMap.get(convId) || 0,
           updatedAt: conv.updatedAt,
-          isGroup: Boolean(conv.isGroup || conv.participants.length > 2),
+          isGroup: Boolean(isGeneral || conv.isGroup || conv.participants.length > 2),
+          groupName: isGeneral ? 'Chat general' : undefined,
         };
       });
 
       res.json(successResponse({ conversations: mapped }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getOnlineUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 200);
+      const blockedIds = await this.getBlockedUserIds(userId);
+      const followSet = await this.getFollowingSet(userId);
+
+      const activeSessionRows = await AuthSessionModel.aggregate([
+        {
+          $match: {
+            $or: [{ revokedAt: { $exists: false } }, { revokedAt: null }],
+            expiresAt: { $gt: new Date() },
+          },
+        },
+        {
+          $group: {
+            _id: '$userId',
+            lastUsedAt: { $max: '$lastUsedAt' },
+          },
+        },
+        { $sort: { lastUsedAt: -1 } },
+      ]);
+
+      const activeUserIds = activeSessionRows
+        .map((row) => String(row._id))
+        .filter(Boolean);
+      const visibleUserIds = activeUserIds.filter((id) => !blockedIds.has(id));
+      const candidateIds = visibleUserIds
+        .filter((id) => id !== userId)
+        .slice(0, limit);
+
+      const userMap = await this.buildUserSummaryMap(candidateIds);
+      const users = candidateIds
+        .map((id) => userMap.get(id))
+        .filter((entry: any) => Boolean(entry))
+        .map((entry: any) =>
+          this.mapParticipant(
+            entry,
+            followSet.has(entry.id),
+            this.socketHub.isUserOnline(entry.id)
+          )
+        )
+        .sort((a: any, b: any) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+
+      res.json(
+        successResponse({
+          users,
+          totalLoggedUsers: activeUserIds.length,
+          totalVisibleUsers: visibleUserIds.length,
+          connectedUsersNow: this.socketHub.getOnlineCount(),
+        })
+      );
     } catch (error) {
       next(error);
     }
@@ -160,7 +248,7 @@ export class ChatController {
           conversation: {
             id: String(conversation._id),
             participants: Array.from(participants.values()).map((entry) =>
-              this.mapParticipant(entry, followSet.has(entry.id))
+              this.mapParticipant(entry, followSet.has(entry.id), this.socketHub.isUserOnline(entry.id))
             ),
             unreadCount: 0,
             updatedAt: conversation.updatedAt,
@@ -188,11 +276,14 @@ export class ChatController {
         throw new NotFoundError('Conversation not found');
       }
 
-      const isParticipant = conversation.participants.some(
-        (participant) => String(participant) === userId
-      );
-      if (!isParticipant) {
-        throw new NotFoundError('Conversation not found');
+      const isGeneralConversation = this.isGeneralConversation(conversation);
+      if (!isGeneralConversation) {
+        const isParticipant = conversation.participants.some(
+          (participant) => String(participant) === userId
+        );
+        if (!isParticipant) {
+          throw new NotFoundError('Conversation not found');
+        }
       }
 
       const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 200);
@@ -232,6 +323,9 @@ export class ChatController {
       const userId = this.getUserId(req);
       const conversationId = String(req.params.id || '').trim();
       const { text, type, content } = req.body || {};
+      const clientMessageIdRaw =
+        typeof req.body?.clientMessageId === 'string' ? req.body.clientMessageId : '';
+      const clientMessageId = clientMessageIdRaw.trim() || undefined;
 
       if (!conversationId) {
         throw new ValidationError('conversation id is required', [
@@ -244,15 +338,18 @@ export class ChatController {
         throw new NotFoundError('Conversation not found');
       }
 
-      const participantIds = conversation.participants.map((participant) =>
-        String(participant)
-      );
-      const isParticipant = participantIds.includes(userId);
-      if (!isParticipant) {
-        throw new NotFoundError('Conversation not found');
+      const isGeneralConversation = this.isGeneralConversation(conversation);
+      const participantIds = conversation.participants.map((participant) => String(participant));
+      if (!isGeneralConversation) {
+        const isParticipant = participantIds.includes(userId);
+        if (!isParticipant) {
+          throw new NotFoundError('Conversation not found');
+        }
       }
 
-      const peerIds = participantIds.filter((participant) => participant !== userId);
+      const peerIds = isGeneralConversation
+        ? []
+        : participantIds.filter((participant) => participant !== userId);
       for (const peerId of peerIds) {
         if (await this.isBlockedBetween(userId, peerId)) {
           throw new ForbiddenError('Conversation is blocked');
@@ -265,58 +362,107 @@ export class ChatController {
         ]);
       }
 
-      const message = await ChatMessageModel.create({
-        conversationId,
-        senderId: userId,
-        text: text ? String(text).trim() : undefined,
-        type: type || 'text',
-        content: content || undefined,
-        readBy: [userId],
-      });
+      if (clientMessageId) {
+        const existingByClientId = await ChatMessageModel.findOne({
+          conversationId,
+          senderId: userId,
+          clientMessageId,
+        })
+          .lean()
+          .exec();
+
+        if (existingByClientId) {
+          res.json(successResponse({ message: this.mapMessage(existingByClientId) }));
+          return;
+        }
+      }
+
+      let message: any;
+      try {
+        message = await ChatMessageModel.create({
+          conversationId,
+          senderId: userId,
+          clientMessageId,
+          text: text ? String(text).trim() : undefined,
+          type: type || 'text',
+          content: content || undefined,
+          readBy: [userId],
+        });
+      } catch (error: any) {
+        if (error?.code === 11000 && clientMessageId) {
+          const duplicated = await ChatMessageModel.findOne({
+            conversationId,
+            senderId: userId,
+            clientMessageId,
+          })
+            .lean()
+            .exec();
+          if (duplicated) {
+            res.json(successResponse({ message: this.mapMessage(duplicated) }));
+            return;
+          }
+        }
+        throw error;
+      }
 
       conversation.updatedAt = new Date();
-      const senderState = conversation.participantStates.find(
-        (state) => String(state.userId) === userId
-      );
-      if (senderState) {
-        senderState.lastReadAt = new Date();
-      } else {
-        conversation.participantStates.push({
-          userId: new mongoose.Types.ObjectId(userId),
-          lastReadAt: new Date(),
-        });
+      if (!isGeneralConversation) {
+        const senderState = conversation.participantStates.find(
+          (state) => String(state.userId) === userId
+        );
+        if (senderState) {
+          senderState.lastReadAt = new Date();
+        } else {
+          conversation.participantStates.push({
+            userId: new mongoose.Types.ObjectId(userId),
+            lastReadAt: new Date(),
+          });
+        }
       }
       await conversation.save();
 
       const mappedMessage = this.mapMessage(message.toObject());
-      const recipients = participantIds;
 
-      this.socketHub.emitMessageNew(recipients, {
-        conversationId,
-        message: mappedMessage,
-      });
-      this.socketHub.emitConversationUpdate(recipients, {
-        conversationId,
-        updatedAt: conversation.updatedAt,
-      });
-
-      const sender = await UserModel.findById(userId).lean().exec();
-      const senderName = sender?.name || sender?.email?.split('@')[0] || 'Usuario';
-      const preview =
-        message.type === 'text'
-          ? String(message.text || '').slice(0, 120)
-          : 'Nuevo mensaje';
-      for (const recipientId of peerIds) {
-        const profile = await UserProfileModel.findOne({ userId: recipientId }).lean().exec();
-        if (profile?.notifications?.chatMessages === false) continue;
-
-        await this.notificationService.notifyMessage({
-          recipientId,
-          actorId: userId,
-          actorName: senderName,
+      if (isGeneralConversation) {
+        this.socketHub.emitGeneralMessageNew({
           conversationId,
-          preview,
+          message: mappedMessage,
         });
+        this.socketHub.emitGeneralConversationUpdate({
+          conversationId,
+          updatedAt: conversation.updatedAt,
+        });
+      } else {
+        this.socketHub.emitMessageNew(participantIds, {
+          conversationId,
+          message: mappedMessage,
+        });
+        this.socketHub.emitConversationUpdate(participantIds, {
+          conversationId,
+          updatedAt: conversation.updatedAt,
+        });
+      }
+
+      if (!isGeneralConversation && peerIds.length) {
+        const sender = await UserModel.findById(userId).lean().exec();
+        const senderName = sender?.name || sender?.email?.split('@')[0] || 'Usuario';
+        const preview =
+          message.type === 'text'
+            ? String(message.text || '').slice(0, 120)
+            : 'Nuevo mensaje';
+
+        for (const recipientId of peerIds) {
+          const profile = await UserProfileModel.findOne({ userId: recipientId }).lean().exec();
+          if (profile?.notifications?.chatMessages === false) continue;
+
+          await this.notificationService.notifyMessage({
+            recipientId,
+            actorId: userId,
+            actorName: senderName,
+            conversationId,
+            preview,
+          });
+        }
       }
 
       res.json(successResponse({ message: mappedMessage }));
@@ -340,11 +486,14 @@ export class ChatController {
         throw new NotFoundError('Conversation not found');
       }
 
-      const isParticipant = conversation.participants.some(
-        (participant) => String(participant) === userId
-      );
-      if (!isParticipant) {
-        throw new NotFoundError('Conversation not found');
+      const isGeneralConversation = this.isGeneralConversation(conversation);
+      if (!isGeneralConversation) {
+        const isParticipant = conversation.participants.some(
+          (participant) => String(participant) === userId
+        );
+        if (!isParticipant) {
+          throw new NotFoundError('Conversation not found');
+        }
       }
 
       const userObjectId = new mongoose.Types.ObjectId(userId);
@@ -358,27 +507,35 @@ export class ChatController {
       ).exec();
 
       const now = new Date();
-      const state = conversation.participantStates.find(
-        (entry) => String(entry.userId) === userId
-      );
-      if (state) {
-        state.lastReadAt = now;
+      if (!isGeneralConversation) {
+        const state = conversation.participantStates.find(
+          (entry) => String(entry.userId) === userId
+        );
+        if (state) {
+          state.lastReadAt = now;
+        } else {
+          conversation.participantStates.push({
+            userId: userObjectId,
+            lastReadAt: now,
+          });
+        }
+        await conversation.save();
+      }
+
+      if (isGeneralConversation) {
+        this.socketHub.emitGeneralReadUpdated({
+          conversationId,
+          userId,
+          readAt: now.toISOString(),
+        });
       } else {
-        conversation.participantStates.push({
-          userId: userObjectId,
-          lastReadAt: now,
+        const participantIds = conversation.participants.map((participant) => String(participant));
+        this.socketHub.emitReadUpdated(participantIds, {
+          conversationId,
+          userId,
+          readAt: now.toISOString(),
         });
       }
-      await conversation.save();
-
-      const participantIds = conversation.participants.map((participant) =>
-        String(participant)
-      );
-      this.socketHub.emitReadUpdated(participantIds, {
-        conversationId,
-        userId,
-        readAt: now.toISOString(),
-      });
 
       res.json(
         successResponse({
@@ -405,6 +562,52 @@ export class ChatController {
 
   private buildPairKey(userA: string, userB: string): string {
     return [userA, userB].sort().join(':');
+  }
+
+  private async ensureGeneralConversation(): Promise<any> {
+    const existing = await ChatConversationModel.findOne({ pairKey: GENERAL_CHAT_PAIR_KEY })
+      .lean()
+      .exec();
+    if (existing) {
+      return existing;
+    }
+
+    try {
+      const created = await ChatConversationModel.create({
+        pairKey: GENERAL_CHAT_PAIR_KEY,
+        isGroup: true,
+        participants: [],
+        participantStates: [],
+      });
+      return created.toObject();
+    } catch (error: any) {
+      if (error?.code === 11000) {
+        const duplicated = await ChatConversationModel.findOne({ pairKey: GENERAL_CHAT_PAIR_KEY })
+          .lean()
+          .exec();
+        if (duplicated) {
+          return duplicated;
+        }
+      }
+      throw error;
+    }
+  }
+
+  private isGeneralConversation(conversation: { pairKey?: string } | null | undefined): boolean {
+    return String(conversation?.pairKey || '').trim() === GENERAL_CHAT_PAIR_KEY;
+  }
+
+  private buildGeneralParticipant() {
+    return {
+      id: 'general',
+      name: 'Chat general',
+      username: 'chat-general',
+      avatar: '/assets/logo.svg',
+      isOnline: true,
+      lastActivity: 'Usuarios conectados en tiempo real',
+      favoriteGenres: [],
+      following: false,
+    };
   }
 
   private async getFollowingSet(userId: string): Promise<Set<string>> {
@@ -439,10 +642,14 @@ export class ChatController {
 
   private async assertDmPolicy(userId: string, targetId: string): Promise<void> {
     const targetProfile = await UserProfileModel.findOne({ userId: targetId }).lean().exec();
-    const allowMessages = targetProfile?.privacy?.allowMessages || 'followers';
+    const allowMessages = targetProfile?.privacy?.allowMessages || 'all';
 
     if (allowMessages === 'none') {
       throw new ForbiddenError('User does not accept messages');
+    }
+
+    if (allowMessages === 'all') {
+      return;
     }
 
     const followsTarget = await UserFollowModel.findOne({
@@ -451,19 +658,8 @@ export class ChatController {
     })
       .lean()
       .exec();
-    const followedByTarget = await UserFollowModel.findOne({
-      followerId: targetId,
-      followeeId: userId,
-    })
-      .lean()
-      .exec();
 
-    const related = Boolean(followsTarget || followedByTarget);
-    if (!related) {
-      throw new ForbiddenError('Messaging is only available for followed users or friends');
-    }
-
-    if (allowMessages === 'followers' && !followsTarget) {
+    if (!followsTarget) {
       throw new ForbiddenError('User only accepts messages from followers');
     }
   }
@@ -497,23 +693,28 @@ export class ChatController {
         avatar: profile?.avatar || user.picture || '/assets/gpt-avatar.png',
         favoriteGenres: profile?.favoriteGenres || [],
         watchingNow: profile?.watchingNow,
-        privacy: profile?.privacy,
       });
     }
 
     return userMap;
   }
 
-  private mapParticipant(user: any, following: boolean) {
+  private mapParticipant(user: any, following: boolean, isOnline?: boolean) {
     const watchingTitle = user.watchingNow?.title;
-    const isOnline = Boolean(user.privacy?.showOnline && watchingTitle);
+    const resolvedOnline = typeof isOnline === 'boolean' ? isOnline : this.socketHub.isUserOnline(user.id);
+    const lastActivity = resolvedOnline
+      ? 'En linea ahora'
+      : watchingTitle
+          ? `Viendo "${watchingTitle}"`
+          : 'Sin actividad reciente';
+
     return {
       id: user.id,
       name: user.name,
       username: user.username,
       avatar: user.avatar,
-      isOnline,
-      lastActivity: watchingTitle ? `Viendo "${watchingTitle}"` : 'Sin actividad reciente',
+      isOnline: resolvedOnline,
+      lastActivity,
       favoriteGenres: user.favoriteGenres || [],
       following,
     };
@@ -524,6 +725,7 @@ export class ChatController {
       id: String(message._id),
       conversationId: String(message.conversationId),
       senderId: String(message.senderId),
+      clientMessageId: message.clientMessageId,
       text: message.text,
       type: message.type,
       content: message.content,

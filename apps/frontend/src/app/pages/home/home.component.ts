@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { map } from 'rxjs/operators';
 
 // Components
@@ -34,6 +34,7 @@ import {
 } from 'src/app/interfaces';
 import { ConsoleLoggerService } from 'src/app/services/core/logger.service';
 import { DeviceDetectorService } from 'src/app/services/device-detector.service';
+import { environment } from 'src/environments/environment';
 
 const DEFAULT_CHANNEL_TYPES = ['TDT', 'CABLE', 'MOVISTAR', 'AUTONOMICO', 'OTT'];
 
@@ -48,6 +49,7 @@ const DEFAULT_CHANNEL_TYPES = ['TDT', 'CABLE', 'MOVISTAR', 'AUTONOMICO', 'OTT'];
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
+    RouterModule,
     NavBarComponent,
     ProgramListComponent,
     BannerComponent,
@@ -411,7 +413,7 @@ export class HomeComponent implements OnInit {
    * Verificar si es producción
    */
   private isProduction(): boolean {
-    return false; // Por ahora siempre false para debug
+    return environment.production;
   }
 
   /**

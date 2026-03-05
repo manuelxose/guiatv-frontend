@@ -41,26 +41,6 @@ export class BlogService {
   private _error = new BehaviorSubject<string | null>(null);
   public error$ = this._error.asObservable();
 
-  // Small local fallback in case the remote API is down
-  private readonly MOCK_POSTS: any[] = [
-    {
-      id: 0,
-      title: { rendered: 'Blog temporal - contenido no disponible' },
-      slug: 'blog-temporal-contenido-no-disponible',
-      excerpt: {
-        rendered:
-          'No hemos podido cargar el blog en remoto. Aquí tienes una entrada temporal.',
-      },
-      content: {
-        rendered:
-          '<p>Lo sentimos, el servicio de blog no está disponible temporalmente. Vuelve a intentarlo en unos minutos.</p>',
-      },
-      date: new Date().toISOString(),
-      categories: [],
-      categories_name: [],
-    },
-  ];
-
   constructor(
     private httpService: HttpService,
     private tvService: TvGuideService,
@@ -165,18 +145,14 @@ export class BlogService {
         this.cacheTimestamp = now;
       }),
       catchError((error) => {
-        // final fallback path: log, expose an error, reset cache, and return local mock posts
         console.error('Error fetching posts:', error);
         this.postsCache$ = null;
         this._error.next(
-          'No se ha podido cargar el blog. Se muestran artículos locales.'
+          'No se ha podido cargar el blog en este momento.'
         );
-
-        // populate posts with a local fallback so UI has something to render
-        const fallback = this.MOCK_POSTS;
-        this.setPosts(fallback);
+        this.setPosts([]);
         this.cacheTimestamp = now;
-        return of(fallback);
+        return of([]);
       }),
       shareReplay(1)
     );

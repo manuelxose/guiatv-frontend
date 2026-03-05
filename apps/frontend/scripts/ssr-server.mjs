@@ -183,46 +183,7 @@ if (!globalThis.localStorage) {
 }
 
 // =============================================================================
-// 2. API FAILSAFE (MOCKS)
-// =============================================================================
-const enableApiFailsafe = process.env['SSR_API_FAILSAFE'] !== 'false';
-
-if (enableApiFailsafe && typeof fetch === 'function') {
-  const originalFetch = fetch;
-  globalThis.fetch = async (input, init) => {
-    try {
-      return await originalFetch(input, init);
-    } catch (err) {
-      const url = typeof input === 'string' ? input : input?.url || '';
-      const isApiCall = url.includes('localhost:4000') || url.includes('127.0.0.1:4000') || url.includes('/v2/');
-
-      if (!isApiCall) throw err;
-
-      console.warn(`[SSR] ⚠️ Backend unreachable. Serving MOCK for: ${url}`);
-      return Promise.resolve(buildMockResponse(url));
-    }
-  };
-}
-
-function buildMockResponse(url) {
-  const json = mockPayloadFor(url);
-  return new Response(JSON.stringify(json), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-
-function mockPayloadFor(url) {
-  const today = new Date().toISOString().slice(0, 10);
-  const empty = { date: today, timeSlots: [], channels: [], programs: [], categories: [] };
-  
-  if (url.includes('/programs')) return { success: true, data: { ...empty, total: 0 } };
-  if (url.includes('/channels')) return { success: true, data: { channels: [] } };
-  return { success: true, data: null };
-}
-
-// =============================================================================
-// 3. SERVER SETUP
+// 2. SERVER SETUP
 // =============================================================================
 let bootstrap;
 async function getBootstrap() {
@@ -300,6 +261,11 @@ app.get('/.well-known/*', (req, res) => {
 });
 
 app.get('*.*', express.static(browserDistPath, { maxAge: '1y', immutable: true }));
+
+// If a static asset is missing, return 404 instead of falling through to SSR HTML.
+app.get(/\.(?:js|mjs|css|map|json|png|jpe?g|webp|gif|svg|ico|woff2?|ttf|otf)$/i, (req, res) => {
+  res.status(404).end();
+});
 
 // Lightweight healthcheck for production orchestration
 app.get('/healthz', (req, res) => {

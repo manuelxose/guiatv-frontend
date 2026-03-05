@@ -5,6 +5,7 @@ import { AuthService } from '../../domain/services/AuthService';
 import { logger } from '../../shared/utils/logger';
 import { ChatConversationModel } from '../../infrastructure/database/models/ChatConversation.model';
 import { ChatMessageModel } from '../../infrastructure/database/models/ChatMessage.model';
+import { GENERAL_CHAT_PAIR_KEY } from './chat.constants';
 
 interface AuthedSocket extends Socket {
   userId?: string;
@@ -14,6 +15,8 @@ export class ChatSocketHub {
   private static instance: ChatSocketHub;
   private io?: Server;
   private initialized = false;
+  private readonly socketUserMap = new Map<string, string>();
+  private readonly userSocketMap = new Map<string, Set<string>>();
 
   static getInstance(): ChatSocketHub {
     if (!ChatSocketHub.instance) {
@@ -61,6 +64,12 @@ export class ChatSocketHub {
       }
 
       socket.join(this.userRoom(userId));
+      socket.join(this.generalRoom());
+      const becameOnline = this.registerPresence(userId, socket.id);
+      this.emitPresenceSnapshot(socket);
+      if (becameOnline) {
+        this.emitPresenceChange(userId, true);
+      }
 
       socket.on('chat:typing', async (payload: { conversationId?: string; isTyping?: boolean }) => {
         const conversationId = String(payload?.conversationId || '').trim();
@@ -68,10 +77,18 @@ export class ChatSocketHub {
 
         const conversation = await ChatConversationModel.findById(conversationId).lean().exec();
         if (!conversation) return;
+        const isGeneral = this.isGeneralConversation(conversation.pairKey);
 
-        const isParticipant = conversation.participants.some(
-          (participant) => String(participant) === userId
-        );
+        if (isGeneral) {
+          socket.to(this.generalRoom()).emit('chat:typing', {
+            conversationId,
+            userId,
+            isTyping: Boolean(payload?.isTyping),
+          });
+          return;
+        }
+
+        const isParticipant = conversation.participants.some((participant) => String(participant) === userId);
         if (!isParticipant) return;
 
         const participantIds = conversation.participants
@@ -92,10 +109,13 @@ export class ChatSocketHub {
 
         const conversation = await ChatConversationModel.findById(conversationId).exec();
         if (!conversation) return;
-        const isParticipant = conversation.participants.some(
-          (participant) => String(participant) === userId
-        );
-        if (!isParticipant) return;
+        const isGeneral = this.isGeneralConversation(conversation.pairKey);
+        if (!isGeneral) {
+          const isParticipant = conversation.participants.some(
+            (participant) => String(participant) === userId
+          );
+          if (!isParticipant) return;
+        }
 
         const now = new Date();
         await ChatMessageModel.updateMany(
@@ -107,18 +127,29 @@ export class ChatSocketHub {
           { $addToSet: { readBy: new mongoose.Types.ObjectId(userId) } }
         ).exec();
 
-        const state = conversation.participantStates.find(
-          (entry) => String(entry.userId) === userId
-        );
-        if (state) {
-          state.lastReadAt = now;
-        } else {
-          conversation.participantStates.push({
-            userId: new mongoose.Types.ObjectId(userId),
-            lastReadAt: now,
-          });
+        if (!isGeneral) {
+          const state = conversation.participantStates.find(
+            (entry) => String(entry.userId) === userId
+          );
+          if (state) {
+            state.lastReadAt = now;
+          } else {
+            conversation.participantStates.push({
+              userId: new mongoose.Types.ObjectId(userId),
+              lastReadAt: now,
+            });
+          }
+          await conversation.save();
         }
-        await conversation.save();
+
+        if (isGeneral) {
+          this.io?.to(this.generalRoom()).emit('chat:read:updated', {
+            conversationId,
+            userId,
+            readAt: now.toISOString(),
+          });
+          return;
+        }
 
         this.io?.to(this.userRoom(userId)).emit('chat:read:updated', {
           conversationId,
@@ -133,6 +164,13 @@ export class ChatSocketHub {
             userId,
             readAt: now.toISOString(),
           });
+        }
+      });
+
+      socket.on('disconnect', () => {
+        const { userId: disconnectedUserId, becameOffline } = this.unregisterPresence(socket.id);
+        if (disconnectedUserId && becameOffline) {
+          this.emitPresenceChange(disconnectedUserId, false);
         }
       });
     });
@@ -159,6 +197,30 @@ export class ChatSocketHub {
     }
   }
 
+  emitGeneralMessageNew(payload: Record<string, unknown>): void {
+    this.io?.to(this.generalRoom()).emit('chat:message:new', payload);
+  }
+
+  emitGeneralConversationUpdate(payload: Record<string, unknown>): void {
+    this.io?.to(this.generalRoom()).emit('chat:conversation:update', payload);
+  }
+
+  emitGeneralReadUpdated(payload: Record<string, unknown>): void {
+    this.io?.to(this.generalRoom()).emit('chat:read:updated', payload);
+  }
+
+  getOnlineUserIds(): string[] {
+    return Array.from(this.userSocketMap.keys());
+  }
+
+  getOnlineCount(): number {
+    return this.userSocketMap.size;
+  }
+
+  isUserOnline(userId: string): boolean {
+    return Boolean(this.userSocketMap.get(userId)?.size);
+  }
+
   private extractBearerToken(header?: string): string {
     const value = String(header || '').trim();
     if (!value.toLowerCase().startsWith('bearer ')) return '';
@@ -167,5 +229,60 @@ export class ChatSocketHub {
 
   private userRoom(userId: string): string {
     return `user:${userId}`;
+  }
+
+  private generalRoom(): string {
+    return 'chat:general';
+  }
+
+  private registerPresence(userId: string, socketId: string): boolean {
+    this.socketUserMap.set(socketId, userId);
+    const current = this.userSocketMap.get(userId) || new Set<string>();
+    const becameOnline = current.size === 0;
+    current.add(socketId);
+    this.userSocketMap.set(userId, current);
+    return becameOnline;
+  }
+
+  private unregisterPresence(
+    socketId: string
+  ): { userId: string | null; becameOffline: boolean } {
+    const userId = this.socketUserMap.get(socketId) || null;
+    if (!userId) {
+      return { userId: null, becameOffline: false };
+    }
+
+    this.socketUserMap.delete(socketId);
+    const sockets = this.userSocketMap.get(userId);
+    if (!sockets) {
+      return { userId, becameOffline: false };
+    }
+
+    sockets.delete(socketId);
+    if (sockets.size > 0) {
+      return { userId, becameOffline: false };
+    }
+
+    this.userSocketMap.delete(userId);
+    return { userId, becameOffline: true };
+  }
+
+  private emitPresenceSnapshot(socket: Socket): void {
+    socket.emit('chat:presence:snapshot', {
+      onlineUserIds: this.getOnlineUserIds(),
+      onlineCount: this.userSocketMap.size,
+    });
+  }
+
+  private emitPresenceChange(userId: string, isOnline: boolean): void {
+    this.io?.emit('chat:presence', {
+      userId,
+      isOnline,
+      onlineCount: this.userSocketMap.size,
+    });
+  }
+
+  private isGeneralConversation(pairKey?: string): boolean {
+    return String(pairKey || '').trim() === GENERAL_CHAT_PAIR_KEY;
   }
 }
