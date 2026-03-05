@@ -6,6 +6,7 @@ export type ChatMessageType = 'text' | 'image' | 'recommendation' | 'list';
 export interface IChatMessageDocument {
   conversationId: mongoose.Types.ObjectId;
   senderId: mongoose.Types.ObjectId;
+  clientMessageId?: string;
   text?: string;
   type: ChatMessageType;
   content?: any;
@@ -18,6 +19,7 @@ const ChatMessageSchema = new Schema<IChatMessageDocument>(
   {
     conversationId: { type: Schema.Types.ObjectId, required: true, index: true },
     senderId: { type: Schema.Types.ObjectId, required: true, index: true },
+    clientMessageId: { type: String, trim: true },
     text: { type: String, trim: true },
     type: {
       type: String,
@@ -34,6 +36,15 @@ const ChatMessageSchema = new Schema<IChatMessageDocument>(
 );
 
 ChatMessageSchema.index({ conversationId: 1, createdAt: -1 });
+ChatMessageSchema.index(
+  { conversationId: 1, senderId: 1, clientMessageId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      clientMessageId: { $exists: true },
+    },
+  }
+);
 
 export const ChatMessageModel = mongoose.model<IChatMessageDocument>(
   'ChatMessage',

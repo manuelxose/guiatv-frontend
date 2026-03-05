@@ -304,9 +304,15 @@ export class SyncEPGData {
           parsed.displayName,
           parsed.country
         );
+        // For Autonomico channels, always try to infer region from name
+        // (don't gate on country since many Spanish channels lack country info)
         const inferredRegion =
-          this.inferRegionWithGeo(parsed.displayName, parsed.country) ||
-          parsed.country;
+          inferredType === 'Autonomico'
+            ? this.inferRegion(parsed.displayName) ||
+              this.inferRegionWithGeo(parsed.displayName, parsed.country) ||
+              parsed.country
+            : this.inferRegionWithGeo(parsed.displayName, parsed.country) ||
+              parsed.country;
 
         const iconForChannel = parsed.icon
           ? await this.cacheChannelIcon(parsed.icon, this.generateChannelId(parsed.displayName))
@@ -332,17 +338,27 @@ export class SyncEPGData {
           this.syncLogger.info('New channel created', { name: channel.name });
         } else if (parsed.icon && parsed.icon !== channel.icon) {
           // Actualizar icono si cambió
+          const regionForUpdate =
+            inferredType === 'Autonomico'
+              ? inferredRegion || channel.region || 'Spain'
+              : channel.region;
           channel = Channel.create({
             ...channel.toJSON(),
             icon: iconForChannel || parsed.icon,
             type: inferredType,
+            region: regionForUpdate,
           });
           await this.channelRepository.save(channel);
         } else if (channel.type !== inferredType) {
           // Actualizar tipo si cambió (e.g. config de canales actualizada)
+          const regionForUpdate =
+            inferredType === 'Autonomico'
+              ? inferredRegion || channel.region || 'Spain'
+              : channel.region;
           channel = Channel.create({
             ...channel.toJSON(),
             type: inferredType,
+            region: regionForUpdate,
           });
           await this.channelRepository.save(channel);
         }
@@ -531,13 +547,20 @@ export class SyncEPGData {
   private inferRegion(name: string): string | undefined {
     const regions: Record<string, string[]> = {
       Andalucía: ['andaluc', 'canal sur'],
-      Cataluña: ['tv3', 'catalu', '3cat'],
+      Cataluña: ['tv3', 'catalu', '3cat', 'el 33', 'esport3', 'sx3', 'betev'],
       Madrid: ['telemadrid', 'madrid'],
-      Valencia: ['punt', 'valencia'],
+      Valencia: ['punt', 'valencia', '7televalencia'],
       Galicia: ['tvg', 'galicia'],
-      'País Vasco': ['etb', 'euskadi'],
+      'País Vasco': ['etb', 'euskadi', 'eitb'],
       Canarias: ['canaria'],
-      Aragón: ['aragon'],
+      Aragón: ['aragon', 'aragón'],
+      Extremadura: ['extremadura'],
+      'Castilla-La Mancha': ['cmm'],
+      Asturias: ['tpa', 'asturias'],
+      Murcia: ['la 7 murcia', 'murcia'],
+      'Islas Baleares': ['ib3', 'balears', 'baleares'],
+      Navarra: ['navarra'],
+      'La Rioja': ['rioja', 'tvr'],
     };
 
     const lowerName = name.toLowerCase();

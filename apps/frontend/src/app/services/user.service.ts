@@ -98,6 +98,10 @@ export class UserService {
     }
   }
 
+  isAuthenticatedSync(): boolean {
+    return this.authenticatedSubject.value;
+  }
+
   getProfile(): Observable<UserProfile> {
     return this.profileSubject.asObservable();
   }

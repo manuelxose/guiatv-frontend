@@ -118,7 +118,7 @@ export class MongoChannelRepository implements IChannelRepository {
       type: (doc.type as any) || (doc.category as any) || 'TDT',
       country: doc.country,
       countryCode: doc.countryCode,
-      region: doc.type === 'Autonomico' ? doc.country : undefined,
+      region: doc.region || (doc.type === 'Autonomico' ? doc.country : undefined),
       isActive: doc.active,
     };
 
@@ -137,6 +137,7 @@ export class MongoChannelRepository implements IChannelRepository {
       category: channel.type,
       country: channel.country || channel.region,
       countryCode: channel.countryCode,
+      region: channel.region,
       active: channel.isActive,
       order: 0, // Default order, can be customized
     };

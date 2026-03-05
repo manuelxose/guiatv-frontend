@@ -14,29 +14,6 @@ export interface BlogServiceConfig {
 export class BlogService {
   private readonly client: AxiosInstance;
   private readonly log = logger.child('BlogService');
-  private readonly mockPosts: BlogPostDTO[] = [
-    {
-      title: 'Top 10 series para maratonear este finde',
-      slug: 'top-10-series-maraton',
-      excerpt: 'Selección rápida con thriller, comedia y true crime listas en streaming.',
-      image: { url: 'https://images.guiatv.mock/series-top10.jpg', aspectRatio: 1.6 },
-      publishedAt: new Date().toISOString(),
-    },
-    {
-      title: 'Qué ver hoy en prime time',
-      slug: 'que-ver-hoy-prime-time',
-      excerpt: 'Películas y realities destacados de la noche en abierto.',
-      image: { url: 'https://images.guiatv.mock/prime-time.jpg', aspectRatio: 1.6 },
-      publishedAt: new Date().toISOString(),
-    },
-    {
-      title: 'Recomendados VOD: estrenos de la semana',
-      slug: 'estrenos-vod-semana',
-      excerpt: 'Lo nuevo en Netflix, HBO Max y Disney+ que vale la pena.',
-      image: { url: 'https://images.guiatv.mock/vod-estrenos.jpg', aspectRatio: 1.6 },
-      publishedAt: new Date().toISOString(),
-    },
-  ];
 
   constructor(config: BlogServiceConfig) {
     this.client = axios.create({
@@ -56,7 +33,7 @@ export class BlogService {
         : Array.isArray((response.data as any)?.posts)
           ? (response.data as any).posts
           : [];
-      if (!payload.length) return this.mockPosts.slice(0, limit);
+      if (!payload.length) return [];
 
       return payload
         .slice(0, limit)
@@ -64,7 +41,7 @@ export class BlogService {
         .filter(Boolean) as BlogPostDTO[];
     } catch (error) {
       this.log.warn('Unable to fetch blog highlights', { error });
-      return this.mockPosts.slice(0, limit);
+      return [];
     }
   }
 

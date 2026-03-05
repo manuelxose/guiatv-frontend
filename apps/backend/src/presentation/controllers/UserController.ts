@@ -16,7 +16,7 @@ const DEFAULT_PRIVACY = {
   shareActivity: true,
   shareWatchlist: true,
   showOnline: true,
-  allowMessages: 'followers' as const,
+  allowMessages: 'all' as const,
   publicLists: true,
 };
 

@@ -120,7 +120,7 @@ export class RightSidebarComponent implements OnInit {
   public navigateTo2(type: string): void {
     if (type === 'movie') {
       this.router.navigate(['programacion-tv/peliculas']);
-    } else if (type === 'serie') {
+    } else if (type === 'series' || type === 'serie') {
       this.router.navigate(['programacion-tv/series']);
     }
   }

@@ -58,9 +58,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   }
 
   private setActiveFromUrl(url: string): void {
-    const parts = (url || '').split('/').filter(Boolean);
-    const key = parts.length ? parts[parts.length - 1] : 'home';
-
+    const key = this.menuState.resolveActiveKeyFromUrl(url);
     this.activeKey = key || 'home';
     this.menuState.setActive(this.activeKey);
 
@@ -82,6 +80,7 @@ export class MenuComponent implements OnInit, OnDestroy {
     }
 
     this.router.navigateByUrl(path).then(() => {
+      this.menuState.setMobile(false);
       this.setActiveFromUrl(this.router.url);
       if (key) this.menuState.setActive(key);
     });

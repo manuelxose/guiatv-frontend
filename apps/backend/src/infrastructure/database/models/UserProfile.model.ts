@@ -56,7 +56,7 @@ const PrivacySchema = new Schema(
     allowMessages: {
       type: String,
       enum: ['all', 'followers', 'none'],
-      default: 'followers',
+      default: 'all',
     },
     publicLists: { type: Boolean, default: true },
   },

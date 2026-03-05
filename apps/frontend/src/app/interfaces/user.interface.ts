@@ -182,6 +182,7 @@ export interface ChatMessage {
   id: string;
   conversationId: string;
   senderId: string;
+  clientMessageId?: string;
   text?: string;
   type: 'text' | 'image' | 'recommendation' | 'list';
   content?: any; // For rich content like recommendations

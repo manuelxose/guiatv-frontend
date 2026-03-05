@@ -376,10 +376,8 @@ $bp-xl: 1280px;
   &__scroll {
     height: 100%;
     width: 100%;
-
-    .cdk-virtual-scroll-content-wrapper {
-      padding: $space-sm;
-    }
+    overflow-y: auto;
+    padding: $space-sm;
   }
 }
 
