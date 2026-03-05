@@ -35,6 +35,8 @@ pnpm-debug.log*
 .sass-cache/
 /connect.lock
 /coverage
+/temp_*
+temp_*
 /libpeerconnection.log
 testem.log
 /typings
@@ -46,4 +48,3 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
-
