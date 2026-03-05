@@ -48,10 +48,10 @@
               }
             ],
             "styles": [
-              "node_modules/bootstrap-icons/font/bootstrap-icons.css",
-              "node_modules/swiper/swiper.min.css",
+              "bootstrap-icons/font/bootstrap-icons.css",
+              "../../node_modules/swiper/swiper.min.css",
               "src/styles.scss",
-              "node_modules/leaflet/dist/leaflet.css"
+              "leaflet/dist/leaflet.css"
             ],
             "server": "src/main.server.ts",
             "prerender": false,
