@@ -26,6 +26,7 @@ export class MenuStateService {
     home: '#ff7a18', // naranja principal para home
     'guia-canales': '#f97316',
     'que-ver-hoy': '#f59e0b',
+    plataformas: '#38bdf8',
     series: '#06b6d4',
     peliculas: '#ea580c',
     blog: '#8b5cf6',
@@ -82,8 +83,9 @@ export class MenuStateService {
     // Puede devolver un subconjunto estático o calcularlo dinámicamente
     return [
       this.routes.find((r) => r.key === 'home')!,
-      this.routes.find((r) => r.key === 'guia-canales')!,
       this.routes.find((r) => r.key === 'que-ver-hoy')!,
+      this.routes.find((r) => r.key === 'plataformas')!,
+      this.routes.find((r) => r.key === 'guia-canales')!,
       this.routes.find((r) => r.key === 'peliculas')!,
       this.routes.find((r) => r.key === 'series')!,
     ];
@@ -118,9 +120,14 @@ export class MenuStateService {
 
     if (
       path.startsWith('/programacion-tv/que-ver-hoy') ||
-      path.startsWith('/programas/')
+      path.startsWith('/programas/') ||
+      path.startsWith('/contenido/')
     ) {
       return 'que-ver-hoy';
+    }
+
+    if (path.startsWith('/plataformas')) {
+      return 'plataformas';
     }
 
     if (path.startsWith('/programacion-tv/en-directo')) {

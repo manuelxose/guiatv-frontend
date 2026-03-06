@@ -27,6 +27,8 @@ export interface ChatbotContext {
 export interface ChatbotResponse {
   text: string;
   recommendations?: Array<{
+    catalogId?: string;
+    source?: 'program' | 'tmdb';
     title: string;
     type: 'movie' | 'series' | 'program';
     platform?: string;

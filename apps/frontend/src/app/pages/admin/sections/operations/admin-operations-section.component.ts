@@ -1,63 +1,78 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { AdminOperationsService } from '../../../../services/admin-operations.service';
+import { HealthResponse } from '../../../../services/admin-schedules.service';
+
+type ActionResult = { success: boolean; message: string; time: Date };
 
 @Component({
   selector: 'app-admin-operations-section',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-operations-section.component.html',
   styleUrls: ['./admin-operations-section.component.scss'],
 })
-export class AdminOperationsSectionComponent {
-  public readonly jobStatusClasses: Record<string, string> = {
-    running: 'border-blue-500/40 text-blue-200 bg-blue-500/10',
-    queued: 'border-slate-500/40 text-slate-200 bg-slate-500/10',
-    failed: 'border-red-500/40 text-red-200 bg-red-500/10',
-    completed: 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10',
-  };
+export class AdminOperationsSectionComponent implements OnInit, OnDestroy {
+  @Output() lastUpdatedChange = new EventEmitter<Date>();
 
-  public readonly jobs = [
-    {
-      name: 'Cache rebuild',
-      status: 'running',
-      owner: 'Scheduler',
-      updated: '2m ago',
-    },
-    {
-      name: 'Metadata enrichment',
-      status: 'queued',
-      owner: 'ETL',
-      updated: '5m ago',
-    },
-    {
-      name: 'Thumbnail regeneration',
-      status: 'completed',
-      owner: 'Media',
-      updated: '12m ago',
-    },
-    {
-      name: 'EPG retry queue',
-      status: 'failed',
-      owner: 'EPG',
-      updated: '18m ago',
-    },
-  ];
+  health: HealthResponse | null = null;
+  loading = false;
+  error: string | null = null;
+  cachePattern = '';
+  clearLoading = false;
+  actionResults: ActionResult[] = [];
 
-  public readonly alerts = [
-    {
-      severity: 'critical',
-      title: 'EPG mismatch detected',
-      detail: 'Channel FOX-SPORTS-3 missing 4 slots.',
-    },
-    {
-      severity: 'warning',
-      title: 'High cache evictions',
-      detail: 'Cache node west-2 hit 82% eviction.',
-    },
-    {
-      severity: 'info',
-      title: 'Nightly sync completed',
-      detail: '142 channels processed successfully.',
-    },
-  ];
+  private subs = new Subscription();
+
+  constructor(private opsService: AdminOperationsService) {}
+
+  ngOnInit(): void {
+    this.loadHealth();
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
+  loadHealth(): void {
+    this.loading = true;
+    this.error = null;
+    this.subs.add(
+      this.opsService.getHealth().subscribe({
+        next: (h) => {
+          this.health = h;
+          this.loading = false;
+          this.lastUpdatedChange.emit(new Date());
+        },
+        error: (e) => {
+          this.error = e?.error?.message || 'Failed to load health';
+          this.loading = false;
+        },
+      })
+    );
+  }
+
+  clearCache(): void {
+    this.clearLoading = true;
+    this.subs.add(
+      this.opsService.clearCache(this.cachePattern || undefined).subscribe({
+        next: () => {
+          this.addResult(true, this.cachePattern ? `Cache cleared (pattern: ${this.cachePattern})` : 'Full cache cleared');
+          this.clearLoading = false;
+          this.loadHealth();
+        },
+        error: (e) => {
+          this.addResult(false, e?.error?.message || 'Cache clear failed');
+          this.clearLoading = false;
+        },
+      })
+    );
+  }
+
+  private addResult(success: boolean, message: string): void {
+    this.actionResults.unshift({ success, message, time: new Date() });
+    if (this.actionResults.length > 20) this.actionResults.pop();
+  }
 }

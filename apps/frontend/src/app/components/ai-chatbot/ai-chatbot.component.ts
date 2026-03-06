@@ -10,6 +10,7 @@ import {
   inject,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { combineLatest } from 'rxjs';
 import { ChatMessage, ChatbotRecommendation, ChatbotService } from '../../services/chatbot.service';
@@ -64,28 +65,53 @@ import { GenreOnboardingComponent } from '../genre-onboarding/genre-onboarding.c
                   </p>
 
                   <div *ngIf="message.recommendations?.length" class="mt-3 space-y-2">
-                    <button
+                    <div
                       *ngFor="let recommendation of message.recommendations"
-                      type="button"
-                      (click)="addRecommendationToList(recommendation)"
-                      class="flex w-full items-start gap-3 rounded-2xl border border-slate-700/70 bg-slate-950/60 p-3 text-left"
+                      class="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-3"
                     >
-                      <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-slate-800 text-xs font-bold text-white">
-                        {{ recommendation.type === 'program' ? 'TV' : 'VOD' }}
+                      <div class="flex items-start gap-3">
+                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-800 text-xs font-bold text-white">
+                          <img
+                            *ngIf="recommendation.image; else recommendationFallback"
+                            [src]="recommendation.image"
+                            [alt]="recommendation.title"
+                            class="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                          <ng-template #recommendationFallback>
+                            {{ recommendation.type === 'program' ? 'TV' : 'VOD' }}
+                          </ng-template>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <p class="truncate text-sm font-semibold text-white">
+                            {{ recommendation.title }}
+                          </p>
+                          <p class="text-xs text-slate-400">
+                            {{ recommendation.platform || recommendation.channel || 'Guia TV' }}
+                            <span *ngIf="recommendation.time"> · {{ recommendation.time }}</span>
+                          </p>
+                          <p class="mt-1 text-xs text-slate-300">
+                            {{ recommendation.reason }}
+                          </p>
+                        </div>
                       </div>
-                      <div class="min-w-0 flex-1">
-                        <p class="truncate text-sm font-semibold text-white">
-                          {{ recommendation.title }}
-                        </p>
-                        <p class="text-xs text-slate-400">
-                          {{ recommendation.platform || recommendation.channel || 'Guia TV' }}
-                          <span *ngIf="recommendation.time"> · {{ recommendation.time }}</span>
-                        </p>
-                        <p class="mt-1 text-xs text-slate-300">
-                          {{ recommendation.reason }}
-                        </p>
+                      <div class="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          (click)="openRecommendation(recommendation)"
+                          class="min-h-[36px] rounded-full border border-slate-700 px-3 text-xs font-semibold text-slate-100"
+                        >
+                          Ver ficha
+                        </button>
+                        <button
+                          type="button"
+                          (click)="saveRecommendation(recommendation)"
+                          class="min-h-[36px] rounded-full border border-red-500/40 bg-red-500/10 px-3 text-xs font-semibold text-red-100"
+                        >
+                          Guardar en mi lista
+                        </button>
                       </div>
-                    </button>
+                    </div>
                   </div>
 
                   <div *ngIf="message.followUpSuggestions?.length" class="mt-3 flex flex-wrap gap-2">
@@ -162,7 +188,8 @@ export class AIChatbotComponent implements AfterViewInit {
 
   constructor(
     private readonly chatbotService: ChatbotService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly router: Router
   ) {}
 
   ngAfterViewInit(): void {
@@ -217,10 +244,20 @@ export class AIChatbotComponent implements AfterViewInit {
     this.sendMessage();
   }
 
-  addRecommendationToList(recommendation: ChatbotRecommendation): void {
+  openRecommendation(recommendation: ChatbotRecommendation): void {
+    if (recommendation.catalogId) {
+      this.router.navigate(['/contenido', recommendation.catalogId]);
+      return;
+    }
+
+    this.draft = recommendation.title;
+    this.sendMessage();
+  }
+
+  saveRecommendation(recommendation: ChatbotRecommendation): void {
     this.userService
       .toggleWatchlistItem({
-        contentId: String(recommendation.tmdbId || recommendation.title),
+        contentId: String(recommendation.catalogId || recommendation.tmdbId || recommendation.title),
         title: recommendation.title,
         type: recommendation.type,
       })

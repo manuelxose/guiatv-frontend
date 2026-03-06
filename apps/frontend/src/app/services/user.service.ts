@@ -16,9 +16,11 @@ import {
   UserFavorite,
   UserNotification,
   UserReport,
+  UserContentInteraction,
 } from '../interfaces/user.interface';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { normalizeCatalogInteractionId } from '../utils/catalog';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -36,6 +38,12 @@ const EMPTY_PROFILE: UserProfile = {
   role: 'user',
   favoriteGenres: [],
   preferredPlatforms: [],
+  discoveryDefaults: {
+    types: ['program', 'movie', 'series'],
+    availability: [],
+    platforms: [],
+    sort: 'popular',
+  },
   watchingNow: {
     title: '',
     mood: '',
@@ -77,6 +85,7 @@ export class UserService {
   private watchlistSubject = new BehaviorSubject<UserListItem[]>([]);
   private listsSubject = new BehaviorSubject<UserList[]>([]);
   private favoritesSubject = new BehaviorSubject<UserFavorite[]>([]);
+  private interactionHistorySubject = new BehaviorSubject<UserContentInteraction[]>([]);
   private notificationsSubject = new BehaviorSubject<UserNotification[]>([]);
   private unreadNotificationsSubject = new BehaviorSubject<number>(0);
   private top10Subject = new BehaviorSubject<Top10Category[]>([]);
@@ -101,6 +110,10 @@ export class UserService {
 
   isAuthenticatedSync(): boolean {
     return this.authenticatedSubject.value;
+  }
+
+  getProfileSnapshot(): UserProfile {
+    return this.profileSubject.value;
   }
 
   getProfile(): Observable<UserProfile> {
@@ -129,6 +142,10 @@ export class UserService {
 
   getFavorites(): Observable<UserFavorite[]> {
     return this.favoritesSubject.asObservable();
+  }
+
+  getInteractionHistory(): Observable<UserContentInteraction[]> {
+    return this.interactionHistorySubject.asObservable();
   }
 
   getNotifications(): Observable<UserNotification[]> {
@@ -161,6 +178,7 @@ export class UserService {
       profile: this.fetchProfile(),
       lists: this.fetchLists(),
       favorites: this.fetchFavorites(),
+      interactions: this.fetchInteractionHistory(),
       notifications: this.fetchNotifications(),
       friends: this.fetchFriends(),
       activities: this.fetchActivities('all'),
@@ -201,6 +219,8 @@ export class UserService {
       watchingNow: { ...current.watchingNow, ...(user.watchingNow || {}) },
       favoriteGenres: user.favoriteGenres || current.favoriteGenres,
       preferredPlatforms: user.preferredPlatforms || current.preferredPlatforms,
+      discoveryDefaults:
+        user.discoveryDefaults || current.discoveryDefaults,
       stats: { ...current.stats, ...(user.stats || {}) },
       role: user.role ?? current.role,
       avatar: user.avatar || (user as any).picture || current.avatar,
@@ -237,6 +257,7 @@ export class UserService {
     this.watchlistSubject.next([]);
     this.listsSubject.next([]);
     this.favoritesSubject.next([]);
+    this.interactionHistorySubject.next([]);
     this.notificationsSubject.next([]);
     this.unreadNotificationsSubject.next(0);
     this.authenticatedSubject.next(false);
@@ -461,11 +482,15 @@ export class UserService {
 
   toggleWatchlistItem(payload: { contentId: string; title: string; type: 'movie' | 'series' | 'program' }): Observable<boolean | null> {
     if (!this.safeGetToken()) return of(null);
+    const normalizedContentId = normalizeCatalogInteractionId({
+      contentId: payload.contentId,
+      contentType: payload.type,
+    });
 
     return this.ensureDefaultListId().pipe(
       switchMap((listId) => {
         if (!listId) return of(null);
-        const existing = this.watchlistSubject.value.find((item) => item.contentId === payload.contentId);
+        const existing = this.watchlistSubject.value.find((item) => item.contentId === normalizedContentId);
         if (existing) {
           return this.removeListItem(listId, existing.id).pipe(map((deleted) => (deleted ? false : null)));
         }
@@ -473,7 +498,7 @@ export class UserService {
           title: payload.title,
           type: payload.type,
           state: 'pending',
-          contentId: payload.contentId,
+          contentId: normalizedContentId,
         }).pipe(map((created) => (created ? true : null)));
       }),
       catchError(this.handleError(null, 'No se pudo actualizar la lista.'))
@@ -781,6 +806,8 @@ export class UserService {
       watchingNow: { ...current.watchingNow, ...(profile.watchingNow || {}) },
       favoriteGenres: profile.favoriteGenres || current.favoriteGenres,
       preferredPlatforms: profile.preferredPlatforms || current.preferredPlatforms,
+      discoveryDefaults:
+        profile.discoveryDefaults || current.discoveryDefaults,
       stats: { ...current.stats, ...(profile.stats || {}) },
       role: profile.role ?? current.role,
       avatar: profile.avatar || current.avatar,
@@ -877,10 +904,18 @@ export class UserService {
     if (!this.safeGetToken()) return of(false);
 
     const url = `${this.baseUrl}/user/interactions`;
+    const normalizedContentId = normalizeCatalogInteractionId({
+      contentId: payload.contentId,
+      contentType: payload.contentType,
+      tmdbId: payload.tmdbId,
+    });
     return this.http
       .post<ApiResponse<{ interaction: any }>>(
         url,
-        payload,
+        {
+          ...payload,
+          contentId: normalizedContentId,
+        },
         { headers: this.getAuthHeaders() }
       )
       .pipe(
@@ -888,6 +923,7 @@ export class UserService {
         tap((saved) => {
           if (saved) {
             this.fetchProfile().subscribe();
+            this.fetchInteractionHistory().subscribe();
           }
         }),
         catchError(this.handleError(false, 'No se pudo guardar la interaccion.'))
@@ -897,7 +933,9 @@ export class UserService {
   getContentInteraction(contentId: string): Observable<any | null> {
     if (!this.safeGetToken()) return of(null);
 
-    const url = `${this.baseUrl}/user/interactions/${contentId}`;
+    const url = `${this.baseUrl}/user/interactions/${encodeURIComponent(
+      normalizeCatalogInteractionId({ contentId })
+    )}`;
     return this.http
       .get<ApiResponse<{ interaction: any | null }>>(url, { headers: this.getAuthHeaders() })
       .pipe(
@@ -906,10 +944,42 @@ export class UserService {
       );
   }
 
+  fetchInteractionHistory(filters?: {
+    status?: 'seen' | 'watching' | 'pending' | 'dropped';
+    contentType?: 'movie' | 'series' | 'program';
+    limit?: number;
+  }): Observable<UserContentInteraction[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const params: Record<string, string> = {};
+    if (filters?.status) params['status'] = filters.status;
+    if (filters?.contentType) params['contentType'] = filters.contentType;
+    if (filters?.limit) params['limit'] = String(filters.limit);
+
+    return this.http
+      .get<ApiResponse<{ interactions: UserContentInteraction[] }>>(`${this.baseUrl}/user/interactions`, {
+        headers: this.getAuthHeaders(),
+        params,
+      })
+      .pipe(
+        map((resp) => resp?.data?.interactions || []),
+        tap((interactions) => this.interactionHistorySubject.next(interactions)),
+        catchError(this.handleError([], 'No se pudo cargar el historial.'))
+      );
+  }
+
   saveGenrePreferences(genres: string[], platforms: string[]): Observable<boolean> {
     return this.updateProfile({
       favoriteGenres: genres,
       preferredPlatforms: platforms,
+    } as any).pipe(map((profile) => Boolean(profile)));
+  }
+
+  saveDiscoveryDefaults(
+    discoveryDefaults: UserProfile['discoveryDefaults']
+  ): Observable<boolean> {
+    return this.updateProfile({
+      discoveryDefaults,
     } as any).pipe(map((profile) => Boolean(profile)));
   }
 }

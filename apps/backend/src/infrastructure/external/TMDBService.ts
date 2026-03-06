@@ -16,6 +16,9 @@ export interface TMDBResult {
   vote_count?: number;
   release_date?: string;
   first_air_date?: string;
+  popularity?: number;
+  genre_ids?: number[];
+  media_type?: 'movie' | 'tv';
 }
 
 export interface TMDBDetailResult extends TMDBResult {
@@ -36,6 +39,23 @@ export interface TMDBDetailResult extends TMDBResult {
   };
 }
 
+export interface TMDBPagedResponse<T> {
+  page: number;
+  total_pages: number;
+  total_results: number;
+  results: T[];
+}
+
+export interface TMDBDiscoverOptions {
+  page?: number;
+  sortBy?: 'popularity.desc' | 'vote_average.desc' | 'primary_release_date.desc' | 'first_air_date.desc';
+  withWatchProviders?: number[];
+  withGenres?: number[];
+  region?: string;
+  includeAdult?: boolean;
+  watchMonetizationTypes?: Array<'flatrate' | 'free' | 'rent' | 'buy'>;
+}
+
 export class TMDBService {
   private readonly baseUrl = 'https://api.themoviedb.org/3';
   private readonly logger = logger.child('TMDBService');
@@ -43,6 +63,9 @@ export class TMDBService {
   private readonly http: AxiosInstance;
   private readonly cache = new Map<string, TMDBResult | null>();
   private readonly detailCache = new Map<string, TMDBDetailResult | null>();
+  private readonly listCache = new Map<string, { expiresAt: number; value: unknown }>();
+  private readonly listCacheTtlMs =
+    (Number(process.env.TMDB_LIST_CACHE_TTL_MIN || 10) || 10) * 60 * 1000;
   private streamingProvidersService?: StreamingProvidersService;
 
   constructor(apiKey: string) {
@@ -153,6 +176,32 @@ export class TMDBService {
     }
   }
 
+  async searchMovies(
+    query: string,
+    options?: { page?: number; limit?: number }
+  ): Promise<TMDBResult[]> {
+    return this.searchList('/search/movie', query, options);
+  }
+
+  async searchTV(
+    query: string,
+    options?: { page?: number; limit?: number }
+  ): Promise<TMDBResult[]> {
+    return this.searchList('/search/tv', query, options);
+  }
+
+  async discoverMovies(
+    options?: TMDBDiscoverOptions
+  ): Promise<TMDBPagedResponse<TMDBResult>> {
+    return this.discover('/discover/movie', options);
+  }
+
+  async discoverTV(
+    options?: TMDBDiscoverOptions
+  ): Promise<TMDBPagedResponse<TMDBResult>> {
+    return this.discover('/discover/tv', options);
+  }
+
   async getMovieById(tmdbId: number): Promise<TMDBDetailResult | null> {
     return this.getById('movie', tmdbId);
   }
@@ -209,5 +258,133 @@ export class TMDBService {
       });
       return null;
     }
+  }
+
+  private async searchList(
+    path: '/search/movie' | '/search/tv',
+    query: string,
+    options?: { page?: number; limit?: number }
+  ): Promise<TMDBResult[]> {
+    const normalizedQuery = String(query || '').trim();
+    if (!normalizedQuery) {
+      return [];
+    }
+
+    const cacheKey = `list:${path}:${normalizedQuery}:${Number(options?.page || 1)}:${Number(options?.limit || 20)}`;
+    const cached = this.getListCache<TMDBResult[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const response = await this.http.get(path, {
+        params: {
+          query: normalizedQuery,
+          language: 'es-ES',
+          page: Number(options?.page || 1),
+          include_adult: false,
+        },
+      });
+
+      const results = Array.isArray(response.data?.results)
+        ? response.data.results.slice(0, Math.max(1, Number(options?.limit || 20)))
+        : [];
+
+      this.setListCache(cacheKey, results);
+      return results;
+    } catch (error) {
+      this.logger.warn(`Failed to search list on ${path}: ${normalizedQuery}`, {
+        error: (error as Error).message,
+      });
+      this.setListCache(cacheKey, []);
+      return [];
+    }
+  }
+
+  private async discover(
+    path: '/discover/movie' | '/discover/tv',
+    options?: TMDBDiscoverOptions
+  ): Promise<TMDBPagedResponse<TMDBResult>> {
+    const page = Math.max(1, Number(options?.page || 1));
+    const cacheKey = `discover:${path}:${JSON.stringify({
+      page,
+      sortBy: options?.sortBy || '',
+      withWatchProviders: options?.withWatchProviders || [],
+      withGenres: options?.withGenres || [],
+      region: options?.region || 'ES',
+      includeAdult: Boolean(options?.includeAdult),
+      watchMonetizationTypes: options?.watchMonetizationTypes || [],
+    })}`;
+    const cached = this.getListCache<TMDBPagedResponse<TMDBResult>>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const params: Record<string, string | number | boolean> = {
+      language: 'es-ES',
+      page,
+      watch_region: String(options?.region || 'ES'),
+      include_adult: Boolean(options?.includeAdult),
+      sort_by: options?.sortBy || 'popularity.desc',
+    };
+
+    if (options?.withWatchProviders?.length) {
+      params['with_watch_providers'] = options.withWatchProviders.join('|');
+    }
+    if (options?.withGenres?.length) {
+      params['with_genres'] = options.withGenres.join(',');
+    }
+    if (options?.watchMonetizationTypes?.length) {
+      params['with_watch_monetization_types'] =
+        options.watchMonetizationTypes.join('|');
+    }
+
+    try {
+      const response = await this.http.get(path, { params });
+      const result: TMDBPagedResponse<TMDBResult> = {
+        page: Number(response.data?.page || page),
+        total_pages: Number(response.data?.total_pages || 0),
+        total_results: Number(response.data?.total_results || 0),
+        results: Array.isArray(response.data?.results)
+          ? response.data.results
+          : [],
+      };
+
+      this.setListCache(cacheKey, result);
+      return result;
+    } catch (error) {
+      this.logger.warn(`Failed to discover content on ${path}`, {
+        error: (error as Error).message,
+      });
+      const empty: TMDBPagedResponse<TMDBResult> = {
+        page,
+        total_pages: 0,
+        total_results: 0,
+        results: [],
+      };
+      this.setListCache(cacheKey, empty);
+      return empty;
+    }
+  }
+
+  private getListCache<T>(key: string): T | null {
+    const hit = this.listCache.get(key);
+    if (!hit) {
+      return null;
+    }
+
+    if (hit.expiresAt <= Date.now()) {
+      this.listCache.delete(key);
+      return null;
+    }
+
+    return hit.value as T;
+  }
+
+  private setListCache<T>(key: string, value: T): void {
+    this.listCache.set(key, {
+      value,
+      expiresAt: Date.now() + this.listCacheTtlMs,
+    });
   }
 }

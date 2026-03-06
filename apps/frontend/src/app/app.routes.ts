@@ -92,6 +92,23 @@ export const routes: Routes = [
     data: { mode: 'featured' }
   },
   {
+    path: 'plataformas',
+    loadComponent: () =>
+      import('./pages/program-explorer/program-explorer.component').then(
+        (m) => m.ProgramExplorerComponent
+      ),
+    title: 'Plataformas - Guía TV',
+    data: { mode: 'platforms' }
+  },
+  {
+    path: 'contenido/:catalogId',
+    loadComponent: () =>
+      import('./pages/catalog-detail/catalog-detail.component').then(
+        (m) => m.CatalogDetailComponent
+      ),
+    title: 'Contenido - Guía TV',
+  },
+  {
     path: 'ver-canal/:id',
     loadComponent: () =>
       import('./pages/canal-completo/canal-completo.component').then(
@@ -126,6 +143,15 @@ export const routes: Routes = [
       ),
     title: 'Películas - Detalle - Guía TV',
     data: { type: 'movies' }
+  },
+  {
+    path: 'series/:slug',
+    loadComponent: () =>
+      import('./pages/pelicula-details/pelicula-details.compoent').then(
+        (m) => m.PeliculaDetailsComponent
+      ),
+    title: 'Series - Detalle - Guía TV',
+    data: { type: 'series' }
   },
 
   // SEO-friendly program route: slug-only (no id exposed)
@@ -224,4 +250,3 @@ export const routes: Routes = [
     title: 'Página no encontrada - Guía TV',
   },
 ];
-

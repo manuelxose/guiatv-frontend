@@ -1,103 +1,88 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Subject, takeUntil, first, filter, take } from 'rxjs';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
-import { CardListComponent } from 'src/app/components/card-list/card-list.component';
-import { MetaService } from 'src/app/services/meta.service';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
-import { TvDataService } from 'src/app/state/tv-data.service';
-import { HttpService } from 'src/app/services/http.service';
-import { isLive, slugify } from 'src/app/utils/utils';
-import { ProgramsResponse, ProgramLayoutDTO, ChannelMetaDTO } from 'src/app/api/models';
-import { DeviceDetectorService } from 'ngx-device-detector';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, ParamMap, Params, Router, RouterModule } from '@angular/router';
+import { Subject, combineLatest, takeUntil } from 'rxjs';
+import { CatalogCardComponent } from '../../components/catalog-card/catalog-card.component';
+import { CatalogFiltersComponent } from '../../components/catalog-filters/catalog-filters.component';
+import { NavBarComponent } from '../../components/nav-bar/nav-bar.component';
+import { APP_PATHS } from '../../config/route-map';
+import {
+  CatalogItem,
+  CatalogPlatform,
+  CatalogQuery,
+  CatalogResponse,
+  CatalogService,
+} from '../../services/catalog.service';
+import {
+  CatalogDiscoveryDefaults,
+  CatalogFiltersService,
+} from '../../services/catalog-filters.service';
+import { MetaService } from '../../services/meta.service';
+import { UserProfile } from '../../interfaces/user.interface';
+import { UserService } from '../../services/user.service';
 
-type ExplorerMode = 'live' | 'featured';
-type ContentType = 'all' | 'movies' | 'series';
+type ExplorerMode = 'live' | 'featured' | 'platforms';
 
 @Component({
   selector: 'app-program-explorer',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NavBarComponent, CardListComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    NavBarComponent,
+    CatalogFiltersComponent,
+    CatalogCardComponent,
+  ],
   templateUrl: './program-explorer.component.html',
   styleUrls: ['./program-explorer.component.scss'],
 })
 export class ProgramExplorerComponent implements OnInit, OnDestroy {
-  public mode: ExplorerMode = 'live';
-  public activeType: ContentType = 'all';
-  
+  public readonly appPaths = APP_PATHS;
+  public readonly isAuthenticated$ = this.userService.isAuthenticated$;
+
+  public mode: ExplorerMode = 'featured';
   public loading = true;
   public error: string | null = null;
-  
-  // Data
-  public allItems: any[] = [];
-  public filteredItems: any[] = [];
-  
-  // Search & Filter
-  // public searchControl = new FormControl(''); // Removed legacy search
-  public isSearching = false;
-  public categories: string[] = [];
-  public activeCategoryFilter: string | null = null;
+  public filters: CatalogQuery = {};
+  public items: CatalogItem[] = [];
+  public platforms: CatalogPlatform[] = [];
+  public genres: string[] = [];
+  public total = 0;
+  public hasMore = false;
 
-  // Dropdown States
-  public isTypeDropdownOpen = false;
-  public isCategoryDropdownOpen = false;
-  public isMobileMenuOpen = false;
-
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
+  private currentProfile: UserProfile | null = null;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private metaSvc: MetaService,
-    private tvData: TvDataService,
-    private guiaSvc: TvGuideService,
-    private http: HttpService,
-    public deviceDetector: DeviceDetectorService
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly metaService: MetaService,
+    private readonly catalogService: CatalogService,
+    private readonly filtersService: CatalogFiltersService,
+    private readonly userService: UserService
   ) {}
 
   ngOnInit(): void {
-    this.route.data.pipe(takeUntil(this.destroy$)).subscribe((data) => {
-      this.mode = data['mode'] || 'live';
-      this.initializeView();
-    });
+    this.catalogService
+      .getPlatforms()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((platforms) => {
+        this.platforms = platforms;
+      });
 
-    // this.searchControl.valueChanges... (Removed)
-  }
-
-  // --- Actions ---
-
-  public toggleTypeDropdown(event: Event): void {
-    event.stopPropagation();
-    this.isTypeDropdownOpen = !this.isTypeDropdownOpen;
-    this.isCategoryDropdownOpen = false;
-  }
-
-  public toggleCategoryDropdown(event: Event): void {
-    event.stopPropagation();
-    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
-    this.isTypeDropdownOpen = false;
-  }
-
-  public selectType(type: ContentType): void {
-    this.activeType = type;
-    this.isTypeDropdownOpen = false;
-    this.applyFilters();
-  }
-
-  public selectCategory(cat: string | null): void {
-    this.activeCategoryFilter = cat;
-    this.isCategoryDropdownOpen = false;
-    this.applyFilters();
-  }
-
-  public getTypeLabel(): string {
-    switch(this.activeType) {
-      case 'movies': return 'Películas';
-      case 'series': return 'Series';
-      default: return 'Todo';
-    }
+    combineLatest([
+      this.route.data,
+      this.route.queryParamMap,
+      this.userService.getProfile(),
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([data, params, profile]) => {
+        this.mode = (data['mode'] || 'featured') as ExplorerMode;
+        this.currentProfile = profile;
+        this.filters = this.resolveFilters(this.paramMapToParams(params), profile);
+        this.updateMeta();
+        this.loadCatalog();
+      });
   }
 
   ngOnDestroy(): void {
@@ -105,285 +90,206 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private initializeView(): void {
-    this.loading = true;
-    this.error = null;
-    this.allItems = [];
-    this.filteredItems = [];
-    this.activeType = 'all'; // Default to show all
-    
-    this.setupMetaTags();
-    
-    if (this.mode === 'live') {
-      this.loadLiveData();
-    } else {
-      this.loadFeaturedData();
+  onFiltersChange(next: CatalogQuery): void {
+    this.filters = {
+      ...this.filters,
+      ...next,
+      page: 1,
+    };
+    this.persistAndNavigate();
+  }
+
+  resetFilters(): void {
+    this.filters = this.filtersFromDefaults(this.resolveModeDefaults(this.currentProfile));
+    this.persistAndNavigate();
+  }
+
+  saveDefaults(): void {
+    if (!this.userService.isAuthenticatedSync() || this.mode === 'live') {
+      return;
     }
+
+    const defaults = this.filtersService.toDiscoveryDefaults(this.filters);
+    this.userService.saveDiscoveryDefaults(defaults).subscribe();
   }
 
-  private setupMetaTags(): void {
+  selectPlatform(platformName: string): void {
+    this.onFiltersChange({
+      platforms: [platformName],
+      availability: ['streaming'],
+      types: ['movie', 'series'],
+    });
+  }
+
+  loadMore(): void {
+    const nextLimit = Number(this.filters.limit || 24) + 24;
+    this.filters = {
+      ...this.filters,
+      limit: nextLimit,
+    };
+    this.persistAndNavigate();
+  }
+
+  get pageTitle(): string {
+    if (this.mode === 'live') return 'En directo ahora';
+    if (this.mode === 'platforms') return 'Catálogo por plataformas';
+    return 'Explorar todo';
+  }
+
+  get pageSubtitle(): string {
     if (this.mode === 'live') {
-      this.metaSvc.setMetaTags({
-        title: 'En Directo Ahora | Guía TV',
-        description: 'Descubre qué se emite ahora mismo en TV: películas, series y programas en directo.',
-        canonicalUrl: this.router.url
-      });
-    } else {
-      this.metaSvc.setMetaTags({
-        title: 'Qué Ver Hoy | Guía TV',
-        description: 'Selección curada de las mejores películas y series para ver hoy en televisión.',
-        canonicalUrl: this.router.url
-      });
+      return 'Programación en emisión y próximas franjas horarias con disponibilidad adicional en streaming cuando exista.';
     }
+    if (this.mode === 'platforms') {
+      return 'Navega por Netflix, Prime Video, Disney+, Max, Movistar+ y el resto del ecosistema streaming de España.';
+    }
+    return 'Un solo catálogo para TV, streaming y contenido gratuito, con filtros persistentes y recomendaciones personalizadas.';
   }
 
-  // --- Data Loading Strategies ---
-
-  private loadLiveData(): void {
-    this.tvData.loadPrograms({ date: 'today', fields: 'full', limit: 5000 })
-      .pipe(first(), takeUntil(this.destroy$))
-      .subscribe({
-        next: (resp) => this.processLiveResponse(resp),
-        error: (err) => this.handleError(err)
-      });
+  get pageEyebrow(): string {
+    if (this.mode === 'live') return 'Guía TV';
+    if (this.mode === 'platforms') return 'Streaming';
+    return 'Explorar';
   }
 
-  private processLiveResponse(resp: ProgramsResponse): void {
-    const programs = resp?.programs || [];
-    const channelMap = new Map((resp?.channels || []).map(c => [c.id, c]));
-    
-    console.log('[ProgramExplorer] Processing programs:', {
-      totalPrograms: programs.length,
-      currentTime: new Date().toISOString(),
-      currentTimeLocal: new Date().toLocaleString('es-ES'),
-      sampleProgram: programs[0] ? {
-        title: programs[0].title,
-        start: programs[0].start,
-        end: programs[0].end,
-        startLocal: new Date(programs[0].start).toLocaleString('es-ES'),
-        endLocal: new Date(programs[0].end).toLocaleString('es-ES')
-      } : null
-    });
-
-    this.allItems = programs
-      .filter(p => {
-        const live = isLive(p.start, p.end);
-        if (!live && Math.random() < 0.01) { // Log 1% of non-live for debugging
-          console.log('[ProgramExplorer] Not live:', {
-            title: p.title,
-            start: new Date(p.start).toLocaleString('es-ES'),
-            end: new Date(p.end).toLocaleString('es-ES'),
-            now: new Date().toLocaleString('es-ES')
-          });
-        }
-        return live;
-      })
-      .map(p => this.normalizeProgram(p, channelMap.get(p.channelId || '')));
-
-    console.log('[ProgramExplorer] Live programs loaded:', {
-      total: this.allItems.length,
-      sample: this.allItems[0],
-      currentTime: new Date().toISOString()
-    });
-
-    this.extractCategories();
-    this.applyFilters();
-    this.loading = false;
+  get showSaveDefaults(): boolean {
+    return this.userService.isAuthenticatedSync() && this.mode !== 'live';
   }
 
-  private loadFeaturedData(): void {
-    // Reusing logic from ListaDestacadas
-    this.http.getProgramacion('today')
-      .pipe(first(), takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            this.guiaSvc.setData(data);
-            Promise.all([
-              this.guiaSvc.setPeliculasDestacadas(),
-              this.guiaSvc.setSeriesDestacadas()
-            ]).then(() => {
-              this.loadFeaturedFromService();
-            });
-          } else {
-             // Fallback or wait for stream
-             this.loadFeaturedFromService(); 
-          }
-        },
-        error: (err) => this.handleError(err)
-      });
+  get activePlatforms(): CatalogPlatform[] {
+    if (this.filters.platforms?.length) {
+      return this.platforms.filter((platform) =>
+        this.filters.platforms?.includes(platform.name)
+      );
+    }
+    return this.platforms.slice(0, 10);
   }
 
-  private loadFeaturedFromService(): void {
-    // Combine both arrays for internal storage, filter by view later
-    const movies$ = this.guiaSvc.getPeliculasDestacadas().pipe(take(1));
-    const series$ = this.guiaSvc.getSeriesDestacadas().pipe(take(1));
+  private resolveFilters(params: Params, profile: UserProfile | null): CatalogQuery {
+    const defaults = this.resolveModeDefaults(profile);
+    const hasQuery = Object.values(params).some((value) => String(value || '').trim() !== '');
+    const restored = !hasQuery && this.mode === 'featured' ? this.filtersService.restore() : null;
+    const source = restored ? { ...defaults, ...restored } : defaults;
+    const filters = this.filtersService.fromQueryParams(params, source);
 
-    // We fetch both to have them ready for switching
-    import('rxjs').then(({ forkJoin }) => {
-        forkJoin([movies$, series$]).subscribe(([movies, series]) => {
-            const normMovies = ((movies as any[]) || []).map(p => ({ ...this.normalizeGeneric(p), _type: 'movies' }));
-            const normSeries = ((series as any[]) || []).map(p => ({ ...this.normalizeGeneric(p), _type: 'series' }));
-            this.allItems = [...normMovies, ...normSeries];
-            
-            this.extractCategories();
-            this.applyFilters();
-            this.loading = false;
-        });
-    });
+    if (!filters.types?.length && defaults.types?.length) {
+      filters.types = [...defaults.types];
+    }
+    if (!filters.availability?.length && defaults.availability?.length) {
+      filters.availability = [...defaults.availability];
+    }
+    if (!filters.platforms?.length && defaults.platforms?.length) {
+      filters.platforms = [...defaults.platforms];
+    }
+    if (!filters.sort) {
+      filters.sort = defaults.sort;
+    }
+    if (!filters.limit) {
+      filters.limit = 24;
+    }
+    return filters;
   }
 
-  // --- Normalization ---
+  private resolveModeDefaults(profile: UserProfile | null): CatalogDiscoveryDefaults {
+    if (this.mode === 'live') {
+      return {
+        types: ['program'],
+        availability: ['live'],
+        platforms: [],
+        sort: 'airtime',
+      };
+    }
 
-  private normalizeProgram(p: ProgramLayoutDTO, channel?: ChannelMetaDTO): any {
-    const media = this.resolveMedia((p as any).image || (p as any).poster || (p as any).background);
+    if (this.mode === 'platforms') {
+      return {
+        types: ['movie', 'series'],
+        availability: ['streaming'],
+        platforms: [],
+        sort: 'popular',
+      };
+    }
+
     return {
-      id: p.id,
-      title: typeof p.title === 'object' ? p.title.value : p.title,
-      channel: channel?.name || p.channelId,
-      channelIcon: this.resolveMedia(channel?.icon),
-      image: media,
-      start: p.start,
-      end: p.end,
-      category: (p.category || '').toString(),
-      description: ((p as any).desc?.details || (p as any).desc?.value || '').toString(),
-      _type: this.guessType(p.category || ''),
-      live: true
+      types: profile?.discoveryDefaults?.types?.length
+        ? [...profile.discoveryDefaults.types]
+        : ['program', 'movie', 'series'],
+      availability: profile?.discoveryDefaults?.availability?.length
+        ? [...profile.discoveryDefaults.availability]
+        : [],
+      platforms: profile?.discoveryDefaults?.platforms?.length
+        ? [...profile.discoveryDefaults.platforms]
+        : [],
+      sort: profile?.discoveryDefaults?.sort || (this.userService.isAuthenticatedSync() ? 'personalized' : 'popular'),
     };
   }
 
-  private normalizeGeneric(p: any): any {
-     return {
-        id: p.id || p.uuid,
-        title: p.title?.value || p.title,
-        channel: p.channel?.name || p.channelName || 'Canal',
-        image: p.image || p.poster || p.background || p.icon,
-        start: p.start || p.startDate,
-        category: p.category?.value || p.category || '',
-        description: p.desc?.value || p.description || '',
-        live: false
-     };
+  private filtersFromDefaults(defaults: CatalogDiscoveryDefaults): CatalogQuery {
+    return {
+      types: [...defaults.types],
+      availability: [...defaults.availability],
+      platforms: [...defaults.platforms],
+      sort: defaults.sort,
+      q: '',
+      genres: [],
+      limit: 24,
+      page: 1,
+    };
   }
 
-  private guessType(cat: string): ContentType {
-    if (!cat) return 'movies'; // Default
-    
-    const c = cat.toLowerCase();
-    
-    // Check for series indicators
-    if (c.includes('serie') || c.includes('season') || c.includes('episod')) {
-      return 'series';
+  private persistAndNavigate(): void {
+    if (this.mode === 'featured') {
+      this.filtersService.remember(this.filters);
     }
-    
-    // Check for movie indicators (cine, película, movie, film)
-    if (c.includes('cine') || c.includes('película') || c.includes('pelicula') || 
-        c.includes('movie') || c.includes('film')) {
-      return 'movies';
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: this.filtersService.toQueryParams(this.filters),
+      queryParamsHandling: '',
+    });
+  }
+
+  private loadCatalog(): void {
+    this.loading = true;
+    this.error = null;
+
+    this.catalogService
+      .query({
+        ...this.filters,
+        limit: this.filters.limit || 24,
+        page: this.filters.page || 1,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: CatalogResponse) => {
+          this.items = response.items || [];
+          this.total = response.meta?.total || 0;
+          this.hasMore = Boolean(response.meta?.hasMore);
+          this.genres = response.availableGenres || [];
+          this.platforms = response.availablePlatforms?.length
+            ? response.availablePlatforms
+            : this.platforms;
+          this.loading = false;
+        },
+        error: () => {
+          this.error = 'No se pudo cargar este catálogo.';
+          this.loading = false;
+        },
+      });
+  }
+
+  private updateMeta(): void {
+    this.metaService.setMetaTags({
+      title: `${this.pageTitle} - Guía TV`,
+      description: this.pageSubtitle,
+      canonicalUrl: this.router.url,
+    });
+  }
+
+  private paramMapToParams(paramMap: ParamMap): Params {
+    const params: Params = {};
+    for (const key of paramMap.keys) {
+      params[key] = paramMap.get(key);
     }
-    
-    // Default to movies for other content
-    return 'movies';
-  }
-
-  private resolveMedia(url?: string | null): string | undefined {
-    if (!url) return undefined;
-    if (url.startsWith('http') || url.startsWith('data')) return url;
-    return (typeof window !== 'undefined' ? window.location.origin : '') + url;
-  }
-
-  // --- Filtering & Search ---
-
-  public setType(type: ContentType): void {
-    this.activeType = type;
-    this.applyFilters();
-  }
-
-  public toggleCategoryFilter(cat: string): void {
-    this.activeCategoryFilter = this.activeCategoryFilter === cat ? null : cat;
-    this.applyFilters();
-  }
-
-  public performSearch(term: string): void {
-    this.isSearching = !!term;
-    // this.applyFilters();
-  }
-
-  private applyFilters(): void {
-    // const term = this.searchControl.value?.toLowerCase().trim() || '';
-    const term = '';
-    
-    this.filteredItems = this.allItems.filter(item => {
-      // 1. Type Filter (All, Movies, or Series)
-      let typeMatch = true;
-      if (this.activeType !== 'all') {
-        const itemType = item._type || this.guessType(item.category);
-        typeMatch = itemType === this.activeType;
-      }
-      
-      // 2. Text Search (Removed legacy search)
-      // const textMatch = !term || item.title.toLowerCase().includes(term);
-      const textMatch = true;
-
-      // 3. Category Filter
-      const catMatch = !this.activeCategoryFilter || 
-        (item.category && item.category.toLowerCase().includes(this.activeCategoryFilter.toLowerCase()));
-
-      return typeMatch && textMatch && catMatch;
-    });
-
-    console.log('[ProgramExplorer] Filter applied:', {
-      activeType: this.activeType,
-      totalItems: this.allItems.length,
-      filteredCount: this.filteredItems.length,
-      sampleFiltered: this.filteredItems[0] ? {
-        title: this.filteredItems[0].title,
-        category: this.filteredItems[0].category,
-        _type: this.filteredItems[0]._type
-      } : null
-    });
-  }
-
-  private extractCategories(): void {
-    const cats = new Set<string>();
-    this.allItems.forEach(i => {
-      if (i.category) {
-        const mainCat = i.category.split(',')[0].split('/')[0].trim();
-        if (mainCat) cats.add(mainCat);
-      }
-    });
-    this.categories = Array.from(cats).slice(0, 10); // Limit chips
-  }
-
-  // --- Helpers ---
-
-  public trackById(index: number, item: any): any {
-    return item.id || index;
-  }
-
-  public formatTime(dateStr: string): string {
-    if (!dateStr) return '';
-    
-    // The API returns times in UTC, but they represent local Spanish time
-    // So we need to subtract 1 hour to display correctly
-    const date = new Date(dateStr);
-    date.setHours(date.getHours() - 1);
-    
-    return date.toLocaleTimeString('es-ES', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-  }
-
-  public goToDetails(item: any): void {
-    const slug = slugify(item.title);
-    const route = this.activeType === 'series' ? '/programas' : '/peliculas';
-    this.router.navigate([route, slug]);
-  }
-
-  private handleError(err: any): void {
-    console.error('Explorer Error:', err);
-    this.error = 'No se pudieron cargar los datos. Inténtalo de nuevo.';
-    this.loading = false;
+    return params;
   }
 }

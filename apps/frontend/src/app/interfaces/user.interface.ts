@@ -11,6 +11,12 @@ export interface UserProfile {
   role?: 'admin' | 'editor' | 'user';
   favoriteGenres: string[];
   preferredPlatforms: string[];
+  discoveryDefaults?: {
+    types: Array<'movie' | 'series' | 'program'>;
+    availability: Array<'live' | 'streaming' | 'free' | 'flatrate' | 'rent' | 'buy'>;
+    platforms: string[];
+    sort: 'personalized' | 'popular' | 'rating' | 'airtime' | 'recent';
+  };
   watchingNow: WatchingNow;
   privacy: UserPrivacy;
   notifications: UserNotifications;

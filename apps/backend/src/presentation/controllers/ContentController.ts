@@ -5,6 +5,7 @@ import { successResponse } from '@/shared/types/ApiResponse';
 import { ValidationError } from '@/shared/errors';
 import { AuthenticatedRequest } from '../middlewares/authGuard';
 import { StreamingProvidersService } from '@/infrastructure/external/StreamingProvidersService';
+import { parseCatalogId } from '@/application/services/CatalogIdentity';
 
 /**
  * Controller that returns media content cards and batches.
@@ -21,6 +22,9 @@ export class ContentController {
    */
   async getContent(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
+    const parsed = parseCatalogId(id);
+    const programId =
+      parsed?.source === 'program' && parsed.programId ? parsed.programId : id;
     const { expand } = req.query;
 
     const expandList = expand
@@ -31,7 +35,7 @@ export class ContentController {
       : [];
 
     const result = await this.getContentDetail.execute({
-      programId: id,
+      programId,
       userId: (req as AuthenticatedRequest).user?.id,
       expand: expandList,
     });

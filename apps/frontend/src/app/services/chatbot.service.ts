@@ -5,6 +5,8 @@ import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface ChatbotRecommendation {
+  catalogId?: string;
+  source?: 'program' | 'tmdb';
   title: string;
   type: 'movie' | 'series' | 'program';
   platform?: string;

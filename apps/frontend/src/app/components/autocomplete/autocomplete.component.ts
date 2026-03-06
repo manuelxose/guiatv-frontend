@@ -1,30 +1,25 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
-import { slugify } from 'src/app/utils/utils';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import {
-  map,
-  startWith,
   debounceTime,
   distinctUntilChanged,
+  startWith,
+  switchMap,
+  map,
 } from 'rxjs/operators';
-import { ProgramListService } from 'src/app/state/program-list.service';
-import { ContentService } from 'src/app/state/content.service';
+import { CatalogService, CatalogSuggestion } from '../../services/catalog.service';
 
-type FilterType = 'all' | 'channels' | 'movies' | 'series' | 'programs';
+type FilterType = 'all' | 'tv' | 'streaming' | 'movies' | 'series';
 
-interface SearchResult {
-  type: 'channel' | 'movie' | 'series' | 'program';
-  title: string;
-  image: string;
-  subtitle?: string;
-  data: any;
+interface SearchResult extends CatalogSuggestion {
+  typeBadge: string;
 }
 
 @Component({
@@ -41,126 +36,38 @@ interface SearchResult {
     MatOptionModule,
   ],
 })
-export class AutocompleteComponent {
-  public dataInput: FormControl;
-  public filteredData: Observable<SearchResult[]>;
-  public activeFilter: FilterType = 'movies'; // Default to movies
+export class AutocompleteComponent implements OnInit {
+  public readonly dataInput = new FormControl('');
+  public filteredData: Observable<SearchResult[]> = of([]);
+  public activeFilter: FilterType = 'all';
   public isDropdownOpen = false;
-  
-  private channelsData: any[] = [];
-  private moviesData: any[] = [];
-  private seriesData: any[] = [];
 
   constructor(
-    private programList: ProgramListService,
-    private contentService: ContentService,
-    private router: Router
-  ) {
-    this.dataInput = new FormControl();
-    this.filteredData = new Observable<SearchResult[]>();
-  }
+    private readonly catalogService: CatalogService,
+    private readonly router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.loadDataSources();
-    
     this.filteredData = this.dataInput.valueChanges.pipe(
       startWith(''),
-      debounceTime(200),
+      debounceTime(180),
       distinctUntilChanged(),
-      map((value) => {
-        const str = typeof value === 'string' ? value : '';
-        return this._filter(str);
+      switchMap((value) => {
+        const query = typeof value === 'string' ? value.trim() : '';
+        if (!query) {
+          return of([]);
+        }
+        return this.catalogService.suggest(query, 8).pipe(
+          map((items) => items
+            .filter((item) => this.matchesActiveFilter(item))
+            .map((item) => ({
+              ...item,
+              typeBadge: this.getItemType(item),
+            }))
+          )
+        );
       })
     );
-  }
-
-  private loadDataSources(): void {
-    this.programList.loadProgramList('today').subscribe({
-      next: (snap) => {
-        this.channelsData = snap.channels || [];
-      },
-      error: (err) => console.error('Error loading channels', err),
-    });
-
-    this.contentService.loadContent('movies', 'today').subscribe({
-      next: (snap) => {
-        this.moviesData = snap.items || [];
-      },
-      error: (err) => console.error('Error loading movies', err),
-    });
-
-    this.contentService.loadContent('series', 'today').subscribe({
-      next: (snap) => {
-        this.seriesData = snap.items || [];
-      },
-      error: (err) => console.error('Error loading series', err),
-    });
-  }
-
-  private _filter(query: string): SearchResult[] {
-    const str = (query || '').trim().toLowerCase();
-    if (str.length === 0) return [];
-
-    const results: SearchResult[] = [];
-
-    if (this.activeFilter === 'all' || this.activeFilter === 'channels') {
-      const channels = this.channelsData
-        .filter((c) => c?.channel?.name?.toLowerCase().includes(str))
-        .slice(0, 3)
-        .map((c) => ({
-          type: 'channel' as const,
-          title: c.channel?.name || '',
-          image: this.getChannelImage(c.channel),
-          subtitle: 'Canal de televisión',
-          data: c,
-        }));
-      results.push(...channels);
-    }
-
-    if (this.activeFilter === 'all' || this.activeFilter === 'programs') {
-      const programs = this.channelsData
-        .flatMap((c) => c?.programs || [])
-        .filter((p) => p?.title?.value?.toLowerCase().includes(str))
-        .slice(0, 3)
-        .map((p) => ({
-          type: 'program' as const,
-          title: p.title?.value || '',
-          image: p.icon || '/assets/images/placeholder.jpg',
-          subtitle: p.start ? `${new Date(p.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : '',
-          data: p,
-        }));
-      results.push(...programs);
-    }
-
-    if (this.activeFilter === 'all' || this.activeFilter === 'movies') {
-      const movies = this.moviesData
-        .filter((m) => m?.title?.toLowerCase().includes(str))
-        .slice(0, 3)
-        .map((m) => ({
-          type: 'movie' as const,
-          title: m.title || '',
-          image: m.image || '/assets/images/placeholder.jpg',
-          subtitle: m.category || 'Película',
-          data: m,
-        }));
-      results.push(...movies);
-    }
-
-    if (this.activeFilter === 'all' || this.activeFilter === 'series') {
-      const series = this.seriesData
-        .filter((s) => s?.title?.toLowerCase().includes(str))
-        .slice(0, 3)
-        .map((s) => ({
-          type: 'series' as const,
-          title: s.title || '',
-          image: s.image || '/assets/images/placeholder.jpg',
-          subtitle: s.category || 'Serie',
-          data: s,
-        }));
-      results.push(...series);
-    }
-
-    return results.slice(0, 8);
   }
 
   toggleDropdown(): void {
@@ -174,70 +81,69 @@ export class AutocompleteComponent {
   setFilter(filter: FilterType): void {
     this.activeFilter = filter;
     this.isDropdownOpen = false;
-    const currentValue = this.dataInput.value;
-    this.dataInput.setValue(currentValue || '');
+    const currentValue = this.dataInput.value || '';
+    this.dataInput.setValue(currentValue, { emitEvent: true });
   }
 
   getFilterLabel(): string {
-    switch (this.activeFilter) {
-      case 'channels': return 'Canales';
-      case 'movies': return 'Películas';
-      case 'series': return 'Series';
-      case 'programs': return 'Programas';
-      default: return 'Todos';
-    }
+    if (this.activeFilter === 'tv') return 'TV';
+    if (this.activeFilter === 'streaming') return 'Streaming';
+    if (this.activeFilter === 'movies') return 'Películas';
+    if (this.activeFilter === 'series') return 'Series';
+    return 'Todo';
   }
 
   getFilterButtonClass(): string {
-    switch (this.activeFilter) {
-      case 'channels': return 'text-blue-300';
-      case 'movies': return 'text-purple-300';
-      case 'series': return 'text-green-300';
-      case 'programs': return 'text-orange-300';
-      default: return 'text-gray-300';
-    }
+    if (this.activeFilter === 'tv') return 'text-emerald-300';
+    if (this.activeFilter === 'streaming') return 'text-sky-300';
+    if (this.activeFilter === 'movies') return 'text-amber-300';
+    if (this.activeFilter === 'series') return 'text-violet-300';
+    return 'text-gray-300';
   }
 
   getPlaceholder(): string {
-    switch (this.activeFilter) {
-      case 'channels': return 'Buscar canales...';
-      case 'movies': return 'Buscar películas...';
-      case 'series': return 'Buscar series...';
-      case 'programs': return 'Buscar programas...';
-      default: return 'Buscar...';
-    }
+    if (this.activeFilter === 'tv') return 'Buscar en televisión...';
+    if (this.activeFilter === 'streaming') return 'Buscar en plataformas...';
+    if (this.activeFilter === 'movies') return 'Buscar películas...';
+    if (this.activeFilter === 'series') return 'Buscar series...';
+    return 'Buscar en todo el catálogo...';
   }
 
   navigateTo(result: SearchResult): void {
-    switch (result.type) {
-      case 'channel':
-        this.router.navigate(['/programacion-tv/ver-canal', slugify(result.title)]);
-        break;
-      case 'movie':
-        this.router.navigate(['/peliculas', slugify(result.title)]);
-        break;
-      case 'series':
-        this.router.navigate(['/series', slugify(result.title)]);
-        break;
-      case 'program':
-        this.router.navigate(['/programas', slugify(result.title)]);
-        break;
-    }
+    this.router.navigate(['/contenido', result.catalogId]);
     this.clearInput();
   }
 
-  private clearInput(): void {
-    setTimeout(() => this.dataInput.setValue(''), 50);
+  submitCurrentSearch(): void {
+    const query = String(this.dataInput.value || '').trim();
+    if (!query) {
+      return;
+    }
+
+    this.router.navigate(['/programacion-tv/que-ver-hoy'], {
+      queryParams: {
+        q: query,
+        ...(this.activeFilter === 'tv'
+          ? { types: 'program', availability: 'live' }
+          : this.activeFilter === 'streaming'
+            ? { types: 'movie,series', availability: 'streaming' }
+            : this.activeFilter === 'movies'
+              ? { types: 'movie' }
+              : this.activeFilter === 'series'
+                ? { types: 'series' }
+                : {}),
+      },
+    });
+    this.clearInput();
   }
 
   displayFn(result: SearchResult | string): string {
     if (!result) return '';
-    if (typeof result === 'string') return result;
-    return result.title || '';
+    return typeof result === 'string' ? result : result.title || '';
   }
 
   getOptionImage(result: SearchResult): string {
-    return result.image || '/assets/images/placeholder.jpg';
+    return result.image || '/assets/images/default-movie-poster.svg';
   }
 
   getOptionTitle(result: SearchResult): string {
@@ -245,63 +151,45 @@ export class AutocompleteComponent {
   }
 
   getOptionSubtitle(result: SearchResult): string {
-    return result.subtitle || '';
+    return result.subtitle || result.primaryPlatforms?.join(' · ') || '';
   }
 
-  getItemType(result: SearchResult): string {
-    switch (result.type) {
-      case 'channel': return 'Canal';
-      case 'movie': return 'Película';
-      case 'series': return 'Serie';
-      case 'program': return 'Programa';
-      default: return '';
-    }
-  }
-
-  private getChannelImage(channel: any): string {
-    if (channel?.icon && typeof channel.icon === 'string') {
-      if (channel.icon.startsWith('/')) {
-        return channel.icon;
-      }
-      if (
-        channel.icon.startsWith('http://') ||
-        channel.icon.startsWith('https://') ||
-        channel.icon.startsWith('data:')
-      ) {
-        return channel.icon;
-      }
-    }
-
-    const token = channel?.id || channel?.name || '';
-    if (!token) {
-      return '/assets/images/default-movie-poster.svg';
-    }
-    return `/storage/channel_icons/${encodeURIComponent(
-      this.normalizeChannelToken(token)
-    )}.webp`;
-  }
-
-  private normalizeChannelToken(value: string): string {
-    return String(value)
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '');
+  getItemType(result: Pick<SearchResult, 'contentType' | 'source' | 'primaryPlatforms'>): string {
+    if (result.source === 'program') return 'TV';
+    if (result.contentType === 'movie') return 'Película';
+    if (result.contentType === 'series') return 'Serie';
+    return 'Contenido';
   }
 
   getTypeBadgeClass(result: SearchResult): string {
-    switch (result.type) {
-      case 'channel': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'movie': return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
-      case 'series': return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case 'program': return 'bg-orange-500/20 text-orange-300 border-orange-500/30';
-      default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-    }
+    if (result.source === 'program') return 'border-emerald-500/30 text-emerald-200';
+    if (result.contentType === 'movie') return 'border-amber-500/30 text-amber-200';
+    if (result.contentType === 'series') return 'border-violet-500/30 text-violet-200';
+    return 'border-slate-600 text-slate-200';
   }
 
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    img.src = '/assets/images/placeholder.jpg';
+    img.src = '/assets/images/default-movie-poster.svg';
+  }
+
+  @HostListener('document:keydown.enter', ['$event'])
+  onEnter(event: KeyboardEvent): void {
+    if ((event.target as HTMLElement)?.tagName?.toLowerCase() === 'input') {
+      this.submitCurrentSearch();
+    }
+  }
+
+  private clearInput(): void {
+    setTimeout(() => this.dataInput.setValue(''), 50);
+  }
+
+  private matchesActiveFilter(item: CatalogSuggestion): boolean {
+    if (this.activeFilter === 'all') return true;
+    if (this.activeFilter === 'tv') return item.source === 'program';
+    if (this.activeFilter === 'streaming') return item.source === 'tmdb';
+    if (this.activeFilter === 'movies') return item.contentType === 'movie';
+    if (this.activeFilter === 'series') return item.contentType === 'series';
+    return true;
   }
 }

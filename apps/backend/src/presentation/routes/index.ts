@@ -22,6 +22,8 @@ import { DiscoveryController } from '../controllers/DiscoveryController';
 import { createDiscoveryRoutes } from './discovery.routes';
 import { ContentController } from '../controllers/ContentController';
 import { createContentRoutes } from './content.routes';
+import { CatalogController } from '../controllers/CatalogController';
+import { createCatalogRoutes } from './catalog.routes';
 import { TvController } from '../controllers/TvController';
 
 import { createTvRoutes } from './tv.routes';
@@ -59,6 +61,7 @@ export interface RoutesDependencies {
   authService: AuthService;
   discoveryController: DiscoveryController;
   contentController: ContentController;
+  catalogController: CatalogController;
 
   tvController: TvController;
   blogController: BlogController;
@@ -107,6 +110,10 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   router.use(
     '/content',
     createContentRoutes(dependencies.contentController, dependencies.authService)
+  );
+  router.use(
+    '/catalog',
+    createCatalogRoutes(dependencies.catalogController, dependencies.authService)
   );
   router.use('/tv', createTvRoutes(dependencies.tvController));
   router.use(

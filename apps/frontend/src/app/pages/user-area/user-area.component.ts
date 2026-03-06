@@ -25,6 +25,7 @@ import { EditProfileModalComponent } from './components/edit-profile-modal/edit-
 import { AddToListModalComponent } from './components/add-to-list-modal/add-to-list-modal.component';
 import { UserChatComponent } from './components/user-chat/user-chat.component';
 import { UserFavoritesComponent } from './components/user-favorites/user-favorites.component';
+import { UserInteractionHistoryComponent } from './components/user-interaction-history/user-interaction-history.component';
 import { AuthActionService } from '../../services/auth-action.service';
 import { ChatService } from '../../services/chat.service';
 
@@ -33,6 +34,7 @@ type TabType =
   | 'lists'
   | 'social'
   | 'favorites'
+  | 'history'
   | 'chat'
   | 'settings'
   | 'admin';
@@ -53,7 +55,8 @@ type TabType =
     EditProfileModalComponent,
     AddToListModalComponent,
     UserChatComponent,
-    UserFavoritesComponent
+    UserFavoritesComponent,
+    UserInteractionHistoryComponent,
   ],
   templateUrl: './user-area.component.html',
   styleUrls: ['./user-area.component.scss'],
@@ -63,6 +66,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     { key: 'overview', label: 'Resumen' },
     { key: 'lists', label: 'Mis listas' },
     { key: 'favorites', label: 'Favoritos' },
+    { key: 'history', label: 'Historial' },
     { key: 'social', label: 'Comunidad' },
     { key: 'chat', label: 'Chat' },
     { key: 'settings', label: 'Ajustes' },
@@ -73,6 +77,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
   public friends$ = this.userService.getFriends();
   public lists$ = this.userService.getLists();
   public favorites$ = this.userService.getFavorites();
+  public interactionHistory$ = this.userService.getInteractionHistory();
   public isAuthenticated$ = this.userService.isAuthenticated$;
   public loading$ = this.userService.loading$;
   public error$ = this.userService.error$;
@@ -203,10 +208,18 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     this.authActionService.toggleFollow(friendId).subscribe();
   }
 
-  onSaveSettings(event: { privacy: UserPrivacy; notifications: UserNotifications }): void {
+  onSaveSettings(event: {
+    privacy: UserPrivacy;
+    notifications: UserNotifications;
+    favoriteGenres: string[];
+    preferredPlatforms: string[];
+    discoveryDefaults: NonNullable<UserProfile['discoveryDefaults']>;
+  }): void {
     forkJoin([
       this.userService.updatePrivacy(event.privacy),
       this.userService.updateNotifications(event.notifications),
+      this.userService.saveGenrePreferences(event.favoriteGenres, event.preferredPlatforms),
+      this.userService.saveDiscoveryDefaults(event.discoveryDefaults),
     ]).subscribe();
   }
 
@@ -325,6 +338,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
       value === 'lists' ||
       value === 'social' ||
       value === 'favorites' ||
+      value === 'history' ||
       value === 'chat' ||
       value === 'settings' ||
       value === 'admin'

@@ -114,6 +114,7 @@ export class WhereToWatchComponent implements OnChanges {
   @Input() contentId?: string | null;
   @Input() tmdbId?: number | null;
   @Input() contentType?: 'movie' | 'tv' | null;
+  @Input() providersData?: ContentProvidersDTO | null;
 
   public providers: ContentProvidersDTO | null = null;
   public isLoading = false;
@@ -141,6 +142,12 @@ export class WhereToWatchComponent implements OnChanges {
   }
 
   private loadProviders(): void {
+    if (this.providersData) {
+      this.providers = this.providersData;
+      this.isLoading = false;
+      return;
+    }
+
     if (!this.contentId && !this.tmdbId) {
       this.providers = null;
       return;
