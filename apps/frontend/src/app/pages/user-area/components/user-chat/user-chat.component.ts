@@ -16,7 +16,8 @@ import { AuthActionService } from '../../../../services/auth-action.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div
-      class="relative w-full overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950/50 shadow-[0_20px_40px_rgba(0,0,0,0.35)] flex flex-col md:flex-row h-[calc(100dvh-13.5rem)] min-h-[420px] md:h-[78vh] md:min-h-[560px]"
+      class="relative w-full overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950/50 shadow-[0_20px_40px_rgba(0,0,0,0.35)] flex flex-col md:flex-row"
+      [ngClass]="isMobileView ? 'h-[calc(100dvh-12.2rem)] min-h-[420px] rounded-xl' : 'h-[70vh] min-h-[480px] max-h-[680px]'"
     >
       <aside
         class="border-b border-slate-800/80 md:border-b-0 md:border-r md:w-80 md:min-w-80 flex-col bg-slate-950/70"
@@ -208,7 +209,10 @@ import { AuthActionService } from '../../../../services/auth-action.service';
             </div>
           </div>
 
-          <div class="sticky bottom-0 z-10 p-3 md:p-4 bg-slate-900/70 border-t border-slate-800/80 pb-[calc(env(safe-area-inset-bottom)+0.7rem)]">
+          <div
+            class="sticky bottom-0 z-10 p-3 md:p-4 bg-slate-900/70 border-t border-slate-800/80"
+            [ngClass]="isMobileView ? 'pb-[calc(env(safe-area-inset-bottom)+0.75rem)]' : 'pb-[calc(env(safe-area-inset-bottom)+0.7rem)]'"
+          >
             <div class="flex items-center gap-2">
               <input
                 type="text"

@@ -110,9 +110,16 @@ export class AppComponent implements OnInit, OnDestroy {
     if (target === APP_PATHS.account) {
       return (
         current === APP_PATHS.account ||
-        current.startsWith(`${APP_PATHS.account}/`) ||
-        current === APP_PATHS.community ||
-        current.startsWith(`${APP_PATHS.community}/`)
+        current.startsWith(`${APP_PATHS.account}/`)
+      );
+    }
+
+    if (target === APP_PATHS.guide) {
+      return (
+        current === APP_PATHS.guide ||
+        current.startsWith(`${APP_PATHS.guide}/`) ||
+        current === APP_PATHS.explore ||
+        current.startsWith(`${APP_PATHS.explore}/`)
       );
     }
 
@@ -124,7 +131,11 @@ export class AppComponent implements OnInit, OnDestroy {
     this.currentPath = path;
     this.menuState.setActive(this.menuState.resolveActiveKeyFromUrl(path));
 
-    this.hideRightSidebar = path.startsWith('/admin') || path.startsWith('/blog');
+    this.hideRightSidebar =
+      path.startsWith('/admin') ||
+      path.startsWith('/blog') ||
+      path.startsWith(APP_PATHS.account) ||
+      path.startsWith(APP_PATHS.community);
     this.mobileTitle = this.resolveMobileTitle(path);
 
     this.applyMobileChromeState();
@@ -135,8 +146,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const hideShell = this.shouldHideMobileShell(path);
     const isAuthRoute =
       path.startsWith(APP_PATHS.login) || path.startsWith(APP_PATHS.register);
-    const isAccountRoute =
-      path.startsWith(APP_PATHS.account) || path.startsWith(APP_PATHS.community);
+    const isAccountRoute = path.startsWith(APP_PATHS.account);
 
     this.showMobileTopBar = this.isMobileViewport && !hideShell;
     this.showMobileBottomNav =
@@ -167,7 +177,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private resolveMobileTitle(path: string): string {
     if (path === '/') return 'Inicio';
     if (path.startsWith(APP_PATHS.guide)) return 'Guía';
-    if (path.startsWith(APP_PATHS.explore)) return 'Explorar';
+    if (path.startsWith(APP_PATHS.explore)) return 'Qué ver hoy';
     if (path.startsWith(APP_PATHS.live)) return 'En directo';
     if (path.startsWith(APP_PATHS.series)) return 'Series';
     if (path.startsWith(APP_PATHS.movies)) return 'Películas';

@@ -54,7 +54,7 @@ export const USER_NAV_ROUTES: AppRouteEntry[] = [
 export const MOBILE_APP_TABS: AppRouteEntry[] = [
   { key: 'home', label: 'Inicio', path: APP_PATHS.home },
   { key: 'guia-canales', label: 'Guía', path: APP_PATHS.guide },
-  { key: 'que-ver-hoy', label: 'Explorar', path: APP_PATHS.explore },
+  { key: 'en-directo', label: 'Directo', path: APP_PATHS.live },
   { key: 'comunidad', label: 'Comunidad', path: APP_PATHS.community },
   { key: 'mi-cuenta', label: 'Cuenta', path: APP_PATHS.account },
 ];
