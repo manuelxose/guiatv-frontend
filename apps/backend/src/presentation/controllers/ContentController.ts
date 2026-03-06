@@ -3,6 +3,8 @@ import { GetContentDetail } from '@/application/use-cases/GetContentDetail';
 import { GetContentBatch } from '@/application/use-cases/GetContentBatch';
 import { successResponse } from '@/shared/types/ApiResponse';
 import { ValidationError } from '@/shared/errors';
+import { AuthenticatedRequest } from '../middlewares/authGuard';
+import { StreamingProvidersService } from '@/infrastructure/external/StreamingProvidersService';
 
 /**
  * Controller that returns media content cards and batches.
@@ -10,7 +12,8 @@ import { ValidationError } from '@/shared/errors';
 export class ContentController {
   constructor(
     private readonly getContentDetail: GetContentDetail,
-    private readonly getContentBatch: GetContentBatch
+    private readonly getContentBatch: GetContentBatch,
+    private readonly streamingProvidersService: StreamingProvidersService
   ) {}
 
   /**
@@ -28,11 +31,78 @@ export class ContentController {
       : [];
 
     const result = await this.getContentDetail.execute({
-      id,
+      programId: id,
+      userId: (req as AuthenticatedRequest).user?.id,
       expand: expandList,
     });
 
-    res.status(200).json(successResponse(result.item));
+    res.status(200).json(successResponse(result));
+  }
+
+  async getProvidersByTmdb(req: Request, res: Response): Promise<void> {
+    const tmdbId = Number(req.params.tmdbId);
+    const contentType = String(req.params.contentType || '').toLowerCase();
+
+    if (!tmdbId || (contentType !== 'movie' && contentType !== 'tv')) {
+      throw new ValidationError('Invalid contentType or tmdbId');
+    }
+
+    const providers =
+      contentType === 'movie'
+        ? await this.streamingProvidersService.getMovieProviders(tmdbId)
+        : await this.streamingProvidersService.getTVProviders(tmdbId);
+
+    res.status(200).json(
+      successResponse({
+        whereToWatch: providers
+          ? {
+              flatrate: providers.flatrate.map((provider) => ({
+                id: provider.providerId,
+                name: provider.providerName,
+                logoUrl: provider.logoPath
+                  ? this.streamingProvidersService.getLogoUrl(provider.logoPath)
+                  : '',
+                type: 'flatrate',
+                deepLink: providers.link || undefined,
+              })),
+              rent: providers.rent.map((provider) => ({
+                id: provider.providerId,
+                name: provider.providerName,
+                logoUrl: provider.logoPath
+                  ? this.streamingProvidersService.getLogoUrl(provider.logoPath)
+                  : '',
+                type: 'rent',
+                deepLink: providers.link || undefined,
+              })),
+              buy: providers.buy.map((provider) => ({
+                id: provider.providerId,
+                name: provider.providerName,
+                logoUrl: provider.logoPath
+                  ? this.streamingProvidersService.getLogoUrl(provider.logoPath)
+                  : '',
+                type: 'buy',
+                deepLink: providers.link || undefined,
+              })),
+              free: providers.free.map((provider) => ({
+                id: provider.providerId,
+                name: provider.providerName,
+                logoUrl: provider.logoPath
+                  ? this.streamingProvidersService.getLogoUrl(provider.logoPath)
+                  : '',
+                type: 'free',
+                deepLink: providers.link || undefined,
+              })),
+              tmdbLink: providers.link,
+            }
+          : {
+              flatrate: [],
+              rent: [],
+              buy: [],
+              free: [],
+              tmdbLink: '',
+            },
+      })
+    );
   }
 
   /**

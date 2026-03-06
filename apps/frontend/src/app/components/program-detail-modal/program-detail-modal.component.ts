@@ -17,11 +17,12 @@ import { CommonModule } from '@angular/common';
 import { trigger, style, transition, animate } from '@angular/animations';
 import { IProgramItem } from 'src/app/interfaces';
 import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
+import { WhereToWatchComponent } from '../where-to-watch/where-to-watch.component';
 
 @Component({
   selector: 'app-program-detail-modal',
   standalone: true,
-  imports: [CommonModule, InteractionButtonsComponent],
+  imports: [CommonModule, InteractionButtonsComponent, WhereToWatchComponent],
   templateUrl: './program-detail-modal.component.html',
   styleUrls: ['./program-detail-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

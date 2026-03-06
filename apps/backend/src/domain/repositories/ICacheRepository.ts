@@ -17,6 +17,10 @@ export interface ICacheRepository {
    */
   delete(key: string): Promise<void>;
   /**
+   * Atomically increments a numeric key and optionally refreshes its TTL.
+   */
+  increment?(key: string, ttlSeconds?: number): Promise<number>;
+  /**
    * Clears cache entries, optionally using a pattern for partial eviction.
    */
   clear(pattern?: string): Promise<void>;

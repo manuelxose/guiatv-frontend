@@ -15,7 +15,8 @@ export interface ProgramProps {
   subgenre?: string;
   year?: string;
   rating?: string;
-  details?: Record<string, string>;
+  tmdbId?: number;
+  details?: Record<string, unknown>;
 }
 
 /**
@@ -102,6 +103,26 @@ export class Program {
 
   get genre(): string | undefined {
     return this.props.genre;
+  }
+
+  get subgenre(): string | undefined {
+    return this.props.subgenre;
+  }
+
+  get year(): string | undefined {
+    return this.props.year;
+  }
+
+  get rating(): string | undefined {
+    return this.props.rating;
+  }
+
+  get tmdbId(): number | undefined {
+    return this.props.tmdbId;
+  }
+
+  get details(): Record<string, unknown> | undefined {
+    return this.props.details;
   }
 
   /**

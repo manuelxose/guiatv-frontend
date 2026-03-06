@@ -19,6 +19,7 @@ import { PasswordResetTokenModel } from './models/PasswordResetToken.model';
 import { UserBlockModel } from './models/UserBlock.model';
 import { UserReportModel } from './models/UserReport.model';
 import { UserNotificationModel } from './models/UserNotification.model';
+import { UserContentInteractionModel } from './models/UserContentInteraction.model';
 
 /**
  * Ensure required Mongo collections exist and indexes are in place.
@@ -41,6 +42,7 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     { name: 'user_blocks', model: UserBlockModel },
     { name: 'user_reports', model: UserReportModel },
     { name: 'user_notifications', model: UserNotificationModel },
+    { name: 'user_content_interactions', model: UserContentInteractionModel },
     { name: 'chat_conversations', model: ChatConversationModel },
     { name: 'chat_messages', model: ChatMessageModel },
     { name: 'auth_sessions', model: AuthSessionModel },

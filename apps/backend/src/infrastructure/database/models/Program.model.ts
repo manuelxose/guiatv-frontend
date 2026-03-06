@@ -21,8 +21,12 @@ export interface IProgramDocument {
   durationMinutes?: number;
   timeSlotIndex?: number;
   category?: string;
+  subgenre?: string;
   image?: string;
+  year?: string;
   rating?: string;
+  tmdbId?: number;
+  details?: Record<string, any>;
   // Optional layout cache to avoid recomputation on hot paths
   layoutVersion?: string;
   precomputedLayout?: boolean;
@@ -88,13 +92,27 @@ const ProgramSchema = new Schema<IProgramDocument>(
       type: String,
       trim: true,
     },
+    subgenre: {
+      type: String,
+      trim: true,
+    },
     image: {
+      type: String,
+      trim: true,
+    },
+    year: {
       type: String,
       trim: true,
     },
     rating: {
       type: String,
       trim: true,
+    },
+    tmdbId: {
+      type: Number,
+    },
+    details: {
+      type: Schema.Types.Mixed,
     },
     layoutVersion: {
       type: String,
@@ -118,6 +136,7 @@ const ProgramSchema = new Schema<IProgramDocument>(
 // Focus on the indexes used by live queries to keep storage under control.
 ProgramSchema.index({ channelId: 1, startTime: 1 });
 ProgramSchema.index({ startTime: 1, endTime: 1 });
+ProgramSchema.index({ tmdbId: 1 }, { sparse: true });
 
 /**
  * Program model

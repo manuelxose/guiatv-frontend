@@ -39,6 +39,10 @@ import { createUserRoutes } from './user.routes';
 import { createSocialRoutes } from './social.routes';
 import { createChatRoutes } from './chat.routes';
 import { AuthService } from '../../domain/services/AuthService';
+import { InteractionController } from '../controllers/InteractionController';
+import { AIController } from '../controllers/AIController';
+import { createInteractionRoutes } from './interaction.routes';
+import { createAIRoutes } from './ai.routes';
 
 /**
  * Dependencies required by every route factory.
@@ -60,8 +64,10 @@ export interface RoutesDependencies {
   blogController: BlogController;
   analyticsController: AnalyticsController;
   userController: UserController;
+  interactionController: InteractionController;
   socialController: SocialController;
   chatController: ChatController;
+  aiController: AIController;
   sitemapController: SitemapController;
 }
 
@@ -96,13 +102,21 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   router.use('/layouts', createLayoutRoutes(dependencies.layoutController));
   router.use(
     '/discovery',
-    createDiscoveryRoutes(dependencies.discoveryController)
+    createDiscoveryRoutes(dependencies.discoveryController, dependencies.authService)
   );
-  router.use('/content', createContentRoutes(dependencies.contentController));
+  router.use(
+    '/content',
+    createContentRoutes(dependencies.contentController, dependencies.authService)
+  );
   router.use('/tv', createTvRoutes(dependencies.tvController));
+  router.use(
+    '/user/interactions',
+    createInteractionRoutes(dependencies.interactionController, dependencies.authService)
+  );
   router.use('/user', createUserRoutes(dependencies.userController, dependencies.authService));
   router.use('/social', createSocialRoutes(dependencies.socialController, dependencies.authService));
   router.use('/chat', createChatRoutes(dependencies.chatController, dependencies.authService));
+  router.use('/ai', createAIRoutes(dependencies.aiController, dependencies.authService));
 
   router.use(
     '/admin/users',

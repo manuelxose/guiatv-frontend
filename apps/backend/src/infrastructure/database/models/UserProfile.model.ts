@@ -10,6 +10,7 @@ export interface IUserProfileDocument {
   location?: string;
   avatar?: string;
   favoriteGenres?: string[];
+  preferredPlatforms?: string[];
   watchingNow?: {
     title?: string;
     mood?: string;
@@ -82,6 +83,7 @@ const UserProfileSchema = new Schema<IUserProfileDocument>(
     location: { type: String, trim: true, default: '-' },
     avatar: { type: String, trim: true },
     favoriteGenres: { type: [String], default: [] },
+    preferredPlatforms: { type: [String], default: [] },
     watchingNow: { type: WatchingNowSchema, default: () => ({}) },
     privacy: { type: PrivacySchema, default: () => ({}) },
     notifications: { type: NotificationsSchema, default: () => ({}) },

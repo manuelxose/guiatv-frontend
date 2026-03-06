@@ -38,8 +38,10 @@ async function startServer() {
       blogController: container.get('blogController'),
       analyticsController: container.get('analyticsController'),
       userController: container.get('userController'),
+      interactionController: container.get('interactionController'),
       socialController: container.get('socialController'),
       chatController: container.get('chatController'),
+      aiController: container.get('aiController'),
       sitemapController: container.get('sitemapController'),
     });
 

@@ -9,6 +9,10 @@ export const environment = {
   SITE_URL: 'http://localhost:4200',
   GOOGLE_CLIENT_ID: '533857766582-hsp4fsrct6321117n68de3h4ckmqrmab.apps.googleusercontent.com',
   ANALYTICS_ADMIN_KEY: '',
+  ai: {
+    chatbotEnabled: true,
+    maxMessagesPerSession: 50,
+  },
 };
 
 /*

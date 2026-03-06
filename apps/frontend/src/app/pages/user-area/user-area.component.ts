@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
-import { Subject, combineLatest, filter, forkJoin, map, take, takeUntil } from 'rxjs';
+import { Subject, combineLatest, filter, forkJoin, map, of, take, takeUntil } from 'rxjs';
 import {
   UserActivity,
   UserFriend,
@@ -26,6 +26,7 @@ import { AddToListModalComponent } from './components/add-to-list-modal/add-to-l
 import { UserChatComponent } from './components/user-chat/user-chat.component';
 import { UserFavoritesComponent } from './components/user-favorites/user-favorites.component';
 import { AuthActionService } from '../../services/auth-action.service';
+import { ChatService } from '../../services/chat.service';
 
 type TabType =
   | 'overview'
@@ -58,6 +59,14 @@ type TabType =
   styleUrls: ['./user-area.component.scss'],
 })
 export class UserAreaComponent implements OnInit, OnDestroy {
+  public readonly mobileSectionTabs: { key: TabType; label: string }[] = [
+    { key: 'overview', label: 'Resumen' },
+    { key: 'lists', label: 'Mis listas' },
+    { key: 'favorites', label: 'Favoritos' },
+    { key: 'social', label: 'Comunidad' },
+    { key: 'chat', label: 'Chat' },
+    { key: 'settings', label: 'Ajustes' },
+  ];
   public profile$ = this.userService.getProfile();
   public recommendations$ = this.userService.getRecommendations();
   public activities$ = this.userService.getActivities();
@@ -68,6 +77,19 @@ export class UserAreaComponent implements OnInit, OnDestroy {
   public loading$ = this.userService.loading$;
   public error$ = this.userService.error$;
   public isAdmin$ = this.profile$.pipe(map((profile) => profile?.role === 'admin'));
+  public mobileSectionTabsWithAdmin$ = combineLatest([
+    this.isAdmin$,
+    of(this.mobileSectionTabs),
+  ]).pipe(
+    map(([isAdmin, tabs]) =>
+      isAdmin ? [...tabs, { key: 'admin' as TabType, label: 'Admin' }] : tabs
+    )
+  );
+  public readonly unreadChatCount$ = this.chatService.getConversations().pipe(
+    map((conversations) =>
+      conversations.reduce((total, conversation) => total + Number(conversation.unreadCount || 0), 0)
+    )
+  );
   
   // Filtered data for RESUMEN (Personal)
   public myActivities$ = combineLatest([this.activities$, this.profile$]).pipe(
@@ -99,6 +121,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private menuState: MenuStateService,
     private authActionService: AuthActionService,
+    private chatService: ChatService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -253,6 +276,16 @@ export class UserAreaComponent implements OnInit, OnDestroy {
 
   onLogout(): void {
     this.userService.logout();
+  }
+
+  getProfileInitials(name: string | null | undefined): string {
+    const safeName = String(name || '').trim();
+    if (!safeName) return 'GT';
+    return safeName
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
   }
 
   private refreshSelectedListItems(): void {

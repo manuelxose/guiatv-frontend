@@ -7,13 +7,15 @@ import { MetaService } from 'src/app/services/meta.service';
 import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { Subscription } from 'rxjs';
 import { diffHour, durationToISO8601, minutesToISO8601 } from '../../utils/utils';
+import { InteractionButtonsComponent } from 'src/app/components/interaction-buttons/interaction-buttons.component';
+import { WhereToWatchComponent } from 'src/app/components/where-to-watch/where-to-watch.component';
 
 @Component({
   selector: 'app-pelicula-details',
   templateUrl: './pelicula-details.compoent.html',
   styleUrls: ['./pelicula-details.compoent.scss'],
   standalone: true,
-  imports: [CommonModule, NavBarComponent, RouterModule],
+  imports: [CommonModule, NavBarComponent, RouterModule, InteractionButtonsComponent, WhereToWatchComponent],
 })
 export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -130,6 +132,31 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
       },
       error: () => this.isLoading = false
     });
+  }
+
+  public interactionType(): 'movie' | 'series' | 'program' {
+    if (this.contentType === 'series') {
+      return 'series';
+    }
+    if (this.contentType === 'programs') {
+      return 'program';
+    }
+    return 'movie';
+  }
+
+  public providerContentType(): 'movie' | 'tv' | null {
+    if (this.contentType === 'movies') {
+      return 'movie';
+    }
+    if (this.contentType === 'series') {
+      return 'tv';
+    }
+    return null;
+  }
+
+  public numericTmdbId(): number | null {
+    const id = Number(this.data?.id);
+    return Number.isFinite(id) && id > 0 ? id : null;
   }
 
   // --- Program Specific Logic ---

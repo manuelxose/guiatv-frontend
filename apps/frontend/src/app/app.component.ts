@@ -1,13 +1,15 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   HostListener,
+  Inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   inject,
 } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
-import { Subject, filter, takeUntil } from 'rxjs';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Subject, filter, map, takeUntil } from 'rxjs';
 import { APP_PATHS, MOBILE_APP_TABS, normalizePath } from './config/route-map';
 import { AuthLoginModalComponent } from './components/auth-login-modal/auth-login-modal.component';
 import { DesktopChatDockComponent } from './components/desktop-chat-dock/desktop-chat-dock.component';
@@ -15,16 +17,19 @@ import { FooterComponent } from './components/footer/footer.component';
 import { LeftSidebarComponent } from './components/left-sidebar/left-sidebar.component';
 import { ModalComponent } from './components/modal/modal.component';
 import { RightSidebarComponent } from './components/right-sidebar/right-sidebar.component';
+import { AIChatbotComponent } from './components/ai-chatbot/ai-chatbot.component';
 import { AnalyticsService } from './services/analytics.service';
 import { ChatService } from './services/chat.service';
 import { MenuStateService } from './services/menu-state.service';
 import { UserService } from './services/user.service';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     RouterOutlet,
     LeftSidebarComponent,
     RightSidebarComponent,
@@ -32,6 +37,7 @@ import { UserService } from './services/user.service';
     ModalComponent,
     AuthLoginModalComponent,
     DesktopChatDockComponent,
+    AIChatbotComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -42,14 +48,25 @@ export class AppComponent implements OnInit, OnDestroy {
   public showMobileBottomNav = false;
   public mobileTitle = 'Guía TV';
   public currentPath = '/';
+  public isMobileViewport = false;
+  public isChatbotOpen = false;
+  public readonly appPaths = APP_PATHS;
   public readonly mobileTabs = MOBILE_APP_TABS;
+  public readonly aiChatbotEnabled = environment.ai.chatbotEnabled;
   public readonly isAuthenticated$ = this.userService.isAuthenticated$;
+  public readonly profile$ = this.userService.getProfile();
+  public readonly unreadCount$ = this.chatService.getConversations().pipe(
+    map((conversations) =>
+      conversations.reduce((total, conversation) => total + Number(conversation.unreadCount || 0), 0)
+    )
+  );
 
   private readonly destroy$ = new Subject<void>();
-  private isMobileViewport = false;
   private readonly analytics = inject(AnalyticsService);
 
   constructor(
+    @Inject(DOCUMENT) private readonly document: Document,
+    @Inject(PLATFORM_ID) private readonly platformId: object,
     private readonly router: Router,
     private readonly menuState: MenuStateService,
     private readonly userService: UserService,
@@ -63,7 +80,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.analytics.init();
     this.updateViewportState();
     this.applyRouteState(this.router.url);
-
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
@@ -81,6 +97,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.resetCSSVariables();
   }
 
   @HostListener('window:resize')
@@ -97,6 +114,36 @@ export class AppComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(
       this.userService.isAuthenticatedSync() ? APP_PATHS.account : APP_PATHS.login
     );
+  }
+
+  public openSearchOverlay(): void {
+    this.router.navigateByUrl(APP_PATHS.explore);
+  }
+
+  public toggleChatbot(): void {
+    if (!this.shouldShowChatbotFab()) {
+      return;
+    }
+    this.isChatbotOpen = !this.isChatbotOpen;
+  }
+
+  public closeChatbot(): void {
+    this.isChatbotOpen = false;
+  }
+
+  public formatUnreadCount(count: number | null | undefined, cap: number): string {
+    const safeCount = Number(count || 0);
+    return safeCount > cap ? `${cap}+` : String(safeCount);
+  }
+
+  public getInitials(name: string | null | undefined): string {
+    const safeName = String(name || '').trim();
+    if (!safeName) return 'GT';
+    return safeName
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
   }
 
   public isTabActive(path: string): boolean {
@@ -117,7 +164,12 @@ export class AppComponent implements OnInit, OnDestroy {
     if (target === APP_PATHS.guide) {
       return (
         current === APP_PATHS.guide ||
-        current.startsWith(`${APP_PATHS.guide}/`) ||
+        current.startsWith(`${APP_PATHS.guide}/`)
+      );
+    }
+
+    if (target === APP_PATHS.explore) {
+      return (
         current === APP_PATHS.explore ||
         current.startsWith(`${APP_PATHS.explore}/`)
       );
@@ -137,6 +189,9 @@ export class AppComponent implements OnInit, OnDestroy {
       path.startsWith(APP_PATHS.account) ||
       path.startsWith(APP_PATHS.community);
     this.mobileTitle = this.resolveMobileTitle(path);
+    if (!this.shouldShowChatbotFab()) {
+      this.closeChatbot();
+    }
 
     this.applyMobileChromeState();
   }
@@ -146,19 +201,41 @@ export class AppComponent implements OnInit, OnDestroy {
     const hideShell = this.shouldHideMobileShell(path);
     const isAuthRoute =
       path.startsWith(APP_PATHS.login) || path.startsWith(APP_PATHS.register);
-    const isAccountRoute = path.startsWith(APP_PATHS.account);
 
     this.showMobileTopBar = this.isMobileViewport && !hideShell;
-    this.showMobileBottomNav =
-      this.isMobileViewport && !hideShell && !isAuthRoute && !isAccountRoute;
+    this.showMobileBottomNav = this.isMobileViewport && !hideShell && !isAuthRoute;
+    if (!this.shouldShowChatbotFab()) {
+      this.closeChatbot();
+    }
+    this.setCSSVariables();
   }
 
   private updateViewportState(): void {
-    if (typeof window === 'undefined') {
+    if (!isPlatformBrowser(this.platformId)) {
       this.isMobileViewport = false;
       return;
     }
     this.isMobileViewport = window.innerWidth < 768;
+  }
+
+  private setCSSVariables(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const root = this.document.documentElement;
+    root.style.setProperty('--top-bar-h', this.showMobileTopBar ? '56px' : '0px');
+    root.style.setProperty('--bottom-nav-h', this.showMobileBottomNav ? '64px' : '0px');
+  }
+
+  private resetCSSVariables(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const root = this.document.documentElement;
+    root.style.setProperty('--top-bar-h', '0px');
+    root.style.setProperty('--bottom-nav-h', '0px');
   }
 
   private shouldHideMobileShell(path: string): boolean {
@@ -171,6 +248,17 @@ export class AppComponent implements OnInit, OnDestroy {
       path.startsWith('/terminos') ||
       path.startsWith('/accesibilidad') ||
       path.startsWith('/sitemap')
+    );
+  }
+
+  public shouldShowChatbotFab(): boolean {
+    const path = normalizePath(this.currentPath);
+    return (
+      this.aiChatbotEnabled &&
+      this.isMobileViewport &&
+      this.showMobileBottomNav &&
+      !path.startsWith(APP_PATHS.community) &&
+      !path.startsWith('/admin')
     );
   }
 

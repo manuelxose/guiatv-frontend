@@ -371,7 +371,11 @@ export class MongoProgramRepository implements IProgramRepository {
       description: doc.description as string | undefined,
       image: doc.image as string | undefined,
       genre: doc.category as string | undefined,
+      subgenre: (doc as any).subgenre as string | undefined,
+      year: (doc as any).year as string | undefined,
       rating: (doc as any).rating !== undefined && (doc as any).rating !== null ? String((doc as any).rating) : undefined,
+      tmdbId: typeof (doc as any).tmdbId === 'number' ? (doc as any).tmdbId : undefined,
+      details: ((doc as any).details || undefined) as Record<string, unknown> | undefined,
     };
 
     return Program.create(props);
@@ -390,7 +394,11 @@ export class MongoProgramRepository implements IProgramRepository {
       description: program.description,
       image: program.image,
       category: program.genre,
-      rating: (program as any).rating,
+      subgenre: program.subgenre,
+      year: program.year,
+      rating: program.rating,
+      tmdbId: program.tmdbId,
+      details: program.details,
     };
   }
 }

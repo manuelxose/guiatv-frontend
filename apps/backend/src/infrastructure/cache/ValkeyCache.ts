@@ -134,6 +134,25 @@ export class ValkeyCache implements ICacheRepository {
     }
   }
 
+  async increment(key: string, ttlSeconds: number = 300): Promise<number> {
+    try {
+      if (!this.isConnected) {
+        console.warn('[ValkeyCache] Not connected, skipping increment');
+        return 0;
+      }
+
+      const nextValue = await this.client.incr(key);
+      if (ttlSeconds > 0 && nextValue === 1) {
+        await this.client.expire(key, ttlSeconds);
+      }
+
+      return nextValue;
+    } catch (error) {
+      console.error(`[ValkeyCache] Error incrementing key ${key}:`, error);
+      return 0;
+    }
+  }
+
   async clear(pattern?: string): Promise<void> {
     try {
       if (!this.isConnected) {

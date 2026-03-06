@@ -52,6 +52,7 @@ export interface IProgramItem {
   };
   duracion?: number; // Duración en minutos
   starRating?: number;
+  tmdbId?: number;
   // Layout opcional desde /v2/layouts
   gridColumnStart?: number;
   gridColumnEnd?: number;

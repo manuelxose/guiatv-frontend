@@ -49,6 +49,13 @@ export class InMemoryCache implements ICacheRepository {
     this.cache.delete(key);
   }
 
+  async increment(key: string, ttlSeconds: number = 300): Promise<number> {
+    const current = await this.get<number>(key);
+    const nextValue = Number(current || 0) + 1;
+    await this.set(key, nextValue, ttlSeconds);
+    return nextValue;
+  }
+
   async clear(pattern?: string): Promise<void> {
     if (!pattern) {
       this.cache.clear();

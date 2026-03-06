@@ -39,6 +39,7 @@ export interface ProgramLayoutDTO {
   category?: string;
   image?: string;
   rating?: string;
+  tmdbId?: number;
   description?: string;
   timeSlotIndex: number | null;
   gridColumnStart: number;

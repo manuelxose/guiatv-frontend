@@ -85,7 +85,9 @@
         <app-interaction-buttons
           [itemId]="program.id || ''"
           [title]="getProgramTitle()"
-          type="program">
+          type="program"
+          [tmdbId]="program.tmdbId"
+          [genres]="program.category?.value ? [program.category?.value] : []">
         </app-interaction-buttons>
       </div>
 
@@ -143,6 +145,30 @@
       <div class="description-section" *ngIf="bannerData()?.description">
         <h3 class="section-title">Descripción</h3>
         <p class="description-text">{{ bannerData()?.description }}</p>
+      </div>
+
+      <div
+        class="description-section"
+        *ngIf="program.tmdbId && (program.category?.value || '').toLowerCase().includes('cine')"
+      >
+        <h3 class="section-title">Dónde ver</h3>
+        <app-where-to-watch
+          [contentId]="program.id"
+          [tmdbId]="program.tmdbId"
+          contentType="movie"
+        ></app-where-to-watch>
+      </div>
+
+      <div
+        class="description-section"
+        *ngIf="program.tmdbId && (program.category?.value || '').toLowerCase().includes('serie')"
+      >
+        <h3 class="section-title">Dónde ver</h3>
+        <app-where-to-watch
+          [contentId]="program.id"
+          [tmdbId]="program.tmdbId"
+          contentType="tv"
+        ></app-where-to-watch>
       </div>
     </div>
 

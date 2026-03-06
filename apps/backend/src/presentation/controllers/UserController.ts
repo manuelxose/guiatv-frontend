@@ -10,6 +10,7 @@ import { UserFavoriteModel } from '../../infrastructure/database/models/UserFavo
 import { UserActivityModel } from '../../infrastructure/database/models/UserActivity.model';
 import { UserFollowModel } from '../../infrastructure/database/models/UserFollow.model';
 import { UserNotificationModel } from '../../infrastructure/database/models/UserNotification.model';
+import { UserContentInteractionModel } from '../../infrastructure/database/models/UserContentInteraction.model';
 
 const DEFAULT_PRIVACY = {
   profilePublic: true,
@@ -53,7 +54,7 @@ export class UserController {
   async updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = this.getUserId(req);
-      const { name, username, bio, location, avatar } = req.body || {};
+      const { name, username, bio, location, avatar, favoriteGenres, preferredPlatforms } = req.body || {};
 
       const updates: Record<string, any> = {};
       if (name !== undefined) updates.name = String(name).trim();
@@ -61,6 +62,12 @@ export class UserController {
       if (bio !== undefined) updates.bio = String(bio).trim();
       if (location !== undefined) updates.location = String(location).trim();
       if (avatar !== undefined) updates.avatar = String(avatar).trim();
+      if (favoriteGenres !== undefined) {
+        updates.favoriteGenres = this.sanitizeStringArray(favoriteGenres);
+      }
+      if (preferredPlatforms !== undefined) {
+        updates.preferredPlatforms = this.sanitizeStringArray(preferredPlatforms);
+      }
 
       if (!Object.keys(updates).length) {
         throw new ValidationError('No fields to update', []);
@@ -83,6 +90,12 @@ export class UserController {
       profile.location = updates.location ?? profile.location;
       if (updates.avatar) {
         profile.avatar = updates.avatar;
+      }
+      if (updates.favoriteGenres) {
+        profile.favoriteGenres = updates.favoriteGenres;
+      }
+      if (updates.preferredPlatforms) {
+        profile.preferredPlatforms = updates.preferredPlatforms;
       }
       await profile.save();
 
@@ -601,6 +614,8 @@ export class UserController {
         mood: '',
         visibility: 'friends',
       },
+      favoriteGenres: [],
+      preferredPlatforms: [],
     });
     return created;
   }
@@ -628,12 +643,13 @@ export class UserController {
   }
 
   private async getStats(userId: string) {
-    const [followers, following, listsCreated, watchlist, recommendations] = await Promise.all([
+    const [followers, following, listsCreated, watchlist, recommendations, ratings] = await Promise.all([
       UserFollowModel.countDocuments({ followeeId: userId }),
       UserFollowModel.countDocuments({ followerId: userId }),
       UserListModel.countDocuments({ userId }),
       UserListItemModel.countDocuments({ userId }),
       UserActivityModel.countDocuments({ userId, type: 'recommendation' }),
+      UserContentInteractionModel.countDocuments({ userId, rating: { $exists: true } }),
     ]);
 
     return {
@@ -642,7 +658,7 @@ export class UserController {
       listsCreated,
       recommendations,
       watchlist,
-      ratings: 0,
+      ratings,
     };
   }
 
@@ -657,11 +673,23 @@ export class UserController {
       bio: profile.bio || '',
       location: profile.location || '-',
       favoriteGenres: profile.favoriteGenres || [],
+      preferredPlatforms: profile.preferredPlatforms || [],
       watchingNow: profile.watchingNow || { title: '', mood: '', visibility: 'friends' },
       privacy: profile.privacy || DEFAULT_PRIVACY,
       notifications: profile.notifications || DEFAULT_NOTIFICATIONS,
       stats,
     };
+  }
+
+  private sanitizeStringArray(value: unknown): string[] {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+
+    return value
+      .map((item) => String(item || '').trim())
+      .filter(Boolean)
+      .slice(0, 20);
   }
 
   private mapList(list: any) {

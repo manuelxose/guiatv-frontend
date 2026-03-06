@@ -24,6 +24,7 @@ async function createIndexes() {
     }
 
     const programsCollection = db.collection('programs');
+    const interactionsCollection = db.collection('user_content_interactions');
 
     logger.info('Creating indexes for programs collection...');
 
@@ -54,6 +55,24 @@ async function createIndexes() {
       { name: 'idx_channel_startTime_desc', background: true }
     );
     logger.info('✅ Created index: idx_channel_startTime_desc');
+
+    await programsCollection.createIndex(
+      { tmdbId: 1 },
+      { name: 'idx_tmdbId', background: true, sparse: true }
+    );
+    logger.info('✅ Created index: idx_tmdbId');
+
+    logger.info('Creating indexes for user_content_interactions collection...');
+    await interactionsCollection.createIndexes([
+      { key: { userId: 1, contentId: 1 }, name: 'idx_user_content_unique', unique: true, background: true },
+      { key: { userId: 1, contentType: 1 }, name: 'idx_user_content_type', background: true },
+      { key: { userId: 1, status: 1 }, name: 'idx_user_status', background: true },
+      { key: { userId: 1, genres: 1 }, name: 'idx_user_genres', background: true },
+      { key: { userId: 1, rating: -1 }, name: 'idx_user_rating', background: true },
+      { key: { userId: 1, updatedAt: -1 }, name: 'idx_user_updated', background: true },
+      { key: { contentId: 1 }, name: 'idx_content_id', background: true },
+    ]);
+    logger.info('✅ Created interaction indexes');
 
     // List all indexes
     const indexes = await programsCollection.indexes();

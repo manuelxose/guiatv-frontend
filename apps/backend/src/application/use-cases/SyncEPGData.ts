@@ -517,7 +517,12 @@ export class SyncEPGData {
               image: this.tmdbService.getImageUrl(tmdbResult.poster_path) || program.image,
               genre: program.genre,
               rating: tmdbResult.vote_average.toString(),
-              year: tmdbResult.release_date ? tmdbResult.release_date.split('-')[0] : undefined,
+              year: tmdbResult.release_date
+                ? tmdbResult.release_date.split('-')[0]
+                : tmdbResult.first_air_date
+                  ? tmdbResult.first_air_date.split('-')[0]
+                  : undefined,
+              tmdbId: tmdbResult.id,
             });
           }
           
