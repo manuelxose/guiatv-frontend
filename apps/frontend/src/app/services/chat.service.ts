@@ -35,6 +35,8 @@ export interface ChatConversationCreateResult {
   code?: string;
 }
 
+export type ChatRealtimeMode = 'idle' | 'connecting' | 'connected' | 'fallback';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -45,6 +47,7 @@ export class ChatService {
   private conversationsSubject = new BehaviorSubject<ChatConversation[]>([]);
   private onlineUsersSubject = new BehaviorSubject<UserFriend[]>([]);
   private connectedUsersCountSubject = new BehaviorSubject<number>(0);
+  private realtimeModeSubject = new BehaviorSubject<ChatRealtimeMode>('idle');
   private messagesByConversation = new Map<string, BehaviorSubject<ChatMessage[]>>();
   private currentUserId: string | null = null;
   private fallbackTimer: ReturnType<typeof setInterval> | null = null;
@@ -67,6 +70,7 @@ export class ChatService {
         this.conversationsSubject.next([]);
         this.onlineUsersSubject.next([]);
         this.connectedUsersCountSubject.next(0);
+        this.realtimeModeSubject.next('idle');
         this.messagesByConversation.clear();
       }
     });
@@ -82,6 +86,10 @@ export class ChatService {
 
   getConnectedUsersCount(): Observable<number> {
     return this.connectedUsersCountSubject.asObservable();
+  }
+
+  getRealtimeMode(): Observable<ChatRealtimeMode> {
+    return this.realtimeModeSubject.asObservable();
   }
 
   refreshConversations(): Observable<ChatConversation[]> {
@@ -265,6 +273,7 @@ export class ChatService {
     this.disconnectSocket();
 
     const socketUrl = this.resolveSocketUrl();
+    this.realtimeModeSubject.next('connecting');
     this.socket = io(socketUrl, {
       path: '/v2/ws',
       auth: { token },
@@ -275,12 +284,19 @@ export class ChatService {
     });
 
     this.socket.on('connect', () => {
+      this.realtimeModeSubject.next('connected');
       this.clearFallbackPolling();
       this.refreshConversations().subscribe();
       this.refreshOnlineUsers().subscribe();
     });
 
     this.socket.on('disconnect', () => {
+      this.realtimeModeSubject.next('fallback');
+      this.ensureFallbackPolling();
+    });
+
+    this.socket.on('connect_error', () => {
+      this.realtimeModeSubject.next('fallback');
       this.ensureFallbackPolling();
     });
 
@@ -341,10 +357,12 @@ export class ChatService {
       this.socket = null;
     }
     this.clearFallbackPolling();
+    this.realtimeModeSubject.next(this.safeGetToken() ? 'connecting' : 'idle');
   }
 
   private ensureFallbackPolling(): void {
     if (this.fallbackTimer) return;
+    this.realtimeModeSubject.next('fallback');
     this.fallbackTimer = setInterval(() => {
       if (this.socket?.connected) return;
       this.refreshConversations().subscribe();

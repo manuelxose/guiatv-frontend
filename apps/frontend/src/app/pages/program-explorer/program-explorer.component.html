@@ -1,6 +1,4 @@
 <div class="min-h-screen bg-[#081018] text-slate-100">
-  <app-nav-bar></app-nav-bar>
-
   <div class="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
     <section
       class="overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[linear-gradient(135deg,rgba(15,23,42,0.95),rgba(8,16,24,0.92))] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.24)] md:p-8"
@@ -64,10 +62,13 @@
     <section class="mt-6">
       <app-catalog-filters
         [title]="pageTitle"
+        [variant]="mode === 'platforms' ? 'platforms' : mode === 'live' ? 'guide' : 'explore'"
         [filters]="filters"
         [genres]="genres"
         [platforms]="platforms"
         [showSaveDefaults]="showSaveDefaults"
+        [degraded]="degradedFilters"
+        [degradedMessage]="degradedMessage || ''"
         (filtersChange)="onFiltersChange($event)"
         (reset)="resetFilters()"
         (saveDefaults)="saveDefaults()"
@@ -104,7 +105,24 @@
       </section>
 
       <section
-        *ngIf="!items.length"
+        *ngIf="catalogUnavailable"
+        class="mt-8 rounded-[1.75rem] border border-amber-500/30 bg-amber-500/10 p-10 text-center"
+      >
+        <p class="text-xl font-semibold text-white">El catálogo remoto no está disponible todavía.</p>
+        <p class="mt-2 text-sm text-amber-100">
+          Mantuvimos los filtros activos para que puedas reintentar sin perder la vista actual.
+        </p>
+        <button
+          type="button"
+          (click)="retryCurrentView()"
+          class="mt-5 min-h-[44px] rounded-full border border-amber-300/30 px-5 text-sm font-semibold text-amber-50"
+        >
+          Reintentar
+        </button>
+      </section>
+
+      <section
+        *ngIf="!catalogUnavailable && !items.length"
         class="mt-8 rounded-[1.75rem] border border-slate-800 bg-slate-950/70 p-10 text-center"
       >
         <p class="text-xl font-semibold text-white">No hay resultados con estos filtros.</p>

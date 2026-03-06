@@ -1,6 +1,4 @@
 <div class="min-h-screen bg-[#081018] text-slate-100">
-  <app-nav-bar></app-nav-bar>
-
   <div class="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
     <section
       class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.18),_rgba(8,16,24,0.92)_52%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-10"
@@ -45,16 +43,19 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Inicio</p>
-            <p class="mt-2 text-2xl font-bold text-white">Para ti</p>
-            <p class="mt-1 text-sm text-slate-400">Recomendaciones con tu historial e IA.</p>
+            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Guía TV</p>
+            <p class="mt-2 text-2xl font-bold text-white">Ahora</p>
+            <p class="mt-1 text-sm text-slate-400">Acceso directo a emisiones activas y próximas franjas.</p>
           </div>
           <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
             <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Explorar</p>
             <p class="mt-2 text-2xl font-bold text-white">TV + VOD</p>
             <p class="mt-1 text-sm text-slate-400">Filtros unificados por tipo, género y disponibilidad.</p>
           </div>
-          <div class="col-span-2 rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
+          <div
+            *ngIf="sections.platforms.length; else heroFallbackPlatforms"
+            class="col-span-2 rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4"
+          >
             <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Tus plataformas</p>
             <div class="mt-3 flex flex-wrap gap-2">
               <span
@@ -65,6 +66,15 @@
               </span>
             </div>
           </div>
+          <ng-template #heroFallbackPlatforms>
+            <div class="col-span-2 rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
+              <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Streaming</p>
+              <p class="mt-2 text-sm font-semibold text-white">TV y plataformas desde una sola portada</p>
+              <p class="mt-1 text-sm text-slate-400">
+                Si el catálogo remoto tarda en responder, mantenemos visibles la guía y los accesos principales.
+              </p>
+            </div>
+          </ng-template>
         </div>
       </div>
     </section>
@@ -80,8 +90,35 @@
       {{ error }}
     </div>
 
+    <div
+      *ngIf="!loading && !error && degradedNotice"
+      class="mt-8 rounded-[1.75rem] border border-amber-500/30 bg-amber-500/10 p-6 text-sm text-amber-100"
+    >
+      {{ degradedNotice }}
+    </div>
+
     <ng-container *ngIf="!loading && !error">
       <div class="mt-10 space-y-10">
+        <app-catalog-rail
+          *ngIf="sections.liveItems.length"
+          eyebrow="Guía TV ahora"
+          title="Lo primero que deberías ver"
+          subtitle="Emisiones activas y accesos rápidos a la guía en directo."
+          linkLabel="Abrir guía"
+          [linkPath]="appPaths.guide"
+          [items]="sections.liveItems"
+        ></app-catalog-rail>
+
+        <app-catalog-rail
+          *ngIf="sections.platformItems.length"
+          eyebrow="Explorar streaming"
+          title="Disponible donde ya ves contenido"
+          subtitle="Seleccionado desde tus plataformas preferidas."
+          linkLabel="Abrir plataformas"
+          [linkPath]="appPaths.platforms"
+          [items]="sections.platformItems"
+        ></app-catalog-rail>
+
         <app-catalog-rail
           *ngIf="(isAuthenticated$ | async) && sections.personalized.length"
           eyebrow="Personalizado"
@@ -90,16 +127,6 @@
           linkLabel="Abrir explorar"
           [linkPath]="appPaths.explore"
           [items]="sections.personalized"
-        ></app-catalog-rail>
-
-        <app-catalog-rail
-          *ngIf="sections.platformItems.length"
-          eyebrow="Tus plataformas"
-          title="Disponible donde ya ves contenido"
-          subtitle="Seleccionado desde tus plataformas preferidas."
-          linkLabel="Abrir plataformas"
-          [linkPath]="appPaths.platforms"
-          [items]="sections.platformItems"
         ></app-catalog-rail>
 
         <app-catalog-rail
@@ -113,16 +140,6 @@
         ></app-catalog-rail>
 
         <app-catalog-rail
-          *ngIf="sections.liveItems.length"
-          eyebrow="En directo"
-          title="Emitiéndose ahora"
-          subtitle="Programas y emisiones activas en la guía."
-          linkLabel="Abrir directo"
-          [linkPath]="appPaths.live"
-          [items]="sections.liveItems"
-        ></app-catalog-rail>
-
-        <app-catalog-rail
           *ngIf="sections.trendingItems.length"
           eyebrow="Tendencias"
           title="Lo más visto ahora"
@@ -132,7 +149,7 @@
           [items]="sections.trendingItems"
         ></app-catalog-rail>
 
-        <section class="space-y-5">
+        <section *ngIf="sections.platforms.length" class="space-y-5">
           <div class="flex items-end justify-between gap-4">
             <div>
               <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Acceso rápido</p>

@@ -4,7 +4,6 @@ import { ActivatedRoute, ParamMap, Params, Router, RouterModule } from '@angular
 import { Subject, combineLatest, takeUntil } from 'rxjs';
 import { CatalogCardComponent } from '../../components/catalog-card/catalog-card.component';
 import { CatalogFiltersComponent } from '../../components/catalog-filters/catalog-filters.component';
-import { NavBarComponent } from '../../components/nav-bar/nav-bar.component';
 import { APP_PATHS } from '../../config/route-map';
 import {
   CatalogItem,
@@ -12,6 +11,7 @@ import {
   CatalogQuery,
   CatalogResponse,
   CatalogService,
+  FALLBACK_CATALOG_GENRES,
 } from '../../services/catalog.service';
 import {
   CatalogDiscoveryDefaults,
@@ -29,7 +29,6 @@ type ExplorerMode = 'live' | 'featured' | 'platforms';
   imports: [
     CommonModule,
     RouterModule,
-    NavBarComponent,
     CatalogFiltersComponent,
     CatalogCardComponent,
   ],
@@ -43,6 +42,9 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
   public mode: ExplorerMode = 'featured';
   public loading = true;
   public error: string | null = null;
+  public degradedFilters = false;
+  public degradedMessage: string | null = null;
+  public catalogUnavailable = false;
   public filters: CatalogQuery = {};
   public items: CatalogItem[] = [];
   public platforms: CatalogPlatform[] = [];
@@ -52,6 +54,8 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
   private currentProfile: UserProfile | null = null;
+  private remotePlatformsDegraded = false;
+  private catalogStateDegraded = false;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -64,10 +68,16 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.catalogService
-      .getPlatforms()
+      .getPlatformsState()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((platforms) => {
-        this.platforms = platforms;
+      .subscribe((result) => {
+        this.platforms = result.data || [];
+        this.remotePlatformsDegraded = result.unavailable || result.stale;
+        this.syncDegradedFilters();
+        if ((result.unavailable || result.stale) && !this.degradedMessage) {
+          this.degradedMessage =
+            'El registro remoto de plataformas no respondió. Se usan filtros locales mientras se recupera.';
+        }
       });
 
     combineLatest([
@@ -165,6 +175,10 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
     return this.platforms.slice(0, 10);
   }
 
+  retryCurrentView(): void {
+    this.loadCatalog();
+  }
+
   private resolveFilters(params: Params, profile: UserProfile | null): CatalogQuery {
     const defaults = this.resolveModeDefaults(profile);
     const hasQuery = Object.values(params).some((value) => String(value || '').trim() !== '');
@@ -253,21 +267,41 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
     this.error = null;
 
     this.catalogService
-      .query({
+      .queryState({
         ...this.filters,
         limit: this.filters.limit || 24,
         page: this.filters.page || 1,
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: CatalogResponse) => {
+        next: (result) => {
+          const response = result.data as CatalogResponse;
           this.items = response.items || [];
           this.total = response.meta?.total || 0;
           this.hasMore = Boolean(response.meta?.hasMore);
-          this.genres = response.availableGenres || [];
+          this.genres = response.availableGenres?.length
+            ? response.availableGenres
+            : FALLBACK_CATALOG_GENRES;
           this.platforms = response.availablePlatforms?.length
             ? response.availablePlatforms
             : this.platforms;
+          this.catalogUnavailable =
+            result.unavailable && !result.stale && !(response.items || []).length;
+          this.catalogStateDegraded = result.unavailable || result.stale;
+          this.syncDegradedFilters();
+
+          if (result.stale) {
+            this.degradedMessage =
+              'Mostrando la última versión disponible del catálogo mientras se refrescan estos resultados.';
+          } else if (this.catalogUnavailable) {
+            this.degradedMessage =
+              'El catálogo principal no está disponible ahora mismo. Conservamos los filtros para que puedas reintentar o cambiar de vista.';
+          } else if (this.remotePlatformsDegraded) {
+            this.degradedMessage =
+              'Las plataformas se están resolviendo con datos locales mientras el catálogo remoto se estabiliza.';
+          } else {
+            this.degradedMessage = null;
+          }
           this.loading = false;
         },
         error: () => {
@@ -291,5 +325,9 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
       params[key] = paramMap.get(key);
     }
     return params;
+  }
+
+  private syncDegradedFilters(): void {
+    this.degradedFilters = this.remotePlatformsDegraded || this.catalogStateDegraded;
   }
 }

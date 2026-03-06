@@ -49,20 +49,35 @@
             <app-admin-content-section
               *ngIf="activeItem !== 'blog'"
               [activeItem]="activeItem"
+              (lastUpdatedChange)="onLastUpdated($event)"
             ></app-admin-content-section>
           </ng-container>
 
-          <app-admin-schedules-section *ngIf="activeGroup === 'schedules'"></app-admin-schedules-section>
-          <app-admin-operations-section *ngIf="activeGroup === 'operations'"></app-admin-operations-section>
+          <app-admin-schedules-section
+            *ngIf="activeGroup === 'schedules'"
+            (lastUpdatedChange)="onLastUpdated($event)"
+          ></app-admin-schedules-section>
+          <app-admin-operations-section
+            *ngIf="activeGroup === 'operations'"
+            (lastUpdatedChange)="onLastUpdated($event)"
+          ></app-admin-operations-section>
           <app-admin-users-section
             *ngIf="activeGroup === 'users'"
             [activeItem]="activeItem"
             (lastUpdatedChange)="onLastUpdated($event)"
           ></app-admin-users-section>
-          <app-admin-system-section *ngIf="activeGroup === 'system'"></app-admin-system-section>
+          <app-admin-system-section
+            *ngIf="activeGroup === 'system'"
+            (lastUpdatedChange)="onLastUpdated($event)"
+          ></app-admin-system-section>
+          <app-admin-community-section
+            *ngIf="activeGroup === 'community'"
+            [activeItem]="activeItem"
+            (lastUpdatedChange)="onLastUpdated($event)"
+          ></app-admin-community-section>
 
           <app-admin-placeholder-section
-            *ngIf="activeGroup !== 'analytics' && activeGroup !== 'content' && activeGroup !== 'schedules' && activeGroup !== 'operations' && activeGroup !== 'users' && activeGroup !== 'system'"
+            *ngIf="activeGroup !== 'analytics' && activeGroup !== 'content' && activeGroup !== 'schedules' && activeGroup !== 'operations' && activeGroup !== 'users' && activeGroup !== 'system' && activeGroup !== 'community'"
             [title]="activeGroupLabel"
           ></app-admin-placeholder-section>
         </div>

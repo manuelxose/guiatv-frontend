@@ -20,10 +20,10 @@ import { LoginModalService } from '../../services/login-modal.service';
         aria-modal="true"
         aria-labelledby="login-modal-title"
         (click)="$event.stopPropagation()"
-      >
+        >
         <div class="flex items-start justify-between gap-3">
           <div>
-            <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Comunidad GPTV</p>
+            <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Comunidad Guía TV</p>
             <h2 id="login-modal-title" class="text-xl font-semibold text-white mt-1">
               Inicia sesión para seguir usuarios
             </h2>

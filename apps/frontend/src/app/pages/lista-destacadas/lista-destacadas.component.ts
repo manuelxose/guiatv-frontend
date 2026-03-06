@@ -5,7 +5,6 @@ import { slugify } from 'src/app/utils/utils';
 import { first, filter, takeUntil, take } from 'rxjs';
 import { Subject } from 'rxjs';
 import { HttpService } from 'src/app/services/http.service';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { CardListComponent } from 'src/app/components/card-list/card-list.component';
 import { getHoraInicio } from 'src/app/utils/utils';
@@ -15,7 +14,7 @@ import { getHoraInicio } from 'src/app/utils/utils';
   templateUrl: './lista-destacadas.component.html',
   styleUrls: ['./lista-destacadas.component.scss'],
   standalone: true,
-  imports: [CommonModule, NavBarComponent, CardListComponent],
+  imports: [CommonModule, CardListComponent],
 })
 export class ListaDestacadasComponent implements OnInit, OnDestroy {
   // Separar arrays para películas y series

@@ -5,7 +5,6 @@ import { Subject, combineLatest, takeUntil } from 'rxjs';
 import { CatalogCardComponent } from '../../components/catalog-card/catalog-card.component';
 import { CatalogFiltersComponent } from '../../components/catalog-filters/catalog-filters.component';
 import { CatalogRailComponent } from '../../components/catalog-rail/catalog-rail.component';
-import { NavBarComponent } from '../../components/nav-bar/nav-bar.component';
 import { APP_PATHS } from '../../config/route-map';
 import {
   CatalogContentType,
@@ -14,6 +13,7 @@ import {
   CatalogQuery,
   CatalogResponse,
   CatalogService,
+  FALLBACK_CATALOG_GENRES,
 } from '../../services/catalog.service';
 import { CatalogFiltersService } from '../../services/catalog-filters.service';
 import { MetaService } from '../../services/meta.service';
@@ -26,7 +26,6 @@ type ContentPageType = 'series' | 'movies';
   imports: [
     CommonModule,
     RouterModule,
-    NavBarComponent,
     CatalogFiltersComponent,
     CatalogCardComponent,
     CatalogRailComponent,
@@ -39,6 +38,9 @@ export class ContentPageComponent implements OnInit, OnDestroy {
   public contentType: ContentPageType = 'movies';
   public loading = true;
   public error: string | null = null;
+  public degradedFilters = false;
+  public degradedMessage: string | null = null;
+  public catalogUnavailable = false;
   public filters: CatalogQuery = {};
   public items: CatalogItem[] = [];
   public liveItems: CatalogItem[] = [];
@@ -48,6 +50,8 @@ export class ContentPageComponent implements OnInit, OnDestroy {
   public total = 0;
 
   private readonly destroy$ = new Subject<void>();
+  private remotePlatformsDegraded = false;
+  private catalogStateDegraded = false;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -59,10 +63,16 @@ export class ContentPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.catalogService
-      .getPlatforms()
+      .getPlatformsState()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((platforms) => {
-        this.platforms = platforms;
+      .subscribe((result) => {
+        this.platforms = result.data || [];
+        this.remotePlatformsDegraded = result.unavailable || result.stale;
+        this.syncDegradedFilters();
+        if ((result.unavailable || result.stale) && !this.degradedMessage) {
+          this.degradedMessage =
+            'Las plataformas remotas no respondieron. Se muestran filtros locales para no bloquear esta vista.';
+        }
       });
 
     combineLatest([this.route.data, this.route.queryParamMap])
@@ -118,6 +128,11 @@ export class ContentPageComponent implements OnInit, OnDestroy {
     return this.contentType === 'series' ? 'series' : 'movie';
   }
 
+  retryCurrentView(): void {
+    this.loadContent();
+    this.loadLiveItems();
+  }
+
   private resolveFilters(params: Params): CatalogQuery {
     const defaults = this.buildDefaultFilters();
     const filters = this.filtersService.fromQueryParams(params, defaults);
@@ -151,17 +166,36 @@ export class ContentPageComponent implements OnInit, OnDestroy {
     this.error = null;
 
     this.catalogService
-      .query(this.filters)
+      .queryState(this.filters)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: CatalogResponse) => {
+        next: (result) => {
+          const response = result.data as CatalogResponse;
           this.items = response.items || [];
-          this.genres = response.availableGenres || [];
+          this.genres = response.availableGenres?.length
+            ? response.availableGenres
+            : FALLBACK_CATALOG_GENRES;
           this.platforms = response.availablePlatforms?.length
             ? response.availablePlatforms
             : this.platforms;
           this.total = response.meta?.total || 0;
           this.hasMore = Boolean(response.meta?.hasMore);
+          this.catalogUnavailable =
+            result.unavailable && !result.stale && !(response.items || []).length;
+          this.catalogStateDegraded = result.unavailable || result.stale;
+          this.syncDegradedFilters();
+          if (result.stale) {
+            this.degradedMessage =
+              'Mostrando la última versión disponible mientras esta colección se actualiza.';
+          } else if (this.catalogUnavailable) {
+            this.degradedMessage =
+              'Esta colección no pudo consultar el catálogo remoto. Conservamos tus filtros para que puedas reintentar.';
+          } else if (this.remotePlatformsDegraded) {
+            this.degradedMessage =
+              'Las plataformas se están resolviendo con datos locales mientras recuperamos el catálogo completo.';
+          } else {
+            this.degradedMessage = null;
+          }
           this.loading = false;
         },
         error: () => {
@@ -173,15 +207,15 @@ export class ContentPageComponent implements OnInit, OnDestroy {
 
   private loadLiveItems(): void {
     this.catalogService
-      .query({
+      .queryState({
         types: [this.fixedCatalogType],
         availability: ['live'],
         sort: 'airtime',
         limit: 8,
       })
       .pipe(takeUntil(this.destroy$))
-      .subscribe((response) => {
-        this.liveItems = response.items || [];
+      .subscribe((result) => {
+        this.liveItems = result.data.items || [];
       });
   }
 
@@ -199,5 +233,9 @@ export class ContentPageComponent implements OnInit, OnDestroy {
       params[key] = paramMap.get(key);
     }
     return params;
+  }
+
+  private syncDegradedFilters(): void {
+    this.degradedFilters = this.remotePlatformsDegraded || this.catalogStateDegraded;
   }
 }

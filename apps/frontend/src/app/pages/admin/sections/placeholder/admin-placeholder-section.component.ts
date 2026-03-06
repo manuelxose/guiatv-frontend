@@ -10,4 +10,5 @@ import { Component, Input } from '@angular/core';
 })
 export class AdminPlaceholderSectionComponent {
   @Input() title = 'Section';
+  @Input() items: { label: string; description: string }[] = [];
 }

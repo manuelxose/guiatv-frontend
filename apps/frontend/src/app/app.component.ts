@@ -16,8 +16,9 @@ import { DesktopChatDockComponent } from './components/desktop-chat-dock/desktop
 import { FooterComponent } from './components/footer/footer.component';
 import { LeftSidebarComponent } from './components/left-sidebar/left-sidebar.component';
 import { ModalComponent } from './components/modal/modal.component';
-import { RightSidebarComponent } from './components/right-sidebar/right-sidebar.component';
 import { AIChatbotComponent } from './components/ai-chatbot/ai-chatbot.component';
+import { NavBarComponent } from './components/nav-bar/nav-bar.component';
+import { SearchOverlayComponent } from './components/search-overlay/search-overlay.component';
 import { AnalyticsService } from './services/analytics.service';
 import { ChatService } from './services/chat.service';
 import { MenuStateService } from './services/menu-state.service';
@@ -31,25 +32,28 @@ import { environment } from '../environments/environment';
     CommonModule,
     RouterLink,
     RouterOutlet,
+    NavBarComponent,
     LeftSidebarComponent,
-    RightSidebarComponent,
     FooterComponent,
     ModalComponent,
     AuthLoginModalComponent,
     DesktopChatDockComponent,
     AIChatbotComponent,
+    SearchOverlayComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-  public hideRightSidebar = false;
+  public showDesktopShell = false;
   public showMobileTopBar = false;
   public showMobileBottomNav = false;
   public mobileTitle = 'Guía TV';
   public currentPath = '/';
   public isMobileViewport = false;
   public isChatbotOpen = false;
+  public isSearchOverlayOpen = false;
+  public contextRailMode: 'guide' | 'catalog' | null = null;
   public readonly appPaths = APP_PATHS;
   public readonly mobileTabs = MOBILE_APP_TABS;
   public readonly aiChatbotEnabled = environment.ai.chatbotEnabled;
@@ -103,6 +107,8 @@ export class AppComponent implements OnInit, OnDestroy {
   @HostListener('window:resize')
   onResize(): void {
     this.updateViewportState();
+    this.showDesktopShell = !this.shouldHideDesktopShell(this.currentPath) && !this.isMobileViewport;
+    this.contextRailMode = this.showDesktopShell ? this.resolveContextRailMode(this.currentPath) : null;
     this.applyMobileChromeState();
   }
 
@@ -117,7 +123,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public openSearchOverlay(): void {
-    this.router.navigateByUrl(APP_PATHS.explore);
+    this.isSearchOverlayOpen = true;
+  }
+
+  public closeSearchOverlay(): void {
+    this.isSearchOverlayOpen = false;
   }
 
   public toggleChatbot(): void {
@@ -183,15 +193,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.currentPath = path;
     this.menuState.setActive(this.menuState.resolveActiveKeyFromUrl(path));
 
-    this.hideRightSidebar =
-      path.startsWith('/admin') ||
-      path.startsWith('/blog') ||
-      path.startsWith(APP_PATHS.account) ||
-      path.startsWith(APP_PATHS.community);
+    this.showDesktopShell = !this.shouldHideDesktopShell(path) && !this.isMobileViewport;
+    this.contextRailMode = this.showDesktopShell ? this.resolveContextRailMode(path) : null;
     this.mobileTitle = this.resolveMobileTitle(path);
     if (!this.canRenderChatbot()) {
       this.closeChatbot();
     }
+    this.closeSearchOverlay();
 
     this.applyMobileChromeState();
   }
@@ -251,6 +259,20 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
+  private shouldHideDesktopShell(path: string): boolean {
+    return (
+      path.startsWith('/admin') ||
+      path.startsWith(APP_PATHS.login) ||
+      path.startsWith(APP_PATHS.register) ||
+      path.startsWith('/avisolegal') ||
+      path.startsWith('/privacidad') ||
+      path.startsWith('/cookies') ||
+      path.startsWith('/terminos') ||
+      path.startsWith('/accesibilidad') ||
+      path.startsWith('/sitemap')
+    );
+  }
+
   public shouldShowChatbotFab(): boolean {
     return this.shouldShowMobileChatbotFab();
   }
@@ -289,15 +311,37 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private resolveMobileTitle(path: string): string {
     if (path === '/') return 'Inicio';
-    if (path.startsWith(APP_PATHS.guide)) return 'Guía';
-    if (path.startsWith(APP_PATHS.explore)) return 'Qué ver hoy';
-    if (path.startsWith(APP_PATHS.live)) return 'En directo';
+    if (path.startsWith(APP_PATHS.guide)) return 'Guía TV';
+    if (path.startsWith(APP_PATHS.explore)) return 'Explorar';
+    if (path.startsWith(APP_PATHS.live)) return 'Guía TV';
     if (path.startsWith(APP_PATHS.series)) return 'Series';
     if (path.startsWith(APP_PATHS.movies)) return 'Películas';
+    if (path.startsWith(APP_PATHS.platforms)) return 'Plataformas';
     if (path.startsWith(APP_PATHS.community)) return 'Comunidad';
     if (path.startsWith(APP_PATHS.account)) return 'Mi cuenta';
     if (path.startsWith(APP_PATHS.login)) return 'Iniciar sesión';
     if (path.startsWith(APP_PATHS.register)) return 'Crear cuenta';
     return 'Guía TV';
+  }
+
+  private resolveContextRailMode(path: string): 'guide' | 'catalog' | null {
+    if (
+      path.startsWith(APP_PATHS.guide) ||
+      path.startsWith(APP_PATHS.live) ||
+      path.startsWith('/programacion-tv/ver-canal')
+    ) {
+      return 'guide';
+    }
+
+    if (
+      path.startsWith(APP_PATHS.explore) ||
+      path.startsWith(APP_PATHS.platforms) ||
+      path.startsWith(APP_PATHS.movies) ||
+      path.startsWith(APP_PATHS.series)
+    ) {
+      return 'catalog';
+    }
+
+    return null;
   }
 }

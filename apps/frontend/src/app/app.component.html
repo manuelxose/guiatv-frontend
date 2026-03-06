@@ -1,16 +1,26 @@
 <div class="app-shell font-montserrat bg-gradient-to-br from-gray-900 via-gray-800 to-black min-h-screen flex flex-col">
+  <app-nav-bar
+    *ngIf="showDesktopShell"
+    (searchRequested)="openSearchOverlay()"
+  ></app-nav-bar>
+
   <header
     *ngIf="showMobileTopBar"
     class="fixed top-0 inset-x-0 z-[70] h-14 md:hidden bg-slate-950/96 backdrop-blur-xl border-b border-slate-800/60 flex items-center justify-between px-4 shadow-[0_1px_0_rgba(255,255,255,0.04)]"
   >
     <a
       [routerLink]="appPaths.home"
-      class="flex items-center gap-1.5 min-h-[44px]"
+      class="flex min-h-[44px] items-center gap-2"
       aria-label="Inicio"
     >
-      <span class="text-base font-bold text-white tracking-tight">GUIA</span>
-      <span class="w-1.5 h-1.5 rounded-full bg-red-500 mb-0.5"></span>
-      <span class="text-base font-bold text-white tracking-tight">TV</span>
+      <div class="flex items-center gap-1.5">
+        <span class="text-base font-bold text-white tracking-tight">GUIA</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-red-500 mb-0.5"></span>
+        <span class="text-base font-bold text-white tracking-tight">TV</span>
+      </div>
+      <span class="rounded-full border border-slate-700 bg-slate-900/80 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-400">
+        {{ mobileTitle }}
+      </span>
     </a>
 
     <div class="flex items-center gap-1">
@@ -24,28 +34,6 @@
           <circle cx="11" cy="11" r="6.5"></circle>
           <path stroke-linecap="round" d="M16 16l4.5 4.5"></path>
         </svg>
-      </button>
-
-      <button
-        *ngIf="isAuthenticated$ | async"
-        type="button"
-        [routerLink]="appPaths.community"
-        class="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-slate-300 hover:text-white"
-        aria-label="Mensajes"
-      >
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M7 8.5h10M7 12h6m-5.5 7.5 3.53-2.35H17A4 4 0 0 0 21 13.15V8.85A4 4 0 0 0 17 4.85H7A4 4 0 0 0 3 8.85v4.3a4 4 0 0 0 4 4h.5v2.35Z"
-          ></path>
-        </svg>
-        <span
-          *ngIf="unreadCount$ | async as count"
-          class="absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center"
-        >
-          {{ formatUnreadCount(count, 99) }}
-        </span>
       </button>
 
       <ng-container *ngIf="isAuthenticated$ | async; else loginBtn">
@@ -80,7 +68,11 @@
   </header>
 
   <div class="flex flex-1 w-full min-h-0">
-    <app-left-sidebar></app-left-sidebar>
+    <app-left-sidebar
+      *ngIf="showDesktopShell && contextRailMode"
+      [mode]="contextRailMode"
+      [currentPath]="currentPath"
+    ></app-left-sidebar>
 
     <main
       class="flex-1 min-h-0 overflow-x-hidden"
@@ -88,8 +80,6 @@
     >
       <router-outlet></router-outlet>
     </main>
-
-    <app-right-sidebar *ngIf="!hideRightSidebar"></app-right-sidebar>
   </div>
 
   <app-footer class="hidden md:block"></app-footer>
@@ -174,6 +164,11 @@
       <app-ai-chatbot (close)="closeChatbot()"></app-ai-chatbot>
     </div>
   </div>
+
+  <app-search-overlay
+    *ngIf="isSearchOverlayOpen"
+    (close)="closeSearchOverlay()"
+  ></app-search-overlay>
 
   <button
     *ngIf="shouldShowDesktopChatbotLauncher() && (isAuthenticated$ | async) && !isChatbotOpen"

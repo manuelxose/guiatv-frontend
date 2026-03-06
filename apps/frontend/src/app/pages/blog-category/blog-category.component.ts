@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, first } from 'rxjs';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { BlogService } from 'src/app/services/blog.service';
 import { slugify } from 'src/app/utils/utils';
 
@@ -15,7 +14,7 @@ interface ArticleCategory {
 @Component({
   selector: 'app-blog-category',
   standalone: true,
-  imports: [CommonModule, NavBarComponent],
+  imports: [CommonModule],
   templateUrl: './blog-category.component.html',
   styleUrl: './blog-category.component.scss',
 })

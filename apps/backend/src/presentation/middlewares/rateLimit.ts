@@ -44,3 +44,31 @@ export const strictRateLimit = createRateLimiter({
   max: 20,
   message: 'Too many requests to this endpoint',
 });
+
+/**
+ * Catalog and detail endpoints back most of the browsing experience and tolerate
+ * a higher request volume than generic public routes.
+ */
+export const catalogRateLimit = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 300,
+  message: 'Too many catalog requests, please retry in a few seconds',
+});
+
+export const discoveryRateLimit = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 240,
+  message: 'Too many discovery requests, please retry in a few seconds',
+});
+
+export const contentRateLimit = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 240,
+  message: 'Too many content detail requests, please retry in a few seconds',
+});
+
+export const interactionRateLimit = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 240,
+  message: 'Too many interaction requests, please retry in a few seconds',
+});

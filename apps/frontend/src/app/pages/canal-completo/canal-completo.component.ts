@@ -13,7 +13,6 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil, first, filter, tap } from 'rxjs';
 import { BannerComponent } from 'src/app/components/banner/banner.component';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { SliderComponent } from 'src/app/components/slider/slider.component';
 import { TvDataService } from 'src/app/state/tv-data.service';
 import { MetaService } from 'src/app/services/meta.service';
@@ -79,7 +78,6 @@ interface PerformanceMetrics {
     CommonModule,
     SliderComponent,
     BannerComponent,
-    NavBarComponent,
     RouterModule,
   ],
 })

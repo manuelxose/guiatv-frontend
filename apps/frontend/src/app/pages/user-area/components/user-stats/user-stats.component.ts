@@ -1,182 +1,179 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, Input } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import {
   UserActivity,
   UserList,
   UserListItem,
   UserProfile,
-  UserRecommendation,
-  Visibility,
 } from '../../../../interfaces/user.interface';
 
 @Component({
   selector: 'app-user-stats',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <div class="space-y-8">
       <div *ngIf="error" class="rounded-2xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
         {{ error }}
       </div>
-      <div class="grid lg:grid-cols-[2fr_1fr] gap-6">
+
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_22rem]">
         <div class="space-y-6">
-          <!-- Status Composer -->
-          <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)]">
-            <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
-              <div>
-                <h2 class="text-lg font-semibold text-white">Estado actual</h2>
-                <p class="text-sm text-slate-400">Comparte lo que ves y como te sientes.</p>
+          <section class="overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.14),_rgba(15,23,42,0.94)_55%)] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)]">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div class="space-y-3">
+                <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Mi cuenta</p>
+                <h2 class="text-3xl font-black tracking-tight text-white">
+                  Tu resumen personal, sin ruido social.
+                </h2>
+                <p class="max-w-2xl text-sm leading-6 text-slate-300">
+                  Desde aquí gestionas tu historial, tus listas y lo que tienes guardado. La actividad
+                  pública y el chat viven en Comunidad para que cada espacio tenga una única función.
+                </p>
               </div>
-              <span class="text-xs text-slate-300 border border-slate-700 px-2 py-1 rounded-full">
-                Visible:
-                {{
-                  statusForm.value.visibility === 'public'
-                    ? 'Publico'
-                    : statusForm.value.visibility === 'private'
-                      ? 'Privado'
-                      : 'Amigos'
-                }}
-              </span>
+
+              <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4 text-sm">
+                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Viendo ahora</p>
+                <p class="mt-2 font-semibold text-white">
+                  {{ profile?.watchingNow?.title || 'Sin sesión activa' }}
+                </p>
+                <p class="mt-1 text-slate-400">
+                  {{ profile?.watchingNow?.mood || 'Marca contenido como viendo desde una ficha o desde Comunidad.' }}
+                </p>
+              </div>
             </div>
 
-            <form [formGroup]="statusForm" (ngSubmit)="onSubmitStatus()" class="space-y-4">
-              <div class="grid md:grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <label for="watching-title" class="text-xs text-slate-400 uppercase tracking-wider">Que estas viendo</label>
-                  <input
-                    id="watching-title"
-                    type="text"
-                    formControlName="title"
-                    placeholder="Ej. The Bear T3"
-                    class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  />
-                </div>
-                <div class="space-y-2">
-                  <label for="watching-mood" class="text-xs text-slate-400 uppercase tracking-wider">Como te sientes</label>
-                  <input
-                    id="watching-mood"
-                    type="text"
-                    formControlName="mood"
-                    placeholder="Ej. Enganchado"
-                    class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  />
-                </div>
-              </div>
-
-              <div class="grid md:grid-cols-[1fr_auto] gap-4 items-end">
-                <div class="space-y-2">
-                  <label for="watching-visibility" class="text-xs text-slate-400 uppercase tracking-wider">Visibilidad</label>
-                  <select
-                    id="watching-visibility"
-                    formControlName="visibility"
-                    class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  >
-                    <option value="public">Publico</option>
-                    <option value="friends">Amigos</option>
-                    <option value="private">Privado</option>
-                  </select>
-                </div>
-                <button
-                  type="submit"
-                  [disabled]="statusForm.invalid"
-                  class="min-h-[44px] px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                >
-                  Publicar estado
-                </button>
-              </div>
-
-              <div class="rounded-xl border border-slate-800/80 bg-slate-950/60 p-4">
-                <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Vista previa</p>
-                <p class="text-sm text-slate-200">
-                  {{ statusForm.value.title || 'Sin titulo definido' }}
-                </p>
-                <p class="text-xs text-slate-400">
-                  {{ statusForm.value.mood || 'Sin estado' }}
-                </p>
-              </div>
-            </form>
+            <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <a
+                routerLink="/mi-cuenta"
+                [queryParams]="{ tab: 'history' }"
+                class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4 transition-colors hover:border-slate-600"
+              >
+                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Historial</p>
+                <p class="mt-2 text-2xl font-bold text-white">{{ profile?.stats?.ratings || 0 }}</p>
+                <p class="mt-1 text-sm text-slate-400">Valora y revisa lo que ya has visto.</p>
+              </a>
+              <a
+                routerLink="/mi-cuenta"
+                [queryParams]="{ tab: 'lists' }"
+                class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4 transition-colors hover:border-slate-600"
+              >
+                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Listas</p>
+                <p class="mt-2 text-2xl font-bold text-white">{{ lists.length }}</p>
+                <p class="mt-1 text-sm text-slate-400">Tus colecciones listas para compartir o seguir editando.</p>
+              </a>
+              <a
+                routerLink="/mi-cuenta"
+                [queryParams]="{ tab: 'favorites' }"
+                class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4 transition-colors hover:border-slate-600"
+              >
+                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Guardados</p>
+                <p class="mt-2 text-2xl font-bold text-white">{{ profile?.stats?.watchlist || reminders.length }}</p>
+                <p class="mt-1 text-sm text-slate-400">Accede rápido a lo pendiente y a tus favoritos.</p>
+              </a>
+              <a
+                routerLink="/comunidad"
+                [queryParams]="{ tab: 'social' }"
+                class="rounded-[1.5rem] border border-red-500/30 bg-red-500/10 p-4 transition-colors hover:border-red-400/40"
+              >
+                <p class="text-[11px] uppercase tracking-[0.28em] text-red-200">Comunidad</p>
+                <p class="mt-2 text-2xl font-bold text-white">{{ profile?.stats?.followers || 0 }}</p>
+                <p class="mt-1 text-sm text-red-100/80">Publica, recomienda y chatea desde el hub social.</p>
+              </a>
+            </div>
           </section>
 
-          <!-- Upcoming Reminders -->
-          <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-white">Proximos recordatorios</h3>
-              <button
-                type="button"
-                class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          <section class="rounded-[2rem] border border-slate-800/80 bg-slate-900/60 p-6">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Recordatorios</p>
+                <h3 class="mt-1 text-2xl font-semibold text-white">Lo siguiente que querías ver</h3>
+                <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                  Tus pendientes personales viven aquí, sin mezclarse con recomendaciones de amigos.
+                </p>
+              </div>
+              <a
+                routerLink="/mi-cuenta"
+                [queryParams]="{ tab: 'lists' }"
+                class="min-h-[44px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
               >
-                Nuevo
-              </button>
+                Gestionar listas
+              </a>
             </div>
 
-            <div *ngIf="loading" class="space-y-3">
+            <div *ngIf="loading" class="mt-5 space-y-3">
               <div class="h-16 rounded-xl border border-slate-800/80 bg-slate-900/60"></div>
               <div class="h-16 rounded-xl border border-slate-800/80 bg-slate-900/60"></div>
               <div class="h-16 rounded-xl border border-slate-800/80 bg-slate-900/60"></div>
             </div>
 
-            <div *ngIf="!loading && reminders.length === 0" class="rounded-xl border border-slate-800/80 bg-slate-950/60 p-4 text-sm text-slate-400">
-              No tienes recordatorios pendientes.
+            <div *ngIf="!loading && reminders.length === 0" class="mt-5 rounded-xl border border-slate-800/80 bg-slate-950/60 p-4 text-sm text-slate-400">
+              No tienes recordatorios pendientes ahora mismo.
             </div>
 
-            <div class="space-y-3" *ngIf="!loading && reminders.length > 0">
-              <div
+            <div class="mt-5 space-y-3" *ngIf="!loading && reminders.length > 0">
+              <article
                 *ngFor="let reminder of reminders"
                 class="flex items-center gap-4 rounded-xl border border-slate-800/80 bg-slate-950/60 p-4"
               >
-                <div class="h-12 w-12 rounded-xl bg-slate-800/80 border border-slate-700 overflow-hidden flex items-center justify-center text-xs text-slate-300">
-                  <img *ngIf="reminder.poster" [src]="reminder.poster" class="w-full h-full object-cover" alt="" />
-                  <span *ngIf="!reminder.poster">Sin poster</span>
+                <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-700 bg-slate-800 text-xs text-slate-300">
+                  <img *ngIf="reminder.poster" [src]="reminder.poster" class="h-full w-full object-cover" alt="" />
+                  <span *ngIf="!reminder.poster">{{ reminder.type === 'movie' ? 'MOV' : reminder.type === 'series' ? 'SER' : 'TV' }}</span>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <h4 class="text-sm text-white font-medium truncate">{{ reminder.title }}</h4>
+                <div class="min-w-0 flex-1">
+                  <h4 class="truncate text-sm font-medium text-white">{{ reminder.title }}</h4>
                   <p class="text-xs text-slate-400">
-                    {{ reminder.type === 'movie' ? 'Pelicula' : 'Serie' }}
+                    {{ reminder.type === 'movie' ? 'Película' : reminder.type === 'series' ? 'Serie' : 'Programa' }}
+                    · {{ reminder.state === 'pending' ? 'Pendiente' : reminder.state === 'watching' ? 'Viendo' : 'Finalizado' }}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                <a
+                  *ngIf="reminder.contentId"
+                  [routerLink]="['/contenido', reminder.contentId]"
+                  class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
                 >
-                  Ver
-                </button>
-              </div>
+                  Ver ficha
+                </a>
+              </article>
             </div>
           </section>
 
-          <!-- Recent Activity -->
           <section class="space-y-4">
-            <div class="flex items-center justify-between">
-              <h3 class="text-xs text-slate-500 uppercase tracking-[0.3em]">Actividad reciente</h3>
-              <button
-                type="button"
-                class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Actividad propia</p>
+                <h3 class="mt-1 text-2xl font-semibold text-white">Tu rastro reciente</h3>
+              </div>
+              <a
+                routerLink="/mi-cuenta"
+                [queryParams]="{ tab: 'history' }"
+                class="min-h-[44px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
               >
-                Ver todo
-              </button>
+                Abrir historial
+              </a>
             </div>
 
             <div *ngIf="myActivities.length === 0" class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 text-sm text-slate-400">
-              Aun no tienes actividad reciente.
+              Aún no tienes actividad reciente.
             </div>
 
             <article
-              *ngFor="let activity of myActivities"
+              *ngFor="let activity of myActivities.slice(0, 5)"
               class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-5"
             >
               <div class="flex items-start gap-4">
-                <div class="h-10 w-10 rounded-xl border border-slate-700 bg-slate-800/80 flex items-center justify-center text-xs text-slate-300 font-semibold">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-slate-800/80 text-xs font-semibold text-slate-300">
                   {{ activity.type.slice(0, 2).toUpperCase() }}
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="min-w-0 flex-1">
                   <div class="flex items-center justify-between gap-3">
-                    <h4 class="text-sm text-white font-medium">{{ activity.title }}</h4>
+                    <h4 class="text-sm font-medium text-white">{{ activity.title }}</h4>
                     <span class="text-xs text-slate-500 whitespace-nowrap">{{ activity.createdAt }}</span>
                   </div>
-                  <p class="text-sm text-slate-300 mt-2">{{ activity.description }}</p>
+                  <p class="mt-2 text-sm text-slate-300">{{ activity.description }}</p>
                   <div class="mt-3 flex flex-wrap items-center gap-2" *ngIf="activity.badge">
-                    <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">
+                    <span class="rounded-full border border-slate-700 px-2 py-1 text-xs text-slate-300">
                       {{ activity.badge }}
                     </span>
                   </div>
@@ -187,136 +184,108 @@ import {
         </div>
 
         <aside class="space-y-6">
-          <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
-            <h3 class="text-lg font-semibold text-white mb-4">Ahora mismo</h3>
-            <div class="space-y-3 text-sm">
-              <div class="flex items-center justify-between gap-3">
-                <span class="text-slate-400">Viendo</span>
-                <span class="text-slate-200 text-right">
-                  {{ profile?.watchingNow?.title || '-' }}
-                </span>
+          <section class="rounded-[2rem] border border-slate-800/80 bg-slate-900/60 p-6">
+            <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Tu cuenta</p>
+            <div class="mt-4 grid grid-cols-2 gap-3">
+              <div class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+                <p class="text-[11px] uppercase tracking-[0.25em] text-slate-500">Seguidores</p>
+                <p class="mt-2 text-2xl font-bold text-white">{{ profile?.stats?.followers || 0 }}</p>
               </div>
-              <div class="flex items-center justify-between gap-3">
-                <span class="text-slate-400">Mood</span>
-                <span class="text-slate-200 text-right">
-                  {{ profile?.watchingNow?.mood || '-' }}
-                </span>
+              <div class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+                <p class="text-[11px] uppercase tracking-[0.25em] text-slate-500">Siguiendo</p>
+                <p class="mt-2 text-2xl font-bold text-white">{{ profile?.stats?.following || 0 }}</p>
               </div>
-              <div class="flex items-center justify-between gap-3">
-                <span class="text-slate-400">Visibilidad</span>
-                <span class="text-slate-200 text-right">
-                  {{
-                    profile?.watchingNow?.visibility === 'public'
-                      ? 'Publico'
-                      : profile?.watchingNow?.visibility === 'private'
-                        ? 'Privado'
-                        : profile?.watchingNow?.visibility === 'friends'
-                          ? 'Amigos'
-                          : '-'
-                  }}
-                </span>
+              <div class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+                <p class="text-[11px] uppercase tracking-[0.25em] text-slate-500">Listas</p>
+                <p class="mt-2 text-2xl font-bold text-white">{{ profile?.stats?.listsCreated || lists.length }}</p>
+              </div>
+              <div class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+                <p class="text-[11px] uppercase tracking-[0.25em] text-slate-500">Valoraciones</p>
+                <p class="mt-2 text-2xl font-bold text-white">{{ profile?.stats?.ratings || 0 }}</p>
               </div>
             </div>
           </section>
 
-          <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-white">Recomendaciones relevantes</h3>
-              <button
-                type="button"
-                class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              >
-                Ver todas
-              </button>
-            </div>
-
-            <div *ngIf="recommendations.length === 0" class="text-sm text-slate-400">
-              No hay recomendaciones todavia.
-            </div>
-
-            <div class="space-y-3" *ngIf="recommendations.length > 0">
-              <div
-                *ngFor="let rec of recommendations.slice(0, 3)"
-                class="rounded-xl border border-slate-800/80 bg-slate-950/60 p-4"
-              >
-                <div class="flex items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <p class="text-sm text-white font-medium truncate">{{ rec.title }}</p>
-                    <p class="text-xs text-slate-500">{{ rec.type }} | {{ rec.createdAt }}</p>
-                  </div>
-                  <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">
-                    {{ rec.visibility === 'public' ? 'Publico' : 'Amigos' }}
+          <section class="rounded-[2rem] border border-slate-800/80 bg-slate-900/60 p-6">
+            <h3 class="text-lg font-semibold text-white">Preferencias rápidas</h3>
+            <div class="mt-4 space-y-4">
+              <div>
+                <p class="text-[11px] uppercase tracking-[0.25em] text-slate-500">Géneros favoritos</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <span
+                    *ngFor="let genre of (profile?.favoriteGenres || []).slice(0, 6)"
+                    class="rounded-full border border-slate-700 bg-slate-950/60 px-3 py-1.5 text-xs font-semibold text-slate-200"
+                  >
+                    {{ genre }}
+                  </span>
+                  <span
+                    *ngIf="!(profile?.favoriteGenres || []).length"
+                    class="text-sm text-slate-400"
+                  >
+                    Configúralos desde Ajustes para afinar explorar y el asistente.
                   </span>
                 </div>
-                <p class="text-xs text-slate-400 mt-2 line-clamp-2">"{{ rec.note }}"</p>
+              </div>
+
+              <div>
+                <p class="text-[11px] uppercase tracking-[0.25em] text-slate-500">Plataformas</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <span
+                    *ngFor="let platform of (profile?.preferredPlatforms || []).slice(0, 6)"
+                    class="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-100"
+                  >
+                    {{ platform }}
+                  </span>
+                  <span
+                    *ngIf="!(profile?.preferredPlatforms || []).length"
+                    class="text-sm text-slate-400"
+                  >
+                    Añade tus plataformas en Ajustes para priorizar el catálogo correcto.
+                  </span>
+                </div>
               </div>
             </div>
           </section>
 
-          <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-white">Listas recientes</h3>
-              <button
-                type="button"
-                class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          <section class="rounded-[2rem] border border-slate-800/80 bg-slate-900/60 p-6">
+            <h3 class="text-lg font-semibold text-white">Accesos directos</h3>
+            <div class="mt-4 space-y-3">
+              <a
+                routerLink="/mi-cuenta"
+                [queryParams]="{ tab: 'history' }"
+                class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-950/60 px-4 py-3 text-sm text-slate-200 transition-colors hover:border-slate-600 hover:text-white"
               >
-                Ver todas
-              </button>
-            </div>
-
-            <div *ngIf="lists.length === 0" class="text-sm text-slate-400">
-              Aun no has creado listas.
-            </div>
-
-            <div class="space-y-3" *ngIf="lists.length > 0">
-              <div
-                *ngFor="let list of lists.slice(0, 3)"
-                class="rounded-xl border border-slate-800/80 bg-slate-950/60 p-4"
+                <span>Editar historial</span>
+                <span class="text-slate-500">/mi-cuenta</span>
+              </a>
+              <a
+                routerLink="/mi-cuenta"
+                [queryParams]="{ tab: 'settings' }"
+                class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-950/60 px-4 py-3 text-sm text-slate-200 transition-colors hover:border-slate-600 hover:text-white"
               >
-                <div class="flex items-center justify-between gap-3">
-                  <div class="min-w-0">
-                    <p class="text-sm text-white font-medium truncate">{{ list.title }}</p>
-                    <p class="text-xs text-slate-500">{{ list.itemsCount }} items</p>
-                  </div>
-                  <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">
-                    {{ list.visibility === 'public' ? 'Publico' : list.visibility === 'friends' ? 'Amigos' : 'Privado' }}
-                  </span>
-                </div>
-              </div>
+                <span>Ajustar gustos y plataformas</span>
+                <span class="text-slate-500">Ajustes</span>
+              </a>
+              <a
+                routerLink="/comunidad"
+                [queryParams]="{ tab: 'social' }"
+                class="flex items-center justify-between rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100 transition-colors hover:border-red-400/40"
+              >
+                <span>Ir a Comunidad</span>
+                <span class="text-red-200/70">Actividad + chat</span>
+              </a>
             </div>
           </section>
         </aside>
       </div>
     </div>
   `,
-  styles: [],
 })
 export class UserStatsComponent {
   @Input() profile!: UserProfile | null;
   @Input() myActivities: UserActivity[] = [];
   @Input() lists: UserList[] = [];
-  @Input() recommendations: UserRecommendation[] = [];
   @Input() reminders: UserListItem[] = [];
   @Input() loading = false;
   @Input() error: string | null = null;
-  @Output() updateStatus = new EventEmitter<{ title: string; mood: string; visibility: Visibility }>();
-
-  statusForm = this.fb.group({
-    title: ['', Validators.required],
-    mood: [''],
-    visibility: ['friends'],
-  });
-
-  constructor(private fb: FormBuilder) {}
-
-  onSubmitStatus() {
-    if (this.statusForm.valid) {
-      this.updateStatus.emit({
-        title: this.statusForm.value.title!,
-        mood: this.statusForm.value.mood || '',
-        visibility: (this.statusForm.value.visibility || 'friends') as Visibility,
-      });
-      this.statusForm.reset({ visibility: 'friends' });
-    }
-  }
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {
   PRIMARY_NAV_ROUTES,
+  SECONDARY_NAV_ROUTES,
   USER_NAV_ROUTES,
   normalizePath,
 } from '../config/route-map';
@@ -75,20 +76,17 @@ export class MenuStateService {
 
   // Shared routes configuration so Header and Menu use the same source
   public readonly routes = PRIMARY_NAV_ROUTES;
+  public readonly secondaryRoutes = SECONDARY_NAV_ROUTES;
 
   public readonly userRoutes = USER_NAV_ROUTES;
 
   // Subset intended for the header (mostrar solo lo más destacado)
   public getHeaderRoutes() {
-    // Puede devolver un subconjunto estático o calcularlo dinámicamente
-    return [
-      this.routes.find((r) => r.key === 'home')!,
-      this.routes.find((r) => r.key === 'que-ver-hoy')!,
-      this.routes.find((r) => r.key === 'plataformas')!,
-      this.routes.find((r) => r.key === 'guia-canales')!,
-      this.routes.find((r) => r.key === 'peliculas')!,
-      this.routes.find((r) => r.key === 'series')!,
-    ];
+    return this.routes;
+  }
+
+  public getSecondaryRoutes() {
+    return this.secondaryRoutes;
   }
 
   public getUserRoutes() {
@@ -97,7 +95,7 @@ export class MenuStateService {
 
   public resolveActiveKeyFromUrl(url: string): string {
     const path = normalizePath(url);
-    const allRoutes = [...this.routes, ...this.userRoutes];
+    const allRoutes = [...this.routes, ...this.secondaryRoutes, ...this.userRoutes];
     const exact = allRoutes.find((route) => normalizePath(route.path) === path);
     if (exact) {
       return exact.key;

@@ -2,9 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Subject, combineLatest, forkJoin, of } from 'rxjs';
-import { catchError, takeUntil } from 'rxjs/operators';
+import { catchError, distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 import { CatalogRailComponent } from '../../components/catalog-rail/catalog-rail.component';
-import { NavBarComponent } from '../../components/nav-bar/nav-bar.component';
 import { APP_PATHS } from '../../config/route-map';
 import { CatalogItem, CatalogPlatform, CatalogService } from '../../services/catalog.service';
 import { MetaService } from '../../services/meta.service';
@@ -26,7 +25,6 @@ interface HomeSections {
   imports: [
     CommonModule,
     RouterModule,
-    NavBarComponent,
     CatalogRailComponent,
   ],
   templateUrl: './home.component.html',
@@ -38,6 +36,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   public loading = true;
   public error: string | null = null;
+  public degradedNotice: string | null = null;
   public sections: HomeSections = {
     personalized: [],
     platformItems: [],
@@ -65,10 +64,31 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     combineLatest([this.userService.isAuthenticated$, this.userService.getProfile()])
       .pipe(
+        map(([isAuthenticated, profile]) => ({
+          isAuthenticated,
+          profile,
+          signature: JSON.stringify({
+            isAuthenticated,
+            favoriteGenres: profile?.favoriteGenres || [],
+            preferredPlatforms: profile?.preferredPlatforms || [],
+            discoveryDefaults: profile?.discoveryDefaults || null,
+          }),
+        })),
+        distinctUntilChanged((left, right) => left.signature === right.signature),
         takeUntil(this.destroy$),
-        catchError(() => of([false, null] as [boolean, UserProfile | null]))
+        catchError(() =>
+          of({
+            isAuthenticated: false,
+            profile: null,
+            signature: 'anonymous',
+          } as {
+            isAuthenticated: boolean;
+            profile: UserProfile | null;
+            signature: string;
+          })
+        )
       )
-      .subscribe(([isAuthenticated, profile]) => {
+      .subscribe(({ isAuthenticated, profile }) => {
         this.loadHome(isAuthenticated, profile);
       });
   }
@@ -81,52 +101,98 @@ export class HomeComponent implements OnInit, OnDestroy {
   private loadHome(isAuthenticated: boolean, profile: UserProfile | null): void {
     this.loading = true;
     this.error = null;
+    this.degradedNotice = null;
     const preferredPlatforms = profile?.preferredPlatforms || [];
+    const emptyCatalog = {
+      items: [] as CatalogItem[],
+      meta: { page: 1, limit: 12, total: 0, hasMore: false },
+      availableGenres: [],
+      availablePlatforms: [],
+    };
 
     forkJoin({
-      personalized: this.catalogService.getForYou(12).pipe(catchError(() => of([]))),
+      personalized: this.catalogService.getForYouState(12).pipe(
+        catchError(() => of({ data: [], unavailable: true, stale: false }))
+      ),
       platformItems: this.catalogService
-        .query({
+        .queryState({
           types: ['movie', 'series'],
           platforms: preferredPlatforms.slice(0, 3),
           availability: ['streaming'],
           sort: 'popular',
           limit: 12,
         })
-        .pipe(catchError(() => of(null))),
+        .pipe(catchError(() => of({ data: emptyCatalog, unavailable: true, stale: false }))),
       freeItems: this.catalogService
-        .query({
+        .queryState({
           availability: ['free'],
           sort: 'popular',
           limit: 12,
         })
-        .pipe(catchError(() => of(null))),
+        .pipe(catchError(() => of({ data: emptyCatalog, unavailable: true, stale: false }))),
       liveItems: this.catalogService
-        .query({
+        .queryState({
           types: ['program'],
           availability: ['live'],
           sort: 'airtime',
           limit: 12,
         })
-        .pipe(catchError(() => of(null))),
+        .pipe(catchError(() => of({ data: emptyCatalog, unavailable: true, stale: false }))),
       trendingItems: this.catalogService
-        .query({
+        .queryState({
           types: ['movie', 'series'],
           sort: 'popular',
           limit: 12,
         })
-        .pipe(catchError(() => of(null))),
-      platforms: this.catalogService.getPlatforms().pipe(catchError(() => of([]))),
+        .pipe(catchError(() => of({ data: emptyCatalog, unavailable: true, stale: false }))),
+      platforms: this.catalogService.getPlatformsState().pipe(
+        catchError(() => of({ data: [], unavailable: true, stale: false }))
+      ),
     }).subscribe({
       next: (result) => {
-        const personalized = this.mapRecommendationItems(result.personalized);
+        const personalized = this.mapRecommendationItems(result.personalized.data || []);
+        const platformItemsUnavailable =
+          result.platformItems.unavailable && !result.platformItems.stale;
+        const freeUnavailable = result.freeItems.unavailable && !result.freeItems.stale;
+        const liveUnavailable = result.liveItems.unavailable && !result.liveItems.stale;
+        const trendingUnavailable =
+          result.trendingItems.unavailable && !result.trendingItems.stale;
+        const catalogUnavailable =
+          platformItemsUnavailable &&
+          freeUnavailable &&
+          liveUnavailable &&
+          trendingUnavailable;
+        const platformsUnavailable = result.platforms.unavailable && !result.platforms.stale;
+        const personalizedUnavailable =
+          result.personalized.unavailable && !result.personalized.stale;
+
+        if (catalogUnavailable) {
+          this.degradedNotice =
+            'Mostramos la última portada útil disponible mientras el catálogo híbrido se recupera.';
+        } else if (isAuthenticated && result.personalized.stale) {
+          this.degradedNotice =
+            'Tus recomendaciones se muestran con la última actualización disponible mientras se refrescan en segundo plano.';
+        } else if (personalizedUnavailable && isAuthenticated) {
+          this.degradedNotice =
+            'Las recomendaciones personalizadas no respondieron. El resto de la portada sigue operativo.';
+        } else if (
+          result.platformItems.stale ||
+          result.freeItems.stale ||
+          result.liveItems.stale ||
+          result.trendingItems.stale
+        ) {
+          this.degradedNotice =
+            'Parte de la portada está usando datos recientes en caché mientras se completa la actualización.';
+        }
+
         this.sections = {
-          personalized: isAuthenticated ? personalized : [],
-          platformItems: result.platformItems?.items || [],
-          freeItems: result.freeItems?.items || [],
-          liveItems: result.liveItems?.items || [],
-          trendingItems: result.trendingItems?.items || [],
-          platforms: result.platforms || [],
+          personalized:
+            isAuthenticated && !personalizedUnavailable ? personalized : [],
+          platformItems: result.platformItems.data?.items || [],
+          freeItems: result.freeItems.data?.items || [],
+          liveItems: result.liveItems.data?.items || [],
+          trendingItems: result.trendingItems.data?.items || [],
+          platforms: platformsUnavailable ? [] : result.platforms.data || [],
         };
         this.loading = false;
       },

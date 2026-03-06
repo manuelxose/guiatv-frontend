@@ -33,6 +33,8 @@ type TabType =
   | 'overview'
   | 'lists'
   | 'social'
+  | 'friends'
+  | 'recommendations'
   | 'favorites'
   | 'history'
   | 'chat'
@@ -62,14 +64,18 @@ type TabType =
   styleUrls: ['./user-area.component.scss'],
 })
 export class UserAreaComponent implements OnInit, OnDestroy {
-  public readonly mobileSectionTabs: { key: TabType; label: string }[] = [
+  public readonly accountSectionTabs: { key: TabType; label: string }[] = [
     { key: 'overview', label: 'Resumen' },
     { key: 'lists', label: 'Mis listas' },
     { key: 'favorites', label: 'Favoritos' },
     { key: 'history', label: 'Historial' },
-    { key: 'social', label: 'Comunidad' },
-    { key: 'chat', label: 'Chat' },
     { key: 'settings', label: 'Ajustes' },
+  ];
+  public readonly communitySectionTabs: { key: TabType; label: string }[] = [
+    { key: 'social', label: 'Actividad' },
+    { key: 'chat', label: 'Chat' },
+    { key: 'friends', label: 'Amigos' },
+    { key: 'recommendations', label: 'Recomendaciones' },
   ];
   public profile$ = this.userService.getProfile();
   public recommendations$ = this.userService.getRecommendations();
@@ -84,7 +90,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
   public isAdmin$ = this.profile$.pipe(map((profile) => profile?.role === 'admin'));
   public mobileSectionTabsWithAdmin$ = combineLatest([
     this.isAdmin$,
-    of(this.mobileSectionTabs),
+    of(this.accountSectionTabs),
   ]).pipe(
     map(([isAdmin, tabs]) =>
       isAdmin ? [...tabs, { key: 'admin' as TabType, label: 'Admin' }] : tabs
@@ -173,7 +179,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
         }
 
         if (this.isCommunityRoute) {
-          this.activeTab = 'chat';
+          this.activeTab = 'social';
           return;
         }
 
@@ -192,8 +198,22 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
   }
 
+  get desktopPrimaryTabs(): { key: TabType; label: string }[] {
+    return this.isCommunityRoute ? this.communitySectionTabs : this.accountSectionTabs;
+  }
+
+  get mobileTabs(): { key: TabType; label: string }[] {
+    return this.isCommunityRoute ? this.communitySectionTabs : this.accountSectionTabs;
+  }
+
   openMoreTab(tab: 'lists' | 'admin'): void {
     this.activeTab = tab;
+  }
+
+  openCommunityHub(): void {
+    void this.router.navigate(['/comunidad'], {
+      queryParams: { tab: 'social' },
+    });
   }
 
   onUpdateStatus(event: { title: string; mood: string; visibility: 'public' | 'friends' | 'private' }): void {
@@ -202,6 +222,53 @@ export class UserAreaComponent implements OnInit, OnDestroy {
       mood: event.mood,
       visibility: event.visibility || 'friends',
     }).subscribe();
+  }
+
+  onCreateCommunityList(event: {
+    title: string;
+    description: string;
+    visibility: 'public' | 'friends' | 'private';
+  }): void {
+    this.userService.createList(event).subscribe();
+  }
+
+  onRecommendContent(event: {
+    title: string;
+    note: string;
+    visibility: 'public' | 'friends' | 'private';
+  }): void {
+    this.userService
+      .addRecommendation({
+        title: event.title,
+        note: event.note,
+        visibility: event.visibility,
+        type: 'program',
+      })
+      .subscribe();
+  }
+
+  onOpenFriendChat(friendId: string): void {
+    this.chatService.createConversation(friendId).subscribe(() => {
+      this.activeTab = 'chat';
+      if (!this.isCommunityRoute) {
+        void this.router.navigate(['/comunidad'], {
+          queryParams: { tab: 'chat' },
+        });
+      }
+    });
+  }
+
+  onUpdateHistory(item: {
+    contentId: string;
+    contentTitle: string;
+    contentType: 'movie' | 'series' | 'program';
+    rating?: number;
+    status: 'seen' | 'watching' | 'pending' | 'dropped';
+    platform?: string;
+    genres?: string[];
+    tmdbId?: number;
+  }): void {
+    this.userService.addContentInteraction(item).subscribe();
   }
 
   onToggleFollow(friendId: string): void {
@@ -322,8 +389,11 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     this.isCommunityRoute = this.isCommunityUrl(url);
     this.menuState.setActive(this.isCommunityRoute ? 'comunidad' : 'mi-cuenta');
 
-    if (this.isCommunityRoute && this.activeTab !== 'chat') {
-      this.activeTab = 'chat';
+    if (
+      this.isCommunityRoute &&
+      !['social', 'chat', 'friends', 'recommendations'].includes(this.activeTab)
+    ) {
+      this.activeTab = 'social';
     }
   }
 
@@ -337,6 +407,8 @@ export class UserAreaComponent implements OnInit, OnDestroy {
       value === 'overview' ||
       value === 'lists' ||
       value === 'social' ||
+      value === 'friends' ||
+      value === 'recommendations' ||
       value === 'favorites' ||
       value === 'history' ||
       value === 'chat' ||

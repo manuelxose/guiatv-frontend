@@ -31,7 +31,7 @@ export const routes: Routes = [
       import('./pages/user-area/user-area.component').then(
         (m) => m.UserAreaComponent
       ),
-    title: 'Mi cuenta - Comunidad GPTV',
+    title: 'Mi cuenta - Guía TV',
   },
   {
     path: 'comunidad',
@@ -39,8 +39,8 @@ export const routes: Routes = [
       import('./pages/user-area/user-area.component').then(
         (m) => m.UserAreaComponent
       ),
-    title: 'Comunidad - GPTV',
-    data: { defaultTab: 'chat' },
+    title: 'Comunidad - Guía TV',
+    data: { defaultTab: 'social' },
   },
   {
     path: 'admin',

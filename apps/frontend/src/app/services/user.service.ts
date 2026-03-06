@@ -899,6 +899,7 @@ export class UserService {
     rating?: number;
     status?: 'seen' | 'watching' | 'pending' | 'dropped';
     liked?: boolean;
+    recommended?: boolean;
     platform?: string;
   }): Observable<boolean> {
     if (!this.safeGetToken()) return of(false);
