@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-import { Subject, combineLatest, forkJoin, map, take, takeUntil } from 'rxjs';
+import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
+import { Subject, combineLatest, filter, forkJoin, map, take, takeUntil } from 'rxjs';
 import {
   UserActivity,
   UserFriend,
@@ -86,6 +86,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
 
   public activeTab: TabType = 'overview';
   public isMobileView = false;
+  public isCommunityRoute = false;
   public isCreateListModalOpen = false;
   public isEditProfileModalOpen = false;
   public isAddToListModalOpen = false;
@@ -98,13 +99,24 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private menuState: MenuStateService,
     private authActionService: AuthActionService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.updateViewportState();
-    const initialRoutePath = String(this.route.snapshot.routeConfig?.path || '');
-    this.menuState.setActive(initialRoutePath === 'comunidad' ? 'comunidad' : 'mi-cuenta');
+    this.applyRouteContext(this.router.url);
+
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event) => {
+        const navEnd = event as NavigationEnd;
+        this.applyRouteContext(navEnd.urlAfterRedirects || navEnd.url);
+      });
+
     this.isAdmin$
       .pipe(takeUntil(this.destroy$))
       .subscribe((isAdmin) => {
@@ -116,9 +128,6 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     combineLatest([this.route.data, this.route.queryParamMap])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([data, params]) => {
-        const routePath = String(this.route.snapshot.routeConfig?.path || '');
-        this.menuState.setActive(routePath === 'comunidad' ? 'comunidad' : 'mi-cuenta');
-
         const queryTab = String(params.get('tab') || '')
           .trim()
           .toLowerCase();
@@ -135,7 +144,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
           return;
         }
 
-        if (routePath === 'comunidad') {
+        if (this.isCommunityRoute) {
           this.activeTab = 'chat';
           return;
         }
@@ -261,6 +270,20 @@ export class UserAreaComponent implements OnInit, OnDestroy {
   private updateViewportState(): void {
     const width = typeof window !== 'undefined' ? window.innerWidth : 1280;
     this.isMobileView = width < 768;
+  }
+
+  private applyRouteContext(url: string): void {
+    this.isCommunityRoute = this.isCommunityUrl(url);
+    this.menuState.setActive(this.isCommunityRoute ? 'comunidad' : 'mi-cuenta');
+
+    if (this.isCommunityRoute && this.activeTab !== 'chat') {
+      this.activeTab = 'chat';
+    }
+  }
+
+  private isCommunityUrl(url: string): boolean {
+    const path = String(url || '').split('?')[0].split('#')[0];
+    return path === '/comunidad' || path.startsWith('/comunidad/');
   }
 
   private isTabType(value: string): value is TabType {

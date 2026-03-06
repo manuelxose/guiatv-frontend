@@ -296,13 +296,18 @@ app.get('*', async (req, res) => {
       providers: [{ provide: REQUEST, useValue: req }],
     });
 
-    // Some legacy globals in this server can lead to successful render execution
-    // but an empty serialized root in `html`. Recover from the Domino window snapshot.
     if (html.includes('<app-root></app-root>')) {
-      const root = win?.document?.querySelector?.('app-root');
-      const rootInner = root?.innerHTML?.trim?.() || '';
-      if (rootInner.length > 0) {
-        html = `<!DOCTYPE html>${win.document.documentElement.outerHTML}`;
+      // Avoid serving stale HTML from a shared Domino window snapshot.
+      // If SSR produced an empty root, prefer CSR fallback for this request.
+      const fallbackFile = join(browserDistPath, 'index.html');
+      const fallbackCsr = join(browserDistPath, 'index.csr.html');
+      res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+      res.setHeader('Cache-Control', 'no-store');
+      if (existsSync(fallbackFile)) {
+        return res.sendFile(fallbackFile);
+      }
+      if (existsSync(fallbackCsr)) {
+        return res.sendFile(fallbackCsr);
       }
     }
     res.setHeader('Cache-Control', 'no-store');
