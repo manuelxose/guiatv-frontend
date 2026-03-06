@@ -121,6 +121,8 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
             [type]="item.contentType"
             [tmdbId]="item.tmdbId"
             [genres]="item.genres"
+            [image]="item.image || item.backdrop"
+            [platform]="item.primaryPlatforms?.[0]"
             [compact]="compact"
           ></app-interaction-buttons>
         </div>

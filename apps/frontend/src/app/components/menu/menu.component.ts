@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, filter, takeUntil } from 'rxjs';
+import { AppRouteEntry } from '../../config/route-map';
 import { MenuStateService } from '../../services/menu-state.service';
-import { TvGuideService } from '../../services/tv-guide.service';
 import { UserService } from '../../services/user.service';
 
 @Component({
@@ -14,96 +14,67 @@ import { UserService } from '../../services/user.service';
   imports: [CommonModule, RouterModule],
 })
 export class MenuComponent implements OnInit, OnDestroy {
-  public activeKey: string = 'home';
-  public routes = this.menuState.routes;
-  public userRoutes = this.menuState.getUserRoutes();
-  public isAuthenticated$ = this.userService.isAuthenticated$;
+  public activeKey = 'home';
+  public readonly primaryRoutes = this.menuState.getHeaderRoutes();
+  public readonly secondaryRoutes = this.menuState.getSecondaryRoutes();
+  public readonly userRoutes = this.menuState.getUserRoutes();
+  public readonly isAuthenticated$ = this.userService.isAuthenticated$;
 
-  private unsuscribe$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    public router: Router,
-    private guiaTvService: TvGuideService,
-    private menuState: MenuStateService,
-    private userService: UserService
+    private readonly router: Router,
+    private readonly menuState: MenuStateService,
+    private readonly userService: UserService
   ) {}
 
   ngOnInit(): void {
-    // Sincroniza estado inicial según la URL
-    this.setActiveFromUrl(this.router.url);
+    this.syncFromUrl(this.router.url);
 
-    // Suscribirse al estado global del menú
     this.menuState
       .getActive()
-      .pipe(takeUntil(this.unsuscribe$))
+      .pipe(takeUntil(this.destroy$))
       .subscribe((key) => {
-        if (key) this.activeKey = key;
+        this.activeKey = key || 'home';
       });
 
-    // Escuchar cambios del router para mantener el estado activo
-    this.router.events.pipe(takeUntil(this.unsuscribe$)).subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this.setActiveFromUrl(event.urlAfterRedirects || event.url);
-      }
-    });
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event) => {
+        const url = (event as NavigationEnd).urlAfterRedirects || (event as NavigationEnd).url;
+        this.syncFromUrl(url);
+      });
   }
 
   ngOnDestroy(): void {
-    this.unsuscribe$.next();
-    this.unsuscribe$.complete();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  public navigateTo(): void {
-    this.navigate('/programacion-tv/que-ver-hoy', 'que-ver-hoy');
-  }
-
-  private setActiveFromUrl(url: string): void {
-    const key = this.menuState.resolveActiveKeyFromUrl(url);
-    this.activeKey = key || 'home';
-    this.menuState.setActive(this.activeKey);
-
-    if (this.activeKey === 'peliculas') {
-      this.guiaTvService.setIsMovies();
-    } else if (this.activeKey === 'series') {
-      this.guiaTvService.setIsSeries();
-    }
-  }
-
-  /**
-   * Navega a la ruta absoluta y sincroniza estado.
-   */
-  public navigate(path: string, key?: string): void {
-    if (key === 'peliculas') {
-      this.guiaTvService.setIsMovies();
-    } else if (key === 'series') {
-      this.guiaTvService.setIsSeries();
-    }
-
-    this.router.navigateByUrl(path).then(() => {
+  navigateTo(route: AppRouteEntry): void {
+    this.menuState.setActive(route.key);
+    this.router.navigateByUrl(route.path).then(() => {
       this.menuState.setMobile(false);
-      this.setActiveFromUrl(this.router.url);
-      if (key) this.menuState.setActive(key);
+      this.syncFromUrl(this.router.url);
     });
   }
 
-  /**
-   * Handler para las entradas del menú.
-   */
-  public onItemClick(path: string, key?: string): void {
-    this.navigate(path, key);
+  isActive(route: AppRouteEntry): boolean {
+    return this.activeKey === route.key;
   }
 
-  public isActive(key: string): boolean {
-    return !!key && this.activeKey === key;
-  }
-
-  public getColor(key: string): string | undefined {
-    return this.menuState.getColorForKey(key);
-  }
-
-  public logout(): void {
+  logout(): void {
     this.userService.logout();
     this.menuState.setActive('home');
     this.router.navigateByUrl('/iniciar-sesion');
+  }
+
+  private syncFromUrl(url: string): void {
+    const key = this.menuState.resolveActiveKeyFromUrl(url);
+    this.activeKey = key || 'home';
+    this.menuState.setActive(this.activeKey);
   }
 }

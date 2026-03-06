@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { first, takeUntil, Subject } from 'rxjs';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { CardListComponent } from 'src/app/components/card-list/card-list.component';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
@@ -13,7 +12,7 @@ import { ProgramsResponse, ProgramLayoutDTO, ChannelMetaDTO } from 'src/app/api/
 @Component({
   selector: 'app-ahora-directo',
   standalone: true,
-  imports: [CommonModule, NavBarComponent, CardListComponent],
+  imports: [CommonModule, CardListComponent],
   templateUrl: './ahora-directo.component.html',
   styleUrls: ['./ahora-directo.component.scss'],
 })

@@ -12,6 +12,7 @@ import { AdminPlaceholderSectionComponent } from './sections/placeholder/admin-p
 import { AdminSchedulesSectionComponent } from './sections/schedules/admin-schedules-section.component';
 import { AdminSystemSectionComponent } from './sections/system/admin-system-section.component';
 import { AdminUsersSectionComponent } from './sections/users/admin-users-section.component';
+import { AdminCommunitySectionComponent } from './sections/community/admin-community-section.component';
 
 @Component({
   selector: 'app-admin-panel',
@@ -27,6 +28,7 @@ import { AdminUsersSectionComponent } from './sections/users/admin-users-section
     AdminOperationsSectionComponent,
     AdminUsersSectionComponent,
     AdminSystemSectionComponent,
+    AdminCommunitySectionComponent,
     AdminPlaceholderSectionComponent,
   ],
   templateUrl: './admin.component.html',
@@ -178,7 +180,9 @@ export class AdminComponent {
     this.sidebarOpen = false;
 
     const keepsUpdated =
-      group === 'analytics' || group === 'users' || (group === 'content' && item === 'blog');
+      group === 'analytics' || group === 'users' || group === 'content'
+      || group === 'schedules' || group === 'operations' || group === 'system'
+      || group === 'community';
     if (!keepsUpdated) {
       this.lastUpdated = null;
     }

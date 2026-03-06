@@ -1,395 +1,656 @@
-// ============== src/app/pages/lista-canales/lista-canales.component.ts ==============
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   Component,
-  EventEmitter,
-  Output,
-  OnInit,
-  OnDestroy,
-  AfterViewInit,
-  ElementRef,
-  ViewChildren,
-  QueryList,
   Inject,
+  OnDestroy,
+  OnInit,
   PLATFORM_ID,
 } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { first, filter, Subscription } from 'rxjs';
-
-import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { MetaService } from 'src/app/services/meta.service';
-import { BannerComponent } from 'src/app/components/banner/banner.component';
-import { SliderComponent } from 'src/app/components/slider/slider.component';
-import { CardChannelComponent } from 'src/app/components/card-channel/card-channel.component';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
-import { TvApiService } from 'src/app/api/tv-api.service';
+import { Subscription, forkJoin } from 'rxjs';
+
 import { ApiConfigService } from 'src/app/api/api-config.service';
+import {
+  ChannelMetaDTO,
+  ProgramsResponse,
+} from 'src/app/api/models';
+import { MetaService } from 'src/app/services/meta.service';
 import { slugify } from 'src/app/utils/utils';
+import { CatalogItem, CatalogService } from 'src/app/services/catalog.service';
+import { buildProgramCatalogId } from 'src/app/utils/catalog';
+import { TvDataService } from 'src/app/state/tv-data.service';
+
+type GuideTabKey = 'now' | 'next' | 'night' | 'channels';
+type ChannelGroupKey =
+  | 'all'
+  | 'tdt'
+  | 'autonomico'
+  | 'movistar'
+  | 'online'
+  | 'deporte';
+type GuideCategoryKey = 'all' | 'Cine' | 'Series' | 'Deportes' | string;
+
+interface GuideProgram {
+  id: string;
+  catalogId: string;
+  title: string;
+  channelId: string;
+  channelName: string;
+  channelIcon?: string;
+  category?: string;
+  normalizedCategory: string;
+  image?: string;
+  tmdbId?: number;
+  primaryPlatforms: string[];
+  providersResolvedAt?: string;
+  start: string;
+  end: string;
+  liveNow: boolean;
+  groupKey: Exclude<ChannelGroupKey, 'all'>;
+  sortIndex: number;
+  editorialScore: number;
+  detailLink: any[];
+  channelLink: any[];
+}
+
+interface GuideChannel {
+  id: string;
+  name: string;
+  icon?: string;
+  type: string;
+  region?: string;
+  isActive: boolean;
+  sortIndex: number;
+  groupKey: Exclude<ChannelGroupKey, 'all'>;
+  channelLink: any[];
+}
+
+interface GuideSection {
+  key: Exclude<ChannelGroupKey, 'all'>;
+  title: string;
+  description: string;
+  channels: GuideChannel[];
+}
+
+const PRIMARY_GUIDE_CATEGORIES: Array<{ key: GuideCategoryKey; label: string }> = [
+  { key: 'all', label: 'Todos' },
+  { key: 'Cine', label: 'Cine' },
+  { key: 'Series', label: 'Series' },
+  { key: 'Deportes', label: 'Deportes' },
+];
+
+const EDITORIAL_CATEGORY_PRIORITY: Record<string, number> = {
+  Cine: 0,
+  Series: 1,
+  Deportes: 2,
+  Noticias: 3,
+  Infantil: 4,
+  Documental: 5,
+  Entretenimiento: 6,
+  Otros: 7,
+};
 
 @Component({
   selector: 'app-lista-canales',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
   templateUrl: './lista-canales.component.html',
   styleUrls: ['./lista-canales.component.scss'],
-  standalone: true,
-  imports: [CommonModule, BannerComponent, CardChannelComponent,NavBarComponent],
 })
-export class ListaCanalesComponent implements OnInit, OnDestroy, AfterViewInit {
-  // Datos principales
-  public categorias: string[] = ['TDT', 'Cable', 'Autonomico'];
-  public canales: any = [];
-  public url_web: any = {};
+export class ListaCanalesComponent implements OnInit, OnDestroy {
+  public readonly guideTabs: Array<{ key: GuideTabKey; label: string }> = [
+    { key: 'now', label: 'Ahora' },
+    { key: 'next', label: 'Siguiente' },
+    { key: 'night', label: 'Esta noche' },
+    { key: 'channels', label: 'Canales' },
+  ];
+  public readonly quickCategoryTabs = PRIMARY_GUIDE_CATEGORIES;
 
-  // Estado de carga
-  public cargando = true;
-
-  // Canales por categoría
-  public canales_tdt: any[] = [];
-  public canales_m: any[] = [];
-  public canales_auto: any[] = [];
-  public canales_dep: any[] = [];
-  public canales_cable: any[] = [];
-
-  // Datos adicionales
-  public program: any;
-  public data: any;
-  public popular_movies: any[] = [];
-  public relatedMovies: any;
-  public movieStartIndex = 0;
-  public actors: any;
-  public actorStartIndex = 0;
-  public actor = {};
-  public movie: any;
-  public time: any;
-  public logo: any;
-  public destacada: any;
-  // Suscripciones
-  private programasSubscription!: Subscription;
-  private canalesSubscription!: Subscription;
-  // view children for lazy observer
-  @ViewChildren('channelSection', { read: ElementRef })
-  channelSections!: QueryList<ElementRef>;
-  // capture child slider components so parents can control navigation
-  @ViewChildren(SliderComponent) sliderComponents!: QueryList<SliderComponent>;
-  private intersectionObserver?: IntersectionObserver;
-  // runtime flags
-  public isBrowser = false;
-  // tracks which sliders are ready to render (lazy)
-  public sliderVisible: Record<string, boolean> = {};
-  // SEO helpers
-  public ldJson: string = '';
+  public activeGuideTab: GuideTabKey = 'now';
+  public selectedChannelGroup: ChannelGroupKey = 'tdt';
+  public selectedCategory: GuideCategoryKey = 'all';
+  public loading = true;
+  public error: string | null = null;
   public safeLdHtml: SafeHtml | null = null;
-  public topChannels: Array<any> = [];
+  public isMoreCategoriesOpen = false;
+
+  public channels: GuideChannel[] = [];
+  public sections: GuideSection[] = [];
+  public nowPrograms: GuideProgram[] = [];
+  public nextPrograms: GuideProgram[] = [];
+  public tonightPrograms: GuideProgram[] = [];
+
+  private readonly subscriptions = new Subscription();
+  private readonly isBrowser: boolean;
+  private readonly enrichedCatalogIds = new Set<string>();
 
   constructor(
-    private guideSvc: TvGuideService,
-    private tvApi: TvApiService,
-    private metaSvc: MetaService,
-    private router: Router,
-    private http: HttpClient,
-    private apiConfig: ApiConfigService,
-    private sanitizer: DomSanitizer,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
-
-  ngOnInit(): void {
-    this.isBrowser = isPlatformBrowser(this.platformId);
-    this.setupMetaTags();
-    this.loadCanalesData();
-    this.loadProgramsData();
-    // initialize slider visibility (server-safe)
-    this.sliderVisible = {
-      tdt: !this.isBrowser, // SSR: don't render sliders, but on browser set to false -> will be enabled via observer
-      movistar: !this.isBrowser,
-      online: !this.isBrowser,
-      autonomo: !this.isBrowser,
-      deporte: !this.isBrowser,
-    };
+    @Inject(DOCUMENT) private readonly document: Document,
+    @Inject(PLATFORM_ID) platformId: object,
+    private readonly catalogService: CatalogService,
+    private readonly apiConfig: ApiConfigService,
+    private readonly metaService: MetaService,
+    private readonly router: Router,
+    private readonly sanitizer: DomSanitizer,
+    private readonly tvDataService: TvDataService
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
   }
 
-  ngAfterViewInit(): void {
-    if (!this.isBrowser) return;
+  ngOnInit(): void {
+    this.metaService.setMetaTags({
+      title: 'Guía TV en directo y canales - Guía TV',
+      description:
+        'Consulta qué se está emitiendo ahora, qué viene después y qué destaca esta noche en la televisión española, con acceso directo a todos los canales.',
+      canonicalUrl: this.router.url,
+    });
 
-    this.intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const el = entry.target as HTMLElement;
-          const key = el.getAttribute('data-key') || el.id || '';
-          if (!key) return;
-          if (entry.isIntersecting) {
-            this.sliderVisible[key] = true;
-            if (this.intersectionObserver)
-              this.intersectionObserver.unobserve(el);
-          }
-        });
-      },
-      { root: null, rootMargin: '200px 0px', threshold: 0.05 }
-    );
-
-    // observe sections (slight delay to ensure QueryList populated)
-    setTimeout(() => {
-      this.channelSections.forEach((q) => {
-        const el = q.nativeElement as HTMLElement;
-        const key = el.getAttribute('data-key') || el.id || '';
-        if (key && this.intersectionObserver && !this.sliderVisible[key]) {
-          this.intersectionObserver.observe(el);
-        }
-      });
-    }, 80);
+    this.loadGuideData();
   }
 
   ngOnDestroy(): void {
-    this.cleanup();
+    this.subscriptions.unsubscribe();
   }
 
-  // ============== MÉTODOS PRIVADOS ==============
-  private setupMetaTags(): void {
-    const canonicalUrl = this.router.url;
-    this.metaSvc.setMetaTags({
-      title: 'Canales de TV de España',
-      description:
-        'Listado de canales de televisión de España, como TVE, Antena 3, Telecinco, Cuatro, La Sexta, etc.',
-      canonicalUrl: canonicalUrl,
+  public setActiveTab(tab: GuideTabKey): void {
+    this.activeGuideTab = tab;
+    this.ensureGuideEnrichment(tab);
+    this.scrollToSection(this.sectionIdForTab(tab));
+  }
+
+  public selectChannelGroup(group: ChannelGroupKey): void {
+    this.selectedChannelGroup = group;
+    this.ensureGuideEnrichment(this.activeGuideTab);
+    this.scrollToSection(this.sectionIdForTab(this.activeGuideTab));
+  }
+
+  public selectCategory(category: GuideCategoryKey): void {
+    this.selectedCategory = category;
+    this.isMoreCategoriesOpen = false;
+    this.ensureGuideEnrichment(this.activeGuideTab);
+  }
+
+  public toggleMoreCategories(): void {
+    this.isMoreCategoriesOpen = !this.isMoreCategoriesOpen;
+  }
+
+  public programTrackBy(index: number, program: GuideProgram): string {
+    return program.id || `${program.channelId}-${index}`;
+  }
+
+  public channelTrackBy(index: number, channel: GuideChannel): string {
+    return channel.id || `${channel.name}-${index}`;
+  }
+
+  public formatTimeRange(program: GuideProgram): string {
+    return `${this.formatTime(program.start)} - ${this.formatTime(program.end)}`;
+  }
+
+  public navigateToChannel(channel: GuideChannel): void {
+    if (!channel?.channelLink?.length) {
+      return;
+    }
+    void this.router.navigate(channel.channelLink);
+  }
+
+  public formatTime(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    return date.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
     });
   }
 
-  private loadCanalesData(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.canalesSubscription = this.http
-        .get<any>('/assets/canales.json')
-        .subscribe({
-          next: (data) => {
-            this.url_web = data;
-          },
-          error: (error) => {
-            console.error('Error loading canales:', error);
-            this.url_web = {};
-          },
-        });
-    }
+  public get totalChannels(): number {
+    return this.channels.length;
   }
 
-  /**
-   * Load channels data from /v2/channels API endpoint
-   * This gets the complete list of channels with their metadata
-   */
-  private loadProgramsData(): void {
+  public get channelGroups(): Array<{ key: ChannelGroupKey; label: string; count: number }> {
+    const countFor = (key: ChannelGroupKey) =>
+      key === 'all'
+        ? this.channels.length
+        : this.sections.find((section) => section.key === key)?.channels.length || 0;
+
+    const groups: Array<{ key: ChannelGroupKey; label: string; count: number }> = [
+      { key: 'all', label: 'Todos', count: countFor('all') },
+      { key: 'tdt', label: 'TDT', count: countFor('tdt') },
+      { key: 'autonomico', label: 'Autonómicos', count: countFor('autonomico') },
+      { key: 'movistar', label: 'Movistar+', count: countFor('movistar') },
+      { key: 'online', label: 'Online', count: countFor('online') },
+      { key: 'deporte', label: 'Deporte', count: countFor('deporte') },
+    ];
+
+    return groups.filter((group) => group.count > 0);
+  }
+
+  public get extraCategories(): string[] {
+    const primaryKeys = new Set(PRIMARY_GUIDE_CATEGORIES.map((category) => category.key));
+    const categories = new Set<string>();
+
+    [...this.nowPrograms, ...this.nextPrograms, ...this.tonightPrograms].forEach((program) => {
+      if (!primaryKeys.has(program.normalizedCategory) && program.normalizedCategory !== 'Otros') {
+        categories.add(program.normalizedCategory);
+      }
+    });
+
+    return Array.from(categories).sort((left, right) => left.localeCompare(right, 'es'));
+  }
+
+  public get visibleSections(): GuideSection[] {
+    if (this.selectedChannelGroup === 'all') {
+      return this.sections;
+    }
+    return this.sections.filter((section) => section.key === this.selectedChannelGroup);
+  }
+
+  public get quickChannels(): GuideChannel[] {
+    const fallbackKey =
+      this.selectedChannelGroup === 'all' ? 'tdt' : this.selectedChannelGroup;
+    const section =
+      this.sections.find((entry) => entry.key === fallbackKey) ||
+      this.sections.find((entry) => entry.key === 'tdt') ||
+      this.sections[0];
+    return section?.channels.slice(0, 12) || [];
+  }
+
+  public get visibleNowPrograms(): GuideProgram[] {
+    return this.filterPrograms(this.nowPrograms).slice(0, 12);
+  }
+
+  public get visibleNextPrograms(): GuideProgram[] {
+    return this.filterPrograms(this.nextPrograms).slice(0, 12);
+  }
+
+  public get visibleTonightPrograms(): GuideProgram[] {
+    return this.filterPrograms(this.tonightPrograms).slice(0, 12);
+  }
+
+  public isMoreCategoryActive(): boolean {
+    return this.selectedCategory !== 'all' &&
+      !PRIMARY_GUIDE_CATEGORIES.some((category) => category.key === this.selectedCategory);
+  }
+
+  private loadGuideData(): void {
+    this.loading = true;
+    this.error = null;
+
+    this.subscriptions.add(
+      forkJoin({
+        channels: this.tvDataService.loadChannels(),
+        programs: this.tvDataService.loadPrograms({
+          date: 'today',
+          fields: 'full',
+          limit: 2500,
+        }),
+      }).subscribe({
+        next: ({ channels, programs }) => {
+          const normalizedChannels = this.normalizeChannels(programs, channels || []);
+          const channelMap = new Map(
+            normalizedChannels.map((channel) => [channel.id, channel] as const)
+          );
+          const programCards = this.normalizePrograms(programs, channelMap);
+
+          this.channels = normalizedChannels;
+          this.sections = this.buildSections(normalizedChannels);
+          this.nowPrograms = this.sortPrograms(programCards.filter((program) => program.liveNow));
+          this.nextPrograms = this.buildNextPrograms(programCards);
+          this.tonightPrograms = this.buildTonightPrograms(programCards);
+          this.buildLdJson(normalizedChannels);
+          this.ensureGuideEnrichment('now');
+          this.loading = false;
+        },
+        error: () => {
+          this.error =
+            'No se pudo cargar la guía ahora mismo. Inténtalo de nuevo en unos minutos.';
+          this.loading = false;
+        },
+      })
+    );
+  }
+
+  private normalizeChannels(
+    response: ProgramsResponse | undefined,
+    fullChannelCatalog: ChannelMetaDTO[]
+  ): GuideChannel[] {
     const assetBaseUrl = this.apiConfig.getAssetBaseUrl();
+    const metaById = new Map<string, ChannelMetaDTO>();
 
-    this.programasSubscription = this.tvApi
-      .getChannels()
-      .pipe(filter((resp) => !!resp))
-      .subscribe({
-        next: (response) => {
-          const channels = (response as any)?.data?.channels || (response as any)?.channels || [];
+    [...(fullChannelCatalog || []), ...((response?.channels || []) as ChannelMetaDTO[])].forEach(
+      (channel) => {
+        if (channel?.id) {
+          metaById.set(channel.id, {
+            ...(metaById.get(channel.id) || {}),
+            ...channel,
+          });
+        }
+      }
+    );
 
-          if (channels && channels.length > 0) {
-            const transformedData = channels.map((channel: any) => {
+    const orderedChannels = (response?.channels || fullChannelCatalog || []).filter(
+      (channel): channel is ChannelMetaDTO => Boolean(channel?.id)
+    );
 
-              // Icon path normalization
-              let iconPath = channel.icon || channel.logo || channel.image;
+    return orderedChannels.map((channel, index) => {
+      const merged = metaById.get(channel.id) || channel;
+      let icon = merged.icon || undefined;
+      if (!icon) {
+        icon = `/storage/channel_icons/${merged.id}.webp`;
+      }
+      if (icon && !icon.startsWith('http')) {
+        const cleanPath = icon.startsWith('/') ? icon : `/${icon}`;
+        icon = `${assetBaseUrl}${cleanPath}`;
+      }
 
-              if (!iconPath) {
-                iconPath = `/storage/channel_icons/${channel.id}.webp`;
-              }
+      const slug = slugify(merged.name || merged.id);
+      const groupKey = this.resolveChannelGroup(merged);
 
-              if (iconPath && !iconPath.startsWith('http')) {
-                const cleanPath = iconPath.startsWith('/') ? iconPath : `/${iconPath}`;
-                iconPath = `${assetBaseUrl}${cleanPath}`;
-              }
-
-              return {
-                id: channel.id,
-                name: channel.name,
-                icon: iconPath,
-                type: (channel.type || 'TDT').toUpperCase(),
-                country: channel.country,
-                countryCode: channel.countryCode,
-                region: channel.region,
-                isActive: channel.isActive !== false,
-                channel: {
-                  id: channel.id,
-                  name: channel.name,
-                  icon: iconPath,
-                  type: (channel.type || 'TDT').toUpperCase(),
-                },
-              };
-            });
-
-            this.manageCanales(transformedData);
-          } else {
-            this.cargando = false;
-          }
-        },
-        error: (error) => {
-          console.error('[ListaCanales] Error cargando canales:', error);
-          this.cargando = false;
-        },
-      });
-  }
-
-  private manageCanales(data: any): void {
-    this.guideSvc.setData(data);
-
-    // Use transformed data directly to ensure icons are correct
-    this.canales_auto = data.filter((c: any) => c.type === 'AUTONOMICO');
-    this.canales_tdt = data.filter((c: any) => c.type === 'TDT');
-    this.canales_m = data.filter((c: any) => c.type === 'MOVISTAR');
-    this.canales_dep = data.filter((c: any) => c.type === 'DEPORTES');
-    this.canales_cable = data.filter((c: any) => c.type === 'CABLE');
-
-    // Debug: Log sample channels to verify data structure
-    console.log('[ListaCanales] Sample TDT channels:', this.canales_tdt.slice(0, 2));
-    console.log('[ListaCanales] Sample Autonomico channels:', this.canales_auto.slice(0, 2));
-
-    this.cargando = false;
-    // when data available on browser, enable sliders for rendering
-    if (this.isBrowser) {
-      // small delay to let the view initialize
-      setTimeout(() => {
-        Object.keys(this.sliderVisible).forEach(
-          (k) => (this.sliderVisible[k] = true)
-        );
-      }, 120);
-    }
-
-    // Build SEO artifacts (JSON-LD and top channels list)
-    try {
-      this.buildLdJson();
-    } catch (err) {
-      console.warn('Error building JSON-LD for channels', err);
-    }
-  }
-
-  private buildLdJson(): void {
-    const channels = [
-      ...this.canales_tdt,
-      ...this.canales_m,
-      ...this.canales_cable,
-      ...this.canales_auto,
-      ...this.canales_dep,
-    ].filter(Boolean);
-
-    // prepare top channels list for a simple crawlable list
-    this.topChannels = channels.slice(0, 12);
-
-    const itemListElement = channels.map((c: any, i: number) => {
-      const name =
-        c.name || c.nombre || c.title || c.titulo || `Canal ${i + 1}`;
-      // attempt to resolve a url from url_web mapping; fallback to empty string
-      const urlFromMap =
-        this.url_web &&
-        (this.url_web[c.id] || this.url_web[name] || this.url_web[c.slug]);
-      const url = urlFromMap && urlFromMap.url ? urlFromMap.url : '';
       return {
-        '@type': 'ListItem',
-        position: i + 1,
-        name,
-        url,
+        id: merged.id,
+        name: merged.name,
+        icon,
+        type: String(merged.type || 'TDT').toUpperCase(),
+        region: merged.country || merged.countryCode || undefined,
+        isActive: true,
+        sortIndex: index,
+        groupKey,
+        channelLink: ['/programacion-tv/ver-canal', slug],
       };
     });
+  }
+
+  private normalizePrograms(
+    response: ProgramsResponse | undefined,
+    channelMap: Map<string, GuideChannel>
+  ): GuideProgram[] {
+    const now = Date.now();
+
+    return ((response?.programs || [])
+      .map((program) => {
+        const channel = channelMap.get(program.channelId);
+        if (!channel) {
+          return null;
+        }
+
+        const title =
+          typeof program.title === 'string'
+            ? program.title
+            : String(program.title?.value || '');
+        if (!title.trim()) {
+          return null;
+        }
+
+        const startTime = new Date(program.start).getTime();
+        const endTime = new Date(program.end).getTime();
+        const catalogId = buildProgramCatalogId(String(program.id));
+        const normalizedCategory = this.normalizeGuideCategory(program.category, title);
+        const editorialScore = this.buildEditorialScore(normalizedCategory, channel.sortIndex);
+
+        return {
+          id: String(program.id),
+          catalogId,
+          title,
+          channelId: channel.id,
+          channelName: channel.name,
+          channelIcon: channel.icon,
+          category: program.category,
+          normalizedCategory,
+          image: program.image,
+          tmdbId: program.tmdbId,
+          primaryPlatforms: [],
+          start: program.start,
+          end: program.end,
+          liveNow: startTime <= now && now < endTime,
+          groupKey: channel.groupKey,
+          sortIndex: channel.sortIndex,
+          editorialScore,
+          detailLink: ['/contenido', catalogId],
+          channelLink: channel.channelLink,
+        } satisfies GuideProgram;
+      })
+      .filter(Boolean) as GuideProgram[]);
+  }
+
+  private buildNextPrograms(programs: GuideProgram[]): GuideProgram[] {
+    const now = Date.now();
+    const nextByChannel = new Map<string, GuideProgram>();
+
+    programs.forEach((program) => {
+      const start = new Date(program.start).getTime();
+      if (start <= now) {
+        return;
+      }
+
+      const current = nextByChannel.get(program.channelId);
+      if (!current || start < new Date(current.start).getTime()) {
+        nextByChannel.set(program.channelId, program);
+      }
+    });
+
+    return this.sortPrograms(Array.from(nextByChannel.values()));
+  }
+
+  private buildTonightPrograms(programs: GuideProgram[]): GuideProgram[] {
+    return this.sortPrograms(
+      programs.filter((program) => {
+        const start = new Date(program.start);
+        const hour = start.getHours();
+        return hour >= 20 && hour <= 23;
+      })
+    );
+  }
+
+  private sortPrograms(programs: GuideProgram[]): GuideProgram[] {
+    return [...programs].sort((left, right) => {
+      const categoryDifference = this.categoryPriority(left.normalizedCategory) - this.categoryPriority(right.normalizedCategory);
+      if (categoryDifference !== 0) {
+        return categoryDifference;
+      }
+
+      if (left.sortIndex !== right.sortIndex) {
+        return left.sortIndex - right.sortIndex;
+      }
+
+      return new Date(left.start).getTime() - new Date(right.start).getTime();
+    });
+  }
+
+  private buildSections(channels: GuideChannel[]): GuideSection[] {
+    const definitions: Array<{
+      key: GuideSection['key'];
+      title: string;
+      description: string;
+    }> = [
+      {
+        key: 'tdt',
+        title: 'Canales TDT',
+        description: 'Generalistas y temáticos de acceso abierto en el orden habitual de la TDT española.',
+      },
+      {
+        key: 'autonomico',
+        title: 'Canales autonómicos',
+        description: 'Televisión regional para seguir la programación local y autonómica.',
+      },
+      {
+        key: 'movistar',
+        title: 'Canales Movistar+',
+        description: 'Señales premium y temáticas dentro del ecosistema Movistar+.',
+      },
+      {
+        key: 'online',
+        title: 'Canales online y OTT',
+        description: 'Señales conectadas, cable y otros canales digitales.',
+      },
+      {
+        key: 'deporte',
+        title: 'Canales deportivos',
+        description: 'Cobertura temática de fútbol, motor, baloncesto y otros eventos.',
+      },
+    ];
+
+    return definitions
+      .map((definition) => ({
+        key: definition.key,
+        title: definition.title,
+        description: definition.description,
+        channels: channels.filter((channel) => channel.groupKey === definition.key),
+      }))
+      .filter((section) => section.channels.length > 0);
+  }
+
+  private buildLdJson(channels: GuideChannel[]): void {
+    const baseUrl =
+      this.isBrowser && this.document.location
+        ? this.document.location.origin
+        : '';
 
     const ld = {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      name: 'Listado de canales de televisión en España',
+      name: 'Guía TV y canales de España',
       description:
-        'Listado y programación de los principales canales de TV en España.',
-      itemListElement: itemListElement.slice(0, 200),
+        'Canales disponibles en Guía TV con acceso a emisiones actuales, próximas franjas y programación destacada de esta noche.',
+      itemListElement: channels.slice(0, 150).map((channel, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: channel.name,
+        url: `${baseUrl}/programacion-tv/ver-canal/${slugify(channel.name)}`,
+      })),
     };
 
-    this.ldJson = JSON.stringify(ld, null, 2);
-    // sanitize for safe injection into template
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${this.ldJson}</script>`
+      `<script type="application/ld+json">${JSON.stringify(ld)}</script>`
     );
   }
 
-  private cleanup(): void {
-    if (this.programasSubscription) {
-      this.programasSubscription.unsubscribe();
+  private scrollToSection(id: string): void {
+    if (!this.isBrowser) {
+      return;
     }
-    if (this.canalesSubscription) {
-      this.canalesSubscription.unsubscribe();
-    }
-    if (this.intersectionObserver) {
-      this.intersectionObserver.disconnect();
-      this.intersectionObserver = undefined;
-    }
+    requestAnimationFrame(() => {
+      this.document.getElementById(id)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
   }
 
-  // ============== MÉTODOS PÚBLICOS ==============
-  public canalesPorCategoria(categoria: string): any[] {
-    return this.canales.filter((canal: any) => canal.tipo === categoria);
-  }
+  private ensureGuideEnrichment(tab: GuideTabKey): void {
+    const programs = this.getProgramsByTab(tab)
+      .filter((program) => !!program.catalogId && !this.enrichedCatalogIds.has(program.catalogId))
+      .slice(0, 12);
 
-  // onNextClick(): void {
-  //   this.nextClicked.emit();
-  // }
-
-  // onPrevClick(): void {
-  //   this.prevClicked.emit();
-  // }
-
-  // Parent controls to navigate a specific slider by its key
-  public prevFor(key: string): void {
-    const found = this.sliderComponents.find((s) => (s as any).key === key);
-    if (found) {
-      found.prev();
+    if (!programs.length) {
+      return;
     }
-  }
 
-  public nextFor(key: string): void {
-    const found = this.sliderComponents.find((s) => (s as any).key === key);
-    if (found) {
-      found.next();
-    }
-  }
+    programs.forEach((program) => this.enrichedCatalogIds.add(program.catalogId));
 
-  // ============== GETTERS PARA FACILITAR EL ACCESO A DATOS ==============
-  get hasCanalesTdt(): boolean {
-    return this.canales_tdt.length > 0;
-  }
+    this.subscriptions.add(
+      forkJoin(
+        programs.map((program) => this.catalogService.getDetail(program.catalogId))
+      ).subscribe((details) => {
+        const byCatalogId = new Map<string, CatalogItem>();
+        details.forEach((detail) => {
+          if (detail?.catalogId) {
+            byCatalogId.set(detail.catalogId, detail);
+          }
+        });
 
-  get hasCanalesTotales(): boolean {
-    return (
-      this.canales_auto.length > 0 ||
-      this.canales_tdt.length > 0 ||
-      this.canales_m.length > 0 ||
-      this.canales_dep.length > 0 ||
-      this.canales_cable.length > 0
+        this.nowPrograms = this.mergeProgramDetails(this.nowPrograms, byCatalogId);
+        this.nextPrograms = this.mergeProgramDetails(this.nextPrograms, byCatalogId);
+        this.tonightPrograms = this.mergeProgramDetails(this.tonightPrograms, byCatalogId);
+      })
     );
   }
 
-  get totalCanales(): number {
-    return (
-      this.canales_auto.length +
-      this.canales_tdt.length +
-      this.canales_m.length +
-      this.canales_dep.length +
-      this.canales_cable.length
-    );
-  }
-
-  /**
-   * Navigate to channel detail page
-   */
-  public navigateToChannel(channel: any): void {
-    if (!channel) return;
-    
-    const channelName = channel?.name || channel?.nombre || channel?.title || channel?.id || '';
-    const slug = slugify(channelName);
-    
-    if (slug) {
-      this.router.navigate(['programacion-tv/ver-canal', slug]);
+  private getProgramsByTab(tab: GuideTabKey): GuideProgram[] {
+    if (tab === 'next') {
+      return this.visibleNextPrograms;
     }
+    if (tab === 'night') {
+      return this.visibleTonightPrograms;
+    }
+    if (tab === 'channels') {
+      return [];
+    }
+    return this.visibleNowPrograms;
   }
 
-  /**
-   * TrackBy function for channel lists to optimize rendering
-   */
-  public trackByChannel(index: number, channel: any): string {
-    return channel?.id || channel?.name || `channel-${index}`;
+  private mergeProgramDetails(
+    programs: GuideProgram[],
+    details: Map<string, CatalogItem>
+  ): GuideProgram[] {
+    return programs.map((program) => {
+      const detail = details.get(program.catalogId);
+      if (!detail) {
+        return program;
+      }
+
+      return {
+        ...program,
+        primaryPlatforms: detail.primaryPlatforms?.slice(0, 2) || [],
+        providersResolvedAt: new Date().toISOString(),
+        image: program.image || detail.backdrop || detail.image,
+      };
+    });
+  }
+
+  private filterPrograms(programs: GuideProgram[]): GuideProgram[] {
+    return programs.filter((program) => {
+      const matchesGroup =
+        this.selectedChannelGroup === 'all' || program.groupKey === this.selectedChannelGroup;
+      const matchesCategory =
+        this.selectedCategory === 'all' || program.normalizedCategory === this.selectedCategory;
+      return matchesGroup && matchesCategory;
+    });
+  }
+
+  private resolveChannelGroup(
+    channel: Pick<ChannelMetaDTO, 'type' | 'name'>
+  ): Exclude<ChannelGroupKey, 'all'> {
+    const type = String(channel.type || '').trim().toUpperCase();
+    const name = String(channel.name || '').trim().toUpperCase();
+
+    if (type === 'TDT') return 'tdt';
+    if (type === 'AUTONOMICO') return 'autonomico';
+    if (type === 'MOVISTAR') return 'movistar';
+    if (type === 'DEPORTES' || type === 'SPORTS') return 'deporte';
+    if (type === 'CABLE' || type === 'ONLINE' || type === 'OTT') return 'online';
+    if (name.includes('DAZN') || name.includes('EUROSPORT')) return 'deporte';
+    return 'online';
+  }
+
+  private normalizeGuideCategory(category?: string, title?: string): string {
+    const source = `${category || ''} ${title || ''}`.toLowerCase();
+
+    if (/(cine|pel[ií]cula|film|movie)/.test(source)) return 'Cine';
+    if (/(serie|series|ficci[oó]n|telenovela|cap[ií]tulo)/.test(source)) return 'Series';
+    if (/(deport|f[úu]tbol|baloncesto|tenis|formula|motogp|liga|champions)/.test(source)) return 'Deportes';
+    if (/(noticia|informativo|actualidad|debate|pol[ií]tica)/.test(source)) return 'Noticias';
+    if (/(infantil|dibujos|kids|juvenil|familia)/.test(source)) return 'Infantil';
+    if (/(documental|docu)/.test(source)) return 'Documental';
+    if (/(reality|entretenimiento|concurso|show|magazine)/.test(source)) return 'Entretenimiento';
+
+    return category?.trim() || 'Otros';
+  }
+
+  private buildEditorialScore(category: string, sortIndex: number): number {
+    const priority = this.categoryPriority(category);
+    return 1000 - priority * 100 - sortIndex;
+  }
+
+  private categoryPriority(category: string): number {
+    return EDITORIAL_CATEGORY_PRIORITY[category] ?? EDITORIAL_CATEGORY_PRIORITY['Otros'];
+  }
+
+  private sectionIdForTab(tab: GuideTabKey): string {
+    if (tab === 'next') return 'guide-next';
+    if (tab === 'night') return 'guide-tonight';
+    if (tab === 'channels') return 'guide-directory';
+    return 'guide-now';
   }
 }

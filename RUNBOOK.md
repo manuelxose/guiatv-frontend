@@ -24,6 +24,18 @@ Con bootstrap DB (solo cuando haga falta):
 sudo BOOTSTRAP_DB=1 /var/www/guiatv/deploy-guiatv.sh
 ```
 
+Smoke autenticado opcional tras deploy:
+```bash
+sudo SMOKE_AUTH_TOKEN='<jwt>' /var/www/guiatv/deploy-guiatv.sh
+```
+
+Validación mínima esperada tras deploy:
+- `GET /v2/catalog/platforms` -> `200`
+- `GET /v2/catalog?limit=1` -> `200`
+- `GET /v2/discovery/for-you` -> `200` con JWT
+- `GET /v2/user/interactions` -> `200` con JWT
+- Socket.IO autenticado en `wss://guiaprogramaciontv.com/v2/ws`
+
 ## SEO (sitemap + Search Console)
 Sitemap público dinámico:
 ```bash
@@ -51,6 +63,7 @@ systemctl status mongod valkey-server guiatv-api guiatv-ssr --no-pager
 journalctl -u guiatv-api -u guiatv-ssr --no-pager -n 200
 curl -s http://127.0.0.1:4000/v2/health
 curl -s http://127.0.0.1:3000/ | head -n 5
+curl -s https://guiaprogramaciontv.com/v2/catalog/platforms | jq '.success'
 ```
 
 ## Rebuild ventana canónica (ayer/hoy/mañana/pasado)

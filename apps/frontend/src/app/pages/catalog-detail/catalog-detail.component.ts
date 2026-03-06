@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subject, switchMap, takeUntil } from 'rxjs';
-import { NavBarComponent } from '../../components/nav-bar/nav-bar.component';
 import { CatalogCardComponent } from '../../components/catalog-card/catalog-card.component';
 import { InteractionButtonsComponent } from '../../components/interaction-buttons/interaction-buttons.component';
 import { WhereToWatchComponent } from '../../components/where-to-watch/where-to-watch.component';
@@ -14,15 +13,12 @@ import { CatalogItem, CatalogService } from '../../services/catalog.service';
   imports: [
     CommonModule,
     RouterModule,
-    NavBarComponent,
     CatalogCardComponent,
     InteractionButtonsComponent,
     WhereToWatchComponent,
   ],
   template: `
     <div class="min-h-screen bg-[#081018] text-slate-100">
-      <app-nav-bar></app-nav-bar>
-
       <div *ngIf="loading" class="flex min-h-[60vh] items-center justify-center">
         <div class="h-12 w-12 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
       </div>
@@ -87,13 +83,15 @@ import { CatalogItem, CatalogService } from '../../services/catalog.service';
 
                 <div class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/75 p-4">
                   <app-interaction-buttons
-                    [itemId]="content.catalogId"
-                    [title]="content.title"
-                    [type]="content.contentType"
-                    [tmdbId]="content.tmdbId"
-                    [genres]="content.genres"
-                  ></app-interaction-buttons>
-                </div>
+                  [itemId]="content.catalogId"
+                  [title]="content.title"
+                  [type]="content.contentType"
+                  [tmdbId]="content.tmdbId"
+                  [genres]="content.genres"
+                  [image]="content.image || content.backdrop"
+                  [platform]="content.primaryPlatforms?.[0]"
+                ></app-interaction-buttons>
+              </div>
               </div>
 
               <aside class="space-y-6">

@@ -4,7 +4,6 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpService } from 'src/app/services/http.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { MetaService } from 'src/app/services/meta.service';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { Subscription } from 'rxjs';
 import { diffHour, durationToISO8601, minutesToISO8601 } from '../../utils/utils';
 import { InteractionButtonsComponent } from 'src/app/components/interaction-buttons/interaction-buttons.component';
@@ -15,7 +14,7 @@ import { WhereToWatchComponent } from 'src/app/components/where-to-watch/where-t
   templateUrl: './pelicula-details.compoent.html',
   styleUrls: ['./pelicula-details.compoent.scss'],
   standalone: true,
-  imports: [CommonModule, NavBarComponent, RouterModule, InteractionButtonsComponent, WhereToWatchComponent],
+  imports: [CommonModule, RouterModule, InteractionButtonsComponent, WhereToWatchComponent],
 })
 export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);

@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil, first } from 'rxjs';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
 import { BlogService } from 'src/app/services/blog.service';
 import { slugify } from 'src/app/utils/utils';
 
@@ -11,7 +10,7 @@ import { slugify } from 'src/app/utils/utils';
   templateUrl: './blog-details.component.html',
   styleUrls: ['./blog-details.component.scss'],
   standalone: true,
-  imports: [CommonModule, NavBarComponent],
+  imports: [CommonModule],
 })
 export class BlogDetailsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();

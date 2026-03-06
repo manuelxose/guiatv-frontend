@@ -86,7 +86,26 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   // Health check (sin rate limit)
   router.use('/health', createHealthRoutes());
 
-  // Aplicar rate limiting general
+  // Rutas de catálogo y detalle con límites específicos para evitar que la
+  // navegación normal agote el rate limit general demasiado pronto.
+  router.use(
+    '/discovery',
+    createDiscoveryRoutes(dependencies.discoveryController, dependencies.authService)
+  );
+  router.use(
+    '/content',
+    createContentRoutes(dependencies.contentController, dependencies.authService)
+  );
+  router.use(
+    '/catalog',
+    createCatalogRoutes(dependencies.catalogController, dependencies.authService)
+  );
+  router.use(
+    '/user/interactions',
+    createInteractionRoutes(dependencies.interactionController, dependencies.authService)
+  );
+
+  // Aplicar rate limiting general al resto de recursos.
   router.use(generalRateLimit);
 
   // Rutas de recursos
@@ -104,21 +123,8 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   );
   router.use('/layouts', createLayoutRoutes(dependencies.layoutController));
   router.use(
-    '/discovery',
-    createDiscoveryRoutes(dependencies.discoveryController, dependencies.authService)
-  );
-  router.use(
-    '/content',
-    createContentRoutes(dependencies.contentController, dependencies.authService)
-  );
-  router.use(
-    '/catalog',
-    createCatalogRoutes(dependencies.catalogController, dependencies.authService)
-  );
-  router.use('/tv', createTvRoutes(dependencies.tvController));
-  router.use(
-    '/user/interactions',
-    createInteractionRoutes(dependencies.interactionController, dependencies.authService)
+    '/tv',
+    createTvRoutes(dependencies.tvController)
   );
   router.use('/user', createUserRoutes(dependencies.userController, dependencies.authService));
   router.use('/social', createSocialRoutes(dependencies.socialController, dependencies.authService));

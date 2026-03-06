@@ -3,6 +3,7 @@ import { InteractionController } from '../controllers/InteractionController';
 import { AuthService } from '@/domain/services/AuthService';
 import { createAuthGuard } from '../middlewares/authGuard';
 import { asyncHandler } from '@/shared/utils/asyncHandler';
+import { interactionRateLimit } from '../middlewares/rateLimit';
 
 export const createInteractionRoutes = (
   controller: InteractionController,
@@ -11,6 +12,7 @@ export const createInteractionRoutes = (
   const router = Router();
   const authGuard = createAuthGuard(authService);
 
+  router.use(interactionRateLimit);
   router.use(authGuard);
   router.post('/', asyncHandler(controller.upsert.bind(controller)));
   router.get('/', asyncHandler(controller.getAll.bind(controller)));

@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { ChatConversation, ChatMessage, UserFriend } from '../../../../interfaces/user.interface';
 import {
   ChatConversationCreateResult,
+  ChatRealtimeMode,
   ChatService,
 } from '../../../../services/chat.service';
 import { UserService } from '../../../../services/user.service';
@@ -25,13 +26,24 @@ import { AuthActionService } from '../../../../services/auth-action.service';
       >
         <div class="p-4 border-b border-slate-800/80">
           <div class="flex items-center justify-between gap-3">
-            <h2 class="text-base font-semibold text-white">Mensajes</h2>
+            <h2 class="text-base font-semibold text-white">Comunidad en tiempo real</h2>
             <span
               class="text-[11px] px-2 py-1 rounded-full border border-red-500/40 text-red-200"
               aria-live="polite"
             >
               {{ connectedUsersCount }} conectados
             </span>
+          </div>
+
+          <div
+            *ngIf="realtimeMode !== 'connected'"
+            class="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-100"
+          >
+            {{
+              realtimeMode === 'connecting'
+                ? 'Reconectando el tiempo real...'
+                : 'Tiempo real no disponible. El chat sigue actualizándose con refresh periódico.'
+            }}
           </div>
 
           <button
@@ -366,6 +378,7 @@ export class UserChatComponent implements OnInit, OnDestroy {
   isMobileView = false;
   mobilePanel: 'list' | 'chat' = 'list';
   chatActionError = '';
+  realtimeMode: ChatRealtimeMode = 'idle';
 
   private sub = new Subscription();
   private messagesSub?: Subscription;
@@ -417,6 +430,12 @@ export class UserChatComponent implements OnInit, OnDestroy {
     this.sub.add(
       this.chatService.getConnectedUsersCount().subscribe((count) => {
         this.connectedUsersCount = count;
+      })
+    );
+
+    this.sub.add(
+      this.chatService.getRealtimeMode().subscribe((mode) => {
+        this.realtimeMode = mode;
       })
     );
 

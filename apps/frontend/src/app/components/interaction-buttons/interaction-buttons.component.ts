@@ -2,6 +2,9 @@ import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user.service';
 import { Subscription } from 'rxjs';
+import { ChatService } from '../../services/chat.service';
+import { Router } from '@angular/router';
+import { ChatConversation } from '../../interfaces/user.interface';
 
 @Component({
   selector: 'app-interaction-buttons',
@@ -64,6 +67,30 @@ import { Subscription } from 'rxjs';
         <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white">Recomendar</span>
       </button>
 
+      <button
+        (click)="markAsWatching()"
+        class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
+        [ngClass]="{
+          '!bg-emerald-600/20 !border-emerald-500/50': isWatching,
+          'px-2 py-2': compact
+        }"
+        title="Marcar como viendo"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 text-gray-300 transition-colors"
+          [ngClass]="{'!text-emerald-300': isWatching, 'h-4 w-4': compact}"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.55-2.27A1 1 0 0121 8.62v6.76a1 1 0 01-1.45.89L15 14m-9 4h8a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+        <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white" [ngClass]="{'!text-emerald-200': isWatching}">
+          {{ isWatching ? 'Viendo' : 'Estoy viendo' }}
+        </span>
+      </button>
+
       <!-- Rate Button -->
       <button
         (click)="showRatingPanel = !showRatingPanel"
@@ -89,6 +116,25 @@ import { Subscription } from 'rxjs';
         <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white">
           {{ currentRating ? currentRating + '/10' : 'Valorar' }}
         </span>
+      </button>
+
+      <button
+        (click)="shareToChat()"
+        class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
+        [ngClass]="{'px-2 py-2': compact}"
+        title="Compartir por chat"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 text-gray-300 group-hover:text-white transition-colors"
+          [ngClass]="{'h-4 w-4': compact}"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h8M8 14h5m8-2a9 9 0 11-18 0a9 9 0 0118 0z" />
+        </svg>
+        <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white">Compartir chat</span>
       </button>
 
       <div
@@ -171,22 +217,36 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy, OnChanges
   @Input() compact: boolean = false;
   @Input() tmdbId?: number;
   @Input() genres: string[] = [];
+  @Input() image?: string;
+  @Input() platform?: string;
 
   public isInWatchlist = false;
+  public isWatching = false;
   public showModal = false;
   public showRatingPanel = false;
   public currentRating = 0;
   public hoveredRating = 0;
   public readonly ratings = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   private sub = new Subscription();
+  private generalConversationId: string | null = null;
 
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private chatService: ChatService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.sub.add(
       this.userService.getWatchlist().subscribe((items) => {
         if (!this.itemId) return;
         this.isInWatchlist = items.some((item) => item.contentId === this.itemId);
+      })
+    );
+
+    this.sub.add(
+      this.chatService.getConversations().subscribe((conversations) => {
+        this.generalConversationId = this.findGeneralConversationId(conversations);
       })
     );
 
@@ -268,6 +328,7 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy, OnChanges
       .subscribe((saved) => {
         if (!saved) return;
         this.currentRating = stars;
+        this.isWatching = false;
         this.showRatingPanel = false;
       });
   }
@@ -283,7 +344,74 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy, OnChanges
         status: 'seen',
       })
       .subscribe(() => {
+        this.isWatching = false;
         this.showRatingPanel = false;
+      });
+  }
+
+  markAsWatching() {
+    this.userService
+      .addContentInteraction({
+        contentId: this.itemId,
+        contentTitle: this.title,
+        contentType: this.type,
+        tmdbId: this.tmdbId,
+        genres: this.genres,
+        status: 'watching',
+        platform: this.platform,
+      })
+      .subscribe((saved) => {
+        if (!saved) return;
+        this.userService
+          .updateWatchingNow({
+            title: this.title,
+            mood: 'Viéndolo ahora',
+            visibility: 'friends',
+          })
+          .subscribe();
+        this.isWatching = true;
+      });
+  }
+
+  shareToChat() {
+    if (!this.userService.isAuthenticatedSync()) {
+      void this.router.navigate(['/iniciar-sesion']);
+      return;
+    }
+
+    if (!this.generalConversationId) {
+      void this.router.navigate(['/comunidad'], {
+        queryParams: { tab: 'chat', share: this.itemId || this.title },
+      });
+      return;
+    }
+
+    this.chatService
+      .sendMessage(
+        this.generalConversationId,
+        `Estoy viendo ${this.title}`,
+        'recommendation',
+        {
+          id: this.itemId,
+          title: this.title,
+          image: this.image,
+          platform: this.platform || '',
+          type: this.type,
+        }
+      )
+      .subscribe(() => {
+        this.userService
+          .addContentInteraction({
+            contentId: this.itemId,
+            contentTitle: this.title,
+            contentType: this.type,
+            tmdbId: this.tmdbId,
+            genres: this.genres,
+            status: 'watching',
+            recommended: true,
+            platform: this.platform,
+          })
+          .subscribe();
       });
   }
 
@@ -292,7 +420,19 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy, OnChanges
     this.sub.add(
       this.userService.getContentInteraction(this.itemId).subscribe((interaction) => {
         this.currentRating = Number(interaction?.rating || 0);
+        this.isWatching = interaction?.status === 'watching';
       })
     );
+  }
+
+  private findGeneralConversationId(conversations: ChatConversation[]): string | null {
+    const general = (conversations || []).find((conversation) => {
+      if (conversation.groupName?.toLowerCase() === 'chat general') {
+        return true;
+      }
+      return conversation.participants?.[0]?.id === 'general';
+    });
+
+    return general?.id || null;
   }
 }
