@@ -303,6 +303,7 @@ export class Container {
     const { SearchDiscoveryContent } = await import('../application/use-cases/SearchDiscoveryContent');
     const { GetContentDetail } = await import('../application/use-cases/GetContentDetail');
     const { GetContentBatch } = await import('../application/use-cases/GetContentBatch');
+    const { CatalogService } = await import('../application/services/CatalogService');
     const { GetPersonalizedRecommendations } = await import(
       '../application/use-cases/GetPersonalizedRecommendations'
     );
@@ -389,10 +390,21 @@ export class Container {
     );
     this.dependencies.set('getContentBatch', getContentBatch);
 
+    const catalogService = new CatalogService(
+      programRepository,
+      channelRepository,
+      cacheRepository,
+      tmdbService,
+      streamingProvidersService,
+      interactionRepository
+    );
+    this.dependencies.set('catalogService', catalogService);
+
     const getPersonalizedRecommendations = new GetPersonalizedRecommendations(
       getPrograms,
       interactionRepository,
-      streamingProvidersService
+      streamingProvidersService,
+      catalogService
     );
     this.dependencies.set(
       'getPersonalizedRecommendations',
@@ -404,7 +416,7 @@ export class Container {
         this.get('aiRecommendationService'),
         interactionRepository,
         userRepository,
-        getPrograms
+        catalogService
       );
       this.dependencies.set('chatbotRecommend', chatbotRecommend);
     }
@@ -428,6 +440,7 @@ export class Container {
     const { AuthController } = await import('../presentation/controllers/AuthController');
     const { DiscoveryController } = await import('../presentation/controllers/DiscoveryController');
     const { ContentController } = await import('../presentation/controllers/ContentController');
+    const { CatalogController } = await import('../presentation/controllers/CatalogController');
     const { TvController } = await import('../presentation/controllers/TvController');
     const { BlogController } = await import('../presentation/controllers/BlogController');
     const { AnalyticsController } = await import('../presentation/controllers/AnalyticsController');
@@ -483,6 +496,9 @@ export class Container {
       this.get('streamingProvidersService')
     );
     this.dependencies.set('contentController', contentController);
+
+    const catalogController = new CatalogController(this.get('catalogService'));
+    this.dependencies.set('catalogController', catalogController);
 
     const tvController = new TvController(this.get('getNowPlaying'), getPrograms);
     this.dependencies.set('tvController', tvController);

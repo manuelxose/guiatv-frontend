@@ -54,7 +54,16 @@ export class UserController {
   async updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = this.getUserId(req);
-      const { name, username, bio, location, avatar, favoriteGenres, preferredPlatforms } = req.body || {};
+      const {
+        name,
+        username,
+        bio,
+        location,
+        avatar,
+        favoriteGenres,
+        preferredPlatforms,
+        discoveryDefaults,
+      } = req.body || {};
 
       const updates: Record<string, any> = {};
       if (name !== undefined) updates.name = String(name).trim();
@@ -67,6 +76,9 @@ export class UserController {
       }
       if (preferredPlatforms !== undefined) {
         updates.preferredPlatforms = this.sanitizeStringArray(preferredPlatforms);
+      }
+      if (discoveryDefaults !== undefined) {
+        updates.discoveryDefaults = this.sanitizeDiscoveryDefaults(discoveryDefaults);
       }
 
       if (!Object.keys(updates).length) {
@@ -96,6 +108,9 @@ export class UserController {
       }
       if (updates.preferredPlatforms) {
         profile.preferredPlatforms = updates.preferredPlatforms;
+      }
+      if (updates.discoveryDefaults) {
+        profile.discoveryDefaults = updates.discoveryDefaults;
       }
       await profile.save();
 
@@ -616,6 +631,12 @@ export class UserController {
       },
       favoriteGenres: [],
       preferredPlatforms: [],
+      discoveryDefaults: {
+        types: [],
+        availability: [],
+        platforms: [],
+        sort: 'popular',
+      },
     });
     return created;
   }
@@ -674,6 +695,12 @@ export class UserController {
       location: profile.location || '-',
       favoriteGenres: profile.favoriteGenres || [],
       preferredPlatforms: profile.preferredPlatforms || [],
+      discoveryDefaults: profile.discoveryDefaults || {
+        types: [],
+        availability: [],
+        platforms: [],
+        sort: 'popular',
+      },
       watchingNow: profile.watchingNow || { title: '', mood: '', visibility: 'friends' },
       privacy: profile.privacy || DEFAULT_PRIVACY,
       notifications: profile.notifications || DEFAULT_NOTIFICATIONS,
@@ -690,6 +717,19 @@ export class UserController {
       .map((item) => String(item || '').trim())
       .filter(Boolean)
       .slice(0, 20);
+  }
+
+  private sanitizeDiscoveryDefaults(value: any) {
+    const payload = value && typeof value === 'object' ? value : {};
+    const allowedSort = ['personalized', 'popular', 'rating', 'airtime', 'recent'];
+    return {
+      types: this.sanitizeStringArray(payload.types).slice(0, 4),
+      availability: this.sanitizeStringArray(payload.availability).slice(0, 6),
+      platforms: this.sanitizeStringArray(payload.platforms).slice(0, 12),
+      sort: allowedSort.includes(String(payload.sort || '').trim().toLowerCase())
+        ? String(payload.sort).trim().toLowerCase()
+        : 'popular',
+    };
   }
 
   private mapList(list: any) {

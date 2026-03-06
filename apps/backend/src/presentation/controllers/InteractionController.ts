@@ -3,6 +3,7 @@ import { successResponse } from '@/shared/types/ApiResponse';
 import { AuthenticatedRequest } from '../middlewares/authGuard';
 import { IUserContentInteractionRepository } from '@/domain/repositories/IUserContentInteractionRepository';
 import { NotFoundError, ValidationError } from '@/shared/errors';
+import { normalizeInteractionContentId } from '@/application/services/CatalogIdentity';
 
 export class InteractionController {
   constructor(
@@ -20,14 +21,23 @@ export class InteractionController {
       );
     }
 
+    const normalizedContentId = normalizeInteractionContentId({
+      contentId: body.contentId,
+      contentType: body.contentType,
+      tmdbId:
+        body.tmdbId !== undefined && body.tmdbId !== null
+          ? Number(body.tmdbId)
+          : undefined,
+    });
+
     const existing = await this.interactionRepository.findByUserAndContent(
       userId,
-      String(body.contentId)
+      normalizedContentId
     );
 
     const interaction = await this.interactionRepository.upsert({
       userId,
-      contentId: String(body.contentId),
+      contentId: normalizedContentId,
       contentTitle: String(body.contentTitle),
       contentType: body.contentType,
       tmdbId:
@@ -74,9 +84,12 @@ export class InteractionController {
 
   async getOne(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = this.requireUserId(req);
+    const normalizedContentId = normalizeInteractionContentId({
+      contentId: String(req.params.contentId),
+    });
     const interaction = await this.interactionRepository.findByUserAndContent(
       userId,
-      String(req.params.contentId)
+      normalizedContentId
     );
 
     res.status(200).json(successResponse({ interaction }));
@@ -84,13 +97,16 @@ export class InteractionController {
 
   async remove(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = this.requireUserId(req);
+    const normalizedContentId = normalizeInteractionContentId({
+      contentId: String(req.params.contentId),
+    });
     const deleted = await this.interactionRepository.delete(
       userId,
-      String(req.params.contentId)
+      normalizedContentId
     );
 
     if (!deleted) {
-      throw new NotFoundError('Interaction', String(req.params.contentId));
+      throw new NotFoundError('Interaction', normalizedContentId);
     }
 
     res.status(200).json(successResponse({ deleted: true }));

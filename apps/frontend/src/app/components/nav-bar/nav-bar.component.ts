@@ -1,72 +1,61 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, filter, takeUntil } from 'rxjs';
 import { MenuStateService } from '../../services/menu-state.service';
 import { UserService } from '../../services/user.service';
-import { MenuComponent } from '../menu/menu.component';
 import { AutocompleteComponent } from '../autocomplete/autocomplete.component';
-import { TvGuideService } from '../../services/tv-guide.service';
-
+import { APP_PATHS, AppRouteEntry } from '../../config/route-map';
 
 @Component({
   selector: 'app-nav-bar',
   templateUrl: './nav-bar.component.html',
   styleUrls: ['./nav-bar.component.scss'],
   standalone: true,
-  imports: [CommonModule, MenuComponent, RouterModule, AutocompleteComponent],
+  imports: [CommonModule, RouterModule, AutocompleteComponent],
 })
 export class NavBarComponent implements OnDestroy {
-  public isHome = false;
-  public isGuiaCanales = false;
-  public isSeries = false;
-  public isPeliculas = false;
-  public isBlog = false;
-  public isDirecto = false;
-  public isCuenta = false;
-  public isLogin = false;
-  public isAuthenticated$ = this.userService.isAuthenticated$;
+  public readonly appPaths = APP_PATHS;
+  public readonly isAuthenticated$ = this.userService.isAuthenticated$;
+  public readonly headerRoutes = this.menuState.getHeaderRoutes().filter(Boolean);
+  public activeKey = this.menuState.getCurrentActive();
 
-  private unsuscribe$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    public router: Router,
-    public menuState: MenuStateService,
-    private userService: UserService,
-    private tvGuideService: TvGuideService
+    public readonly router: Router,
+    public readonly menuState: MenuStateService,
+    private readonly userService: UserService
   ) {
     this.menuState
       .getActive()
-      .pipe(takeUntil(this.unsuscribe$))
+      .pipe(takeUntil(this.destroy$))
       .subscribe((key) => {
-        this.isHome = key === 'home';
-        this.isGuiaCanales = key === 'guia-canales';
-        this.isSeries = key === 'series';
-        this.isPeliculas = key === 'peliculas';
-        this.isBlog = key === 'blog';
-        this.isDirecto = key === 'en-directo';
-        this.isCuenta = key === 'mi-cuenta';
-        this.isLogin = key === 'iniciar-sesion';
+        this.activeKey = key;
+      });
+
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event) => {
+        const url = (event as NavigationEnd).urlAfterRedirects || (event as NavigationEnd).url;
+        this.menuState.setActive(this.menuState.resolveActiveKeyFromUrl(url));
       });
   }
 
-  navigateTo(path: string, key: string): void {
-    // Set the active state
-    this.menuState.setActive(key);
-    
-    // Set TV guide mode
-    if (key === 'peliculas') {
-      this.tvGuideService.setIsMovies();
-    } else if (key === 'series') {
-      this.tvGuideService.setIsSeries();
-    }
-    
-    // Navigate
-    this.router.navigateByUrl(path);
+  navigateTo(route: AppRouteEntry): void {
+    this.menuState.setActive(route.key);
+    this.router.navigateByUrl(route.path);
+  }
+
+  isActive(route: AppRouteEntry): boolean {
+    return this.activeKey === route.key;
   }
 
   ngOnDestroy(): void {
-    this.unsuscribe$.next();
-    this.unsuscribe$.complete();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

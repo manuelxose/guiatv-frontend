@@ -121,7 +121,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public toggleChatbot(): void {
-    if (!this.shouldShowChatbotFab()) {
+    if (!this.canRenderChatbot()) {
       return;
     }
     this.isChatbotOpen = !this.isChatbotOpen;
@@ -189,7 +189,7 @@ export class AppComponent implements OnInit, OnDestroy {
       path.startsWith(APP_PATHS.account) ||
       path.startsWith(APP_PATHS.community);
     this.mobileTitle = this.resolveMobileTitle(path);
-    if (!this.shouldShowChatbotFab()) {
+    if (!this.canRenderChatbot()) {
       this.closeChatbot();
     }
 
@@ -204,7 +204,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.showMobileTopBar = this.isMobileViewport && !hideShell;
     this.showMobileBottomNav = this.isMobileViewport && !hideShell && !isAuthRoute;
-    if (!this.shouldShowChatbotFab()) {
+    if (!this.canRenderChatbot()) {
       this.closeChatbot();
     }
     this.setCSSVariables();
@@ -252,13 +252,38 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public shouldShowChatbotFab(): boolean {
+    return this.shouldShowMobileChatbotFab();
+  }
+
+  public shouldShowMobileChatbotFab(): boolean {
     const path = normalizePath(this.currentPath);
     return (
-      this.aiChatbotEnabled &&
+      this.canRenderChatbot() &&
       this.isMobileViewport &&
       this.showMobileBottomNav &&
       !path.startsWith(APP_PATHS.community) &&
       !path.startsWith('/admin')
+    );
+  }
+
+  public shouldShowDesktopChatbotLauncher(): boolean {
+    return this.canRenderChatbot() && !this.isMobileViewport;
+  }
+
+  private canRenderChatbot(): boolean {
+    const path = normalizePath(this.currentPath);
+    return (
+      this.aiChatbotEnabled &&
+      !path.startsWith('/admin') &&
+      !path.startsWith(APP_PATHS.login) &&
+      !path.startsWith(APP_PATHS.register) &&
+      !path.startsWith('/avisolegal') &&
+      !path.startsWith('/privacidad') &&
+      !path.startsWith('/cookies') &&
+      !path.startsWith('/terminos') &&
+      !path.startsWith('/accesibilidad') &&
+      !path.startsWith('/sitemap') &&
+      !path.startsWith(APP_PATHS.community)
     );
   }
 

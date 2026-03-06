@@ -5,7 +5,7 @@ import {
 } from '@/infrastructure/external/AIRecommendationService';
 import { IUserContentInteractionRepository } from '@/domain/repositories/IUserContentInteractionRepository';
 import { MongoUserRepository } from '@/infrastructure/repositories/MongoUserRepository';
-import { GetPrograms } from './GetPrograms';
+import { CatalogService } from '../services/CatalogService';
 import { UserProfileModel } from '@/infrastructure/database/models/UserProfile.model';
 
 export interface ChatbotRecommendRequest {
@@ -18,13 +18,13 @@ export class ChatbotRecommend {
     private readonly aiService: AIRecommendationService,
     private readonly interactionRepository: IUserContentInteractionRepository,
     private readonly userRepository: MongoUserRepository,
-    private readonly getPrograms: GetPrograms
+    private readonly catalogService: CatalogService
   ) {}
 
   async execute(
     request: ChatbotRecommendRequest
   ): Promise<ChatbotResponse> {
-    const [user, profile, genreProfile, recentInteractions, tonightPrograms] =
+    const [user, profile, genreProfile, recentInteractions, tonightCatalog] =
       await Promise.all([
         this.userRepository.findById(request.userId),
         UserProfileModel.findOne({ userId: request.userId }).lean().exec(),
@@ -33,18 +33,16 @@ export class ChatbotRecommend {
           status: 'seen',
           limit: 20,
         }),
-        this.getPrograms.execute({
-          date: 'today',
-          fields: 'full',
-          limit: 120,
+        this.catalogService.query({
+          userId: request.userId,
+          availability: ['live'],
+          sort: 'airtime',
+          limit: 20,
+          page: 1,
         }),
       ]);
 
-    const channelMap = new Map(
-      tonightPrograms.channels.map((channel) => [channel.id, channel])
-    );
-
-    return this.aiService.chat(request.messages, {
+    const baseResponse = await this.aiService.chat(request.messages, {
       userId: request.userId,
       userProfile: {
         name: user?.name || profile?.username || 'usuario',
@@ -67,23 +65,62 @@ export class ChatbotRecommend {
             : profile?.preferredPlatforms || [],
         avgRating: genreProfile.avgRating,
       },
-      availableTonight: tonightPrograms.programs
-        .filter((program) => program.image)
-        .filter((program) => {
-          const hour = new Date(program.start).getHours();
-          return hour >= 20 && hour <= 23;
-        })
-        .slice(0, 20)
-        .map((program) => ({
-          title: String(program.title),
-          channel: channelMap.get(program.channelId)?.name || '',
-          time: new Date(program.start).toLocaleTimeString('es-ES', {
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
-          genre: program.category || '',
-          tmdbRating: program.rating ? Number(program.rating) : undefined,
+      availableTonight: tonightCatalog.items
+        .filter((item) => item.start && item.channel?.name)
+        .slice(0, 12)
+        .map((item) => ({
+          title: item.title,
+          channel: item.channel?.name || '',
+          time: item.start
+            ? new Date(item.start).toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+            : '',
+          genre: item.genres[0] || '',
+          tmdbRating: item.rating,
         })),
     });
+
+    if (!Array.isArray(baseResponse.recommendations) || !baseResponse.recommendations.length) {
+      return baseResponse;
+    }
+
+    const resolvedRecommendations = await Promise.all(
+      baseResponse.recommendations.map(async (recommendation) => {
+        const match = await this.catalogService.resolveRecommendation({
+          title: recommendation.title,
+          type: recommendation.type,
+          platform: recommendation.platform,
+          channel: recommendation.channel,
+        });
+
+        return {
+          ...recommendation,
+          catalogId: match?.catalogId,
+          source: match?.source,
+          tmdbId: match?.tmdbId || recommendation.tmdbId,
+          image: match?.image || recommendation.image,
+          platform:
+            recommendation.platform ||
+            match?.primaryPlatforms[0] ||
+            recommendation.channel,
+          channel: recommendation.channel || match?.channel?.name,
+          time:
+            recommendation.time ||
+            (match?.start
+              ? new Date(match.start).toLocaleTimeString('es-ES', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : undefined),
+        };
+      })
+    );
+
+    return {
+      ...baseResponse,
+      recommendations: resolvedRecommendations,
+    };
   }
 }

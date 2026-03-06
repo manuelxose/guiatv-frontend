@@ -1,149 +1,132 @@
 <section class="space-y-6">
   <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
-      <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Settings / System</p>
+      <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">System</p>
       <h3 class="text-2xl font-semibold text-white">System health</h3>
-      <p class="text-sm text-slate-400">Configuration, service status, and operational safety.</p>
+      <p class="text-sm text-slate-400">Real-time system metrics. Auto-refreshes every 30 seconds.</p>
     </div>
-    <div class="flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        class="px-4 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-      >
-        Edit config
-      </button>
-      <button
-        type="button"
-        class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-xs text-red-100 hover:bg-red-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-      >
-        View logs
-      </button>
-    </div>
+    <button type="button"
+      class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500"
+      (click)="loadHealth()">
+      Refresh
+    </button>
   </div>
 
+  <div *ngIf="error" class="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+    {{ error }}
+  </div>
+
+  <!-- Stats cards -->
   <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
     <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">Services healthy</p>
-      <p class="text-2xl font-semibold text-emerald-200 mt-2">4/5</p>
-      <p class="text-xs text-slate-500 mt-1">Last 15m</p>
+      <p class="text-xs text-slate-500 uppercase tracking-wider">Status</p>
+      <p class="text-2xl font-semibold mt-2"
+        [ngClass]="health?.status === 'healthy' ? 'text-emerald-200' : 'text-amber-200'">
+        {{ health?.status || '…' }}
+      </p>
+      <p class="text-xs text-slate-500 mt-1">API v{{ health?.version || '…' }}</p>
     </div>
     <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">Warnings</p>
-      <p class="text-2xl font-semibold text-amber-200 mt-2">1</p>
-      <p class="text-xs text-slate-500 mt-1">Needs review</p>
+      <p class="text-xs text-slate-500 uppercase tracking-wider">Uptime</p>
+      <p class="text-2xl font-semibold text-white mt-2">{{ health?.uptime || '…' }}</p>
+      <p class="text-xs text-slate-500 mt-1">Process running</p>
     </div>
     <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">Flags active</p>
-      <p class="text-2xl font-semibold text-white mt-2">2</p>
-      <p class="text-xs text-slate-500 mt-1">Across teams</p>
+      <p class="text-xs text-slate-500 uppercase tracking-wider">Cache</p>
+      <p class="text-2xl font-semibold mt-2"
+        [ngClass]="cacheStatus === 'healthy' ? 'text-emerald-200' : 'text-amber-200'">
+        {{ cacheStatus }}
+      </p>
+      <p class="text-xs text-slate-500 mt-1">Valkey/Redis</p>
     </div>
     <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">Incidents</p>
-      <p class="text-2xl font-semibold text-white mt-2">0</p>
-      <p class="text-xs text-slate-500 mt-1">Last 24h</p>
+      <p class="text-xs text-slate-500 uppercase tracking-wider">Memory RSS</p>
+      <p class="text-2xl font-semibold text-white mt-2">{{ health?.memory?.rss || '…' }}</p>
+      <p class="text-xs text-slate-500 mt-1">Total process</p>
     </div>
   </div>
 
-  <div class="grid xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-6">
-    <div class="space-y-6">
-      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h4 class="text-lg font-semibold text-white">Service status</h4>
-          <span class="text-xs text-slate-500">Updated 2m ago</span>
+  <!-- Detailed metrics -->
+  <div class="grid xl:grid-cols-2 gap-6" *ngIf="health">
+    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+      <h4 class="text-lg font-semibold text-white mb-4">Memory breakdown</h4>
+      <div class="space-y-4">
+        <div>
+          <div class="flex items-center justify-between text-sm mb-1">
+            <span class="text-slate-400">Heap Used</span>
+            <span class="text-white">{{ health.memory.heapUsed }}</span>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full bg-emerald-500/60 rounded-full" style="width: 60%"></div>
+          </div>
         </div>
-        <div class="overflow-auto">
-          <table class="w-full text-sm text-left">
-            <thead class="text-[11px] uppercase text-slate-500">
-              <tr>
-                <th class="px-2 py-2">Service</th>
-                <th class="px-2 py-2">Status</th>
-                <th class="px-2 py-2">Detail</th>
-                <th class="px-2 py-2">Updated</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-800/70">
-              <tr *ngFor="let service of services" class="hover:bg-slate-900/40">
-                <td class="px-2 py-3 text-white">{{ service.name }}</td>
-                <td class="px-2 py-3">
-                  <span class="text-[11px] px-2 py-1 rounded-full border" [ngClass]="statusClasses[service.status]">
-                    {{ service.status }}
-                  </span>
-                </td>
-                <td class="px-2 py-3 text-slate-400">{{ service.detail }}</td>
-                <td class="px-2 py-3 text-slate-400">{{ service.updated }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div>
+          <div class="flex items-center justify-between text-sm mb-1">
+            <span class="text-slate-400">Heap Total</span>
+            <span class="text-white">{{ health.memory.heapTotal }}</span>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full bg-blue-500/60 rounded-full" style="width: 80%"></div>
+          </div>
         </div>
-      </div>
-
-      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
-        <div class="flex items-center justify-between">
-          <h4 class="text-lg font-semibold text-white">Recent logs</h4>
-          <button type="button" class="text-xs text-slate-400 hover:text-white">Open stream</button>
-        </div>
-        <div class="mt-4 space-y-3 text-xs">
-          <div *ngFor="let log of logs" class="flex items-start gap-3">
-            <span class="text-slate-500">{{ log.time }}</span>
-            <span
-              class="text-[10px] uppercase tracking-[0.2em]"
-              [ngClass]="log.level === 'error' ? 'text-red-300' : log.level === 'warning' ? 'text-amber-300' : 'text-emerald-300'"
-            >
-              {{ log.level }}
-            </span>
-            <span class="text-slate-400">{{ log.message }}</span>
+        <div>
+          <div class="flex items-center justify-between text-sm mb-1">
+            <span class="text-slate-400">RSS</span>
+            <span class="text-white">{{ health.memory.rss }}</span>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full bg-amber-500/60 rounded-full" style="width: 90%"></div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="space-y-6">
-      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
-        <div class="flex items-center justify-between">
-          <h4 class="text-lg font-semibold text-white">Feature flags</h4>
-          <span class="text-xs text-slate-500">Safe rollout</span>
-        </div>
-        <div class="mt-4 space-y-3">
-          <div *ngFor="let flag of flags" class="flex items-center justify-between text-sm">
-            <div>
-              <p class="text-white">{{ flag.name }}</p>
-              <p class="text-xs text-slate-500">Owner: {{ flag.owner }}</p>
-            </div>
-            <button
-              type="button"
-              class="px-3 py-1.5 rounded-full border text-xs"
-              [ngClass]="flag.status === 'on' ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-slate-700/70 text-slate-300 bg-slate-800/40'"
-            >
-              {{ flag.status === 'on' ? 'Enabled' : 'Disabled' }}
-            </button>
-          </div>
-        </div>
+    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+      <h4 class="text-lg font-semibold text-white mb-4">Service details</h4>
+      <div class="overflow-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="text-[11px] uppercase text-slate-500">
+            <tr>
+              <th class="px-2 py-2">Service</th>
+              <th class="px-2 py-2">Status</th>
+              <th class="px-2 py-2">Info</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/70">
+            <tr class="hover:bg-slate-900/40">
+              <td class="px-2 py-3 text-white">API Server</td>
+              <td class="px-2 py-3">
+                <span class="text-[11px] px-2 py-1 rounded-full border border-emerald-500/40 text-emerald-200 bg-emerald-500/10">
+                  {{ health.status }}
+                </span>
+              </td>
+              <td class="px-2 py-3 text-slate-400">v{{ health.version }} &middot; up {{ health.uptime }}</td>
+            </tr>
+            <tr class="hover:bg-slate-900/40">
+              <td class="px-2 py-3 text-white">Cache (Valkey)</td>
+              <td class="px-2 py-3">
+                <span class="text-[11px] px-2 py-1 rounded-full border"
+                  [ngClass]="cacheStatus === 'healthy' ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-amber-500/40 text-amber-200 bg-amber-500/10'">
+                  {{ cacheStatus }}
+                </span>
+              </td>
+              <td class="px-2 py-3 text-slate-400">Read &amp; write verified</td>
+            </tr>
+            <tr class="hover:bg-slate-900/40">
+              <td class="px-2 py-3 text-white">MongoDB</td>
+              <td class="px-2 py-3">
+                <span class="text-[11px] px-2 py-1 rounded-full border border-emerald-500/40 text-emerald-200 bg-emerald-500/10">
+                  connected
+                </span>
+              </td>
+              <td class="px-2 py-3 text-slate-400">Primary database</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-
-      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
-        <h4 class="text-lg font-semibold text-white">Environments</h4>
-        <div class="mt-4 space-y-3 text-sm">
-          <div class="flex items-center justify-between">
-            <span class="text-slate-400">Production</span>
-            <span class="text-emerald-300">Stable</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-slate-400">Staging</span>
-            <span class="text-amber-300">Deploying</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-6">
-        <h4 class="text-lg font-semibold text-white">Danger zone</h4>
-        <p class="text-xs text-red-200 mt-2">Destructive actions require explicit confirmation.</p>
-        <button
-          type="button"
-          class="mt-4 w-full px-4 py-2 rounded-xl border border-red-500/50 text-sm text-red-100 hover:bg-red-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-        >
-          Disable ingestion
-        </button>
-      </div>
+      <p class="text-xs text-slate-500 mt-4">Last checked: {{ health.timestamp }}</p>
     </div>
   </div>
+
+  <p *ngIf="loading && !health" class="text-sm text-slate-500">Loading system data…</p>
 </section>

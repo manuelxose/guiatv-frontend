@@ -1,331 +1,203 @@
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, ParamMap, Params, Router, RouterModule } from '@angular/router';
+import { Subject, combineLatest, takeUntil } from 'rxjs';
+import { CatalogCardComponent } from '../../components/catalog-card/catalog-card.component';
+import { CatalogFiltersComponent } from '../../components/catalog-filters/catalog-filters.component';
+import { CatalogRailComponent } from '../../components/catalog-rail/catalog-rail.component';
+import { NavBarComponent } from '../../components/nav-bar/nav-bar.component';
+import { APP_PATHS } from '../../config/route-map';
 import {
-  Component,
-  OnDestroy,
-  OnInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
-import { BannerComponent } from 'src/app/components/banner/banner.component';
-import { NavBarComponent } from 'src/app/components/nav-bar/nav-bar.component';
-import { SliderComponent } from 'src/app/components/slider/slider.component';
-import { MetaService } from 'src/app/services/meta.service';
-import {
-  ContentService,
-  ContentKind,
-  ContentItem,
-  ContentSnapshot,
-} from 'src/app/state/content.service';
-import { DeviceDetectorService } from 'src/app/services/device-detector.service';
-import { DateAlias } from 'src/app/api/models';
+  CatalogContentType,
+  CatalogItem,
+  CatalogPlatform,
+  CatalogQuery,
+  CatalogResponse,
+  CatalogService,
+} from '../../services/catalog.service';
+import { CatalogFiltersService } from '../../services/catalog-filters.service';
+import { MetaService } from '../../services/meta.service';
 
-type ContentType = 'series' | 'movies';
+type ContentPageType = 'series' | 'movies';
 
 @Component({
   selector: 'app-content-page',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    NavBarComponent,
+    CatalogFiltersComponent,
+    CatalogCardComponent,
+    CatalogRailComponent,
+  ],
   templateUrl: './content-page.component.html',
   styleUrls: ['./content-page.component.scss'],
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, SliderComponent, NavBarComponent, BannerComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContentPageComponent implements OnInit, OnDestroy {
-  public contentType: ContentType = 'movies'; // Default
-  public contentTitle: string = '';
+  public readonly appPaths = APP_PATHS;
+  public contentType: ContentPageType = 'movies';
+  public loading = true;
+  public error: string | null = null;
+  public filters: CatalogQuery = {};
+  public items: CatalogItem[] = [];
+  public liveItems: CatalogItem[] = [];
+  public genres: string[] = [];
+  public platforms: CatalogPlatform[] = [];
+  public hasMore = false;
+  public total = 0;
 
-  public get sliderVariant(): 'series' | 'peliculas' {
-    return this.contentType === 'series' ? 'series' : 'peliculas';
-  }
-
-  public items: ContentItem[] = [];
-  public categorias: string[] = [];
-  public destacada: ContentItem | null = null;
-  public en_emision: ContentItem[] = [];
-  public isLoading = true;
-  public ldJson: string = '';
-
-  // Cache for categories
-  public itemsPorCategoria = new Map<string, ContentItem[]>();
-  private destroy$ = new Subject<void>();
-
-  // Search & Filter state
-  public activeCategoryFilter: string | null = null;
-  public selectedDate: DateAlias = 'today';
-
-  // Dropdown states
-  public isCategoryDropdownOpen = false;
-  public isDayDropdownOpen = false;
-
-  public diasDisponibles: { label: string; value: DateAlias }[] = [
-    { label: 'Ayer', value: 'yesterday' },
-    { label: 'Hoy', value: 'today' },
-    { label: 'Mañana', value: 'tomorrow' },
-    { label: 'Pasado mañana', value: 'day-after-tomorrow' },
-  ];
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private contentSvc: ContentService,
-    private metaSvc: MetaService,
-    public router: Router,
-    private route: ActivatedRoute,
-    public deviceDetector: DeviceDetectorService,
-    private cdr: ChangeDetectorRef
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly metaService: MetaService,
+    private readonly catalogService: CatalogService,
+    private readonly filtersService: CatalogFiltersService
   ) {}
 
-  public toggleCategoryDropdown(event?: Event): void {
-    if (event) event.stopPropagation();
-    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
-    this.isDayDropdownOpen = false;
-  }
-
-  public toggleDayDropdown(event?: Event): void {
-    if (event) event.stopPropagation();
-    this.isDayDropdownOpen = !this.isDayDropdownOpen;
-    this.isCategoryDropdownOpen = false;
-  }
-
-  public selectCategory(cat: string | null): void {
-    this.activeCategoryFilter = cat;
-    this.isCategoryDropdownOpen = false;
-    this.applyFilters();
-  }
-
-  public selectDay(day: DateAlias): void {
-    this.selectedDate = day;
-    this.isDayDropdownOpen = false;
-    this.initializePage();
-  }
-
-  public getSelectedDayLabel(): string {
-    return this.diasDisponibles.find(d => d.value === this.selectedDate)?.label || 'Día';
-  }
-
-  private applyFilters(): void {
-    // Basic filter application - more advanced logic could be added to searchResults if needed
-    // For now we use the existing itemsPorCategoria logic in the template
-    this.cdr.markForCheck();
-  }
-
-  public performSearch(term: string): void {
-    // Redundant now, but keeping a minimal implementation for compatibility if needed
-    this.applyFilters();
-  }
-
-  public toggleCategoryFilter(cat: string): void {
-    this.selectCategory(this.activeCategoryFilter === cat ? null : cat);
-  }
-
   ngOnInit(): void {
-    this.route.data.pipe(takeUntil(this.destroy$)).subscribe((data) => {
-      this.contentType = data['type'] || 'movies';
-      this.initializePage();
-    });
+    this.catalogService
+      .getPlatforms()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((platforms) => {
+        this.platforms = platforms;
+      });
+
+    combineLatest([this.route.data, this.route.queryParamMap])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([data, params]) => {
+        this.contentType = (data['type'] || 'movies') as ContentPageType;
+        this.filters = this.resolveFilters(this.paramMapToParams(params));
+        this.updateMeta();
+        this.loadContent();
+        this.loadLiveItems();
+      });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    this.itemsPorCategoria.clear();
   }
 
-  private initializePage(): void {
-    this.isLoading = true;
-    this.items = [];
-    this.en_emision = [];
-    this.categorias = [];
-    this.destacada = null;
-    this.itemsPorCategoria.clear();
-
-    this.setupMetaTags();
-    this.loadData(this.selectedDate);
+  onFiltersChange(next: CatalogQuery): void {
+    this.filters = {
+      ...this.filters,
+      ...next,
+      types: [this.fixedCatalogType],
+      page: 1,
+    };
+    this.navigateWithFilters();
   }
 
-  private setupMetaTags(): void {
-    if (this.contentType === 'series') {
-      this.contentTitle = 'Series';
-      this.metaSvc.setMetaTags({
-        title: 'Series de TV en España Hoy en Emisión | Guía Completa',
-        description:
-          'Descubre todas las series que se emiten hoy en TV: dramas, comedias, thrillers y más. Guía actualizada en emisión en la televisión española con horarios y sinopsis.',
-        canonicalUrl: this.router.url,
-        keywords:
-          'series en emisión hoy, series tv en directo, buscar series en tv, guía tv series España, qué ver ahora series',
-        ogImage: '/assets/images/series-og.jpg',
-      });
-    } else {
-      this.contentTitle = 'Peliculas';
-      this.metaSvc.setMetaTags({
-        title: 'Películas en TV Hoy en Emisión | Cartelera Completa',
-        description:
-          'Encuentra las mejores películas que se emiten hoy en televisión española: estrenos, clásicos, acción, comedia y drama. Guía en emisión con horarios y fichas completas.',
-        canonicalUrl: this.router.url,
-        keywords:
-          'películas en emisión hoy, películas tv en directo, buscar películas en tv, cartelera tv España, qué ver ahora películas',
-        ogImage: '/assets/images/peliculas-og.jpg',
-      });
-    }
+  resetFilters(): void {
+    this.filters = this.buildDefaultFilters();
+    this.navigateWithFilters();
   }
 
-  private loadData(date: DateAlias = 'today'): void {
-    console.log(`[ContentPage] Loading ${this.contentType} data for ${date}`);
-    this.contentSvc
-      .loadContent(this.contentType as ContentKind, date)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (snapshot) => this.manageData(snapshot),
-        error: (error) => {
-          console.error(
-            `[ContentPage] Error loading ${this.contentType} data:`,
-            error
-          );
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-      });
+  loadMore(): void {
+    this.filters = {
+      ...this.filters,
+      limit: Number(this.filters.limit || 24) + 24,
+    };
+    this.navigateWithFilters();
   }
 
-  private manageData(snapshot: ContentSnapshot): void {
-    const startTime = performance.now();
-    this.items = snapshot.items;
-    this.en_emision = snapshot.live.slice(0, 20);
-
-    console.log(`[ContentPage] Data State for ${this.contentType}:`);
-    console.log(`   - Total items: ${this.items.length}`);
-    console.log(`   - Live items: ${this.en_emision.length}`);
-
-    this.categorias = snapshot.categories
-      .filter((cat) => cat && cat.toLowerCase().trim() !== 'otros')
-      .slice(0, 12); // Slightly more categories
-
-    if (typeof requestIdleCallback !== 'undefined') {
-      requestIdleCallback(() => this.precacheCategories(), { timeout: 2000 });
-    } else {
-      setTimeout(() => this.precacheCategories(), 100);
-    }
-
-    this.loadDestacada(snapshot);
-
-    this.isLoading = false;
-    this.cdr.markForCheck();
-
-    const endTime = performance.now();
-    console.log(
-      `[ContentPage] Processed ${this.contentType} in ${(endTime - startTime).toFixed(2)}ms`
-    );
+  get pageTitle(): string {
+    return this.contentType === 'series' ? 'Series en TV y streaming' : 'Películas en TV y streaming';
   }
 
-  private precacheCategories(): void {
-    const limit = 3;
-    for (let i = 0; i < Math.min(limit, this.categorias.length); i++) {
-      const cat = this.categorias[i];
-      if (!this.itemsPorCategoria.has(cat)) {
-        this.getItemsByCategory(cat);
-      }
-    }
+  get pageSubtitle(): string {
+    return this.contentType === 'series'
+      ? 'Series en emisión, bajo demanda y ordenadas por plataforma, valoración y disponibilidad.'
+      : 'Películas en directo, catálogo streaming y opciones gratuitas desde un mismo explorador.';
   }
 
-  private loadDestacada(snapshot: ContentSnapshot): void {
-    setTimeout(() => {
-      this.destacada = snapshot.featured || this.items[0] || null;
-      if (this.destacada) {
-        this.generateJsonLd();
-      }
-      this.cdr.markForCheck();
-    }, 100);
+  get fixedCatalogType(): CatalogContentType {
+    return this.contentType === 'series' ? 'series' : 'movie';
   }
 
-  public getCategoryDescription(cat: string): string {
-    const base =
-      this.contentType === 'series'
-        ? 'Series en emisión hoy'
-        : 'Películas en TV hoy';
-    return `${base} de ${cat}: horarios, sinopsis y recomendaciones para ver ahora mismo en televisión.`;
+  private resolveFilters(params: Params): CatalogQuery {
+    const defaults = this.buildDefaultFilters();
+    const filters = this.filtersService.fromQueryParams(params, defaults);
+    filters.types = [this.fixedCatalogType];
+    filters.limit = filters.limit || 24;
+    return filters;
   }
 
-  private generateJsonLd(): void {
-    try {
-      const title = this.destacada?.title || this.destacada?.channel?.name;
-      const description =
-        this.destacada?.description ||
-        `Guia de ${this.contentTitle} en television`;
-      const image =
-        this.destacada?.image || `/assets/images/${this.contentType}-og.jpg`;
-
-      const pageLd = {
-        '@context': 'https://schema.org',
-        '@type': 'WebPage',
-        name: `${this.contentTitle} en television`,
-        description: `Guia actualizada de ${this.contentTitle.toLowerCase()} en television en Espana`,
-        url: this.router.url,
-        mainEntity: {
-          '@type': this.contentType === 'series' ? 'TVSeries' : 'Movie',
-          name: title,
-          description,
-          image,
-        },
-      };
-
-      this.ldJson = JSON.stringify(pageLd);
-
-      this.metaSvc.setMetaTags({
-        title: `${title} — ${this.contentTitle} en TV | Guia TV`,
-        description,
-        canonicalUrl: this.router.url,
-        keywords: `${this.contentType === 'series' ? 'serie' : 'pelicula'} ${title}, ${this.contentType} tv`,
-        ogImage: image,
-      });
-    } catch {
-      this.ldJson = '';
-    }
-  }
-
-  public getItemsByCategory(categoria: string): ContentItem[] {
-    if (this.itemsPorCategoria.has(categoria)) {
-      return this.itemsPorCategoria.get(categoria)!;
-    }
-
-    const items = this.items
-      .filter((item) =>
-        (item.raw.category || '')
-          .toLowerCase()
-          .includes(categoria.toLowerCase())
-      )
-      .slice(0, this.contentType === 'series' ? 15 : 12);
-
-    this.itemsPorCategoria.set(categoria, items);
-    return items;
-  }
-
-  public trackByCategory(index: number, categoria: string): string {
-    return categoria;
-  }
-
-  public toBannerData(item: ContentItem | null): any {
-    if (!item) return {};
+  private buildDefaultFilters(): CatalogQuery {
     return {
-      id: item.id,
-      title: item.title,
-      channel: item.channel?.name || '',
-      channelName: item.channel?.name || '',
-      icon: item.channel?.icon,
-      poster: item.image,
-      start: item.start,
-      stop: item.end,
-      desc: { details: item.description },
-      category: item.category,
-      starRating: item.rating,
+      types: [this.fixedCatalogType],
+      availability: [],
+      genres: [],
+      platforms: [],
+      sort: 'popular',
+      limit: 24,
+      page: 1,
     };
   }
-}
 
-// Polyfill for requestIdleCallback
-declare const requestIdleCallback: (
-  callback: () => void,
-  options?: { timeout: number }
-) => number;
-if (typeof requestIdleCallback === 'undefined') {
-  (window as any).requestIdleCallback = (cb: () => void) => setTimeout(cb, 1);
+  private navigateWithFilters(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: this.filtersService.toQueryParams(this.filters),
+      queryParamsHandling: '',
+    });
+  }
+
+  private loadContent(): void {
+    this.loading = true;
+    this.error = null;
+
+    this.catalogService
+      .query(this.filters)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: CatalogResponse) => {
+          this.items = response.items || [];
+          this.genres = response.availableGenres || [];
+          this.platforms = response.availablePlatforms?.length
+            ? response.availablePlatforms
+            : this.platforms;
+          this.total = response.meta?.total || 0;
+          this.hasMore = Boolean(response.meta?.hasMore);
+          this.loading = false;
+        },
+        error: () => {
+          this.error = 'No se pudo cargar este contenido.';
+          this.loading = false;
+        },
+      });
+  }
+
+  private loadLiveItems(): void {
+    this.catalogService
+      .query({
+        types: [this.fixedCatalogType],
+        availability: ['live'],
+        sort: 'airtime',
+        limit: 8,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        this.liveItems = response.items || [];
+      });
+  }
+
+  private updateMeta(): void {
+    this.metaService.setMetaTags({
+      title: `${this.pageTitle} - Guía TV`,
+      description: this.pageSubtitle,
+      canonicalUrl: this.router.url,
+    });
+  }
+
+  private paramMapToParams(paramMap: ParamMap): Params {
+    const params: Params = {};
+    for (const key of paramMap.keys) {
+      params[key] = paramMap.get(key);
+    }
+    return params;
+  }
 }

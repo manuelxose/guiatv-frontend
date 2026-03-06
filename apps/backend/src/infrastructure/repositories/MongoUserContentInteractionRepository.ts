@@ -4,6 +4,7 @@ import {
 } from '@/domain/entities/UserContentInteraction';
 import { IUserContentInteractionRepository } from '@/domain/repositories/IUserContentInteractionRepository';
 import { UserContentInteractionModel } from '../database/models/UserContentInteraction.model';
+import { parseCatalogId } from '@/application/services/CatalogIdentity';
 
 type InteractionInput = Omit<
   UserContentInteractionProps,
@@ -20,9 +21,10 @@ export class MongoUserContentInteractionRepository
     userId: string,
     contentId: string
   ): Promise<UserContentInteraction | null> {
+    const acceptedIds = this.expandAcceptedContentIds(contentId);
     const doc = await UserContentInteractionModel.findOne({
       userId,
-      contentId,
+      contentId: { $in: acceptedIds },
     })
       .lean()
       .exec();
@@ -91,9 +93,10 @@ export class MongoUserContentInteractionRepository
   }
 
   async delete(userId: string, contentId: string): Promise<boolean> {
+    const acceptedIds = this.expandAcceptedContentIds(contentId);
     const result = await UserContentInteractionModel.deleteOne({
       userId,
-      contentId,
+      contentId: { $in: acceptedIds },
     }).exec();
 
     return Boolean(result.deletedCount);
@@ -211,5 +214,19 @@ export class MongoUserContentInteractionRepository
       createdAt: new Date(doc.createdAt),
       updatedAt: new Date(doc.updatedAt),
     };
+  }
+
+  private expandAcceptedContentIds(contentId: string): string[] {
+    const parsed = parseCatalogId(contentId);
+    if (!parsed) {
+      return [contentId];
+    }
+    if (parsed.source === 'program' && parsed.programId) {
+      return [contentId, parsed.programId];
+    }
+    if (parsed.source === 'tmdb' && parsed.tmdbId) {
+      return [contentId, String(parsed.tmdbId)];
+    }
+    return [contentId];
   }
 }

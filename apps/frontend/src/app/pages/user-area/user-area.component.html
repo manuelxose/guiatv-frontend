@@ -71,6 +71,19 @@
             Favoritos
           </button>
           <button
+            id="tab-history"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab === 'history'"
+            [attr.aria-controls]="'panel-history'"
+            [attr.tabindex]="activeTab === 'history' ? 0 : -1"
+            (click)="setActiveTab('history')"
+            class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [ngClass]="activeTab === 'history' ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
+          >
+            Historial
+          </button>
+          <button
             id="tab-chat"
             type="button"
             role="tab"
@@ -175,6 +188,18 @@
             [favorites]="(favorites$ | async) || []"
             (removeFavorite)="onRemoveFavorite($event)"
           ></app-user-favorites>
+        </div>
+
+        <div
+          *ngSwitchCase="'history'"
+          id="panel-history"
+          role="tabpanel"
+          aria-labelledby="tab-history"
+          tabindex="0"
+        >
+          <app-user-interaction-history
+            [items]="(interactionHistory$ | async) || []"
+          ></app-user-interaction-history>
         </div>
 
         <div
@@ -454,6 +479,14 @@
               [favorites]="(favorites$ | async) || []"
               (removeFavorite)="onRemoveFavorite($event)"
             ></app-user-favorites>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'history'">
+          <div class="section-enter">
+            <app-user-interaction-history
+              [items]="(interactionHistory$ | async) || []"
+            ></app-user-interaction-history>
           </div>
         </ng-container>
 

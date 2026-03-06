@@ -11,6 +11,12 @@ export interface IUserProfileDocument {
   avatar?: string;
   favoriteGenres?: string[];
   preferredPlatforms?: string[];
+  discoveryDefaults?: {
+    types?: string[];
+    availability?: string[];
+    platforms?: string[];
+    sort?: string;
+  };
   watchingNow?: {
     title?: string;
     mood?: string;
@@ -75,6 +81,16 @@ const NotificationsSchema = new Schema(
   { _id: false }
 );
 
+const DiscoveryDefaultsSchema = new Schema(
+  {
+    types: { type: [String], default: [] },
+    availability: { type: [String], default: [] },
+    platforms: { type: [String], default: [] },
+    sort: { type: String, default: 'popular' },
+  },
+  { _id: false }
+);
+
 const UserProfileSchema = new Schema<IUserProfileDocument>(
   {
     userId: { type: Schema.Types.ObjectId, required: true, index: true, unique: true },
@@ -84,6 +100,7 @@ const UserProfileSchema = new Schema<IUserProfileDocument>(
     avatar: { type: String, trim: true },
     favoriteGenres: { type: [String], default: [] },
     preferredPlatforms: { type: [String], default: [] },
+    discoveryDefaults: { type: DiscoveryDefaultsSchema, default: () => ({}) },
     watchingNow: { type: WatchingNowSchema, default: () => ({}) },
     privacy: { type: PrivacySchema, default: () => ({}) },
     notifications: { type: NotificationsSchema, default: () => ({}) },

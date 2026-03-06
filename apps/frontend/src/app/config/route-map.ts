@@ -2,9 +2,11 @@ export const APP_PATHS = {
   home: '/',
   guide: '/programacion-tv/guia-canales',
   explore: '/programacion-tv/que-ver-hoy',
+  platforms: '/plataformas',
   live: '/programacion-tv/en-directo',
   series: '/programacion-tv/series',
   movies: '/programacion-tv/peliculas',
+  content: '/contenido',
   blog: '/blog',
   top10: '/blog/top10',
   account: '/mi-cuenta',
@@ -17,6 +19,7 @@ export type AppRouteKey =
   | 'home'
   | 'guia-canales'
   | 'que-ver-hoy'
+  | 'plataformas'
   | 'en-directo'
   | 'series'
   | 'peliculas'
@@ -38,11 +41,12 @@ export interface AppRouteEntry {
 
 export const PRIMARY_NAV_ROUTES: AppRouteEntry[] = [
   { key: 'home', label: 'Inicio', path: APP_PATHS.home },
+  { key: 'que-ver-hoy', label: 'Explorar', path: APP_PATHS.explore },
   { key: 'guia-canales', label: 'Guía canales', path: APP_PATHS.guide },
-  { key: 'que-ver-hoy', label: 'Qué ver hoy', path: APP_PATHS.explore },
+  { key: 'plataformas', label: 'Plataformas', path: APP_PATHS.platforms },
+  { key: 'en-directo', label: 'En directo', path: APP_PATHS.live },
   { key: 'peliculas', label: 'Películas', path: APP_PATHS.movies },
   { key: 'series', label: 'Series', path: APP_PATHS.series },
-  { key: 'en-directo', label: 'En directo', path: APP_PATHS.live },
   { key: 'blog', label: 'Blog', path: APP_PATHS.blog },
   { key: 'top-10', label: 'Top 10', path: APP_PATHS.top10 },
 ];

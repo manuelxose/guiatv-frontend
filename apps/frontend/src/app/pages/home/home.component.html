@@ -1,145 +1,175 @@
-<!-- 
-  Home Component - REBUILD
-  Objetivo: ProgramList es el elemento PRINCIPAL
-  - El banner featured es secundario y compacto en móvil
-  - La parrilla de canales ocupa el máximo espacio
--->
+<div class="min-h-screen bg-[#081018] text-slate-100">
+  <app-nav-bar></app-nav-bar>
 
-<!-- Skip Link for Accessibility -->
-<a href="#programacion" class="skip-link">
-  Ir al contenido principal
-</a>
-
-<!-- NavBar (ya existente) -->
-<app-nav-bar></app-nav-bar>
-
-<!-- Main Content -->
-<main class="home">
-
-  <!-- ============================================ -->
-  <!-- LOADING STATE                               -->
-  <!-- ============================================ -->
-  <div *ngIf="uiState().isLoading" class="home__loading">
-    <div class="home__loading-content">
-      <div class="home__loading-spinner"></div>
-      <p>Cargando Guía TV...</p>
-    </div>
-  </div>
-
-  <!-- ============================================ -->
-  <!-- ERROR STATE                                 -->
-  <!-- ============================================ -->
-  <div *ngIf="uiState().showError" class="home__error">
-    <div class="home__error-content">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="M12 8v4m0 4h.01"/>
-      </svg>
-      <h2>Error al cargar</h2>
-      <p>{{ error() }}</p>
-      <button (click)="onRefresh()" class="home__error-btn">
-        Reintentar
-      </button>
-    </div>
-  </div>
-
-  <!-- ============================================ -->
-  <!-- MAIN CONTENT                                -->
-  <!-- ============================================ -->
-  <div *ngIf="uiState().showContent" class="home__content">
-
-    <!-- Mobile: Mini header con stats (muy compacto) -->
-    <header class="home__header home__header--mobile" *ngIf="deviceDetector.isMobile()">
-      <h1 class="home__title">Guía TV</h1>
-      <div class="home__stats">
-        <span class="home__stat">
-          <span class="home__stat-icon">📺</span>
-          <span class="home__stat-value">{{ programs().length || '80+' }}</span>
-          <span class="home__stat-label">canales</span>
-        </span>
-      </div>
-    </header>
-
-    <section class="home__quick" *ngIf="deviceDetector.isMobile()" aria-label="Accesos rápidos">
-      <a routerLink="/programacion-tv/en-directo" class="home__quick-item">
-        <span class="home__quick-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12a7 7 0 0114 0M8 12a4 4 0 018 0M12 12h.01" />
-          </svg>
-        </span>
-        <span class="home__quick-label">En directo</span>
-      </a>
-      <a routerLink="/programacion-tv/peliculas" class="home__quick-item">
-        <span class="home__quick-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="16" rx="2" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4" />
-          </svg>
-        </span>
-        <span class="home__quick-label">Películas</span>
-      </a>
-      <a routerLink="/programacion-tv/series" class="home__quick-item">
-        <span class="home__quick-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4-2v8l-4-2M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-          </svg>
-        </span>
-        <span class="home__quick-label">Series</span>
-      </a>
-      <a routerLink="/comunidad" class="home__quick-item">
-        <span class="home__quick-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5m10 0v-2a3 3 0 00-3-3H10a3 3 0 00-3 3v2m10-9a3 3 0 11-6 0 3 3 0 016 0zm-8 0a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </span>
-        <span class="home__quick-label">Comunidad</span>
-      </a>
-    </section>
-
-    <!-- Desktop: Hero section (compacto) -->
-    <header class="home__header home__header--desktop" *ngIf="!deviceDetector.isMobile()">
-      <div class="home__hero">
-        <h1 class="home__hero-title">Guía de Programación TV España</h1>
-        <p class="home__hero-subtitle">
-          Consulta toda la programación de televisión actualizada en tiempo real
-        </p>
-      </div>
-    </header>
-
-    <!-- Featured Banner (SOLO si hay película destacada y NO hay filtro de categoría) -->
-    <section 
-      *ngIf="uiState().hasFeaturedMovie && !selectedCategory()" 
-      class="home__featured"
-      aria-label="Película destacada"
+  <div class="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
+    <section
+      class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.18),_rgba(8,16,24,0.92)_52%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-10"
     >
-      <app-banner
-        [data]="getBannerData()"
-        [compact]="deviceDetector.isMobile()"
-        (movieSelected)="onMovieSelected($event)"
-      ></app-banner>
+      <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_35%,transparent_65%,rgba(56,189,248,0.08))]"></div>
+      <div class="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+        <div class="space-y-5">
+          <div class="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-red-200">
+            TV + Streaming
+          </div>
+          <div class="space-y-3">
+            <h1 class="max-w-3xl text-4xl font-black tracking-tight text-white md:text-6xl">
+              Todo lo que puedes ver hoy, en directo o en plataformas.
+            </h1>
+            <p class="max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
+              Guía TV ahora mezcla parrilla, streaming y recomendaciones reales para que descubras
+              contenido desde una sola experiencia, tanto en móvil como en desktop.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            <a
+              [routerLink]="appPaths.explore"
+              class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-red-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+            >
+              Explorar catálogo
+            </a>
+            <a
+              [routerLink]="appPaths.platforms"
+              class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-6 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-500 hover:text-white"
+            >
+              Ver plataformas
+            </a>
+            <a
+              [routerLink]="appPaths.live"
+              class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-6 text-sm font-semibold text-emerald-200 transition-colors hover:border-emerald-400/40"
+            >
+              En directo ahora
+            </a>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
+            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Inicio</p>
+            <p class="mt-2 text-2xl font-bold text-white">Para ti</p>
+            <p class="mt-1 text-sm text-slate-400">Recomendaciones con tu historial e IA.</p>
+          </div>
+          <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
+            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Explorar</p>
+            <p class="mt-2 text-2xl font-bold text-white">TV + VOD</p>
+            <p class="mt-1 text-sm text-slate-400">Filtros unificados por tipo, género y disponibilidad.</p>
+          </div>
+          <div class="col-span-2 rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
+            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Tus plataformas</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <span
+                *ngFor="let platform of sections.platforms.slice(0, 8)"
+                class="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs font-semibold text-slate-200"
+              >
+                {{ platform.name }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <!-- Active Category Filter Indicator -->
-    <div *ngIf="selectedCategory()" class="home__filter-active">
-      <span>Filtrando por: <strong>{{ selectedCategory() }}</strong></span>
-      <button (click)="clearCategoryFilter()" aria-label="Limpiar filtro">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 6L6 18M6 6l12 12"/>
-        </svg>
-        Limpiar
-      </button>
+    <div *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-2">
+      <div *ngFor="let index of [1, 2, 3, 4]" class="h-48 animate-pulse rounded-[1.75rem] bg-slate-900/70"></div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- PROGRAM LIST - EL ELEMENTO PRINCIPAL       -->
-    <!-- ============================================ -->
-    <section id="programacion" class="home__programs" aria-label="Programación de televisión">
-      <app-program-list
-        (dayChanged)="onDayChanged($event)"
-        (categorySelected)="onCategorySelected($event)"
-      ></app-program-list>
-    </section>
+    <div
+      *ngIf="error"
+      class="mt-8 rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
+    >
+      {{ error }}
+    </div>
 
+    <ng-container *ngIf="!loading && !error">
+      <div class="mt-10 space-y-10">
+        <app-catalog-rail
+          *ngIf="(isAuthenticated$ | async) && sections.personalized.length"
+          eyebrow="Personalizado"
+          title="Para ti"
+          subtitle="Se alimenta de lo que valoras, guardas y ves en la app."
+          linkLabel="Abrir explorar"
+          [linkPath]="appPaths.explore"
+          [items]="sections.personalized"
+        ></app-catalog-rail>
+
+        <app-catalog-rail
+          *ngIf="sections.platformItems.length"
+          eyebrow="Tus plataformas"
+          title="Disponible donde ya ves contenido"
+          subtitle="Seleccionado desde tus plataformas preferidas."
+          linkLabel="Abrir plataformas"
+          [linkPath]="appPaths.platforms"
+          [items]="sections.platformItems"
+        ></app-catalog-rail>
+
+        <app-catalog-rail
+          *ngIf="sections.freeItems.length"
+          eyebrow="Gratis"
+          title="Sin coste extra"
+          subtitle="Opciones free o incluidas sin alquiler."
+          linkLabel="Explorar gratis"
+          [linkPath]="[appPaths.explore]"
+          [items]="sections.freeItems"
+        ></app-catalog-rail>
+
+        <app-catalog-rail
+          *ngIf="sections.liveItems.length"
+          eyebrow="En directo"
+          title="Emitiéndose ahora"
+          subtitle="Programas y emisiones activas en la guía."
+          linkLabel="Abrir directo"
+          [linkPath]="appPaths.live"
+          [items]="sections.liveItems"
+        ></app-catalog-rail>
+
+        <app-catalog-rail
+          *ngIf="sections.trendingItems.length"
+          eyebrow="Tendencias"
+          title="Lo más visto ahora"
+          subtitle="Películas y series destacadas en streaming."
+          linkLabel="Ver más"
+          [linkPath]="appPaths.explore"
+          [items]="sections.trendingItems"
+        ></app-catalog-rail>
+
+        <section class="space-y-5">
+          <div class="flex items-end justify-between gap-4">
+            <div>
+              <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Acceso rápido</p>
+              <h2 class="text-2xl font-semibold text-white">Plataformas destacadas</h2>
+            </div>
+            <a
+              [routerLink]="appPaths.platforms"
+              class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+            >
+              Ver catálogo completo
+            </a>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <a
+              *ngFor="let platform of sections.platforms.slice(0, 8)"
+              [routerLink]="appPaths.platforms"
+              [queryParams]="{ platforms: platform.name, availability: 'streaming', types: 'movie,series' }"
+              class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4 transition-colors hover:border-slate-600"
+            >
+              <div class="flex items-center gap-3">
+                <img
+                  *ngIf="platform.logoUrl"
+                  [src]="platform.logoUrl"
+                  [alt]="platform.name"
+                  class="h-10 w-10 rounded-xl object-contain bg-white/5 p-1"
+                  loading="lazy"
+                />
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-semibold text-white">{{ platform.name }}</p>
+                  <p class="text-xs text-slate-400">Abrir catálogo filtrado</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </section>
+      </div>
+    </ng-container>
   </div>
-
-</main>
+</div>

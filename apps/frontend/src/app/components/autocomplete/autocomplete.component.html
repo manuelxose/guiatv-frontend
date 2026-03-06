@@ -28,36 +28,36 @@
           Todos
         </button>
         <button 
-          (click)="setFilter('channels')"
+          (click)="setFilter('tv')"
           class="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 hover:bg-gray-700/60 transition-all"
-          [ngClass]="activeFilter === 'channels' ? 'bg-blue-500/20 text-blue-300' : 'text-gray-300'"
+          [ngClass]="activeFilter === 'tv' ? 'bg-emerald-500/20 text-emerald-300' : 'text-gray-300'"
         >
-          <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-          Canales
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          TV
+        </button>
+        <button 
+          (click)="setFilter('streaming')"
+          class="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 hover:bg-gray-700/60 transition-all"
+          [ngClass]="activeFilter === 'streaming' ? 'bg-sky-500/20 text-sky-300' : 'text-gray-300'"
+        >
+          <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+          Streaming
         </button>
         <button 
           (click)="setFilter('movies')"
           class="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 hover:bg-gray-700/60 transition-all"
-          [ngClass]="activeFilter === 'movies' ? 'bg-purple-500/20 text-purple-300' : 'text-gray-300'"
+          [ngClass]="activeFilter === 'movies' ? 'bg-amber-500/20 text-amber-300' : 'text-gray-300'"
         >
-          <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
           Películas
         </button>
         <button 
           (click)="setFilter('series')"
           class="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 hover:bg-gray-700/60 transition-all"
-          [ngClass]="activeFilter === 'series' ? 'bg-green-500/20 text-green-300' : 'text-gray-300'"
+          [ngClass]="activeFilter === 'series' ? 'bg-violet-500/20 text-violet-300' : 'text-gray-300'"
         >
-          <span class="w-2 h-2 rounded-full bg-green-500"></span>
+          <span class="w-2 h-2 rounded-full bg-violet-500"></span>
           Series
-        </button>
-        <button 
-          (click)="setFilter('programs')"
-          class="w-full px-4 py-3 text-left text-sm font-medium flex items-center gap-3 hover:bg-gray-700/60 transition-all"
-          [ngClass]="activeFilter === 'programs' ? 'bg-orange-500/20 text-orange-300' : 'text-gray-300'"
-        >
-          <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-          Programas
         </button>
       </div>
     </div>
