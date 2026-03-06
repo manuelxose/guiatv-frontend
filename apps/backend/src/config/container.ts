@@ -125,6 +125,9 @@ export class Container {
     const { MongoProgramRepository } = await import('../infrastructure/repositories/MongoProgramRepository');
     const { MongoUserRepository } = await import('../infrastructure/repositories/MongoUserRepository');
     const { MongoAnalyticsRepository } = await import('../infrastructure/repositories/MongoAnalyticsRepository');
+    const { MongoUserContentInteractionRepository } = await import(
+      '../infrastructure/repositories/MongoUserContentInteractionRepository'
+    );
 
     const channelRepository = new MongoChannelRepository();
     this.dependencies.set('channelRepository', channelRepository);
@@ -134,6 +137,9 @@ export class Container {
 
     const userRepository = new MongoUserRepository();
     this.dependencies.set('userRepository', userRepository);
+
+    const interactionRepository = new MongoUserContentInteractionRepository();
+    this.dependencies.set('userContentInteractionRepository', interactionRepository);
 
     const analyticsStore = (process.env.ANALYTICS_STORE || 'mongo').toLowerCase();
     let analyticsRepository: IAnalyticsRepository;
@@ -203,9 +209,15 @@ export class Container {
     const { ChannelService } = await import('../domain/services/ChannelService');
     const { ProgramService } = await import('../domain/services/ProgramService');
     const { TMDBService } = await import('../infrastructure/external/TMDBService');
+    const { StreamingProvidersService } = await import(
+      '../infrastructure/external/StreamingProvidersService'
+    );
     const { AuthService } = await import('../domain/services/AuthService');
     const { BlogService } = await import('../infrastructure/external/BlogService');
     const { AnalyticsService } = await import('../application/services/AnalyticsService');
+    const { AIRecommendationService } = await import(
+      '../infrastructure/external/AIRecommendationService'
+    );
 
     const channelRepository = this.get<IChannelRepository>('channelRepository');
     const channelService = new ChannelService(channelRepository);
@@ -218,6 +230,13 @@ export class Container {
     const tmdbApiKey = process.env.TMDB_API_KEY || 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8';
     const tmdbService = new TMDBService(tmdbApiKey);
     this.dependencies.set('tmdbService', tmdbService);
+
+    const streamingProvidersService = new StreamingProvidersService(
+      tmdbApiKey,
+      tmdbService
+    );
+    tmdbService.attachStreamingProvidersService(streamingProvidersService);
+    this.dependencies.set('streamingProvidersService', streamingProvidersService);
 
     const googleClientId = process.env.GOOGLE_CLIENT_ID;
     const jwtSecret = process.env.JWT_SECRET || 'dev-secret-change-me';
@@ -244,6 +263,16 @@ export class Container {
       this.dependencies.set('blogService', blogService);
     }
 
+    if (
+      process.env.AI_CHATBOT_ENABLED === 'true' &&
+      process.env.ANTHROPIC_API_KEY
+    ) {
+      const aiRecommendationService = new AIRecommendationService(
+        process.env.ANTHROPIC_API_KEY
+      );
+      this.dependencies.set('aiRecommendationService', aiRecommendationService);
+    }
+
     logger.info('Services registered');
   }
 
@@ -253,6 +282,9 @@ export class Container {
     const cacheRepository = this.get<ICacheRepository>('cacheRepository');
     const channelService = this.get<any>('channelService');
     const tmdbService = this.get<any>('tmdbService');
+    const streamingProvidersService = this.get<any>('streamingProvidersService');
+    const interactionRepository = this.get<any>('userContentInteractionRepository');
+    const userRepository = this.get<any>('userRepository');
 
     const { GetAllChannels } = await import('../application/use-cases/GetAllChannels');
     const { GetChannelById } = await import('../application/use-cases/GetChannelById');
@@ -271,6 +303,10 @@ export class Container {
     const { SearchDiscoveryContent } = await import('../application/use-cases/SearchDiscoveryContent');
     const { GetContentDetail } = await import('../application/use-cases/GetContentDetail');
     const { GetContentBatch } = await import('../application/use-cases/GetContentBatch');
+    const { GetPersonalizedRecommendations } = await import(
+      '../application/use-cases/GetPersonalizedRecommendations'
+    );
+    const { ChatbotRecommend } = await import('../application/use-cases/ChatbotRecommend');
 
     const getAllChannels = new GetAllChannels(channelRepository, cacheRepository, channelService);
     this.dependencies.set('getAllChannels', getAllChannels);
@@ -340,7 +376,10 @@ export class Container {
     const getContentDetail = new GetContentDetail(
       programRepository,
       channelRepository,
-      cacheRepository
+      cacheRepository,
+      tmdbService,
+      streamingProvidersService,
+      interactionRepository
     );
     this.dependencies.set('getContentDetail', getContentDetail);
 
@@ -349,6 +388,26 @@ export class Container {
       channelRepository
     );
     this.dependencies.set('getContentBatch', getContentBatch);
+
+    const getPersonalizedRecommendations = new GetPersonalizedRecommendations(
+      getPrograms,
+      interactionRepository,
+      streamingProvidersService
+    );
+    this.dependencies.set(
+      'getPersonalizedRecommendations',
+      getPersonalizedRecommendations
+    );
+
+    if (this.has('aiRecommendationService')) {
+      const chatbotRecommend = new ChatbotRecommend(
+        this.get('aiRecommendationService'),
+        interactionRepository,
+        userRepository,
+        getPrograms
+      );
+      this.dependencies.set('chatbotRecommend', chatbotRecommend);
+    }
 
     logger.info('Use Cases registered');
   }
@@ -376,6 +435,8 @@ export class Container {
     const { UserController } = await import('../presentation/controllers/UserController');
     const { SocialController } = await import('../presentation/controllers/SocialController');
     const { ChatController } = await import('../presentation/controllers/ChatController');
+    const { InteractionController } = await import('../presentation/controllers/InteractionController');
+    const { AIController } = await import('../presentation/controllers/AIController');
 
     const channelController = new ChannelController(getAllChannels, getChannelById);
     this.dependencies.set('channelController', channelController);
@@ -411,13 +472,15 @@ export class Container {
 
     const discoveryController = new DiscoveryController(
       this.get('getDiscoveryHome'),
-      this.get('searchDiscoveryContent')
+      this.get('searchDiscoveryContent'),
+      this.get('getPersonalizedRecommendations')
     );
     this.dependencies.set('discoveryController', discoveryController);
 
     const contentController = new ContentController(
       this.get('getContentDetail'),
-      this.get('getContentBatch')
+      this.get('getContentBatch'),
+      this.get('streamingProvidersService')
     );
     this.dependencies.set('contentController', contentController);
 
@@ -436,11 +499,22 @@ export class Container {
     const userController = new UserController();
     this.dependencies.set('userController', userController);
 
+    const interactionController = new InteractionController(
+      this.get('userContentInteractionRepository')
+    );
+    this.dependencies.set('interactionController', interactionController);
+
     const socialController = new SocialController();
     this.dependencies.set('socialController', socialController);
 
     const chatController = new ChatController();
     this.dependencies.set('chatController', chatController);
+
+    const aiController = new AIController(
+      this.has('chatbotRecommend') ? this.get('chatbotRecommend') : null,
+      this.get('cacheRepository')
+    );
+    this.dependencies.set('aiController', aiController);
 
     const { SitemapController } = await import('../presentation/controllers/SitemapController');
     const sitemapController = new SitemapController(

@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user.service';
 import { Subscription } from 'rxjs';
@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="flex items-center" [class.gap-3]="!compact" [class.gap-1.5]="compact">
+    <div class="relative flex items-center flex-wrap" [class.gap-3]="!compact" [class.gap-1.5]="compact">
       <!-- Watchlist Button -->
       <button
         (click)="toggleWatchlist()"
@@ -66,7 +66,7 @@ import { Subscription } from 'rxjs';
 
       <!-- Rate Button -->
       <button
-        (click)="rate()"
+        (click)="showRatingPanel = !showRatingPanel"
         class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
         [ngClass]="{'px-2 py-2': compact}"
         title="Valorar"
@@ -86,7 +86,39 @@ import { Subscription } from 'rxjs';
             d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
           />
         </svg>
+        <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white">
+          {{ currentRating ? currentRating + '/10' : 'Valorar' }}
+        </span>
       </button>
+
+      <div
+        *ngIf="showRatingPanel"
+        class="absolute bottom-full left-0 z-20 mb-2 w-[min(20rem,90vw)] rounded-2xl border border-slate-700 bg-slate-900 p-4 shadow-2xl"
+      >
+        <p class="mb-3 text-xs text-slate-400">Cuanto te gusto?</p>
+        <div class="flex flex-wrap gap-1">
+          <button
+            *ngFor="let star of ratings"
+            type="button"
+            (click)="rate(star)"
+            (mouseenter)="hoveredRating = star"
+            (mouseleave)="hoveredRating = 0"
+            class="h-7 w-7 rounded text-sm font-bold transition-colors"
+            [ngClass]="(hoveredRating || currentRating) >= star ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-400'"
+          >
+            {{ star }}
+          </button>
+        </div>
+        <div class="mt-3 flex gap-2">
+          <button
+            type="button"
+            (click)="markAsSeen()"
+            class="text-xs text-slate-400 hover:text-white"
+          >
+            Solo marcar como visto
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Recommendation Modal -->
@@ -132,14 +164,20 @@ import { Subscription } from 'rxjs';
     }
   `]
 })
-export class InteractionButtonsComponent implements OnInit, OnDestroy {
+export class InteractionButtonsComponent implements OnInit, OnDestroy, OnChanges {
   @Input() itemId: string = '';
   @Input() title: string = '';
   @Input() type: 'movie' | 'series' | 'program' = 'program';
   @Input() compact: boolean = false;
+  @Input() tmdbId?: number;
+  @Input() genres: string[] = [];
 
   public isInWatchlist = false;
   public showModal = false;
+  public showRatingPanel = false;
+  public currentRating = 0;
+  public hoveredRating = 0;
+  public readonly ratings = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   private sub = new Subscription();
 
   constructor(private userService: UserService) {}
@@ -151,10 +189,18 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy {
         this.isInWatchlist = items.some((item) => item.contentId === this.itemId);
       })
     );
+
+    this.loadCurrentInteraction();
   }
 
   ngOnDestroy() {
     this.sub.unsubscribe();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['itemId'] && !changes['itemId'].firstChange) {
+      this.loadCurrentInteraction();
+    }
   }
 
   toggleWatchlist() {
@@ -167,6 +213,18 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy {
     this.userService.toggleWatchlistItem(payload).subscribe((inWatchlist) => {
       if (inWatchlist !== null) {
         this.isInWatchlist = inWatchlist;
+        if (inWatchlist) {
+          this.userService
+            .addContentInteraction({
+              contentId: this.itemId,
+              contentTitle: this.title,
+              contentType: this.type,
+              tmdbId: this.tmdbId,
+              genres: this.genres,
+              status: 'pending',
+            })
+            .subscribe();
+        }
       }
     });
   }
@@ -182,11 +240,59 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.showModal = false;
+          this.userService
+            .addContentInteraction({
+              contentId: this.itemId,
+              contentTitle: this.title,
+              contentType: this.type,
+              tmdbId: this.tmdbId,
+              genres: this.genres,
+              status: 'pending',
+            })
+            .subscribe();
         },
       });
   }
 
-  rate() {
-    alert('Funcionalidad de valoración próximamente.');
+  rate(stars: number) {
+    this.userService
+      .addContentInteraction({
+        contentId: this.itemId,
+        contentTitle: this.title,
+        contentType: this.type,
+        tmdbId: this.tmdbId,
+        genres: this.genres,
+        rating: stars,
+        status: 'seen',
+      })
+      .subscribe((saved) => {
+        if (!saved) return;
+        this.currentRating = stars;
+        this.showRatingPanel = false;
+      });
+  }
+
+  markAsSeen() {
+    this.userService
+      .addContentInteraction({
+        contentId: this.itemId,
+        contentTitle: this.title,
+        contentType: this.type,
+        tmdbId: this.tmdbId,
+        genres: this.genres,
+        status: 'seen',
+      })
+      .subscribe(() => {
+        this.showRatingPanel = false;
+      });
+  }
+
+  private loadCurrentInteraction() {
+    if (!this.itemId) return;
+    this.sub.add(
+      this.userService.getContentInteraction(this.itemId).subscribe((interaction) => {
+        this.currentRating = Number(interaction?.rating || 0);
+      })
+    );
   }
 }

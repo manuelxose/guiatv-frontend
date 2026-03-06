@@ -10,6 +10,7 @@ export interface UserProfile {
   location: string;
   role?: 'admin' | 'editor' | 'user';
   favoriteGenres: string[];
+  preferredPlatforms: string[];
   watchingNow: WatchingNow;
   privacy: UserPrivacy;
   notifications: UserNotifications;
@@ -111,6 +112,25 @@ export interface UserListItem {
   poster?: string;
   rating?: number;
   addedAt?: string;
+}
+
+export interface UserContentInteraction {
+  id: string;
+  userId: string;
+  contentId: string;
+  contentTitle: string;
+  contentType: 'movie' | 'series' | 'program';
+  tmdbId?: number;
+  genres: string[];
+  rating?: number;
+  status: 'seen' | 'watching' | 'pending' | 'dropped';
+  liked?: boolean;
+  addedToList?: boolean;
+  recommended?: boolean;
+  platform?: string;
+  watchedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type Visibility = 'public' | 'friends' | 'private';

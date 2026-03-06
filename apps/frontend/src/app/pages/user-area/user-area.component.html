@@ -1,27 +1,18 @@
-<div
-  class="relative min-h-screen bg-[#0b0f14] text-slate-100"
-  [ngClass]="isCommunityRoute && isMobileView ? 'pb-[6.5rem]' : 'pb-24 md:pb-16'"
->
+<div class="relative min-h-screen bg-[#0b0f14] text-slate-100">
   <div
     class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06)_0,_rgba(11,15,20,0)_55%)] opacity-70"
   ></div>
 
-  <div
-    class="relative mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8 space-y-8"
-    [ngClass]="isCommunityRoute && isMobileView ? 'py-3' : 'py-10'"
-  >
-    <ng-container *ngIf="isAuthenticated$ | async; else loginCTA">
-      <!-- Profile Header -->
+  <ng-container *ngIf="isAuthenticated$ | async; else loginCTA">
+    <div class="hidden md:block max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 relative">
       <ng-container *ngIf="profile$ | async as profile">
         <app-user-profile-header
-          *ngIf="!(isMobileView && (isCommunityRoute || activeTab === 'chat'))"
           [profile]="profile"
           (editProfile)="openEditProfileModal()"
         ></app-user-profile-header>
       </ng-container>
 
-      <!-- Navigation Tabs -->
-      <div class="hidden md:block border-b border-slate-800/80" *ngIf="!isCommunityRoute">
+      <div class="border-b border-slate-800/80" *ngIf="!isCommunityRoute">
         <div
           class="flex items-center gap-2 overflow-x-auto pb-3"
           role="tablist"
@@ -51,7 +42,7 @@
             class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             [ngClass]="activeTab === 'lists' ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
           >
-            Mis Listas
+            Mis listas
           </button>
           <button
             id="tab-social"
@@ -122,9 +113,7 @@
         </div>
       </div>
 
-      <!-- Tab Content -->
       <div [ngSwitch]="activeTab" class="min-h-[400px]">
-        <!-- OVERVIEW TAB -->
         <div
           *ngSwitchCase="'overview'"
           id="panel-overview"
@@ -143,35 +132,8 @@
             [error]="(error$ | async) || null"
             (updateStatus)="onUpdateStatus($event)"
           ></app-user-stats>
-
-          <section class="md:hidden bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4">
-            <div class="flex items-center justify-between gap-3">
-              <div>
-                <p class="text-[11px] uppercase tracking-[0.18em] text-slate-500">Más secciones</p>
-                <h3 class="text-sm font-semibold text-white mt-1">Accesos secundarios</h3>
-              </div>
-            </div>
-            <div class="mt-3 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                (click)="openMoreTab('lists')"
-                class="min-h-[44px] rounded-xl border border-slate-700 text-sm text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              >
-                Mis Listas
-              </button>
-              <button
-                *ngIf="isAdmin$ | async"
-                type="button"
-                (click)="openMoreTab('admin')"
-                class="min-h-[44px] rounded-xl border border-slate-700 text-sm text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              >
-                Admin
-              </button>
-            </div>
-          </section>
         </div>
 
-        <!-- LISTS TAB -->
         <div
           *ngSwitchCase="'lists'"
           id="panel-lists"
@@ -186,7 +148,6 @@
           ></app-user-lists>
         </div>
 
-        <!-- SOCIAL TAB -->
         <div
           *ngSwitchCase="'social'"
           id="panel-social"
@@ -203,7 +164,6 @@
           ></app-user-social-feed>
         </div>
 
-        <!-- FAVORITES TAB -->
         <div
           *ngSwitchCase="'favorites'"
           id="panel-favorites"
@@ -217,7 +177,6 @@
           ></app-user-favorites>
         </div>
 
-        <!-- CHAT TAB -->
         <div
           *ngSwitchCase="'chat'"
           id="panel-chat"
@@ -228,7 +187,6 @@
           <app-user-chat></app-user-chat>
         </div>
 
-        <!-- SETTINGS TAB -->
         <div
           *ngSwitchCase="'settings'"
           id="panel-settings"
@@ -247,291 +205,544 @@
           ></app-user-settings>
         </div>
 
-        <!-- ADMIN TAB -->
-        <ng-container *ngSwitchCase="'admin'">
-          <div
-            *ngIf="isAdmin$ | async"
-            id="panel-admin"
-            role="tabpanel"
-            aria-labelledby="tab-admin"
-            tabindex="0"
-            class="space-y-6"
-          >
-            <section class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 lg:p-8 shadow-[0_20px_40px_rgba(0,0,0,0.35)]">
-              <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                <div class="space-y-2">
-                  <p class="text-xs text-slate-500 uppercase tracking-[0.3em]">Resumen admin</p>
-                  <h3 class="text-xl lg:text-2xl font-semibold text-white">Acceso al panel completo</h3>
-                  <p class="text-sm text-slate-300 max-w-xl">
-                    Esta vista resume la capa administrativa. Para acciones avanzadas y gestion completa,
-                    abre la version completa del panel.
-                  </p>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-3">
-                  <a
-                    routerLink="/admin"
-                    class="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  >
-                    Ir al panel completo
-                  </a>
-                  <button
-                    type="button"
-                    class="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                    disabled
-                  >
-                    Configurar accesos
-                  </button>
-                </div>
+        <div
+          *ngSwitchCase="'admin'"
+          id="panel-admin"
+          role="tabpanel"
+          aria-labelledby="tab-admin"
+          tabindex="0"
+        >
+          <ng-container *ngIf="isAdmin$ | async">
+            <ng-container *ngTemplateOutlet="adminPanel"></ng-container>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <div class="md:hidden relative">
+      <div class="px-4 pt-4 pb-3">
+        <ng-container *ngIf="profile$ | async as profile">
+          <div class="flex items-center gap-3">
+            <div class="relative flex-shrink-0">
+              <div class="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700/80 overflow-hidden">
+                <img
+                  *ngIf="profile.avatar"
+                  [src]="profile.avatar"
+                  class="w-full h-full object-cover"
+                  alt=""
+                />
+                <span
+                  *ngIf="!profile.avatar"
+                  class="w-full h-full flex items-center justify-center text-lg font-bold text-white"
+                >
+                  {{ getProfileInitials(profile.name) }}
+                </span>
               </div>
-            </section>
+              <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#0b0f14]"></span>
+            </div>
 
-            <div class="grid lg:grid-cols-3 gap-6">
-              <div class="space-y-6">
-                <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
-                  <div class="flex items-center justify-between">
-                    <h4 class="text-lg font-semibold text-white">Accesos administrativos</h4>
-                    <span class="text-xs text-slate-500">Revision hoy</span>
-                  </div>
-                  <div class="mt-4 space-y-3 text-sm">
-                    <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                      <div>
-                        <p class="text-slate-200 font-medium">Analitica</p>
-                        <p class="text-xs text-slate-500">Lectura y exportacion</p>
-                      </div>
-                      <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Activo</span>
-                    </div>
-                    <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                      <div>
-                        <p class="text-slate-200 font-medium">Contenido</p>
-                        <p class="text-xs text-slate-500">Gestion editorial</p>
-                      </div>
-                      <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Activo</span>
-                    </div>
-                    <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                      <div>
-                        <p class="text-slate-200 font-medium">Usuarios</p>
-                        <p class="text-xs text-slate-500">Moderacion y roles</p>
-                      </div>
-                      <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Limitado</span>
-                    </div>
-                  </div>
-                </section>
+            <div class="flex-1 min-w-0">
+              <h1 class="text-base font-bold text-white truncate">{{ profile.name }}</h1>
+              <p class="text-xs text-slate-400 truncate">{{ '@' }}{{ profile.username }}</p>
+            </div>
 
-                <section class="bg-slate-900/60 border border-red-500/30 rounded-2xl p-6">
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <h4 class="text-lg font-semibold text-white">Informacion sensible</h4>
-                      <p class="text-xs text-slate-400">Acciones criticas requieren confirmacion.</p>
-                    </div>
-                    <span class="text-[10px] uppercase tracking-[0.3em] text-red-200 border border-red-500/40 px-2 py-1 rounded-full">
-                      Sensible
-                    </span>
-                  </div>
-                  <div class="mt-4 space-y-3 text-sm">
-                    <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                      <div>
-                        <p class="text-slate-200 font-medium">API Keys</p>
-                        <p class="text-xs text-slate-500">************</p>
-                      </div>
-                      <button
-                        type="button"
-                        class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                      >
-                        Rotar
-                      </button>
-                    </div>
-                    <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                      <div>
-                        <p class="text-slate-200 font-medium">Tokens de integracion</p>
-                        <p class="text-xs text-slate-500">************</p>
-                      </div>
-                      <button
-                        type="button"
-                        class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                      >
-                        Revisar
-                      </button>
-                    </div>
-                  </div>
-                </section>
-              </div>
+            <button
+              type="button"
+              (click)="openEditProfileModal()"
+              class="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl border border-slate-700 text-slate-400 hover:text-white"
+              aria-label="Editar perfil"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 20h4l10-10-4-4L4 16v4Zm9-13 4 4" />
+              </svg>
+            </button>
+          </div>
 
-              <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 lg:col-span-2">
-                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-                  <h4 class="text-lg font-semibold text-white">Actividad administrativa</h4>
-                  <button
-                    type="button"
-                    class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  >
-                    Ver log completo
-                  </button>
-                </div>
-                <div class="overflow-x-auto">
-                  <table class="w-full text-sm">
-                    <thead class="text-xs uppercase tracking-wider text-slate-500">
-                      <tr>
-                        <th scope="col" class="text-left py-2">Accion</th>
-                        <th scope="col" class="text-left py-2">Responsable</th>
-                        <th scope="col" class="text-left py-2">Fecha</th>
-                        <th scope="col" class="text-left py-2">Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody class="text-slate-200">
-                      <tr class="border-t border-slate-800/70">
-                        <td class="py-3">Publicacion destacada</td>
-                        <td class="py-3">Marina G.</td>
-                        <td class="py-3">Hace 2 h</td>
-                        <td class="py-3">
-                          <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Confirmado</span>
-                        </td>
-                      </tr>
-                      <tr class="border-t border-slate-800/70">
-                        <td class="py-3">Cambio de rol</td>
-                        <td class="py-3">Equipo Moderacion</td>
-                        <td class="py-3">Hace 1 d</td>
-                        <td class="py-3">
-                          <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">En revision</span>
-                        </td>
-                      </tr>
-                      <tr class="border-t border-slate-800/70">
-                        <td class="py-3">Borrado de contenido</td>
-                        <td class="py-3">Admin GPTV</td>
-                        <td class="py-3">Hace 3 d</td>
-                        <td class="py-3">
-                          <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Auditoria</span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </section>
+          <div class="grid grid-cols-4 gap-1 mt-4 text-center">
+            <div class="bg-slate-900/60 rounded-xl py-2.5">
+              <p class="text-base font-bold text-white">{{ profile.stats.followers | number }}</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Seguidores</p>
+            </div>
+            <div class="bg-slate-900/60 rounded-xl py-2.5">
+              <p class="text-base font-bold text-white">{{ profile.stats.following | number }}</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Siguiendo</p>
+            </div>
+            <div class="bg-slate-900/60 rounded-xl py-2.5">
+              <p class="text-base font-bold text-white">{{ profile.stats.listsCreated | number }}</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Listas</p>
+            </div>
+            <div class="bg-slate-900/60 rounded-xl py-2.5">
+              <p class="text-base font-bold text-white">{{ profile.stats.ratings | number }}</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Valoradas</p>
             </div>
           </div>
         </ng-container>
       </div>
 
-      <nav
-        *ngIf="!isCommunityRoute"
-        class="md:hidden sticky bottom-0 z-30 -mx-4 sm:-mx-6 border-t border-slate-800/90 bg-slate-950/95 backdrop-blur-lg pb-[max(env(safe-area-inset-bottom),0.35rem)] shadow-[0_-10px_26px_rgba(0,0,0,0.5)]"
-        aria-label="Navegación de cuenta móvil"
-      >
-        <div class="grid grid-cols-5 gap-1 px-2 pt-2">
+      <div class="px-4 mb-1">
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1" role="tablist" aria-label="Secciones de cuenta">
           <button
+            *ngFor="let section of (mobileSectionTabsWithAdmin$ | async) || []"
             type="button"
-            (click)="setActiveTab('overview')"
-            class="min-h-[56px] rounded-xl text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 flex flex-col items-center justify-center gap-1"
-            [ngClass]="activeTab === 'overview' ? 'text-white bg-red-600/20 border border-red-500/40' : 'text-slate-400 border border-transparent'"
+            (click)="setActiveTab(section.key)"
+            role="tab"
+            [attr.aria-selected]="activeTab === section.key"
+            class="mobile-chip-tab flex-shrink-0 min-h-[36px] px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [ngClass]="activeTab === section.key ? 'bg-red-600 text-white' : 'bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60'"
           >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 11l9-7 9 7M5 10v10h14V10" />
-            </svg>
-            <span>Resumen</span>
-          </button>
-          <button
-            type="button"
-            (click)="setActiveTab('social')"
-            class="min-h-[56px] rounded-xl text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 flex flex-col items-center justify-center gap-1"
-            [ngClass]="activeTab === 'social' ? 'text-white bg-red-600/20 border border-red-500/40' : 'text-slate-400 border border-transparent'"
-          >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5V4H2v16h5m10 0v-2a3 3 0 00-3-3H10a3 3 0 00-3 3v2m10-9a3 3 0 11-6 0 3 3 0 016 0zm-8 0a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span>Social</span>
-          </button>
-          <button
-            type="button"
-            (click)="setActiveTab('chat')"
-            class="min-h-[56px] rounded-xl text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 flex flex-col items-center justify-center gap-1"
-            [ngClass]="activeTab === 'chat' ? 'text-white bg-red-600/25 border border-red-500/50' : 'text-slate-300 border border-slate-700/60 bg-slate-900/50'"
-          >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m7-2a8 8 0 11-16 0 8 8 0 0116 0z" />
-            </svg>
-            <span>Chat</span>
-          </button>
-          <button
-            type="button"
-            (click)="setActiveTab('favorites')"
-            class="min-h-[56px] rounded-xl text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 flex flex-col items-center justify-center gap-1"
-            [ngClass]="activeTab === 'favorites' ? 'text-white bg-red-600/20 border border-red-500/40' : 'text-slate-400 border border-transparent'"
-          >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364 4.318 12.682a4.5 4.5 0 010-6.364z" />
-            </svg>
-            <span>Favoritos</span>
-          </button>
-          <button
-            type="button"
-            (click)="setActiveTab('settings')"
-            class="min-h-[56px] rounded-xl text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 flex flex-col items-center justify-center gap-1"
-            [ngClass]="activeTab === 'settings' ? 'text-white bg-red-600/20 border border-red-500/40' : 'text-slate-400 border border-transparent'"
-          >
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317a1 1 0 011.35-.936l1.307.523a1 1 0 00.836 0l1.307-.523a1 1 0 011.35.936l.094 1.404a1 1 0 00.55.85l1.235.712a1 1 0 01.365 1.366l-.712 1.235a1 1 0 000 .836l.712 1.235a1 1 0 01-.365 1.366l-1.235.712a1 1 0 00-.55.85l-.094 1.404a1 1 0 01-1.35.936l-1.307-.523a1 1 0 00-.836 0l-1.307.523a1 1 0 01-1.35-.936l-.094-1.404a1 1 0 00-.55-.85l-1.235-.712a1 1 0 01-.365-1.366l.712-1.235a1 1 0 000-.836l-.712-1.235a1 1 0 01.365-1.366l1.235-.712a1 1 0 00.55-.85l.094-1.404z" />
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-            </svg>
-            <span>Ajustes</span>
+            {{ section.label }}
           </button>
         </div>
-      </nav>
+      </div>
 
-      <app-create-list-modal
-        [isOpen]="isCreateListModalOpen"
-        (closeModal)="closeCreateListModal()"
-        (createList)="onCreateList($event)"
-      ></app-create-list-modal>
+      <div class="px-4 pb-6 mobile-scroll-container" [ngSwitch]="activeTab">
+        <ng-container *ngSwitchCase="'overview'">
+          <div class="section-enter">
+            <ng-container *ngIf="(profile$ | async)?.watchingNow?.title as watching">
+              <div class="mb-4 p-4 bg-slate-900/60 border border-slate-800/80 rounded-2xl">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Viendo ahora</p>
+                <p class="text-sm font-semibold text-white truncate">{{ watching }}</p>
+              </div>
+            </ng-container>
 
-      <app-list-details
-        *ngIf="selectedList"
-        [list]="selectedList"
-        [items]="selectedListItems"
-        (closeModal)="onCloseListDetails()"
-        (removeItem)="onRemoveListItem($event)"
-        (addItem)="openAddToListModal()"
-      ></app-list-details>
+            <div class="grid grid-cols-3 gap-3 mb-5">
+              <button
+                type="button"
+                (click)="openCreateListModal()"
+                class="min-h-[72px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-slate-300 hover:text-white active:scale-95 transition-transform"
+              >
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 5.5h8l4 4V18.5A1.5 1.5 0 0 1 16.5 20h-10A1.5 1.5 0 0 1 5 18.5v-11A2 2 0 0 1 7 5.5Zm6 6.5h6M15 9v6" />
+                </svg>
+                <span class="text-xs font-medium">Nueva lista</span>
+              </button>
 
-      <app-add-to-list-modal
-        [isOpen]="isAddToListModalOpen"
-        (closeModal)="closeAddToListModal()"
-        (addItem)="onAddListItem($event)"
-      ></app-add-to-list-modal>
+              <button
+                type="button"
+                (click)="setActiveTab('favorites')"
+                class="min-h-[72px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-slate-300 hover:text-white active:scale-95 transition-transform"
+              >
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.5 4.8 13.3a4.5 4.5 0 1 1 6.36-6.36L12 7.78l.84-.84a4.5 4.5 0 1 1 6.36 6.36L12 20.5Z" />
+                </svg>
+                <span class="text-xs font-medium">Favoritos</span>
+              </button>
 
-      <app-edit-profile-modal
-        [isOpen]="isEditProfileModalOpen"
-        [profile]="profile$ | async"
-        (closeModal)="closeEditProfileModal()"
-        (saveProfile)="onSaveProfile($event)"
-      ></app-edit-profile-modal>
-    </ng-container>
+              <button
+                type="button"
+                (click)="setActiveTab('chat')"
+                class="relative min-h-[72px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-red-900/20 border border-red-500/30 text-red-300 hover:text-red-200 active:scale-95 transition-transform"
+              >
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 8.5h10M7 12h6m-5.5 7.5 3.53-2.35H17A4 4 0 0 0 21 13.15V8.85A4 4 0 0 0 17 4.85H7A4 4 0 0 0 3 8.85v4.3a4 4 0 0 0 4 4h.5v2.35Z" />
+                </svg>
+                <span class="text-xs font-medium">Chat</span>
+                <span
+                  *ngIf="unreadChatCount$ | async as count"
+                  class="absolute top-2.5 right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center"
+                >
+                  {{ count > 99 ? '99+' : count }}
+                </span>
+              </button>
+            </div>
 
-    <ng-template #loginCTA>
-      <div class="min-h-[60vh] flex items-center justify-center">
-        <div class="bg-slate-900/70 border border-slate-800/80 rounded-3xl p-10 shadow-[0_20px_40px_rgba(0,0,0,0.35)] text-center max-w-lg">
-          <div class="h-16 w-16 rounded-2xl border border-slate-700 flex items-center justify-center mx-auto mb-6">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-7 w-7 text-slate-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5s-3 1.343-3 3 1.343 3 3 3z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.5 19a6.5 6.5 0 0113 0" />
-            </svg>
+            <div class="mb-5">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500">Mis listas</p>
+                <button type="button" (click)="setActiveTab('lists')" class="text-xs text-red-400 min-h-[36px]">
+                  Ver todas
+                </button>
+              </div>
+
+              <div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+                <div
+                  *ngFor="let list of ((lists$ | async) || []).slice(0, 6)"
+                  class="flex-shrink-0 w-[120px] cursor-pointer active:scale-95 transition-transform"
+                  (click)="onSelectList(list)"
+                >
+                  <div class="w-full h-[160px] rounded-xl bg-slate-800 border border-slate-700/60 overflow-hidden mb-2">
+                    <img
+                      *ngIf="list.cover"
+                      [src]="list.cover"
+                      class="w-full h-full object-cover"
+                      alt=""
+                      loading="lazy"
+                    />
+                    <div
+                      *ngIf="!list.cover"
+                      class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900"
+                    >
+                      <svg class="w-8 h-8 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 5.5h8l4 4V18.5A1.5 1.5 0 0 1 16.5 20h-10A1.5 1.5 0 0 1 5 18.5v-11A2 2 0 0 1 7 5.5Z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p class="text-xs font-medium text-white truncate">{{ list.title }}</p>
+                  <p class="text-[10px] text-slate-500">{{ list.itemsCount }} títulos</p>
+                </div>
+
+                <button
+                  type="button"
+                  (click)="openCreateListModal()"
+                  class="flex-shrink-0 w-[120px] h-[160px] rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center text-slate-600 hover:border-slate-500 hover:text-slate-400 active:scale-95 transition-all"
+                  aria-label="Crear nueva lista"
+                >
+                  <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="mb-5">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500">Favoritos recientes</p>
+                <button type="button" (click)="setActiveTab('favorites')" class="text-xs text-red-400 min-h-[36px]">
+                  Ver todos
+                </button>
+              </div>
+
+              <div class="space-y-2">
+                <div
+                  *ngFor="let favorite of ((favorites$ | async) || []).slice(0, 3)"
+                  class="flex items-center gap-3 p-3 bg-slate-900/60 border border-slate-800/80 rounded-xl"
+                >
+                  <div class="w-10 h-10 rounded-lg bg-slate-800 overflow-hidden flex-shrink-0">
+                    <img
+                      *ngIf="favorite.image"
+                      [src]="favorite.image"
+                      class="w-full h-full object-cover"
+                      alt=""
+                      loading="lazy"
+                    />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-white truncate">{{ favorite.title }}</p>
+                    <p class="text-xs text-slate-500">{{ favorite.subtitle || favorite.type }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <h2 class="text-2xl font-semibold text-white mb-3">Acceso privado</h2>
-          <p class="text-sm text-slate-300 mb-6">
-            Conectate para gestionar tu perfil, crear listas personalizadas y compartir tus descubrimientos con amigos.
-          </p>
-          <a
-            routerLink="/iniciar-sesion"
-            class="inline-flex items-center justify-center min-h-[44px] px-8 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-          >
-            Iniciar sesion
-          </a>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'lists'">
+          <div class="section-enter">
+            <app-user-lists
+              [lists]="(lists$ | async) || []"
+              (create)="openCreateListModal()"
+              (select)="onSelectList($event)"
+            ></app-user-lists>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'social'">
+          <div class="section-enter">
+            <app-user-social-feed
+              [activities]="(friendsActivities$ | async) || []"
+              [friends]="(friends$ | async) || []"
+              [recommendations]="(recommendations$ | async) || []"
+              (updateStatus)="onUpdateStatus($event)"
+              (toggleFollow)="onToggleFollow($event)"
+            ></app-user-social-feed>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'favorites'">
+          <div class="section-enter">
+            <app-user-favorites
+              [favorites]="(favorites$ | async) || []"
+              (removeFavorite)="onRemoveFavorite($event)"
+            ></app-user-favorites>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'chat'">
+          <div class="mobile-chat-wrapper section-enter">
+            <app-user-chat></app-user-chat>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'settings'">
+          <div class="section-enter">
+            <app-user-settings
+              *ngIf="profile$ | async as profile"
+              [profile]="profile"
+              [privacy]="profile.privacy"
+              [notifications]="profile.notifications"
+              (saveSettings)="onSaveSettings($event)"
+              (editProfile)="openEditProfileModal()"
+              (logout)="onLogout()"
+            ></app-user-settings>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'admin'">
+          <div class="section-enter">
+            <ng-container *ngIf="isAdmin$ | async">
+              <ng-container *ngTemplateOutlet="adminPanel"></ng-container>
+            </ng-container>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <app-create-list-modal
+      [isOpen]="isCreateListModalOpen"
+      (closeModal)="closeCreateListModal()"
+      (createList)="onCreateList($event)"
+    ></app-create-list-modal>
+
+    <app-list-details
+      *ngIf="selectedList"
+      [list]="selectedList"
+      [items]="selectedListItems"
+      (closeModal)="onCloseListDetails()"
+      (removeItem)="onRemoveListItem($event)"
+      (addItem)="openAddToListModal()"
+    ></app-list-details>
+
+    <app-add-to-list-modal
+      [isOpen]="isAddToListModalOpen"
+      (closeModal)="closeAddToListModal()"
+      (addItem)="onAddListItem($event)"
+    ></app-add-to-list-modal>
+
+    <app-edit-profile-modal
+      [isOpen]="isEditProfileModalOpen"
+      [profile]="profile$ | async"
+      (closeModal)="closeEditProfileModal()"
+      (saveProfile)="onSaveProfile($event)"
+    ></app-edit-profile-modal>
+
+    <ng-template #adminPanel>
+      <div class="space-y-6">
+        <section class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 lg:p-8 shadow-[0_20px_40px_rgba(0,0,0,0.35)]">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div class="space-y-2">
+              <p class="text-xs text-slate-500 uppercase tracking-[0.3em]">Resumen admin</p>
+              <h3 class="text-xl lg:text-2xl font-semibold text-white">Acceso al panel completo</h3>
+              <p class="text-sm text-slate-300 max-w-xl">
+                Esta vista resume la capa administrativa. Para acciones avanzadas y gestión completa,
+                abre la versión completa del panel.
+              </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <a
+                routerLink="/admin"
+                class="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              >
+                Ir al panel completo
+              </a>
+              <button
+                type="button"
+                class="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                disabled
+              >
+                Configurar accesos
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+          <div class="space-y-6">
+            <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
+              <div class="flex items-center justify-between">
+                <h4 class="text-lg font-semibold text-white">Accesos administrativos</h4>
+                <span class="text-xs text-slate-500">Revisión hoy</span>
+              </div>
+              <div class="mt-4 space-y-3 text-sm">
+                <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                  <div>
+                    <p class="text-slate-200 font-medium">Analítica</p>
+                    <p class="text-xs text-slate-500">Lectura y exportación</p>
+                  </div>
+                  <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Activo</span>
+                </div>
+                <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                  <div>
+                    <p class="text-slate-200 font-medium">Contenido</p>
+                    <p class="text-xs text-slate-500">Gestión editorial</p>
+                  </div>
+                  <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Activo</span>
+                </div>
+                <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                  <div>
+                    <p class="text-slate-200 font-medium">Usuarios</p>
+                    <p class="text-xs text-slate-500">Moderación y roles</p>
+                  </div>
+                  <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Limitado</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="bg-slate-900/60 border border-red-500/30 rounded-2xl p-6">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h4 class="text-lg font-semibold text-white">Información sensible</h4>
+                  <p class="text-xs text-slate-400">Acciones críticas requieren confirmación.</p>
+                </div>
+                <span class="text-[10px] uppercase tracking-[0.3em] text-red-200 border border-red-500/40 px-2 py-1 rounded-full">
+                  Sensible
+                </span>
+              </div>
+              <div class="mt-4 space-y-3 text-sm">
+                <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                  <div>
+                    <p class="text-slate-200 font-medium">API Keys</p>
+                    <p class="text-xs text-slate-500">************</p>
+                  </div>
+                  <button
+                    type="button"
+                    class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  >
+                    Rotar
+                  </button>
+                </div>
+                <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                  <div>
+                    <p class="text-slate-200 font-medium">Tokens de integración</p>
+                    <p class="text-xs text-slate-500">************</p>
+                  </div>
+                  <button
+                    type="button"
+                    class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  >
+                    Revisar
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 lg:col-span-2">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <h4 class="text-lg font-semibold text-white">Actividad administrativa</h4>
+              <button
+                type="button"
+                class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              >
+                Ver log completo
+              </button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="text-xs uppercase tracking-wider text-slate-500">
+                  <tr>
+                    <th scope="col" class="text-left py-2">Acción</th>
+                    <th scope="col" class="text-left py-2">Responsable</th>
+                    <th scope="col" class="text-left py-2">Fecha</th>
+                    <th scope="col" class="text-left py-2">Estado</th>
+                  </tr>
+                </thead>
+                <tbody class="text-slate-200">
+                  <tr class="border-t border-slate-800/70">
+                    <td class="py-3">Publicación destacada</td>
+                    <td class="py-3">Marina G.</td>
+                    <td class="py-3">Hace 2 h</td>
+                    <td class="py-3">
+                      <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Confirmado</span>
+                    </td>
+                  </tr>
+                  <tr class="border-t border-slate-800/70">
+                    <td class="py-3">Cambio de rol</td>
+                    <td class="py-3">Equipo Moderación</td>
+                    <td class="py-3">Hace 1 d</td>
+                    <td class="py-3">
+                      <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">En revisión</span>
+                    </td>
+                  </tr>
+                  <tr class="border-t border-slate-800/70">
+                    <td class="py-3">Borrado de contenido</td>
+                    <td class="py-3">Admin GPTV</td>
+                    <td class="py-3">Hace 3 d</td>
+                    <td class="py-3">
+                      <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Auditoría</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
       </div>
     </ng-template>
-  </div>
+  </ng-container>
+
+  <ng-template #loginCTA>
+    <div
+      class="md:hidden relative min-h-0 flex flex-col items-center justify-center px-6 py-10 text-center"
+      style="min-height: calc(100dvh - var(--top-bar-h, 0px) - var(--bottom-nav-h, 0px))"
+    >
+      <div class="mb-8">
+        <div class="flex items-center justify-center gap-2 mb-4">
+          <span class="text-4xl font-black text-white tracking-tight">GUIA</span>
+          <span class="w-3 h-3 rounded-full bg-red-500"></span>
+          <span class="text-4xl font-black text-white tracking-tight">TV</span>
+        </div>
+        <p class="text-slate-400 text-sm leading-relaxed max-w-xs">
+          Descubre qué ver, guarda tus favoritos y comparte con amigos.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-2 mb-10">
+        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
+          87 canales en directo
+        </span>
+        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
+          Películas y series
+        </span>
+        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
+          Chat en tiempo real
+        </span>
+        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
+          Listas personalizadas
+        </span>
+      </div>
+
+      <div class="w-full max-w-xs space-y-3">
+        <a
+          routerLink="/registro"
+          class="block w-full min-h-[52px] flex items-center justify-center rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-base shadow-lg shadow-red-900/30 active:scale-[0.98] transition-transform"
+        >
+          Crear cuenta gratis
+        </a>
+        <a
+          routerLink="/iniciar-sesion"
+          class="block w-full min-h-[52px] flex items-center justify-center rounded-2xl border border-slate-700 text-slate-200 font-semibold text-sm hover:border-slate-500 active:scale-[0.98] transition-transform"
+        >
+          Ya tengo cuenta
+        </a>
+      </div>
+    </div>
+
+    <div class="hidden md:flex items-center justify-center min-h-[60vh] relative">
+      <div class="bg-slate-900/70 border border-slate-800/80 rounded-3xl p-10 shadow-[0_20px_40px_rgba(0,0,0,0.35)] text-center max-w-lg">
+        <div class="h-16 w-16 rounded-2xl border border-slate-700 flex items-center justify-center mx-auto mb-6">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-7 w-7 text-slate-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5s-3 1.343-3 3 1.343 3 3 3z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.5 19a6.5 6.5 0 0113 0" />
+          </svg>
+        </div>
+        <h2 class="text-2xl font-semibold text-white mb-3">Acceso privado</h2>
+        <p class="text-sm text-slate-300 mb-6">
+          Conéctate para gestionar tu perfil, crear listas personalizadas y compartir tus descubrimientos con amigos.
+        </p>
+        <a
+          routerLink="/iniciar-sesion"
+          class="inline-flex items-center justify-center min-h-[44px] px-8 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        >
+          Iniciar sesión
+        </a>
+      </div>
+    </div>
+  </ng-template>
 </div>

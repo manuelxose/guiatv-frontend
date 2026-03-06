@@ -42,6 +42,7 @@ export interface ProgramLayoutDTO {
   category?: string;
   image?: string;
   rating?: any;
+  tmdbId?: number;
   description?: string;
   timeSlotIndex: number | null;
   gridColumnStart?: number;
@@ -162,7 +163,8 @@ export class ProgramLayoutBuilder {
         durationMinutes: program.duration,
         category: program.genre,
         image: fields === 'full' ? this.normalizeImageValue(program.image) : undefined,
-        rating: (program as any).rating,
+        rating: program.rating,
+        tmdbId: program.tmdbId,
         description: fields === 'full' ? program.description : undefined,
         timeSlotIndex: layoutForTopFields?.timeSlotIndex ?? null,
         gridColumnStart: layoutForTopFields?.gridColumnStart,

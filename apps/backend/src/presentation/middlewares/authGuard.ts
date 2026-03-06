@@ -35,3 +35,21 @@ export const createAuthGuard =
       next(error);
     }
   };
+
+export const createOptionalAuthGuard =
+  (authService: AuthService) =>
+  async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const token = extractToken(req);
+      if (!token) {
+        next();
+        return;
+      }
+
+      const user = await authService.getSession(token);
+      (req as AuthenticatedRequest).user = user;
+      next();
+    } catch {
+      next();
+    }
+  };

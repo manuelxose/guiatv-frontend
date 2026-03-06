@@ -506,3 +506,93 @@ main {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+
+// ===============================================
+// MOBILE NAVIGATION AND CHAT LAYOUT
+// ===============================================
+
+:root {
+  --top-bar-h: 0px;
+  --bottom-nav-h: 0px;
+}
+
+.mobile-nav-tab {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: color 150ms ease, transform 150ms ease;
+
+  &:active {
+    transform: scale(0.88);
+  }
+}
+
+.mobile-chip-tab {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-chat-wrapper app-user-chat {
+  display: block;
+}
+
+.mobile-chat-wrapper app-user-chat > div {
+  height: calc(
+    100dvh
+    - var(--top-bar-h, 0px)
+    - var(--bottom-nav-h, 0px)
+    - env(safe-area-inset-bottom)
+    - 3.5rem
+    - 7rem
+  ) !important;
+  min-height: 400px;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0.8) 25%,
+    rgba(51, 65, 85, 0.6) 50%,
+    rgba(30, 41, 59, 0.8) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-enter {
+  animation: fadeSlideUp 180ms ease-out forwards;
+}
+
+.mobile-scroll-container {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}

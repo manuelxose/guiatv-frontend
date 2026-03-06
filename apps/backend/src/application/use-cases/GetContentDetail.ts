@@ -1,143 +1,466 @@
 import { IProgramRepository } from '@/domain/repositories/IProgramRepository';
 import { IChannelRepository } from '@/domain/repositories/IChannelRepository';
-import { NotFoundError } from '@/shared/errors';
-import { MediaCardDTO, MediaDetailDTO } from '../dto/MediaDTO';
-import { MediaMapper } from '../mappers/MediaMapper';
-import { ChannelId } from '@/domain/value-objects/ChannelId';
-import { DateRange } from '@/domain/value-objects/DateRange';
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
-import { Channel } from '@/domain/entities/Channel';
+import { NotFoundError } from '@/shared/errors';
+import { ProgramLayoutBuilder, ProgramLayoutDTO } from '../services/ProgramLayoutBuilder';
+import { TMDBDetailResult, TMDBService } from '@/infrastructure/external/TMDBService';
+import {
+  StreamingProvidersService,
+  WatchProvidersResult,
+} from '@/infrastructure/external/StreamingProvidersService';
+import { IUserContentInteractionRepository } from '@/domain/repositories/IUserContentInteractionRepository';
+import { UserFollowModel } from '@/infrastructure/database/models/UserFollow.model';
+import { UserContentInteractionModel } from '@/infrastructure/database/models/UserContentInteraction.model';
+import { UserListItemModel } from '@/infrastructure/database/models/UserListItem.model';
+import { UserListModel } from '@/infrastructure/database/models/UserList.model';
+import { DateUtils } from '@/shared/utils/dateUtils';
 
 export interface GetContentDetailRequest {
-  id: string;
+  programId: string;
+  userId?: string;
   expand?: string[];
 }
 
-export interface GetContentDetailResponse {
-  item: MediaDetailDTO;
+export interface NormalizedProvider {
+  id: number;
+  name: string;
+  logoUrl: string;
+  type: 'flatrate' | 'rent' | 'buy' | 'free';
+  price?: string;
+  deepLink?: string;
 }
 
-/**
- * Returns an enriched media detail card with optional related and schedule expansions.
- */
+export interface GetContentDetailResponse {
+  program: ProgramLayoutDTO & {
+    tmdbId?: number;
+    synopsis?: string;
+    cast?: Array<{ name: string; character: string; profile?: string }>;
+    director?: string;
+    year?: number;
+    runtime?: number;
+    tmdbRating?: number;
+    tmdbRatingCount?: number;
+  };
+  whereToWatch?: {
+    flatrate: NormalizedProvider[];
+    rent: NormalizedProvider[];
+    buy: NormalizedProvider[];
+    free: NormalizedProvider[];
+    tmdbLink: string;
+  };
+  userInteraction?: {
+    status: string;
+    rating?: number;
+    liked?: boolean;
+    inWatchlist: boolean;
+    lists: string[];
+  };
+  related?: ProgramLayoutDTO[];
+  upcomingAirings?: Array<{
+    channelName: string;
+    channelIcon?: string;
+    start: string;
+    end: string;
+  }>;
+  socialSummary?: {
+    friendsWhoWatched: number;
+    avgFriendRating?: number;
+    topReview?: { userName: string; text: string; rating: number };
+  };
+}
+
+type TmdbContentType = 'movie' | 'tv';
+
 export class GetContentDetail {
   private readonly ttlSeconds =
     Number(process.env.CONTENT_DETAIL_CACHE_TTL_SEC || 1800) || 1800;
+  private readonly layoutBuilder = new ProgramLayoutBuilder();
+  private readonly timeSlots = this.layoutBuilder.buildTimeSlots();
 
   constructor(
     private readonly programRepository: IProgramRepository,
     private readonly channelRepository: IChannelRepository,
-    private readonly cacheRepository: ICacheRepository
+    private readonly cacheRepository: ICacheRepository,
+    private readonly tmdbService: TMDBService,
+    private readonly streamingProvidersService: StreamingProvidersService,
+    private readonly interactionRepository: IUserContentInteractionRepository
   ) {}
 
-  /**
-   * Loads the content detail using cache when possible.
-   */
   async execute(
     request: GetContentDetailRequest
   ): Promise<GetContentDetailResponse> {
-    const expand = (request.expand || []).map((e) => e.toLowerCase()).sort();
-    const cacheKey = `bff:content:${request.id}:${expand.join('|') || 'base'}`;
-    const cached = await this.cacheRepository.get<GetContentDetailResponse>(
-      cacheKey
-    );
-    if (cached) return cached;
+    const expand = Array.from(
+      new Set((request.expand || []).map((item) => String(item).toLowerCase()))
+    ).sort();
+    const cacheKey = [
+      'content:detail',
+      request.programId,
+      request.userId || 'anon',
+      expand.join('|') || 'base',
+    ].join(':');
 
-    const program = await this.programRepository.findById(request.id);
-    if (!program) {
-      throw new NotFoundError('Program', request.id);
+    const cached =
+      await this.cacheRepository.get<GetContentDetailResponse>(cacheKey);
+    if (cached) {
+      return cached;
     }
 
-    const channel = await this.channelRepository.findById(
-      ChannelId.create(program.channelId)
+    const program = await this.programRepository.findById(request.programId);
+    if (!program) {
+      throw new NotFoundError('Program', request.programId);
+    }
+
+    const inferredType = this.inferTmdbContentType(program.genre);
+    const resolvedTmdb = await this.resolveTmdb(
+      program.tmdbId,
+      inferredType,
+      program.title,
+      program.year
     );
 
-    const related = expand.includes('related')
-      ? await this.loadRelated(program.id, program.date, program.channelId, channel)
-      : undefined;
+    const layout =
+      this.layoutBuilder.buildProgramLayouts(
+        [program],
+        program.date,
+        this.timeSlots,
+        undefined,
+        'full'
+      )[0] || this.fallbackLayout(program);
 
-    const schedule = expand.includes('schedule')
-      ? await this.loadSchedule(program.date, program.channelId, channel)
-      : undefined;
+    const response: GetContentDetailResponse = {
+      program: {
+        ...layout,
+        tmdbId: resolvedTmdb.tmdbId,
+        synopsis: resolvedTmdb.detail?.overview || program.description,
+        cast: this.mapCast(resolvedTmdb.detail),
+        director: this.getDirector(resolvedTmdb.detail),
+        year: this.resolveYear(program.year, resolvedTmdb.detail),
+        runtime: this.resolveRuntime(resolvedTmdb.detail),
+        tmdbRating:
+          typeof resolvedTmdb.detail?.vote_average === 'number'
+            ? resolvedTmdb.detail.vote_average
+            : program.rating
+              ? Number(program.rating)
+              : undefined,
+        tmdbRatingCount:
+          typeof resolvedTmdb.detail?.vote_count === 'number'
+            ? resolvedTmdb.detail.vote_count
+            : undefined,
+      },
+    };
 
-    const item = MediaMapper.toDetail(
-      program,
-      channel,
-      related,
-      schedule,
-      {
-        vodProviders: this.extractVodProviders(program),
-        socialMetrics: this.extractSocialMetrics(program),
-      }
-    );
+    if (resolvedTmdb.providers) {
+      response.whereToWatch = this.mapWatchProviders(resolvedTmdb.providers);
+    }
 
-    const response: GetContentDetailResponse = { item };
+    if (request.userId) {
+      response.userInteraction = await this.loadUserInteraction(
+        request.userId,
+        request.programId
+      );
+    }
+
+    if (!expand.length || expand.includes('related')) {
+      response.related = await this.loadRelated(program.id, program.date, program.genre);
+    }
+
+    if (!expand.length || expand.includes('schedule')) {
+      response.upcomingAirings = await this.loadUpcomingAirings(
+        program.title,
+        program.date
+      );
+    }
+
+    if (expand.includes('social') && request.userId) {
+      response.socialSummary = await this.loadSocialSummary(
+        request.userId,
+        request.programId,
+        resolvedTmdb.tmdbId,
+        program.title
+      );
+    }
+
     await this.cacheRepository.set(cacheKey, response, this.ttlSeconds);
     return response;
+  }
+
+  private async resolveTmdb(
+    existingTmdbId: number | undefined,
+    type: TmdbContentType | null,
+    title: string,
+    year?: string
+  ): Promise<{
+    tmdbId?: number;
+    detail: TMDBDetailResult | null;
+    providers: WatchProvidersResult | null;
+  }> {
+    if (!type) {
+      return { tmdbId: existingTmdbId, detail: null, providers: null };
+    }
+
+    let tmdbId = existingTmdbId;
+    if (!tmdbId) {
+      const resolved =
+        type === 'movie'
+          ? await this.tmdbService.searchMovie(title, year ? Number(year) : undefined)
+          : await this.tmdbService.searchSeries(title.replace(/T\\d+.*/, '').trim());
+      tmdbId = resolved?.id;
+    }
+
+    if (!tmdbId) {
+      return { tmdbId: undefined, detail: null, providers: null };
+    }
+
+    const [detail, providers] = await Promise.all([
+      type === 'movie'
+        ? this.tmdbService.getMovieById(tmdbId)
+        : this.tmdbService.getTVById(tmdbId),
+      type === 'movie'
+        ? this.streamingProvidersService.getMovieProviders(tmdbId)
+        : this.streamingProvidersService.getTVProviders(tmdbId),
+    ]);
+
+    return { tmdbId, detail, providers };
+  }
+
+  private async loadUserInteraction(userId: string, contentId: string) {
+    const [interaction, listItems] = await Promise.all([
+      this.interactionRepository.findByUserAndContent(userId, contentId),
+      UserListItemModel.find({ userId, contentId }).lean().exec(),
+    ]);
+
+    const listIds = listItems.map((item: any) => item.listId).filter(Boolean);
+    const lists = listIds.length
+      ? await UserListModel.find({ _id: { $in: listIds } }).lean().exec()
+      : [];
+
+    if (!interaction && !listItems.length) {
+      return undefined;
+    }
+
+    return {
+      status: interaction?.status || (listItems.length ? 'pending' : 'unknown'),
+      rating: interaction?.rating,
+      liked: interaction?.liked,
+      inWatchlist: listItems.length > 0,
+      lists: lists.map((list: any) => String(list.title || '')),
+    };
   }
 
   private async loadRelated(
     programId: string,
     date: string,
-    channelId: string,
-    channel: Channel | null
-  ): Promise<MediaCardDTO[]> {
-    const sameDay = await this.programRepository.findByDate(date, 'minimal');
-
-    return sameDay
-      .filter(
-        (program) =>
-          program.channelId === channelId &&
-          program.id !== programId &&
-          program.startTime > new Date()
+    genre?: string
+  ): Promise<ProgramLayoutDTO[]> {
+    const programs = await this.programRepository.findByDate(date, 'full');
+    const related = programs
+      .filter((program) => program.id !== programId)
+      .filter((program) =>
+        genre
+          ? String(program.genre || '')
+              .toLowerCase()
+              .includes(String(genre).toLowerCase())
+          : true
       )
-      .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
-      .slice(0, 8)
-      .map((program) => MediaMapper.fromProgram(program, channel));
-  }
+      .sort((a, b) => {
+        const imageDiff = Number(Boolean(b.image)) - Number(Boolean(a.image));
+        if (imageDiff !== 0) return imageDiff;
+        return a.startTime.getTime() - b.startTime.getTime();
+      })
+      .slice(0, 8);
 
-  private async loadSchedule(
-    date: string,
-    channelId: string,
-    channel: Channel | null
-  ): Promise<MediaCardDTO[]> {
-    const range = DateRange.fromString(date);
-    const programs = await this.programRepository.findByChannel(
-      ChannelId.create(channelId),
-      range
+    return this.layoutBuilder.buildProgramLayouts(
+      related,
+      date,
+      this.timeSlots,
+      undefined,
+      'full'
     );
+  }
 
-    return programs
+  private async loadUpcomingAirings(title: string, date: string) {
+    const dates = [date, DateUtils.getTomorrowYYYYMMDD()];
+    const [channels, programsByDate] = await Promise.all([
+      this.channelRepository.findAll(),
+      Promise.all(dates.map((day) => this.programRepository.findByDate(day, 'minimal'))),
+    ]);
+    const channelMap = new Map(channels.map((channel) => [channel.id, channel]));
+    const normalizedTitle = this.normalizeTitle(title);
+
+    return programsByDate
+      .flat()
+      .filter((program) => this.normalizeTitle(program.title) === normalizedTitle)
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
-      .map((program) => MediaMapper.fromProgram(program, channel));
+      .slice(0, 6)
+      .map((program) => {
+        const channel = channelMap.get(program.channelId);
+        return {
+          channelName: channel?.name || program.channelId,
+          channelIcon: channel?.icon || undefined,
+          start: program.startTime.toISOString(),
+          end: program.endTime.toISOString(),
+        };
+      });
   }
 
-  private extractVodProviders(program: any) {
-    const details = program?.details || {};
-    const raw = details.vodProviders || details.whereToWatch || [];
-    if (!Array.isArray(raw)) return undefined;
-    return raw
-      .map((p) => ({
-        provider: p.provider || p.name || p.id,
-        link: p.link || p.url,
-        price: p.price || p.type || p.tier,
-      }))
-      .filter((p) => p.provider);
-  }
+  private async loadSocialSummary(
+    userId: string,
+    contentId: string,
+    tmdbId: number | undefined,
+    title: string
+  ) {
+    const follows = await UserFollowModel.find({ followerId: userId }).lean().exec();
+    const friendIds = follows.map((item) => String(item.followeeId));
 
-  private extractSocialMetrics(program: any) {
-    const details = program?.details || {};
-    const social = details.socialMetrics || details.social || {};
-    const average =
-      social.average ??
-      social.friendsRating ??
-      (typeof program.rating === 'number' ? program.rating : undefined);
+    if (!friendIds.length) {
+      return {
+        friendsWhoWatched: 0,
+      };
+    }
 
+    const orConditions: Array<Record<string, unknown>> = [
+      { contentId },
+      { contentTitle: title },
+    ];
+    if (tmdbId) {
+      orConditions.push({ tmdbId });
+    }
+
+    const stats = await UserContentInteractionModel.aggregate([
+      {
+        $match: {
+          userId: { $in: friendIds },
+          $or: orConditions,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          users: { $addToSet: '$userId' },
+          avgFriendRating: { $avg: '$rating' },
+        },
+      },
+    ]).exec();
+
+    const item = stats[0];
     return {
-      friendsRating: social.friendsRating ?? average ?? null,
-      topReview: social.topReview || null,
-      ratingCount: social.ratingCount || social.count || undefined,
-      average: average ?? undefined,
+      friendsWhoWatched: Array.isArray(item?.users) ? item.users.length : 0,
+      avgFriendRating:
+        typeof item?.avgFriendRating === 'number'
+          ? Number(item.avgFriendRating.toFixed(1))
+          : undefined,
+    };
+  }
+
+  private mapWatchProviders(providers: WatchProvidersResult) {
+    return {
+      flatrate: this.normalizeProviders(providers, 'flatrate'),
+      rent: this.normalizeProviders(providers, 'rent'),
+      buy: this.normalizeProviders(providers, 'buy'),
+      free: this.normalizeProviders(providers, 'free'),
+      tmdbLink: providers.link,
+    };
+  }
+
+  private normalizeProviders(
+    providers: WatchProvidersResult,
+    type: 'flatrate' | 'rent' | 'buy' | 'free'
+  ): NormalizedProvider[] {
+    return (providers[type] || []).map((provider) => ({
+      id: provider.providerId,
+      name: provider.providerName,
+      logoUrl: provider.logoPath
+        ? this.streamingProvidersService.getLogoUrl(provider.logoPath)
+        : '',
+      type,
+      deepLink: providers.link || undefined,
+    }));
+  }
+
+  private mapCast(detail: TMDBDetailResult | null) {
+    if (!detail?.credits?.cast?.length) {
+      return [];
+    }
+
+    return detail.credits.cast.slice(0, 8).map((castMember) => ({
+      name: castMember.name,
+      character: String(castMember.character || ''),
+      profile: this.tmdbService.getImageUrl(castMember.profile_path || null),
+    }));
+  }
+
+  private getDirector(detail: TMDBDetailResult | null): string | undefined {
+    const crew = detail?.credits?.crew || [];
+    const director = crew.find(
+      (person) => person.job === 'Director' || person.job === 'Creator'
+    );
+    return director?.name;
+  }
+
+  private resolveYear(
+    year: string | undefined,
+    detail: TMDBDetailResult | null
+  ): number | undefined {
+    const rawYear =
+      year ||
+      detail?.release_date?.split('-')[0] ||
+      detail?.first_air_date?.split('-')[0];
+    return rawYear ? Number(rawYear) : undefined;
+  }
+
+  private resolveRuntime(detail: TMDBDetailResult | null): number | undefined {
+    if (!detail) {
+      return undefined;
+    }
+
+    if (typeof detail.runtime === 'number') {
+      return detail.runtime;
+    }
+
+    if (Array.isArray(detail.episode_run_time) && detail.episode_run_time.length) {
+      return Number(detail.episode_run_time[0]);
+    }
+
+    return undefined;
+  }
+
+  private inferTmdbContentType(genre?: string): TmdbContentType | null {
+    const normalized = String(genre || '').toLowerCase();
+    if (!normalized) return null;
+    if (normalized.includes('serie')) {
+      return 'tv';
+    }
+    if (normalized.includes('cine') || normalized.includes('pel')) {
+      return 'movie';
+    }
+    return null;
+  }
+
+  private normalizeTitle(value: string): string {
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\\u0300-\\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
+  }
+
+  private fallbackLayout(program: any): ProgramLayoutDTO {
+    return {
+      id: program.id,
+      channelId: program.channelId,
+      title: program.title,
+      start: program.startTime.toISOString(),
+      end: program.endTime.toISOString(),
+      durationMinutes: program.duration,
+      category: program.genre,
+      image: program.image,
+      rating: program.rating,
+      tmdbId: program.tmdbId,
+      description: program.description,
+      timeSlotIndex: null,
+      crossesMidnight: false,
+      fieldsProvided: 'full',
     };
   }
 }

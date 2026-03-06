@@ -3,6 +3,8 @@ import { GetDiscoveryHome } from '@/application/use-cases/GetDiscoveryHome';
 import { SearchDiscoveryContent } from '@/application/use-cases/SearchDiscoveryContent';
 import { successResponse } from '@/shared/types/ApiResponse';
 import { ValidationError } from '@/shared/errors';
+import { GetPersonalizedRecommendations } from '@/application/use-cases/GetPersonalizedRecommendations';
+import { AuthenticatedRequest } from '../middlewares/authGuard';
 
 /**
  * Controller for discovery experiences such as home feed and search.
@@ -10,7 +12,8 @@ import { ValidationError } from '@/shared/errors';
 export class DiscoveryController {
   constructor(
     private readonly getDiscoveryHome: GetDiscoveryHome,
-    private readonly searchDiscoveryContent: SearchDiscoveryContent
+    private readonly searchDiscoveryContent: SearchDiscoveryContent,
+    private readonly getPersonalizedRecommendations: GetPersonalizedRecommendations
   ) {}
 
   /**
@@ -89,5 +92,28 @@ export class DiscoveryController {
         }
       )
     );
+  }
+
+  async forYou(req: AuthenticatedRequest, res: Response): Promise<void> {
+    if (!req.user?.id) {
+      throw new ValidationError('Authentication required');
+    }
+
+    const limit = req.query.limit ? Number(req.query.limit) : undefined;
+    const excludeIds = req.query.excludeIds
+      ? String(req.query.excludeIds)
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : undefined;
+
+    const items = await this.getPersonalizedRecommendations.execute({
+      userId: req.user.id,
+      limit,
+      context: (req.query.context as any) || 'home',
+      excludeIds,
+    });
+
+    res.status(200).json(successResponse({ items }));
   }
 }

@@ -35,6 +35,7 @@ const EMPTY_PROFILE: UserProfile = {
   location: '-',
   role: 'user',
   favoriteGenres: [],
+  preferredPlatforms: [],
   watchingNow: {
     title: '',
     mood: '',
@@ -199,6 +200,7 @@ export class UserService {
       notifications: { ...current.notifications, ...(user.notifications || {}) },
       watchingNow: { ...current.watchingNow, ...(user.watchingNow || {}) },
       favoriteGenres: user.favoriteGenres || current.favoriteGenres,
+      preferredPlatforms: user.preferredPlatforms || current.preferredPlatforms,
       stats: { ...current.stats, ...(user.stats || {}) },
       role: user.role ?? current.role,
       avatar: user.avatar || (user as any).picture || current.avatar,
@@ -778,6 +780,7 @@ export class UserService {
       notifications: { ...current.notifications, ...(profile.notifications || {}) },
       watchingNow: { ...current.watchingNow, ...(profile.watchingNow || {}) },
       favoriteGenres: profile.favoriteGenres || current.favoriteGenres,
+      preferredPlatforms: profile.preferredPlatforms || current.preferredPlatforms,
       stats: { ...current.stats, ...(profile.stats || {}) },
       role: profile.role ?? current.role,
       avatar: profile.avatar || current.avatar,
@@ -858,5 +861,55 @@ export class UserService {
       this.loadingSubject.next(false);
       return of(fallback);
     };
+  }
+
+  addContentInteraction(payload: {
+    contentId: string;
+    contentTitle: string;
+    contentType: 'movie' | 'series' | 'program';
+    tmdbId?: number;
+    genres?: string[];
+    rating?: number;
+    status?: 'seen' | 'watching' | 'pending' | 'dropped';
+    liked?: boolean;
+    platform?: string;
+  }): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
+
+    const url = `${this.baseUrl}/user/interactions`;
+    return this.http
+      .post<ApiResponse<{ interaction: any }>>(
+        url,
+        payload,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => Boolean(resp?.data?.interaction)),
+        tap((saved) => {
+          if (saved) {
+            this.fetchProfile().subscribe();
+          }
+        }),
+        catchError(this.handleError(false, 'No se pudo guardar la interaccion.'))
+      );
+  }
+
+  getContentInteraction(contentId: string): Observable<any | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/user/interactions/${contentId}`;
+    return this.http
+      .get<ApiResponse<{ interaction: any | null }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.interaction || null),
+        catchError(this.handleError(null, 'No se pudo cargar la interaccion.'))
+      );
+  }
+
+  saveGenrePreferences(genres: string[], platforms: string[]): Observable<boolean> {
+    return this.updateProfile({
+      favoriteGenres: genres,
+      preferredPlatforms: platforms,
+    } as any).pipe(map((profile) => Boolean(profile)));
   }
 }

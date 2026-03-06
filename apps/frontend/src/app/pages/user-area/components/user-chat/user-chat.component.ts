@@ -17,7 +17,7 @@ import { AuthActionService } from '../../../../services/auth-action.service';
   template: `
     <div
       class="relative w-full overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-950/50 shadow-[0_20px_40px_rgba(0,0,0,0.35)] flex flex-col md:flex-row"
-      [ngClass]="isMobileView ? 'h-[calc(100dvh-12.2rem)] min-h-[420px] rounded-xl' : 'h-[70vh] min-h-[480px] max-h-[680px]'"
+      [ngClass]="isMobileView ? 'h-[calc(100dvh-var(--top-bar-h,0px)-var(--bottom-nav-h,0px)-env(safe-area-inset-bottom)-1rem)] min-h-[420px] rounded-xl' : 'md:h-[78vh] min-h-[480px] max-h-[680px]'"
     >
       <aside
         class="border-b border-slate-800/80 md:border-b-0 md:border-r md:w-80 md:min-w-80 flex-col bg-slate-950/70"
