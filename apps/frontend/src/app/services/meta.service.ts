@@ -8,7 +8,7 @@ import { environment } from 'src/environments/environment';
 })
 export class MetaService {
   public url: string =
-    environment.SITE_URL || 'https://www.guiaprogramacion.com';
+    environment.SITE_URL || 'https://guiaprogramaciontv.com';
 
   constructor(
     private meta: Meta,
@@ -27,7 +27,10 @@ export class MetaService {
     this.meta.removeTag('name="viewport"');
     this.meta.removeTag('property="og:image"');
     this.meta.removeTag('property="og:type"');
+    this.meta.removeTag('property="og:url"');
     this.meta.removeTag('name="twitter:card"');
+    this.meta.removeTag('name="robots"');
+    this.meta.removeTag('name="ssr-status"');
 
     // Add new meta tags using Angular's Meta service
     this.meta.addTag({ name: 'description', content: config.description });
@@ -57,8 +60,20 @@ export class MetaService {
       content: 'width=device-width, initial-scale=1',
     });
 
+    // Set robots meta tag (per-page control for noindex)
+    const robotsContent = config.robots || 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
+    this.meta.addTag({ name: 'robots', content: robotsContent });
+
+    // SSR status code marker — server.ts reads this to set HTTP status
+    if (config.httpStatus) {
+      this.meta.addTag({ name: 'ssr-status', content: String(config.httpStatus) });
+    }
+
     // Handle canonical URL safely
-    if (this.document) {
+    if (this.document && config.canonicalUrl) {
+      // Strip query params and fragments from canonical URL
+      const cleanPath = config.canonicalUrl.split('?')[0].split('#')[0];
+
       // Remove existing canonical link
       const existingCanonical = this.document.querySelector(
         'link[rel="canonical"]'
@@ -67,11 +82,14 @@ export class MetaService {
         existingCanonical.remove();
       }
 
-      // Add new canonical link
+      // Add new canonical link with absolute URL
       const linkElement = this.document.createElement('link');
       linkElement.setAttribute('rel', 'canonical');
-      linkElement.setAttribute('href', this.url + config.canonicalUrl);
+      linkElement.setAttribute('href', this.url + cleanPath);
       this.document.head.appendChild(linkElement);
+
+      // Set og:url matching canonical
+      this.meta.addTag({ property: 'og:url', content: this.url + cleanPath });
     }
   }
 }

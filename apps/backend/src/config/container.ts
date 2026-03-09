@@ -535,7 +535,8 @@ export class Container {
     const { SitemapController } = await import('../presentation/controllers/SitemapController');
     const sitemapController = new SitemapController(
       this.get('channelRepository'),
-      this.get('programRepository')
+      this.get('programRepository'),
+      this.has('tmdbService') ? this.get('tmdbService') : undefined
     );
     this.dependencies.set('sitemapController', sitemapController);
 

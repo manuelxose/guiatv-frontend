@@ -8,7 +8,7 @@ import {
   PLATFORM_ID,
   inject,
 } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet, ActivatedRoute } from '@angular/router';
 import { Subject, filter, map, takeUntil } from 'rxjs';
 import { APP_PATHS, MOBILE_APP_TABS, normalizePath } from './config/route-map';
 import { AuthLoginModalComponent } from './components/auth-login-modal/auth-login-modal.component';
@@ -22,6 +22,7 @@ import { SearchOverlayComponent } from './components/search-overlay/search-overl
 import { AnalyticsService } from './services/analytics.service';
 import { ChatService } from './services/chat.service';
 import { MenuStateService } from './services/menu-state.service';
+import { MetaService } from './services/meta.service';
 import { UserService } from './services/user.service';
 import { environment } from '../environments/environment';
 
@@ -72,7 +73,9 @@ export class AppComponent implements OnInit, OnDestroy {
     @Inject(DOCUMENT) private readonly document: Document,
     @Inject(PLATFORM_ID) private readonly platformId: object,
     private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly menuState: MenuStateService,
+    private readonly metaService: MetaService,
     private readonly userService: UserService,
     private readonly chatService: ChatService
   ) {
@@ -95,6 +98,20 @@ export class AppComponent implements OnInit, OnDestroy {
         this.menuState.setMobile(false);
         this.applyRouteState(url);
         this.analytics.trackPageView(url);
+
+        // Set default robots meta from route data for pages that don't call setMetaTags themselves
+        let route = this.activatedRoute;
+        while (route.firstChild) {
+          route = route.firstChild;
+        }
+        const routeData = route.snapshot.data;
+        if (routeData['robots']) {
+          this.metaService.setMetaTags({
+            title: routeData['title'] || this.getRouteTitle(route),
+            description: '',
+            robots: routeData['robots'],
+          });
+        }
       });
   }
 
@@ -114,6 +131,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
   public navigate(path: string): void {
     this.router.navigateByUrl(path);
+  }
+
+  private getRouteTitle(route: ActivatedRoute): string {
+    return route.snapshot.title || 'Guía TV';
   }
 
   public openAccountOrAuth(): void {
