@@ -61,6 +61,31 @@ export function app(): express.Express {
     })
   );
 
+  // 301 redirect legacy /contenido/:catalogId → slug-based route
+  server.get('/contenido/:catalogId', async (req, res) => {
+    const catalogId = decodeURIComponent(req.params.catalogId || '');
+    if (!catalogId) {
+      res.status(404).send('Not found');
+      return;
+    }
+    try {
+      const apiRes = await fetch(
+        `http://localhost:4000/v2/catalog/${encodeURIComponent(catalogId)}`
+      );
+      if (apiRes.ok) {
+        const json = await apiRes.json();
+        const detailPath = json?.data?.detailPath;
+        if (detailPath) {
+          res.redirect(301, detailPath);
+          return;
+        }
+      }
+    } catch {
+      // fall through to 404
+    }
+    res.status(404).send('Not found');
+  });
+
   // Todas las rutas regulares usan el motor Universal
   server.get('*', (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;

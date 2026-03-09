@@ -16,6 +16,7 @@ export interface IChannelDocument {
   language?: string;
   category?: string;
   url?: string;
+  description?: string;
   active: boolean;
   order: number;
   createdAt: Date;
@@ -71,6 +72,10 @@ const ChannelSchema = new Schema<IChannelDocument>(
       trim: true,
     },
     url: {
+      type: String,
+      trim: true,
+    },
+    description: {
       type: String,
       trim: true,
     },

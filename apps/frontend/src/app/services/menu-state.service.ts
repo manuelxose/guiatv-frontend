@@ -119,7 +119,8 @@ export class MenuStateService {
     if (
       path.startsWith('/programacion-tv/que-ver-hoy') ||
       path.startsWith('/programas/') ||
-      path.startsWith('/contenido/')
+      path.startsWith('/contenido/') ||
+      path.startsWith('/programas/')
     ) {
       return 'que-ver-hoy';
     }

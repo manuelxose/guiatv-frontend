@@ -1,4 +1,5 @@
 import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
+import { ChannelModel } from '../../infrastructure/database/models/Channel.model';
 import { ScheduleModel } from '../../infrastructure/database/models/Schedule.model';
 import { DateUtils } from '../../shared/utils/dateUtils';
 import { ProgramLayoutDTO, TimeSlotDTO } from '../services/ProgramLayoutBuilder';
@@ -60,12 +61,14 @@ export class GetProgramLayouts {
     // 1) Redis snapshot
     const cached = await this.cacheRepository.get<any>(preKey);
     if (cached) {
-      return this.buildResponseFromSnapshot(
-        cached,
-        channelFilter,
-        channelTypeFilter,
-        slotFilter,
-        true
+      return this.enrichChannelDescriptions(
+        this.buildResponseFromSnapshot(
+          cached,
+          channelFilter,
+          channelTypeFilter,
+          slotFilter,
+          true
+        )
       );
     }
 
@@ -85,12 +88,14 @@ export class GetProgramLayouts {
         },
       };
       await this.cacheRepository.set(preKey, snapshot);
-      return this.buildResponseFromSnapshot(
-        snapshot,
-        channelFilter,
-        channelTypeFilter,
-        slotFilter,
-        true
+      return this.enrichChannelDescriptions(
+        this.buildResponseFromSnapshot(
+          snapshot,
+          channelFilter,
+          channelTypeFilter,
+          slotFilter,
+          true
+        )
       );
     }
 
@@ -114,7 +119,7 @@ export class GetProgramLayouts {
         layoutVersion: this.layoutVersion,
       },
     };
-    return response;
+    return this.enrichChannelDescriptions(response);
   }
 
   private buildPreKey(date: string, fields: string) {
@@ -242,8 +247,10 @@ export class GetProgramLayouts {
     return {
       id,
       name: channelName,
+      normalizedName: channel?.normalizedName || undefined,
       icon: channel?.icon || undefined,
       type: channel?.type || undefined,
+      description: channel?.description || undefined,
       country: channel?.country || undefined,
       countryCode: channel?.countryCode || undefined,
     };
@@ -270,8 +277,12 @@ export class GetProgramLayouts {
         fromProgram?.name ||
         channelId ||
         'Canal desconocido',
+      normalizedName:
+        fromEntry?.normalizedName || fromMeta?.normalizedName || fromProgram?.normalizedName,
       icon: fromEntry?.icon || fromMeta?.icon || fromProgram?.icon,
       type: fromEntry?.type || fromMeta?.type || fromProgram?.type,
+      description:
+        fromEntry?.description || fromMeta?.description || fromProgram?.description,
       country: fromEntry?.country || fromMeta?.country || fromProgram?.country,
       countryCode:
         fromEntry?.countryCode || fromMeta?.countryCode || fromProgram?.countryCode,
@@ -319,5 +330,40 @@ export class GetProgramLayouts {
       channels,
       totalPrograms: filteredBySlot.length,
     };
+  }
+
+  /**
+   * Enrich channel objects with description and normalizedName from the
+   * Channels collection (these fields are not stored in schedule snapshots).
+   */
+  private async enrichChannelDescriptions(
+    response: GetProgramLayoutsResponse
+  ): Promise<GetProgramLayoutsResponse> {
+    const channelIds = response.channels
+      .map((c) => c.channel?.id)
+      .filter(Boolean);
+    if (channelIds.length === 0) return response;
+
+    const docs = await ChannelModel.find(
+      { id: { $in: channelIds } },
+      'id description normalizedName'
+    )
+      .lean()
+      .exec();
+
+    const extraMap = new Map<string, { description?: string; normalizedName?: string }>();
+    docs.forEach((d: any) => {
+      if (d.id) extraMap.set(d.id, { description: d.description, normalizedName: d.normalizedName });
+    });
+
+    response.channels.forEach((entry) => {
+      const extra = extraMap.get(entry.channel?.id);
+      if (extra) {
+        if (extra.description) entry.channel.description = extra.description;
+        if (extra.normalizedName) entry.channel.normalizedName = extra.normalizedName;
+      }
+    });
+
+    return response;
   }
 }

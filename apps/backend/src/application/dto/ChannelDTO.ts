@@ -12,6 +12,7 @@ export interface ChannelDTO {
   country?: string;
   countryCode?: string;
   region?: string;
+  description?: string;
   isActive: boolean;
 }
 

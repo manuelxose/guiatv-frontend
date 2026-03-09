@@ -223,6 +223,8 @@ export class CatalogService {
       source: item.source,
       contentType: item.contentType,
       title: item.title,
+      slug: item.slug,
+      detailPath: item.detailPath,
       subtitle:
         item.source === 'program'
           ? item.channel?.name || item.start
@@ -253,6 +255,72 @@ export class CatalogService {
     }
 
     throw new NotFoundError('Catalog item', catalogId);
+  }
+
+  async getBySlug(
+    contentType: CatalogContentType,
+    slug: string,
+    userId?: string
+  ): Promise<CatalogDetailDTO> {
+    const validTypes: CatalogContentType[] = ['movie', 'series', 'program'];
+    if (!validTypes.includes(contentType)) {
+      throw new NotFoundError('Content type', contentType);
+    }
+
+    const searchText = String(slug || '').replace(/-/g, ' ').trim();
+    if (!searchText) {
+      throw new NotFoundError('Catalog item', slug);
+    }
+
+    // For TMDB content, search TMDB and pick first matching slug
+    if (contentType === 'movie' || contentType === 'series') {
+      const tmdbType = contentType === 'movie' ? 'movie' : 'tv';
+      const results = tmdbType === 'movie'
+        ? await this.tmdbService.searchMovies(searchText, { page: 1, limit: 10 })
+        : await this.tmdbService.searchTV(searchText, { page: 1, limit: 10 });
+
+      const match = results.find(
+        (entry) => this.slugify(entry.title || entry.name || '') === slug
+      );
+      if (match) {
+        return this.getTmdbDetail(match.id, tmdbType, userId);
+      }
+      // Fallback: first result
+      if (results.length) {
+        return this.getTmdbDetail(results[0].id, tmdbType, userId);
+      }
+      throw new NotFoundError('Catalog item', slug);
+    }
+
+    // For programs, search by title in current EPG
+    const today = DateUtils.getTodayYYYYMMDD();
+    const { items: programs } = await this.programRepository.search({
+      date: today,
+      text: searchText,
+      limit: 20,
+      fields: 'full',
+    });
+
+    const found = programs.find((p) => this.slugify(p.title) === slug);
+    if (found) {
+      return this.getProgramDetail(found.id, userId);
+    }
+
+    // Try tomorrow
+    const tomorrow = DateUtils.getTomorrowYYYYMMDD();
+    const { items: tomorrowPrograms } = await this.programRepository.search({
+      date: tomorrow,
+      text: searchText,
+      limit: 20,
+      fields: 'full',
+    });
+
+    const foundTomorrow = tomorrowPrograms.find((p) => this.slugify(p.title) === slug);
+    if (foundTomorrow) {
+      return this.getProgramDetail(foundTomorrow.id, userId);
+    }
+
+    throw new NotFoundError('Catalog item', slug);
   }
 
   async resolveRecommendation(
@@ -541,6 +609,25 @@ export class CatalogService {
     };
   }
 
+  private slugify(text: string): string {
+    const s = String(text || '').trim();
+    if (!s) return 'sin-titulo';
+    return s
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'sin-titulo';
+  }
+
+  private buildDetailPath(contentType: CatalogContentType, slug: string): string {
+    const prefix =
+      contentType === 'movie' ? '/peliculas' :
+      contentType === 'series' ? '/series' :
+      '/programas';
+    return `${prefix}/${slug}`;
+  }
+
   private mapProgramToCatalogItem(
     program: Program,
     channelMap: Map<string, any>,
@@ -549,6 +636,7 @@ export class CatalogService {
     const channel = channelMap.get(program.channelId);
     const contentType = this.inferProgramContentType(program);
     const title = String(program.title || '').trim();
+    const slug = this.slugify(title);
     const start = program.startTime.toISOString();
     const end = program.endTime.toISOString();
 
@@ -557,6 +645,8 @@ export class CatalogService {
       source: 'program',
       contentType,
       title,
+      slug,
+      detailPath: this.buildDetailPath(contentType, slug),
       synopsis: program.description,
       image: program.image,
       backdrop: program.image,
@@ -598,12 +688,16 @@ export class CatalogService {
   ): CatalogItemDTO {
     const whereToWatch = providers ? this.mapWatchProviders(providers) : undefined;
     const contentType: CatalogContentType = type === 'movie' ? 'movie' : 'series';
+    const title = entry.title || entry.name || '';
+    const slug = this.slugify(title);
 
     return {
       catalogId: buildTmdbCatalogId(type, entry.id),
       source: 'tmdb',
       contentType,
-      title: entry.title || entry.name || '',
+      title,
+      slug,
+      detailPath: this.buildDetailPath(contentType, slug),
       synopsis: entry.overview || '',
       image: this.tmdbService.getImageUrl(entry.poster_path),
       backdrop: this.tmdbService.getImageUrl(entry.backdrop_path, 'original'),

@@ -130,7 +130,7 @@ import {
                 </div>
                 <a
                   *ngIf="reminder.contentId"
-                  [routerLink]="['/contenido', reminder.contentId]"
+                  [routerLink]="detailPathFor(reminder.title, reminder.type)"
                   class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
                 >
                   Ver ficha
@@ -288,4 +288,12 @@ export class UserStatsComponent {
   @Input() reminders: UserListItem[] = [];
   @Input() loading = false;
   @Input() error: string | null = null;
+
+  detailPathFor(title: string, type: string): string {
+    const slug = (title || '').toLowerCase()
+      .replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-').replace(/^-+|-+$/g, '') || 'sin-titulo';
+    const prefix = type === 'movie' ? '/peliculas' : type === 'series' ? '/series' : '/programas';
+    return `${prefix}/${slug}`;
+  }
 }

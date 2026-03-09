@@ -20,6 +20,7 @@ import {
 import { MetaService } from '../../services/meta.service';
 import { UserProfile } from '../../interfaces/user.interface';
 import { UserService } from '../../services/user.service';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
 
 type ExplorerMode = 'live' | 'featured' | 'platforms';
 
@@ -31,6 +32,7 @@ type ExplorerMode = 'live' | 'featured' | 'platforms';
     RouterModule,
     CatalogFiltersComponent,
     CatalogCardComponent,
+    BreadcrumbComponent,
   ],
   templateUrl: './program-explorer.component.html',
   styleUrls: ['./program-explorer.component.scss'],
@@ -51,6 +53,7 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
   public genres: string[] = [];
   public total = 0;
   public hasMore = false;
+  public breadcrumbItems: BreadcrumbItem[] = [];
 
   private readonly destroy$ = new Subject<void>();
   private currentProfile: UserProfile | null = null;
@@ -312,6 +315,10 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
   }
 
   private updateMeta(): void {
+    this.breadcrumbItems = [
+      { name: 'Inicio', url: '/' },
+      { name: this.pageTitle, url: this.router.url.split('?')[0] },
+    ];
     this.metaService.setMetaTags({
       title: `${this.pageTitle} - Guía TV`,
       description: this.pageSubtitle,

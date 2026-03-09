@@ -110,7 +110,7 @@ export class AutocompleteComponent implements OnInit {
   }
 
   navigateTo(result: SearchResult): void {
-    this.router.navigate(['/contenido', result.catalogId]);
+    this.router.navigate([result.detailPath || '/contenido/' + result.catalogId]);
     this.clearInput();
   }
 

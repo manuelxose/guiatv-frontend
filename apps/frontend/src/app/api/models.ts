@@ -19,6 +19,7 @@ export interface ChannelMetaDTO {
   type?: string;
   country?: string;
   countryCode?: string;
+  description?: string;
 }
 
 export interface TimeSlotDTO {

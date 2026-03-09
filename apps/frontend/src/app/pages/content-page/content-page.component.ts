@@ -17,6 +17,9 @@ import {
 } from '../../services/catalog.service';
 import { CatalogFiltersService } from '../../services/catalog-filters.service';
 import { MetaService } from '../../services/meta.service';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
+import { FaqSectionComponent, FaqItem } from '../../components/faq-section/faq-section.component';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 type ContentPageType = 'series' | 'movies';
 
@@ -29,6 +32,8 @@ type ContentPageType = 'series' | 'movies';
     CatalogFiltersComponent,
     CatalogCardComponent,
     CatalogRailComponent,
+    BreadcrumbComponent,
+    FaqSectionComponent,
   ],
   templateUrl: './content-page.component.html',
   styleUrls: ['./content-page.component.scss'],
@@ -48,6 +53,46 @@ export class ContentPageComponent implements OnInit, OnDestroy {
   public platforms: CatalogPlatform[] = [];
   public hasMore = false;
   public total = 0;
+  public breadcrumbItems: BreadcrumbItem[] = [];
+  public safeLdHtml: SafeHtml | null = null;
+
+  public readonly moviesFaq: FaqItem[] = [
+    {
+      question: '¿Dónde puedo ver películas gratis en España?',
+      answer: 'Canales de TDT como Antena 3, Telecinco, La 1, Atrescine y DePelícula emiten películas a diario sin coste. También existen plataformas de streaming gratuitas con publicidad como Pluto TV y Rakuten TV.',
+    },
+    {
+      question: '¿Cómo sé en qué plataforma está disponible una película?',
+      answer: 'Cada ficha de película muestra las plataformas donde está disponible, ya sea en streaming, alquiler o emisión lineal. Puedes filtrar por plataforma para ver solo el catálogo que te interese.',
+    },
+    {
+      question: '¿Puedo filtrar por género o plataforma de streaming?',
+      answer: 'Sí. Usa los filtros de esta página para seleccionar el género (acción, comedia, drama, thriller…) y la plataforma (Netflix, Prime Video, Disney+, Movistar+ y más).',
+    },
+    {
+      question: '¿Qué películas se emiten hoy en televisión?',
+      answer: 'En la sección «En directo» de esta página puedes ver las películas que se están emitiendo ahora mismo en los canales de televisión españoles.',
+    },
+  ];
+
+  public readonly seriesFaq: FaqItem[] = [
+    {
+      question: '¿Dónde puedo ver series en streaming en España?',
+      answer: 'Las principales plataformas son Netflix, HBO Max, Disney+, Amazon Prime Video, Movistar Plus+, Atresplayer y RTVE Play. Cada una ofrece catálogos diferentes con series originales y de producción internacional.',
+    },
+    {
+      question: '¿Cómo encuentro series según mis gustos?',
+      answer: 'Utiliza los filtros de esta página: selecciona tu género favorito (drama, comedia, thriller, ciencia ficción…) y la plataforma que prefieras. También puedes ordenar por popularidad o valoración.',
+    },
+    {
+      question: '¿Qué series se emiten hoy en la televisión española?',
+      answer: 'En la sección «En directo» de esta página aparecen las series que se están emitiendo ahora mismo en los canales de TV. También puedes consultar la guía de programación para ver la parrilla completa.',
+    },
+    {
+      question: '¿Se pueden filtrar series por plataforma?',
+      answer: 'Sí. El filtro de plataformas te permite ver únicamente las series disponibles en Netflix, HBO Max, Disney+, Prime Video, Movistar+ u otras plataformas de tu elección.',
+    },
+  ];
 
   private readonly destroy$ = new Subject<void>();
   private remotePlatformsDegraded = false;
@@ -58,7 +103,8 @@ export class ContentPageComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly metaService: MetaService,
     private readonly catalogService: CatalogService,
-    private readonly filtersService: CatalogFiltersService
+    private readonly filtersService: CatalogFiltersService,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -128,6 +174,10 @@ export class ContentPageComponent implements OnInit, OnDestroy {
     return this.contentType === 'series' ? 'series' : 'movie';
   }
 
+  get faqItems(): FaqItem[] {
+    return this.contentType === 'series' ? this.seriesFaq : this.moviesFaq;
+  }
+
   retryCurrentView(): void {
     this.loadContent();
     this.loadLiveItems();
@@ -184,6 +234,7 @@ export class ContentPageComponent implements OnInit, OnDestroy {
             result.unavailable && !result.stale && !(response.items || []).length;
           this.catalogStateDegraded = result.unavailable || result.stale;
           this.syncDegradedFilters();
+          this.buildItemListLd();
           if (result.stale) {
             this.degradedMessage =
               'Mostrando la última versión disponible mientras esta colección se actualiza.';
@@ -220,6 +271,11 @@ export class ContentPageComponent implements OnInit, OnDestroy {
   }
 
   private updateMeta(): void {
+    const label = this.contentType === 'series' ? 'Series' : 'Películas';
+    this.breadcrumbItems = [
+      { name: 'Inicio', url: '/' },
+      { name: label, url: this.router.url.split('?')[0] },
+    ];
     this.metaService.setMetaTags({
       title: `${this.pageTitle} - Guía TV`,
       description: this.pageSubtitle,
@@ -237,5 +293,33 @@ export class ContentPageComponent implements OnInit, OnDestroy {
 
   private syncDegradedFilters(): void {
     this.degradedFilters = this.remotePlatformsDegraded || this.catalogStateDegraded;
+  }
+
+  private buildItemListLd(): void {
+    if (!this.items.length) {
+      this.safeLdHtml = null;
+      return;
+    }
+    const baseUrl = 'https://guiaprogramaciontv.com';
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: this.pageTitle,
+      description: this.pageSubtitle,
+      url: `${baseUrl}${this.router.url.split('?')[0]}`,
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: this.total,
+        itemListElement: this.items.slice(0, 20).map((item, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: item.title,
+          url: `${baseUrl}${item.detailPath || '/contenido/' + item.catalogId}`,
+        })),
+      },
+    };
+    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
+      `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+    );
   }
 }

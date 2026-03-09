@@ -112,6 +112,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   public live_programs: any[] = [];
   public isLoading: boolean = true;
   public error: string | null = null;
+  public channelDescription: string | null = null;
 
   // New Properties for Enhanced Features
   public days: DayOption[] = [
@@ -386,6 +387,14 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
           this.logo = this.buildLocalChannelIcon(
             channelGroup.channel?.id || channelGroup.channel?.name || this.query
           );
+          this.channelDescription = channelGroup.channel?.description || null;
+          if (this.channelDescription) {
+            this.metaSvc.setMetaTags({
+              title: `Programación de ${this.canal} ${this.diaSeleccionado.toLowerCase()} - Guía TV Completa en Directo`,
+              description: `${this.channelDescription} Consulta la parrilla completa de ${this.canal} ${this.diaSeleccionado.toLowerCase()} con horarios y programas en directo.`,
+              canonicalUrl: this.router.url,
+            });
+          }
           this.programs = channelGroup.programs.map((p: any) => {
             const imageUrl = p.poster || p.icon || p.image;
             return {
