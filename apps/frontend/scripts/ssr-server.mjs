@@ -272,6 +272,39 @@ app.get('/healthz', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
+/** Known route prefixes — anything not matching these is a 404 */
+const KNOWN_ROUTES = [
+  /^\/$/,
+  /^\/iniciar-sesion$/,
+  /^\/registro$/,
+  /^\/mi-cuenta$/,
+  /^\/comunidad$/,
+  /^\/admin$/,
+  /^\/programacion-tv\/(series|peliculas|guia-canales|en-directo|que-ver-hoy)$/,
+  /^\/programacion-tv\/ver-canal\/[^/]+$/,
+  /^\/plataformas$/,
+  /^\/contenido\/[^/]+$/,
+  /^\/peliculas\/[^/]+$/,
+  /^\/series\/[^/]+$/,
+  /^\/programas\/[^/]+$/,
+  /^\/blog(\/.*)?$/,
+  /^\/program-full-details\/[^/]+$/,
+  /^\/avisolegal$/,
+  /^\/privacidad$/,
+  /^\/cookies$/,
+  /^\/terminos$/,
+  /^\/accesibilidad$/,
+  /^\/sitemap$/,
+  /^\/ver-canal\/[^/]+$/,
+  /^\/detalles\/[^/]+$/,
+  /^\/pelicula-details\/[^/]+$/,
+];
+
+function isKnownRoute(url) {
+  const path = url.split('?')[0].split('#')[0];
+  return KNOWN_ROUTES.some((re) => re.test(path));
+}
+
 app.get('*', async (req, res) => {
   const { protocol, originalUrl, headers } = req;
   const host = headers.host || `localhost:${port}`;
@@ -297,24 +330,34 @@ app.get('*', async (req, res) => {
     });
 
     if (html.includes('<app-root></app-root>')) {
-      // Avoid serving stale HTML from a shared Domino window snapshot.
-      // If SSR produced an empty root, prefer CSR fallback for this request.
+      // SSR produced an empty root — serve CSR fallback.
       const fallbackFile = join(browserDistPath, 'index.html');
       const fallbackCsr = join(browserDistPath, 'index.csr.html');
-      res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-      res.setHeader('Cache-Control', 'no-store');
+      // Unknown routes get 404 status even on CSR fallback
+      const statusCode = isKnownRoute(originalUrl) ? 200 : 404;
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120');
       if (existsSync(fallbackFile)) {
-        return res.sendFile(fallbackFile);
+        return res.status(statusCode).sendFile(fallbackFile);
       }
       if (existsSync(fallbackCsr)) {
-        return res.sendFile(fallbackCsr);
+        return res.status(statusCode).sendFile(fallbackCsr);
       }
     }
-    res.setHeader('Cache-Control', 'no-store');
-    res.send(html);
+
+    // Check for ssr-status meta marker from Angular components
+    const statusMatch = html.match(/<meta\s+name="ssr-status"\s+content="(\d+)"/);
+    let statusCode = statusMatch ? Number(statusMatch[1]) : 200;
+    if (statusCode === 200 && !isKnownRoute(originalUrl)) {
+      statusCode = 404;
+    }
+    // Strip the marker from final HTML
+    html = html.replace(/<meta\s+name="ssr-status"\s+content="\d+"\s*\/?>/g, '');
+
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
+    res.status(statusCode).send(html);
   } catch (err) {
     console.error('[SSR] ❌ Render Error:', err);
-    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    // Do NOT set X-Robots-Tag: noindex — CSR fallback is still indexable by Google.
     
     // 🔧 FIX: Manejo robusto del Fallback (CSR)
     // Buscamos index.html o index.csr.html

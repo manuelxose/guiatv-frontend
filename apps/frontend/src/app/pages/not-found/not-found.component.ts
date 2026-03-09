@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { MetaService } from 'src/app/services/meta.service';
 
 @Component({
   selector: 'app-not-found',
@@ -32,4 +33,15 @@ import { RouterModule } from '@angular/router';
     </main>
   `,
 })
-export class NotFoundComponent {}
+export class NotFoundComponent implements OnInit {
+  constructor(private metaSvc: MetaService) {}
+
+  ngOnInit(): void {
+    this.metaSvc.setMetaTags({
+      title: 'Página no encontrada - Guía TV',
+      description: 'La página que buscas no existe o ha sido movida.',
+      robots: 'noindex, nofollow',
+      httpStatus: 404,
+    });
+  }
+}

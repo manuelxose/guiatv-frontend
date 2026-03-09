@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription, forkJoin, of, timeout, catchError } from 'rxjs';
 
 import { ApiConfigService } from 'src/app/api/api-config.service';
 import {
@@ -280,12 +280,18 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
 
     this.subscriptions.add(
       forkJoin({
-        channels: this.tvDataService.loadChannels(),
+        channels: this.tvDataService.loadChannels().pipe(
+          timeout(12000),
+          catchError(() => of([] as ChannelMetaDTO[]))
+        ),
         programs: this.tvDataService.loadPrograms({
           date: 'today',
           fields: 'full',
           limit: 2500,
-        }),
+        }).pipe(
+          timeout(12000),
+          catchError(() => of(undefined))
+        ),
       }).subscribe({
         next: ({ channels, programs }) => {
           const normalizedChannels = this.normalizeChannels(programs, channels || []);

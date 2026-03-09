@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { BLOG_ROUTES } from './blog/blog.routes';
 import { adminGuard } from './guards/admin.guard';
+import { NotFoundComponent } from './pages/not-found/not-found.component';
 
 export const routes: Routes = [
   {
@@ -16,6 +17,7 @@ export const routes: Routes = [
         (m) => m.LoginComponent
       ),
     title: 'Iniciar sesión - Guía TV',
+    data: { robots: 'noindex, follow' },
   },
   {
     path: 'registro',
@@ -24,6 +26,7 @@ export const routes: Routes = [
         (m) => m.RegisterComponent
       ),
     title: 'Registro - Guia TV',
+    data: { robots: 'noindex, follow' },
   },
   {
     path: 'mi-cuenta',
@@ -32,6 +35,7 @@ export const routes: Routes = [
         (m) => m.UserAreaComponent
       ),
     title: 'Mi cuenta - Guía TV',
+    data: { robots: 'noindex, nofollow' },
   },
   {
     path: 'comunidad',
@@ -40,7 +44,7 @@ export const routes: Routes = [
         (m) => m.UserAreaComponent
       ),
     title: 'Comunidad - Guía TV',
-    data: { defaultTab: 'social' },
+    data: { defaultTab: 'social', robots: 'noindex, nofollow' },
   },
   {
     path: 'admin',
@@ -48,6 +52,7 @@ export const routes: Routes = [
       import('./pages/admin/admin.component').then((m) => m.AdminComponent),
     title: 'Admin - Guia TV',
     canActivate: [adminGuard],
+    data: { robots: 'noindex, nofollow' },
   },
   {
     path: 'programacion-tv/series',
@@ -107,31 +112,23 @@ export const routes: Routes = [
         (m) => m.CatalogDetailComponent
       ),
     title: 'Contenido - Guía TV',
+    data: { robots: 'noindex, follow' },
   },
   {
     path: 'ver-canal/:id',
-    loadComponent: () =>
-      import('./pages/canal-completo/canal-completo.component').then(
-        (m) => m.CanalCompletoComponent
-      ),
-    title: 'Canal - Guía TV',
+    redirectTo: 'programacion-tv/ver-canal/:id',
+    pathMatch: 'full',
   },
-  // Legacy single-parameter detail routes (kept for backwards compatibility)
+  // Legacy single-parameter detail routes (redirect to canonical slug routes)
   {
     path: 'detalles/:id',
-    loadComponent: () =>
-      import('./pages/pelicula-details/pelicula-details.compoent').then(
-        (m) => m.PeliculaDetailsComponent
-      ),
-    title: 'Detalles - Guía TV',
+    redirectTo: 'programas/:id',
+    pathMatch: 'full',
   },
   {
     path: 'pelicula-details/:id',
-    loadComponent: () =>
-      import('./pages/pelicula-details/pelicula-details.compoent').then(
-        (m) => m.PeliculaDetailsComponent
-      ),
-    title: 'Detalle de Película - Guía TV',
+    redirectTo: 'programas/:id',
+    pathMatch: 'full',
   },
 
   // SEO-friendly movie route: slug-only (no id exposed)
@@ -192,6 +189,7 @@ export const routes: Routes = [
         './pages/program-full-details/program-full-details.component'
       ).then((m) => m.ProgramFullDetailsComponent),
     title: 'Detalles del Programa - Guía TV',
+    data: { robots: 'noindex, follow' },
   },
   {
     path: 'avisolegal',
@@ -240,13 +238,11 @@ export const routes: Routes = [
         (m) => m.SitemapComponent
       ),
     title: 'Mapa del sitio - Guía TV',
+    data: { robots: 'noindex, follow' },
   },
   {
     path: '**',
-    loadComponent: () =>
-      import('./pages/not-found/not-found.component').then(
-        (m) => m.NotFoundComponent
-      ),
+    component: NotFoundComponent,
     title: 'Página no encontrada - Guía TV',
   },
 ];

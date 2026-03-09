@@ -5,6 +5,40 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import bootstrap from './src/main.server';
 
+/** Known route prefixes — anything not matching these is a 404 */
+const KNOWN_ROUTES: RegExp[] = [
+  /^\/$/,
+  /^\/iniciar-sesion$/,
+  /^\/registro$/,
+  /^\/mi-cuenta$/,
+  /^\/comunidad$/,
+  /^\/admin$/,
+  /^\/programacion-tv\/(series|peliculas|guia-canales|en-directo|que-ver-hoy)$/,
+  /^\/programacion-tv\/ver-canal\/[^/]+$/,
+  /^\/plataformas$/,
+  /^\/contenido\/[^/]+$/,
+  /^\/peliculas\/[^/]+$/,
+  /^\/series\/[^/]+$/,
+  /^\/programas\/[^/]+$/,
+  /^\/blog(\/.*)?$/,
+  /^\/program-full-details\/[^/]+$/,
+  /^\/avisolegal$/,
+  /^\/privacidad$/,
+  /^\/cookies$/,
+  /^\/terminos$/,
+  /^\/accesibilidad$/,
+  /^\/sitemap$/,
+  // Legacy redirects (handled by Angular router as redirectTo)
+  /^\/ver-canal\/[^/]+$/,
+  /^\/detalles\/[^/]+$/,
+  /^\/pelicula-details\/[^/]+$/,
+];
+
+function isKnownRoute(url: string): boolean {
+  const path = url.split('?')[0].split('#')[0];
+  return KNOWN_ROUTES.some((re) => re.test(path));
+}
+
 // La función app exportada es usada por el servidor de desarrollo SSR
 export function app(): express.Express {
   const server = express();
@@ -53,10 +87,29 @@ export function app(): express.Express {
           // Los providers adicionales van aquí si son necesarios
         ],
       })
-      .then((html) => res.send(html))
+      .then((html) => {
+        // Detect SSR status code marker set by Angular components (e.g. NotFoundComponent sets 404)
+        const statusMatch = html.match(/<meta\s+name="ssr-status"\s+content="(\d+)"/);
+        let statusCode = statusMatch ? Number(statusMatch[1]) : 200;
+
+        // Fallback: if no ssr-status marker, check URL against known routes
+        if (statusCode === 200 && !isKnownRoute(originalUrl)) {
+          statusCode = 404;
+        }
+
+        // Remove the ssr-status meta tag from the final HTML sent to clients
+        const cleanHtml = html.replace(/<meta\s+name="ssr-status"\s+content="\d+"\s*\/?>/g, '');
+
+        res.status(statusCode).send(cleanHtml);
+      })
       .catch((err) => {
         console.error('SSR Error:', err);
-        res.status(500).send('Error rendering page');
+        // Serve the static index.html as client-side fallback instead of bare error text
+        res.status(500).sendFile(indexHtml, (sendErr) => {
+          if (sendErr) {
+            res.status(500).send('Error rendering page');
+          }
+        });
       });
   });
 

@@ -372,6 +372,17 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
         });
         
         if (channelGroup.programs && channelGroup.programs.length > 0) {
+          // Set noindex for non-curated channel types (Cable, Movistar, OTT)
+          const channelType = channelGroup.channel?.type;
+          if (channelType && channelType !== 'TDT' && channelType !== 'Autonomico') {
+            this.metaSvc.setMetaTags({
+              title: `Programación de ${this.canal} ${this.diaSeleccionado.toLowerCase()} - Guía TV Completa en Directo`,
+              description: `✓ Consulta qué ver en ${this.canal} ${this.diaSeleccionado.toLowerCase()}. Parrilla completa con horarios, programas en directo, películas y series.`,
+              canonicalUrl: this.router.url,
+              robots: 'noindex, follow',
+            });
+          }
+
           this.logo = this.buildLocalChannelIcon(
             channelGroup.channel?.id || channelGroup.channel?.name || this.query
           );
@@ -394,6 +405,11 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       } else {
         devConsole.warn('⚠️ No se encontró el canal:', this.canal, 'normalizado:', searchTerm);
         this.programs = [];
+        // Channel not found — show 404 page with correct HTTP status
+        void this.router.navigate(['/not-found'], { skipLocationChange: true });
+        this.isLoading = false;
+        this.cdr.markForCheck();
+        return;
       }
 
       // Find current live program

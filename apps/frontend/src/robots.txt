@@ -1,4 +1,19 @@
 User-agent: *
 Allow: /
 
+# Non-indexable user/admin pages
+Disallow: /mi-cuenta
+Disallow: /admin
+Disallow: /iniciar-sesion
+Disallow: /registro
+Disallow: /comunidad
+
+# Legacy ID-based routes (redirected to canonical slug routes)
+Disallow: /detalles/
+Disallow: /pelicula-details/
+Disallow: /program-full-details/
+
+# Internal catalog IDs
+Disallow: /contenido/
+
 Sitemap: https://guiaprogramaciontv.com/sitemap.xml

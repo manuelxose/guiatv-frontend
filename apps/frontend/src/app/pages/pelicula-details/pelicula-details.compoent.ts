@@ -129,7 +129,10 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
         this.loadAdditionalInfo(id);
         this.isLoading = false;
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        void this.router.navigate(['/not-found'], { skipLocationChange: true });
+      }
     });
   }
 
@@ -172,6 +175,7 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
             this.relatedContent = this.getSimilarPrograms(flatPrograms, found);
         } else {
             this.isLoading = false;
+            void this.router.navigate(['/not-found'], { skipLocationChange: true });
         }
     });
   }
@@ -189,6 +193,7 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
              this.relatedContent = this.getSimilarPrograms(flatPrograms, found);
         } else {
              this.isLoading = false;
+             void this.router.navigate(['/not-found'], { skipLocationChange: true });
         }
     });
   }
@@ -298,18 +303,27 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   }
 
   private updateMetaTags() {
-    if (!this.data) return;
+    if (!this.data?.title) {
+      // No data found — navigate to 404
+      void this.router.navigate(['/not-found'], { skipLocationChange: true });
+      return;
+    }
     
     const title = `${this.data.title} - Guía TV`;
     const description = this.data.overview || `Detalles de ${this.data.title}`;
     const image = this.data.backdrop || this.data.poster;
 
+    // Ephemeral EPG-only programs (no TMDB enrichment) get noindex
+    const isEphemeralProgram = this.contentType === 'programs' && !this.data.id;
+    const robots = isEphemeralProgram ? 'noindex, follow' : undefined;
+
     this.metaSvc.setMetaTags({
       title,
       description,
       image,
-      url: this.router.url,
-      type: 'website' // or video.movie / video.tv_show
+      canonicalUrl: this.router.url,
+      type: 'website',
+      robots,
     });
 
     this.generateJsonLd();
