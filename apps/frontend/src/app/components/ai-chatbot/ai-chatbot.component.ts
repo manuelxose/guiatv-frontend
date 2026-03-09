@@ -246,12 +246,7 @@ export class AIChatbotComponent implements AfterViewInit {
 
   openRecommendation(recommendation: ChatbotRecommendation): void {
     if (recommendation.catalogId) {
-      const slug = this.slugifyText(recommendation.title);
-      const prefix =
-        recommendation.type === 'movie' ? '/peliculas' :
-        recommendation.type === 'series' ? '/series' :
-        '/programas';
-      this.router.navigate([`${prefix}/${slug}`]);
+      this.router.navigate(['/contenido', recommendation.catalogId]);
       return;
     }
 

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
@@ -27,7 +27,14 @@ interface ChatWindowState {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div *ngIf="isAuthenticated && !isHiddenByRoute" class="hidden lg:block">
+    <div
+      *ngIf="isAuthenticated && !isHiddenByRoute"
+      class="hidden transition-opacity duration-200 lg:block"
+      [class.invisible]="suspended"
+      [class.opacity-0]="suspended"
+      [class.pointer-events-none]="suspended"
+      [attr.aria-hidden]="suspended ? 'true' : null"
+    >
       <section
         *ngFor="let window of windows; let i = index; trackBy: trackByWindow"
         class="fixed bottom-3 w-80 rounded-t-xl border border-slate-700/90 bg-slate-950/95 shadow-[0_20px_48px_rgba(0,0,0,0.48)] backdrop-blur-md"
@@ -389,6 +396,8 @@ interface ChatWindowState {
   ],
 })
 export class DesktopChatDockComponent implements OnInit, OnDestroy {
+  @Input() suspended = false;
+
   conversations: ChatConversation[] = [];
   onlineUsers: UserFriend[] = [];
   connectedUsersCount = 0;

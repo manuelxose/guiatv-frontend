@@ -15,6 +15,7 @@ export const createCatalogRoutes = (
   router.use(catalogRateLimit);
   router.get('/platforms', asyncHandler(controller.getPlatforms.bind(controller)));
   router.get('/suggest', optionalAuth, asyncHandler(controller.suggest.bind(controller)));
+  router.get('/slug/:contentType/:slug', optionalAuth, asyncHandler(controller.getBySlug.bind(controller)));
   router.get('/by-slug/:contentType/:slug', optionalAuth, asyncHandler(controller.getBySlug.bind(controller)));
   router.get('/:catalogId', optionalAuth, asyncHandler(controller.getDetail.bind(controller)));
   router.get('/', optionalAuth, asyncHandler(controller.getCatalog.bind(controller)));

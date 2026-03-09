@@ -108,8 +108,8 @@ export const routes: Routes = [
   {
     path: 'contenido/:catalogId',
     loadComponent: () =>
-      import('./pages/content-redirect/content-redirect.component').then(
-        (m) => m.ContentRedirectComponent
+      import('./pages/catalog-detail/catalog-detail.component').then(
+        (m) => m.CatalogDetailComponent
       ),
     title: 'Contenido - Guía TV',
     data: { robots: 'noindex, follow' },
@@ -122,44 +122,52 @@ export const routes: Routes = [
   // Legacy single-parameter detail routes (redirect to canonical slug routes)
   {
     path: 'detalles/:id',
-    redirectTo: 'programas/:id',
-    pathMatch: 'full',
+    loadComponent: () =>
+      import('./pages/catalog-detail/catalog-detail.component').then(
+        (m) => m.CatalogDetailComponent
+      ),
+    title: 'Detalles del Programa - Guía TV',
+    data: { legacyCatalogMode: 'program', robots: 'noindex, follow' },
   },
   {
     path: 'pelicula-details/:id',
-    redirectTo: 'programas/:id',
-    pathMatch: 'full',
+    loadComponent: () =>
+      import('./pages/catalog-detail/catalog-detail.component').then(
+        (m) => m.CatalogDetailComponent
+      ),
+    title: 'Películas - Detalle - Guía TV',
+    data: { legacyCatalogMode: 'movie', robots: 'noindex, follow' },
   },
 
   // SEO-friendly movie route: slug-only (no id exposed)
   {
     path: 'peliculas/:slug',
     loadComponent: () =>
-      import('./pages/pelicula-details/pelicula-details.compoent').then(
-        (m) => m.PeliculaDetailsComponent
+      import('./pages/catalog-detail/catalog-detail.component').then(
+        (m) => m.CatalogDetailComponent
       ),
     title: 'Películas - Detalle - Guía TV',
-    data: { type: 'movies' }
+    data: { contentType: 'movie' }
   },
   {
     path: 'series/:slug',
     loadComponent: () =>
-      import('./pages/pelicula-details/pelicula-details.compoent').then(
-        (m) => m.PeliculaDetailsComponent
+      import('./pages/catalog-detail/catalog-detail.component').then(
+        (m) => m.CatalogDetailComponent
       ),
     title: 'Series - Detalle - Guía TV',
-    data: { type: 'series' }
+    data: { contentType: 'series' }
   },
 
   // SEO-friendly program route: slug-only (no id exposed)
   {
     path: 'programas/:slug',
     loadComponent: () =>
-      import(
-        './pages/pelicula-details/pelicula-details.compoent'
-      ).then((m) => m.PeliculaDetailsComponent),
+      import('./pages/catalog-detail/catalog-detail.component').then(
+        (m) => m.CatalogDetailComponent
+      ),
     title: 'Programas - Detalle - Guía TV',
-    data: { type: 'programs' }
+    data: { contentType: 'program' }
   },
 
   {
@@ -185,11 +193,11 @@ export const routes: Routes = [
   {
     path: 'program-full-details/:id',
     loadComponent: () =>
-      import(
-        './pages/program-full-details/program-full-details.component'
-      ).then((m) => m.ProgramFullDetailsComponent),
+      import('./pages/catalog-detail/catalog-detail.component').then(
+        (m) => m.CatalogDetailComponent
+      ),
     title: 'Detalles del Programa - Guía TV',
-    data: { robots: 'noindex, follow' },
+    data: { legacyCatalogMode: 'program', robots: 'noindex, follow' },
   },
   {
     path: 'avisolegal',
