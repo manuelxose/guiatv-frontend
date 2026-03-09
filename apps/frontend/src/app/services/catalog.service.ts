@@ -295,19 +295,24 @@ export class CatalogService {
     }).pipe(map((state) => state.data));
   }
 
-  getBySlug(contentType: string, slug: string): Observable<CatalogItem | null> {
+  getBySlug(contentType: CatalogContentType, slug: string): Observable<CatalogItem | null> {
     if (!contentType || !slug) {
       return of(null);
     }
-    return this.http
-      .get<ApiResponse<CatalogItem>>(
-        `${this.baseUrl}/catalog/by-slug/${encodeURIComponent(contentType)}/${encodeURIComponent(slug)}`,
-        { headers: this.getAuthHeaders() }
-      )
-      .pipe(
-        map((resp) => resp?.data || null),
-        catchError(() => of(null))
-      );
+
+    const normalizedSlug = String(slug).trim().toLowerCase();
+    return this.requestState<CatalogItem | null>({
+      key: this.buildCacheKey('detail', `slug:${contentType}:${normalizedSlug}`),
+      ttlMs: this.ttlByKind.detail,
+      fallbackData: null,
+      requestFactory: () =>
+        this.http
+          .get<ApiResponse<CatalogItem>>(
+            `${this.baseUrl}/catalog/slug/${encodeURIComponent(contentType)}/${encodeURIComponent(normalizedSlug)}`,
+            { headers: this.getAuthHeaders() }
+          )
+          .pipe(map((resp) => resp?.data || null)),
+    }).pipe(map((state) => state.data));
   }
 
   getForYou(limit = 12): Observable<any[]> {

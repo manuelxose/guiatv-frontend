@@ -193,5 +193,8 @@
 
   <app-modal></app-modal>
   <app-auth-login-modal></app-auth-login-modal>
-  <app-desktop-chat-dock *ngIf="!isMobileViewport"></app-desktop-chat-dock>
+  <app-desktop-chat-dock
+    *ngIf="!isMobileViewport"
+    [suspended]="isChatbotOpen && shouldShowDesktopChatbotLauncher()"
+  ></app-desktop-chat-dock>
 </div>
