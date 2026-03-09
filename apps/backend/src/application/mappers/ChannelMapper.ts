@@ -20,6 +20,7 @@ export class ChannelMapper {
       country: channel.country,
       countryCode: channel.countryCode,
       region: channel.region,
+      description: channel.description,
       isActive: channel.isActive,
     };
   }
@@ -34,7 +35,7 @@ export class ChannelMapper {
   /**
    * Lightweight DTO used for metadata sections where full normalization is not needed.
    */
-  static toMetaDTO(channel: Channel): Pick<ChannelDTO, 'id' | 'name' | 'icon' | 'type' | 'country' | 'countryCode'> {
+  static toMetaDTO(channel: Channel): Pick<ChannelDTO, 'id' | 'name' | 'icon' | 'type' | 'country' | 'countryCode' | 'description'> {
     return {
       id: channel.id,
       name: channel.name,
@@ -42,6 +43,7 @@ export class ChannelMapper {
       type: (channel.type as any)?.toString().toUpperCase(),
       country: channel.country,
       countryCode: channel.countryCode,
+      description: channel.description,
     };
   }
 
@@ -55,6 +57,7 @@ export class ChannelMapper {
       icon: dto.icon,
       type: dto.type as any,
       region: dto.region,
+      description: dto.description,
       isActive: dto.isActive,
     });
   }

@@ -248,7 +248,7 @@ export class SearchOverlayComponent implements OnInit {
   }
 
   openSuggestion(result: CatalogSuggestion): void {
-    this.router.navigate(['/contenido', result.catalogId]);
+    this.router.navigate([result.detailPath || '/contenido/' + result.catalogId]);
     this.close.emit();
   }
 

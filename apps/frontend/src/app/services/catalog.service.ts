@@ -54,6 +54,8 @@ export interface CatalogItem {
   source: 'program' | 'tmdb';
   contentType: CatalogContentType;
   title: string;
+  slug?: string;
+  detailPath?: string;
   subtitle?: string;
   synopsis?: string;
   image?: string;
@@ -101,6 +103,8 @@ export interface CatalogSuggestion {
   source: 'program' | 'tmdb';
   contentType: CatalogContentType;
   title: string;
+  slug?: string;
+  detailPath?: string;
   subtitle?: string;
   image?: string;
   primaryPlatforms: string[];
@@ -289,6 +293,21 @@ export class CatalogService {
           )
           .pipe(map((resp) => resp?.data?.items || [])),
     }).pipe(map((state) => state.data));
+  }
+
+  getBySlug(contentType: string, slug: string): Observable<CatalogItem | null> {
+    if (!contentType || !slug) {
+      return of(null);
+    }
+    return this.http
+      .get<ApiResponse<CatalogItem>>(
+        `${this.baseUrl}/catalog/by-slug/${encodeURIComponent(contentType)}/${encodeURIComponent(slug)}`,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => resp?.data || null),
+        catchError(() => of(null))
+      );
   }
 
   getForYou(limit = 12): Observable<any[]> {

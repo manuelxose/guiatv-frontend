@@ -137,6 +137,7 @@ const ProgramSchema = new Schema<IProgramDocument>(
 ProgramSchema.index({ channelId: 1, startTime: 1 });
 ProgramSchema.index({ startTime: 1, endTime: 1 });
 ProgramSchema.index({ tmdbId: 1 }, { sparse: true });
+ProgramSchema.index({ title: 1, startTime: -1 });
 
 /**
  * Program model

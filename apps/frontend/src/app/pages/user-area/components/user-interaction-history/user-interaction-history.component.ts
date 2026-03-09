@@ -61,7 +61,7 @@ import { UserContentInteraction } from '../../../../interfaces/user.interface';
                 </div>
                 <a
                   *ngIf="item.contentId"
-                  [routerLink]="['/contenido', item.contentId]"
+                  [routerLink]="detailPathFor(item.contentTitle, item.contentType)"
                   class="min-h-[34px] rounded-full border border-slate-700 px-3 py-1 text-[11px] font-semibold text-slate-200"
                 >
                   Ver ficha
@@ -169,5 +169,13 @@ export class UserInteractionHistoryComponent {
     if (status === 'pending') return 'Pendiente';
     if (status === 'dropped') return 'Abandonado';
     return status || 'Sin estado';
+  }
+
+  detailPathFor(title: string, type: string): string {
+    const slug = (title || '').toLowerCase()
+      .replace(/\s+/g, '-').replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-').replace(/^-+|-+$/g, '') || 'sin-titulo';
+    const prefix = type === 'movie' ? '/peliculas' : type === 'series' ? '/series' : '/programas';
+    return `${prefix}/${slug}`;
   }
 }

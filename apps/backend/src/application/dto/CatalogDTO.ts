@@ -62,6 +62,8 @@ export interface CatalogItemDTO {
   source: CatalogSource;
   contentType: CatalogContentType;
   title: string;
+  slug: string;
+  detailPath: string;
   subtitle?: string;
   synopsis?: string;
   image?: string;
@@ -108,6 +110,8 @@ export interface CatalogSuggestionDTO {
   source: CatalogSource;
   contentType: CatalogContentType;
   title: string;
+  slug: string;
+  detailPath: string;
   subtitle?: string;
   image?: string;
   primaryPlatforms: string[];

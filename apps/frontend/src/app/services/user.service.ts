@@ -101,6 +101,8 @@ export class UserService {
   public readonly error$ = this.errorSubject.asObservable();
 
   constructor(private http: HttpClient) {
+    if (!this.isBrowser) return;
+
     const token = this.safeGetToken();
     if (token) {
       this.authenticatedSubject.next(true);

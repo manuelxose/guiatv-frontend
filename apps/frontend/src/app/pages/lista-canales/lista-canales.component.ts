@@ -18,8 +18,10 @@ import {
 import { MetaService } from 'src/app/services/meta.service';
 import { slugify } from 'src/app/utils/utils';
 import { CatalogItem, CatalogService } from 'src/app/services/catalog.service';
-import { buildProgramCatalogId } from 'src/app/utils/catalog';
+import { buildProgramCatalogId, buildDetailPath, CatalogContentType } from 'src/app/utils/catalog';
 import { TvDataService } from 'src/app/state/tv-data.service';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
+import { FaqSectionComponent, FaqItem } from '../../components/faq-section/faq-section.component';
 
 type GuideTabKey = 'now' | 'next' | 'night' | 'channels';
 type ChannelGroupKey =
@@ -94,7 +96,7 @@ const EDITORIAL_CATEGORY_PRIORITY: Record<string, number> = {
 @Component({
   selector: 'app-lista-canales',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, BreadcrumbComponent, FaqSectionComponent],
   templateUrl: './lista-canales.component.html',
   styleUrls: ['./lista-canales.component.scss'],
 })
@@ -114,6 +116,32 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
   public error: string | null = null;
   public safeLdHtml: SafeHtml | null = null;
   public isMoreCategoriesOpen = false;
+  public readonly breadcrumbItems: BreadcrumbItem[] = [
+    { name: 'Inicio', url: '/' },
+    { name: 'Guía de Canales', url: '/programacion-tv/guia-canales' },
+  ];
+  public readonly faqItems: FaqItem[] = [
+    {
+      question: '¿Qué canales de TDT puedo ver gratis en España?',
+      answer: 'En España hay más de 20 canales de TDT gratuitos, entre ellos La 1, La 2, Antena 3, Cuatro, Telecinco, La Sexta, Neox, Nova, Mega, Energy, Divinity, Clan, Boing, 24 Horas, Teledeporte, DMAX, DKISS, Atreseries, Atrescine, TRECE, Be Mad y GOL.',
+    },
+    {
+      question: '¿Cómo consultar la programación de TV de hoy?',
+      answer: 'Desde esta página puedes ver qué se emite ahora, qué programa viene a continuación y qué hay esta noche en los principales canales. Usa las pestañas «Ahora», «Siguiente» y «Esta noche» para cambiar de franja horaria.',
+    },
+    {
+      question: '¿Se puede filtrar por tipo de canal o categoría?',
+      answer: 'Sí. Puedes filtrar por grupo de canales (TDT, Autonómicos, Movistar+, Online, Deporte) y por categoría de contenido (Cine, Series, Deportes y más) para encontrar rápidamente lo que buscas.',
+    },
+    {
+      question: '¿Qué diferencia hay entre canales TDT y Movistar+?',
+      answer: 'Los canales TDT son gratuitos y se reciben con una antena terrestre convencional. Los canales de Movistar+ requieren una suscripción de pago y ofrecen contenido premium como cine de estreno, series originales y deporte exclusivo.',
+    },
+    {
+      question: '¿Con qué frecuencia se actualiza la guía de programación?',
+      answer: 'La guía de programación se actualiza varias veces al día de forma automática para reflejar cambios de última hora en la parrilla de cada canal.',
+    },
+  ];
 
   public channels: GuideChannel[] = [];
   public sections: GuideSection[] = [];
@@ -140,9 +168,9 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.metaService.setMetaTags({
-      title: 'Guía TV en directo y canales - Guía TV',
+      title: 'Canales TDT y televisión en directo — Guía Programación TV',
       description:
-        'Consulta qué se está emitiendo ahora, qué viene después y qué destaca esta noche en la televisión española, con acceso directo a todos los canales.',
+        'Consulta qué se está emitiendo ahora, qué viene después y qué destaca esta noche en la televisión española, con acceso directo a todos los canales TDT.',
       canonicalUrl: this.router.url,
     });
 
@@ -394,6 +422,11 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
         const catalogId = buildProgramCatalogId(String(program.id));
         const normalizedCategory = this.normalizeGuideCategory(program.category, title);
         const editorialScore = this.buildEditorialScore(normalizedCategory, channel.sortIndex);
+        const contentType: CatalogContentType =
+          normalizedCategory === 'Cine' ? 'movie' :
+          normalizedCategory === 'Series' ? 'series' :
+          'program';
+        const detailPath = buildDetailPath(contentType, title, slugify);
 
         return {
           id: String(program.id),
@@ -413,7 +446,7 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
           groupKey: channel.groupKey,
           sortIndex: channel.sortIndex,
           editorialScore,
-          detailLink: ['/contenido', catalogId],
+          detailLink: [detailPath],
           channelLink: channel.channelLink,
         } satisfies GuideProgram;
       })

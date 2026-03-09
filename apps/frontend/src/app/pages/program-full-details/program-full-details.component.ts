@@ -10,6 +10,7 @@ import { MetaService } from 'src/app/services/meta.service';
 import { SliderComponent } from 'src/app/components/slider/slider.component';
 import { InteractionButtonsComponent } from 'src/app/components/interaction-buttons/interaction-buttons.component';
 import { durationToISO8601 } from 'src/app/utils/utils';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
 
 // Importaciones modernas de Swiper
 import { SwiperOptions } from 'swiper/types';
@@ -20,7 +21,7 @@ import { Navigation, Pagination, A11y } from 'swiper/modules';
   templateUrl: './program-full-details.component.html',
   styleUrls: ['./program-full-details.component.scss'],
   standalone: true,
-  imports: [CommonModule, SliderComponent, InteractionButtonsComponent],
+  imports: [CommonModule, SliderComponent, InteractionButtonsComponent, BreadcrumbComponent],
 })
 export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
   @ViewChild(HeaderComponent) header!: HeaderComponent;
@@ -40,6 +41,7 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
   public program_modal: any = {};
   public programas: any[] = [];
   public ldJson: SafeHtml = '';
+  public breadcrumbItems: BreadcrumbItem[] = [];
 
   // Subscriptions para evitar memory leaks
   private subscriptions: Subscription = new Subscription();
@@ -266,21 +268,26 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
     const startTime = this.program.start || '';
     const stopTime = this.program.stop || '';
     const isoDuration = durationToISO8601(startTime, stopTime);
-    const contentUrl = `https://guiaprogramaciontv.com/programas/${slug}`;
 
     const schema: Record<string, any> = {
       '@context': 'https://schema.org',
-      '@type': 'VideoObject',
+      '@type': 'BroadcastEvent',
       name: title,
       description: description || `Detalles de ${title} en la guía de TV española`,
-      thumbnailUrl: poster,
-      uploadDate: startTime ? new Date(startTime).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      contentUrl,
-      embedUrl: contentUrl,
+      videoFormat: 'HD',
+      isLiveBroadcast: this.compareDate(startTime, stopTime),
+      startDate: startTime || undefined,
+      endDate: stopTime || undefined,
       inLanguage: 'es-ES',
     };
     if (isoDuration) schema['duration'] = isoDuration;
-    if (this.program.channel) schema['publisher'] = { '@type': 'Organization', name: this.program.channel };
+    if (poster) schema['image'] = poster;
+    if (this.program.channel) {
+      schema['publishedOn'] = {
+        '@type': 'BroadcastService',
+        name: this.program.channel,
+      };
+    }
     if (this.program.category?.value || this.program.desc?.category) {
       schema['genre'] = this.program.category?.value || this.program.desc?.category;
     }
@@ -299,6 +306,12 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
       canonicalUrl: `/programas/${slug}`,
       ogImage: poster,
     });
+
+    this.breadcrumbItems = [
+      { name: 'Inicio', url: '/' },
+      { name: 'Programas', url: '/programacion-tv/guia-canales' },
+      { name: title, url: `/programas/${slug}` },
+    ];
   }
 
   private slugify(value: string | undefined | null): string {

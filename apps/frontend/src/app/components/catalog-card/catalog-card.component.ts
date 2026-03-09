@@ -136,6 +136,9 @@ export class CatalogCardComponent {
   @Input() showActions = true;
 
   get detailLink(): any[] {
+    if (this.item?.detailPath) {
+      return [this.item.detailPath];
+    }
     return ['/contenido', this.item?.catalogId || ''];
   }
 

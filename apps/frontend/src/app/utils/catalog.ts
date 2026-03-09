@@ -73,3 +73,16 @@ export function normalizeCatalogInteractionId(input: {
   return buildProgramCatalogId(raw);
 }
 
+export function buildDetailPath(
+  contentType: CatalogContentType,
+  title: string,
+  slugifyFn: (text: string) => string
+): string {
+  const slug = slugifyFn(title) || 'sin-titulo';
+  const prefix =
+    contentType === 'movie' ? '/peliculas' :
+    contentType === 'series' ? '/series' :
+    '/programas';
+  return `${prefix}/${slug}`;
+}
+

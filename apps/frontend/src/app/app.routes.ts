@@ -108,8 +108,8 @@ export const routes: Routes = [
   {
     path: 'contenido/:catalogId',
     loadComponent: () =>
-      import('./pages/catalog-detail/catalog-detail.component').then(
-        (m) => m.CatalogDetailComponent
+      import('./pages/content-redirect/content-redirect.component').then(
+        (m) => m.ContentRedirectComponent
       ),
     title: 'Contenido - Guía TV',
     data: { robots: 'noindex, follow' },

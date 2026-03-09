@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject, combineLatest, forkJoin, of } from 'rxjs';
 import { catchError, distinctUntilChanged, map, takeUntil } from 'rxjs/operators';
 import { CatalogRailComponent } from '../../components/catalog-rail/catalog-rail.component';
@@ -37,6 +38,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   public loading = true;
   public error: string | null = null;
   public degradedNotice: string | null = null;
+  public safeLdHtml: SafeHtml | null = null;
   public sections: HomeSections = {
     personalized: [],
     platformItems: [],
@@ -51,16 +53,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private readonly catalogService: CatalogService,
     private readonly metaService: MetaService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
     this.metaService.setMetaTags({
-      title: 'Inicio - Guía TV',
+      title: 'Guía de Programación TV — Qué ver hoy en televisión y streaming',
       description:
         'Descubre qué ver hoy en televisión y streaming con recomendaciones personalizadas, plataformas disponibles y emisiones en directo.',
       canonicalUrl: '/',
     });
+
+    this.buildStructuredData();
 
     combineLatest([this.userService.isAuthenticated$, this.userService.getProfile()])
       .pipe(
@@ -207,5 +212,42 @@ export class HomeComponent implements OnInit, OnDestroy {
     return (items || [])
       .map((entry) => entry?.item || entry)
       .filter((item): item is CatalogItem => Boolean(item?.catalogId));
+  }
+
+  private buildStructuredData(): void {
+    const baseUrl = 'https://guiaprogramaciontv.com';
+    const schemas = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'Guía Programación TV',
+        url: baseUrl,
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${baseUrl}/programacion-tv/series?q={search_term_string}`,
+          },
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'Guía Programación TV',
+        url: baseUrl,
+        logo: {
+          '@type': 'ImageObject',
+          url: `${baseUrl}/assets/images/logo.png`,
+        },
+        description:
+          'Guía completa de programación de televisión y streaming en España. Consulta la parrilla de TV, recomendaciones y catálogo de plataformas.',
+      },
+    ];
+
+    const scripts = schemas
+      .map((s) => `<script type="application/ld+json">${JSON.stringify(s)}</script>`)
+      .join('');
+    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(scripts);
   }
 }

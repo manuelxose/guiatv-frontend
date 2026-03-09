@@ -272,6 +272,32 @@ app.get('/healthz', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
+// =============================================================================
+// SSR RESPONSE CACHE (in-memory, TTL-based)
+// =============================================================================
+const SSR_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const SSR_CACHE_MAX_ENTRIES = 200;
+const ssrCache = new Map();
+
+function getCachedResponse(urlPath) {
+  const entry = ssrCache.get(urlPath);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > SSR_CACHE_TTL_MS) {
+    ssrCache.delete(urlPath);
+    return null;
+  }
+  return entry;
+}
+
+function setCachedResponse(urlPath, statusCode, html) {
+  // Evict oldest entries when cache is full
+  if (ssrCache.size >= SSR_CACHE_MAX_ENTRIES) {
+    const oldestKey = ssrCache.keys().next().value;
+    ssrCache.delete(oldestKey);
+  }
+  ssrCache.set(urlPath, { statusCode, html, ts: Date.now() });
+}
+
 /** Known route prefixes — anything not matching these is a 404 */
 const KNOWN_ROUTES = [
   /^\/$/,
@@ -310,6 +336,20 @@ app.get('*', async (req, res) => {
   const host = headers.host || `localhost:${port}`;
   const renderUrl = `${protocol}://${host}${originalUrl}`;
 
+  // Skip cache for authenticated users (cookie-based)
+  const hasAuthCookie = (req.headers.cookie || '').includes('session');
+  const cachePath = originalUrl.split('?')[0];
+
+  if (!hasAuthCookie) {
+    const cached = getCachedResponse(cachePath);
+    if (cached) {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
+      res.setHeader('X-SSR-Cache', 'HIT');
+      return res.status(cached.statusCode).send(cached.html);
+    }
+  }
+  res.setHeader('X-SSR-Cache', 'MISS');
+
   if (win?.location) {
     try {
       win.location.href = renderUrl;
@@ -321,26 +361,38 @@ app.get('*', async (req, res) => {
 
   try {
     const bootstrapFn = await getBootstrap();
-    let html = await commonEngine.render({
-      bootstrap: bootstrapFn,
-      documentFilePath: indexHtml,
-      url: renderUrl,
-      publicPath: browserDistPath,
-      providers: [{ provide: REQUEST, useValue: req }],
-    });
+    const SSR_TIMEOUT_MS = 5000;
+    const renderStart = Date.now();
+    let html = await Promise.race([
+      commonEngine.render({
+        bootstrap: bootstrapFn,
+        documentFilePath: indexHtml,
+        url: renderUrl,
+        publicPath: browserDistPath,
+        providers: [{ provide: REQUEST, useValue: req }],
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('SSR render timeout')), SSR_TIMEOUT_MS)
+      ),
+    ]);
+    const renderMs = Date.now() - renderStart;
 
     if (html.includes('<app-root></app-root>')) {
+      const appRootMatch = html.match(/<app-root([^>]*)>/);
+      console.warn(`[SSR] ⚠️ Empty render for ${renderUrl} (${renderMs}ms), html=${html.length}b, attrs=${appRootMatch?.[1] || 'none'}`);
       // SSR produced an empty root — serve CSR fallback.
       const fallbackFile = join(browserDistPath, 'index.html');
       const fallbackCsr = join(browserDistPath, 'index.csr.html');
       // Unknown routes get 404 status even on CSR fallback
       const statusCode = isKnownRoute(originalUrl) ? 200 : 404;
       res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120');
-      if (existsSync(fallbackFile)) {
-        return res.status(statusCode).sendFile(fallbackFile);
-      }
-      if (existsSync(fallbackCsr)) {
-        return res.status(statusCode).sendFile(fallbackCsr);
+      const csrPath = existsSync(fallbackFile) ? fallbackFile : existsSync(fallbackCsr) ? fallbackCsr : null;
+      if (csrPath) {
+        const csrHtml = readFileSync(csrPath, 'utf-8');
+        if (!hasAuthCookie) {
+          setCachedResponse(cachePath, statusCode, csrHtml);
+        }
+        return res.status(statusCode).send(csrHtml);
       }
     }
 
@@ -354,6 +406,9 @@ app.get('*', async (req, res) => {
     html = html.replace(/<meta\s+name="ssr-status"\s+content="\d+"\s*\/?>/g, '');
 
     res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
+    if (!hasAuthCookie) {
+      setCachedResponse(cachePath, statusCode, html);
+    }
     res.status(statusCode).send(html);
   } catch (err) {
     console.error('[SSR] ❌ Render Error:', err);

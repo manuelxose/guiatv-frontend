@@ -43,6 +43,17 @@ export class CatalogController {
     );
   }
 
+  async getBySlug(req: Request, res: Response): Promise<void> {
+    const { contentType, slug } = req.params;
+    const result = await this.catalogService.getBySlug(
+      contentType as any,
+      slug,
+      (req as AuthenticatedRequest).user?.id
+    );
+
+    res.status(200).json(successResponse(result));
+  }
+
   async suggest(req: Request, res: Response): Promise<void> {
     const q = String(req.query.q || '').trim();
     const limit = req.query.limit ? Number(req.query.limit) : 8;

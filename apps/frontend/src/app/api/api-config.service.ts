@@ -14,7 +14,15 @@ export class ApiConfigService {
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     const isBrowser = isPlatformBrowser(platformId);
     const envBase = (environment as any).API_BASE_URL?.trim();
-    let base = envBase || (isBrowser ? '/v2' : 'http://localhost:4000/v2');
+
+    // In SSR, always use an absolute URL to the backend API to avoid
+    // self-referencing requests that loop back into the SSR server.
+    let base: string;
+    if (isBrowser) {
+      base = envBase || '/v2';
+    } else {
+      base = 'http://localhost:4000/v2';
+    }
 
     if (base.endsWith('/')) base = base.slice(0, -1);
     if (!base.startsWith('http') && !base.startsWith('/')) {

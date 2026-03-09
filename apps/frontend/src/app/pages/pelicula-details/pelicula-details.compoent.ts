@@ -4,17 +4,19 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpService } from 'src/app/services/http.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { MetaService } from 'src/app/services/meta.service';
+import { CatalogService } from 'src/app/services/catalog.service';
 import { Subscription } from 'rxjs';
 import { diffHour, durationToISO8601, minutesToISO8601 } from '../../utils/utils';
 import { InteractionButtonsComponent } from 'src/app/components/interaction-buttons/interaction-buttons.component';
 import { WhereToWatchComponent } from 'src/app/components/where-to-watch/where-to-watch.component';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-pelicula-details',
   templateUrl: './pelicula-details.compoent.html',
   styleUrls: ['./pelicula-details.compoent.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule, InteractionButtonsComponent, WhereToWatchComponent],
+  imports: [CommonModule, RouterModule, InteractionButtonsComponent, WhereToWatchComponent, BreadcrumbComponent],
 })
 export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
@@ -22,6 +24,7 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   private httpSvc = inject(HttpService);
   private guiaSvc = inject(TvGuideService);
   private metaSvc = inject(MetaService);
+  private catalogSvc = inject(CatalogService);
 
   public data: any = { genres: [] };
   public movie: any = {}; // Holds raw API response
@@ -32,6 +35,7 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   public contentType: 'movies' | 'series' | 'programs' = 'movies';
   public isLoading = true;
   public ldJson: string = '';
+  public breadcrumbItems: BreadcrumbItem[] = [];
   
   // Navigation state
   public actorStartIndex = 0;
@@ -163,6 +167,23 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
 
   // --- Program Specific Logic ---
   private loadProgramBySlug(slug: string) {
+    this.catalogSvc.getBySlug('program', slug).subscribe({
+      next: (item) => {
+        if (item) {
+          this.movie = item;
+          this.data = this.transformCatalogItemToData(item);
+          this.updateMetaTags();
+          this.isLoading = false;
+          this.relatedContent = (item.related || []).map((r: any) => this.transformCatalogItemToData(r));
+        } else {
+          this.loadProgramBySlugFallback(slug);
+        }
+      },
+      error: () => this.loadProgramBySlugFallback(slug),
+    });
+  }
+
+  private loadProgramBySlugFallback(slug: string) {
     this.httpSvc.getProgramacion('today').subscribe((programs: any[]) => {
         const flatPrograms = this.flattenPrograms(programs);
         const found = flatPrograms.find((p: any) => this.slugify(p.title?.value || p.title) === slug);
@@ -273,6 +294,26 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
       return result;
   }
 
+  private transformCatalogItemToData(item: any) {
+    return {
+      id: item.tmdbId || item.catalogId,
+      title: item.title || '',
+      overview: item.synopsis || '',
+      poster: item.image || '',
+      backdrop: item.backdrop || '',
+      year: item.releaseYear ? String(item.releaseYear) : (item.start ? new Date(item.start).getFullYear().toString() : ''),
+      rating: item.rating,
+      duration: item.durationMinutes ? `${item.durationMinutes} min` : (item.start && item.end ? diffHour(item.start, item.end) : ''),
+      genres: item.genres || [],
+      directors: item.director || '',
+      cast: (item.cast || []).map((c: any) => ({ name: c.name, character: c.character, profile_path: c.profile })),
+      type: item.contentType === 'movie' ? 'movies' : item.contentType === 'series' ? 'series' : 'programs',
+      start: item.start,
+      stop: item.end,
+      channel: item.channel,
+    };
+  }
+
   private loadAdditionalInfo(id: string) {
     if (this.contentType === 'movies') {
         // Get Credits (Cast/Crew)
@@ -326,6 +367,18 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
       robots,
     });
 
+    const pathMap: Record<string, { label: string; path: string }> = {
+      movies: { label: 'Películas', path: '/programacion-tv/peliculas' },
+      series: { label: 'Series', path: '/programacion-tv/series' },
+      programs: { label: 'Programas', path: '/programacion-tv/guia-canales' },
+    };
+    const section = pathMap[this.contentType] || pathMap['movies'];
+    this.breadcrumbItems = [
+      { name: 'Inicio', url: '/' },
+      { name: section.label, url: section.path },
+      { name: this.data.title, url: this.router.url.split('?')[0] },
+    ];
+
     this.generateJsonLd();
   }
 
@@ -356,11 +409,14 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
       name: this.data.title,
       description: this.data.overview || `${this.data.title} en la guía de TV española`,
       image: this.data.poster || this.data.backdrop,
-      uploadDate,
       url: contentUrl,
-      contentUrl,
       inLanguage: 'es-ES',
     };
+    if (schemaType === 'VideoObject') {
+      schema['uploadDate'] = uploadDate;
+    } else {
+      schema['datePublished'] = uploadDate;
+    }
     if (isoDuration) schema['duration'] = isoDuration;
     if (this.data.rating) {
       schema['aggregateRating'] = {

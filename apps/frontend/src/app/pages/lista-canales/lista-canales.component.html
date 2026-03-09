@@ -13,6 +13,8 @@
 >
   <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
 
+  <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
+
   <section
     class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.16),_rgba(8,16,24,0.96)_52%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-8"
   >
@@ -459,4 +461,6 @@
       </div>
     </section>
   </ng-container>
+
+  <app-faq-section [items]="faqItems"></app-faq-section>
 </main>

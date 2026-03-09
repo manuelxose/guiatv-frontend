@@ -6,7 +6,7 @@ export const APP_PATHS = {
   live: '/programacion-tv/en-directo',
   series: '/programacion-tv/series',
   movies: '/programacion-tv/peliculas',
-  content: '/contenido',
+  content: '/contenido', // legacy — kept for redirect support
   blog: '/blog',
   top10: '/blog/top10',
   account: '/mi-cuenta',

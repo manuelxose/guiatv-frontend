@@ -54,6 +54,8 @@ export class ChatService {
   private onlineRefreshTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(private http: HttpClient, private userService: UserService) {
+    if (!this.isBrowser) return;
+
     this.userService.getProfile().subscribe((profile) => {
       this.currentUserId = profile?.id || null;
     });

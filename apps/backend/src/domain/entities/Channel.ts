@@ -21,6 +21,7 @@ export interface ChannelProps {
   country?: string;
   countryCode?: string;
   region?: string;
+  description?: string;
   isActive: boolean;
 }
 
@@ -95,6 +96,10 @@ export class Channel {
 
   get countryCode(): string | undefined {
     return this.props.countryCode;
+  }
+
+  get description(): string | undefined {
+    return this.props.description;
   }
 
   get isActive(): boolean {
