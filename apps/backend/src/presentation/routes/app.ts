@@ -22,6 +22,7 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
 
   // Evitar respuestas 304 por etag en datos dinámicos
   app.disable('etag');
+  app.set('trust proxy', 1);
 
   // Sitemap — mounted before the no-store middleware so it can send its own Cache-Control headers
   app.use('/', createSitemapRoutes(dependencies.sitemapController));

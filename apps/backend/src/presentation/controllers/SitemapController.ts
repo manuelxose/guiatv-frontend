@@ -187,7 +187,7 @@ export class SitemapController {
       const slug = channel.normalizedName;
       if (!slug) continue;
       urls.push({
-        loc: `/programacion-tv/ver-canal/${slug}`,
+        loc: `/canales/${slug}`,
         lastmod: todayIso,
         changefreq: 'weekly',
         priority: 0.7,

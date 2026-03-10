@@ -79,13 +79,17 @@ export const routes: Routes = [
     title: 'Guía de Canales - Guía TV',
   },
   {
-    // SEO-friendly channel route used across the app (e.g. slider/navigation)
-    path: 'programacion-tv/ver-canal/:id',
+    path: 'canales/:id',
     loadComponent: () =>
       import('./pages/canal-completo/canal-completo.component').then(
         (m) => m.CanalCompletoComponent
       ),
     title: 'Canal - Guía TV',
+  },
+  {
+    path: 'programacion-tv/ver-canal/:id',
+    redirectTo: 'canales/:id',
+    pathMatch: 'full',
   },
   {
     path: 'programacion-tv/que-ver-hoy',
@@ -116,7 +120,7 @@ export const routes: Routes = [
   },
   {
     path: 'ver-canal/:id',
-    redirectTo: 'programacion-tv/ver-canal/:id',
+    redirectTo: 'canales/:id',
     pathMatch: 'full',
   },
   // Legacy single-parameter detail routes (redirect to canonical slug routes)

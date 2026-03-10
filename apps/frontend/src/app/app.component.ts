@@ -12,7 +12,6 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet, ActivatedRoute } from 
 import { Subject, filter, map, takeUntil } from 'rxjs';
 import { APP_PATHS, MOBILE_APP_TABS, normalizePath } from './config/route-map';
 import { AuthLoginModalComponent } from './components/auth-login-modal/auth-login-modal.component';
-import { DesktopChatDockComponent } from './components/desktop-chat-dock/desktop-chat-dock.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { LeftSidebarComponent } from './components/left-sidebar/left-sidebar.component';
 import { ModalComponent } from './components/modal/modal.component';
@@ -38,7 +37,6 @@ import { environment } from '../environments/environment';
     FooterComponent,
     ModalComponent,
     AuthLoginModalComponent,
-    DesktopChatDockComponent,
     AIChatbotComponent,
     SearchOverlayComponent,
   ],
@@ -349,7 +347,8 @@ export class AppComponent implements OnInit, OnDestroy {
     if (
       path.startsWith(APP_PATHS.guide) ||
       path.startsWith(APP_PATHS.live) ||
-      path.startsWith('/programacion-tv/ver-canal')
+      path.startsWith('/programacion-tv/ver-canal') ||
+      path.startsWith('/canales/')
     ) {
       return 'guide';
     }

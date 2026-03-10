@@ -279,10 +279,10 @@ export class ChatService {
     this.socket = io(socketUrl, {
       path: '/v2/ws',
       auth: { token },
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
+      transports: ['polling', 'websocket'],
+      upgrade: true,
+      reconnection: false,
+      timeout: 10000,
     });
 
     this.socket.on('connect', () => {

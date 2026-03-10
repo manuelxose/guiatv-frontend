@@ -15,6 +15,7 @@ const KNOWN_ROUTES: RegExp[] = [
   /^\/admin$/,
   /^\/programacion-tv\/(series|peliculas|guia-canales|en-directo|que-ver-hoy)$/,
   /^\/programacion-tv\/ver-canal\/[^/]+$/,
+  /^\/canales\/[^/]+$/,
   /^\/plataformas$/,
   /^\/contenido\/[^/]+$/,
   /^\/peliculas\/[^/]+$/,
@@ -84,6 +85,15 @@ export function app(): express.Express {
       // fall through to 404
     }
     res.status(404).send('Not found');
+  });
+
+  server.get(['/programacion-tv/ver-canal/:id', '/ver-canal/:id'], (req, res) => {
+    const slug = encodeURIComponent(String(req.params.id || '').trim());
+    if (!slug) {
+      res.status(404).send('Not found');
+      return;
+    }
+    res.redirect(301, `/canales/${slug}`);
   });
 
   // Todas las rutas regulares usan el motor Universal

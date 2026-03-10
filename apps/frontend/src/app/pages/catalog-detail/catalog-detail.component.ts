@@ -100,6 +100,7 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                     [genres]="content.genres"
                     [image]="content.image || content.backdrop"
                     [platform]="content.primaryPlatforms?.[0]"
+                    [preloadInteraction]="true"
                   ></app-interaction-buttons>
                 </div>
               </div>

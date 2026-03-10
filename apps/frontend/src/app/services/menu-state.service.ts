@@ -102,6 +102,7 @@ export class MenuStateService {
     }
 
     if (
+      path.startsWith('/canales/') ||
       path.startsWith('/programacion-tv/ver-canal/') ||
       path.startsWith('/ver-canal/')
     ) {

@@ -174,7 +174,7 @@
     *ngIf="shouldShowDesktopChatbotLauncher() && (isAuthenticated$ | async) && !isChatbotOpen"
     type="button"
     (click)="toggleChatbot()"
-    class="fixed bottom-6 right-6 z-[119] hidden h-14 min-w-[14rem] items-center justify-center gap-3 rounded-full border border-red-500/30 bg-slate-950/95 px-5 text-sm font-semibold text-white shadow-[0_16px_38px_rgba(0,0,0,0.45)] md:inline-flex"
+    class="fixed bottom-6 right-6 z-[119] hidden h-14 min-w-[16rem] items-center justify-center gap-3 rounded-full border border-red-500/30 bg-slate-950/95 px-6 text-sm font-semibold text-white shadow-[0_16px_38px_rgba(0,0,0,0.45)] md:inline-flex"
     aria-label="Abrir asistente de recomendaciones"
   >
     <svg class="h-5 w-5 text-red-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -186,15 +186,11 @@
 
   <div
     *ngIf="shouldShowDesktopChatbotLauncher() && (isAuthenticated$ | async) && isChatbotOpen"
-    class="fixed inset-y-6 right-6 z-[120] hidden w-[26rem] overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-950/95 shadow-[0_20px_50px_rgba(0,0,0,0.55)] md:block"
+    class="fixed inset-y-4 right-4 z-[120] hidden w-[min(46rem,calc(100vw-2.5rem))] overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-950/95 shadow-[0_24px_60px_rgba(0,0,0,0.55)] md:block xl:w-[48rem]"
   >
     <app-ai-chatbot (close)="closeChatbot()"></app-ai-chatbot>
   </div>
 
   <app-modal></app-modal>
   <app-auth-login-modal></app-auth-login-modal>
-  <app-desktop-chat-dock
-    *ngIf="!isMobileViewport"
-    [suspended]="isChatbotOpen && shouldShowDesktopChatbotLauncher()"
-  ></app-desktop-chat-dock>
 </div>

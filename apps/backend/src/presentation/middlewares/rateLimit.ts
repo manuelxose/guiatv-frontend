@@ -69,6 +69,6 @@ export const contentRateLimit = createRateLimiter({
 
 export const interactionRateLimit = createRateLimiter({
   windowMs: 60 * 1000,
-  max: 240,
+  max: 600,
   message: 'Too many interaction requests, please retry in a few seconds',
 });

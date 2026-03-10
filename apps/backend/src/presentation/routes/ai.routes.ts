@@ -12,6 +12,21 @@ export const createAIRoutes = (
   const authGuard = createAuthGuard(authService);
 
   router.post('/chat', authGuard, asyncHandler(controller.chat.bind(controller)));
+  router.get(
+    '/chat/history',
+    authGuard,
+    asyncHandler(controller.getHistory.bind(controller))
+  );
+  router.post(
+    '/chat/history',
+    authGuard,
+    asyncHandler(controller.saveHistory.bind(controller))
+  );
+  router.delete(
+    '/chat/history',
+    authGuard,
+    asyncHandler(controller.clearHistory.bind(controller))
+  );
 
   return router;
 };

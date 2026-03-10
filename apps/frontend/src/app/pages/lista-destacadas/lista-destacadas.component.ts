@@ -336,7 +336,7 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
       }
     } else {
       const slug = slugify(programa?.name || '');
-      this.router.navigate(['programacion-tv/ver-canal', slug]);
+      this.router.navigate(['/canales', slug]);
     }
   }
 }
