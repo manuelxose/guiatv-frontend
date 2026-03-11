@@ -1,18 +1,35 @@
 import { Request, Response, NextFunction } from 'express';
 import {
+  BlogContentType,
   BlogPostModel,
+  IBlogFaqItem,
   IBlogPostCategory,
+  IBlogPostDocument,
 } from '../../infrastructure/database/models/BlogPost.model';
+import { CATALOG_PLATFORM_REGISTRY } from '../../application/dto/CatalogDTO';
 import { successResponse } from '../../shared/types/ApiResponse';
-import { ValidationError } from '../../shared/errors';
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+} from '../../shared/errors';
 
-interface CreatePostPayload {
+interface BlogWritePayload {
   title?: string;
   slug?: string;
   status?: string;
   excerpt?: string;
   content?: string;
   categories?: string[] | string;
+  contentType?: string;
+  featured?: boolean | string;
+  primaryIntent?: string;
+  targetQuery?: string;
+  relatedPlatformKeys?: string[] | string;
+  relatedRouteKeys?: string[] | string;
+  faqItems?: Array<{ question?: string; answer?: string }> | string;
+  evergreen?: boolean | string;
   coverImage?: string;
   featuredImage?: string;
   metaTitle?: string;
@@ -21,6 +38,51 @@ interface CreatePostPayload {
   ogImage?: string;
   canonicalUrl?: string;
   publishedAt?: string;
+}
+
+const CONTENT_TYPES: ReadonlySet<BlogContentType> = new Set([
+  'guide',
+  'ranking',
+  'trend',
+]);
+const RELATED_ROUTE_KEYS = new Set([
+  'platforms',
+  'guide',
+  'explore',
+  'stats',
+  'comparison',
+]);
+const RELATED_PLATFORM_KEYS = new Set(
+  CATALOG_PLATFORM_REGISTRY.map((platform) => platform.key)
+);
+
+interface NormalizedBlogPayload {
+  title: string;
+  slug: string;
+  status: 'draft' | 'publish';
+  excerpt?: string;
+  content?: string;
+  categories: IBlogPostCategory[];
+  contentType: BlogContentType;
+  featured: boolean;
+  primaryIntent?: string;
+  targetQuery?: string;
+  relatedPlatformKeys: string[];
+  relatedRouteKeys: string[];
+  faqItems: IBlogFaqItem[];
+  evergreen: boolean;
+  featuredImage?: {
+    sourceUrl?: string;
+    caption?: string;
+  };
+  seo: {
+    metaTitle?: string;
+    metaDescription?: string;
+    keywords?: string[];
+    ogImage?: string;
+    canonicalUrl?: string;
+  };
+  publishedAt?: Date;
 }
 
 /**
@@ -33,17 +95,42 @@ export class BlogController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const { slug, limit, status, categories, search } = req.query;
+      const {
+        slug,
+        limit,
+        status,
+        categories,
+        categorySlug,
+        search,
+        contentType,
+        featured,
+      } = req.query;
       const filters: Record<string, any> = {};
       const limitValue = this.parseNumber(limit, 50);
+      const isAdminRequest = this.isAdminRequest(req);
 
       if (slug && typeof slug === 'string') {
         filters.slug = slug;
       }
 
-      if (status && typeof status === 'string' && status !== 'all') {
-        filters.status = status;
-      } else if (!status) {
+      if (status && typeof status === 'string') {
+        if (status === 'all') {
+          if (!isAdminRequest) {
+            throw new ForbiddenError('Admin access required to list all editorial posts');
+          }
+        } else if (status === 'draft') {
+          if (!isAdminRequest) {
+            throw new ForbiddenError('Admin access required to list draft editorial posts');
+          }
+          filters.status = 'draft';
+        } else if (status === 'publish') {
+          filters.status = 'publish';
+        } else {
+          throw new ValidationError('Invalid status', [
+            { field: 'status', message: 'Expected all, draft or publish', value: status },
+          ]);
+        }
+      } else {
         filters.status = 'publish';
       }
 
@@ -57,12 +144,46 @@ export class BlogController {
         }
       }
 
-      if (search && typeof search === 'string') {
-        filters.$text = { $search: search };
+      if (categorySlug && typeof categorySlug === 'string') {
+        const slugs = categorySlug
+          .split(',')
+          .map((value) => this.slugify(value))
+          .filter(Boolean);
+        if (slugs.length) {
+          filters['categories.slug'] = { $in: slugs };
+        }
+      }
+
+      if (contentType && typeof contentType === 'string') {
+        const normalizedType = String(contentType).trim().toLowerCase() as BlogContentType;
+        if (!CONTENT_TYPES.has(normalizedType)) {
+          throw new ValidationError('Invalid contentType', [
+            {
+              field: 'contentType',
+              message: 'Expected guide, ranking or trend',
+              value: contentType,
+            },
+          ]);
+        }
+        filters.contentType = normalizedType;
+      }
+
+      if (typeof featured === 'string') {
+        const parsed = this.parseOptionalBoolean(featured);
+        if (parsed == null) {
+          throw new ValidationError('Invalid featured flag', [
+            { field: 'featured', message: 'Expected true or false', value: featured },
+          ]);
+        }
+        filters.featured = parsed;
+      }
+
+      if (search && typeof search === 'string' && search.trim()) {
+        filters.$text = { $search: search.trim() };
       }
 
       const posts = await BlogPostModel.find(filters)
-        .sort({ publishedAt: -1, createdAt: -1 })
+        .sort({ featured: -1, publishedAt: -1, createdAt: -1 })
         .limit(limitValue)
         .lean()
         .exec();
@@ -79,54 +200,98 @@ export class BlogController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const payload = req.body as CreatePostPayload;
-      const title = (payload.title || '').trim();
-      if (!title) {
-        throw new ValidationError('Title is required', [
-          { field: 'title', message: 'Required', value: title },
-        ]);
-      }
-
-      const slug = this.slugify(payload.slug || title);
-      const status =
-        payload.status && payload.status.toLowerCase() === 'publish'
-          ? 'publish'
-          : 'draft';
-      const categories = this.normalizeCategories(payload.categories);
-      const keywords = this.normalizeKeywords(payload.keywords);
-      const featuredImage =
-        payload.coverImage || payload.featuredImage || payload.ogImage;
-
-      const publishedAt =
-        payload.publishedAt && status === 'publish'
-          ? new Date(payload.publishedAt)
-          : status === 'publish'
-          ? new Date()
-          : undefined;
+      const payload = req.body as BlogWritePayload;
+      const normalized = this.normalizePayload(payload);
+      await this.assertUniqueSlug(normalized.slug);
 
       const created = await BlogPostModel.create({
-        title,
-        slug,
-        status,
-        excerpt: payload.excerpt,
-        content: payload.content,
-        categories,
-        featuredImage: featuredImage
-          ? { sourceUrl: featuredImage }
-          : undefined,
-        seo: {
-          metaTitle: payload.metaTitle,
-          metaDescription: payload.metaDescription,
-          keywords,
-          ogImage: payload.ogImage,
-          canonicalUrl: payload.canonicalUrl,
-        },
-        publishedAt,
+        ...normalized,
       });
 
       res.status(201).json(
         successResponse({
           post: this.mapPost(created.toObject()),
+        })
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public updatePost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const postId = String(req.params.id || '').trim();
+      if (!postId) {
+        throw new ValidationError('Post id is required', [
+          { field: 'id', message: 'Required', value: postId },
+        ]);
+      }
+
+      const existing = await BlogPostModel.findById(postId).exec();
+      if (!existing) {
+        throw new NotFoundError('Editorial post not found');
+      }
+
+      const payload = req.body as BlogWritePayload;
+      const normalized = this.normalizePayload(payload, existing);
+      await this.assertUniqueSlug(normalized.slug, postId);
+
+      existing.title = normalized.title;
+      existing.slug = normalized.slug;
+      existing.status = normalized.status;
+      existing.excerpt = normalized.excerpt;
+      existing.content = normalized.content;
+      existing.categories = normalized.categories;
+      existing.contentType = normalized.contentType;
+      existing.featured = normalized.featured;
+      existing.primaryIntent = normalized.primaryIntent;
+      existing.targetQuery = normalized.targetQuery;
+      existing.relatedPlatformKeys = normalized.relatedPlatformKeys;
+      existing.relatedRouteKeys = normalized.relatedRouteKeys;
+      existing.faqItems = normalized.faqItems;
+      existing.evergreen = normalized.evergreen;
+      existing.featuredImage = normalized.featuredImage;
+      existing.seo = normalized.seo;
+      existing.publishedAt = normalized.publishedAt;
+
+      await existing.save();
+
+      res.status(200).json(
+        successResponse({
+          post: this.mapPost(existing.toObject()),
+        })
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public deletePost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const postId = String(req.params.id || '').trim();
+      if (!postId) {
+        throw new ValidationError('Post id is required', [
+          { field: 'id', message: 'Required', value: postId },
+        ]);
+      }
+
+      const deleted = await BlogPostModel.findByIdAndDelete(postId).lean().exec();
+      if (!deleted) {
+        throw new NotFoundError('Editorial post not found');
+      }
+
+      res.status(200).json(
+        successResponse({
+          deleted: true,
+          id: postId,
         })
       );
     } catch (error) {
@@ -140,8 +305,8 @@ export class BlogController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      void req;
-      const posts = await BlogPostModel.find({})
+      const filters = this.isAdminRequest(req) ? {} : { status: 'publish' };
+      const posts = await BlogPostModel.find(filters)
         .select({ categories: 1 })
         .lean()
         .exec();
@@ -157,7 +322,7 @@ export class BlogController {
               id: category.id,
               count: 1,
               description: '',
-              link: `http://guiatv.local/blog/categoria/${category.slug}`,
+              link: `/editorial/categoria/${category.slug}`,
               name: category.name,
               slug: category.slug,
               taxonomy: 'category',
@@ -168,7 +333,7 @@ export class BlogController {
         });
       });
 
-      res.json(Array.from(categoryMap.values()));
+      res.json(Array.from(categoryMap.values()).sort((left, right) => right.count - left.count));
     } catch (error) {
       next(error);
     }
@@ -176,7 +341,7 @@ export class BlogController {
 
   private mapPost(post: any): any {
     return {
-      id: post._id || post.id,
+      id: String(post._id || post.id),
       date: post.publishedAt || post.createdAt || new Date().toISOString(),
       date_gmt: post.publishedAt || post.createdAt || new Date().toISOString(),
       modified: post.updatedAt || post.modified || new Date().toISOString(),
@@ -184,7 +349,7 @@ export class BlogController {
       slug: post.slug,
       status: post.status,
       type: 'post',
-      link: post.seo?.canonicalUrl || `/blog/${post.slug}`,
+      link: `/editorial/${post.slug}`,
       title: { rendered: post.title },
       content: { rendered: post.content || '' },
       excerpt: { rendered: post.excerpt || '' },
@@ -199,7 +364,352 @@ export class BlogController {
         caption: post.featuredImage?.caption || '',
       },
       seo: post.seo,
+      contentType: post.contentType || 'guide',
+      featured: Boolean(post.featured),
+      primaryIntent: post.primaryIntent || '',
+      targetQuery: post.targetQuery || '',
+      relatedPlatformKeys: Array.isArray(post.relatedPlatformKeys)
+        ? post.relatedPlatformKeys
+        : [],
+      relatedRouteKeys: Array.isArray(post.relatedRouteKeys)
+        ? post.relatedRouteKeys
+        : [],
+      faqItems: Array.isArray(post.faqItems) ? post.faqItems : [],
+      evergreen: post.evergreen !== false,
     };
+  }
+
+  private normalizePayload(
+    payload: BlogWritePayload,
+    existing?: IBlogPostDocument
+  ): NormalizedBlogPayload {
+    const title = this.resolveRequiredString(payload.title, existing?.title, 'title');
+    const slug = this.slugify(payload.slug || title || existing?.slug || '');
+    if (!slug) {
+      throw new ValidationError('Slug is required', [
+        { field: 'slug', message: 'Provide a title or slug', value: payload.slug },
+      ]);
+    }
+
+    const status = this.normalizeStatus(payload.status, existing?.status);
+    const excerpt = this.resolveOptionalString(payload.excerpt, existing?.excerpt);
+    const content = this.resolveOptionalString(payload.content, existing?.content);
+    const categories = this.normalizeCategories(payload.categories, existing?.categories);
+    const contentType = this.normalizeContentType(payload.contentType, existing?.contentType);
+    const featured = this.normalizeBoolean(payload.featured, existing?.featured, false);
+    const primaryIntent = this.resolveOptionalString(
+      payload.primaryIntent,
+      existing?.primaryIntent
+    );
+    const targetQuery = this.resolveOptionalString(payload.targetQuery, existing?.targetQuery);
+    const relatedPlatformKeys = this.normalizeStringArray(
+      payload.relatedPlatformKeys,
+      existing?.relatedPlatformKeys,
+      RELATED_PLATFORM_KEYS,
+      'relatedPlatformKeys'
+    );
+    const relatedRouteKeys = this.normalizeStringArray(
+      payload.relatedRouteKeys,
+      existing?.relatedRouteKeys,
+      RELATED_ROUTE_KEYS,
+      'relatedRouteKeys'
+    );
+    const faqItems = this.normalizeFaqItems(payload.faqItems, existing?.faqItems);
+    const evergreen = this.normalizeBoolean(payload.evergreen, existing?.evergreen, true);
+    const featuredImageSource = this.resolveFeaturedImage(payload, existing);
+    const metaTitle = this.resolveOptionalString(payload.metaTitle, existing?.seo?.metaTitle);
+    const metaDescription = this.resolveOptionalString(
+      payload.metaDescription,
+      existing?.seo?.metaDescription
+    );
+    const ogImage = this.resolveOptionalString(payload.ogImage, existing?.seo?.ogImage);
+    const canonicalUrl = this.normalizeCanonicalUrl(
+      payload.canonicalUrl,
+      existing?.seo?.canonicalUrl
+    );
+    const keywords = this.normalizeKeywords(payload.keywords, existing?.seo?.keywords);
+    const publishedAt = this.normalizePublishedAt(payload.publishedAt, status, existing?.publishedAt);
+
+    return {
+      title,
+      slug,
+      status,
+      excerpt,
+      content,
+      categories,
+      contentType,
+      featured,
+      primaryIntent,
+      targetQuery,
+      relatedPlatformKeys,
+      relatedRouteKeys,
+      faqItems,
+      evergreen,
+      featuredImage: featuredImageSource
+        ? { sourceUrl: featuredImageSource }
+        : undefined,
+      seo: {
+        metaTitle,
+        metaDescription,
+        keywords,
+        ogImage,
+        canonicalUrl: canonicalUrl || `/editorial/${slug}`,
+      },
+      publishedAt,
+    };
+  }
+
+  private resolveRequiredString(
+    value: unknown,
+    fallback: string | undefined,
+    field: string
+  ): string {
+    const normalized = this.resolveOptionalString(value, fallback);
+    if (!normalized) {
+      throw new ValidationError(`${field} is required`, [
+        { field, message: 'Required', value },
+      ]);
+    }
+    return normalized;
+  }
+
+  private resolveOptionalString(value: unknown, fallback?: string): string | undefined {
+    if (value === undefined) {
+      return fallback;
+    }
+    const normalized = String(value || '').trim();
+    return normalized || undefined;
+  }
+
+  private normalizeStatus(
+    value: unknown,
+    fallback?: 'draft' | 'publish'
+  ): 'draft' | 'publish' {
+    const normalized = String(value || fallback || 'draft').trim().toLowerCase();
+    return normalized === 'publish' ? 'publish' : 'draft';
+  }
+
+  private normalizeContentType(value: unknown, fallback?: BlogContentType): BlogContentType {
+    const normalized = String(value || fallback || 'guide').trim().toLowerCase() as BlogContentType;
+    if (!CONTENT_TYPES.has(normalized)) {
+      throw new ValidationError('Invalid contentType', [
+        {
+          field: 'contentType',
+          message: 'Expected guide, ranking or trend',
+          value,
+        },
+      ]);
+    }
+    return normalized;
+  }
+
+  private normalizeCategories(
+    input: string[] | string | undefined,
+    fallback?: IBlogPostCategory[]
+  ): IBlogPostCategory[] {
+    if (input === undefined) {
+      return Array.isArray(fallback) ? [...fallback] : [];
+    }
+
+    const list = Array.isArray(input)
+      ? input
+      : String(input || '')
+          .split(',')
+          .map((item) => item.trim());
+
+    return list
+      .map((name) => String(name || '').trim())
+      .filter(Boolean)
+      .map((name) => {
+        const slug = this.slugify(name);
+        return {
+          id: this.hashCategoryId(slug),
+          name,
+          slug,
+        };
+      });
+  }
+
+  private normalizeKeywords(input: string[] | string | undefined, fallback?: string[]): string[] {
+    if (input === undefined) {
+      return Array.isArray(fallback) ? [...fallback] : [];
+    }
+    const list = Array.isArray(input)
+      ? input
+      : String(input || '')
+          .split(',')
+          .map((item) => item.trim());
+    return list.map((item) => String(item || '').trim()).filter(Boolean);
+  }
+
+  private normalizeFaqItems(
+    input: Array<{ question?: string; answer?: string }> | string | undefined,
+    fallback?: IBlogFaqItem[]
+  ): IBlogFaqItem[] {
+    if (input === undefined) {
+      return Array.isArray(fallback) ? [...fallback] : [];
+    }
+
+    const items = Array.isArray(input)
+      ? input
+      : String(input || '')
+          .split('\n')
+          .map((line) => {
+            const [question, answer] = line.split('::');
+            return { question, answer };
+          });
+
+    return items
+      .map((item) => ({
+        question: String(item?.question || '').trim(),
+        answer: String(item?.answer || '').trim(),
+      }))
+      .filter((item) => item.question && item.answer);
+  }
+
+  private normalizeStringArray(
+    input: string[] | string | undefined,
+    fallback: string[] | undefined,
+    allowlist: ReadonlySet<string>,
+    field: string
+  ): string[] {
+    if (input === undefined) {
+      return Array.isArray(fallback) ? [...fallback] : [];
+    }
+    const list = Array.isArray(input)
+      ? input
+      : String(input || '')
+          .split(',')
+          .map((item) => item.trim());
+
+    const normalized = list
+      .map((value) => String(value || '').trim().toLowerCase())
+      .filter(Boolean);
+    const invalid = normalized.filter((value) => !allowlist.has(value));
+    if (invalid.length) {
+      throw new ValidationError(`Invalid ${field}`, [
+        {
+          field,
+          message: `Unexpected values: ${invalid.join(', ')}`,
+          value: invalid.join(','),
+        },
+      ]);
+    }
+    return normalized;
+  }
+
+  private resolveFeaturedImage(
+    payload: BlogWritePayload,
+    existing?: IBlogPostDocument
+  ): string | undefined {
+    const hasExplicitValue =
+      payload.coverImage !== undefined ||
+      payload.featuredImage !== undefined ||
+      payload.ogImage !== undefined;
+
+    if (!hasExplicitValue) {
+      return existing?.featuredImage?.sourceUrl;
+    }
+
+    const preferred = this.resolveOptionalString(payload.coverImage)
+      || this.resolveOptionalString(payload.featuredImage)
+      || this.resolveOptionalString(payload.ogImage);
+    return preferred;
+  }
+
+  private normalizeCanonicalUrl(value: unknown, fallback?: string): string | undefined {
+    if (value === undefined) {
+      return fallback;
+    }
+
+    const normalized = String(value || '').trim();
+    if (!normalized) {
+      return undefined;
+    }
+    if (normalized.startsWith('/')) {
+      return normalized;
+    }
+    try {
+      const url = new URL(normalized);
+      return `${url.origin}${url.pathname}`;
+    } catch {
+      throw new ValidationError('Invalid canonicalUrl', [
+        {
+          field: 'canonicalUrl',
+          message: 'Expected an absolute URL or internal path',
+          value,
+        },
+      ]);
+    }
+  }
+
+  private normalizeBoolean(
+    value: unknown,
+    fallback: boolean | undefined,
+    defaultValue: boolean
+  ): boolean {
+    if (value === undefined) {
+      return typeof fallback === 'boolean' ? fallback : defaultValue;
+    }
+    if (typeof value === 'boolean') {
+      return value;
+    }
+    const normalized = String(value).trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(normalized)) {
+      return true;
+    }
+    if (['false', '0', 'no', 'off', ''].includes(normalized)) {
+      return false;
+    }
+    throw new ValidationError('Invalid boolean flag', [
+      { field: 'boolean', message: 'Expected true or false', value },
+    ]);
+  }
+
+  private parseOptionalBoolean(value: string): boolean | null {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'off'].includes(normalized)) return false;
+    return null;
+  }
+
+  private normalizePublishedAt(
+    value: unknown,
+    status: 'draft' | 'publish',
+    fallback?: Date
+  ): Date | undefined {
+    if (value === undefined) {
+      if (status === 'publish') {
+        return fallback || new Date();
+      }
+      return fallback;
+    }
+
+    const normalized = String(value || '').trim();
+    if (!normalized) {
+      return status === 'publish' ? fallback || new Date() : fallback;
+    }
+    const date = new Date(normalized);
+    if (Number.isNaN(date.getTime())) {
+      throw new ValidationError('Invalid publishedAt', [
+        { field: 'publishedAt', message: 'Expected a valid date', value },
+      ]);
+    }
+    return date;
+  }
+
+  private async assertUniqueSlug(slug: string, excludeId?: string): Promise<void> {
+    const existing = await BlogPostModel.findOne({
+      slug,
+      ...(excludeId ? { _id: { $ne: excludeId } } : {}),
+    })
+      .select({ _id: 1 })
+      .lean()
+      .exec();
+
+    if (existing) {
+      throw new ConflictError('An editorial post with this slug already exists');
+    }
   }
 
   private parseNumber(value: any, fallback: number): number {
@@ -212,38 +722,12 @@ export class BlogController {
       .toString()
       .toLowerCase()
       .trim()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w\-]+/g, '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
       .replace(/\-\-+/g, '-')
       .replace(/^-+/, '')
       .replace(/-+$/, '');
-  }
-
-  private normalizeCategories(input?: string[] | string): IBlogPostCategory[] {
-    if (!input) return [];
-    const list = Array.isArray(input)
-      ? input
-      : input.split(',').map((item) => item.trim());
-
-    return list
-      .map((name) => name.trim())
-      .filter(Boolean)
-      .map((name) => {
-        const slug = this.slugify(name);
-        return {
-          id: this.hashCategoryId(slug),
-          name,
-          slug,
-        };
-      });
-  }
-
-  private normalizeKeywords(input?: string[] | string): string[] {
-    if (!input) return [];
-    const list = Array.isArray(input)
-      ? input
-      : input.split(',').map((item) => item.trim());
-    return list.filter(Boolean);
   }
 
   private hashCategoryId(slug: string): number {
@@ -253,5 +737,18 @@ export class BlogController {
       hash |= 0;
     }
     return Math.abs(hash);
+  }
+
+  private isAdminRequest(req: Request): boolean {
+    const requiredKey = process.env.ANALYTICS_ADMIN_KEY;
+    if (!requiredKey) {
+      return true;
+    }
+    const headerKey = req.header('x-admin-key');
+    const authHeader = req.header('authorization') || '';
+    const bearerKey = authHeader.toLowerCase().startsWith('bearer ')
+      ? authHeader.slice(7)
+      : undefined;
+    return headerKey === requiredKey || bearerKey === requiredKey;
   }
 }

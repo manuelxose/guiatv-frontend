@@ -200,6 +200,31 @@ export class AuthController {
     });
   }
 
+  async changePassword(req: Request, res: Response): Promise<void> {
+    const token = extractAccessToken(req);
+    if (!token) {
+      throw new UnauthorizedError('Authorization token missing');
+    }
+
+    const payload = this.authService.getAccessTokenPayload(token);
+    const currentPassword = typeof req.body?.currentPassword === 'string'
+      ? req.body.currentPassword
+      : '';
+    const newPassword = typeof req.body?.newPassword === 'string'
+      ? req.body.newPassword
+      : '';
+
+    if (!currentPassword || !newPassword) {
+      throw new BadRequestError('currentPassword and newPassword are required');
+    }
+
+    await this.authService.changePassword(payload.sub, currentPassword, newPassword);
+    res.json({
+      success: true,
+      data: { changed: true },
+    });
+  }
+
   private buildSessionContext(req: Request): {
     userAgent?: string;
     ipAddress?: string;

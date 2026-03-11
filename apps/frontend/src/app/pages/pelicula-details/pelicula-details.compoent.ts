@@ -44,8 +44,6 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   private subs: Subscription = new Subscription();
 
   ngOnInit(): void {
-    console.log('PeliculaDetailsComponent ngOnInit');
-
     // 1. Determine content type from route data
     this.subs.add(
       this.route.data.subscribe((data) => {
@@ -100,12 +98,10 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
           if (first?.id) {
             this.loadDetails(String(first.id));
           } else {
-            console.warn('No results found for slug:', slug, 'Falling back to programs...');
             this.loadProgramBySlug(slug);
           }
         },
-        error: (err) => {
-          console.error('loadBySlug error:', err, 'Falling back to programs...');
+        error: () => {
           this.loadProgramBySlug(slug);
         }
       });
@@ -240,9 +236,8 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   // --- Data Transformation ---
 
   private transformToUnifiedData(m: any) {
-    console.log('transformToUnifiedData input:', m);
     const isSeries = this.contentType === 'series';
-    const result = {
+    return {
       id: m.id,
       title: m.title || m.name || '',
       overview: m.overview || '',
@@ -256,13 +251,9 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
       cast: m.credits?.cast || [],
       type: this.contentType
     };
-    console.log('transformToUnifiedData result:', result);
-    return result;
   }
 
   private transformProgramToData(p: any) {
-      console.log('transformProgramToData input:', p);
-      
       // Handle category which can be a string or object
       let genres: string[] = [];
       if (typeof p.category === 'string') {
@@ -274,7 +265,7 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
       // Handle description
       const overview = p.desc?.value || p.desc?.details || p.description || '';
 
-      const result = {
+      return {
           id: p.id,
           title: p.title?.value || p.title || '',
           overview: overview,
@@ -290,8 +281,6 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
           start: p.start,
           stop: p.end || p.stop // Use end or stop
       };
-      console.log('transformProgramToData result:', result);
-      return result;
   }
 
   private transformCatalogItemToData(item: any) {

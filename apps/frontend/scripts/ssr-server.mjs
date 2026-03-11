@@ -1,7 +1,7 @@
 import express from 'express';
 import { readFileSync, existsSync } from 'node:fs'; // ?? A¤adido existsSync
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import http from 'node:http';
 import https from 'node:https';
@@ -28,7 +28,9 @@ const __dirname = dirname(__filename);
 
 // CONFIGURACIÓN DE RUTAS
 // Asegúrate de que estas carpetas existen tras el 'ng build'
-const distFolder = resolve(__dirname, '../dist/guiatv');
+const distFolder = process.env.FRONTEND_RELEASE_DIR
+  ? resolve(process.env.FRONTEND_RELEASE_DIR)
+  : resolve(__dirname, '../dist/guiatv');
 const browserDistPath = join(distFolder, 'browser');
 const serverDistPath = join(distFolder, 'server');
 const indexHtml = join(serverDistPath, 'index.server.html');
@@ -188,7 +190,8 @@ if (!globalThis.localStorage) {
 let bootstrap;
 async function getBootstrap() {
   if (!bootstrap) {
-    const module = await import('../dist/guiatv/server/main.server.mjs');
+    const mainServerBundle = pathToFileURL(join(serverDistPath, 'main.server.mjs')).href;
+    const module = await import(mainServerBundle);
     bootstrap = module.default || module.bootstrap || module.app || module;
   }
   return bootstrap;
@@ -305,15 +308,25 @@ const KNOWN_ROUTES = [
   /^\/registro$/,
   /^\/mi-cuenta$/,
   /^\/comunidad$/,
+  /^\/para-ti$/,
   /^\/admin$/,
   /^\/programacion-tv\/(series|peliculas|guia-canales|en-directo|que-ver-hoy)$/,
   /^\/programacion-tv\/ver-canal\/[^/]+$/,
+  /^\/canales\/[^/]+$/,
   /^\/plataformas$/,
   /^\/contenido\/[^/]+$/,
   /^\/peliculas\/[^/]+$/,
   /^\/series\/[^/]+$/,
   /^\/programas\/[^/]+$/,
+  /^\/editorial(\/.*)?$/,
   /^\/blog(\/.*)?$/,
+  /^\/comparador-streaming$/,
+  /^\/developers$/,
+  /^\/embed$/,
+  /^\/embed\/programacion$/,
+  /^\/tendencias$/,
+  /^\/sobre-nosotros$/,
+  /^\/prensa$/,
   /^\/program-full-details\/[^/]+$/,
   /^\/avisolegal$/,
   /^\/privacidad$/,
@@ -378,8 +391,6 @@ app.get('*', async (req, res) => {
     const renderMs = Date.now() - renderStart;
 
     if (html.includes('<app-root></app-root>')) {
-      const appRootMatch = html.match(/<app-root([^>]*)>/);
-      console.warn(`[SSR] ⚠️ Empty render for ${renderUrl} (${renderMs}ms), html=${html.length}b, attrs=${appRootMatch?.[1] || 'none'}`);
       // SSR produced an empty root — serve CSR fallback.
       const fallbackFile = join(browserDistPath, 'index.html');
       const fallbackCsr = join(browserDistPath, 'index.csr.html');

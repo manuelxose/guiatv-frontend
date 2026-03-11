@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular
 import { Observable, concat, of } from 'rxjs';
 import { catchError, finalize, map, shareReplay } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { FALLBACK_CATALOG_PLATFORMS } from '../data/catalog-platforms.data';
 
 export type CatalogAvailability =
   | 'live'
@@ -151,22 +152,6 @@ interface CooldownEntry {
   status?: number;
 }
 
-export const FALLBACK_CATALOG_PLATFORMS: CatalogPlatform[] = [
-  { key: 'netflix', name: 'Netflix', tmdbProviderId: 8, color: '#E50914', supportedAvailability: ['streaming', 'flatrate'] },
-  { key: 'prime-video', name: 'Prime Video', tmdbProviderId: 119, color: '#00A8E1', supportedAvailability: ['streaming', 'flatrate', 'rent', 'buy'] },
-  { key: 'disney-plus', name: 'Disney+', tmdbProviderId: 337, color: '#113CCF', supportedAvailability: ['streaming', 'flatrate'] },
-  { key: 'max', name: 'Max', tmdbProviderId: 1899, color: '#6A4CFF', supportedAvailability: ['streaming', 'flatrate'] },
-  { key: 'movistar-plus', name: 'Movistar+', tmdbProviderId: 149, color: '#00B7FF', supportedAvailability: ['streaming', 'flatrate', 'live'] },
-  { key: 'skyshowtime', name: 'SkyShowtime', tmdbProviderId: 1773, color: '#123FEE', supportedAvailability: ['streaming', 'flatrate'] },
-  { key: 'apple-tv-plus', name: 'Apple TV+', tmdbProviderId: 350, color: '#A7A7A7', supportedAvailability: ['streaming', 'flatrate', 'rent', 'buy'] },
-  { key: 'filmin', name: 'Filmin', tmdbProviderId: 63, color: '#00AEEF', supportedAvailability: ['streaming', 'flatrate'] },
-  { key: 'rtve-play', name: 'RTVE Play', tmdbProviderId: 541, color: '#FFE100', supportedAvailability: ['free', 'streaming'] },
-  { key: 'atresplayer', name: 'ATRESplayer', tmdbProviderId: 677, color: '#FF6A00', supportedAvailability: ['streaming', 'flatrate'] },
-  { key: 'mitele', name: 'Mitele', tmdbProviderId: 633, color: '#2AD1FF', supportedAvailability: ['streaming', 'flatrate'] },
-  { key: 'pluto-tv', name: 'Pluto TV', tmdbProviderId: 300, color: '#FFEA00', supportedAvailability: ['free', 'streaming'] },
-  { key: 'rakuten-tv', name: 'Rakuten TV', tmdbProviderId: 35, color: '#C2002F', supportedAvailability: ['rent', 'buy', 'streaming'] },
-];
-
 export const FALLBACK_CATALOG_GENRES: string[] = [
   'Cine',
   'Series',
@@ -181,6 +166,8 @@ export const FALLBACK_CATALOG_GENRES: string[] = [
   'Suspense',
   'Romance',
 ];
+
+export { FALLBACK_CATALOG_PLATFORMS } from '../data/catalog-platforms.data';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {

@@ -14,6 +14,10 @@ import {
   UserAssistantMemoryModel,
   IUserAssistantMemoryDocument,
 } from '@/infrastructure/database/models/UserAssistantMemory.model';
+import {
+  UserNotificationModel,
+} from '@/infrastructure/database/models/UserNotification.model';
+import mongoose from 'mongoose';
 
 export interface AssistantMemorySnapshot {
   likedGenres: string[];
@@ -39,6 +43,7 @@ export interface AssistantHistoryMessage {
   moreRecommendations?: ChatbotRecommendationPayload[];
   followUpSuggestions?: string[];
   queryContext?: ChatbotQueryContext;
+  feedback?: { rating: 'positive' | 'negative' };
 }
 
 export interface AssistantHistoryPayload {
@@ -56,7 +61,9 @@ export interface TrackAssistantActionInput {
     | 'open_recommendation'
     | 'save_recommendation'
     | 'follow_recommendation'
-    | 'ignore_recommendation';
+    | 'ignore_recommendation'
+    | 'rate_positive'
+    | 'rate_negative';
   recommendation: {
     title: string;
     type?: CatalogContentType;
@@ -83,7 +90,16 @@ const KNOWN_GENRES = [
 ];
 
 const KNOWN_PLATFORMS = CATALOG_PLATFORM_REGISTRY.map((platform) => platform.name);
-const NEGATIVE_TOKENS = ['sin ', 'no ', 'nada de ', 'evita ', 'odio '];
+const NEGATIVE_TOKENS = [
+  'sin ',
+  'no ',
+  'nada de ',
+  'evita ',
+  'odio ',
+  'prefiero evitar ',
+  'mejor sin ',
+  'paso de ',
+];
 const MAX_STORED_MESSAGES = 24;
 const AUTONOMOUS_COMMUNITIES: Array<{
   canonical: string;
@@ -108,7 +124,222 @@ const AUTONOMOUS_COMMUNITIES: Array<{
   { canonical: 'País Vasco', aliases: ['pais vasco', 'país vasco', 'euskadi'] },
 ];
 
+export interface ConversationSummary {
+  conversationId: string;
+  sessionTitle: string;
+  lastUsedAt: string;
+  pinned: boolean;
+  archived: boolean;
+  messageCount: number;
+  lastMessage?: string;
+}
+
 export class AssistantMemoryService {
+  async listConversations(
+    userId: string,
+    options?: { archived?: boolean }
+  ): Promise<ConversationSummary[]> {
+    const filter: Record<string, unknown> = { userId };
+    if (typeof options?.archived === 'boolean') {
+      filter.archived = options.archived;
+    }
+
+    const conversations = await UserAssistantConversationModel.find(filter)
+      .sort({ pinned: -1, lastUsedAt: -1 })
+      .select('conversationId sessionTitle lastUsedAt pinned archived messages')
+      .lean()
+      .exec();
+
+    return conversations.map((c) => ({
+      conversationId: c.conversationId,
+      sessionTitle: c.sessionTitle || 'Conversación',
+      lastUsedAt: new Date(c.lastUsedAt).toISOString(),
+      pinned: c.pinned || false,
+      archived: c.archived || false,
+      messageCount: c.messages?.length || 0,
+      lastMessage: c.messages?.length
+        ? c.messages[c.messages.length - 1].content?.slice(0, 120)
+        : undefined,
+    }));
+  }
+
+  async searchConversations(
+    userId: string,
+    query: string
+  ): Promise<ConversationSummary[]> {
+    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').slice(0, 100);
+    if (!safeQuery) return [];
+
+    const conversations = await UserAssistantConversationModel.find({
+      userId,
+      $or: [
+        { sessionTitle: { $regex: safeQuery, $options: 'i' } },
+        { 'messages.content': { $regex: safeQuery, $options: 'i' } },
+      ],
+    })
+      .sort({ lastUsedAt: -1 })
+      .limit(20)
+      .select('conversationId sessionTitle lastUsedAt pinned archived messages')
+      .lean()
+      .exec();
+
+    return conversations.map((c) => ({
+      conversationId: c.conversationId,
+      sessionTitle: c.sessionTitle || 'Conversación',
+      lastUsedAt: new Date(c.lastUsedAt).toISOString(),
+      pinned: c.pinned || false,
+      archived: c.archived || false,
+      messageCount: c.messages?.length || 0,
+      lastMessage: c.messages?.length
+        ? c.messages[c.messages.length - 1].content?.slice(0, 120)
+        : undefined,
+    }));
+  }
+
+  async getConversation(
+    userId: string,
+    conversationId: string
+  ): Promise<AssistantHistoryPayload | null> {
+    const [conversation, memory] = await Promise.all([
+      UserAssistantConversationModel.findOne({ userId, conversationId })
+        .lean(false)
+        .exec(),
+      this.getMemory(userId),
+    ]);
+
+    if (!conversation) return null;
+
+    return {
+      conversationId: conversation.conversationId,
+      sessionTitle: conversation.sessionTitle,
+      messages: this.mapMessages(conversation.messages || []),
+      memory: memory ? this.mapMemory(memory) : null,
+      updatedAt: conversation.updatedAt?.toISOString(),
+    };
+  }
+
+  async updateConversation(
+    userId: string,
+    conversationId: string,
+    updates: { sessionTitle?: string; pinned?: boolean; archived?: boolean }
+  ): Promise<ConversationSummary | null> {
+    const setFields: Record<string, unknown> = {};
+    if (typeof updates.sessionTitle === 'string') {
+      setFields.sessionTitle = updates.sessionTitle.trim().slice(0, 120);
+    }
+    if (typeof updates.pinned === 'boolean') {
+      setFields.pinned = updates.pinned;
+    }
+    if (typeof updates.archived === 'boolean') {
+      setFields.archived = updates.archived;
+    }
+
+    if (Object.keys(setFields).length === 0) return null;
+
+    const conversation = await UserAssistantConversationModel.findOneAndUpdate(
+      { userId, conversationId },
+      { $set: setFields },
+      { new: true }
+    )
+      .select('conversationId sessionTitle lastUsedAt pinned archived messages')
+      .lean()
+      .exec();
+
+    if (!conversation) return null;
+
+    return {
+      conversationId: conversation.conversationId,
+      sessionTitle: conversation.sessionTitle || 'Conversación',
+      lastUsedAt: new Date(conversation.lastUsedAt).toISOString(),
+      pinned: conversation.pinned || false,
+      archived: conversation.archived || false,
+      messageCount: conversation.messages?.length || 0,
+      lastMessage: conversation.messages?.length
+        ? conversation.messages[conversation.messages.length - 1].content?.slice(0, 120)
+        : undefined,
+    };
+  }
+
+  async deleteConversation(
+    userId: string,
+    conversationId: string
+  ): Promise<boolean> {
+    const result = await UserAssistantConversationModel.deleteOne({
+      userId,
+      conversationId,
+    }).exec();
+    return (result.deletedCount || 0) > 0;
+  }
+
+  async trackMessageFeedback(
+    userId: string,
+    conversationId: string,
+    messageIndex: number,
+    rating: 'positive' | 'negative'
+  ): Promise<void> {
+    const conversation = await UserAssistantConversationModel.findOne({
+      userId,
+      conversationId,
+    })
+      .lean(false)
+      .exec();
+
+    if (!conversation) return;
+
+    const msg = conversation.messages?.[messageIndex];
+    if (!msg || msg.role !== 'assistant') return;
+
+    await UserAssistantConversationModel.updateOne(
+      { userId, conversationId },
+      {
+        $set: {
+          [`messages.${messageIndex}.feedback`]: {
+            rating,
+            createdAt: new Date(),
+          },
+        },
+      }
+    ).exec();
+  }
+
+  async createProgramReminder(
+    userId: string,
+    recommendation: {
+      title: string;
+      type?: string;
+      channel?: string;
+      platform?: string;
+      startTime?: string;
+    }
+  ): Promise<boolean> {
+    const title = String(recommendation.title || '').trim();
+    if (!title) return false;
+
+    const where = recommendation.channel
+      ? `en ${recommendation.channel}`
+      : recommendation.platform
+        ? `en ${recommendation.platform}`
+        : '';
+
+    await new UserNotificationModel({
+      recipientId: new mongoose.Types.ObjectId(userId),
+      type: 'recommendation',
+      title: `📺 ${title} empieza pronto`,
+      description: `Tu programa ${where ? where + ' ' : ''}comienza a las ${recommendation.startTime || ''}. ¡No te lo pierdas!`.trim(),
+      entityType: 'program',
+      entityId: title,
+      payload: {
+        source: 'ai_reminder',
+        programTitle: title,
+        channel: recommendation.channel,
+        platform: recommendation.platform,
+        startTime: recommendation.startTime,
+      },
+    }).save();
+
+    return true;
+  }
+
   async saveCommunityPreference(input: {
     userId: string;
     preferredAutonomousCommunity?: string;
@@ -288,6 +519,37 @@ export class AssistantMemoryService {
     return true;
   }
 
+  async updateMemory(
+    userId: string,
+    updates: Record<string, string[]>
+  ): Promise<AssistantMemorySnapshot> {
+    const memory = await this.ensureMemory(userId);
+
+    for (const [field, values] of Object.entries(updates)) {
+      if (field in memory && Array.isArray(values)) {
+        (memory as any)[field] = values;
+      }
+    }
+
+    await memory.save();
+    return this.mapMemory(memory);
+  }
+
+  async syncFromProfile(
+    userId: string,
+    genres: string[],
+    platforms: string[]
+  ): Promise<void> {
+    const memory = await this.ensureMemory(userId);
+    if (genres.length > 0) {
+      memory.likedGenres = genres.slice(0, 10);
+    }
+    if (platforms.length > 0) {
+      memory.preferredPlatforms = platforms.slice(0, 10);
+    }
+    await memory.save();
+  }
+
   private async updateMemoryFromTurn(
     userId: string,
     userMessage: string,
@@ -325,6 +587,11 @@ export class AssistantMemoryService {
       memory.preferredViewingContexts,
       extracted.preferredViewingContexts,
       6
+    );
+    memory.favoriteFranchisesOrTitles = this.mergeValues(
+      memory.favoriteFranchisesOrTitles,
+      extracted.favoriteFranchisesOrTitles,
+      16
     );
     memory.negativeSignals = this.mergeValues(
       memory.negativeSignals,
@@ -373,6 +640,7 @@ export class AssistantMemoryService {
     avoidedPlatforms: string[];
     preferredDurations: string[];
     preferredViewingContexts: string[];
+    favoriteFranchisesOrTitles: string[];
     negativeSignals: string[];
     preferredAutonomousCommunity?: string;
     autonomicOptIn?: boolean | 'unknown';
@@ -384,6 +652,7 @@ export class AssistantMemoryService {
     const avoidedPlatforms: string[] = [];
     const preferredDurations: string[] = [];
     const preferredViewingContexts: string[] = [];
+    const favoriteFranchisesOrTitles = this.extractFavoriteReferences(text);
     const negativeSignals: string[] = [];
     const preferredAutonomousCommunity =
       this.extractAutonomousCommunity(normalized);
@@ -433,6 +702,13 @@ export class AssistantMemoryService {
     if (/solo|a solas|yo solo|para mi/.test(normalized)) {
       preferredViewingContexts.push('solo');
     }
+    if (/amigos|con amigos|plan de grupo/.test(normalized)) {
+      preferredViewingContexts.push('amigos');
+    }
+
+    if (/\brealit(?:y|ies)\b/.test(normalized) && this.isNegativeMention(normalized, 'realit')) {
+      negativeSignals.push('sin realities');
+    }
 
     return {
       likedGenres,
@@ -441,6 +717,7 @@ export class AssistantMemoryService {
       avoidedPlatforms,
       preferredDurations,
       preferredViewingContexts,
+      favoriteFranchisesOrTitles,
       negativeSignals,
       preferredAutonomousCommunity,
       autonomicOptIn,
@@ -470,6 +747,11 @@ export class AssistantMemoryService {
       .sort({ lastUsedAt: -1 })
       .lean(false)
       .exec();
+  }
+
+  async getMemorySnapshot(userId: string): Promise<AssistantMemorySnapshot | null> {
+    const memory = await this.getMemory(userId);
+    return memory ? this.mapMemory(memory) : null;
   }
 
   private async getMemory(
@@ -513,10 +795,22 @@ export class AssistantMemoryService {
       recommendations: (message.recommendations || []).map((recommendation) => ({
         ...recommendation,
         reason: recommendation.reason || 'Encaja con tus gustos.',
+        actions: {
+          canOpenDetail: recommendation.actions?.canOpenDetail !== false,
+          canSave: recommendation.actions?.canSave !== false,
+          canTrack: recommendation.actions?.canTrack !== false,
+        },
+        badges: recommendation.badges || [],
       })),
       moreRecommendations: (message.moreRecommendations || []).map((recommendation) => ({
         ...recommendation,
         reason: recommendation.reason || 'Encaja con tus gustos.',
+        actions: {
+          canOpenDetail: recommendation.actions?.canOpenDetail !== false,
+          canSave: recommendation.actions?.canSave !== false,
+          canTrack: recommendation.actions?.canTrack !== false,
+        },
+        badges: recommendation.badges || [],
       })),
       followUpSuggestions: message.followUpSuggestions || [],
       queryContext: message.queryContext
@@ -538,6 +832,9 @@ export class AssistantMemoryService {
               message.queryContext.savedAutonomousCommunity || ''
             ).trim() || undefined,
           }
+        : undefined,
+      feedback: message.feedback?.rating
+        ? { rating: message.feedback.rating }
         : undefined,
     }));
   }
@@ -588,6 +885,42 @@ export class AssistantMemoryService {
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 96);
+  }
+
+  private extractFavoriteReferences(value: string): string[] {
+    const safeValue = String(value || '').trim();
+    if (!safeValue) {
+      return [];
+    }
+
+    const patterns = [
+      /me encant[oó]\s+(.+)$/i,
+      /me gust[oó]\s+mucho\s+(.+)$/i,
+      /me gust[oó]\s+(.+)$/i,
+      /quiero algo tipo\s+(.+)$/i,
+      /algo tipo\s+(.+)$/i,
+      /(.+)\s+es muy mi rollo$/i,
+      /soy muy de\s+(.+)$/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = safeValue.match(pattern);
+      const extracted = match?.[1]?.trim();
+      if (!extracted) {
+        continue;
+      }
+
+      const cleaned = extracted
+        .replace(/^[“"'¿¡\s]+|[”"'?!.,\s]+$/g, '')
+        .trim()
+        .slice(0, 80);
+
+      if (cleaned.length >= 2) {
+        return [cleaned];
+      }
+    }
+
+    return [];
   }
 
   private mergeValues(

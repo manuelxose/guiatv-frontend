@@ -3,7 +3,12 @@
  * Ubicación: src/app/app.config.ts
  */
 
-import { ApplicationConfig, Provider } from '@angular/core';
+import {
+  ApplicationConfig,
+  ErrorHandler,
+  mergeApplicationConfig,
+  Provider,
+} from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 // Importamos withEventReplay para que si el usuario hace clic antes de cargar JS, se guarde el evento
@@ -16,6 +21,7 @@ import { routes } from './app.routes';
 // Configuración SOLID de providers - ACTUALIZADA
 import { allProviders } from './config/providers.config';
 import { authRefreshInterceptor } from './interceptors/auth-refresh.interceptor';
+import { GlobalErrorHandlerService } from './services/core/global-error-handler.service';
 
 // Environment para configuración condicional
 import { environment } from '../environments/environment';
@@ -27,17 +33,13 @@ export const appConfig: ApplicationConfig = {
   providers: [
     // Providers básicos de Angular para standalone
     provideRouter(routes),
-    
-    // Habilitar animaciones en el cliente
-    provideAnimations(),
-    
-    // ✅ CRÍTICO PARA SSR: Habilitar Hidratación
-    // Esto hace que Angular "reutilice" el HTML del servidor en lugar de borrarlo.
-    // withEventReplay() asegura que los clics del usuario durante la carga no se pierdan.
-    provideClientHydration(withEventReplay()),
-    
     // Fetch API es requerida para SSR moderno
     provideHttpClient(withFetch(), withInterceptors([authRefreshInterceptor])),
+
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandlerService,
+    },
 
     // Providers SOLID para toda la aplicación
     ...allProviders,
@@ -50,6 +52,13 @@ export const appConfig: ApplicationConfig = {
   ],
 };
 
+export const browserAppConfig = mergeApplicationConfig(appConfig, {
+  providers: [
+    provideAnimations(),
+    provideClientHydration(withEventReplay()),
+  ],
+});
+
 /**
  * Providers específicos según el entorno
  */
@@ -57,13 +66,11 @@ function getEnvironmentProviders(env: any): Provider[] {
   const providers: Provider[] = [];
 
   if (env.production) {
-    console.log('🏭 SOLID App - Configurando providers para PRODUCCIÓN');
     providers.push({
       provide: 'ENVIRONMENT_MODE',
       useValue: 'production',
     });
   } else {
-    console.log('🛠️ SOLID App - Configurando providers para DESARROLLO');
     providers.push(
       { provide: 'ENVIRONMENT_MODE', useValue: 'development' },
       { provide: 'DEBUG_ENABLED', useValue: true }
@@ -103,5 +110,4 @@ if (!environment.production && typeof window !== 'undefined') {
       });
     },
   };
-  console.log('🛠️ SOLID Debug tools available at window.SOLID_DEBUG');
 }

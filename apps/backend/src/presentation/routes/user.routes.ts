@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { UserController } from '../controllers/UserController';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { createAuthGuard } from '../middlewares/authGuard';
+import { createRateLimiter } from '../middlewares/rateLimit';
 import { AuthService } from '../../domain/services/AuthService';
 
 /**
@@ -10,6 +11,11 @@ import { AuthService } from '../../domain/services/AuthService';
 export const createUserRoutes = (controller: UserController, authService: AuthService): Router => {
   const router = Router();
   const authGuard = createAuthGuard(authService);
+  const exportRateLimit = createRateLimiter({
+    windowMs: 24 * 60 * 60 * 1000,
+    max: 3,
+    message: 'Export limit reached, please try again tomorrow',
+  });
 
   router.use(authGuard);
 
@@ -36,6 +42,9 @@ export const createUserRoutes = (controller: UserController, authService: AuthSe
   router.get('/notifications', asyncHandler(controller.getNotifications.bind(controller)));
   router.post('/notifications/read', asyncHandler(controller.markNotificationsRead.bind(controller)));
   router.get('/notifications/unread-count', asyncHandler(controller.getUnreadNotificationsCount.bind(controller)));
+
+  router.delete('/account', asyncHandler(controller.deleteAccount.bind(controller)));
+  router.get('/export', exportRateLimit, asyncHandler(controller.exportData.bind(controller)));
 
   return router;
 };

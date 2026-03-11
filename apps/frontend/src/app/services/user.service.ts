@@ -328,6 +328,20 @@ export class UserService {
       );
   }
 
+  changePassword(currentPassword: string, newPassword: string): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
+
+    const url = `${this.baseUrl}/auth/password`;
+    return this.http
+      .patch<ApiResponse<{ changed: boolean }>>(url, { currentPassword, newPassword }, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => !!resp?.data?.changed),
+        catchError(this.handleError(false, 'No se pudo cambiar la contraseña.'))
+      );
+  }
+
   updatePrivacy(privacy: Partial<UserPrivacy>): Observable<UserPrivacy | null> {
     if (!this.safeGetToken()) return of(null);
 
@@ -734,6 +748,138 @@ export class UserService {
       .pipe(
         map((resp) => resp?.data?.report || null),
         catchError(this.handleError(null, 'No se pudo enviar el reporte.'))
+      );
+  }
+
+  getBlockedUsers(): Observable<Array<{ id: string; name: string; username: string; avatar: string }>> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/social/blocks`;
+    return this.http
+      .get<ApiResponse<{ blocks: Array<{ id: string; name: string; username: string; avatar: string }> }>>(
+        url,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => resp?.data?.blocks || []),
+        catchError(this.handleError([], 'No se pudieron cargar los usuarios bloqueados.'))
+      );
+  }
+
+  deleteAccount(password: string): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
+
+    const url = `${this.baseUrl}/user/account`;
+    return this.http
+      .delete<ApiResponse<{ deleted: boolean }>>(url, {
+        headers: this.getAuthHeaders(),
+        body: { password },
+      })
+      .pipe(
+        map((resp) => Boolean(resp?.data?.deleted)),
+        catchError(this.handleError(false, 'No se pudo eliminar la cuenta.'))
+      );
+  }
+
+  exportUserData(): Observable<any> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/user/export`;
+    return this.http
+      .get<ApiResponse<any>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data || null),
+        catchError(this.handleError(null, 'No se pudieron exportar los datos.'))
+      );
+  }
+
+  toggleActivityLike(activityId: string): Observable<{ liked: boolean; likes: number } | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/social/activities/${activityId}/like`;
+    return this.http
+      .post<ApiResponse<{ liked: boolean; likes: number }>>(url, {}, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data || null),
+        tap((result) => {
+          if (result) {
+            const current = this.activitiesSubject.value;
+            this.activitiesSubject.next(
+              current.map((a) => a.id === activityId ? { ...a, liked: result.liked, likes: result.likes } : a)
+            );
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo actualizar el me gusta.'))
+      );
+  }
+
+  addActivityComment(activityId: string, text: string): Observable<any> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/social/activities/${activityId}/comments`;
+    return this.http
+      .post<ApiResponse<{ comment: any }>>(url, { text }, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.comment || null),
+        tap((comment) => {
+          if (comment) {
+            const current = this.activitiesSubject.value;
+            this.activitiesSubject.next(
+              current.map((a) => a.id === activityId ? { ...a, comments: (a.comments || 0) + 1 } : a)
+            );
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo añadir el comentario.'))
+      );
+  }
+
+  fetchActivityComments(activityId: string, offset = 0, limit = 20): Observable<any[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/social/activities/${activityId}/comments?offset=${offset}&limit=${limit}`;
+    return this.http
+      .get<ApiResponse<{ comments: any[] }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.comments || []),
+        catchError(this.handleError([], 'No se pudieron cargar los comentarios.'))
+      );
+  }
+
+  getPublicProfile(userId: string): Observable<any> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/social/profile/${userId}`;
+    return this.http
+      .get<ApiResponse<{ profile: any }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.profile || null),
+        catchError(this.handleError(null, 'No se pudo cargar el perfil.'))
+      );
+  }
+
+  searchUsers(query: string, limit = 20): Observable<any[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/social/users/search?q=${encodeURIComponent(query)}&limit=${limit}`;
+    return this.http
+      .get<ApiResponse<{ users: any[] }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.users || []),
+        catchError(this.handleError([], 'No se pudo buscar usuarios.'))
+      );
+  }
+
+  getUserStats(userId?: string): Observable<any> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = userId
+      ? `${this.baseUrl}/social/stats/${userId}`
+      : `${this.baseUrl}/social/stats`;
+    return this.http
+      .get<ApiResponse<{ stats: any }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.stats || null),
+        catchError(this.handleError(null, 'No se pudieron cargar las estadísticas.'))
       );
   }
 

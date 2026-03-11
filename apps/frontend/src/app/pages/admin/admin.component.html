@@ -76,8 +76,13 @@
             (lastUpdatedChange)="onLastUpdated($event)"
           ></app-admin-community-section>
 
+          <app-admin-ai-section
+            *ngIf="activeGroup === 'ai'"
+            (lastUpdatedChange)="onLastUpdated($event)"
+          ></app-admin-ai-section>
+
           <app-admin-placeholder-section
-            *ngIf="activeGroup !== 'analytics' && activeGroup !== 'content' && activeGroup !== 'schedules' && activeGroup !== 'operations' && activeGroup !== 'users' && activeGroup !== 'system' && activeGroup !== 'community'"
+            *ngIf="activeGroup !== 'analytics' && activeGroup !== 'content' && activeGroup !== 'schedules' && activeGroup !== 'operations' && activeGroup !== 'users' && activeGroup !== 'system' && activeGroup !== 'community' && activeGroup !== 'ai'"
             [title]="activeGroupLabel"
           ></app-admin-placeholder-section>
         </div>

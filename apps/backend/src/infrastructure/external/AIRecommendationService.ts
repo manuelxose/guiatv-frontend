@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { logger } from '@/shared/utils/logger';
+import { Readable } from 'stream';
 
 export interface ChatbotMessage {
   role: 'user' | 'assistant';
@@ -29,6 +30,10 @@ export interface ChatbotRecommendationPayload {
     canTrack: boolean;
   };
   badges?: string[];
+  rating?: number;
+  durationMinutes?: number;
+  synopsis?: string;
+  platformLogo?: string;
 }
 
 export interface ChatbotQueryContext {
@@ -216,6 +221,140 @@ export class AIRecommendationService {
       }
 
       return this.buildFailureResponse(primaryError);
+    }
+  }
+
+  async *chatStream(
+    messages: ChatbotMessage[],
+    context: ChatbotContext
+  ): AsyncGenerator<string> {
+    const prompt = this.buildSystemPrompt(context);
+
+    try {
+      yield* this.executeStreamWithProvider(this.provider, messages, prompt);
+    } catch (primaryError) {
+      logger.warn('Primary AI stream provider failed', {
+        provider: this.provider,
+        error: primaryError instanceof Error ? primaryError.message : 'unknown',
+      });
+      if (this.fallbackProvider) {
+        try {
+          yield* this.executeStreamWithProvider(this.fallbackProvider, messages, prompt);
+          return;
+        } catch (fallbackError) {
+          logger.warn('Fallback AI stream provider failed', {
+            provider: this.fallbackProvider,
+            error: fallbackError instanceof Error ? fallbackError.message : 'unknown',
+          });
+        }
+      }
+      throw primaryError;
+    }
+  }
+
+  parseStreamedResponse(fullText: string): ChatbotResponse {
+    return this.parseResponse(this.validateProviderPayload(fullText));
+  }
+
+  private async *executeStreamWithProvider(
+    provider: AIProvider,
+    messages: ChatbotMessage[],
+    systemPrompt: string
+  ): AsyncGenerator<string> {
+    if (provider === 'deepseek') {
+      yield* this.chatWithDeepSeekStream(messages, systemPrompt);
+    } else {
+      yield* this.chatWithAnthropicStream(messages, systemPrompt);
+    }
+  }
+
+  private async *chatWithDeepSeekStream(
+    messages: ChatbotMessage[],
+    systemPrompt: string
+  ): AsyncGenerator<string> {
+    if (!this.deepseekClient) throw new Error('DeepSeek client is not configured');
+
+    const response = await this.deepseekClient.post(
+      '/chat/completions',
+      {
+        model: this.deepseekModel,
+        temperature: 0.5,
+        max_tokens: 1024,
+        stream: true,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...messages.map((m) => ({ role: m.role, content: m.content })),
+        ],
+      },
+      { responseType: 'stream', timeout: 30000 }
+    );
+
+    const stream = response.data as Readable;
+    let buffer = '';
+
+    for await (const chunk of stream) {
+      buffer += chunk.toString();
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const payload = trimmed.slice(5).trim();
+        if (payload === '[DONE]') return;
+
+        try {
+          const parsed = JSON.parse(payload);
+          const content = parsed?.choices?.[0]?.delta?.content;
+          if (content) yield content;
+        } catch {
+          // skip malformed chunks
+        }
+      }
+    }
+  }
+
+  private async *chatWithAnthropicStream(
+    messages: ChatbotMessage[],
+    systemPrompt: string
+  ): AsyncGenerator<string> {
+    if (!this.anthropicClient) throw new Error('Anthropic client is not configured');
+
+    const response = await this.anthropicClient.post(
+      '/messages',
+      {
+        model: this.anthropicModel,
+        max_tokens: 1024,
+        stream: true,
+        system: systemPrompt,
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      },
+      { responseType: 'stream', timeout: 30000 }
+    );
+
+    const stream = response.data as Readable;
+    let buffer = '';
+
+    for await (const chunk of stream) {
+      buffer += chunk.toString();
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const payload = trimmed.slice(5).trim();
+
+        try {
+          const parsed = JSON.parse(payload);
+          if (parsed?.type === 'content_block_delta') {
+            const text = parsed?.delta?.text;
+            if (text) yield text;
+          }
+        } catch {
+          // skip malformed chunks
+        }
+      }
     }
   }
 

@@ -1,9 +1,11 @@
 <section class="space-y-6">
   <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
-      <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Content studio</p>
-      <h3 class="text-2xl font-semibold text-white">Blog control</h3>
-      <p class="text-sm text-slate-400">Create posts, refine SEO, and manage publishing.</p>
+      <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Editorial CMS</p>
+      <h3 class="text-2xl font-semibold text-white">Editorial y SEO</h3>
+      <p class="text-sm text-slate-400">
+        Gestiona guias, rankings y tendencias enlazadas con la app y con la API editorial.
+      </p>
     </div>
     <div class="flex items-center gap-2">
       <button
@@ -11,31 +13,37 @@
         type="button"
         (click)="refreshBlog()"
       >
-        Refresh
+        Refrescar
       </button>
       <button
         class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-100 text-sm hover:bg-red-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         type="button"
         (click)="resetBlogForm(true)"
       >
-        New draft
+        Nuevo borrador
       </button>
     </div>
   </div>
 
-  <div class="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-6">
+  <div class="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] gap-6">
     <form
       class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6 space-y-6"
       [formGroup]="blogForm"
       (ngSubmit)="submitBlogPost()"
     >
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between gap-4">
         <div>
-          <h4 class="text-lg font-semibold text-white">Post composer</h4>
-          <p class="text-xs text-slate-500 mt-1">Autosave enabled. Validate as you type.</p>
+          <h4 class="text-lg font-semibold text-white">
+            {{ isEditingBlogPost ? 'Editar articulo editorial' : 'Crear articulo editorial' }}
+          </h4>
+          <p class="text-xs text-slate-500 mt-1">
+            Modelo SEO first con tipos editoriales, FAQs y relaciones con recursos de la app.
+          </p>
         </div>
-        <span *ngIf="blogSaving" class="text-xs text-slate-400">Saving...</span>
-        <span *ngIf="!blogSaving" class="text-xs text-emerald-300">Autosave on</span>
+        <span *ngIf="blogSaving" class="text-xs text-slate-400">Guardando...</span>
+        <span *ngIf="!blogSaving" class="text-xs text-emerald-300">
+          {{ isEditingBlogPost ? 'Modo edicion' : 'Modo alta' }}
+        </span>
       </div>
 
       <div *ngIf="blogSaveError" class="bg-red-500/10 border border-red-500/30 text-red-200 px-4 py-3 rounded-xl text-sm">
@@ -45,188 +53,282 @@
         {{ blogSaveSuccess }}
       </div>
 
-      <div class="space-y-4">
-        <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-title">Title</label>
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="md:col-span-2">
+          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-title">Titulo</label>
           <input
             id="blog-title"
             formControlName="title"
             type="text"
             class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            placeholder="Write a strong headline"
+            placeholder="Escribe un titular orientado a busqueda real"
           />
           <p *ngIf="blogForm.get('title')?.invalid && blogForm.get('title')?.touched" class="text-xs text-red-300 mt-1">
-            Title is required.
+            El titulo es obligatorio.
           </p>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-4">
-          <div class="md:col-span-2">
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-slug">Slug</label>
-            <input
-              id="blog-slug"
-              formControlName="slug"
-              type="text"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              [placeholder]="blogPreviewSlug || 'my-post'"
-            />
-            <p class="text-xs text-slate-500 mt-1">Auto-generated if empty.</p>
-          </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-slug">Slug</label>
+          <input
+            id="blog-slug"
+            formControlName="slug"
+            type="text"
+            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [placeholder]="blogPreviewSlug || 'slug-del-articulo'"
+          />
+          <p class="text-xs text-slate-500 mt-1">Se genera si lo dejas vacio.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-status">Status</label>
+            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-status">Estado</label>
             <select
               id="blog-status"
               formControlName="status"
               class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             >
-              <option value="draft">Draft</option>
-              <option value="publish">Publish</option>
+              <option value="draft">Borrador</option>
+              <option value="publish">Publicado</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-type">Tipo</label>
+            <select
+              id="blog-type"
+              formControlName="contentType"
+              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            >
+              <option value="guide">Guia</option>
+              <option value="ranking">Ranking</option>
+              <option value="trend">Tendencia</option>
             </select>
           </div>
         </div>
+      </div>
 
-        <div class="grid md:grid-cols-2 gap-4">
-          <div>
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-published">Publish date</label>
-            <input
-              id="blog-published"
-              formControlName="publishedAt"
-              type="datetime-local"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            />
-          </div>
-          <div>
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-cover">Cover image URL</label>
-            <input
-              id="blog-cover"
-              formControlName="coverImage"
-              type="text"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              placeholder="https://"
-            />
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-published">Fecha de publicacion</label>
+          <input
+            id="blog-published"
+            formControlName="publishedAt"
+            type="datetime-local"
+            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          />
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-cover">Imagen de portada</label>
+          <input
+            id="blog-cover"
+            formControlName="coverImage"
+            type="text"
+            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="/assets/images/blog-og-image.jpg"
+          />
+        </div>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-intent">Primary intent</label>
+          <input
+            id="blog-intent"
+            formControlName="primaryIntent"
+            type="text"
+            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="discovery, comparison, family-weekend..."
+          />
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-target-query">Query objetivo</label>
+          <input
+            id="blog-target-query"
+            formControlName="targetQuery"
+            type="text"
+            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="que ver hoy en tv y streaming"
+          />
+        </div>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="flex items-center gap-3 rounded-2xl border border-slate-800/70 bg-slate-950/60 px-4 py-3 text-sm text-slate-200">
+          <input type="checkbox" formControlName="featured" class="h-4 w-4 rounded border-slate-600 bg-slate-900 text-red-500 focus:ring-red-500" />
+          Destacar en hubs editoriales
+        </label>
+        <label class="flex items-center gap-3 rounded-2xl border border-slate-800/70 bg-slate-950/60 px-4 py-3 text-sm text-slate-200">
+          <input type="checkbox" formControlName="evergreen" class="h-4 w-4 rounded border-slate-600 bg-slate-900 text-red-500 focus:ring-red-500" />
+          Contenido evergreen
+        </label>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-excerpt">Extracto</label>
+        <textarea
+          id="blog-excerpt"
+          formControlName="excerpt"
+          rows="3"
+          class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          placeholder="Resumen corto y util para cards y snippets"
+        ></textarea>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-content">Contenido HTML</label>
+        <textarea
+          id="blog-content"
+          formControlName="content"
+          rows="12"
+          class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          placeholder="HTML permitido. Usa enlaces internos a /plataformas, /comparador-streaming, /tendencias..."
+        ></textarea>
+        <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+          <span>{{ blogWordCount }} palabras</span>
+          <span>{{ blogReadingTime }} min de lectura</span>
+          <span>Slug: {{ blogPreviewSlug || '-' }}</span>
+        </div>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-categories">Categorias</label>
+          <input
+            id="blog-categories"
+            formControlName="categories"
+            type="text"
+            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="Guias, Streaming, Netflix"
+          />
+          <p class="text-xs text-slate-500 mt-1">Separadas por coma.</p>
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-keywords">Keywords SEO</label>
+          <input
+            id="blog-keywords"
+            formControlName="keywords"
+            type="text"
+            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="que ver hoy, netflix, guia tv"
+          />
+        </div>
+      </div>
+
+      <fieldset class="border border-slate-800/70 rounded-2xl p-4 space-y-4">
+        <legend class="px-2 text-xs text-slate-400 uppercase tracking-wider">Relaciones con la app</legend>
+
+        <div>
+          <p class="text-xs text-slate-400 uppercase tracking-wider">Plataformas relacionadas</p>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+            <label
+              *ngFor="let option of platformOptions"
+              class="flex items-start gap-3 rounded-xl border border-slate-800/70 bg-slate-950/60 px-4 py-3 text-sm text-slate-200"
+            >
+              <input
+                type="checkbox"
+                class="mt-0.5 h-4 w-4 rounded border-slate-600 bg-slate-900 text-red-500 focus:ring-red-500"
+                [checked]="isArraySelectionActive('relatedPlatformKeys', option.key)"
+                (change)="toggleArraySelection('relatedPlatformKeys', option.key, $any($event.target).checked)"
+              />
+              <span>{{ option.label }}</span>
+            </label>
           </div>
         </div>
 
         <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-excerpt">Excerpt</label>
+          <p class="text-xs text-slate-400 uppercase tracking-wider">Modulos y CTAs relacionados</p>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+            <label
+              *ngFor="let option of routeOptions"
+              class="flex items-start gap-3 rounded-xl border border-slate-800/70 bg-slate-950/60 px-4 py-3 text-sm text-slate-200"
+            >
+              <input
+                type="checkbox"
+                class="mt-0.5 h-4 w-4 rounded border-slate-600 bg-slate-900 text-red-500 focus:ring-red-500"
+                [checked]="isArraySelectionActive('relatedRouteKeys', option.key)"
+                (change)="toggleArraySelection('relatedRouteKeys', option.key, $any($event.target).checked)"
+              />
+              <span>
+                <span class="block font-semibold text-white">{{ option.label }}</span>
+                <span class="block text-xs text-slate-500">{{ option.description }}</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="border border-slate-800/70 rounded-2xl p-4 space-y-4">
+        <legend class="px-2 text-xs text-slate-400 uppercase tracking-wider">FAQs y snippet SEO</legend>
+
+        <div>
+          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-faqs">FAQs</label>
           <textarea
-            id="blog-excerpt"
-            formControlName="excerpt"
+            id="blog-faqs"
+            formControlName="faqItems"
+            rows="5"
+            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="Pregunta::Respuesta&#10;Otra pregunta::Otra respuesta"
+          ></textarea>
+          <p class="text-xs text-slate-500 mt-1">Una FAQ por linea con el formato <code>Pregunta::Respuesta</code>.</p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between">
+            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-meta-title">Meta title</label>
+            <span class="text-xs" [ngClass]="isSeoTitleOk() ? 'text-emerald-300' : 'text-amber-300'">
+              {{ blogSeoTitleLength }}/{{ seoTitleMax }}
+            </span>
+          </div>
+          <input
+            id="blog-meta-title"
+            formControlName="metaTitle"
+            type="text"
+            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="Por defecto usa el titulo"
+          />
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between">
+            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-meta-description">Meta description</label>
+            <span class="text-xs" [ngClass]="isSeoDescriptionOk() ? 'text-emerald-300' : 'text-amber-300'">
+              {{ blogSeoDescriptionLength }}/{{ seoDescriptionMax }}
+            </span>
+          </div>
+          <textarea
+            id="blog-meta-description"
+            formControlName="metaDescription"
             rows="3"
             class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            placeholder="Short summary for search and cards"
+            placeholder="Por defecto usa el extracto"
           ></textarea>
         </div>
 
-        <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider">Content</label>
-          <div class="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-slate-800/80 bg-slate-950/70 px-3 py-2 text-xs text-slate-400">
-            <button type="button" class="px-2 py-1 rounded-lg bg-slate-900/70">B</button>
-            <button type="button" class="px-2 py-1 rounded-lg">I</button>
-            <button type="button" class="px-2 py-1 rounded-lg">H2</button>
-            <button type="button" class="px-2 py-1 rounded-lg">Link</button>
-            <button type="button" class="px-2 py-1 rounded-lg">List</button>
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-og">OG image</label>
+            <input
+              id="blog-og"
+              formControlName="ogImage"
+              type="text"
+              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              placeholder="https://..."
+            />
           </div>
-          <textarea
-            formControlName="content"
-            rows="10"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            placeholder="Write the body, HTML allowed"
-          ></textarea>
-          <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-            <span>{{ blogWordCount }} words</span>
-            <span>{{ blogReadingTime }} min read</span>
-            <span>Slug: {{ blogPreviewSlug || '-' }}</span>
+          <div>
+            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-canonical">Canonical</label>
+            <input
+              id="blog-canonical"
+              formControlName="canonicalUrl"
+              type="text"
+              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              [ngClass]="{ 'border-red-500/60': !isCanonicalValid() }"
+              placeholder="/editorial/slug o https://..."
+            />
+            <p *ngIf="!isCanonicalValid()" class="text-xs text-red-300 mt-1">Canonical invalida.</p>
           </div>
         </div>
-
-        <div class="grid md:grid-cols-2 gap-4">
-          <div>
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-categories">Categories</label>
-            <input
-              id="blog-categories"
-              formControlName="categories"
-              type="text"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              placeholder="Series, News, Top 10"
-            />
-          </div>
-          <div>
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-keywords">Keywords</label>
-            <input
-              id="blog-keywords"
-              formControlName="keywords"
-              type="text"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              placeholder="streaming, tv guide, reviews"
-            />
-          </div>
-        </div>
-
-        <fieldset class="border border-slate-800/70 rounded-2xl p-4 space-y-4">
-          <legend class="px-2 text-xs text-slate-400 uppercase tracking-wider">SEO metadata</legend>
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-meta-title">Meta title</label>
-              <span
-                class="text-xs"
-                [ngClass]="isSeoTitleOk() ? 'text-emerald-300' : 'text-amber-300'"
-              >
-                {{ blogSeoTitleLength }}/{{ seoTitleMax }}
-              </span>
-            </div>
-            <input
-              id="blog-meta-title"
-              formControlName="metaTitle"
-              type="text"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              placeholder="Optional, defaults to title"
-            />
-          </div>
-          <div>
-            <div class="flex items-center justify-between">
-              <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-meta-description">Meta description</label>
-              <span
-                class="text-xs"
-                [ngClass]="isSeoDescriptionOk() ? 'text-emerald-300' : 'text-amber-300'"
-              >
-                {{ blogSeoDescriptionLength }}/{{ seoDescriptionMax }}
-              </span>
-            </div>
-            <textarea
-              id="blog-meta-description"
-              formControlName="metaDescription"
-              rows="3"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              placeholder="Optional, defaults to excerpt"
-            ></textarea>
-          </div>
-          <div class="grid md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-og">OG image</label>
-              <input
-                id="blog-og"
-                formControlName="ogImage"
-                type="text"
-                class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                placeholder="https://"
-              />
-            </div>
-            <div>
-              <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-canonical">Canonical URL</label>
-              <input
-                id="blog-canonical"
-                formControlName="canonicalUrl"
-                type="text"
-                class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                [ngClass]="{ 'border-red-500/60': !isCanonicalValid() }"
-                placeholder="https://"
-              />
-              <p *ngIf="!isCanonicalValid()" class="text-xs text-red-300 mt-1">URL is invalid.</p>
-            </div>
-          </div>
-        </fieldset>
-      </div>
+      </fieldset>
 
       <div class="flex flex-wrap items-center justify-end gap-3 pt-2">
         <button
@@ -234,14 +336,14 @@
           class="px-4 py-2 rounded-xl border border-slate-700/70 text-slate-200 text-sm hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           (click)="resetBlogForm(true)"
         >
-          Reset
+          Limpiar
         </button>
         <button
           type="submit"
           class="px-5 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-100 text-sm hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           [disabled]="blogSaving || blogForm.invalid"
         >
-          {{ blogForm.get('status')?.value === 'publish' ? 'Publish' : 'Save draft' }}
+          {{ blogForm.get('status')?.value === 'publish' ? (isEditingBlogPost ? 'Actualizar y publicar' : 'Publicar') : (isEditingBlogPost ? 'Actualizar borrador' : 'Guardar borrador') }}
         </button>
       </div>
     </form>
@@ -249,114 +351,127 @@
     <div class="space-y-6">
       <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
         <div class="flex items-center justify-between">
-          <h4 class="text-lg font-semibold text-white">SEO preview</h4>
-          <span class="text-xs text-slate-500">Search snippet</span>
+          <h4 class="text-lg font-semibold text-white">Preview SEO</h4>
+          <span class="text-xs text-slate-500">Snippet de busqueda</span>
         </div>
         <div class="mt-4 space-y-2">
           <div class="text-xs text-slate-500 break-all">{{ blogPreviewUrl }}</div>
           <div class="text-xl font-semibold text-blue-200">{{ blogPreviewTitle }}</div>
           <p class="text-sm text-slate-300">
-            {{ blogPreviewDescription || 'Add a meta description to improve CTR.' }}
+            {{ blogPreviewDescription || 'Anade una descripcion util para mejorar el CTR.' }}
           </p>
         </div>
         <div class="mt-5 grid sm:grid-cols-3 gap-3 text-xs">
           <div class="p-3 rounded-xl bg-slate-950/50 border border-slate-800/70">
-            <p class="text-slate-500">Words</p>
+            <p class="text-slate-500">Palabras</p>
             <p class="text-white font-semibold">{{ blogWordCount }}</p>
           </div>
           <div class="p-3 rounded-xl bg-slate-950/50 border border-slate-800/70">
-            <p class="text-slate-500">Reading time</p>
+            <p class="text-slate-500">Lectura</p>
             <p class="text-white font-semibold">{{ blogReadingTime }} min</p>
           </div>
           <div class="p-3 rounded-xl bg-slate-950/50 border border-slate-800/70">
-            <p class="text-slate-500">Title length</p>
+            <p class="text-slate-500">Titulo SEO</p>
             <p class="text-white font-semibold">{{ blogSeoTitleLength }}</p>
           </div>
         </div>
         <button
           type="button"
           class="mt-4 w-full px-4 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          (click)="openBlogPreview()"
         >
-          Open preview
+          Abrir preview
         </button>
       </div>
 
       <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
-            <h4 class="text-lg font-semibold text-white">Posts</h4>
+            <h4 class="text-lg font-semibold text-white">Articulos</h4>
             <p class="text-xs text-slate-500">
-              Showing {{ blogPosts.length }} posts
-              <span *ngIf="blogLastLoaded"> | Updated {{ blogLastLoaded | date: 'shortTime' }}</span>
+              {{ blogPosts.length }} resultados
+              <span *ngIf="blogLastLoaded"> | actualizado {{ blogLastLoaded | date: 'shortTime' }}</span>
             </p>
           </div>
-          <div class="flex flex-wrap items-center gap-2">
+          <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             <select
               class="bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               [value]="blogStatusFilter"
               (change)="setBlogStatus($any($event.target).value)"
             >
-              <option *ngFor="let option of blogStatusOptions" [value]="option.id">
-                {{ option.label }}
-              </option>
+              <option *ngFor="let option of blogStatusOptions" [value]="option.id">{{ option.label }}</option>
+            </select>
+            <select
+              class="bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              [value]="blogTypeFilter"
+              (change)="setBlogType($any($event.target).value)"
+            >
+              <option *ngFor="let option of blogTypeOptions" [value]="option.id">{{ option.label }}</option>
+            </select>
+            <select
+              class="bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              [value]="blogCategoryFilter"
+              (change)="setBlogCategory($any($event.target).value)"
+            >
+              <option value="all">Todas las categorias</option>
+              <option *ngFor="let category of blogCategories" [value]="category.slug">{{ category.name }}</option>
             </select>
             <input
               type="text"
               class="bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              placeholder="Search posts"
+              placeholder="Buscar articulos"
               [value]="blogSearchTerm"
               (input)="onBlogSearchInput($event)"
               (keydown.enter)="applyBlogFilters()"
             />
-            <button
-              type="button"
-              class="px-3 py-2 rounded-xl border border-slate-700/70 text-slate-200 text-xs hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              (click)="applyBlogFilters()"
-            >
-              Apply
-            </button>
           </div>
         </div>
 
         <div *ngIf="blogLoading" class="text-sm text-slate-500 py-6 text-center">
-          Loading posts...
+          Cargando articulos...
         </div>
         <div *ngIf="blogError" class="text-sm text-red-300 py-3">
           {{ blogError }}
         </div>
         <div *ngIf="!blogLoading && !blogError && blogPosts.length === 0" class="text-sm text-slate-500 py-6 text-center">
-          No posts yet. Start by creating a draft.
+          No hay articulos para estos filtros.
         </div>
 
-        <div *ngIf="blogPosts.length" class="space-y-4 max-h-[520px] overflow-auto pr-1">
+        <div *ngIf="blogPosts.length" class="space-y-4 max-h-[680px] overflow-auto pr-1">
           <article
             *ngFor="let post of blogPosts; trackBy: trackByBlogPost"
-            class="p-4 rounded-2xl bg-slate-950/50 border border-slate-800/70 space-y-3"
+            class="p-4 rounded-2xl bg-slate-950/50 border space-y-3"
+            [ngClass]="selectedBlogPostId === post.id ? 'border-red-500/40' : 'border-slate-800/70'"
           >
             <div class="flex items-start gap-3">
-              <div class="h-16 w-24 rounded-xl bg-slate-900/70 border border-slate-800/70 overflow-hidden flex-shrink-0">
+              <div class="h-20 w-28 rounded-xl bg-slate-900/70 border border-slate-800/70 overflow-hidden flex-shrink-0">
                 <ng-container *ngIf="getPostImage(post) as image; else noImage">
-                  <img [src]="image" alt="Post cover" class="h-full w-full object-cover" />
+                  <img [src]="image" alt="" class="h-full w-full object-cover" />
                 </ng-container>
                 <ng-template #noImage>
                   <div class="h-full w-full flex items-center justify-center text-[10px] text-slate-500 bg-slate-950/40">
-                    No image
+                    Sin imagen
                   </div>
                 </ng-template>
               </div>
 
-              <div class="flex-1 space-y-3">
+              <div class="flex-1 min-w-0 space-y-3">
                 <div class="flex items-start justify-between gap-3">
                   <div>
                     <h5 class="text-white text-sm font-semibold">{{ getPostTitle(post) }}</h5>
-                    <p class="text-xs text-slate-500 mt-1">{{ post.slug }}</p>
+                    <p class="text-xs text-slate-500 mt-1 break-all">{{ post.slug }}</p>
                   </div>
-                  <span
-                    class="text-[10px] px-2 py-1 rounded-full border"
-                    [ngClass]="getPostStatusClass(post.status)"
-                  >
-                    {{ post.status || 'draft' }}
-                  </span>
+                  <div class="flex flex-wrap justify-end gap-2">
+                    <span class="text-[10px] px-2 py-1 rounded-full border" [ngClass]="getPostStatusClass(post.status)">
+                      {{ post.status || 'draft' }}
+                    </span>
+                    <span class="text-[10px] px-2 py-1 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200">
+                      {{ getPostTypeLabel(post) }}
+                    </span>
+                    <span *ngIf="post.featured" class="text-[10px] px-2 py-1 rounded-full border border-red-500/40 bg-red-500/10 text-red-100">
+                      Destacado
+                    </span>
+                  </div>
                 </div>
 
                 <p class="text-sm text-slate-300">{{ getPostExcerpt(post) }}</p>
@@ -367,12 +482,37 @@
                   <span>| SEO {{ getPostSeoTitle(post).length }}/{{ seoTitleMax }}</span>
                 </div>
 
-                <div class="flex items-center gap-3 text-xs">
-                  <a [href]="getPostUrl(post)" target="_blank" rel="noopener" class="text-red-300 hover:text-red-200">
-                    Open
+                <div class="flex flex-wrap items-center gap-2 text-xs">
+                  <button
+                    type="button"
+                    class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 hover:text-white hover:border-slate-500"
+                    (click)="editBlogPost(post)"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    class="px-3 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-200 hover:border-emerald-400/40"
+                    (click)="togglePublishState(post)"
+                  >
+                    {{ post.status === 'publish' ? 'Pasar a borrador' : 'Publicar' }}
+                  </button>
+                  <a
+                    [href]="getPostUrl(post)"
+                    target="_blank"
+                    rel="noopener"
+                    class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 hover:text-white hover:border-slate-500"
+                  >
+                    Abrir
                   </a>
-                  <span class="text-slate-600">|</span>
-                  <span class="text-slate-500 break-all">{{ getPostUrl(post) }}</span>
+                  <button
+                    type="button"
+                    class="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-200 hover:border-red-400/40 disabled:opacity-50"
+                    [disabled]="blogDeletingId === post.id"
+                    (click)="deleteBlogPost(post)"
+                  >
+                    {{ blogDeletingId === post.id ? 'Eliminando...' : 'Eliminar' }}
+                  </button>
                 </div>
               </div>
             </div>

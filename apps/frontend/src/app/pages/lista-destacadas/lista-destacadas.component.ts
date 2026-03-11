@@ -43,8 +43,6 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    console.log('ListaDestacadas inicializado');
-
     // Asegurar que empezamos con películas seleccionadas
     this.isPelicula = true;
     this.isSerie = false;
@@ -99,8 +97,7 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
             this.escucharProgramas();
           }
         },
-        error: (err) => {
-          console.error('Error al obtener programación:', err);
+        error: () => {
           this.escucharProgramas();
         },
       });
@@ -120,8 +117,7 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.procesarDatosProgramacion(data as any[]);
         },
-        error: (err) => {
-          console.error('Error en programas$:', err);
+        error: () => {
           this.loading = false;
           this.error = 'No se pudieron cargar los datos';
         },
@@ -132,8 +128,6 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
    * Procesa los datos de programación y genera destacados
    */
   private procesarDatosProgramacion(data: any[]): void {
-    console.log('Procesando datos de programación:', data.length);
-
     // Alimentar el servicio con los datos
     this.guiaSvc.setData(data);
     this.datosInicializados = true;
@@ -144,14 +138,12 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
       this.guiaSvc.setSeriesDestacadas(),
     ])
       .then(() => {
-        console.log('Destacados generados');
         // Ahora sí cargar las películas (que es el modo por defecto)
         this.cargarPeliculasDestacadas();
         // Precargar series en segundo plano
         this.precargarSeriesDestacadas();
       })
-      .catch((err) => {
-        console.error('Error al generar destacados:', err);
+      .catch(() => {
         this.loading = false;
       });
   }
@@ -177,13 +169,8 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
           this.peliculasDestacadas = data || [];
           this.peliculasCargadas = true;
           this.loading = false;
-          console.log(
-            'Películas destacadas cargadas:',
-            this.peliculasDestacadas.length
-          );
         },
-        error: (err) => {
-          console.error('Error al cargar películas:', err);
+        error: () => {
           this.error = 'Error al cargar películas destacadas';
           this.loading = false;
         },
@@ -207,14 +194,8 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.seriesDestacadas = data || [];
           this.seriesCargadas = true;
-          console.log(
-            'Series destacadas precargadas:',
-            this.seriesDestacadas.length
-          );
         },
-        error: (err) => {
-          console.error('Error al precargar series:', err);
-        },
+        error: () => undefined,
       });
   }
 
@@ -222,7 +203,6 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
    * Cambia a modo películas
    */
   public getPeliculasAhora(): void {
-    console.log('Cambiando a películas');
     this.isPelicula = true;
     this.isSerie = false;
 
@@ -236,7 +216,6 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
    * Cambia a modo series
    */
   public getSeriesAhora(): void {
-    console.log('Cambiando a series');
     this.isPelicula = false;
     this.isSerie = true;
 
@@ -255,8 +234,7 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
             this.seriesCargadas = true;
             this.loading = false;
           },
-          error: (err) => {
-            console.error('Error al cargar series:', err);
+          error: () => {
             this.error = 'Error al cargar series destacadas';
             this.loading = false;
           },

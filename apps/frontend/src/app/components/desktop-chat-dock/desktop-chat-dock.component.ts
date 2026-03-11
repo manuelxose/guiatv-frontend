@@ -825,10 +825,12 @@ export class DesktopChatDockComponent implements OnInit, OnDestroy {
     const path = String(url || '').split('?')[0];
     this.isHiddenByRoute =
       path.startsWith('/admin') ||
+      path.startsWith('/editorial') ||
       path.startsWith('/blog') ||
       path.startsWith('/iniciar-sesion') ||
       path.startsWith('/registro') ||
-      path.startsWith('/mi-cuenta');
+      path.startsWith('/mi-cuenta') ||
+      path.startsWith('/comunidad');
 
     if (this.isHiddenByRoute) {
       this.isDockOpen = false;

@@ -178,6 +178,8 @@
                 (createList)="onCreateCommunityList($event)"
                 (recommendContent)="onRecommendContent($event)"
                 (messageFriend)="onOpenFriendChat($event)"
+                (likeActivity)="onLikeActivity($event)"
+                (commentActivity)="onCommentActivity($event)"
               ></app-user-social-feed>
             </section>
 
@@ -244,6 +246,14 @@
                     </button>
                   </article>
                 </div>
+              </section>
+
+              <section class="rounded-[1.75rem] border border-slate-800/80 bg-slate-900/60 p-5">
+                <div class="mb-4">
+                  <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Explorar</p>
+                  <h3 class="mt-2 text-lg font-semibold text-white">Buscar usuarios</h3>
+                </div>
+                <app-user-search (followToggled)="onToggleFollow($event)"></app-user-search>
               </section>
 
               <section class="rounded-[1.75rem] border border-slate-800/80 bg-slate-900/60 p-5">
@@ -796,6 +806,8 @@
               (createList)="onCreateCommunityList($event)"
               (recommendContent)="onRecommendContent($event)"
               (messageFriend)="onOpenFriendChat($event)"
+              (likeActivity)="onLikeActivity($event)"
+              (commentActivity)="onCommentActivity($event)"
             ></app-user-social-feed>
           </div>
         </ng-container>
@@ -969,6 +981,7 @@
       [profile]="profile$ | async"
       (closeModal)="closeEditProfileModal()"
       (saveProfile)="onSaveProfile($event)"
+      (changePassword)="onChangePassword($event)"
     ></app-edit-profile-modal>
 
     <ng-template #adminPanel>
@@ -1128,8 +1141,7 @@
 
   <ng-template #loginCTA>
     <div
-      class="md:hidden relative min-h-0 flex flex-col items-center justify-center px-6 py-10 text-center"
-      style="min-height: calc(100dvh - var(--top-bar-h, 0px) - var(--bottom-nav-h, 0px))"
+      class="user-area-login-cta md:hidden relative min-h-0 flex flex-col items-center justify-center px-6 py-10 text-center"
     >
       <div class="mb-8">
         <div class="flex items-center justify-center gap-2 mb-4">

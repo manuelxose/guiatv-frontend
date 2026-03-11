@@ -348,6 +348,11 @@ export class ChatService {
       this.refreshConversations().subscribe();
     });
 
+    this.socket.on('notification:new', () => {
+      this.userService.fetchUnreadNotificationsCount().subscribe();
+      this.userService.fetchNotifications().subscribe();
+    });
+
     this.ensureFallbackPolling();
     this.ensureOnlineRefreshPolling();
   }

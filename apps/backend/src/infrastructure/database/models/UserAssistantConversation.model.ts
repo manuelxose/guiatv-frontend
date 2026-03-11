@@ -32,6 +32,10 @@ const RecommendationSchema = new Schema(
       canTrack: { type: Boolean, default: true },
     },
     badges: { type: [String], default: [] },
+    rating: { type: Number },
+    durationMinutes: { type: Number },
+    synopsis: { type: String, trim: true },
+    platformLogo: { type: String, trim: true },
   },
   { _id: false }
 );
@@ -58,6 +62,14 @@ const AssistantQueryContextSchema = new Schema(
   { _id: false }
 );
 
+const MessageFeedbackSchema = new Schema(
+  {
+    rating: { type: String, enum: ['positive', 'negative'], required: true },
+    createdAt: { type: Date, required: true, default: Date.now },
+  },
+  { _id: false }
+);
+
 const AssistantMessageSchema = new Schema(
   {
     role: {
@@ -71,6 +83,7 @@ const AssistantMessageSchema = new Schema(
     moreRecommendations: { type: [RecommendationSchema], default: [] },
     followUpSuggestions: { type: [String], default: [] },
     queryContext: { type: AssistantQueryContextSchema, default: undefined },
+    feedback: { type: MessageFeedbackSchema, default: undefined },
   },
   { _id: false }
 );
@@ -79,6 +92,8 @@ export interface IUserAssistantConversationDocument extends Document {
   userId: string;
   conversationId: string;
   sessionTitle?: string;
+  pinned: boolean;
+  archived: boolean;
   messages: Array<{
     role: 'user' | 'assistant';
     content: string;
@@ -144,6 +159,10 @@ export interface IUserAssistantConversationDocument extends Document {
       autonomicPromptRequired?: boolean;
       savedAutonomousCommunity?: string;
     };
+    feedback?: {
+      rating: 'positive' | 'negative';
+      createdAt: Date;
+    };
   }>;
   lastUsedAt: Date;
   createdAt: Date;
@@ -155,6 +174,8 @@ const UserAssistantConversationSchema = new Schema<IUserAssistantConversationDoc
     userId: { type: String, required: true, index: true },
     conversationId: { type: String, required: true, unique: true, index: true },
     sessionTitle: { type: String, trim: true },
+    pinned: { type: Boolean, default: false },
+    archived: { type: Boolean, default: false },
     messages: { type: [AssistantMessageSchema], default: [] },
     lastUsedAt: { type: Date, required: true, default: Date.now, index: true },
   },
@@ -165,6 +186,7 @@ const UserAssistantConversationSchema = new Schema<IUserAssistantConversationDoc
 );
 
 UserAssistantConversationSchema.index({ userId: 1, lastUsedAt: -1 });
+UserAssistantConversationSchema.index({ userId: 1, pinned: -1, lastUsedAt: -1 });
 
 export const UserAssistantConversationModel =
   mongoose.model<IUserAssistantConversationDocument>(

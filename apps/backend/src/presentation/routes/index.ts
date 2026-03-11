@@ -45,6 +45,8 @@ import { InteractionController } from '../controllers/InteractionController';
 import { AIController } from '../controllers/AIController';
 import { createInteractionRoutes } from './interaction.routes';
 import { createAIRoutes } from './ai.routes';
+import { AIAnalyticsController } from '../controllers/AIAnalyticsController';
+import { createAdminAIAnalyticsRoutes } from './admin-ai-analytics.routes';
 
 /**
  * Dependencies required by every route factory.
@@ -71,6 +73,7 @@ export interface RoutesDependencies {
   socialController: SocialController;
   chatController: ChatController;
   aiController: AIController;
+  aiAnalyticsController: AIAnalyticsController;
   sitemapController: SitemapController;
 }
 
@@ -136,10 +139,70 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
     createAdminUsersRoutes(dependencies.adminUsersController, dependencies.authService)
   );
   router.use('/admin', createAdminRoutes(dependencies.adminController, dependencies.authService));
+  router.use('/admin/ai-analytics', createAdminAIAnalyticsRoutes(dependencies.aiAnalyticsController, dependencies.authService));
   router.use('/ssr', createSSRRoutes(dependencies.ssrController));
   router.use('/auth', createAuthRoutes(dependencies.authController));
   router.use('/blog', createBlogRoutes(dependencies.blogController));
   router.use('/analytics', createAnalyticsRoutes(dependencies.analyticsController, dependencies.authService));
+  router.use('/telemetry', createAnalyticsRoutes(dependencies.analyticsController, dependencies.authService));
+
+  // oEmbed endpoint — enables CMS auto-embedding and rich preview cards
+  router.get('/oembed', (req, res) => {
+    const url = typeof req.query.url === 'string' ? req.query.url : '';
+    const format = req.query.format === 'xml' ? 'xml' : 'json';
+    const maxwidth = Math.min(Number(req.query.maxwidth) || 600, 1200);
+    const maxheight = Math.min(Number(req.query.maxheight) || 720, 900);
+
+    const baseUrl = 'https://guiaprogramaciontv.com';
+    const allowedOrigin = 'guiaprogramaciontv.com';
+
+    // Validate URL belongs to our domain
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname !== allowedOrigin && parsed.hostname !== `www.${allowedOrigin}`) {
+        res.status(404).json({ error: 'URL not supported' });
+        return;
+      }
+    } catch {
+      res.status(400).json({ error: 'Invalid URL' });
+      return;
+    }
+
+    const oembedResponse = {
+      version: '1.0',
+      type: 'rich' as const,
+      provider_name: 'Guía Programación TV',
+      provider_url: baseUrl,
+      title: 'Widget de programación TV — Guía Programación TV',
+      html: `<iframe src="${baseUrl}/embed/programacion?theme=light&channels=5&date=today&autorefresh=300&lang=es" width="${maxwidth}" height="${maxheight}" frameborder="0" title="Programación TV embebida" loading="lazy"></iframe>`,
+      width: maxwidth,
+      height: maxheight,
+      thumbnail_url: `${baseUrl}/assets/og-image.jpg`,
+      thumbnail_width: 1200,
+      thumbnail_height: 630,
+    };
+
+    if (format === 'xml') {
+      res.set('Content-Type', 'text/xml; charset=utf-8');
+      res.send(`<?xml version="1.0" encoding="utf-8"?>
+<oembed>
+  <version>${oembedResponse.version}</version>
+  <type>${oembedResponse.type}</type>
+  <provider_name>${oembedResponse.provider_name}</provider_name>
+  <provider_url>${oembedResponse.provider_url}</provider_url>
+  <title>${oembedResponse.title}</title>
+  <html><![CDATA[${oembedResponse.html}]]></html>
+  <width>${oembedResponse.width}</width>
+  <height>${oembedResponse.height}</height>
+  <thumbnail_url>${oembedResponse.thumbnail_url}</thumbnail_url>
+  <thumbnail_width>${oembedResponse.thumbnail_width}</thumbnail_width>
+  <thumbnail_height>${oembedResponse.thumbnail_height}</thumbnail_height>
+</oembed>`);
+      return;
+    }
+
+    res.json(oembedResponse);
+  });
 
   return router;
 };

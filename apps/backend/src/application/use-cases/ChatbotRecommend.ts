@@ -19,6 +19,8 @@ import {
   AssistantHistoryPayload,
   AssistantMemoryService,
 } from '../services/AssistantMemoryService';
+import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
+import * as crypto from 'crypto';
 
 export interface ChatbotRecommendRequest {
   userId: string;
@@ -227,6 +229,15 @@ interface RankedScheduleItem {
   liveRank: number;
   startRank: number;
   ratingRank: number;
+  historyBoost: number;   // lower = better, -1 for genre match, 0 default
+  negativePenalty: number; // 0 default, 1 penalty
+  timeBoost: number;       // lower = better, 0 primetime, 1 default
+}
+
+interface RankingContext {
+  likedGenres?: string[];
+  negativeSignals?: string[];
+  recentTitles?: string[];
 }
 
 interface CommunityPreferenceReply {
@@ -235,19 +246,43 @@ interface CommunityPreferenceReply {
   shouldPersist: boolean;
 }
 
+export type StreamableChatResponse = {
+  kind: 'direct';
+  response: ChatbotResponse;
+} | {
+  kind: 'stream';
+  textStream: AsyncGenerator<string>;
+  finalize: (fullText: string) => Promise<ChatbotResponse>;
+};
+
 export class ChatbotRecommend {
   constructor(
     private readonly aiService: AIRecommendationService,
     private readonly interactionRepository: IUserContentInteractionRepository,
     private readonly userRepository: MongoUserRepository,
     private readonly catalogService: CatalogService,
-    private readonly assistantMemoryService: AssistantMemoryService
+    private readonly assistantMemoryService: AssistantMemoryService,
+    private readonly cacheRepository?: ICacheRepository
   ) {}
 
   async execute(
     request: ChatbotRecommendRequest
   ): Promise<ChatbotResponse> {
     const latestUserMessage = this.getLatestUserMessage(request.messages);
+
+    // --- Response cache: check before heavy processing ---
+    if (this.cacheRepository && latestUserMessage) {
+      const intent = this.analyzeIntent(latestUserMessage);
+      const cacheKey = this.buildCacheKey(request.userId, latestUserMessage, intent.mode);
+      try {
+        const cached = await this.cacheRepository.get<string>(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached) as ChatbotResponse;
+          return parsed;
+        }
+      } catch { /* cache miss or parse error – continue normally */ }
+    }
+
     const [history, user, profile, genreProfile, recentInteractions] =
       await Promise.all([
         this.assistantMemoryService.getHistory(
@@ -296,13 +331,37 @@ export class ChatbotRecommend {
       communityReply.kind === 'set'
         ? communityReply.community
         : history.memory?.preferredAutonomousCommunity;
-    const [liveCatalog, streamingCatalog] = await Promise.all([
+    const liveTypes = this.resolveLiveTypes(intent);
+    const [
+      liveCatalog,
+      tonightEarlyCatalog,
+      tonightLateCatalog,
+      streamingCatalog,
+    ] = await Promise.all([
       this.catalogService.query({
         userId: request.userId,
         availability: ['live'],
-        types: this.resolveLiveTypes(intent),
+        types: liveTypes,
         sort: 'airtime',
         limit: 500,
+        page: 1,
+      }),
+      this.catalogService.query({
+        userId: request.userId,
+        availability: ['live'],
+        types: liveTypes,
+        sort: 'airtime',
+        timeSlot: '6',
+        limit: 240,
+        page: 1,
+      }),
+      this.catalogService.query({
+        userId: request.userId,
+        availability: ['live'],
+        types: liveTypes,
+        sort: 'airtime',
+        timeSlot: '7',
+        limit: 240,
         page: 1,
       }),
       this.catalogService.query({
@@ -320,11 +379,15 @@ export class ChatbotRecommend {
     ]);
 
     const liveNowItems = this.filterCatalogItems(
-      liveCatalog.items.filter((item) => item.liveNow),
+      this.dedupeCatalogItems(liveCatalog.items.filter((item) => item.liveNow)),
       intent
     );
+    const tonightSourceItems = this.dedupeCatalogItems([
+      ...tonightEarlyCatalog.items,
+      ...tonightLateCatalog.items,
+    ]);
     const tonightItems = this.filterCatalogItems(
-      this.extractTonightItems(liveCatalog.items),
+      this.extractTonightItems(tonightSourceItems),
       intent
     );
     const streamingMatches = this.filterCatalogItems(
@@ -342,6 +405,11 @@ export class ChatbotRecommend {
         history,
         effectiveCommunity,
         communityReply,
+        rankingCtx: {
+          likedGenres: this.mergeUnique(profile?.favoriteGenres || [], history.memory?.likedGenres || []),
+          negativeSignals: this.mergeUnique(history.memory?.negativeSignals || [], history.memory?.dislikedGenres || []),
+          recentTitles: recentInteractions.map((i: any) => i.title || '').filter(Boolean),
+        },
       }
     );
     if (directResponse && latestUserMessage) {
@@ -418,11 +486,177 @@ export class ChatbotRecommend {
       assistantResponse: normalizedFinalResponse,
     });
 
-    return {
+    const result = {
       ...normalizedFinalResponse,
       conversationId: persisted.conversationId,
       assistantMemorySnapshot: persisted.memory,
     };
+
+    // --- Store in cache ---
+    if (this.cacheRepository && latestUserMessage) {
+      const cacheKey = this.buildCacheKey(request.userId, latestUserMessage, intent.mode);
+      const ttl = this.getCacheTtl(intent.mode);
+      this.cacheRepository.set(cacheKey, JSON.stringify(result), ttl).catch(() => {});
+    }
+
+    return result;
+  }
+
+  async executeStream(
+    request: ChatbotRecommendRequest
+  ): Promise<StreamableChatResponse> {
+    const latestUserMessage = this.getLatestUserMessage(request.messages);
+    const [history, user, profile, genreProfile, recentInteractions] =
+      await Promise.all([
+        this.assistantMemoryService.getHistory(request.userId, request.conversationId),
+        this.userRepository.findById(request.userId),
+        UserProfileModel.findOne({ userId: request.userId }).lean().exec(),
+        this.interactionRepository.getUserGenreProfile(request.userId),
+        this.interactionRepository.findByUser(request.userId, { status: 'seen', limit: 20 }),
+      ]);
+
+    const communityReply = this.extractCommunityReply(
+      latestUserMessage,
+      history.memory?.preferredAutonomousCommunity
+    );
+    if (communityReply.shouldPersist) {
+      await this.assistantMemoryService.saveCommunityPreference({
+        userId: request.userId,
+        preferredAutonomousCommunity:
+          communityReply.kind === 'set'
+            ? communityReply.community
+            : history.memory?.preferredAutonomousCommunity,
+        autonomicOptIn:
+          communityReply.kind === 'decline'
+            ? false
+            : communityReply.kind === 'confirm' || communityReply.kind === 'set' ? true : undefined,
+      });
+      if (communityReply.kind === 'set' && history.memory) {
+        history.memory.preferredAutonomousCommunity = communityReply.community;
+        history.memory.autonomicOptIn = true;
+      } else if (communityReply.kind === 'confirm' && history.memory) {
+        history.memory.autonomicOptIn = true;
+      } else if (communityReply.kind === 'decline' && history.memory) {
+        history.memory.autonomicOptIn = false;
+      }
+    }
+
+    const intent = this.analyzeIntent(latestUserMessage);
+    const effectiveCommunity =
+      communityReply.kind === 'set'
+        ? communityReply.community
+        : history.memory?.preferredAutonomousCommunity;
+    const liveTypes = this.resolveLiveTypes(intent);
+    const [liveCatalog, tonightEarlyCatalog, tonightLateCatalog, streamingCatalog] =
+      await Promise.all([
+        this.catalogService.query({ userId: request.userId, availability: ['live'], types: liveTypes, sort: 'airtime', limit: 500, page: 1 }),
+        this.catalogService.query({ userId: request.userId, availability: ['live'], types: liveTypes, sort: 'airtime', timeSlot: '6', limit: 240, page: 1 }),
+        this.catalogService.query({ userId: request.userId, availability: ['live'], types: liveTypes, sort: 'airtime', timeSlot: '7', limit: 240, page: 1 }),
+        this.catalogService.query({ userId: request.userId, availability: ['streaming'], types: this.resolveStreamingTypes(intent), genres: intent.explicitGenres.length ? intent.explicitGenres : undefined, platforms: intent.explicitPlatforms.length ? intent.explicitPlatforms : undefined, sort: 'popular', limit: 36, page: 1 }),
+      ]);
+
+    const liveNowItems = this.filterCatalogItems(this.dedupeCatalogItems(liveCatalog.items.filter((item) => item.liveNow)), intent);
+    const tonightSourceItems = this.dedupeCatalogItems([...tonightEarlyCatalog.items, ...tonightLateCatalog.items]);
+    const tonightItems = this.filterCatalogItems(this.extractTonightItems(tonightSourceItems), intent);
+    const streamingMatches = this.filterCatalogItems(streamingCatalog.items, intent);
+
+    // Direct schedule responses return immediately (no streaming needed)
+    const directResponse = this.buildDirectScheduleResponse(intent, liveNowItems, tonightItems, streamingMatches, latestUserMessage, { history, effectiveCommunity, communityReply, rankingCtx: {
+      likedGenres: this.mergeUnique(profile?.favoriteGenres || [], history.memory?.likedGenres || []),
+      negativeSignals: this.mergeUnique(history.memory?.negativeSignals || [], history.memory?.dislikedGenres || []),
+      recentTitles: recentInteractions.map((i: any) => i.title || '').filter(Boolean),
+    } });
+    if (directResponse && latestUserMessage) {
+      const normalizedDirectResponse = this.finalizeResponse(directResponse, latestUserMessage);
+      const persisted = await this.assistantMemoryService.saveChatTurn({
+        userId: request.userId,
+        conversationId: request.conversationId || history.conversationId || undefined,
+        userMessage: latestUserMessage,
+        assistantResponse: normalizedDirectResponse,
+      });
+      return {
+        kind: 'direct',
+        response: { ...normalizedDirectResponse, conversationId: persisted.conversationId, assistantMemorySnapshot: persisted.memory },
+      };
+    }
+
+    // Build AI context and stream text from provider
+    const context = this.buildContext({
+      userId: request.userId,
+      history,
+      intent,
+      userName: user?.name || profile?.username || 'usuario',
+      favoriteGenres: this.mergeUnique(profile?.favoriteGenres || [], history.memory?.likedGenres || []),
+      dislikedGenres: this.mergeUnique(history.memory?.dislikedGenres || []),
+      preferredPlatforms: this.mergeUnique(genreProfile.preferredPlatforms || [], profile?.preferredPlatforms || [], history.memory?.preferredPlatforms || []),
+      recentInteractions,
+      liveNowItems,
+      tonightItems,
+      streamingMatches,
+      avgRating: genreProfile.avgRating,
+      effectiveCommunity,
+    });
+
+    const textStream = this.aiService.chatStream(request.messages, context);
+
+    const finalize = async (fullText: string): Promise<ChatbotResponse> => {
+      const baseResponse = this.aiService.parseStreamedResponse(fullText);
+      const [resolvedRecommendations, resolvedMoreRecommendations] = await Promise.all([
+        this.resolveRecommendations(baseResponse.recommendations || []),
+        this.resolveRecommendations(baseResponse.moreRecommendations || []),
+      ]);
+
+      const finalResponse: ChatbotResponse = {
+        ...baseResponse,
+        recommendations: resolvedRecommendations,
+        moreRecommendations: resolvedMoreRecommendations,
+      };
+
+      if (!latestUserMessage) {
+        return { ...finalResponse, assistantMemorySnapshot: history.memory || undefined };
+      }
+
+      const normalizedFinalResponse = this.finalizeResponse(finalResponse, latestUserMessage);
+      const persisted = await this.assistantMemoryService.saveChatTurn({
+        userId: request.userId,
+        conversationId: request.conversationId || history.conversationId || undefined,
+        userMessage: latestUserMessage,
+        assistantResponse: normalizedFinalResponse,
+      });
+
+      return {
+        ...normalizedFinalResponse,
+        conversationId: persisted.conversationId,
+        assistantMemorySnapshot: persisted.memory,
+      };
+    };
+
+    return { kind: 'stream', textStream, finalize };
+  }
+
+  // --- Cache helpers ---
+
+  buildCacheKey(userId: string, message: string, mode: string): string {
+    const normalized = message.toLowerCase().trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ');
+    const hash = crypto.createHash('sha256').update(`${normalized}:${mode}`).digest('hex').slice(0, 16);
+    return `ai:response:${userId}:${hash}`;
+  }
+
+  getCacheTtl(mode: string): number {
+    switch (mode) {
+      case 'tv_now': return 180;
+      case 'tv_tonight': return 300;
+      case 'streaming': return 600;
+      default: return 300;
+    }
+  }
+
+  buildProactiveCacheKey(community: string, mode: string): string {
+    const now = new Date();
+    const window = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(Math.floor(now.getMinutes() / 5) * 5).padStart(2, '0')}`;
+    return `ai:proactive:${community || 'default'}:${mode}:${window}`;
   }
 
   private buildContext(input: {
@@ -532,6 +766,7 @@ export class ChatbotRecommend {
       history: AssistantHistoryPayload;
       effectiveCommunity?: string;
       communityReply: CommunityPreferenceReply;
+      rankingCtx?: RankingContext;
     }
   ): ChatbotResponse | null {
     const previousTvContext = this.getLastAutonomicPromptContext(
@@ -558,8 +793,8 @@ export class ChatbotRecommend {
       return null;
     }
 
-    const rankedLiveNowItems = this.rankScheduleItems(liveNowItems, 'tv_now');
-    const rankedTonightItems = this.rankScheduleItems(tonightItems, 'tv_tonight');
+    const rankedLiveNowItems = this.rankScheduleItems(liveNowItems, 'tv_now', context.rankingCtx);
+    const rankedTonightItems = this.rankScheduleItems(tonightItems, 'tv_tonight', context.rankingCtx);
     const uniqueStreamingMatches = this.dedupeCatalogItems(streamingMatches);
 
     const rankedPrimaryLiveNowItems = rankedLiveNowItems.filter(
@@ -808,7 +1043,19 @@ export class ChatbotRecommend {
         canTrack: true,
       },
       badges: this.buildRecommendationBadges(item),
+      rating: item.rating,
+      durationMinutes: item.durationMinutes,
+      synopsis: item.synopsis ? item.synopsis.slice(0, 200) : undefined,
+      platformLogo: this.resolvePlatformLogo(item.primaryPlatforms[0]),
     };
+  }
+
+  private resolvePlatformLogo(platformKey?: string): string | undefined {
+    if (!platformKey) return undefined;
+    const platform = CATALOG_PLATFORM_REGISTRY.find(
+      (p) => p.key === platformKey
+    );
+    return platform?.logoUrl;
   }
 
   private mapRankedItemToRecommendation(
@@ -895,10 +1142,10 @@ export class ChatbotRecommend {
 
   private extractTonightItems(items: CatalogItemDTO[]): CatalogItemDTO[] {
     const now = new Date();
-    const today = now.toISOString().slice(0, 10);
-    const tonightStartHour = 20;
-    const tonightEnd = new Date(now);
-    tonightEnd.setHours(23, 59, 59, 999);
+    const tonightStart = this.buildTonightWindowStart(now);
+    const tonightEnd = this.buildTonightWindowEnd(now);
+    const isBeforeTonightWindow = now.getTime() < tonightStart.getTime();
+    const activeWindowStart = isBeforeTonightWindow ? tonightStart : now;
 
     return items.filter((item) => {
       if (!item.start) {
@@ -910,16 +1157,22 @@ export class ChatbotRecommend {
         return false;
       }
 
+      const endDate = item.end ? new Date(item.end) : null;
+      if (endDate && Number.isNaN(endDate.getTime())) {
+        return false;
+      }
+
+      if (isBeforeTonightWindow) {
+        return (
+          startDate.getTime() >= tonightStart.getTime() &&
+          startDate.getTime() <= tonightEnd.getTime()
+        );
+      }
+
+      const intervalEnd = endDate || startDate;
       return (
-        startDate.toISOString().slice(0, 10) === today &&
-        startDate.getHours() >= tonightStartHour &&
-        (
-          (
-            startDate.getTime() >= now.getTime() &&
-            startDate.getTime() <= tonightEnd.getTime()
-          ) ||
-          (item.end ? new Date(item.end).getTime() > now.getTime() : false)
-        )
+        startDate.getTime() <= tonightEnd.getTime() &&
+        intervalEnd.getTime() >= activeWindowStart.getTime()
       );
     });
   }
@@ -1010,6 +1263,9 @@ export class ChatbotRecommend {
   private buildRequestedLabel(
     types: Array<'movie' | 'series' | 'program'>
   ): string {
+    if (types.includes('movie') && types.includes('series')) {
+      return 'películas y series';
+    }
     if (types.includes('movie') && !types.includes('series')) {
       return 'películas';
     }
@@ -1159,8 +1415,13 @@ export class ChatbotRecommend {
 
   private rankScheduleItems(
     items: CatalogItemDTO[],
-    mode: 'tv_now' | 'tv_tonight'
+    mode: 'tv_now' | 'tv_tonight',
+    ctx?: RankingContext
   ): RankedScheduleItem[] {
+    const likedSet = new Set((ctx?.likedGenres || []).map((g) => g.toLowerCase()));
+    const negativeSet = new Set((ctx?.negativeSignals || []).map((s) => s.toLowerCase()));
+    const recentSet = new Set((ctx?.recentTitles || []).map((t) => this.normalizeTitleKey(t)));
+
     return items
       .filter((item) => {
         if (mode === 'tv_now' && !item.liveNow) {
@@ -1181,6 +1442,23 @@ export class ChatbotRecommend {
       .map((item) => {
         const displayTitle = this.cleanDisplayTitle(item.title, item.contentType);
         const channelName = item.channel?.name || '';
+        const itemGenres = (item.genres || []).map((g: string) => g.toLowerCase());
+
+        // History boost: -1 if genres match user's liked genres
+        const genreMatch = itemGenres.some((g: string) => likedSet.has(g));
+        const historyBoost = genreMatch ? -1 : 0;
+
+        // Negative penalty: 1 if title matches a negative signal or recently seen
+        const titleKey = this.normalizeTitleKey(displayTitle);
+        const isNegative = itemGenres.some((g: string) => negativeSet.has(g))
+          || negativeSet.has(titleKey)
+          || recentSet.has(titleKey);
+        const negativePenalty = isNegative ? 1 : 0;
+
+        // Time boost: primetime (20-23) gets 0, else 1
+        const startHour = item.start ? new Date(item.start).getHours() : -1;
+        const timeBoost = (startHour >= 20 && startHour < 23) ? 0 : 1;
+
         return {
           item,
           displayTitle,
@@ -1191,20 +1469,35 @@ export class ChatbotRecommend {
           liveRank: item.liveNow ? 0 : 1,
           startRank: item.start ? new Date(item.start).getTime() : Number.MAX_SAFE_INTEGER,
           ratingRank: -(item.rating || 0),
+          historyBoost,
+          negativePenalty,
+          timeBoost,
         };
       })
       .sort((left, right) => {
+        // Penalized items always go last
+        if (left.negativePenalty !== right.negativePenalty) {
+          return left.negativePenalty - right.negativePenalty;
+        }
         if (left.groupRank !== right.groupRank) {
           return left.groupRank - right.groupRank;
         }
         if (left.liveRank !== right.liveRank) {
           return left.liveRank - right.liveRank;
         }
+        // History boost next (genre-matched items rise)
+        if (left.historyBoost !== right.historyBoost) {
+          return left.historyBoost - right.historyBoost;
+        }
         if (left.contentTypeRank !== right.contentTypeRank) {
           return left.contentTypeRank - right.contentTypeRank;
         }
         if (left.channelRank !== right.channelRank) {
           return left.channelRank - right.channelRank;
+        }
+        // Time-aware: primetime items first
+        if (left.timeBoost !== right.timeBoost) {
+          return left.timeBoost - right.timeBoost;
         }
         if (left.startRank !== right.startRank) {
           return left.startRank - right.startRank;
@@ -1221,20 +1514,28 @@ export class ChatbotRecommend {
     displayTitle: string
   ): string {
     if (item.contentType === 'series') {
-      return this.normalize(this.extractSeriesBaseTitle(displayTitle));
+      return this.normalizeTitleKey(this.extractSeriesBaseTitle(displayTitle));
     }
 
-    return this.normalize(displayTitle);
+    return this.normalizeTitleKey(displayTitle);
   }
 
   private buildRecommendationKey(
     recommendation: ChatbotRecommendationPayload
   ): string {
     return [
-      recommendation.catalogId || '',
-      this.normalize(recommendation.title),
+      recommendation.type || '',
+      this.normalizeTitleKey(recommendation.title) ||
+        this.normalize(recommendation.catalogId || ''),
       this.normalize(
-        recommendation.channel || recommendation.platform || recommendation.detailPath || ''
+        recommendation.channelOrPlatform ||
+          recommendation.channel ||
+          recommendation.platform ||
+          recommendation.detailPath ||
+          ''
+      ),
+      this.normalize(
+        recommendation.startTime || recommendation.time || recommendation.endTime || ''
       ),
     ]
       .filter(Boolean)
@@ -1668,23 +1969,6 @@ export class ChatbotRecommend {
     const platforms = item.primaryPlatforms.map((platform) => this.normalize(platform));
 
     if (
-      FAST_CHANNEL_PATTERNS.some((pattern) => channelName.includes(this.normalize(pattern))) ||
-      platforms.some((platform) =>
-        FAST_CHANNEL_PATTERNS.some((pattern) => platform.includes(this.normalize(pattern)))
-      )
-    ) {
-      return 4;
-    }
-
-    if (
-      AUTONOMIC_CHANNEL_PATTERNS.some((pattern) =>
-        channelName.includes(this.normalize(pattern))
-      )
-    ) {
-      return 3;
-    }
-
-    if (
       NATIONAL_CHANNEL_PRIORITY.some((pattern) =>
         channelName.includes(this.normalize(pattern))
       )
@@ -1698,6 +1982,33 @@ export class ChatbotRecommend {
       )
     ) {
       return 2;
+    }
+
+    if (
+      AUTONOMIC_CHANNEL_PATTERNS.some((pattern) =>
+        channelName.includes(this.normalize(pattern))
+      )
+    ) {
+      return 3;
+    }
+
+    if (
+      FAST_CHANNEL_PATTERNS.some((pattern) =>
+        channelName.includes(this.normalize(pattern))
+      )
+    ) {
+      return 4;
+    }
+
+    if (
+      !channelName &&
+      platforms.some((platform) =>
+        FAST_CHANNEL_PATTERNS.some((pattern) =>
+          platform.includes(this.normalize(pattern))
+        )
+      )
+    ) {
+      return 4;
     }
 
     return 2;
@@ -1751,17 +2062,40 @@ export class ChatbotRecommend {
     if (Number.isNaN(startDate.getTime())) {
       return false;
     }
-
-    const tonightStart = new Date(now);
-    tonightStart.setHours(20, 0, 0, 0);
-    const tonightEnd = new Date(now);
-    tonightEnd.setHours(23, 59, 59, 999);
-
-    if (startDate >= tonightStart && startDate <= tonightEnd) {
-      return true;
+    if (endDate && Number.isNaN(endDate.getTime())) {
+      return false;
     }
 
-    return Boolean(endDate && endDate > now && startDate <= tonightEnd);
+    const tonightStart = this.buildTonightWindowStart(now);
+    const tonightEnd = this.buildTonightWindowEnd(now);
+    const isBeforeTonightWindow = now.getTime() < tonightStart.getTime();
+    const activeWindowStart = isBeforeTonightWindow ? tonightStart : now;
+
+    if (isBeforeTonightWindow) {
+      return (
+        startDate.getTime() >= tonightStart.getTime() &&
+        startDate.getTime() <= tonightEnd.getTime()
+      );
+    }
+
+    const intervalEnd = endDate || startDate;
+
+    return (
+      startDate.getTime() <= tonightEnd.getTime() &&
+      intervalEnd.getTime() >= activeWindowStart.getTime()
+    );
+  }
+
+  private buildTonightWindowStart(reference: Date): Date {
+    const tonightStart = new Date(reference);
+    tonightStart.setHours(20, 0, 0, 0);
+    return tonightStart;
+  }
+
+  private buildTonightWindowEnd(reference: Date): Date {
+    const tonightEnd = new Date(reference);
+    tonightEnd.setHours(23, 59, 59, 999);
+    return tonightEnd;
   }
 
   private getContentTypePriority(
@@ -1775,6 +2109,14 @@ export class ChatbotRecommend {
       default:
         return 2;
     }
+  }
+
+  private normalizeTitleKey(value: string): string {
+    return this.normalize(value)
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\b(el|la|los|las|un|una|unos|unas)\b/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   private buildRecommendationBadges(item: CatalogItemDTO): string[] {

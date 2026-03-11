@@ -1,6 +1,7 @@
 import { logger } from '../shared/utils/logger';
 import { connectMongoDB, mongoose as mongooseInstance } from './mongodb';
 import { ensureMongoCollectionsAndIndexes } from '../infrastructure/database/initializeMongoCollections';
+import { ensureEditorialSeedData } from '../application/services/EditorialSeedService';
 
 // Lightweight local type aliases to avoid compile-time coupling while
 // preserving clearer intent in the container implementation.
@@ -58,6 +59,7 @@ export class Container {
       this.dependencies.set('mongoDb', nativeDb);
 
       await ensureMongoCollectionsAndIndexes();
+      await ensureEditorialSeedData();
 
       logger.info('MongoDB (mongoose) initialized and registered in container');
     } catch (e) {
@@ -427,7 +429,8 @@ export class Container {
         interactionRepository,
         userRepository,
         catalogService,
-        this.get('assistantMemoryService')
+        this.get('assistantMemoryService'),
+        this.has('cacheRepository') ? this.get('cacheRepository') : undefined
       );
       this.dependencies.set('chatbotRecommend', chatbotRecommend);
     }
@@ -543,6 +546,13 @@ export class Container {
       this.get('assistantMemoryService')
     );
     this.dependencies.set('aiController', aiController);
+
+    const { AIAnalyticsService } = await import('../application/services/AIAnalyticsService');
+    const { AIAnalyticsController } = await import('../presentation/controllers/AIAnalyticsController');
+    const aiAnalyticsService = new AIAnalyticsService(this.get('cacheRepository'));
+    this.dependencies.set('aiAnalyticsService', aiAnalyticsService);
+    const aiAnalyticsController = new AIAnalyticsController(aiAnalyticsService);
+    this.dependencies.set('aiAnalyticsController', aiAnalyticsController);
 
     const { SitemapController } = await import('../presentation/controllers/SitemapController');
     const sitemapController = new SitemapController(

@@ -88,6 +88,9 @@ export interface UserActivity {
   category?: string;
   target?: string;
   image?: string; // Image of the content
+  likes?: number;
+  comments?: number;
+  liked?: boolean;
   user?: {
     id: string;
     name: string;

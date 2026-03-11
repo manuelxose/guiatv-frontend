@@ -129,22 +129,41 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                 <div class="flex flex-wrap items-center gap-3 mt-4 pt-3 border-t border-slate-800/80">
                   <button
                     type="button"
-                    class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    (click)="onLike(activity.id)"
+                    class="min-h-[44px] px-4 rounded-lg border text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors"
+                    [ngClass]="activity.liked
+                      ? 'border-red-500/60 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                      : 'border-slate-700 text-slate-200 hover:text-white hover:border-slate-500'"
                   >
-                    Me gusta
+                    {{ activity.liked ? '❤️' : '🤍' }} Me gusta{{ activity.likes ? ' · ' + activity.likes : '' }}
                   </button>
                   <button
                     type="button"
+                    (click)="onToggleComments(activity.id)"
                     class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   >
-                    Comentar
+                    💬 Comentar{{ activity.comments ? ' · ' + activity.comments : '' }}
                   </button>
-                  <button
-                    type="button"
-                    class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  >
-                    Guardar
-                  </button>
+                </div>
+
+                <div *ngIf="expandedComments.has(activity.id)" class="mt-3 space-y-3">
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      [value]="commentTexts[activity.id] || ''"
+                      (input)="commentTexts[activity.id] = $any($event.target).value"
+                      (keydown.enter)="onComment(activity.id)"
+                      placeholder="Escribe un comentario..."
+                      class="flex-1 min-h-[40px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    />
+                    <button
+                      type="button"
+                      (click)="onComment(activity.id)"
+                      class="min-h-[40px] px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    >
+                      Enviar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -258,6 +277,11 @@ export class UserSocialFeedComponent {
   @Output() createList = new EventEmitter<{ title: string; description: string; visibility: Visibility }>();
   @Output() recommendContent = new EventEmitter<{ title: string; note: string; visibility: Visibility }>();
   @Output() messageFriend = new EventEmitter<string>();
+  @Output() likeActivity = new EventEmitter<string>();
+  @Output() commentActivity = new EventEmitter<{ activityId: string; text: string }>();
+
+  expandedComments = new Set<string>();
+  commentTexts: Record<string, string> = {};
 
   composerMode: 'status' | 'recommendation' | 'list' | 'alert' = 'status';
   readonly composerModes = [
@@ -310,6 +334,25 @@ export class UserSocialFeedComponent {
 
   onToggleFollow(id: string) {
     this.toggleFollow.emit(id);
+  }
+
+  onLike(activityId: string) {
+    this.likeActivity.emit(activityId);
+  }
+
+  onToggleComments(activityId: string) {
+    if (this.expandedComments.has(activityId)) {
+      this.expandedComments.delete(activityId);
+    } else {
+      this.expandedComments.add(activityId);
+    }
+  }
+
+  onComment(activityId: string) {
+    const text = (this.commentTexts[activityId] || '').trim();
+    if (!text) return;
+    this.commentActivity.emit({ activityId, text });
+    this.commentTexts[activityId] = '';
   }
 
   getActivityVerb(type: string): string {

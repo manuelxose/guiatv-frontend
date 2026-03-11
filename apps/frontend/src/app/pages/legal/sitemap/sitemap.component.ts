@@ -29,7 +29,7 @@ export class SitemapComponent {
     this.blogService.getAllPosts().subscribe(posts => {
       const items = posts.map(post => ({
         title: post.title.rendered,
-        link: `/blog/${post.slug}`,
+        link: `/editorial/${post.slug}`,
         description: post.excerpt.rendered,
         pubDate: new Date(post.date)
       }));
@@ -50,7 +50,7 @@ export class SitemapComponent {
       this.blogService.getAllPosts().subscribe(posts => {
         const items = posts.map(post => ({
           title: post.title.rendered,
-          link: `/blog/${post.slug}`,
+          link: `/editorial/${post.slug}`,
           description: post.excerpt.rendered,
           pubDate: new Date(post.date)
         }));
@@ -72,7 +72,7 @@ export class SitemapComponent {
     this.blogService.getAllPosts().subscribe(posts => {
       const items = posts.map(post => ({
         title: post.title.rendered,
-        link: `/blog/${post.slug}`,
+        link: `/editorial/${post.slug}`,
         description: post.excerpt.rendered,
         pubDate: new Date(post.date)
       }));

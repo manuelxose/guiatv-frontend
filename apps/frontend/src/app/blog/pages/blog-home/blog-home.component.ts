@@ -1,66 +1,70 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  PLATFORM_ID,
-  Inject,
-} from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
-import { BlogService } from '../../../services/blog.service';
-import { MetaService } from '../../../services/meta.service';
-
-import { Subject, first, takeUntil } from 'rxjs';
-import { slugify } from '../../../utils/utils';
-import { PostCardComponent } from 'src/app/components/post-card/post-card.component';
-import { CategoryFilterComponent } from '../../components/category-filter/category-filter.component';
-import { PostCardHorizontalComponent } from '../../components/post-card-horizontal/post-card-horizontal.component';
+import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
+import { APP_PATHS } from '../../../config/route-map';
+import { MetaService } from '../../../services/meta.service';
+import { EditorialCategorySection, EditorialPost } from '../../models/editorial.models';
+import { EditorialService } from '../../services/editorial.service';
+import { generateCollectionPageSchema } from '../../../utils/utils';
 
 @Component({
   selector: 'app-blog-home',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    PostCardComponent,
-    CategoryFilterComponent,
-  ],
+  imports: [CommonModule, RouterModule, EditorialPostCardComponent],
   templateUrl: './blog-home.component.html',
   styleUrls: ['./blog-home.component.scss'],
 })
 export class BlogHomeComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-  private isBrowser: boolean;
+  public readonly appPaths = APP_PATHS;
 
-  // Data
-  posts: any[] = [];
-  featuredPosts: any[] = [];
-  latestPosts: any[] = [];
-  categories: any[] = [];
+  public loading = true;
+  public error: string | null = null;
+  public hero: EditorialPost | null = null;
+  public guidePosts: EditorialPost[] = [];
+  public rankingPosts: EditorialPost[] = [];
+  public trendPosts: EditorialPost[] = [];
+  public categorySections: EditorialCategorySection[] = [];
+  public safeLdHtml: SafeHtml | null = null;
 
-  // Pagination
-  postsPerPage = 12;
-  currentPage = 1;
-
-  // Loading states
-  isLoading = true;
-
-  // Filters
-  selectedCategory: string | null = null;
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private blogSvc: BlogService,
-    private metaSvc: MetaService,
-    private router: Router,
-    @Inject(PLATFORM_ID) platformId: Object
-  ) {
-    this.isBrowser = isPlatformBrowser(platformId);
-  }
+    private readonly editorialService: EditorialService,
+    private readonly metaService: MetaService,
+    private readonly sanitizer: DomSanitizer
+  ) {}
 
   ngOnInit(): void {
-    this.setMetaTags();
-    this.loadData();
+    this.metaService.setMetaTags({
+      title: 'Editorial de cine, series y streaming | Guía TV',
+      description:
+        'Reportajes, guías y rankings conectados con la app para descubrir qué ver, dónde verlo y por qué merece la pena.',
+      canonicalUrl: '/editorial',
+      image: '/assets/images/blog-og-image.jpg',
+      type: 'website',
+    });
+    this.buildStructuredData();
+
+    this.editorialService
+      .getHubState()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (state) => {
+          this.hero = state.hero;
+          this.guidePosts = state.guidePosts;
+          this.rankingPosts = state.rankingPosts;
+          this.trendPosts = state.trendPosts;
+          this.categorySections = state.categorySections;
+          this.loading = false;
+        },
+        error: () => {
+          this.error = 'No se ha podido cargar la capa editorial.';
+          this.loading = false;
+        },
+      });
   }
 
   ngOnDestroy(): void {
@@ -68,102 +72,19 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private setMetaTags(): void {
-    this.metaSvc.setMetaTags({
-      title: 'Blog de Cine, Series y Anime | Noticias y Análisis',
-      description:
-        'Descubre artículos, reseñas y análisis sobre cine, series y anime. Mantente al día con las últimas noticias del entretenimiento.',
-      image: '/assets/images/blog-og-image.jpg',
-      canonicalUrl: '/blog',
-      type: 'website',
-    });
-  }
-
-  private loadData(): void {
-    this.blogSvc
-      .getAllPosts()
-      .pipe(first(), takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.posts = this.sortByDate(data);
-          this.featuredPosts = this.posts.slice(0, 6);
-          this.latestPosts = this.posts.slice(0, 12);
-          this.loadCategories();
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Error loading posts:', err);
-          this.isLoading = false;
-        },
-      });
-  }
-
-  private loadCategories(): void {
-    this.blogSvc.blogCategories$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((cats) => {
-        if (cats.length === 0) {
-          this.blogSvc.intiCategories(this.posts);
-        } else {
-          this.categories = cats;
-        }
-      });
-  }
-
-  private sortByDate(posts: any[]): any[] {
-    return [...posts].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  private buildStructuredData(): void {
+    const baseUrl = 'https://guiaprogramaciontv.com';
+    const schema = generateCollectionPageSchema(
+      {
+        name: 'Editorial Guia TV',
+        description:
+          'Guias, rankings y tendencias conectadas con la programacion TV, las plataformas y el descubrimiento de la app.',
+        path: '/editorial',
+      },
+      baseUrl
     );
-  }
-
-  // UI Methods
-  navigateToPost(post: any): void {
-    const slug = slugify(post.slug || post.title?.rendered || '');
-    this.router.navigate(['/blog', slug]);
-  }
-
-  filterByCategory(categoryId: string | null): void {
-    this.selectedCategory = categoryId;
-    this.currentPage = 1;
-
-    if (!categoryId) {
-      this.latestPosts = this.posts.slice(0, this.postsPerPage);
-      return;
-    }
-
-    this.blogSvc
-      .filterByCategory(Number(categoryId))
-      .pipe(first())
-      .subscribe((filtered) => {
-        this.latestPosts = filtered.slice(0, this.postsPerPage);
-      });
-  }
-
-  loadMore(): void {
-    this.currentPage++;
-    const start = 0;
-    const end = this.currentPage * this.postsPerPage;
-
-    if (this.selectedCategory) {
-      this.blogSvc
-        .filterByCategory(Number(this.selectedCategory))
-        .pipe(first())
-        .subscribe((filtered) => {
-          this.latestPosts = filtered.slice(start, end);
-        });
-    } else {
-      this.latestPosts = this.posts.slice(start, end);
-    }
-  }
-
-  get hasMorePosts(): boolean {
-    const totalPosts = this.selectedCategory
-      ? this.latestPosts.length
-      : this.posts.length;
-    return this.currentPage * this.postsPerPage < totalPosts;
-  }
-
-  trackByPostId(index: number, post: any): number {
-    return post.id || index;
+    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
+      `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+    );
   }
 }

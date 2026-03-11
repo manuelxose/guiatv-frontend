@@ -117,14 +117,12 @@ export class CategoryFilterService implements ICategoryFilterService {
    */
   public selectCategory(category: string): void {
     if (!this.isValidCategory(category)) {
-      console.warn(`CategoryFilterService: Invalid category: ${category}`);
       return;
     }
     
     this._selectedCategorySignal.set(category);
     this._selectedCategory.next(category);
     
-    console.log(`CategoryFilterService: Category selected: ${category}`);
   }
   
   /**
@@ -134,7 +132,6 @@ export class CategoryFilterService implements ICategoryFilterService {
     this._selectedCategorySignal.set(null);
     this._selectedCategory.next(null);
     
-    console.log('CategoryFilterService: Category filter cleared');
   }
   
   /**
@@ -149,7 +146,6 @@ export class CategoryFilterService implements ICategoryFilterService {
     this._availableCategoriesSignal.set(categories);
     this._availableCategories.next(categories);
     
-    console.log(`CategoryFilterService: Programs updated: ${programs.length} items, ${categories.length} categories`);
   }
   
   /**

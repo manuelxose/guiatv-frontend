@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { Subject, combineLatest, filter, forkJoin, map, of, take, takeUntil } from 'rxjs';
 import {
@@ -18,6 +18,7 @@ import { UserListsComponent } from './components/user-lists/user-lists.component
 import { UserProfileHeaderComponent } from './components/user-profile-header/user-profile-header.component';
 import { UserSettingsComponent } from './components/user-settings/user-settings.component';
 import { UserSocialFeedComponent } from './components/user-social-feed/user-social-feed.component';
+import { UserSearchComponent } from './components/user-search/user-search.component';
 import { UserStatsComponent } from './components/user-stats/user-stats.component';
 import { CreateListModalComponent } from './components/create-list-modal/create-list-modal.component';
 import { ListDetailsComponent } from './components/list-details/list-details.component';
@@ -50,6 +51,7 @@ type TabType =
     UserProfileHeaderComponent,
     UserListsComponent,
     UserSocialFeedComponent,
+    UserSearchComponent,
     UserSettingsComponent,
     UserStatsComponent,
     CreateListModalComponent,
@@ -127,6 +129,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
   
   public selectedList: UserList | null = null;
   public selectedListItems: UserListItem[] = [];
+  @ViewChild(EditProfileModalComponent) editProfileModal?: EditProfileModalComponent;
 
   constructor(
     private userService: UserService,
@@ -275,6 +278,14 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     this.authActionService.toggleFollow(friendId).subscribe();
   }
 
+  onLikeActivity(activityId: string): void {
+    this.userService.toggleActivityLike(activityId).subscribe();
+  }
+
+  onCommentActivity(event: { activityId: string; text: string }): void {
+    this.userService.addActivityComment(event.activityId, event.text).subscribe();
+  }
+
   onSaveSettings(event: {
     privacy: UserPrivacy;
     notifications: UserNotifications;
@@ -323,6 +334,15 @@ export class UserAreaComponent implements OnInit, OnDestroy {
   onSaveProfile(profileData: Partial<UserProfile>): void {
     this.userService.updateProfile(profileData).subscribe(() => {
       this.closeEditProfileModal();
+    });
+  }
+
+  onChangePassword(event: { currentPassword: string; newPassword: string }): void {
+    this.userService.changePassword(event.currentPassword, event.newPassword).subscribe((success) => {
+      this.editProfileModal?.onPasswordChangeResult(
+        success,
+        success ? 'Contraseña actualizada correctamente.' : 'No se pudo cambiar la contraseña. Verifica tu contraseña actual.'
+      );
     });
   }
 

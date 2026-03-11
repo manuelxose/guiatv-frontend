@@ -357,4 +357,61 @@ export class AuthService {
         return 'No se pudo iniciar sesion con Google. Intenta de nuevo.';
     }
   }
+
+  getSessions(): Observable<AuthSessionView[]> {
+    const token = this.getStoredAccessToken();
+    if (!token) return of([]);
+
+    return this.http
+      .get<{ success: boolean; data?: { sessions: AuthSessionView[] } }>(
+        `${environment.API_BASE_URL}/auth/sessions`,
+        { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+      )
+      .pipe(
+        map((resp) => resp?.data?.sessions || []),
+        catchError(() => of([]))
+      );
+  }
+
+  revokeSession(sessionId: string): Observable<boolean> {
+    const token = this.getStoredAccessToken();
+    if (!token) return of(false);
+
+    return this.http
+      .delete<{ success: boolean }>(
+        `${environment.API_BASE_URL}/auth/sessions/${sessionId}`,
+        { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+      )
+      .pipe(
+        map((resp) => resp?.success ?? false),
+        catchError(() => of(false))
+      );
+  }
+
+  logoutAllDevices(): Observable<boolean> {
+    const token = this.getStoredAccessToken();
+    if (!token) return of(false);
+
+    return this.http
+      .post<{ success: boolean }>(
+        `${environment.API_BASE_URL}/auth/logout-all`,
+        {},
+        { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+      )
+      .pipe(
+        map((resp) => resp?.success ?? false),
+        catchError(() => of(false))
+      );
+  }
+}
+
+export interface AuthSessionView {
+  id: string;
+  expiresAt: string;
+  createdAt: string;
+  lastUsedAt?: string;
+  userAgent?: string;
+  ipAddress?: string;
+  deviceName?: string;
+  current?: boolean;
 }

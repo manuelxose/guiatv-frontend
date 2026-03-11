@@ -5,82 +5,28 @@ import { catchError, finalize, map, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { UserService } from './user.service';
 import { UserAuthState } from './user.service';
+import {
+  AssistantHistoryMessage,
+  AssistantMemorySnapshot,
+  ChatbotQueryContext,
+  ChatbotRecommendation,
+  ChatbotRequestState,
+  ChatbotSessionState,
+  ChatMessage,
+  ConversationSummary,
+} from '../interfaces/chatbot.interface';
 
-export interface ChatbotRecommendation {
-  catalogId?: string;
-  detailPath?: string;
-  source?: 'program' | 'tmdb';
-  title: string;
-  subtitle?: string;
-  type: 'movie' | 'series' | 'program';
-  platform?: string;
-  channel?: string;
-  time?: string;
-  channelOrPlatform?: string;
-  startTime?: string;
-  endTime?: string;
-  liveNow?: boolean;
-  reason: string;
-  tmdbId?: number;
-  image?: string;
-  actions?: {
-    canOpenDetail: boolean;
-    canSave: boolean;
-    canTrack: boolean;
-  };
-  badges?: string[];
-}
-
-export interface ChatbotQueryContext {
-  mode: 'tv_now' | 'tv_tonight' | 'streaming' | 'general';
-  requestedTypes: Array<'movie' | 'series' | 'program'>;
-  totalMatches: number;
-  primaryMatches?: number;
-  shownCount: number;
-  hasMore: boolean;
-  answerWindowLabel: string;
-  hasAutonomicMatches?: boolean;
-  autonomicPromptRequired?: boolean;
-  savedAutonomousCommunity?: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  recommendations?: ChatbotRecommendation[];
-  moreRecommendations?: ChatbotRecommendation[];
-  followUpSuggestions?: string[];
-  queryContext?: ChatbotQueryContext;
-  isLoading?: boolean;
-}
-
-export interface AssistantMemorySnapshot {
-  likedGenres: string[];
-  dislikedGenres: string[];
-  preferredPlatforms: string[];
-  avoidedPlatforms: string[];
-  preferredDurations: string[];
-  preferredViewingContexts: string[];
-  favoriteFranchisesOrTitles: string[];
-  recentTopics: string[];
-  negativeSignals: string[];
-  preferredAutonomousCommunity?: string;
-  autonomicOptIn?: boolean | 'unknown';
-  lastCommunityConfirmationAt?: string;
-  updatedAt?: string;
-}
-
-export interface AssistantHistoryMessage {
-  role: 'user' | 'assistant';
-  content: string;
-  createdAt: string;
-  recommendations?: ChatbotRecommendation[];
-  moreRecommendations?: ChatbotRecommendation[];
-  followUpSuggestions?: string[];
-  queryContext?: ChatbotQueryContext;
-}
+// Re-export so existing consumers keep working via `chatbot.service`
+export {
+  AssistantHistoryMessage,
+  AssistantMemorySnapshot,
+  ChatbotQueryContext,
+  ChatbotRecommendation,
+  ChatbotRequestState,
+  ChatbotSessionState,
+  ChatMessage,
+  ConversationSummary,
+} from '../interfaces/chatbot.interface';
 
 interface AssistantHistoryPayload {
   conversationId: string | null;
@@ -108,18 +54,6 @@ interface ApiResponse<T> {
   };
 }
 
-export type ChatbotSessionState =
-  | 'unknown'
-  | 'authenticated'
-  | 'unauthenticated'
-  | 'refreshing';
-
-export type ChatbotRequestState =
-  | 'idle'
-  | 'sending'
-  | 'login_required'
-  | 'unavailable';
-
 @Injectable({ providedIn: 'root' })
 export class ChatbotService {
   private readonly isBrowser = typeof window !== 'undefined';
@@ -129,6 +63,7 @@ export class ChatbotService {
   private readonly messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
   private readonly memorySubject =
     new BehaviorSubject<AssistantMemorySnapshot | null>(null);
+  private readonly conversationsSubject = new BehaviorSubject<ConversationSummary[]>([]);
   private readonly sessionStateSubject =
     new BehaviorSubject<ChatbotSessionState>('unknown');
   private readonly chatStateSubject =
@@ -140,6 +75,7 @@ export class ChatbotService {
 
   readonly messages$ = this.messagesSubject.asObservable();
   readonly memory$ = this.memorySubject.asObservable();
+  readonly conversations$ = this.conversationsSubject.asObservable();
   readonly sessionState$ = this.sessionStateSubject.asObservable();
   readonly chatState$ = this.chatStateSubject.asObservable();
   readonly isLoading$ = this.isLoadingSubject.asObservable();
@@ -316,6 +252,7 @@ export class ChatbotService {
               this.collectRecentSuggestionTexts()
             ),
             queryContext: data.queryContext,
+            isNewMessage: true,
           };
 
           this.messagesSubject.next(
@@ -351,12 +288,198 @@ export class ChatbotService {
       );
   }
 
+  /**
+   * SSE-based streaming alternative to sendMessage().
+   * Yields assistant text token-by-token, then resolves recommendations.
+   */
+  sendMessageStream(text: string): Observable<ChatMessage> {
+    const normalized = String(text || '').trim();
+    if (!normalized) return throwError(() => new Error('EMPTY_MESSAGE'));
+    if (this.sessionStateSubject.value !== 'authenticated' || !this.hasValidSessionToken()) {
+      this.chatStateSubject.next('login_required');
+      return throwError(() => new Error('LOGIN_REQUIRED'));
+    }
+    if (this.chatStateSubject.value === 'sending') return throwError(() => new Error('MESSAGE_IN_FLIGHT'));
+
+    const userMessage: ChatMessage = {
+      id: this.createId(),
+      role: 'user',
+      content: normalized,
+      timestamp: new Date(),
+    };
+    const streamingMessage: ChatMessage = {
+      id: this.createId(),
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      isStreaming: true,
+    };
+
+    this.messagesSubject.next([...this.messagesSubject.value, userMessage, streamingMessage]);
+    this.isLoadingSubject.next(true);
+    this.chatStateSubject.next('sending');
+
+    const history = this.messagesSubject.value
+      .filter((m) => !m.isLoading && !m.isStreaming && m.id !== 'welcome')
+      .map((m) => ({ role: m.role, content: m.content }));
+
+    return new Observable<ChatMessage>((subscriber) => {
+      const token = this.readToken();
+      const abortController = new AbortController();
+
+      fetch(`${this.baseUrl}/ai/chat/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ messages: history, conversationId: this.readConversationId() }),
+        signal: abortController.signal,
+      })
+        .then(async (res) => {
+          if (!res.ok || !res.body) {
+            throw new Error(res.status === 429 ? 'RATE_LIMITED' : 'STREAM_FAILED');
+          }
+
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let accumulated = '';
+
+          const processLines = (block: string): void => {
+            buffer += block;
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            let eventType = '';
+            for (const line of lines) {
+              if (line.startsWith('event: ')) {
+                eventType = line.slice(7).trim();
+              } else if (line.startsWith('data: ')) {
+                const raw = line.slice(6);
+                this.handleSSEEvent(eventType, raw, streamingMessage, accumulated, (text) => { accumulated = text; }, subscriber);
+                eventType = '';
+              }
+            }
+          };
+
+          // eslint-disable-next-line no-constant-condition
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            processLines(decoder.decode(value, { stream: true }));
+          }
+          // Process remaining buffer
+          if (buffer.trim()) processLines('\n');
+        })
+        .catch((err) => {
+          if (abortController.signal.aborted) return;
+          this.isLoadingSubject.next(false);
+          this.chatStateSubject.next('unavailable');
+          const messages = this.messagesSubject.value.filter((m) => !m.isStreaming);
+          messages.push({
+            id: this.createId(),
+            role: 'assistant',
+            content: 'El asistente no está disponible ahora mismo.',
+            timestamp: new Date(),
+            followUpSuggestions: ['Reintentar'],
+          });
+          this.messagesSubject.next(messages);
+          subscriber.error(err);
+        });
+
+      return () => abortController.abort();
+    });
+  }
+
+  private handleSSEEvent(
+    eventType: string,
+    rawData: string,
+    streamingMessage: ChatMessage,
+    accumulated: string,
+    setAccumulated: (t: string) => void,
+    subscriber: import('rxjs').Subscriber<ChatMessage>
+  ): void {
+    try {
+      if (eventType === 'text') {
+        const chunk = JSON.parse(rawData) as { t: string };
+        const newText = accumulated + (chunk.t || '');
+        setAccumulated(newText);
+        // Create new object reference to trigger OnPush change detection
+        const updated = { ...streamingMessage, content: newText };
+        Object.assign(streamingMessage, updated);
+        this.messagesSubject.next(
+          this.messagesSubject.value.map((m) =>
+            m.id === streamingMessage.id ? { ...streamingMessage } : m
+          )
+        );
+      } else if (eventType === 'full' || eventType === 'result') {
+        const data = JSON.parse(rawData) as ChatbotApiPayload;
+        this.applyFinalSSEPayload(data, streamingMessage, subscriber);
+      } else if (eventType === 'done') {
+        // If subscriber hasn't completed yet (direct response already called complete)
+        if (!subscriber.closed) {
+          this.isLoadingSubject.next(false);
+          this.chatStateSubject.next('idle');
+          subscriber.complete();
+        }
+      } else if (eventType === 'error') {
+        const err = JSON.parse(rawData) as { error: string };
+        throw new Error(err.error || 'STREAM_ERROR');
+      }
+    } catch (e) {
+      if (!subscriber.closed) {
+        subscriber.error(e);
+      }
+    }
+  }
+
+  private applyFinalSSEPayload(
+    data: ChatbotApiPayload,
+    streamingMessage: ChatMessage,
+    subscriber: import('rxjs').Subscriber<ChatMessage>
+  ): void {
+    if (data.conversationId) this.storeConversationId(data.conversationId);
+    if (data.assistantMemorySnapshot) this.memorySubject.next(data.assistantMemorySnapshot);
+
+    const topRecommendations = this.dedupeRecommendations(data.recommendations || []);
+    const finalMessage: ChatMessage = {
+      ...streamingMessage,
+      content: String(data.text || streamingMessage.content || '').trim() || 'No tengo una recomendación clara ahora mismo.',
+      isStreaming: false,
+      isNewMessage: true,
+      recommendations: topRecommendations,
+      moreRecommendations: this.dedupeRecommendations(
+        (data.moreRecommendations || []).filter(
+          (c) => !topRecommendations.some((e) => this.buildRecommendationKey(e) === this.buildRecommendationKey(c))
+        )
+      ),
+      followUpSuggestions: this.sanitizeSuggestions(
+        data.followUpSuggestions || [],
+        '',
+        this.collectRecentSuggestionTexts()
+      ),
+      queryContext: data.queryContext,
+    };
+
+    const messages = this.messagesSubject.value.map((m) =>
+      m.id === streamingMessage.id ? finalMessage : m
+    );
+    this.messagesSubject.next(messages);
+    this.isLoadingSubject.next(false);
+    this.chatStateSubject.next('idle');
+    this.historyLoaded = true;
+    subscriber.next(finalMessage);
+  }
+
   trackRecommendationAction(
     action:
       | 'open_recommendation'
       | 'save_recommendation'
       | 'follow_recommendation'
-      | 'ignore_recommendation',
+      | 'ignore_recommendation'
+      | 'rate_positive'
+      | 'rate_negative',
     recommendation: ChatbotRecommendation
   ): Observable<boolean> {
     if (
@@ -435,6 +558,187 @@ export class ChatbotService {
     this.historyLoaded = false;
     this.memorySubject.next(null);
     this.resetToWelcome();
+  }
+
+  /* ── Multi-conversation management ── */
+
+  listConversations(): Observable<ConversationSummary[]> {
+    if (!this.hasValidSessionToken()) return of([]);
+
+    return this.http
+      .get(`${this.baseUrl}/ai/conversations`, {
+        headers: this.getAuthHeaders(),
+        responseType: 'text',
+      })
+      .pipe(
+        map((raw) => this.parseApiResponse<ConversationSummary[]>(raw)),
+        map((r) => r.data || []),
+        tap((list) => this.conversationsSubject.next(list)),
+        catchError(() => of([]))
+      );
+  }
+
+  searchConversations(query: string): Observable<ConversationSummary[]> {
+    if (!this.hasValidSessionToken() || !query.trim()) return of([]);
+
+    return this.http
+      .get(`${this.baseUrl}/ai/conversations/search`, {
+        headers: this.getAuthHeaders(),
+        params: { q: query.trim() },
+        responseType: 'text',
+      })
+      .pipe(
+        map((raw) => this.parseApiResponse<ConversationSummary[]>(raw)),
+        map((r) => r.data || []),
+        catchError(() => of([]))
+      );
+  }
+
+  switchConversation(conversationId: string): Observable<ChatMessage[]> {
+    if (!this.hasValidSessionToken()) return of([]);
+
+    return this.http
+      .get(`${this.baseUrl}/ai/conversations/${encodeURIComponent(conversationId)}`, {
+        headers: this.getAuthHeaders(),
+        responseType: 'text',
+      })
+      .pipe(
+        map((raw) => this.parseApiResponse<AssistantHistoryPayload>(raw)),
+        map((response) => {
+          if (!response.success || !response.data) return [];
+
+          const payload = response.data;
+          this.storeConversationId(payload.conversationId);
+          if (payload.memory) this.memorySubject.next(payload.memory);
+          this.historyLoaded = true;
+
+          const messages = payload.messages?.length
+            ? payload.messages.map((m) => this.mapHistoryMessage(m))
+            : [this.buildWelcomeMessage(payload.memory || null)];
+
+          this.messagesSubject.next(messages);
+          this.chatStateSubject.next('idle');
+          return messages;
+        }),
+        catchError(() => of([]))
+      );
+  }
+
+  updateConversation(
+    conversationId: string,
+    updates: { sessionTitle?: string; pinned?: boolean; archived?: boolean }
+  ): Observable<ConversationSummary | null> {
+    if (!this.hasValidSessionToken()) return of(null);
+
+    return this.http
+      .patch<ApiResponse<ConversationSummary>>(
+        `${this.baseUrl}/ai/conversations/${encodeURIComponent(conversationId)}`,
+        updates,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((r) => r?.data || null),
+        tap(() => this.listConversations().subscribe()),
+        catchError(() => of(null))
+      );
+  }
+
+  deleteConversation(conversationId: string): Observable<boolean> {
+    if (!this.hasValidSessionToken()) return of(false);
+
+    return this.http
+      .delete<ApiResponse<{ deleted: boolean }>>(
+        `${this.baseUrl}/ai/conversations/${encodeURIComponent(conversationId)}`,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((r) => Boolean(r?.data?.deleted)),
+        tap((deleted) => {
+          if (deleted) {
+            const current = this.readConversationId();
+            if (current === conversationId) {
+              this.resetDraftConversation();
+            }
+            this.listConversations().subscribe();
+          }
+        }),
+        catchError(() => of(false))
+      );
+  }
+
+  trackMessageFeedback(
+    conversationId: string,
+    messageIndex: number,
+    rating: 'positive' | 'negative'
+  ): Observable<boolean> {
+    if (!this.hasValidSessionToken()) return of(false);
+
+    return this.http
+      .post<ApiResponse<{ saved: boolean }>>(
+        `${this.baseUrl}/ai/conversations/${encodeURIComponent(conversationId)}/feedback`,
+        { messageIndex, rating },
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((r) => Boolean(r?.data?.saved)),
+        catchError(() => of(false))
+      );
+  }
+
+  getActiveConversationId(): string | null {
+    return this.readConversationId();
+  }
+
+  createProgramReminder(recommendation: ChatbotRecommendation): Observable<boolean> {
+    if (!this.hasValidSessionToken()) return of(false);
+
+    return this.http
+      .post<ApiResponse<{ created: boolean }>>(
+        `${this.baseUrl}/ai/reminders`,
+        {
+          title: recommendation.title,
+          type: recommendation.type,
+          channel: recommendation.channel,
+          platform: recommendation.platform,
+          startTime: recommendation.startTime,
+        },
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((r) => Boolean(r?.data?.created)),
+        catchError(() => of(false))
+      );
+  }
+
+  startNewConversation(): void {
+    this.storeConversationId(null);
+    this.historyLoaded = false;
+    this.resetToWelcome();
+    this.chatStateSubject.next('idle');
+  }
+
+  updateAssistantMemory(
+    prefs: Record<string, string[]>,
+    preferredAutonomousCommunity?: string | null
+  ): Observable<any> {
+    if (!this.hasValidSessionToken()) return of(null);
+
+    const body: Record<string, any> = { ...prefs };
+    if (preferredAutonomousCommunity) {
+      body['preferredAutonomousCommunity'] = preferredAutonomousCommunity;
+    }
+
+    return this.http
+      .patch<ApiResponse<{ memory: any }>>(`${this.baseUrl}/ai/memory`, body, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => resp?.data?.memory || null),
+        tap((memory) => {
+          if (memory) this.memorySubject.next(memory);
+        }),
+        catchError(() => of(null))
+      );
   }
 
   private applyAuthState(authState: UserAuthState): void {
@@ -621,7 +925,17 @@ export class ChatbotService {
       suggestions.add(`Quiero algo de ${preferredGenre.toLowerCase()}`);
     }
 
-    suggestions.add('Algo corto para ver hoy');
+    if (memory?.preferredViewingContexts?.includes('pareja')) {
+      suggestions.add('Algo para ver en pareja');
+    } else if (memory?.preferredViewingContexts?.includes('familia')) {
+      suggestions.add('Algo para ver en familia');
+    }
+
+    if (memory?.preferredDurations?.includes('corto')) {
+      suggestions.add('Algo corto para ver hoy');
+    } else {
+      suggestions.add('¿Qué merece la pena ahora mismo?');
+    }
 
     return Array.from(suggestions).slice(0, 4);
   }
@@ -646,6 +960,7 @@ export class ChatbotService {
         ''
       ),
       queryContext: message.queryContext,
+      feedback: message.feedback || undefined,
     };
   }
 
@@ -712,7 +1027,13 @@ export class ChatbotService {
     return [
       recommendation.catalogId || recommendation.detailPath || '',
       this.normalize(recommendation.title),
-      this.normalize(recommendation.channel || recommendation.platform || ''),
+      this.normalize(
+        recommendation.channelOrPlatform ||
+          recommendation.channel ||
+          recommendation.platform ||
+          ''
+      ),
+      this.normalize(recommendation.startTime || recommendation.time || ''),
     ]
       .filter(Boolean)
       .join('::');

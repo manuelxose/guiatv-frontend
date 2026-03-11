@@ -1,0 +1,139 @@
+<div class="flex h-full flex-col overflow-hidden bg-[#0b0f14] text-slate-100">
+  <!-- Header -->
+  <app-chat-header
+    [isAuthenticated]="sessionState === 'authenticated'"
+    [memoryHighlights]="getMemoryHighlights()"
+    [memory]="assistantMemory"
+    [memoryEditorOpen]="memoryEditorOpen"
+    (newConversation)="startNewConversation()"
+    (closePanel)="close.emit()"
+    (toggleMemoryEditor)="toggleMemoryEditor()"
+    (toggleSidebar)="toggleSidebar()"
+    (removeTag)="onRemoveMemoryTag($event)"
+  />
+
+  <!-- Memory editor panel (inside header area) -->
+  <app-chat-memory-editor
+    *ngIf="memoryEditorOpen && sessionState === 'authenticated'"
+    #memoryEditor
+    [memory]="assistantMemory"
+    [fields]="memoryEditorFields"
+    (saved)="onMemorySaved($event)"
+    (cancelled)="memoryEditorOpen = false"
+  />
+
+  <!-- Unauthenticated: welcome screen -->
+  <ng-container *ngIf="sessionState === 'unauthenticated'; else authenticatedShell">
+    <app-chat-welcome-screen
+      [previewSuggestions]="previewSuggestions"
+      (login)="goToLogin()"
+      (register)="goToRegister()"
+    />
+  </ng-container>
+
+  <!-- Authenticated shell -->
+  <ng-template #authenticatedShell>
+    <!-- Session recovery: skeleton loading -->
+    <app-chat-skeleton
+      *ngIf="sessionState === 'unknown' || sessionState === 'refreshing'"
+    />
+
+    <!-- Unavailable banner -->
+    <div
+      *ngIf="chatState === 'unavailable'"
+      class="mx-4 mt-4 flex items-start justify-between gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100"
+    >
+      <p>El asistente está temporalmente limitado. Puedes reintentar o cambiar la consulta.</p>
+      <button
+        type="button"
+        (click)="retryHistory()"
+        class="rounded-lg border border-amber-400/30 px-3 py-1.5 text-xs font-semibold text-amber-50"
+      >
+        Reintentar
+      </button>
+    </div>
+
+    <!-- Onboarding wizard -->
+    <app-chat-onboarding-wizard
+      *ngIf="needsOnboarding"
+      [currentMemory]="assistantMemory"
+      (completed)="onWizardCompleted($event)"
+      (skipped)="onWizardSkipped()"
+    />
+
+    <!-- Messages area -->
+    <div
+      #messagesContainer
+      class="relative flex-1 space-y-4 overflow-y-auto bg-[radial-gradient(circle_at_top,rgba(185,28,28,0.10),transparent_36%),linear-gradient(180deg,rgba(15,23,42,0.92),rgba(11,15,20,0.98))] px-4 py-4 md:px-5 md:py-5"
+      (scroll)="onMessagesScroll()"
+    >
+      <!-- Conversation sidebar -->
+      <app-chat-conversation-sidebar
+        *ngIf="sidebarOpen"
+        [conversations]="conversations"
+        [activeConversationId]="activeConversationId"
+        (selectConversation)="onSelectConversation($event)"
+        (newConversation)="startNewConversation()"
+        (updateConversationEvent)="onUpdateConversation($event)"
+        (deleteConversationEvent)="onDeleteConversation($event)"
+        (search)="onSearchConversations($event)"
+        (close)="sidebarOpen = false"
+      />
+      <app-chat-message-bubble
+        *ngFor="let message of messages; trackBy: trackByMessage"
+        [message]="message"
+        [resultSummary]="getResultSummary(message)"
+        [filteredSuggestions]="getMessageSuggestions(message)"
+        [showAutonomicPrompt]="shouldShowAutonomicPrompt(message)"
+        [savedCommunity]="getSavedCommunity(message)"
+        [autonomicPromptText]="getAutonomicPromptText(message)"
+        [autonomousCommunities]="autonomousCommunities"
+        (openDetail)="openRecommendation($event)"
+        (save)="saveRecommendation($event)"
+        (followUp)="askAboutTitle($event)"
+        (ignore)="ignoreRecommendation($event)"
+        (ratePositive)="ratePositiveRecommendation($event)"
+        (rateNegative)="rateNegativeRecommendation($event)"
+        (feedbackPositive)="onFeedbackPositive($event)"
+        (feedbackNegative)="onFeedbackNegative($event)"
+        (remind)="onRemindProgram($event)"
+        (suggestionSelected)="useSuggestion($event)"
+        (useSavedCommunity)="onUseSavedCommunity(message)"
+        (communitySelected)="selectCommunity($event)"
+        (autonomicsDeclined)="declineAutonomics()"
+      />
+
+      <!-- Scroll-to-bottom FAB -->
+      <button
+        *ngIf="showScrollFab"
+        type="button"
+        (click)="scrollToBottom()"
+        class="sticky bottom-2 left-1/2 z-10 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full border border-slate-700 bg-slate-900/90 text-slate-300 shadow-lg backdrop-blur-sm transition-all hover:bg-slate-800 hover:text-white"
+        aria-label="Ir al final"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Input area -->
+    <div class="border-t border-slate-800/80 bg-[linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.96))] p-4 backdrop-blur-xl">
+      <!-- Preference prompt -->
+      <app-chat-preference-prompt
+        *ngIf="getPreferencePrompt() as preferencePrompt"
+        [promptText]="preferencePrompt"
+        [options]="getPreferenceOptions()"
+        (optionSelected)="sendQuickMessage($event)"
+        (dismissed)="dismissPreferencePrompt()"
+      />
+
+      <app-chat-input-bar
+        #inputBar
+        [sessionState]="sessionState"
+        [chatState]="chatState"
+        (messageSent)="onMessageSent($event)"
+      />
+    </div>
+  </ng-template>
+</div>

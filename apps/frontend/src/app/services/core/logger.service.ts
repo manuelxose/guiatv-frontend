@@ -21,7 +21,9 @@ export class ConsoleLoggerService implements ILogger {
   }
 
   warn(message: string, ...args: any[]): void {
-    console.warn(`⚠️ ${this.formatMessage(message)}`, ...args);
+    if (this.isDevelopment) {
+      console.warn(`⚠️ ${this.formatMessage(message)}`, ...args);
+    }
   }
 
   error(message: string, ...args: any[]): void {

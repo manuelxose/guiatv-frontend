@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { UserNotifications, UserPrivacy, UserProfile } from '../../../../interfaces/user.interface';
+import { UserService } from '../../../../services/user.service';
+import { AuthService, AuthSessionView } from '../../../../services/auth.service';
 
 const GENRE_OPTIONS = [
   'Cine',
@@ -60,7 +62,7 @@ const SORT_OPTIONS = [
 @Component({
   selector: 'app-user-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
     <div class="mx-auto max-w-4xl space-y-6">
       <div class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
@@ -284,6 +286,177 @@ const SORT_OPTIONS = [
         </form>
       </div>
 
+      <!-- Sessions section -->
+      <div class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold text-white">Sesiones activas</h3>
+            <p class="text-sm text-slate-400">Dispositivos con sesión iniciada en tu cuenta.</p>
+          </div>
+          <button
+            type="button"
+            (click)="loadSessions()"
+            class="min-h-[36px] rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-200"
+          >
+            {{ sessionsLoaded ? 'Actualizar' : 'Ver sesiones' }}
+          </button>
+        </div>
+
+        <div *ngIf="sessionsLoading" class="mt-4 text-sm text-slate-400">Cargando sesiones…</div>
+
+        <div *ngIf="sessionsLoaded && !sessionsLoading" class="mt-4 space-y-3">
+          <div
+            *ngFor="let session of sessions"
+            class="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4"
+          >
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-white">
+                {{ getDeviceLabel(session) }}
+                <span *ngIf="session.current" class="ml-2 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                  Actual
+                </span>
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                {{ session.ipAddress || 'IP desconocida' }}
+                · Última actividad: {{ formatSessionDate(session.lastUsedAt || session.createdAt) }}
+              </p>
+            </div>
+            <button
+              *ngIf="!session.current"
+              type="button"
+              (click)="revokeSession(session.id)"
+              class="ml-3 min-h-[34px] rounded-xl border border-slate-700 px-3 text-xs font-semibold text-slate-300 hover:border-red-500/50 hover:text-red-300"
+            >
+              Cerrar
+            </button>
+          </div>
+
+          <div *ngIf="!sessions.length" class="text-sm text-slate-500">No se encontraron sesiones activas.</div>
+
+          <button
+            *ngIf="sessions.length > 1"
+            type="button"
+            (click)="logoutAllDevices()"
+            class="mt-2 min-h-[36px] rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-200"
+          >
+            Cerrar todas las sesiones excepto esta
+          </button>
+        </div>
+      </div>
+
+      <!-- Blocked users section -->
+      <div class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold text-white">Usuarios bloqueados</h3>
+            <p class="text-sm text-slate-400">Usuarios a los que has bloqueado.</p>
+          </div>
+          <button
+            type="button"
+            (click)="loadBlockedUsers()"
+            class="min-h-[36px] rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-200"
+          >
+            {{ blockedLoaded ? 'Actualizar' : 'Ver bloqueados' }}
+          </button>
+        </div>
+
+        <div *ngIf="blockedLoading" class="mt-4 text-sm text-slate-400">Cargando…</div>
+
+        <div *ngIf="blockedLoaded && !blockedLoading" class="mt-4 space-y-3">
+          <div
+            *ngFor="let user of blockedUsers"
+            class="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4"
+          >
+            <div class="flex items-center gap-3">
+              <img
+                [src]="user.avatar || '/assets/gpt-avatar.png'"
+                [alt]="user.name"
+                class="h-10 w-10 rounded-full object-cover"
+              />
+              <div>
+                <p class="text-sm font-medium text-white">{{ user.name }}</p>
+                <p class="text-xs text-slate-500">&#64;{{ user.username }}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              (click)="unblockUser(user.id)"
+              class="min-h-[34px] rounded-xl border border-slate-700 px-3 text-xs font-semibold text-slate-300 hover:border-emerald-500/50 hover:text-emerald-300"
+            >
+              Desbloquear
+            </button>
+          </div>
+
+          <div *ngIf="!blockedUsers.length" class="text-sm text-slate-500">No tienes usuarios bloqueados.</div>
+        </div>
+      </div>
+
+      <!-- Data export section -->
+      <div class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-semibold text-white">Exportar mis datos</h3>
+            <p class="text-sm text-slate-400">Descarga un archivo con todos tus datos de la plataforma (RGPD).</p>
+          </div>
+          <button
+            type="button"
+            (click)="exportData()"
+            [disabled]="exporting"
+            class="min-h-[44px] rounded-xl border border-slate-700 px-5 py-2.5 text-slate-200 hover:border-slate-500 hover:text-white disabled:opacity-50"
+          >
+            {{ exporting ? 'Exportando…' : 'Descargar mis datos' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="rounded-3xl border border-red-500/30 bg-red-500/5 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
+        <h3 class="text-lg font-semibold text-red-200">Zona de peligro</h3>
+        <p class="mt-1 text-sm text-slate-400">
+          Eliminar tu cuenta es permanente. Se borrarán todos tus datos: perfil, listas, favoritos, actividad, conversaciones y preferencias del asistente.
+        </p>
+
+        <div *ngIf="!showDeleteConfirm" class="mt-4">
+          <button
+            type="button"
+            (click)="showDeleteConfirm = true"
+            class="min-h-[44px] rounded-xl border border-red-500/50 bg-red-500/10 px-5 py-2.5 font-semibold text-red-200 hover:bg-red-500/20"
+          >
+            Eliminar mi cuenta
+          </button>
+        </div>
+
+        <div *ngIf="showDeleteConfirm" class="mt-4 space-y-3 rounded-2xl border border-red-500/30 bg-slate-950/60 p-4">
+          <p class="text-sm font-medium text-red-100">
+            Escribe tu contraseña para confirmar la eliminación de tu cuenta.
+          </p>
+          <input
+            type="password"
+            [(ngModel)]="deletePassword"
+            placeholder="Tu contraseña actual"
+            class="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-600 focus:border-red-500/50"
+          />
+          <p *ngIf="deleteError" class="text-xs text-red-400">{{ deleteError }}</p>
+          <div class="flex gap-3">
+            <button
+              type="button"
+              (click)="confirmDeleteAccount()"
+              [disabled]="deleting || !deletePassword"
+              class="min-h-[44px] rounded-xl bg-red-600 px-5 py-2.5 font-semibold text-white disabled:opacity-50"
+            >
+              {{ deleting ? 'Eliminando…' : 'Confirmar eliminación' }}
+            </button>
+            <button
+              type="button"
+              (click)="showDeleteConfirm = false; deletePassword = ''; deleteError = ''"
+              class="min-h-[44px] rounded-xl border border-slate-700 px-5 py-2.5 text-slate-300"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="text-center">
         <button
           type="button"
@@ -296,7 +469,7 @@ const SORT_OPTIONS = [
     </div>
   `,
 })
-export class UserSettingsComponent implements OnChanges {
+export class UserSettingsComponent implements OnChanges, OnInit {
   @Input() profile: UserProfile | null = null;
   @Input() privacy!: UserPrivacy;
   @Input() notifications!: UserNotifications;
@@ -322,6 +495,25 @@ export class UserSettingsComponent implements OnChanges {
   public selectedAvailability: Array<'live' | 'streaming' | 'free' | 'flatrate' | 'rent' | 'buy'> = [];
   public selectedSort: 'personalized' | 'popular' | 'rating' | 'airtime' | 'recent' = 'popular';
 
+  // Sessions
+  public sessions: AuthSessionView[] = [];
+  public sessionsLoading = false;
+  public sessionsLoaded = false;
+
+  // Blocked users
+  public blockedUsers: Array<{ id: string; name: string; username: string; avatar: string }> = [];
+  public blockedLoading = false;
+  public blockedLoaded = false;
+
+  // Export
+  public exporting = false;
+
+  // Account deletion
+  public showDeleteConfirm = false;
+  public deletePassword = '';
+  public deleting = false;
+  public deleteError = '';
+
   public readonly settingsForm = this.fb.group({
     profilePublic: [true],
     shareActivity: [true],
@@ -332,7 +524,15 @@ export class UserSettingsComponent implements OnChanges {
     weeklySummary: [false],
   });
 
-  constructor(private readonly fb: FormBuilder) {}
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+  ) {}
+
+  ngOnInit(): void {
+    this.loadSessions();
+  }
 
   ngOnChanges(): void {
     this.resetForm();
@@ -432,5 +632,123 @@ export class UserSettingsComponent implements OnChanges {
     return values.includes(value)
       ? values.filter((item) => item !== value)
       : [...values, value];
+  }
+
+  // --- Sessions ---
+  loadSessions(): void {
+    this.sessionsLoading = true;
+    this.authService.getSessions().subscribe({
+      next: (sessions) => {
+        this.sessions = sessions;
+        this.sessionsLoaded = true;
+        this.sessionsLoading = false;
+      },
+      error: () => {
+        this.sessionsLoading = false;
+      },
+    });
+  }
+
+  revokeSession(sessionId: string): void {
+    this.authService.revokeSession(sessionId).subscribe({
+      next: () => {
+        this.sessions = this.sessions.filter((s) => s.id !== sessionId);
+      },
+    });
+  }
+
+  logoutAllDevices(): void {
+    this.authService.logoutAllDevices().subscribe({
+      next: () => {
+        this.sessions = this.sessions.filter((s) => s.current);
+      },
+    });
+  }
+
+  getDeviceLabel(session: AuthSessionView): string {
+    if (session.deviceName) return session.deviceName;
+    if (session.userAgent) {
+      const ua = session.userAgent;
+      if (ua.includes('Mobile')) return 'Dispositivo móvil';
+      if (ua.includes('Chrome')) return 'Chrome';
+      if (ua.includes('Firefox')) return 'Firefox';
+      if (ua.includes('Safari')) return 'Safari';
+      return 'Navegador';
+    }
+    return 'Dispositivo desconocido';
+  }
+
+  formatSessionDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'Ahora';
+    if (diffMin < 60) return `Hace ${diffMin} min`;
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return `Hace ${diffH}h`;
+    const diffD = Math.floor(diffH / 24);
+    if (diffD < 7) return `Hace ${diffD}d`;
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  }
+
+  // --- Blocked users ---
+  loadBlockedUsers(): void {
+    this.blockedLoading = true;
+    this.userService.getBlockedUsers().subscribe({
+      next: (users) => {
+        this.blockedUsers = users;
+        this.blockedLoaded = true;
+        this.blockedLoading = false;
+      },
+      error: () => {
+        this.blockedLoading = false;
+      },
+    });
+  }
+
+  unblockUser(userId: string): void {
+    this.userService.unblockUser(userId).subscribe({
+      next: () => {
+        this.blockedUsers = this.blockedUsers.filter((u) => u.id !== userId);
+      },
+    });
+  }
+
+  // --- Data export ---
+  exportData(): void {
+    this.exporting = true;
+    this.userService.exportUserData().subscribe({
+      next: (data) => {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `guiatv-datos-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.exporting = false;
+      },
+      error: () => {
+        this.exporting = false;
+      },
+    });
+  }
+
+  // --- Account deletion ---
+  confirmDeleteAccount(): void {
+    if (!this.deletePassword) return;
+    this.deleting = true;
+    this.deleteError = '';
+    this.userService.deleteAccount(this.deletePassword).subscribe({
+      next: () => {
+        this.deleting = false;
+        this.logout.emit();
+      },
+      error: (err) => {
+        this.deleting = false;
+        this.deleteError = err?.error?.message || 'Error al eliminar la cuenta. Comprueba la contraseña.';
+      },
+    });
   }
 }

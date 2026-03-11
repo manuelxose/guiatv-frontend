@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { generateFAQSchema } from '../../utils/utils';
 
 export interface FaqItem {
   question: string;
@@ -12,17 +13,18 @@ export interface FaqItem {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section *ngIf="items.length" class="mt-10">
+    <section *ngIf="items.length" class="mt-10" itemscope itemtype="https://schema.org/FAQPage">
       <h2 class="text-lg font-bold text-white mb-4">{{ heading }}</h2>
       <div class="space-y-2">
         <details
           *ngFor="let item of items; let i = index"
           class="group border border-white/10 rounded-lg bg-white/[0.02]"
+          itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"
         >
           <summary
             class="flex items-center justify-between gap-4 cursor-pointer select-none px-4 py-3 text-sm font-medium text-gray-200 hover:text-white transition-colors"
           >
-            {{ item.question }}
+            <span itemprop="name">{{ item.question }}</span>
             <svg
               class="w-4 h-4 shrink-0 text-gray-500 group-open:rotate-180 transition-transform"
               fill="none"
@@ -32,8 +34,9 @@ export interface FaqItem {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </summary>
-          <div class="px-4 pb-4 text-sm text-gray-400 leading-relaxed">
-            {{ item.answer }}
+          <div class="px-4 pb-4 text-sm text-gray-400 leading-relaxed"
+               itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+            <p itemprop="text">{{ item.answer }}</p>
           </div>
         </details>
       </div>
@@ -53,18 +56,7 @@ export class FaqSectionComponent implements OnChanges {
       this.safeLdJson = '';
       return;
     }
-    const schema = {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: this.items.map((item) => ({
-        '@type': 'Question',
-        name: item.question,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: item.answer,
-        },
-      })),
-    };
+    const schema = generateFAQSchema(this.items);
     this.safeLdJson = this.sanitizer.bypassSecurityTrustHtml(
       `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
     );

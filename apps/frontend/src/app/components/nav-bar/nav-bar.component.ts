@@ -6,13 +6,14 @@ import { MenuStateService } from '../../services/menu-state.service';
 import { ChatService } from '../../services/chat.service';
 import { UserService } from '../../services/user.service';
 import { APP_PATHS, AppRouteEntry } from '../../config/route-map';
+import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-nav-bar',
   templateUrl: './nav-bar.component.html',
   styleUrls: ['./nav-bar.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificationBellComponent],
 })
 export class NavBarComponent implements OnDestroy {
   @Output() searchRequested = new EventEmitter<void>();
@@ -27,6 +28,8 @@ export class NavBarComponent implements OnDestroy {
   );
   public readonly headerRoutes = this.menuState.getHeaderRoutes().filter(Boolean);
   public readonly secondaryRoutes = this.menuState.getSecondaryRoutes().filter(Boolean);
+  public readonly resourceRoutes = this.menuState.getResourceRoutes().filter(Boolean);
+  public readonly toolRoutes = this.menuState.getToolRoutes().filter(Boolean);
   public activeKey = this.menuState.getCurrentActive();
   public isMoreMenuOpen = false;
 
@@ -80,6 +83,17 @@ export class NavBarComponent implements OnDestroy {
 
   isSecondaryRouteActive(route: AppRouteEntry): boolean {
     return this.activeKey === route.key;
+  }
+
+  getRouteAccent(route: AppRouteEntry): string {
+    if (route.key === 'peliculas') return 'Movie';
+    if (route.key === 'series') return 'TV';
+    if (route.key === 'editorial' || route.key === 'rankings') return 'Editorial';
+    if (route.key === 'tendencias') return 'Data';
+    if (route.key === 'comparador-streaming') return 'Streaming';
+    if (route.key === 'prensa' || route.key === 'sobre-nosotros') return 'Brand';
+    if (route.key === 'developers' || route.key === 'embed') return 'Tools';
+    return 'Extra';
   }
 
   toggleMoreMenu(): void {

@@ -7,6 +7,7 @@ import { InteractionButtonsComponent } from 'src/app/components/interaction-butt
 import { MetaService } from 'src/app/services/meta.service';
 import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { buildDetailPath, CatalogContentType } from 'src/app/utils/catalog';
+import { normalizePublicImageUrl } from 'src/app/utils/media-url';
 import { isLive, slugify } from 'src/app/utils/utils';
 
 type GuideQuickCategory = 'all' | 'Cine' | 'Series' | 'Deportes';
@@ -420,14 +421,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
 
   private resolveImageUrl(url?: string | null): string | undefined {
     if (!url) return undefined;
-    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
-      return url;
-    }
-    const base = this.apiConfig.getAssetBaseUrl();
-    if (url.startsWith('/')) {
-      return `${base}${url}`;
-    }
-    return `${base}/${url}`;
+    return normalizePublicImageUrl(url, this.apiConfig.getAssetBaseUrl());
   }
 
   private normalizeCategory(input: unknown, title: string): string {

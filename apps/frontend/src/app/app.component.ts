@@ -12,11 +12,14 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet, ActivatedRoute } from 
 import { Subject, filter, map, takeUntil } from 'rxjs';
 import { APP_PATHS, MOBILE_APP_TABS, normalizePath } from './config/route-map';
 import { AuthLoginModalComponent } from './components/auth-login-modal/auth-login-modal.component';
+import { DesktopChatDockComponent } from './components/desktop-chat-dock/desktop-chat-dock.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { LeftSidebarComponent } from './components/left-sidebar/left-sidebar.component';
+import { MenuComponent } from './components/menu/menu.component';
 import { ModalComponent } from './components/modal/modal.component';
 import { AIChatbotComponent } from './components/ai-chatbot/ai-chatbot.component';
 import { NavBarComponent } from './components/nav-bar/nav-bar.component';
+import { NotificationBellComponent } from './components/notification-bell/notification-bell.component';
 import { SearchOverlayComponent } from './components/search-overlay/search-overlay.component';
 import { AnalyticsService } from './services/analytics.service';
 import { ChatService } from './services/chat.service';
@@ -33,12 +36,15 @@ import { environment } from '../environments/environment';
     RouterLink,
     RouterOutlet,
     NavBarComponent,
+    DesktopChatDockComponent,
     LeftSidebarComponent,
+    MenuComponent,
     FooterComponent,
     ModalComponent,
     AuthLoginModalComponent,
     AIChatbotComponent,
     SearchOverlayComponent,
+    NotificationBellComponent,
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
@@ -51,7 +57,17 @@ export class AppComponent implements OnInit, OnDestroy {
   public currentPath = '/';
   public isMobileViewport = false;
   public isChatbotOpen = false;
+  public isChatMinimized = false;
+  public chatPanelWidth = 736; // default: ~46rem
+  public swipeOffsetY = 0;
+  public swipeAnimating = false;
+  private swipeStartY = 0;
+  private resizeStartX = 0;
+  private resizeStartWidth = 0;
+  private resizeMoveHandler: ((e: MouseEvent) => void) | null = null;
+  private resizeUpHandler: (() => void) | null = null;
   public isSearchOverlayOpen = false;
+  public isMobileMenuOpen = false;
   public contextRailMode: 'guide' | 'catalog' | null = null;
   public readonly appPaths = APP_PATHS;
   public readonly mobileTabs = MOBILE_APP_TABS;
@@ -83,6 +99,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.analytics.init();
+    this.menuState
+      .getMobile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((open) => {
+        this.isMobileMenuOpen = open;
+        this.syncBodyScrollLock();
+      });
+
     this.updateViewportState();
     this.applyRouteState(this.router.url);
     this.router.events
@@ -117,6 +141,19 @@ export class AppComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.resetCSSVariables();
+    this.syncBodyScrollLock(true);
+    this.cleanupResizeListeners();
+  }
+
+  private cleanupResizeListeners(): void {
+    if (this.resizeMoveHandler) {
+      this.document.removeEventListener('mousemove', this.resizeMoveHandler);
+    }
+    if (this.resizeUpHandler) {
+      this.document.removeEventListener('mouseup', this.resizeUpHandler);
+    }
+    this.resizeMoveHandler = null;
+    this.resizeUpHandler = null;
   }
 
   @HostListener('window:resize')
@@ -142,11 +179,20 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public openSearchOverlay(): void {
+    this.closeMobileMenu();
     this.isSearchOverlayOpen = true;
   }
 
   public closeSearchOverlay(): void {
     this.isSearchOverlayOpen = false;
+  }
+
+  public toggleMobileMenu(): void {
+    this.menuState.toggleMobile();
+  }
+
+  public closeMobileMenu(): void {
+    this.menuState.setMobile(false);
   }
 
   public toggleChatbot(): void {
@@ -158,6 +204,61 @@ export class AppComponent implements OnInit, OnDestroy {
 
   public closeChatbot(): void {
     this.isChatbotOpen = false;
+    this.isChatMinimized = false;
+  }
+
+  public minimizeChatbot(): void {
+    this.isChatMinimized = true;
+  }
+
+  public restoreChatbot(): void {
+    this.isChatMinimized = false;
+    this.isChatbotOpen = true;
+  }
+
+  // --- Desktop resize ---
+  public onResizeStart(event: MouseEvent): void {
+    event.preventDefault();
+    this.resizeStartX = event.clientX;
+    this.resizeStartWidth = this.chatPanelWidth;
+
+    this.resizeMoveHandler = (e: MouseEvent) => {
+      const delta = this.resizeStartX - e.clientX;
+      const maxWidth = window.innerWidth - 40;
+      this.chatPanelWidth = Math.max(360, Math.min(maxWidth, this.resizeStartWidth + delta));
+    };
+
+    this.resizeUpHandler = () => this.cleanupResizeListeners();
+
+    this.document.addEventListener('mousemove', this.resizeMoveHandler);
+    this.document.addEventListener('mouseup', this.resizeUpHandler);
+  }
+
+  // --- Mobile swipe-to-minimize ---
+  public onSwipePanelStart(event: TouchEvent): void {
+    this.swipeAnimating = false;
+    this.swipeStartY = event.touches[0].clientY;
+    this.swipeOffsetY = 0;
+  }
+
+  public onSwipePanelMove(event: TouchEvent): void {
+    const delta = event.touches[0].clientY - this.swipeStartY;
+    this.swipeOffsetY = Math.max(0, delta); // only allow downward drag
+  }
+
+  public onSwipePanelEnd(): void {
+    this.swipeAnimating = true;
+    if (this.swipeOffsetY > 120) {
+      this.swipeOffsetY = window.innerHeight;
+      setTimeout(() => {
+        this.minimizeChatbot();
+        this.swipeOffsetY = 0;
+        this.swipeAnimating = false;
+      }, 300);
+    } else {
+      this.swipeOffsetY = 0;
+      setTimeout(() => (this.swipeAnimating = false), 300);
+    }
   }
 
   public formatUnreadCount(count: number | null | undefined, cap: number): string {
@@ -231,6 +332,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.showMobileTopBar = this.isMobileViewport && !hideShell;
     this.showMobileBottomNav = this.isMobileViewport && !hideShell && !isAuthRoute;
+    if (!this.showMobileTopBar) {
+      this.closeMobileMenu();
+    }
     if (!this.canRenderChatbot()) {
       this.closeChatbot();
     }
@@ -255,6 +359,15 @@ export class AppComponent implements OnInit, OnDestroy {
     root.style.setProperty('--bottom-nav-h', this.showMobileBottomNav ? '64px' : '0px');
   }
 
+  private syncBodyScrollLock(forceUnlock = false): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    this.document.body.style.overflow =
+      !forceUnlock && this.isMobileMenuOpen ? 'hidden' : '';
+  }
+
   private resetCSSVariables(): void {
     if (!isPlatformBrowser(this.platformId)) {
       return;
@@ -268,7 +381,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private shouldHideMobileShell(path: string): boolean {
     return (
       path.startsWith('/admin') ||
-      path.startsWith('/blog') ||
+      path.startsWith(APP_PATHS.embedProgramGuide) ||
       path.startsWith('/avisolegal') ||
       path.startsWith('/privacidad') ||
       path.startsWith('/cookies') ||
@@ -281,6 +394,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private shouldHideDesktopShell(path: string): boolean {
     return (
       path.startsWith('/admin') ||
+      path.startsWith(APP_PATHS.embedProgramGuide) ||
       path.startsWith(APP_PATHS.login) ||
       path.startsWith(APP_PATHS.register) ||
       path.startsWith('/avisolegal') ||
@@ -324,7 +438,8 @@ export class AppComponent implements OnInit, OnDestroy {
       !path.startsWith('/terminos') &&
       !path.startsWith('/accesibilidad') &&
       !path.startsWith('/sitemap') &&
-      !path.startsWith(APP_PATHS.community)
+      !path.startsWith(APP_PATHS.community) &&
+      !path.startsWith(APP_PATHS.embedProgramGuide)
     );
   }
 
@@ -336,6 +451,14 @@ export class AppComponent implements OnInit, OnDestroy {
     if (path.startsWith(APP_PATHS.series)) return 'Series';
     if (path.startsWith(APP_PATHS.movies)) return 'Películas';
     if (path.startsWith(APP_PATHS.platforms)) return 'Plataformas';
+    if (path.startsWith(APP_PATHS.top10)) return 'Rankings';
+    if (path.startsWith(APP_PATHS.blog)) return 'Editorial';
+    if (path.startsWith(APP_PATHS.streamingComparison)) return 'Comparar';
+    if (path.startsWith(APP_PATHS.stats)) return 'Tendencias';
+    if (path.startsWith(APP_PATHS.developers)) return 'Desarrolladores';
+    if (path.startsWith(APP_PATHS.embed)) return 'Widget';
+    if (path.startsWith(APP_PATHS.about)) return 'Sobre nosotros';
+    if (path.startsWith(APP_PATHS.pressKit)) return 'Prensa';
     if (path.startsWith(APP_PATHS.community)) return 'Comunidad';
     if (path.startsWith(APP_PATHS.account)) return 'Mi cuenta';
     if (path.startsWith(APP_PATHS.login)) return 'Iniciar sesión';

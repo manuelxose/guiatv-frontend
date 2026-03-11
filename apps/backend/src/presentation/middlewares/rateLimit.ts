@@ -72,3 +72,12 @@ export const interactionRateLimit = createRateLimiter({
   max: 600,
   message: 'Too many interaction requests, please retry in a few seconds',
 });
+
+/**
+ * AI chat endpoints – tighter burst protection than general limit.
+ */
+export const aiRateLimit = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: 'Too many AI requests, please wait before trying again',
+});
