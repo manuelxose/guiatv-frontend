@@ -53,8 +53,8 @@ npm run job:clean      # Limpia programas antiguos de la BD
 npm run create-indexes # Crea índices de MongoDB
 
 # Calidad
-npm run lint           # ESLint
-npm run test           # Jest
+npm run lint           # Verificación estática con TypeScript
+npm run test           # Runner nativo de Node
 ```
 
 ## API
