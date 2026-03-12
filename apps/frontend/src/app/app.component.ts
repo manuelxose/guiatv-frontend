@@ -12,12 +12,11 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet, ActivatedRoute } from 
 import { Subject, filter, map, takeUntil } from 'rxjs';
 import { APP_PATHS, MOBILE_APP_TABS, normalizePath } from './config/route-map';
 import { AuthLoginModalComponent } from './components/auth-login-modal/auth-login-modal.component';
-import { DesktopChatDockComponent } from './components/desktop-chat-dock/desktop-chat-dock.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { LeftSidebarComponent } from './components/left-sidebar/left-sidebar.component';
 import { MenuComponent } from './components/menu/menu.component';
 import { ModalComponent } from './components/modal/modal.component';
-import { AIChatbotComponent } from './components/ai-chatbot/ai-chatbot.component';
+import { UnifiedChatShellComponent } from './components/unified-chat-shell/unified-chat-shell.component';
 import { NavBarComponent } from './components/nav-bar/nav-bar.component';
 import { NotificationBellComponent } from './components/notification-bell/notification-bell.component';
 import { SearchOverlayComponent } from './components/search-overlay/search-overlay.component';
@@ -36,13 +35,12 @@ import { environment } from '../environments/environment';
     RouterLink,
     RouterOutlet,
     NavBarComponent,
-    DesktopChatDockComponent,
     LeftSidebarComponent,
     MenuComponent,
     FooterComponent,
     ModalComponent,
     AuthLoginModalComponent,
-    AIChatbotComponent,
+    UnifiedChatShellComponent,
     SearchOverlayComponent,
     NotificationBellComponent,
   ],
@@ -105,6 +103,15 @@ export class AppComponent implements OnInit, OnDestroy {
       .subscribe((open) => {
         this.isMobileMenuOpen = open;
         this.syncBodyScrollLock();
+      });
+
+    this.chatService.requestOpenChat$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.canRenderChatbot()) {
+          this.isChatbotOpen = true;
+          this.isChatMinimized = false;
+        }
       });
 
     this.updateViewportState();
@@ -284,10 +291,14 @@ export class AppComponent implements OnInit, OnDestroy {
       return current === '/';
     }
 
-    if (target === APP_PATHS.account) {
+    if (target === APP_PATHS.profile) {
       return (
+        current === APP_PATHS.profile ||
+        current.startsWith(`${APP_PATHS.profile}/`) ||
         current === APP_PATHS.account ||
-        current.startsWith(`${APP_PATHS.account}/`)
+        current.startsWith(`${APP_PATHS.account}/`) ||
+        current === APP_PATHS.community ||
+        current.startsWith(`${APP_PATHS.community}/`)
       );
     }
 
@@ -416,7 +427,6 @@ export class AppComponent implements OnInit, OnDestroy {
       this.canRenderChatbot() &&
       this.isMobileViewport &&
       this.showMobileBottomNav &&
-      !path.startsWith(APP_PATHS.community) &&
       !path.startsWith('/admin')
     );
   }
@@ -438,7 +448,6 @@ export class AppComponent implements OnInit, OnDestroy {
       !path.startsWith('/terminos') &&
       !path.startsWith('/accesibilidad') &&
       !path.startsWith('/sitemap') &&
-      !path.startsWith(APP_PATHS.community) &&
       !path.startsWith(APP_PATHS.embedProgramGuide)
     );
   }
@@ -459,8 +468,9 @@ export class AppComponent implements OnInit, OnDestroy {
     if (path.startsWith(APP_PATHS.embed)) return 'Widget';
     if (path.startsWith(APP_PATHS.about)) return 'Sobre nosotros';
     if (path.startsWith(APP_PATHS.pressKit)) return 'Prensa';
-    if (path.startsWith(APP_PATHS.community)) return 'Comunidad';
-    if (path.startsWith(APP_PATHS.account)) return 'Mi cuenta';
+    if (path.startsWith(APP_PATHS.community)) return 'Perfil';
+    if (path.startsWith(APP_PATHS.account)) return 'Perfil';
+    if (path.startsWith(APP_PATHS.profile)) return 'Perfil';
     if (path.startsWith(APP_PATHS.login)) return 'Iniciar sesión';
     if (path.startsWith(APP_PATHS.register)) return 'Crear cuenta';
     return 'Guía TV';

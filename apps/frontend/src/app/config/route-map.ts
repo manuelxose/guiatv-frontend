@@ -18,6 +18,7 @@ export const APP_PATHS = {
   stats: '/tendencias',
   account: '/mi-cuenta',
   community: '/comunidad',
+  profile: '/perfil',
   login: '/iniciar-sesion',
   register: '/registro',
 } as const;
@@ -40,6 +41,7 @@ export type AppRouteKey =
   | 'embed'
   | 'mi-cuenta'
   | 'comunidad'
+  | 'perfil'
   | 'iniciar-sesion'
   | 'registro';
 
@@ -84,6 +86,7 @@ export const TOOL_NAV_ROUTES: AppRouteEntry[] = [
 ];
 
 export const USER_NAV_ROUTES: AppRouteEntry[] = [
+  { key: 'perfil', label: 'Perfil', path: APP_PATHS.profile },
   { key: 'comunidad', label: 'Comunidad', path: APP_PATHS.community },
   { key: 'mi-cuenta', label: 'Mi cuenta', path: APP_PATHS.account },
   { key: 'iniciar-sesion', label: 'Iniciar sesión', path: APP_PATHS.login },
@@ -118,23 +121,14 @@ export const MOBILE_APP_TABS: AppRouteEntry[] = [
       'M12 2.25a9.75 9.75 0 1 0 9.75 9.75A9.76 9.76 0 0 0 12 2.25Zm4.58 6.69-2.02 6.08a.75.75 0 0 1-.47.47l-6.08 2.02a.75.75 0 0 1-.96-.96l2.02-6.08a.75.75 0 0 1 .47-.47l6.08-2.02a.75.75 0 0 1 .96.96Z',
   },
   {
-    key: 'comunidad',
-    label: 'Comunidad',
-    path: APP_PATHS.community,
-    iconOutline:
-      'M8.25 9.75h7.5M8.25 13.5h4.5M6.75 4.5h10.5a3.75 3.75 0 0 1 3.75 3.75v5.25A3.75 3.75 0 0 1 17.25 17.25H12l-4.5 3v-3h-.75A3.75 3.75 0 0 1 3 13.5V8.25A3.75 3.75 0 0 1 6.75 4.5Z',
-    iconFilled:
-      'M6.75 3.75A4.5 4.5 0 0 0 2.25 8.25v5.25A4.5 4.5 0 0 0 6.75 18H7.5v2.25a.75.75 0 0 0 1.17.62L12.23 18h5.02a4.5 4.5 0 0 0 4.5-4.5V8.25a4.5 4.5 0 0 0-4.5-4.5H6.75Zm1.5 5.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5h-6A.75.75 0 0 1 8.25 9Zm0 3.75A.75.75 0 0 1 9 12h3.75a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75Z',
-    badgeKey: 'unreadMessages',
-  },
-  {
-    key: 'mi-cuenta',
+    key: 'perfil',
     label: 'Perfil',
-    path: APP_PATHS.account,
+    path: APP_PATHS.profile,
     iconOutline:
       'M15.75 6.75a3.75 3.75 0 1 1-7.5 0a3.75 3.75 0 0 1 7.5 0ZM4.5 19.5a7.5 7.5 0 0 1 15 0',
     iconFilled:
       'M12 2.25a9.75 9.75 0 1 0 0 19.5a9.75 9.75 0 0 0 0-19.5Zm0 4.5a3.375 3.375 0 1 1 0 6.75a3.375 3.375 0 0 1 0-6.75Zm0 12a7.46 7.46 0 0 1-4.96-1.88a4.875 4.875 0 0 1 9.92 0A7.46 7.46 0 0 1 12 18.75Z',
+    badgeKey: 'unreadMessages',
   },
 ];
 

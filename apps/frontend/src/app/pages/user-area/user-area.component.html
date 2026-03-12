@@ -4,957 +4,403 @@
   ></div>
 
   <ng-container *ngIf="isAuthenticated$ | async; else loginCTA">
-    <div class="hidden md:block max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 relative">
-      <ng-container *ngIf="!isCommunityRoute">
-        <ng-container *ngIf="profile$ | async as profile">
-          <app-user-profile-header
-            [profile]="profile"
-            (editProfile)="openEditProfileModal()"
-          ></app-user-profile-header>
+    <div class="relative z-10 mx-auto max-w-6xl px-4 pt-4 pb-24 md:pb-8">
 
-          <section class="grid gap-4 rounded-[2rem] border border-slate-800/80 bg-slate-900/50 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.24)] xl:grid-cols-[1.2fr_0.8fr]">
-            <div class="space-y-2">
-              <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Mi cuenta</p>
-              <h1 class="text-3xl font-semibold tracking-tight text-white">Tu espacio personal en Guía TV</h1>
-              <p class="max-w-3xl text-sm leading-6 text-slate-400">
-                Gestiona lo que estás viendo, tus listas, tu historial y tus ajustes sin mezclarlo con la capa social.
-              </p>
-            </div>
+      <!-- ═══════════════════════════════════════════════════════════
+           LAYOUT: Desktop md+ → 2-column (sidebar + main)
+                   Mobile    → single column
+           ═══════════════════════════════════════════════════════════ -->
+      <div class="md:flex md:gap-6">
 
-            <div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-              <article class="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-                <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Viendo ahora</p>
-                <p class="mt-2 text-base font-semibold text-white truncate">
-                  {{ profile.watchingNow?.title || 'Sin sesión activa' }}
-                </p>
-                <p class="mt-1 text-xs text-slate-400">Actualízalo desde una ficha o desde Comunidad.</p>
-              </article>
-              <article class="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-                <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Listas</p>
-                <p class="mt-2 text-3xl font-semibold text-white">{{ profile.stats.listsCreated | number }}</p>
-                <p class="mt-1 text-xs text-slate-400">Acceso rápido a tus colecciones personales.</p>
-              </article>
-              <article class="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-                <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Historial</p>
-                <p class="mt-2 text-3xl font-semibold text-white">{{ profile.stats.ratings | number }}</p>
-                <p class="mt-1 text-xs text-slate-400">Valoraciones y actividad reciente de visionado.</p>
-              </article>
-            </div>
-          </section>
-        </ng-container>
-      </ng-container>
-
-      <div
-        *ngIf="isCommunityRoute"
-        class="grid gap-6 rounded-[2rem] border border-slate-800/80 bg-slate-900/50 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.28)] xl:grid-cols-[1.35fr_0.9fr]"
-      >
-        <div class="space-y-4">
-          <div class="space-y-2">
-            <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Comunidad</p>
-            <h1 class="text-3xl font-semibold tracking-tight text-white">Tu hub social de Guía TV</h1>
-            <p class="max-w-3xl text-sm leading-6 text-slate-400">
-              Conversaciones, actividad de tu red y recomendaciones compartidas en una sola superficie. Aquí es donde se abre el chat, se recomienda contenido y se comparten listas.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-3">
-            <button
-              type="button"
-              (click)="setActiveTab('chat')"
-              class="min-h-[44px] rounded-xl border border-red-500/40 bg-red-500/10 px-5 py-2.5 text-sm font-semibold text-red-100"
-            >
-              Abrir chat social
-            </button>
-            <button
-              type="button"
-              (click)="openCreateListModal()"
-              class="min-h-[44px] rounded-xl border border-slate-700 bg-slate-950/70 px-5 py-2.5 text-sm font-semibold text-slate-100"
-            >
-              Crear lista compartida
-            </button>
-          </div>
-        </div>
-
-        <div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-          <article class="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-            <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Mensajes</p>
-            <p class="mt-2 text-3xl font-semibold text-white">{{ unreadChatCount$ | async }}</p>
-            <p class="mt-1 text-xs text-slate-400">Conversaciones con actividad reciente</p>
-          </article>
-          <article class="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-            <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Amigos</p>
-            <p class="mt-2 text-3xl font-semibold text-white">{{ ((friends$ | async) || []).length }}</p>
-            <p class="mt-1 text-xs text-slate-400">Personas activas en tu red</p>
-          </article>
-          <article class="rounded-[1.5rem] border border-slate-800 bg-slate-950/60 p-4">
-            <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Recomendaciones</p>
-            <p class="mt-2 text-3xl font-semibold text-white">{{ ((recommendations$ | async) || []).length }}</p>
-            <p class="mt-1 text-xs text-slate-400">Contenido compartido por tu comunidad</p>
-          </article>
-        </div>
-      </div>
-
-      <div class="border-b border-slate-800/80">
-        <div
-          class="flex items-center gap-2 overflow-x-auto pb-3"
-          role="tablist"
-          [attr.aria-label]="isCommunityRoute ? 'Secciones de comunidad' : 'Secciones de cuenta'"
-        >
-          <button
-            *ngFor="let tab of desktopPrimaryTabs"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === tab.key"
-            [attr.tabindex]="activeTab === tab.key ? 0 : -1"
-            (click)="setActiveTab(tab.key)"
-            class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            [ngClass]="activeTab === tab.key ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
-          >
-            {{ tab.label }}
-          </button>
-          <button
-            *ngIf="!isCommunityRoute && (isAdmin$ | async)"
-            type="button"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'admin'"
-            [attr.tabindex]="activeTab === 'admin' ? 0 : -1"
-            (click)="setActiveTab('admin')"
-            class="min-h-[44px] px-4 py-2.5 rounded-t-lg text-sm font-semibold whitespace-nowrap border-b-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            [ngClass]="activeTab === 'admin' ? 'text-white border-red-500 bg-slate-900/60' : 'text-slate-400 border-transparent hover:text-slate-200 hover:bg-slate-900/40'"
-          >
-            Admin
-          </button>
-        </div>
-      </div>
-
-      <div [ngSwitch]="activeTab" class="min-h-[400px]">
-        <div
-          *ngSwitchCase="'overview'"
-          id="panel-overview"
-          role="tabpanel"
-          aria-labelledby="tab-overview"
-          tabindex="0"
-          class="space-y-8"
-        >
-          <app-user-stats
-            [profile]="profile$ | async"
-            [myActivities]="(myActivities$ | async) || []"
-            [lists]="(lists$ | async) || []"
-            [reminders]="(myReminders$ | async) || []"
-            [loading]="(loading$ | async) || false"
-            [error]="(error$ | async) || null"
-          ></app-user-stats>
-        </div>
-
-        <div
-          *ngSwitchCase="'lists'"
-          id="panel-lists"
-          role="tabpanel"
-          aria-labelledby="tab-lists"
-          tabindex="0"
-        >
-          <app-user-lists
-            [lists]="(lists$ | async) || []"
-            (create)="openCreateListModal()"
-            (select)="onSelectList($event)"
-          ></app-user-lists>
-        </div>
-
-        <div
-          *ngSwitchCase="'social'"
-          id="panel-social"
-          role="tabpanel"
-          aria-labelledby="tab-social"
-          tabindex="0"
-        >
-          <div class="grid gap-6 xl:grid-cols-[1.2fr_1fr_0.9fr]">
-            <section class="min-w-0">
-              <app-user-social-feed
-                [activities]="(friendsActivities$ | async) || []"
-                [friends]="(friends$ | async) || []"
-                [recommendations]="(recommendations$ | async) || []"
-                [showSidebar]="false"
-                (updateStatus)="onUpdateStatus($event)"
-                (toggleFollow)="onToggleFollow($event)"
-                (createList)="onCreateCommunityList($event)"
-                (recommendContent)="onRecommendContent($event)"
-                (messageFriend)="onOpenFriendChat($event)"
-                (likeActivity)="onLikeActivity($event)"
-                (commentActivity)="onCommentActivity($event)"
-              ></app-user-social-feed>
-            </section>
-
-            <section class="rounded-[2rem] border border-slate-800/80 bg-slate-900/60 p-4">
-              <div class="mb-4 flex items-center justify-between gap-3 px-2">
-                <div>
-                  <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Conversaciones</p>
-                  <h3 class="mt-2 text-lg font-semibold text-white">Chat social</h3>
+        <!-- ── SIDEBAR (md+) ── -->
+        <aside class="hidden md:block md:w-72 lg:w-80 flex-shrink-0 space-y-4 sticky top-4 self-start">
+          <!-- Profile card -->
+          <ng-container *ngIf="profile$ | async as profile">
+            <div class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-5">
+              <div class="flex items-center gap-3">
+                <div class="relative flex-shrink-0">
+                  <div class="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700/80 overflow-hidden">
+                    <img *ngIf="profile.avatar" [src]="profile.avatar" class="w-full h-full object-cover" alt="" />
+                    <span *ngIf="!profile.avatar" class="w-full h-full flex items-center justify-center text-lg font-bold text-white">
+                      {{ getProfileInitials(profile.name) }}
+                    </span>
+                  </div>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#0b0f14]"></span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h2 class="text-sm font-bold text-white truncate">{{ profile.name }}</h2>
+                  <p class="text-xs text-slate-500 truncate">{{ '@' }}{{ profile.username }}</p>
                 </div>
                 <button
                   type="button"
-                  (click)="setActiveTab('chat')"
-                  class="min-h-[40px] rounded-xl border border-slate-700 px-3 text-xs font-semibold text-slate-200"
+                  (click)="openEditProfileModal()"
+                  class="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-xl border border-slate-700 text-slate-400 hover:text-white"
+                  aria-label="Editar perfil"
                 >
-                  Expandir
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 20h4l10-10-4-4L4 16v4Zm9-13 4 4" />
+                  </svg>
                 </button>
               </div>
-              <app-user-chat></app-user-chat>
-            </section>
 
-            <aside class="space-y-6">
-              <section class="rounded-[1.75rem] border border-slate-800/80 bg-slate-900/60 p-5">
-                <div class="flex items-center justify-between gap-3">
-                  <div>
-                    <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Amigos activos</p>
-                    <h3 class="mt-2 text-lg font-semibold text-white">Quién está disponible</h3>
+              <div class="grid grid-cols-4 gap-1 mt-4 text-center">
+                <div class="py-1.5">
+                  <p class="text-sm font-bold text-white">{{ profile.stats.followers | number }}</p>
+                  <p class="text-[9px] text-slate-500">Seguidores</p>
+                </div>
+                <div class="py-1.5">
+                  <p class="text-sm font-bold text-white">{{ profile.stats.following | number }}</p>
+                  <p class="text-[9px] text-slate-500">Siguiendo</p>
+                </div>
+                <div class="py-1.5">
+                  <p class="text-sm font-bold text-white">{{ profile.stats.listsCreated | number }}</p>
+                  <p class="text-[9px] text-slate-500">Listas</p>
+                </div>
+                <div class="py-1.5">
+                  <p class="text-sm font-bold text-white">{{ profile.stats.ratings | number }}</p>
+                  <p class="text-[9px] text-slate-500">Valoradas</p>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Quick shortcuts -->
+          <div class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4 space-y-1">
+            <button type="button" (click)="setActiveTab('lists')"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60 hover:text-white transition-colors"
+              [ngClass]="activeTab === 'lists' ? 'bg-slate-800/80 text-white' : ''">
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 5.5h8l4 4V18.5A1.5 1.5 0 0 1 16.5 20h-10A1.5 1.5 0 0 1 5 18.5v-11A2 2 0 0 1 7 5.5Z" />
+              </svg>
+              <span>Mis listas</span>
+              <span class="ml-auto text-xs text-slate-500">{{ ((lists$ | async) || []).length }}</span>
+            </button>
+            <button type="button" (click)="setActiveTab('favorites')"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60 hover:text-white transition-colors"
+              [ngClass]="activeTab === 'favorites' ? 'bg-slate-800/80 text-white' : ''">
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.5 4.8 13.3a4.5 4.5 0 1 1 6.36-6.36L12 7.78l.84-.84a4.5 4.5 0 1 1 6.36 6.36L12 20.5Z" />
+              </svg>
+              <span>Favoritos</span>
+              <span class="ml-auto text-xs text-slate-500">{{ ((favorites$ | async) || []).length }}</span>
+            </button>
+            <button type="button" (click)="setActiveTab('history')"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60 hover:text-white transition-colors"
+              [ngClass]="activeTab === 'history' ? 'bg-slate-800/80 text-white' : ''">
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z" />
+              </svg>
+              <span>Historial</span>
+              <span class="ml-auto text-xs text-slate-500">{{ ((interactionHistory$ | async) || []).length }}</span>
+            </button>
+            <button type="button" (click)="setActiveTab('settings')"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60 hover:text-white transition-colors"
+              [ngClass]="activeTab === 'settings' ? 'bg-slate-800/80 text-white' : ''">
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.3 4.9 10 3h4l-.3 1.9a7.5 7.5 0 0 1 2 1.1l1.8-.7 2 3.4-1.5 1.2a7.5 7.5 0 0 1 0 2.2l1.5 1.2-2 3.4-1.8-.7a7.5 7.5 0 0 1-2 1.1L14 21h-4l.3-1.9a7.5 7.5 0 0 1-2-1.1l-1.8.7-2-3.4 1.5-1.2a7.5 7.5 0 0 1 0-2.2L4.5 11.7l2-3.4 1.8.7a7.5 7.5 0 0 1 2-1.1Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span>Ajustes</span>
+            </button>
+            <button *ngIf="isAdmin$ | async" type="button" (click)="setActiveTab('admin')"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60 hover:text-white transition-colors"
+              [ngClass]="activeTab === 'admin' ? 'bg-slate-800/80 text-white' : ''">
+              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z" />
+              </svg>
+              <span>Admin</span>
+            </button>
+          </div>
+
+          <!-- Online friends preview -->
+          <div class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-[10px] uppercase tracking-widest text-slate-500">Amigos online</p>
+              <button type="button" (click)="setActiveTab('friends')" class="text-xs text-red-400 min-h-[28px]">Ver todos</button>
+            </div>
+            <div class="space-y-2">
+              <ng-container *ngFor="let friend of ((friends$ | async) || []).slice(0, 5)">
+                <div *ngIf="friend.isOnline" class="flex items-center gap-2.5">
+                  <div class="relative">
+                    <div class="h-8 w-8 overflow-hidden rounded-lg border border-slate-700 bg-slate-800">
+                      <img *ngIf="friend.avatar" [src]="friend.avatar" class="h-full w-full object-cover" alt="" />
+                      <div *ngIf="!friend.avatar" class="flex h-full w-full items-center justify-center text-[10px] font-bold text-white">
+                        {{ friend.name.slice(0, 2).toUpperCase() }}
+                      </div>
+                    </div>
+                    <span class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-[#0b0f14]"></span>
                   </div>
-                  <button
-                    type="button"
-                    (click)="setActiveTab('friends')"
-                    class="min-h-[38px] rounded-xl border border-slate-700 px-3 text-xs font-semibold text-slate-200"
-                  >
-                    Ver todos
+                  <span class="text-xs text-slate-300 truncate flex-1">{{ friend.name }}</span>
+                  <button type="button" (click)="onOpenFriendChat(friend.id)"
+                    class="min-h-[28px] px-2 rounded-lg text-[10px] text-red-300 hover:text-red-200 border border-red-500/30 hover:border-red-500/50">
+                    Chat
                   </button>
                 </div>
+              </ng-container>
+              <p *ngIf="((friends$ | async) || []).length === 0" class="text-xs text-slate-600">Sin amigos online</p>
+            </div>
+          </div>
+        </aside>
 
-                <div class="mt-4 space-y-3">
-                  <article
-                    *ngFor="let friend of ((friends$ | async) || []).slice(0, 4)"
-                    class="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 p-3"
-                  >
+        <!-- ── MAIN CONTENT ── -->
+        <div class="flex-1 min-w-0">
+
+          <!-- Mobile compact profile header -->
+          <div class="md:hidden px-0 pb-4">
+            <ng-container *ngIf="profile$ | async as profile">
+              <div class="flex items-center gap-3.5">
+                <div class="relative flex-shrink-0">
+                  <div class="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700/80 overflow-hidden shadow-lg shadow-black/20">
+                    <img *ngIf="profile.avatar" [src]="profile.avatar" class="w-full h-full object-cover" alt="" />
+                    <span *ngIf="!profile.avatar" class="w-full h-full flex items-center justify-center text-lg font-bold text-white">
+                      {{ getProfileInitials(profile.name) }}
+                    </span>
+                  </div>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#0b0f14]"></span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h1 class="text-base font-bold text-white truncate leading-tight">{{ profile.name }}</h1>
+                  <p class="text-xs text-slate-500 truncate mt-0.5">{{ '@' }}{{ profile.username }}</p>
+                  <div class="flex items-center gap-4 mt-1.5">
+                    <span class="text-xs text-slate-300 font-semibold">{{ profile.stats.followers | number }} <span class="text-slate-500 font-normal">seg.</span></span>
+                    <span class="text-xs text-slate-300 font-semibold">{{ profile.stats.following | number }} <span class="text-slate-500 font-normal">sig.</span></span>
+                    <span class="text-xs text-slate-300 font-semibold">{{ profile.stats.listsCreated | number }} <span class="text-slate-500 font-normal">listas</span></span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="openEditProfileModal()"
+                  class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-2xl border border-slate-700 bg-slate-900/60 text-slate-400 hover:text-white active:scale-95 transition-transform"
+                  aria-label="Editar perfil"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 20h4l10-10-4-4L4 16v4Zm9-13 4 4" />
+                  </svg>
+                </button>
+              </div>
+            </ng-container>
+          </div>
+
+          <!-- Chip tabs -->
+          <div class="mb-5 md:mb-6 -mx-4 px-4">
+            <div
+              class="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory"
+              role="tablist"
+              aria-label="Secciones del perfil"
+            >
+              <button
+                *ngFor="let section of visibleTabs"
+                type="button"
+                (click)="setActiveTab(section.key)"
+                role="tab"
+                [attr.aria-selected]="activeTab === section.key"
+                class="snap-start flex-shrink-0 min-h-[40px] px-5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 active:scale-95"
+                [ngClass]="activeTab === section.key
+                  ? 'bg-red-600 text-white shadow-lg shadow-red-900/30'
+                  : 'bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60'"
+              >
+                {{ section.label }}
+              </button>
+              <button
+                *ngIf="isAdmin$ | async"
+                type="button"
+                (click)="setActiveTab('admin')"
+                role="tab"
+                [attr.aria-selected]="activeTab === 'admin'"
+                class="snap-start flex-shrink-0 min-h-[40px] px-5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 active:scale-95"
+                [ngClass]="activeTab === 'admin'
+                  ? 'bg-red-600 text-white shadow-lg shadow-red-900/30'
+                  : 'bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60'"
+              >
+                Admin
+              </button>
+            </div>
+          </div>
+
+          <!-- ═══ TAB PANELS ═══ -->
+          <div [ngSwitch]="activeTab">
+
+            <!-- ── FEED ── -->
+            <ng-container *ngSwitchCase="'feed'">
+              <div class="section-enter">
+                <!-- "Viendo ahora" banner -->
+                <ng-container *ngIf="(profile$ | async)?.watchingNow?.title as watching">
+                  <div class="mb-4 flex items-center gap-3 p-3 bg-slate-900/60 border border-slate-800/80 rounded-2xl">
+                    <span class="flex-shrink-0 w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    <p class="text-xs text-slate-400"><span class="font-semibold text-white">Viendo ahora:</span> {{ watching }}</p>
+                  </div>
+                </ng-container>
+
+                <app-user-social-feed
+                  [activities]="(activities$ | async) || []"
+                  [friends]="(friends$ | async) || []"
+                  [recommendations]="(recommendations$ | async) || []"
+                  [showSidebar]="false"
+                  (updateStatus)="onUpdateStatus($event)"
+                  (toggleFollow)="onToggleFollow($event)"
+                  (createList)="onCreateCommunityList($event)"
+                  (recommendContent)="onRecommendContent($event)"
+                  (messageFriend)="onOpenFriendChat($event)"
+                  (likeActivity)="onLikeActivity($event)"
+                  (commentActivity)="onCommentActivity($event)"
+                ></app-user-social-feed>
+
+                <!-- Inline recommendations section -->
+                <ng-container *ngIf="((recommendations$ | async) || []).length > 0">
+                  <div class="mt-6">
+                    <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-3">Recomendaciones de tu red</p>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                      <article
+                        *ngFor="let rec of ((recommendations$ | async) || []).slice(0, 4)"
+                        class="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60"
+                      >
+                        <div *ngIf="rec.image" class="border-b border-slate-800 bg-slate-900">
+                          <img [src]="rec.image" class="aspect-[16/9] w-full object-cover" alt="" loading="lazy" />
+                        </div>
+                        <div class="space-y-2 p-4">
+                          <div class="flex flex-wrap gap-1.5">
+                            <span class="rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-100">
+                              {{ rec.type }}
+                            </span>
+                            <span *ngIf="rec.platform" class="rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-100">
+                              {{ rec.platform }}
+                            </span>
+                          </div>
+                          <h4 class="text-sm font-semibold text-white">{{ rec.title }}</h4>
+                          <p *ngIf="rec.note" class="text-xs leading-5 text-slate-400 line-clamp-2">{{ rec.note }}</p>
+                          <div class="flex flex-wrap items-center gap-3 text-[10px] text-slate-500">
+                            <span>{{ rec.likes }} likes</span>
+                            <span>{{ rec.comments }} comentarios</span>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </ng-container>
+
+            <!-- ── FRIENDS ── -->
+            <ng-container *ngSwitchCase="'friends'">
+              <div class="section-enter space-y-4">
+                <!-- Search -->
+                <app-user-search (followToggled)="onToggleFollow($event)"></app-user-search>
+
+                <!-- Friends list -->
+                <div
+                  *ngIf="((friends$ | async) || []).length === 0"
+                  class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 text-sm text-slate-400"
+                >
+                  Aún no hay amigos en tu red. Busca usuarios arriba para empezar a conectar.
+                </div>
+
+                <article
+                  *ngFor="let friend of (friends$ | async) || []"
+                  class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4"
+                >
+                  <div class="flex items-center gap-3.5">
                     <div class="relative">
-                      <div class="h-11 w-11 overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
+                      <div class="h-12 w-12 overflow-hidden rounded-xl border border-slate-700 bg-slate-800">
                         <img *ngIf="friend.avatar" [src]="friend.avatar" class="h-full w-full object-cover" alt="" />
                         <div *ngIf="!friend.avatar" class="flex h-full w-full items-center justify-center text-xs font-bold text-white">
                           {{ friend.name.slice(0, 2).toUpperCase() }}
                         </div>
                       </div>
                       <span
-                        class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-slate-950"
-                        [ngClass]="friend.isOnline ? 'bg-emerald-500' : 'bg-slate-500'"
+                        class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#0b0f14]"
+                        [ngClass]="friend.isOnline ? 'bg-emerald-500' : 'bg-slate-600'"
                       ></span>
                     </div>
+
                     <div class="min-w-0 flex-1">
                       <p class="truncate text-sm font-semibold text-white">{{ friend.name }}</p>
-                      <p class="truncate text-xs text-slate-500">{{ friend.lastActivity }}</p>
+                      <p class="truncate text-xs text-slate-500">{{ friend.lastActivity || 'Sin actividad reciente' }}</p>
                     </div>
-                    <button
-                      type="button"
-                      (click)="onOpenFriendChat(friend.id)"
-                      class="min-h-[38px] rounded-xl border border-red-500/40 bg-red-500/10 px-3 text-xs font-semibold text-red-100"
-                    >
-                      Chat
-                    </button>
-                  </article>
-                </div>
-              </section>
 
-              <section class="rounded-[1.75rem] border border-slate-800/80 bg-slate-900/60 p-5">
-                <div class="mb-4">
-                  <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Explorar</p>
-                  <h3 class="mt-2 text-lg font-semibold text-white">Buscar usuarios</h3>
-                </div>
-                <app-user-search (followToggled)="onToggleFollow($event)"></app-user-search>
-              </section>
-
-              <section class="rounded-[1.75rem] border border-slate-800/80 bg-slate-900/60 p-5">
-                <div class="flex items-center justify-between gap-3">
-                  <div>
-                    <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Recomendaciones</p>
-                    <h3 class="mt-2 text-lg font-semibold text-white">Lo más compartido</h3>
-                  </div>
-                  <button
-                    type="button"
-                    (click)="setActiveTab('recommendations')"
-                    class="min-h-[38px] rounded-xl border border-slate-700 px-3 text-xs font-semibold text-slate-200"
-                  >
-                    Ver todas
-                  </button>
-                </div>
-
-                <div class="mt-4 space-y-3">
-                  <article
-                    *ngFor="let recommendation of ((recommendations$ | async) || []).slice(0, 3)"
-                    class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4"
-                  >
-                    <div class="flex flex-wrap gap-2">
-                      <span class="rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-[10px] font-semibold text-red-100">
-                        {{ recommendation.type }}
-                      </span>
-                      <span
-                        *ngIf="recommendation.platform"
-                        class="rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[10px] font-semibold text-sky-100"
+                    <div class="flex items-center gap-2">
+                      <button
+                        type="button"
+                        (click)="onToggleFollow(friend.id)"
+                        class="min-h-[44px] rounded-xl border border-slate-700 px-4 text-xs font-semibold text-slate-200 hover:border-slate-500 hover:text-white active:scale-95 transition-transform"
                       >
-                        {{ recommendation.platform }}
-                      </span>
-                    </div>
-                    <p class="mt-3 text-sm font-semibold text-white">{{ recommendation.title }}</p>
-                    <p class="mt-1 text-xs leading-5 text-slate-400">{{ recommendation.note }}</p>
-                  </article>
-                </div>
-              </section>
-            </aside>
-          </div>
-        </div>
-
-        <div
-          *ngSwitchCase="'friends'"
-          id="panel-friends"
-          role="tabpanel"
-          aria-labelledby="tab-friends"
-          tabindex="0"
-          class="space-y-6"
-        >
-          <section class="rounded-[2rem] border border-slate-800/80 bg-slate-900/60 p-6">
-            <div class="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Amigos</p>
-                <h3 class="mt-1 text-2xl font-semibold text-white">Tu red activa</h3>
-                <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-                  Abre conversaciones, revisa quién está conectado y sigue la actividad de tu círculo.
-                </p>
-              </div>
-              <span class="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-slate-300">
-                {{ ((friends$ | async) || []).length }} amigos
-              </span>
-            </div>
-          </section>
-
-          <div class="grid gap-4 lg:grid-cols-2">
-            <article
-              *ngFor="let friend of (friends$ | async) || []"
-              class="rounded-[1.75rem] border border-slate-800/80 bg-slate-900/60 p-5"
-            >
-              <div class="flex items-start gap-4">
-                <div class="relative">
-                  <div class="h-14 w-14 overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
-                    <img *ngIf="friend.avatar" [src]="friend.avatar" class="h-full w-full object-cover" alt="" />
-                    <div *ngIf="!friend.avatar" class="flex h-full w-full items-center justify-center text-xs font-bold text-white">
-                      {{ friend.name.slice(0, 2).toUpperCase() }}
+                        {{ friend.following ? 'Siguiendo' : 'Seguir' }}
+                      </button>
+                      <button
+                        type="button"
+                        (click)="onOpenFriendChat(friend.id)"
+                        class="min-h-[44px] rounded-xl border border-red-500/40 bg-red-500/10 px-4 text-xs font-semibold text-red-100 active:scale-95 transition-transform"
+                      >
+                        Chat
+                      </button>
                     </div>
                   </div>
-                  <span
-                    class="absolute -bottom-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-slate-950"
-                    [ngClass]="friend.isOnline ? 'bg-emerald-500' : 'bg-slate-500'"
-                  ></span>
-                </div>
-
-                <div class="min-w-0 flex-1">
-                  <div class="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <h4 class="text-base font-semibold text-white">{{ friend.name }}</h4>
-                      <p class="text-sm text-slate-400">{{ '@' }}{{ friend.username }}</p>
-                    </div>
-                    <span class="rounded-full border px-2.5 py-1 text-[10px] font-semibold"
-                      [ngClass]="friend.isOnline ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-100' : 'border-slate-700 bg-slate-900/70 text-slate-300'">
-                      {{ friend.isOnline ? 'Online' : 'Offline' }}
-                    </span>
-                  </div>
-
-                  <p class="mt-3 text-sm text-slate-400">
-                    {{ friend.lastActivity || 'Sin actividad reciente visible' }}
-                  </p>
-
-                  <div class="mt-4 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      (click)="onToggleFollow(friend.id)"
-                      class="min-h-[42px] rounded-xl border border-slate-700 px-4 text-xs font-semibold text-slate-200 hover:border-slate-500 hover:text-white"
-                    >
-                      {{ friend.following ? 'Siguiendo' : 'Seguir' }}
-                    </button>
-                    <button
-                      type="button"
-                      (click)="onOpenFriendChat(friend.id)"
-                      class="min-h-[42px] rounded-xl border border-red-500/40 bg-red-500/10 px-4 text-xs font-semibold text-red-100"
-                    >
-                      Mensaje
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
-          </div>
-        </div>
-
-        <div
-          *ngSwitchCase="'recommendations'"
-          id="panel-recommendations"
-          role="tabpanel"
-          aria-labelledby="tab-recommendations"
-          tabindex="0"
-          class="space-y-6"
-        >
-          <section class="rounded-[2rem] border border-slate-800/80 bg-slate-900/60 p-6">
-            <div class="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Recomendaciones</p>
-                <h3 class="mt-1 text-2xl font-semibold text-white">Lo que se está compartiendo en tu red</h3>
-                <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-                  Reúne lo que te recomiendan tus amigos y lo que tú has compartido desde fichas, listas o el chat.
-                </p>
-              </div>
-              <button
-                type="button"
-                (click)="setActiveTab('social')"
-                class="min-h-[42px] rounded-xl border border-red-500/40 bg-red-500/10 px-4 text-xs font-semibold text-red-100"
-              >
-                Recomendar algo
-              </button>
-            </div>
-          </section>
-
-          <div
-            *ngIf="((recommendations$ | async) || []).length === 0"
-            class="rounded-[1.75rem] border border-slate-800/80 bg-slate-900/60 p-8 text-sm text-slate-400"
-          >
-            Todavía no hay recomendaciones sociales. Comparte una serie, crea una lista o marca lo que estás viendo.
-          </div>
-
-          <div class="grid gap-4 lg:grid-cols-2">
-            <article
-              *ngFor="let recommendation of (recommendations$ | async) || []"
-              class="overflow-hidden rounded-[1.75rem] border border-slate-800/80 bg-slate-900/60"
-            >
-              <div *ngIf="recommendation.image" class="border-b border-slate-800 bg-slate-900">
-                <img [src]="recommendation.image" class="aspect-[16/9] w-full object-cover" alt="" loading="lazy" />
-              </div>
-              <div class="space-y-4 p-5">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-[10px] font-semibold text-red-100">
-                    {{ recommendation.type }}
-                  </span>
-                  <span
-                    *ngIf="recommendation.platform"
-                    class="rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[10px] font-semibold text-sky-100"
-                  >
-                    {{ recommendation.platform }}
-                  </span>
-                  <span class="rounded-full border border-slate-700 bg-slate-950/70 px-2.5 py-1 text-[10px] font-semibold text-slate-300">
-                    {{ recommendation.createdAt }}
-                  </span>
-                </div>
-
-                <div>
-                  <h4 class="text-lg font-semibold text-white">{{ recommendation.title }}</h4>
-                  <p class="mt-2 text-sm leading-6 text-slate-300">{{ recommendation.note }}</p>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                  <span>{{ recommendation.likes }} likes</span>
-                  <span>{{ recommendation.comments }} comentarios</span>
-                  <span *ngIf="recommendation.rating">{{ recommendation.rating }}/10</span>
-                </div>
-              </div>
-            </article>
-          </div>
-        </div>
-
-        <div
-          *ngSwitchCase="'favorites'"
-          id="panel-favorites"
-          role="tabpanel"
-          aria-labelledby="tab-favorites"
-          tabindex="0"
-        >
-          <app-user-favorites
-            [favorites]="(favorites$ | async) || []"
-            (removeFavorite)="onRemoveFavorite($event)"
-          ></app-user-favorites>
-        </div>
-
-        <div
-          *ngSwitchCase="'history'"
-          id="panel-history"
-          role="tabpanel"
-          aria-labelledby="tab-history"
-          tabindex="0"
-        >
-          <app-user-interaction-history
-            [items]="(interactionHistory$ | async) || []"
-            (updateInteraction)="onUpdateHistory($event)"
-          ></app-user-interaction-history>
-        </div>
-
-        <div
-          *ngSwitchCase="'chat'"
-          id="panel-chat"
-          role="tabpanel"
-          aria-labelledby="tab-chat"
-          tabindex="0"
-        >
-          <app-user-chat></app-user-chat>
-        </div>
-
-        <div
-          *ngSwitchCase="'settings'"
-          id="panel-settings"
-          role="tabpanel"
-          aria-labelledby="tab-settings"
-          tabindex="0"
-        >
-          <app-user-settings
-            *ngIf="profile$ | async as profile"
-            [profile]="profile"
-            [privacy]="profile.privacy"
-            [notifications]="profile.notifications"
-            (saveSettings)="onSaveSettings($event)"
-            (editProfile)="openEditProfileModal()"
-            (logout)="onLogout()"
-          ></app-user-settings>
-        </div>
-
-        <div
-          *ngSwitchCase="'admin'"
-          id="panel-admin"
-          role="tabpanel"
-          aria-labelledby="tab-admin"
-          tabindex="0"
-        >
-          <ng-container *ngIf="isAdmin$ | async">
-            <ng-container *ngTemplateOutlet="adminPanel"></ng-container>
-          </ng-container>
-        </div>
-      </div>
-    </div>
-
-    <div class="md:hidden relative">
-      <div class="px-4 pt-4 pb-3" *ngIf="!isCommunityRoute; else communityMobileHeader">
-        <ng-container *ngIf="profile$ | async as profile">
-          <div class="flex items-center gap-3">
-            <div class="relative flex-shrink-0">
-              <div class="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700/80 overflow-hidden">
-                <img
-                  *ngIf="profile.avatar"
-                  [src]="profile.avatar"
-                  class="w-full h-full object-cover"
-                  alt=""
-                />
-                <span
-                  *ngIf="!profile.avatar"
-                  class="w-full h-full flex items-center justify-center text-lg font-bold text-white"
-                >
-                  {{ getProfileInitials(profile.name) }}
-                </span>
-              </div>
-              <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#0b0f14]"></span>
-            </div>
-
-            <div class="flex-1 min-w-0">
-              <h1 class="text-base font-bold text-white truncate">{{ profile.name }}</h1>
-              <p class="text-xs text-slate-400 truncate">{{ '@' }}{{ profile.username }}</p>
-            </div>
-
-            <button
-              type="button"
-              (click)="openEditProfileModal()"
-              class="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl border border-slate-700 text-slate-400 hover:text-white"
-              aria-label="Editar perfil"
-            >
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 20h4l10-10-4-4L4 16v4Zm9-13 4 4" />
-              </svg>
-            </button>
-          </div>
-
-          <div class="grid grid-cols-4 gap-1 mt-4 text-center">
-            <div class="bg-slate-900/60 rounded-xl py-2.5">
-              <p class="text-base font-bold text-white">{{ profile.stats.followers | number }}</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">Seguidores</p>
-            </div>
-            <div class="bg-slate-900/60 rounded-xl py-2.5">
-              <p class="text-base font-bold text-white">{{ profile.stats.following | number }}</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">Siguiendo</p>
-            </div>
-            <div class="bg-slate-900/60 rounded-xl py-2.5">
-              <p class="text-base font-bold text-white">{{ profile.stats.listsCreated | number }}</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">Listas</p>
-            </div>
-            <div class="bg-slate-900/60 rounded-xl py-2.5">
-              <p class="text-base font-bold text-white">{{ profile.stats.ratings | number }}</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">Valoradas</p>
-            </div>
-          </div>
-
-          <div class="mt-4 rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4">
-            <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Mi cuenta</p>
-            <p class="mt-2 text-sm font-semibold text-white">Tu dashboard personal</p>
-            <p class="mt-1 text-xs leading-5 text-slate-400">
-              Aquí gestionas historial, listas, favoritos y ajustes. La actividad social y el chat viven en Comunidad.
-            </p>
-          </div>
-        </ng-container>
-      </div>
-
-      <ng-template #communityMobileHeader>
-        <div class="px-4 pt-4 pb-3">
-          <section class="rounded-[1.75rem] border border-slate-800/80 bg-slate-900/60 p-4">
-            <p class="text-[10px] uppercase tracking-[0.28em] text-slate-500">Comunidad</p>
-            <h1 class="mt-2 text-xl font-semibold text-white">Actividad, chat y recomendaciones</h1>
-            <p class="mt-2 text-sm leading-6 text-slate-400">
-              Sigue a tu red, comparte lo que estás viendo y abre conversaciones sin salir del hub social.
-            </p>
-
-            <div class="mt-4 grid grid-cols-3 gap-2 text-center">
-              <div class="rounded-2xl border border-slate-800 bg-slate-950/60 px-3 py-3">
-                <p class="text-lg font-semibold text-white">{{ unreadChatCount$ | async }}</p>
-                <p class="mt-1 text-[10px] uppercase tracking-[0.22em] text-slate-500">Chat</p>
-              </div>
-              <div class="rounded-2xl border border-slate-800 bg-slate-950/60 px-3 py-3">
-                <p class="text-lg font-semibold text-white">{{ ((friends$ | async) || []).length }}</p>
-                <p class="mt-1 text-[10px] uppercase tracking-[0.22em] text-slate-500">Amigos</p>
-              </div>
-              <div class="rounded-2xl border border-slate-800 bg-slate-950/60 px-3 py-3">
-                <p class="text-lg font-semibold text-white">{{ ((recommendations$ | async) || []).length }}</p>
-                <p class="mt-1 text-[10px] uppercase tracking-[0.22em] text-slate-500">Recs</p>
-              </div>
-            </div>
-          </section>
-        </div>
-      </ng-template>
-
-      <div class="px-4 mb-1">
-        <div
-          class="flex gap-2 overflow-x-auto scrollbar-hide pb-1"
-          role="tablist"
-          [attr.aria-label]="isCommunityRoute ? 'Secciones de comunidad' : 'Secciones de cuenta'"
-        >
-          <button
-            *ngFor="let section of mobileTabs"
-            type="button"
-            (click)="setActiveTab(section.key)"
-            role="tab"
-            [attr.aria-selected]="activeTab === section.key"
-            class="mobile-chip-tab flex-shrink-0 min-h-[36px] px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            [ngClass]="activeTab === section.key ? 'bg-red-600 text-white' : 'bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60'"
-          >
-            {{ section.label }}
-          </button>
-          <button
-            *ngIf="!isCommunityRoute && (isAdmin$ | async)"
-            type="button"
-            (click)="setActiveTab('admin')"
-            role="tab"
-            [attr.aria-selected]="activeTab === 'admin'"
-            class="mobile-chip-tab flex-shrink-0 min-h-[36px] px-4 rounded-full text-xs font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            [ngClass]="activeTab === 'admin' ? 'bg-red-600 text-white' : 'bg-slate-800/80 text-slate-400 hover:text-white border border-slate-700/60'"
-          >
-            Admin
-          </button>
-        </div>
-      </div>
-
-      <div class="px-4 pb-6 mobile-scroll-container" [ngSwitch]="activeTab">
-        <ng-container *ngSwitchCase="'overview'">
-          <div class="section-enter">
-            <div
-              *ngIf="isCommunityRoute"
-              class="mb-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4"
-            >
-              <p class="text-[10px] uppercase tracking-[0.28em] text-red-200">Comunidad</p>
-              <p class="mt-2 text-sm leading-6 text-slate-200">
-                Sigue la actividad, abre el chat general o comparte listas y recomendaciones desde un único hub.
-              </p>
-            </div>
-
-            <ng-container *ngIf="(profile$ | async)?.watchingNow?.title as watching">
-              <div class="mb-4 p-4 bg-slate-900/60 border border-slate-800/80 rounded-2xl">
-                <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Viendo ahora</p>
-                <p class="text-sm font-semibold text-white truncate">{{ watching }}</p>
+                </article>
               </div>
             </ng-container>
 
-            <div class="grid grid-cols-3 gap-3 mb-5">
-              <button
-                type="button"
-                (click)="openCreateListModal()"
-                class="min-h-[72px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-slate-300 hover:text-white active:scale-95 transition-transform"
-              >
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 5.5h8l4 4V18.5A1.5 1.5 0 0 1 16.5 20h-10A1.5 1.5 0 0 1 5 18.5v-11A2 2 0 0 1 7 5.5Zm6 6.5h6M15 9v6" />
-                </svg>
-                <span class="text-xs font-medium">Nueva lista</span>
-              </button>
-
-              <button
-                type="button"
-                (click)="setActiveTab('favorites')"
-                class="min-h-[72px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-slate-300 hover:text-white active:scale-95 transition-transform"
-              >
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.5 4.8 13.3a4.5 4.5 0 1 1 6.36-6.36L12 7.78l.84-.84a4.5 4.5 0 1 1 6.36 6.36L12 20.5Z" />
-                </svg>
-                <span class="text-xs font-medium">Favoritos</span>
-              </button>
-
-              <button
-                type="button"
-                (click)="openCommunityHub()"
-                class="relative min-h-[72px] flex flex-col items-center justify-center gap-2 rounded-2xl bg-red-900/20 border border-red-500/30 text-red-300 hover:text-red-200 active:scale-95 transition-transform"
-              >
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 8.5h10M7 12h6m-5.5 7.5 3.53-2.35H17A4 4 0 0 0 21 13.15V8.85A4 4 0 0 0 17 4.85H7A4 4 0 0 0 3 8.85v4.3a4 4 0 0 0 4 4h.5v2.35Z" />
-                </svg>
-                <span class="text-xs font-medium">Comunidad</span>
-                <span
-                  *ngIf="unreadChatCount$ | async as count"
-                  class="absolute top-2.5 right-2.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center"
-                >
-                  {{ count > 99 ? '99+' : count }}
-                </span>
-              </button>
-            </div>
-
-            <div class="mb-5">
-              <div class="flex items-center justify-between mb-3">
-                <p class="text-[10px] uppercase tracking-widest text-slate-500">Mis listas</p>
-                <button type="button" (click)="setActiveTab('lists')" class="text-xs text-red-400 min-h-[36px]">
-                  Ver todas
-                </button>
+            <!-- ── LISTS ── -->
+            <ng-container *ngSwitchCase="'lists'">
+              <div class="section-enter">
+                <app-user-lists
+                  [lists]="(lists$ | async) || []"
+                  (create)="openCreateListModal()"
+                  (quickCreate)="onCreateList($event)"
+                  (select)="onSelectList($event)"
+                ></app-user-lists>
               </div>
-
-              <div class="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
-                <div
-                  *ngFor="let list of ((lists$ | async) || []).slice(0, 6)"
-                  class="flex-shrink-0 w-[120px] cursor-pointer active:scale-95 transition-transform"
-                  (click)="onSelectList(list)"
-                >
-                  <div class="w-full h-[160px] rounded-xl bg-slate-800 border border-slate-700/60 overflow-hidden mb-2">
-                    <img
-                      *ngIf="list.cover"
-                      [src]="list.cover"
-                      class="w-full h-full object-cover"
-                      alt=""
-                      loading="lazy"
-                    />
-                    <div
-                      *ngIf="!list.cover"
-                      class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900"
-                    >
-                      <svg class="w-8 h-8 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 5.5h8l4 4V18.5A1.5 1.5 0 0 1 16.5 20h-10A1.5 1.5 0 0 1 5 18.5v-11A2 2 0 0 1 7 5.5Z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <p class="text-xs font-medium text-white truncate">{{ list.title }}</p>
-                  <p class="text-[10px] text-slate-500">{{ list.itemsCount }} títulos</p>
-                </div>
-
-                <button
-                  type="button"
-                  (click)="openCreateListModal()"
-                  class="flex-shrink-0 w-[120px] h-[160px] rounded-xl border-2 border-dashed border-slate-700 flex items-center justify-center text-slate-600 hover:border-slate-500 hover:text-slate-400 active:scale-95 transition-all"
-                  aria-label="Crear nueva lista"
-                >
-                  <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div class="mb-5">
-              <div class="flex items-center justify-between mb-3">
-                <p class="text-[10px] uppercase tracking-widest text-slate-500">Favoritos recientes</p>
-                <button type="button" (click)="setActiveTab('favorites')" class="text-xs text-red-400 min-h-[36px]">
-                  Ver todos
-                </button>
-              </div>
-
-              <div class="space-y-2">
-                <div
-                  *ngFor="let favorite of ((favorites$ | async) || []).slice(0, 3)"
-                  class="flex items-center gap-3 p-3 bg-slate-900/60 border border-slate-800/80 rounded-xl"
-                >
-                  <div class="w-10 h-10 rounded-lg bg-slate-800 overflow-hidden flex-shrink-0">
-                    <img
-                      *ngIf="favorite.image"
-                      [src]="favorite.image"
-                      class="w-full h-full object-cover"
-                      alt=""
-                      loading="lazy"
-                    />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-white truncate">{{ favorite.title }}</p>
-                    <p class="text-xs text-slate-500">{{ favorite.subtitle || favorite.type }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ng-container>
-
-        <ng-container *ngSwitchCase="'lists'">
-          <div class="section-enter">
-            <app-user-lists
-              [lists]="(lists$ | async) || []"
-              (create)="openCreateListModal()"
-              (select)="onSelectList($event)"
-            ></app-user-lists>
-          </div>
-        </ng-container>
-
-        <ng-container *ngSwitchCase="'social'">
-          <div class="section-enter">
-            <app-user-social-feed
-              [activities]="(friendsActivities$ | async) || []"
-              [friends]="(friends$ | async) || []"
-              [recommendations]="(recommendations$ | async) || []"
-              [showSidebar]="false"
-              (updateStatus)="onUpdateStatus($event)"
-              (toggleFollow)="onToggleFollow($event)"
-              (createList)="onCreateCommunityList($event)"
-              (recommendContent)="onRecommendContent($event)"
-              (messageFriend)="onOpenFriendChat($event)"
-              (likeActivity)="onLikeActivity($event)"
-              (commentActivity)="onCommentActivity($event)"
-            ></app-user-social-feed>
-          </div>
-        </ng-container>
-
-        <ng-container *ngSwitchCase="'friends'">
-          <div class="section-enter space-y-3">
-            <div
-              *ngIf="((friends$ | async) || []).length === 0"
-              class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 text-sm text-slate-400"
-            >
-              Aún no hay amigos en tu red. Sigue a usuarios desde comunidad para ver su actividad y chatear.
-            </div>
-
-            <article
-              *ngFor="let friend of (friends$ | async) || []"
-              class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-4"
-            >
-              <div class="flex items-center gap-3">
-                <div class="relative">
-                  <div class="h-12 w-12 overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
-                    <img *ngIf="friend.avatar" [src]="friend.avatar" class="h-full w-full object-cover" alt="" />
-                    <div *ngIf="!friend.avatar" class="flex h-full w-full items-center justify-center text-xs font-bold text-white">
-                      {{ friend.name.slice(0, 2).toUpperCase() }}
-                    </div>
-                  </div>
-                  <span
-                    class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-[#0b0f14]"
-                    [ngClass]="friend.isOnline ? 'bg-emerald-500' : 'bg-slate-500'"
-                  ></span>
-                </div>
-
-                <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-semibold text-white">{{ friend.name }}</p>
-                  <p class="truncate text-xs text-slate-500">{{ friend.lastActivity }}</p>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <button
-                    type="button"
-                    (click)="onToggleFollow(friend.id)"
-                    class="min-h-[40px] rounded-xl border border-slate-700 px-3 text-xs font-semibold text-slate-200"
-                  >
-                    {{ friend.following ? 'Siguiendo' : 'Seguir' }}
-                  </button>
-                  <button
-                    type="button"
-                    (click)="onOpenFriendChat(friend.id)"
-                    class="min-h-[40px] rounded-xl border border-red-500/40 bg-red-500/10 px-3 text-xs font-semibold text-red-100"
-                  >
-                    Chat
-                  </button>
-                </div>
-              </div>
-            </article>
-          </div>
-        </ng-container>
-
-        <ng-container *ngSwitchCase="'recommendations'">
-          <div class="section-enter space-y-3">
-            <div
-              *ngIf="((recommendations$ | async) || []).length === 0"
-              class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 text-sm text-slate-400"
-            >
-              Tu red todavía no ha compartido recomendaciones. Usa el compositor social para empezar.
-            </div>
-
-            <article
-              *ngFor="let recommendation of (recommendations$ | async) || []"
-              class="overflow-hidden rounded-2xl border border-slate-800/80 bg-slate-900/60"
-            >
-              <div *ngIf="recommendation.image" class="border-b border-slate-800 bg-slate-900">
-                <img [src]="recommendation.image" class="aspect-[16/9] w-full object-cover" alt="" loading="lazy" />
-              </div>
-              <div class="space-y-3 p-4">
-                <div class="flex flex-wrap gap-2">
-                  <span class="rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-[10px] font-semibold text-red-100">
-                    {{ recommendation.type }}
-                  </span>
-                  <span
-                    *ngIf="recommendation.platform"
-                    class="rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[10px] font-semibold text-sky-100"
-                  >
-                    {{ recommendation.platform }}
-                  </span>
-                </div>
-                <div>
-                  <h4 class="text-sm font-semibold text-white">{{ recommendation.title }}</h4>
-                  <p class="mt-1 text-xs leading-5 text-slate-400">{{ recommendation.note }}</p>
-                </div>
-                <div class="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
-                  <span>{{ recommendation.createdAt }}</span>
-                  <span>{{ recommendation.likes }} likes</span>
-                  <span>{{ recommendation.comments }} comentarios</span>
-                </div>
-              </div>
-            </article>
-          </div>
-        </ng-container>
-
-        <ng-container *ngSwitchCase="'favorites'">
-          <div class="section-enter">
-            <app-user-favorites
-              [favorites]="(favorites$ | async) || []"
-              (removeFavorite)="onRemoveFavorite($event)"
-            ></app-user-favorites>
-          </div>
-        </ng-container>
-
-        <ng-container *ngSwitchCase="'history'">
-          <div class="section-enter">
-            <app-user-interaction-history
-              [items]="(interactionHistory$ | async) || []"
-              (updateInteraction)="onUpdateHistory($event)"
-            ></app-user-interaction-history>
-          </div>
-        </ng-container>
-
-        <ng-container *ngSwitchCase="'chat'">
-          <div class="mobile-chat-wrapper section-enter">
-            <app-user-chat></app-user-chat>
-          </div>
-        </ng-container>
-
-        <ng-container *ngSwitchCase="'settings'">
-          <div class="section-enter">
-            <app-user-settings
-              *ngIf="profile$ | async as profile"
-              [profile]="profile"
-              [privacy]="profile.privacy"
-              [notifications]="profile.notifications"
-              (saveSettings)="onSaveSettings($event)"
-              (editProfile)="openEditProfileModal()"
-              (logout)="onLogout()"
-            ></app-user-settings>
-          </div>
-        </ng-container>
-
-        <ng-container *ngSwitchCase="'admin'">
-          <div class="section-enter">
-            <ng-container *ngIf="isAdmin$ | async">
-              <ng-container *ngTemplateOutlet="adminPanel"></ng-container>
             </ng-container>
+
+            <!-- ── FAVORITES ── -->
+            <ng-container *ngSwitchCase="'favorites'">
+              <div class="section-enter">
+                <app-user-favorites
+                  [favorites]="(favorites$ | async) || []"
+                  (removeFavorite)="onRemoveFavorite($event)"
+                ></app-user-favorites>
+              </div>
+            </ng-container>
+
+            <!-- ── HISTORY ── -->
+            <ng-container *ngSwitchCase="'history'">
+              <div class="section-enter">
+                <app-user-interaction-history
+                  [items]="(interactionHistory$ | async) || []"
+                  (updateInteraction)="onUpdateHistory($event)"
+                ></app-user-interaction-history>
+              </div>
+            </ng-container>
+
+            <!-- ── SETTINGS ── -->
+            <ng-container *ngSwitchCase="'settings'">
+              <div class="section-enter">
+                <app-user-settings
+                  *ngIf="profile$ | async as profile"
+                  [profile]="profile"
+                  [privacy]="profile.privacy"
+                  [notifications]="profile.notifications"
+                  (saveSettings)="onSaveSettings($event)"
+                  (editProfile)="openEditProfileModal()"
+                  (logout)="onLogout()"
+                ></app-user-settings>
+              </div>
+            </ng-container>
+
+            <!-- ── ADMIN ── -->
+            <ng-container *ngSwitchCase="'admin'">
+              <div class="section-enter">
+                <ng-container *ngIf="isAdmin$ | async">
+                  <ng-container *ngTemplateOutlet="adminPanel"></ng-container>
+                </ng-container>
+              </div>
+            </ng-container>
+
           </div>
-        </ng-container>
+        </div>
+
       </div>
     </div>
 
+    <!-- Modals -->
     <app-create-list-modal
       [isOpen]="isCreateListModalOpen"
       (closeModal)="closeCreateListModal()"
@@ -984,9 +430,10 @@
       (changePassword)="onChangePassword($event)"
     ></app-edit-profile-modal>
 
+    <!-- Admin Panel Template -->
     <ng-template #adminPanel>
       <div class="space-y-6">
-        <section class="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 lg:p-8 shadow-[0_20px_40px_rgba(0,0,0,0.35)]">
+        <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 lg:p-8">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div class="space-y-2">
               <p class="text-xs text-slate-500 uppercase tracking-[0.3em]">Resumen admin</p>
@@ -1003,97 +450,41 @@
               >
                 Ir al panel completo
               </a>
-              <button
-                type="button"
-                class="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                disabled
-              >
-                Configurar accesos
-              </button>
             </div>
           </div>
         </section>
 
         <div class="grid lg:grid-cols-3 gap-6">
-          <div class="space-y-6">
-            <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
-              <div class="flex items-center justify-between">
-                <h4 class="text-lg font-semibold text-white">Accesos administrativos</h4>
-                <span class="text-xs text-slate-500">Revisión hoy</span>
-              </div>
-              <div class="mt-4 space-y-3 text-sm">
-                <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                  <div>
-                    <p class="text-slate-200 font-medium">Analítica</p>
-                    <p class="text-xs text-slate-500">Lectura y exportación</p>
-                  </div>
-                  <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Activo</span>
-                </div>
-                <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                  <div>
-                    <p class="text-slate-200 font-medium">Contenido</p>
-                    <p class="text-xs text-slate-500">Gestión editorial</p>
-                  </div>
-                  <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Activo</span>
-                </div>
-                <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                  <div>
-                    <p class="text-slate-200 font-medium">Usuarios</p>
-                    <p class="text-xs text-slate-500">Moderación y roles</p>
-                  </div>
-                  <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Limitado</span>
-                </div>
-              </div>
-            </section>
-
-            <section class="bg-slate-900/60 border border-red-500/30 rounded-2xl p-6">
-              <div class="flex items-start justify-between gap-3">
+          <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
+            <h4 class="text-lg font-semibold text-white mb-4">Accesos administrativos</h4>
+            <div class="space-y-3 text-sm">
+              <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
                 <div>
-                  <h4 class="text-lg font-semibold text-white">Información sensible</h4>
-                  <p class="text-xs text-slate-400">Acciones críticas requieren confirmación.</p>
+                  <p class="text-slate-200 font-medium">Analítica</p>
+                  <p class="text-xs text-slate-500">Lectura y exportación</p>
                 </div>
-                <span class="text-[10px] uppercase tracking-[0.3em] text-red-200 border border-red-500/40 px-2 py-1 rounded-full">
-                  Sensible
-                </span>
+                <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Activo</span>
               </div>
-              <div class="mt-4 space-y-3 text-sm">
-                <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                  <div>
-                    <p class="text-slate-200 font-medium">API Keys</p>
-                    <p class="text-xs text-slate-500">************</p>
-                  </div>
-                  <button
-                    type="button"
-                    class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  >
-                    Rotar
-                  </button>
+              <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                <div>
+                  <p class="text-slate-200 font-medium">Contenido</p>
+                  <p class="text-xs text-slate-500">Gestión editorial</p>
                 </div>
-                <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
-                  <div>
-                    <p class="text-slate-200 font-medium">Tokens de integración</p>
-                    <p class="text-xs text-slate-500">************</p>
-                  </div>
-                  <button
-                    type="button"
-                    class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  >
-                    Revisar
-                  </button>
-                </div>
+                <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Activo</span>
               </div>
-            </section>
-          </div>
+              <div class="flex items-center justify-between rounded-xl border border-slate-800/80 bg-slate-900/40 px-4 py-3">
+                <div>
+                  <p class="text-slate-200 font-medium">Usuarios</p>
+                  <p class="text-xs text-slate-500">Moderación y roles</p>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Limitado</span>
+              </div>
+            </div>
+          </section>
 
           <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 lg:col-span-2">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
               <h4 class="text-lg font-semibold text-white">Actividad administrativa</h4>
-              <button
-                type="button"
-                class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              >
-                Ver log completo
-              </button>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
@@ -1110,25 +501,13 @@
                     <td class="py-3">Publicación destacada</td>
                     <td class="py-3">Marina G.</td>
                     <td class="py-3">Hace 2 h</td>
-                    <td class="py-3">
-                      <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Confirmado</span>
-                    </td>
+                    <td class="py-3"><span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Confirmado</span></td>
                   </tr>
                   <tr class="border-t border-slate-800/70">
                     <td class="py-3">Cambio de rol</td>
                     <td class="py-3">Equipo Moderación</td>
                     <td class="py-3">Hace 1 d</td>
-                    <td class="py-3">
-                      <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">En revisión</span>
-                    </td>
-                  </tr>
-                  <tr class="border-t border-slate-800/70">
-                    <td class="py-3">Borrado de contenido</td>
-                    <td class="py-3">Admin GPTV</td>
-                    <td class="py-3">Hace 3 d</td>
-                    <td class="py-3">
-                      <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">Auditoría</span>
-                    </td>
+                    <td class="py-3"><span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">En revisión</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -1139,10 +518,9 @@
     </ng-template>
   </ng-container>
 
+  <!-- Login CTA (unauthenticated) -->
   <ng-template #loginCTA>
-    <div
-      class="user-area-login-cta md:hidden relative min-h-0 flex flex-col items-center justify-center px-6 py-10 text-center"
-    >
+    <div class="relative min-h-0 flex flex-col items-center justify-center px-6 py-10 text-center" style="min-height: calc(100dvh - var(--top-bar-h, 0px) - var(--bottom-nav-h, 0px))">
       <div class="mb-8">
         <div class="flex items-center justify-center gap-2 mb-4">
           <span class="text-4xl font-black text-white tracking-tight">GUIA</span>
@@ -1155,18 +533,10 @@
       </div>
 
       <div class="flex flex-wrap justify-center gap-2 mb-10">
-        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
-          87 canales en directo
-        </span>
-        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
-          Películas y series
-        </span>
-        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
-          Chat en tiempo real
-        </span>
-        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">
-          Listas personalizadas
-        </span>
+        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">87 canales en directo</span>
+        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">Películas y series</span>
+        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">Chat en tiempo real</span>
+        <span class="px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300">Listas personalizadas</span>
       </div>
 
       <div class="w-full max-w-xs space-y-3">
@@ -1184,33 +554,6 @@
         </a>
       </div>
     </div>
-
-    <div class="hidden md:flex items-center justify-center min-h-[60vh] relative">
-      <div class="bg-slate-900/70 border border-slate-800/80 rounded-3xl p-10 shadow-[0_20px_40px_rgba(0,0,0,0.35)] text-center max-w-lg">
-        <div class="h-16 w-16 rounded-2xl border border-slate-700 flex items-center justify-center mx-auto mb-6">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-7 w-7 text-slate-300"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            aria-hidden="true"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5s-3 1.343-3 3 1.343 3 3 3z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.5 19a6.5 6.5 0 0113 0" />
-          </svg>
-        </div>
-        <h2 class="text-2xl font-semibold text-white mb-3">Acceso privado</h2>
-        <p class="text-sm text-slate-300 mb-6">
-          Conéctate para gestionar tu perfil, crear listas personalizadas y compartir tus descubrimientos con amigos.
-        </p>
-        <a
-          routerLink="/iniciar-sesion"
-          class="inline-flex items-center justify-center min-h-[44px] px-8 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-        >
-          Iniciar sesión
-        </a>
-      </div>
-    </div>
   </ng-template>
 </div>
+

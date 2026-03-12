@@ -105,10 +105,10 @@ export class NavBarComponent implements OnDestroy {
     this.searchRequested.emit();
   }
 
-  openCommunity(): void {
+  openProfile(): void {
     this.isMoreMenuOpen = false;
-    this.menuState.setActive('comunidad');
-    void this.router.navigateByUrl(APP_PATHS.community);
+    this.menuState.setActive('perfil');
+    void this.router.navigateByUrl(APP_PATHS.profile);
   }
 
   formatUnreadCount(count: number | null | undefined): string {

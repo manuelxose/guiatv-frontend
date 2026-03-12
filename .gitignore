@@ -1,21 +1,26 @@
 # Workspace dependencies
 /node_modules
-/backend/node_modules
+/apps/backend/node_modules
+/apps/frontend/node_modules
 
 # Frontend artifacts
-/.angular
-/dist
+/apps/frontend/.angular
+/apps/frontend/dist
+/apps/frontend/releases
 
 # Backend artifacts
-/backend/dist
-/backend/lib
-/backend/storage
+/apps/backend/dist
+/apps/backend/lib
+/apps/backend/storage
 
 # Runtime (kept outside git)
 /.runtime
-/backend/.env
+/.vscode/
+/apps/backend/.env
 .env
 .env.*
+!.env.example
+*.env
 
 # Logs and temp
 *.log

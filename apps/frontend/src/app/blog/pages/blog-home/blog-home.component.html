@@ -128,6 +128,27 @@
         </div>
       </section>
 
+      <section *ngIf="communityLists.length" class="mt-10 space-y-5">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Comunidad</p>
+            <h2 class="text-2xl font-semibold text-white">Listas de los usuarios</h2>
+          </div>
+          <a
+            [routerLink]="appPaths.profile"
+            class="min-h-[40px] rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition-colors hover:border-emerald-400/40"
+          >
+            Crear tu lista
+          </a>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <app-community-list-card
+            *ngFor="let list of communityLists"
+            [list]="list"
+          ></app-community-list-card>
+        </div>
+      </section>
+
       <section *ngIf="trendPosts.length" class="mt-10 space-y-5">
         <div class="flex items-end justify-between gap-4">
           <div>

@@ -48,9 +48,9 @@ interface RecommendationGroup {
             *ngIf="hiddenCount > 0 && !carouselMode"
             type="button"
             (click)="toggleExpanded()"
-            class="min-h-[28px] rounded-full border border-slate-700 bg-slate-900/80 px-2.5 text-[10px] font-semibold text-slate-200 transition-colors hover:border-slate-500"
+            class="min-h-[28px] rounded-full border border-red-500/30 bg-red-500/10 px-3 text-[10px] font-semibold text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200"
           >
-            {{ expanded ? 'Menos' : '+' + hiddenCount + ' más' }}
+            {{ expanded ? 'Ver menos' : 'Ver ' + hiddenCount + ' más' }}
           </button>
         </div>
       </div>

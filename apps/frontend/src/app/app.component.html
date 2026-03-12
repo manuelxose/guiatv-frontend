@@ -40,7 +40,7 @@
 
       <ng-container *ngIf="isAuthenticated$ | async; else loginBtn">
         <a
-          [routerLink]="appPaths.account"
+          [routerLink]="appPaths.profile"
           class="min-h-[44px] min-w-[44px] flex items-center justify-center"
           aria-label="Mi perfil"
         >
@@ -134,7 +134,7 @@
     class="fixed bottom-0 inset-x-0 z-[74] md:hidden bg-slate-950/98 backdrop-blur-xl border-t border-slate-800/50 shadow-[0_-8px_32px_rgba(0,0,0,0.6)] pb-[env(safe-area-inset-bottom)]"
     aria-label="Navegación principal"
   >
-    <div class="grid grid-cols-5 h-16">
+    <div class="grid grid-cols-4 h-16">
       <button
         *ngFor="let tab of mobileTabs"
         type="button"
@@ -165,7 +165,7 @@
             ></path>
           </svg>
 
-          <ng-container *ngIf="tab.key === 'comunidad' && (isAuthenticated$ | async)">
+          <ng-container *ngIf="tab.key === 'perfil' && (isAuthenticated$ | async)">
             <span class="absolute -right-1 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950"></span>
             <span class="absolute -right-1 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-70 animate-ping"></span>
           </ng-container>
@@ -216,25 +216,30 @@
 
     <!-- Full overlay -->
     <div
-      *ngIf="isChatbotOpen && !isChatMinimized"
+      *ngIf="isChatbotOpen"
       class="fixed inset-0 z-[150] md:hidden"
+      [class.invisible]="isChatMinimized"
+      [class.pointer-events-none]="isChatMinimized"
       (click)="closeChatbot()"
     >
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
       <div
-        class="absolute bottom-0 inset-x-0 h-[90dvh] overflow-hidden rounded-t-3xl"
+        class="absolute bottom-0 inset-x-0 h-[100dvh] overflow-hidden rounded-t-3xl"
         (click)="$event.stopPropagation()"
-        (touchstart)="onSwipePanelStart($event)"
-        (touchmove)="onSwipePanelMove($event)"
-        (touchend)="onSwipePanelEnd()"
         [style.transform]="'translateY(' + swipeOffsetY + 'px)'"
         [style.transition]="swipeAnimating ? 'transform 0.3s ease' : 'none'"
       >
-        <!-- Swipe handle -->
-        <div class="flex justify-center pt-2 pb-1">
-          <div class="h-1 w-10 rounded-full bg-slate-600"></div>
+        <!-- Swipe handle (exclusive gesture target) -->
+        <div
+          class="flex justify-center py-3 cursor-grab active:cursor-grabbing"
+          style="touch-action: none"
+          (touchstart)="onSwipePanelStart($event)"
+          (touchmove)="onSwipePanelMove($event)"
+          (touchend)="onSwipePanelEnd()"
+        >
+          <div class="h-1.5 w-12 rounded-full bg-slate-500"></div>
         </div>
-        <app-ai-chatbot (close)="minimizeChatbot()"></app-ai-chatbot>
+        <app-unified-chat-shell (close)="minimizeChatbot()"></app-unified-chat-shell>
       </div>
     </div>
   </ng-container>
@@ -269,13 +274,8 @@
       class="absolute inset-y-0 left-0 z-10 w-1.5 cursor-col-resize hover:bg-red-500/20 active:bg-red-500/30 transition-colors"
       (mousedown)="onResizeStart($event)"
     ></div>
-    <app-ai-chatbot (close)="closeChatbot()"></app-ai-chatbot>
+    <app-unified-chat-shell (close)="closeChatbot()"></app-unified-chat-shell>
   </div>
-
-  <app-desktop-chat-dock
-    *ngIf="showDesktopShell && !isMobileViewport"
-    [suspended]="isChatbotOpen"
-  ></app-desktop-chat-dock>
 
   <app-modal></app-modal>
   <app-auth-login-modal></app-auth-login-modal>

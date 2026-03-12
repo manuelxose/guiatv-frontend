@@ -41,12 +41,13 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
             ? 'bg-gradient-to-br from-red-600 to-red-700 text-white'
             : 'border border-slate-800/90 bg-slate-900/96 text-slate-100'"
         >
-          <!-- Loading state -->
-          <ng-container *ngIf="message.isLoading && !message.isStreaming; else contentBlock">
+          <!-- Loading / Thinking state -->
+          <ng-container *ngIf="(message.isLoading && !message.isStreaming) || message.isThinking; else contentBlock">
             <div class="flex items-center gap-2 py-1">
               <span class="h-2 w-2 rounded-full bg-slate-400 animate-[pulse_1.2s_ease-in-out_infinite]"></span>
               <span class="h-2 w-2 rounded-full bg-slate-400 animate-[pulse_1.2s_ease-in-out_infinite_0.15s]"></span>
               <span class="h-2 w-2 rounded-full bg-slate-400 animate-[pulse_1.2s_ease-in-out_infinite_0.3s]"></span>
+              <span *ngIf="message.isThinking" class="ml-1 text-xs text-slate-400">Analizando la parrilla…</span>
             </div>
           </ng-container>
 

@@ -312,7 +312,8 @@ export class ChatbotService {
       role: 'assistant',
       content: '',
       timestamp: new Date(),
-      isStreaming: true,
+      isThinking: true,
+      isStreaming: false,
     };
 
     this.messagesSubject.next([...this.messagesSubject.value, userMessage, streamingMessage]);
@@ -406,7 +407,7 @@ export class ChatbotService {
         const newText = accumulated + (chunk.t || '');
         setAccumulated(newText);
         // Create new object reference to trigger OnPush change detection
-        const updated = { ...streamingMessage, content: newText };
+        const updated = { ...streamingMessage, content: newText, isThinking: false, isStreaming: true };
         Object.assign(streamingMessage, updated);
         this.messagesSubject.next(
           this.messagesSubject.value.map((m) =>

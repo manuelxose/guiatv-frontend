@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { ChatConversation, ChatMessage, UserFriend } from '../interfaces/user.interface';
 import { environment } from '../../environments/environment';
@@ -53,6 +53,10 @@ export class ChatService {
   private fallbackTimer: ReturnType<typeof setInterval> | null = null;
   private onlineRefreshTimer: ReturnType<typeof setInterval> | null = null;
 
+  /** Emits when a component requests opening the chat shell with a specific user */
+  private readonly requestOpenChatSubject = new Subject<string>();
+  public readonly requestOpenChat$ = this.requestOpenChatSubject.asObservable();
+
   constructor(private http: HttpClient, private userService: UserService) {
     if (!this.isBrowser) return;
 
@@ -92,6 +96,10 @@ export class ChatService {
 
   getRealtimeMode(): Observable<ChatRealtimeMode> {
     return this.realtimeModeSubject.asObservable();
+  }
+
+  requestOpenChat(userId: string): void {
+    this.requestOpenChatSubject.next(userId);
   }
 
   refreshConversations(): Observable<ChatConversation[]> {

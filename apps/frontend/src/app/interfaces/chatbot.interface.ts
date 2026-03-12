@@ -57,6 +57,8 @@ export interface ChatMessage {
   isLoading?: boolean;
   /** True while SSE tokens are still arriving. */
   isStreaming?: boolean;
+  /** True between send and first SSE text chunk — shows "thinking" animation. */
+  isThinking?: boolean;
   /** True only for messages created via sendMessage(), false/undefined for hydrated history. */
   isNewMessage?: boolean;
   feedback?: { rating: 'positive' | 'negative' };

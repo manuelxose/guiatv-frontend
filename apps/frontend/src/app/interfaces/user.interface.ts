@@ -159,6 +159,24 @@ export interface UserList {
   items?: UserListItem[]; // Optional for list preview
 }
 
+export interface CommunityList {
+  id: string;
+  title: string;
+  description?: string;
+  itemsCount: number;
+  visibility: Visibility;
+  createdAt: string;
+  updatedAt: string;
+  cover?: string;
+  previewPosters: string[];
+  user: {
+    id: string;
+    name: string;
+    username: string;
+    avatar: string;
+  } | null;
+}
+
 export interface UserFavorite {
   id: string;
   title: string;

@@ -36,5 +36,6 @@ const UserListSchema = new Schema<IUserListDocument>(
 );
 
 UserListSchema.index({ userId: 1, updatedAt: -1 });
+UserListSchema.index({ visibility: 1, itemsCount: -1, updatedAt: -1 });
 
 export const UserListModel = mongoose.model<IUserListDocument>('UserList', UserListSchema);

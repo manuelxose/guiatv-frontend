@@ -53,6 +53,23 @@ Las variables de entorno se cargan automáticamente desde:
 
 No es necesario hacer `source` manual del env file.
 
+## VS Code Agent Images
+
+El workspace incluye integración local con SiliconFlow para generación de imágenes en modo agente de VS Code.
+
+- MCP server: `.vscode/mcp.json`
+- Script: `tools/mcp/siliconflow-image-server.mjs`
+- Tool disponible para agentes: `generate_image`
+- Variables locales: `.env` y `.env.example`
+- Repositorio central de imágenes generadas: `generated-assets/<proyecto>/`
+- Modelo por defecto para imágenes: `black-forest-labs/FLUX.2-pro`
+
+Flujo recomendado:
+- Primero generar y guardar en `generated-assets/<proyecto>/`, que vive en la raíz del workspace al mismo nivel que `apps/`.
+- Los proyectos pueden tener un enlace simbólico `generated-assets` que apunte a su subcarpeta dentro del repositorio central.
+- Si la imagen se usa realmente en producto, guardar también una copia en los assets del proyecto correspondiente, por ejemplo `apps/frontend/src/assets/...`.
+- El tool `generate_image` soporta `project` para la carpeta central y `assetOutputPath` para la copia final de producto.
+
 ## Deploy
 
 ```bash
