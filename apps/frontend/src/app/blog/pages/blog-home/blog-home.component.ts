@@ -4,16 +4,19 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
+import { CommunityListCardComponent } from '../../../pages/user-area/components/community-list-card/community-list-card.component';
 import { APP_PATHS } from '../../../config/route-map';
 import { MetaService } from '../../../services/meta.service';
+import { UserService } from '../../../services/user.service';
 import { EditorialCategorySection, EditorialPost } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
+import { CommunityList } from '../../../interfaces/user.interface';
 import { generateCollectionPageSchema } from '../../../utils/utils';
 
 @Component({
   selector: 'app-blog-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, EditorialPostCardComponent],
+  imports: [CommonModule, RouterModule, EditorialPostCardComponent, CommunityListCardComponent],
   templateUrl: './blog-home.component.html',
   styleUrls: ['./blog-home.component.scss'],
 })
@@ -27,6 +30,7 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
   public rankingPosts: EditorialPost[] = [];
   public trendPosts: EditorialPost[] = [];
   public categorySections: EditorialCategorySection[] = [];
+  public communityLists: CommunityList[] = [];
   public safeLdHtml: SafeHtml | null = null;
 
   private readonly destroy$ = new Subject<void>();
@@ -34,6 +38,7 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
   constructor(
     private readonly editorialService: EditorialService,
     private readonly metaService: MetaService,
+    private readonly userService: UserService,
     private readonly sanitizer: DomSanitizer
   ) {}
 
@@ -64,6 +69,13 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
           this.error = 'No se ha podido cargar la capa editorial.';
           this.loading = false;
         },
+      });
+
+    this.userService
+      .fetchCommunityLists(4)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((lists) => {
+        this.communityLists = lists;
       });
   }
 

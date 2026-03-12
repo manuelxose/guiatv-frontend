@@ -47,6 +47,7 @@ import { createInteractionRoutes } from './interaction.routes';
 import { createAIRoutes } from './ai.routes';
 import { AIAnalyticsController } from '../controllers/AIAnalyticsController';
 import { createAdminAIAnalyticsRoutes } from './admin-ai-analytics.routes';
+import { createListsPublicRoutes } from './lists-public.routes';
 
 /**
  * Dependencies required by every route factory.
@@ -143,6 +144,7 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   router.use('/ssr', createSSRRoutes(dependencies.ssrController));
   router.use('/auth', createAuthRoutes(dependencies.authController));
   router.use('/blog', createBlogRoutes(dependencies.blogController));
+  router.use('/lists/public', createListsPublicRoutes());
   router.use('/analytics', createAnalyticsRoutes(dependencies.analyticsController, dependencies.authService));
   router.use('/telemetry', createAnalyticsRoutes(dependencies.analyticsController, dependencies.authService));
 

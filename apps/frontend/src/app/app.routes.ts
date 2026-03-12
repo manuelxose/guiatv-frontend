@@ -29,22 +29,23 @@ export const routes: Routes = [
     data: { robots: 'noindex, follow' },
   },
   {
-    path: 'mi-cuenta',
+    path: 'perfil',
     loadComponent: () =>
       import('./pages/user-area/user-area.component').then(
         (m) => m.UserAreaComponent
       ),
-    title: 'Mi cuenta - Guía TV',
-    data: { robots: 'noindex, nofollow' },
+    title: 'Perfil - Guía TV',
+    data: { defaultTab: 'feed', robots: 'noindex, nofollow' },
+  },
+  {
+    path: 'mi-cuenta',
+    redirectTo: 'perfil',
+    pathMatch: 'full',
   },
   {
     path: 'comunidad',
-    loadComponent: () =>
-      import('./pages/user-area/user-area.component').then(
-        (m) => m.UserAreaComponent
-      ),
-    title: 'Comunidad - Guía TV',
-    data: { defaultTab: 'social', robots: 'noindex, nofollow' },
+    redirectTo: 'perfil',
+    pathMatch: 'full',
   },
   {
     path: 'perfil/:userId',

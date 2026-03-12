@@ -10,6 +10,7 @@ const KNOWN_ROUTES: RegExp[] = [
   /^\/$/,
   /^\/iniciar-sesion$/,
   /^\/registro$/,
+  /^\/perfil$/,
   /^\/mi-cuenta$/,
   /^\/comunidad$/,
   /^\/para-ti$/,

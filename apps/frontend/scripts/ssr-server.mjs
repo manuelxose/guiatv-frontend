@@ -306,6 +306,7 @@ const KNOWN_ROUTES = [
   /^\/$/,
   /^\/iniciar-sesion$/,
   /^\/registro$/,
+  /^\/perfil$/,
   /^\/mi-cuenta$/,
   /^\/comunidad$/,
   /^\/para-ti$/,

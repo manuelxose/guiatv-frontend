@@ -17,6 +17,7 @@ import {
   UserNotification,
   UserReport,
   UserContentInteraction,
+  CommunityList,
 } from '../interfaces/user.interface';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
@@ -597,6 +598,16 @@ export class UserService {
         map((resp) => resp?.data?.favorites || []),
         tap((favorites) => this.favoritesSubject.next(favorites)),
         catchError(this.handleError([], 'No se pudieron cargar los favoritos.'))
+      );
+  }
+
+  fetchCommunityLists(limit = 12): Observable<CommunityList[]> {
+    const url = `${this.baseUrl}/lists/public?limit=${limit}`;
+    return this.http
+      .get<ApiResponse<{ lists: CommunityList[] }>>(url)
+      .pipe(
+        map((resp) => resp?.data?.lists || []),
+        catchError(() => of([] as CommunityList[]))
       );
   }
 
