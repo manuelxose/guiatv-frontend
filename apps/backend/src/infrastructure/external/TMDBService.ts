@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import https from 'node:https';
 import { logger } from '../../shared/utils/logger';
 import type { StreamingProvidersService, WatchProvidersResult } from './StreamingProvidersService';
+import type { ICacheRepository } from '../../domain/repositories/ICacheRepository';
 
 export interface TMDBResult {
   id: number;
@@ -67,8 +68,13 @@ export class TMDBService {
   private readonly listCacheTtlMs =
     (Number(process.env.TMDB_LIST_CACHE_TTL_MIN || 10) || 10) * 60 * 1000;
   private streamingProvidersService?: StreamingProvidersService;
+  private readonly persistentCache: ICacheRepository | null;
+  /** TTL for TMDB search results in Valkey/Redis: 24 hours */
+  private static readonly PERSISTENT_TTL_SECONDS = 86400;
+  private static readonly NEGATIVE_CACHE_MARKER = { __tmdbMissing: true } as const;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, persistentCache?: ICacheRepository | null) {
+    this.persistentCache = persistentCache ?? null;
     this.apiKey = apiKey;
 
     const allowSelfSigned =
@@ -100,6 +106,12 @@ export class TMDBService {
     return `${type}:${query}:${year ?? ''}`.toLowerCase();
   }
 
+  private isNegativeCacheMarker(
+    value: TMDBResult | typeof TMDBService.NEGATIVE_CACHE_MARKER | null | undefined
+  ): value is typeof TMDBService.NEGATIVE_CACHE_MARKER {
+    return Boolean((value as any)?.__tmdbMissing);
+  }
+
   private getDetailCacheKey(type: 'movie' | 'tv', tmdbId: number): string {
     return `${type}:${tmdbId}`;
   }
@@ -114,6 +126,24 @@ export class TMDBService {
       return this.cache.get(cacheKey) ?? null;
     }
 
+    // L2: check persistent Valkey cache
+    const valkeyKey = `tmdb:movie:${cacheKey}`;
+    if (this.persistentCache) {
+      try {
+        const persisted = await this.persistentCache.get<
+          TMDBResult | typeof TMDBService.NEGATIVE_CACHE_MARKER | null
+        >(valkeyKey);
+        if (this.isNegativeCacheMarker(persisted)) {
+          this.cache.set(cacheKey, null);
+          return null;
+        }
+        if (persisted !== null && persisted !== undefined) {
+          this.cache.set(cacheKey, persisted);
+          return persisted;
+        }
+      } catch { /* non-fatal */ }
+    }
+
     try {
       const params: any = {
         query,
@@ -121,7 +151,7 @@ export class TMDBService {
         page: 1,
         include_adult: false,
       };
-      
+
       if (year) {
         params.year = year;
       }
@@ -129,14 +159,18 @@ export class TMDBService {
       const response = await this.http.get('/search/movie', { params });
 
       const results = response.data.results;
-      if (results && results.length > 0) {
-        const result = results[0] as TMDBResult;
-        this.cache.set(cacheKey, result);
-        return result;
+      const result: TMDBResult | null = (results && results.length > 0) ? results[0] as TMDBResult : null;
+      this.cache.set(cacheKey, result);
+      if (this.persistentCache) {
+        this.persistentCache
+          .set(
+            valkeyKey,
+            result ?? TMDBService.NEGATIVE_CACHE_MARKER,
+            TMDBService.PERSISTENT_TTL_SECONDS
+          )
+          .catch(() => {});
       }
-      
-      this.cache.set(cacheKey, null);
-      return null;
+      return result;
     } catch (error) {
       this.cache.set(cacheKey, null);
       this.logger.warn(`Failed to search movie: ${query}`, { error: (error as Error).message });
@@ -150,6 +184,24 @@ export class TMDBService {
       return this.cache.get(cacheKey) ?? null;
     }
 
+    // L2: check persistent Valkey cache
+    const valkeyKey = `tmdb:series:${cacheKey}`;
+    if (this.persistentCache) {
+      try {
+        const persisted = await this.persistentCache.get<
+          TMDBResult | typeof TMDBService.NEGATIVE_CACHE_MARKER | null
+        >(valkeyKey);
+        if (this.isNegativeCacheMarker(persisted)) {
+          this.cache.set(cacheKey, null);
+          return null;
+        }
+        if (persisted !== null && persisted !== undefined) {
+          this.cache.set(cacheKey, persisted);
+          return persisted;
+        }
+      } catch { /* non-fatal */ }
+    }
+
     try {
       const response = await this.http.get('/search/tv', {
         params: {
@@ -161,14 +213,18 @@ export class TMDBService {
       });
 
       const results = response.data.results;
-      if (results && results.length > 0) {
-        const result = results[0] as TMDBResult;
-        this.cache.set(cacheKey, result);
-        return result;
+      const result: TMDBResult | null = (results && results.length > 0) ? results[0] as TMDBResult : null;
+      this.cache.set(cacheKey, result);
+      if (this.persistentCache) {
+        this.persistentCache
+          .set(
+            valkeyKey,
+            result ?? TMDBService.NEGATIVE_CACHE_MARKER,
+            TMDBService.PERSISTENT_TTL_SECONDS
+          )
+          .catch(() => {});
       }
-      
-      this.cache.set(cacheKey, null);
-      return null;
+      return result;
     } catch (error) {
       this.cache.set(cacheKey, null);
       this.logger.warn(`Failed to search series: ${query}`, { error: (error as Error).message });

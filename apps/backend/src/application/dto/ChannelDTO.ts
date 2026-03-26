@@ -9,6 +9,8 @@ export interface ChannelDTO {
   normalizedName: string;
   icon: string | null;
   type: string;
+  aliases?: string[];
+  sourceIds?: string[];
   country?: string;
   countryCode?: string;
   region?: string;

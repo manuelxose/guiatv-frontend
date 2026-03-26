@@ -1,13 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { slugify } from 'src/app/utils/utils';
-import { first, filter, takeUntil, take } from 'rxjs';
+import { forkJoin, takeUntil } from 'rxjs';
 import { Subject } from 'rxjs';
-import { HttpService } from 'src/app/services/http.service';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { CardListComponent } from 'src/app/components/card-list/card-list.component';
 import { getHoraInicio } from 'src/app/utils/utils';
+import { DiscoveryService } from 'src/app/services/discovery.service';
 
 @Component({
   selector: 'app-lista-destacadas',
@@ -30,15 +29,8 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
   public error: string | null = null;
   private destroy$ = new Subject<void>();
 
-  // Control de carga inicial
-  private peliculasCargadas = false;
-  private seriesCargadas = false;
-  private datosInicializados = false;
-
   constructor(
-    private route: ActivatedRoute,
-    private guiaSvc: TvGuideService,
-    private http: HttpService,
+    private discoveryService: DiscoveryService,
     private router: Router
   ) {}
 
@@ -47,8 +39,7 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
     this.isPelicula = true;
     this.isSerie = false;
 
-    // Inicializar datos de programación primero
-    this.inicializarDatos();
+    this.cargarDestacados();
   }
 
   public goToDetails(item: any): void {
@@ -57,7 +48,7 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
     const slug = slugify(title);
     // Navegar segun si es pelicula o serie destacada
     this.router.navigate(
-      this.isPelicula ? ['/peliculas', slug] : ['/programas', slug],
+      this.isPelicula ? ['/peliculas', slug] : ['/series', slug],
       { state: { item } }
     );
   }
@@ -78,124 +69,33 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Inicializa los datos de programación necesarios
-   */
-  private inicializarDatos(): void {
+  private cargarDestacados(): void {
     this.loading = true;
+    this.error = null;
 
-    // Intentar obtener programación actual
-    this.http
-      .getProgramacion('today')
-      .pipe(first(), takeUntil(this.destroy$))
+    forkJoin({
+      peliculas: this.discoveryService.browse({
+        type: 'movie',
+        limit: 12,
+        sort: 'popular',
+      }),
+      series: this.discoveryService.browse({
+        type: 'series',
+        limit: 12,
+        sort: 'popular',
+      }),
+    })
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            this.procesarDatosProgramacion(data);
-          } else {
-            // Si no hay datos directos, escuchar el observable
-            this.escucharProgramas();
-          }
-        },
-        error: () => {
-          this.escucharProgramas();
-        },
-      });
-  }
-
-  /**
-   * Escucha cambios en los programas
-   */
-  private escucharProgramas(): void {
-    this.http.programas$
-      .pipe(
-        filter((d) => Array.isArray(d) && d.length > 0),
-        first(),
-        takeUntil(this.destroy$)
-      )
-      .subscribe({
-        next: (data) => {
-          this.procesarDatosProgramacion(data as any[]);
-        },
-        error: () => {
-          this.loading = false;
-          this.error = 'No se pudieron cargar los datos';
-        },
-      });
-  }
-
-  /**
-   * Procesa los datos de programación y genera destacados
-   */
-  private procesarDatosProgramacion(data: any[]): void {
-    // Alimentar el servicio con los datos
-    this.guiaSvc.setData(data);
-    this.datosInicializados = true;
-
-    // Generar listas de destacados
-    Promise.all([
-      this.guiaSvc.setPeliculasDestacadas(),
-      this.guiaSvc.setSeriesDestacadas(),
-    ])
-      .then(() => {
-        // Ahora sí cargar las películas (que es el modo por defecto)
-        this.cargarPeliculasDestacadas();
-        // Precargar series en segundo plano
-        this.precargarSeriesDestacadas();
-      })
-      .catch(() => {
-        this.loading = false;
-      });
-  }
-
-  /**
-   * Carga películas destacadas (modo principal)
-   */
-  private cargarPeliculasDestacadas(): void {
-    if (this.peliculasCargadas) {
-      this.loading = false;
-      return;
-    }
-
-    this.guiaSvc
-      .getPeliculasDestacadas()
-      .pipe(
-        filter((data) => Array.isArray(data) && data.length > 0),
-        take(1),
-        takeUntil(this.destroy$)
-      )
-      .subscribe({
-        next: (data) => {
-          this.peliculasDestacadas = data || [];
-          this.peliculasCargadas = true;
+        next: ({ peliculas, series }) => {
+          this.peliculasDestacadas = peliculas.items || [];
+          this.seriesDestacadas = series.items || [];
           this.loading = false;
         },
         error: () => {
-          this.error = 'Error al cargar películas destacadas';
+          this.error = 'No se pudieron cargar los destacados';
           this.loading = false;
         },
-      });
-  }
-
-  /**
-   * Precarga series en segundo plano
-   */
-  private precargarSeriesDestacadas(): void {
-    if (this.seriesCargadas) return;
-
-    this.guiaSvc
-      .getSeriesDestacadas()
-      .pipe(
-        filter((data) => Array.isArray(data) && data.length > 0),
-        take(1),
-        takeUntil(this.destroy$)
-      )
-      .subscribe({
-        next: (data) => {
-          this.seriesDestacadas = data || [];
-          this.seriesCargadas = true;
-        },
-        error: () => undefined,
       });
   }
 
@@ -205,11 +105,6 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
   public getPeliculasAhora(): void {
     this.isPelicula = true;
     this.isSerie = false;
-
-    if (!this.peliculasCargadas) {
-      this.loading = true;
-      this.cargarPeliculasDestacadas();
-    }
   }
 
   /**
@@ -218,28 +113,6 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
   public getSeriesAhora(): void {
     this.isPelicula = false;
     this.isSerie = true;
-
-    if (!this.seriesCargadas) {
-      this.loading = true;
-      this.guiaSvc
-        .getSeriesDestacadas()
-        .pipe(
-          filter((data) => Array.isArray(data) && data.length > 0),
-          take(1),
-          takeUntil(this.destroy$)
-        )
-        .subscribe({
-          next: (data) => {
-            this.seriesDestacadas = data || [];
-            this.seriesCargadas = true;
-            this.loading = false;
-          },
-          error: () => {
-            this.error = 'Error al cargar series destacadas';
-            this.loading = false;
-          },
-        });
-    }
   }
 
   // ===== Template Helpers =====
@@ -291,7 +164,6 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
   public openDetails(programa: any): void {
     if (!programa) return;
     if (programa?.channel) {
-      this.guiaSvc.setDetallesPrograma(programa);
       const title = (programa?.title?.value || programa?.name || '').trim();
       const slug = slugify(title);
 
@@ -310,7 +182,7 @@ export class ListaDestacadasComponent implements OnInit, OnDestroy {
       if (looksLikeMovie) {
         this.router.navigate(['/peliculas', slug]);
       } else {
-        this.router.navigate(['/programas', slug]);
+        this.router.navigate(['/series', slug]);
       }
     } else {
       const slug = slugify(programa?.name || '');

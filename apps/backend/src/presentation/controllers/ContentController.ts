@@ -6,6 +6,7 @@ import { ValidationError } from '@/shared/errors';
 import { AuthenticatedRequest } from '../middlewares/authGuard';
 import { StreamingProvidersService } from '@/infrastructure/external/StreamingProvidersService';
 import { parseCatalogId } from '@/application/services/CatalogIdentity';
+import { CatalogService } from '@/application/services/CatalogService';
 
 /**
  * Controller that returns media content cards and batches.
@@ -14,7 +15,8 @@ export class ContentController {
   constructor(
     private readonly getContentDetail: GetContentDetail,
     private readonly getContentBatch: GetContentBatch,
-    private readonly streamingProvidersService: StreamingProvidersService
+    private readonly streamingProvidersService: StreamingProvidersService,
+    private readonly catalogService: CatalogService
   ) {}
 
   /**
@@ -23,8 +25,17 @@ export class ContentController {
   async getContent(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
     const parsed = parseCatalogId(id);
-    const programId =
-      parsed?.source === 'program' && parsed.programId ? parsed.programId : id;
+    if (parsed) {
+      const result = await this.catalogService.getDetail(
+        id,
+        (req as AuthenticatedRequest).user?.id
+      );
+
+      res.status(200).json(successResponse(result));
+      return;
+    }
+
+    const programId = id;
     const { expand } = req.query;
 
     const expandList = expand
@@ -122,6 +133,17 @@ export class ContentController {
       .split(',')
       .map((id) => id.trim())
       .filter(Boolean);
+
+    const catalogIds = ids.filter((id) => Boolean(parseCatalogId(id)));
+    if (catalogIds.length === ids.length) {
+      const items = await Promise.all(
+        ids.map((id) =>
+          this.catalogService.getDetail(id, (req as AuthenticatedRequest).user?.id)
+        )
+      );
+      res.status(200).json(successResponse({ items }));
+      return;
+    }
 
     const result = await this.getContentBatch.execute({ ids });
 

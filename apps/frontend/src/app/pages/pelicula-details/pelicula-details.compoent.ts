@@ -2,7 +2,6 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { HttpService } from 'src/app/services/http.service';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { MetaService } from 'src/app/services/meta.service';
 import { CatalogService } from 'src/app/services/catalog.service';
 import { Subscription } from 'rxjs';
@@ -22,7 +21,6 @@ export class PeliculaDetailsComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private httpSvc = inject(HttpService);
-  private guiaSvc = inject(TvGuideService);
   private metaSvc = inject(MetaService);
   private catalogSvc = inject(CatalogService);
 

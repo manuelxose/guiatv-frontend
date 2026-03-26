@@ -57,8 +57,8 @@ export class ProgramListService {
   constructor(private tvData: TvDataService) {}
 
   /**
-   * Devuelve la lista de canales + programas con layout precalculado desde /v2/layouts/{date}.
-   * Usa fields=full por defecto para mantener metadatos necesarios en UI.
+   * Returns channel/program data derived from the canonical TV read model.
+   * Uses `fields=full` by default to preserve UI metadata.
    */
   loadProgramList(
     date: DateAlias,

@@ -256,7 +256,7 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
     if (!this.program) return;
     const title = this.extractTitle(this.program);
     const slug = this.slugify(title);
-    const poster = this.program.icon || this.program.poster || this.program.image || '';
+    const poster = this.program.poster || this.program.image || this.program.icon || '';
     const description = this.program.desc?.details || this.program.desc?.value || this.program.description || '';
     const startTime = this.program.start || '';
     const stopTime = this.program.stop || '';

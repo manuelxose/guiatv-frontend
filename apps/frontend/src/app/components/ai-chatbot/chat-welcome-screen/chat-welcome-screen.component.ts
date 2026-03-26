@@ -19,12 +19,14 @@ import { CommonModule } from '@angular/common';
       </p>
 
       <div class="mt-5 flex max-w-sm flex-wrap justify-center gap-2">
-        <span
+        <button
           *ngFor="let suggestion of previewSuggestions; trackBy: trackByText"
-          class="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs text-slate-300"
+          type="button"
+          (click)="login.emit()"
+          class="cursor-pointer rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs text-slate-300 transition-colors hover:bg-slate-800"
         >
           {{ suggestion }}
-        </span>
+        </button>
       </div>
 
       <div class="mt-6 flex items-center gap-3">

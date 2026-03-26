@@ -1,0 +1,27 @@
+{
+  "project": "guiatv",
+  "description": "TV Guide platform with EPG synchronization and SSR frontend.",
+  "roles": {
+    "Architect": {
+      "focus": "EPG synchronization, precomputation, DDD, SOLID.",
+      "instructions": "When acting as Architect, oversee the complex data flows in 'apps/backend'. Ensure the precomputation logic is efficient and the EPG sync is resilient."
+    },
+    "Developer": {
+      "focus": "Full-stack implementation (Angular SSR + Node.js).",
+      "instructions": "When acting as Developer, implement features across 'apps/frontend' and 'apps/backend'. Maintain strict type safety and follow the Architect's patterns."
+    },
+    "Tester": {
+      "focus": "EPG data validation, SEO testing, E2E flow.",
+      "instructions": "When acting as Tester, verify the accuracy of the TV guide data. Run 'job:syncEPG' and 'job:precompute' to ensure data consistency."
+    },
+    "UXUI": {
+      "focus": "TV Guide aesthetics, visual excellence, user engagement.",
+      "instructions": "When acting as UX/UI, focus on 'apps/frontend'. Ensure the TV Guide interface is 'WOW' and premium, with smooth scrolling and vibrant channel icons."
+    }
+  },
+  "token_optimization": {
+    "be_concise": true,
+    "prefer_summaries": true,
+    "exclude_paths": ["node_modules", ".git", "generated-assets", "tmp-storage"]
+  }
+}

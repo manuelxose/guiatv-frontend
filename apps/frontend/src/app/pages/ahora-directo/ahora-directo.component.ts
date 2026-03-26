@@ -4,11 +4,9 @@ import { Router } from '@angular/router';
 import { first, takeUntil, Subject } from 'rxjs';
 import { CardListComponent } from 'src/app/components/card-list/card-list.component';
 import { MetaService } from 'src/app/services/meta.service';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
-import { isLive } from 'src/app/utils/utils';
 import { normalizePublicImageUrl } from 'src/app/utils/media-url';
 import { TvDataService } from 'src/app/state/tv-data.service';
-import { ProgramsResponse, ProgramLayoutDTO, ChannelMetaDTO } from 'src/app/api/models';
+import { TvReadItemDTO, TvReadResponseDTO } from 'src/app/api/models';
 
 @Component({
   selector: 'app-ahora-directo',
@@ -35,7 +33,6 @@ export class AhoraDirectoComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private svcGuide: TvGuideService,
     private metaSvc: MetaService,
     private router: Router,
     private tvData: TvDataService
@@ -89,7 +86,7 @@ export class AhoraDirectoComponent implements OnInit, OnDestroy {
     const startTime = performance.now();
 
     this.tvData
-      .loadPrograms({ date: 'today', fields: 'full', limit: 5000 })
+      .loadReadView('today', { view: 'now', limit: 2000 })
       .pipe(first(), takeUntil(this.destroy$))
       .subscribe({
         next: (resp) => {
@@ -102,13 +99,10 @@ export class AhoraDirectoComponent implements OnInit, OnDestroy {
       });
   }
 
-  private processProgramsResponse(resp: ProgramsResponse): void {
+  private processProgramsResponse(resp: TvReadResponseDTO): void {
     try {
-      const programs = resp?.programs || [];
-      const channelMap = new Map<string, ChannelMetaDTO>(
-        (resp?.channels || []).map((c) => [c.id, c])
-      );
-      this.extractLivePrograms(programs, channelMap);
+      const items = resp?.items || [];
+      this.extractLivePrograms(items);
       this.error = null;
     } catch (err) {
       this.handleError(err);
@@ -117,31 +111,36 @@ export class AhoraDirectoComponent implements OnInit, OnDestroy {
     }
   }
 
-  private extractLivePrograms(
-    programs: ProgramLayoutDTO[],
-    channelMap: Map<string, ChannelMetaDTO>
-  ): void {
+  private extractLivePrograms(items: TvReadItemDTO[]): void {
     this.peliculas_live = [];
     this.series_live = [];
 
-    programs.forEach((p) => {
-      if (!isLive(p.start, p.end)) return;
-      const channelMeta = channelMap.get(p.channelId || '') as ChannelMetaDTO;
+    items.forEach((item) => {
+      if (!item.airing.liveNow) return;
       const media = this.resolveMedia(
-        (p as any).image || (p as any).poster || (p as any).background
+        item.assets.poster?.url ||
+          ((item.assets.primary?.kind === 'poster' ||
+            item.assets.primary?.kind === 'backdrop')
+            ? item.assets.primary?.url
+            : undefined)
       );
       const mapped = {
-        ...p,
-        title: typeof p.title === 'object' ? p.title : { value: p.title },
-        channel: channelMeta?.name || p.channelId,
-        channelIcon: this.resolveIcon(channelMeta?.icon),
+        id: item.id,
+        title: { value: item.program.title },
+        category: item.program.editorialCategory || item.program.genre || '',
+        start: item.airing.start,
+        end: item.airing.end,
+        channelId: item.channel.id,
+        channel: item.channel.name,
+        channelIcon: this.resolveIcon(item.channel.icon),
         image: media,
         poster: media,
         background: media,
+        liveNow: item.airing.liveNow,
       };
-      if (this.isMovie(p)) {
+      if (this.isMovie(mapped)) {
         this.peliculas_live.push(mapped);
-      } else if (this.isSeries(p)) {
+      } else if (this.isSeries(mapped)) {
         this.series_live.push(mapped);
       }
     });
@@ -184,12 +183,8 @@ export class AhoraDirectoComponent implements OnInit, OnDestroy {
       const start =
         item?.start || item?.startDate || item?.date || item?.start_time;
       if (!start) return '';
-      
-      // The API returns times in UTC, but they represent local Spanish time
-      // So we need to subtract 1 hour to display correctly
+
       const date = new Date(start);
-      date.setHours(date.getHours() - 1);
-      
       return date.toLocaleTimeString('es-ES', {
         hour: '2-digit',
         minute: '2-digit',
@@ -215,11 +210,7 @@ export class AhoraDirectoComponent implements OnInit, OnDestroy {
       if (!dateStr) {
         return new Date();
       }
-      const date = new Date(dateStr);
-      // isLive logic uses +1h on current time, which is equivalent to -1h on program time
-      // relative to current time.
-      date.setHours(date.getHours() - 1);
-      return date;
+      return new Date(dateStr);
     } catch {
       return new Date();
     }
@@ -248,12 +239,12 @@ export class AhoraDirectoComponent implements OnInit, OnDestroy {
     void startTime;
   }
 
-  private isMovie(p: ProgramLayoutDTO): boolean {
+  private isMovie(p: { category?: string }): boolean {
     const cat = (p.category || '').toLowerCase();
     return cat.includes('cine') || cat.includes('movie') || cat.includes('pel');
   }
 
-  private isSeries(p: ProgramLayoutDTO): boolean {
+  private isSeries(p: { category?: string }): boolean {
     const cat = (p.category || '').toLowerCase();
     return cat.includes('serie') || cat.includes('series');
   }

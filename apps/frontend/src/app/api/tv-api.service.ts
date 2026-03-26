@@ -3,20 +3,16 @@ import { Observable } from 'rxjs';
 import { ApiClientService } from './api-client.service';
 import {
   ApiResponse,
-  ChannelMetaDTO,
-  LayoutsQuery,
-  LayoutsResponse,
-  NowPlayingResponse,
-  ProgramResponse,
-  ProgramsQuery,
-  ProgramsResponse,
-  ScheduleChannelsSummary,
-  ScheduleResponse,
   DateAlias,
+  TvChannelSurfaceDTO,
+  TvGuideSurfaceDTO,
+  TvReadChannelsResponseDTO,
+  TvReadItemResponseDTO,
+  TvReadResponseDTO,
 } from './models';
 import { ApiCacheService } from './cache.service';
 
-const DEFAULT_TTL = 30_000; // 30s for most GETs
+const DEFAULT_TTL = 30_000;
 
 @Injectable({ providedIn: 'root' })
 export class TvApiService {
@@ -29,98 +25,101 @@ export class TvApiService {
     return this.client.get<ApiResponse<any>>('/health');
   }
 
-  getChannels(): Observable<ApiResponse<{ channels: ChannelMetaDTO[] }>> {
-    return this.client.get('/channels');
-  }
-
-  getPrograms(query: ProgramsQuery): Observable<ApiResponse<ProgramsResponse>> {
-    this.assertDate(query.date);
+  getTvRead(query: {
+    view: 'now' | 'next' | 'night' | 'day' | 'search';
+    date?: DateAlias;
+    group?: string;
+    category?: string;
+    channelId?: string;
+    q?: string;
+    limit?: number;
+    cursor?: string;
+  }): Observable<ApiResponse<TvReadResponseDTO>> {
     const params: Record<string, any> = {
-      date: query.date,
-      fields: query.fields ?? 'full',
-      limit: query.limit ?? 5000,
-      page: query.page,
-      channels: query.channels,
-      timeSlot: query.timeSlot,
-      country: query.country,
-      channelTypes: query.channelTypes,
+      view: query.view,
+      date: query.date ?? 'today',
+      group: query.group,
+      category: query.category,
+      channelId: query.channelId,
+      q: query.q,
+      limit: query.limit,
+      cursor: query.cursor,
     };
-    return this.client.get('/programs', params);
+    return this.cachedGet<ApiResponse<TvReadResponseDTO>>(
+      `/tv/read:${JSON.stringify(params)}`,
+      '/tv/read',
+      params,
+      this.resolveReadTtl(query.view)
+    );
   }
 
-  getProgram(id: string): Observable<ApiResponse<ProgramResponse>> {
-    return this.client.get(`/programs/${id}`);
-  }
-
-  getLayouts(
-    date: DateAlias,
-    query?: LayoutsQuery
-  ): Observable<ApiResponse<LayoutsResponse>> {
-    this.assertDate(date);
+  getTvReadChannels(
+    date: DateAlias = 'today',
+    group?: string
+  ): Observable<ApiResponse<TvReadChannelsResponseDTO>> {
     const params: Record<string, any> = {
-      fields: query?.fields ?? 'full',
-      channels: query?.channels,
-      timeSlot: query?.timeSlot,
-      channelTypes: query?.channelTypes,
+      date,
+      group,
     };
-    const cacheKey = `layouts:${date}:${JSON.stringify(params)}`;
-    const cached = this.cache.get<ApiResponse<LayoutsResponse>>(cacheKey);
-    if (cached) {
-      return new Observable((subscriber) => {
-        subscriber.next(cached);
-        subscriber.complete();
-      });
-    }
-
-    return new Observable((subscriber) => {
-      this.client.get<ApiResponse<LayoutsResponse>>(`/layouts/${date}`, params).subscribe({
-        next: (resp) => {
-          this.cache.set(cacheKey, resp, DEFAULT_TTL);
-          subscriber.next(resp);
-          subscriber.complete();
-        },
-        error: (err) => subscriber.error(err),
-      });
-    });
+    return this.cachedGet<ApiResponse<TvReadChannelsResponseDTO>>(
+      `/tv/read/channels:${JSON.stringify(params)}`,
+      '/tv/read/channels',
+      params,
+      60_000
+    );
   }
 
-  getSchedule(date: DateAlias): Observable<ApiResponse<ScheduleResponse>> {
-    this.assertDate(date);
-    return this.client.get(`/schedules/${date}`);
+  getTvReadChannelDetail(
+    channelId: string,
+    date: DateAlias = 'today',
+    view: 'now' | 'next' | 'night' | 'day' = 'day'
+  ): Observable<ApiResponse<TvReadResponseDTO>> {
+    const params: Record<string, any> = {
+      date,
+      view,
+    };
+    return this.cachedGet<ApiResponse<TvReadResponseDTO>>(
+      `/tv/read/channels/${channelId}:${JSON.stringify(params)}`,
+      `/tv/read/channels/${channelId}`,
+      params,
+      view === 'now' ? 60_000 : 15 * 60_000
+    );
   }
 
-  getScheduleChannels(
-    date: DateAlias
-  ): Observable<ApiResponse<ScheduleChannelsSummary>> {
-    this.assertDate(date);
-    return this.client.get(`/schedules/${date}/channels`);
+  getTvReadItem(airingId: string): Observable<ApiResponse<TvReadItemResponseDTO>> {
+    return this.cachedGet<ApiResponse<TvReadItemResponseDTO>>(
+      `/tv/read/items/${airingId}`,
+      `/tv/read/items/${airingId}`,
+      undefined,
+      30 * 60_000
+    );
   }
 
-  getNowPlaying(): Observable<ApiResponse<NowPlayingResponse>> {
-    const cacheKey = 'now-playing';
-    const cached = this.cache.get<ApiResponse<NowPlayingResponse>>(cacheKey);
-    if (cached) {
-      return new Observable((subscriber) => {
-        subscriber.next(cached);
-        subscriber.complete();
-      });
-    }
-
-    return new Observable((subscriber) => {
-      this.client.get<ApiResponse<NowPlayingResponse>>('/ssr/now-playing').subscribe({
-        next: (resp) => {
-          this.cache.set(cacheKey, resp, 15_000); // shorter TTL
-          subscriber.next(resp);
-          subscriber.complete();
-        },
-        error: (err) => subscriber.error(err),
-      });
-    });
+  getTvGuideSurface(params: {
+    date?: DateAlias;
+    group?: string;
+    category?: string;
+  }): Observable<ApiResponse<TvGuideSurfaceDTO>> {
+    return this.cachedGet<ApiResponse<TvGuideSurfaceDTO>>(
+      `/tv/surface/guide:${JSON.stringify(params)}`,
+      '/tv/surface/guide',
+      params,
+      60_000
+    );
   }
 
-  /**
-   * Placeholder helpers for admin endpoints. They are declared but not wired to UI yet.
-   */
+  getTvChannelSurface(
+    channelId: string,
+    date: DateAlias = 'today'
+  ): Observable<ApiResponse<TvChannelSurfaceDTO>> {
+    return this.cachedGet<ApiResponse<TvChannelSurfaceDTO>>(
+      `/tv/surface/channels/${channelId}:${date}`,
+      `/tv/surface/channels/${channelId}`,
+      { date },
+      60_000
+    );
+  }
+
   triggerSync(body: { date?: DateAlias; forceRefresh?: boolean; sourceUrl?: string }) {
     return this.client.post('/v2/admin/sync', body);
   }
@@ -137,9 +136,36 @@ export class TvApiService {
     return this.client.post('/v2/admin/cache/clear', body);
   }
 
-  private assertDate(date: DateAlias) {
-    if (!date) {
-      throw new Error('[TvApiService] date is required');
+  private cachedGet<T>(
+    cacheKey: string,
+    path: string,
+    params?: Record<string, any>,
+    ttlMs: number = DEFAULT_TTL
+  ): Observable<T> {
+    const cached = this.cache.get<T>(cacheKey);
+    if (cached) {
+      return new Observable((subscriber) => {
+        subscriber.next(cached);
+        subscriber.complete();
+      });
     }
+
+    return new Observable((subscriber) => {
+      this.client.get<T>(path, params).subscribe({
+        next: (resp) => {
+          this.cache.set(cacheKey, resp, ttlMs);
+          subscriber.next(resp);
+          subscriber.complete();
+        },
+        error: (err) => subscriber.error(err),
+      });
+    });
+  }
+
+  private resolveReadTtl(view: 'now' | 'next' | 'night' | 'day' | 'search'): number {
+    if (view === 'now') return 60_000;
+    if (view === 'next') return 120_000;
+    if (view === 'search') return 30_000;
+    return 15 * 60_000;
   }
 }

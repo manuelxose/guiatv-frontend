@@ -1,82 +1,100 @@
 # GuiaTV Backend
 
-API Node.js/Express para la Guía de Programación TV.
+Express + TypeScript backend for TV guide, discovery, streaming catalog, and chatbot retrieval features.
 
 ## Stack
 
-- **Runtime**: Node.js 22, TypeScript 5.8
-- **Framework**: Express 4
-- **Base de datos**: MongoDB (mongoose)
-- **Cache**: Valkey / Redis (opcional, fallback a memoria)
-- **Timezone**: `Europe/Madrid` (CET/CEST) — forzado automáticamente
+- Runtime: Node.js 22
+- Language: TypeScript 5.8
+- Framework: Express 4
+- Database: MongoDB via Mongoose
+- Cache: in-memory or Valkey/Redis-compatible
+- Operational timezone: `Europe/Madrid`
 
-## Requisitos
+## Requirements
 
 - Node.js 22+
-- MongoDB en `127.0.0.1:27017`
-- Valkey/Redis en `127.0.0.1:6379` (opcional)
+- MongoDB available at `127.0.0.1:27017` or via `MONGODB_URI`
+- Optional Valkey/Redis at `127.0.0.1:6379`
 
-## Configuración
+## Configuration
 
-Las variables de entorno se cargan automáticamente en este orden:
+Environment variables are loaded in this order:
 
-1. `/etc/guiatv/api.env` (producción)
-2. `apps/backend/.env` (desarrollo local)
+1. `/etc/guiatv/api.env`
+2. `apps/backend/.env`
 
-Variables principales (ver `/etc/guiatv/api.env` como referencia):
+Key variables:
 
-| Variable | Descripción | Default |
-|---|---|---|
-| `PORT` | Puerto del servidor | `8080` |
-| `MONGODB_URI` | URI de MongoDB | `mongodb://127.0.0.1:27017/guiatv` |
-| `MONGODB_DB_NAME` | Nombre de la BD | `guiatv` |
-| `CACHE_TYPE` | `memory` o `valkey` | `memory` |
-| `VALKEY_URL` | URL de Valkey/Redis | — |
-| `NODE_ENV` | Entorno | `development` |
+| Variable | Description | Default |
+| --- | --- | --- |
+| `PORT` | HTTP server port | `8080` |
+| `MONGODB_URI` | Mongo connection string | `mongodb://127.0.0.1:27017/guiatv` |
+| `MONGODB_DB_NAME` | Mongo database name | `guiatv` |
+| `CACHE_TYPE` | `memory`, `redis`, or `valkey` | `memory` |
+| `VALKEY_URL` | Valkey/Redis URL | — |
+| `NODE_ENV` | Runtime environment | `development` |
 
 ## Scripts
 
 ```bash
-# Build
-npm run build          # Compila TypeScript
+# Build and lint
+npm run build
+npm run lint
+npm run test
 
-# Servidor
-npm start              # Inicia el servidor (requiere build previo)
-npm run dev            # Build + watch + restart automático
+# Server
+npm start
+npm run dev
 
-# Jobs (requieren build previo)
-npm run job:syncEPG    # Descarga y parsea EPG desde fuentes XML
-npm run job:precompute # Pre-calcula JSONs de parrilla (ayer/hoy/mañana/pasado)
-npm run job:clean      # Limpia programas antiguos de la BD
+# Data jobs
+npm run job:syncEPG
+npm run job:precompute
+npm run job:clean
 
-# Índices
-npm run create-indexes # Crea índices de MongoDB
-
-# Calidad
-npm run lint           # Verificación estática con TypeScript
-npm run test           # Runner nativo de Node
+# Operational scripts
+npm run create-indexes
+npm run migrate:tv-read-model
+npm run seed:editorial
 ```
 
-## API
+## Active API surface
 
-- **Health**: `GET /health`
-- **Swagger**: `GET /api-docs`
-- **Endpoints principales**: `/v2/channels`, `/v2/tv/schedule`, `/v2/tv/now`, `/v2/discovery/home`
+- Health: `GET /v2/health`
+- Swagger: `GET /v2/docs`
+- Canonical TV reads:
+  - `GET /v2/tv/read`
+  - `GET /v2/tv/read/channels`
+  - `GET /v2/tv/read/items/:airingId`
+- TV BFF surfaces:
+  - `GET /v2/tv/surface/guide`
+  - `GET /v2/tv/surface/channels/:channelId`
+- Discovery:
+  - `GET /v2/discovery/home`
+  - `GET /v2/discovery/search`
+  - `GET /v2/discovery/browse`
+- Unified content:
+  - `GET /v2/content/:id`
+  - `GET /v2/content/batch`
 
-Documentación detallada en [docs/endpoints-reference.md](docs/endpoints-reference.md) y [docs/bff-overview.md](docs/bff-overview.md).
+Detailed documentation:
 
-## Arquitectura
+- [docs/architecture.md](docs/architecture.md)
+- [docs/bff-overview.md](docs/bff-overview.md)
+- [docs/endpoints-reference.md](docs/endpoints-reference.md)
+- [docs/regression-recovery-2026-03-26.md](docs/regression-recovery-2026-03-26.md)
+- [docs/project-status-and-future-improvements.md](docs/project-status-and-future-improvements.md)
 
-```
+## Repository layout
+
+```text
 src/
-├── config/          # Bootstrap, MongoDB, container DI
-├── domain/          # Entidades y lógica de negocio
-├── application/     # Servicios (ProgramLayoutBuilder, etc.)
-├── infrastructure/  # MongoDB repos, cache, storage
-├── presentation/    # Controllers, routes, middleware
-├── jobs/            # Cron jobs + CLI runners
-├── server/          # Express entry point y config
-└── shared/          # Utilidades comunes
+├── config/          # bootstrap, Mongo, container wiring
+├── domain/          # entities, repository contracts, domain services
+├── application/     # use cases, read services, DTOs
+├── infrastructure/  # repositories, cache adapters, provider clients
+├── presentation/    # routes, controllers, middleware, Swagger
+├── jobs/            # cron jobs and CLI entry points
+├── server/          # HTTP server bootstrap
+└── shared/          # shared utilities and helpers
 ```
-
-Ver [docs/architecture.md](docs/architecture.md) para detalle completo.

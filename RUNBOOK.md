@@ -6,10 +6,12 @@
 - MongoDB: `mongod` en `127.0.0.1:27017`
 - Valkey: `valkey-server` en `127.0.0.1:6379`
 
-## Rutas
+## Paths
 - Código: `/var/www/guiatv`
 - Frontend: `/var/www/guiatv/apps/frontend`
 - Backend: `/var/www/guiatv/apps/backend`
+- Release activa: `/var/www/guiatv/current`
+- Historial de releases: `/var/www/guiatv/releases/<timestamp>`
 - Env API: `/etc/guiatv/api.env`
 - Env SSR: `/etc/guiatv/ssr.env`
 - Storage persistente: `/var/lib/guiatv/storage`
@@ -29,8 +31,19 @@ Smoke autenticado opcional tras deploy:
 sudo SMOKE_AUTH_TOKEN='<jwt>' /var/www/guiatv/deploy-guiatv.sh
 ```
 
+El deploy ya no publica frontend y backend por separado. Siempre:
+
+1. compila ambos workspaces
+2. publica una release única bajo `/var/www/guiatv/releases/<timestamp>`
+3. repunta `/var/www/guiatv/current`
+4. reinicia `guiatv-api` y `guiatv-ssr`
+5. ejecuta smokes HTTP/SSR/canonical API
+
 Validación mínima esperada tras deploy:
+- `readlink -f /var/www/guiatv/current` -> release recién publicada
 - `GET /v2/catalog/platforms` -> `200`
+- `GET /v2/discovery/home` -> `200`
+- `GET /v2/tv/surface/guide?...` -> `200`
 - `GET /v2/catalog?limit=1` -> `200`
 - `GET /v2/discovery/for-you` -> `200` con JWT
 - `GET /v2/user/interactions` -> `200` con JWT
@@ -61,6 +74,7 @@ Si falta el fichero de credenciales, el submit se marca como `skipped` y no romp
 ```bash
 systemctl status mongod valkey-server guiatv-api guiatv-ssr --no-pager
 journalctl -u guiatv-api -u guiatv-ssr --no-pager -n 200
+readlink -f /var/www/guiatv/current
 curl -s http://127.0.0.1:4000/v2/health
 curl -s http://127.0.0.1:3000/ | head -n 5
 curl -s https://guiaprogramaciontv.com/v2/catalog/platforms | jq '.success'

@@ -22,6 +22,10 @@ export interface ParsedXMLProgram {
   category?: string;
   year?: string;
   rating?: string;
+  sourceFeed?: string;
+  sourceProgrammeId?: string;
+  sourceAssetCandidates?: Array<Record<string, any>>;
+  sourceProvenance?: Record<string, any>;
 }
 
 export interface ParsedXMLData {
@@ -76,7 +80,8 @@ export class XMLParser {
   private parseChannels(channelsData: any[]): ParsedXMLChannel[] {
     return channelsData.map((ch) => {
       const id = this.firstValue(ch.id ?? ch.$?.id) || '';
-      const displayName = this.firstValue(ch['display-name']) || '';
+      let displayName = this.firstValue(ch['display-name']) || '';
+      displayName = displayName.replace(/^(ES|PT|UK|FR|DE|US|IT|RU|AR|MX)\s*-\s*/i, '').trim();
       const icon = this.firstValue(ch.icon?.[0]?.src ?? ch.icon?.[0]?.$?.src);
       const { country, countryCode } = this.extractCountry(id, displayName);
 

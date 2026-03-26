@@ -177,7 +177,7 @@ const UserAssistantConversationSchema = new Schema<IUserAssistantConversationDoc
     pinned: { type: Boolean, default: false },
     archived: { type: Boolean, default: false },
     messages: { type: [AssistantMessageSchema], default: [] },
-    lastUsedAt: { type: Date, required: true, default: Date.now, index: true },
+    lastUsedAt: { type: Date, required: true, default: Date.now },
   },
   {
     timestamps: true,
@@ -187,6 +187,10 @@ const UserAssistantConversationSchema = new Schema<IUserAssistantConversationDoc
 
 UserAssistantConversationSchema.index({ userId: 1, lastUsedAt: -1 });
 UserAssistantConversationSchema.index({ userId: 1, pinned: -1, lastUsedAt: -1 });
+// TTL: remove conversations with no activity for 90 days (7776000 s).
+// NOTE: the old index on { createdAt: 1 } must be dropped manually in MongoDB if it exists:
+//   db.user_assistant_conversations.dropIndex("createdAt_1")
+UserAssistantConversationSchema.index({ lastUsedAt: 1 }, { expireAfterSeconds: 7776000 });
 
 export const UserAssistantConversationModel =
   mongoose.model<IUserAssistantConversationDocument>(

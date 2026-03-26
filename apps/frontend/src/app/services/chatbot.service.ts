@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, finalize, map, tap } from 'rxjs/operators';
@@ -82,12 +82,19 @@ export class ChatbotService {
 
   constructor(
     private readonly http: HttpClient,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly ngZone: NgZone
   ) {
     this.resetToWelcome();
 
     this.userService.authState$.subscribe((authState) => {
       this.applyAuthState(authState);
+      if (authState === 'authenticated') {
+        // Do NOT clear the stored conversationId here so the active
+        // conversation is restored when the user reloads the page.
+        // hydrateConversation() will pick up the stored ID and fetch history.
+        this.listConversations().subscribe();
+      }
     });
   }
 
@@ -106,8 +113,13 @@ export class ChatbotService {
       return this.historyRequestInFlight;
     }
 
+    const activeId = this.readConversationId();
+    const url = activeId 
+      ? `${this.baseUrl}/ai/chat/history?conversationId=${encodeURIComponent(activeId)}`
+      : `${this.baseUrl}/ai/chat/history`;
+
     const request$ = this.http
-      .get(`${this.baseUrl}/ai/chat/history`, {
+      .get(url, {
         headers: this.getAuthHeaders(),
         responseType: 'text',
       })
@@ -255,6 +267,15 @@ export class ChatbotService {
             isNewMessage: true,
           };
 
+          if (data.conversationId) {
+            const isNew = !this.readConversationId();
+            this.storeConversationId(data.conversationId);
+            if (isNew) {
+              this.listConversations().subscribe();
+            }
+          }
+          if (data.assistantMemorySnapshot) this.memorySubject.next(data.assistantMemorySnapshot);
+
           this.messagesSubject.next(
             this.messagesSubject.value
               .filter((message) => !message.isLoading)
@@ -321,12 +342,31 @@ export class ChatbotService {
     this.chatStateSubject.next('sending');
 
     const history = this.messagesSubject.value
-      .filter((m) => !m.isLoading && !m.isStreaming && m.id !== 'welcome')
+      .filter((m) => !m.isLoading && !m.isStreaming && !m.isThinking && m.id !== 'welcome' && String(m.content || '').trim() !== '')
       .map((m) => ({ role: m.role, content: m.content }));
 
     return new Observable<ChatMessage>((subscriber) => {
       const token = this.readToken();
       const abortController = new AbortController();
+
+      // Fix D: abort stream after 25s to prevent the "Analizando la parrilla…" freeze
+      const streamTimeout = setTimeout(() => {
+        if (!subscriber.closed) {
+          abortController.abort();
+          this.isLoadingSubject.next(false);
+          this.chatStateSubject.next('idle');
+          const messages = this.messagesSubject.value.filter((m) => !m.isStreaming && !m.isThinking);
+          messages.push({
+            id: this.createId(),
+            role: 'assistant',
+            content: 'La respuesta tardó demasiado. Por favor, inténtalo de nuevo.',
+            timestamp: new Date(),
+            followUpSuggestions: ['¿Qué hay ahora en TV?', '¿Qué puedo ver en streaming?'],
+          });
+          this.messagesSubject.next(messages);
+          subscriber.complete();
+        }
+      }, 25000);
 
       fetch(`${this.baseUrl}/ai/chat/stream`, {
         method: 'POST',
@@ -346,13 +386,15 @@ export class ChatbotService {
           const decoder = new TextDecoder();
           let buffer = '';
           let accumulated = '';
+          // eventType must persist across chunk boundaries: event: and data: lines
+          // can arrive in separate read() calls when TCP segments are small.
+          let eventType = '';
 
           const processLines = (block: string): void => {
             buffer += block;
             const lines = buffer.split('\n');
             buffer = lines.pop() || '';
 
-            let eventType = '';
             for (const line of lines) {
               if (line.startsWith('event: ')) {
                 eventType = line.slice(7).trim();
@@ -372,12 +414,12 @@ export class ChatbotService {
           }
           // Process remaining buffer
           if (buffer.trim()) processLines('\n');
+          clearTimeout(streamTimeout);
         })
         .catch((err) => {
+          clearTimeout(streamTimeout);
           if (abortController.signal.aborted) return;
-          this.isLoadingSubject.next(false);
-          this.chatStateSubject.next('unavailable');
-          const messages = this.messagesSubject.value.filter((m) => !m.isStreaming);
+          const messages = this.messagesSubject.value.filter((m) => !m.isStreaming && !m.isThinking);
           messages.push({
             id: this.createId(),
             role: 'assistant',
@@ -385,12 +427,21 @@ export class ChatbotService {
             timestamp: new Date(),
             followUpSuggestions: ['Reintentar'],
           });
-          this.messagesSubject.next(messages);
+          this.runInZone(() => {
+            this.isLoadingSubject.next(false);
+            this.chatStateSubject.next('unavailable');
+            this.messagesSubject.next(messages);
+          });
           subscriber.error(err);
         });
 
       return () => abortController.abort();
     });
+  }
+
+  /** Run fn inside NgZone so fetch/ReadableStream callbacks trigger change detection. */
+  private runInZone<T>(fn: () => T): T {
+    return this.ngZone.run(fn);
   }
 
   private handleSSEEvent(
@@ -409,9 +460,11 @@ export class ChatbotService {
         // Create new object reference to trigger OnPush change detection
         const updated = { ...streamingMessage, content: newText, isThinking: false, isStreaming: true };
         Object.assign(streamingMessage, updated);
-        this.messagesSubject.next(
-          this.messagesSubject.value.map((m) =>
-            m.id === streamingMessage.id ? { ...streamingMessage } : m
+        this.runInZone(() =>
+          this.messagesSubject.next(
+            this.messagesSubject.value.map((m) =>
+              m.id === streamingMessage.id ? { ...streamingMessage } : m
+            )
           )
         );
       } else if (eventType === 'full' || eventType === 'result') {
@@ -420,8 +473,10 @@ export class ChatbotService {
       } else if (eventType === 'done') {
         // If subscriber hasn't completed yet (direct response already called complete)
         if (!subscriber.closed) {
-          this.isLoadingSubject.next(false);
-          this.chatStateSubject.next('idle');
+          this.runInZone(() => {
+            this.isLoadingSubject.next(false);
+            this.chatStateSubject.next('idle');
+          });
           subscriber.complete();
         }
       } else if (eventType === 'error') {
@@ -429,6 +484,22 @@ export class ChatbotService {
         throw new Error(err.error || 'STREAM_ERROR');
       }
     } catch (e) {
+      // Always clean up loading state so the chat never freezes permanently
+      this.runInZone(() => {
+        this.isLoadingSubject.next(false);
+        this.chatStateSubject.next('idle');
+        const current = this.messagesSubject.value.filter((m) => !m.isStreaming && !m.isThinking);
+        if (!current.some((m) => m.role === 'assistant' && !m.isLoading)) {
+          current.push({
+            id: this.createId(),
+            role: 'assistant',
+            content: 'Lo siento, no pude procesar la respuesta. Inténtalo de nuevo.',
+            timestamp: new Date(),
+            followUpSuggestions: ['¿Qué hay ahora en TV?', 'Reintentar'],
+          });
+        }
+        this.messagesSubject.next(current);
+      });
       if (!subscriber.closed) {
         subscriber.error(e);
       }
@@ -440,13 +511,20 @@ export class ChatbotService {
     streamingMessage: ChatMessage,
     subscriber: import('rxjs').Subscriber<ChatMessage>
   ): void {
-    if (data.conversationId) this.storeConversationId(data.conversationId);
+    if (data.conversationId) {
+      const isNew = !this.readConversationId();
+      this.storeConversationId(data.conversationId);
+      if (isNew) {
+        this.listConversations().subscribe();
+      }
+    }
     if (data.assistantMemorySnapshot) this.memorySubject.next(data.assistantMemorySnapshot);
 
     const topRecommendations = this.dedupeRecommendations(data.recommendations || []);
     const finalMessage: ChatMessage = {
       ...streamingMessage,
       content: String(data.text || streamingMessage.content || '').trim() || 'No tengo una recomendación clara ahora mismo.',
+      isThinking: false,
       isStreaming: false,
       isNewMessage: true,
       recommendations: topRecommendations,
@@ -466,9 +544,11 @@ export class ChatbotService {
     const messages = this.messagesSubject.value.map((m) =>
       m.id === streamingMessage.id ? finalMessage : m
     );
-    this.messagesSubject.next(messages);
-    this.isLoadingSubject.next(false);
-    this.chatStateSubject.next('idle');
+    this.runInZone(() => {
+      this.messagesSubject.next(messages);
+      this.isLoadingSubject.next(false);
+      this.chatStateSubject.next('idle');
+    });
     this.historyLoaded = true;
     subscriber.next(finalMessage);
   }

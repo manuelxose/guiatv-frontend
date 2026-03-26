@@ -4,6 +4,7 @@ import { SearchDiscoveryContent } from '@/application/use-cases/SearchDiscoveryC
 import { successResponse } from '@/shared/types/ApiResponse';
 import { ValidationError } from '@/shared/errors';
 import { GetPersonalizedRecommendations } from '@/application/use-cases/GetPersonalizedRecommendations';
+import { GetDiscoveryBrowse } from '@/application/use-cases/GetDiscoveryBrowse';
 import { AuthenticatedRequest } from '../middlewares/authGuard';
 
 /**
@@ -13,28 +14,17 @@ export class DiscoveryController {
   constructor(
     private readonly getDiscoveryHome: GetDiscoveryHome,
     private readonly searchDiscoveryContent: SearchDiscoveryContent,
-    private readonly getPersonalizedRecommendations: GetPersonalizedRecommendations
+    private readonly getPersonalizedRecommendations: GetPersonalizedRecommendations,
+    private readonly getDiscoveryBrowse: GetDiscoveryBrowse
   ) {}
 
   /**
    * Builds the discovery home view with curated sections.
    */
   async home(req: Request, res: Response): Promise<void> {
-    const { date, country, channelTypes, timeSlot, fields } = req.query;
-
-    const channelTypesArray = channelTypes
-      ? String(channelTypes)
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean)
-      : undefined;
-
     const { view, cached } = await this.getDiscoveryHome.execute({
-      date: date as string,
-      country: country as string,
-      channelTypes: channelTypesArray,
-      timeSlot: timeSlot as string,
-      fields: fields as any,
+      date: req.query.date as string,
+      userId: (req as AuthenticatedRequest).user?.id,
     });
 
     res
@@ -50,19 +40,11 @@ export class DiscoveryController {
    * Performs full-text search across discovery content.
    */
   async search(req: Request, res: Response): Promise<void> {
-    const { q, date, genre, platform, type, limit, country, channelTypes, page } =
-      req.query;
+    const { q, date, genre, platform, type, limit, page } = req.query;
 
     if (!q || String(q).trim() === '') {
       throw new ValidationError('Search query (q) is required');
     }
-
-    const channelTypesArray = channelTypes
-      ? String(channelTypes)
-          .split(',')
-          .map((t) => t.trim())
-          .filter(Boolean)
-      : undefined;
 
     const limitNumber = limit ? parseInt(limit as string, 10) : undefined;
     const pageNumber = page ? parseInt(page as string, 10) : undefined;
@@ -75,23 +57,54 @@ export class DiscoveryController {
       type: type as string,
       limit: limitNumber,
       page: pageNumber,
-      country: country as string,
-      channelTypes: channelTypesArray,
     });
 
-    res.status(200).json(
-      successResponse(
-        {
-          items: result.items,
-        },
-        {
-          total: result.meta.total,
-          date: result.meta.date,
-          page: result.meta.page,
-          limit: result.meta.limit,
-        }
-      )
-    );
+    res.status(200).json(successResponse(result, result.meta));
+  }
+
+  async browse(req: Request, res: Response): Promise<void> {
+    const { q, genre, platform, availability, sort, limit, page, type } =
+      req.query;
+    const contentType = String(type || '').toLowerCase();
+
+    if (contentType !== 'movie' && contentType !== 'series') {
+      throw new ValidationError('type must be movie or series');
+    }
+
+    const limitNumber = limit ? parseInt(limit as string, 10) : undefined;
+    const pageNumber = page ? parseInt(page as string, 10) : undefined;
+    const genres = genre
+      ? String(genre)
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : undefined;
+    const platforms = platform
+      ? String(platform)
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : undefined;
+    const availabilityFilters = availability
+      ? String(availability)
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : undefined;
+
+    const { view, cached } = await this.getDiscoveryBrowse.execute({
+      userId: (req as AuthenticatedRequest).user?.id,
+      contentType,
+      q: q as string,
+      genres,
+      platforms,
+      availability: availabilityFilters,
+      sort: sort as string,
+      limit: limitNumber,
+      page: pageNumber,
+    });
+
+    res.status(200).json(successResponse(view, { cached, ...view.meta }));
   }
 
   async forYou(req: AuthenticatedRequest, res: Response): Promise<void> {

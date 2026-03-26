@@ -8,6 +8,9 @@ import { Schema } from 'mongoose';
 export interface IChannelDocument {
   id: string;
   name: string;
+  normalizedName?: string;
+  aliases?: string[];
+  sourceIds?: string[];
   logo?: string;
   type?: string;
   country?: string;
@@ -38,6 +41,21 @@ const ChannelSchema = new Schema<IChannelDocument>(
       type: String,
       required: true,
       trim: true,
+    },
+    normalizedName: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    aliases: {
+      type: [String],
+      default: [],
+      index: true,
+    },
+    sourceIds: {
+      type: [String],
+      default: [],
+      index: true,
     },
     logo: {
       type: String,
@@ -99,6 +117,9 @@ const ChannelSchema = new Schema<IChannelDocument>(
 // Compound indexes for common queries
 ChannelSchema.index({ country: 1, active: 1, order: 1 });
 ChannelSchema.index({ active: 1, order: 1 });
+ChannelSchema.index({ normalizedName: 1, active: 1 });
+ChannelSchema.index({ aliases: 1, active: 1 });
+ChannelSchema.index({ sourceIds: 1, active: 1 });
 
 /**
  * Channel model

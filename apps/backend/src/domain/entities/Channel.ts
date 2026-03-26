@@ -1,5 +1,7 @@
 // src/v2/domain/entities/Channel.ts
 
+import { normalizeTvToken } from '@/shared/utils/tvMetadata';
+
 /**
  * Allowed distribution types for a channel.
  */
@@ -18,6 +20,8 @@ export interface ChannelProps {
   name: string;
   icon: string | null;
   type: ChannelType;
+  aliases?: string[];
+  sourceIds?: string[];
   country?: string;
   countryCode?: string;
   region?: string;
@@ -70,12 +74,15 @@ export class Channel {
   }
 
   get normalizedName(): string {
-    return this.props.name
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+    return normalizeTvToken(this.props.name);
+  }
+
+  get aliases(): string[] {
+    return Array.isArray(this.props.aliases) ? [...this.props.aliases] : [];
+  }
+
+  get sourceIds(): string[] {
+    return Array.isArray(this.props.sourceIds) ? [...this.props.sourceIds] : [];
   }
 
   get icon(): string | null {

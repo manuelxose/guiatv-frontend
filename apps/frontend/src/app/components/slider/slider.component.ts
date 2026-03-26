@@ -15,7 +15,6 @@ import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { getHoraInicio, formatCorrectTime, slugify } from 'src/app/utils/utils';
 import { CommonModule } from '@angular/common';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
 import { CardSliderComponent } from '../card-slider/card-slider.component';
 
 /**
@@ -53,7 +52,6 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
     'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 400 400%27%3E%3Crect width=%27400%27 height=%27400%27 fill=%27%23111827%27/%3E%3C/svg%3E';
 
   constructor(
-    private guiatvSvc: TvGuideService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object,
     private cdr: ChangeDetectorRef
@@ -238,10 +236,6 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
           : programa.channel_id || null,
     };
 
-    try {
-      this.guiatvSvc.setDetallesPrograma(bannerData);
-    } catch (_) {}
-
     const cat = String(categoryValue || '').toLowerCase();
     const isMovieData =
       cat.includes('cine') ||
@@ -303,8 +297,17 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
       .join(', ');
   }
 
+  public getCoverSrc(program: any): string {
+    const primary = program?.image || program?.poster || program?.background;
+    return primary || '';
+  }
+
   public getLogoSrc(program: any, w = 400, h = 225): string {
-    const explicit = program?.icon || program?.channelLogo || program?.logo;
+    const explicit =
+      program?.channelIcon ||
+      program?.channel?.icon ||
+      program?.channelLogo ||
+      program?.logo;
     if (explicit) return this.buildWsrvUrl(explicit, w, h);
     if (this.logo) return this.buildWsrvUrl(this.logo as string, w, h);
     const name =
@@ -319,7 +322,11 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public getOverlayIcon(program: any, size = 120): string {
-    const explicit = program?.icon || program?.channelLogo || program?.logo;
+    const explicit =
+      program?.channelIcon ||
+      program?.channel?.icon ||
+      program?.channelLogo ||
+      program?.logo;
     if (explicit && typeof explicit === 'string') {
       const low = explicit.toLowerCase();
       const looksLikePoster =
@@ -335,9 +342,9 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const attempts = Number(img.dataset['attempts'] || '0');
 
-    if (attempts === 0 && program?.icon) {
+    if (attempts === 0 && program?.channelIcon) {
       img.dataset['attempts'] = '1';
-      img.src = program.icon;
+      img.src = program.channelIcon;
       return;
     }
 

@@ -7,6 +7,7 @@ import { logger } from '../../shared/utils/logger';
 import { ChannelModel } from '../../infrastructure/database/models/Channel.model';
 import { ProgramModel } from '../../infrastructure/database/models/Program.model';
 import { ScheduleModel } from '../../infrastructure/database/models/Schedule.model';
+import { getConfiguredEpgSourceUrls } from '../../shared/config/epgSources';
 
 export interface ResetSystemRequest {
   sourceUrl?: string;
@@ -26,8 +27,6 @@ export interface ResetSystemResult {
  */
 export class ResetSystem {
   private readonly resetLogger = logger.child('ResetSystem');
-  private readonly defaultSource =
-    'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz';
 
   constructor(
     private readonly cacheRepository: ICacheRepository,
@@ -70,32 +69,43 @@ export class ResetSystem {
     this.resetLogger.info('Storage cleaned', storageStats);
 
     // 4) Re-synchronize EPG for canonical window
-    const sourceUrl = request.sourceUrl || this.defaultSource;
-    this.resetLogger.info('Downloading EPG data once for all dates', { sourceUrl });
-    
-    // Import dynamically to avoid circular deps or verify if safe. 
-    // Actually EPGDataSource is infra/external, ResetSystem is application. Safe.
-    const { EPGDataSource } = await import('../../infrastructure/external/EPGDataSource');
-    const dataSource = new EPGDataSource({
-      url: sourceUrl,
-      timeout: 60000,
-      compressed: sourceUrl.endsWith('.gz'),
+    const sourceUrls = request.sourceUrl
+      ? [request.sourceUrl]
+      : getConfiguredEpgSourceUrls();
+    this.resetLogger.info('Downloading EPG data for reset rebuild', {
+      sourceUrls,
     });
-    const xmlContent = await dataSource.fetchWithRetry(3);
+
+    const { EPGDataSource } = await import('../../infrastructure/external/EPGDataSource');
+    const sourcePayloads = await Promise.all(
+      sourceUrls.map(async (sourceUrl) => {
+        const dataSource = new EPGDataSource({
+          url: sourceUrl,
+          timeout: 60000,
+          compressed: sourceUrl.endsWith('.gz'),
+        });
+        const xmlContent = await dataSource.fetchWithRetry(3);
+        return { sourceUrl, xmlContent };
+      })
+    );
 
     const windowDates = ['yesterday', 'today', 'tomorrow', 'after_tomorrow'];
     let isFirst = true;
-    for (const alias of windowDates) {
-      const date = DateUtils.parseDateAlias(alias);
-      await this.syncEPGData.execute({
-        sourceUrl,
-        date,
-        forceRefresh: true,
-        xmlContent,
-        skipSaveXml: !isFirst,
-      });
-      isFirst = false;
-      syncedDates.push(date);
+    for (const { sourceUrl, xmlContent } of sourcePayloads) {
+      for (const alias of windowDates) {
+        const date = DateUtils.parseDateAlias(alias);
+        await this.syncEPGData.execute({
+          sourceUrl,
+          date,
+          forceRefresh: true,
+          xmlContent,
+          skipSaveXml: !isFirst,
+        });
+        isFirst = false;
+        if (!syncedDates.includes(date)) {
+          syncedDates.push(date);
+        }
+      }
     }
 
     // 5) Precompute

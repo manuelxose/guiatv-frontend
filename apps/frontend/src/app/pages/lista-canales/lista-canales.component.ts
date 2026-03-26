@@ -8,20 +8,21 @@ import {
 } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Subscription, forkJoin, of, timeout, catchError } from 'rxjs';
+import { Subscription, of, timeout, catchError } from 'rxjs';
 
 import { ApiConfigService } from 'src/app/api/api-config.service';
 import {
   ChannelMetaDTO,
-  ProgramsResponse,
+  TvGuideSurfaceDTO,
+  TvReadItemDTO,
 } from 'src/app/api/models';
 import { MetaService } from 'src/app/services/meta.service';
 import { slugify } from 'src/app/utils/utils';
-import { CatalogItem, CatalogService } from 'src/app/services/catalog.service';
-import { buildProgramCatalogId, buildDetailPath, CatalogContentType } from 'src/app/utils/catalog';
+import { buildDetailPath, CatalogContentType } from 'src/app/utils/catalog';
 import { TvDataService } from 'src/app/state/tv-data.service';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
 import { FaqSectionComponent, FaqItem } from '../../components/faq-section/faq-section.component';
+import { InteractionButtonsComponent } from '../../components/interaction-buttons/interaction-buttons.component';
 
 type GuideTabKey = 'now' | 'next' | 'night' | 'channels';
 type ChannelGroupKey =
@@ -51,7 +52,6 @@ interface GuideProgram {
   liveNow: boolean;
   groupKey: Exclude<ChannelGroupKey, 'all'>;
   sortIndex: number;
-  editorialScore: number;
   detailLink: any[];
   channelLink: any[];
 }
@@ -82,21 +82,10 @@ const PRIMARY_GUIDE_CATEGORIES: Array<{ key: GuideCategoryKey; label: string }> 
   { key: 'Deportes', label: 'Deportes' },
 ];
 
-const EDITORIAL_CATEGORY_PRIORITY: Record<string, number> = {
-  Cine: 0,
-  Series: 1,
-  Deportes: 2,
-  Noticias: 3,
-  Infantil: 4,
-  Documental: 5,
-  Entretenimiento: 6,
-  Otros: 7,
-};
-
 @Component({
   selector: 'app-lista-canales',
   standalone: true,
-  imports: [CommonModule, RouterModule, BreadcrumbComponent, FaqSectionComponent],
+  imports: [CommonModule, RouterModule, BreadcrumbComponent, FaqSectionComponent, InteractionButtonsComponent],
   templateUrl: './lista-canales.component.html',
   styleUrls: ['./lista-canales.component.scss'],
 })
@@ -151,12 +140,10 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
 
   private readonly subscriptions = new Subscription();
   private readonly isBrowser: boolean;
-  private readonly enrichedCatalogIds = new Set<string>();
 
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
     @Inject(PLATFORM_ID) platformId: object,
-    private readonly catalogService: CatalogService,
     private readonly apiConfig: ApiConfigService,
     private readonly metaService: MetaService,
     private readonly router: Router,
@@ -183,20 +170,25 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
 
   public setActiveTab(tab: GuideTabKey): void {
     this.activeGuideTab = tab;
-    this.ensureGuideEnrichment(tab);
-    this.scrollToSection(this.sectionIdForTab(tab));
+    // Scroll al inicio del área de contenido (debajo de la barra sticky)
+    if (this.isBrowser) {
+      requestAnimationFrame(() => {
+        const nav = this.document.querySelector('.guide-nav') as HTMLElement | null;
+        if (nav) {
+          const offset = nav.getBoundingClientRect().bottom + (this.document.documentElement.scrollTop || 0);
+          window.scrollTo({ top: offset, behavior: 'smooth' });
+        }
+      });
+    }
   }
 
   public selectChannelGroup(group: ChannelGroupKey): void {
     this.selectedChannelGroup = group;
-    this.ensureGuideEnrichment(this.activeGuideTab);
-    this.scrollToSection(this.sectionIdForTab(this.activeGuideTab));
   }
 
   public selectCategory(category: GuideCategoryKey): void {
     this.selectedCategory = category;
     this.isMoreCategoriesOpen = false;
-    this.ensureGuideEnrichment(this.activeGuideTab);
   }
 
   public toggleMoreCategories(): void {
@@ -282,19 +274,19 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
       this.sections.find((entry) => entry.key === fallbackKey) ||
       this.sections.find((entry) => entry.key === 'tdt') ||
       this.sections[0];
-    return section?.channels.slice(0, 12) || [];
+    return section?.channels || [];
   }
 
   public get visibleNowPrograms(): GuideProgram[] {
-    return this.filterPrograms(this.nowPrograms).slice(0, 12);
+    return this.filterPrograms(this.nowPrograms);
   }
 
   public get visibleNextPrograms(): GuideProgram[] {
-    return this.filterPrograms(this.nextPrograms).slice(0, 12);
+    return this.filterPrograms(this.nextPrograms);
   }
 
   public get visibleTonightPrograms(): GuideProgram[] {
-    return this.filterPrograms(this.tonightPrograms).slice(0, 12);
+    return this.filterPrograms(this.tonightPrograms);
   }
 
   public isMoreCategoryActive(): boolean {
@@ -307,34 +299,22 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
     this.error = null;
 
     this.subscriptions.add(
-      forkJoin({
-        channels: this.tvDataService.loadChannels().pipe(
-          timeout(12000),
-          catchError(() => of([] as ChannelMetaDTO[]))
-        ),
-        programs: this.tvDataService.loadPrograms({
-          date: 'today',
-          fields: 'full',
-          limit: 2500,
-        }).pipe(
-          timeout(12000),
-          catchError(() => of(undefined))
-        ),
-      }).subscribe({
-        next: ({ channels, programs }) => {
-          const normalizedChannels = this.normalizeChannels(programs, channels || []);
-          const channelMap = new Map(
-            normalizedChannels.map((channel) => [channel.id, channel] as const)
-          );
-          const programCards = this.normalizePrograms(programs, channelMap);
-
+      this.tvDataService.loadGuideSurface('today').pipe(
+        timeout(12000),
+        catchError(() => of(undefined))
+      ).subscribe({
+        next: (response) => {
+          if (!response) {
+            throw new Error('empty_guide_response');
+          }
+          const normalizedChannels = this.normalizeChannels(response);
+          const channelMap = new Map(normalizedChannels.map((channel) => [channel.id, channel] as const));
           this.channels = normalizedChannels;
           this.sections = this.buildSections(normalizedChannels);
-          this.nowPrograms = this.sortPrograms(programCards.filter((program) => program.liveNow));
-          this.nextPrograms = this.buildNextPrograms(programCards);
-          this.tonightPrograms = this.buildTonightPrograms(programCards);
+          this.nowPrograms = this.sortPrograms(this.normalizePrograms(response.nowItems || [], channelMap));
+          this.nextPrograms = this.sortPrograms(this.normalizePrograms(response.nextItems || [], channelMap));
+          this.tonightPrograms = this.sortPrograms(this.normalizePrograms(response.nightItems || [], channelMap));
           this.buildLdJson(normalizedChannels);
-          this.ensureGuideEnrichment('now');
           this.loading = false;
         },
         error: () => {
@@ -346,50 +326,33 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
     );
   }
 
-  private normalizeChannels(
-    response: ProgramsResponse | undefined,
-    fullChannelCatalog: ChannelMetaDTO[]
-  ): GuideChannel[] {
+  private normalizeChannels(response: TvGuideSurfaceDTO): GuideChannel[] {
     const assetBaseUrl = this.apiConfig.getAssetBaseUrl();
-    const metaById = new Map<string, ChannelMetaDTO>();
-
-    [...(fullChannelCatalog || []), ...((response?.channels || []) as ChannelMetaDTO[])].forEach(
-      (channel) => {
-        if (channel?.id) {
-          metaById.set(channel.id, {
-            ...(metaById.get(channel.id) || {}),
-            ...channel,
-          });
-        }
-      }
-    );
-
-    const orderedChannels = (response?.channels || fullChannelCatalog || []).filter(
-      (channel): channel is ChannelMetaDTO => Boolean(channel?.id)
-    );
+    const orderedChannels = (response.channels || [])
+      .map((entry) => entry.channel)
+      .filter((channel): channel is ChannelMetaDTO => Boolean(channel?.id));
 
     return orderedChannels.map((channel, index) => {
-      const merged = metaById.get(channel.id) || channel;
-      let icon = merged.icon || undefined;
+      let icon = channel.icon || undefined;
       if (!icon) {
-        icon = `/storage/channel_icons/${merged.id}.webp`;
+        icon = `/storage/channel_icons/${channel.id}.webp`;
       }
       if (icon && !icon.startsWith('http')) {
         const cleanPath = icon.startsWith('/') ? icon : `/${icon}`;
         icon = `${assetBaseUrl}${cleanPath}`;
       }
 
-      const slug = slugify(merged.name || merged.id);
-      const groupKey = this.resolveChannelGroup(merged);
+      const slug = slugify(channel.name || channel.id);
+      const groupKey = this.resolveChannelGroup(channel);
 
       return {
-        id: merged.id,
-        name: merged.name,
+        id: channel.id,
+        name: channel.name,
         icon,
-        type: String(merged.type || 'TDT').toUpperCase(),
-        region: merged.country || merged.countryCode || undefined,
+        type: String(channel.type || 'TDT').toUpperCase(),
+        region: channel.country || channel.countryCode || undefined,
         isActive: true,
-        sortIndex: index,
+        sortIndex: typeof channel.sortOrder === 'number' ? channel.sortOrder : index,
         groupKey,
         channelLink: ['/canales', slug],
       };
@@ -397,55 +360,53 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
   }
 
   private normalizePrograms(
-    response: ProgramsResponse | undefined,
+    items: TvReadItemDTO[],
     channelMap: Map<string, GuideChannel>
   ): GuideProgram[] {
-    const now = Date.now();
-
-    return ((response?.programs || [])
-      .map((program) => {
-        const channel = channelMap.get(program.channelId);
+    return (items
+      .map((item) => {
+        const channel = channelMap.get(item.channel.id);
         if (!channel) {
           return null;
         }
 
-        const title =
-          typeof program.title === 'string'
-            ? program.title
-            : String(program.title?.value || '');
+        const title = String(item.program.title || '').trim();
         if (!title.trim()) {
           return null;
         }
 
-        const startTime = new Date(program.start).getTime();
-        const endTime = new Date(program.end).getTime();
-        const catalogId = buildProgramCatalogId(String(program.id));
-        const normalizedCategory = this.normalizeGuideCategory(program.category, title);
-        const editorialScore = this.buildEditorialScore(normalizedCategory, channel.sortIndex);
+        const normalizedCategory = this.normalizeGuideCategory(
+          item.program.editorialCategory || item.program.genre
+        );
         const contentType: CatalogContentType =
           normalizedCategory === 'Cine' ? 'movie' :
           normalizedCategory === 'Series' ? 'series' :
           'program';
         const detailPath = buildDetailPath(contentType, title, slugify);
+        const image =
+          item.assets.poster?.url ||
+          (item.assets.primary?.kind === 'poster' || item.assets.primary?.kind === 'backdrop'
+            ? item.assets.primary?.url
+            : undefined) ||
+          undefined;
 
         return {
-          id: String(program.id),
-          catalogId,
+          id: String(item.id),
+          catalogId: `program:${item.id}`,
           title,
           channelId: channel.id,
           channelName: channel.name,
           channelIcon: channel.icon,
-          category: program.category,
+          category: item.program.editorialCategory,
           normalizedCategory,
-          image: program.image,
-          tmdbId: program.tmdbId,
+          image,
+          tmdbId: item.program.tmdbId,
           primaryPlatforms: [],
-          start: program.start,
-          end: program.end,
-          liveNow: startTime <= now && now < endTime,
+          start: item.airing.start,
+          end: item.airing.end,
+          liveNow: item.airing.liveNow,
           groupKey: channel.groupKey,
           sortIndex: channel.sortIndex,
-          editorialScore,
           detailLink: [detailPath],
           channelLink: channel.channelLink,
         } satisfies GuideProgram;
@@ -453,42 +414,8 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
       .filter(Boolean) as GuideProgram[]);
   }
 
-  private buildNextPrograms(programs: GuideProgram[]): GuideProgram[] {
-    const now = Date.now();
-    const nextByChannel = new Map<string, GuideProgram>();
-
-    programs.forEach((program) => {
-      const start = new Date(program.start).getTime();
-      if (start <= now) {
-        return;
-      }
-
-      const current = nextByChannel.get(program.channelId);
-      if (!current || start < new Date(current.start).getTime()) {
-        nextByChannel.set(program.channelId, program);
-      }
-    });
-
-    return this.sortPrograms(Array.from(nextByChannel.values()));
-  }
-
-  private buildTonightPrograms(programs: GuideProgram[]): GuideProgram[] {
-    return this.sortPrograms(
-      programs.filter((program) => {
-        const start = new Date(program.start);
-        const hour = start.getHours();
-        return hour >= 20 && hour <= 23;
-      })
-    );
-  }
-
   private sortPrograms(programs: GuideProgram[]): GuideProgram[] {
     return [...programs].sort((left, right) => {
-      const categoryDifference = this.categoryPriority(left.normalizedCategory) - this.categoryPriority(right.normalizedCategory);
-      if (categoryDifference !== 0) {
-        return categoryDifference;
-      }
-
       if (left.sortIndex !== right.sortIndex) {
         return left.sortIndex - right.sortIndex;
       }
@@ -577,67 +504,6 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
     });
   }
 
-  private ensureGuideEnrichment(tab: GuideTabKey): void {
-    const programs = this.getProgramsByTab(tab)
-      .filter((program) => !!program.catalogId && !this.enrichedCatalogIds.has(program.catalogId))
-      .slice(0, 12);
-
-    if (!programs.length) {
-      return;
-    }
-
-    programs.forEach((program) => this.enrichedCatalogIds.add(program.catalogId));
-
-    this.subscriptions.add(
-      forkJoin(
-        programs.map((program) => this.catalogService.getDetail(program.catalogId))
-      ).subscribe((details) => {
-        const byCatalogId = new Map<string, CatalogItem>();
-        details.forEach((detail) => {
-          if (detail?.catalogId) {
-            byCatalogId.set(detail.catalogId, detail);
-          }
-        });
-
-        this.nowPrograms = this.mergeProgramDetails(this.nowPrograms, byCatalogId);
-        this.nextPrograms = this.mergeProgramDetails(this.nextPrograms, byCatalogId);
-        this.tonightPrograms = this.mergeProgramDetails(this.tonightPrograms, byCatalogId);
-      })
-    );
-  }
-
-  private getProgramsByTab(tab: GuideTabKey): GuideProgram[] {
-    if (tab === 'next') {
-      return this.visibleNextPrograms;
-    }
-    if (tab === 'night') {
-      return this.visibleTonightPrograms;
-    }
-    if (tab === 'channels') {
-      return [];
-    }
-    return this.visibleNowPrograms;
-  }
-
-  private mergeProgramDetails(
-    programs: GuideProgram[],
-    details: Map<string, CatalogItem>
-  ): GuideProgram[] {
-    return programs.map((program) => {
-      const detail = details.get(program.catalogId);
-      if (!detail) {
-        return program;
-      }
-
-      return {
-        ...program,
-        primaryPlatforms: detail.primaryPlatforms?.slice(0, 2) || [],
-        providersResolvedAt: new Date().toISOString(),
-        image: program.image || detail.backdrop || detail.image,
-      };
-    });
-  }
-
   private filterPrograms(programs: GuideProgram[]): GuideProgram[] {
     return programs.filter((program) => {
       const matchesGroup =
@@ -649,8 +515,15 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
   }
 
   private resolveChannelGroup(
-    channel: Pick<ChannelMetaDTO, 'type' | 'name'>
+    channel: Pick<ChannelMetaDTO, 'type' | 'name' | 'group'>
   ): Exclude<ChannelGroupKey, 'all'> {
+    const canonicalGroup = String(channel.group || '').trim().toLowerCase();
+    if (canonicalGroup === 'tdt') return 'tdt';
+    if (canonicalGroup === 'autonomico') return 'autonomico';
+    if (canonicalGroup === 'movistar') return 'movistar';
+    if (canonicalGroup === 'online') return 'online';
+    if (canonicalGroup === 'deporte') return 'deporte';
+
     const type = String(channel.type || '').trim().toUpperCase();
     const name = String(channel.name || '').trim().toUpperCase();
 
@@ -663,27 +536,8 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
     return 'online';
   }
 
-  private normalizeGuideCategory(category?: string, title?: string): string {
-    const source = `${category || ''} ${title || ''}`.toLowerCase();
-
-    if (/(cine|pel[ií]cula|film|movie)/.test(source)) return 'Cine';
-    if (/(serie|series|ficci[oó]n|telenovela|cap[ií]tulo)/.test(source)) return 'Series';
-    if (/(deport|f[úu]tbol|baloncesto|tenis|formula|motogp|liga|champions)/.test(source)) return 'Deportes';
-    if (/(noticia|informativo|actualidad|debate|pol[ií]tica)/.test(source)) return 'Noticias';
-    if (/(infantil|dibujos|kids|juvenil|familia)/.test(source)) return 'Infantil';
-    if (/(documental|docu)/.test(source)) return 'Documental';
-    if (/(reality|entretenimiento|concurso|show|magazine)/.test(source)) return 'Entretenimiento';
-
-    return category?.trim() || 'Otros';
-  }
-
-  private buildEditorialScore(category: string, sortIndex: number): number {
-    const priority = this.categoryPriority(category);
-    return 1000 - priority * 100 - sortIndex;
-  }
-
-  private categoryPriority(category: string): number {
-    return EDITORIAL_CATEGORY_PRIORITY[category] ?? EDITORIAL_CATEGORY_PRIORITY['Otros'];
+  private normalizeGuideCategory(category?: string): string {
+    return String(category || '').trim() || 'Otros';
   }
 
   private sectionIdForTab(tab: GuideTabKey): string {

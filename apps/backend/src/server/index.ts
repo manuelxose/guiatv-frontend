@@ -23,13 +23,8 @@ async function startServer() {
     logger.info('Container initialized');
 
     const app = createRoutesApp({
-      channelController: container.get('channelController'),
-      programController: container.get('programController'),
-      scheduleController: container.get('scheduleController'),
-      layoutController: container.get('layoutController'),
       adminController: container.get('adminController'),
       adminUsersController: container.get('adminUsersController'),
-      ssrController: container.get('ssrController'),
       authController: container.get('authController'),
       authService: container.get('authService'),
       discoveryController: container.get('discoveryController'),

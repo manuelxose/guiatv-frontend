@@ -14,11 +14,12 @@ import {
   switchMap,
   map,
 } from 'rxjs/operators';
-import { CatalogService, CatalogSuggestion } from '../../services/catalog.service';
+import { CatalogItem } from '../../services/catalog.service';
+import { DiscoveryService } from '../../services/discovery.service';
 
 type FilterType = 'all' | 'tv' | 'streaming' | 'movies' | 'series';
 
-interface SearchResult extends CatalogSuggestion {
+interface SearchResult extends CatalogItem {
   typeBadge: string;
 }
 
@@ -43,7 +44,7 @@ export class AutocompleteComponent implements OnInit {
   public isDropdownOpen = false;
 
   constructor(
-    private readonly catalogService: CatalogService,
+    private readonly discoveryService: DiscoveryService,
     private readonly router: Router
   ) {}
 
@@ -57,8 +58,8 @@ export class AutocompleteComponent implements OnInit {
         if (!query) {
           return of([]);
         }
-        return this.catalogService.suggest(query, 8).pipe(
-          map((items) => items
+        return this.discoveryService.search({ q: query, limit: 8 }).pipe(
+          map((response) => (response.items || [])
             .filter((item) => this.matchesActiveFilter(item))
             .map((item) => ({
               ...item,
@@ -184,7 +185,7 @@ export class AutocompleteComponent implements OnInit {
     setTimeout(() => this.dataInput.setValue(''), 50);
   }
 
-  private matchesActiveFilter(item: CatalogSuggestion): boolean {
+  private matchesActiveFilter(item: CatalogItem): boolean {
     if (this.activeFilter === 'all') return true;
     if (this.activeFilter === 'tv') return item.source === 'program';
     if (this.activeFilter === 'streaming') return item.source === 'tmdb';

@@ -111,7 +111,7 @@
           [time]="horaInicio(item)"
           [category]="isPelicula ? 'Peliculas' : 'Series'"
           [description]="item?.description || item?.desc?.value || ''"
-          [image]="item?.image || item?.poster || item?.background || item?.icon"
+          [image]="item?.image || item?.poster || item?.background"
           [badge]="item?.channel?.name || item?.channelName || 'Canal'"
           badgeColor="gray"
           [live]="false"

@@ -49,6 +49,7 @@ export class MongoUserContentInteractionRepository
       .sort({ updatedAt: -1 })
       .skip(Number(filters?.skip || 0))
       .limit(Math.max(0, Number(filters?.limit || 100)))
+      .select('userId contentId contentTitle contentType platform rating genres status liked addedToList recommended tmdbId watchedAt createdAt updatedAt')
       .lean()
       .exec();
 

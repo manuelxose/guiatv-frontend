@@ -1,203 +1,1018 @@
 /**
- * Lista Canales Component - Mobile-First Styles
- * Optimizado para SEO, UX y rendimiento
+ * Lista Canales — Estilos rediseñados
+ * Mobile-first · Compacto · Moderno · Coherente con la app
  */
 
-// ===============================================
+// =====================================================
 // VARIABLES
-// ===============================================
+// =====================================================
 
-$primary-color: #dc2626;
-$primary-hover: #b91c1c;
-$text-primary: #ffffff;
-$text-secondary: #9ca3af;
-$bg-dark: #1f2937;
-$bg-darker: #111827;
-$border-color: rgba(255, 255, 255, 0.05);
-$border-radius: 0.75rem;
-$transition-speed: 0.2s;
+$c-red:        #ef4444;
+$c-red-dark:   #dc2626;
+$c-red-light:  #f87171;
+$c-bg:         #09090f;
+$c-surface:    #111117;
+$c-card:       #18181f;
+$c-card-hover: #22222c;
+$c-border:     rgba(255, 255, 255, 0.07);
+$c-border-md:  rgba(255, 255, 255, 0.11);
+$c-text:       #f1f5f9;
+$c-text-2:     #94a3b8;
+$c-text-3:     #64748b;
 
-// ===============================================
+$r-sm:  8px;
+$r-md:  12px;
+$r-lg:  16px;
+$r-xl:  20px;
+
+$sp-1: 4px;
+$sp-2: 8px;
+$sp-3: 12px;
+$sp-4: 16px;
+$sp-5: 20px;
+$sp-6: 24px;
+
+$t-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+$t-normal: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// =====================================================
 // CONTAINER
-// ===============================================
+// =====================================================
 
 .lista-canales {
-  background: transparent;
-  color: $text-primary;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  
-  // Prevenir overflow horizontal
+  color: $c-text;
   overflow-x: hidden;
   max-width: 100vw;
+  -webkit-overflow-scrolling: touch;
 }
 
-// ===============================================
-// HEADER & INTRO
-// ===============================================
+// =====================================================
+// HERO — compacto en móvil, con stats en desktop
+// =====================================================
 
-.intro {
-  animation: fadeInUp 0.4s ease-out;
-  
-  h1 {
-    line-height: 1.2;
+.guide-hero {
+  margin-bottom: $sp-3;
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-4;
+    padding: $sp-5 $sp-4;
+    border-radius: $r-xl;
+    border: 1px solid $c-border-md;
+    background: radial-gradient(circle at top left, rgba($c-red, 0.12), rgba(8, 16, 24, 0.96) 56%);
+    overflow: hidden;
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: $sp-6;
+    }
+  }
+
+  &__lead {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-2;
+    min-width: 0;
+  }
+
+  &__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba($c-red, 0.3);
+    background: rgba($c-red, 0.1);
+    color: #fca5a5;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    align-self: flex-start;
+  }
+
+  &__pulse {
+    width: 6px;
+    height: 6px;
+    background: $c-red;
+    border-radius: 50%;
+    animation: guidePulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: clamp(1.375rem, 4vw, 2rem);
+    font-weight: 900;
+    line-height: 1.15;
     letter-spacing: -0.025em;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    color: #fff;
   }
-  
-  p {
-    line-height: 1.6;
-    max-width: 65ch;
+
+  &__desc {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: $c-text-2;
+    max-width: 46ch;
+
+    @media (min-width: 768px) {
+      font-size: 0.875rem;
+    }
+  }
+
+  // Stats — visibles solo en ≥ md
+  &__stats {
+    display: none;
+
+    @media (min-width: 768px) {
+      display: grid;
+      grid-template-columns: repeat(4, auto);
+      gap: $sp-3;
+      flex-shrink: 0;
+    }
+  }
+
+  &__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: $sp-3 $sp-4;
+    border-radius: $r-md;
+    border: 1px solid $c-border;
+    background: rgba($c-surface, 0.7);
+    min-width: 72px;
+  }
+
+  &__stat-val {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  &__stat-label {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: $c-text-3;
   }
 }
 
-// ===============================================
-// CHANNEL SECTIONS
-// ===============================================
-
-.channel-section {
-  border-top: 1px solid $border-color;
-  padding-top: 1.5rem;
-  
-  header {
-    margin-bottom: 1rem;
-  }
+@keyframes guidePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
 }
 
-// ===============================================
-// SKELETON LOADING
-// ===============================================
+// =====================================================
+// BARRA DE NAVEGACIÓN STICKY
+// =====================================================
 
-.skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  
-  @media (min-width: 640px) {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-  }
-  
+.guide-nav {
+  position: sticky;
+  top: 56px; // altura del top bar fijo en móvil
+  z-index: 40;
+
   @media (min-width: 768px) {
-    grid-template-columns: repeat(4, 1fr);
+    top: 72px; // altura del nav sticky en desktop
   }
-  
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(5, 1fr);
+  display: flex;
+  flex-direction: column;
+  background: rgba($c-bg, 0.97);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid $c-border-md;
+  margin-bottom: $sp-5;
+
+  // Sombra sutil que da "elevación"
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+
+  // Row genérico
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0 $sp-4;
+
+    &::-webkit-scrollbar { display: none; }
+
+    // Separador entre rows
+    + .guide-nav__row {
+      border-top: 1px solid $c-border;
+    }
   }
-  
-  @media (min-width: 1280px) {
-    grid-template-columns: repeat(6, 1fr);
+
+  // Row: tabs principales
+  &__row--tabs {
+    padding-top: 2px;
+    padding-bottom: 2px;
   }
-  
-  @media (min-width: 1536px) {
-    grid-template-columns: repeat(7, 1fr);
+
+  // Row: grupos
+  &__row--groups {
+    padding-top: $sp-2;
+    padding-bottom: $sp-2;
+  }
+
+  // Row: categorías
+  &__row--cats {
+    padding-top: $sp-2;
+    padding-bottom: $sp-2;
+  }
+
+  // Row: canales rápidos — oculto en móvil
+  &__row--quick {
+    display: none;
+    padding-top: $sp-2;
+    padding-bottom: $sp-2;
+
+    @media (min-width: 768px) {
+      display: flex;
+    }
+  }
+
+  // ── TABS ──────────────────────────────────────────
+
+  &__tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: $sp-3 $sp-3;
+    background: transparent;
+    border: none;
+    color: $c-text-2;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color $t-fast, border-color $t-fast;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+
+    &:hover {
+      color: $c-text;
+    }
+
+    &--active {
+      color: #fff;
+      border-bottom-color: $c-red;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $c-red;
+      outline-offset: -2px;
+    }
+  }
+
+  &__live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: $c-text-3;
+    flex-shrink: 0;
+    transition: background $t-fast;
+
+    &--on {
+      background: $c-red;
+      animation: guidePulse 2s ease-in-out infinite;
+    }
+  }
+
+  &__tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: rgba($c-red, 0.2);
+    color: $c-red-light;
+    font-size: 0.6875rem;
+    font-weight: 700;
+  }
+
+  // ── CHIPS (grupos y categorías) ─────────────────
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: $sp-1;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid $c-border-md;
+    background: rgba($c-surface, 0.6);
+    color: $c-text-2;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all $t-fast;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 32px;
+
+    // Touch target real via padding (accesibilidad sin inflar visual)
+    @media (pointer: coarse) {
+      min-height: 40px;
+      padding: 8px 14px;
+    }
+
+    &:hover {
+      border-color: $c-border-md;
+      background: $c-card-hover;
+      color: $c-text;
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+
+    &--active {
+      background: rgba($c-red, 0.14);
+      border-color: rgba($c-red, 0.4);
+      color: $c-red-light;
+
+      &:hover {
+        background: rgba($c-red, 0.2);
+      }
+    }
+
+    &--sm {
+      font-size: 0.75rem;
+      padding: 5px 11px;
+
+      @media (pointer: coarse) {
+        min-height: 38px;
+        padding: 7px 13px;
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid $c-red;
+      outline-offset: 2px;
+    }
+  }
+
+  &__chip-count {
+    display: inline-block;
+    font-size: 0.6875rem;
+    color: $c-text-3;
+    margin-left: 1px;
+  }
+
+  &__chevron {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    transition: transform $t-fast;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  // ── MÁS CATEGORÍAS ────────────────────────────
+
+  &__more {
+    position: relative;
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 80;
+    min-width: 12rem;
+    background: #1e1e28;
+    border: 1px solid $c-border-md;
+    border-radius: $r-md;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    animation: dropdownIn $t-fast both;
+    padding: $sp-1;
+  }
+
+  &__dropdown-item {
+    display: block;
+    width: 100%;
+    padding: $sp-2 $sp-3;
+    background: transparent;
+    border: none;
+    color: $c-text;
+    font-size: 0.875rem;
+    text-align: left;
+    cursor: pointer;
+    border-radius: $r-sm;
+    transition: background $t-fast;
+
+    &:hover {
+      background: $c-card-hover;
+    }
+
+    &--active {
+      background: rgba($c-red, 0.15);
+      color: $c-red-light;
+    }
+  }
+
+  // ── CANALES RÁPIDOS ──────────────────────────
+
+  &__quick {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid $c-border;
+    background: rgba($c-surface, 0.5);
+    color: $c-text-2;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: all $t-fast;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 32px;
+
+    @media (pointer: coarse) {
+      min-height: 38px;
+    }
+
+    &:hover {
+      border-color: $c-border-md;
+      color: $c-text;
+      background: $c-card;
+    }
+  }
+
+  &__quick-img {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: contain;
+    background: #0f0f17;
+    flex-shrink: 0;
   }
 }
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// =====================================================
+// LOADING STATE
+// =====================================================
+
+.guide-loading {
+  display: grid;
+  gap: $sp-3;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 640px)  { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
+
+  &__card {
+    height: 120px;
+    border-radius: $r-lg;
+    background: linear-gradient(
+      135deg,
+      rgba(255,255,255,0.03) 0%,
+      rgba(255,255,255,0.05) 50%,
+      rgba(255,255,255,0.03) 100%
+    );
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+      animation: shimmer 1.4s infinite;
+    }
+  }
+}
+
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+// =====================================================
+// ERROR STATE
+// =====================================================
+
+.guide-error {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-5;
+  border-radius: $r-lg;
+  border: 1px solid rgba($c-red, 0.25);
+  background: rgba($c-red, 0.08);
+  color: #fca5a5;
+  font-size: 0.875rem;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+}
+
+// =====================================================
+// SECCIÓN DE CONTENIDO
+// =====================================================
+
+.guide-section {
+  margin-top: $sp-2;
+
+  &__head {
+    margin-bottom: $sp-4;
+  }
+
+  &__label {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    color: $c-text-3;
+    margin-bottom: $sp-2;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: clamp(1.25rem, 3.5vw, 1.75rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: #fff;
+    line-height: 1.2;
+  }
+}
+
+// =====================================================
+// GRID DE TARJETAS
+// =====================================================
+
+.guide-grid {
+  display: grid;
+  gap: $sp-3;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 640px)  { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
+}
+
+// =====================================================
+// TARJETA DE PROGRAMA (guide-card)
+// =====================================================
+
+.guide-card {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+  padding: $sp-4;
+  border-radius: $r-lg;
+  border: 1px solid $c-border-md;
+  background: $c-card;
+  transition: border-color $t-fast, background $t-fast;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: $c-card-hover;
+  }
+
+  // Tarjeta compacta (Siguiente)
+  &--compact {
+    gap: $sp-1;
+  }
+
+  // Tarjeta Esta Noche (imagen arriba, sin padding extra)
+  &--tonight {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-2;
+    padding: $sp-4;
+  }
+
+  // Cabecera: logo + badges
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    gap: $sp-3;
+  }
+
+  // Logo del canal
+  &__ch-logo {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: $r-md;
+    border: 1px solid $c-border-md;
+    background: rgba($c-surface, 0.8);
+    overflow: hidden;
+    transition: border-color $t-fast;
+
+    &:hover {
+      border-color: $c-border-md;
+    }
+  }
+
+  &__ch-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 6px;
+  }
+
+  // Info del canal (para tarjeta compact)
+  &__ch-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    justify-content: center;
+  }
+
+  // Badges: En emisión / Categoría / Plataforma
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $sp-1;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+
+    &--live {
+      background: rgba($c-red, 0.15);
+      border: 1px solid rgba($c-red, 0.35);
+      color: #fca5a5;
+    }
+
+    &--night {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      color: #c7d2fe;
+    }
+
+    &--cat {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid $c-border;
+      color: $c-text-2;
+    }
+
+    &--platform {
+      background: rgba(14, 165, 233, 0.1);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      color: #bae6fd;
+    }
+  }
+
+  &__live-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: $c-red;
+    animation: guidePulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  // Título del programa (link)
+  &__title {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: $c-text;
+    text-decoration: none;
+    transition: color $t-fast;
+
+    &:hover {
+      color: #fca5a5;
+    }
+  }
+
+  // Metainformación
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  &__ch-name {
+    font-size: 0.8125rem;
+    color: $c-text-2;
+    font-weight: 500;
+  }
+
+  &__sep {
+    color: $c-text-3;
+    font-size: 0.875rem;
+  }
+
+  &__time {
+    font-size: 0.8125rem;
+    color: $c-text-3;
+  }
+
+  &__cat {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: $c-text-3;
+  }
+
+  // Imagen del programa
+  &__img-wrap {
+    overflow: hidden;
+    border-radius: $r-md;
+    border: 1px solid $c-border;
+    background: $c-surface;
+    margin-top: $sp-1;
+
+    &--top {
+      border-radius: 0;
+      border: none;
+      margin-top: 0;
+    }
+  }
+
+  &__img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    transition: transform $t-normal;
+
+    .guide-card:hover & {
+      transform: scale(1.03);
+    }
+  }
+
+  // Plataformas
+  &__platforms {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $sp-1;
+    padding-top: $sp-2;
+    border-top: 1px solid $c-border;
+  }
+
+  &__also-on {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: $c-text-3;
+    margin-right: $sp-1;
+  }
+
+  // Botones de interacción (compact icon row)
+  &__actions {
+    display: flex;
+    align-items: center;
+    padding-top: $sp-2;
+    border-top: 1px solid $c-border;
+    margin-top: $sp-1;
+  }
+}
+
+// =====================================================
+// ESTADO VACÍO
+// =====================================================
+
+.guide-empty {
+  padding: $sp-6 $sp-5;
+  border-radius: $r-lg;
+  border: 1px solid $c-border;
+  background: rgba($c-surface, 0.5);
+  text-align: center;
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $c-text;
+    margin: 0 0 $sp-2;
+  }
+
+  &__hint {
+    font-size: 0.875rem;
+    color: $c-text-3;
+    margin: 0;
+  }
+}
+
+// =====================================================
+// DIRECTORIO DE CANALES
+// =====================================================
+
+.guide-directory {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-6;
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-4;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: $c-text;
+  }
+
+  &__desc {
+    margin: -$sp-2 0 0;
+    font-size: 0.8125rem;
+    color: $c-text-3;
+    line-height: 1.5;
+  }
+
+  &__grid {
+    display: grid;
+    gap: $sp-2;
+    grid-template-columns: 1fr 1fr;
+
+    @media (min-width: 640px)  { grid-template-columns: repeat(3, 1fr); }
+    @media (min-width: 1024px) { grid-template-columns: repeat(4, 1fr); }
+    @media (min-width: 1280px) { grid-template-columns: repeat(5, 1fr); }
+  }
+}
+
+// Tarjeta de canal (directorio)
+.guide-ch-card {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-3;
+  border-radius: $r-md;
+  border: 1px solid $c-border;
+  background: $c-card;
+  cursor: pointer;
+  transition: all $t-fast;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 56px;
+
+  &:hover {
+    border-color: $c-border-md;
+    background: $c-card-hover;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $c-red;
+    outline-offset: 2px;
+  }
+
+  &__logo {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: $r-sm;
+    border: 1px solid $c-border;
+    background: rgba($c-surface, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 5px;
+  }
+
+  &__initial {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $c-text-3;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $c-text;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: color $t-fast;
+
+    .guide-ch-card:hover & {
+      color: #fca5a5;
+    }
+  }
+
+  &__type {
+    font-size: 0.6875rem;
+    color: $c-text-3;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+}
+
+// =====================================================
+// SKELETON / LOADING
+// =====================================================
 
 .s-item {
   aspect-ratio: 1;
-  border-radius: $border-radius;
+  border-radius: $r-md;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.03) 0%,
-    rgba(255, 255, 255, 0.06) 50%,
-    rgba(255, 255, 255, 0.03) 100%
+    rgba(255,255,255,0.03) 0%,
+    rgba(255,255,255,0.06) 50%,
+    rgba(255,255,255,0.03) 100%
   );
   position: relative;
   overflow: hidden;
-  
+
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.08),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
     animation: shimmer 1.5s infinite;
   }
 }
 
-@keyframes shimmer {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
-}
+// =====================================================
+// RESPONSIVE
+// =====================================================
 
-// ===============================================
-// ANIMATIONS
-// ===============================================
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// ===============================================
-// RESPONSIVE OPTIMIZATIONS
-// ===============================================
-
-@media (max-width: 640px) {
+@media (max-width: 639px) {
   .lista-canales {
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
   }
 }
 
-@media (min-width: 1024px) {
-  .lista-canales {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
+// =====================================================
+// ACCESIBILIDAD
+// =====================================================
 
-// ===============================================
-// ACCESSIBILITY
-// ===============================================
-
-.skip-link {
-  &:focus {
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    z-index: 9999;
-  }
-}
-
-// Mejora de contraste para accesibilidad
-@media (prefers-contrast: high) {
-  .channel-section {
-    border-top-color: rgba(255, 255, 255, 0.2);
-  }
-  
-  .s-item {
-    background: rgba(255, 255, 255, 0.1);
-  }
-}
-
-// Reducir animaciones si el usuario lo prefiere
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
 
+@media (prefers-contrast: high) {
+  .guide-nav__chip,
+  .guide-ch-card,
+  .guide-card {
+    border-width: 2px;
+  }
+}

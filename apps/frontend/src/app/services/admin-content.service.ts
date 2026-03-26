@@ -9,6 +9,7 @@ export interface AdminContentChannel {
   name: string;
   icon?: string;
   type: string;
+  group?: string;
   country?: string;
   region?: string;
   isActive: boolean;
@@ -44,14 +45,25 @@ export class AdminContentService {
 
   getChannels(): Observable<AdminContentChannel[]> {
     return this.http
-      .get<ApiResponse<any> | any[]>(`${this.baseUrl}/channels`, {
+      .get<ApiResponse<any> | any[]>(`${this.baseUrl}/tv/read/channels`, {
+        params: { date: 'today' },
         headers: this.buildHeaders(),
       })
       .pipe(
         map((resp) => {
           if (Array.isArray(resp)) return resp;
-          const data: any = (resp as ApiResponse<any>).data;
-          return Array.isArray(data) ? data : data?.channels || [];
+          const payload: any = (resp as ApiResponse<any>).data;
+          const items = Array.isArray(payload?.channels) ? payload.channels : [];
+          return items.map((entry: any) => ({
+            id: String(entry?.channel?.id || ''),
+            name: String(entry?.channel?.name || entry?.channel?.id || ''),
+            icon: entry?.channel?.icon || undefined,
+            type: String(entry?.channel?.type || entry?.channel?.group || 'TV'),
+            group: entry?.channel?.group || undefined,
+            country: entry?.channel?.country || entry?.channel?.countryCode || undefined,
+            region: entry?.channel?.region || undefined,
+            isActive: true,
+          }));
         })
       );
   }
@@ -62,16 +74,39 @@ export class AdminContentService {
     limit?: number;
     fields?: 'minimal' | 'full';
   } = {}): Observable<AdminContentProgramsResponse> {
-    const query = this.serializeParams(params);
+    const query = this.serializeParams({
+      view: 'day',
+      date: params.date || 'today',
+      limit: params.limit,
+      cursor:
+        typeof params.page === 'number' && typeof params.limit === 'number'
+          ? Math.max(0, (params.page - 1) * params.limit)
+          : undefined,
+    });
     return this.http
-      .get<ApiResponse<any> | any>(`${this.baseUrl}/programs${query ? `?${query}` : ''}`, {
+      .get<ApiResponse<any> | any>(`${this.baseUrl}/tv/read${query ? `?${query}` : ''}`, {
         headers: this.buildHeaders(),
       })
       .pipe(
         map((resp) => {
-          const data: any = resp?.data || resp;
-          const programs = Array.isArray(data) ? data : data?.programs || [];
-          return { programs, total: data?.total || programs.length };
+          const payload: any = resp?.data || resp;
+          const items = Array.isArray(payload?.items) ? payload.items : [];
+          const programs = items.map((item: any) => ({
+            id: String(item?.id || ''),
+            channelId: String(item?.channel?.id || ''),
+            title: String(item?.program?.title || ''),
+            startTime: String(item?.airing?.start || ''),
+            endTime: String(item?.airing?.end || ''),
+            description: item?.program?.description || undefined,
+            genre: item?.program?.editorialCategory || item?.program?.genre || undefined,
+            image:
+              item?.assets?.poster?.url ||
+              ((item?.assets?.primary?.kind === 'poster' || item?.assets?.primary?.kind === 'backdrop')
+                ? item?.assets?.primary?.url
+                : undefined),
+          }));
+          const total = payload?.meta?.total || resp?.meta?.total || programs.length;
+          return { programs, total };
         })
       );
   }

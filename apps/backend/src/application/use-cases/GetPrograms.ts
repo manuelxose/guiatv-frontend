@@ -12,6 +12,7 @@ import {
   TimeSlotDTO,
 } from '../services/ProgramLayoutBuilder';
 import { ProgramDeduplicator } from '../services/ProgramDeduplicator';
+import { l1Cache } from '../../infrastructure/cache/L1Cache';
 
 export interface GetProgramsRequest {
   date: string;
@@ -31,10 +32,15 @@ export interface GetProgramsResponse {
   channels: Array<{
     id: string;
     name: string;
+    normalizedName?: string;
+    aliases?: string[];
+    sourceIds?: string[];
     icon?: string | null;
     type?: string;
     country?: string;
     countryCode?: string;
+    region?: string;
+    description?: string;
   }>;
   programs: ProgramLayoutDTO[];
   meta: {
@@ -145,7 +151,10 @@ export class GetPrograms {
     if (canUsePrecomputed) {
       const pre = await this.cacheRepository.get<GetProgramsResponse>(preKey);
       if (pre) {
-        return { ...pre, meta: { ...pre.meta, cached: true, precomputed: true } };
+        return this.applyCanonicalChannelOverlay({
+          ...pre,
+          meta: { ...pre.meta, cached: true, precomputed: true },
+        });
       }
     }
 
@@ -178,7 +187,7 @@ export class GetPrograms {
           await this.cacheRepository.set(preKey, response, this.cacheTtlSeconds * 4);
         }
 
-        return response;
+        return this.applyCanonicalChannelOverlay(response);
       }
     }
 
@@ -186,10 +195,10 @@ export class GetPrograms {
 
     const cached = await this.cacheRepository.get<GetProgramsResponse>(cacheKey);
     if (cached) {
-      return {
+      return this.applyCanonicalChannelOverlay({
         ...cached,
         meta: { ...cached.meta, cached: true },
-      };
+      });
     }
 
     const channelFilter = normalized.channels?.length
@@ -248,15 +257,86 @@ export class GetPrograms {
       },
     };
 
-    await this.cacheRepository.set(cacheKey, response, this.cacheTtlSeconds);
+    const canonicalResponse = await this.applyCanonicalChannelOverlay(response);
+
+    await this.cacheRepository.set(cacheKey, canonicalResponse, this.cacheTtlSeconds);
     if (canUsePrecomputed) {
       await this.cacheRepository.set(
         `precomputed:programs:${normalized.date}:${normalized.fields}`,
-        response,
+        canonicalResponse,
         this.cacheTtlSeconds * 4
       );
     }
-    return response;
+    return canonicalResponse;
+  }
+
+  private async applyCanonicalChannelOverlay(
+    response: GetProgramsResponse
+  ): Promise<GetProgramsResponse> {
+    if (!response.channels.length) {
+      return response;
+    }
+
+    const canonicalMap = await this.loadCanonicalChannelOverlayMap();
+    const channels = response.channels.map((channel) => {
+      const canonical = canonicalMap.get(channel.id);
+      if (!canonical) {
+        return channel;
+      }
+
+      return {
+        ...channel,
+        ...canonical,
+        id: channel.id,
+        name: canonical.name || channel.name,
+        icon: canonical.icon || channel.icon,
+        type: canonical.type || channel.type,
+      };
+    });
+
+    const sortedChannels = this.sortChannels(channels);
+    const channelOrder = this.buildChannelOrder(sortedChannels);
+
+    return {
+      ...response,
+      channels: sortedChannels,
+      programs: this.sortProgramLayouts(response.programs, channelOrder),
+    };
+  }
+
+  private async loadCanonicalChannelOverlayMap(): Promise<
+    Map<string, GetProgramsResponse['channels'][number]>
+  > {
+    const cacheKey = 'channels:canonical-overlay:v1';
+    const cached = l1Cache.get(cacheKey) as
+      | Map<string, GetProgramsResponse['channels'][number]>
+      | undefined;
+    if (cached) {
+      return cached;
+    }
+
+    const channels = await this.channelRepository.findAll({ isActive: true });
+    const overlay = new Map(
+      channels.map((channel) => [
+        channel.id,
+        {
+          id: channel.id,
+          name: channel.name,
+          normalizedName: channel.normalizedName,
+          aliases: channel.aliases,
+          sourceIds: channel.sourceIds,
+          icon: channel.icon,
+          type: channel.type,
+          country: channel.country,
+          countryCode: channel.countryCode,
+          region: channel.region,
+          description: channel.description,
+        },
+      ])
+    );
+
+    l1Cache.set(cacheKey, overlay, this.cacheTtlSeconds * 1000);
+    return overlay;
   }
 
   private async loadScheduleSnapshot(
@@ -302,6 +382,22 @@ export class GetPrograms {
       programs: programs as any,
       layoutVersion: doc.layoutVersion,
     };
+
+    snapshot.channels = (
+      await this.applyCanonicalChannelOverlay({
+        date: snapshot.date,
+        timeSlots: snapshot.timeSlots,
+        channels: snapshot.channels as any,
+        programs: snapshot.programs as any,
+        meta: {
+          date: snapshot.date,
+          totalChannels: snapshot.channels.length,
+          totalPrograms: snapshot.programs.length,
+          cached: true,
+          precomputed: true,
+        },
+      })
+    ).channels as any;
 
     await this.cacheRepository.set(cacheKey, snapshot, this.cacheTtlSeconds * 2);
     return snapshot;
@@ -644,10 +740,15 @@ export class GetPrograms {
       .map(({ ch, normalizedType }) => ({
         id: ch.id,
         name: ch.name,
+        normalizedName: ch.normalizedName,
+        aliases: ch.aliases,
+        sourceIds: ch.sourceIds,
         icon: ch.icon,
         type: normalizedType,
         country: ch.country,
         countryCode: ch.countryCode,
+        region: ch.region,
+        description: ch.description,
       }));
 
     const sortedMeta = this.sortChannels(meta);

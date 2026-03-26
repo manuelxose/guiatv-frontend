@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap, Params, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject, combineLatest, takeUntil } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { CatalogCardComponent } from '../../components/catalog-card/catalog-card.component';
 import { CatalogFiltersComponent } from '../../components/catalog-filters/catalog-filters.component';
 import { APP_PATHS } from '../../config/route-map';
@@ -23,6 +24,7 @@ import { UserProfile } from '../../interfaces/user.interface';
 import { UserService } from '../../services/user.service';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
 import { generateItemListSchema } from '../../utils/utils';
+import { DiscoveryService } from '../../services/discovery.service';
 
 type ExplorerMode = 'live' | 'featured' | 'platforms';
 
@@ -68,6 +70,7 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly metaService: MetaService,
     private readonly catalogService: CatalogService,
+    private readonly discoveryService: DiscoveryService,
     private readonly filtersService: CatalogFiltersService,
     private readonly userService: UserService,
     private readonly sanitizer: DomSanitizer
@@ -273,16 +276,26 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
-    this.catalogService
-      .queryState({
-        ...this.filters,
-        limit: this.filters.limit || 24,
-        page: this.filters.page || 1,
-      })
+    const useDiscoverySearch = Boolean(String(this.filters.q || '').trim());
+    const source$ = useDiscoverySearch
+      ? this.discoveryService.search({
+          q: String(this.filters.q || '').trim(),
+          type: this.filters.types?.length === 1 ? this.filters.types[0] : undefined,
+          genre: this.filters.genres?.[0],
+          platform: this.filters.platforms?.[0],
+          limit: this.filters.limit || 24,
+          page: this.filters.page || 1,
+        })
+      : this.catalogService.queryState({
+          ...this.filters,
+          limit: this.filters.limit || 24,
+          page: this.filters.page || 1,
+        }).pipe(map((result) => result.data as CatalogResponse));
+
+    source$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (result) => {
-          const response = result.data as CatalogResponse;
+        next: (response) => {
           this.items = response.items || [];
           this.total = response.meta?.total || 0;
           this.hasMore = Boolean(response.meta?.hasMore);
@@ -292,15 +305,11 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
           this.platforms = response.availablePlatforms?.length
             ? response.availablePlatforms
             : this.platforms;
-          this.catalogUnavailable =
-            result.unavailable && !result.stale && !(response.items || []).length;
-          this.catalogStateDegraded = result.unavailable || result.stale;
+          this.catalogUnavailable = !(response.items || []).length && !useDiscoverySearch;
+          this.catalogStateDegraded = false;
           this.syncDegradedFilters();
 
-          if (result.stale) {
-            this.degradedMessage =
-              'Mostrando la última versión disponible del catálogo mientras se refrescan estos resultados.';
-          } else if (this.catalogUnavailable) {
+          if (this.catalogUnavailable) {
             this.degradedMessage =
               'El catálogo principal no está disponible ahora mismo. Conservamos los filtros para que puedas reintentar o cambiar de vista.';
           } else if (this.remotePlatformsDegraded) {

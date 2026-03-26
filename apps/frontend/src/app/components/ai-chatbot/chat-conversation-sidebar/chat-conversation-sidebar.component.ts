@@ -5,7 +5,6 @@ import {
   Output,
   EventEmitter,
   signal,
-  computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -76,7 +75,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
       <!-- Conversation list -->
       <div class="flex-1 overflow-y-auto">
         <!-- Pinned section -->
-        @if (pinnedList().length > 0) {
+        @if (pinnedList.length > 0) {
           <div class="px-3 pt-2 pb-1">
             <button
               (click)="pinnedCollapsed.set(!pinnedCollapsed())"
@@ -92,24 +91,24 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             </button>
           </div>
           @if (!pinnedCollapsed()) {
-            @for (conv of pinnedList(); track conv.conversationId) {
+            @for (conv of pinnedList; track conv.conversationId) {
               <ng-container *ngTemplateOutlet="conversationItem; context: { $implicit: conv }"></ng-container>
             }
           }
         }
 
         <!-- Recent section -->
-        @if (recentList().length > 0) {
+        @if (recentList.length > 0) {
           <div class="px-3 pt-2 pb-1">
             <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Recientes</span>
           </div>
-          @for (conv of recentList(); track conv.conversationId) {
+          @for (conv of recentList; track conv.conversationId) {
             <ng-container *ngTemplateOutlet="conversationItem; context: { $implicit: conv }"></ng-container>
           }
         }
 
         <!-- Archived section -->
-        @if (archivedList().length > 0) {
+        @if (archivedList.length > 0) {
           <div class="px-3 pt-2 pb-1">
             <button
               (click)="archivedCollapsed.set(!archivedCollapsed())"
@@ -125,14 +124,14 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             </button>
           </div>
           @if (!archivedCollapsed()) {
-            @for (conv of archivedList(); track conv.conversationId) {
+            @for (conv of archivedList; track conv.conversationId) {
               <ng-container *ngTemplateOutlet="conversationItem; context: { $implicit: conv }"></ng-container>
             }
           }
         }
 
         <!-- Empty state -->
-        @if (displayList().length === 0) {
+        @if (displayList.length === 0) {
           <div class="flex flex-col items-center justify-center py-12 text-slate-500">
             <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
@@ -249,21 +248,21 @@ export class ChatConversationSidebarComponent {
   pinnedCollapsed = signal(false);
   archivedCollapsed = signal(true);
 
-  displayList = computed(() => {
-    return [...this.pinnedList(), ...this.recentList(), ...this.archivedList()];
-  });
+  get displayList(): ConversationSummary[] {
+    return [...this.pinnedList, ...this.recentList, ...this.archivedList];
+  }
 
-  pinnedList = computed(() => {
+  get pinnedList(): ConversationSummary[] {
     return (this.conversations || []).filter((c) => c.pinned && !c.archived);
-  });
+  }
 
-  recentList = computed(() => {
+  get recentList(): ConversationSummary[] {
     return (this.conversations || []).filter((c) => !c.pinned && !c.archived);
-  });
+  }
 
-  archivedList = computed(() => {
+  get archivedList(): ConversationSummary[] {
     return (this.conversations || []).filter((c) => c.archived);
-  });
+  }
 
   onSearchChange(query: string): void {
     this.search.emit(query);

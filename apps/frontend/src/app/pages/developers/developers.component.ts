@@ -195,15 +195,16 @@ interface DeveloperLinkCard {
 })
 export class DevelopersComponent implements OnInit {
   readonly endpoints: DeveloperEndpoint[] = [
-    { method: 'GET', path: '/v2/channels', description: 'Listado de canales activos con metadatos y filtros básicos.' },
-    { method: 'GET', path: '/v2/channels/:id', description: 'Detalle de canal con información editorial y operativa.' },
-    { method: 'GET', path: '/v2/channels/:id/programs', description: 'Programación del canal seleccionado.' },
-    { method: 'GET', path: '/v2/schedules/:date', description: 'Parrilla agrupada por fecha con alias como `today` o `tomorrow`.' },
-    { method: 'GET', path: '/v2/layouts/:date', description: 'Layouts listos para la guía y el widget embebible.' },
-    { method: 'GET', path: '/v2/catalog', description: 'Catálogo unificado de TV, streaming y disponibilidad.' },
-    { method: 'GET', path: '/v2/catalog/platforms', description: 'Registro canónico de plataformas del catálogo.' },
-    { method: 'GET', path: '/v2/catalog/slug/:contentType/:slug', description: 'Detalle SEO-friendly por slug para película, serie o programa.' },
-    { method: 'GET', path: '/v2/discovery/search', description: 'Búsqueda pública para discovery y navegación.' },
+    { method: 'GET', path: '/v2/tv/read', description: 'Canonical TV read model for day, now, next, night, and search views.' },
+    { method: 'GET', path: '/v2/tv/read/channels', description: 'Channel summaries grouped by canonical TV metadata.' },
+    { method: 'GET', path: '/v2/tv/read/channels/:channelId', description: 'Canonical TV schedule filtered to a single channel.' },
+    { method: 'GET', path: '/v2/tv/surface/guide', description: 'Single-call TV guide BFF used by the main guide page.' },
+    { method: 'GET', path: '/v2/tv/surface/channels/:channelId', description: 'Single-call channel page surface with current, next, tonight, and full schedule.' },
+    { method: 'GET', path: '/v2/discovery/home', description: 'Home surface with live TV rails and streaming discovery rails.' },
+    { method: 'GET', path: '/v2/discovery/search', description: 'Unified public discovery search for TV and streaming.' },
+    { method: 'GET', path: '/v2/discovery/browse', description: 'Single-call browse surface for movies and series listings.' },
+    { method: 'GET', path: '/v2/content/:id', description: 'Unified content detail endpoint for TV and streaming items.' },
+    { method: 'GET', path: '/v2/catalog/platforms', description: 'Canonical platform registry used by discovery filters.' },
     { method: 'GET', path: '/v2/oembed', description: 'Respuesta oEmbed oficial del widget embebible.' },
   ];
 
@@ -246,7 +247,7 @@ export class DevelopersComponent implements OnInit {
     { name: 'lang=es', description: 'Compatibilidad de idioma actualmente soportada.' },
   ];
 
-  readonly curlExample = `curl -s "https://guiaprogramaciontv.com/v2/layouts/today?fields=full&limit=20" \\
+  readonly curlExample = `curl -s "https://guiaprogramaciontv.com/v2/tv/surface/guide?date=today&group=tdt" \\
   -H "Accept: application/json"`;
 
   readonly jsExample = `const response = await fetch(
@@ -258,11 +259,11 @@ return data.items;`;
   readonly pythonExample = `import requests
 
 response = requests.get(
-    'https://guiaprogramaciontv.com/v2/channels/la_1/programs',
+    'https://guiaprogramaciontv.com/v2/tv/read/channels/la_1',
     params={'date': 'today'}
 )
 payload = response.json()
-programs = payload['data']`;
+programs = payload['data']['items']`;
 
   readonly responseExample = `{
   "success": true,
@@ -283,7 +284,7 @@ programs = payload['data']`;
     this.metaService.setMetaTags({
       title: 'Desarrolladores y API pública - Guía TV',
       description:
-        'Consulta la API pública de Guía TV, la documentación oficial y el widget embebible de programación para canales, catálogo y layouts.',
+        'Consulta la API pública de Guía TV, la documentación oficial y el widget embebible de programación para TV, discovery y catálogo.',
       canonicalUrl: '/developers',
     });
   }

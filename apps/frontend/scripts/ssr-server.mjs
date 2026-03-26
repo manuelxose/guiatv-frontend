@@ -263,6 +263,27 @@ app.get('/.well-known/*', (req, res) => {
   res.status(204).end();
 });
 
+// =============================================================================
+// HTTP 301 PERMANENT REDIRECTS — handled at Express level for Google compliance
+// These must be defined BEFORE static files and the Angular catch-all handler.
+// Angular router redirectTo = client-side only; these ensure proper 301 for bots.
+// =============================================================================
+
+// /programacion-tv/en-directo → canonical destination (not in sitemap)
+app.get('/programacion-tv/en-directo', (_req, res) => {
+  res.redirect(301, '/programacion-tv/guia-canales');
+});
+
+// Legacy /blog/** → /editorial/**
+app.get('/blog/top10', (_req, res) => res.redirect(301, '/editorial/rankings'));
+app.get('/blog/categoria/:slug', (req, res) => res.redirect(301, `/editorial/categoria/${req.params.slug}`));
+app.get('/blog/:slug', (req, res) => res.redirect(301, `/editorial/${req.params.slug}`));
+app.get('/blog', (_req, res) => res.redirect(301, '/editorial'));
+
+// Legacy user area routes
+app.get('/mi-cuenta', (_req, res) => res.redirect(301, '/perfil'));
+app.get('/comunidad', (_req, res) => res.redirect(301, '/perfil'));
+
 app.get('*.*', express.static(browserDistPath, { maxAge: '1y', immutable: true }));
 
 // If a static asset is missing, return 404 instead of falling through to SSR HTML.
@@ -279,6 +300,7 @@ app.get('/healthz', (req, res) => {
 // SSR RESPONSE CACHE (in-memory, TTL-based)
 // =============================================================================
 const SSR_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const BASE_SITE_URL = 'https://guiaprogramaciontv.com';
 const SSR_CACHE_MAX_ENTRIES = 200;
 const ssrCache = new Map();
 
@@ -375,7 +397,7 @@ app.get('*', async (req, res) => {
 
   try {
     const bootstrapFn = await getBootstrap();
-    const SSR_TIMEOUT_MS = 5000;
+    const SSR_TIMEOUT_MS = 8000;
     const renderStart = Date.now();
     let html = await Promise.race([
       commonEngine.render({
@@ -392,7 +414,7 @@ app.get('*', async (req, res) => {
     const renderMs = Date.now() - renderStart;
 
     if (html.includes('<app-root></app-root>')) {
-      // SSR produced an empty root — serve CSR fallback.
+      // SSR produced an empty root — serve CSR fallback with canonical injected.
       const fallbackFile = join(browserDistPath, 'index.html');
       const fallbackCsr = join(browserDistPath, 'index.csr.html');
       // Unknown routes get 404 status even on CSR fallback
@@ -400,7 +422,13 @@ app.get('*', async (req, res) => {
       res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120');
       const csrPath = existsSync(fallbackFile) ? fallbackFile : existsSync(fallbackCsr) ? fallbackCsr : null;
       if (csrPath) {
-        const csrHtml = readFileSync(csrPath, 'utf-8');
+        const rawCsrHtml = readFileSync(csrPath, 'utf-8');
+        // Inject canonical so Google never sees a page without one
+        const canonicalHref = `${BASE_SITE_URL}${req.path}`;
+        const csrHtml = rawCsrHtml.replace(
+          '</head>',
+          `<link rel="canonical" href="${canonicalHref}"></head>`
+        );
         if (!hasAuthCookie) {
           setCachedResponse(cachePath, statusCode, csrHtml);
         }
@@ -417,6 +445,12 @@ app.get('*', async (req, res) => {
     // Strip the marker from final HTML
     html = html.replace(/<meta\s+name="ssr-status"\s+content="\d+"\s*\/?>/g, '');
 
+    // Mirror robots meta tag as X-Robots-Tag HTTP header
+    const robotsMatch = html.match(/<meta\s+name="robots"\s+content="([^"]+)"/);
+    if (robotsMatch) {
+      res.setHeader('X-Robots-Tag', robotsMatch[1]);
+    }
+
     res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
     if (!hasAuthCookie) {
       setCachedResponse(cachePath, statusCode, html);
@@ -431,12 +465,17 @@ app.get('*', async (req, res) => {
     const fallbackFile = join(browserDistPath, 'index.html');
     const fallbackCsr = join(browserDistPath, 'index.csr.html');
     
-    if (existsSync(fallbackFile)) {
+    if (existsSync(fallbackFile) || existsSync(fallbackCsr)) {
+        const csrSrc = existsSync(fallbackFile) ? fallbackFile : fallbackCsr;
+        const rawCsrHtml = readFileSync(csrSrc, 'utf-8');
+        // Inject canonical so Google never sees a page without one on SSR error
+        const canonicalHref = `${BASE_SITE_URL}${req.path}`;
+        const csrHtmlWithCanonical = rawCsrHtml.replace(
+          '</head>',
+          `<link rel="canonical" href="${canonicalHref}"></head>`
+        );
         res.setHeader('Cache-Control', 'no-store');
-        return res.sendFile(fallbackFile);
-    } else if (existsSync(fallbackCsr)) {
-        res.setHeader('Cache-Control', 'no-store');
-        return res.sendFile(fallbackCsr);
+        return res.status(200).send(csrHtmlWithCanonical);
     } else {
         console.error(`❌ CRITICAL: No se encuentra index.html en ${browserDistPath}`);
         return res.status(500).send('<h1>500 - Error Interno</h1><p>No se pudo cargar la aplicación (SSR Failed & CSR missing).</p>');

@@ -1,5 +1,6 @@
 import { Program } from '../../domain/entities/Program';
 import { logger } from '../../shared/utils/logger';
+import { isGenericMovieTitle } from '../../shared/utils/tvMetadata';
 
 /**
  * Normaliza y deduplica programas que representan el mismo espacio en parrilla.
@@ -124,6 +125,7 @@ export class ProgramDeduplicator {
   static isGenericTitle(title: string): boolean {
     const normalized = ProgramDeduplicator.normalizeTitle(title);
     if (!normalized) return true;
+    if (isGenericMovieTitle(normalized)) return true;
 
     // Si incluye un subtitulo despues de ":", consideramos que ya es especifico
     const colonIndex = normalized.indexOf(':');
@@ -146,6 +148,15 @@ export class ProgramDeduplicator {
       'serie',
       'cinema',
       'estreno',
+      'historia de nuestro cine',
+      'el blockbuster',
+      'blockbuster',
+      'el taquillazo',
+      'taquillazo',
+      'cine cuatro',
+      'el peliculon',
+      'multicine',
+      'el western de la 2',
     ];
 
     if (genericRoots.includes(normalized)) return true;

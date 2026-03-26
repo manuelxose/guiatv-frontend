@@ -8,6 +8,11 @@ import {
 import { ProgramModel, IProgramDocument } from '../database/models/Program.model';
 import { logger } from '../../shared/utils/logger';
 import { DateUtils } from '../../shared/utils/dateUtils';
+import {
+  buildProgramBrandKey,
+  buildProgramTitleAliases,
+  normalizeTvToken,
+} from '../../shared/utils/tvMetadata';
 
 // Using a local loose type for lean results to avoid depending on specific
 // `mongoose` exported types (which vary between versions). We only access
@@ -104,11 +109,11 @@ export class MongoProgramRepository implements IProgramRepository {
    */
   async save(program: Program): Promise<void> {
     try {
-      const data = this.mapToDocument(program);
+      const setDoc = this.buildSetDoc(program);
 
       await ProgramModel.findOneAndUpdate(
         { id: program.id },
-        data,
+        { $set: setDoc },
         { upsert: true, new: true }
       ).exec();
 
@@ -131,7 +136,10 @@ export class MongoProgramRepository implements IProgramRepository {
       const bulkOps = programs.map((program) => ({
         updateOne: {
           filter: { id: program.id },
-          update: this.mapToDocument(program),
+          // Use $set so unset fields don't overwrite existing enriched data.
+          // image/tmdbId/rating are omitted when null so a prior TMDB-matched
+          // poster is preserved if this sync run's TMDB lookup failed.
+          update: { $set: this.buildSetDoc(program) },
           upsert: true,
         },
       }));
@@ -171,6 +179,74 @@ export class MongoProgramRepository implements IProgramRepository {
   }
 
   /**
+   * Delete overlapping programs for a given set of channels.
+   * This keeps sync idempotent even when feed ids or titles change between runs.
+   */
+  async deleteOverlappingByChannels(
+    channelIds: string[],
+    dateRange: DateRange
+  ): Promise<void> {
+    try {
+      if (!channelIds.length) {
+        return;
+      }
+
+      const result = await ProgramModel.deleteMany({
+        channelId: { $in: channelIds },
+        startTime: { $lt: dateRange.end },
+        endTime: { $gt: dateRange.start },
+      }).exec();
+
+      logger.debug('Programs deleted by overlapping channel/date range', {
+        channelCount: channelIds.length,
+        dateRange,
+        deletedCount: result.deletedCount,
+      });
+    } catch (error) {
+      logger.error('Error deleting programs by overlapping channel/date range', {
+        channelIds,
+        dateRange,
+        error,
+      });
+      throw error;
+    }
+  }
+
+  async deleteOverlappingBySourceAndChannels(
+    sourceFeed: string,
+    channelIds: string[],
+    dateRange: DateRange
+  ): Promise<void> {
+    try {
+      if (!sourceFeed || !channelIds.length) {
+        return;
+      }
+
+      const result = await ProgramModel.deleteMany({
+        sourceFeed,
+        channelId: { $in: channelIds },
+        startTime: { $lt: dateRange.end },
+        endTime: { $gt: dateRange.start },
+      }).exec();
+
+      logger.debug('Programs deleted by source/channel/date overlap', {
+        sourceFeed,
+        channelCount: channelIds.length,
+        dateRange,
+        deletedCount: result.deletedCount,
+      });
+    } catch (error) {
+      logger.error('Error deleting programs by source/channel/date overlap', {
+        sourceFeed,
+        channelIds,
+        dateRange,
+        error,
+      });
+      throw error;
+    }
+  }
+
+  /**
    * Find programs by specific date (YYYYMMDD format)
    * INCLUDES programs that started before this day but are still airing (crossing midnight)
    */
@@ -178,9 +254,11 @@ export class MongoProgramRepository implements IProgramRepository {
     try {
       const dateRange = this.parseDateToRange(date);
 
+      // Inclusion projection for minimal: only the fields needed for grid rendering.
+      // Inclusion is faster than exclusion because Mongo reads fewer fields from disk.
       const projection =
         fields === 'minimal'
-          ? {description: 0, image: 0}
+          ? { _id: 0, id: 1, channelId: 1, title: 1, startTime: 1, endTime: 1, category: 1, type: 1 }
           : undefined;
 
       // Use overlap detection: program overlaps with day if:
@@ -323,6 +401,90 @@ export class MongoProgramRepository implements IProgramRepository {
   }
 
   /**
+   * Flexible title search within a rolling time window (default 48 h).
+   * Case-insensitive regex on the title field; -1 h offset so ongoing programs are included.
+   */
+  async findByTitleApprox(titleFragment: string, windowHours = 48): Promise<Program[]> {
+    try {
+      const now = new Date();
+      const windowStart = new Date(now.getTime() - 3_600_000); // -1 h for ongoing programs
+      const windowEnd = new Date(now.getTime() + windowHours * 3_600_000);
+      const escaped = titleFragment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escaped, 'i');
+
+      const docs = await ProgramModel.find({
+        title: regex,
+        startTime: { $lt: windowEnd },
+        endTime: { $gt: windowStart },
+      })
+        .sort({ startTime: 1 })
+        .limit(10)
+        .select({ _id: 0, id: 1, channelId: 1, title: 1, startTime: 1, endTime: 1, category: 1 })
+        .lean()
+        .exec() as ProgramDoc[];
+
+      return docs.map((doc) => this.mapToDomain(doc));
+    } catch (error) {
+      logger.error('Error in findByTitleApprox', { titleFragment, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Return enriched metadata (tmdbId + image) for programs matching the given titles.
+   * Used to skip TMDB API calls when a title was already enriched in a prior sync.
+   */
+  async findEnrichedByTitles(titles: string[]): Promise<Array<{
+    title: string;
+    tmdbId: number;
+    image: string;
+    description?: string;
+    year?: string;
+    rating?: string;
+  }>> {
+    if (!titles.length) return [];
+    try {
+      const normalizedTitles = Array.from(
+        new Set(
+          titles.flatMap((title) => buildProgramTitleAliases(title))
+        )
+      );
+      const docs = await ProgramModel.find(
+        {
+          $and: [
+            { tmdbId: { $exists: true, $ne: null } },
+            { image: { $exists: true, $ne: '' } },
+            {
+              $or: [
+                { title: { $in: titles } },
+                { normalizedTitle: { $in: normalizedTitles } },
+                { titleAliases: { $in: normalizedTitles } },
+              ],
+            },
+          ],
+        },
+        { title: 1, normalizedTitle: 1, titleAliases: 1, tmdbId: 1, image: 1, description: 1, year: 1, rating: 1, _id: 0 }
+      )
+        .lean()
+        .exec() as ProgramDoc[];
+
+      return docs
+        .filter((d) => typeof d.tmdbId === 'number' && d.image)
+        .map((d) => ({
+          title: String(d.title),
+          tmdbId: d.tmdbId as number,
+          image: String(d.image),
+          description: d.description as string | undefined,
+          year: (d as any).year as string | undefined,
+          rating: (d as any).rating as string | undefined,
+        }));
+    } catch (error) {
+      logger.error('Error in findEnrichedByTitles', { error });
+      return [];
+    }
+  }
+
+  /**
    * Find current program for a set of channels in a single query.
    */
   async findNowPlaying(channelIds: string[], at: Date): Promise<Program[]> {
@@ -365,7 +527,14 @@ export class MongoProgramRepository implements IProgramRepository {
     const props: ProgramProps = {
       id: String(doc.id),
       channelId: String(doc.channelId),
+      canonicalChannelId: String((doc as any).canonicalChannelId || doc.channelId),
       title: String(doc.title),
+      subtitle: (doc as any).subtitle as string | undefined,
+      normalizedTitle: (doc as any).normalizedTitle as string | undefined,
+      titleAliases: Array.isArray((doc as any).titleAliases)
+        ? ((doc as any).titleAliases as string[])
+        : undefined,
+      brandKey: (doc as any).brandKey as string | undefined,
       startTime: new Date(doc.startTime as any),
       endTime: new Date(doc.endTime as any),
       description: doc.description as string | undefined,
@@ -375,6 +544,13 @@ export class MongoProgramRepository implements IProgramRepository {
       year: (doc as any).year as string | undefined,
       rating: (doc as any).rating !== undefined && (doc as any).rating !== null ? String((doc as any).rating) : undefined,
       tmdbId: typeof (doc as any).tmdbId === 'number' ? (doc as any).tmdbId : undefined,
+      sourceFeed: (doc as any).sourceFeed as string | undefined,
+      sourceProgrammeId: (doc as any).sourceProgrammeId as string | undefined,
+      sourceAssetCandidates: Array.isArray((doc as any).sourceAssetCandidates)
+        ? ((doc as any).sourceAssetCandidates as Array<Record<string, unknown>>)
+        : undefined,
+      sourceProvenance: ((doc as any).sourceProvenance || undefined) as Record<string, unknown> | undefined,
+      trustFlags: ((doc as any).trustFlags || undefined) as Record<string, unknown> | undefined,
       details: ((doc as any).details || undefined) as Record<string, unknown> | undefined,
     };
 
@@ -382,23 +558,43 @@ export class MongoProgramRepository implements IProgramRepository {
   }
 
   /**
-   * Map domain entity to MongoDB document data
+   * Build a $set document that preserves existing TMDB-enriched fields.
+   * image, tmdbId and rating are omitted when falsy so a previously stored
+   * TMDB poster/metadata survives if this sync run's TMDB lookup failed.
    */
-  private mapToDocument(program: Program): Partial<IProgramDocument> {
-    return {
+  private buildSetDoc(program: Program): Partial<IProgramDocument> {
+    const normalizedTitle = program.normalizedTitle || normalizeTvToken(program.title, ' ');
+    const titleAliases = program.titleAliases.length
+      ? program.titleAliases
+      : buildProgramTitleAliases(program.title);
+
+    const doc: Partial<IProgramDocument> = {
       id: program.id,
       channelId: program.channelId,
+      canonicalChannelId: program.canonicalChannelId,
       title: program.title,
+      subtitle: program.subtitle,
+      normalizedTitle,
+      titleAliases,
+      brandKey: program.brandKey || buildProgramBrandKey(program.title),
       startTime: program.startTime,
       endTime: program.endTime,
       description: program.description,
-      image: program.image,
       category: program.genre,
       subgenre: program.subgenre,
       year: program.year,
-      rating: program.rating,
-      tmdbId: program.tmdbId,
+      sourceFeed: program.sourceFeed,
+      sourceProgrammeId: program.sourceProgrammeId,
+      sourceAssetCandidates: program.sourceAssetCandidates,
+      sourceProvenance: program.sourceProvenance,
+      trustFlags: program.trustFlags,
       details: program.details,
     };
+    // Only include enriched fields when the current sync produced a value,
+    // so we never accidentally clear TMDB data with a failed enrichment run.
+    if (program.image) doc.image = program.image;
+    if (program.tmdbId) doc.tmdbId = program.tmdbId;
+    if (program.rating) doc.rating = program.rating;
+    return doc;
   }
 }

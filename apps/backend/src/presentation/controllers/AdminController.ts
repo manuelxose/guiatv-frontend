@@ -10,6 +10,7 @@ import { logger } from '../../shared/utils/logger';
 import { ValidationError } from '../../shared/errors';
 import { successResponse } from '../../shared/types/ApiResponse';
 import { ResetSystem } from '../../application/use-cases/ResetSystem';
+import { SECONDARY_EPG_SOURCE_URL } from '../../shared/config/epgSources';
 
 /**
  * Administrative controller that orchestrates maintenance and data workflows.
@@ -72,8 +73,7 @@ export class AdminController {
       void this.syncEPGData
         .execute({
           sourceUrl:
-            sourceUrl ||
-            'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz',
+            sourceUrl || SECONDARY_EPG_SOURCE_URL,
           date: dateToSync,
           forceRefresh: forceRefresh === true,
         })
@@ -92,8 +92,7 @@ export class AdminController {
 
     const result = await this.syncEPGData.execute({
       sourceUrl:
-        sourceUrl ||
-        'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz',
+        sourceUrl || SECONDARY_EPG_SOURCE_URL,
       date: dateToSync,
       forceRefresh: forceRefresh === true,
     });

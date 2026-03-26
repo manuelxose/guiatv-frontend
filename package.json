@@ -9,6 +9,7 @@
     "build": "npm run build -w apps/backend && npm run build:ssr -w apps/frontend",
     "build:frontend": "npm run build:ssr -w apps/frontend",
     "build:backend": "npm run build -w apps/backend",
+    "publish:release": "node scripts/publish-release.mjs",
     "start:api": "npm run start -w apps/backend",
     "start:ssr": "npm run serve:ssr -w apps/frontend",
     "job:syncEPG": "npm run job:syncEPG -w apps/backend",

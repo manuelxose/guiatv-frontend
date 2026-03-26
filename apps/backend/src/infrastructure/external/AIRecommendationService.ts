@@ -190,9 +190,10 @@ export class AIRecommendationService {
     context: ChatbotContext
   ): Promise<ChatbotResponse> {
     const prompt = this.buildSystemPrompt(context);
+    const anthropicModel = this.resolveAnthropicModel(context);
 
     try {
-      return await this.executeWithProvider(this.provider, messages, prompt);
+      return await this.executeWithProvider(this.provider, messages, prompt, anthropicModel);
     } catch (primaryError) {
       logger.warn('Primary AI provider failed', {
         provider: this.provider,
@@ -206,7 +207,8 @@ export class AIRecommendationService {
           return await this.executeWithProvider(
             this.fallbackProvider,
             messages,
-            prompt
+            prompt,
+            anthropicModel
           );
         } catch (fallbackError) {
           logger.warn('Fallback AI provider failed', {
@@ -229,9 +231,10 @@ export class AIRecommendationService {
     context: ChatbotContext
   ): AsyncGenerator<string> {
     const prompt = this.buildSystemPrompt(context);
+    const anthropicModel = this.resolveAnthropicModel(context);
 
     try {
-      yield* this.executeStreamWithProvider(this.provider, messages, prompt);
+      yield* this.executeStreamWithProvider(this.provider, messages, prompt, anthropicModel);
     } catch (primaryError) {
       logger.warn('Primary AI stream provider failed', {
         provider: this.provider,
@@ -239,7 +242,7 @@ export class AIRecommendationService {
       });
       if (this.fallbackProvider) {
         try {
-          yield* this.executeStreamWithProvider(this.fallbackProvider, messages, prompt);
+          yield* this.executeStreamWithProvider(this.fallbackProvider, messages, prompt, anthropicModel);
           return;
         } catch (fallbackError) {
           logger.warn('Fallback AI stream provider failed', {
@@ -259,12 +262,13 @@ export class AIRecommendationService {
   private async *executeStreamWithProvider(
     provider: AIProvider,
     messages: ChatbotMessage[],
-    systemPrompt: string
+    systemPrompt: string,
+    anthropicModelOverride?: string
   ): AsyncGenerator<string> {
     if (provider === 'deepseek') {
       yield* this.chatWithDeepSeekStream(messages, systemPrompt);
     } else {
-      yield* this.chatWithAnthropicStream(messages, systemPrompt);
+      yield* this.chatWithAnthropicStream(messages, systemPrompt, anthropicModelOverride);
     }
   }
 
@@ -286,7 +290,7 @@ export class AIRecommendationService {
           ...messages.map((m) => ({ role: m.role, content: m.content })),
         ],
       },
-      { responseType: 'stream', timeout: 30000 }
+      { responseType: 'stream', timeout: 22000 }
     );
 
     const stream = response.data as Readable;
@@ -316,20 +320,21 @@ export class AIRecommendationService {
 
   private async *chatWithAnthropicStream(
     messages: ChatbotMessage[],
-    systemPrompt: string
+    systemPrompt: string,
+    modelOverride?: string
   ): AsyncGenerator<string> {
     if (!this.anthropicClient) throw new Error('Anthropic client is not configured');
 
     const response = await this.anthropicClient.post(
       '/messages',
       {
-        model: this.anthropicModel,
+        model: modelOverride ?? this.anthropicModel,
         max_tokens: 1024,
         stream: true,
         system: systemPrompt,
         messages: messages.map((m) => ({ role: m.role, content: m.content })),
       },
-      { responseType: 'stream', timeout: 30000 }
+      { responseType: 'stream', timeout: 22000 }
     );
 
     const stream = response.data as Readable;
@@ -361,12 +366,13 @@ export class AIRecommendationService {
   private async executeWithProvider(
     provider: AIProvider,
     messages: ChatbotMessage[],
-    systemPrompt: string
+    systemPrompt: string,
+    anthropicModelOverride?: string
   ): Promise<ChatbotResponse> {
     const text =
       provider === 'deepseek'
         ? await this.chatWithDeepSeek(messages, systemPrompt)
-        : await this.chatWithAnthropic(messages, systemPrompt);
+        : await this.chatWithAnthropic(messages, systemPrompt, anthropicModelOverride);
 
     return this.parseResponse(this.validateProviderPayload(text));
   }
@@ -402,14 +408,15 @@ export class AIRecommendationService {
 
   private async chatWithAnthropic(
     messages: ChatbotMessage[],
-    systemPrompt: string
+    systemPrompt: string,
+    modelOverride?: string
   ): Promise<string> {
     if (!this.anthropicClient) {
       throw new Error('Anthropic client is not configured');
     }
 
     const response = await this.anthropicClient.post('/messages', {
-      model: this.anthropicModel,
+      model: modelOverride ?? this.anthropicModel,
       max_tokens: 1024,
       system: systemPrompt,
       messages: messages.map((message) => ({
@@ -426,114 +433,100 @@ export class AIRecommendationService {
       : '';
   }
 
-  private buildSystemPrompt(context: ChatbotContext): string {
-    const {
-      userProfile,
-      assistantMemory,
-      conversationHistory,
-      liveNow,
-      tonight,
-      streamingMatches,
-      queryIntent,
-    } = context;
+  // Static portion of the system prompt — never changes between calls, avoids recomputing tokens.
+  private static readonly SYSTEM_STATIC = [
+    'Eres el asistente de GuíaTV. Ayudas a encontrar qué ver en TV española y streaming.',
+    'Responde SIEMPRE en español. Sé concreto. Usa horas y canales reales. Máximo 3 recomendaciones.',
+    'Nunca inventes títulos, canales ni plataformas. Si la consulta es ambigua haz solo una pregunta.',
+    'Devuelve SIEMPRE JSON válido:',
+    '{"text":"...","recommendations":[{"title":"","type":"movie|series|program","platform":"","channel":"","time":"","reason":""}],"moreRecommendations":[],"followUpSuggestions":[]}',
+    'followUpSuggestions: 3 preguntas concretas. tv_now→siguiente franja o género alternativo; tv_tonight→qué hay ahora o en streaming; streaming→otra plataforma o género similar; general→búsqueda más específica.',
+  ].join('\n');
 
-    return `Eres el asistente de recomendaciones de Guía TV, una app española de television y streaming.
+  private buildCompactProfile(ctx: ChatbotContext): string {
+    const p = ctx.userProfile;
+    const m = ctx.assistantMemory;
+    const parts: string[] = [`Usuario: ${p.name}`];
+    const genres = [...new Set([...p.favoriteGenres.slice(0, 4), ...(m?.likedGenres?.slice(0, 3) ?? [])])];
+    if (genres.length) parts.push(`Géneros: ${genres.join(', ')}`);
+    const avoid = [...new Set([...(p.dislikedGenres ?? []), ...(m?.negativeSignals?.slice(0, 3) ?? [])])];
+    if (avoid.length) parts.push(`Evitar: ${avoid.slice(0, 4).join(', ')}`);
+    const platforms = [...new Set([...p.preferredPlatforms.slice(0, 4), ...(m?.preferredPlatforms?.slice(0, 3) ?? [])])];
+    if (platforms.length) parts.push(`Plataformas: ${platforms.slice(0, 5).join(', ')}`);
+    if (m?.preferredAutonomousCommunity) parts.push(`CC.AA.: ${m.preferredAutonomousCommunity}`);
+    const mode = ctx.queryIntent?.mode;
+    if (mode && mode !== 'general') parts.push(`Modo: ${mode}`);
+    return `PERFIL: ${parts.join(' | ')}`;
+  }
 
-Tu objetivo es ayudar a ${userProfile.name} a decidir qué ver basandote EXCLUSIVAMENTE en sus gustos reales, en la parrilla real y en el catálogo disponible.
+  private buildCompactMemory(ctx: ChatbotContext): string {
+    const history = ctx.conversationHistory?.slice(-6) ?? [];
+    if (!history.length) return '';
+    const lines = history.map((m) =>
+      `${m.role === 'user' ? 'U' : 'A'}: ${m.content.slice(0, m.role === 'user' ? 300 : 200)}`
+    );
+    return `CHAT:\n${lines.join('\n')}`;
+  }
 
-## PERFIL DEL USUARIO
-- Géneros favoritos: ${userProfile.favoriteGenres.join(', ') || 'No especificados todavía'}
-- Géneros a evitar: ${userProfile.dislikedGenres?.join(', ') || assistantMemory?.dislikedGenres?.join(', ') || 'No especificados'}
-- Plataformas disponibles: ${userProfile.preferredPlatforms.join(', ') || 'No especificadas'}
-- Puntuación media que da: ${userProfile.avgRating}/10
-- Contenido mejor valorado: ${userProfile.topRatedContent
-  .slice(0, 5)
-  .map((item) => `${item.title} (${item.rating}/10)`)
-  .join(', ') || 'Sin valoraciones todavía'}
-- Visto recientemente: ${userProfile.recentlyWatched
-  .slice(0, 5)
-  .map((item) => item.platform ? `${item.title} en ${item.platform}` : item.title)
-  .join(', ') || 'Sin historial'}
-
-## MEMORIA LARGA DEL ASISTENTE
-- Gustos inferidos: ${assistantMemory?.likedGenres?.join(', ') || 'Sin señales claras'}
-- Plataformas reforzadas: ${assistantMemory?.preferredPlatforms?.join(', ') || 'Sin señales claras'}
-- Plataformas evitadas: ${assistantMemory?.avoidedPlatforms?.join(', ') || 'Sin señales claras'}
-- Duración preferida: ${assistantMemory?.preferredDurations?.join(', ') || 'Sin señales claras'}
-- Contexto de visionado: ${assistantMemory?.preferredViewingContexts?.join(', ') || 'Sin señales claras'}
-- Señales negativas: ${assistantMemory?.negativeSignals?.join(', ') || 'Sin señales negativas'}
-- Temas recientes: ${assistantMemory?.recentTopics?.join(', ') || 'Sin temas recientes'}
-
-## HISTORIAL RECIENTE DEL ASISTENTE
-${conversationHistory?.slice(-8)?.map(
-    (message) => `- ${message.role === 'user' ? 'Usuario' : 'Asistente'}: ${message.content}`
-  )
-  .join('\n') || 'Sin conversación previa relevante'}
-
-## EN EMISIÓN AHORA MISMO
-${liveNow?.slice(0, 10)?.map(
-    (program) =>
-      `- ${program.time} · ${program.channel}: "${program.title}" [${program.genre}] (${program.type})${
-        program.tmdbRating ? ` (TMDB: ${program.tmdbRating}/10)` : ''
-      }`
-  )
-  .join('\n') || 'No hay datos relevantes en emisión ahora mismo'}
-
-## ESTA NOCHE EN TV
-${tonight?.slice(0, 12)?.map(
-    (program) =>
-      `- ${program.time} en ${program.channel}: "${program.title}" [${program.genre}] (${program.type})${
-        program.tmdbRating ? ` (TMDB: ${program.tmdbRating}/10)` : ''
-      }`
-  )
-  .join('\n') || 'No hay datos de programación disponibles'}
-
-## STREAMING COMPATIBLE
-${streamingMatches?.slice(0, 12)?.map(
-    (item) =>
-      `- ${item.title} [${item.genre}] en ${item.platform || 'streaming'} (${item.type})${
-        item.tmdbRating ? ` (TMDB: ${item.tmdbRating}/10)` : ''
-      }`
-  )
-  .join('\n') || 'No hay resultados relevantes en streaming'}
-
-## INTENCIÓN DE LA CONSULTA ACTUAL
-- Modo: ${queryIntent?.mode || 'general'}
-- Tipos solicitados: ${queryIntent?.requestedTypes.join(', ') || 'sin preferencia'}
-- Géneros explícitos: ${queryIntent?.explicitGenres.join(', ') || 'ninguno'}
-- Plataformas explícitas: ${queryIntent?.explicitPlatforms.join(', ') || 'ninguna'}
-- Familiar: ${queryIntent?.wantsFamily ? 'sí' : 'no'}
-- Corto: ${queryIntent?.wantsShort ? 'sí' : 'no'}
-- Señales negativas actuales: ${queryIntent?.negativeSignals?.join(', ') || 'ninguna'}
-
-## INSTRUCCIONES
-1. Responde SIEMPRE en español.
-2. Sé útil y concreto. No repitas preguntas del usuario ni plantillas vacías.
-3. Máximo 3 recomendaciones por respuesta.
-4. Prioriza TV de hoy y plataformas compatibles con el perfil del usuario.
-5. Si la consulta es sobre TV en directo o parrilla actual, responde primero con TV real. Solo ofrece streaming como alternativa si no hay coincidencias reales.
-6. Si no hay coincidencias directas, dilo con honestidad y ofrece la siguiente mejor opción inmediata: más tarde esta noche, mañana o streaming compatible.
-7. No digas que algo no encaja con su perfil salvo que sea realmente relevante; la prioridad es responder a la consulta exacta.
-8. Usa horas y canales reales cuando recomiendes TV. No uses frases vagas como "explora Prime Video" si puedes dar títulos concretos.
-9. Si la consulta es ambigua, haz como mucho una sola pregunta de aclaración útil.
-10. Nunca inventes títulos, canales ni plataformas.
-11. Devuelve SIEMPRE un JSON válido con este formato exacto:
-{
-  "text": "mensaje conversacional para el usuario",
-  "recommendations": [
-    {
-      "title": "Nombre exacto",
-      "type": "movie|series|program",
-      "platform": "Netflix|Prime Video|TV|etc",
-      "channel": "Nombre del canal si es TV",
-      "time": "HH:MM si aplica",
-      "reason": "una línea explicando por qué"
+  private buildCompactLiveData(ctx: ChatbotContext): string {
+    const parts: string[] = [];
+    if (ctx.liveNow?.length) {
+      parts.push(
+        'AHORA:\n' +
+          ctx.liveNow
+            .slice(0, 6)
+            .map((p) => `${p.time} ${p.channel}: "${p.title}" [${p.genre}]${p.tmdbRating ? ` ★${p.tmdbRating}` : ''}`)
+            .join('\n')
+      );
     }
-  ],
-  "moreRecommendations": [],
-  "followUpSuggestions": ["otra pregunta útil", "segunda pregunta útil"]
-}
-`;
+    if (ctx.tonight?.length) {
+      parts.push(
+        'ESTA NOCHE:\n' +
+          ctx.tonight
+            .slice(0, 6)
+            .map((p) => `${p.time} ${p.channel}: "${p.title}" [${p.genre}]${p.tmdbRating ? ` ★${p.tmdbRating}` : ''}`)
+            .join('\n')
+      );
+    }
+    if (ctx.streamingMatches?.length) {
+      parts.push(
+        'STREAMING:\n' +
+          ctx.streamingMatches
+            .slice(0, 8)
+            .map((p) => `${p.title} [${p.genre}] ${p.platform ?? ''}${p.tmdbRating ? ` ★${p.tmdbRating}` : ''}`)
+            .join('\n')
+      );
+    }
+    return parts.join('\n\n');
+  }
+
+  private buildSystemPrompt(context: ChatbotContext): string {
+    const prompt = [
+      AIRecommendationService.SYSTEM_STATIC,
+      this.buildCompactProfile(context),
+      this.buildCompactMemory(context),
+      this.buildCompactLiveData(context),
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+
+    // Rough token estimate: ~4 chars per token. Log so we can track prompt size trends.
+    logger.info('[AIRecommendationService] PROMPT_TOKENS', {
+      estimatedTokens: Math.ceil(prompt.length / 4),
+      promptChars: prompt.length,
+      mode: context.queryIntent?.mode ?? 'unknown',
+    });
+
+    return prompt;
+  }
+
+  /** Selects Haiku for lightweight TV schedule intents, Sonnet/default for general/streaming. */
+  private resolveAnthropicModel(context: ChatbotContext): string {
+    const mode = context.queryIntent?.mode;
+    if (mode === 'tv_now' || mode === 'tv_tonight') {
+      return process.env.AI_CHATBOT_ANTHROPIC_HAIKU_MODEL ?? 'claude-haiku-4-5-20251001';
+    }
+    return this.anthropicModel;
   }
 
   private parseResponse(text: string): ChatbotResponse {

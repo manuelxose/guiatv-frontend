@@ -56,7 +56,14 @@ export class DateUtils {
   }
 
   static parseDateAlias(alias: string): string {
-    switch (alias.toLowerCase()) {
+    const normalizedInput = String(alias || '').trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(normalizedInput)) {
+      const compactDate = normalizedInput.replace(/-/g, '');
+      this.parseYYYYMMDD(compactDate);
+      return compactDate;
+    }
+
+    switch (normalizedInput.toLowerCase()) {
       case 'yesterday':
         return this.getYesterdayYYYYMMDD();
       case 'today':
@@ -67,11 +74,11 @@ export class DateUtils {
         return this.getAfterTomorrowYYYYMMDD();
       default:
         // Si no es un alias, validar formato YYYYMMDD
-        if (/^\d{8}$/.test(alias)) {
-          this.parseYYYYMMDD(alias); // Validar fecha
-          return alias;
+        if (/^\d{8}$/.test(normalizedInput)) {
+          this.parseYYYYMMDD(normalizedInput); // Validar fecha
+          return normalizedInput;
         }
-        throw new Error(`Invalid date alias or format: ${alias}`);
+        throw new Error(`Invalid date alias or format: ${normalizedInput}`);
     }
   }
 

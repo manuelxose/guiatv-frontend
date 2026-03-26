@@ -333,8 +333,8 @@ export class GetProgramLayouts {
   }
 
   /**
-   * Enrich channel objects with description and normalizedName from the
-   * Channels collection (these fields are not stored in schedule snapshots).
+   * Overlay canonical channel metadata from the Channels collection so layout
+   * snapshots do not leak stale type/icon/alias data after schema changes.
    */
   private async enrichChannelDescriptions(
     response: GetProgramLayoutsResponse
@@ -346,21 +346,56 @@ export class GetProgramLayouts {
 
     const docs = await ChannelModel.find(
       { id: { $in: channelIds } },
-      'id description normalizedName'
+      'id name normalizedName aliases sourceIds logo type country countryCode region description'
     )
       .lean()
       .exec();
 
-    const extraMap = new Map<string, { description?: string; normalizedName?: string }>();
+    const extraMap = new Map<
+      string,
+      {
+        name?: string;
+        normalizedName?: string;
+        aliases?: string[];
+        sourceIds?: string[];
+        icon?: string;
+        type?: string;
+        country?: string;
+        countryCode?: string;
+        region?: string;
+        description?: string;
+      }
+    >();
     docs.forEach((d: any) => {
-      if (d.id) extraMap.set(d.id, { description: d.description, normalizedName: d.normalizedName });
+      if (d.id) {
+        extraMap.set(d.id, {
+          name: d.name,
+          normalizedName: d.normalizedName,
+          aliases: d.aliases,
+          sourceIds: d.sourceIds,
+          icon: d.logo,
+          type: d.type,
+          country: d.country,
+          countryCode: d.countryCode,
+          region: d.region,
+          description: d.description,
+        });
+      }
     });
 
     response.channels.forEach((entry) => {
       const extra = extraMap.get(entry.channel?.id);
       if (extra) {
+        if (extra.name) entry.channel.name = extra.name;
         if (extra.description) entry.channel.description = extra.description;
         if (extra.normalizedName) entry.channel.normalizedName = extra.normalizedName;
+        if (extra.aliases?.length) entry.channel.aliases = extra.aliases;
+        if (extra.sourceIds?.length) entry.channel.sourceIds = extra.sourceIds;
+        if (extra.icon) entry.channel.icon = extra.icon;
+        if (extra.type) entry.channel.type = extra.type;
+        if (extra.country) entry.channel.country = extra.country;
+        if (extra.countryCode) entry.channel.countryCode = extra.countryCode;
+        if (extra.region) entry.channel.region = extra.region;
       }
     });
 

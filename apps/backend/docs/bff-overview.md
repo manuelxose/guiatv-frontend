@@ -1,262 +1,127 @@
-# Guía TV API v2 (BFF) - Manual de Referencia
+# Backend-for-Frontend Overview
 
-> **Estado**: Activo  
-> **Versión**: 2.0.0  
-> **Stack**: Node.js 22, TypeScript, Express, MongoDB, Valkey (opcional), Axios
+## Purpose
 
-Este documento sirve como referencia completa para la API v2 de Guía TV. Esta API actúa como un **Backend-For-Frontend (BFF)** unificado, optimizado para vistas de cliente modernas, además de mantener compatibilidad con endpoints _legacy_ para funcionalidades del núcleo.
+The backend exposes a thin set of surface endpoints whose only job is to serve frontend-ready payloads with minimal client-side orchestration.
 
----
+The BFF contract is built around:
 
-## Índice
+- one request per primary view whenever possible
+- canonical TV reads for all TV-derived screens
+- unified content detail for both TV and streaming
+- shared DTO semantics between frontend surfaces and chatbot recommendations
 
-1. [Visión General](#visión-general)
-2. [Configuración y Despliegue](#configuración-y-despliegue)
-3. [Scripts de Gestión](#scripts-de-gestión)
-4. [Dominios y Endpoints](#dominios-y-endpoints)
-    - [Discovery (Home & Search)](#discovery-home--search)
-    - [Content (Detalle & Batch)](#content-detalle--batch)
-    - [TV (Directo & Parrilla)](#tv-directo--parrilla)
-    - [Interactive (Auth & User)](#interactive-auth--user)
-    - [Blog / CMS](#blog--cms)
-    - [Legacy Core](#legacy-core)
-    - [Admin & Operaciones](#admin--operaciones)
-5. [Contratos de Datos (DTOs)](#contratos-de-datos-dtos)
-6. [Estrategia de Cache y Rendimiento](#estrategia-de-cache-y-rendimiento)
-7. [Manejo de Errores](#manejo-de-errores)
+## Surface endpoints
 
----
+### TV guide surface
 
-## Visión General
+- `GET /v2/tv/surface/guide`
+- Used by the main TV guide page.
+- Returns:
+  - `nowItems`
+  - `nextItems`
+  - `nightItems`
+  - `channels`
+  - guide-level metadata
 
-La API v2 centraliza la lógica de negocio y presentación para clientes web y móviles.
+The frontend should not reconstruct the guide by chaining `/tv/read` plus multiple detail requests.
 
-- **Discovery**: Agrega contenido de diversas fuentes (EPG, Blog, TMDB) para la portada y búsqueda.
-- **Content**: Enriquece la información de programas con metadatos VOD, sociales y relacionados.
-- **TV**: Gestión eficiente de la parrilla lineal y estado "en vivo".
-- **Performance**: Uso intensivo de *precálculo* (JSON estáticos) para ventanas de tiempo canónicas (ayer, hoy, mañana).
+### Channel surface
 
----
+- `GET /v2/tv/surface/channels/:channelId`
+- Used by the channel detail page.
+- Returns:
+  - `channel`
+  - `current`
+  - `next`
+  - `tonightItems`
+  - `scheduleItems`
+  - `relatedChannels`
 
-## Configuración y Despliegue
+### Discovery home surface
 
-Variables de entorno críticas (ver `.env.example`):
+- `GET /v2/discovery/home`
+- Used by the home page.
+- Returns:
+  - live TV rail
+  - tonight TV rail
+  - streaming rails
+  - platform registry subset
+  - personalized items when a user is authenticated
 
-| Variable | Descripción | Valor por defecto |
-|----------|-------------|-------------------|
-| `PORT` | Puerto de escucha | `8080` |
-| `MONGODB_URI` | Conexión a MongoDB | - |
-| `CACHE_TYPE` | Tipo de caché (`memory` o `valkey`) | `memory` |
-| `REDIS_URL` | URL de conexión Valkey | - |
-| `TMDB_API_KEY` | API Key para enriquecimiento de metadatos | - |
-| `BLOG_API_URL` | URL del CMS externo (WordPress/Headless) | - |
-| `JWT_SECRET` | Secreto para firma de tokens de sesión | - |
-| `STORAGE_ADAPTER`| Almacenamiento de archivos (`local` o `s3`) | `local` |
+### Discovery browse surface
 
-### Notas de Producción
-- **Indices**: Al arrancar, el sistema verifica y crea los índices de MongoDB necesarios (`metrics.ensureMongoCollectionsAndIndexes`).
-- **Storage**: En modo `local`, los archivos se sirven desde `/storage` (mapeado estáticamente). En `s3`, se generan URLs firmadas o públicas.
+- `GET /v2/discovery/browse`
+- Used by listing pages for movies and series.
+- Returns catalog items, live TV complements, and filter metadata in one response.
 
----
+### Unified search surface
 
-## Scripts de Gestión
+- `GET /v2/discovery/search`
+- Used by public search views and overlays.
+- Merges TV and streaming results while keeping the response in a single `CatalogQueryResultDTO` shape.
 
-```bash
-# Instalación y Build
-npm install
-npm run build           # Compila TS y resuelve alias
+### Unified content detail surface
 
-# Ejecución
-npm start               # Inicia servidor (dist/server/index.js)
-npm run dev             # Modo desarrollo (watch)
+- `GET /v2/content/:id`
+- Used by all detail pages.
+- Resolves:
+  - TV airings from canonical TV read data
+  - streaming items from catalog/TMDB data
 
-# Jobs Manuales (Cron)
-npm run job:syncEPG     # Sincroniza EPG (descarga + parseo + guardado)
-npm run job:precompute  # Genera JSONs estáticos de parrilla
-npm run job:clean       # Limpia programas antiguos
-```
+## Core read endpoints behind the BFFs
 
----
+The BFFs aggregate but do not replace the canonical read endpoints:
 
-## Dominios y Endpoints
+- `/v2/tv/read*`
+- `/v2/catalog*`
+- `/v2/content/*`
 
-Base URL: `http://host:port/v2`  
-Header opcional: `x-api-key` (si se configura protección global).
+These remain important for:
 
-### Discovery (Home & Search)
+- secondary UI consumers
+- admin utilities
+- chatbot retrieval
+- debugging and contract inspection
 
-Endpoints orientados a la exploración de contenido.
+## Response invariants
 
-#### `GET /discovery/home`
-Obtiene la vista agregada de la portada.
-- **Query Params**:
-  - `date`: `today` (default), `tomorrow`, `YYYYMMDD`.
-  - `channelTypes`: Filtro de canales (ej: `TDT,AUTONOMICO`).
-- **Respuesta (`HomeViewDTO`)**:
-  - `hero`: Elementos destacados para el carrusel principal.
-  - `whatToWatch`: Recomendaciones del día ("Qué ver hoy").
-  - `liveNow`: Programas destacados en emisión actual.
-  - `blogHighlights`: Últimas noticias del blog.
-- **Cache**: TTL corto (120s).
+- TV covers and logos are not interchangeable.
+- `image` must represent a real program/content visual.
+- channel and platform logos are exposed separately.
+- guide and channel surfaces must carry enough metadata for the frontend to avoid fan-out requests.
+- empty arrays are preferred over `null` for collection fields.
 
-#### `GET /discovery/search`
-Búsqueda unificada de contenido.
-- **Query Params**:
-  - `q`: Término de búsqueda (requerido).
-  - `limit`: Resultados por página (max 200).
-  - `page`: Paginación.
-  - `genre`, `category`: Filtros opcionales.
-- **Respuesta**: Lista paginada de `MediaCardDTO`.
+## Cache strategy for surfaces
 
-### Content (Detalle & Batch)
+### Short-lived surfaces
 
-Endpoints para fichas de contenido y listas agregadas.
+- `/v2/tv/read?view=now`
+- `/v2/discovery/search`
+- AI/chatbot retrieval inputs
 
-#### `GET /content/:id`
-Detalle completo de un programa o contenido.
-- **Path Params**: `id` (ID del programa).
-- **Query Params**:
-  - `expand`: CSV opcional (`related,schedule`).
-- **Respuesta (`MediaDetailDTO`)**:
-  - Datos básicos + imágenes de alta calidad (TMDB).
-  - `whereToWatch`: Opciones de visualización (Canal lineal, Plataformas VOD).
-  - `schedule`: Próximas emisiones.
-- **Cache**: TTL medio (30 min).
+### Medium-lived surfaces
 
-#### `GET /content/batch`
-Hidratación masiva de tarjetas (para favoritos o historiales).
-- **Query Params**: `ids` (CSV de IDs).
-- **Respuesta**: `{ items: MediaCardDTO[], notFound: string[] }`.
+- `/v2/tv/surface/guide`
+- `/v2/tv/surface/channels/:channelId`
+- `/v2/discovery/home`
+- `/v2/discovery/browse`
 
-### TV (Directo & Parrilla)
+### Detail surfaces
 
-#### `GET /tv/now`
-Estado actual de la parrilla ("Ahora en TV").
-- **Respuesta**: Lista de canales con su programa actual y el siguiente.
-- **Cache**: TTL muy corto (30s) o nulo.
+- `/v2/content/:id`
+- `/v2/catalog/:catalogId`
 
-#### `GET /tv/schedule`
-Parrilla de programación completa.
-- **Query Params**:
-  - `date`: `today`, `tomorrow`, `YYYYMMDD`.
-  - `channelTypes`: Filtra canales (TDT, CABLE, etc).
-  - `timeSlot`: Filtro por franja horaria (0-7).
-- **Respuesta**: Estructura optimizada para renderizado de parrilla (TimeSlots + Canales + Programas posicionados).
-- **Optimización**: Intenta servir desde JSON precalculado (`storage/schedules/`) para velocidad máxima.
+Detail routes can tolerate longer TTLs because they are less bursty and often backed by stable metadata.
 
-### Interactive (Auth & User)
+## BFF migration outcome
 
-#### `POST /auth/google`
-Login social con Google.
-- **Body**: `{ "token": "google_id_token" }`
-- **Respuesta**: `{ "token": "jwt_access_token", "user": { ... } }`
+The previous backend state mixed canonical reads, raw program routes, schedule routes, and UI-facing endpoints. That created contract drift and duplicated transformations.
 
-#### `GET /auth/me`
-Obtiene el perfil del usuario actual.
-- **Headers**: `Authorization: Bearer <jwt_token>`
+The current direction is explicit:
 
-#### `POST /auth/logout`
-Cierra la sesión (idealmente invalida token si se usa lista negra).
+- frontend views use surface endpoints first
+- surface endpoints build on canonical read services
+- raw legacy TV routes are no longer part of the active BFF surface
 
-### Blog / CMS
-
-Endpoints proxy o mock para contenido editorial. Accesibles bajo ruta raíz `/blog` (no `/v2/blog`).
-
-#### `GET /blog`
-Lista de posts recientes.
-- **Query**: `slug` (para detalle), `limit`.
-
-#### `GET /blog/categories`
-Lista de categorías del blog.
-
-### Legacy Core
-
-Endpoints RESTful clásicos sobre recursos base. Útiles para integraciones directas.
-
-- `GET /channels`: Listado de canales.
-- `GET /programs`: Búsqueda cruda de programas (sin DTOs de vista UI).
-- `GET /schedules/:date`: Raw schedule data.
-
-### Admin & Operaciones
-
-Endpoints de mantenimiento. **Proteger en producción**.
-
-> **Nota Async**: Todos los endpoints de escritura/proceso (`POST`) aceptan el parámetro `"async": true` en el body. Esto devuelve inmediatamente un `202 Accepted` y ejecuta la tarea en segundo plano, evitando timeouts HTTP en operaciones largas.
-
-#### `POST /admin/sync`
-Fuerza la descarga y procesado del EPG.
-- **Body**: `{ "date": "today", "forceRefresh": true, "async": true }`
-
-#### `POST /admin/precompute`
-Genera los JSON estáticos para una fecha.
-- **Body**: `{ "date": "today", "async": true }`
-
-#### `POST /admin/precompute-window`
-Genera JSONs para toda la ventana canónica (Ayer, Hoy, Mañana, Pasado).
-- **Body**: `{ "fields": "full", "async": true }`
-
-#### `POST /admin/reset`
-**Peligroso**. Borra base de datos, caché y almacenamiento, y reinicia la sincronización desde cero.
-- **Body**: `{ "async": true }`
-
----
-
-## Contratos de Datos (DTOs)
-
-Formato de respuesta estándar:
-```json
-{
-  "success": true,
-  "data": { ... }, // Objeto o Array principal
-  "meta": {        // Metadatos de paginación, cache, timestamp
-    "total": 100,
-    "cached": true,
-    "timestamp": "ISO-8601"
-  }
-}
-```
-
-### MediaCardDTO
-Usado en listados (Home, Search, Batch).
-```typescript
-interface MediaCardDTO {
-  id: string;
-  type: 'program' | 'movie' | 'series';
-  title: string;
-  subtitle: string; // Ej: "22:00 - Antena 3"
-  image: { url: string; aspectRatio: number };
-  badges: string[]; // Ej: ["Directo", "Cine"]
-  context?: {
-    schedule?: { start: string; end: string; live: boolean; progress: number };
-  }
-}
-```
-
----
-
-## Estrategia de Cache y Rendimiento
-
-La API utiliza una estrategia de caché en capas:
-
-1.  **Static Storage (Nivel 1)**: Los `schedules` (parrillas) se pre-calculan en archivos JSON almacenados fisicamente (o en S3). Esto permite lecturas O(1) casi instantáneas sin tocar la BD.
-2.  **Application Cache (Nivel 2)**: Valkey o Memoria. Almacena:
-    - Resultados de `discovery/home`.
-    - Datos de canales (`channels:meta`).
-    - Snapshots de `schedules` calientes.
-3.  **HTTP Cache (Nivel 3)**: Headers `Cache-Control` agresivos para recursos estáticos (imágenes) y controlados para datos dinámicos (`stale-while-revalidate`).
-
----
-
-## Manejo de Errores
-
-| Código | Error | Descripción |
-|--------|-------|-------------|
-| 400 | `ValidationError` | Parámetros de entrada inválidos. |
-| 401 | `Unauthorized` | Token faltante o inválido. |
-| 404 | `NotFoundError` | Recurso no encontrado. |
-| 429 | `TooManyRequests` | Exceso de peticiones (Rate Limit). |
-| 500 | `InternalServerError` | Error no controlado del servidor. |
-| 503 | `ServiceUnavailable` | Sistema en mantenimiento o sobrecarga. |
-
----
-*Documentación generada automáticamente para Guía TV API v2.*
+This is the contract that future frontend work must target.

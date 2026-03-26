@@ -7,7 +7,7 @@
 
 <main
   id="main-content"
-  class="lista-canales mx-auto w-full max-w-7xl overflow-x-hidden px-4 pb-24 pt-6 text-slate-100 sm:px-6 lg:px-8"
+  class="lista-canales mx-auto w-full max-w-7xl overflow-x-hidden px-4 pb-24 pt-4 text-slate-100 sm:px-6 lg:px-8"
   role="main"
   aria-labelledby="page-title"
 >
@@ -15,451 +15,469 @@
 
   <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
 
-  <section
-    class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.16),_rgba(8,16,24,0.96)_52%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-8"
-  >
-    <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_35%,transparent_65%,rgba(56,189,248,0.07))]"></div>
-    <div class="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
-      <div class="space-y-5">
-        <div class="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-red-200">
+  <!-- =============================== -->
+  <!-- HERO COMPACTO                   -->
+  <!-- =============================== -->
+  <section class="guide-hero" aria-label="Guía de televisión">
+    <div class="guide-hero__inner">
+      <div class="guide-hero__lead">
+        <div class="guide-hero__pill">
+          <span class="guide-hero__pulse" aria-hidden="true"></span>
           Guía TV
         </div>
-        <div class="space-y-3">
-          <h1 id="page-title" class="max-w-3xl text-4xl font-black tracking-tight text-white md:text-6xl">
-            Qué ver hoy en TV con orden real de canales y foco en lo importante.
-          </h1>
-          <p class="max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
-            La guía recupera el orden habitual de la TDT, mantiene coherencia al cambiar de grupo
-            y prioriza cine, series y deportes para decidir más rápido.
-          </p>
-        </div>
-
-        <div class="flex flex-wrap gap-3">
-          <button
-            type="button"
-            (click)="setActiveTab('now')"
-            class="inline-flex min-h-[46px] items-center justify-center rounded-full bg-red-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
-          >
-            Ver ahora
-          </button>
-          <button
-            type="button"
-            (click)="setActiveTab('night')"
-            class="inline-flex min-h-[46px] items-center justify-center rounded-full border border-slate-700 bg-slate-950/50 px-5 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-500"
-          >
-            Esta noche
-          </button>
-          <button
-            type="button"
-            (click)="setActiveTab('channels')"
-            class="inline-flex min-h-[46px] items-center justify-center rounded-full border border-slate-700 bg-slate-950/50 px-5 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-500"
-          >
-            Directorio de canales
-          </button>
-        </div>
+        <h1 id="page-title" class="guide-hero__title">
+          Qué ver hoy en TV
+        </h1>
+        <p class="guide-hero__desc">
+          Parrilla con orden real TDT, foco en cine, series y deporte.
+        </p>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/72 p-4">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Canales</p>
-          <p class="mt-2 text-3xl font-bold text-white">{{ totalChannels }}</p>
-          <p class="mt-1 text-sm text-slate-400">Ordenados como en la guía real</p>
+      <!-- Stats grid: solo desktop -->
+      <div class="guide-hero__stats" aria-hidden="true">
+        <div class="guide-hero__stat">
+          <strong class="guide-hero__stat-val">{{ totalChannels }}</strong>
+          <span class="guide-hero__stat-label">Canales</span>
         </div>
-        <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/72 p-4">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Rápidos</p>
-          <p class="mt-2 text-3xl font-bold text-white">{{ quickChannels.length }}</p>
-          <p class="mt-1 text-sm text-slate-400">Canales del grupo activo</p>
+        <div class="guide-hero__stat">
+          <strong class="guide-hero__stat-val">{{ visibleNowPrograms.length }}</strong>
+          <span class="guide-hero__stat-label">Ahora</span>
         </div>
-        <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/72 p-4">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Ahora</p>
-          <p class="mt-2 text-3xl font-bold text-white">{{ visibleNowPrograms.length }}</p>
-          <p class="mt-1 text-sm text-slate-400">Selección filtrada y priorizada</p>
+        <div class="guide-hero__stat">
+          <strong class="guide-hero__stat-val">{{ visibleTonightPrograms.length }}</strong>
+          <span class="guide-hero__stat-label">Esta noche</span>
         </div>
-        <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/72 p-4">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Esta noche</p>
-          <p class="mt-2 text-3xl font-bold text-white">{{ visibleTonightPrograms.length }}</p>
-          <p class="mt-1 text-sm text-slate-400">Prime time editorializado</p>
+        <div class="guide-hero__stat">
+          <strong class="guide-hero__stat-val">{{ quickChannels.length }}</strong>
+          <span class="guide-hero__stat-label">Rápidos</span>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="mt-6 rounded-[1.75rem] border border-slate-800/80 bg-slate-950/80 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.24)]">
-    <div class="space-y-4">
-      <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Navegación de guía</p>
-          <p class="mt-2 text-sm text-slate-300">
-            El mismo criterio se aplica a canales rápidos, emisiones activas, siguiente bloque y prime time.
-          </p>
-        </div>
-        <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+  <!-- =============================== -->
+  <!-- BARRA DE NAVEGACIÓN STICKY      -->
+  <!-- =============================== -->
+  <nav class="guide-nav" aria-label="Filtros de guía">
+
+    <!-- Row 1: Tabs principales -->
+    <div class="guide-nav__row guide-nav__row--tabs" role="tablist">
+      <button
+        *ngFor="let tab of guideTabs"
+        type="button"
+        (click)="setActiveTab(tab.key)"
+        class="guide-nav__tab"
+        [class.guide-nav__tab--active]="activeGuideTab === tab.key"
+        role="tab"
+        [attr.aria-selected]="activeGuideTab === tab.key"
+        [attr.aria-controls]="'guide-' + tab.key"
+      >
+        <span
+          *ngIf="tab.key === 'now'"
+          class="guide-nav__live-dot"
+          [class.guide-nav__live-dot--on]="activeGuideTab === 'now'"
+          aria-hidden="true"
+        ></span>
+        {{ tab.label }}
+        <span
+          *ngIf="tab.key === 'now' && visibleNowPrograms.length > 0"
+          class="guide-nav__tab-count"
+          aria-hidden="true"
+        >{{ visibleNowPrograms.length }}</span>
+      </button>
+    </div>
+
+    <!-- Row 2: Grupos de canales (oculto en tab Canales) -->
+    <div class="guide-nav__row guide-nav__row--groups" *ngIf="activeGuideTab !== 'channels'">
+      <button
+        *ngFor="let group of channelGroups"
+        type="button"
+        (click)="selectChannelGroup(group.key)"
+        class="guide-nav__chip"
+        [class.guide-nav__chip--active]="selectedChannelGroup === group.key"
+        [attr.aria-pressed]="selectedChannelGroup === group.key"
+      >
+        {{ group.label }}<span class="guide-nav__chip-count" aria-hidden="true">{{ group.count }}</span>
+      </button>
+    </div>
+
+    <!-- Row 3: Categorías -->
+    <div class="guide-nav__row guide-nav__row--cats" *ngIf="activeGuideTab !== 'channels'">
+      <button
+        *ngFor="let category of quickCategoryTabs"
+        type="button"
+        (click)="selectCategory(category.key)"
+        class="guide-nav__chip guide-nav__chip--sm"
+        [class.guide-nav__chip--active]="selectedCategory === category.key"
+        [attr.aria-pressed]="selectedCategory === category.key"
+      >
+        {{ category.label }}
+      </button>
+
+      <div class="guide-nav__more" *ngIf="extraCategories.length">
+        <button
+          type="button"
+          (click)="toggleMoreCategories()"
+          class="guide-nav__chip guide-nav__chip--sm"
+          [class.guide-nav__chip--active]="isMoreCategoryActive()"
+          [attr.aria-expanded]="isMoreCategoriesOpen"
+        >
+          Más
+          <svg
+            class="guide-nav__chevron"
+            [class.guide-nav__chevron--open]="isMoreCategoriesOpen"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+          </svg>
+        </button>
+
+        <div
+          *ngIf="isMoreCategoriesOpen && extraCategories.length"
+          class="guide-nav__dropdown"
+          role="listbox"
+        >
           <button
-            *ngFor="let tab of guideTabs"
+            *ngFor="let category of extraCategories"
             type="button"
-            (click)="setActiveTab(tab.key)"
-            class="flex-shrink-0 min-h-[40px] rounded-full px-4 text-sm font-semibold transition-colors"
-            [ngClass]="activeGuideTab === tab.key ? 'bg-red-600 text-white' : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
+            (click)="selectCategory(category)"
+            class="guide-nav__dropdown-item"
+            [class.guide-nav__dropdown-item--active]="selectedCategory === category"
+            role="option"
+            [attr.aria-selected]="selectedCategory === category"
           >
-            {{ tab.label }}
+            {{ category }}
           </button>
-        </div>
-      </div>
-
-      <div class="border-t border-slate-800/80 pt-4">
-        <p class="mb-3 text-[11px] uppercase tracking-[0.32em] text-slate-500">Grupo de canales</p>
-        <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          <button
-            *ngFor="let group of channelGroups"
-            type="button"
-            (click)="selectChannelGroup(group.key)"
-            class="flex-shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors"
-            [ngClass]="selectedChannelGroup === group.key ? 'border-red-500 bg-red-500/10 text-red-100' : 'border-slate-700 bg-slate-900/70 text-slate-300'"
-          >
-            {{ group.label }} · {{ group.count }}
-          </button>
-        </div>
-      </div>
-
-      <div class="border-t border-slate-800/80 pt-4">
-        <div class="flex flex-wrap items-center gap-2">
-          <button
-            *ngFor="let category of quickCategoryTabs"
-            type="button"
-            (click)="selectCategory(category.key)"
-            class="min-h-[40px] rounded-full px-4 text-sm font-semibold transition-colors"
-            [ngClass]="selectedCategory === category.key ? 'bg-slate-100 text-slate-900' : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
-          >
-            {{ category.label }}
-          </button>
-
-          <div class="relative">
-            <button
-              type="button"
-              (click)="toggleMoreCategories()"
-              class="min-h-[40px] rounded-full border px-4 text-sm font-semibold transition-colors"
-              [ngClass]="isMoreCategoryActive() ? 'border-sky-500/30 bg-sky-500/10 text-sky-100' : 'border-slate-700 bg-slate-900/70 text-slate-300'"
-            >
-              Más
-            </button>
-
-            <div
-              *ngIf="isMoreCategoriesOpen && extraCategories.length"
-              class="absolute left-0 top-[calc(100%+0.5rem)] z-[80] min-w-[14rem] rounded-2xl border border-slate-800/80 bg-slate-950/96 p-3 shadow-[0_16px_36px_rgba(0,0,0,0.35)]"
-            >
-              <button
-                *ngFor="let category of extraCategories"
-                type="button"
-                (click)="selectCategory(category)"
-                class="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition-colors"
-                [ngClass]="selectedCategory === category ? 'bg-slate-100 text-slate-900' : 'text-slate-200 hover:bg-slate-900/80'"
-              >
-                <span>{{ category }}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="quickChannels.length" class="border-t border-slate-800/80 pt-4">
-        <p class="mb-3 text-[11px] uppercase tracking-[0.32em] text-slate-500">Canales rápidos</p>
-        <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          <a
-            *ngFor="let channel of quickChannels; trackBy: channelTrackBy"
-            [routerLink]="channel.channelLink"
-            class="flex min-w-max items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
-          >
-            <img
-              *ngIf="channel.icon"
-              [src]="channel.icon"
-              [alt]="channel.name"
-              class="h-6 w-6 rounded-full object-contain bg-slate-950"
-              loading="lazy"
-            />
-            <span>{{ channel.name }}</span>
-          </a>
         </div>
       </div>
     </div>
-  </section>
 
-  <div *ngIf="loading" class="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3" aria-live="polite">
-    <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-56 animate-pulse rounded-[1.75rem] bg-slate-900/70"></div>
+    <!-- Row 4: Canales rápidos -->
+    <div
+      class="guide-nav__row guide-nav__row--quick"
+      *ngIf="quickChannels.length && activeGuideTab !== 'channels'"
+    >
+      <a
+        *ngFor="let channel of quickChannels; trackBy: channelTrackBy"
+        [routerLink]="channel.channelLink"
+        class="guide-nav__quick"
+        [attr.aria-label]="channel.name"
+      >
+        <img
+          *ngIf="channel.icon"
+          [src]="channel.icon"
+          [alt]=""
+          class="guide-nav__quick-img"
+          loading="lazy"
+          aria-hidden="true"
+        />
+        <span>{{ channel.name }}</span>
+      </a>
+    </div>
+
+  </nav>
+
+  <!-- =============================== -->
+  <!-- LOADING                         -->
+  <!-- =============================== -->
+  <div *ngIf="loading" class="guide-loading" aria-live="polite" aria-label="Cargando programación">
+    <div *ngFor="let i of [1,2,3,4,5,6]" class="guide-loading__card"></div>
   </div>
 
-  <div
-    *ngIf="!loading && error"
-    class="mt-8 rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
-  >
-    {{ error }}
+  <!-- ERROR -->
+  <div *ngIf="!loading && error" class="guide-error" role="alert">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 8v4m0 4h.01"/>
+    </svg>
+    <p>{{ error }}</p>
   </div>
 
+  <!-- =============================== -->
+  <!-- CONTENIDO (filtrado por tab)    -->
+  <!-- =============================== -->
   <ng-container *ngIf="!loading && !error">
-    <section id="guide-now" class="mt-10">
-      <div class="mb-5 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Ahora</p>
-          <h2 class="mt-1 text-3xl font-black tracking-tight text-white">Emitiéndose en este momento</h2>
-          <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-            Ordenado por interés editorial y por el orden del canal, no alfabéticamente.
-          </p>
-        </div>
-      </div>
 
-      <div *ngIf="visibleNowPrograms.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <!-- TAB: AHORA -->
+    <section
+      *ngIf="activeGuideTab === 'now'"
+      id="guide-now"
+      class="guide-section"
+      role="tabpanel"
+      aria-labelledby="tab-now"
+    >
+      <header class="guide-section__head">
+        <div class="guide-section__label">En emisión</div>
+        <h2 class="guide-section__title">Emitiéndose ahora</h2>
+      </header>
+
+      <div *ngIf="visibleNowPrograms.length" class="guide-grid">
         <article
           *ngFor="let program of visibleNowPrograms; trackBy: programTrackBy"
-          class="group rounded-[1.75rem] border border-slate-800/80 bg-slate-950/78 p-4 shadow-[0_16px_36px_rgba(0,0,0,0.24)]"
+          class="guide-card"
         >
-          <div class="flex items-start gap-4">
-            <a [routerLink]="program.channelLink" class="flex-shrink-0">
+          <div class="guide-card__header">
+            <a [routerLink]="program.channelLink" class="guide-card__ch-logo" [attr.aria-label]="'Ir a ' + program.channelName">
               <img
                 *ngIf="program.channelIcon"
                 [src]="program.channelIcon"
                 [alt]="program.channelName"
-                class="h-12 w-12 rounded-2xl border border-slate-800 bg-slate-900 object-contain p-2"
+                class="guide-card__ch-img"
                 loading="lazy"
               />
             </a>
-            <div class="min-w-0 flex-1">
-              <div class="mb-2 flex flex-wrap gap-2">
-                <span class="rounded-full border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-red-200">
-                  En emisión
-                </span>
-                <span
-                  *ngIf="program.normalizedCategory"
-                  class="rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[10px] font-semibold text-slate-300"
-                >
-                  {{ program.normalizedCategory }}
-                </span>
-                <span
-                  *ngIf="program.primaryPlatforms.length"
-                  class="rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[10px] font-semibold text-sky-100"
-                >
-                  También en {{ program.primaryPlatforms[0] }}
-                </span>
-              </div>
-
-              <a [routerLink]="program.detailLink" class="block text-lg font-semibold leading-tight text-white transition-colors hover:text-red-300">
-                {{ program.title }}
-              </a>
-              <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                <span>{{ program.channelName }}</span>
-                <span>{{ formatTimeRange(program) }}</span>
-              </div>
+            <div class="guide-card__badges">
+              <span class="guide-card__badge guide-card__badge--live">
+                <span class="guide-card__live-dot" aria-hidden="true"></span>
+                En emisión
+              </span>
+              <span *ngIf="program.normalizedCategory" class="guide-card__badge guide-card__badge--cat">
+                {{ program.normalizedCategory }}
+              </span>
+              <span *ngIf="program.primaryPlatforms.length" class="guide-card__badge guide-card__badge--platform">
+                {{ program.primaryPlatforms[0] }}
+              </span>
             </div>
           </div>
 
-          <div *ngIf="program.image" class="mt-4 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900">
+          <a [routerLink]="program.detailLink" class="guide-card__title">{{ program.title }}</a>
+
+          <div class="guide-card__info">
+            <span class="guide-card__ch-name">{{ program.channelName }}</span>
+            <span class="guide-card__sep" aria-hidden="true">·</span>
+            <time class="guide-card__time">{{ formatTimeRange(program) }}</time>
+          </div>
+
+          <div *ngIf="program.image" class="guide-card__img-wrap">
             <img
               [src]="program.image"
               [alt]="program.title"
-              class="aspect-[16/9] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              class="guide-card__img"
               loading="lazy"
             />
           </div>
 
-          <div
-            *ngIf="program.primaryPlatforms.length"
-            class="mt-4 flex flex-wrap gap-2 border-t border-slate-800/80 pt-4"
-          >
+          <div *ngIf="program.primaryPlatforms.length > 1" class="guide-card__platforms">
+            <span class="guide-card__also-on">También en</span>
             <span
               *ngFor="let platform of program.primaryPlatforms"
-              class="rounded-full border border-slate-700/80 bg-slate-900/70 px-2.5 py-1 text-[11px] font-medium text-slate-200"
-            >
-              {{ platform }}
-            </span>
+              class="guide-card__badge guide-card__badge--platform"
+            >{{ platform }}</span>
+          </div>
+
+          <div class="guide-card__actions">
+            <app-interaction-buttons
+              [itemId]="program.catalogId"
+              [title]="program.title"
+              [type]="'program'"
+              [tmdbId]="program.tmdbId"
+              [compact]="true"
+            ></app-interaction-buttons>
           </div>
         </article>
       </div>
 
-      <div *ngIf="!visibleNowPrograms.length" class="rounded-[1.75rem] border border-slate-800 bg-slate-950/70 p-10 text-center">
-        <p class="text-xl font-semibold text-white">No hay emisiones activas con este filtro.</p>
-        <p class="mt-2 text-sm text-slate-400">
-          Cambia grupo o categoría para abrir más opciones del momento.
-        </p>
+      <div *ngIf="!visibleNowPrograms.length" class="guide-empty">
+        <p class="guide-empty__title">Sin emisiones activas con este filtro</p>
+        <p class="guide-empty__hint">Cambia el grupo o la categoría para ver más opciones.</p>
       </div>
     </section>
 
-    <section id="guide-next" class="mt-12">
-      <div class="mb-5">
-        <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Siguiente</p>
-        <h2 class="mt-1 text-3xl font-black tracking-tight text-white">Lo próximo en cada canal</h2>
-        <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-          El siguiente bloque mantiene el mismo grupo activo y la misma prioridad editorial.
-        </p>
-      </div>
+    <!-- TAB: SIGUIENTE -->
+    <section
+      *ngIf="activeGuideTab === 'next'"
+      id="guide-next"
+      class="guide-section"
+      role="tabpanel"
+      aria-labelledby="tab-next"
+    >
+      <header class="guide-section__head">
+        <div class="guide-section__label">Próximamente</div>
+        <h2 class="guide-section__title">Lo próximo en cada canal</h2>
+      </header>
 
-      <div *ngIf="visibleNextPrograms.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div *ngIf="visibleNextPrograms.length" class="guide-grid">
         <article
           *ngFor="let program of visibleNextPrograms; trackBy: programTrackBy"
-          class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/78 p-4"
+          class="guide-card guide-card--compact"
         >
-          <div class="flex items-center gap-3">
-            <img
-              *ngIf="program.channelIcon"
-              [src]="program.channelIcon"
-              [alt]="program.channelName"
-              class="h-11 w-11 rounded-2xl border border-slate-800 bg-slate-900 object-contain p-2"
-              loading="lazy"
-            />
-            <div class="min-w-0">
-              <p class="text-sm font-semibold text-white">{{ program.channelName }}</p>
-              <p class="text-xs text-slate-400">{{ formatTimeRange(program) }}</p>
+          <div class="guide-card__header">
+            <a [routerLink]="program.channelLink" class="guide-card__ch-logo" [attr.aria-label]="'Ir a ' + program.channelName">
+              <img
+                *ngIf="program.channelIcon"
+                [src]="program.channelIcon"
+                [alt]="program.channelName"
+                class="guide-card__ch-img"
+                loading="lazy"
+              />
+            </a>
+            <div class="guide-card__ch-info">
+              <span class="guide-card__ch-name">{{ program.channelName }}</span>
+              <time class="guide-card__time">{{ formatTimeRange(program) }}</time>
             </div>
           </div>
 
-          <a [routerLink]="program.detailLink" class="mt-4 block text-lg font-semibold leading-tight text-white transition-colors hover:text-red-300">
-            {{ program.title }}
-          </a>
-          <p class="mt-2 text-sm text-slate-400">
-            {{ program.normalizedCategory }}
-          </p>
+          <a [routerLink]="program.detailLink" class="guide-card__title">{{ program.title }}</a>
 
-          <div
-            *ngIf="program.primaryPlatforms.length"
-            class="mt-4 flex flex-wrap gap-2 border-t border-slate-800/80 pt-4"
-          >
-            <span class="text-[11px] uppercase tracking-[0.22em] text-slate-500">También en</span>
+          <div *ngIf="program.normalizedCategory" class="guide-card__badges">
+            <span class="guide-card__badge guide-card__badge--cat">{{ program.normalizedCategory }}</span>
+          </div>
+
+          <div *ngIf="program.primaryPlatforms.length" class="guide-card__platforms">
+            <span class="guide-card__also-on">También en</span>
             <span
               *ngFor="let platform of program.primaryPlatforms"
-              class="rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold text-sky-100"
-            >
-              {{ platform }}
-            </span>
+              class="guide-card__badge guide-card__badge--platform"
+            >{{ platform }}</span>
+          </div>
+
+          <div class="guide-card__actions">
+            <app-interaction-buttons
+              [itemId]="program.catalogId"
+              [title]="program.title"
+              [type]="'program'"
+              [tmdbId]="program.tmdbId"
+              [compact]="true"
+            ></app-interaction-buttons>
           </div>
         </article>
       </div>
 
-      <div *ngIf="!visibleNextPrograms.length" class="rounded-[1.75rem] border border-slate-800 bg-slate-950/70 p-10 text-center">
-        <p class="text-xl font-semibold text-white">No hay próximos programas con este filtro.</p>
-        <p class="mt-2 text-sm text-slate-400">
-          Cambia de grupo o vuelve a “Todos” para ampliar la parrilla.
-        </p>
+      <div *ngIf="!visibleNextPrograms.length" class="guide-empty">
+        <p class="guide-empty__title">Sin próximos programas con este filtro</p>
+        <p class="guide-empty__hint">Cambia de grupo o selecciona «Todos» para ampliar la parrilla.</p>
       </div>
     </section>
 
-    <section id="guide-tonight" class="mt-12">
-      <div class="mb-5 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Prime time</p>
-          <h2 class="mt-1 text-3xl font-black tracking-tight text-white">Lo más fuerte de esta noche</h2>
-          <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-            Entre las 20:00 y las 23:59, priorizando cine y series por encima del resto.
-          </p>
-        </div>
-      </div>
+    <!-- TAB: ESTA NOCHE -->
+    <section
+      *ngIf="activeGuideTab === 'night'"
+      id="guide-tonight"
+      class="guide-section"
+      role="tabpanel"
+      aria-labelledby="tab-night"
+    >
+      <header class="guide-section__head">
+        <div class="guide-section__label">Prime time · 20:00–24:00</div>
+        <h2 class="guide-section__title">Lo más fuerte esta noche</h2>
+      </header>
 
-      <div *ngIf="visibleTonightPrograms.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div *ngIf="visibleTonightPrograms.length" class="guide-grid">
         <article
           *ngFor="let program of visibleTonightPrograms; trackBy: programTrackBy"
-          class="overflow-hidden rounded-[1.75rem] border border-slate-800/80 bg-slate-950/78"
+          class="guide-card guide-card--tonight"
         >
-          <div *ngIf="program.image" class="border-b border-slate-800 bg-slate-900">
+          <div *ngIf="program.image" class="guide-card__img-wrap guide-card__img-wrap--top">
             <img
               [src]="program.image"
               [alt]="program.title"
-              class="aspect-[16/9] w-full object-cover"
+              class="guide-card__img"
               loading="lazy"
             />
           </div>
-          <div class="space-y-3 p-4">
-            <div class="flex flex-wrap gap-2">
-              <span class="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.24em] text-indigo-200">
-                Esta noche
-              </span>
-              <span
-                *ngIf="program.normalizedCategory"
-                class="rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[10px] font-semibold text-slate-300"
-              >
+
+          <div class="guide-card__body">
+            <div class="guide-card__badges">
+              <span class="guide-card__badge guide-card__badge--night">Esta noche</span>
+              <span *ngIf="program.normalizedCategory" class="guide-card__badge guide-card__badge--cat">
                 {{ program.normalizedCategory }}
               </span>
             </div>
 
-            <a [routerLink]="program.detailLink" class="block text-lg font-semibold leading-tight text-white transition-colors hover:text-red-300">
-              {{ program.title }}
-            </a>
-            <div class="flex flex-wrap items-center gap-3 text-sm text-slate-400">
-              <span>{{ program.channelName }}</span>
-              <span>{{ formatTimeRange(program) }}</span>
+            <a [routerLink]="program.detailLink" class="guide-card__title">{{ program.title }}</a>
+
+            <div class="guide-card__info">
+              <span class="guide-card__ch-name">{{ program.channelName }}</span>
+              <span class="guide-card__sep" aria-hidden="true">·</span>
+              <time class="guide-card__time">{{ formatTimeRange(program) }}</time>
             </div>
 
-            <div
-              *ngIf="program.primaryPlatforms.length"
-              class="flex flex-wrap gap-2 border-t border-slate-800/80 pt-3"
-            >
+            <div *ngIf="program.primaryPlatforms.length" class="guide-card__platforms">
               <span
                 *ngFor="let platform of program.primaryPlatforms"
-                class="rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-[11px] font-semibold text-sky-100"
-              >
-                {{ platform }}
-              </span>
+                class="guide-card__badge guide-card__badge--platform"
+              >{{ platform }}</span>
+            </div>
+
+            <div class="guide-card__actions">
+              <app-interaction-buttons
+                [itemId]="program.catalogId"
+                [title]="program.title"
+                [type]="'program'"
+                [tmdbId]="program.tmdbId"
+                [compact]="true"
+              ></app-interaction-buttons>
             </div>
           </div>
         </article>
       </div>
 
-      <div *ngIf="!visibleTonightPrograms.length" class="rounded-[1.75rem] border border-slate-800 bg-slate-950/70 p-10 text-center">
-        <p class="text-xl font-semibold text-white">No hay bloque fuerte para esta noche con este filtro.</p>
-        <p class="mt-2 text-sm text-slate-400">
-          Prueba con “Todos” o cambia de grupo para revisar otra selección editorial.
-        </p>
+      <div *ngIf="!visibleTonightPrograms.length" class="guide-empty">
+        <p class="guide-empty__title">Sin contenido de prime time con este filtro</p>
+        <p class="guide-empty__hint">Prueba con «Todos» o cambia de grupo para revisar otra selección.</p>
       </div>
     </section>
 
-    <section id="guide-directory" class="mt-12">
-      <div class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Canales</p>
-          <h2 class="mt-1 text-3xl font-black tracking-tight text-white">Directorio completo</h2>
-          <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
-            El directorio respeta el mismo orden del grupo activo y no vuelve a reordenarse por nombre.
-          </p>
-        </div>
-      </div>
+    <!-- TAB: CANALES -->
+    <section
+      *ngIf="activeGuideTab === 'channels'"
+      id="guide-channels"
+      class="guide-section"
+      role="tabpanel"
+      aria-labelledby="tab-channels"
+    >
+      <header class="guide-section__head">
+        <div class="guide-section__label">Directorio completo</div>
+        <h2 class="guide-section__title">Todos los canales</h2>
+      </header>
 
-      <div class="space-y-10">
+      <div class="guide-directory">
         <section
           *ngFor="let section of visibleSections"
           [attr.id]="'guide-cat-' + section.key"
-          class="space-y-5"
+          class="guide-directory__section"
         >
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">{{ section.title }}</p>
-            <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-              {{ section.description }}
-            </p>
-          </div>
+          <h3 class="guide-directory__title">{{ section.title }}</h3>
+          <p class="guide-directory__desc">{{ section.description }}</p>
 
-          <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div class="guide-directory__grid">
             <button
               *ngFor="let channel of section.channels; trackBy: channelTrackBy"
               type="button"
               (click)="navigateToChannel(channel)"
-              class="group flex items-center gap-4 rounded-[1.75rem] border border-slate-800/80 bg-slate-950/75 p-4 text-left transition-colors hover:border-slate-600"
+              class="guide-ch-card"
             >
-              <div class="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-[1.25rem] border border-slate-800 bg-slate-900 p-3">
+              <div class="guide-ch-card__logo">
                 <img
                   *ngIf="channel.icon"
                   [src]="channel.icon"
                   [alt]="channel.name"
-                  class="h-full w-full object-contain"
+                  class="guide-ch-card__img"
                   loading="lazy"
                 />
+                <span *ngIf="!channel.icon" class="guide-ch-card__initial" aria-hidden="true">
+                  {{ channel.name.charAt(0) }}
+                </span>
               </div>
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-base font-semibold text-white group-hover:text-red-300">
-                  {{ channel.name }}
-                </p>
-                <p class="mt-1 text-xs text-slate-500">
+              <div class="guide-ch-card__info">
+                <span class="guide-ch-card__name">{{ channel.name }}</span>
+                <span class="guide-ch-card__type">
                   {{ channel.type === 'AUTONOMICO' ? 'Autonómico' : channel.type }}
-                </p>
+                </span>
               </div>
             </button>
           </div>
         </section>
       </div>
+
+      <div *ngIf="!visibleSections.length" class="guide-empty">
+        <p class="guide-empty__title">No hay canales para este grupo</p>
+        <p class="guide-empty__hint">Selecciona «Todos» para ver el directorio completo.</p>
+      </div>
     </section>
+
   </ng-container>
 
   <app-faq-section [items]="faqItems"></app-faq-section>
