@@ -3,12 +3,13 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, first, takeUntil } from 'rxjs';
 import { ApiConfigService } from 'src/app/api/api-config.service';
+import { TvChannelSurfaceDTO, TvReadItemDTO } from 'src/app/api/models';
 import { InteractionButtonsComponent } from 'src/app/components/interaction-buttons/interaction-buttons.component';
 import { MetaService } from 'src/app/services/meta.service';
-import { TvGuideService } from 'src/app/services/tv-guide.service';
+import { TvDataService } from 'src/app/state/tv-data.service';
 import { buildDetailPath, CatalogContentType } from 'src/app/utils/catalog';
 import { normalizePublicImageUrl } from 'src/app/utils/media-url';
-import { isLive, slugify } from 'src/app/utils/utils';
+import { slugify } from 'src/app/utils/utils';
 
 type GuideQuickCategory = 'all' | 'Cine' | 'Series' | 'Deportes';
 type DayAlias = 'today' | 'tomorrow' | 'after_tomorrow';
@@ -69,7 +70,7 @@ const EDITORIAL_CATEGORY_PRIORITY: Record<string, number> = {
 export class CanalCompletoComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly tvGuideService = inject(TvGuideService);
+  private readonly tvDataService = inject(TvDataService);
   private readonly metaService = inject(MetaService);
   private readonly apiConfig = inject(ApiConfigService);
   private readonly destroy$ = new Subject<void>();
@@ -220,8 +221,8 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.error = null;
 
-    this.tvGuideService
-      .getFromApi(this.activeDayAlias)
+    this.tvDataService
+      .loadChannelSurface(this.normalizeChannelToken(this.query || this.canal), this.activeDayAlias)
       .pipe(first(), takeUntil(this.destroy$))
       .subscribe({
         next: (data) => this.managePrograms(data),
@@ -233,23 +234,24 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       });
   }
 
-  private managePrograms(layouts: any[]): void {
-    const channelGroup = this.findChannelGroup(layouts);
-    if (!channelGroup) {
+  private managePrograms(surface: TvChannelSurfaceDTO): void {
+    if (!surface.channel) {
       this.error = 'No hemos encontrado este canal en la guía actual.';
       this.isLoading = false;
       return;
     }
 
-    const channelName = String(channelGroup.channel?.name || this.canal || '').trim();
+    const channelName = String(surface.channel?.name || this.canal || '').trim();
     this.canal = channelName || this.canal;
-    this.channelDescription = channelGroup.channel?.description || null;
-    this.logo = this.buildLocalChannelIcon(
-      channelGroup.channel?.id || channelGroup.channel?.normalizedName || this.query
-    );
+    this.channelDescription = surface.channel?.description || null;
+    this.logo =
+      this.resolveImageUrl(surface.channel?.icon) ||
+      this.buildLocalChannelIcon(
+        surface.channel?.id || surface.channel?.normalizedName || this.query
+      );
 
-    const normalizedPrograms = (channelGroup.programs || [])
-      .map((program: any) => this.normalizeProgram(program))
+    const normalizedPrograms = (surface.scheduleItems || [])
+      .map((program: TvReadItemDTO) => this.normalizeProgram(program))
       .filter(Boolean) as ChannelProgram[];
 
     normalizedPrograms.sort(
@@ -259,31 +261,44 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
 
     this.programs = normalizedPrograms;
     this.currentProgram =
-      normalizedPrograms.find((program) => program.liveNow) || normalizedPrograms[0] || null;
-    this.nextPrograms = this.buildNextPrograms(normalizedPrograms);
-    this.tonightPrograms = this.buildTonightPrograms(normalizedPrograms);
+      this.normalizeProgram(surface.current) ||
+      normalizedPrograms.find((program) => program.liveNow) ||
+      normalizedPrograms[0] ||
+      null;
+    this.nextPrograms = (surface.next ? [surface.next] : [])
+      .map((program) => this.normalizeProgram(program))
+      .filter(Boolean) as ChannelProgram[];
+    this.tonightPrograms = (surface.tonightItems || [])
+      .map((program) => this.normalizeProgram(program))
+      .filter(Boolean) as ChannelProgram[];
     this.featuredPrograms = this.buildFeaturedPrograms(normalizedPrograms);
-    this.relatedChannels = this.buildRelatedChannels(layouts, channelGroup);
+    this.relatedChannels = this.buildRelatedChannels(surface);
     this.setupMetaTags();
     this.isLoading = false;
   }
 
-  private normalizeProgram(program: any): ChannelProgram | null {
-    const title = String(program?.title?.value || program?.title || '').trim();
-    const start = String(program?.start || '').trim();
-    const end = String(program?.end || program?.stop || '').trim();
+  private normalizeProgram(program: TvReadItemDTO | undefined): ChannelProgram | null {
+    const title = String(program?.program?.title || '').trim();
+    const start = String(program?.airing?.start || '').trim();
+    const end = String(program?.airing?.end || '').trim();
 
     if (!title || !start || !end) {
       return null;
     }
 
-    const normalizedCategory = this.normalizeCategory(program?.category, title);
+    const normalizedCategory = this.normalizeCategory(
+      program?.program?.editorialCategory || program?.program?.genre,
+      title
+    );
     const contentType: CatalogContentType =
       normalizedCategory === 'Cine' ? 'movie' :
       normalizedCategory === 'Series' ? 'series' :
       'program';
     const imageUrl = this.resolveImageUrl(
-      program?.poster || program?.icon || program?.image
+      program?.assets?.poster?.url ||
+      ((program?.assets?.primary?.kind === 'poster' || program?.assets?.primary?.kind === 'backdrop')
+        ? program?.assets?.primary?.url
+        : undefined)
     );
     const startDate = new Date(start);
     const endDate = new Date(end);
@@ -295,16 +310,16 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     return {
       id: String(program?.id || `${slugify(title)}-${start}`),
       title,
-      description: String(program?.desc?.details || program?.desc || '').trim() || undefined,
-      category: String(program?.category?.value || program?.category || '').trim() || undefined,
+      description: String(program?.program?.description || '').trim() || undefined,
+      category: String(program?.program?.editorialCategory || '').trim() || undefined,
       normalizedCategory,
       contentType,
       image: imageUrl,
       start,
       end,
-      liveNow: isLive(start, end),
+      liveNow: Boolean(program?.airing?.liveNow),
       detailPath: buildDetailPath(contentType, title, slugify),
-      durationMinutes,
+      durationMinutes: program?.airing?.durationMinutes || durationMinutes,
     };
   }
 
@@ -341,21 +356,8 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     });
   }
 
-  private buildRelatedChannels(layouts: any[], currentGroup: any): RelatedChannel[] {
-    const currentType = String(currentGroup?.channel?.type || '').toUpperCase();
-
-    return (layouts || [])
-      .filter((entry) => entry?.channel?.id !== currentGroup?.channel?.id)
-      .sort((left, right) => {
-        const leftType = String(left?.channel?.type || '').toUpperCase();
-        const rightType = String(right?.channel?.type || '').toUpperCase();
-        const leftScore = leftType === currentType ? 0 : 1;
-        const rightScore = rightType === currentType ? 0 : 1;
-        if (leftScore !== rightScore) {
-          return leftScore - rightScore;
-        }
-        return 0;
-      })
+  private buildRelatedChannels(surface: TvChannelSurfaceDTO): RelatedChannel[] {
+    return (surface.relatedChannels || [])
       .slice(0, 8)
       .map((entry) => {
         const slug = slugify(entry?.channel?.normalizedName || entry?.channel?.name || entry?.channel?.id || '');
@@ -369,16 +371,6 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
           link: ['/canales', slug],
         };
       });
-  }
-
-  private findChannelGroup(layouts: any[]): any | undefined {
-    const target = this.normalizeChannelToken(this.query || this.canal);
-    return (layouts || []).find((entry) => {
-      const nameToken = this.normalizeChannelToken(entry?.channel?.name || '');
-      const idToken = this.normalizeChannelToken(entry?.channel?.id || '');
-      const slugToken = this.normalizeChannelToken(entry?.channel?.normalizedName || '');
-      return nameToken === target || idToken === target || slugToken === target;
-    });
   }
 
   private setupMetaTags(): void {

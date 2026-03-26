@@ -237,7 +237,7 @@ export class CatalogService {
       requestFactory: () =>
         this.http
           .get<ApiResponse<CatalogItem>>(
-            `${this.baseUrl}/catalog/${encodeURIComponent(catalogId)}`,
+            `${this.baseUrl}/content/${encodeURIComponent(catalogId)}`,
             { headers: this.getAuthHeaders() }
           )
           .pipe(map((resp) => resp?.data || null)),

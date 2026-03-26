@@ -22,6 +22,9 @@ import { UserNotificationModel } from './models/UserNotification.model';
 import { UserContentInteractionModel } from './models/UserContentInteraction.model';
 import { UserAssistantConversationModel } from './models/UserAssistantConversation.model';
 import { UserAssistantMemoryModel } from './models/UserAssistantMemory.model';
+import { EPGSourceSnapshotModel } from './models/EPGSourceSnapshot.model';
+import { TVProgramBrandModel } from './models/TVProgramBrand.model';
+import { TVReadAiringModel } from './models/TVReadAiring.model';
 
 /**
  * Ensure required Mongo collections exist and indexes are in place.
@@ -47,6 +50,9 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     { name: 'user_content_interactions', model: UserContentInteractionModel },
     { name: 'user_assistant_conversations', model: UserAssistantConversationModel },
     { name: 'user_assistant_memory', model: UserAssistantMemoryModel },
+    { name: 'epg_source_snapshots', model: EPGSourceSnapshotModel },
+    { name: 'tv_program_brands', model: TVProgramBrandModel },
+    { name: 'tv_read_airings', model: TVReadAiringModel },
     { name: 'chat_conversations', model: ChatConversationModel },
     { name: 'chat_messages', model: ChatMessageModel },
     { name: 'auth_sessions', model: AuthSessionModel },

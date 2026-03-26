@@ -5,6 +5,7 @@ import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import zlib from 'zlib';
 import { logger } from '../../shared/utils/logger';
+import { isTdtChannelsSourceUrl } from '../../shared/config/epgSources';
 
 export interface EPGDataSourceOptions {
   url: string;
@@ -17,6 +18,24 @@ export class EPGDataSource {
 
   constructor(private readonly options: EPGDataSourceOptions) {}
 
+  private buildRequestHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'User-Agent':
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36',
+      Accept: 'application/xml,text/xml,application/xhtml+xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
+    };
+
+    if (isTdtChannelsSourceUrl(this.options.url)) {
+      headers.Referer = 'https://www.tdtchannels.com/';
+      headers.Origin = 'https://www.tdtchannels.com';
+    }
+
+    return headers;
+  }
+
   async fetchRaw(): Promise<Buffer> {
     try {
       this.dataLogger.info('Fetching EPG data', { url: this.options.url });
@@ -24,6 +43,7 @@ export class EPGDataSource {
       const response = await axios.get(this.options.url, {
         responseType: 'arraybuffer',
         timeout: this.options.timeout || 30000,
+        headers: this.buildRequestHeaders(),
       });
 
       const buffer = Buffer.from(response.data);

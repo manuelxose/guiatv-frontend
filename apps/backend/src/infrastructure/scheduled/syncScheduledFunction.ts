@@ -8,6 +8,207 @@ import { logger } from '../../shared/utils/logger';
 import { EPGDataSource } from '../external/EPGDataSource';
 import { XMLParser } from '../parsers/XMLParser';
 import { submitSitemapToSearchConsole } from '../../application/services/submitSitemapToSearchConsole';
+import { EPGSourceSnapshotModel } from '../database/models/EPGSourceSnapshot.model';
+import { createHash } from 'node:crypto';
+import {
+  getConfiguredEpgSourceUrls,
+} from '../../shared/config/epgSources';
+import {
+  buildChannelIdentityMetadata,
+  inferChannelGroup,
+  isGenericMovieTitle,
+  normalizeTvToken,
+  resolveProgramDisplayTitle,
+} from '../../shared/utils/tvMetadata';
+
+// ─── Multi-source EPG helpers ─────────────────────────────────────────────────
+
+interface EPGSourceResult {
+  sourceUrl: string;
+  xml: string;
+  parsed: { channels: any[]; programmes: any[] };
+}
+
+function normalizeChannelName(name: string): string {
+  return normalizeTvToken(name, ' ');
+}
+
+function parseXmlDate(dateStr: string): Date {
+  const normalized = String(dateStr || '').trim();
+  const match = normalized.match(
+    /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(?:\s*([+-])(\d{2})(\d{2}))?$/
+  );
+
+  if (!match) {
+    throw new Error(`Invalid XML datetime format: "${dateStr}"`);
+  }
+
+  const year = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10) - 1;
+  const day = parseInt(match[3], 10);
+  const hour = parseInt(match[4], 10);
+  const minute = parseInt(match[5], 10);
+  const second = parseInt(match[6], 10);
+  const baseUtcMillis = Date.UTC(year, month, day, hour, minute, second);
+
+  if (!match[7]) {
+    return new Date(baseUtcMillis);
+  }
+
+  const sign = match[7] === '+' ? 1 : -1;
+  const offsetHours = parseInt(match[8], 10);
+  const offsetMinutes = parseInt(match[9], 10);
+  const totalOffsetMinutes = sign * (offsetHours * 60 + offsetMinutes);
+  return new Date(baseUtcMillis - totalOffsetMinutes * 60_000);
+}
+
+function annotateSourceParsedData(
+  sourceUrl: string,
+  parsed: { channels: any[]; programmes: any[] }
+): { channels: any[]; programmes: any[] } {
+  return {
+    channels: parsed.channels.map((channel: any) => ({
+      ...channel,
+      sourceFeed: sourceUrl,
+    })),
+    programmes: parsed.programmes.map((programme: any) => ({
+      ...programme,
+      sourceFeed: sourceUrl,
+      sourceProgrammeId:
+        programme.sourceProgrammeId ||
+        `${programme.channelId}|${programme.start}|${programme.title}`,
+      sourceAssetCandidates: programme.icon
+        ? [
+            {
+              kind: 'poster',
+              role: 'primary',
+              source: 'epg_program_image',
+              url: programme.icon,
+              sourceFeed: sourceUrl,
+            },
+          ]
+        : [],
+      sourceProvenance: {
+        schedule: [sourceUrl],
+        metadata: [sourceUrl],
+        assets: programme.icon ? ['epg_program_image'] : [],
+      },
+    })),
+  };
+}
+
+function filterSourceProgrammesByDate(
+  programmes: any[],
+  date: string
+): any[] {
+  const { start: dayStart, end: dayEnd } = DateUtils.getDayRangeYYYYMMDD(date);
+  return programmes
+    .filter((programme) => {
+      try {
+        const startDate = parseXmlDate(String(programme.start || ''));
+        let endDate = parseXmlDate(String(programme.stop || ''));
+        if (endDate <= startDate) {
+          endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
+        }
+        return startDate < dayEnd && endDate > dayStart;
+      } catch {
+        return false;
+      }
+    })
+    .map((programme) => ({
+      channelId: programme.channelId,
+      start: programme.start,
+      stop: programme.stop,
+      title: programme.title,
+      subTitle: programme.subTitle,
+      icon: programme.icon,
+      category: programme.category,
+      year: programme.year,
+      rating: programme.rating,
+      sourceFeed: programme.sourceFeed,
+      sourceProgrammeId: programme.sourceProgrammeId,
+      sourceAssetCandidates: programme.sourceAssetCandidates,
+      sourceProvenance: programme.sourceProvenance,
+    }));
+}
+
+function buildSnapshotStats(source: EPGSourceResult, date: string) {
+  const programmesForDate = filterSourceProgrammesByDate(source.parsed.programmes, date);
+  const tdtChannelAliases = new Set<string>();
+
+  source.parsed.channels.forEach((channel: any) => {
+    const identity = buildChannelIdentityMetadata({
+      name: channel.displayName,
+      sourceId: channel.id,
+      country: channel.country,
+      countryCode: channel.countryCode,
+    });
+    if (
+      inferChannelGroup({
+        name: channel.displayName,
+        sourceId: channel.id,
+        type: identity.inferredType,
+        country: channel.country,
+        countryCode: channel.countryCode,
+      }) !== 'tdt'
+    ) {
+      return;
+    }
+
+    [
+      channel.id,
+      channel.displayName,
+      ...identity.aliases,
+      ...identity.sourceIds,
+    ]
+      .map((value) => normalizeTvToken(value))
+      .filter(Boolean)
+      .forEach((alias) => {
+        tdtChannelAliases.add(alias);
+      });
+  });
+
+  let programmeIconsCount = 0;
+  let genericMovieTitleCount = 0;
+  let tdtSpecificTitleCount = 0;
+
+  programmesForDate.forEach((programme: any) => {
+    if (programme.icon) {
+      programmeIconsCount += 1;
+    }
+
+    const resolvedTitle = resolveProgramDisplayTitle(
+      programme.title,
+      programme.subTitle
+    );
+    const isGenericMovie = isGenericMovieTitle(resolvedTitle);
+    if (isGenericMovie) {
+      genericMovieTitleCount += 1;
+    }
+
+    const channelAliases = [
+      programme.channelId,
+      normalizeTvToken(programme.channelId),
+    ]
+      .map((value) => normalizeTvToken(value))
+      .filter(Boolean);
+
+    const isTdt = channelAliases.some((alias) => tdtChannelAliases.has(alias));
+    if (isTdt && !isGenericMovie) {
+      tdtSpecificTitleCount += 1;
+    }
+  });
+
+  return {
+    channelsCount: source.parsed.channels.length,
+    programmesCount: programmesForDate.length,
+    programmeIconsCount,
+    genericMovieTitleCount,
+    tdtSpecificTitleCount,
+  };
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 
 /**
  * Sincronización diaria de datos EPG
@@ -42,50 +243,104 @@ export const syncEPGDataHandler = async (context: any) => {
       DateUtils.getAfterTomorrowYYYYMMDD(),
     ];
 
-    // Descargar y parsear el XML una sola vez para reutilizar en todas las fechas
-    const sourceUrl =
-      'https://raw.githubusercontent.com/davidmuma/EPG_dobleM/master/guiatv_sincolor.xml.gz';
-    const dataSource = new EPGDataSource({
-      url: sourceUrl,
-      timeout: 60000,
-      compressed: sourceUrl.endsWith('.gz'),
-    });
-    syncLogger.info('Fetching EPG once for all dates', { sourceUrl });
-    const xmlContent = await dataSource.fetchWithRetry(3);
-    const xmlParser = new XMLParser();
-    const parsedData = await xmlParser.parse(xmlContent);
+    // Support multiple EPG sources via EPG_SOURCE_URLS (comma-separated).
+    // First URL is primary (drives channel/schedule). Additional URLs supply
+    // programme images that the primary source may be missing.
+    // The davidmuma/EPG_dobleM source provides poster artwork for Spanish programs.
+    const sourceUrls = getConfiguredEpgSourceUrls();
+    syncLogger.info('Fetching EPG source(s)', { count: sourceUrls.length, sourceUrls });
 
-    const results = [];
-    let isFirstDate = true;
+    const sourceResults = await Promise.all(
+      sourceUrls.map(async (url: string): Promise<EPGSourceResult | null> => {
+        try {
+          const ds = new EPGDataSource({ url, timeout: 60000, compressed: url.endsWith('.gz') });
+          const xml = await ds.fetchWithRetry(3);
+          const parsed = annotateSourceParsedData(url, await new XMLParser().parse(xml));
+          return { sourceUrl: url, xml, parsed };
+        } catch (err) {
+          syncLogger.error('Failed to fetch/parse EPG source', err as Error, { url });
+          return null;
+        }
+      })
+    );
+
+    const validSources = sourceResults.filter(Boolean) as EPGSourceResult[];
+    if (!validSources.length) throw new Error('All EPG sources failed to load');
 
     for (const date of datesToSync) {
-      syncLogger.info('Syncing date', { date });
-
-      const result = await syncUseCase.execute({
-        sourceUrl,
-        date,
-        forceRefresh: true,
-        xmlContent,
-        parsedData,
-        skipSaveXml: !isFirstDate,
-      });
-      isFirstDate = false;
-
-      results.push({ date, ...result });
-
-      if (result.success) {
-        syncLogger.info('Sync completed for date', {
-          date,
-          channelsProcessed: result.channelsProcessed,
-          programsProcessed: result.programsProcessed,
-          duration: result.duration,
-        });
-      } else {
-        syncLogger.error(
-          'Sync failed for date',
-          new Error(result.errors.join(', ')),
-          { date }
+      const snapshotOps = validSources.map((source) => {
+        const programmesForDate = filterSourceProgrammesByDate(
+          source.parsed.programmes,
+          date
         );
+        const stats = buildSnapshotStats(source, date);
+        return (
+        EPGSourceSnapshotModel.findOneAndUpdate(
+          {
+            sourceKey: normalizeChannelName(source.sourceUrl),
+            date,
+          },
+          {
+            $set: {
+              sourceUrl: source.sourceUrl,
+              sourceKey: normalizeChannelName(source.sourceUrl),
+              date,
+              payloadHash: createHash('sha1').update(source.xml).digest('hex'),
+              channels: source.parsed.channels.map((channel: any) => ({
+                id: channel.id,
+                displayName: channel.displayName,
+                icon: channel.icon,
+                country: channel.country,
+                countryCode: channel.countryCode,
+              })),
+              programmes: programmesForDate,
+              stats,
+            },
+          },
+          { upsert: true }
+        ).exec()
+        );
+      });
+      await Promise.all(snapshotOps);
+    }
+
+    const results = [];
+    let hasSavedXml = false;
+
+    for (const source of validSources) {
+      for (const date of datesToSync) {
+        syncLogger.info('Syncing source/date slice', {
+          sourceUrl: source.sourceUrl,
+          date,
+        });
+
+        const result = await syncUseCase.execute({
+          sourceUrl: source.sourceUrl,
+          date,
+          forceRefresh: !results.length,
+          xmlContent: source.xml,
+          parsedData: source.parsed,
+          skipSaveXml: hasSavedXml,
+        });
+        hasSavedXml = true;
+
+        results.push({ date, sourceUrl: source.sourceUrl, ...result });
+
+        if (result.success) {
+          syncLogger.info('Sync completed for source/date slice', {
+            sourceUrl: source.sourceUrl,
+            date,
+            channelsProcessed: result.channelsProcessed,
+            programsProcessed: result.programsProcessed,
+            duration: result.duration,
+          });
+        } else {
+          syncLogger.error(
+            'Sync failed for source/date slice',
+            new Error(result.errors.join(', ')),
+            { sourceUrl: source.sourceUrl, date }
+          );
+        }
       }
     }
 

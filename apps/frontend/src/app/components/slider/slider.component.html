@@ -21,9 +21,9 @@
       <app-card-slider
         [title]="program?.title?.value || program?.title || 'Programa'"
         [subtitle]="program?.channelName || program?.channel?.name || (program?.channel && !program?.channel?.name ? program.channel : '') || 'Canal'"
-        [channelIcon]="program?.channelIcon || program?.icon || program?.channel?.icon || ''"
+        [channelIcon]="program?.channelIcon || program?.channel?.icon || program?.channelLogo || ''"
         [time]="program?.start ? horaInicio(i) : ''"
-        [image]="program?.image || program?.poster || program?.background || program?.icon"
+        [image]="getCoverSrc(program)"
         [badge]="''"
         badgeColor="gray"
         [live]="false"
@@ -61,7 +61,6 @@
     </button>
   </div>
 </section>
-
 
 
 

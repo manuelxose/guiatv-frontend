@@ -14,7 +14,6 @@ import {
   timer,
 } from 'rxjs';
 import { HttpService } from './http.service';
-import { TvGuideService } from './tv-guide.service';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -43,7 +42,6 @@ export class BlogService {
 
   constructor(
     private httpService: HttpService,
-    private tvService: TvGuideService,
     @Inject(PLATFORM_ID) platformId: object
   ) {
     this.isServer = isPlatformServer(platformId);
@@ -73,22 +71,6 @@ export class BlogService {
 
   public getPosts(): any[] {
     return this._posts.getValue();
-  }
-
-  // ============================================
-  // INICIALIZACIÓN DE PROGRAMAS TV
-  // ============================================
-
-  public setProgramsFromApi(): void {
-    this.tvService.getProgramsAndChannels().subscribe((data) => {
-      if (data.length === 0) {
-        this.tvService.getFromApi().subscribe((apiData) => {
-          this.httpService.setProgramas(apiData as any[], 'today').then(() => {
-            this.tvService.setData(apiData as any[]);
-          });
-        });
-      }
-    });
   }
 
   // ============================================

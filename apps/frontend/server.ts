@@ -72,6 +72,17 @@ export function app(): express.Express {
     })
   );
 
+  // HTTP 301 permanent redirects — must precede Angular catch-all
+  server.get('/programacion-tv/en-directo', (_req, res) => {
+    res.redirect(301, '/programacion-tv/guia-canales');
+  });
+  server.get('/blog/top10', (_req, res) => res.redirect(301, '/editorial/rankings'));
+  server.get('/blog/categoria/:slug', (req, res) => res.redirect(301, `/editorial/categoria/${req.params['slug']}`));
+  server.get('/blog/:slug', (req, res) => res.redirect(301, `/editorial/${req.params['slug']}`));
+  server.get('/blog', (_req, res) => res.redirect(301, '/editorial'));
+  server.get('/mi-cuenta', (_req, res) => res.redirect(301, '/perfil'));
+  server.get('/comunidad', (_req, res) => res.redirect(301, '/perfil'));
+
   // 301 redirect legacy /contenido/:catalogId → slug-based route
   server.get('/contenido/:catalogId', async (req, res) => {
     const catalogId = decodeURIComponent(req.params.catalogId || '');

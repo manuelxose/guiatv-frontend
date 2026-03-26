@@ -6,9 +6,9 @@ APP_DIR="/var/www/guiatv"
 BRANCH="${1:-main}"
 SSR_PORT="3000"
 API_PORT="4000"
+BACKEND_BUILD_DIR="${APP_DIR}/apps/backend/dist"
 FRONTEND_BUILD_DIR="${APP_DIR}/apps/frontend/dist/guiatv"
-FRONTEND_RELEASES_DIR="${APP_DIR}/apps/frontend/releases"
-CURRENT_RELEASE_LINK="${FRONTEND_RELEASES_DIR}/current"
+CURRENT_RELEASE_LINK="${APP_DIR}/current"
 
 if [ "${EUID:-$(id -u)}" -ne 0 ]; then
   echo "Run as root"
@@ -27,6 +27,13 @@ wait_http() {
     sleep 2
   done
   return 1
+}
+
+verify_backend_build() {
+  if [ ! -f "${BACKEND_BUILD_DIR}/server/index.js" ]; then
+    echo "Missing backend build output at ${BACKEND_BUILD_DIR}/server/index.js"
+    exit 1
+  fi
 }
 
 verify_frontend_build() {
@@ -61,24 +68,6 @@ verify_frontend_build() {
   fi
 }
 
-publish_frontend_release() {
-  local release_id release_dir temp_link
-  release_id="$(date +%Y%m%d%H%M%S)"
-  release_dir="${FRONTEND_RELEASES_DIR}/${release_id}"
-  temp_link="${FRONTEND_RELEASES_DIR}/.current_tmp"
-
-  mkdir -p "${FRONTEND_RELEASES_DIR}" "${release_dir}"
-  cp -a "${FRONTEND_BUILD_DIR}/browser" "${release_dir}/browser"
-  cp -a "${FRONTEND_BUILD_DIR}/server" "${release_dir}/server"
-
-  if [ -f "${FRONTEND_BUILD_DIR}/prerendered-routes.json" ]; then
-    cp -a "${FRONTEND_BUILD_DIR}/prerendered-routes.json" "${release_dir}/prerendered-routes.json"
-  fi
-
-  ln -sfn "${release_dir}" "${temp_link}"
-  mv -Tf "${temp_link}" "${CURRENT_RELEASE_LINK}"
-}
-
 verify_local_ssr_assets() {
   local html
   html="$(curl -fsS "http://127.0.0.1:${SSR_PORT}/")"
@@ -90,6 +79,7 @@ verify_local_ssr_assets() {
       | sed -E 's#^(https?:)?//[^/]+##; s#^([^/])#/\1#' \
       | sort -u
   )
+
   if [ "${#assets[@]}" -eq 0 ]; then
     echo "SSR HTML does not reference JS/CSS assets"
     exit 1
@@ -103,18 +93,6 @@ verify_local_ssr_assets() {
       exit 1
     fi
   done
-}
-
-resolve_smoke_channel_id() {
-  curl -fsS "http://127.0.0.1:${API_PORT}/v2/channels" | node -e "
-    let data = '';
-    process.stdin.on('data', (chunk) => data += chunk);
-    process.stdin.on('end', () => {
-      const payload = JSON.parse(data);
-      const id = payload?.data?.[0]?.id || '';
-      process.stdout.write(String(id));
-    });
-  "
 }
 
 smoke_http() {
@@ -184,20 +162,21 @@ socket.on('connect_error', (error) => {
 NODE
 }
 
-cd "$APP_DIR"
+cd "${APP_DIR}"
 
 if git diff --quiet && git diff --cached --quiet; then
   git fetch --prune origin
-  git checkout "$BRANCH"
-  git pull --ff-only origin "$BRANCH"
+  git checkout "${BRANCH}"
+  git pull --ff-only origin "${BRANCH}"
 else
   echo "Working tree has local changes. Deploying current checkout without git sync."
 fi
 
 npm install --workspaces --include-workspace-root --legacy-peer-deps --no-audit --no-fund
 npm run build
+verify_backend_build
 verify_frontend_build
-publish_frontend_release
+npm run publish:release
 
 if [ "${BOOTSTRAP_DB:-0}" = "1" ]; then
   npm run db:bootstrap
@@ -205,36 +184,22 @@ fi
 
 systemctl daemon-reload
 systemctl restart guiatv-api
-
 wait_http "http://127.0.0.1:${API_PORT}/v2/health"
+smoke_http "http://127.0.0.1:${API_PORT}/v2/discovery/home" "200"
+smoke_http "http://127.0.0.1:${API_PORT}/v2/discovery/browse?kind=streaming&limit=1" "200"
+smoke_http "http://127.0.0.1:${API_PORT}/v2/tv/surface/guide?date=$(date +%F)&group=tdt" "200"
+smoke_http "http://127.0.0.1:${API_PORT}/v2/tv/surface/channels/la_2?date=$(date +%F)" "200"
+smoke_http "http://127.0.0.1:${API_PORT}/v2/catalog/platforms" "200"
+smoke_auth_http "http://127.0.0.1:${API_PORT}/v2/discovery/for-you" "200"
+smoke_auth_http "http://127.0.0.1:${API_PORT}/v2/user/interactions" "200"
+
 systemctl restart guiatv-ssr
 wait_http "http://127.0.0.1:${SSR_PORT}/"
 verify_local_ssr_assets
-smoke_http "http://127.0.0.1:${SSR_PORT}/editorial" "200"
-smoke_http "http://127.0.0.1:${SSR_PORT}/editorial/rankings" "200"
-smoke_http "http://127.0.0.1:${SSR_PORT}/developers" "200"
-smoke_http "http://127.0.0.1:${SSR_PORT}/embed" "200"
-smoke_http "http://127.0.0.1:${SSR_PORT}/comparador-streaming" "200"
+smoke_http "http://127.0.0.1:${SSR_PORT}/" "200"
+smoke_http "http://127.0.0.1:${SSR_PORT}/programacion-tv/guia-canales" "200"
+smoke_http "http://127.0.0.1:${SSR_PORT}/canales/la_2" "200"
 smoke_http "http://127.0.0.1:${SSR_PORT}/plataformas" "200"
-
-CHANNEL_ID="$(resolve_smoke_channel_id || true)"
-if [ -n "${CHANNEL_ID}" ]; then
-  smoke_http "http://127.0.0.1:${SSR_PORT}/canales/${CHANNEL_ID}" "200"
-fi
-
-rm -rf /var/cache/nginx/guiatv/*
-nginx -t && systemctl reload nginx
-
-smoke_http "https://guiaprogramaciontv.com/v2/health" "200"
-smoke_http "https://guiaprogramaciontv.com/v2/catalog/platforms" "200"
-smoke_http "https://guiaprogramaciontv.com/v2/catalog?limit=1" "200"
-smoke_auth_http "https://guiaprogramaciontv.com/v2/discovery/for-you?limit=1" "200"
-smoke_auth_http "https://guiaprogramaciontv.com/v2/user/interactions" "200"
-smoke_http "https://guiaprogramaciontv.com/editorial" "200"
-smoke_http "https://guiaprogramaciontv.com/developers" "200"
 smoke_socket_io
 
-# Non-blocking SEO submit (logs and continues on failure).
-npm run seo:submit-sitemap || true
-
-echo "Deploy OK on branch: ${BRANCH}"
+echo "Unified release active: $(readlink -f "${CURRENT_RELEASE_LINK}")"

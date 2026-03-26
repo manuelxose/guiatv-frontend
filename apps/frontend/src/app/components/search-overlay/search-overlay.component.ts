@@ -5,10 +5,11 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, map, startWith, switchMap } from 'rxjs/operators';
 import {
+  CatalogItem,
   CatalogPlatform,
   CatalogService,
-  CatalogSuggestion,
 } from '../../services/catalog.service';
+import { DiscoveryService } from '../../services/discovery.service';
 
 type SearchMode = 'all' | 'tv' | 'streaming' | 'free' | 'tonight';
 
@@ -191,12 +192,13 @@ export class SearchOverlayComponent implements OnInit {
   public selectedPlatform: string | null = null;
   public platforms: CatalogPlatform[] = [];
   public platformRegistryUnavailable = false;
-  public results$: Observable<CatalogSuggestion[]> = of([]);
+  public results$: Observable<CatalogItem[]> = of([]);
   private readonly modeSubject = new BehaviorSubject<SearchMode>('all');
   private readonly selectedPlatformSubject = new BehaviorSubject<string | null>(null);
 
   constructor(
     private readonly catalogService: CatalogService,
+    private readonly discoveryService: DiscoveryService,
     private readonly router: Router
   ) {}
 
@@ -223,11 +225,19 @@ export class SearchOverlayComponent implements OnInit {
           return of([]);
         }
 
-        return this.catalogService.suggest(normalized, 10).pipe(
-          map((items) =>
-            items.filter((item) => this.matchesCurrentMode(item, mode, selectedPlatform))
-          )
-        );
+        return this.discoveryService
+          .search({
+            q: normalized,
+            limit: 10,
+            platform: selectedPlatform || undefined,
+          })
+          .pipe(
+            map((result) =>
+              (result.items || []).filter((item) =>
+                this.matchesCurrentMode(item, mode, selectedPlatform)
+              )
+            )
+          );
       })
     );
   }
@@ -247,7 +257,7 @@ export class SearchOverlayComponent implements OnInit {
     this.selectedPlatformSubject.next(this.selectedPlatform);
   }
 
-  openSuggestion(result: CatalogSuggestion): void {
+  openSuggestion(result: CatalogItem): void {
     this.router.navigate([result.detailPath || '/contenido/' + result.catalogId]);
     this.close.emit();
   }
@@ -292,7 +302,7 @@ export class SearchOverlayComponent implements OnInit {
   }
 
   private matchesCurrentMode(
-    item: CatalogSuggestion,
+    item: CatalogItem,
     mode: SearchMode,
     selectedPlatform: string | null
   ): boolean {

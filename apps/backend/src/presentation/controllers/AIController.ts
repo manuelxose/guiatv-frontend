@@ -10,6 +10,7 @@ import {
 } from '@/shared/errors';
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import { DateUtils } from '@/shared/utils/dateUtils';
+import { logger } from '@/shared/utils/logger';
 
 export class AIController {
   constructor(
@@ -93,10 +94,16 @@ export class AIController {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders();
+    // Immediately signal connection is alive — prevents frontend "isThinking" freeze
+    // during the heavy DB + catalog pre-fetch phase inside executeStream
+    res.write('event: ping\ndata: {}\n\n');
 
     const conversationId = typeof req.body?.conversationId === 'string'
       ? req.body.conversationId
       : undefined;
+
+    const t0 = Date.now();
+    logger.info('[AIController] chatStream start', { userId, conversationId });
 
     try {
       const result = await this.chatbotRecommend.executeStream({
@@ -104,6 +111,7 @@ export class AIController {
         messages,
         conversationId,
       });
+      logger.info('[AIController] executeStream resolved', { userId, kind: result.kind, elapsedMs: Date.now() - t0 });
 
       if (result.kind === 'direct') {
         res.write(`event: full\ndata: ${JSON.stringify(result.response)}\n\n`);
@@ -112,22 +120,58 @@ export class AIController {
         return;
       }
 
-      // Stream text chunks
+      // Stream text chunks — isolated try/catch so a mid-stream provider error
+      // still allows finalize() to run and persist whatever text arrived
       let fullText = '';
-      for await (const chunk of result.textStream) {
-        fullText += chunk;
-        res.write(`event: text\ndata: ${JSON.stringify({ t: chunk })}\n\n`);
+      let chunkCount = 0;
+      try {
+        for await (const chunk of result.textStream) {
+          fullText += chunk;
+          chunkCount++;
+          res.write(`event: text\ndata: ${JSON.stringify({ t: chunk })}\n\n`);
+        }
+      } catch (streamErr) {
+        logger.warn('[AIController] text stream interrupted', {
+          userId,
+          chunkCount,
+          partialLength: fullText.length,
+          elapsedMs: Date.now() - t0,
+          error: streamErr instanceof Error ? streamErr.message : 'unknown',
+        });
+        // Continue to finalize with whatever text arrived
+      }
+      logger.info('[AIController] text stream done', { userId, chunkCount, fullTextLength: fullText.length, elapsedMs: Date.now() - t0 });
+
+      // Finalize: resolve recommendations, persist — isolated so errors send a safe fallback
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let finalResponse: any;
+      try {
+        finalResponse = await result.finalize(fullText);
+      } catch (finalizeErr) {
+        logger.error('[AIController] finalize error', {
+          userId,
+          elapsedMs: Date.now() - t0,
+          error: finalizeErr instanceof Error ? finalizeErr.message : 'unknown',
+        });
+        finalResponse = {
+          text: fullText.trim() || 'No pude completar la respuesta ahora mismo.',
+          recommendations: [],
+          followUpSuggestions: ['¿Qué hay ahora en TV?', 'Reintentar'],
+        };
       }
 
-      // Finalize: resolve recommendations, persist
-      const finalResponse = await result.finalize(fullText);
       res.write(`event: result\ndata: ${JSON.stringify(finalResponse)}\n\n`);
       res.write('event: done\ndata: {}\n\n');
       res.end();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Stream error';
-      res.write(`event: error\ndata: ${JSON.stringify({ error: message })}\n\n`);
-      res.end();
+      logger.error('[AIController] chatStream error', { userId, elapsedMs: Date.now() - t0, message });
+      if (!res.writableEnded) {
+        res.write(`event: error\ndata: ${JSON.stringify({ error: message })}\n\n`);
+        // Always close the SSE stream so the frontend exits the reader loop
+        res.write('event: done\ndata: {}\n\n');
+        res.end();
+      }
     }
   }
 

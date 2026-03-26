@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import https from 'node:https';
 import { TMDBService } from './TMDBService';
+import type { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 
 export interface StreamingProvider {
   providerId: number;
@@ -35,11 +36,14 @@ export class StreamingProvidersService {
     60 *
     60 *
     1000;
+  private readonly persistentCacheTTLSeconds =
+    (Number(process.env.STREAMING_PROVIDERS_CACHE_TTL_HOURS || 24) || 24) * 60 * 60;
   private readonly http: AxiosInstance;
 
   constructor(
     private readonly apiKey: string,
-    private readonly tmdbService: TMDBService
+    private readonly tmdbService: TMDBService,
+    private readonly persistentCache?: ICacheRepository | null
   ) {
     const allowSelfSigned =
       process.env.TMDB_ALLOW_SELF_SIGNED === '1' ||
@@ -103,6 +107,25 @@ export class StreamingProvidersService {
       return cached.value;
     }
 
+    const persistentKey = `streaming-providers:${cacheKey}`;
+    if (this.persistentCache) {
+      try {
+        const persisted =
+          await this.persistentCache.get<{ value: WatchProvidersResult | null }>(
+            persistentKey
+          );
+        if (persisted) {
+          this.cache.set(cacheKey, {
+            value: persisted.value,
+            expiresAt: Date.now() + this.cacheTTL,
+          });
+          return persisted.value;
+        }
+      } catch {
+        // Persistent cache failures must not block provider resolution.
+      }
+    }
+
     try {
       const response = await this.http.get(
         `/${contentType}/${tmdbId}/watch/providers`
@@ -133,6 +156,15 @@ export class StreamingProvidersService {
         value: mapped,
         expiresAt: Date.now() + this.cacheTTL,
       });
+      if (this.persistentCache) {
+        this.persistentCache
+          .set(
+            persistentKey,
+            { value: mapped },
+            this.persistentCacheTTLSeconds
+          )
+          .catch(() => {});
+      }
 
       return mapped;
     } catch {
@@ -140,6 +172,15 @@ export class StreamingProvidersService {
         value: null,
         expiresAt: Date.now() + this.cacheTTL,
       });
+      if (this.persistentCache) {
+        this.persistentCache
+          .set(
+            persistentKey,
+            { value: null },
+            this.persistentCacheTTLSeconds
+          )
+          .catch(() => {});
+      }
       return null;
     }
   }

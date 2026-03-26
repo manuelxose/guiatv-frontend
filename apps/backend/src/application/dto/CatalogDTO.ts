@@ -26,10 +26,45 @@ export interface CatalogProviderDTO {
   deepLink?: string;
 }
 
+export interface CatalogAssetRefDTO {
+  kind: 'poster' | 'backdrop' | 'channelLogo' | 'platformLogo';
+  role: 'primary' | 'fallback';
+  source: 'epg_program_image' | 'tmdb_poster' | 'tmdb_backdrop' | 'channel_icon' | 'platform_logo';
+  url: string;
+}
+
+export interface CatalogAssetSetDTO {
+  primary?: CatalogAssetRefDTO;
+  poster?: CatalogAssetRefDTO;
+  backdrop?: CatalogAssetRefDTO;
+  channelLogo?: CatalogAssetRefDTO;
+  platformLogo?: CatalogAssetRefDTO;
+  fallbackChain: CatalogAssetRefDTO[];
+}
+
+export interface CatalogSourceProvenanceDTO {
+  schedule: string[];
+  metadata: string[];
+  assets: string[];
+  titleSource?: string;
+}
+
+export interface CatalogTimingContextDTO {
+  start?: string;
+  end?: string;
+  liveNow: boolean;
+  window?: 'now' | 'today' | 'tonight' | 'unknown';
+}
+
 export interface CatalogChannelDTO {
   id: string;
   name: string;
   icon?: string;
+  normalizedName?: string;
+  aliases?: string[];
+  sourceIds?: string[];
+  type?: string;
+  region?: string;
 }
 
 export interface CatalogAiringDTO {
@@ -68,6 +103,9 @@ export interface CatalogItemDTO {
   synopsis?: string;
   image?: string;
   backdrop?: string;
+  assets?: CatalogAssetSetDTO;
+  sourceProvenance?: CatalogSourceProvenanceDTO;
+  timingContext?: CatalogTimingContextDTO;
   genres: string[];
   tmdbId?: number;
   rating?: number;

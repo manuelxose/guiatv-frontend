@@ -65,7 +65,42 @@ export interface IProgramRepository {
    */
   deleteByDateRange(dateRange: DateRange): Promise<void>;
   /**
+   * Removes overlapping programs for a set of channels in a given date range.
+   * Used by sync to replace a channel/day slice without keeping stale airings.
+   */
+  deleteOverlappingByChannels(
+    channelIds: string[],
+    dateRange: DateRange
+  ): Promise<void>;
+  /**
+   * Removes overlapping programs for a source/channel/date slice without
+   * touching rows from other feeds.
+   */
+  deleteOverlappingBySourceAndChannels(
+    sourceFeed: string,
+    channelIds: string[],
+    dateRange: DateRange
+  ): Promise<void>;
+  /**
    * Computes and patches derived fields for a given day, returning the number of updated records.
    */
   backfillComputedFields(date: string): Promise<number>;
+  /**
+   * Flexible title search within a rolling time window.
+   * Returns programs whose title contains titleFragment (case-insensitive)
+   * and that overlap with [now-1h, now+windowHours].
+   */
+  findByTitleApprox(titleFragment: string, windowHours?: number): Promise<Program[]>;
+  /**
+   * Returns previously enriched metadata (tmdbId + image) for a set of exact titles.
+   * Used to avoid redundant TMDB API calls on repeated syncs.
+   */
+  findEnrichedByTitles(titles: string[]): Promise<Array<{
+    title: string;
+    tmdbId: number;
+    image: string;
+    description?: string;
+    year?: string;
+    rating?: string;
+  }>>;
 }

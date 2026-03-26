@@ -1,8 +1,9 @@
 // src/v2/presentation/middlewares/rateLimit.ts
 
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { TooManyRequestsError } from '../../shared/errors';
 import { Request, Response } from 'express';
+import { AuthenticatedRequest } from './authGuard';
 
 /**
  * Creates a typed rate limiter that throws domain errors instead of generic responses.
@@ -74,10 +75,19 @@ export const interactionRateLimit = createRateLimiter({
 });
 
 /**
- * AI chat endpoints – tighter burst protection than general limit.
+ * AI chat endpoints – 10 mensajes por minuto por usuario autenticado.
  */
-export const aiRateLimit = createRateLimiter({
+export const aiRateLimit = rateLimit({
   windowMs: 60 * 1000,
-  max: 30,
-  message: 'Too many AI requests, please wait before trying again',
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) =>
+    (req as AuthenticatedRequest).user?.id ??
+    ipKeyGenerator(req.ip ?? req.socket.remoteAddress ?? 'unknown'),
+  handler: (req: Request, res: Response) => {
+    void req;
+    void res;
+    throw new TooManyRequestsError('Too many AI requests, please wait before trying again');
+  },
 });

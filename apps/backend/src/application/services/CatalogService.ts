@@ -1,7 +1,5 @@
 import { IChannelRepository } from '@/domain/repositories/IChannelRepository';
-import { IProgramRepository } from '@/domain/repositories/IProgramRepository';
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
-import { Program } from '@/domain/entities/Program';
 import {
   CatalogAiringDTO,
   CatalogContentType,
@@ -38,6 +36,11 @@ import { UserListModel } from '@/infrastructure/database/models/UserList.model';
 import { UserContentInteractionModel } from '@/infrastructure/database/models/UserContentInteraction.model';
 import { UserFollowModel } from '@/infrastructure/database/models/UserFollow.model';
 import { UserProfileModel } from '@/infrastructure/database/models/UserProfile.model';
+import { buildCatalogAssetSet } from '@/shared/utils/tvMetadata';
+import { l1Cache } from '@/infrastructure/cache/L1Cache';
+import { TvReadItemDTO, TvReadView } from '../dto/TvReadDTO';
+import { TvReadQueryService } from './TvReadQueryService';
+import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring.model';
 
 export interface CatalogQueryParams {
   userId?: string;
@@ -119,14 +122,16 @@ const TV_GENRE_IDS: Record<string, number> = {
 export class CatalogService {
   private readonly ttlSeconds = 600;
   private readonly suggestionTtlSeconds = 300;
+  private readonly hotCacheTtlMs = 30_000;
+  private readonly channelMapTtlMs = 60_000;
 
   constructor(
-    private readonly programRepository: IProgramRepository,
     private readonly channelRepository: IChannelRepository,
     private readonly cacheRepository: ICacheRepository,
     private readonly tmdbService: TMDBService,
     private readonly streamingProvidersService: StreamingProvidersService,
-    private readonly interactionRepository: IUserContentInteractionRepository
+    private readonly interactionRepository: IUserContentInteractionRepository,
+    private readonly tvReadQueryService: TvReadQueryService
   ) {}
 
   getPlatforms(): CatalogPlatformDTO[] {
@@ -135,16 +140,26 @@ export class CatalogService {
 
   async query(params: CatalogQueryParams): Promise<CatalogQueryResultDTO> {
     const normalized = this.normalizeQuery(params);
+    const hotCacheKey = this.buildHotCatalogCacheKey(normalized);
+    if (hotCacheKey) {
+      const hotCached = l1Cache.get(hotCacheKey) as CatalogQueryResultDTO | undefined;
+      if (hotCached) {
+        return hotCached;
+      }
+    }
     const cacheKey = `catalog:query:${JSON.stringify(normalized)}`;
     const cached = await this.cacheRepository.get<CatalogQueryResultDTO>(cacheKey);
     if (cached) {
+      if (hotCacheKey) {
+        l1Cache.set(hotCacheKey, cached, this.hotCacheTtlMs);
+      }
       return cached;
     }
 
     const [channelMap, preferences, programItems, streamingItems] = await Promise.all([
       this.loadChannelMap(),
       this.loadPreferences(normalized.userId),
-      this.loadProgramItems(normalized),
+      normalized.types.includes('program') ? this.loadProgramItems(normalized) : Promise.resolve([]),
       this.loadStreamingItems(normalized),
     ]);
 
@@ -191,6 +206,9 @@ export class CatalogService {
     };
 
     await this.cacheRepository.set(cacheKey, response, this.ttlSeconds);
+    if (hotCacheKey) {
+      l1Cache.set(hotCacheKey, response, this.hotCacheTtlMs);
+    }
     return response;
   }
 
@@ -213,6 +231,7 @@ export class CatalogService {
     const result = await this.query({
       userId,
       q: normalizedQuery,
+      types: ['movie', 'series'],
       limit,
       page: 1,
       sort: 'popular',
@@ -229,7 +248,7 @@ export class CatalogService {
         item.source === 'program'
           ? item.channel?.name || item.start
           : item.primaryPlatforms[0] || item.genres[0],
-      image: item.image,
+      image: item.image || item.assets?.poster?.url || item.assets?.backdrop?.url,
       primaryPlatforms: item.primaryPlatforms,
     }));
 
@@ -292,30 +311,17 @@ export class CatalogService {
       throw new NotFoundError('Catalog item', slug);
     }
 
-    // For programs, search by title in current EPG
-    const today = DateUtils.getTodayYYYYMMDD();
-    const { items: programs } = await this.programRepository.search({
-      date: today,
-      text: searchText,
-      limit: 20,
-      fields: 'full',
-    });
-
-    const found = programs.find((p) => this.slugify(p.title) === slug);
+    // For programs, search against the canonical TV read model.
+    const found = await this.findTvReadItemBySlug(searchText, slug, DateUtils.getTodayYYYYMMDD());
     if (found) {
       return this.getProgramDetail(found.id, userId);
     }
 
-    // Try tomorrow
-    const tomorrow = DateUtils.getTomorrowYYYYMMDD();
-    const { items: tomorrowPrograms } = await this.programRepository.search({
-      date: tomorrow,
-      text: searchText,
-      limit: 20,
-      fields: 'full',
-    });
-
-    const foundTomorrow = tomorrowPrograms.find((p) => this.slugify(p.title) === slug);
+    const foundTomorrow = await this.findTvReadItemBySlug(
+      searchText,
+      slug,
+      DateUtils.getTomorrowYYYYMMDD()
+    );
     if (foundTomorrow) {
       return this.getProgramDetail(foundTomorrow.id, userId);
     }
@@ -329,6 +335,10 @@ export class CatalogService {
     const query = String(input.title || '').trim();
     if (!query) {
       return null;
+    }
+
+    if (input.type === 'program' || input.channel) {
+      return this.resolveTvRecommendation(input);
     }
 
     const items = await this.query({
@@ -374,59 +384,39 @@ export class CatalogService {
 
     const includePrograms =
       !query.availability.length || query.availability.includes('live');
-    const includeProgramStreaming =
-      query.availability.some((value) =>
-        ['streaming', 'free', 'flatrate', 'rent', 'buy'].includes(value)
-      ) || !query.availability.length;
-
-    if (!includePrograms && !includeProgramStreaming) {
+    if (!includePrograms) {
       return [];
     }
 
-    const programs = query.q
-      ? (await this.programRepository.search({
-          date: query.date,
-          text: query.q,
-          limit: 180,
-          fields: 'full',
-        })).items
-      : await this.programRepository.findByDate(query.date, 'full');
-
-    const filtered = programs
-      .filter((program) => {
-        const type = this.inferProgramContentType(program);
+    const items = await this.loadTvReadItems(query);
+    const filtered = items
+      .filter((item) => {
+        const type = this.inferTvReadContentType(item);
         if (!query.types.includes('program') && type === 'program') {
           return false;
         }
         if (!query.types.includes(type)) {
           return false;
         }
-        if (query.timeSlot && !this.programMatchesTimeSlot(program, query.timeSlot)) {
+        if (query.timeSlot && !this.tvReadItemMatchesTimeSlot(item, query.timeSlot)) {
           return false;
         }
-        if (query.q && !this.programMatchesQuery(program, query.q)) {
+        if (query.q && !this.tvReadItemMatchesQuery(item, query.q)) {
+          return false;
+        }
+        if (
+          query.availability.includes('live') &&
+          query.availability.length === 1 &&
+          !query.timeSlot &&
+          !item.airing.liveNow
+        ) {
           return false;
         }
         return true;
       })
-      .slice(0, 160);
+      .slice(0, 1200);
 
-    const channelMap = await this.loadChannelMap();
-    const withProviders = await Promise.all(
-      filtered.map(async (program) => {
-        const whereToWatch = includeProgramStreaming
-          ? await this.resolveProgramProviders(program)
-          : undefined;
-        return this.mapProgramToCatalogItem(program, channelMap, whereToWatch);
-      })
-    );
-
-    return withProviders.filter((item) => {
-      if (!includePrograms && item.liveNow) {
-        return false;
-      }
-      return true;
-    });
+    return filtered.map((item) => this.mapTvReadItemToCatalogItem(item));
   }
 
   private async loadStreamingItems(
@@ -447,6 +437,11 @@ export class CatalogService {
       return [];
     }
 
+    const providerHydrationLimit = this.resolveProviderHydrationLimit(
+      query,
+      tmdbTypes.length
+    );
+
     const providerIds = query.platforms
       .map((platform) => this.findPlatform(platform)?.tmdbProviderId)
       .filter((value): value is number => typeof value === 'number');
@@ -464,6 +459,7 @@ export class CatalogService {
           providerIds,
           monetizationTypes,
           genreIds: movieGenreIds,
+          providerHydrationLimit,
         })
       );
     }
@@ -476,6 +472,7 @@ export class CatalogService {
           providerIds,
           monetizationTypes,
           genreIds: tvGenreIds,
+          providerHydrationLimit,
         })
       );
     }
@@ -493,6 +490,7 @@ export class CatalogService {
       providerIds: number[];
       monetizationTypes: Array<'flatrate' | 'free' | 'rent' | 'buy'>;
       genreIds: number[];
+      providerHydrationLimit: number;
     }
   ): Promise<CatalogItemDTO[]> {
     const items = params.q
@@ -518,7 +516,7 @@ export class CatalogService {
         ).results;
 
     const withProviders = await Promise.all(
-      items.slice(0, 36).map(async (entry) => {
+      items.slice(0, params.providerHydrationLimit).map(async (entry) => {
         const whereToWatch =
           type === 'movie'
             ? await this.streamingProvidersService.getMovieProviders(entry.id)
@@ -530,19 +528,31 @@ export class CatalogService {
     return withProviders.filter(Boolean) as CatalogItemDTO[];
   }
 
+  private resolveProviderHydrationLimit(
+    query: Required<CatalogQueryParams>,
+    typeCount: number
+  ): number {
+    const normalizedTypeCount = Math.max(typeCount, 1);
+    const requestedLimit = Math.min(Math.max(query.limit || 24, 1), 48);
+    const multiplier =
+      query.availability.includes('free') || query.platforms.length ? 2 : 1;
+    const perTypeTarget = Math.ceil(
+      (requestedLimit * multiplier) / normalizedTypeCount
+    );
+
+    return Math.min(Math.max(perTypeTarget, 12), 24);
+  }
+
   private async getProgramDetail(
     programId: string,
     userId?: string
   ): Promise<CatalogDetailDTO> {
-    const program = await this.programRepository.findById(programId);
-    if (!program) {
-      throw new NotFoundError('Program', programId);
-    }
-
-    const channelMap = await this.loadChannelMap();
-    const whereToWatch = await this.resolveProgramProviders(program);
-    const item = this.mapProgramToCatalogItem(program, channelMap, whereToWatch);
-    const tmdbType = this.inferTmdbTypeFromContentType(item.contentType);
+    const tvReadDetail = await this.tvReadQueryService.getItem(programId);
+    const tmdbType = this.inferTmdbTypeFromContentType(
+      this.inferTvReadContentType(tvReadDetail.item)
+    );
+    const whereToWatch = await this.resolveTvReadProviders(tvReadDetail.item, tmdbType);
+    const item = this.mapTvReadItemToCatalogItem(tvReadDetail.item, whereToWatch);
     const tmdbDetail =
       tmdbType && item.tmdbId
         ? tmdbType === 'movie'
@@ -550,12 +560,17 @@ export class CatalogService {
           : await this.tmdbService.getTVById(item.tmdbId)
         : null;
 
-    const [userInteraction, related, socialSummary, airings] = await Promise.all([
+    const [userInteraction, related, socialSummary] = await Promise.all([
       this.loadSingleUserInteraction(userId, item.catalogId),
-      this.loadRelatedForProgram(program, channelMap),
+      this.loadRelatedForTvReadItem(tvReadDetail.item),
       this.loadSocialSummary(userId, item),
-      this.loadAiringsForProgram(program, channelMap),
     ]);
+    const airings = this.mergeAirings(
+      [this.mapTvReadItemToAiring(tvReadDetail.item)],
+      tvReadDetail.relatedChannelItems.map((relatedItem) =>
+        this.mapTvReadItemToAiring(relatedItem)
+      )
+    );
 
     return {
       ...item,
@@ -569,6 +584,60 @@ export class CatalogService {
       socialSummary,
       airings,
       userInteraction: userInteraction || item.userInteraction,
+    };
+  }
+
+  public mapTvReadItemToCatalogItem(
+    item: TvReadItemDTO,
+    providers?: CatalogWhereToWatchDTO
+  ): CatalogItemDTO {
+    const contentType = this.inferTvReadContentType(item);
+    const slug = this.slugify(item.program.title);
+    const image =
+      item.assets.poster?.url ||
+      (item.assets.primary?.kind === 'poster' || item.assets.primary?.kind === 'backdrop'
+        ? item.assets.primary?.url
+        : undefined);
+    const backdrop =
+      item.assets.backdrop?.url ||
+      item.assets.poster?.url ||
+      (item.assets.primary?.kind === 'poster' || item.assets.primary?.kind === 'backdrop'
+        ? item.assets.primary?.url
+        : undefined);
+
+    return {
+      catalogId: buildProgramCatalogId(item.id),
+      source: 'program',
+      contentType,
+      title: item.program.title,
+      slug,
+      detailPath: this.buildDetailPath(contentType, slug),
+      subtitle: item.program.subtitle,
+      synopsis: item.program.description,
+      image,
+      backdrop,
+      assets: item.assets,
+      sourceProvenance: item.sourceProvenance,
+      timingContext: item.timingContext,
+      genres: this.extractTvReadGenres(item),
+      tmdbId: item.program.tmdbId,
+      durationMinutes: item.airing.durationMinutes,
+      start: item.airing.start,
+      end: item.airing.end,
+      liveNow: item.airing.liveNow,
+      primaryPlatforms: this.extractPrimaryPlatforms(providers),
+      whereToWatch: providers,
+      channel: {
+        id: item.channel.id,
+        name: item.channel.name,
+        icon: item.channel.icon,
+        normalizedName: item.channel.normalizedName,
+        aliases: item.channel.aliases,
+        sourceIds: item.channel.sourceIds,
+        type: item.channel.group,
+        region: item.channel.region,
+      },
+      airings: [this.mapTvReadItemToAiring(item)],
     };
   }
 
@@ -628,59 +697,6 @@ export class CatalogService {
     return `${prefix}/${slug}`;
   }
 
-  private mapProgramToCatalogItem(
-    program: Program,
-    channelMap: Map<string, any>,
-    providers?: CatalogWhereToWatchDTO
-  ): CatalogItemDTO {
-    const channel = channelMap.get(program.channelId);
-    const contentType = this.inferProgramContentType(program);
-    const title = String(program.title || '').trim();
-    const slug = this.slugify(title);
-    const start = program.startTime.toISOString();
-    const end = program.endTime.toISOString();
-
-    return {
-      catalogId: buildProgramCatalogId(program.id),
-      source: 'program',
-      contentType,
-      title,
-      slug,
-      detailPath: this.buildDetailPath(contentType, slug),
-      synopsis: program.description,
-      image: program.image,
-      backdrop: program.image,
-      genres: this.extractProgramGenres(program),
-      tmdbId: program.tmdbId,
-      rating: program.rating ? Number(program.rating) : undefined,
-      releaseYear: program.year ? Number(program.year) : undefined,
-      durationMinutes: program.duration,
-      start,
-      end,
-      liveNow: this.isLive(program.startTime, program.endTime),
-      primaryPlatforms: this.extractPrimaryPlatforms(providers),
-      whereToWatch: providers,
-      channel: channel
-        ? {
-            id: channel.id,
-            name: channel.name,
-            icon: channel.icon || undefined,
-          }
-        : undefined,
-      airings: channel
-        ? [
-            {
-              channelId: channel.id,
-              channelName: channel.name,
-              channelIcon: channel.icon || undefined,
-              start,
-              end,
-            },
-          ]
-        : undefined,
-    };
-  }
-
   private mapTmdbToCatalogItem(
     entry: TMDBResult,
     type: 'movie' | 'tv',
@@ -690,6 +706,14 @@ export class CatalogService {
     const contentType: CatalogContentType = type === 'movie' ? 'movie' : 'series';
     const title = entry.title || entry.name || '';
     const slug = this.slugify(title);
+    const primaryPlatform = this.extractPrimaryPlatforms(whereToWatch)[0];
+    const assets = buildCatalogAssetSet({
+      poster: this.tmdbService.getImageUrl(entry.poster_path),
+      backdrop: this.tmdbService.getImageUrl(entry.backdrop_path, 'original'),
+      platformLogo: this.resolvePrimaryPlatformLogo(primaryPlatform),
+      posterSource: 'tmdb_poster',
+      backdropSource: 'tmdb_backdrop',
+    });
 
     return {
       catalogId: buildTmdbCatalogId(type, entry.id),
@@ -699,11 +723,21 @@ export class CatalogService {
       slug,
       detailPath: this.buildDetailPath(contentType, slug),
       synopsis: entry.overview || '',
-      image: this.tmdbService.getImageUrl(entry.poster_path),
-      backdrop: this.tmdbService.getImageUrl(entry.backdrop_path, 'original'),
+      image: assets.poster?.url,
+      backdrop: assets.backdrop?.url,
+      assets,
+      sourceProvenance: {
+        schedule: [],
+        metadata: ['tmdb'],
+        assets: Array.from(new Set(assets.fallbackChain.map((asset) => asset.source))),
+      },
+      timingContext: {
+        liveNow: false,
+        window: 'unknown',
+      },
       genres: [],
       tmdbId: entry.id,
-      rating: typeof entry.vote_average === 'number' ? entry.vote_average : undefined,
+      rating: typeof entry.vote_average === 'number' && !isNaN(entry.vote_average) ? entry.vote_average : undefined,
       releaseYear: this.extractYear(entry.release_date || entry.first_air_date),
       liveNow: false,
       primaryPlatforms: this.extractPrimaryPlatforms(whereToWatch),
@@ -732,7 +766,29 @@ export class CatalogService {
         ...preferred,
         image: preferred.image || secondary.image,
         backdrop: preferred.backdrop || secondary.backdrop,
+        assets: this.mergeAssetSets(preferred.assets, secondary.assets),
         synopsis: preferred.synopsis || secondary.synopsis,
+        sourceProvenance: {
+          schedule: Array.from(
+            new Set([
+              ...(preferred.sourceProvenance?.schedule || []),
+              ...(secondary.sourceProvenance?.schedule || []),
+            ])
+          ),
+          metadata: Array.from(
+            new Set([
+              ...(preferred.sourceProvenance?.metadata || []),
+              ...(secondary.sourceProvenance?.metadata || []),
+            ])
+          ),
+          assets: Array.from(
+            new Set([
+              ...(preferred.sourceProvenance?.assets || []),
+              ...(secondary.sourceProvenance?.assets || []),
+            ])
+          ),
+        },
+        timingContext: preferred.timingContext || secondary.timingContext,
         genres: Array.from(new Set([...(preferred.genres || []), ...(secondary.genres || [])])),
         primaryPlatforms: Array.from(
           new Set([...(preferred.primaryPlatforms || []), ...(secondary.primaryPlatforms || [])])
@@ -769,18 +825,10 @@ export class CatalogService {
     });
   }
 
-  private async loadAiringsForProgram(
-    program: Program,
-    channelMap: Map<string, any>
-  ): Promise<CatalogAiringDTO[]> {
-    const matches = await this.findProgramMatches(program.title, program.tmdbId);
-    return matches.map((entry) => this.mapAiring(entry, channelMap));
-  }
-
   private async loadAiringsForTmdb(
     detail: TMDBDetailResult,
     contentType: CatalogContentType,
-    channelMap: Map<string, any>
+    _channelMap: Map<string, any>
   ): Promise<CatalogAiringDTO[]> {
     const title = detail.title || detail.name || '';
     const matches = await this.findProgramMatches(
@@ -788,25 +836,7 @@ export class CatalogService {
       detail.id,
       contentType === 'series' ? 'series' : 'movie'
     );
-    return matches.map((entry) => this.mapAiring(entry, channelMap));
-  }
-
-  private async loadRelatedForProgram(
-    program: Program,
-    channelMap: Map<string, any>
-  ): Promise<CatalogItemDTO[]> {
-    const programs = await this.programRepository.findByDate(program.date, 'full');
-    return programs
-      .filter((entry) => entry.id !== program.id)
-      .filter((entry) => {
-        if (program.genre && entry.genre) {
-          return this.normalizeToken(program.genre).includes(this.normalizeToken(entry.genre)) ||
-            this.normalizeToken(entry.genre).includes(this.normalizeToken(program.genre));
-        }
-        return true;
-      })
-      .slice(0, 8)
-      .map((entry) => this.mapProgramToCatalogItem(entry, channelMap));
+    return matches.map((entry) => this.mapTvReadItemToAiring(entry));
   }
 
   private async loadRelatedForTmdb(
@@ -986,37 +1016,6 @@ export class CatalogService {
     };
   }
 
-  private async resolveProgramProviders(
-    program: Program
-  ): Promise<CatalogWhereToWatchDTO | undefined> {
-    const inferredType = this.inferTmdbTypeFromContentType(
-      this.inferProgramContentType(program)
-    );
-    if (!inferredType) {
-      return undefined;
-    }
-
-    let tmdbId = program.tmdbId;
-    if (!tmdbId) {
-      const resolved =
-        inferredType === 'movie'
-          ? await this.tmdbService.searchMovie(program.title, program.year ? Number(program.year) : undefined)
-          : await this.tmdbService.searchSeries(program.title);
-      tmdbId = resolved?.id;
-    }
-
-    if (!tmdbId) {
-      return undefined;
-    }
-
-    const providers =
-      inferredType === 'movie'
-        ? await this.streamingProvidersService.getMovieProviders(tmdbId)
-        : await this.streamingProvidersService.getTVProviders(tmdbId);
-
-    return providers ? this.mapWatchProviders(providers) : undefined;
-  }
-
   private mapWatchProviders(providers: WatchProvidersResult): CatalogWhereToWatchDTO {
     const mapProviders = (
       input: WatchProvidersResult['flatrate'],
@@ -1060,6 +1059,54 @@ export class CatalogService {
           .filter(Boolean)
       )
     );
+  }
+
+  private resolvePrimaryPlatformLogo(platformName?: string): string | undefined {
+    return this.findPlatform(platformName || '')?.logoUrl;
+  }
+
+  private mergeAssetSets(
+    primary?: CatalogItemDTO['assets'],
+    secondary?: CatalogItemDTO['assets']
+  ): CatalogItemDTO['assets'] | undefined {
+    const fallbackChain = [
+      ...(primary?.fallbackChain || []),
+      ...(secondary?.fallbackChain || []),
+    ].filter(
+      (asset, index, assets) =>
+        index ===
+        assets.findIndex(
+          (candidate) =>
+            candidate.kind === asset.kind &&
+            candidate.url === asset.url &&
+            candidate.source === asset.source
+        )
+    );
+
+    if (!fallbackChain.length) {
+      return primary || secondary;
+    }
+
+    const primaryVisual =
+      primary?.primary?.kind === 'poster' || primary?.primary?.kind === 'backdrop'
+        ? primary.primary
+        : undefined;
+    const secondaryVisual =
+      secondary?.primary?.kind === 'poster' || secondary?.primary?.kind === 'backdrop'
+        ? secondary.primary
+        : undefined;
+    const fallbackVisual =
+      fallbackChain.find((asset) => asset.kind === 'poster') ||
+      fallbackChain.find((asset) => asset.kind === 'backdrop');
+
+    return {
+      primary: primaryVisual || secondaryVisual || fallbackVisual,
+      poster: primary?.poster || secondary?.poster,
+      backdrop: primary?.backdrop || secondary?.backdrop,
+      channelLogo: primary?.channelLogo || secondary?.channelLogo,
+      platformLogo: primary?.platformLogo || secondary?.platformLogo,
+      fallbackChain,
+    };
   }
 
   private mapAvailabilityToWatchTypes(
@@ -1133,6 +1180,25 @@ export class CatalogService {
     }
     const deltaYears = Math.max(0, new Date().getFullYear() - item.releaseYear);
     return Math.max(0, 1 - deltaYears / 20);
+  }
+
+  private buildHotCatalogCacheKey(
+    query: Required<CatalogQueryParams>
+  ): string | null {
+    if (query.userId || query.q || query.page !== 1 || query.limit > 96) {
+      return null;
+    }
+
+    const isHotAvailability =
+      !query.availability.length ||
+      query.availability.every((value) =>
+        ['live', 'streaming', 'free', 'flatrate', 'rent', 'buy'].includes(value)
+      );
+    if (!isHotAvailability) {
+      return null;
+    }
+
+    return `catalog:hot:${query.date}:${query.timeSlot || 'all'}:${query.sort}:${query.types.join(',')}:${query.platforms.join(',')}:${query.genres.join(',')}:${query.availability.join(',')}`;
   }
 
   private matchesAvailability(item: CatalogItemDTO, availability: string[]): boolean {
@@ -1261,7 +1327,7 @@ export class CatalogService {
       timeSlot: String(params.timeSlot || '').trim(),
       sort: this.normalizeSort(params.sort),
       page: Math.max(1, Number(params.page || 1)),
-      limit: Math.min(240, Math.max(1, Number(params.limit || 24))),
+      limit: Math.min(1000, Math.max(1, Number(params.limit || 24))),
     };
   }
 
@@ -1284,7 +1350,7 @@ export class CatalogService {
       )
     );
 
-    return normalized.length ? normalized : ['program', 'movie', 'series'];
+    return normalized.length ? normalized : ['movie', 'series'];
   }
 
   private normalizeAvailability(value?: string[]): string[] {
@@ -1354,10 +1420,33 @@ export class CatalogService {
     );
   }
 
-  private inferProgramContentType(program: Program): CatalogContentType {
-    const token = this.normalizeToken(program.genre || '');
-    if (token.includes('serie')) return 'series';
-    if (token.includes('cine') || token.includes('pelicula') || token.includes('pel')) {
+  private inferTvReadContentType(item: TvReadItemDTO): CatalogContentType {
+    return this.inferCatalogContentTypeFromValues(
+      item.program.editorialCategory,
+      item.program.genre,
+      item.program.title
+    );
+  }
+
+  private inferCatalogContentTypeFromValues(
+    editorialCategory?: string,
+    genre?: string,
+    title?: string
+  ): CatalogContentType {
+    const token = this.normalizeToken([editorialCategory, genre, title].filter(Boolean).join(' '));
+    if (
+      token.includes('series') ||
+      token.includes('serie') ||
+      token.includes('ficcion seriada')
+    ) {
+      return 'series';
+    }
+    if (
+      token.includes('cine') ||
+      token.includes('pelicula') ||
+      token.includes('pel') ||
+      token.includes('film')
+    ) {
       return 'movie';
     }
     return 'program';
@@ -1371,26 +1460,41 @@ export class CatalogService {
     return null;
   }
 
-  private extractProgramGenres(program: Program): string[] {
-    const parts = [program.genre, program.subgenre]
-      .flatMap((value) => String(value || '').split(/[\\/|,]/))
-      .map((value) => value.trim())
-      .filter(Boolean);
-    return Array.from(new Set(parts));
+  private extractTvReadGenres(item: TvReadItemDTO): string[] {
+    return Array.from(
+      new Set(
+        [
+          item.program.editorialCategory,
+          item.program.genre,
+          item.program.subgenre,
+        ]
+          .flatMap((value) => String(value || '').split(/[\\/|,]/))
+          .map((value) => value.trim())
+          .filter(Boolean)
+      )
+    );
   }
 
-  private programMatchesQuery(program: Program, q: string): boolean {
+  private tvReadItemMatchesQuery(item: TvReadItemDTO, q: string): boolean {
     const token = this.normalizeToken(q);
-    return [program.title, program.description, program.genre, program.subgenre]
-      .some((value) => this.normalizeToken(value || '').includes(token));
+    return [
+      item.program.title,
+      item.program.subtitle,
+      item.program.description,
+      item.program.genre,
+      item.program.subgenre,
+      item.program.editorialCategory,
+      item.channel.name,
+      ...(item.channel.aliases || []),
+    ].some((value) => this.normalizeToken(value || '').includes(token));
   }
 
-  private programMatchesTimeSlot(program: Program, timeSlot: string): boolean {
+  private tvReadItemMatchesTimeSlot(item: TvReadItemDTO, timeSlot: string): boolean {
     const slot = Number(timeSlot);
     if (!Number.isFinite(slot)) {
       return true;
     }
-    const hours = new Date(program.startTime).getHours();
+    const hours = new Date(item.airing.start).getHours();
     if (slot === 6) return hours >= 18 && hours < 21;
     if (slot === 7) return hours >= 21 || hours < 3;
     const ranges: Array<[number, number]> = [
@@ -1406,35 +1510,136 @@ export class CatalogService {
   }
 
   private async loadChannelMap() {
+    const cacheKey = 'catalog:channels:v1';
+    const cached = l1Cache.get(cacheKey) as Map<string, any> | undefined;
+    if (cached) {
+      return cached;
+    }
+
     const channels = await this.channelRepository.findAll();
-    return new Map(channels.map((channel) => [channel.id, channel.toJSON()]));
+    const channelMap = new Map(channels.map((channel) => [channel.id, channel.toJSON()]));
+    l1Cache.set(cacheKey, channelMap, this.channelMapTtlMs);
+    return channelMap;
   }
 
   private async findProgramMatches(
     title: string,
     tmdbId?: number,
     contentType?: 'movie' | 'series'
-  ): Promise<Program[]> {
+  ): Promise<TvReadItemDTO[]> {
     const dates = [DateUtils.getTodayYYYYMMDD(), DateUtils.getTomorrowYYYYMMDD()];
     const chunks = await Promise.all(
-      dates.map((date) => this.programRepository.findByDate(date, 'full'))
+      dates.map((date) =>
+        TVReadAiringModel.find({ date })
+          .sort({ 'airing.start': 1 })
+          .lean()
+          .exec()
+      )
     );
     const normalizedTitle = this.normalizeToken(title);
     return chunks
-      .flat()
+      .flatMap((chunk) => chunk as unknown as TvReadItemDTO[])
       .filter((program) => {
-        if (tmdbId && program.tmdbId === tmdbId) {
+        if (tmdbId && program.program.tmdbId === tmdbId) {
           return true;
         }
         if (contentType) {
-          const inferred = this.inferProgramContentType(program);
+          const inferred = this.inferTvReadContentType(program);
           if (inferred !== contentType) {
             return false;
           }
         }
-        return this.normalizeToken(program.title) === normalizedTitle;
+        return this.normalizeToken(program.program.title) === normalizedTitle;
       })
       .slice(0, 12);
+  }
+
+  private async findTvReadItemBySlug(
+    searchText: string,
+    slug: string,
+    date: string
+  ): Promise<TvReadItemDTO | null> {
+    const response = await this.tvReadQueryService.query({
+      view: 'search',
+      date,
+      q: searchText,
+      limit: 20,
+    });
+    return (
+      response.items.find((item) => this.slugify(item.program.title) === slug) ||
+      null
+    );
+  }
+
+  private async loadTvReadItems(
+    query: Required<CatalogQueryParams>
+  ): Promise<TvReadItemDTO[]> {
+    const view = this.resolveTvReadView(query);
+    const limit = query.q ? 240 : view === 'day' ? 2400 : 1200;
+    const response = await this.tvReadQueryService.query({
+      view,
+      date: query.date,
+      q: query.q || undefined,
+      limit,
+    });
+    return response.items;
+  }
+
+  private async resolveTvRecommendation(
+    input: ResolveRecommendationInput
+  ): Promise<CatalogItemDTO | null> {
+    const query = String(input.title || '').trim();
+    const dates = [DateUtils.getTodayYYYYMMDD(), DateUtils.getTomorrowYYYYMMDD()];
+
+    for (const date of dates) {
+      const response = await this.tvReadQueryService.query({
+        view: 'search',
+        date,
+        q: query,
+        limit: 24,
+      });
+
+      const matches = response.items.filter((item) => {
+        if (
+          input.channel &&
+          !String(item.channel.name || '')
+            .toLowerCase()
+            .includes(String(input.channel || '').toLowerCase())
+        ) {
+          return false;
+        }
+
+        if (input.type && this.inferTvReadContentType(item) !== input.type) {
+          return false;
+        }
+
+        return this.normalizeToken(item.program.title) === this.normalizeToken(query);
+      });
+
+      const picked = matches[0] || response.items[0];
+      if (picked) {
+        return this.mapTvReadItemToCatalogItem(picked);
+      }
+    }
+
+    return null;
+  }
+
+  private resolveTvReadView(query: Required<CatalogQueryParams>): TvReadView {
+    if (query.q) {
+      return 'search';
+    }
+    if (query.timeSlot === '6' || query.timeSlot === '7') {
+      return 'night';
+    }
+    if (
+      query.availability.length === 1 &&
+      query.availability.includes('live') &&
+      !query.timeSlot
+    ) {
+      return 'now';
+    }
+    return 'day';
   }
 
   private mergeAirings(
@@ -1456,15 +1661,46 @@ export class CatalogService {
     });
   }
 
-  private mapAiring(program: Program, channelMap: Map<string, any>): CatalogAiringDTO {
-    const channel = channelMap.get(program.channelId);
+  private mapTvReadItemToAiring(item: TvReadItemDTO): CatalogAiringDTO {
     return {
-      channelId: program.channelId,
-      channelName: channel?.name || program.channelId,
-      channelIcon: channel?.icon || undefined,
-      start: program.startTime.toISOString(),
-      end: program.endTime.toISOString(),
+      channelId: item.channel.id,
+      channelName: item.channel.name,
+      channelIcon: item.channel.icon,
+      start: item.airing.start,
+      end: item.airing.end,
     };
+  }
+
+  private async loadRelatedForTvReadItem(
+    item: TvReadItemDTO
+  ): Promise<CatalogItemDTO[]> {
+    const response = await this.tvReadQueryService.query({
+      view: 'day',
+      date: item.airing.date,
+      category: item.program.editorialCategory,
+      limit: 18,
+    });
+
+    return response.items
+      .filter((candidate) => candidate.id !== item.id)
+      .slice(0, 8)
+      .map((candidate) => this.mapTvReadItemToCatalogItem(candidate));
+  }
+
+  private async resolveTvReadProviders(
+    item: TvReadItemDTO,
+    tmdbType: 'movie' | 'tv' | null
+  ): Promise<CatalogWhereToWatchDTO | undefined> {
+    if (!tmdbType || !item.program.tmdbId) {
+      return undefined;
+    }
+
+    const providers =
+      tmdbType === 'movie'
+        ? await this.streamingProvidersService.getMovieProviders(item.program.tmdbId)
+        : await this.streamingProvidersService.getTVProviders(item.program.tmdbId);
+
+    return providers ? this.mapWatchProviders(providers) : undefined;
   }
 
   private mapCast(detail: TMDBDetailResult | null | undefined) {
@@ -1489,11 +1725,6 @@ export class CatalogService {
     }
     const year = Number(String(value).slice(0, 4));
     return Number.isFinite(year) ? year : undefined;
-  }
-
-  private isLive(start: Date, end: Date): boolean {
-    const now = Date.now();
-    return start.getTime() <= now && end.getTime() >= now;
   }
 
   private findPlatform(name: string) {

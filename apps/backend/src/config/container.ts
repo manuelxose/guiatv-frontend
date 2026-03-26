@@ -220,6 +220,7 @@ export class Container {
     const { AssistantMemoryService } = await import(
       '../application/services/AssistantMemoryService'
     );
+    const { TvReadQueryService } = await import('../application/services/TvReadQueryService');
     const { AIRecommendationService } = await import(
       '../infrastructure/external/AIRecommendationService'
     );
@@ -233,12 +234,16 @@ export class Container {
 
     // Use env var or fallback to the known token (temporary)
     const tmdbApiKey = process.env.TMDB_API_KEY || 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8';
-    const tmdbService = new TMDBService(tmdbApiKey);
+    const cacheRepositoryForTmdb = this.has('cacheRepository')
+      ? this.get<ICacheRepository>('cacheRepository')
+      : null;
+    const tmdbService = new TMDBService(tmdbApiKey, cacheRepositoryForTmdb);
     this.dependencies.set('tmdbService', tmdbService);
 
     const streamingProvidersService = new StreamingProvidersService(
       tmdbApiKey,
-      tmdbService
+      tmdbService,
+      cacheRepositoryForTmdb
     );
     tmdbService.attachStreamingProvidersService(streamingProvidersService);
     this.dependencies.set('streamingProvidersService', streamingProvidersService);
@@ -258,6 +263,12 @@ export class Container {
 
     const assistantMemoryService = new AssistantMemoryService();
     this.dependencies.set('assistantMemoryService', assistantMemoryService);
+
+    const tvReadQueryService = new TvReadQueryService(this.get('cacheRepository'));
+    this.dependencies.set('tvReadQueryService', tvReadQueryService);
+    const { TvSurfaceService } = await import('../application/services/TvSurfaceService');
+    const tvSurfaceService = new TvSurfaceService(tvReadQueryService, this.get('cacheRepository'));
+    this.dependencies.set('tvSurfaceService', tvSurfaceService);
 
     const blogBaseUrl =
       process.env.BLOG_API_URL ||
@@ -312,10 +323,12 @@ export class Container {
     const { GetNowPlaying } = await import('../application/use-cases/GetNowPlaying');
     const { ResetSystem } = await import('../application/use-cases/ResetSystem');
     const { GetDiscoveryHome } = await import('../application/use-cases/GetDiscoveryHome');
+    const { GetDiscoveryBrowse } = await import('../application/use-cases/GetDiscoveryBrowse');
     const { SearchDiscoveryContent } = await import('../application/use-cases/SearchDiscoveryContent');
     const { GetContentDetail } = await import('../application/use-cases/GetContentDetail');
     const { GetContentBatch } = await import('../application/use-cases/GetContentBatch');
     const { CatalogService } = await import('../application/services/CatalogService');
+    const { TvReadModelBuilder } = await import('../application/services/TvReadModelBuilder');
     const { GetPersonalizedRecommendations } = await import(
       '../application/use-cases/GetPersonalizedRecommendations'
     );
@@ -350,12 +363,10 @@ export class Container {
     const syncEPGData = new SyncEPGData(channelRepository, programRepository, cacheRepository, storageRepository, xmlParser, programParser, tmdbService);
     this.dependencies.set('syncEPGData', syncEPGData);
 
-    const precomputeSchedule = new PrecomputeSchedule(
-      getPrograms,
-      this.get('getAllChannels'),
-      storageRepository,
-      cacheRepository
-    );
+    const tvReadModelBuilder = new TvReadModelBuilder(programRepository, cacheRepository);
+    this.dependencies.set('tvReadModelBuilder', tvReadModelBuilder);
+
+    const precomputeSchedule = new PrecomputeSchedule(tvReadModelBuilder);
     this.dependencies.set('precomputeSchedule', precomputeSchedule);
 
     const cleanOldPrograms = new CleanOldPrograms(programRepository);
@@ -372,19 +383,47 @@ export class Container {
     );
     this.dependencies.set('resetSystem', resetSystem);
 
-    const getDiscoveryHome = new GetDiscoveryHome(
-      getPrograms,
-      getNowPlaying,
+    const catalogService = new CatalogService(
+      channelRepository,
       cacheRepository,
-      this.dependencies.get('blogService')
+      tmdbService,
+      streamingProvidersService,
+      interactionRepository,
+      this.get('tvReadQueryService')
+    );
+    this.dependencies.set('catalogService', catalogService);
+
+    const getPersonalizedRecommendations = new GetPersonalizedRecommendations(
+      getPrograms,
+      interactionRepository,
+      streamingProvidersService,
+      catalogService
+    );
+    this.dependencies.set(
+      'getPersonalizedRecommendations',
+      getPersonalizedRecommendations
+    );
+
+    const getDiscoveryHome = new GetDiscoveryHome(
+      cacheRepository,
+      this.get('tvReadQueryService'),
+      catalogService,
+      getPersonalizedRecommendations
     );
     this.dependencies.set('getDiscoveryHome', getDiscoveryHome);
 
     const searchDiscoveryContent = new SearchDiscoveryContent(
-      programRepository,
-      channelRepository
+      catalogService,
+      this.get('tvReadQueryService')
     );
     this.dependencies.set('searchDiscoveryContent', searchDiscoveryContent);
+
+    const getDiscoveryBrowse = new GetDiscoveryBrowse(
+      cacheRepository,
+      this.get('tvReadQueryService'),
+      catalogService
+    );
+    this.dependencies.set('getDiscoveryBrowse', getDiscoveryBrowse);
 
     const getContentDetail = new GetContentDetail(
       programRepository,
@@ -402,27 +441,6 @@ export class Container {
     );
     this.dependencies.set('getContentBatch', getContentBatch);
 
-    const catalogService = new CatalogService(
-      programRepository,
-      channelRepository,
-      cacheRepository,
-      tmdbService,
-      streamingProvidersService,
-      interactionRepository
-    );
-    this.dependencies.set('catalogService', catalogService);
-
-    const getPersonalizedRecommendations = new GetPersonalizedRecommendations(
-      getPrograms,
-      interactionRepository,
-      streamingProvidersService,
-      catalogService
-    );
-    this.dependencies.set(
-      'getPersonalizedRecommendations',
-      getPersonalizedRecommendations
-    );
-
     if (this.has('aiRecommendationService')) {
       const chatbotRecommend = new ChatbotRecommend(
         this.get('aiRecommendationService'),
@@ -430,7 +448,8 @@ export class Container {
         userRepository,
         catalogService,
         this.get('assistantMemoryService'),
-        this.has('cacheRepository') ? this.get('cacheRepository') : undefined
+        this.has('cacheRepository') ? this.get('cacheRepository') : undefined,
+        this.get('tvReadQueryService')
       );
       this.dependencies.set('chatbotRecommend', chatbotRecommend);
     }
@@ -439,18 +458,7 @@ export class Container {
   }
 
   private async registerControllers(): Promise<void> {
-    const getAllChannels = this.get<any>('getAllChannels');
-    const getChannelById = this.get<any>('getChannelById');
-    const getPrograms = this.get<any>('getPrograms');
-    const getProgramLayouts = this.get<any>('getProgramLayouts');
-    const getProgramById = this.get<any>('getProgramById');
-
-    const { ChannelController } = await import('../presentation/controllers/ChannelController');
-    const { ProgramController } = await import('../presentation/controllers/ProgramController');
-    const { ScheduleController } = await import('../presentation/controllers/ScheduleController');
-    const { LayoutController } = await import('../presentation/controllers/LayoutController');
     const { AdminController } = await import('../presentation/controllers/AdminController');
-    const { SSRController } = await import('../presentation/controllers/SSRController');
     const { AuthController } = await import('../presentation/controllers/AuthController');
     const { DiscoveryController } = await import('../presentation/controllers/DiscoveryController');
     const { ContentController } = await import('../presentation/controllers/ContentController');
@@ -465,23 +473,6 @@ export class Container {
     const { InteractionController } = await import('../presentation/controllers/InteractionController');
     const { AIController } = await import('../presentation/controllers/AIController');
 
-    const channelController = new ChannelController(getAllChannels, getChannelById);
-    this.dependencies.set('channelController', channelController);
-
-
-    const programController = new ProgramController(
-      getPrograms,
-      getChannelById,
-      getProgramById
-    );
-    this.dependencies.set('programController', programController);
-
-    const scheduleController = new ScheduleController(getPrograms, getAllChannels);
-    this.dependencies.set('scheduleController', scheduleController);
-
-    const layoutController = new LayoutController(getProgramLayouts);
-    this.dependencies.set('layoutController', layoutController);
-
     const adminController = new AdminController(
       this.get('syncEPGData'),
       this.get('precomputeSchedule'),
@@ -491,30 +482,32 @@ export class Container {
     );
     this.dependencies.set('adminController', adminController);
 
-    const ssrController = new SSRController(this.get('getNowPlaying'));
-    this.dependencies.set('ssrController', ssrController);
-
     const authController = new AuthController(this.get('authService'));
     this.dependencies.set('authController', authController);
 
     const discoveryController = new DiscoveryController(
       this.get('getDiscoveryHome'),
       this.get('searchDiscoveryContent'),
-      this.get('getPersonalizedRecommendations')
+      this.get('getPersonalizedRecommendations'),
+      this.get('getDiscoveryBrowse')
     );
     this.dependencies.set('discoveryController', discoveryController);
 
     const contentController = new ContentController(
       this.get('getContentDetail'),
       this.get('getContentBatch'),
-      this.get('streamingProvidersService')
+      this.get('streamingProvidersService'),
+      this.get('catalogService')
     );
     this.dependencies.set('contentController', contentController);
 
     const catalogController = new CatalogController(this.get('catalogService'));
     this.dependencies.set('catalogController', catalogController);
 
-    const tvController = new TvController(this.get('getNowPlaying'), getPrograms);
+    const tvController = new TvController(
+      this.get('tvReadQueryService'),
+      this.get('tvSurfaceService')
+    );
     this.dependencies.set('tvController', tvController);
 
     const blogController = new BlogController();

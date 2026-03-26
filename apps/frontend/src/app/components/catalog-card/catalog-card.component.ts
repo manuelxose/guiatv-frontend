@@ -33,6 +33,24 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
 
           <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/25 to-transparent"></div>
 
+          <!-- Action overlay — compact mode: buttons over image, never blocks navigation -->
+          <div
+            *ngIf="showActions && compact"
+            class="absolute bottom-0 inset-x-0 flex items-center gap-1.5 px-3 pb-3 pt-10 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent transition-opacity duration-200 opacity-100 md:opacity-0 md:group-hover:opacity-100"
+            (click)="$event.stopPropagation(); $event.preventDefault()"
+          >
+            <app-interaction-buttons
+              [itemId]="item.catalogId"
+              [title]="item.title"
+              [type]="item.contentType"
+              [tmdbId]="item.tmdbId"
+              [genres]="item.genres"
+              [image]="item.image || item.backdrop"
+              [platform]="item.primaryPlatforms?.[0]"
+              [compact]="true"
+            ></app-interaction-buttons>
+          </div>
+
           <div class="absolute left-3 top-3 flex flex-wrap gap-2">
             <span
               *ngIf="item?.liveNow"
@@ -114,7 +132,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
           </span>
         </div>
 
-        <div *ngIf="showActions" class="border-t border-slate-800 pt-3">
+        <div *ngIf="showActions && !compact" class="border-t border-slate-800 pt-3">
           <app-interaction-buttons
             [itemId]="item.catalogId"
             [title]="item.title"

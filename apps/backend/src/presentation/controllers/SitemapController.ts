@@ -292,24 +292,24 @@ export class SitemapController {
     return [
       { loc: '/', lastmod: today, changefreq: 'daily', priority: 1.0 },
       { loc: '/programacion-tv/que-ver-hoy', lastmod: today, changefreq: 'daily', priority: 0.9 },
-      { loc: '/programacion-tv/en-directo', lastmod: today, changefreq: 'hourly', priority: 0.9 },
+      // NOTE: /programacion-tv/en-directo is excluded — it redirects to /guia-canales (301)
+      { loc: '/programacion-tv/guia-canales', lastmod: today, changefreq: 'hourly', priority: 0.9 },
       { loc: '/programacion-tv/peliculas', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/programacion-tv/series', lastmod: today, changefreq: 'daily', priority: 0.9 },
-      { loc: '/programacion-tv/guia-canales', lastmod: today, changefreq: 'daily', priority: 0.9 },
+      { loc: '/plataformas', lastmod: today, changefreq: 'daily', priority: 0.9 },
+      { loc: '/tendencias', lastmod: today, changefreq: 'daily', priority: 0.8 },
+      { loc: '/comparador-streaming', lastmod: today, changefreq: 'weekly', priority: 0.8 },
       { loc: '/editorial', lastmod: today, changefreq: 'daily', priority: 0.8 },
       { loc: '/editorial/rankings', lastmod: today, changefreq: 'weekly', priority: 0.7 },
+      { loc: '/sobre-nosotros', lastmod: today, changefreq: 'monthly', priority: 0.6 },
+      { loc: '/prensa', lastmod: today, changefreq: 'monthly', priority: 0.5 },
+      { loc: '/developers', lastmod: today, changefreq: 'monthly', priority: 0.5 },
+      { loc: '/embed', lastmod: today, changefreq: 'monthly', priority: 0.4 },
       { loc: '/avisolegal', lastmod: today, changefreq: 'monthly', priority: 0.3 },
       { loc: '/privacidad', lastmod: today, changefreq: 'monthly', priority: 0.3 },
       { loc: '/cookies', lastmod: today, changefreq: 'monthly', priority: 0.3 },
       { loc: '/terminos', lastmod: today, changefreq: 'monthly', priority: 0.3 },
       { loc: '/accesibilidad', lastmod: today, changefreq: 'monthly', priority: 0.3 },
-      { loc: '/plataformas', lastmod: today, changefreq: 'daily', priority: 0.9 },
-      { loc: '/sobre-nosotros', lastmod: today, changefreq: 'monthly', priority: 0.6 },
-      { loc: '/prensa', lastmod: today, changefreq: 'monthly', priority: 0.5 },
-      { loc: '/comparador-streaming', lastmod: today, changefreq: 'weekly', priority: 0.8 },
-      { loc: '/developers', lastmod: today, changefreq: 'monthly', priority: 0.5 },
-      { loc: '/embed', lastmod: today, changefreq: 'monthly', priority: 0.4 },
-      { loc: '/tendencias', lastmod: today, changefreq: 'daily', priority: 0.8 },
     ];
   }
 

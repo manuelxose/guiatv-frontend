@@ -9,10 +9,15 @@ import { Schema } from 'mongoose';
 export interface IProgramDocument {
   id: string;
   channelId: string;
+  canonicalChannelId?: string;
   title: string;
+  subtitle?: string;
   description?: string;
   startTime: Date;
   endTime: Date;
+  normalizedTitle?: string;
+  titleAliases?: string[];
+  brandKey?: string;
   startUtc?: string;
   endUtc?: string;
   date?: string;
@@ -26,6 +31,11 @@ export interface IProgramDocument {
   year?: string;
   rating?: string;
   tmdbId?: number;
+  sourceFeed?: string;
+  sourceProgrammeId?: string;
+  sourceAssetCandidates?: Array<Record<string, any>>;
+  sourceProvenance?: Record<string, any>;
+  trustFlags?: Record<string, any>;
   details?: Record<string, any>;
   // Optional layout cache to avoid recomputation on hot paths
   layoutVersion?: string;
@@ -50,14 +60,37 @@ const ProgramSchema = new Schema<IProgramDocument>(
       type: String,
       required: true,
     },
+    canonicalChannelId: {
+      type: String,
+      index: true,
+    },
     title: {
       type: String,
       required: true,
       trim: true,
     },
+    subtitle: {
+      type: String,
+      trim: true,
+    },
     description: {
       type: String,
       trim: true,
+    },
+    normalizedTitle: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    titleAliases: {
+      type: [String],
+      default: [],
+      index: true,
+    },
+    brandKey: {
+      type: String,
+      trim: true,
+      index: true,
     },
     startTime: {
       type: Date,
@@ -111,6 +144,25 @@ const ProgramSchema = new Schema<IProgramDocument>(
     tmdbId: {
       type: Number,
     },
+    sourceFeed: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    sourceProgrammeId: {
+      type: String,
+      trim: true,
+    },
+    sourceAssetCandidates: {
+      type: [Schema.Types.Mixed],
+      default: [],
+    },
+    sourceProvenance: {
+      type: Schema.Types.Mixed,
+    },
+    trustFlags: {
+      type: Schema.Types.Mixed,
+    },
     details: {
       type: Schema.Types.Mixed,
     },
@@ -138,6 +190,12 @@ ProgramSchema.index({ channelId: 1, startTime: 1 });
 ProgramSchema.index({ startTime: 1, endTime: 1 });
 ProgramSchema.index({ tmdbId: 1 }, { sparse: true });
 ProgramSchema.index({ title: 1, startTime: -1 });
+ProgramSchema.index({ normalizedTitle: 1, startTime: -1 });
+ProgramSchema.index({ titleAliases: 1, startTime: -1 });
+ProgramSchema.index({ date: 1, canonicalChannelId: 1, startTime: 1 });
+ProgramSchema.index({ brandKey: 1, date: 1 });
+ProgramSchema.index({ sourceFeed: 1, sourceProgrammeId: 1 });
+ProgramSchema.index({ sourceFeed: 1, channelId: 1, startTime: 1 });
 
 /**
  * Program model

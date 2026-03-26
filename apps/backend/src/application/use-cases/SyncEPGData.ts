@@ -12,12 +12,21 @@ import { logger } from '../../shared/utils/logger';
 import { IStorageRepository } from '../../domain/repositories/IStorageRepository';
 import { TMDBService } from '../../infrastructure/external/TMDBService';
 import { Program } from '../../domain/entities/Program';
+import type { ProgramProps } from '../../domain/entities/Program';
+import { DateRange } from '../../domain/value-objects/DateRange';
 import { ProgramDeduplicator } from '../services/ProgramDeduplicator';
 import { normalizeCategory } from '../../shared/constants/categories';
+import { normalizeExternalMediaUrl } from '../../shared/utils/mediaUrl';
+import {
+  buildChannelIdentityMetadata,
+  buildProgramTitleAliases,
+  normalizeTvToken,
+} from '../../shared/utils/tvMetadata';
 import axios from 'axios';
 import https from 'https';
 import { readFileSync } from 'fs';
 import { resolve as pathResolve } from 'path';
+import { l1Cache } from '../../infrastructure/cache/L1Cache';
 
 export interface SyncEPGDataRequest {
   sourceUrl: string;
@@ -43,6 +52,7 @@ export class SyncEPGData {
   private readonly syncLogger = logger.child('SyncEPGData');
   private readonly deduplicator = new ProgramDeduplicator();
   private readonly channelTypeOverrides: Record<string, string>;
+  private readonly normalizedChannelTypeOverrides: Record<string, string>;
   private readonly channelTypePatterns: Array<{ re: RegExp; type: string }>;
 
   constructor(
@@ -59,14 +69,62 @@ export class SyncEPGData {
       const cfgPath = pathResolve(__dirname, '../../../config/channel-types.json');
       const raw = JSON.parse(readFileSync(cfgPath, 'utf-8'));
       this.channelTypeOverrides = raw.overrides ?? {};
+      this.normalizedChannelTypeOverrides = Object.entries(this.channelTypeOverrides).reduce<Record<string, string>>(
+        (acc, [key, value]) => {
+          acc[normalizeTvToken(key)] = value as string;
+          acc[normalizeTvToken(key, ' ')] = value as string;
+          return acc;
+        },
+        {}
+      );
       this.channelTypePatterns = (raw.patterns ?? []).map((p: any) => ({
         re: new RegExp(p.match, 'i'),
         type: p.type,
       }));
     } catch {
       this.channelTypeOverrides = {};
+      this.normalizedChannelTypeOverrides = {};
       this.channelTypePatterns = [];
     }
+  }
+
+  private shouldSkipTmdbEnrichment(): boolean {
+    const value = String(process.env.SKIP_TMDB_ENRICHMENT || '').trim().toLowerCase();
+    return value === '1' || value === 'true' || value === 'yes';
+  }
+
+  private shouldSkipChannelIconCache(): boolean {
+    const value = String(process.env.SKIP_CHANNEL_ICON_CACHE || '').trim().toLowerCase();
+    return value === '1' || value === 'true' || value === 'yes';
+  }
+
+  private cloneProgram(program: Program, overrides: Partial<ProgramProps> = {}): Program {
+    return Program.create({
+      id: program.id,
+      channelId: program.channelId,
+      canonicalChannelId: program.canonicalChannelId,
+      title: program.title,
+      subtitle: program.subtitle,
+      normalizedTitle: program.normalizedTitle,
+      titleAliases: program.titleAliases,
+      brandKey: program.brandKey,
+      startTime: program.startTime,
+      endTime: program.endTime,
+      description: program.description,
+      image: program.image,
+      genre: program.genre,
+      subgenre: program.subgenre,
+      year: program.year,
+      rating: program.rating,
+      tmdbId: program.tmdbId,
+      sourceFeed: program.sourceFeed,
+      sourceProgrammeId: program.sourceProgrammeId,
+      sourceAssetCandidates: program.sourceAssetCandidates,
+      sourceProvenance: program.sourceProvenance,
+      trustFlags: program.trustFlags,
+      details: program.details,
+      ...overrides,
+    });
   }
 
   /**
@@ -90,7 +148,9 @@ export class SyncEPGData {
         },
       });
 
-      const date = request.date || DateUtils.getTodayYYYYMMDD();
+      const date = request.date
+        ? DateUtils.parseDateAlias(request.date)
+        : DateUtils.getTodayYYYYMMDD();
 
       // 1. Descargar XML (o reusar si viene en la petición)
       const xmlContent =
@@ -110,17 +170,33 @@ export class SyncEPGData {
       const channelMap = await this.processChannels(parsedData.channels);
       channelsProcessed = channelMap.size;
 
+      // Build set of normalized channel icon URLs so we can exclude them from
+      // programme images. Normalizing here matches what ProgramDataParser does
+      // with normalizeExternalMediaUrl before comparing against this set.
+      const channelIconUrls = new Set<string>();
+      for (const ch of parsedData.channels) {
+        const normalized = normalizeExternalMediaUrl(ch.icon);
+        if (normalized) channelIconUrls.add(normalized);
+      }
+
       // 5. Procesar Programas
       programsProcessed = await this.processPrograms(
         parsedData.programmes,
         channelMap,
-        date
+        date,
+        channelIconUrls,
+        request.sourceUrl
       );
 
       // 6. Limpiar caché
       if (request.forceRefresh) {
         await this.cacheRepository.clear('channels:*');
         await this.cacheRepository.clear('programs:*');
+        await this.cacheRepository.clear('catalog:*');
+        await this.cacheRepository.clear('schedule:*');
+        await this.cacheRepository.clear('precomputed:programs:*');
+        l1Cache.invalidatePrefix('nowplaying:');
+        l1Cache.invalidatePrefix('catalog:hot:');
       }
 
       const duration = Date.now() - startTime;
@@ -293,38 +369,66 @@ export class SyncEPGData {
 
     // Obtener canales existentes
     const existingChannels = await this.channelRepository.findAll();
-    const existingByName = new Map(existingChannels.map((ch) => [ch.name, ch]));
+    const existingByAlias = new Map<string, Channel>();
+    existingChannels.forEach((channel) => {
+      const metadata = buildChannelIdentityMetadata({
+        name: channel.name,
+        sourceId: channel.sourceIds[0] || channel.id,
+        country: channel.country,
+        countryCode: channel.countryCode,
+        region: channel.region,
+      });
+      [channel.id, channel.name, channel.normalizedName, ...channel.aliases, ...metadata.aliases]
+        .map((value) => normalizeTvToken(value))
+        .filter(Boolean)
+        .forEach((alias) => {
+          const current = existingByAlias.get(alias);
+          existingByAlias.set(alias, this.pickPreferredExistingChannel(current, channel));
+        });
+    });
 
     for (const parsed of parsedChannels) {
       try {
-        // Buscar si el canal ya existe
-        let channel = existingByName.get(parsed.displayName);
+        const identity = buildChannelIdentityMetadata({
+          name: parsed.displayName,
+          sourceId: parsed.id,
+          country: parsed.country,
+          countryCode: parsed.countryCode,
+        });
+
+        // Buscar si el canal ya existe por nombre canónico, alias o sourceId
+        let channel =
+          identity.aliases
+            .map((alias) => existingByAlias.get(alias))
+            .find(Boolean) ||
+          existingByAlias.get(identity.normalizedName);
 
         const inferredType = this.inferChannelTypeWithGeo(
           parsed.displayName,
-          parsed.country
+          parsed.country,
+          parsed.countryCode,
+          parsed.id
         );
-        // For Autonomico channels, always try to infer region from name
-        // (don't gate on country since many Spanish channels lack country info)
         const inferredRegion =
           inferredType === 'Autonomico'
-            ? this.inferRegion(parsed.displayName) ||
-              this.inferRegionWithGeo(parsed.displayName, parsed.country) ||
-              parsed.country
+            ? identity.inferredRegion || parsed.country
             : this.inferRegionWithGeo(parsed.displayName, parsed.country) ||
               parsed.country;
 
-        const iconForChannel = parsed.icon
-          ? await this.cacheChannelIcon(parsed.icon, this.generateChannelId(parsed.displayName))
-          : null;
-
         if (!channel) {
+          const iconForChannel = parsed.icon
+            ? this.shouldSkipChannelIconCache()
+              ? parsed.icon
+              : await this.cacheChannelIcon(parsed.icon, this.generateChannelId(parsed.displayName))
+            : null;
           // Crear nuevo canal
           channel = Channel.create({
-            id: this.generateChannelId(parsed.displayName),
+            id: identity.canonicalId || this.generateChannelId(parsed.displayName),
             name: parsed.displayName,
             icon: iconForChannel || null,
             type: inferredType,
+            aliases: identity.aliases,
+            sourceIds: identity.sourceIds,
             country: parsed.country,
             countryCode: parsed.countryCode,
             region:
@@ -337,6 +441,9 @@ export class SyncEPGData {
           await this.channelRepository.save(channel);
           this.syncLogger.info('New channel created', { name: channel.name });
         } else if (parsed.icon && parsed.icon !== channel.icon) {
+          const iconForChannel = this.shouldSkipChannelIconCache()
+            ? channel.icon || parsed.icon
+            : await this.cacheChannelIcon(parsed.icon, this.generateChannelId(parsed.displayName));
           // Actualizar icono si cambió
           const regionForUpdate =
             inferredType === 'Autonomico'
@@ -346,6 +453,8 @@ export class SyncEPGData {
             ...channel.toJSON(),
             icon: iconForChannel || parsed.icon,
             type: inferredType,
+            aliases: Array.from(new Set([...channel.aliases, ...identity.aliases])),
+            sourceIds: Array.from(new Set([...channel.sourceIds, ...identity.sourceIds])),
             region: regionForUpdate,
           });
           await this.channelRepository.save(channel);
@@ -358,7 +467,19 @@ export class SyncEPGData {
           channel = Channel.create({
             ...channel.toJSON(),
             type: inferredType,
+            aliases: Array.from(new Set([...channel.aliases, ...identity.aliases])),
+            sourceIds: Array.from(new Set([...channel.sourceIds, ...identity.sourceIds])),
             region: regionForUpdate,
+          });
+          await this.channelRepository.save(channel);
+        } else if (
+          identity.aliases.some((alias) => !channel!.aliases.includes(alias)) ||
+          identity.sourceIds.some((sourceId) => !channel!.sourceIds.includes(sourceId))
+        ) {
+          channel = Channel.create({
+            ...channel.toJSON(),
+            aliases: Array.from(new Set([...channel.aliases, ...identity.aliases])),
+            sourceIds: Array.from(new Set([...channel.sourceIds, ...identity.sourceIds])),
           });
           await this.channelRepository.save(channel);
         }
@@ -372,6 +493,17 @@ export class SyncEPGData {
         if (parsed.displayName?.trim()) {
           channelMap.set(parsed.displayName.trim(), channel.id);
         }
+
+        if (!channel) {
+          continue;
+        }
+        const resolvedChannel = channel;
+
+        identity.aliases.forEach((alias) => {
+          channelMap.set(alias, resolvedChannel.id);
+          const current = existingByAlias.get(alias);
+          existingByAlias.set(alias, this.pickPreferredExistingChannel(current, resolvedChannel));
+        });
 
         // Completar región en autonómicos si faltara
         if (inferredType === 'Autonomico' && !channel.region) {
@@ -398,7 +530,9 @@ export class SyncEPGData {
   private async processPrograms(
     parsedPrograms: any[],
     channelMap: Map<string, string>,
-    date: string
+    date: string,
+    channelIconUrls?: Set<string>,
+    sourceFeed?: string
   ): Promise<number> {
     this.syncLogger.info('Processing programs', {
       count: parsedPrograms.length,
@@ -445,13 +579,13 @@ export class SyncEPGData {
     });
 
     // Convertir a entidades del dominio
-    let programs = this.programParser.batchConvert(filteredPrograms, channelMap);
+    let programs = this.programParser.batchConvert(filteredPrograms, channelMap, channelIconUrls);
 
     // Normalizar categorías a nombres canónicos
     programs = programs.map((p) => {
       const normalized = normalizeCategory(p.genre);
       if (normalized && normalized !== p.genre) {
-        return Program.create({ ...p.toJSON(), genre: normalized, startTime: p.startTime, endTime: p.endTime });
+        return this.cloneProgram(p, { genre: normalized });
       }
       return p;
     });
@@ -459,8 +593,34 @@ export class SyncEPGData {
     // Deduplicar versiones genericas vs especificas antes de enriquecer
     programs = this.deduplicator.dedupe(programs);
 
-    // Enriquecer con datos de TMDB (Cine y Series)
-    programs = await this.enrichProgramsWithTMDB(programs);
+    const impactedChannelIds = Array.from(
+      new Set(programs.map((program) => program.channelId).filter(Boolean))
+    );
+    if (impactedChannelIds.length) {
+      if (sourceFeed) {
+        await this.programRepository.deleteOverlappingBySourceAndChannels(
+          sourceFeed,
+          impactedChannelIds,
+          DateRange.create(dayStart, dayEnd)
+        );
+      } else {
+        await this.programRepository.deleteOverlappingByChannels(
+          impactedChannelIds,
+          DateRange.create(dayStart, dayEnd)
+        );
+      }
+    }
+
+    // Enriquecer con datos de TMDB (Cine y Series) solo cuando no se pida
+    // una reconstrucción lineal rápida basada en EPG ya enriquecida por fuente.
+    if (this.shouldSkipTmdbEnrichment()) {
+      this.syncLogger.info('Skipping TMDB enrichment for this sync run', {
+        date,
+        programs: programs.length,
+      });
+    } else {
+      programs = await this.enrichProgramsWithTMDB(programs);
+    }
 
     // Guardar en lotes
     const batchSize = 500;
@@ -481,12 +641,104 @@ export class SyncEPGData {
     return processed;
   }
 
+  private normalizeTitleForTMDB(title: string): string {
+    return buildProgramTitleAliases(title)[0] || normalizeTvToken(title, ' ');
+  }
+
+  private levenshtein(a: string, b: string): number {
+    const m = a.length, n = b.length;
+    let prev = Array.from({ length: n + 1 }, (_, i) => i);
+    for (let i = 1; i <= m; i++) {
+      const curr = [i];
+      for (let j = 1; j <= n; j++) {
+        curr[j] = a[i - 1] === b[j - 1]
+          ? prev[j - 1]
+          : 1 + Math.min(prev[j - 1], prev[j], curr[j - 1]);
+      }
+      prev = curr;
+    }
+    return prev[n];
+  }
+
+  private titleMatches(epgTitle: string, tmdbTitle: string | undefined): boolean {
+    if (!tmdbTitle) return false;
+    const a = this.normalizeTitleForTMDB(epgTitle);
+    const b = this.normalizeTitleForTMDB(tmdbTitle);
+    if (a.length < 4) return false;
+    if (a === b) return true;
+    if (a.includes(b) || b.includes(a)) return true;
+    if (a.length <= 20 && b.length <= 20 && this.levenshtein(a, b) <= 2) return true;
+    return false;
+  }
+
+  private shouldSkipTMDBFallback(genre: string | undefined): boolean {
+    if (!genre) return false;
+    const g = genre.toLowerCase();
+    return g === 'noticias' || g === 'deportes' || g === 'religión' || g === 'magazine';
+  }
+
+  private shouldSkipTMDBForProgram(program: Program): boolean {
+    const title = String(program.title || '').toLowerCase();
+    const description = String(program.description || '').toLowerCase();
+
+    if (ProgramDeduplicator.isGenericTitle(program.title)) {
+      return true;
+    }
+
+    if (/(teletienda|televenta|infocomercial|shopping|tarot|horoscopo|horóscopo)/.test(title)) {
+      return true;
+    }
+
+    if (/(teletienda|televenta|infocomercial|shopping)/.test(description)) {
+      return true;
+    }
+
+    return this.shouldSkipTMDBFallback(program.genre);
+  }
+
+  /**
+   * Loads TMDB enrichment data from existing DB records for the given programs.
+   * Returns a map from normalized title → enriched fields, used to avoid redundant API calls.
+   */
+  private async loadExistingEnrichment(programs: Program[]): Promise<Map<string, {
+    tmdbId: number; image: string; description?: string; year?: string; rating?: string;
+  }>> {
+      const uniqueTitles = [...new Set(programs.map((p) => p.title))];
+    if (!uniqueTitles.length) return new Map();
+
+    try {
+      const existing = await this.programRepository.findEnrichedByTitles(uniqueTitles);
+      const map = new Map<string, { tmdbId: number; image: string; description?: string; year?: string; rating?: string }>();
+      for (const entry of existing) {
+        buildProgramTitleAliases(entry.title).forEach((alias) => {
+          if (alias && !map.has(alias)) {
+            map.set(alias, {
+              tmdbId: entry.tmdbId,
+              image: entry.image,
+              description: entry.description,
+              year: entry.year,
+              rating: entry.rating,
+            });
+          }
+        });
+      }
+      this.syncLogger.info('DB enrichment cache loaded', { titles: uniqueTitles.length, hits: map.size });
+      return map;
+    } catch (err) {
+      this.syncLogger.warn('Failed to load DB enrichment cache', { error: (err as Error).message });
+      return new Map();
+    }
+  }
+
   private async enrichProgramsWithTMDB(programs: Program[]): Promise<Program[]> {
     this.syncLogger.info('Enriching programs with TMDB data...');
     const enrichedPrograms: Program[] = [];
-    
+
+    // Pre-load enrichment from DB to avoid redundant TMDB calls on repeated syncs
+    const dbEnrichmentMap = await this.loadExistingEnrichment(programs);
+
     // Process in chunks to avoid rate limiting
-    const chunkSize = 5; 
+    const chunkSize = 5;
     for (let i = 0; i < programs.length; i += chunkSize) {
       const chunk = programs.slice(i, i + chunkSize);
       const promises = chunk.map(async (program) => {
@@ -494,39 +746,156 @@ export class SyncEPGData {
           const isMovie = program.genre?.toLowerCase().includes('cine') || program.genre?.toLowerCase().includes('película');
           const isSeries = program.genre?.toLowerCase().includes('serie');
 
-          if (!isMovie && !isSeries) {
+          if (this.shouldSkipTMDBForProgram(program)) {
+            return this.cloneProgram(program, {
+              trustFlags: {
+                ...(program.trustFlags || {}),
+                tmdbSkipped: true,
+              },
+            });
+          }
+
+          // ---- Phase 1: existing cine/serie enrichment (no regression) ----
+          if (isMovie || isSeries) {
+            // Check DB enrichment cache before calling TMDB
+            const titleAliases = buildProgramTitleAliases(program.title);
+            const dbHit = titleAliases
+              .map((alias) => dbEnrichmentMap.get(alias))
+              .find(Boolean);
+            if (dbHit) {
+              this.syncLogger.debug('TMDB DB cache hit (phase1)', { title: program.title });
+              return this.cloneProgram(program, {
+                description: dbHit.description || program.description,
+                image: dbHit.image,
+                rating: dbHit.rating || program.rating,
+                year: dbHit.year || program.year,
+                tmdbId: dbHit.tmdbId,
+                trustFlags: {
+                  ...(program.trustFlags || {}),
+                  tmdbMatched: true,
+                  tmdbSource: 'db_cache',
+                  tmdbKind: isMovie ? 'movie' : 'series',
+                },
+              });
+            }
+            let tmdbResult = null;
+            if (isMovie) {
+              for (const alias of buildProgramTitleAliases(program.title)) {
+                tmdbResult = await this.tmdbService.searchMovie(alias, program.year ? Number(program.year) : undefined);
+                if (tmdbResult && this.titleMatches(program.title, tmdbResult.title || tmdbResult.original_title)) {
+                  break;
+                }
+              }
+            } else {
+              for (const alias of buildProgramTitleAliases(program.title)) {
+                tmdbResult = await this.tmdbService.searchSeries(alias);
+                if (tmdbResult && this.titleMatches(program.title, tmdbResult.name || tmdbResult.original_name)) {
+                  break;
+                }
+              }
+            }
+
+            if (tmdbResult) {
+              return this.cloneProgram(program, {
+                description: tmdbResult.overview || program.description,
+                image: this.tmdbService.getImageUrl(tmdbResult.poster_path) || program.image,
+                rating: tmdbResult.vote_average.toString(),
+                year: tmdbResult.release_date
+                  ? tmdbResult.release_date.split('-')[0]
+                  : tmdbResult.first_air_date
+                    ? tmdbResult.first_air_date.split('-')[0]
+                    : undefined,
+                tmdbId: tmdbResult.id,
+                trustFlags: {
+                  ...(program.trustFlags || {}),
+                  tmdbMatched: true,
+                  tmdbSource: 'api_primary',
+                  tmdbKind: isMovie ? 'movie' : 'series',
+                },
+              });
+            }
             return program;
           }
 
-          let tmdbResult = null;
-          if (isMovie) {
-             tmdbResult = await this.tmdbService.searchMovie(program.title);
-          } else if (isSeries) {
-             const cleanTitle = program.title.replace(/T\d+.*/, '').trim();
-             tmdbResult = await this.tmdbService.searchSeries(cleanTitle);
-          }
+          // ---- Phase 2: universal fallback for programs with no image ----
+          if (program.image) return program;
+          if (this.shouldSkipTMDBForProgram(program)) return program;
 
-          if (tmdbResult) {
-            return Program.create({
-              id: program.id,
-              channelId: program.channelId,
-              title: program.title,
-              startTime: program.startTime,
-              endTime: program.endTime,
-              description: tmdbResult.overview || program.description,
-              image: this.tmdbService.getImageUrl(tmdbResult.poster_path) || program.image,
-              genre: program.genre,
-              rating: tmdbResult.vote_average.toString(),
-              year: tmdbResult.release_date
-                ? tmdbResult.release_date.split('-')[0]
-                : tmdbResult.first_air_date
-                  ? tmdbResult.first_air_date.split('-')[0]
-                  : undefined,
-              tmdbId: tmdbResult.id,
+          const cleanTitles = buildProgramTitleAliases(program.title);
+          if (!cleanTitles.length) return program;
+
+          // Check DB enrichment cache before calling TMDB
+          const dbHit2 = cleanTitles
+            .map((alias) => dbEnrichmentMap.get(alias))
+            .find(Boolean);
+          if (dbHit2) {
+            this.syncLogger.debug('TMDB DB cache hit (phase2)', { title: program.title });
+            return this.cloneProgram(program, {
+              description: dbHit2.description || program.description,
+              image: dbHit2.image,
+              rating: dbHit2.rating || program.rating,
+              year: dbHit2.year || program.year,
+              tmdbId: dbHit2.tmdbId,
+              trustFlags: {
+                ...(program.trustFlags || {}),
+                tmdbMatched: true,
+                tmdbSource: 'db_cache',
+              },
             });
           }
-          
-          return program;
+
+          // Try series first (most non-movie TV content), then movie as fallback
+          let tmdbResult = null;
+          let matchTitle: string | undefined;
+          let matchedKind: 'movie' | 'series' | undefined;
+
+          for (const alias of cleanTitles) {
+            tmdbResult = await this.tmdbService.searchSeries(alias);
+            matchTitle = tmdbResult?.name ?? tmdbResult?.original_name;
+            if (tmdbResult && this.titleMatches(program.title, matchTitle)) {
+              matchedKind = 'series';
+              break;
+            }
+
+            tmdbResult = await this.tmdbService.searchMovie(alias, program.year ? Number(program.year) : undefined);
+            matchTitle = tmdbResult?.title ?? tmdbResult?.original_title;
+            if (tmdbResult && this.titleMatches(program.title, matchTitle)) {
+              matchedKind = 'movie';
+              break;
+            }
+            tmdbResult = null;
+            matchTitle = undefined;
+            matchedKind = undefined;
+          }
+
+          if (!tmdbResult || !this.titleMatches(program.title, matchTitle)) {
+            return program; // no confident match
+          }
+
+          const posterUrl = this.tmdbService.getImageUrl(tmdbResult.poster_path);
+          if (!posterUrl) return program;
+
+          this.syncLogger.debug('TMDB fallback enrichment applied', {
+            title: program.title,
+            matchedTitle: matchTitle,
+            genre: program.genre,
+          });
+
+          return this.cloneProgram(program, {
+            description: tmdbResult.overview || program.description,
+            image: posterUrl,
+            rating: tmdbResult.vote_average ? tmdbResult.vote_average.toString() : program.rating,
+            year: tmdbResult.release_date?.split('-')[0]
+               ?? tmdbResult.first_air_date?.split('-')[0]
+               ?? program.year,
+            tmdbId: tmdbResult.id,
+            trustFlags: {
+              ...(program.trustFlags || {}),
+              tmdbMatched: true,
+              tmdbSource: 'api_fallback',
+              tmdbKind: matchedKind,
+            },
+          });
         } catch (err) {
           return program;
         }
@@ -579,13 +948,64 @@ export class SyncEPGData {
     return undefined;
   }
 
+  private pickPreferredExistingChannel(
+    current: Channel | undefined,
+    candidate: Channel
+  ): Channel {
+    if (!current) {
+      return candidate;
+    }
+
+    const currentMetadata = buildChannelIdentityMetadata({
+      name: current.name,
+      sourceId: current.sourceIds[0] || current.id,
+      country: current.country,
+      countryCode: current.countryCode,
+      region: current.region,
+    });
+    const candidateMetadata = buildChannelIdentityMetadata({
+      name: candidate.name,
+      sourceId: candidate.sourceIds[0] || candidate.id,
+      country: candidate.country,
+      countryCode: candidate.countryCode,
+      region: candidate.region,
+    });
+
+    const currentIsCanonical = current.id === currentMetadata.canonicalId;
+    const candidateIsCanonical = candidate.id === candidateMetadata.canonicalId;
+    if (currentIsCanonical !== candidateIsCanonical) {
+      return candidateIsCanonical ? candidate : current;
+    }
+
+    if (Boolean(current.icon) !== Boolean(candidate.icon)) {
+      return candidate.icon ? candidate : current;
+    }
+
+    const currentOrder = Number((current as any).order ?? currentMetadata.sortOrder ?? 999);
+    const candidateOrder = Number((candidate as any).order ?? candidateMetadata.sortOrder ?? 999);
+    if (currentOrder !== candidateOrder) {
+      return candidateOrder < currentOrder ? candidate : current;
+    }
+
+    return candidate.aliases.length > current.aliases.length ? candidate : current;
+  }
+
   // Inferencia enriquecida con información de país y config
   private inferChannelTypeWithGeo(
     name: string,
-    _country?: string
+    country?: string,
+    countryCode?: string,
+    sourceId?: string
   ): 'TDT' | 'Cable' | 'Movistar' | 'Autonomico' | 'OTT' {
     // 1) Exact override from config
-    const override = this.channelTypeOverrides[name];
+    const override =
+      this.channelTypeOverrides[name] ||
+      this.normalizedChannelTypeOverrides[normalizeTvToken(name)] ||
+      this.normalizedChannelTypeOverrides[normalizeTvToken(name, ' ')] ||
+      (sourceId
+        ? this.normalizedChannelTypeOverrides[normalizeTvToken(sourceId)] ||
+          this.normalizedChannelTypeOverrides[normalizeTvToken(sourceId, ' ')]
+        : undefined);
     if (override) return override as any;
 
     // 2) Pattern match from config
@@ -594,17 +1014,13 @@ export class SyncEPGData {
     }
 
     // 3) Heuristic fallback
-    const inferredRegion = this.inferRegion(name);
-    const isRegionalNationalVariant =
-      inferredRegion &&
-      /(la\s*1|la\s*2|la_1|la_2)/i.test(name);
-
-    if (isRegionalNationalVariant) {
-      return 'Autonomico';
-    }
-
-    if (inferredRegion) return 'Autonomico';
-    return 'OTT';
+    return buildChannelIdentityMetadata({
+      name,
+      sourceId,
+      country,
+      countryCode,
+      region: this.inferRegion(name),
+    }).inferredType;
   }
 
   private inferRegionWithGeo(name: string, country?: string): string | undefined {

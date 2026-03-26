@@ -1,9 +1,7 @@
 import { DateUtils } from '@/shared/utils/dateUtils';
-import { MediaCardDTO } from '../dto/MediaDTO';
-import { MediaMapper } from '../mappers/MediaMapper';
-import { IProgramRepository } from '@/domain/repositories/IProgramRepository';
-import { IChannelRepository } from '@/domain/repositories/IChannelRepository';
-import { Channel } from '@/domain/entities/Channel';
+import { CatalogQueryResultDTO } from '../dto/CatalogDTO';
+import { CatalogService } from '../services/CatalogService';
+import { TvReadQueryService } from '../services/TvReadQueryService';
 
 export interface DiscoverySearchRequest {
   q?: string;
@@ -13,112 +11,112 @@ export interface DiscoverySearchRequest {
   type?: string;
   limit?: number;
   page?: number;
-  country?: string;
-  channelTypes?: string[];
 }
 
-export interface DiscoverySearchResponse {
-  items: MediaCardDTO[];
-  meta: {
-    total: number;
-    date: string;
-    page: number;
-    limit: number;
-  };
-}
-
-/**
- * Performs search across programs to power the discovery results page.
- */
 export class SearchDiscoveryContent {
   constructor(
-    private readonly programRepository: IProgramRepository,
-    private readonly channelRepository: IChannelRepository
+    private readonly catalogService: CatalogService,
+    private readonly tvReadQueryService: TvReadQueryService
   ) {}
 
-  /**
-   * Executes the search with pagination and channel filtering.
-   */
   async execute(
     request: DiscoverySearchRequest
-  ): Promise<DiscoverySearchResponse> {
+  ): Promise<CatalogQueryResultDTO> {
     const date =
       request.date && request.date.length
         ? DateUtils.parseDateAlias(request.date)
         : DateUtils.getTodayYYYYMMDD();
-
-    const q = (request.q || '').trim().toLowerCase();
-    const genre = (request.genre || '').trim().toLowerCase();
-    const platform = (request.platform || '').trim().toUpperCase();
-    const type = (request.type || '').trim().toLowerCase();
-    const limit = Math.min(request.limit || 50, 200);
+    const q = String(request.q || '').trim();
+    const limit = Math.min(Math.max(1, request.limit || 24), 60);
     const page = request.page && request.page > 0 ? request.page : 1;
-    const offset = (page - 1) * limit;
+    const type = String(request.type || '').trim().toLowerCase();
+    const genre = String(request.genre || '').trim();
+    const platform = String(request.platform || '').trim();
 
-    const { channelMap, channelIds } = await this.resolveChannels({
-      channelTypes: request.channelTypes || (platform ? [platform] : undefined),
-      country: request.country,
-    });
+    const includeTv = !type || type === 'program' || type === 'tv' || type === 'all';
+    const includeStreaming = !type || type === 'movie' || type === 'series' || type === 'all';
 
-    if (type && type !== 'program') {
-      return {
-        items: [],
-        meta: { total: 0, date, page, limit },
-      };
-    }
+    const [tvResult, streamingResult] = await Promise.all([
+      includeTv && q
+        ? this.tvReadQueryService.query({
+            view: 'search',
+            date,
+            q,
+            limit: 48,
+          })
+        : Promise.resolve({ items: [] } as any),
+      includeStreaming
+        ? this.catalogService.query({
+            q: q || undefined,
+            types:
+              type === 'movie' || type === 'series'
+                ? [type]
+                : ['movie', 'series'],
+            genres: genre ? [genre] : undefined,
+            platforms: platform ? [platform] : undefined,
+            limit: 48,
+            page: 1,
+            sort: q ? 'popular' : 'recent',
+          })
+        : Promise.resolve({
+            items: [],
+            meta: { total: 0, page: 1, limit: 48, hasMore: false },
+            availableGenres: [],
+            availablePlatforms: this.catalogService.getPlatforms(),
+          }),
+    ]);
 
-    const { items, total } = await this.programRepository.search({
-      date,
-      text: q,
-      category: genre,
-      channelIds,
-      limit,
-      offset,
-      fields: 'full',
-    });
+    const tvItems = (tvResult.items || [])
+      .map((item: any) => this.catalogService.mapTvReadItemToCatalogItem(item))
+      .filter(() => !platform)
+      .filter((item: any) => (genre ? item.genres.includes(genre) : true));
 
-    const layouts = items.map((program) => {
-      const channel = channelMap.get(program.channelId);
-      return MediaMapper.fromProgram(program, channel, { now: new Date() });
-    });
+    const merged = [...tvItems, ...(streamingResult.items || [])]
+      .sort((left, right) => this.score(right, q) - this.score(left, q))
+      .slice((page - 1) * limit, (page - 1) * limit + limit);
 
+    const allItems = [...tvItems, ...(streamingResult.items || [])];
     return {
-      items: layouts,
+      items: merged,
       meta: {
-        total,
-        date,
+        total: allItems.length,
         page,
         limit,
+        hasMore: page * limit < allItems.length,
       },
+      availableGenres: Array.from(
+        new Set(
+          allItems.flatMap((item) => item.genres).map((entry) => String(entry || '').trim())
+        )
+      ).filter(Boolean),
+      availablePlatforms: streamingResult.availablePlatforms || this.catalogService.getPlatforms(),
     };
   }
 
-  private async resolveChannels(params: {
-    channelTypes?: string[];
-    country?: string;
-  }): Promise<{ channelMap: Map<string, Channel>; channelIds: string[] }> {
-    const typesFilter = params.channelTypes?.length
-      ? params.channelTypes.map((t) => t.toUpperCase())
-      : undefined;
+  private score(item: { title: string; liveNow?: boolean; image?: string; rating?: number }, q: string): number {
+    let score = 0;
+    const normalizedTitle = this.normalize(item.title);
+    const normalizedQuery = this.normalize(q);
 
-    const channels = await this.channelRepository.findAll({
-      isActive: true,
-    });
+    if (normalizedQuery && normalizedTitle === normalizedQuery) {
+      score += 100;
+    } else if (normalizedQuery && normalizedTitle.includes(normalizedQuery)) {
+      score += 40;
+    }
 
-    const filtered = channels.filter((ch) => {
-      if (typesFilter && !typesFilter.includes((ch.type as any)?.toString().toUpperCase())) {
-        return false;
-      }
-      if (params.country) {
-        const c = params.country.toLowerCase();
-        if (!ch.country || ch.country.toLowerCase() !== c) return false;
-      }
-      return true;
-    });
+    if (item.liveNow) score += 20;
+    if (item.image) score += 10;
+    if (typeof item.rating === 'number') score += Math.min(item.rating, 10);
 
-    return {
-      channelMap: new Map(filtered.map((c) => [c.id, c] as const)),
-      channelIds: filtered.map((c) => c.id),
-    };
+    return score;
+  }
+
+  private normalize(value: string): string {
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim();
   }
 }

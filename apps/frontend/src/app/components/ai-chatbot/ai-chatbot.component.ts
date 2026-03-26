@@ -1,11 +1,13 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   DestroyRef,
   ElementRef,
   EventEmitter,
   Output,
+  PLATFORM_ID,
   ViewChild,
   inject,
 } from '@angular/core';
@@ -97,6 +99,12 @@ export class AIChatbotComponent implements AfterViewInit {
   ];
 
   private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly platformId = inject(PLATFORM_ID);
+
+  private get isMobile(): boolean {
+    return isPlatformBrowser(this.platformId) && window.innerWidth < 768;
+  }
 
   constructor(
     private readonly chatbotService: ChatbotService,
@@ -110,6 +118,7 @@ export class AIChatbotComponent implements AfterViewInit {
       .subscribe((messages) => {
         this.messages = messages;
         this.previewSuggestions = messages[0]?.followUpSuggestions || [];
+        this.cdr.detectChanges();
         if (!this.showScrollFab) {
           queueMicrotask(() => this.scrollToBottom());
         }
@@ -119,12 +128,14 @@ export class AIChatbotComponent implements AfterViewInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((memory) => {
         this.assistantMemory = memory;
+        this.cdr.detectChanges();
       });
 
     this.chatbotService.sessionState$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((state) => {
         this.sessionState = state;
+        this.cdr.detectChanges();
         if (state === 'authenticated') {
           this.chatbotService.hydrateConversation().subscribe({
             error: () => undefined,
@@ -136,6 +147,7 @@ export class AIChatbotComponent implements AfterViewInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((state) => {
         this.chatState = state;
+        this.cdr.detectChanges();
         if (!this.showScrollFab) {
           queueMicrotask(() => this.scrollToBottom());
         }
@@ -169,13 +181,7 @@ export class AIChatbotComponent implements AfterViewInit {
   }
 
   useSuggestion(text: string): void {
-    const normalized = text.trim();
-    if (!normalized) {
-      return;
-    }
-
-    this.inputBar?.setDraft(normalized);
-    queueMicrotask(() => this.inputBar?.focus());
+    this.sendQuickMessage(text);
   }
 
   onUseSavedCommunity(message: ChatMessage): void {
@@ -200,18 +206,24 @@ export class AIChatbotComponent implements AfterViewInit {
       .trackRecommendationAction('open_recommendation', recommendation)
       .subscribe();
 
+    const catalogId = recommendation.catalogId;
+
+    // Only navigate to /contenido/ for real catalog IDs (tmdb:movie:* or tmdb:tv:*).
+    // EPG program IDs (program:*) are ephemeral and have no catalog detail page.
+    if (catalogId && !catalogId.startsWith('program:')) {
+      this.close.emit();
+      void this.router.navigate(['/contenido', catalogId]);
+      return;
+    }
+
+    // Navigate to detailPath if available (any device, any path type including /programas/).
     if (recommendation.detailPath) {
       this.close.emit();
       void this.router.navigateByUrl(recommendation.detailPath);
       return;
     }
 
-    if (recommendation.catalogId) {
-      this.close.emit();
-      void this.router.navigate(['/contenido', recommendation.catalogId]);
-      return;
-    }
-
+    // No detailPath at all: open chatbot search as fallback.
     this.inputBar?.setDraft(`Cuéntame más sobre ${recommendation.title}`);
     queueMicrotask(() => this.inputBar?.focus());
   }

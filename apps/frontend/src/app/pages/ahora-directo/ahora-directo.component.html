@@ -122,7 +122,7 @@
           [time]="horaInicio(programa)"
           [category]="programa?.category?.value || programa?.category || ''"
           [description]="programa?.desc?.details || programa?.desc?.value || ''"
-          [image]="programa?.image || programa?.poster || programa?.background || programa?.channelIcon"
+          [image]="programa?.image || programa?.poster || programa?.background"
           [channelIcon]="programa?.channelIcon"
           [live]="true"
           [startTime]="getProgressDate(programa?.start)"

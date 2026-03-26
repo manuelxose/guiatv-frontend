@@ -21,6 +21,8 @@ import {
 } from '../services/AssistantMemoryService';
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import * as crypto from 'crypto';
+import { logger } from '../../shared/utils/logger';
+import { TvReadQueryService } from '../services/TvReadQueryService';
 
 export interface ChatbotRecommendRequest {
   userId: string;
@@ -35,6 +37,7 @@ interface ChatQueryIntent {
   explicitPlatforms: string[];
   wantsFamily: boolean;
   wantsShort: boolean;
+  wantsPrimeTime: boolean;
   negativeSignals: string[];
 }
 
@@ -55,87 +58,138 @@ const KNOWN_GENRES = [
   'Cultura',
 ];
 
-const NATIONAL_CHANNEL_PRIORITY = [
-  'la 1',
-  'la1',
-  'la 2',
-  'la2',
-  'antena 3',
-  'telecinco',
+// ─── Explicit channel priority order (user-defined) ──────────────────────────
+
+// Group 1 — Nacional / TDT
+// Include both "with space" and "without space" variants as EPG sources differ
+const NATIONAL_CHANNELS = [
+  'la 1', 'la1', 'la primera', 'tve1',
+  'la 2', 'la2', 'la dos', 'tve2',
+  'antena 3', 'antena3', 'a3',
   'cuatro',
-  'la sexta',
-  'lasexta',
+  'telecinco', 'tele 5',
+  'la sexta', 'lasexta', 'la 6',
+  'divinity',
+  'dkiss',
+  'ten',
+  'be mad', 'bemad',
   'mega',
+  'dmax',
+  'energy',
+  'fdf',
+  'atreseries',
   'neox',
   'nova',
-  'atreseries',
-  'fdf',
-  'divinity',
-  'energy',
-  'be mad',
-  'bemad',
-  'dmax',
-  'paramount network',
-  'trece',
-  'dkiss',
-  'clan',
+  '13 tv', '13tv', 'trece tv', 'trece',
+  'veo7', 'veo 7',
+  'squirrel tv', 'squirrel 2',
   'boing',
+  'clan',
+  'teledeporte',
+  'real madrid tv',
+  'bom cine',
+  'el toro tv',
 ];
 
-const PAY_CHANNEL_PATTERNS = [
-  'axn',
+// Group 2 — Autonómicos / Regionales
+const REGIONAL_CHANNELS = [
+  // Regional La 1/La 2 variants — longer keys match before national 'la 1'/'la 2' keys
+  'la 1 canarias', 'la 1 cat', 'la 1 cataluna', 'la 1 catalunya', 'la 1 baleares',
+  'la 1 aragon', 'la 1 andalucia', 'la 1 castilla', 'la 1 extremadura', 'la 1 galicia',
+  'la 2 canarias', 'la 2 cat', 'la 2 cataluna', 'la 2 catalunya', 'la 2 baleares',
+  'la 2 aragon', 'la 2 andalucia', 'la 2 castilla',
+  // International/Latin American "Trece" variants — must not match national 'trece' key
+  'el trece internacional', 'trece internacional', 'el trece',
+  'telemadrid', 'la otra', '8madrid', 'tv3',
+  'la 2 cat', 'sx3 33', 'sx3', 'canal 33', '33',
+  'esport3', 'esport 3', 'beteve', 'a punt', 'la 8 mediterraneo',
+  'canal sur', 'andalucia tv', 'canal andalucia',
+  'tvg2', 'tvg',
+  'etb 1', 'etb 2', 'etb', 'euskal telebista',
+  'tv canaria', 'cmmedia', 'cmm', 'ib3',
+  'aragon tv', 'la 7 rm', '7 tv region murcia', '7 tv murcia',
+  'canal extremadura', 'tpa', 'rtpa',
+  'la 7', 'la 8',
+  '3/24', '3 24', '24 hores', 'informatiu',
+];
+
+// Group 3 — Pago / Cable (no Movistar)
+// Order matches the user's desired sequence: SELEKT → AMC → Canal Hollywood → Sundance →
+// DARK → XTRM → Somos → AMC Western → Vin TV → Historia → Odisea →
+// AMC Crime → AMC Break → AMC Living → Canal Cocina → Nat Geo → Discovery → STAR →
+// Warner → MTV → Cosmo → AXN → Calle 13 → Syfy → TCM → Comedy Central
+const PAY_CHANNELS = [
+  'selekt',
   'amc',
-  'calle 13',
-  'canal hollywood',
-  'comedy central',
-  'cosmo',
+  'canal hollywood', 'hollywood',
+  'sundance',
   'dark',
-  'fox',
-  'star channel',
-  'syfy',
-  'sundancetv',
-  'tcm',
-  'tnt',
-  'warner tv',
   'xtrm',
-  'de pelicula',
-  'movistar',
+  'somos',
+  'amc western',
+  'vin tv',
+  'historia',
+  'odisea',
+  'amc crime', 'amc break', 'amc living',
+  'canal cocina',
+  'national geographic wild', 'national geographic', 'nat geo wild', 'nat geo',
+  'discovery channel', 'discovery',
+  'star channel',
+  'warner tv',
+  'mtv',
+  'cosmo',
+  'axn movies', 'axn',
+  'calle 13',
+  'syfy',
+  'tcm',
+  'comedy central',
 ];
 
-const AUTONOMIC_CHANNEL_PATTERNS = [
-  'andalucia',
-  'andalucía',
-  'aragon',
-  'aragón',
-  'aragón tv',
-  'apunt',
-  'à punt',
-  'canal extremadura',
-  'castilla',
-  'cmm',
-  'cyl',
-  'etb',
-  'ib3',
-  'la 7',
-  'navarra',
-  'rtpa',
-  'sur',
-  'telemadrid',
-  'tv3',
-  'tvg',
-  '7rm',
+// Group 4 — Movistar (includes channels in the Movistar package)
+const MOVISTAR_CHANNELS = [
+  'movistar plus', 'm+ estrenos', 'm+ hits', 'm+ comedia', 'm+ accion',
+  'm+ drama', 'm+ indie', 'm+ clasicos', 'm+ cine espanol', 'm+ originales',
+  'm+ documentales', 'm+ vamos', 'm+ deportes 4', 'm+ deportes 3',
+  'm+ deportes 2', 'm+ deportes', 'm+ laliga', 'm+ liga de campeones 3',
+  'm+ liga de campeones 2', 'm+ liga de campeones', 'm+ golf',
+  // BBC channels available via Movistar
+  'bbc earth', 'bbc world', 'bbc history', 'bbc top gear', 'bbc series',
+  'bbc lifestyle', 'bbc food', 'bbc entertainment', 'bbc',
+  // Other Movistar package channels
+  'bloomberg', 'al jazeera', 'baby tv', 'canal de las estrellas',
+  'euronews', 'cnn', 'fox news', 'sky news',
+  'canal estrella', 'estrella tv',
 ];
 
-const FAST_CHANNEL_PATTERNS = [
-  'rakuten',
-  'pluto',
-  'plex',
-  'runtime',
-  'samsung tv plus',
-  'rlaxx',
-  'tivify',
-  'youtube',
+// Group 5 — Deportes / Sports
+const SPORTS_CHANNELS = [
+  'dazn f1', 'dazn laliga', 'dazn 1', 'dazn', 'eurosport 2', 'eurosport 1',
+  'eurosport', 'gol play', 'gol', 'extreme sports', 'garage tv', 'ubeat',
 ];
+
+interface ChannelEntry { group: number; priority: number; }
+
+function buildChannelMap(): Map<string, ChannelEntry> {
+  const map = new Map<string, ChannelEntry>();
+  const groups = [
+    NATIONAL_CHANNELS,
+    REGIONAL_CHANNELS,
+    PAY_CHANNELS,
+    MOVISTAR_CHANNELS,
+    SPORTS_CHANNELS,
+  ];
+  groups.forEach((arr, g) => {
+    arr.forEach((ch, i) => {
+      if (!map.has(ch)) map.set(ch, { group: g + 1, priority: (g + 1) * 100 + i });
+    });
+  });
+  return map;
+}
+
+const CHANNEL_MAP = buildChannelMap();
+
+// Pre-sorted keys longest-first to avoid substring false matches (e.g. 'amc' inside 'amc western')
+const CHANNEL_MAP_KEYS_DESC = [...CHANNEL_MAP.keys()].sort((a, b) => b.length - a.length);
 
 const AUTONOMOUS_COMMUNITIES: Array<{
   canonical: string;
@@ -255,14 +309,49 @@ export type StreamableChatResponse = {
   finalize: (fullText: string) => Promise<ChatbotResponse>;
 };
 
+// L1 in-process cache — eliminates Redis + Mongo round-trips for data that rarely changes
+// within a single session window. TTLs are intentionally short to stay fresh.
+interface L1Entry<T> { value: T; expiresAt: number; }
+
 export class ChatbotRecommend {
+  private static readonly l1: Map<string, L1Entry<unknown>> = new Map();
+
+  private l1Get<T>(key: string): T | undefined {
+    const entry = ChatbotRecommend.l1.get(key) as L1Entry<T> | undefined;
+    if (!entry || Date.now() > entry.expiresAt) {
+      ChatbotRecommend.l1.delete(key);
+      return undefined;
+    }
+    return entry.value;
+  }
+
+  private l1Set<T>(key: string, value: T, ttlMs: number): void {
+    ChatbotRecommend.l1.set(key, { value, expiresAt: Date.now() + ttlMs });
+    // Evict stale entries when the map grows large (prevents unbounded growth)
+    if (ChatbotRecommend.l1.size > 1000) {
+      const now = Date.now();
+      for (const [k, v] of ChatbotRecommend.l1) {
+        if (now > v.expiresAt) ChatbotRecommend.l1.delete(k);
+      }
+    }
+  }
+
+  private async l1Fetch<T>(key: string, ttlMs: number, fetch: () => Promise<T>): Promise<T> {
+    const cached = this.l1Get<T>(key);
+    if (cached !== undefined) return cached;
+    const value = await fetch();
+    this.l1Set(key, value, ttlMs);
+    return value;
+  }
+
   constructor(
     private readonly aiService: AIRecommendationService,
     private readonly interactionRepository: IUserContentInteractionRepository,
     private readonly userRepository: MongoUserRepository,
     private readonly catalogService: CatalogService,
     private readonly assistantMemoryService: AssistantMemoryService,
-    private readonly cacheRepository?: ICacheRepository
+    private readonly cacheRepository?: ICacheRepository,
+    private readonly tvReadQueryService?: TvReadQueryService
   ) {}
 
   async execute(
@@ -285,17 +374,15 @@ export class ChatbotRecommend {
 
     const [history, user, profile, genreProfile, recentInteractions] =
       await Promise.all([
-        this.assistantMemoryService.getHistory(
-          request.userId,
-          request.conversationId
+        this.assistantMemoryService.getHistory(request.userId, request.conversationId),
+        this.l1Fetch(`user:${request.userId}`, 600_000, () => this.userRepository.findNameById(request.userId)),
+        this.l1Fetch(`profile:${request.userId}`, 600_000, () =>
+          UserProfileModel.findOne({ userId: request.userId })
+            .select('favoriteGenres username preferredPlatforms')
+            .lean().exec()
         ),
-        this.userRepository.findById(request.userId),
-        UserProfileModel.findOne({ userId: request.userId }).lean().exec(),
-        this.interactionRepository.getUserGenreProfile(request.userId),
-        this.interactionRepository.findByUser(request.userId, {
-          status: 'seen',
-          limit: 20,
-        }),
+        this.l1Fetch(`genreProfile:${request.userId}`, 900_000, () => this.interactionRepository.getUserGenreProfile(request.userId)),
+        this.l1Fetch(`interactions:${request.userId}`, 300_000, () => this.interactionRepository.findByUser(request.userId, { status: 'seen', limit: 20 })),
       ]);
 
     const communityReply = this.extractCommunityReply(
@@ -327,44 +414,43 @@ export class ChatbotRecommend {
     }
 
     const intent = this.analyzeIntent(latestUserMessage);
+    const liveTypesForExecute = this.resolveLiveTypes(intent);
     const effectiveCommunity =
       communityReply.kind === 'set'
         ? communityReply.community
         : history.memory?.preferredAutonomousCommunity;
-    const liveTypes = this.resolveLiveTypes(intent);
+    const isLiveIntent = intent.mode === 'tv_now' || intent.mode === 'tv_tonight';
+    const isStreamingIntent = intent.mode === 'streaming' || intent.mode === 'general';
+    const emptyResult = { items: [], total: 0 };
+
     const [
       liveCatalog,
       tonightEarlyCatalog,
       tonightLateCatalog,
       streamingCatalog,
     ] = await Promise.all([
-      this.catalogService.query({
-        userId: request.userId,
-        availability: ['live'],
-        types: liveTypes,
-        sort: 'airtime',
-        limit: 500,
-        page: 1,
-      }),
-      this.catalogService.query({
-        userId: request.userId,
-        availability: ['live'],
-        types: liveTypes,
-        sort: 'airtime',
-        timeSlot: '6',
-        limit: 240,
-        page: 1,
-      }),
-      this.catalogService.query({
-        userId: request.userId,
-        availability: ['live'],
-        types: liveTypes,
-        sort: 'airtime',
-        timeSlot: '7',
-        limit: 240,
-        page: 1,
-      }),
-      this.catalogService.query({
+      isLiveIntent
+        ? this.loadTvCatalog({ view: 'now', limit: 1000, requestedTypes: liveTypesForExecute })
+        : emptyResult,
+      isLiveIntent && intent.mode === 'tv_tonight'
+        ? this.loadTvCatalog({
+            view: 'night',
+            limit: 500,
+            category: undefined,
+            slot: '6',
+            requestedTypes: liveTypesForExecute,
+          })
+        : emptyResult,
+      isLiveIntent && intent.mode === 'tv_tonight'
+        ? this.loadTvCatalog({
+            view: 'night',
+            limit: 500,
+            category: undefined,
+            slot: '7',
+            requestedTypes: liveTypesForExecute,
+          })
+        : emptyResult,
+      isStreamingIntent ? this.catalogService.query({
         userId: request.userId,
         availability: ['streaming'],
         types: this.resolveStreamingTypes(intent),
@@ -375,7 +461,7 @@ export class ChatbotRecommend {
         sort: 'popular',
         limit: 36,
         page: 1,
-      }),
+      }) : emptyResult,
     ]);
 
     const liveNowItems = this.filterCatalogItems(
@@ -395,7 +481,7 @@ export class ChatbotRecommend {
       intent
     );
 
-    const directResponse = this.buildDirectScheduleResponse(
+    const directResponse = await this.buildDirectScheduleResponse(
       intent,
       liveNowItems,
       tonightItems,
@@ -505,15 +591,43 @@ export class ChatbotRecommend {
   async executeStream(
     request: ChatbotRecommendRequest
   ): Promise<StreamableChatResponse> {
+    const t0 = Date.now();
     const latestUserMessage = this.getLatestUserMessage(request.messages);
+    logger.info('[ChatbotRecommend] executeStream start', { userId: request.userId, conversationId: request.conversationId });
+
+    // --- Cache check: skip all DB + catalog + AI work if we have a recent answer ---
+    if (this.cacheRepository && latestUserMessage) {
+      const intentForCache = this.analyzeIntent(latestUserMessage);
+      if (intentForCache.mode === 'tv_now' || intentForCache.mode === 'tv_tonight' || intentForCache.mode === 'streaming') {
+        const cacheKey = this.buildCacheKey(request.userId, latestUserMessage, intentForCache.mode);
+        try {
+          const cached = await this.cacheRepository.get<string>(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached) as ChatbotResponse;
+            logger.info('[ChatbotRecommend] executeStream cache hit', { userId: request.userId, mode: intentForCache.mode, elapsedMs: Date.now() - t0 });
+            return { kind: 'direct', response: parsed };
+          }
+        } catch { /* cache miss or parse error — continue */ }
+      }
+    }
+
     const [history, user, profile, genreProfile, recentInteractions] =
       await Promise.all([
         this.assistantMemoryService.getHistory(request.userId, request.conversationId),
-        this.userRepository.findById(request.userId),
-        UserProfileModel.findOne({ userId: request.userId }).lean().exec(),
-        this.interactionRepository.getUserGenreProfile(request.userId),
-        this.interactionRepository.findByUser(request.userId, { status: 'seen', limit: 20 }),
+        // L1: user name changes rarely — 10 min TTL
+        this.l1Fetch(`user:${request.userId}`, 600_000, () => this.userRepository.findNameById(request.userId)),
+        // L1: profile genres/platforms change rarely — 10 min TTL
+        this.l1Fetch(`profile:${request.userId}`, 600_000, () =>
+          UserProfileModel.findOne({ userId: request.userId })
+            .select('favoriteGenres username preferredPlatforms')
+            .lean().exec()
+        ),
+        // L1: 3 aggregations on interactions — expensive, cache 15 min
+        this.l1Fetch(`genreProfile:${request.userId}`, 900_000, () => this.interactionRepository.getUserGenreProfile(request.userId)),
+        // L1: recent interactions for context — 5 min TTL
+        this.l1Fetch(`interactions:${request.userId}`, 300_000, () => this.interactionRepository.findByUser(request.userId, { status: 'seen', limit: 20 })),
       ]);
+    logger.info('[ChatbotRecommend] DB queries done', { userId: request.userId, elapsedMs: Date.now() - t0 });
 
     const communityReply = this.extractCommunityReply(
       latestUserMessage,
@@ -542,18 +656,31 @@ export class ChatbotRecommend {
     }
 
     const intent = this.analyzeIntent(latestUserMessage);
+    const liveTypesForStream = this.resolveLiveTypes(intent);
     const effectiveCommunity =
       communityReply.kind === 'set'
         ? communityReply.community
         : history.memory?.preferredAutonomousCommunity;
-    const liveTypes = this.resolveLiveTypes(intent);
+    // Only fetch what the intent requires — avoids heavy parallel queries for chat/streaming questions
+    const isLiveIntent = intent.mode === 'tv_now' || intent.mode === 'tv_tonight';
+    const isStreamingIntent = intent.mode === 'streaming' || intent.mode === 'general';
+    const emptyResult = { items: [], total: 0 };
+
+    const t1 = Date.now();
     const [liveCatalog, tonightEarlyCatalog, tonightLateCatalog, streamingCatalog] =
       await Promise.all([
-        this.catalogService.query({ userId: request.userId, availability: ['live'], types: liveTypes, sort: 'airtime', limit: 500, page: 1 }),
-        this.catalogService.query({ userId: request.userId, availability: ['live'], types: liveTypes, sort: 'airtime', timeSlot: '6', limit: 240, page: 1 }),
-        this.catalogService.query({ userId: request.userId, availability: ['live'], types: liveTypes, sort: 'airtime', timeSlot: '7', limit: 240, page: 1 }),
-        this.catalogService.query({ userId: request.userId, availability: ['streaming'], types: this.resolveStreamingTypes(intent), genres: intent.explicitGenres.length ? intent.explicitGenres : undefined, platforms: intent.explicitPlatforms.length ? intent.explicitPlatforms : undefined, sort: 'popular', limit: 36, page: 1 }),
+        isLiveIntent
+          ? this.loadTvCatalog({ view: 'now', limit: 1000, requestedTypes: liveTypesForStream })
+          : emptyResult,
+        isLiveIntent && intent.mode === 'tv_tonight'
+          ? this.loadTvCatalog({ view: 'night', limit: 500, slot: '6', requestedTypes: liveTypesForStream })
+          : emptyResult,
+        isLiveIntent && intent.mode === 'tv_tonight'
+          ? this.loadTvCatalog({ view: 'night', limit: 500, slot: '7', requestedTypes: liveTypesForStream })
+          : emptyResult,
+        isStreamingIntent ? this.catalogService.query({ userId: request.userId, availability: ['streaming'], types: this.resolveStreamingTypes(intent), genres: intent.explicitGenres.length ? intent.explicitGenres : undefined, platforms: intent.explicitPlatforms.length ? intent.explicitPlatforms : undefined, sort: 'popular', limit: 36, page: 1 }) : emptyResult,
       ]);
+    logger.info('[ChatbotRecommend] catalog queries done', { userId: request.userId, mode: intent.mode, elapsedMs: Date.now() - t1, totalElapsedMs: Date.now() - t0 });
 
     const liveNowItems = this.filterCatalogItems(this.dedupeCatalogItems(liveCatalog.items.filter((item) => item.liveNow)), intent);
     const tonightSourceItems = this.dedupeCatalogItems([...tonightEarlyCatalog.items, ...tonightLateCatalog.items]);
@@ -561,7 +688,7 @@ export class ChatbotRecommend {
     const streamingMatches = this.filterCatalogItems(streamingCatalog.items, intent);
 
     // Direct schedule responses return immediately (no streaming needed)
-    const directResponse = this.buildDirectScheduleResponse(intent, liveNowItems, tonightItems, streamingMatches, latestUserMessage, { history, effectiveCommunity, communityReply, rankingCtx: {
+    const directResponse = await this.buildDirectScheduleResponse(intent, liveNowItems, tonightItems, streamingMatches, latestUserMessage, { history, effectiveCommunity, communityReply, rankingCtx: {
       likedGenres: this.mergeUnique(profile?.favoriteGenres || [], history.memory?.likedGenres || []),
       negativeSignals: this.mergeUnique(history.memory?.negativeSignals || [], history.memory?.dislikedGenres || []),
       recentTitles: recentInteractions.map((i: any) => i.title || '').filter(Boolean),
@@ -574,10 +701,14 @@ export class ChatbotRecommend {
         userMessage: latestUserMessage,
         assistantResponse: normalizedDirectResponse,
       });
-      return {
-        kind: 'direct',
-        response: { ...normalizedDirectResponse, conversationId: persisted.conversationId, assistantMemorySnapshot: persisted.memory },
-      };
+      const directResult = { ...normalizedDirectResponse, conversationId: persisted.conversationId, assistantMemorySnapshot: persisted.memory };
+      // Cache direct responses so future identical queries skip the full DB + catalog flow
+      if (this.cacheRepository) {
+        const cacheKey = this.buildCacheKey(request.userId, latestUserMessage, intent.mode);
+        const ttl = this.getCacheTtl(intent.mode);
+        this.cacheRepository.set(cacheKey, JSON.stringify(directResult), ttl).catch(() => {});
+      }
+      return { kind: 'direct', response: directResult };
     }
 
     // Build AI context and stream text from provider
@@ -597,9 +728,11 @@ export class ChatbotRecommend {
       effectiveCommunity,
     });
 
+    logger.info('[ChatbotRecommend] starting AI stream', { userId: request.userId, provider: this.aiService['provider'], totalElapsedMs: Date.now() - t0 });
     const textStream = this.aiService.chatStream(request.messages, context);
 
     const finalize = async (fullText: string): Promise<ChatbotResponse> => {
+      logger.info('[ChatbotRecommend] finalize start', { userId: request.userId, fullTextLength: fullText.length, totalElapsedMs: Date.now() - t0 });
       const baseResponse = this.aiService.parseStreamedResponse(fullText);
       const [resolvedRecommendations, resolvedMoreRecommendations] = await Promise.all([
         this.resolveRecommendations(baseResponse.recommendations || []),
@@ -623,12 +756,22 @@ export class ChatbotRecommend {
         userMessage: latestUserMessage,
         assistantResponse: normalizedFinalResponse,
       });
+      logger.info('[ChatbotRecommend] saveChatTurn done', { userId: request.userId, conversationId: persisted.conversationId, totalElapsedMs: Date.now() - t0 });
 
-      return {
+      const streamResult = {
         ...normalizedFinalResponse,
         conversationId: persisted.conversationId,
         assistantMemorySnapshot: persisted.memory,
       };
+
+      // Write to cache so future identical queries skip DB + AI entirely
+      if (this.cacheRepository && latestUserMessage) {
+        const cacheKey = this.buildCacheKey(request.userId, latestUserMessage, intent.mode);
+        const ttl = this.getCacheTtl(intent.mode);
+        this.cacheRepository.set(cacheKey, JSON.stringify(streamResult), ttl).catch(() => {});
+      }
+
+      return streamResult;
     };
 
     return { kind: 'stream', textStream, finalize };
@@ -720,13 +863,15 @@ export class ChatbotRecommend {
           input.history.memory?.lastCommunityConfirmationAt,
       },
       conversationHistory: input.history.messages
-        .slice(-12)
+        .slice(-6)
         .map((message) => ({
           role: message.role,
-          content: message.content,
+          content: message.role === 'user'
+            ? message.content.slice(0, 300)
+            : message.content.slice(0, 200),
         })),
       queryIntent: input.intent,
-      liveNow: input.liveNowItems.slice(0, 10).map((item) => ({
+      liveNow: input.liveNowItems.slice(0, 6).map((item) => ({
         title: item.title,
         type: item.contentType,
         channel: item.channel?.name || '',
@@ -735,7 +880,7 @@ export class ChatbotRecommend {
         genre: item.genres[0] || '',
         tmdbRating: item.rating,
       })),
-      tonight: input.tonightItems.slice(0, 10).map((item) => ({
+      tonight: input.tonightItems.slice(0, 6).map((item) => ({
         title: item.title,
         type: item.contentType,
         channel: item.channel?.name || '',
@@ -744,7 +889,7 @@ export class ChatbotRecommend {
         genre: item.genres[0] || '',
         tmdbRating: item.rating,
       })),
-      streamingMatches: input.streamingMatches.slice(0, 12).map((item) => ({
+      streamingMatches: input.streamingMatches.slice(0, 8).map((item) => ({
         title: item.title,
         type: item.contentType,
         channel: item.channel?.name,
@@ -756,7 +901,7 @@ export class ChatbotRecommend {
     };
   }
 
-  private buildDirectScheduleResponse(
+  private async buildDirectScheduleResponse(
     intent: ChatQueryIntent,
     liveNowItems: CatalogItemDTO[],
     tonightItems: CatalogItemDTO[],
@@ -768,7 +913,26 @@ export class ChatbotRecommend {
       communityReply: CommunityPreferenceReply;
       rankingCtx?: RankingContext;
     }
-  ): ChatbotResponse | null {
+  ): Promise<ChatbotResponse | null> {
+    // Title-specific schedule query ("a qué hora emiten X", "en qué canal dan Y")
+    if (latestUserMessage) {
+      const titleQuery = this.detectTitleScheduleQuery(latestUserMessage);
+      if (titleQuery) {
+        const titleResponse = this.buildTitleScheduleResponse(titleQuery, liveNowItems, tonightItems);
+        if (titleResponse) return titleResponse;
+        // EPG fallback: broader catalog search within 48 h window
+        const epgFallback = await this.tryEpgTitleFallback(titleQuery);
+        if (epgFallback) return epgFallback;
+        // No match anywhere — return a clear no-result rather than falling through to AI
+        return {
+          text: `No he encontrado "${titleQuery}" en la parrilla de hoy ni de mañana. Puede que el título sea diferente o que no esté programado en las próximas 48 horas.`,
+          recommendations: [],
+          moreRecommendations: [],
+          followUpSuggestions: ['¿Qué hay ahora mismo en TV?', '¿Qué hay esta noche?'],
+        };
+      }
+    }
+
     const previousTvContext = this.getLastAutonomicPromptContext(
       context.history.messages
     );
@@ -793,15 +957,19 @@ export class ChatbotRecommend {
       return null;
     }
 
-    const rankedLiveNowItems = this.rankScheduleItems(liveNowItems, 'tv_now', context.rankingCtx);
-    const rankedTonightItems = this.rankScheduleItems(tonightItems, 'tv_tonight', context.rankingCtx);
+    const rankedLiveNowItems = intent.requestedTypes[0] === 'movie'
+      ? this.rankMovieItems(liveNowItems, 'tv_now', context.rankingCtx, intent.wantsPrimeTime)
+      : this.rankScheduleItems(liveNowItems, 'tv_now', context.rankingCtx);
+    const rankedTonightItems = intent.requestedTypes[0] === 'movie'
+      ? this.rankMovieItems(tonightItems, 'tv_tonight', context.rankingCtx, intent.wantsPrimeTime)
+      : this.rankScheduleItems(tonightItems, 'tv_tonight', context.rankingCtx);
     const uniqueStreamingMatches = this.dedupeCatalogItems(streamingMatches);
 
     const rankedPrimaryLiveNowItems = rankedLiveNowItems.filter(
-      (item) => item.groupRank <= 2
+      (item) => item.groupRank !== 2  // exclude regional (shown separately via autonomic)
     );
     const rankedPrimaryTonightItems = rankedTonightItems.filter(
-      (item) => item.groupRank <= 2
+      (item) => item.groupRank !== 2
     );
     const rankedAutonomicLiveNowItems = this.filterAutonomicMatches(
       rankedLiveNowItems,
@@ -823,7 +991,7 @@ export class ChatbotRecommend {
 
     if (rankedPrimaryItems.length) {
       const picks = rankedPrimaryItems.slice(0, 3);
-      const more = rankedPrimaryItems.slice(3, 12);
+      const more = rankedPrimaryItems.slice(3);
       const hasNationalMatches = rankedPrimaryItems.some(
         (item) => item.groupRank === 1
       );
@@ -914,7 +1082,7 @@ export class ChatbotRecommend {
 
     if (intent.mode === 'tv_now' && rankedPrimaryTonightItems.length) {
       const picks = rankedPrimaryTonightItems.slice(0, 3);
-      const more = rankedPrimaryTonightItems.slice(3, 12);
+      const more = rankedPrimaryTonightItems.slice(3);
       return {
         text: `Ahora mismo no veo ${requestedLabel} en emisión. Lo más útil que llega en TV durante esta noche es esto.`,
         recommendations: picks.map((item) =>
@@ -960,7 +1128,7 @@ export class ChatbotRecommend {
 
     if (uniqueStreamingMatches.length) {
       const picks = uniqueStreamingMatches.slice(0, 3);
-      const more = uniqueStreamingMatches.slice(3, 12);
+      const more = uniqueStreamingMatches.slice(3);
       return {
         text: `Ahora mismo no veo ${requestedLabel} en TV con esa búsqueda concreta. En streaming sí he encontrado alternativas útiles.`,
         recommendations: picks.map((item) =>
@@ -1036,17 +1204,21 @@ export class ChatbotRecommend {
       liveNow: Boolean(item.liveNow),
       reason,
       tmdbId: item.tmdbId,
-      image: item.image,
+      image: item.image || undefined,
       actions: {
         canOpenDetail: true,
         canSave: true,
         canTrack: true,
       },
       badges: this.buildRecommendationBadges(item),
-      rating: item.rating,
+      rating: typeof item.rating === 'number' && !isNaN(item.rating) ? item.rating : undefined,
       durationMinutes: item.durationMinutes,
       synopsis: item.synopsis ? item.synopsis.slice(0, 200) : undefined,
-      platformLogo: this.resolvePlatformLogo(item.primaryPlatforms[0]),
+      platformLogo:
+        item.assets?.channelLogo?.url ||
+        item.assets?.platformLogo?.url ||
+        item.channel?.icon ||
+        this.resolvePlatformLogo(item.primaryPlatforms[0]),
     };
   }
 
@@ -1097,13 +1269,6 @@ export class ChatbotRecommend {
                 this.normalize(itemPlatform) === this.normalize(platform)
             )
           )
-        ) {
-          return false;
-        }
-
-        if (
-          intent.negativeSignals.some((signal) => signal.includes('deportes')) &&
-          item.genres.some((genre) => this.normalize(genre).includes('deportes'))
         ) {
           return false;
         }
@@ -1233,18 +1398,9 @@ export class ChatbotRecommend {
       explicitPlatforms,
       wantsFamily: /familia|familiar|con ninos|con niños/.test(normalized),
       wantsShort: /corta|corto|menos de|rapida|rápida/.test(normalized),
+      wantsPrimeTime: /prime\s*time/.test(normalized),
       negativeSignals,
     };
-  }
-
-  private resolveLiveTypes(
-    intent: ChatQueryIntent
-  ): CatalogContentType[] | undefined {
-    if (!intent.requestedTypes.length) {
-      return ['movie', 'series', 'program'];
-    }
-
-    return Array.from(new Set(intent.requestedTypes));
   }
 
   private resolveStreamingTypes(
@@ -1254,6 +1410,264 @@ export class ChatbotRecommend {
       (type) => type === 'movie' || type === 'series'
     );
     return streamingTypes.length ? streamingTypes : ['movie', 'series'];
+  }
+
+  private resolveLiveTypes(
+    intent: ChatQueryIntent
+  ): Array<'movie' | 'series' | 'program'> {
+    if (!intent.requestedTypes.length) {
+      return ['movie', 'series', 'program'];
+    }
+
+    return Array.from(
+      new Set(
+        intent.requestedTypes.filter(
+          (type): type is 'movie' | 'series' | 'program' =>
+            type === 'movie' || type === 'series' || type === 'program'
+        )
+      )
+    );
+  }
+
+  /**
+   * Detects title-specific schedule queries like "a qué hora emiten X" or "en qué canal dan Y".
+   * Also handles title-first phrasings: "Succession ¿a qué hora?" and "Élite, en qué canal".
+   * Returns the extracted title preserving original casing/accents (for catalog text search),
+   * null if no pattern matched.
+   */
+  private detectTitleScheduleQuery(message: string): string | null {
+    const normalized = this.normalize(message);
+    const original = message.trim();
+
+    // Helper: extract the original-cased substring that corresponds to the
+    // normalized match offset, so MongoDB text search can use accented titles.
+    const originalSlice = (normStart: number, normEnd: number): string => {
+      // Approximate: normalize both sides char-by-char alignment is complex,
+      // so we use the normalized match to find character count and slice original.
+      const normPrefix = normalized.slice(0, normStart);
+      // Count original chars that map to normPrefix length (rough heuristic: 1:1)
+      return original.slice(normPrefix.length, normPrefix.length + (normEnd - normStart)).trim().replace(/[¿?.,!¡]+$/, '').trim();
+    };
+
+    // Verb-first patterns: "a qué hora emiten <title>"
+    const verbFirstPatterns = [
+      /a que hora(?:\s+emite|\s+echan|\s+ponen|\s+sale|\s+da|\s+empieza)?\s+(.+)/,
+      /en que canal(?:\s+emite|\s+echan|\s+ponen|\s+dan|\s+va)?\s+(.+)/,
+      /cuando emiten?\s+(.+)/,
+      /cuando ponen?\s+(.+)/,
+      /donde echan\s+(.+)/,
+      /donde emiten?\s+(.+)/,
+      /que canal(?:\s+da|\s+emite|\s+echa|\s+pone|\s+tiene)?\s+(.+)/,
+      /en que cadena(?:\s+ponen|\s+echan|\s+emiten?)?\s+(.+)/,
+    ];
+    for (const pattern of verbFirstPatterns) {
+      const match = normalized.match(pattern);
+      if (match?.[1]) {
+        const normTitleStart = (match.index ?? 0) + match[0].length - match[1].length;
+        const orig = originalSlice(normTitleStart, normTitleStart + match[1].length);
+        return orig || match[1].trim().replace(/[¿?.,!¡]+$/, '').trim();
+      }
+    }
+
+    // Title-first patterns: "<title> a qué hora" / "<title> en qué canal"
+    const titleFirstPatterns = [
+      /^(.+?)\s+a\s+que\s+hora/,
+      /^(.+?)\s+en\s+que\s+canal/,
+      /^(.+?)\s+cuando\s+(?:emiten?|ponen?|echan)/,
+      /^(.+?)\s+donde\s+(?:echan|emiten?|lo\s+ponen)/,
+    ];
+    for (const pattern of titleFirstPatterns) {
+      const match = normalized.match(pattern);
+      if (match?.[1]) {
+        const normLen = match[1].length;
+        const origCandidate = original.slice(0, normLen).trim().replace(/[¿?.,!¡]+$/, '').trim();
+        const candidate = origCandidate || match[1].trim().replace(/[¿?.,!¡]+$/, '').trim();
+        // Minimum 3 chars and not a mode keyword to avoid false positives
+        if (candidate && candidate.length >= 3 && !/^(que|una|un|los|las|algo|hay|hay algo)$/i.test(this.normalize(candidate))) {
+          return candidate;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private fuzzyTitleMatch(a: string, b: string): boolean {
+    const wordsA = a.split(' ').filter((w) => w.length > 2);
+    const wordsB = b.split(' ').filter((w) => w.length > 2);
+    if (!wordsA.length || !wordsB.length) return false;
+
+    const minWords = Math.min(wordsA.length, wordsB.length);
+
+    // Single-word titles (e.g. "Succession", "Élite", "Friends"):
+    // match if the one meaningful word appears in the other's word list
+    if (minWords === 1) {
+      return wordsA.some((w) => wordsB.includes(w));
+    }
+
+    // Multi-word titles: require at least 2 shared meaningful words
+    const shared = wordsA.filter((w) => wordsB.includes(w));
+    return shared.length >= Math.min(2, minWords);
+  }
+
+  private buildTitleScheduleResponse(
+    titleQuery: string,
+    liveNowItems: CatalogItemDTO[],
+    tonightItems: CatalogItemDTO[]
+  ): ChatbotResponse | null {
+    const qNorm = this.normalize(titleQuery);
+    const now = Date.now();
+    const allItems = [...liveNowItems, ...tonightItems];
+    const matches = allItems
+      .filter((item) => {
+        const tNorm = this.normalize(item.title);
+        const titleMatches = tNorm.includes(qNorm) || qNorm.includes(tNorm) || this.fuzzyTitleMatch(tNorm, qNorm);
+        if (!titleMatches) return false;
+        // EPG staleness: skip items that ended more than 30 minutes ago
+        if (item.end) {
+          const endMs = new Date(item.end).getTime();
+          if (endMs < now - 30 * 60_000) return false;
+        }
+        return true;
+      })
+      .slice(0, 3);
+
+    if (!matches.length) return null;
+
+    const first = matches[0];
+    const where = first.channel?.name || 'TV';
+    const when = first.start ? this.formatTime(first.start) : 'próximamente';
+    const displayTitle = this.cleanDisplayTitle(first.title, first.contentType);
+    const text = first.liveNow
+      ? `"${displayTitle}" está en emisión ahora mismo en ${where}.`
+      : `"${displayTitle}" empieza a las ${when} en ${where}.`;
+
+    return {
+      text,
+      recommendations: matches.map((item) => ({
+        catalogId: item.catalogId,
+        detailPath: item.detailPath,
+        title: this.cleanDisplayTitle(item.title, item.contentType),
+        type: item.contentType,
+        channel: item.channel?.name,
+        time: item.start ? this.formatTime(item.start) : undefined,
+        startTime: item.start ? this.formatTime(item.start) : undefined,
+        endTime: item.end ? this.formatTime(item.end) : undefined,
+        liveNow: Boolean(item.liveNow),
+        image: item.image || undefined,
+        platformLogo: item.channel?.icon,
+        channelOrPlatform: item.channel?.name,
+        reason: item.liveNow
+          ? `En emisión ahora en ${item.channel?.name || 'TV'}.`
+          : `Empieza a las ${item.start ? this.formatTime(item.start) : 'próximamente'} en ${item.channel?.name || 'TV'}.`,
+      })),
+      moreRecommendations: [],
+      followUpSuggestions: ['¿Qué más hay esta noche?', '¿Qué hay ahora mismo en TV?'],
+    };
+  }
+
+  /**
+   * Broader EPG title search across today + tomorrow when liveNow/tonight arrays don't match.
+   * Uses the canonical TV read model so chatbot and guide share the same payload.
+   */
+  private async tryEpgTitleFallback(titleQuery: string): Promise<ChatbotResponse | null> {
+    try {
+      const [todayResult, tomorrowResult] = await Promise.all([
+        this.loadTvCatalog({ view: 'search', q: titleQuery, limit: 10 }),
+        this.loadTvCatalog({ view: 'search', q: titleQuery, date: 'tomorrow', limit: 10 }),
+      ]);
+
+      const qNorm = this.normalize(titleQuery);
+      const candidates = [...todayResult.items, ...tomorrowResult.items]
+        .filter((item) => {
+          const tNorm = this.normalize(item.title);
+          return tNorm.includes(qNorm) || qNorm.includes(tNorm) || this.fuzzyTitleMatch(tNorm, qNorm);
+        })
+        .slice(0, 3);
+
+      if (!candidates.length) return null;
+
+      const first = candidates[0];
+      const where = first.channel?.name || 'TV';
+      const when = first.start ? this.formatTime(first.start) : 'próximamente';
+      const text = first.liveNow
+        ? `"${first.title}" está en emisión ahora mismo en ${where}.`
+        : `"${first.title}" empieza a las ${when} en ${where}.`;
+
+      return {
+        text,
+        recommendations: candidates.map((item) =>
+          this.mapCatalogItemToRecommendation(
+            item,
+            item.liveNow
+              ? `En emisión ahora en ${item.channel?.name || 'TV'}.`
+              : `Empieza a las ${item.start ? this.formatTime(item.start) : 'próximamente'} en ${item.channel?.name || 'TV'}.`
+          )
+        ),
+        moreRecommendations: [],
+        followUpSuggestions: ['¿Qué más hay esta noche?', '¿Qué hay ahora mismo en TV?'],
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  private async loadTvCatalog(input: {
+    view: 'now' | 'night' | 'search';
+    date?: string;
+    q?: string;
+    limit: number;
+    slot?: '6' | '7';
+    category?: string;
+    requestedTypes?: Array<'movie' | 'series' | 'program'>;
+  }): Promise<{ items: CatalogItemDTO[]; total: number }> {
+    if (!this.tvReadQueryService) {
+      const fallback = await this.catalogService.query({
+        q: input.q,
+        date: input.date,
+        availability: ['live'],
+        types: input.requestedTypes,
+        sort: 'airtime',
+        timeSlot: input.slot,
+        limit: input.limit,
+        page: 1,
+      });
+      return {
+        items: fallback.items,
+        total: fallback.meta.total,
+      };
+    }
+
+    const response = await this.tvReadQueryService.query({
+      view: input.view,
+      date: input.date,
+      q: input.q,
+      category: input.category,
+      limit: input.limit,
+    });
+
+    const slot = input.slot;
+    const requestedTypes = input.requestedTypes?.length
+      ? new Set(input.requestedTypes)
+      : null;
+    const items = response.items
+      .map((item) => this.catalogService.mapTvReadItemToCatalogItem(item))
+      .filter((item) =>
+        requestedTypes ? requestedTypes.has(item.contentType) : true
+      )
+      .filter((item) => {
+        if (!slot) return true;
+        const hours = item.start ? new Date(item.start).getHours() : -1;
+        if (slot === '6') {
+          return hours >= 18 && hours < 21;
+        }
+        return hours >= 21 || hours < 3;
+      });
+
+    return {
+      items,
+      total: items.length,
+    };
   }
 
   private isDirectScheduleIntent(intent: ChatQueryIntent): boolean {
@@ -1334,12 +1748,29 @@ export class ChatbotRecommend {
   ): Promise<ChatbotRecommendationPayload[]> {
     const resolved = await Promise.all(
       recommendations.map(async (recommendation) => {
+        if (recommendation.catalogId && recommendation.title) {
+          return {
+            ...recommendation,
+            title: this.cleanDisplayTitle(
+              recommendation.title,
+              recommendation.type
+            ),
+          };
+        }
+
         const match = await this.catalogService.resolveRecommendation({
           title: recommendation.title,
           type: recommendation.type,
           platform: recommendation.platform,
           channel: recommendation.channel,
         });
+
+        // Validate EPG timing: don't surface stale airtime data from the catalog match
+        const matchStartMs = match?.start ? new Date(match.start).getTime() : null;
+        const now = Date.now();
+        const epgIsStale = matchStartMs !== null && matchStartMs < now - 3 * 3_600_000;
+        const epgIsFutureTooFar = matchStartMs !== null && matchStartMs > now + 48 * 3_600_000;
+        const useEpgTimes = matchStartMs !== null && !epgIsStale && !epgIsFutureTooFar;
 
         return {
           ...recommendation,
@@ -1354,14 +1785,22 @@ export class ChatbotRecommend {
             match?.primaryPlatforms[0] ||
             recommendation.channel,
           channel: recommendation.channel || match?.channel?.name,
+          liveNow: useEpgTimes ? Boolean(match?.liveNow) : false,
           time:
             recommendation.time ||
-            (match?.start
+            (useEpgTimes && match?.start
               ? new Date(match.start).toLocaleTimeString('es-ES', {
                   hour: '2-digit',
                   minute: '2-digit',
                 })
               : undefined),
+          platformLogo:
+            recommendation.platformLogo ||
+            match?.assets?.channelLogo?.url ||
+            match?.assets?.platformLogo?.url ||
+            match?.channel?.icon,
+          startTime: useEpgTimes ? (recommendation.startTime || (match?.start ? this.formatTime(match.start) : undefined)) : recommendation.startTime,
+          endTime: useEpgTimes ? (recommendation.endTime || (match?.end ? this.formatTime(match.end) : undefined)) : recommendation.endTime,
         };
       })
     );
@@ -1475,25 +1914,26 @@ export class ChatbotRecommend {
         };
       })
       .sort((left, right) => {
-        // Penalized items always go last
-        if (left.negativePenalty !== right.negativePenalty) {
-          return left.negativePenalty - right.negativePenalty;
-        }
         if (left.groupRank !== right.groupRank) {
           return left.groupRank - right.groupRank;
         }
         if (left.liveRank !== right.liveRank) {
           return left.liveRank - right.liveRank;
         }
-        // History boost next (genre-matched items rise)
+        // Channel order (explicit priority) always respected before any personalization or penalties
+        if (left.channelRank !== right.channelRank) {
+          return left.channelRank - right.channelRank;
+        }
+        // Penalized items go last within the same channel slot
+        if (left.negativePenalty !== right.negativePenalty) {
+          return left.negativePenalty - right.negativePenalty;
+        }
+        // History boost: genre-matched items rise within the same channel slot
         if (left.historyBoost !== right.historyBoost) {
           return left.historyBoost - right.historyBoost;
         }
         if (left.contentTypeRank !== right.contentTypeRank) {
           return left.contentTypeRank - right.contentTypeRank;
-        }
-        if (left.channelRank !== right.channelRank) {
-          return left.channelRank - right.channelRank;
         }
         // Time-aware: primetime items first
         if (left.timeBoost !== right.timeBoost) {
@@ -1506,7 +1946,71 @@ export class ChatbotRecommend {
       })
       .filter((candidate, index, candidates) =>
         index === candidates.findIndex((entry) => entry.dedupeKey === candidate.dedupeKey)
+      )
+      // For tv_now: each channel can only be airing one program; deduplicate by channelId
+      // to remove EPG overlap entries (e.g. two simultaneous liveNow programs on BE MAD).
+      .filter((candidate, index, candidates) =>
+        mode !== 'tv_now' ||
+        index === candidates.findIndex((entry) => entry.item.channel?.id === candidate.item.channel?.id)
       );
+  }
+
+  /**
+   * Movie-specific ranking: filters to TDT (group 1) + Movistar (group 4) only,
+   * sorts by groupRank → ratingRank (best first) → channelRank.
+   */
+  private rankMovieItems(
+    items: CatalogItemDTO[],
+    mode: 'tv_now' | 'tv_tonight',
+    ctx?: RankingContext,
+    primeTimeOnly?: boolean
+  ): RankedScheduleItem[] {
+    const negativeSet = new Set((ctx?.negativeSignals || []).map((s) => s.toLowerCase()));
+    const recentSet = new Set((ctx?.recentTitles || []).map((t) => this.normalizeTitleKey(t)));
+
+    return items
+      .filter((item) => {
+        if (item.contentType !== 'movie') return false;
+        const group = this.getChannelGroupRank(item);
+        if (group !== 1 && group !== 4) return false; // TDT or Movistar only
+        if (mode === 'tv_now' && !item.liveNow) return false;
+        if (mode === 'tv_tonight') {
+          const ok = item.liveNow || Boolean(item.start && this.isTonightWindow(item.start, item.end));
+          if (!ok) return false;
+        }
+        if (primeTimeOnly && item.start) {
+          const h = new Date(item.start).getHours();
+          if (h < 20 || h >= 23) return false;
+        }
+        return true;
+      })
+      .map((item) => {
+        const displayTitle = this.cleanDisplayTitle(item.title, item.contentType);
+        const channelName = item.channel?.name || '';
+        const titleKey = this.normalizeTitleKey(displayTitle);
+        const isNegative = negativeSet.has(titleKey) || recentSet.has(titleKey);
+        return {
+          item,
+          displayTitle,
+          dedupeKey: this.buildScheduleDedupeKey(item, displayTitle),
+          groupRank: this.getChannelGroupRank(item),
+          contentTypeRank: 0,
+          channelRank: this.getChannelPriority(channelName),
+          liveRank: item.liveNow ? 0 : 1,
+          startRank: item.start ? new Date(item.start).getTime() : Number.MAX_SAFE_INTEGER,
+          ratingRank: -(item.rating || 0),
+          historyBoost: 0,
+          negativePenalty: isNegative ? 1 : 0,
+          timeBoost: 0,
+        };
+      })
+      .sort((a, b) => {
+        if (a.negativePenalty !== b.negativePenalty) return a.negativePenalty - b.negativePenalty;
+        if (a.groupRank !== b.groupRank) return a.groupRank - b.groupRank; // TDT(1) before Movistar(4)
+        if (a.ratingRank !== b.ratingRank) return a.ratingRank - b.ratingRank; // best rating first
+        return a.channelRank - b.channelRank;
+      })
+      .filter((c, i, arr) => i === arr.findIndex((e) => e.dedupeKey === c.dedupeKey));
   }
 
   private buildScheduleDedupeKey(
@@ -1576,6 +2080,7 @@ export class ChatbotRecommend {
       explicitPlatforms: [],
       wantsFamily: false,
       wantsShort: false,
+      wantsPrimeTime: false,
       negativeSignals: [],
     };
 
@@ -1659,7 +2164,7 @@ export class ChatbotRecommend {
     }
 
     const picks = autonomicMatches.slice(0, 3);
-    const more = autonomicMatches.slice(3, 12);
+    const more = autonomicMatches.slice(3);
     return {
       text: `Perfecto. También puedo incluir autonómicas de ${
         effectiveCommunity || 'tu comunidad'
@@ -1736,7 +2241,7 @@ export class ChatbotRecommend {
       : [];
 
     return items.filter((item) => {
-      if (item.groupRank !== 3) {
+      if (item.groupRank !== 2) {
         return false;
       }
 
@@ -1840,32 +2345,55 @@ export class ChatbotRecommend {
     intent: ChatQueryIntent,
     latestUserMessage: string
   ): string[] {
-    const candidates =
-      intent.requestedTypes[0] === 'movie'
-        ? [
-            intent.mode === 'tv_now'
-              ? '¿Qué películas hay más tarde esta noche?'
-              : '¿Qué merece la pena ahora mismo?',
-            intent.mode === 'tv_now'
-              ? '¿Qué series hay ahora mismo?'
-              : '¿Qué series hay esta noche?',
-            '¿Qué merece la pena esta noche?',
-          ]
-        : intent.requestedTypes[0] === 'series'
-          ? [
-              intent.mode === 'tv_now'
-                ? '¿Qué series hay más tarde esta noche?'
-                : '¿Qué merece la pena ahora mismo?',
-              intent.mode === 'tv_now'
-                ? '¿Qué películas hay ahora mismo en TV?'
-                : '¿Qué películas hay esta noche en TV?',
-              '¿Qué merece la pena esta noche?',
-            ]
-          : [
-              '¿Qué merece la pena ahora mismo?',
-              '¿Qué hay esta noche en TV?',
-              '¿Qué películas hay esta noche en TV?',
-            ];
+    const genreLabel = intent.explicitGenres[0] ? ` de ${intent.explicitGenres[0].toLowerCase()}` : '';
+    const platform = intent.explicitPlatforms[0];
+
+    let candidates: string[];
+
+    // Streaming-specific: suggest genre alternatives and platform cross-checks
+    if (intent.mode === 'streaming') {
+      if (intent.requestedTypes[0] === 'movie') {
+        candidates = [
+          genreLabel ? `¿Más películas${genreLabel} en streaming?` : '¿Qué películas tienen mejor valoración ahora?',
+          platform ? `¿Qué series hay en ${platform}?` : '¿Qué series hay en Netflix ahora mismo?',
+          '¿Qué hay esta noche en TV?',
+        ];
+      } else if (intent.requestedTypes[0] === 'series') {
+        candidates = [
+          genreLabel ? `¿Más series${genreLabel} en streaming?` : '¿Qué series tienen mejor valoración ahora?',
+          platform ? `¿Qué películas hay en ${platform}?` : '¿Qué películas hay en streaming ahora?',
+          '¿Qué hay esta noche en TV?',
+        ];
+      } else {
+        candidates = [
+          platform ? `¿Qué más hay en ${platform}?` : '¿Qué hay en Netflix ahora?',
+          genreLabel ? `¿Más contenido${genreLabel} en streaming?` : '¿Qué series están de moda ahora?',
+          '¿Qué hay esta noche en TV?',
+        ];
+      }
+    } else if (intent.requestedTypes[0] === 'movie') {
+      candidates = [
+        '¿Solo películas en prime time (20h-23h)?',
+        '¿Películas en todo el día en TDT y Movistar?',
+        intent.mode === 'tv_now' ? '¿Qué series hay ahora mismo?' : '¿Qué series hay esta noche?',
+      ];
+    } else if (intent.requestedTypes[0] === 'series') {
+      candidates = [
+        intent.mode === 'tv_now'
+          ? `¿Qué series${genreLabel} hay más tarde esta noche?`
+          : `¿Qué merece la pena${genreLabel} ahora mismo?`,
+        intent.mode === 'tv_now'
+          ? '¿Qué películas hay ahora mismo en TV?'
+          : '¿Qué películas hay esta noche en TV?',
+        platform ? `¿Qué más hay en ${platform}?` : '¿Qué series hay en streaming ahora?',
+      ];
+    } else {
+      candidates = [
+        genreLabel ? `¿Más contenido${genreLabel} ahora?` : '¿Qué merece la pena ahora mismo?',
+        '¿Qué hay esta noche en TV?',
+        platform ? `¿Qué más hay en ${platform}?` : '¿Qué películas hay esta noche en TV?',
+      ];
+    }
 
     return this.sanitizeFollowUpSuggestions(candidates, latestUserMessage);
   }
@@ -1874,13 +2402,19 @@ export class ChatbotRecommend {
     intent: ChatQueryIntent,
     latestUserMessage: string
   ): string[] {
+    const typeQuestion = intent.requestedTypes[0] === 'movie'
+      ? '¿Qué películas hay esta noche en TV?'
+      : '¿Qué series hay esta noche?';
+    const platform = intent.explicitPlatforms[0];
     return this.sanitizeFollowUpSuggestions(
       [
-        intent.requestedTypes[0] === 'movie'
-          ? '¿Qué películas hay esta noche en TV?'
-          : '¿Qué series hay esta noche?',
-        '¿Qué hay mañana en TV?',
-        '¿Qué tengo en streaming ahora mismo?',
+        typeQuestion,
+        intent.mode === 'tv_tonight'
+          ? '¿Qué hay ahora mismo en TV?'
+          : intent.mode === 'tv_now'
+            ? '¿Qué hay esta noche en TV?'
+            : '¿Qué hay ahora mismo en TV?',
+        platform ? `¿Qué hay en ${platform}?` : '¿Qué tengo en streaming ahora?',
       ],
       latestUserMessage
     );
@@ -1890,13 +2424,15 @@ export class ChatbotRecommend {
     intent: ChatQueryIntent,
     latestUserMessage: string
   ): string[] {
+    const platform = intent.explicitPlatforms[0];
+    const genreLabel = intent.explicitGenres[0] ? ` de ${intent.explicitGenres[0].toLowerCase()}` : '';
     return this.sanitizeFollowUpSuggestions(
       [
         intent.requestedTypes[0] === 'movie'
-          ? '¿Qué películas hay esta noche en TV?'
-          : '¿Qué series hay esta noche?',
-        '¿Qué tengo en mis plataformas?',
-        'Algo corto para ver hoy',
+          ? `¿Qué películas${genreLabel} hay esta noche en TV?`
+          : `¿Qué series${genreLabel} hay esta noche en TV?`,
+        platform ? `¿Qué más hay en ${platform}?` : '¿Qué tengo en mis plataformas?',
+        genreLabel ? `¿Algo${genreLabel} más corto para hoy?` : 'Algo corto para ver hoy',
       ],
       latestUserMessage
     );
@@ -1964,87 +2500,29 @@ export class ChatbotRecommend {
       .trim();
   }
 
+  private resolveChannelEntry(channelName: string): ChannelEntry | undefined {
+    const norm = this.normalize(channelName);
+    for (const key of CHANNEL_MAP_KEYS_DESC) {
+      // Word-boundary match: key must be the entire string, or preceded/followed by a space.
+      // This prevents short keys like 'ten' from matching 'antena', 'tennis', 'rakuten', etc.
+      if (
+        norm === key ||
+        norm.startsWith(key + ' ') ||
+        norm.endsWith(' ' + key) ||
+        norm.includes(' ' + key + ' ')
+      ) {
+        return CHANNEL_MAP.get(key);
+      }
+    }
+    return undefined;
+  }
+
   private getChannelGroupRank(item: CatalogItemDTO): number {
-    const channelName = this.normalize(item.channel?.name || '');
-    const platforms = item.primaryPlatforms.map((platform) => this.normalize(platform));
-
-    if (
-      NATIONAL_CHANNEL_PRIORITY.some((pattern) =>
-        channelName.includes(this.normalize(pattern))
-      )
-    ) {
-      return 1;
-    }
-
-    if (
-      PAY_CHANNEL_PATTERNS.some((pattern) =>
-        channelName.includes(this.normalize(pattern))
-      )
-    ) {
-      return 2;
-    }
-
-    if (
-      AUTONOMIC_CHANNEL_PATTERNS.some((pattern) =>
-        channelName.includes(this.normalize(pattern))
-      )
-    ) {
-      return 3;
-    }
-
-    if (
-      FAST_CHANNEL_PATTERNS.some((pattern) =>
-        channelName.includes(this.normalize(pattern))
-      )
-    ) {
-      return 4;
-    }
-
-    if (
-      !channelName &&
-      platforms.some((platform) =>
-        FAST_CHANNEL_PATTERNS.some((pattern) =>
-          platform.includes(this.normalize(pattern))
-        )
-      )
-    ) {
-      return 4;
-    }
-
-    return 2;
+    return this.resolveChannelEntry(item.channel?.name || '')?.group ?? 3;
   }
 
   private getChannelPriority(channelName: string): number {
-    const normalized = this.normalize(channelName);
-    const nationalIndex = NATIONAL_CHANNEL_PRIORITY.findIndex((pattern) =>
-      normalized.includes(this.normalize(pattern))
-    );
-    if (nationalIndex >= 0) {
-      return nationalIndex;
-    }
-
-    const payIndex = PAY_CHANNEL_PATTERNS.findIndex((pattern) =>
-      normalized.includes(this.normalize(pattern))
-    );
-    if (payIndex >= 0) {
-      return 100 + payIndex;
-    }
-
-    const autonomicIndex = AUTONOMIC_CHANNEL_PATTERNS.findIndex((pattern) =>
-      normalized.includes(this.normalize(pattern))
-    );
-    if (autonomicIndex >= 0) {
-      return 200 + autonomicIndex;
-    }
-
-    const fastIndex = FAST_CHANNEL_PATTERNS.findIndex((pattern) =>
-      normalized.includes(this.normalize(pattern))
-    );
-    if (fastIndex >= 0) {
-      return 300 + fastIndex;
-    }
-
-    return 999;
+    return this.resolveChannelEntry(channelName)?.priority ?? 999;
   }
 
   private getAutonomicCommunityPatterns(community: string): string[] {
@@ -2132,11 +2610,13 @@ export class ChatbotRecommend {
     if (groupRank === 1) {
       badges.push('TDT / nacional');
     } else if (groupRank === 2) {
-      badges.push('Canal de pago');
-    } else if (groupRank === 3) {
       badges.push('Autonómica');
+    } else if (groupRank === 3) {
+      badges.push('Canal de pago');
     } else if (groupRank === 4) {
-      badges.push('FAST / lineal');
+      badges.push('Movistar');
+    } else if (groupRank === 5) {
+      badges.push('Deportes');
     }
 
     return badges.slice(0, 3);

@@ -1,50 +1,70 @@
-import { GetPrograms, GetProgramsResponse } from './GetPrograms';
-import { GetNowPlaying } from './GetNowPlaying';
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
+import { l1Cache } from '@/infrastructure/cache/L1Cache';
 import { DateUtils } from '@/shared/utils/dateUtils';
-import { HomeViewDTO, MediaCardDTO } from '../dto/MediaDTO';
-import { MediaMapper } from '../mappers/MediaMapper';
-import { ProgramLayoutDTO } from '../services/ProgramLayoutBuilder';
-import { BlogService } from '@/infrastructure/external/BlogService';
+import {
+  CatalogItemDTO,
+  CatalogPlatformDTO,
+  CatalogQueryResultDTO,
+} from '../dto/CatalogDTO';
+import { TvReadQueryService } from '../services/TvReadQueryService';
+import { CatalogService } from '../services/CatalogService';
+import { GetPersonalizedRecommendations } from './GetPersonalizedRecommendations';
+import { TvReadResponseDTO } from '../dto/TvReadDTO';
+
+export interface DiscoveryHomeViewDTO {
+  personalized: CatalogItemDTO[];
+  platformItems: CatalogItemDTO[];
+  freeItems: CatalogItemDTO[];
+  liveItems: CatalogItemDTO[];
+  tonightItems: CatalogItemDTO[];
+  trendingItems: CatalogItemDTO[];
+  platforms: CatalogPlatformDTO[];
+  generatedAt: string;
+}
 
 export interface GetDiscoveryHomeRequest {
   date?: string;
-  country?: string;
-  channelTypes?: string[];
-  timeSlot?: string;
-  fields?: 'minimal' | 'full';
+  userId?: string;
 }
 
-type ChannelMeta = GetProgramsResponse['channels'][number];
-
-/**
- * Builds the discovery home view combining curated hero, recommendations and live now.
- */
 export class GetDiscoveryHome {
   private readonly ttlSeconds =
     Number(process.env.DISCOVERY_HOME_CACHE_TTL_SEC || 120) || 120;
+  private readonly hotCacheTtlMs =
+    Number(process.env.DISCOVERY_HOME_L1_CACHE_TTL_MS || 30_000) || 30_000;
+  private readonly segmentTimeoutMs =
+    Number(process.env.DISCOVERY_HOME_SEGMENT_TIMEOUT_MS || 2500) || 2500;
 
   constructor(
-    private readonly getPrograms: GetPrograms,
-    private readonly getNowPlaying: GetNowPlaying,
     private readonly cacheRepository: ICacheRepository,
-    private readonly blogService?: BlogService
+    private readonly tvReadQueryService: TvReadQueryService,
+    private readonly catalogService: CatalogService,
+    private readonly getPersonalizedRecommendations: GetPersonalizedRecommendations
   ) {}
 
-  /**
-   * Generates or retrieves from cache the discovery home payload.
-   */
   async execute(
     request: GetDiscoveryHomeRequest = {}
-  ): Promise<{ view: HomeViewDTO; cached: boolean }> {
+  ): Promise<{ view: DiscoveryHomeViewDTO; cached: boolean }> {
     const date =
       request.date && request.date.length
         ? DateUtils.parseDateAlias(request.date)
         : DateUtils.getTodayYYYYMMDD();
 
-    const cacheKey = this.buildCacheKey(date, request);
-    const cached = await this.cacheRepository.get<HomeViewDTO>(cacheKey);
+    const cacheKey = ['surface:discovery:home', date, request.userId || 'anon'].join(':');
+    const hotCached = l1Cache.get(cacheKey) as DiscoveryHomeViewDTO | undefined;
+    if (hotCached) {
+      return {
+        view: {
+          ...hotCached,
+          generatedAt: hotCached.generatedAt || new Date().toISOString(),
+        },
+        cached: true,
+      };
+    }
+
+    const cached = await this.cacheRepository.get<DiscoveryHomeViewDTO>(cacheKey);
     if (cached) {
+      l1Cache.set(cacheKey, cached, this.hotCacheTtlMs);
       return {
         view: {
           ...cached,
@@ -54,149 +74,155 @@ export class GetDiscoveryHome {
       };
     }
 
-    const programsResponse = await this.getPrograms.execute({
-      date,
-      fields: request.fields ?? 'full',
-      limit: 1200,
-      country: request.country,
-      channelTypes: request.channelTypes,
-      timeSlot: request.timeSlot,
-    });
+    const [liveNow, tonight, trending, freeItems, personalized] = await Promise.all([
+      this.withTimeout(
+        this.tvReadQueryService.query({
+          view: 'now',
+          date,
+          limit: 12,
+        }),
+        Math.min(this.segmentTimeoutMs, 1500),
+        this.emptyTvReadResult()
+      ),
+      this.withTimeout(
+        this.tvReadQueryService.query({
+          view: 'night',
+          date,
+          limit: 12,
+        }),
+        Math.min(this.segmentTimeoutMs, 1500),
+        this.emptyTvReadResult()
+      ),
+      this.withTimeout(
+        this.catalogService.query({
+          userId: request.userId,
+          types: ['movie', 'series'],
+          availability: ['streaming'],
+          sort: 'popular',
+          limit: 12,
+          page: 1,
+        }),
+        this.segmentTimeoutMs,
+        this.emptyCatalogResult()
+      ),
+      this.withTimeout(
+        this.catalogService.query({
+          userId: request.userId,
+          types: ['movie', 'series'],
+          availability: ['free'],
+          sort: 'popular',
+          limit: 12,
+          page: 1,
+        }),
+        this.segmentTimeoutMs,
+        this.emptyCatalogResult()
+      ),
+      request.userId
+        ? this.withTimeout(
+            this.getPersonalizedRecommendations.execute({
+              userId: request.userId,
+              context: 'home',
+              limit: 12,
+            }),
+            this.segmentTimeoutMs,
+            []
+          )
+        : Promise.resolve([]),
+    ]);
 
-    const channelMap = new Map(
-      programsResponse.channels.map((channel) => [channel.id, channel] as const)
-    );
+    const liveItems = liveNow.items
+      .filter((item) => item.airing.liveNow)
+      .slice(0, 12)
+      .map((item) => this.catalogService.mapTvReadItemToCatalogItem(item));
+    const tonightItems = tonight.items
+      .slice(0, 12)
+      .map((item) => this.catalogService.mapTvReadItemToCatalogItem(item));
+    const platforms = this.catalogService.getPlatforms();
 
-    const now = new Date();
-    const hero = this.pickHero(programsResponse.programs, channelMap, now);
-    const whatToWatch = this.buildWhatToWatch(
-      programsResponse.programs,
-      channelMap,
-      now
-    );
-    const liveNow = await this.buildLiveNow(now);
-    const blogHighlights = await this.blogService?.getHighlights(4);
-
-    const response: HomeViewDTO = {
-      hero,
-      whatToWatch: { title: 'Qué ver hoy', items: whatToWatch },
-      liveNow: { title: 'En directo', items: liveNow },
-      blogHighlights: blogHighlights || [],
+    const platformItems = this.selectPlatformItems(trending.items, platforms);
+    const view: DiscoveryHomeViewDTO = {
+      personalized: personalized.map((entry) => entry.item).slice(0, 12),
+      platformItems,
+      freeItems: freeItems.items.slice(0, 12),
+      liveItems,
+      tonightItems,
+      trendingItems: trending.items.slice(0, 12),
+      platforms,
       generatedAt: new Date().toISOString(),
     };
 
-    await this.cacheRepository.set(cacheKey, response, this.ttlSeconds);
-    return { view: response, cached: false };
+    await this.cacheRepository.set(cacheKey, view, this.ttlSeconds);
+    l1Cache.set(cacheKey, view, this.hotCacheTtlMs);
+    return { view, cached: false };
   }
 
-  private async buildLiveNow(now: Date): Promise<MediaCardDTO[]> {
-    const results = await this.getNowPlaying.execute(now);
-    return results
-      .filter(({ program }) => !!program)
-      .map(({ program, channel }) =>
-        MediaMapper.fromProgram(program!, channel, { now })
-      );
-  }
-
-  private pickHero(
-    programs: ProgramLayoutDTO[],
-    channelMap: Map<string, ChannelMeta>,
-    now: Date
-  ): MediaCardDTO[] {
-    const scored = programs
-      .filter((p) => p.image || p.description)
-      .map((program) => ({
-        program,
-        score: this.scoreProgram(program, now),
-      }))
-      .sort((a, b) => b.score - a.score);
-
-    const unique = new Map<string, MediaCardDTO>();
-    for (const { program } of scored) {
-      if (unique.size >= 8) break;
-      const card = MediaMapper.fromProgramLayout(program, channelMap, now);
-      unique.set(card.id, card);
+  private selectPlatformItems(
+    items: CatalogItemDTO[],
+    platforms: CatalogPlatformDTO[]
+  ): CatalogItemDTO[] {
+    if (!items.length) {
+      return [];
     }
 
-    return Array.from(unique.values());
+    const topPlatformNames = new Set(platforms.slice(0, 6).map((platform) => platform.name));
+    const preferred = items.filter((item) =>
+      item.primaryPlatforms.some((platform) => topPlatformNames.has(platform))
+    );
+
+    return (preferred.length ? preferred : items).slice(0, 12);
   }
 
-  private buildWhatToWatch(
-    programs: ProgramLayoutDTO[],
-    channelMap: Map<string, ChannelMeta>,
-    now: Date
-  ): MediaCardDTO[] {
-    const nowMs = now.getTime();
-    const windowEnd = nowMs + 1000 * 60 * 60 * 6; // 6h hacia adelante
-
-    const upcoming = programs
-      .map((program) => ({
-        program,
-        start: new Date(program.start).getTime(),
-        score: this.scoreProgram(program, now),
-      }))
-      .filter(({ start }) => !Number.isNaN(start) && start >= nowMs - 20 * 60000)
-      .filter(({ start }) => start <= windowEnd)
-      .sort((a, b) => {
-        if (a.start !== b.start) return a.start - b.start;
-        return b.score - a.score;
-      });
-
-    const fallback = programs
-      .map((program) => ({
-        program,
-        score: this.scoreProgram(program, now),
-      }))
-      .sort((a, b) => b.score - a.score);
-
-    const candidates = upcoming.length ? upcoming : fallback;
-
-    const picked = new Map<string, MediaCardDTO>();
-    for (const { program } of candidates) {
-      if (picked.size >= 12) break;
-      const card = MediaMapper.fromProgramLayout(program, channelMap, now);
-      picked.set(card.id, card);
-    }
-
-    return Array.from(picked.values());
+  private emptyTvReadResult(): TvReadResponseDTO {
+    return {
+      date: DateUtils.getTodayYYYYMMDD(),
+      view: 'day',
+      items: [],
+      channels: [],
+      filters: {},
+      meta: {
+        total: 0,
+        limit: 12,
+        generatedAt: new Date().toISOString(),
+      },
+    };
   }
 
-  private scoreProgram(program: ProgramLayoutDTO, now: Date): number {
-    let score = 0;
-
-    if (program.image) score += 20;
-    if (program.description) {
-      score += Math.min(program.description.length / 40, 10);
-    }
-    if (program.category) score += 5;
-    if (program.rating) score += 2;
-
-    const start = new Date(program.start).getHours();
-    if (start >= 20 || start < 2) score += 6; // prime time
-    if (program.timeSlotIndex != null && program.timeSlotIndex >= 6) score += 4;
-
-    const nowMs = now.getTime();
-    const startMs = new Date(program.start).getTime();
-    if (!Number.isNaN(startMs)) {
-      const diffHours = Math.abs(startMs - nowMs) / (1000 * 60 * 60);
-      score += Math.max(0, 6 - diffHours);
-    }
-
-    return score;
+  private emptyCatalogResult(): CatalogQueryResultDTO {
+    return {
+      items: [],
+      meta: {
+        page: 1,
+        limit: 12,
+        total: 0,
+        hasMore: false,
+      },
+      availableGenres: [],
+      availablePlatforms: this.catalogService.getPlatforms(),
+    };
   }
 
-  private buildCacheKey(
-    date: string,
-    request: GetDiscoveryHomeRequest
-  ): string {
-    const types = (request.channelTypes || []).map((t) => t.toUpperCase()).join('|');
-    return [
-      'bff:discovery:home',
-      date,
-      request.country || 'all',
-      types || 'all',
-      request.timeSlot || 'any',
-      request.fields || 'full',
-    ].join(':');
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    fallback: T
+  ): Promise<T> {
+    let timer: NodeJS.Timeout | undefined;
+
+    return new Promise<T>((resolve) => {
+      timer = setTimeout(() => resolve(fallback), timeoutMs);
+      promise
+        .then((value) => {
+          if (timer) {
+            clearTimeout(timer);
+          }
+          resolve(value);
+        })
+        .catch(() => {
+          if (timer) {
+            clearTimeout(timer);
+          }
+          resolve(fallback);
+        });
+    });
   }
 }

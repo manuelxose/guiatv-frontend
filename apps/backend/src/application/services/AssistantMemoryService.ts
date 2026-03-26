@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { logger } from '../../shared/utils/logger';
 import { CATALOG_PLATFORM_REGISTRY, CatalogContentType } from '../dto/CatalogDTO';
 import {
   ChatbotQueryContext,
@@ -100,7 +101,10 @@ const NEGATIVE_TOKENS = [
   'mejor sin ',
   'paso de ',
 ];
-const MAX_STORED_MESSAGES = 24;
+const MAX_STORED_MESSAGES = 20;
+// Max chars stored per message role before persisting to MongoDB
+const MAX_PERSIST_USER_CHARS = 500;
+const MAX_PERSIST_ASSISTANT_CHARS = 800;
 const AUTONOMOUS_COMMUNITIES: Array<{
   canonical: string;
   aliases: string[];
@@ -370,6 +374,14 @@ export class AssistantMemoryService {
       this.getMemory(userId),
     ]);
 
+    if (conversation) {
+      logger.info('[AssistantMemory] conversation loaded', {
+        userId,
+        conversationId: conversation.conversationId,
+        messageCount: conversation.messages?.length ?? 0,
+      });
+    }
+
     return {
       conversationId: conversation?.conversationId || null,
       sessionTitle: conversation?.sessionTitle,
@@ -386,8 +398,10 @@ export class AssistantMemoryService {
     assistantResponse: ChatbotResponse;
   }): Promise<{ conversationId: string; memory: AssistantMemorySnapshot }> {
     const now = new Date();
+    const existing = await this.findConversation(input.userId, input.conversationId);
+    const isNew = !existing;
     const conversation =
-      (await this.findConversation(input.userId, input.conversationId)) ||
+      existing ||
       new UserAssistantConversationModel({
         userId: input.userId,
         conversationId: input.conversationId || randomUUID(),
@@ -399,16 +413,19 @@ export class AssistantMemoryService {
       conversation.sessionTitle = this.buildSessionTitle(input.userMessage);
     }
 
+    const truncatedUser = input.userMessage.slice(0, MAX_PERSIST_USER_CHARS);
+    const truncatedAssistant = input.assistantResponse.text.slice(0, MAX_PERSIST_ASSISTANT_CHARS);
+
     conversation.messages = [
       ...(conversation.messages || []).slice(-(MAX_STORED_MESSAGES - 2)),
       {
         role: 'user',
-        content: input.userMessage,
+        content: truncatedUser,
         createdAt: now,
       },
       {
         role: 'assistant',
-        content: input.assistantResponse.text,
+        content: truncatedAssistant,
         createdAt: now,
         recommendations: input.assistantResponse.recommendations || [],
         moreRecommendations: input.assistantResponse.moreRecommendations || [],
@@ -418,6 +435,14 @@ export class AssistantMemoryService {
     ];
     conversation.lastUsedAt = now;
     await conversation.save();
+
+    logger.info(`[AssistantMemory] conversation ${isNew ? 'created' : 'updated'}`, {
+      userId: input.userId,
+      conversationId: conversation.conversationId,
+      messageCount: conversation.messages.length,
+      userTruncated: input.userMessage.length > MAX_PERSIST_USER_CHARS,
+      assistantTruncated: input.assistantResponse.text.length > MAX_PERSIST_ASSISTANT_CHARS,
+    });
 
     const memory = await this.updateMemoryFromTurn(
       input.userId,
@@ -732,7 +757,7 @@ export class AssistantMemoryService {
 
   private async findConversation(
     userId: string,
-    conversationId?: string
+    conversationId?: string | null
   ): Promise<IUserAssistantConversationDocument | null> {
     if (conversationId) {
       return UserAssistantConversationModel.findOne({
@@ -743,10 +768,9 @@ export class AssistantMemoryService {
         .exec();
     }
 
-    return UserAssistantConversationModel.findOne({ userId })
-      .sort({ lastUsedAt: -1 })
-      .lean(false)
-      .exec();
+    // If no specific conversation is requested, we no longer fallback to the last one.
+    // This ensures a blank state when starting a new session.
+    return null;
   }
 
   async getMemorySnapshot(userId: string): Promise<AssistantMemorySnapshot | null> {
@@ -788,30 +812,32 @@ export class AssistantMemoryService {
   private mapMessages(
     messages: IUserAssistantConversationDocument['messages']
   ): AssistantHistoryMessage[] {
+    // Mongoose 8 stores subdocument fields as prototype getters, not own
+    // properties. Spreading a subdocument ({...subdoc}) gives an empty
+    // object. Call .toObject() first to get a plain JS object with all fields.
+    const toPlain = (v: any): any =>
+      typeof v?.toObject === 'function' ? v.toObject() : v;
+
+    const mapRec = (r: any): ChatbotRecommendationPayload => {
+      const rec = toPlain(r);
+      return {
+        ...rec,
+        reason: rec.reason || 'Encaja con tus gustos.',
+        actions: {
+          canOpenDetail: rec.actions?.canOpenDetail !== false,
+          canSave: rec.actions?.canSave !== false,
+          canTrack: rec.actions?.canTrack !== false,
+        },
+        badges: rec.badges || [],
+      };
+    };
+
     return (messages || []).map((message) => ({
       role: message.role,
       content: message.content,
       createdAt: new Date(message.createdAt).toISOString(),
-      recommendations: (message.recommendations || []).map((recommendation) => ({
-        ...recommendation,
-        reason: recommendation.reason || 'Encaja con tus gustos.',
-        actions: {
-          canOpenDetail: recommendation.actions?.canOpenDetail !== false,
-          canSave: recommendation.actions?.canSave !== false,
-          canTrack: recommendation.actions?.canTrack !== false,
-        },
-        badges: recommendation.badges || [],
-      })),
-      moreRecommendations: (message.moreRecommendations || []).map((recommendation) => ({
-        ...recommendation,
-        reason: recommendation.reason || 'Encaja con tus gustos.',
-        actions: {
-          canOpenDetail: recommendation.actions?.canOpenDetail !== false,
-          canSave: recommendation.actions?.canSave !== false,
-          canTrack: recommendation.actions?.canTrack !== false,
-        },
-        badges: recommendation.badges || [],
-      })),
+      recommendations: (message.recommendations || []).map(mapRec),
+      moreRecommendations: (message.moreRecommendations || []).map(mapRec),
       followUpSuggestions: message.followUpSuggestions || [],
       queryContext: message.queryContext
         ? {

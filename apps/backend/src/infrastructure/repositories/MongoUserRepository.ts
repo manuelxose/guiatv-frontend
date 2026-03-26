@@ -24,6 +24,11 @@ export class MongoUserRepository {
     return doc ? this.map(doc) : null;
   }
 
+  /** Lightweight read used by the AI chatbot — fetches only the name field. */
+  async findNameById(id: string): Promise<{ name?: string } | null> {
+    return UserModel.findById(id).select('name').lean().exec() as Promise<{ name?: string } | null>;
+  }
+
   async findByEmail(email: string): Promise<UserEntity | null> {
     const doc = await UserModel.findOne({ email }).lean().exec();
     return doc ? this.map(doc) : null;

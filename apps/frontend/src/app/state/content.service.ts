@@ -82,7 +82,7 @@ export class ContentService {
   ) {}
 
   /**
-   * Load content filtered by type (movies | series | all) from /v2/layouts/{date}
+   * Load content filtered by type (movies | series | all) from canonical TV reads.
    */
   loadContent(
     kind: ContentKind,
@@ -126,15 +126,15 @@ export class ContentService {
    */
   getProgramsByChannel(channelIdOrName: string): ContentItem[] {
     if (!this.cachedLayouts) return [];
-    const token = String(channelIdOrName || '').toLowerCase();
+    const token = this.normalizeChannelToken(channelIdOrName);
 
     const channelEntry = this.cachedLayouts.channels.find(
       (entry) => {
-        const normalized = this.normalizeChannel(entry.channel, (entry.programs || [])[0]);
-        return (
-          normalized.id === channelIdOrName ||
-          normalized.name.toLowerCase() === token
+        const normalized = this.normalizeChannel(
+          entry.channel,
+          (entry.programs || [])[0]
         );
+        return this.getChannelTokens(normalized).includes(token);
       }
     );
 
@@ -273,6 +273,17 @@ export class ContentService {
       name:
         String(channel?.name || cached?.name || channelId || 'Canal desconocido').trim() ||
         'Canal desconocido',
+      normalizedName:
+        String(channel?.normalizedName || cached?.normalizedName || '').trim() ||
+        undefined,
+      aliases:
+        Array.isArray(channel?.aliases) && channel.aliases.length
+          ? [...channel.aliases]
+          : cached?.aliases,
+      sourceIds:
+        Array.isArray(channel?.sourceIds) && channel.sourceIds.length
+          ? [...channel.sourceIds]
+          : cached?.sourceIds,
       icon:
         (channel?.icon as string | null | undefined) ||
         cached?.icon ||
@@ -282,6 +293,11 @@ export class ContentService {
         String(channel?.country || cached?.country || '').trim() || undefined,
       countryCode:
         String(channel?.countryCode || cached?.countryCode || '').trim() ||
+        undefined,
+      region:
+        String(channel?.region || cached?.region || '').trim() || undefined,
+      description:
+        String(channel?.description || cached?.description || '').trim() ||
         undefined,
     };
   }
@@ -386,15 +402,28 @@ export class ContentService {
   }
 
   private isMainFeaturedChannel(channel?: ChannelMetaDTO): boolean {
-    const tokens = [
-      this.normalizeChannelToken(channel?.id),
-      this.normalizeChannelToken(channel?.name),
-    ].filter(Boolean);
+    const tokens = this.getChannelTokens(channel);
 
     return tokens.some((token) => {
       const canonical = MAIN_CHANNEL_ALIASES[token] || token;
       return MAIN_FEATURED_CHANNELS.has(canonical);
     });
+  }
+
+  private getChannelTokens(channel?: Partial<ChannelMetaDTO>): string[] {
+    return Array.from(
+      new Set(
+        [
+          channel?.id,
+          channel?.name,
+          channel?.normalizedName,
+          ...(Array.isArray(channel?.aliases) ? channel.aliases : []),
+          ...(Array.isArray(channel?.sourceIds) ? channel.sourceIds : []),
+        ]
+          .map((value) => this.normalizeChannelToken(value))
+          .filter(Boolean)
+      )
+    );
   }
 
   private normalizeChannelToken(value?: string | null): string {

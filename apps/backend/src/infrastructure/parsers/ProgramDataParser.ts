@@ -3,7 +3,15 @@
 import { Program } from '../../domain/entities/Program';
 import { ParsedXMLProgram } from './XMLParser';
 import { logger } from '../../shared/utils/logger';
+import { createHash } from 'node:crypto';
 import { normalizeExternalMediaUrl } from '../../shared/utils/mediaUrl';
+import {
+  buildProgramBrandKey,
+  buildProgramTitleAliases,
+  isGenericMovieTitle,
+  normalizeTvToken,
+  resolveProgramDisplayTitle,
+} from '../../shared/utils/tvMetadata';
 
 /** Titles that are actually category labels, not real program names. */
 const GENERIC_TITLES = new Set([
@@ -21,12 +29,15 @@ export class ProgramDataParser {
    * a sub-title carries the real program name, use the sub-title instead.
    */
   private resolveTitle(title: string, subTitle?: string): string {
+    const resolved = resolveProgramDisplayTitle(title, subTitle);
+    if (resolved !== title) {
+      return resolved;
+    }
     if (!subTitle) return title;
     const normalized = title.toLowerCase().trim();
     if (GENERIC_TITLES.has(normalized)) {
       return subTitle;
     }
-    // Also catch patterns like "Cine de acción" (3 words max)
     if (normalized.startsWith('cine') && normalized.split(' ').length <= 3) {
       return subTitle;
     }
@@ -69,7 +80,8 @@ export class ProgramDataParser {
 
   convertToDomainEntity(
     parsed: ParsedXMLProgram,
-    channelMap: Map<string, string>
+    channelMap: Map<string, string>,
+    channelIconUrls?: Set<string>
   ): Program | null {
     try {
       const channelId =
@@ -110,11 +122,24 @@ export class ProgramDataParser {
       } else {
         image = normalizeExternalMediaUrl(parsed.icon);
       }
+      // If the programme icon matches a known channel icon, it's not a real poster
+      if (image && channelIconUrls?.has(image)) {
+        image = undefined;
+      }
+
+      const resolvedTitle = this.resolveTitle(parsed.title, parsed.subTitle);
+      const isGenericTitle = ProgramDataParser.isGenericTitle(resolvedTitle);
+      const isGenericMovie = isGenericMovieTitle(resolvedTitle);
 
       return Program.create({
         id: this.generateProgramId(parsed),
         channelId,
-        title: this.resolveTitle(parsed.title, parsed.subTitle),
+        canonicalChannelId: channelId,
+        title: resolvedTitle,
+        subtitle: parsed.subTitle,
+        normalizedTitle: normalizeTvToken(resolvedTitle, ' '),
+        titleAliases: buildProgramTitleAliases(resolvedTitle),
+        brandKey: buildProgramBrandKey(resolvedTitle),
         startTime,
         endTime,
         description: parsed.description,
@@ -122,6 +147,26 @@ export class ProgramDataParser {
         genre: parsed.category,
         year: parsed.year,
         rating: parsed.rating,
+        sourceFeed: parsed.sourceFeed,
+        sourceProgrammeId:
+          parsed.sourceProgrammeId ||
+          `${parsed.channelId}|${parsed.start}|${parsed.title}`,
+        sourceAssetCandidates: Array.isArray(parsed.sourceAssetCandidates)
+          ? parsed.sourceAssetCandidates
+          : image
+            ? [{ url: image, source: 'epg_program_image', sourceFeed: parsed.sourceFeed }]
+            : [],
+        sourceProvenance: parsed.sourceProvenance,
+        trustFlags: {
+          isGenericTitle,
+          isGenericMovieTitle: isGenericMovie,
+          titleResolutionState: isGenericMovie
+            ? 'generic_unresolved'
+            : 'specific_source_title',
+          isResolvedTitle: !isGenericMovie,
+          hasPoster: Boolean(image),
+          sourceFeed: parsed.sourceFeed,
+        },
       });
     } catch (error) {
       this.parserLogger.error(
@@ -136,23 +181,36 @@ export class ProgramDataParser {
   }
 
   private generateProgramId(parsed: ParsedXMLProgram): string {
-    // Generar ID único basado en canal, fecha y hora
-    const normalized = `${parsed.channelId}_${parsed.start}_${parsed.title}`
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '_');
+    const sourceScopedSeed = [
+      parsed.sourceFeed || 'unknown_source',
+      parsed.sourceProgrammeId || '',
+      parsed.channelId,
+      parsed.start,
+      parsed.stop,
+      parsed.title,
+    ].join('|');
 
-    return normalized.substring(0, 100); // Limitar longitud
+    return createHash('sha1').update(sourceScopedSeed).digest('hex');
+  }
+
+  static isGenericTitle(title: string): boolean {
+    const normalized = String(title || '').toLowerCase().trim();
+    if (!normalized) return true;
+    if (isGenericMovieTitle(normalized)) return true;
+    if (GENERIC_TITLES.has(normalized)) return true;
+    return normalized.startsWith('cine') && normalized.split(' ').length <= 3;
   }
 
   batchConvert(
     programmes: ParsedXMLProgram[],
-    channelMap: Map<string, string>
+    channelMap: Map<string, string>,
+    channelIconUrls?: Set<string>
   ): Program[] {
     const programs: Program[] = [];
     let skipped = 0;
 
     for (const prog of programmes) {
-      const program = this.convertToDomainEntity(prog, channelMap);
+      const program = this.convertToDomainEntity(prog, channelMap, channelIconUrls);
       if (program) {
         programs.push(program);
       } else {

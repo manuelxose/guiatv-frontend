@@ -53,7 +53,7 @@ export interface IProgramItem {
   duracion?: number; // Duración en minutos
   starRating?: number;
   tmdbId?: number;
-  // Layout opcional desde /v2/layouts
+  // Optional layout metadata derived from canonical TV reads
   gridColumnStart?: number;
   gridColumnEnd?: number;
   layerIndex?: number;

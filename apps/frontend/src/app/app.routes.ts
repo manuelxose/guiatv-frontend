@@ -54,7 +54,6 @@ export const routes: Routes = [
         (m) => m.PublicProfileComponent
       ),
     title: 'Perfil - Guía TV',
-    data: { robots: 'noindex, nofollow' },
   },
   {
     path: 'para-ti',
@@ -135,7 +134,6 @@ export const routes: Routes = [
         (m) => m.CatalogDetailComponent
       ),
     title: 'Contenido - Guía TV',
-    data: { robots: 'noindex, follow' },
   },
   {
     path: 'ver-canal/:id',
@@ -195,12 +193,8 @@ export const routes: Routes = [
 
   {
     path: 'programacion-tv/en-directo',
-    loadComponent: () =>
-      import('./pages/program-explorer/program-explorer.component').then(
-        (m) => m.ProgramExplorerComponent
-      ),
-    title: 'En Directo - Guía TV',
-    data: { mode: 'live' }
+    redirectTo: 'programacion-tv/guia-canales',
+    pathMatch: 'full',
   },
   {
     path: 'editorial',

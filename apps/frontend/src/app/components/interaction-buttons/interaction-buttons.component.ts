@@ -12,33 +12,32 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="relative flex items-center flex-wrap" [class.gap-3]="!compact" [class.gap-1.5]="compact">
+    <div class="relative flex items-center flex-wrap" [class.gap-1.5]="compact" [class.gap-3]="!compact">
       <!-- Watchlist Button -->
       <button
         (click)="toggleWatchlist()"
-        class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
-        [ngClass]="{
-          '!bg-red-600/20 !border-red-500/50': isInWatchlist,
-          'px-2 py-2': compact
-        }"
         [title]="isInWatchlist ? 'Quitar de mi lista' : 'Añadir a mi lista'"
+        class="flex items-center border transition-all duration-150"
+        [ngClass]="{
+          'h-9 w-9 justify-center rounded-xl': compact,
+          'gap-2 px-4 py-2 rounded-full': !compact,
+          'bg-red-600/15 border-red-500/40': isInWatchlist,
+          'bg-slate-800/70 hover:bg-slate-700 border-slate-700/60': !isInWatchlist
+        }"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 text-gray-300 group-hover:text-white transition-colors"
-          [ngClass]="{'!text-red-400': isInWatchlist, 'h-4 w-4': compact}"
-          fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          fill="none"
+          stroke-width="2"
+          [class.h-5]="!compact" [class.w-5]="!compact"
+          [class.h-4]="compact" [class.w-4]="compact"
+          [ngClass]="isInWatchlist ? 'text-red-400' : 'text-slate-300'"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-          />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white" [ngClass]="{'!text-red-300': isInWatchlist}">
+        <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isInWatchlist ? 'text-red-300' : 'text-slate-300'">
           {{ isInWatchlist ? 'En lista' : 'Mi lista' }}
         </span>
       </button>
@@ -46,48 +45,53 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
       <!-- Recommend Button -->
       <button
         (click)="showModal = true"
-        class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
-        [ngClass]="{'px-2 py-2': compact}"
         title="Recomendar a amigos"
+        class="flex items-center border border-slate-700/60 bg-slate-800/70 hover:bg-slate-700 transition-all duration-150"
+        [ngClass]="{
+          'h-9 w-9 justify-center rounded-xl': compact,
+          'gap-2 px-4 py-2 rounded-full': !compact
+        }"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 text-gray-300 group-hover:text-white transition-colors"
-          [ngClass]="{'h-4 w-4': compact}"
-          fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          fill="none"
+          stroke-width="2"
+          class="text-slate-300"
+          [class.h-5]="!compact" [class.w-5]="!compact"
+          [class.h-4]="compact" [class.w-4]="compact"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-          />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white">Recomendar</span>
+        <span *ngIf="!compact" class="text-sm font-medium text-slate-300">Recomendar</span>
       </button>
 
+      <!-- Watching Button -->
       <button
         (click)="markAsWatching()"
-        class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
-        [ngClass]="{
-          '!bg-emerald-600/20 !border-emerald-500/50': isWatching,
-          'px-2 py-2': compact
-        }"
         title="Marcar como viendo"
+        class="flex items-center border transition-all duration-150"
+        [ngClass]="{
+          'h-9 w-9 justify-center rounded-xl': compact,
+          'gap-2 px-4 py-2 rounded-full': !compact,
+          'bg-emerald-600/15 border-emerald-500/40': isWatching,
+          'bg-slate-800/70 hover:bg-slate-700 border-slate-700/60': !isWatching
+        }"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 text-gray-300 transition-colors"
-          [ngClass]="{'!text-emerald-300': isWatching, 'h-4 w-4': compact}"
-          fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          fill="none"
+          stroke-width="2"
+          [class.h-5]="!compact" [class.w-5]="!compact"
+          [class.h-4]="compact" [class.w-4]="compact"
+          [ngClass]="isWatching ? 'text-emerald-300' : 'text-slate-300'"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.55-2.27A1 1 0 0121 8.62v6.76a1 1 0 01-1.45.89L15 14m-9 4h8a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.55-2.27A1 1 0 0121 8.62v6.76a1 1 0 01-1.45.89L15 14m-9 4h8a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white" [ngClass]="{'!text-emerald-200': isWatching}">
+        <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isWatching ? 'text-emerald-200' : 'text-slate-300'">
           {{ isWatching ? 'Viendo' : 'Estoy viendo' }}
         </span>
       </button>
@@ -95,54 +99,61 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
       <!-- Rate Button -->
       <button
         (click)="showRatingPanel = !showRatingPanel"
-        class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
-        [ngClass]="{'px-2 py-2': compact}"
         title="Valorar"
+        class="flex items-center border border-slate-700/60 bg-slate-800/70 hover:bg-slate-700 transition-all duration-150"
+        [ngClass]="{
+          'h-9 w-9 justify-center rounded-xl': compact,
+          'gap-2 px-4 py-2 rounded-full': !compact
+        }"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 text-gray-300 group-hover:text-yellow-400 transition-colors"
-          [ngClass]="{'h-4 w-4': compact}"
-          fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          fill="none"
+          stroke-width="2"
+          [class.h-5]="!compact" [class.w-5]="!compact"
+          [class.h-4]="compact" [class.w-4]="compact"
+          class="text-slate-300"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-          />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white">
+        <span *ngIf="!compact" class="text-sm font-medium text-slate-300">
           {{ currentRating ? currentRating + '/10' : 'Valorar' }}
         </span>
       </button>
 
+      <!-- Share to Chat Button -->
       <button
         (click)="shareToChat()"
-        class="group flex items-center gap-2 px-4 py-2 rounded-full bg-gray-800/80 hover:bg-gray-700 border border-gray-600 transition-all duration-200 backdrop-blur-sm"
-        [ngClass]="{'px-2 py-2': compact}"
         title="Compartir por chat"
+        class="flex items-center border border-slate-700/60 bg-slate-800/70 hover:bg-slate-700 transition-all duration-150"
+        [ngClass]="{
+          'h-9 w-9 justify-center rounded-xl': compact,
+          'gap-2 px-4 py-2 rounded-full': !compact
+        }"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 text-gray-300 group-hover:text-white transition-colors"
-          [ngClass]="{'h-4 w-4': compact}"
-          fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
+          fill="none"
+          stroke-width="2"
+          class="text-slate-300"
+          [class.h-5]="!compact" [class.w-5]="!compact"
+          [class.h-4]="compact" [class.w-4]="compact"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h8M8 14h5m8-2a9 9 0 11-18 0a9 9 0 0118 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m8-2a9 9 0 11-18 0a9 9 0 0118 0z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium text-gray-300 group-hover:text-white">Compartir chat</span>
+        <span *ngIf="!compact" class="text-sm font-medium text-slate-300">Compartir chat</span>
       </button>
 
+      <!-- Rating Panel -->
       <div
         *ngIf="showRatingPanel"
         class="absolute bottom-full left-0 z-20 mb-2 w-[min(20rem,90vw)] rounded-2xl border border-slate-700 bg-slate-900 p-4 shadow-2xl"
       >
-        <p class="mb-3 text-xs text-slate-400">Cuanto te gusto?</p>
+        <p class="mb-3 text-xs text-slate-400">¿Cuánto te gustó?</p>
         <div class="flex flex-wrap gap-1">
           <button
             *ngFor="let star of ratings"
@@ -157,11 +168,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           </button>
         </div>
         <div class="mt-3 flex gap-2">
-          <button
-            type="button"
-            (click)="markAsSeen()"
-            class="text-xs text-slate-400 hover:text-white"
-          >
+          <button type="button" (click)="markAsSeen()" class="text-xs text-slate-400 hover:text-white">
             Solo marcar como visto
           </button>
         </div>
@@ -170,27 +177,24 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
 
     <!-- Recommendation Modal -->
     <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-        <button (click)="showModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+      <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+        <button (click)="showModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
           <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
-        
         <h3 class="text-xl font-bold text-white mb-4">Recomendar a amigos</h3>
-        <p class="text-gray-300 text-sm mb-6">Comparte "{{ title }}" con tus seguidores.</p>
-        
+        <p class="text-slate-300 text-sm mb-6">Comparte "{{ title }}" con tus seguidores.</p>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-400 mb-1">Nota (opcional)</label>
+            <label class="block text-sm font-medium text-slate-400 mb-1">Nota (opcional)</label>
             <textarea
               #noteInput
               rows="3"
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-red-500 focus:outline-none"
+              class="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-red-500 focus:outline-none"
               placeholder="¿Por qué te ha gustado?"
             ></textarea>
           </div>
-          
           <button
             (click)="submitRecommendation(noteInput.value)"
             class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors"

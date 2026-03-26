@@ -6,7 +6,12 @@
 export interface ProgramProps {
   id: string;
   channelId: string;
+  canonicalChannelId?: string;
   title: string;
+  subtitle?: string;
+  normalizedTitle?: string;
+  titleAliases?: string[];
+  brandKey?: string;
   startTime: Date;
   endTime: Date;
   description?: string;
@@ -16,6 +21,11 @@ export interface ProgramProps {
   year?: string;
   rating?: string;
   tmdbId?: number;
+  sourceFeed?: string;
+  sourceProgrammeId?: string;
+  sourceAssetCandidates?: Array<Record<string, unknown>>;
+  sourceProvenance?: Record<string, unknown>;
+  trustFlags?: Record<string, unknown>;
   details?: Record<string, unknown>;
 }
 
@@ -66,8 +76,28 @@ export class Program {
     return this.props.channelId;
   }
 
+  get canonicalChannelId(): string {
+    return this.props.canonicalChannelId || this.props.channelId;
+  }
+
   get title(): string {
     return this.props.title;
+  }
+
+  get subtitle(): string | undefined {
+    return this.props.subtitle;
+  }
+
+  get normalizedTitle(): string | undefined {
+    return this.props.normalizedTitle;
+  }
+
+  get titleAliases(): string[] {
+    return Array.isArray(this.props.titleAliases) ? [...this.props.titleAliases] : [];
+  }
+
+  get brandKey(): string | undefined {
+    return this.props.brandKey;
   }
 
   get startTime(): Date {
@@ -119,6 +149,28 @@ export class Program {
 
   get tmdbId(): number | undefined {
     return this.props.tmdbId;
+  }
+
+  get sourceFeed(): string | undefined {
+    return this.props.sourceFeed;
+  }
+
+  get sourceProgrammeId(): string | undefined {
+    return this.props.sourceProgrammeId;
+  }
+
+  get sourceAssetCandidates(): Array<Record<string, unknown>> {
+    return Array.isArray(this.props.sourceAssetCandidates)
+      ? [...this.props.sourceAssetCandidates]
+      : [];
+  }
+
+  get sourceProvenance(): Record<string, unknown> | undefined {
+    return this.props.sourceProvenance;
+  }
+
+  get trustFlags(): Record<string, unknown> | undefined {
+    return this.props.trustFlags;
   }
 
   get details(): Record<string, unknown> | undefined {

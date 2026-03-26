@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   ChatbotQueryContext,
   ChatbotRecommendation,
@@ -12,19 +12,21 @@ interface RecommendationGroup {
   items: ChatbotRecommendation[];
 }
 
+type ExpandState = 'compact' | 'partial' | 'full';
+
 @Component({
   selector: 'app-chat-recommendation-list',
   standalone: true,
   imports: [CommonModule, ChatContextBadgeComponent, ChatRecommendationCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mt-4 rounded-[1.4rem] border border-slate-800/90 bg-slate-950/70 p-3 md:p-4">
-      <!-- Header: badge + summary + toggle + view mode -->
+    <div class="mt-4 rounded-[1.4rem] border border-slate-800/90 bg-slate-950/70 p-3 md:p-5">
+      <!-- Header: badge + summary + controls -->
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-wrap items-center gap-2">
           <app-chat-context-badge [queryContext]="queryContext" />
-          <span *ngIf="resultSummary" class="text-[11px] font-medium text-slate-400">
-            {{ resultSummary }}
+          <span *ngIf="dynamicSummary" class="text-[11px] font-medium text-slate-400">
+            {{ dynamicSummary }}
           </span>
         </div>
         <div class="flex items-center gap-2">
@@ -43,15 +45,39 @@ interface RecommendationGroup {
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <!-- Expand toggle -->
-          <button
-            *ngIf="hiddenCount > 0 && !carouselMode"
-            type="button"
-            (click)="toggleExpanded()"
-            class="min-h-[28px] rounded-full border border-red-500/30 bg-red-500/10 px-3 text-[10px] font-semibold text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200"
-          >
-            {{ expanded ? 'Ver menos' : 'Ver ' + hiddenCount + ' más' }}
-          </button>
+
+          <!-- Expand controls -->
+          <ng-container>
+            <!-- Compact → Partial: always "Ver N más" -->
+            <button
+              *ngIf="expandState === 'compact' && moreRecommendations.length > 0"
+              type="button"
+              (click)="expandState = 'partial'"
+              class="min-h-[28px] rounded-full border border-red-500/30 bg-red-500/10 px-3 text-[10px] font-semibold text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200"
+            >
+              Ver {{ firstBatchSize }} más
+            </button>
+
+            <!-- Partial → Full: when loaded items < context total -->
+            <button
+              *ngIf="expandState === 'partial' && hasMoreBeyondLoaded"
+              type="button"
+              (click)="expandState = 'full'"
+              class="min-h-[28px] rounded-full border border-violet-500/30 bg-violet-500/10 px-3 text-[10px] font-semibold text-violet-300 transition-colors hover:bg-violet-500/20 hover:text-violet-200"
+            >
+              Ver todos ({{ allRecommendations.length - visibleItems.length }} más)
+            </button>
+
+            <!-- Collapse button only in full state -->
+            <button
+              *ngIf="expandState === 'full'"
+              type="button"
+              (click)="expandState = 'compact'"
+              class="min-h-[28px] rounded-full border border-slate-700 bg-slate-800/60 px-3 text-[10px] font-medium text-slate-400 transition-colors hover:border-slate-500 hover:text-slate-200"
+            >
+              Ver menos
+            </button>
+          </ng-container>
         </div>
       </div>
 
@@ -64,12 +90,10 @@ interface RecommendationGroup {
           >
             {{ group.label }}
           </p>
-          <div
-            class="flex gap-2.5 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700/50"
-          >
+          <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700/50">
             <div
               *ngFor="let rec of group.items; trackBy: trackByRec"
-              class="w-[260px] flex-shrink-0 md:w-[280px]"
+              class="w-[280px] flex-shrink-0 md:w-[300px]"
             >
               <app-chat-recommendation-card
                 [recommendation]="rec"
@@ -85,6 +109,8 @@ interface RecommendationGroup {
           </div>
         </ng-container>
       </div>
+
+      <!-- List mode -->
       <ng-template #listMode>
         <ng-container *ngFor="let group of groups; trackBy: trackByGroup">
           <p
@@ -93,9 +119,9 @@ interface RecommendationGroup {
           >
             {{ group.label }}
           </p>
-          <div class="space-y-2">
+          <div class="space-y-2.5">
             <app-chat-recommendation-card
-              *ngFor="let rec of (expanded ? group.items : group.items | slice:0:maxPerGroup); trackBy: trackByRec"
+              *ngFor="let rec of group.items; trackBy: trackByRec"
               [recommendation]="rec"
               (openDetail)="openDetail.emit($event)"
               (save)="save.emit($event)"
@@ -125,33 +151,57 @@ export class ChatRecommendationListComponent {
   @Output() rateNegative = new EventEmitter<ChatbotRecommendation>();
   @Output() remind = new EventEmitter<ChatbotRecommendation>();
 
-  expanded = false;
-  carouselMode = false;
+  private readonly platformId = inject(PLATFORM_ID);
+
+  expandState: ExpandState = 'compact';
+  carouselMode = isPlatformBrowser(this.platformId) && window.innerWidth < 768;
+
+  /** Dynamic summary reflecting how many items are currently visible vs total from queryContext. */
+  get dynamicSummary(): string {
+    const total = this.queryContext?.primaryMatches || this.queryContext?.totalMatches || 0;
+    const shown = this.visibleItems.length;
+    const windowLabel = this.queryContext?.answerWindowLabel || '';
+    if (!total && !this.resultSummary) return '';
+    if (!total) return this.resultSummary;
+    return `${shown} de ${total} resultados${windowLabel ? ' · ' + windowLabel : ''}`;
+  }
 
   get allRecommendations(): ChatbotRecommendation[] {
     return [...this.recommendations, ...this.moreRecommendations];
   }
 
-  get hiddenCount(): number {
-    return this.moreRecommendations.length;
+  /** Size of the first expansion batch (capped at 9). */
+  get firstBatchSize(): number {
+    return Math.min(9, this.moreRecommendations.length);
   }
 
-  get maxPerGroup(): number {
-    return Math.max(3, this.recommendations.length);
+  /** Total results reported by the backend context (may exceed loaded items). */
+  get totalFromContext(): number {
+    return this.queryContext?.primaryMatches || this.queryContext?.totalMatches || this.allRecommendations.length;
+  }
+
+  /** True when there are loaded items beyond what's currently visible (partial state). */
+  get hasMoreBeyondLoaded(): boolean {
+    return this.allRecommendations.length > this.visibleItems.length;
+  }
+
+  /** Items currently visible based on expand state. */
+  get visibleItems(): ChatbotRecommendation[] {
+    if (this.expandState === 'compact') return this.recommendations;
+    if (this.expandState === 'partial') {
+      return [...this.recommendations, ...this.moreRecommendations.slice(0, 9)];
+    }
+    return this.allRecommendations;
   }
 
   get groups(): RecommendationGroup[] {
-    const all = this.expanded
-      ? this.allRecommendations
-      : this.recommendations;
+    const all = this.visibleItems;
 
     if (all.length <= 3) return [{ label: '', items: all }];
 
     const liveItems = all.filter((r) => r.liveNow);
     const tvItems = all.filter((r) => !r.liveNow && r.type === 'program');
-    const vodItems = all.filter(
-      (r) => !r.liveNow && r.type !== 'program'
-    );
+    const vodItems = all.filter((r) => !r.liveNow && r.type !== 'program');
 
     const groups: RecommendationGroup[] = [];
     if (liveItems.length) groups.push({ label: 'En directo ahora', items: liveItems });
@@ -160,10 +210,6 @@ export class ChatRecommendationListComponent {
 
     if (groups.length <= 1) return [{ label: '', items: all }];
     return groups;
-  }
-
-  toggleExpanded(): void {
-    this.expanded = !this.expanded;
   }
 
   trackByRec(_index: number, rec: ChatbotRecommendation): string {

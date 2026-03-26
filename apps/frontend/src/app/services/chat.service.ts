@@ -52,6 +52,7 @@ export class ChatService {
   private currentUserId: string | null = null;
   private fallbackTimer: ReturnType<typeof setInterval> | null = null;
   private onlineRefreshTimer: ReturnType<typeof setInterval> | null = null;
+  private lastOnlineRefreshAt = 0;
 
   /** Emits when a component requests opening the chat shell with a specific user */
   private readonly requestOpenChatSubject = new Subject<string>();
@@ -297,7 +298,7 @@ export class ChatService {
       this.realtimeModeSubject.next('connected');
       this.clearFallbackPolling();
       this.refreshConversations().subscribe();
-      this.refreshOnlineUsers().subscribe();
+      this.throttledRefreshOnlineUsers();
     });
 
     this.socket.on('disconnect', () => {
@@ -316,13 +317,14 @@ export class ChatService {
 
     this.socket.on('chat:presence', (payload: { onlineCount?: number } = {}) => {
       this.applyPresenceCount(payload.onlineCount);
-      this.refreshOnlineUsers().subscribe();
+      // Throttle HTTP refresh: socket presence events already carry the count
+      this.throttledRefreshOnlineUsers();
       this.refreshConversations().subscribe();
     });
 
     this.socket.on('chat:presence:snapshot', (payload: { onlineCount?: number } = {}) => {
       this.applyPresenceCount(payload.onlineCount);
-      this.refreshOnlineUsers().subscribe();
+      this.throttledRefreshOnlineUsers();
       this.refreshConversations().subscribe();
     });
 
@@ -362,7 +364,7 @@ export class ChatService {
     });
 
     this.ensureFallbackPolling();
-    this.ensureOnlineRefreshPolling();
+    // Note: ensureOnlineRefreshPolling is already called by the isAuthenticated$ subscriber
   }
 
   private disconnectSocket(): void {
@@ -391,11 +393,18 @@ export class ChatService {
     this.fallbackTimer = null;
   }
 
+  private throttledRefreshOnlineUsers(): void {
+    const now = Date.now();
+    if (now - this.lastOnlineRefreshAt < 30000) return;
+    this.lastOnlineRefreshAt = now;
+    this.refreshOnlineUsers().subscribe();
+  }
+
   private ensureOnlineRefreshPolling(): void {
     if (this.onlineRefreshTimer) return;
     this.onlineRefreshTimer = setInterval(() => {
-      this.refreshOnlineUsers().subscribe();
-    }, 10000);
+      this.throttledRefreshOnlineUsers();
+    }, 60000);
   }
 
   private clearOnlineRefreshPolling(): void {

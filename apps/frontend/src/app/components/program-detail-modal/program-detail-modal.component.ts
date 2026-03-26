@@ -65,13 +65,10 @@ export class ProgramDetailModalComponent {
     const prog = this.program;
     if (!prog) return null;
 
-    // Prefer program-provided imagery; fallback to channel logo
     const posterFromProg =
       (prog as any).image ||
       (prog as any).poster ||
       (prog as any).background ||
-      (prog as any).icon ||
-      this.channelLogo ||
       '';
 
     const descObj = prog.desc
@@ -115,7 +112,7 @@ export class ProgramDetailModalComponent {
 
   public onPosterError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    img.src = this.channelLogo || 'assets/images/default-movie-poster.svg';
+    img.src = 'assets/images/default-movie-poster.svg';
   }
 
   /**
