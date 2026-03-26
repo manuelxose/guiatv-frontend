@@ -36,3 +36,12 @@ tmp/
 /apps/backend/temp_*
 .DS_Store
 Thumbs.db
+
+# AI tooling
+.agents/
+.claude-flow/
+.claude/
+.swarm/
+tmp-storage/
+current
+releases/
