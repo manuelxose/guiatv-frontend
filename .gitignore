@@ -4,11 +4,14 @@
 /apps/frontend/node_modules
 
 # Frontend artifacts
+/.angular
 /apps/frontend/.angular
+/dist
 /apps/frontend/dist
 /apps/frontend/releases
 
 # Backend artifacts
+/backend
 /apps/backend/dist
 /apps/backend/lib
 /apps/backend/storage
