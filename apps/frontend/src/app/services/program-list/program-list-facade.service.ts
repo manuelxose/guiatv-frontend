@@ -1,63 +1,60 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { map, tap, catchError, filter } from 'rxjs/operators';
+import { catchError, filter, map, shareReplay, tap } from 'rxjs/operators';
+import { LayoutsQuery } from '../../api/models';
 import { ProgramListService, ProgramListSnapshot } from '../../state/program-list.service';
-import { IProgramListData, ITimeIndicatorState, IDayInfo, IProgramItem } from 'src/app/interfaces';
+import {
+  IDayInfo,
+  IProgramItem,
+  IProgramListData,
+  ITimeIndicatorState,
+  ProgramListEmbedConfig,
+} from 'src/app/interfaces';
 
-/**
- * Nueva fachada ligera para ProgramListComponent.
- * Sustituye la anterior capa legacy; carga datos desde /v2/layouts/{date}
- * y expone helpers básicos para mantener el componente funcionando.
- */
+interface ProgramListRequestState {
+  channelIds?: string[];
+  channelTypes?: string[];
+  timeSlot?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ProgramListFacadeService {
-  // Start in loading state so the UI never sees "not loading + no data" on first render
-  private loading$ = new BehaviorSubject<boolean>(true);
-  private error$ = new BehaviorSubject<string | null>(null);
-  private snapshot$ = new BehaviorSubject<ProgramListSnapshot | null>(null);
-  private currentDayIndex = 0; // -1..2; default today=0
-  private currentLoad$: any = null; // Changed to any or Subscription to avoid type errors with previous usage
+  private readonly loading$ = new BehaviorSubject<boolean>(true);
+  private readonly error$ = new BehaviorSubject<string | null>(null);
+  private readonly snapshot$ = new BehaviorSubject<ProgramListSnapshot | null>(null);
 
-  constructor(private programList: ProgramListService) {}
+  private currentDayIndex = 0;
+  private currentLoad$: any = null;
+  private requestState: ProgramListRequestState = {};
+
+  constructor(private readonly programList: ProgramListService) {}
 
   getProgramListData(): Observable<IProgramListData[]> {
-    // Trigger initial load if no data exists
     if (!this.snapshot$.value && !this.currentLoad$) {
       this.loadInitialData();
     }
 
-    // Return reactive stream that emits whenever snapshot changes
     return this.snapshot$.pipe(
       filter((snap): snap is ProgramListSnapshot => snap !== null),
       map((snap) => snap.channels)
     );
   }
 
-  /**
-   * Load initial data for current day index
-   */
-  private loadInitialData(): void {
-    this.loading$.next(true);
+  public configureEmbed(config: ProgramListEmbedConfig | null): void {
+    if (!config) {
+      return;
+    }
+
+    this.currentDayIndex = this.resolveDayIndex(config.date);
+    this.requestState = {
+      channelIds: config.channelIds?.length ? [...config.channelIds] : undefined,
+      channelTypes: config.channelTypes?.length
+        ? config.channelTypes.map((type) => String(type).trim().toUpperCase()).filter(Boolean)
+        : undefined,
+      timeSlot: this.normalizeTimeSlot(config.timeSlot),
+    };
+    this.snapshot$.next(null);
     this.error$.next(null);
-    
-    this.currentLoad$ = this.programList
-      .loadProgramList(this.aliasForIndex(this.currentDayIndex))
-      .pipe(
-        tap((snap) => {
-          console.log('[Facade] Initial data loaded:', snap.channels.length, 'channels');
-          this.snapshot$.next(snap);
-          this.loading$.next(false);
-          this.currentLoad$ = null;
-        }),
-        catchError((err) => {
-          console.error('[Facade] Initial load error:', err);
-          this.loading$.next(false);
-          this.error$.next(err?.message || 'Error loading program list');
-          this.currentLoad$ = null;
-          return of(null);
-        })
-      )
-      .subscribe();
   }
 
   getLoadingState(): Observable<boolean> {
@@ -69,14 +66,12 @@ export class ProgramListFacadeService {
   }
 
   refreshData(): Observable<{ success: boolean; data?: boolean; error?: string }> {
-    return this.getProgramListData().pipe(
-      map(() => ({ success: true, data: true })),
-      catchError((err) => of({ success: false, error: err?.message }))
-    );
+    const request$ = this.loadSnapshot(this.currentDayIndex).pipe(shareReplay(1));
+    request$.subscribe();
+    return request$;
   }
 
   getTimeSlots(): readonly string[][] {
-    // Fixed 3h slots as in README
     return [
       ['00:00', '03:00'],
       ['03:00', '06:00'],
@@ -94,10 +89,23 @@ export class ProgramListFacadeService {
     return Math.floor(now.getHours() / 3);
   }
 
+  getConfiguredTimeSlot(): number | null {
+    if (!this.requestState.timeSlot) {
+      return null;
+    }
+
+    const parsed = Number(this.requestState.timeSlot);
+    if (!Number.isInteger(parsed) || parsed < 0 || parsed > 7) {
+      return null;
+    }
+
+    return parsed;
+  }
+
   generateHoursForSlot(slotIndex: number): string[] {
     const start = slotIndex * 3;
     const hours: string[] = [];
-    for (let h = start; h <= start + 3; h++) {
+    for (let h = start; h <= start + 3; h += 1) {
       const hh = (h % 24).toString().padStart(2, '0');
       hours.push(`${hh}:00`);
     }
@@ -107,15 +115,21 @@ export class ProgramListFacadeService {
   formatDisplayTime(timeString: string): string {
     try {
       const d = new Date(timeString);
-      return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      return d.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
     } catch {
       return timeString;
     }
   }
 
-  calculateTimeIndicatorState(activeDay: number, currentTimeSlot: string): Observable<ITimeIndicatorState> {
+  calculateTimeIndicatorState(
+    activeDay: number,
+    _currentTimeSlot: string
+  ): Observable<ITimeIndicatorState> {
     const visible = activeDay === 0;
-    const leftPosition = 0; // Placeholder; UI recalculates via component
+    const leftPosition = 0;
     const currentTime = this.formatDisplayTime(new Date().toISOString());
     return of({ visible, leftPosition, currentTime });
   }
@@ -129,11 +143,15 @@ export class ProgramListFacadeService {
   }
 
   getDayButtonClasses(dayIndex: number, activeIndex: number): string {
-    return dayIndex === activeIndex ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-200';
+    return dayIndex === activeIndex
+      ? 'bg-red-600 text-white'
+      : 'bg-gray-800 text-gray-200';
   }
 
   getTimeSlotButtonClasses(timeSlot: string, activeSlot: string): string {
-    return timeSlot === activeSlot ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-200';
+    return timeSlot === activeSlot
+      ? 'bg-red-600 text-white'
+      : 'bg-gray-800 text-gray-200';
   }
 
   getProgramContainerClasses(isSelected: boolean, isLive?: boolean): string {
@@ -159,7 +177,7 @@ export class ProgramListFacadeService {
   generateDaysInfo(): IDayInfo[] {
     const days: IDayInfo[] = [];
     const base = new Date();
-    for (let i = -1; i <= 2; i++) {
+    for (let i = -1; i <= 2; i += 1) {
       const d = new Date(base);
       d.setDate(d.getDate() + i);
       let diaSemana = d.toLocaleDateString('es-ES', { weekday: 'long' });
@@ -174,22 +192,11 @@ export class ProgramListFacadeService {
     return days;
   }
 
-  loadProgramsForDay(dayIndex: number): Observable<{ success: boolean; data?: boolean; error?: string }> {
+  loadProgramsForDay(
+    dayIndex: number
+  ): Observable<{ success: boolean; data?: boolean; error?: string }> {
     this.currentDayIndex = dayIndex;
-    return this.programList
-      .loadProgramList(this.aliasForIndex(dayIndex))
-      .pipe(
-        tap((snap) => {
-          this.snapshot$.next(snap);
-          this.loading$.next(false);
-        }),
-        map(() => ({ success: true, data: true })),
-        catchError((err) => {
-          this.loading$.next(false);
-          this.error$.next(err?.message || 'Error loading day');
-          return of({ success: false, error: err?.message });
-        })
-      );
+    return this.loadSnapshot(dayIndex);
   }
 
   calculateProgramDuration(startTime: string, endTime: string): number {
@@ -206,7 +213,7 @@ export class ProgramListFacadeService {
   }
 
   diagnoseState(): void {
-    console.log('[ProgramListFacade] snapshot', this.snapshot$.value);
+    return;
   }
 
   resetAllCaches(): void {
@@ -218,11 +225,98 @@ export class ProgramListFacadeService {
     return this.currentDayIndex;
   }
 
+  private loadInitialData(): void {
+    this.loading$.next(true);
+    this.error$.next(null);
+
+    this.currentLoad$ = this.programList
+      .loadProgramList(this.aliasForIndex(this.currentDayIndex), this.buildLoadQuery())
+      .pipe(
+        tap((snap) => {
+          this.snapshot$.next(snap);
+          this.loading$.next(false);
+          this.currentLoad$ = null;
+        }),
+        catchError((err) => {
+          this.loading$.next(false);
+          this.error$.next(err?.message || 'Error loading program list');
+          this.currentLoad$ = null;
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+  private loadSnapshot(
+    dayIndex: number
+  ): Observable<{ success: boolean; data?: boolean; error?: string }> {
+    this.loading$.next(true);
+    this.error$.next(null);
+    return this.programList
+      .loadProgramList(this.aliasForIndex(dayIndex), this.buildLoadQuery())
+      .pipe(
+        tap((snap) => {
+          this.snapshot$.next(snap);
+          this.loading$.next(false);
+        }),
+        map(() => ({ success: true, data: true })),
+        catchError((err) => {
+          this.loading$.next(false);
+          this.error$.next(err?.message || 'Error loading day');
+          return of({ success: false, error: err?.message });
+        })
+      );
+  }
+
+  private buildLoadQuery(): Pick<
+    LayoutsQuery,
+    'channels' | 'channelTypes' | 'fields' | 'timeSlot'
+  > {
+    return {
+      fields: 'full',
+      channels: this.requestState.channelIds,
+      channelTypes: this.requestState.channelTypes,
+      timeSlot: this.requestState.timeSlot,
+    };
+  }
+
   private aliasForIndex(index: number): string {
     if (index === -1) return 'yesterday';
     if (index === 0) return 'today';
     if (index === 1) return 'tomorrow';
     if (index === 2) return 'after_tomorrow';
     return 'today';
+  }
+
+  private normalizeTimeSlot(value?: string | null): string | undefined {
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 0 || parsed > 7) {
+      return undefined;
+    }
+    return String(parsed);
+  }
+
+  private resolveDayIndex(rawDate?: string | null): number {
+    const value = String(rawDate || '').trim().toLowerCase();
+    if (!value || value === 'today') return 0;
+    if (value === 'yesterday') return -1;
+    if (value === 'tomorrow') return 1;
+    if (value === 'after_tomorrow') return 2;
+
+    if (/^\d{8}$/.test(value)) {
+      const year = Number(value.slice(0, 4));
+      const month = Number(value.slice(4, 6)) - 1;
+      const day = Number(value.slice(6, 8));
+      const requested = new Date(year, month, day);
+      const today = new Date();
+      requested.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      const diff = Math.round((requested.getTime() - today.getTime()) / 86_400_000);
+      if (diff >= -1 && diff <= 2) {
+        return diff;
+      }
+    }
+
+    return 0;
   }
 }

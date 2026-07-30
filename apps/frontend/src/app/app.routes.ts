@@ -29,22 +29,41 @@ export const routes: Routes = [
     data: { robots: 'noindex, follow' },
   },
   {
-    path: 'mi-cuenta',
+    path: 'perfil',
     loadComponent: () =>
       import('./pages/user-area/user-area.component').then(
         (m) => m.UserAreaComponent
       ),
-    title: 'Mi cuenta - Guía TV',
-    data: { robots: 'noindex, nofollow' },
+    title: 'Perfil - Guía TV',
+    data: { defaultTab: 'feed', robots: 'noindex, nofollow' },
+  },
+  {
+    path: 'mi-cuenta',
+    redirectTo: 'perfil',
+    pathMatch: 'full',
   },
   {
     path: 'comunidad',
+    redirectTo: 'perfil',
+    pathMatch: 'full',
+  },
+  {
+    path: 'perfil/:userId',
     loadComponent: () =>
-      import('./pages/user-area/user-area.component').then(
-        (m) => m.UserAreaComponent
+      import('./pages/public-profile/public-profile.component').then(
+        (m) => m.PublicProfileComponent
       ),
-    title: 'Comunidad - Guía TV',
-    data: { defaultTab: 'social', robots: 'noindex, nofollow' },
+    title: 'Perfil - Guía TV',
+    data: { robots: 'noindex, nofollow' },
+  },
+  {
+    path: 'para-ti',
+    loadComponent: () =>
+      import('./pages/for-you/for-you.component').then(
+        (m) => m.ForYouComponent
+      ),
+    title: 'Para ti - Guía TV',
+    data: { robots: 'noindex, nofollow' },
   },
   {
     path: 'admin',
@@ -79,13 +98,17 @@ export const routes: Routes = [
     title: 'Guía de Canales - Guía TV',
   },
   {
-    // SEO-friendly channel route used across the app (e.g. slider/navigation)
-    path: 'programacion-tv/ver-canal/:id',
+    path: 'canales/:id',
     loadComponent: () =>
       import('./pages/canal-completo/canal-completo.component').then(
         (m) => m.CanalCompletoComponent
       ),
     title: 'Canal - Guía TV',
+  },
+  {
+    path: 'programacion-tv/ver-canal/:id',
+    redirectTo: 'canales/:id',
+    pathMatch: 'full',
   },
   {
     path: 'programacion-tv/que-ver-hoy',
@@ -116,7 +139,7 @@ export const routes: Routes = [
   },
   {
     path: 'ver-canal/:id',
-    redirectTo: 'programacion-tv/ver-canal/:id',
+    redirectTo: 'canales/:id',
     pathMatch: 'full',
   },
   // Legacy single-parameter detail routes (redirect to canonical slug routes)
@@ -180,15 +203,29 @@ export const routes: Routes = [
     data: { mode: 'live' }
   },
   {
-    path: 'blog',
-    loadComponent: () =>
-      import('./blog/layout/blog-layout.component').then(
-        (m) => m.BlogLayoutComponent
-      ),
-    // attach children from the blog feature routes so the layout's <router-outlet>
-    // can render blog-home, post-detail, categories, etc.
+    path: 'editorial',
     children: BLOG_ROUTES && BLOG_ROUTES.length ? BLOG_ROUTES[0].children : [],
-    title: 'Blog - Guía TV',
+    title: 'Editorial - Guía TV',
+  },
+  {
+    path: 'blog/top10',
+    redirectTo: 'editorial/rankings',
+    pathMatch: 'full',
+  },
+  {
+    path: 'blog/categoria/:slug',
+    redirectTo: 'editorial/categoria/:slug',
+    pathMatch: 'full',
+  },
+  {
+    path: 'blog/:slug',
+    redirectTo: 'editorial/:slug',
+    pathMatch: 'full',
+  },
+  {
+    path: 'blog',
+    redirectTo: 'editorial',
+    pathMatch: 'full',
   },
   {
     path: 'program-full-details/:id',
@@ -198,6 +235,60 @@ export const routes: Routes = [
       ),
     title: 'Detalles del Programa - Guía TV',
     data: { legacyCatalogMode: 'program', robots: 'noindex, follow' },
+  },
+  {
+    path: 'sobre-nosotros',
+    loadComponent: () =>
+      import('./pages/about/about.component').then((m) => m.AboutComponent),
+    title: 'Sobre Nosotros - Guía TV',
+  },
+  {
+    path: 'prensa',
+    loadComponent: () =>
+      import('./pages/press-kit/press-kit.component').then(
+        (m) => m.PressKitComponent
+      ),
+    title: 'Kit de Prensa - Guía TV',
+  },
+  {
+    path: 'comparador-streaming',
+    loadComponent: () =>
+      import(
+        './pages/streaming-comparison/streaming-comparison.component'
+      ).then((m) => m.StreamingComparisonComponent),
+    title: 'Comparador de Streaming - Guía TV',
+  },
+  {
+    path: 'developers',
+    loadComponent: () =>
+      import('./pages/developers/developers.component').then(
+        (m) => m.DevelopersComponent
+      ),
+    title: 'API para Desarrolladores - Guía TV',
+  },
+  {
+    path: 'embed/programacion',
+    loadComponent: () =>
+      import('./pages/embed-page/embed-program-guide.component').then(
+        (m) => m.EmbedProgramGuideComponent
+      ),
+    title: 'Widget de Programación - Guía TV',
+  },
+  {
+    path: 'embed',
+    loadComponent: () =>
+      import('./pages/embed-page/embed-page.component').then(
+        (m) => m.EmbedPageComponent
+      ),
+    title: 'Widget Embebible - Guía TV',
+  },
+  {
+    path: 'tendencias',
+    loadComponent: () =>
+      import('./pages/stats/stats.component').then(
+        (m) => m.StatsComponent
+      ),
+    title: 'Tendencias TV y Streaming - Guía TV',
   },
   {
     path: 'avisolegal',

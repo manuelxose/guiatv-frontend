@@ -37,6 +37,7 @@ export interface SessionUser {
   name?: string;
   picture?: string;
   role?: 'admin' | 'editor' | 'user';
+  subscription?: 'free' | 'premium';
 }
 
 export interface AuthSessionView {
@@ -271,6 +272,7 @@ export class AuthService {
         name: user.name,
         picture: user.picture,
         role: user.role,
+        subscription: (user as any).subscription || 'free',
       };
     } catch (error) {
       logger.warn('Failed to validate session token', { error });
@@ -401,6 +403,44 @@ export class AuthService {
 
     resetToken.usedAt = new Date();
     await resetToken.save();
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> {
+    if (!currentPassword) {
+      throw new ValidationError('current password is required', [
+        { field: 'currentPassword', message: 'Current password is required' },
+      ]);
+    }
+    if (!newPassword || newPassword.length < PASSWORD_MIN_LENGTH) {
+      throw new ValidationError('new password is invalid', [
+        {
+          field: 'newPassword',
+          message: `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
+        },
+      ]);
+    }
+
+    const user = await this.userRepo.findById(userId);
+    if (!user) {
+      throw new UnauthorizedError('User not found');
+    }
+    if (!user.passwordHash || !user.passwordSalt) {
+      throw new ValidationError('password login not configured', [
+        { field: 'currentPassword', message: 'This account does not have a password set. Use forgot-password instead.' },
+      ]);
+    }
+
+    const valid = await this.verifyPassword(currentPassword, user.passwordSalt, user.passwordHash);
+    if (!valid) {
+      throw new UnauthorizedError('Current password is incorrect');
+    }
+
+    const { salt, hash } = await this.createPasswordHash(newPassword);
+    await this.userRepo.updatePassword(userId, hash, salt);
   }
 
   private async issueSession(user: any, ctx: SessionContext): Promise<AuthResult> {
@@ -622,5 +662,11 @@ export class AuthService {
     const expected = Buffer.from(expectedHash, 'hex');
     if (expected.length !== derived.length) return false;
     return crypto.timingSafeEqual(expected, derived);
+  }
+
+  async verifyPasswordForUser(userId: string, password: string): Promise<boolean> {
+    const user = await this.userRepo.findById(userId);
+    if (!user || !user.passwordHash || !user.passwordSalt) return false;
+    return this.verifyPassword(password, user.passwordSalt, user.passwordHash);
   }
 }

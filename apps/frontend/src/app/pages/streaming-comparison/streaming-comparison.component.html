@@ -1,0 +1,400 @@
+<div class="min-h-screen bg-[#081018] text-slate-100">
+  <div class="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
+    <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
+
+    <section
+      class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.2),_rgba(8,16,24,0.94)_48%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-10"
+    >
+      <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_35%,transparent_65%,rgba(56,189,248,0.08))]"></div>
+      <div class="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+        <div class="space-y-6">
+          <div
+            class="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-red-200"
+          >
+            Comparador editorial
+          </div>
+
+          <div class="space-y-3">
+            <h1 class="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
+              Compara plataformas sin salir del catálogo real de la app.
+            </h1>
+            <p class="max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
+              Reunimos precios de entrada, límites de uso y señales editoriales de las plataformas que
+              ya puedes abrir en <span class="font-semibold text-white">/plataformas</span>. Menos landing
+              aislada, más decisión útil.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            <a
+              [routerLink]="appPaths.platforms"
+              class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-red-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+            >
+              Abrir plataformas
+            </a>
+            <a
+              [routerLink]="appPaths.explore"
+              class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-6 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-500 hover:text-white"
+            >
+              Explorar catálogo completo
+            </a>
+          </div>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <article
+            *ngFor="let card of summaryCards"
+            class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4"
+          >
+            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">{{ card.label }}</p>
+            <p class="mt-2 text-2xl font-bold text-white">{{ card.value }}</p>
+            <p class="mt-1 text-sm leading-6 text-slate-400">{{ card.description }}</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="relative mt-8 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+        <span class="rounded-full border border-slate-700 bg-slate-950/60 px-3 py-1.5">
+          Revisión editorial: {{ lastReviewedAt }}
+        </span>
+        <span class="rounded-full border border-slate-700 bg-slate-950/60 px-3 py-1.5">
+          Naming canónico del catálogo
+        </span>
+        <span class="rounded-full border border-slate-700 bg-slate-950/60 px-3 py-1.5">
+          Deep links reales a /plataformas
+        </span>
+      </div>
+    </section>
+
+    <section class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
+      <article class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/80 p-6">
+        <p class="text-[11px] uppercase tracking-[0.34em] text-slate-500">Resumen rápido</p>
+        <h2 class="mt-3 text-2xl font-semibold text-white">Qué compara esta página</h2>
+        <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+          No es un directorio genérico. La comparativa cruza señales editoriales con los proveedores que
+          la app ya sabe filtrar en España, así que cada recomendación desemboca en una vista útil y no en
+          una ficha huérfana.
+        </p>
+
+        <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div class="rounded-[1.25rem] border border-slate-800/80 bg-slate-900/70 p-4">
+            <p class="text-sm font-semibold text-white">Precio de entrada</p>
+            <p class="mt-2 text-sm leading-6 text-slate-400">
+              Tomamos el plan mensual más accesible publicado de forma visible o indicamos si no es estable.
+            </p>
+          </div>
+          <div class="rounded-[1.25rem] border border-slate-800/80 bg-slate-900/70 p-4">
+            <p class="text-sm font-semibold text-white">Límites de uso</p>
+            <p class="mt-2 text-sm leading-6 text-slate-400">
+              Pantallas, resolución, descargas y presencia de anuncios resumidos sin convertir la tabla en una ficha técnica infinita.
+            </p>
+          </div>
+          <div class="rounded-[1.25rem] border border-slate-800/80 bg-slate-900/70 p-4 sm:col-span-2 xl:col-span-1">
+            <p class="text-sm font-semibold text-white">Encaje editorial</p>
+            <p class="mt-2 text-sm leading-6 text-slate-400">
+              Añadimos “para quién encaja” y una nota práctica para decidir rápido antes de abrir el catálogo.
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <article class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/80 p-6">
+        <p class="text-[11px] uppercase tracking-[0.34em] text-slate-500">Perfiles</p>
+        <h2 class="mt-3 text-2xl font-semibold text-white">Elige según tu uso</h2>
+
+        <div class="mt-5 space-y-4">
+          <article
+            *ngFor="let profile of profileCards"
+            class="rounded-[1.25rem] border border-slate-800/80 bg-slate-900/70 p-4"
+          >
+            <h3 class="text-sm font-semibold text-white">{{ profile.title }}</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-400">{{ profile.description }}</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <span
+                *ngFor="let platformName of profile.platformNames"
+                class="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1.5 text-xs font-semibold text-slate-200"
+              >
+                {{ platformName }}
+              </span>
+            </div>
+          </article>
+        </div>
+      </article>
+    </section>
+
+    <section class="mt-10">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="text-[11px] uppercase tracking-[0.34em] text-slate-500">Tabla comparativa</p>
+          <h2 class="mt-2 text-3xl font-bold text-white">Precios, límites y señales clave</h2>
+        </div>
+        <p class="max-w-2xl text-sm leading-6 text-slate-400">
+          La primera columna es sticky para que la comparación siga siendo legible en móvil. Cada nombre de
+          plataforma ya es un acceso directo a su catálogo filtrado.
+        </p>
+      </div>
+
+      <div class="mt-5 overflow-hidden rounded-[1.75rem] border border-slate-800/80 bg-slate-950/82 shadow-[0_20px_40px_rgba(0,0,0,0.22)]">
+        <div class="overflow-x-auto comparison-table-wrap">
+          <table class="comparison-table w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-slate-800/80 bg-slate-900/70">
+                <th class="comparison-table__sticky comparison-table__sticky--header min-w-[220px] px-4 py-4 font-semibold text-white">
+                  Plataforma
+                </th>
+                <th class="px-4 py-4 text-center font-semibold text-slate-300 whitespace-nowrap">Mensual desde</th>
+                <th class="px-4 py-4 text-center font-semibold text-slate-300 whitespace-nowrap">Anual desde</th>
+                <th class="px-4 py-4 text-center font-semibold text-slate-300 whitespace-nowrap">Prueba</th>
+                <th class="px-4 py-4 text-center font-semibold text-slate-300 whitespace-nowrap">Pantallas</th>
+                <th class="px-4 py-4 text-center font-semibold text-slate-300 whitespace-nowrap">Resolución</th>
+                <th class="px-4 py-4 text-center font-semibold text-slate-300 whitespace-nowrap">Descargas</th>
+                <th class="px-4 py-4 text-center font-semibold text-slate-300 whitespace-nowrap">Anuncios</th>
+                <th class="px-4 py-4 text-center font-semibold text-slate-300 whitespace-nowrap">Directo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let comparison of platformComparisons; let odd = odd; trackBy: trackByPlatformKey"
+                class="border-b border-slate-800/60 transition-colors hover:bg-slate-900/35"
+                [ngClass]="odd ? 'bg-slate-950/45' : 'bg-slate-950/10'"
+              >
+                <th
+                  scope="row"
+                  class="comparison-table__sticky px-4 py-4 align-top"
+                  [ngClass]="odd ? 'bg-slate-950/95' : 'bg-slate-950/92'"
+                >
+                  <a
+                    [routerLink]="appPaths.platforms"
+                    [queryParams]="comparison.queryParams"
+                    [attr.aria-label]="'Abrir catálogo de ' + comparison.platform.name"
+                    class="group flex items-start gap-3"
+                  >
+                    <span class="platform-avatar" [ngClass]="comparison.accentClass">
+                      <img
+                        *ngIf="comparison.platform.logoUrl"
+                        [src]="comparison.platform.logoUrl"
+                        [alt]="comparison.platform.name"
+                        class="h-full w-full object-contain"
+                        loading="lazy"
+                      />
+                      <span *ngIf="!comparison.platform.logoUrl">{{ comparison.initials }}</span>
+                    </span>
+                    <span class="min-w-0">
+                      <span class="block text-sm font-semibold text-white transition-colors group-hover:text-red-300">
+                        {{ comparison.platform.name }}
+                      </span>
+                      <span class="mt-1 block text-xs text-slate-500">{{ comparison.profile }}</span>
+                    </span>
+                  </a>
+                </th>
+                <td class="px-4 py-4 text-center text-slate-200">{{ comparison.startingMonthlyPrice }}</td>
+                <td class="px-4 py-4 text-center text-slate-200">{{ comparison.startingAnnualPrice }}</td>
+                <td class="px-4 py-4 text-center text-slate-200">{{ comparison.freeTrial }}</td>
+                <td class="px-4 py-4 text-center text-slate-200">{{ comparison.simultaneousStreams }}</td>
+                <td class="px-4 py-4 text-center text-slate-200">{{ comparison.maxResolution }}</td>
+                <td class="px-4 py-4 text-center">
+                  <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClasses(comparison.downloads.tone)">
+                    {{ comparison.downloads.label }}
+                  </span>
+                </td>
+                <td class="px-4 py-4 text-center">
+                  <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClasses(comparison.ads.tone)">
+                    {{ comparison.ads.label }}
+                  </span>
+                </td>
+                <td class="px-4 py-4 text-center">
+                  <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="statusClasses(comparison.liveContent.tone)">
+                    {{ comparison.liveContent.label }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span
+          *ngFor="let legendItem of legendItems"
+          class="inline-flex rounded-full px-3 py-1.5 text-xs font-semibold"
+          [ngClass]="statusClasses(legendItem.tone)"
+        >
+          {{ legendItem.label }}
+        </span>
+      </div>
+
+      <p class="mt-3 text-xs leading-6 text-slate-500">
+        * “Mensual desde” y “Anual desde” se refieren al primer precio público detectable en España o al
+        plan anual más competitivo visible en la web oficial. Si una plataforma no lo publica de forma clara,
+        lo marcamos como no disponible.
+      </p>
+    </section>
+
+    <section class="mt-10">
+      <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="text-[11px] uppercase tracking-[0.34em] text-slate-500">Por plataforma</p>
+          <h2 class="mt-2 text-3xl font-bold text-white">Elige por encaje real, no solo por precio</h2>
+        </div>
+        <p class="max-w-2xl text-sm leading-6 text-slate-400">
+          Cada tarjeta resume el porqué de la plataforma y termina en el catálogo filtrado que ya maneja la app.
+        </p>
+      </div>
+
+      <div class="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <article
+          *ngFor="let comparison of platformComparisons; trackBy: trackByPlatformKey"
+          class="editorial-card rounded-[1.75rem] border border-slate-800/80 bg-slate-950/80 p-6"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <span class="platform-avatar platform-avatar--small" [ngClass]="comparison.accentClass">
+                <img
+                  *ngIf="comparison.platform.logoUrl"
+                  [src]="comparison.platform.logoUrl"
+                  [alt]="comparison.platform.name"
+                  class="h-full w-full object-contain"
+                  loading="lazy"
+                />
+                <span *ngIf="!comparison.platform.logoUrl">{{ comparison.initials }}</span>
+              </span>
+              <div>
+                <h3 class="text-lg font-semibold text-white">{{ comparison.platform.name }}</h3>
+                <p class="text-xs text-slate-500">{{ comparison.lastReviewedAt }}</p>
+              </div>
+            </div>
+
+            <span
+              class="rounded-full border px-3 py-1 text-xs font-semibold"
+              [ngStyle]="{
+                borderColor: comparison.platform.color,
+                background: comparison.platform.color + '1a',
+                color: '#ffffff'
+              }"
+            >
+              {{ comparison.bestFor }}
+            </span>
+          </div>
+
+          <p class="mt-5 text-sm leading-7 text-slate-300">{{ comparison.highlight }}</p>
+
+          <div class="mt-5 grid gap-3 sm:grid-cols-2">
+            <div class="rounded-[1.25rem] border border-slate-800/80 bg-slate-900/70 p-4">
+              <p class="text-[11px] uppercase tracking-[0.25em] text-slate-500">Mensual</p>
+              <p class="mt-2 text-xl font-semibold text-white">{{ comparison.startingMonthlyPrice }}</p>
+            </div>
+            <div class="rounded-[1.25rem] border border-slate-800/80 bg-slate-900/70 p-4">
+              <p class="text-[11px] uppercase tracking-[0.25em] text-slate-500">Anual</p>
+              <p class="mt-2 text-xl font-semibold text-white">{{ comparison.startingAnnualPrice }}</p>
+            </div>
+          </div>
+
+          <div class="mt-5 flex flex-wrap gap-2">
+            <span class="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs font-semibold text-slate-200">
+              {{ comparison.simultaneousStreams }} pantallas
+            </span>
+            <span class="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs font-semibold text-slate-200">
+              {{ comparison.maxResolution }}
+            </span>
+            <span class="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1.5 text-xs font-semibold text-slate-200">
+              {{ comparison.freeTrial }}
+            </span>
+          </div>
+
+          <p class="mt-5 text-sm leading-6 text-slate-400">{{ comparison.note }}</p>
+
+          <a
+            [routerLink]="appPaths.platforms"
+            [queryParams]="comparison.queryParams"
+            class="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-full bg-red-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+          >
+            Abrir catálogo filtrado
+          </a>
+        </article>
+      </div>
+    </section>
+
+    <section class="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <article class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/80 p-6">
+        <p class="text-[11px] uppercase tracking-[0.34em] text-slate-500">Metodología</p>
+        <h2 class="mt-3 text-3xl font-bold text-white">Cómo se lee esta comparativa</h2>
+        <p class="mt-3 text-sm leading-7 text-slate-300">
+          Esta página mezcla información editorial curada con el catálogo operativo de Guía TV. No dependemos
+          de una API remota para renderizarla, pero sí respetamos el naming y los proveedores que la app reconoce
+          en /plataformas.
+        </p>
+
+        <ul class="mt-5 space-y-3 text-sm leading-7 text-slate-400">
+          <li>Se comparan solo plataformas que ya tienen encaje real en la experiencia de catálogo de la app.</li>
+          <li>El precio mensual refleja la entrada visible o la referencia pública más clara encontrada para España.</li>
+          <li>Cuando el anual no es estable o no aparece de forma pública, lo marcamos como no disponible.</li>
+          <li>Las etiquetas “Sí”, “Según plan” y “No” priorizan lectura rápida sobre el detalle contractual completo.</li>
+        </ul>
+      </article>
+
+      <article class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/80 p-6">
+        <p class="text-[11px] uppercase tracking-[0.34em] text-slate-500">Siguiente paso</p>
+        <h2 class="mt-3 text-2xl font-semibold text-white">Salta del criterio al catálogo</h2>
+        <p class="mt-3 text-sm leading-7 text-slate-300">
+          Si la comparación ya te aclaró el mapa, el siguiente paso útil es abrir la vista de plataformas y
+          quedarte solo con el proveedor que te interesa.
+        </p>
+
+        <div class="mt-6 flex flex-col gap-3">
+          <a
+            [routerLink]="appPaths.platforms"
+            class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-red-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+          >
+            Abrir catálogo por plataformas
+          </a>
+          <a
+            [routerLink]="appPaths.explore"
+            class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-5 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-500 hover:text-white"
+          >
+            Ver todo el catálogo
+          </a>
+        </div>
+      </article>
+    </section>
+
+    <section class="mt-10 rounded-[1.75rem] border border-slate-800/80 bg-slate-950/80 p-6">
+      <p class="text-[11px] uppercase tracking-[0.34em] text-slate-500">Preguntas frecuentes</p>
+      <h2 class="mt-3 text-3xl font-bold text-white">Preguntas frecuentes</h2>
+
+      <div class="mt-6 grid gap-4 md:grid-cols-2">
+        <article
+          *ngFor="let faq of faqItems"
+          class="faq-card rounded-[1.5rem] border border-slate-800/80 bg-slate-900/70 p-5"
+        >
+          <h3 class="text-base font-semibold text-white">{{ faq.question }}</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-400">{{ faq.answer }}</p>
+        </article>
+      </div>
+    </section>
+
+    <section
+      class="mt-10 rounded-[1.75rem] border border-red-500/20 bg-[linear-gradient(135deg,rgba(239,68,68,0.12),rgba(15,23,42,0.92))] p-8 text-center"
+    >
+      <p class="text-[11px] uppercase tracking-[0.34em] text-red-200">Cierre</p>
+      <h2 class="mt-3 text-3xl font-bold text-white">Compara aquí. Decide viendo el catálogo real.</h2>
+      <p class="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+        El rework deja esta página conectada con el resto de la app: mismo lenguaje visual, mismos nombres
+        de plataforma y mismo destino útil cuando haces clic.
+      </p>
+      <div class="mt-6 flex flex-wrap justify-center gap-3">
+        <a
+          [routerLink]="appPaths.platforms"
+          class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-red-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+        >
+          Ir a plataformas
+        </a>
+        <a
+          [routerLink]="appPaths.top10"
+          class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-6 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-500 hover:text-white"
+        >
+          Ver rankings editoriales
+        </a>
+      </div>
+    </section>
+  </div>
+</div>

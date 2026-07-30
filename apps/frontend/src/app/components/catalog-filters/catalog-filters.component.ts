@@ -7,8 +7,8 @@ import {
   CatalogQuery,
   CatalogSort,
   FALLBACK_CATALOG_GENRES,
-  FALLBACK_CATALOG_PLATFORMS,
 } from '../../services/catalog.service';
+import { FALLBACK_CATALOG_PLATFORMS } from '../../data/catalog-platforms.data';
 
 type FilterVariant = 'explore' | 'platforms' | 'content-type' | 'guide';
 

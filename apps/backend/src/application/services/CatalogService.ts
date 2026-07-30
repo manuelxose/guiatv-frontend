@@ -1261,7 +1261,7 @@ export class CatalogService {
       timeSlot: String(params.timeSlot || '').trim(),
       sort: this.normalizeSort(params.sort),
       page: Math.max(1, Number(params.page || 1)),
-      limit: Math.min(48, Math.max(1, Number(params.limit || 24))),
+      limit: Math.min(240, Math.max(1, Number(params.limit || 24))),
     };
   }
 

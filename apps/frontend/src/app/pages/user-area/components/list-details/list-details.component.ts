@@ -2,6 +2,17 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { UserList, UserListItem } from '../../../../interfaces/user.interface';
 
+const COVER_GRADIENTS = [
+  'from-red-600/50 to-red-950/80',
+  'from-amber-600/50 to-amber-950/80',
+  'from-blue-600/50 to-blue-950/80',
+  'from-emerald-600/50 to-emerald-950/80',
+  'from-violet-600/50 to-violet-950/80',
+  'from-sky-600/50 to-sky-950/80',
+  'from-rose-600/50 to-rose-950/80',
+  'from-teal-600/50 to-teal-950/80',
+];
+
 @Component({
   selector: 'app-list-details',
   standalone: true,
@@ -18,10 +29,28 @@ import { UserList, UserListItem } from '../../../../interfaces/user.interface';
       >
         <div class="relative h-48 flex-shrink-0">
           <img
-            [src]="list.cover || '/assets/default-cover.jpg'"
+            *ngIf="list.cover"
+            [src]="list.cover"
             class="absolute inset-0 w-full h-full object-cover opacity-70"
             alt=""
           />
+          <img
+            *ngIf="!list.cover && getFirstPoster()"
+            [src]="getFirstPoster()"
+            class="absolute inset-0 w-full h-full object-cover opacity-40 blur-sm"
+            alt=""
+          />
+          <div
+            *ngIf="!list.cover && !getFirstPoster()"
+            class="absolute inset-0 bg-gradient-to-br"
+            [ngClass]="getCoverGradient(list.title)"
+          >
+            <div class="absolute inset-0 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white/10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+              </svg>
+            </div>
+          </div>
           <div class="absolute inset-0 bg-black/50"></div>
           <div class="relative z-10 h-full flex items-end justify-between p-6 gap-4">
             <div>
@@ -121,5 +150,18 @@ export class ListDetailsComponent {
   onRemoveItem(itemId: string, event: Event) {
     event.stopPropagation();
     this.removeItem.emit(itemId);
+  }
+
+  getFirstPoster(): string | null {
+    const poster = this.items.find((item) => item.poster)?.poster;
+    return poster || null;
+  }
+
+  getCoverGradient(title: string): string {
+    let hash = 0;
+    for (let i = 0; i < title.length; i++) {
+      hash = ((hash << 5) - hash + title.charCodeAt(i)) | 0;
+    }
+    return COVER_GRADIENTS[Math.abs(hash) % COVER_GRADIENTS.length];
   }
 }

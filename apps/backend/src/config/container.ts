@@ -1,6 +1,7 @@
 import { logger } from '../shared/utils/logger';
 import { connectMongoDB, mongoose as mongooseInstance } from './mongodb';
 import { ensureMongoCollectionsAndIndexes } from '../infrastructure/database/initializeMongoCollections';
+import { ensureEditorialSeedData } from '../application/services/EditorialSeedService';
 
 // Lightweight local type aliases to avoid compile-time coupling while
 // preserving clearer intent in the container implementation.
@@ -58,6 +59,7 @@ export class Container {
       this.dependencies.set('mongoDb', nativeDb);
 
       await ensureMongoCollectionsAndIndexes();
+      await ensureEditorialSeedData();
 
       logger.info('MongoDB (mongoose) initialized and registered in container');
     } catch (e) {
@@ -215,6 +217,9 @@ export class Container {
     const { AuthService } = await import('../domain/services/AuthService');
     const { BlogService } = await import('../infrastructure/external/BlogService');
     const { AnalyticsService } = await import('../application/services/AnalyticsService');
+    const { AssistantMemoryService } = await import(
+      '../application/services/AssistantMemoryService'
+    );
     const { AIRecommendationService } = await import(
       '../infrastructure/external/AIRecommendationService'
     );
@@ -251,6 +256,9 @@ export class Container {
     const analyticsService = new AnalyticsService(analyticsRepository);
     this.dependencies.set('analyticsService', analyticsService);
 
+    const assistantMemoryService = new AssistantMemoryService();
+    this.dependencies.set('assistantMemoryService', assistantMemoryService);
+
     const blogBaseUrl =
       process.env.BLOG_API_URL ||
       process.env.API_BLOG ||
@@ -265,11 +273,15 @@ export class Container {
 
     if (
       process.env.AI_CHATBOT_ENABLED === 'true' &&
-      process.env.ANTHROPIC_API_KEY
+      (process.env.DEEPSEEK_API_KEY || process.env.ANTHROPIC_API_KEY)
     ) {
-      const aiRecommendationService = new AIRecommendationService(
-        process.env.ANTHROPIC_API_KEY
-      );
+      const aiRecommendationService = new AIRecommendationService({
+        provider: process.env.AI_PROVIDER,
+        deepseekApiKey: process.env.DEEPSEEK_API_KEY,
+        anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+        deepseekModel: process.env.AI_CHATBOT_MODEL,
+        anthropicModel: process.env.AI_CHATBOT_ANTHROPIC_MODEL,
+      });
       this.dependencies.set('aiRecommendationService', aiRecommendationService);
     }
 
@@ -416,7 +428,9 @@ export class Container {
         this.get('aiRecommendationService'),
         interactionRepository,
         userRepository,
-        catalogService
+        catalogService,
+        this.get('assistantMemoryService'),
+        this.has('cacheRepository') ? this.get('cacheRepository') : undefined
       );
       this.dependencies.set('chatbotRecommend', chatbotRecommend);
     }
@@ -528,9 +542,17 @@ export class Container {
 
     const aiController = new AIController(
       this.has('chatbotRecommend') ? this.get('chatbotRecommend') : null,
-      this.get('cacheRepository')
+      this.get('cacheRepository'),
+      this.get('assistantMemoryService')
     );
     this.dependencies.set('aiController', aiController);
+
+    const { AIAnalyticsService } = await import('../application/services/AIAnalyticsService');
+    const { AIAnalyticsController } = await import('../presentation/controllers/AIAnalyticsController');
+    const aiAnalyticsService = new AIAnalyticsService(this.get('cacheRepository'));
+    this.dependencies.set('aiAnalyticsService', aiAnalyticsService);
+    const aiAnalyticsController = new AIAnalyticsController(aiAnalyticsService);
+    this.dependencies.set('aiAnalyticsController', aiAnalyticsController);
 
     const { SitemapController } = await import('../presentation/controllers/SitemapController');
     const sitemapController = new SitemapController(

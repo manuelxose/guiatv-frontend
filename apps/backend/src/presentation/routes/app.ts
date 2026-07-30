@@ -2,7 +2,6 @@
 
 import express, { Application } from 'express';
 import path from 'path';
-import fs from 'fs';
 import { createV2Routes, RoutesDependencies } from './index';
 import { createBlogRoutes } from './blog.routes';
 import { createSitemapRoutes } from './sitemap.routes';
@@ -22,6 +21,7 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
 
   // Evitar respuestas 304 por etag en datos dinámicos
   app.disable('etag');
+  app.set('trust proxy', 1);
 
   // Sitemap — mounted before the no-store middleware so it can send its own Cache-Control headers
   app.use('/', createSitemapRoutes(dependencies.sitemapController));
@@ -40,8 +40,6 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
   const storagePath = process.env.STORAGE_LOCAL_PATH
     ? path.resolve(process.env.STORAGE_LOCAL_PATH)
     : path.join(__dirname, '../../../storage');
-  console.log('📂 Serving storage from:', storagePath);
-  console.log('📂 Directory exists:', fs.existsSync(storagePath));
   app.use('/storage', express.static(storagePath));
 
   // Middlewares globales

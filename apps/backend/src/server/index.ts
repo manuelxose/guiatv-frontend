@@ -43,6 +43,7 @@ async function startServer() {
       socialController: container.get('socialController'),
       chatController: container.get('chatController'),
       aiController: container.get('aiController'),
+      aiAnalyticsController: container.get('aiAnalyticsController'),
       sitemapController: container.get('sitemapController'),
     });
 

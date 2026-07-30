@@ -17,6 +17,8 @@ export class MenuComponent implements OnInit, OnDestroy {
   public activeKey = 'home';
   public readonly primaryRoutes = this.menuState.getHeaderRoutes();
   public readonly secondaryRoutes = this.menuState.getSecondaryRoutes();
+  public readonly resourceRoutes = this.menuState.getResourceRoutes();
+  public readonly toolRoutes = this.menuState.getToolRoutes();
   public readonly userRoutes = this.menuState.getUserRoutes();
   public readonly isAuthenticated$ = this.userService.isAuthenticated$;
 
@@ -69,6 +71,7 @@ export class MenuComponent implements OnInit, OnDestroy {
   logout(): void {
     this.userService.logout();
     this.menuState.setActive('home');
+    this.menuState.setMobile(false);
     this.router.navigateByUrl('/iniciar-sesion');
   }
 

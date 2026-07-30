@@ -1,0 +1,17 @@
+<div
+  class="embed-widget"
+  [class.embed-widget--light]="config.theme === 'light'"
+  [class.embed-widget--dark]="config.theme === 'dark'"
+>
+  <header class="embed-widget__header">
+    <div>
+      <p class="embed-widget__eyebrow">Guía TV</p>
+      <h1 class="embed-widget__title">Programación en directo</h1>
+    </div>
+    <a href="https://guiaprogramaciontv.com" target="_blank" rel="noopener noreferrer" class="embed-widget__brand">
+      Powered by Guía TV
+    </a>
+  </header>
+
+  <app-program-list mode="embed" [embedConfig]="config"></app-program-list>
+</div>

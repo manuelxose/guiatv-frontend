@@ -36,9 +36,11 @@
         </svg>
       </button>
 
+      <app-notification-bell *ngIf="isAuthenticated$ | async"></app-notification-bell>
+
       <ng-container *ngIf="isAuthenticated$ | async; else loginBtn">
         <a
-          [routerLink]="appPaths.account"
+          [routerLink]="appPaths.profile"
           class="min-h-[44px] min-w-[44px] flex items-center justify-center"
           aria-label="Mi perfil"
         >
@@ -64,8 +66,52 @@
           Acceder
         </a>
       </ng-template>
+
+      <button
+        type="button"
+        (click)="toggleMobileMenu()"
+        class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-slate-300 hover:text-white"
+        [attr.aria-expanded]="isMobileMenuOpen"
+        aria-label="Abrir menú"
+      >
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h10"></path>
+        </svg>
+      </button>
     </div>
   </header>
+
+  <div
+    *ngIf="isMobileMenuOpen"
+    class="fixed inset-0 z-[120] md:hidden"
+  >
+    <button
+      type="button"
+      class="absolute inset-0 bg-black/65 backdrop-blur-sm"
+      (click)="closeMobileMenu()"
+      aria-label="Cerrar menú"
+    ></button>
+    <aside class="absolute right-0 top-0 h-full w-[min(88vw,24rem)] overflow-y-auto border-l border-slate-800 bg-slate-950 px-5 pb-8 pt-5 shadow-[0_24px_60px_rgba(0,0,0,0.55)]">
+      <div class="mb-5 flex items-center justify-between">
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500">Guía TV</p>
+          <p class="mt-1 text-lg font-semibold text-white">Menú</p>
+        </div>
+        <button
+          type="button"
+          class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-300 hover:text-white"
+          (click)="closeMobileMenu()"
+          aria-label="Cerrar menú"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6 18 18M18 6 6 18"></path>
+          </svg>
+        </button>
+      </div>
+
+      <app-menu></app-menu>
+    </aside>
+  </div>
 
   <div class="flex flex-1 w-full min-h-0">
     <app-left-sidebar
@@ -75,21 +121,20 @@
     ></app-left-sidebar>
 
     <main
-      class="flex-1 min-h-0 overflow-x-hidden"
-      style="padding-top: var(--top-bar-h, 0px); padding-bottom: var(--bottom-nav-h, 0px)"
+      class="app-shell-main flex-1 min-h-0 overflow-x-hidden"
     >
       <router-outlet></router-outlet>
     </main>
   </div>
 
-  <app-footer class="hidden md:block"></app-footer>
+  <app-footer *ngIf="showDesktopShell" class="hidden md:block"></app-footer>
 
   <nav
     *ngIf="showMobileBottomNav"
     class="fixed bottom-0 inset-x-0 z-[74] md:hidden bg-slate-950/98 backdrop-blur-xl border-t border-slate-800/50 shadow-[0_-8px_32px_rgba(0,0,0,0.6)] pb-[env(safe-area-inset-bottom)]"
     aria-label="Navegación principal"
   >
-    <div class="grid grid-cols-5 h-16">
+    <div class="grid grid-cols-4 h-16">
       <button
         *ngFor="let tab of mobileTabs"
         type="button"
@@ -120,7 +165,7 @@
             ></path>
           </svg>
 
-          <ng-container *ngIf="tab.key === 'comunidad' && (isAuthenticated$ | async)">
+          <ng-container *ngIf="tab.key === 'perfil' && (isAuthenticated$ | async)">
             <span class="absolute -right-1 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-950"></span>
             <span class="absolute -right-1 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 opacity-70 animate-ping"></span>
           </ng-container>
@@ -139,7 +184,7 @@
   </nav>
 
   <button
-    *ngIf="shouldShowMobileChatbotFab() && (isAuthenticated$ | async)"
+    *ngIf="shouldShowMobileChatbotFab()"
     type="button"
     (click)="toggleChatbot()"
     class="fixed bottom-[80px] right-4 z-[73] flex h-14 w-14 items-center justify-center rounded-full border border-red-500/40 bg-gradient-to-br from-red-600 to-red-700 text-white shadow-[0_8px_24px_rgba(239,68,68,0.4)] transition-transform active:scale-95"
@@ -151,19 +196,53 @@
     </svg>
   </button>
 
-  <div
-    *ngIf="isChatbotOpen"
-    class="fixed inset-0 z-[150] md:hidden"
-    (click)="closeChatbot()"
-  >
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-    <div
-      class="absolute bottom-0 inset-x-0 h-[90dvh] overflow-hidden rounded-t-3xl"
-      (click)="$event.stopPropagation()"
+  <!-- Mobile: full overlay or minimized bar -->
+  <ng-container *ngIf="isChatbotOpen || isChatMinimized">
+    <!-- Minimized bar -->
+    <button
+      *ngIf="isChatMinimized"
+      type="button"
+      (click)="restoreChatbot()"
+      class="fixed bottom-[80px] inset-x-4 z-[150] flex items-center gap-3 rounded-2xl border border-slate-700 bg-slate-950/95 px-4 py-3 text-white shadow-lg backdrop-blur-sm md:hidden"
     >
-      <app-ai-chatbot (close)="closeChatbot()"></app-ai-chatbot>
+      <svg class="h-5 w-5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3 13.8 8.2 19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"></path>
+      </svg>
+      <span class="flex-1 text-sm font-medium">Asistente IA</span>
+      <svg class="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"></path>
+      </svg>
+    </button>
+
+    <!-- Full overlay -->
+    <div
+      *ngIf="isChatbotOpen"
+      class="fixed inset-0 z-[150] md:hidden"
+      [class.invisible]="isChatMinimized"
+      [class.pointer-events-none]="isChatMinimized"
+      (click)="closeChatbot()"
+    >
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+      <div
+        class="absolute bottom-0 inset-x-0 h-[100dvh] overflow-hidden rounded-t-3xl"
+        (click)="$event.stopPropagation()"
+        [style.transform]="'translateY(' + swipeOffsetY + 'px)'"
+        [style.transition]="swipeAnimating ? 'transform 0.3s ease' : 'none'"
+      >
+        <!-- Swipe handle (exclusive gesture target) -->
+        <div
+          class="flex justify-center py-3 cursor-grab active:cursor-grabbing"
+          style="touch-action: none"
+          (touchstart)="onSwipePanelStart($event)"
+          (touchmove)="onSwipePanelMove($event)"
+          (touchend)="onSwipePanelEnd()"
+        >
+          <div class="h-1.5 w-12 rounded-full bg-slate-500"></div>
+        </div>
+        <app-unified-chat-shell (close)="minimizeChatbot()"></app-unified-chat-shell>
+      </div>
     </div>
-  </div>
+  </ng-container>
 
   <app-search-overlay
     *ngIf="isSearchOverlayOpen"
@@ -171,10 +250,10 @@
   ></app-search-overlay>
 
   <button
-    *ngIf="shouldShowDesktopChatbotLauncher() && (isAuthenticated$ | async) && !isChatbotOpen"
+    *ngIf="shouldShowDesktopChatbotLauncher() && !isChatbotOpen"
     type="button"
     (click)="toggleChatbot()"
-    class="fixed bottom-6 right-6 z-[119] hidden h-14 min-w-[14rem] items-center justify-center gap-3 rounded-full border border-red-500/30 bg-slate-950/95 px-5 text-sm font-semibold text-white shadow-[0_16px_38px_rgba(0,0,0,0.45)] md:inline-flex"
+    class="fixed bottom-20 right-6 z-[119] hidden h-14 min-w-[16rem] items-center justify-center gap-3 rounded-full border border-red-500/30 bg-slate-950/95 px-6 text-sm font-semibold text-white shadow-[0_16px_38px_rgba(0,0,0,0.45)] md:inline-flex"
     aria-label="Abrir asistente de recomendaciones"
   >
     <svg class="h-5 w-5 text-red-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -184,17 +263,20 @@
     Asistente IA
   </button>
 
+  <!-- Desktop: resizable panel -->
   <div
-    *ngIf="shouldShowDesktopChatbotLauncher() && (isAuthenticated$ | async) && isChatbotOpen"
-    class="fixed inset-y-6 right-6 z-[120] hidden w-[26rem] overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-950/95 shadow-[0_20px_50px_rgba(0,0,0,0.55)] md:block"
+    *ngIf="shouldShowDesktopChatbotLauncher() && isChatbotOpen"
+    class="fixed inset-y-4 right-4 z-[120] hidden overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-950/95 shadow-[0_24px_60px_rgba(0,0,0,0.55)] md:block"
+    [style.width.px]="chatPanelWidth"
   >
-    <app-ai-chatbot (close)="closeChatbot()"></app-ai-chatbot>
+    <!-- Left resize handle -->
+    <div
+      class="absolute inset-y-0 left-0 z-10 w-1.5 cursor-col-resize hover:bg-red-500/20 active:bg-red-500/30 transition-colors"
+      (mousedown)="onResizeStart($event)"
+    ></div>
+    <app-unified-chat-shell (close)="closeChatbot()"></app-unified-chat-shell>
   </div>
 
   <app-modal></app-modal>
   <app-auth-login-modal></app-auth-login-modal>
-  <app-desktop-chat-dock
-    *ngIf="!isMobileViewport"
-    [suspended]="isChatbotOpen && shouldShowDesktopChatbotLauncher()"
-  ></app-desktop-chat-dock>
 </div>

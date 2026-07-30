@@ -1,58 +1,69 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  PLATFORM_ID,
-  Inject,
-} from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
-import { BlogService } from '../../../services/blog.service';
+import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { APP_PATHS } from '../../../config/route-map';
 import { MetaService } from '../../../services/meta.service';
-import { PostCardComponent } from '../../components/post-card/post-card.component';
-import { Subject, first, takeUntil } from 'rxjs';
-import { slugify } from '../../../utils/utils';
+import { EditorialCategory, EditorialCategorySection, EditorialPost } from '../../models/editorial.models';
+import { EditorialService } from '../../services/editorial.service';
+import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
+import { generateCollectionPageSchema, generateItemListSchema } from '../../../utils/utils';
 
 @Component({
   selector: 'app-top10',
   standalone: true,
-  imports: [CommonModule, PostCardComponent],
+  imports: [CommonModule, RouterModule, EditorialPostCardComponent],
   templateUrl: './top10.component.html',
   styleUrls: ['./top10.component.scss'],
 })
 export class Top10Component implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-  private isBrowser: boolean;
+  public readonly appPaths = APP_PATHS;
 
-  // Data
-  posts: any[] = [];
-  featuredPosts: any[] = [];
-  displayedPosts: any[] = [];
+  public loading = true;
+  public error: string | null = null;
+  public featured: EditorialPost | null = null;
+  public posts: EditorialPost[] = [];
+  public categories: EditorialCategory[] = [];
+  public sections: EditorialCategorySection[] = [];
+  public selectedCategory = 'all';
+  public safeLdHtml: SafeHtml | null = null;
 
-  // Carousel
-  carouselIndex = 0;
-  postsPerView = 3;
-
-  // Pagination
-  currentPage = 1;
-  postsPerPage = 10;
-
-  // Loading
-  isLoading = true;
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private blogSvc: BlogService,
-    private metaSvc: MetaService,
-    private router: Router,
-    @Inject(PLATFORM_ID) platformId: Object
-  ) {
-    this.isBrowser = isPlatformBrowser(platformId);
-  }
+    private readonly editorialService: EditorialService,
+    private readonly metaService: MetaService,
+    private readonly sanitizer: DomSanitizer
+  ) {}
 
   ngOnInit(): void {
-    this.setMetaTags();
-    this.calculatePostsPerView();
-    this.loadData();
+    this.metaService.setMetaTags({
+      title: 'Rankings editoriales de cine, series y streaming | Guía TV',
+      description:
+        'Listas, tops y selecciones editoriales conectadas con la guía, el catálogo y las plataformas reales de la app.',
+      canonicalUrl: '/editorial/rankings',
+      image: '/assets/images/top10-og-image.jpg',
+      type: 'website',
+    });
+
+    this.editorialService
+      .getRankingsPageState()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (state) => {
+          this.featured = state.featured;
+          this.posts = state.posts;
+          this.categories = state.categories;
+          this.sections = state.sections;
+          this.buildStructuredData();
+          this.loading = false;
+        },
+        error: () => {
+          this.error = 'No se han podido cargar los rankings editoriales.';
+          this.loading = false;
+        },
+      });
   }
 
   ngOnDestroy(): void {
@@ -60,104 +71,46 @@ export class Top10Component implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private setMetaTags(): void {
-    this.metaSvc.setMetaTags({
-      title: 'Top 10 - Los Mejores Rankings de Cine, Series y Anime',
-      description:
-        'Descubre los mejores rankings y listas de cine, series y anime. Obras maestras, joyas ocultas y sorpresas de cada temporada.',
-      image: '/assets/images/top10-og-image.jpg',
-      canonicalUrl: '/blog/top10',
-      type: 'website',
-    });
+  public selectCategory(slug: string): void {
+    this.selectedCategory = slug;
+    this.buildStructuredData();
   }
 
-  private calculatePostsPerView(): void {
-    if (!this.isBrowser) {
-      this.postsPerView = 3;
-      return;
+  public get filteredPosts(): EditorialPost[] {
+    if (this.selectedCategory === 'all') {
+      return this.posts;
     }
-
-    const width = window.innerWidth;
-    if (width < 640) {
-      this.postsPerView = 1;
-    } else if (width < 1024) {
-      this.postsPerView = 2;
-    } else {
-      this.postsPerView = 3;
-    }
-  }
-
-  private loadData(): void {
-    this.blogSvc
-      .getAllPosts()
-      .pipe(first(), takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.posts = this.blogSvc.sortPostsByDate(data);
-          this.featuredPosts = this.posts.slice(0, 6);
-          this.updateDisplayedPosts();
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Error loading posts:', err);
-          this.isLoading = false;
-        },
-      });
-
-    this.blogSvc.setProgramsFromApi();
-  }
-
-  private updateDisplayedPosts(): void {
-    const start = 0;
-    const end = this.currentPage * this.postsPerPage;
-    this.displayedPosts = this.posts.slice(start, end);
-  }
-
-  // Carousel Controls
-  nextSlide(): void {
-    if (this.carouselIndex < this.posts.length - this.postsPerView) {
-      this.carouselIndex++;
-    }
-  }
-
-  prevSlide(): void {
-    if (this.carouselIndex > 0) {
-      this.carouselIndex--;
-    }
-  }
-
-  get visiblePosts(): any[] {
-    return this.posts.slice(
-      this.carouselIndex,
-      this.carouselIndex + this.postsPerView
+    return this.posts.filter((post) =>
+      post.categories.some((category) => category.slug === this.selectedCategory)
     );
   }
 
-  get canGoPrev(): boolean {
-    return this.carouselIndex > 0;
-  }
-
-  get canGoNext(): boolean {
-    return this.carouselIndex < this.posts.length - this.postsPerView;
-  }
-
-  // Pagination
-  loadMore(): void {
-    this.currentPage++;
-    this.updateDisplayedPosts();
-  }
-
-  get hasMorePosts(): boolean {
-    return this.currentPage * this.postsPerPage < this.posts.length;
-  }
-
-  // Navigation
-  navigateToPost(post: any): void {
-    const slug = slugify(post.slug || post.title?.rendered || '');
-    this.router.navigate(['/blog', slug]);
-  }
-
-  trackByPostId(index: number, post: any): number {
-    return post.id || index;
+  private buildStructuredData(): void {
+    const baseUrl = 'https://guiaprogramaciontv.com';
+    const schemas = [
+      generateCollectionPageSchema(
+        {
+          name: 'Rankings editoriales de Guia TV',
+          description:
+            'Selecciones editoriales y rankings de series, peliculas y streaming conectados con la app.',
+          path: '/editorial/rankings',
+        },
+        baseUrl
+      ),
+      generateItemListSchema(
+        this.filteredPosts.map((post) => ({
+          title: post.title,
+          detailPath: post.canonicalPath,
+          image: post.coverImage,
+        })),
+        'Rankings editoriales de Guia TV',
+        baseUrl
+      ),
+    ];
+    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
+      schemas
+        .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)
+        .join('')
+    );
   }
 }

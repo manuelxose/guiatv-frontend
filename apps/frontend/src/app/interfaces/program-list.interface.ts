@@ -217,6 +217,18 @@ export interface IProgramListConfig {
   };
 }
 
+export interface ProgramListEmbedConfig {
+  theme: 'light' | 'dark';
+  date: string;
+  timeSlot?: string | null;
+  channelTypes?: string[];
+  channelIds?: string[];
+  channelLimit?: number | null;
+  autorefreshSeconds?: number | null;
+  language?: string | null;
+  showCategoryFilter?: boolean;
+}
+
 // ===============================================
 // TIPOS HELPER
 // ===============================================

@@ -15,6 +15,8 @@ import {
   computed,
   Output,
   EventEmitter,
+  Input,
+  HostBinding,
   ChangeDetectorRef,
   inject,
   DestroyRef,
@@ -52,6 +54,7 @@ import {
   IDayInfo,
   IProgramListData,
   IProgramItem,
+  ProgramListEmbedConfig,
 } from 'src/app/interfaces';
 import { ProgramDetailModalComponent } from '../program-detail-modal/program-detail-modal.component';
 import { ApiConfigService } from 'src/app/api/api-config.service';
@@ -176,6 +179,37 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() dayChanged = new EventEmitter<IDayChangedEvent>();
   @Output() categorySelected = new EventEmitter<string[]>();
 
+  @Input() set mode(value: 'default' | 'embed' | null | undefined) {
+    this.modeValue.set(value === 'embed' ? 'embed' : 'default');
+    if (this.initialized) {
+      this.applyEmbedConfig(true);
+    }
+  }
+
+  @Input() set embedConfig(value: ProgramListEmbedConfig | null) {
+    this.embedConfigState.set(value);
+    this.embedTheme.set(value?.theme === 'dark' ? 'dark' : 'light');
+    this.embedChannelLimit.set(value?.channelLimit ?? null);
+    if (this.initialized) {
+      this.applyEmbedConfig(true);
+    }
+  }
+
+  @HostBinding('class.program-list--embed')
+  get embedHostClass(): boolean {
+    return this.isEmbedMode();
+  }
+
+  @HostBinding('class.program-list--theme-light')
+  get lightThemeHostClass(): boolean {
+    return this.isEmbedMode() && this.embedTheme() === 'light';
+  }
+
+  @HostBinding('class.program-list--theme-dark')
+  get darkThemeHostClass(): boolean {
+    return this.isEmbedMode() && this.embedTheme() === 'dark';
+  }
+
   // ===============================================
   // VIEW REFERENCES
   // ===============================================
@@ -204,6 +238,10 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   public readonly showTimeIndicator = signal<boolean>(true);
   public readonly channelTypeFilter = signal<string>('Todos');
   public readonly isChannelTypeDropdownOpen = signal<boolean>(false);
+  public readonly modeValue = signal<'default' | 'embed'>('default');
+  public readonly embedConfigState = signal<ProgramListEmbedConfig | null>(null);
+  public readonly embedTheme = signal<'light' | 'dark'>('light');
+  public readonly embedChannelLimit = signal<number | null>(null);
 
   // ===============================================
   // COMPUTED PROPERTIES
@@ -224,6 +262,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
   public readonly activeDayOffset = computed(
     () => this.activeDayInfo()?.index ?? 0
   );
+  public readonly isEmbedMode = computed(() => this.modeValue() === 'embed');
 
   public readonly channelGroups = CHANNEL_GROUPS;
 
@@ -257,6 +296,15 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     return channels;
   });
 
+  public readonly visibleChannels = computed(() => {
+    const channels = this.filteredChannels();
+    const limit = this.embedChannelLimit();
+    if (this.isEmbedMode() && typeof limit === 'number' && limit > 0) {
+      return channels.slice(0, limit);
+    }
+    return channels;
+  });
+
   /**
    * Computed para obtener información del canal del programa seleccionado
    * Necesario para el modal de detalles
@@ -266,7 +314,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!program) return null;
 
     // Encontrar el canal del programa seleccionado
-    const channelData = this.filteredChannels().find(
+    const channelData = this.visibleChannels().find(
       (canal) =>
         canal.channels && canal.channels.some((p) => p.id === program.id)
     );
@@ -334,7 +382,9 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     .toString(36)
     .substr(2, 9)}`;
   private updateInterval: any;
+  private embedRefreshInterval: any;
   private channelIndexCache = new Map<string, number>();
+  private initialized = false;
   // Timestamp of last explicit load start to avoid spurious auto-refresh attempts
   private lastLoadTimestamp = 0;
 
@@ -360,7 +410,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     // NUEVO: Efecto para reaccionar a cambios en layout
   effect(() => {
       const isMobile = this.isMobile();
-      const channels = this.canalesConProgramas();
+      const channels = this.visibleChannels();
       
       // Si cambia a móvil y tenemos canales, expandir todo
       if (isMobile && channels.length > 0) {
@@ -379,8 +429,10 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     devConsole.log('[ProgramList] ngOnInit');
     devConsole.log('[ProgramList] isLoading inicial:', this.isLoading());
 
+    this.applyEmbedConfig(false);
     this.initializeComponent();
     this.initializeDataStreams();
+    this.initialized = true;
 
     // CRÍTICO: Setup de timeout de seguridad con verificación mejorada
     this.setupLoadingTimeout();
@@ -500,7 +552,10 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     const uiDayIndex = Math.max(0, Math.min(3, currentDayIndex + 1));
     this.activeDay.set(uiDayIndex);
 
-    const currentSlot = this.facade.getCurrentTimeSlot();
+    const currentSlot =
+      this.isEmbedMode() && this.facade.getConfiguredTimeSlot() !== null
+        ? this.facade.getConfiguredTimeSlot()!
+        : this.facade.getCurrentTimeSlot();
     this.activeTimeSlot.set(currentSlot);
 
     const timeSlots = this.facade.getTimeSlots();
@@ -511,7 +566,8 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     // Verificar si es hoy usando el dayIndex real
     this.showTimeIndicator.set(
       currentDayIndex === 0 &&
-        this.activeTimeSlot() === this.facade.getCurrentTimeSlot()
+        this.activeTimeSlot() === this.facade.getCurrentTimeSlot() &&
+        !this.isEmbedMode()
     );
   }
 
@@ -692,7 +748,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       setTimeout(() => {
         if (this.isMobile()) {
           devConsole.log('📱 Mobile detected in handleDataUpdate - Expanding all channels');
-          const allIndices = new Set(validChannels.map((_, index) => index));
+          const allIndices = new Set(this.visibleChannels().map((_, index) => index));
           this.expandedChannels.set(allIndices);
         } else {
           this.expandedChannels.set(new Set());
@@ -879,7 +935,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     const channelId = canal.id || canal.channel?.id || '';
 
     if (!this.channelIndexCache.has(channelId)) {
-      const index = this.filteredChannels().findIndex(
+      const index = this.visibleChannels().findIndex(
         (c) => (c.id || c.channel?.id) === channelId
       );
       this.channelIndexCache.set(channelId, index);
@@ -1924,7 +1980,96 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
     }
+    if (this.embedRefreshInterval) {
+      clearInterval(this.embedRefreshInterval);
+    }
     this.channelIndexCache.clear();
+  }
+
+  private applyEmbedConfig(reload: boolean): void {
+    if (!this.isEmbedMode()) {
+      this.embedChannelLimit.set(null);
+      this.embedTheme.set('light');
+      this.showCategoryFilter.set(true);
+      if (this.embedRefreshInterval) {
+        clearInterval(this.embedRefreshInterval);
+      }
+      return;
+    }
+
+    const config = this.embedConfigState() ?? {
+      theme: 'light' as const,
+      date: 'today',
+      showCategoryFilter: false,
+    };
+
+    this.embedTheme.set(config.theme === 'dark' ? 'dark' : 'light');
+    this.embedChannelLimit.set(config.channelLimit ?? null);
+    this.showCategoryFilter.set(Boolean(config.showCategoryFilter));
+    this.channelTypeFilter.set(
+      this.resolveEmbedChannelTypeLabel(config.channelTypes)
+    );
+    this.selectedCategories.set(new Set());
+    this.isCategoryDropdownOpen.set(false);
+    this.facade.configureEmbed(config);
+
+    if (reload) {
+      this.initializeComponent();
+      this.selectedProgram.set(null);
+      this.selectedChannel.set(-1);
+      this.expandedChannels.set(new Set());
+      this.channelIndexCache.clear();
+      this.isLoading.set(true);
+      this.error.set(null);
+      this.facade.refreshData();
+    }
+
+    this.setupEmbedAutorefresh();
+  }
+
+  private resolveEmbedChannelTypeLabel(channelTypes?: string[] | null): string {
+    if (!channelTypes || channelTypes.length === 0) {
+      return 'Todos';
+    }
+
+    const normalized = new Set(
+      channelTypes.map((value) => String(value).trim().toUpperCase())
+    );
+
+    if (normalized.size === 1 && normalized.has('TDT')) {
+      return 'TDT';
+    }
+
+    if (normalized.size === 1 && normalized.has('AUTONOMICO')) {
+      return 'Autonómicas';
+    }
+
+    const paidTypes = ['MOVISTAR', 'OTT', 'CABLE'];
+    if ([...normalized].every((value) => paidTypes.includes(value))) {
+      return 'TV de Pago';
+    }
+
+    return 'Todos';
+  }
+
+  private setupEmbedAutorefresh(): void {
+    if (this.embedRefreshInterval) {
+      clearInterval(this.embedRefreshInterval);
+      this.embedRefreshInterval = null;
+    }
+
+    if (!this.isEmbedMode() || !this.isBrowser) {
+      return;
+    }
+
+    const seconds = Number(this.embedConfigState()?.autorefreshSeconds || 0);
+    if (!Number.isFinite(seconds) || seconds < 60) {
+      return;
+    }
+
+    this.embedRefreshInterval = window.setInterval(() => {
+      this.facade.refreshData();
+    }, seconds * 1000);
   }
 
 

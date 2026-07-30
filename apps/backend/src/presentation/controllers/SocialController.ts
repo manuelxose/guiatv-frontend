@@ -12,6 +12,10 @@ import { UserFavoriteModel } from '../../infrastructure/database/models/UserFavo
 import { UserListItemModel } from '../../infrastructure/database/models/UserListItem.model';
 import { ProgramModel } from '../../infrastructure/database/models/Program.model';
 import { UserNotificationService } from '../../application/services/UserNotificationService';
+import { ActivityLikeModel } from '../../infrastructure/database/models/ActivityLike.model';
+import { ActivityCommentModel } from '../../infrastructure/database/models/ActivityComment.model';
+import { UserContentInteractionModel } from '../../infrastructure/database/models/UserContentInteraction.model';
+import { UserListModel } from '../../infrastructure/database/models/UserList.model';
 
 type ActivityScope = 'me' | 'friends' | 'all';
 
@@ -47,11 +51,14 @@ export class SocialController {
         this.canViewActivity(userId, String(activity.userId), activity.visibility, scopeData.friendIds)
       );
       const userMap = await this.buildUserSummaryMap(scopeData.userIds);
-      const mapped = filtered
-        .slice(0, limit)
-        .map((activity) => this.mapActivity(activity, userMap.get(String(activity.userId))));
+      const sliced = filtered.slice(0, limit);
+      const mapped = sliced.map((activity) =>
+        this.mapActivity(activity, userMap.get(String(activity.userId)))
+      );
 
-      res.json(successResponse({ activities: mapped }));
+      const enriched = await this.enrichActivitiesWithSocialCounts(mapped, userId);
+
+      res.json(successResponse({ activities: enriched }));
     } catch (error) {
       next(error);
     }
@@ -396,6 +403,232 @@ export class SocialController {
     }
   }
 
+  async getPublicProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const currentUserId = this.getUserId(req);
+      const targetUserId = req.params.userId;
+
+      const user = await UserModel.findById(targetUserId).select('name email avatar status').lean().exec();
+      if (!user || (user as any).status === 'suspended') {
+        throw new NotFoundError('User not found');
+      }
+
+      const profile = await UserProfileModel.findOne({ userId: targetUserId }).lean().exec();
+      const privacy = (profile as any)?.privacy || {};
+      const isBlocked = await UserBlockModel.findOne({
+        $or: [
+          { blockerId: currentUserId, blockedId: targetUserId },
+          { blockerId: targetUserId, blockedId: currentUserId },
+        ],
+      }).lean().exec();
+
+      if (isBlocked) {
+        res.json(successResponse({
+          profile: { id: targetUserId, name: (user as any).name, avatar: (user as any).avatar, blocked: true },
+        }));
+        return;
+      }
+
+      const isFollowing = !!(await UserFollowModel.findOne({ followerId: currentUserId, followeeId: targetUserId }).lean().exec());
+      const isFollower = !!(await UserFollowModel.findOne({ followerId: targetUserId, followeeId: currentUserId }).lean().exec());
+      const isPublic = privacy.profilePublic !== false;
+
+      const [followersCount, followingCount, ratingsCount, listsCount, recommendationsCount] = await Promise.all([
+        UserFollowModel.countDocuments({ followeeId: targetUserId }).exec(),
+        UserFollowModel.countDocuments({ followerId: targetUserId }).exec(),
+        UserContentInteractionModel.countDocuments({ userId: targetUserId, rating: { $exists: true, $ne: null } }).exec(),
+        UserListModel.countDocuments({ userId: targetUserId, visibility: { $ne: 'private' } }).exec(),
+        UserActivityModel.countDocuments({ userId: targetUserId, type: 'recommendation' }).exec(),
+      ]);
+
+      const result: Record<string, unknown> = {
+        id: targetUserId,
+        name: (user as any).name,
+        avatar: (user as any).avatar,
+        isFollowing,
+        isFollower,
+        stats: { followers: followersCount, following: followingCount, ratings: ratingsCount, lists: listsCount, recommendations: recommendationsCount },
+      };
+
+      if (isPublic || isFollower) {
+        result.bio = (profile as any)?.bio || '';
+        result.location = (profile as any)?.location || '';
+        result.favoriteGenres = (profile as any)?.favoriteGenres || [];
+        result.preferredPlatforms = (profile as any)?.preferredPlatforms || [];
+      }
+
+      res.json(successResponse({ profile: result }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async searchUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const currentUserId = this.getUserId(req);
+      const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+      const limit = Math.min(Number(req.query.limit) || 20, 50);
+
+      if (!q || q.length < 2) {
+        res.json(successResponse({ users: [] }));
+        return;
+      }
+
+      const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      const users = await UserModel.find({
+        _id: { $ne: currentUserId },
+        status: { $ne: 'suspended' },
+        $or: [{ name: regex }, { email: regex }],
+      })
+        .select('name avatar')
+        .limit(limit)
+        .lean()
+        .exec();
+
+      const userIds = users.map((u: any) => String(u._id));
+      const follows = await UserFollowModel.find({
+        followerId: currentUserId,
+        followeeId: { $in: userIds },
+      }).select('followeeId').lean().exec();
+      const followingSet = new Set(follows.map((f: any) => String(f.followeeId)));
+
+      const results = users.map((u: any) => ({
+        id: String(u._id),
+        name: u.name,
+        avatar: u.avatar,
+        isFollowing: followingSet.has(String(u._id)),
+      }));
+
+      res.json(successResponse({ users: results }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getStats(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const currentUserId = this.getUserId(req);
+      const targetUserId = req.params.userId || currentUserId;
+
+      const [followersCount, followingCount, ratingsCount, listsCount, recommendationsCount, activitiesCount] = await Promise.all([
+        UserFollowModel.countDocuments({ followeeId: targetUserId }).exec(),
+        UserFollowModel.countDocuments({ followerId: targetUserId }).exec(),
+        UserContentInteractionModel.countDocuments({ userId: targetUserId, rating: { $exists: true, $ne: null } }).exec(),
+        UserListModel.countDocuments({ userId: targetUserId }).exec(),
+        UserActivityModel.countDocuments({ userId: targetUserId, type: 'recommendation' }).exec(),
+        UserActivityModel.countDocuments({ userId: targetUserId }).exec(),
+      ]);
+
+      res.json(successResponse({
+        stats: {
+          followers: followersCount,
+          following: followingCount,
+          ratings: ratingsCount,
+          lists: listsCount,
+          recommendations: recommendationsCount,
+          activities: activitiesCount,
+        },
+      }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async toggleLike(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const activityId = req.params.id;
+
+      const activity = await UserActivityModel.findById(activityId).lean().exec();
+      if (!activity) {
+        throw new NotFoundError('Activity not found');
+      }
+
+      const existing = await ActivityLikeModel.findOne({ activityId, userId }).lean().exec();
+      if (existing) {
+        await ActivityLikeModel.deleteOne({ activityId, userId }).exec();
+      } else {
+        await ActivityLikeModel.create({ activityId, userId });
+      }
+
+      const likes = await ActivityLikeModel.countDocuments({ activityId }).exec();
+      res.json(successResponse({ liked: !existing, likes }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async addComment(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const activityId = req.params.id;
+      const text = typeof req.body.text === 'string' ? req.body.text.trim() : '';
+
+      if (!text || text.length > 1000) {
+        res.status(400).json({ success: false, error: 'Comment text must be 1-1000 characters' });
+        return;
+      }
+
+      const activity = await UserActivityModel.findById(activityId).lean().exec();
+      if (!activity) {
+        throw new NotFoundError('Activity not found');
+      }
+
+      const comment = await ActivityCommentModel.create({ activityId, userId, text });
+
+      const user = await UserModel.findById(userId).select('name avatar').lean().exec();
+      res.status(201).json(
+        successResponse({
+          comment: {
+            id: String(comment._id),
+            text: comment.text,
+            createdAt: comment.createdAt,
+            user: user ? { id: userId, name: (user as any).name, avatar: (user as any).avatar } : undefined,
+          },
+        })
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getComments(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      this.getUserId(req); // ensure authenticated
+      const activityId = req.params.id;
+      const limit = Math.min(Number(req.query.limit) || 20, 100);
+      const offset = Number(req.query.offset) || 0;
+
+      const comments = await ActivityCommentModel.find({ activityId })
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit)
+        .lean()
+        .exec();
+
+      const userIds = [...new Set(comments.map((c: any) => String(c.userId)))];
+      const users = await UserModel.find({ _id: { $in: userIds } })
+        .select('name avatar')
+        .lean()
+        .exec();
+      const userMap = new Map(users.map((u: any) => [String(u._id), u]));
+
+      const mapped = comments.map((c: any) => {
+        const u = userMap.get(String(c.userId));
+        return {
+          id: String(c._id),
+          text: c.text,
+          createdAt: c.createdAt,
+          user: u ? { id: String(c.userId), name: u.name, avatar: u.avatar } : undefined,
+        };
+      });
+
+      res.json(successResponse({ comments: mapped }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
   private getUserId(req: Request): string {
     const authReq = req as AuthenticatedRequest;
     if (!authReq.user?.id) {
@@ -539,6 +772,41 @@ export class SocialController {
     }
 
     return userMap;
+  }
+
+  private async enrichActivitiesWithSocialCounts(
+    activities: any[],
+    currentUserId: string
+  ): Promise<any[]> {
+    if (!activities.length) return activities;
+
+    const activityIds = activities.map((a) => a.id);
+
+    const [likeCounts, commentCounts, myLikes] = await Promise.all([
+      ActivityLikeModel.aggregate([
+        { $match: { activityId: { $in: activityIds } } },
+        { $group: { _id: '$activityId', count: { $sum: 1 } } },
+      ]).exec(),
+      ActivityCommentModel.aggregate([
+        { $match: { activityId: { $in: activityIds } } },
+        { $group: { _id: '$activityId', count: { $sum: 1 } } },
+      ]).exec(),
+      ActivityLikeModel.find({ activityId: { $in: activityIds }, userId: currentUserId })
+        .select('activityId')
+        .lean()
+        .exec(),
+    ]);
+
+    const likeMap = new Map(likeCounts.map((r: any) => [r._id, r.count]));
+    const commentMap = new Map(commentCounts.map((r: any) => [r._id, r.count]));
+    const myLikeSet = new Set(myLikes.map((l: any) => l.activityId));
+
+    return activities.map((a) => ({
+      ...a,
+      likes: likeMap.get(a.id) || 0,
+      comments: commentMap.get(a.id) || 0,
+      liked: myLikeSet.has(a.id),
+    }));
   }
 
   private mapActivity(activity: any, user?: any) {

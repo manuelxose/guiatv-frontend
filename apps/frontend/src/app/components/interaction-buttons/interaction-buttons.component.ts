@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { ChatService } from '../../services/chat.service';
 import { Router } from '@angular/router';
 import { ChatConversation } from '../../interfaces/user.interface';
+import { normalizeCatalogInteractionId } from '../../utils/catalog';
 
 @Component({
   selector: 'app-interaction-buttons',
@@ -219,6 +220,7 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy, OnChanges
   @Input() genres: string[] = [];
   @Input() image?: string;
   @Input() platform?: string;
+  @Input() preloadInteraction: boolean = false;
 
   public isInWatchlist = false;
   public isWatching = false;
@@ -240,7 +242,19 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy, OnChanges
     this.sub.add(
       this.userService.getWatchlist().subscribe((items) => {
         if (!this.itemId) return;
-        this.isInWatchlist = items.some((item) => item.contentId === this.itemId);
+        const normalizedId = this.getNormalizedItemId();
+        this.isInWatchlist = items.some((item) => item.contentId === normalizedId);
+      })
+    );
+
+    this.sub.add(
+      this.userService.getInteractionHistory().subscribe((interactions) => {
+        const normalizedId = this.getNormalizedItemId();
+        if (!normalizedId) return;
+        const interaction =
+          interactions.find((entry) => entry.contentId === normalizedId) ||
+          this.userService.peekContentInteraction(normalizedId);
+        this.applyInteractionState(interaction);
       })
     );
 
@@ -250,7 +264,9 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy, OnChanges
       })
     );
 
-    this.loadCurrentInteraction();
+    if (this.preloadInteraction) {
+      this.loadCurrentInteraction();
+    }
   }
 
   ngOnDestroy() {
@@ -258,7 +274,12 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy, OnChanges
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['itemId'] && !changes['itemId'].firstChange) {
+    if ((changes['itemId'] && !changes['itemId'].firstChange) || changes['preloadInteraction']) {
+      const interaction = this.userService.peekContentInteraction(this.getNormalizedItemId());
+      this.applyInteractionState(interaction);
+    }
+
+    if (this.preloadInteraction && changes['itemId'] && !changes['itemId'].firstChange) {
       this.loadCurrentInteraction();
     }
   }
@@ -416,13 +437,30 @@ export class InteractionButtonsComponent implements OnInit, OnDestroy, OnChanges
   }
 
   private loadCurrentInteraction() {
-    if (!this.itemId) return;
+    const normalizedId = this.getNormalizedItemId();
+    if (!normalizedId) return;
     this.sub.add(
-      this.userService.getContentInteraction(this.itemId).subscribe((interaction) => {
-        this.currentRating = Number(interaction?.rating || 0);
-        this.isWatching = interaction?.status === 'watching';
+      this.userService.getContentInteraction(normalizedId).subscribe((interaction) => {
+        this.applyInteractionState(interaction);
       })
     );
+  }
+
+  private applyInteractionState(interaction: any): void {
+    this.currentRating = Number(interaction?.rating || 0);
+    this.isWatching = interaction?.status === 'watching';
+  }
+
+  private getNormalizedItemId(): string {
+    if (!this.itemId) {
+      return '';
+    }
+
+    return normalizeCatalogInteractionId({
+      contentId: this.itemId,
+      contentType: this.type,
+      tmdbId: this.tmdbId,
+    });
   }
 
   private findGeneralConversationId(conversations: ChatConversation[]): string | null {

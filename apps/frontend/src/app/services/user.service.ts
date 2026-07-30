@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import {
   UserActivity,
   UserFriend,
@@ -17,6 +17,7 @@ import {
   UserNotification,
   UserReport,
   UserContentInteraction,
+  CommunityList,
 } from '../interfaces/user.interface';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
@@ -26,6 +27,13 @@ interface ApiResponse<T> {
   success: boolean;
   data?: T;
 }
+
+export type UserAuthState =
+  | 'unknown'
+  | 'authenticated'
+  | 'unauthenticated'
+  | 'refreshing'
+  | 'refresh_failed';
 
 const EMPTY_PROFILE: UserProfile = {
   id: '',
@@ -78,6 +86,8 @@ const EMPTY_PROFILE: UserProfile = {
 export class UserService {
   private readonly isBrowser = typeof window !== 'undefined';
   private readonly baseUrl = environment.API_BASE_URL;
+  private readonly interactionCacheTtlMs = 60_000;
+  private readonly interactionRetryCooldownMs = 25_000;
   private profileSubject = new BehaviorSubject<UserProfile>(EMPTY_PROFILE);
   private recommendationsSubject = new BehaviorSubject<UserRecommendation[]>([]);
   private activitiesSubject = new BehaviorSubject<UserActivity[]>([]);
@@ -91,23 +101,43 @@ export class UserService {
   private top10Subject = new BehaviorSubject<Top10Category[]>([]);
   private newsSubject = new BehaviorSubject<NewsItem[]>([]);
   private authenticatedSubject = new BehaviorSubject<boolean>(false);
+  private authStateSubject = new BehaviorSubject<UserAuthState>('unknown');
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new BehaviorSubject<string | null>(null);
+  private readonly interactionCache = new Map<
+    string,
+    {
+      value: UserContentInteraction | null;
+      expiresAt: number;
+      unavailableUntil?: number;
+    }
+  >();
+  private readonly interactionInFlight = new Map<
+    string,
+    Observable<UserContentInteraction | null>
+  >();
 
   private defaultListId: string | null = null;
 
   public readonly isAuthenticated$ = this.authenticatedSubject.asObservable();
+  public readonly authState$ = this.authStateSubject.asObservable();
   public readonly loading$ = this.loadingSubject.asObservable();
   public readonly error$ = this.errorSubject.asObservable();
 
   constructor(private http: HttpClient) {
     if (!this.isBrowser) return;
 
+    window.addEventListener('gtv-auth-refreshing', this.handleAuthRefreshing);
+    window.addEventListener('gtv-auth-restored', this.handleAuthRestored);
+    window.addEventListener('gtv-auth-expired', this.handleAuthExpired);
+
     const token = this.safeGetToken();
     if (token) {
-      this.authenticatedSubject.next(true);
-      this.loadUserAreaData().subscribe();
+      this.bootstrapSession().subscribe();
+      return;
     }
+
+    this.authStateSubject.next('unauthenticated');
   }
 
   isAuthenticatedSync(): boolean {
@@ -169,8 +199,12 @@ export class UserService {
   loadUserAreaData(): Observable<boolean> {
     const token = this.safeGetToken();
     if (!token) {
-      this.authenticatedSubject.next(false);
+      this.logout('unauthenticated');
       return of(false);
+    }
+
+    if (!this.authenticatedSubject.value) {
+      return this.bootstrapSession();
     }
 
     this.loadingSubject.next(true);
@@ -233,6 +267,7 @@ export class UserService {
 
     this.profileSubject.next(merged);
     this.authenticatedSubject.next(true);
+    this.authStateSubject.next('authenticated');
     if (token && this.isBrowser) {
       try {
         localStorage.setItem('gtv_id_token', token);
@@ -241,13 +276,17 @@ export class UserService {
       }
     }
 
-    this.loadUserAreaData().subscribe();
+    this.loadingSubject.next(true);
+    this.hydrateUserAreaData()
+      .pipe(finalize(() => this.loadingSubject.next(false)))
+      .subscribe();
   }
 
-  logout(): void {
+  logout(nextState: UserAuthState = 'unauthenticated'): void {
     if (this.isBrowser) {
       try {
         localStorage.removeItem('gtv_id_token');
+        localStorage.removeItem('gtv_refresh_token');
       } catch {
         // ignore
       }
@@ -262,7 +301,10 @@ export class UserService {
     this.interactionHistorySubject.next([]);
     this.notificationsSubject.next([]);
     this.unreadNotificationsSubject.next(0);
+    this.interactionCache.clear();
+    this.interactionInFlight.clear();
     this.authenticatedSubject.next(false);
+    this.authStateSubject.next(nextState);
     this.loadingSubject.next(false);
     this.errorSubject.next(null);
     this.defaultListId = null;
@@ -284,6 +326,20 @@ export class UserService {
           }
         }),
         catchError(this.handleError(null, 'No se pudo actualizar el perfil.'))
+      );
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
+
+    const url = `${this.baseUrl}/auth/password`;
+    return this.http
+      .patch<ApiResponse<{ changed: boolean }>>(url, { currentPassword, newPassword }, {
+        headers: this.getAuthHeaders(),
+      })
+      .pipe(
+        map((resp) => !!resp?.data?.changed),
+        catchError(this.handleError(false, 'No se pudo cambiar la contraseña.'))
       );
   }
 
@@ -494,14 +550,39 @@ export class UserService {
         if (!listId) return of(null);
         const existing = this.watchlistSubject.value.find((item) => item.contentId === normalizedContentId);
         if (existing) {
-          return this.removeListItem(listId, existing.id).pipe(map((deleted) => (deleted ? false : null)));
+          return this.removeListItem(listId, existing.id).pipe(
+            tap((deleted) => {
+              if (deleted) {
+                this.patchInteractionCache(normalizedContentId, {
+                  contentId: normalizedContentId,
+                  contentTitle: payload.title,
+                  contentType: payload.type,
+                  addedToList: false,
+                });
+              }
+            }),
+            map((deleted) => (deleted ? false : null))
+          );
         }
         return this.addListItem(listId, {
           title: payload.title,
           type: payload.type,
           state: 'pending',
           contentId: normalizedContentId,
-        }).pipe(map((created) => (created ? true : null)));
+        }).pipe(
+          tap((created) => {
+            if (created) {
+              this.patchInteractionCache(normalizedContentId, {
+                contentId: normalizedContentId,
+                contentTitle: payload.title,
+                contentType: payload.type,
+                status: 'pending',
+                addedToList: true,
+              });
+            }
+          }),
+          map((created) => (created ? true : null))
+        );
       }),
       catchError(this.handleError(null, 'No se pudo actualizar la lista.'))
     );
@@ -517,6 +598,16 @@ export class UserService {
         map((resp) => resp?.data?.favorites || []),
         tap((favorites) => this.favoritesSubject.next(favorites)),
         catchError(this.handleError([], 'No se pudieron cargar los favoritos.'))
+      );
+  }
+
+  fetchCommunityLists(limit = 12): Observable<CommunityList[]> {
+    const url = `${this.baseUrl}/lists/public?limit=${limit}`;
+    return this.http
+      .get<ApiResponse<{ lists: CommunityList[] }>>(url)
+      .pipe(
+        map((resp) => resp?.data?.lists || []),
+        catchError(() => of([] as CommunityList[]))
       );
   }
 
@@ -668,6 +759,138 @@ export class UserService {
       .pipe(
         map((resp) => resp?.data?.report || null),
         catchError(this.handleError(null, 'No se pudo enviar el reporte.'))
+      );
+  }
+
+  getBlockedUsers(): Observable<Array<{ id: string; name: string; username: string; avatar: string }>> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/social/blocks`;
+    return this.http
+      .get<ApiResponse<{ blocks: Array<{ id: string; name: string; username: string; avatar: string }> }>>(
+        url,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => resp?.data?.blocks || []),
+        catchError(this.handleError([], 'No se pudieron cargar los usuarios bloqueados.'))
+      );
+  }
+
+  deleteAccount(password: string): Observable<boolean> {
+    if (!this.safeGetToken()) return of(false);
+
+    const url = `${this.baseUrl}/user/account`;
+    return this.http
+      .delete<ApiResponse<{ deleted: boolean }>>(url, {
+        headers: this.getAuthHeaders(),
+        body: { password },
+      })
+      .pipe(
+        map((resp) => Boolean(resp?.data?.deleted)),
+        catchError(this.handleError(false, 'No se pudo eliminar la cuenta.'))
+      );
+  }
+
+  exportUserData(): Observable<any> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/user/export`;
+    return this.http
+      .get<ApiResponse<any>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data || null),
+        catchError(this.handleError(null, 'No se pudieron exportar los datos.'))
+      );
+  }
+
+  toggleActivityLike(activityId: string): Observable<{ liked: boolean; likes: number } | null> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/social/activities/${activityId}/like`;
+    return this.http
+      .post<ApiResponse<{ liked: boolean; likes: number }>>(url, {}, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data || null),
+        tap((result) => {
+          if (result) {
+            const current = this.activitiesSubject.value;
+            this.activitiesSubject.next(
+              current.map((a) => a.id === activityId ? { ...a, liked: result.liked, likes: result.likes } : a)
+            );
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo actualizar el me gusta.'))
+      );
+  }
+
+  addActivityComment(activityId: string, text: string): Observable<any> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/social/activities/${activityId}/comments`;
+    return this.http
+      .post<ApiResponse<{ comment: any }>>(url, { text }, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.comment || null),
+        tap((comment) => {
+          if (comment) {
+            const current = this.activitiesSubject.value;
+            this.activitiesSubject.next(
+              current.map((a) => a.id === activityId ? { ...a, comments: (a.comments || 0) + 1 } : a)
+            );
+          }
+        }),
+        catchError(this.handleError(null, 'No se pudo añadir el comentario.'))
+      );
+  }
+
+  fetchActivityComments(activityId: string, offset = 0, limit = 20): Observable<any[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/social/activities/${activityId}/comments?offset=${offset}&limit=${limit}`;
+    return this.http
+      .get<ApiResponse<{ comments: any[] }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.comments || []),
+        catchError(this.handleError([], 'No se pudieron cargar los comentarios.'))
+      );
+  }
+
+  getPublicProfile(userId: string): Observable<any> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = `${this.baseUrl}/social/profile/${userId}`;
+    return this.http
+      .get<ApiResponse<{ profile: any }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.profile || null),
+        catchError(this.handleError(null, 'No se pudo cargar el perfil.'))
+      );
+  }
+
+  searchUsers(query: string, limit = 20): Observable<any[]> {
+    if (!this.safeGetToken()) return of([]);
+
+    const url = `${this.baseUrl}/social/users/search?q=${encodeURIComponent(query)}&limit=${limit}`;
+    return this.http
+      .get<ApiResponse<{ users: any[] }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.users || []),
+        catchError(this.handleError([], 'No se pudo buscar usuarios.'))
+      );
+  }
+
+  getUserStats(userId?: string): Observable<any> {
+    if (!this.safeGetToken()) return of(null);
+
+    const url = userId
+      ? `${this.baseUrl}/social/stats/${userId}`
+      : `${this.baseUrl}/social/stats`;
+    return this.http
+      .get<ApiResponse<{ stats: any }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => resp?.data?.stats || null),
+        catchError(this.handleError(null, 'No se pudieron cargar las estadísticas.'))
       );
   }
 
@@ -884,13 +1107,76 @@ export class UserService {
   private handleError<T>(fallback: T, message: string) {
     return (error: any): Observable<T> => {
       if (error?.status === 401) {
-        this.logout();
+        this.logout('refresh_failed');
       }
       this.errorSubject.next(message);
       this.loadingSubject.next(false);
       return of(fallback);
     };
   }
+
+  private bootstrapSession(): Observable<boolean> {
+    const token = this.safeGetToken();
+    if (!token) {
+      this.logout('unauthenticated');
+      return of(false);
+    }
+
+    this.loadingSubject.next(true);
+    this.errorSubject.next(null);
+    this.authStateSubject.next('refreshing');
+
+    return this.fetchProfile().pipe(
+      switchMap((profile) => {
+        if (!profile?.id) {
+          this.logout('refresh_failed');
+          return of(false);
+        }
+
+        this.authenticatedSubject.next(true);
+        this.authStateSubject.next('authenticated');
+        return this.hydrateUserAreaData();
+      }),
+      finalize(() => this.loadingSubject.next(false))
+    );
+  }
+
+  private hydrateUserAreaData(): Observable<boolean> {
+    return forkJoin({
+      lists: this.fetchLists(),
+      favorites: this.fetchFavorites(),
+      interactions: this.fetchInteractionHistory(),
+      notifications: this.fetchNotifications(),
+      friends: this.fetchFriends(),
+      activities: this.fetchActivities('all'),
+      recommendations: this.fetchRecommendations('friends'),
+    }).pipe(
+      switchMap(() => this.fetchWatchlist()),
+      map(() => true),
+      catchError(this.handleError(false, 'No se pudo cargar la informacion.'))
+    );
+  }
+
+  private readonly handleAuthRefreshing = (): void => {
+    if (!this.safeGetToken()) {
+      return;
+    }
+    this.authStateSubject.next('refreshing');
+  };
+
+  private readonly handleAuthRestored = (): void => {
+    if (!this.safeGetToken()) {
+      this.authStateSubject.next('unauthenticated');
+      return;
+    }
+    this.authStateSubject.next(
+      this.authenticatedSubject.value ? 'authenticated' : 'unknown'
+    );
+  };
+
+  private readonly handleAuthExpired = (): void => {
+    this.logout('refresh_failed');
+  };
 
   addContentInteraction(payload: {
     contentId: string;
@@ -922,29 +1208,44 @@ export class UserService {
         { headers: this.getAuthHeaders() }
       )
       .pipe(
-        map((resp) => Boolean(resp?.data?.interaction)),
-        tap((saved) => {
-          if (saved) {
-            this.fetchProfile().subscribe();
-            this.fetchInteractionHistory().subscribe();
+        map((resp) => resp?.data?.interaction ? this.normalizeInteraction(resp.data.interaction) : null),
+        tap((interaction) => {
+          if (!interaction) {
+            return;
+          }
+          this.setInteractionCache(interaction.contentId, interaction);
+          this.upsertInteractionHistoryEntry(interaction);
+          if (interaction.status === 'watching') {
+            this.patchProfileWatchingNow(interaction.contentTitle);
           }
         }),
+        map((interaction) => Boolean(interaction)),
         catchError(this.handleError(false, 'No se pudo guardar la interaccion.'))
       );
   }
 
-  getContentInteraction(contentId: string): Observable<any | null> {
+  getContentInteraction(contentId: string): Observable<UserContentInteraction | null> {
     if (!this.safeGetToken()) return of(null);
+    if (!String(contentId || '').trim()) return of(null);
 
-    const url = `${this.baseUrl}/user/interactions/${encodeURIComponent(
-      normalizeCatalogInteractionId({ contentId })
-    )}`;
-    return this.http
-      .get<ApiResponse<{ interaction: any | null }>>(url, { headers: this.getAuthHeaders() })
-      .pipe(
-        map((resp) => resp?.data?.interaction || null),
-        catchError(this.handleError(null, 'No se pudo cargar la interaccion.'))
-      );
+    const normalizedContentId = normalizeCatalogInteractionId({ contentId });
+    const now = Date.now();
+    const cached = this.interactionCache.get(normalizedContentId);
+
+    if (cached?.expiresAt && cached.expiresAt > now) {
+      return of(cached.value);
+    }
+
+    if (cached?.unavailableUntil && cached.unavailableUntil > now) {
+      return of(cached.value);
+    }
+
+    if (cached) {
+      this.fetchContentInteraction(normalizedContentId, true);
+      return of(cached.value);
+    }
+
+    return this.fetchContentInteraction(normalizedContentId);
   }
 
   fetchInteractionHistory(filters?: {
@@ -966,7 +1267,11 @@ export class UserService {
       })
       .pipe(
         map((resp) => resp?.data?.interactions || []),
-        tap((interactions) => this.interactionHistorySubject.next(interactions)),
+        map((interactions) => interactions.map((interaction) => this.normalizeInteraction(interaction))),
+        tap((interactions) => {
+          this.interactionHistorySubject.next(interactions);
+          this.primeInteractionCache(interactions);
+        }),
         catchError(this.handleError([], 'No se pudo cargar el historial.'))
       );
   }
@@ -984,5 +1289,170 @@ export class UserService {
     return this.updateProfile({
       discoveryDefaults,
     } as any).pipe(map((profile) => Boolean(profile)));
+  }
+
+  peekContentInteraction(contentId: string): UserContentInteraction | null {
+    if (!String(contentId || '').trim()) {
+      return null;
+    }
+    const normalizedContentId = normalizeCatalogInteractionId({ contentId });
+    const cached = this.interactionCache.get(normalizedContentId);
+    if (cached) {
+      return cached.value;
+    }
+
+    return (
+      this.interactionHistorySubject.value.find(
+        (interaction) => interaction.contentId === normalizedContentId
+      ) || null
+    );
+  }
+
+  private fetchContentInteraction(
+    normalizedContentId: string,
+    background = false
+  ): Observable<UserContentInteraction | null> {
+    const existing = this.interactionInFlight.get(normalizedContentId);
+    if (existing) {
+      return existing;
+    }
+
+    const url = `${this.baseUrl}/user/interactions/${encodeURIComponent(normalizedContentId)}`;
+    const cached = this.interactionCache.get(normalizedContentId);
+
+    const request$ = this.http
+      .get<ApiResponse<{ interaction: any | null }>>(url, { headers: this.getAuthHeaders() })
+      .pipe(
+        map((resp) => (resp?.data?.interaction ? this.normalizeInteraction(resp.data.interaction) : null)),
+        tap((interaction) => {
+          this.setInteractionCache(normalizedContentId, interaction);
+          if (interaction) {
+            this.upsertInteractionHistoryEntry(interaction);
+          }
+        }),
+        catchError((error) => {
+          this.interactionCache.set(normalizedContentId, {
+            value: cached?.value || null,
+            expiresAt: cached?.expiresAt || 0,
+            unavailableUntil: Date.now() + this.interactionRetryCooldownMs,
+          });
+          return this.handleError(cached?.value || null, 'No se pudo cargar la interaccion.')(error);
+        }),
+        finalize(() => this.interactionInFlight.delete(normalizedContentId)),
+        shareReplay(1)
+      );
+
+    this.interactionInFlight.set(normalizedContentId, request$);
+
+    if (background) {
+      request$.subscribe();
+    }
+
+    return request$;
+  }
+
+  private primeInteractionCache(interactions: UserContentInteraction[]): void {
+    interactions.forEach((interaction) => {
+      this.setInteractionCache(interaction.contentId, interaction);
+    });
+  }
+
+  private setInteractionCache(
+    contentId: string,
+    interaction: UserContentInteraction | null
+  ): void {
+    this.interactionCache.set(contentId, {
+      value: interaction,
+      expiresAt: Date.now() + this.interactionCacheTtlMs,
+    });
+  }
+
+  private patchInteractionCache(
+    contentId: string,
+    patch: Partial<UserContentInteraction> & {
+      contentId: string;
+      contentTitle: string;
+      contentType: 'movie' | 'series' | 'program';
+    }
+  ): void {
+    const existing =
+      this.peekContentInteraction(contentId) ||
+      ({
+        id: '',
+        userId: this.profileSubject.value.id,
+        contentId: patch.contentId,
+        contentTitle: patch.contentTitle,
+        contentType: patch.contentType,
+        genres: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as UserContentInteraction);
+
+    const nextValue: UserContentInteraction = {
+      ...existing,
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.setInteractionCache(contentId, nextValue);
+    this.upsertInteractionHistoryEntry(nextValue);
+  }
+
+  private upsertInteractionHistoryEntry(interaction: UserContentInteraction): void {
+    const existing = this.interactionHistorySubject.value.filter(
+      (entry) => entry.contentId !== interaction.contentId
+    );
+    const next = [interaction, ...existing].sort(
+      (left, right) =>
+        new Date(right.updatedAt || right.createdAt).getTime() -
+        new Date(left.updatedAt || left.createdAt).getTime()
+    );
+    this.interactionHistorySubject.next(next);
+  }
+
+  private normalizeInteraction(input: any): UserContentInteraction {
+    return {
+      id: String(input?.id || input?._id || ''),
+      userId: String(input?.userId || ''),
+      contentId: normalizeCatalogInteractionId({ contentId: input?.contentId }),
+      contentTitle: String(input?.contentTitle || ''),
+      contentType: input?.contentType || 'program',
+      tmdbId:
+        input?.tmdbId !== undefined && input?.tmdbId !== null
+          ? Number(input.tmdbId)
+          : undefined,
+      genres: Array.isArray(input?.genres)
+        ? input.genres.map((genre: unknown) => String(genre || '').trim()).filter(Boolean)
+        : [],
+      rating:
+        input?.rating !== undefined && input?.rating !== null
+          ? Number(input.rating)
+          : undefined,
+      status: input?.status || 'pending',
+      liked: input?.liked !== undefined ? Boolean(input.liked) : undefined,
+      addedToList:
+        input?.addedToList !== undefined ? Boolean(input.addedToList) : undefined,
+      recommended:
+        input?.recommended !== undefined ? Boolean(input.recommended) : undefined,
+      platform: input?.platform ? String(input.platform) : undefined,
+      watchedAt: input?.watchedAt ? String(input.watchedAt) : undefined,
+      createdAt: String(input?.createdAt || new Date().toISOString()),
+      updatedAt: String(input?.updatedAt || input?.createdAt || new Date().toISOString()),
+    };
+  }
+
+  private patchProfileWatchingNow(title: string): void {
+    const profile = this.profileSubject.value;
+    if (!title || !profile?.id) {
+      return;
+    }
+
+    this.profileSubject.next({
+      ...profile,
+      watchingNow: {
+        ...profile.watchingNow,
+        title,
+      },
+    });
   }
 }

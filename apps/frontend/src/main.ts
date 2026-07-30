@@ -1,12 +1,12 @@
 /// <reference types="@angular/localize" />
 
 import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
+import { browserAppConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
 
 // Función de arranque encapsulada
 function bootstrap() {
-  bootstrapApplication(AppComponent, appConfig)
+  bootstrapApplication(AppComponent, browserAppConfig)
     .catch((err) => console.error('Error al iniciar la aplicación:', err));
 }
 

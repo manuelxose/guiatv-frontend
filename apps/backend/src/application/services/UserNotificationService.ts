@@ -1,4 +1,5 @@
 import { UserNotificationModel } from '../../infrastructure/database/models/UserNotification.model';
+import { ChatSocketHub } from '../../presentation/realtime/ChatSocketHub';
 
 export class UserNotificationService {
   async createNotification(input: {
@@ -11,7 +12,7 @@ export class UserNotificationService {
     entityId?: string;
     payload?: Record<string, unknown>;
   }): Promise<void> {
-    await UserNotificationModel.create({
+    const doc = await UserNotificationModel.create({
       recipientId: input.recipientId,
       actorId: input.actorId,
       type: input.type,
@@ -21,6 +22,20 @@ export class UserNotificationService {
       entityId: input.entityId,
       payload: input.payload,
     });
+
+    try {
+      ChatSocketHub.getInstance().emitNotification(input.recipientId, {
+        id: String(doc._id),
+        type: input.type,
+        title: input.title,
+        description: input.description,
+        entityType: input.entityType,
+        entityId: input.entityId,
+        createdAt: (doc as any).createdAt,
+      });
+    } catch {
+      // Socket emission is best-effort; don't fail the notification creation
+    }
   }
 
   async notifyFollow(input: {

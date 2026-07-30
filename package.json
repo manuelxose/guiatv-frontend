@@ -20,7 +20,9 @@
     "deploy": "bash ./deploy-guiatv.sh"
   },
   "devDependencies": {
-    "typescript": "5.8.3"
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "typescript": "5.8.3",
+    "zod": "^4.3.6"
   },
   "engines": {
     "node": ">=22"

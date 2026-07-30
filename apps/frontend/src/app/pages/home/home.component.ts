@@ -10,6 +10,7 @@ import { CatalogItem, CatalogPlatform, CatalogService } from '../../services/cat
 import { MetaService } from '../../services/meta.service';
 import { UserService } from '../../services/user.service';
 import { UserProfile } from '../../interfaces/user.interface';
+import { generateWebApplicationSchema, generateOrganizationSchema } from '../../utils/utils';
 
 interface HomeSections {
   personalized: CatalogItem[];
@@ -116,9 +117,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     };
 
     forkJoin({
-      personalized: this.catalogService.getForYouState(12).pipe(
-        catchError(() => of({ data: [], unavailable: true, stale: false }))
-      ),
+      personalized: (
+        isAuthenticated
+          ? this.catalogService.getForYouState(12)
+          : of({ data: [], unavailable: false, stale: false })
+      ).pipe(catchError(() => of({ data: [], unavailable: true, stale: false }))),
       platformItems: this.catalogService
         .queryState({
           types: ['movie', 'series'],
@@ -231,18 +234,8 @@ export class HomeComponent implements OnInit, OnDestroy {
           'query-input': 'required name=search_term_string',
         },
       },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'Organization',
-        name: 'Guía Programación TV',
-        url: baseUrl,
-        logo: {
-          '@type': 'ImageObject',
-          url: `${baseUrl}/assets/images/logo.png`,
-        },
-        description:
-          'Guía completa de programación de televisión y streaming en España. Consulta la parrilla de TV, recomendaciones y catálogo de plataformas.',
-      },
+      generateOrganizationSchema(baseUrl),
+      generateWebApplicationSchema(baseUrl),
     ];
 
     const scripts = schemas
