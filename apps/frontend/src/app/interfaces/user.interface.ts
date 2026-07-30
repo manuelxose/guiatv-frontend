@@ -88,6 +88,9 @@ export interface UserActivity {
   category?: string;
   target?: string;
   image?: string; // Image of the content
+  likes?: number;
+  comments?: number;
+  liked?: boolean;
   user?: {
     id: string;
     name: string;
@@ -154,6 +157,24 @@ export interface UserList {
   likes?: number;
   followers?: number;
   items?: UserListItem[]; // Optional for list preview
+}
+
+export interface CommunityList {
+  id: string;
+  title: string;
+  description?: string;
+  itemsCount: number;
+  visibility: Visibility;
+  createdAt: string;
+  updatedAt: string;
+  cover?: string;
+  previewPosters: string[];
+  user: {
+    id: string;
+    name: string;
+    username: string;
+    avatar: string;
+  } | null;
 }
 
 export interface UserFavorite {

@@ -19,12 +19,27 @@ export interface AdminBlogSeo {
   canonicalUrl?: string;
 }
 
+export type AdminBlogContentType = 'guide' | 'ranking' | 'trend';
+
+export interface AdminBlogFaqItem {
+  question: string;
+  answer: string;
+}
+
 export interface AdminBlogPost {
   id?: string;
   date?: string;
   modified?: string;
   slug: string;
   status?: string;
+  contentType?: AdminBlogContentType;
+  featured?: boolean;
+  primaryIntent?: string;
+  targetQuery?: string;
+  relatedPlatformKeys?: string[];
+  relatedRouteKeys?: string[];
+  faqItems?: AdminBlogFaqItem[];
+  evergreen?: boolean;
   title?: { rendered?: string };
   excerpt?: { rendered?: string };
   content?: { rendered?: string };
@@ -44,6 +59,14 @@ export interface AdminBlogCreatePayload {
   excerpt?: string;
   content?: string;
   categories?: string[] | string;
+  contentType?: AdminBlogContentType;
+  featured?: boolean;
+  primaryIntent?: string;
+  targetQuery?: string;
+  relatedPlatformKeys?: string[] | string;
+  relatedRouteKeys?: string[] | string;
+  faqItems?: AdminBlogFaqItem[];
+  evergreen?: boolean;
   coverImage?: string;
   featuredImage?: string;
   metaTitle?: string;
@@ -60,6 +83,8 @@ export interface AdminBlogListParams {
   search?: string;
   categories?: string[];
   slug?: string;
+  contentType?: AdminBlogContentType | 'all';
+  categorySlug?: string;
 }
 
 interface ApiResponse<T> {
@@ -110,6 +135,41 @@ export class AdminBlogService {
       );
   }
 
+  updatePost(id: string, payload: AdminBlogCreatePayload): Observable<AdminBlogPost> {
+    const url = `${this.baseUrl}/blog/${encodeURIComponent(id)}`;
+    return this.http
+      .put<ApiResponse<{ post: AdminBlogPost }> | AdminBlogPost>(url, payload, {
+        headers: this.buildHeaders(),
+      })
+      .pipe(
+        map((resp) => {
+          if (this.isApiResponse(resp)) {
+            const data: any = resp.data;
+            return data?.post || data;
+          }
+          return resp as AdminBlogPost;
+        })
+      );
+  }
+
+  deletePost(id: string): Observable<{ deleted: boolean; id: string }> {
+    const url = `${this.baseUrl}/blog/${encodeURIComponent(id)}`;
+    return this.http
+      .delete<ApiResponse<{ deleted: boolean; id: string }> | { deleted: boolean; id: string }>(url, {
+        headers: this.buildHeaders(),
+      })
+      .pipe(
+        map((resp) => {
+          if (this.isApiResponse(resp)) {
+            const data: any = resp.data;
+            return { deleted: Boolean(data?.deleted), id: String(data?.id || id) };
+          }
+          const plain = resp as { deleted?: boolean; id?: string };
+          return { deleted: Boolean(plain?.deleted), id: String(plain?.id || id) };
+        })
+      );
+  }
+
   getCategories(): Observable<AdminBlogCategory[]> {
     const url = `${this.baseUrl}/blog/categories`;
     return this.http
@@ -133,6 +193,12 @@ export class AdminBlogService {
     if (params.status) query.push(`status=${encodeURIComponent(params.status)}`);
     if (params.search) query.push(`search=${encodeURIComponent(params.search)}`);
     if (params.slug) query.push(`slug=${encodeURIComponent(params.slug)}`);
+    if (params.contentType && params.contentType !== 'all') {
+      query.push(`contentType=${encodeURIComponent(params.contentType)}`);
+    }
+    if (params.categorySlug) {
+      query.push(`categorySlug=${encodeURIComponent(params.categorySlug)}`);
+    }
     if (params.categories?.length) {
       query.push(`categories=${encodeURIComponent(params.categories.join(','))}`);
     }

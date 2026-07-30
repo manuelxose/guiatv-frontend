@@ -58,9 +58,9 @@ export class SitemapService {
       { loc: '/programacion-tv/series', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/programacion-tv/guia-canales', lastmod: today, changefreq: 'daily', priority: 0.9 },
       
-      // Blog - medium-high priority
-      { loc: '/blog', lastmod: today, changefreq: 'daily', priority: 0.8 },
-      { loc: '/blog/top10', lastmod: today, changefreq: 'weekly', priority: 0.7 },
+      // Editorial - medium-high priority
+      { loc: '/editorial', lastmod: today, changefreq: 'daily', priority: 0.8 },
+      { loc: '/editorial/rankings', lastmod: today, changefreq: 'weekly', priority: 0.7 },
       
       // Legal pages - low priority
       { loc: '/avisolegal', lastmod: today, changefreq: 'monthly', priority: 0.3 },
@@ -68,6 +68,8 @@ export class SitemapService {
       { loc: '/cookies', lastmod: today, changefreq: 'monthly', priority: 0.3 },
       { loc: '/terminos', lastmod: today, changefreq: 'monthly', priority: 0.3 },
       { loc: '/accesibilidad', lastmod: today, changefreq: 'monthly', priority: 0.3 },
+      { loc: '/embed', lastmod: today, changefreq: 'monthly', priority: 0.4 },
+      { loc: '/tendencias', lastmod: today, changefreq: 'daily', priority: 0.8 },
       { loc: '/sitemap', lastmod: today, changefreq: 'weekly', priority: 0.4 },
     ];
   }

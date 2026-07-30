@@ -391,7 +391,7 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
         isActive: true,
         sortIndex: index,
         groupKey,
-        channelLink: ['/programacion-tv/ver-canal', slug],
+        channelLink: ['/canales', slug],
       };
     });
   }
@@ -556,7 +556,7 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
         '@type': 'ListItem',
         position: index + 1,
         name: channel.name,
-        url: `${baseUrl}/programacion-tv/ver-canal/${slugify(channel.name)}`,
+        url: `${baseUrl}/canales/${slugify(channel.name)}`,
       })),
     };
 

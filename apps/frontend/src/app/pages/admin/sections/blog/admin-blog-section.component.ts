@@ -2,19 +2,31 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { environment } from '../../../../../environments/environment';
+import { FALLBACK_CATALOG_PLATFORMS } from '../../../../data/catalog-platforms.data';
 import {
+  AdminBlogCategory,
+  AdminBlogContentType,
   AdminBlogCreatePayload,
+  AdminBlogFaqItem,
   AdminBlogPost,
   AdminBlogService,
 } from '../../../../services/admin-blog.service';
 import {
   calculateReadingTime,
   generateExcerpt,
-  isValidUrl,
   slugify,
   stripHtml,
   truncateTitle,
 } from '../../../../utils/utils';
+
+type BlogStatusFilter = 'all' | 'draft' | 'publish';
+type BlogTypeFilter = 'all' | AdminBlogContentType;
+
+interface BlogRouteOption {
+  key: string;
+  label: string;
+  description: string;
+}
 
 @Component({
   selector: 'app-admin-blog-section',
@@ -27,34 +39,64 @@ export class AdminBlogSectionComponent implements OnInit {
   @Output() lastUpdatedChange = new EventEmitter<Date>();
 
   public blogPosts: AdminBlogPost[] = [];
+  public blogCategories: AdminBlogCategory[] = [];
   public blogLoading = false;
   public blogError: string | null = null;
   public blogLastLoaded: Date | null = null;
   public blogSaving = false;
+  public blogDeletingId: string | null = null;
   public blogSaveError: string | null = null;
   public blogSaveSuccess: string | null = null;
+  public selectedBlogPostId: string | null = null;
 
-  public blogStatusFilter: 'all' | 'draft' | 'publish' = 'all';
+  public blogStatusFilter: BlogStatusFilter = 'all';
+  public blogTypeFilter: BlogTypeFilter = 'all';
+  public blogCategoryFilter = 'all';
   public blogSearchTerm = '';
   public readonly blogStatusOptions = [
-    { id: 'all', label: 'All' },
-    { id: 'draft', label: 'Draft' },
-    { id: 'publish', label: 'Published' },
+    { id: 'all', label: 'Todos' },
+    { id: 'draft', label: 'Borradores' },
+    { id: 'publish', label: 'Publicados' },
   ];
+  public readonly blogTypeOptions = [
+    { id: 'all', label: 'Todos' },
+    { id: 'guide', label: 'Guias' },
+    { id: 'ranking', label: 'Rankings' },
+    { id: 'trend', label: 'Tendencias' },
+  ] as const;
+  public readonly routeOptions: BlogRouteOption[] = [
+    { key: 'platforms', label: 'Plataformas', description: 'CTA o rail al catalogo filtrado por plataformas.' },
+    { key: 'guide', label: 'Guia TV', description: 'Acceso a la guia de canales y a emisiones en curso.' },
+    { key: 'explore', label: 'Que ver hoy', description: 'Descubrimiento rapido orientado a usuarios de la app.' },
+    { key: 'stats', label: 'Tendencias', description: 'Bloque de senales y contenido en tendencia.' },
+    { key: 'comparison', label: 'Comparador', description: 'CTA directo al comparador de plataformas.' },
+  ];
+  public readonly platformOptions = FALLBACK_CATALOG_PLATFORMS.map((platform) => ({
+    key: platform.key,
+    label: platform.name,
+  }));
 
   public readonly seoTitleMax = 60;
   public readonly seoDescriptionMax = 160;
   public blogForm: FormGroup;
   public readonly siteUrl = environment.SITE_URL;
 
-  constructor(private blogService: AdminBlogService, private fb: FormBuilder) {
+  constructor(private readonly blogService: AdminBlogService, private readonly fb: FormBuilder) {
     this.blogForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(6)]],
       slug: [''],
       status: ['draft'],
+      contentType: ['guide'],
+      featured: [false],
+      evergreen: [true],
+      primaryIntent: [''],
+      targetQuery: [''],
       excerpt: [''],
       content: [''],
       categories: [''],
+      relatedPlatformKeys: [[] as string[]],
+      relatedRouteKeys: [[] as string[]],
+      faqItems: [''],
       coverImage: [''],
       metaTitle: [''],
       metaDescription: [''],
@@ -66,80 +108,12 @@ export class AdminBlogSectionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadBlogPosts();
-  }
-
-  onBlogSearchInput(event: Event): void {
-    const target = event.target as HTMLInputElement | null;
-    this.blogSearchTerm = target?.value || '';
-  }
-
-  setBlogStatus(status: 'all' | 'draft' | 'publish'): void {
-    this.blogStatusFilter = status;
+    this.loadBlogCategories();
     this.loadBlogPosts(true);
   }
 
-  applyBlogFilters(): void {
-    this.loadBlogPosts(true);
-  }
-
-  refreshBlog(): void {
-    this.loadBlogPosts(true);
-  }
-
-  submitBlogPost(): void {
-    if (this.blogSaving) return;
-
-    if (this.blogForm.invalid) {
-      this.blogForm.markAllAsTouched();
-      this.blogSaveError = 'Please complete the required fields.';
-      return;
-    }
-
-    const payload = this.buildBlogPayload();
-    this.blogSaving = true;
-    this.blogSaveError = null;
-    this.blogSaveSuccess = null;
-
-    this.blogService.createPost(payload).subscribe({
-      next: () => {
-        this.blogSaving = false;
-        this.blogSaveSuccess = 'Post saved.';
-        this.resetBlogForm();
-        this.loadBlogPosts(true);
-      },
-      error: () => {
-        this.blogSaving = false;
-        this.blogSaveError = 'Failed to save the post.';
-      },
-    });
-  }
-
-  resetBlogForm(clearMessages = false): void {
-    this.blogForm.reset({
-      title: '',
-      slug: '',
-      status: 'draft',
-      excerpt: '',
-      content: '',
-      categories: '',
-      coverImage: '',
-      metaTitle: '',
-      metaDescription: '',
-      keywords: '',
-      ogImage: '',
-      canonicalUrl: '',
-      publishedAt: '',
-    });
-
-    if (clearMessages) {
-      this.blogSaveError = null;
-      this.blogSaveSuccess = null;
-    }
-  }
-
-  trackByBlogPost(_index: number, post: AdminBlogPost): string {
-    return String(post.id || post.slug);
+  get isEditingBlogPost(): boolean {
+    return Boolean(this.selectedBlogPostId);
   }
 
   get blogPreviewSlug(): string {
@@ -148,21 +122,21 @@ export class AdminBlogSectionComponent implements OnInit {
 
   get blogPreviewTitle(): string {
     const title = this.getTrimmedValue('metaTitle') || this.blogTitleValue;
-    return truncateTitle(title || 'Untitled post', this.seoTitleMax);
+    return truncateTitle(title || 'Articulo editorial', this.seoTitleMax);
   }
 
   get blogPreviewDescription(): string {
-    const content = this.getRawValue('content');
+    const content = this.getRawTextValue('content');
     const excerpt =
-      this.getRawValue('metaDescription') ||
-      this.getRawValue('excerpt') ||
+      this.getRawTextValue('metaDescription') ||
+      this.getRawTextValue('excerpt') ||
       generateExcerpt(content, this.seoDescriptionMax);
     return truncateTitle(excerpt, this.seoDescriptionMax);
   }
 
   get blogPreviewUrl(): string {
-    const slug = this.blogPreviewSlug || 'new-post';
-    return `${this.siteUrl}/blog/${slug}`;
+    const slug = this.blogPreviewSlug || 'nuevo-articulo';
+    return `${this.siteUrl}/editorial/${slug}`;
   }
 
   get blogTitleValue(): string {
@@ -178,12 +152,223 @@ export class AdminBlogSectionComponent implements OnInit {
   }
 
   get blogWordCount(): number {
-    const text = stripHtml(this.getRawValue('content')).trim();
+    const text = stripHtml(this.getRawTextValue('content')).trim();
     return text ? text.split(/\s+/).length : 0;
   }
 
   get blogReadingTime(): number {
-    return calculateReadingTime(this.getRawValue('content'));
+    return calculateReadingTime(this.getRawTextValue('content'));
+  }
+
+  onBlogSearchInput(event: Event): void {
+    const target = event.target as HTMLInputElement | null;
+    this.blogSearchTerm = target?.value || '';
+  }
+
+  setBlogStatus(status: BlogStatusFilter): void {
+    this.blogStatusFilter = status;
+    this.loadBlogPosts(true);
+  }
+
+  setBlogType(type: BlogTypeFilter): void {
+    this.blogTypeFilter = type;
+    this.loadBlogPosts(true);
+  }
+
+  setBlogCategory(slug: string): void {
+    this.blogCategoryFilter = slug;
+    this.loadBlogPosts(true);
+  }
+
+  applyBlogFilters(): void {
+    this.loadBlogPosts(true);
+  }
+
+  refreshBlog(): void {
+    this.loadBlogCategories();
+    this.loadBlogPosts(true);
+  }
+
+  submitBlogPost(): void {
+    if (this.blogSaving) return;
+
+    if (this.blogForm.invalid) {
+      this.blogForm.markAllAsTouched();
+      this.blogSaveError = 'Completa los campos obligatorios antes de guardar.';
+      return;
+    }
+
+    const payload = this.buildBlogPayload();
+    this.blogSaving = true;
+    this.blogSaveError = null;
+    this.blogSaveSuccess = null;
+
+    const request$ = this.selectedBlogPostId
+      ? this.blogService.updatePost(this.selectedBlogPostId, payload)
+      : this.blogService.createPost(payload);
+
+    request$.subscribe({
+      next: () => {
+        this.blogSaving = false;
+        this.blogSaveSuccess = this.selectedBlogPostId
+          ? 'Articulo editorial actualizado.'
+          : 'Articulo editorial creado.';
+        this.resetBlogForm();
+        this.loadBlogPosts(true);
+      },
+      error: () => {
+        this.blogSaving = false;
+        this.blogSaveError = 'No se pudo guardar el articulo editorial.';
+      },
+    });
+  }
+
+  editBlogPost(post: AdminBlogPost): void {
+    this.selectedBlogPostId = post.id ? String(post.id) : null;
+    this.blogSaveError = null;
+    this.blogSaveSuccess = null;
+    this.blogForm.reset({
+      title: this.getPostTitle(post),
+      slug: post.slug || '',
+      status: this.normalizePostStatus(post),
+      contentType: this.getPostContentType(post),
+      featured: Boolean(post.featured),
+      evergreen: post.evergreen !== false,
+      primaryIntent: post.primaryIntent || '',
+      targetQuery: post.targetQuery || '',
+      excerpt: post.excerpt?.rendered || '',
+      content: post.content?.rendered || '',
+      categories: (post.categories_name || []).map((category) => category.name).join(', '),
+      relatedPlatformKeys: [...(post.relatedPlatformKeys || [])],
+      relatedRouteKeys: [...(post.relatedRouteKeys || [])],
+      faqItems: this.serializeFaqItems(post.faqItems || []),
+      coverImage: post.featured_image?.source_url || '',
+      metaTitle: post.seo?.metaTitle || '',
+      metaDescription: post.seo?.metaDescription || '',
+      keywords: (post.seo?.keywords || []).join(', '),
+      ogImage: post.seo?.ogImage || '',
+      canonicalUrl: post.seo?.canonicalUrl || '',
+      publishedAt: this.toDatetimeLocalInput(post.date),
+    });
+  }
+
+  deleteBlogPost(post: AdminBlogPost): void {
+    if (!post.id || this.blogDeletingId) {
+      return;
+    }
+    const confirmed = typeof window === 'undefined'
+      ? true
+      : window.confirm(`Eliminar "${this.getPostTitle(post)}"? Esta accion no se puede deshacer.`);
+    if (!confirmed) {
+      return;
+    }
+
+    this.blogDeletingId = String(post.id);
+    this.blogSaveError = null;
+    this.blogSaveSuccess = null;
+
+    this.blogService.deletePost(String(post.id)).subscribe({
+      next: () => {
+        if (this.selectedBlogPostId === String(post.id)) {
+          this.resetBlogForm(true);
+        }
+        this.blogDeletingId = null;
+        this.blogSaveSuccess = 'Articulo editorial eliminado.';
+        this.loadBlogPosts(true);
+      },
+      error: () => {
+        this.blogDeletingId = null;
+        this.blogSaveError = 'No se pudo eliminar el articulo editorial.';
+      },
+    });
+  }
+
+  togglePublishState(post: AdminBlogPost): void {
+    if (!post.id || this.blogSaving) {
+      return;
+    }
+    const nextStatus = this.normalizePostStatus(post) === 'publish' ? 'draft' : 'publish';
+    this.blogSaving = true;
+    this.blogSaveError = null;
+    this.blogSaveSuccess = null;
+
+    this.blogService
+      .updatePost(String(post.id), { ...this.mapPostToPayload(post), status: nextStatus })
+      .subscribe({
+        next: () => {
+          this.blogSaving = false;
+          this.blogSaveSuccess =
+            nextStatus === 'publish' ? 'Articulo publicado.' : 'Articulo devuelto a borrador.';
+          this.loadBlogPosts(true);
+        },
+        error: () => {
+          this.blogSaving = false;
+          this.blogSaveError = 'No se pudo cambiar el estado del articulo.';
+        },
+      });
+  }
+
+  resetBlogForm(clearMessages = false): void {
+    this.selectedBlogPostId = null;
+    this.blogForm.reset({
+      title: '',
+      slug: '',
+      status: 'draft',
+      contentType: 'guide',
+      featured: false,
+      evergreen: true,
+      primaryIntent: '',
+      targetQuery: '',
+      excerpt: '',
+      content: '',
+      categories: '',
+      relatedPlatformKeys: [] as string[],
+      relatedRouteKeys: [] as string[],
+      faqItems: '',
+      coverImage: '',
+      metaTitle: '',
+      metaDescription: '',
+      keywords: '',
+      ogImage: '',
+      canonicalUrl: '',
+      publishedAt: '',
+    });
+
+    if (clearMessages) {
+      this.blogSaveError = null;
+      this.blogSaveSuccess = null;
+    }
+  }
+
+  toggleArraySelection(
+    controlName: 'relatedPlatformKeys' | 'relatedRouteKeys',
+    value: string,
+    checked: boolean
+  ): void {
+    const current = this.getArrayValue(controlName);
+    const next = checked
+      ? Array.from(new Set([...current, value]))
+      : current.filter((entry) => entry !== value);
+    this.blogForm.get(controlName)?.setValue(next);
+    this.blogForm.get(controlName)?.markAsDirty();
+  }
+
+  isArraySelectionActive(
+    controlName: 'relatedPlatformKeys' | 'relatedRouteKeys',
+    value: string
+  ): boolean {
+    return this.getArrayValue(controlName).includes(value);
+  }
+
+  openBlogPreview(): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    window.open(this.blogPreviewUrl, '_blank', 'noopener');
+  }
+
+  trackByBlogPost(_index: number, post: AdminBlogPost): string {
+    return String(post.id || post.slug);
   }
 
   isSeoTitleOk(): boolean {
@@ -198,11 +383,22 @@ export class AdminBlogSectionComponent implements OnInit {
 
   isCanonicalValid(): boolean {
     const value = this.getTrimmedValue('canonicalUrl');
-    return !value || isValidUrl(value);
+    if (!value) {
+      return true;
+    }
+    if (value.startsWith('/')) {
+      return true;
+    }
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   getPostTitle(post: AdminBlogPost): string {
-    return post.title?.rendered || 'Untitled';
+    return post.title?.rendered || 'Sin titulo';
   }
 
   getPostExcerpt(post: AdminBlogPost): string {
@@ -212,7 +408,7 @@ export class AdminBlogSectionComponent implements OnInit {
 
   getPostCategories(post: AdminBlogPost): string {
     const categories = post.categories_name?.map((cat) => cat.name) || [];
-    return categories.length ? categories.join(', ') : 'Uncategorized';
+    return categories.length ? categories.join(', ') : 'Sin categoria';
   }
 
   getPostSeoTitle(post: AdminBlogPost): string {
@@ -234,8 +430,8 @@ export class AdminBlogSectionComponent implements OnInit {
   }
 
   getPostUrl(post: AdminBlogPost): string {
-    const slug = post.slug || 'post';
-    return `${this.siteUrl}/blog/${slug}`;
+    const slug = post.slug || 'articulo';
+    return `${this.siteUrl}/editorial/${slug}`;
   }
 
   getPostStatusClass(status?: string): string {
@@ -243,6 +439,13 @@ export class AdminBlogSectionComponent implements OnInit {
       return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40';
     }
     return 'bg-amber-500/20 text-amber-200 border-amber-500/40';
+  }
+
+  getPostTypeLabel(post: AdminBlogPost): string {
+    const type = this.getPostContentType(post);
+    if (type === 'ranking') return 'Ranking';
+    if (type === 'trend') return 'Tendencia';
+    return 'Guia';
   }
 
   private loadBlogPosts(force = false): void {
@@ -257,7 +460,9 @@ export class AdminBlogSectionComponent implements OnInit {
       .getPosts({
         status: this.blogStatusFilter,
         search: search || undefined,
-        limit: 40,
+        limit: 50,
+        contentType: this.blogTypeFilter,
+        categorySlug: this.blogCategoryFilter !== 'all' ? this.blogCategoryFilter : undefined,
       })
       .subscribe({
         next: (posts) => {
@@ -268,32 +473,50 @@ export class AdminBlogSectionComponent implements OnInit {
         },
         error: () => {
           this.blogLoading = false;
-          this.blogError = 'Failed to load blog posts.';
+          this.blogError = 'No se pudieron cargar los articulos editoriales.';
         },
       });
+  }
+
+  private loadBlogCategories(): void {
+    this.blogService.getCategories().subscribe({
+      next: (categories) => {
+        this.blogCategories = categories || [];
+      },
+      error: () => {
+        this.blogCategories = [];
+      },
+    });
   }
 
   private buildBlogPayload(): AdminBlogCreatePayload {
     const title = this.getTrimmedValue('title');
     const slug = slugify(this.getTrimmedValue('slug') || title);
-    const status =
-      this.getTrimmedValue('status') === 'publish' ? 'publish' : 'draft';
-    const content = this.getRawValue('content');
+    const status = this.normalizePostStatusValue(this.getTrimmedValue('status'));
+    const content = this.getRawTextValue('content');
     const excerpt =
-      this.getRawValue('excerpt') ||
+      this.getRawTextValue('excerpt') ||
       generateExcerpt(content, this.seoDescriptionMax);
     const metaTitle = this.getTrimmedValue('metaTitle') || title;
     const metaDescription =
-      this.getRawValue('metaDescription') || excerpt || '';
+      this.getRawTextValue('metaDescription') || excerpt || '';
     const publishedAt = this.getTrimmedValue('publishedAt');
 
     return {
       title,
       slug,
       status,
+      contentType: this.getPostContentTypeValue(),
+      featured: this.getBooleanValue('featured'),
+      evergreen: this.getBooleanValue('evergreen'),
+      primaryIntent: this.getTrimmedValue('primaryIntent'),
+      targetQuery: this.getTrimmedValue('targetQuery'),
       excerpt,
       content,
       categories: this.getTrimmedValue('categories'),
+      relatedPlatformKeys: this.getArrayValue('relatedPlatformKeys'),
+      relatedRouteKeys: this.getArrayValue('relatedRouteKeys'),
+      faqItems: this.parseFaqItems(this.getRawTextValue('faqItems')),
       coverImage: this.getTrimmedValue('coverImage'),
       metaTitle,
       metaDescription,
@@ -304,13 +527,107 @@ export class AdminBlogSectionComponent implements OnInit {
     };
   }
 
+  private mapPostToPayload(post: AdminBlogPost): AdminBlogCreatePayload {
+    return {
+      title: this.getPostTitle(post),
+      slug: post.slug,
+      status: this.normalizePostStatus(post),
+      contentType: this.getPostContentType(post),
+      featured: Boolean(post.featured),
+      evergreen: post.evergreen !== false,
+      primaryIntent: post.primaryIntent || '',
+      targetQuery: post.targetQuery || '',
+      excerpt: post.excerpt?.rendered || '',
+      content: post.content?.rendered || '',
+      categories: (post.categories_name || []).map((category) => category.name),
+      relatedPlatformKeys: [...(post.relatedPlatformKeys || [])],
+      relatedRouteKeys: [...(post.relatedRouteKeys || [])],
+      faqItems: [...(post.faqItems || [])],
+      coverImage: post.featured_image?.source_url || '',
+      metaTitle: post.seo?.metaTitle || '',
+      metaDescription: post.seo?.metaDescription || '',
+      keywords: post.seo?.keywords || [],
+      ogImage: post.seo?.ogImage || '',
+      canonicalUrl: post.seo?.canonicalUrl || '',
+      publishedAt: post.date || undefined,
+    };
+  }
+
+  private parseFaqItems(value: string): AdminBlogFaqItem[] {
+    return value
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [question, answer] = line.split('::');
+        return {
+          question: String(question || '').trim(),
+          answer: String(answer || '').trim(),
+        };
+      })
+      .filter((item) => item.question && item.answer);
+  }
+
+  private serializeFaqItems(items: AdminBlogFaqItem[]): string {
+    return items.map((item) => `${item.question}::${item.answer}`).join('\n');
+  }
+
+  private getPostContentType(post: AdminBlogPost): AdminBlogContentType {
+    const raw = String(post.contentType || '').trim().toLowerCase();
+    if (raw === 'ranking' || raw === 'trend') {
+      return raw;
+    }
+    const categorySlugs = (post.categories_name || []).map((category) => category.slug);
+    if (categorySlugs.some((slug) => ['ranking', 'rankings', 'top-10', 'top10'].includes(slug))) {
+      return 'ranking';
+    }
+    return 'guide';
+  }
+
+  private getPostContentTypeValue(): AdminBlogContentType {
+    const raw = this.getTrimmedValue('contentType').toLowerCase();
+    if (raw === 'ranking' || raw === 'trend') {
+      return raw;
+    }
+    return 'guide';
+  }
+
+  private normalizePostStatus(post: AdminBlogPost): 'draft' | 'publish' {
+    return this.normalizePostStatusValue(post.status || 'draft');
+  }
+
+  private normalizePostStatusValue(value: string): 'draft' | 'publish' {
+    return value === 'publish' ? 'publish' : 'draft';
+  }
+
+  private toDatetimeLocalInput(value?: string): string {
+    if (!value) {
+      return '';
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '';
+    }
+    const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return offsetDate.toISOString().slice(0, 16);
+  }
+
   private getTrimmedValue(controlName: string): string {
     const value = this.blogForm.get(controlName)?.value;
     return value ? String(value).trim() : '';
   }
 
-  private getRawValue(controlName: string): string {
+  private getRawTextValue(controlName: string): string {
     const value = this.blogForm.get(controlName)?.value;
     return value ? String(value) : '';
+  }
+
+  private getArrayValue(controlName: 'relatedPlatformKeys' | 'relatedRouteKeys'): string[] {
+    const value = this.blogForm.get(controlName)?.value;
+    return Array.isArray(value) ? value.map((item) => String(item)) : [];
+  }
+
+  private getBooleanValue(controlName: 'featured' | 'evergreen'): boolean {
+    return Boolean(this.blogForm.get(controlName)?.value);
   }
 }

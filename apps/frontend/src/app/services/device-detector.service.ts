@@ -88,12 +88,6 @@ export class DeviceDetectorService {
   }));
 
   constructor() {
-    console.log('🏗️ DeviceDetectorService constructor', {
-      isServer: this.isServer,
-      isBrowser: this.isBrowser,
-      hasRequest: !!this.request,
-    });
-
     if (this.isServer) {
       this.detectDeviceOnServer();
     } else if (this.isBrowser) {
@@ -106,17 +100,13 @@ export class DeviceDetectorService {
    */
   private detectDeviceOnServer(): void {
     if (!this.request) {
-      console.warn('⚠️ REQUEST no disponible en servidor');
       return;
     }
 
     const userAgent = this.request.headers['user-agent'] || '';
-    console.log('🔍 SERVER - User-Agent:', userAgent);
 
     // Detectar tipo de dispositivo por User-Agent
     const deviceInfo = this.parseUserAgent(userAgent);
-
-    console.log('📱 SERVER - Device detected:', deviceInfo);
 
     // Aplicar detección
     this.width.set(deviceInfo.width);
@@ -125,8 +115,6 @@ export class DeviceDetectorService {
 
     // Guardar en TransferState para el cliente
     this.transferState.set(DEVICE_INFO_KEY, deviceInfo);
-
-    console.log('💾 SERVER - Device info guardado en TransferState');
 
     // Marcar inicializado
     this.initialized.set(true);
@@ -137,8 +125,6 @@ export class DeviceDetectorService {
    * Lee desde TransferState o detecta manualmente
    */
   private initializeOnClient(): void {
-    console.log('🌐 CLIENT - Inicializando detección...');
-
     // 1. Intentar obtener info del servidor
     const serverDeviceInfo = this.transferState.get<DeviceInfo>(
       DEVICE_INFO_KEY,
@@ -146,18 +132,11 @@ export class DeviceDetectorService {
     );
 
     if (serverDeviceInfo) {
-      console.log(
-        '✅ CLIENT - Usando device info del servidor:',
-        serverDeviceInfo
-      );
       this.applyDeviceInfo(serverDeviceInfo);
 
       // Limpiar TransferState
       this.transferState.remove(DEVICE_INFO_KEY);
     } else {
-      console.log(
-        '⚠️ CLIENT - No hay info del servidor, detectando manualmente...'
-      );
       this.detectDeviceOnClient();
     }
 
@@ -184,18 +163,10 @@ export class DeviceDetectorService {
       this.height.set(height);
       this._isTouchDevice.set(isTouchDevice);
 
-      console.log('📱 CLIENT - Device detected:', {
-        width,
-        height,
-        type: this.deviceType(),
-        isMobile: this.isMobile(),
-        isTouch: isTouchDevice,
-      });
-
       // Marcar inicializado
       this.initialized.set(true);
     } catch (error) {
-      console.error('❌ CLIENT - Error detecting device:', error);
+      this.initialized.set(true);
     }
   }
 
@@ -294,15 +265,10 @@ export class DeviceDetectorService {
           if (typeof window !== 'undefined') {
             this.width.set(window.innerWidth);
             this.height.set(window.innerHeight);
-            console.log('🔄 Window resized:', {
-              width: this.width(),
-              height: this.height(),
-              type: this.deviceType(),
-            });
           }
         });
     } catch (error) {
-      console.error('❌ Error setting up resize listener:', error);
+      void error;
     }
   }
 

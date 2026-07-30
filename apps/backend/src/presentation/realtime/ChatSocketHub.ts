@@ -209,6 +209,10 @@ export class ChatSocketHub {
     this.io?.to(this.generalRoom()).emit('chat:read:updated', payload);
   }
 
+  emitNotification(recipientId: string, payload: Record<string, unknown>): void {
+    this.io?.to(this.userRoom(recipientId)).emit('notification:new', payload);
+  }
+
   getOnlineUserIds(): string[] {
     return Array.from(this.userSocketMap.keys());
   }

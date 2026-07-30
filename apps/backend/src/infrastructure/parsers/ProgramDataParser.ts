@@ -3,6 +3,7 @@
 import { Program } from '../../domain/entities/Program';
 import { ParsedXMLProgram } from './XMLParser';
 import { logger } from '../../shared/utils/logger';
+import { normalizeExternalMediaUrl } from '../../shared/utils/mediaUrl';
 
 /** Titles that are actually category labels, not real program names. */
 const GENERIC_TITLES = new Set([
@@ -105,9 +106,9 @@ export class ProgramDataParser {
 
       let image: string | undefined;
       if (Array.isArray(parsed.icon)) {
-        image = parsed.icon[0];
+        image = normalizeExternalMediaUrl(parsed.icon[0]);
       } else {
-        image = parsed.icon;
+        image = normalizeExternalMediaUrl(parsed.icon);
       }
 
       return Program.create({

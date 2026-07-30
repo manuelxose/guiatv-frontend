@@ -13,6 +13,7 @@ import { AdminSchedulesSectionComponent } from './sections/schedules/admin-sched
 import { AdminSystemSectionComponent } from './sections/system/admin-system-section.component';
 import { AdminUsersSectionComponent } from './sections/users/admin-users-section.component';
 import { AdminCommunitySectionComponent } from './sections/community/admin-community-section.component';
+import { AdminAISectionComponent } from './sections/ai/admin-ai-section.component';
 
 @Component({
   selector: 'app-admin-panel',
@@ -29,6 +30,7 @@ import { AdminCommunitySectionComponent } from './sections/community/admin-commu
     AdminUsersSectionComponent,
     AdminSystemSectionComponent,
     AdminCommunitySectionComponent,
+    AdminAISectionComponent,
     AdminPlaceholderSectionComponent,
   ],
   templateUrl: './admin.component.html',
@@ -47,6 +49,14 @@ export class AdminComponent {
         { id: 'events', label: 'Events', description: 'Behavior stream' },
         { id: 'journeys', label: 'Journeys', description: 'Flows and funnels', badge: 'Soon' },
         { id: 'retention', label: 'Retention', description: 'Cohorts', badge: 'Soon' },
+      ],
+    },
+    {
+      id: 'ai',
+      label: 'AI Chatbot',
+      icon: '🤖',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', description: 'KPIs and usage' },
       ],
     },
     {

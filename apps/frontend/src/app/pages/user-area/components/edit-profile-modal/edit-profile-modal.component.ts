@@ -89,22 +89,34 @@ import { UserProfile } from '../../../../interfaces/user.interface';
 
             <div class="border-t border-slate-800 pt-6 space-y-4">
               <h3 class="text-sm text-slate-300 font-semibold uppercase tracking-wider">Seguridad</h3>
-              <div class="grid md:grid-cols-2 gap-4">
+              <p *ngIf="passwordSuccess" class="text-sm text-green-400">{{ passwordSuccess }}</p>
+              <p *ngIf="passwordError" class="text-sm text-red-400">{{ passwordError }}</p>
+              <div class="space-y-4">
                 <div class="space-y-2">
-                  <label class="text-xs text-slate-400 uppercase tracking-wider">Nueva contrasena</label>
+                  <label class="text-xs text-slate-400 uppercase tracking-wider">Contrasena actual</label>
                   <input
                     type="password"
-                    formControlName="password"
+                    formControlName="currentPassword"
                     class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   />
                 </div>
-                <div class="space-y-2">
-                  <label class="text-xs text-slate-400 uppercase tracking-wider">Confirmar contrasena</label>
-                  <input
-                    type="password"
-                    formControlName="confirmPassword"
-                    class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-                  />
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div class="space-y-2">
+                    <label class="text-xs text-slate-400 uppercase tracking-wider">Nueva contrasena</label>
+                    <input
+                      type="password"
+                      formControlName="password"
+                      class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-xs text-slate-400 uppercase tracking-wider">Confirmar contrasena</label>
+                    <input
+                      type="password"
+                      formControlName="confirmPassword"
+                      class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -147,8 +159,11 @@ export class EditProfileModalComponent {
   }
   @Output() closeModal = new EventEmitter<void>();
   @Output() saveProfile = new EventEmitter<Partial<UserProfile>>();
+  @Output() changePassword = new EventEmitter<{ currentPassword: string; newPassword: string }>();
 
   profileForm: FormGroup;
+  passwordError = '';
+  passwordSuccess = '';
 
   constructor(private fb: FormBuilder) {
     this.profileForm = this.fb.group({
@@ -157,20 +172,53 @@ export class EditProfileModalComponent {
       bio: [''],
       location: [''],
       avatar: [''],
+      currentPassword: [''],
       password: [''],
       confirmPassword: [''],
     });
   }
 
   onClose() {
+    this.passwordError = '';
+    this.passwordSuccess = '';
     this.closeModal.emit();
   }
 
   onSubmit() {
     if (this.profileForm.valid) {
       const formValue = this.profileForm.value;
-      const { password, confirmPassword, ...profileData } = formValue;
+      const { currentPassword, password, confirmPassword, ...profileData } = formValue;
       this.saveProfile.emit(profileData);
+
+      this.passwordError = '';
+      this.passwordSuccess = '';
+
+      if (password || currentPassword) {
+        if (!currentPassword) {
+          this.passwordError = 'Introduce tu contraseña actual.';
+          return;
+        }
+        if (!password || password.length < 8) {
+          this.passwordError = 'La nueva contraseña debe tener al menos 8 caracteres.';
+          return;
+        }
+        if (password !== confirmPassword) {
+          this.passwordError = 'Las contraseñas no coinciden.';
+          return;
+        }
+        this.changePassword.emit({ currentPassword, newPassword: password });
+      }
+    }
+  }
+
+  onPasswordChangeResult(success: boolean, message: string) {
+    if (success) {
+      this.passwordSuccess = message;
+      this.passwordError = '';
+      this.profileForm.patchValue({ currentPassword: '', password: '', confirmPassword: '' });
+    } else {
+      this.passwordError = message;
+      this.passwordSuccess = '';
     }
   }
 }

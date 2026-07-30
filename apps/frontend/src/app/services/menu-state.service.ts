@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {
   PRIMARY_NAV_ROUTES,
+  RESOURCE_NAV_ROUTES,
   SECONDARY_NAV_ROUTES,
+  TOOL_NAV_ROUTES,
   USER_NAV_ROUTES,
   normalizePath,
 } from '../config/route-map';
@@ -30,8 +32,14 @@ export class MenuStateService {
     plataformas: '#38bdf8',
     series: '#06b6d4',
     peliculas: '#ea580c',
-    blog: '#8b5cf6',
-    'top-10': '#ef4444',
+    editorial: '#8b5cf6',
+    rankings: '#ef4444',
+    tendencias: '#14b8a6',
+    'comparador-streaming': '#38bdf8',
+    prensa: '#c084fc',
+    'sobre-nosotros': '#f59e0b',
+    developers: '#06b6d4',
+    embed: '#10b981',
     'en-directo': '#f43f5e',
     comunidad: '#22c55e',
     'mi-cuenta': '#22c55e',
@@ -77,6 +85,8 @@ export class MenuStateService {
   // Shared routes configuration so Header and Menu use the same source
   public readonly routes = PRIMARY_NAV_ROUTES;
   public readonly secondaryRoutes = SECONDARY_NAV_ROUTES;
+  public readonly resourceRoutes = RESOURCE_NAV_ROUTES;
+  public readonly toolRoutes = TOOL_NAV_ROUTES;
 
   public readonly userRoutes = USER_NAV_ROUTES;
 
@@ -89,19 +99,34 @@ export class MenuStateService {
     return this.secondaryRoutes;
   }
 
+  public getResourceRoutes() {
+    return this.resourceRoutes;
+  }
+
+  public getToolRoutes() {
+    return this.toolRoutes;
+  }
+
   public getUserRoutes() {
     return this.userRoutes;
   }
 
   public resolveActiveKeyFromUrl(url: string): string {
     const path = normalizePath(url);
-    const allRoutes = [...this.routes, ...this.secondaryRoutes, ...this.userRoutes];
+    const allRoutes = [
+      ...this.routes,
+      ...this.secondaryRoutes,
+      ...this.resourceRoutes,
+      ...this.toolRoutes,
+      ...this.userRoutes,
+    ];
     const exact = allRoutes.find((route) => normalizePath(route.path) === path);
     if (exact) {
       return exact.key;
     }
 
     if (
+      path.startsWith('/canales/') ||
       path.startsWith('/programacion-tv/ver-canal/') ||
       path.startsWith('/ver-canal/')
     ) {
@@ -133,12 +158,44 @@ export class MenuStateService {
       return 'en-directo';
     }
 
+    if (path.startsWith('/editorial/rankings')) {
+      return 'rankings';
+    }
+
+    if (path.startsWith('/editorial')) {
+      return 'editorial';
+    }
+
     if (path.startsWith('/blog/top10')) {
-      return 'top-10';
+      return 'rankings';
     }
 
     if (path.startsWith('/blog')) {
-      return 'blog';
+      return 'editorial';
+    }
+
+    if (path.startsWith('/tendencias')) {
+      return 'tendencias';
+    }
+
+    if (path.startsWith('/comparador-streaming')) {
+      return 'comparador-streaming';
+    }
+
+    if (path.startsWith('/prensa')) {
+      return 'prensa';
+    }
+
+    if (path.startsWith('/sobre-nosotros')) {
+      return 'sobre-nosotros';
+    }
+
+    if (path.startsWith('/developers')) {
+      return 'developers';
+    }
+
+    if (path.startsWith('/embed')) {
+      return 'embed';
     }
 
     if (path.startsWith('/comunidad')) {

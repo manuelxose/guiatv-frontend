@@ -9,6 +9,7 @@ export interface AuthenticatedRequest extends Request {
     name?: string;
     picture?: string;
     role?: 'admin' | 'editor' | 'user';
+    subscription?: 'free' | 'premium';
   };
 }
 

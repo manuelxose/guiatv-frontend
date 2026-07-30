@@ -87,7 +87,8 @@
           [title]="getProgramTitle()"
           type="program"
           [tmdbId]="program.tmdbId"
-          [genres]="program.category?.value ? [program.category?.value] : []">
+          [genres]="program.category?.value ? [program.category?.value] : []"
+          [preloadInteraction]="true">
         </app-interaction-buttons>
       </div>
 

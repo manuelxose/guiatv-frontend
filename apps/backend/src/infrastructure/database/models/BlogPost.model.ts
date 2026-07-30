@@ -1,10 +1,17 @@
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
 
+export type BlogContentType = 'guide' | 'ranking' | 'trend';
+
 export interface IBlogPostCategory {
   id: number;
   name: string;
   slug: string;
+}
+
+export interface IBlogFaqItem {
+  question: string;
+  answer: string;
 }
 
 export interface IBlogPostDocument {
@@ -14,6 +21,14 @@ export interface IBlogPostDocument {
   excerpt?: string;
   content?: string;
   categories: IBlogPostCategory[];
+  contentType: BlogContentType;
+  featured?: boolean;
+  primaryIntent?: string;
+  targetQuery?: string;
+  relatedPlatformKeys: string[];
+  relatedRouteKeys: string[];
+  faqItems: IBlogFaqItem[];
+  evergreen?: boolean;
   seo?: {
     metaTitle?: string;
     metaDescription?: string;
@@ -43,6 +58,14 @@ const BlogPostCategorySchema = new Schema<IBlogPostCategory>(
   { _id: false }
 );
 
+const BlogFaqItemSchema = new Schema<IBlogFaqItem>(
+  {
+    question: { type: String, required: true, trim: true },
+    answer: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const BlogPostSchema = new Schema<IBlogPostDocument>(
   {
     title: { type: String, required: true, trim: true },
@@ -56,6 +79,19 @@ const BlogPostSchema = new Schema<IBlogPostDocument>(
     excerpt: { type: String, trim: true },
     content: { type: String },
     categories: { type: [BlogPostCategorySchema], default: [] },
+    contentType: {
+      type: String,
+      enum: ['guide', 'ranking', 'trend'],
+      default: 'guide',
+      index: true,
+    },
+    featured: { type: Boolean, default: false, index: true },
+    primaryIntent: { type: String, trim: true },
+    targetQuery: { type: String, trim: true },
+    relatedPlatformKeys: { type: [String], default: [] },
+    relatedRouteKeys: { type: [String], default: [] },
+    faqItems: { type: [BlogFaqItemSchema], default: [] },
+    evergreen: { type: Boolean, default: true, index: true },
     seo: {
       metaTitle: { type: String, trim: true },
       metaDescription: { type: String, trim: true },
@@ -80,6 +116,7 @@ const BlogPostSchema = new Schema<IBlogPostDocument>(
 );
 
 BlogPostSchema.index({ status: 1, publishedAt: -1 });
+BlogPostSchema.index({ contentType: 1, status: 1, publishedAt: -1 });
 BlogPostSchema.index({ 'categories.slug': 1, publishedAt: -1 });
 BlogPostSchema.index({ title: 'text', excerpt: 'text', content: 'text' });
 

@@ -235,9 +235,79 @@ export function generatePostSchema(post: any, baseUrl: string): object {
     ),
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `${baseUrl}/blog/${slugify(post.slug)}`,
+      '@id': `${baseUrl}/editorial/${slugify(post.slug)}`,
     },
   };
+}
+
+export function generateCollectionPageSchema(config: {
+  name: string;
+  description?: string;
+  path: string;
+}, baseUrl: string): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: config.name,
+    description: config.description || '',
+    url: `${baseUrl}${config.path}`,
+    inLanguage: 'es-ES',
+  };
+}
+
+export function generateEditorialArticleSchema(post: {
+  title: string;
+  excerptText?: string;
+  coverImage?: string;
+  publishedAt?: string;
+  modifiedAt?: string;
+  canonicalPath: string;
+  contentType?: string;
+  targetQuery?: string | null;
+}, baseUrl: string): object {
+  const schema: Record<string, any> = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerptText || '',
+    image: post.coverImage || '',
+    datePublished: post.publishedAt ? formatDateForSEO(post.publishedAt) : undefined,
+    dateModified: post.modifiedAt
+      ? formatDateForSEO(post.modifiedAt)
+      : post.publishedAt
+      ? formatDateForSEO(post.publishedAt)
+      : undefined,
+    author: {
+      '@type': 'Organization',
+      name: 'Guia TV',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Guia TV',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${baseUrl}/assets/images/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${baseUrl}${post.canonicalPath}`,
+    },
+    articleSection: post.contentType || 'guide',
+    inLanguage: 'es-ES',
+  };
+
+  if (post.targetQuery) {
+    schema.keywords = [post.targetQuery];
+  }
+
+  Object.keys(schema).forEach((key) => {
+    if (schema[key] === undefined || schema[key] === '') {
+      delete schema[key];
+    }
+  });
+
+  return schema;
 }
 
 /**
@@ -396,19 +466,228 @@ export function formatCorrectTime(dateString: string): string {
  * Función de debug para analizar problemas de zona horaria
  */
 export function debugTimeZone(dateString: string, context: string = ''): void {
-  const originalDate = new Date(dateString);
-  const correctedDate = getCorrectTime(dateString);
-
-  console.log(`🕐 DEBUG TIMEZONE ${context}:`);
-  console.log(`   Raw string: ${dateString}`);
-  console.log(`   Original UTC: ${originalDate.toISOString()}`);
-  console.log(`   Original local: ${originalDate.toLocaleString('es-ES')}`);
-  console.log(`   Corrected: ${correctedDate.toLocaleString('es-ES')}`);
-  console.log(
-    `   Raw hour: ${originalDate.getHours()} -> Corrected hour: ${correctedDate.getHours()}`
-  );
-  console.log('---');
+  void dateString;
+  void context;
 }
+
+// ─── SEO Schema Generators ────────────────────────────────────────
+
+/**
+ * Genera JSON-LD TVSeries para una serie
+ */
+export function generateTVSeriesSchema(item: {
+  title: string;
+  synopsis?: string;
+  image?: string;
+  backdrop?: string;
+  genres?: string[];
+  cast?: Array<{ name: string; character?: string }>;
+  director?: string;
+  releaseYear?: number;
+  rating?: number;
+  slug?: string;
+}, baseUrl: string): object {
+  const schema: Record<string, any> = {
+    '@context': 'https://schema.org',
+    '@type': 'TVSeries',
+    name: item.title,
+    url: `${baseUrl}/series/${item.slug || ''}`,
+  };
+  if (item.synopsis) schema.description = item.synopsis;
+  if (item.backdrop || item.image) schema.image = item.backdrop || item.image;
+  if (item.genres?.length) schema.genre = item.genres;
+  if (item.releaseYear) schema.datePublished = String(item.releaseYear);
+  if (item.director) schema.director = { '@type': 'Person', name: item.director };
+  if (item.cast?.length) {
+    schema.actor = item.cast.slice(0, 10).map(c => ({
+      '@type': 'Person',
+      name: c.name,
+    }));
+  }
+  if (item.rating && item.rating > 0) {
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: item.rating,
+      bestRating: 10,
+      worstRating: 0,
+    };
+  }
+  schema.inLanguage = 'es';
+  return schema;
+}
+
+/**
+ * Genera JSON-LD Movie para una película
+ */
+export function generateMovieSchema(item: {
+  title: string;
+  synopsis?: string;
+  image?: string;
+  backdrop?: string;
+  genres?: string[];
+  cast?: Array<{ name: string; character?: string }>;
+  director?: string;
+  releaseYear?: number;
+  rating?: number;
+  durationMinutes?: number;
+  slug?: string;
+}, baseUrl: string): object {
+  const schema: Record<string, any> = {
+    '@context': 'https://schema.org',
+    '@type': 'Movie',
+    name: item.title,
+    url: `${baseUrl}/peliculas/${item.slug || ''}`,
+  };
+  if (item.synopsis) schema.description = item.synopsis;
+  if (item.backdrop || item.image) schema.image = item.backdrop || item.image;
+  if (item.genres?.length) schema.genre = item.genres;
+  if (item.releaseYear) schema.datePublished = String(item.releaseYear);
+  if (item.director) schema.director = { '@type': 'Person', name: item.director };
+  if (item.durationMinutes) schema.duration = minutesToISO8601(item.durationMinutes);
+  if (item.cast?.length) {
+    schema.actor = item.cast.slice(0, 10).map(c => ({
+      '@type': 'Person',
+      name: c.name,
+    }));
+  }
+  if (item.rating && item.rating > 0) {
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: item.rating,
+      bestRating: 10,
+      worstRating: 0,
+    };
+  }
+  schema.inLanguage = 'es';
+  return schema;
+}
+
+/**
+ * Genera JSON-LD ItemList para colecciones/carruseles
+ */
+export function generateItemListSchema(
+  items: Array<{ title: string; detailPath?: string; image?: string }>,
+  listName: string,
+  baseUrl: string
+): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: listName,
+    numberOfItems: items.length,
+    itemListElement: items.slice(0, 10).map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.title,
+      url: item.detailPath ? `${baseUrl}${item.detailPath}` : undefined,
+      image: item.image || undefined,
+    })),
+  };
+}
+
+/**
+ * Genera JSON-LD FAQPage
+ */
+export function generateFAQSchema(
+  questions: Array<{ question: string; answer: string }>
+): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: questions.map(q => ({
+      '@type': 'Question',
+      name: q.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: q.answer,
+      },
+    })),
+  };
+}
+
+/**
+ * Genera JSON-LD VideoObject para trailers
+ */
+export function generateVideoObjectSchema(video: {
+  name: string;
+  description?: string;
+  thumbnailUrl?: string;
+  uploadDate?: string;
+  durationMinutes?: number;
+  contentUrl?: string;
+  embedUrl?: string;
+}): object {
+  const schema: Record<string, any> = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: video.name,
+  };
+  if (video.description) schema.description = video.description;
+  if (video.thumbnailUrl) schema.thumbnailUrl = video.thumbnailUrl;
+  if (video.uploadDate) schema.uploadDate = video.uploadDate;
+  if (video.durationMinutes) schema.duration = minutesToISO8601(video.durationMinutes);
+  if (video.contentUrl) schema.contentUrl = video.contentUrl;
+  if (video.embedUrl) schema.embedUrl = video.embedUrl;
+  return schema;
+}
+
+/**
+ * Genera JSON-LD WebApplication
+ */
+export function generateWebApplicationSchema(baseUrl: string): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Guía Programación TV',
+    url: baseUrl,
+    applicationCategory: 'EntertainmentApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'es',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'EUR',
+    },
+    description: 'Guía completa de programación de televisión y streaming en España.',
+  };
+}
+
+/**
+ * Genera JSON-LD Organization enriquecido
+ */
+export function generateOrganizationSchema(baseUrl: string): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Guía Programación TV',
+    alternateName: 'GuíaProgramaciónTV',
+    url: baseUrl,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${baseUrl}/assets/images/logo.png`,
+    },
+    description: 'Guía completa de programación de televisión y streaming en España. Consulta la parrilla de TV, recomendaciones y catálogo de plataformas.',
+    foundingDate: '2023',
+    areaServed: {
+      '@type': 'Country',
+      name: 'España',
+    },
+    sameAs: [
+      'https://twitter.com/gptv',
+      'https://facebook.com/gptv',
+      'https://instagram.com/gptv',
+      'https://youtube.com/gptv',
+    ],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      email: 'soporte@tecnoriasl.com',
+      availableLanguage: 'Spanish',
+    },
+  };
+}
+
+// ─── End SEO Schema Generators ────────────────────────────────────
 
 /**
  * Convierte un título en un slug SEO-friendly

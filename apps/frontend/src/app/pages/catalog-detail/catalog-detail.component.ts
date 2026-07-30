@@ -1,11 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Data, Router, RouterModule } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { combineLatest, of, Subject } from 'rxjs';
 import { catchError, map, switchMap, takeUntil } from 'rxjs/operators';
 import { CatalogCardComponent } from '../../components/catalog-card/catalog-card.component';
 import { InteractionButtonsComponent } from '../../components/interaction-buttons/interaction-buttons.component';
 import { WhereToWatchComponent } from '../../components/where-to-watch/where-to-watch.component';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
+import { ShareButtonsComponent } from '../../blog/components/share-buttons/share-buttons.component';
 import {
   CatalogContentType,
   CatalogItem,
@@ -14,6 +17,7 @@ import {
 } from '../../services/catalog.service';
 import { MetaService } from '../../services/meta.service';
 import { buildProgramCatalogId, buildTmdbCatalogId } from '../../utils/catalog';
+import { generateTVSeriesSchema, generateMovieSchema, generateBreadcrumbSchema } from '../../utils/utils';
 
 type LegacyCatalogMode = 'program' | 'movie' | 'series';
 
@@ -26,14 +30,20 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
     CatalogCardComponent,
     InteractionButtonsComponent,
     WhereToWatchComponent,
+    BreadcrumbComponent,
+    ShareButtonsComponent,
   ],
   template: `
     <div class="min-h-screen bg-[#081018] text-slate-100">
+      <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
       <div *ngIf="loading" class="flex min-h-[60vh] items-center justify-center">
         <div class="h-12 w-12 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
       </div>
 
       <ng-container *ngIf="!loading && item as content; else emptyState">
+        <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+          <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
+        </div>
         <section class="relative overflow-hidden border-b border-slate-800/80">
           <div class="absolute inset-0">
             <img
@@ -91,6 +101,10 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                   </span>
                 </div>
 
+                <div class="flex items-center gap-3 flex-wrap">
+                  <app-share-buttons [url]="shareUrl" [title]="content.title"></app-share-buttons>
+                </div>
+
                 <div class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/75 p-4">
                   <app-interaction-buttons
                     [itemId]="content.catalogId"
@@ -100,6 +114,7 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                     [genres]="content.genres"
                     [image]="content.image || content.backdrop"
                     [platform]="content.primaryPlatforms?.[0]"
+                    [preloadInteraction]="true"
                   ></app-interaction-buttons>
                 </div>
               </div>
@@ -215,11 +230,15 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly catalogService = inject(CatalogService);
   private readonly metaService = inject(MetaService);
+  private readonly sanitizer = inject(DomSanitizer);
   private readonly destroy$ = new Subject<void>();
 
   public item: CatalogItem | null = null;
   public relatedItems: CatalogItem[] = [];
   public loading = true;
+  public safeLdHtml: SafeHtml | null = null;
+  public breadcrumbItems: BreadcrumbItem[] = [];
+  public shareUrl = '';
 
   ngOnInit(): void {
     combineLatest([this.route.paramMap, this.route.data])
@@ -255,6 +274,9 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
 
         if (item) {
           this.applyMeta(item);
+          this.buildStructuredData(item);
+          this.buildBreadcrumbs(item);
+          this.shareUrl = `https://guiaprogramaciontv.com${item.detailPath || this.router.url}`;
           return;
         }
 
@@ -437,5 +459,41 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     ].filter(Boolean);
 
     return segments.length ? segments.join(' · ') : '';
+  }
+
+  private buildStructuredData(item: CatalogItem): void {
+    const baseUrl = 'https://guiaprogramaciontv.com';
+    let schema: object;
+
+    if (item.contentType === 'series') {
+      schema = generateTVSeriesSchema(item, baseUrl);
+    } else if (item.contentType === 'movie') {
+      schema = generateMovieSchema(item, baseUrl);
+    } else {
+      this.safeLdHtml = null;
+      return;
+    }
+
+    try {
+      this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
+        `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+      );
+    } catch {
+      this.safeLdHtml = null;
+    }
+  }
+
+  private buildBreadcrumbs(item: CatalogItem): void {
+    const typeLabels: Record<string, { label: string; path: string }> = {
+      movie: { label: 'Películas', path: '/programacion-tv/peliculas' },
+      series: { label: 'Series', path: '/programacion-tv/series' },
+      program: { label: 'Programas', path: '/programacion-tv/guia-canales' },
+    };
+    const entry = typeLabels[item.contentType] || typeLabels['program'];
+    this.breadcrumbItems = [
+      { name: 'Inicio', url: '/' },
+      { name: entry.label, url: entry.path },
+      { name: item.title, url: item.detailPath || this.router.url },
+    ];
   }
 }

@@ -12,6 +12,7 @@ export interface IUserDocument extends mongoose.Document {
   lastLoginAt?: Date;
   role?: 'admin' | 'editor' | 'user';
   status?: 'active' | 'suspended';
+  subscription?: 'free' | 'premium';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +41,12 @@ const UserSchema = new Schema<IUserDocument>(
       type: String,
       enum: ['active', 'suspended'],
       default: 'active',
+      index: true,
+    },
+    subscription: {
+      type: String,
+      enum: ['free', 'premium'],
+      default: 'free',
       index: true,
     },
   },

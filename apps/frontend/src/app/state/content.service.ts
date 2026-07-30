@@ -8,6 +8,7 @@ import {
   LayoutsResponse,
 } from '../api/models';
 import { ApiConfigService } from '../api/api-config.service';
+import { normalizePublicImageUrl } from '../utils/media-url';
 
 export type ContentKind = 'movies' | 'series' | 'all';
 export type ChannelType = 'TDT' | 'AUTONOMICO' | 'MOVISTAR' | 'CABLE' | 'DEPORTES';
@@ -290,17 +291,7 @@ export class ContentService {
    */
   private resolveImage(img?: string | null): string | undefined {
     if (!img) return undefined;
-    if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
-      return img;
-    }
-
-    const base = this.apiConfig.getAssetBaseUrl() || (typeof window !== 'undefined' ? window.location.origin : '');
-    if (img.startsWith('/')) {
-      return `${base}${img}`;
-    }
-
-    // cualquier otra ruta relativa
-    return `${base}/${img}`;
+    return normalizePublicImageUrl(img, this.apiConfig.getAssetBaseUrl());
   }
 
   private resolveProgramImage(program: ProgramLayoutDTO): string | undefined {

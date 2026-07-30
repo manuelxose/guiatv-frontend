@@ -1,381 +1,381 @@
-<!-- Skip Link -->
-<a
-  href="#main-content"
-  class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-red-600 focus:text-white focus:rounded-lg"
->
-  Saltar al contenido principal
-</a>
-
-<main
-  id="main-content"
-  class="canal-completo w-full max-w-full mx-auto py-6 px-4 sm:px-6 lg:px-8 overflow-x-hidden"
-  role="main"
-  aria-labelledby="page-title"
->
-
-  <!-- Hero Section - Live Program -->
-  <section *ngIf="program" class="mt-4 relative overflow-hidden rounded-xl">
-    <app-banner 
-      [data]="program" 
-      [compact]="deviceDetector.isMobile()"
-      class="block"
-    ></app-banner>
-  </section>
-
-  <!-- Channel Description (SEO) -->
-  <p *ngIf="channelDescription" class="mt-4 text-sm text-gray-400 leading-relaxed max-w-3xl">
-    {{ channelDescription }}
-  </p>
-
-  <!-- Quick Stats -->
-  <section class="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
-    <div class="stat-card bg-gradient-to-br from-red-600/10 to-red-900/5 border border-red-500/10 rounded-xl p-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
-          <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-2xl font-bold text-white">{{ programs.length }}</p>
-          <p class="text-xs text-gray-400">Programas hoy</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="stat-card bg-gradient-to-br from-blue-600/10 to-blue-900/5 border border-blue-500/10 rounded-xl p-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-          <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-2xl font-bold text-white">{{ getProgramasPorHora() }}</p>
-          <p class="text-xs text-gray-400">Esta hora</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="stat-card bg-gradient-to-br from-purple-600/10 to-purple-900/5 border border-purple-500/10 rounded-xl p-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-          <svg class="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-2xl font-bold text-white">{{ categorias.length }}</p>
-          <p class="text-xs text-gray-400">Categorías</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="stat-card bg-gradient-to-br from-green-600/10 to-green-900/5 border border-green-500/10 rounded-xl p-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-          <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
-          </svg>
-        </div>
-        <div>
-          <p class="text-2xl font-bold text-white">{{ getProgramasDestacados() }}</p>
-          <p class="text-xs text-gray-400">Destacados</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Mobile Sticky Header with Dropdowns -->
-  <section 
-    class="mt-4 sticky top-16 bg-gray-900/95 backdrop-blur-md border-b border-gray-800/50 -mx-4 px-4 py-3 shadow-lg flex items-center gap-2 overflow-x-auto scrollbar-hide"
-    [class.z-40]="!isDayDropdownOpen && !isTimeSlotDropdownOpen && !isCategoryDropdownOpen"
-    [class.z-[60]]="isDayDropdownOpen || isTimeSlotDropdownOpen || isCategoryDropdownOpen"
-  >
-    
-    <!-- Day Filter (Trigger Only) -->
-    <div class="relative">
-      <button 
-        class="tv-chip"
-        [class.tv-chip--active]="isDayDropdownOpen"
-        (click)="toggleDayDropdown(); $event.stopPropagation()"
-      >
-        <span>{{ diaSeleccionado }}</span>
-        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-      </button>
-    </div>
-
-    <!-- Time Slot Filter (Trigger Only) -->
-    <div class="relative">
-      <button 
-        class="tv-chip"
-        [class.tv-chip--active]="isTimeSlotDropdownOpen || selectedTimeSlot !== null"
-        (click)="toggleTimeSlotDropdown(); $event.stopPropagation()"
-      >
-        <!-- Show 'Ahora' if selectedTimeSlot is null (default) OR if it matches current hour -->
-        <span>{{ (!selectedTimeSlot || isCurrentHour(selectedTimeSlot)) ? 'Ahora' : (selectedTimeSlot + ':00') }}</span>
-        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-      </button>
-    </div>
-
-    <!-- Category Filter (Trigger Only) -->
-    <div class="relative">
-      <button 
-        class="tv-chip"
-        [class.tv-chip--active]="isCategoryDropdownOpen || selectedCategory !== null"
-        (click)="toggleCategoryDropdown(); $event.stopPropagation()"
-      >
-        <span>{{ selectedCategory ? selectedCategory : 'Todas' }}</span>
-        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-      </button>
-    </div>
-  </section>
-
-  <!-- PORTAL: Bottom Sheets (Mobile Dropdowns) - Home Pattern -->
-  <div *ngIf="isAnyDropdownOpen()" class="tv-overlay" (click)="closeAllDropdowns()">
-    
-    <!-- Day Selector Sheet -->
-    <div *ngIf="isDayDropdownOpen" class="tv-sheet-isolated shadow-2xl" (click)="$event.stopPropagation()">
-      <div class="tv-sheet-isolated__handle"></div>
-      <div class="tv-sheet-isolated__header">
-        <h3>Seleccionar día</h3>
-        <button (click)="closeAllDropdowns()" class="tv-sheet-isolated__close" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="tv-sheet-isolated__body">
-        <button
-          *ngFor="let day of days"
-          class="tv-sheet-isolated__option"
-          [class.tv-sheet-isolated__option--selected]="diaSeleccionado === day.label"
-          (click)="cambiarDia(day.value); closeAllDropdowns()"
-        >
-          <span>{{ day.label }}</span>
-          <svg *ngIf="diaSeleccionado === day.label" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Time Slot Selector Sheet (GRID LAYOUT) -->
-    <div *ngIf="isTimeSlotDropdownOpen" class="tv-sheet-isolated shadow-2xl" (click)="$event.stopPropagation()">
-      <div class="tv-sheet-isolated__handle"></div>
-      <div class="tv-sheet-isolated__header">
-        <h3>Franja horaria</h3>
-        <button (click)="closeAllDropdowns()" class="tv-sheet-isolated__close" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="tv-sheet-isolated__body tv-sheet-isolated__body--time-grid">
-        <!-- Ahora Button - Full Width, Destacado -->
-        <button
-          class="tv-sheet-isolated__slot tv-sheet-isolated__slot--ahora"
-          [class.tv-sheet-isolated__slot--selected]="selectedTimeSlot === null"
-          (click)="selectTimeSlot(null); closeAllDropdowns()"
-        >
-          <span class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-            Ver todo (Ahora)
-          </span>
-        </button>
-        <!-- Time Slots Grid -->
-        <button
-          *ngFor="let slot of timeSlots"
-          class="tv-sheet-isolated__slot"
-          [class.tv-sheet-isolated__slot--selected]="selectedTimeSlot === slot.hour"
-          [class.tv-sheet-isolated__slot--active]="slot.isActive"
-          (click)="selectTimeSlot(slot.hour); closeAllDropdowns()"
-        >
-          {{ slot.hour }}:00
-        </button>
-      </div>
-    </div>
-
-    <!-- Category Selector Sheet -->
-    <div *ngIf="isCategoryDropdownOpen" class="tv-sheet-isolated shadow-2xl" (click)="$event.stopPropagation()">
-      <div class="tv-sheet-isolated__handle"></div>
-      <div class="tv-sheet-isolated__header">
-        <h3>Categorías</h3>
-        <button (click)="closeAllDropdowns()" class="tv-sheet-isolated__close" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="tv-sheet-isolated__body">
-        <button
-          class="tv-sheet-isolated__option"
-          [class.tv-sheet-isolated__option--selected]="selectedCategory === null"
-          (click)="selectCategory(null); closeAllDropdowns()"
-        >
-          Todas
-        </button>
-        <button
-          *ngFor="let categoria of categorias"
-          class="tv-sheet-isolated__option"
-          [class.tv-sheet-isolated__option--selected]="selectedCategory === categoria"
-          (click)="selectCategory(categoria); closeAllDropdowns()"
-        >
-          {{ categoria }}
-          <svg *ngIf="selectedCategory === categoria" viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
-        </button>
-      </div>
-    </div>
+<main class="min-h-screen bg-[#081018] text-slate-100">
+  <div *ngIf="isLoading" class="mx-auto flex min-h-[70vh] max-w-7xl items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div class="h-12 w-12 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
   </div>
 
-  <!-- Remove legacy overlay div -->
+  <div *ngIf="!isLoading && error" class="mx-auto flex min-h-[70vh] max-w-3xl flex-col items-center justify-center px-6 text-center">
+    <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Canal no disponible</p>
+    <h1 class="mt-3 text-3xl font-black tracking-tight text-white">No hemos podido cargar esta señal</h1>
+    <p class="mt-3 max-w-xl text-sm leading-7 text-slate-400">
+      {{ error }}
+    </p>
+    <a
+      routerLink="/programacion-tv/guia-canales"
+      class="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-full border border-slate-700 bg-slate-900/80 px-5 text-sm font-semibold text-white"
+    >
+      Volver a la guía
+    </a>
+  </div>
 
-  <!-- Programs by Time Slot (SINGLE DYNAMIC SLIDER) -->
-  <ng-container *ngIf="getActiveTimeSlot() as slot">
-    <section [id]="'time-slot-' + slot.hour" class="mt-6">
-      <header class="flex items-center gap-2 mb-2">
-        <span class="text-xs font-bold text-red-400">{{ slot.hour }}:00</span>
-        <span class="text-xs text-gray-500">|</span>
-        <span class="text-xs text-gray-400">{{ slot.programs.length }} programas</span>
-        <span *ngIf="slot.isActive" class="flex items-center gap-1 text-xs text-green-400">
-          <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-          En directo
-        </span>
-      </header>
-      <!-- SEO Section Intro -->
-      <p class="text-[13px] text-gray-500 mb-4 px-1 max-w-2xl leading-relaxed">
-        Consulta la <strong class="text-gray-400">programación actual de {{ canal }}</strong>. Aquí tienes los programas que se están emitiendo o están a punto de comenzar en esta franja horaria.
-      </p>
-  
-      <app-slider
-        *ngIf="slot.programs.length > 0"
-        [programas]="slot.programs"
-        variant="canales"
-        [logo]="logo"
-      ></app-slider>
-      <p *ngIf="slot.programs.length === 0" class="text-center py-8 text-gray-400">
-        No hay programas en esta franja horaria
-      </p>
+  <ng-container *ngIf="!isLoading && !error">
+    <section class="relative overflow-hidden border-b border-slate-800/80">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(239,68,68,0.14),transparent_34%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_28%),linear-gradient(180deg,#081018_0%,#0b1320_100%)]"></div>
+
+      <div class="relative mx-auto max-w-7xl px-4 pb-8 pt-8 sm:px-6 lg:px-8 lg:pb-10 lg:pt-12">
+        <div class="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-slate-500">
+          <a routerLink="/" class="transition-colors hover:text-slate-200">Inicio</a>
+          <span>/</span>
+          <a routerLink="/programacion-tv/guia-canales" class="transition-colors hover:text-slate-200">Guía TV</a>
+          <span>/</span>
+          <span class="text-slate-300">{{ canal }}</span>
+        </div>
+
+        <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <div class="space-y-6">
+            <div class="flex items-start gap-4">
+              <div class="flex h-20 w-20 flex-none items-center justify-center rounded-[1.5rem] border border-slate-800 bg-slate-950/80 p-3 shadow-[0_16px_40px_rgba(2,6,23,0.45)]">
+                <img
+                  [src]="logo"
+                  [alt]="canal"
+                  class="max-h-full max-w-full object-contain"
+                  (error)="onChannelLogoError($event)"
+                />
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span
+                    *ngIf="filteredCurrentProgram?.liveNow"
+                    class="inline-flex items-center gap-2 rounded-full border border-red-500/40 bg-red-600/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-white"
+                  >
+                    <span class="h-2 w-2 rounded-full bg-white animate-pulse"></span>
+                    En emisión
+                  </span>
+                  <span class="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-300">
+                    {{ diaSeleccionado }}
+                  </span>
+                </div>
+
+                <h1 class="mt-3 text-4xl font-black tracking-tight text-white md:text-5xl">
+                  {{ canal }}
+                </h1>
+
+                <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+                  {{ channelDescription || ('Consulta qué están emitiendo ahora, qué viene después y la parrilla completa de ' + canal + ' con acceso directo a cada programa.') }}
+                </p>
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <button
+                    *ngFor="let day of days"
+                    type="button"
+                    (click)="cambiarDia(day.value)"
+                    class="min-h-[40px] rounded-full border px-4 text-sm font-semibold transition-colors"
+                    [ngClass]="diaSeleccionado === day.label
+                      ? 'border-red-500 bg-red-600 text-white'
+                      : 'border-slate-700 bg-slate-950/80 text-slate-300 hover:border-slate-500 hover:text-white'"
+                  >
+                    {{ day.label }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-3">
+              <div class="rounded-[1.5rem] border border-slate-800 bg-slate-950/70 p-4">
+                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Ahora</p>
+                <p class="mt-2 text-base font-semibold text-white">
+                  {{ filteredCurrentProgram?.title || 'Sin emisión destacada' }}
+                </p>
+                <p *ngIf="filteredCurrentProgram" class="mt-2 text-xs text-slate-400">
+                  {{ formatTimeRange(filteredCurrentProgram) }}
+                </p>
+              </div>
+              <div class="rounded-[1.5rem] border border-slate-800 bg-slate-950/70 p-4">
+                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Próximos programas</p>
+                <p class="mt-2 text-base font-semibold text-white">{{ filteredNextPrograms.length }}</p>
+                <p class="mt-2 text-xs text-slate-400">Siguen en la parrilla inmediata</p>
+              </div>
+              <div class="rounded-[1.5rem] border border-slate-800 bg-slate-950/70 p-4">
+                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Esta noche</p>
+                <p class="mt-2 text-base font-semibold text-white">{{ filteredTonightPrograms.length }}</p>
+                <p class="mt-2 text-xs text-slate-400">Selección editorial priorizando cine y series</p>
+              </div>
+            </div>
+          </div>
+
+          <aside class="rounded-[1.75rem] border border-slate-800 bg-slate-950/78 p-5">
+            <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Filtros rápidos</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button
+                *ngFor="let category of quickCategoryTabs"
+                type="button"
+                (click)="selectCategory(category.key)"
+                class="min-h-[38px] rounded-full border px-4 text-sm font-semibold transition-colors"
+                [ngClass]="selectedCategory === category.key
+                  ? 'border-red-500 bg-red-600 text-white'
+                  : 'border-slate-700 bg-slate-900/80 text-slate-300 hover:border-slate-500 hover:text-white'"
+              >
+                {{ category.label }}
+              </button>
+              <button
+                *ngIf="extraCategories.length"
+                type="button"
+                (click)="toggleMoreCategories()"
+                class="min-h-[38px] rounded-full border px-4 text-sm font-semibold transition-colors"
+                [ngClass]="isMoreCategoriesOpen
+                  ? 'border-slate-500 bg-slate-800 text-white'
+                  : 'border-slate-700 bg-slate-900/80 text-slate-300 hover:border-slate-500 hover:text-white'"
+              >
+                Más
+              </button>
+            </div>
+
+            <div *ngIf="isMoreCategoriesOpen && extraCategories.length" class="mt-3 flex flex-wrap gap-2">
+              <button
+                *ngFor="let category of extraCategories"
+                type="button"
+                (click)="selectCategory(category)"
+                class="min-h-[34px] rounded-full border px-3 text-xs font-semibold transition-colors"
+                [ngClass]="selectedCategory === category
+                  ? 'border-red-500 bg-red-600 text-white'
+                  : 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500 hover:text-white'"
+              >
+                {{ category }}
+              </button>
+            </div>
+
+            <div class="mt-5 rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+              <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Parrilla visible</p>
+              <p class="mt-2 text-2xl font-black text-white">{{ filteredSchedule.length }}</p>
+              <p class="mt-2 text-xs leading-6 text-slate-400">
+                La vista respeta la categoría activa y mantiene el estilo editorial de la nueva guía.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div *ngIf="filteredCurrentProgram as liveProgram" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <article class="rounded-[1.9rem] border border-slate-800 bg-slate-950/78 p-5 shadow-[0_24px_80px_rgba(2,6,23,0.42)]">
+          <div class="flex flex-wrap items-start gap-5">
+              <img
+                *ngIf="liveProgram.image"
+                [src]="liveProgram.image"
+                [alt]="liveProgram.title"
+                class="h-40 w-28 rounded-2xl object-cover"
+                (error)="onPosterError($event)"
+              />
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded-full border border-red-500/40 bg-red-600/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-white">
+                  Ahora
+                </span>
+                <span class="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1 text-[11px] font-semibold text-slate-300">
+                  {{ liveProgram.normalizedCategory }}
+                </span>
+              </div>
+              <h2 class="mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl">
+                {{ liveProgram.title }}
+              </h2>
+              <p class="mt-3 text-sm text-slate-400">
+                {{ formatTimeRange(liveProgram) }}
+                <span *ngIf="liveProgram.durationMinutes"> · {{ liveProgram.durationMinutes }} min</span>
+              </p>
+              <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300">
+                {{ liveProgram.description || 'Programa destacado en emisión ahora mismo en este canal.' }}
+              </p>
+
+              <div class="mt-5 flex flex-wrap gap-3">
+                <a
+                  [routerLink]="[liveProgram.detailPath]"
+                  class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-red-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+                >
+                  Ver ficha completa
+                </a>
+                <app-interaction-buttons
+                  [itemId]="liveProgram.id"
+                  [title]="liveProgram.title"
+                  [type]="liveProgram.contentType"
+                  [genres]="liveProgram.category ? [liveProgram.category] : []"
+                  [image]="liveProgram.image"
+                ></app-interaction-buttons>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="rounded-[1.75rem] border border-slate-800 bg-slate-950/78 p-5">
+          <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Canales relacionados</p>
+          <div class="mt-4 space-y-3">
+            <a
+              *ngFor="let channel of relatedChannels; trackBy: trackChannel"
+              [routerLink]="channel.link"
+              class="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-3 transition-colors hover:border-slate-600 hover:bg-slate-900"
+            >
+              <div class="flex h-12 w-12 flex-none items-center justify-center rounded-xl border border-slate-800 bg-slate-950/90 p-2">
+                <img
+                  [src]="channel.logo"
+                  [alt]="channel.name"
+                  class="max-h-full max-w-full object-contain"
+                  (error)="onChannelLogoError($event)"
+                />
+              </div>
+              <div class="min-w-0">
+                <p class="truncate text-sm font-semibold text-white">{{ channel.name }}</p>
+                <p class="line-clamp-2 text-xs text-slate-400">
+                  {{ channel.description || 'Explora la programación completa de este canal.' }}
+                </p>
+              </div>
+            </a>
+          </div>
+        </aside>
+      </div>
+
+      <div *ngIf="filteredNextPrograms.length" class="mt-8">
+        <div class="mb-4">
+          <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Siguiente</p>
+          <h2 class="mt-1 text-2xl font-semibold text-white">Lo que viene después</h2>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <a
+            *ngFor="let program of filteredNextPrograms; trackBy: trackProgram"
+            [routerLink]="[program.detailPath]"
+            class="rounded-[1.5rem] border border-slate-800 bg-slate-950/75 p-4 transition-colors hover:border-slate-600 hover:bg-slate-950"
+          >
+            <div class="flex items-start gap-4">
+              <img
+                *ngIf="program.image"
+                [src]="program.image"
+                [alt]="program.title"
+                class="h-28 w-20 rounded-xl object-cover"
+                (error)="onPosterError($event)"
+              />
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap gap-2">
+                  <span class="rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[10px] font-semibold text-slate-300">
+                    {{ program.normalizedCategory }}
+                  </span>
+                </div>
+                <h3 class="mt-3 line-clamp-2 text-lg font-semibold text-white">{{ program.title }}</h3>
+                <p class="mt-2 text-xs text-slate-400">{{ formatTimeRange(program) }}</p>
+                <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate-400">
+                  {{ program.description || 'Accede a la ficha completa y descubre más detalles de esta emisión.' }}
+                </p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div *ngIf="filteredTonightPrograms.length" class="mt-8">
+        <div class="mb-4">
+          <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Esta noche</p>
+          <h2 class="mt-1 text-2xl font-semibold text-white">Lo más fuerte del prime time</h2>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <a
+            *ngFor="let program of filteredTonightPrograms; trackBy: trackProgram"
+            [routerLink]="[program.detailPath]"
+            class="rounded-[1.5rem] border border-slate-800 bg-slate-950/75 p-4 transition-colors hover:border-slate-600 hover:bg-slate-950"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-white">{{ program.title }}</p>
+                <p class="mt-1 text-xs text-slate-400">{{ formatTimeRange(program) }}</p>
+              </div>
+              <span class="rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[10px] font-semibold text-slate-300">
+                {{ program.normalizedCategory }}
+              </span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div *ngIf="filteredFeaturedPrograms.length" class="mt-8">
+        <div class="mb-4">
+          <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Destacados del canal</p>
+          <h2 class="mt-1 text-2xl font-semibold text-white">Selección priorizando cine y series</h2>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <a
+            *ngFor="let program of filteredFeaturedPrograms; trackBy: trackProgram"
+            [routerLink]="[program.detailPath]"
+            class="overflow-hidden rounded-[1.5rem] border border-slate-800 bg-slate-950/75 transition-colors hover:border-slate-600 hover:bg-slate-950"
+          >
+            <div class="aspect-[16/10] bg-slate-900">
+              <img
+                *ngIf="program.image"
+                [src]="program.image"
+                [alt]="program.title"
+                class="h-full w-full object-cover"
+                (error)="onPosterError($event)"
+              />
+            </div>
+            <div class="p-4">
+              <div class="flex items-center justify-between gap-3">
+                <span class="rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[10px] font-semibold text-slate-300">
+                  {{ program.normalizedCategory }}
+                </span>
+                <span class="text-xs text-slate-400">{{ formatTime(program.start) }}</span>
+              </div>
+              <h3 class="mt-3 line-clamp-2 text-lg font-semibold text-white">{{ program.title }}</h3>
+              <p class="mt-2 line-clamp-3 text-sm leading-6 text-slate-400">
+                {{ program.description || 'Enlace directo a la ficha moderna del contenido.' }}
+              </p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <div class="mb-4">
+          <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Parrilla completa</p>
+          <h2 class="mt-1 text-2xl font-semibold text-white">Toda la programación de {{ canal }}</h2>
+        </div>
+
+        <div class="overflow-hidden rounded-[1.75rem] border border-slate-800 bg-slate-950/75">
+          <div
+            *ngFor="let program of filteredSchedule; trackBy: trackProgram"
+            class="flex flex-col gap-4 border-b border-slate-800/70 px-4 py-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+          >
+            <div class="flex min-w-0 items-start gap-4">
+              <div class="w-16 flex-none rounded-2xl bg-slate-900 px-2 py-2 text-center">
+                <p class="text-sm font-black text-white">{{ formatTime(program.start) }}</p>
+                <p class="mt-1 text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                  {{ program.normalizedCategory }}
+                </p>
+              </div>
+
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span
+                    *ngIf="program.liveNow"
+                    class="rounded-full border border-red-500/30 bg-red-600/80 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white"
+                  >
+                    En directo
+                  </span>
+                  <span class="text-xs text-slate-400">{{ formatTimeRange(program) }}</span>
+                </div>
+                <h3 class="mt-2 text-lg font-semibold text-white">{{ program.title }}</h3>
+                <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-400">
+                  {{ program.description || 'Contenido disponible en la parrilla del canal para el día seleccionado.' }}
+                </p>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 sm:justify-end">
+              <a
+                [routerLink]="[program.detailPath]"
+                class="inline-flex min-h-[40px] items-center justify-center rounded-full border border-slate-700 bg-slate-900/80 px-4 text-sm font-semibold text-white transition-colors hover:border-slate-500"
+              >
+                Abrir ficha
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   </ng-container>
-
-  <!-- Categories Section Removed as per request -->
-
-  <!-- Complete Schedule -->
-  <section class="mt-10 pt-8 border-t border-gray-800/50">
-    <header class="mb-4">
-      <div class="flex items-center gap-2 mb-1">
-        <span class="text-sm font-bold text-white">Parrilla completa</span>
-        <span class="text-xs text-gray-500">{{ diaSeleccionado.toLowerCase() }}</span>
-      </div>
-      <p class="text-[13px] text-gray-500 max-w-3xl leading-relaxed">
-        Explora todos los <strong class="text-gray-400">horarios de {{ canal }}</strong> para hoy. Listado cronológico completo de series, películas y programas disponibles en la guía de este canal.
-      </p>
-    </header>
-
-    <app-slider
-      *ngIf="programs.length > 0"
-      [programas]="programs"
-      variant="canales"
-      [logo]="logo"
-    ></app-slider>
-  </section>
-
-  <!-- Other Channels Live -->
-  <section class="mt-6">
-    <header class="flex items-center gap-2 mb-2">
-      <span class="text-sm font-bold text-white">Ahora en otros canales</span>
-      <span class="flex items-center gap-1 text-xs text-green-400">
-        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-        En directo
-      </span>
-    </header>
-    <p class="text-[13px] text-gray-500 mb-4 max-w-2xl leading-relaxed">
-      No te pierdas nada. Mira lo que están emitiendo <strong class="text-gray-400">otros canales de TV en directo</strong> ahora mismo y cambia de canal fácilmente.
-    </p>
-
-    <app-slider
-      *ngIf="live_programs.length > 0"
-      [programas]="live_programs"
-      variant="canales"
-    ></app-slider>
-    <p *ngIf="live_programs.length === 0" class="text-center py-6 text-gray-500 text-sm">
-      No hay información de otros canales disponible
-    </p>
-  </section>
-
-  <!-- SEO Content -->
-  <section class="mt-10 pt-8 border-t border-gray-800/50">
-    <article class="prose prose-invert max-w-none">
-      <h2 class="text-xl sm:text-2xl font-bold text-white mb-4">
-        Toda la programación de {{ canal }} {{ diaSeleccionado.toLowerCase() }}
-      </h2>
-
-      <div class="space-y-4 text-gray-300 leading-relaxed text-sm sm:text-base">
-        <p>
-          Descubre la <strong class="text-white">programación completa de {{ canal }} {{ diaSeleccionado.toLowerCase() }}</strong>
-          con nuestra guía actualizada en tiempo real. Consulta todos los programas, series, películas y documentales
-          que se emiten en uno de los canales más populares de la televisión española.
-        </p>
-
-        <p>
-          En esta página encontrarás información detallada sobre qué ver en {{ canal }}, incluyendo horarios exactos,
-          sinopsis de cada programa y recomendaciones personalizadas.
-        </p>
-
-        <h3 class="text-lg sm:text-xl font-bold text-white mt-6 mb-3">
-          ¿Qué puedes ver en {{ canal }} {{ diaSeleccionado.toLowerCase() }}?
-        </h3>
-
-        <p>{{ canal }} ofrece una programación variada que incluye:</p>
-
-        <ul class="list-disc list-inside space-y-2 ml-4">
-          <li *ngFor="let categoria of categorias.slice(0, 6)">
-            <strong class="text-white">{{ categoria }}</strong>: Programas especializados en {{ categoria.toLowerCase() }}
-          </li>
-        </ul>
-
-        <p class="text-xs text-gray-500 mt-6">
-          Última actualización: {{ getCurrentDate() }}
-        </p>
-      </div>
-    </article>
-  </section>
-
-  <!-- Related Channels -->
-  <section *ngIf="relatedChannels.length" class="mt-8">
-    <h2 class="text-lg font-bold text-white mb-4">Canales similares</h2>
-    <div class="flex flex-wrap gap-3">
-      <a
-        *ngFor="let ch of relatedChannels"
-        [routerLink]="['/programacion-tv/ver-canal', ch.id]"
-        class="inline-flex items-center gap-2 rounded-xl border border-slate-700/60 bg-slate-900/60 px-4 py-2.5 text-sm font-medium text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
-      >
-        {{ ch.name }}
-      </a>
-    </div>
-  </section>
-
-
-
-  <!-- Structured Data -->
-  <script type="application/ld+json" *ngIf="canal">
-    {
-      "@context": "https://schema.org",
-      "@type": "BroadcastService",
-      "name": "{{ canal }}",
-      "broadcastDisplayName": "{{ canal }}",
-      "url": "https://guiaprogramaciontv.com/programacion-tv/ver-canal/{{ query }}",
-      "description": "Programación completa de {{ canal }} — guía de horarios, series, películas y programas en televisión española",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://guiaprogramaciontv.com{{ logo }}"
-      },
-      "broadcastTimezone": "Europe/Madrid",
-      "inLanguage": "es-ES"
-    }
-  </script>
-  <script type="application/ld+json" *ngIf="canal">
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://guiaprogramaciontv.com/" },
-        { "@type": "ListItem", "position": 2, "name": "Canales", "item": "https://guiaprogramaciontv.com/programacion-tv/guia-canales" },
-        { "@type": "ListItem", "position": 3, "name": "{{ canal }}", "item": "https://guiaprogramaciontv.com/programacion-tv/ver-canal/{{ query }}" }
-      ]
-    }
-  </script>
 </main>

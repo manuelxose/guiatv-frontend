@@ -62,7 +62,7 @@ export class AnalyticsService implements OnDestroy {
 
     this.scheduleIdle(() => {
       this.baseMetadata = this.buildBaseMetadata();
-      this.postJson('/analytics/session/start', {
+      this.postJson('/telemetry/session/start', {
         sessionId: this.sessionId,
         anonId: this.anonId,
         initialPath: this.lastPath,
@@ -126,7 +126,7 @@ export class AnalyticsService implements OnDestroy {
       timezone: this.getTimezone(),
     };
 
-    this.postJson('/analytics/event', payload);
+    this.postJson('/telemetry/event', payload);
   }
 
   trackEvent(type: string, data?: Record<string, any>, name?: string): void {
@@ -146,14 +146,14 @@ export class AnalyticsService implements OnDestroy {
       timezone: this.getTimezone(),
     };
 
-    this.postJson('/analytics/event', payload);
+    this.postJson('/telemetry/event', payload);
   }
 
   private startHeartbeat(): void {
     if (!this.isBrowser || !this.sessionId) return;
     this.heartbeatSub = interval(this.heartbeatMs).subscribe(() => {
       if (!this.sessionId) return;
-      this.postJson('/analytics/session/heartbeat', {
+      this.postJson('/telemetry/session/heartbeat', {
         sessionId: this.sessionId,
         lastPath: this.lastPath || this.getCurrentPath(),
         lastSeenAt: new Date().toISOString(),
@@ -249,7 +249,7 @@ export class AnalyticsService implements OnDestroy {
       endedAt: new Date().toISOString(),
     };
 
-    const url = this.buildUrl('/analytics/session/end');
+    const url = this.buildUrl('/telemetry/session/end');
 
     if (navigator.sendBeacon) {
       const blob = new Blob([JSON.stringify(payload)], {
@@ -257,7 +257,7 @@ export class AnalyticsService implements OnDestroy {
       });
       navigator.sendBeacon(url, blob);
     } else {
-      this.postJson('/analytics/session/end', payload);
+      this.postJson('/telemetry/session/end', payload);
     }
   }
 

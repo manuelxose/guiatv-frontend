@@ -39,6 +39,7 @@ import {
 import { environment } from 'src/environments/environment';
 import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
 import { ApiConfigService } from 'src/app/api/api-config.service';
+import { normalizePublicImageUrl } from 'src/app/utils/media-url';
 
 // ============================================================
 // CONFIGURACIÓN OPTIMIZADA DE IMÁGENES
@@ -279,15 +280,10 @@ export class BannerComponent
   private toSafeImageUrl(raw: string | undefined): string {
     const safeRaw = (raw || '').trim();
     if (!safeRaw) return this.getFallbackImageUrl();
-
-    if (safeRaw.startsWith('data:')) return safeRaw;
-    if (safeRaw.startsWith('/')) return safeRaw;
-
-    if (safeRaw.startsWith('http://') || safeRaw.startsWith('https://')) {
-      return safeRaw;
-    }
-
-    return this.getFallbackImageUrl();
+    return (
+      normalizePublicImageUrl(safeRaw, this.apiConfig.getAssetBaseUrl()) ||
+      this.getFallbackImageUrl()
+    );
   }
 
   private normalizeChannelToken(value: string): string {
@@ -375,9 +371,8 @@ export class BannerComponent
       });
       if (this.lastLoggedSignature === signature) return;
       this.lastLoggedSignature = signature;
-      console.log('[BannerComponent] processBannerData:', data);
     } catch {
-      console.log('[BannerComponent] processBannerData:', data);
+      this.lastLoggedSignature = null;
     }
   }
 
@@ -486,11 +481,6 @@ export class BannerComponent
   }
 
   addReminder(): void {
-    try {
-      console.log(
-        'addReminder clicked for',
-        this.bannerData?.id || this.bannerData?.title?.value
-      );
-    } catch (_) {}
+    return;
   }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
 
 @Component({
@@ -9,7 +9,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
   templateUrl: './card-slider.component.html',
   styleUrls: ['./card-slider.component.scss'],
 })
-export class CardSliderComponent {
+export class CardSliderComponent implements OnChanges {
   @Input() title: string = '';
   @Input() subtitle: string = '';
   @Input() channelIcon: string = '';
@@ -21,16 +21,26 @@ export class CardSliderComponent {
   @Input() type: 'movie' | 'series' | 'program' = 'program';
   @Input() badge: string = '';
   @Input() badgeColor: 'red' | 'green' | 'blue' | 'gray' = 'gray';
+  public imageFailed = false;
+  public readonly fallbackImage = '/assets/images/default-movie-poster.svg';
 
   @Output() cardClick = new EventEmitter<void>();
 
-  get backgroundImage(): string {
-    return this.image
-      ? `url(${this.image})`
-      : 'linear-gradient(to bottom, #2d3748, #1a202c)';
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['image']) {
+      this.imageFailed = false;
+    }
+  }
+
+  get resolvedImage(): string {
+    return !this.imageFailed && this.image ? this.image : this.fallbackImage;
   }
 
   onClick(): void {
     this.cardClick.emit();
+  }
+
+  onImageError(): void {
+    this.imageFailed = true;
   }
 }

@@ -41,7 +41,6 @@ export class ModalComponent implements OnInit {
   ngOnInit(): void {
     this.isVisible = false;
     this.modalService.programa$.subscribe((program) => {
-      console.log('Programa recibido en modal:', program);
       this.program_modal = program;
       // Si no está vacío el objeto
       if (Object.keys(this.program_modal).length !== 0) {

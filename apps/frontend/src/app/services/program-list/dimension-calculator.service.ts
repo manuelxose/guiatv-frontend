@@ -5,8 +5,9 @@
 
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { IDimensionCalculator, ITimeManager } from 'src/app/interfaces/program-list.interface';
+import { IDimensionCalculator } from 'src/app/interfaces/program-list.interface';
 import { PROGRAM_LIST_CONFIG } from 'src/app/constants/program-list.constants';
+import { TimeManagerService } from './time-manager.service';
 
 
 @Injectable({
@@ -19,7 +20,7 @@ export class DimensionCalculatorService implements IDimensionCalculator {
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    @Inject('TimeManager') private timeManager: ITimeManager
+    private timeManager: TimeManagerService
   ) {
     if (isPlatformBrowser(this.platformId)) {
       this.updateScreenDimensions();
@@ -61,13 +62,8 @@ export class DimensionCalculatorService implements IDimensionCalculator {
       const remSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
       this.screenWidthInRem = window.innerWidth / remSize;
       this.columnWidth = Math.floor(window.innerWidth / 7);
-      
-      console.log('📐 Dimensions updated:', {
-        screenWidthInRem: this.screenWidthInRem,
-        columnWidth: this.columnWidth
-      });
     } catch (error) {
-      console.warn('Error updating screen dimensions:', error);
+      return;
     }
   }
 

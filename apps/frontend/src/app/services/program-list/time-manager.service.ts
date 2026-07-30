@@ -43,8 +43,8 @@ export class TimeManagerService implements ITimeManager {
       if (!isNaN(date.getTime())) {
         return date.getHours() * 60 + date.getMinutes();
       }
-    } catch (error) {
-      console.warn('Error parsing time:', timeString, error);
+    } catch {
+      return 0;
     }
     
     return 0;
@@ -92,8 +92,8 @@ export class TimeManagerService implements ITimeManager {
           hour12: false 
         });
       }
-    } catch (error) {
-      console.warn('Error formatting time:', timeString, error);
+    } catch {
+      return timeString.substring(0, 5);
     }
     
     return timeString.substring(0, 5);
@@ -120,8 +120,7 @@ export class TimeManagerService implements ITimeManager {
       if (duration <= 0) duration += 24 * 60; // Handle day overflow
       
       return Math.max(1, duration);
-    } catch (error) {
-      console.warn('Error calculating duration:', { startTime, endTime, error });
+    } catch {
       return 30;
     }
   }

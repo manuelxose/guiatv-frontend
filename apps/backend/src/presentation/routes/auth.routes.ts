@@ -50,6 +50,11 @@ export const createAuthRoutes = (controller: AuthController): Router => {
     passwordRateLimit,
     asyncHandler(controller.resetPassword.bind(controller))
   );
+  router.patch(
+    '/password',
+    passwordRateLimit,
+    asyncHandler(controller.changePassword.bind(controller))
+  );
 
   return router;
 };

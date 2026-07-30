@@ -24,5 +24,14 @@ export const createSocialRoutes = (controller: SocialController, authService: Au
   router.post('/reports', asyncHandler(controller.createReport.bind(controller)));
   router.get('/reports/me', asyncHandler(controller.getMyReports.bind(controller)));
 
+  router.get('/profile/:userId', asyncHandler(controller.getPublicProfile.bind(controller)));
+  router.get('/users/search', asyncHandler(controller.searchUsers.bind(controller)));
+  router.get('/stats', asyncHandler(controller.getStats.bind(controller)));
+  router.get('/stats/:userId', asyncHandler(controller.getStats.bind(controller)));
+
+  router.post('/activities/:id/like', asyncHandler(controller.toggleLike.bind(controller)));
+  router.post('/activities/:id/comments', asyncHandler(controller.addComment.bind(controller)));
+  router.get('/activities/:id/comments', asyncHandler(controller.getComments.bind(controller)));
+
   return router;
 };

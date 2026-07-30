@@ -1,54 +1,119 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  PLATFORM_ID,
-  Inject,
-} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { BlogService } from '../../../services/blog.service';
+import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Subject, forkJoin, map, of, switchMap, takeUntil } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { CatalogRailComponent } from '../../../components/catalog-rail/catalog-rail.component';
+import { FaqSectionComponent } from '../../../components/faq-section/faq-section.component';
+import { ShareButtonsComponent } from '../../../components/share-buttons/share-buttons.component';
+import { APP_PATHS } from '../../../config/route-map';
+import { getCatalogPlatformByKey } from '../../../data/catalog-platforms.data';
+import { CatalogItem, CatalogService } from '../../../services/catalog.service';
 import { MetaService } from '../../../services/meta.service';
-import { Subject, first, takeUntil } from 'rxjs';
-import { PostCardComponent } from '../../components/post-card/post-card.component';
-import { ShareButtonsComponent } from '../../components/share-buttons/share-buttons.component';
+import {
+  generateBreadcrumbSchema,
+  generateEditorialArticleSchema,
+} from '../../../utils/utils';
+import { EditorialPostPageState } from '../../models/editorial.models';
+import { EditorialService } from '../../services/editorial.service';
+import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
+
+interface TrendingItem {
+  title: string;
+  path: string;
+  platform?: string;
+  category?: string;
+  score: number;
+}
 
 @Component({
   selector: 'app-post-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, PostCardComponent, ShareButtonsComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ShareButtonsComponent,
+    EditorialPostCardComponent,
+    CatalogRailComponent,
+    FaqSectionComponent,
+  ],
   templateUrl: './post-detail.component.html',
   styleUrls: ['./post-detail.component.scss'],
 })
 export class PostDetailComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-  private isBrowser: boolean;
+  public readonly appPaths = APP_PATHS;
+  public readonly isBrowser: boolean;
 
-  post: any = null;
-  relatedPosts: any[] = [];
-  isLoading = true;
-  readingTime = 0;
-  currentUrl = '';
+  public loading = true;
+  public error: string | null = null;
+  public state: EditorialPostPageState | null = null;
+  public currentUrl = '';
+  public safeLdHtml: SafeHtml | null = null;
+  public platformRailItems: CatalogItem[] = [];
+  public exploreRailItems: CatalogItem[] = [];
+  public guideRailItems: CatalogItem[] = [];
+  public trendingItems: TrendingItem[] = [];
+
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private blogSvc: BlogService,
-    private metaSvc: MetaService,
-    @Inject(PLATFORM_ID) platformId: Object
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly editorialService: EditorialService,
+    private readonly metaService: MetaService,
+    private readonly sanitizer: DomSanitizer,
+    private readonly catalogService: CatalogService,
+    @Inject(PLATFORM_ID) platformId: object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
   ngOnInit(): void {
-    this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      const slug = params['slug'];
-      this.loadPost(slug);
-    });
+    this.route.paramMap
+      .pipe(
+        map((params) => params.get('slug') || ''),
+        switchMap((slug) => this.editorialService.getPostPageState(slug)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (state) => {
+          if (!state) {
+            void this.router.navigateByUrl(APP_PATHS.blog);
+            return;
+          }
 
-    if (this.isBrowser) {
-      this.currentUrl = window.location.href;
-    }
+          this.state = state;
+          this.loading = false;
+          this.error = null;
+          this.currentUrl = this.isBrowser
+            ? window.location.href
+            : `https://guiaprogramaciontv.com${state.post.canonicalPath}`;
+
+          this.metaService.setMetaTags({
+            title: state.post.metaTitle || `${state.post.title} | Editorial Guía TV`,
+            description:
+              state.post.metaDescription || state.post.excerptText || 'Artículo editorial de Guía TV.',
+            canonicalUrl: state.post.canonicalPath,
+            image: state.post.coverImage,
+            type: 'article',
+            publishedTime: state.post.publishedAt,
+            modifiedTime: state.post.modifiedAt,
+            section: state.post.primaryCategory?.name || state.post.contentType,
+          });
+
+          this.buildStructuredData(state);
+          this.loadLinkedModules(state.post);
+
+          if (this.isBrowser) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        },
+        error: () => {
+          this.error = 'No se ha podido cargar este artículo.';
+          this.loading = false;
+        },
+      });
   }
 
   ngOnDestroy(): void {
@@ -56,158 +121,141 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadPost(slug: string): void {
-    this.isLoading = true;
-
-    this.blogSvc
-      .getPostBySlug(slug)
-      .pipe(first())
-      .subscribe({
-        next: (data) => {
-          if (data && data.length > 0) {
-            this.post = data[0];
-            // Ensure content/excerpt are strings for template binding
-            this.normalizePostContent(this.post);
-            this.calculateReadingTime();
-            this.setMetaTags();
-            this.loadRelatedPosts();
-            this.isLoading = false;
-
-            // Scroll to top
-            if (this.isBrowser) {
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          } else {
-            this.router.navigate(['/blog']);
-          }
-        },
-        error: (err) => {
-          console.error('Error loading post:', err);
-          this.router.navigate(['/blog']);
-        },
-      });
+  public hasRouteRelation(key: string): boolean {
+    return this.state?.post.relatedRouteKeys.includes(key as any) ?? false;
   }
 
-  /**
-   * Ensure the post.content.rendered and post.excerpt.rendered are strings.
-   * Some backends may return an object shape unexpectedly; convert to a
-   * safe HTML string or JSON fallback to avoid [object Object] in templates.
-   */
-  private normalizePostContent(post: any): void {
-    if (!post) return;
-
-    const ensureString = (value: any): string => {
-      if (typeof value === 'string') return value;
-      if (!value) return '';
-      // try common nested keys
-      const keys = ['rendered', 'raw', 'html', 'value', 'text'];
-      for (const k of keys) {
-        if (value[k] && typeof value[k] === 'string') return value[k];
-      }
-      // last resort: stringify
-      try {
-        return JSON.stringify(value);
-      } catch (e) {
-        return String(value);
-      }
+  public get platformCatalogQueryParams(): Record<string, string> | null {
+    const relatedNames = (this.state?.post.relatedPlatformKeys || [])
+      .map((key) => getCatalogPlatformByKey(key)?.name)
+      .filter((name): name is string => Boolean(name));
+    if (!relatedNames.length) {
+      return null;
+    }
+    return {
+      platforms: relatedNames.join(','),
+      availability: 'streaming',
+      types: 'movie,series',
     };
-
-    try {
-      if (post.content) {
-        post.content = {
-          rendered: ensureString(post.content.rendered ?? post.content),
-        };
-      } else {
-        post.content = { rendered: '' };
-      }
-
-      if (post.excerpt) {
-        post.excerpt = {
-          rendered: ensureString(post.excerpt.rendered ?? post.excerpt),
-        };
-      } else {
-        post.excerpt = { rendered: '' };
-      }
-
-      // Normalize featured image caption if present (WP returns object with rendered)
-      if (post.featured_image && post.featured_image.caption) {
-        post.featured_image.caption = ensureString(
-          post.featured_image.caption.rendered ?? post.featured_image.caption
-        );
-      }
-
-      // Ensure title.rendered is string
-      if (post.title) {
-        post.title = {
-          rendered: ensureString(post.title.rendered ?? post.title),
-        };
-      } else {
-        post.title = { rendered: '' };
-      }
-    } catch (err) {
-      // defensively set minimal fields
-      post.content = post.content || { rendered: '' };
-      post.excerpt = post.excerpt || { rendered: '' };
-    }
   }
 
-  private calculateReadingTime(): void {
-    if (!this.post?.content?.rendered) {
-      this.readingTime = 1;
-      return;
-    }
+  private loadLinkedModules(post: EditorialPostPageState['post']): void {
+    this.platformRailItems = [];
+    this.exploreRailItems = [];
+    this.guideRailItems = [];
+    this.trendingItems = [];
 
-    const text = this.stripHtml(this.post.content.rendered);
-    const words = text.trim().split(/\s+/).length;
-    const wordsPerMinute = 200;
-    this.readingTime = Math.max(1, Math.ceil(words / wordsPerMinute));
-  }
+    const platformItems$ =
+      post.relatedRouteKeys.includes('platforms') && post.relatedPlatformKeys.length
+        ? this.catalogService
+            .queryState({
+              types: ['movie', 'series'],
+              platforms: post.relatedPlatformKeys,
+              availability: ['streaming'],
+              sort: 'popular',
+              limit: 8,
+            })
+            .pipe(
+              map((result) => result.data?.items || []),
+              catchError(() => of([]))
+            )
+        : of([] as CatalogItem[]);
 
-  private setMetaTags(): void {
-    const description = this.stripHtml(this.post.excerpt?.rendered || '').slice(
-      0,
-      160
-    );
+    const exploreItems$ = post.relatedRouteKeys.includes('explore')
+      ? this.catalogService
+          .queryState({
+            types: ['movie', 'series'],
+            sort: 'popular',
+            limit: 8,
+            ...(post.relatedPlatformKeys.length
+              ? { platforms: post.relatedPlatformKeys.slice(0, 2) }
+              : {}),
+          })
+          .pipe(
+            map((result) => result.data?.items || []),
+            catchError(() => of([]))
+          )
+      : of([] as CatalogItem[]);
 
-    this.metaSvc.setMetaTags({
-      title: `${this.post.title?.rendered} | Blog`,
-      description: description,
-      image:
-        this.post.featured_image?.source_url ||
-        '/assets/images/blog-og-image.jpg',
-      canonicalUrl: `/blog/${this.post.slug}`,
-      type: 'article',
-    });
-  }
+    const guideItems$ = post.relatedRouteKeys.includes('guide')
+      ? this.catalogService
+          .queryState({
+            types: ['program'],
+            availability: ['live'],
+            sort: 'airtime',
+            limit: 8,
+          })
+          .pipe(
+            map((result) => result.data?.items || []),
+            catchError(() => of([]))
+          )
+      : of([] as CatalogItem[]);
 
-  private loadRelatedPosts(): void {
-    if (!this.post.categories || this.post.categories.length === 0) {
-      return;
-    }
-    const categoryId = this.post.categories[0];
+    const trendingItems$ = post.relatedRouteKeys.includes('stats')
+      ? this.catalogService
+          .queryState({
+            types: ['movie', 'series'],
+            sort: 'popular',
+            limit: 4,
+          })
+          .pipe(
+            map((result) =>
+              (result.data?.items || []).map((item, index) => ({
+                title: item.title,
+                path: item.detailPath || APP_PATHS.explore,
+                platform: item.primaryPlatforms?.[0] || item.channel?.name,
+                category: item.genres?.[0],
+                score: Math.max(60, 100 - index * 8),
+              }))
+            ),
+            catchError(() => of([] as TrendingItem[]))
+          )
+      : of([] as TrendingItem[]);
 
-    this.blogSvc
-      .getRelatedPosts(categoryId)
-      .pipe(first())
-      .subscribe((posts) => {
-        this.relatedPosts = posts
-          .filter((p) => p.id !== this.post.id)
-          .slice(0, 3);
+    forkJoin({
+      platformRailItems: platformItems$,
+      exploreRailItems: exploreItems$,
+      guideRailItems: guideItems$,
+      trendingItems: trendingItems$,
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((modules) => {
+        this.platformRailItems = modules.platformRailItems;
+        this.exploreRailItems = modules.exploreRailItems;
+        this.guideRailItems = modules.guideRailItems;
+        this.trendingItems = modules.trendingItems.slice(0, 4);
       });
   }
 
-  stripHtml(html: string): string {
-    if (!html) return '';
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || '';
-  }
-
-  navigateToPost(post: any): void {
-    this.router.navigate(['/blog', post.slug]);
-  }
-
-  trackByPostId(index: number, post: any): number {
-    return post.id || index;
+  private buildStructuredData(state: EditorialPostPageState): void {
+    const baseUrl = 'https://guiaprogramaciontv.com';
+    const breadcrumbItems = [
+      { name: 'Editorial', url: '/editorial' },
+      ...(state.post.primaryCategory
+        ? [{ name: state.post.primaryCategory.name, url: state.post.primaryCategory.canonicalPath }]
+        : []),
+      { name: state.post.title, url: state.post.canonicalPath },
+    ];
+    const schemas = [
+      generateEditorialArticleSchema(
+        {
+          title: state.post.title,
+          excerptText: state.post.excerptText,
+          coverImage: state.post.coverImage,
+          publishedAt: state.post.publishedAt,
+          modifiedAt: state.post.modifiedAt,
+          canonicalPath: state.post.canonicalPath,
+          contentType: state.post.contentType,
+          targetQuery: state.post.targetQuery,
+        },
+        baseUrl
+      ),
+      generateBreadcrumbSchema(breadcrumbItems, baseUrl),
+    ];
+    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
+      schemas
+        .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)
+        .join('')
+    );
   }
 }

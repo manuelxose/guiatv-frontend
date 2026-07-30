@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
-import { Subject, combineLatest, filter, forkJoin, map, of, take, takeUntil } from 'rxjs';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Subject, combineLatest, forkJoin, map, take, takeUntil } from 'rxjs';
 import {
   UserActivity,
   UserFriend,
@@ -15,29 +15,24 @@ import {
 import { MenuStateService } from '../../services/menu-state.service';
 import { UserService } from '../../services/user.service';
 import { UserListsComponent } from './components/user-lists/user-lists.component';
-import { UserProfileHeaderComponent } from './components/user-profile-header/user-profile-header.component';
 import { UserSettingsComponent } from './components/user-settings/user-settings.component';
 import { UserSocialFeedComponent } from './components/user-social-feed/user-social-feed.component';
-import { UserStatsComponent } from './components/user-stats/user-stats.component';
+import { UserSearchComponent } from './components/user-search/user-search.component';
 import { CreateListModalComponent } from './components/create-list-modal/create-list-modal.component';
 import { ListDetailsComponent } from './components/list-details/list-details.component';
 import { EditProfileModalComponent } from './components/edit-profile-modal/edit-profile-modal.component';
 import { AddToListModalComponent } from './components/add-to-list-modal/add-to-list-modal.component';
-import { UserChatComponent } from './components/user-chat/user-chat.component';
 import { UserFavoritesComponent } from './components/user-favorites/user-favorites.component';
 import { UserInteractionHistoryComponent } from './components/user-interaction-history/user-interaction-history.component';
 import { AuthActionService } from '../../services/auth-action.service';
 import { ChatService } from '../../services/chat.service';
 
 type TabType =
-  | 'overview'
-  | 'lists'
-  | 'social'
+  | 'feed'
   | 'friends'
-  | 'recommendations'
+  | 'lists'
   | 'favorites'
   | 'history'
-  | 'chat'
   | 'settings'
   | 'admin';
 
@@ -47,16 +42,14 @@ type TabType =
   imports: [
     CommonModule,
     RouterModule,
-    UserProfileHeaderComponent,
     UserListsComponent,
     UserSocialFeedComponent,
+    UserSearchComponent,
     UserSettingsComponent,
-    UserStatsComponent,
     CreateListModalComponent,
     ListDetailsComponent,
     EditProfileModalComponent,
     AddToListModalComponent,
-    UserChatComponent,
     UserFavoritesComponent,
     UserInteractionHistoryComponent,
   ],
@@ -64,19 +57,15 @@ type TabType =
   styleUrls: ['./user-area.component.scss'],
 })
 export class UserAreaComponent implements OnInit, OnDestroy {
-  public readonly accountSectionTabs: { key: TabType; label: string }[] = [
-    { key: 'overview', label: 'Resumen' },
-    { key: 'lists', label: 'Mis listas' },
+  public readonly sectionTabs: { key: TabType; label: string }[] = [
+    { key: 'feed', label: 'Feed' },
+    { key: 'friends', label: 'Amigos' },
+    { key: 'lists', label: 'Listas' },
     { key: 'favorites', label: 'Favoritos' },
     { key: 'history', label: 'Historial' },
     { key: 'settings', label: 'Ajustes' },
   ];
-  public readonly communitySectionTabs: { key: TabType; label: string }[] = [
-    { key: 'social', label: 'Actividad' },
-    { key: 'chat', label: 'Chat' },
-    { key: 'friends', label: 'Amigos' },
-    { key: 'recommendations', label: 'Recomendaciones' },
-  ];
+
   public profile$ = this.userService.getProfile();
   public recommendations$ = this.userService.getRecommendations();
   public activities$ = this.userService.getActivities();
@@ -88,45 +77,23 @@ export class UserAreaComponent implements OnInit, OnDestroy {
   public loading$ = this.userService.loading$;
   public error$ = this.userService.error$;
   public isAdmin$ = this.profile$.pipe(map((profile) => profile?.role === 'admin'));
-  public mobileSectionTabsWithAdmin$ = combineLatest([
-    this.isAdmin$,
-    of(this.accountSectionTabs),
-  ]).pipe(
-    map(([isAdmin, tabs]) =>
-      isAdmin ? [...tabs, { key: 'admin' as TabType, label: 'Admin' }] : tabs
-    )
-  );
+
   public readonly unreadChatCount$ = this.chatService.getConversations().pipe(
     map((conversations) =>
       conversations.reduce((total, conversation) => total + Number(conversation.unreadCount || 0), 0)
     )
   );
-  
-  // Filtered data for RESUMEN (Personal)
-  public myActivities$ = combineLatest([this.activities$, this.profile$]).pipe(
-    map(([activities, profile]) => activities.filter((activity) => !activity.user || activity.user.id === profile.id))
-  );
-  
-  // Filtered data for SOCIAL (Community)
-  public friendsActivities$ = combineLatest([this.activities$, this.profile$]).pipe(
-    map(([activities, profile]) => activities.filter((activity) => activity.user && activity.user.id !== profile.id))
-  );
-  
-  // Personal reminders (mock based on pending watchlist items)
-  public myReminders$ = this.userService.getWatchlist().pipe(
-    map(items => items.filter(item => item.state === 'pending').slice(0, 3))
-  );
 
-  public activeTab: TabType = 'overview';
+  public activeTab: TabType = 'feed';
   public isMobileView = false;
-  public isCommunityRoute = false;
   public isCreateListModalOpen = false;
   public isEditProfileModalOpen = false;
   public isAddToListModalOpen = false;
   private readonly destroy$ = new Subject<void>();
-  
+
   public selectedList: UserList | null = null;
   public selectedListItems: UserListItem[] = [];
+  @ViewChild(EditProfileModalComponent) editProfileModal?: EditProfileModalComponent;
 
   constructor(
     private userService: UserService,
@@ -139,52 +106,32 @@ export class UserAreaComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateViewportState();
-    this.applyRouteContext(this.router.url);
-
-    this.router.events
-      .pipe(
-        filter((event) => event instanceof NavigationEnd),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((event) => {
-        const navEnd = event as NavigationEnd;
-        this.applyRouteContext(navEnd.urlAfterRedirects || navEnd.url);
-      });
+    this.menuState.setActive('perfil');
 
     this.isAdmin$
       .pipe(takeUntil(this.destroy$))
       .subscribe((isAdmin) => {
         if (!isAdmin && this.activeTab === 'admin') {
-          this.activeTab = 'overview';
+          this.activeTab = 'feed';
         }
       });
 
     combineLatest([this.route.data, this.route.queryParamMap])
       .pipe(takeUntil(this.destroy$))
       .subscribe(([data, params]) => {
-        const queryTab = String(params.get('tab') || '')
-          .trim()
-          .toLowerCase();
-        if (this.isTabType(queryTab)) {
-          this.activeTab = queryTab;
+        const queryTab = String(params.get('tab') || '').trim().toLowerCase();
+        // Support legacy tab query params
+        const mapped = this.mapLegacyTab(queryTab);
+        if (this.isTabType(mapped)) {
+          this.activeTab = mapped;
           return;
         }
 
-        const defaultTab = String(data?.['defaultTab'] || '')
-          .trim()
-          .toLowerCase();
-        if (this.isTabType(defaultTab)) {
-          this.activeTab = defaultTab;
+        const defaultTab = String(data?.['defaultTab'] || '').trim().toLowerCase();
+        const mappedDefault = this.mapLegacyTab(defaultTab);
+        if (this.isTabType(mappedDefault)) {
+          this.activeTab = mappedDefault;
           return;
-        }
-
-        if (this.isCommunityRoute) {
-          this.activeTab = 'social';
-          return;
-        }
-
-        if (this.activeTab === 'admin') {
-          this.activeTab = 'overview';
         }
       });
   }
@@ -198,22 +145,8 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
   }
 
-  get desktopPrimaryTabs(): { key: TabType; label: string }[] {
-    return this.isCommunityRoute ? this.communitySectionTabs : this.accountSectionTabs;
-  }
-
-  get mobileTabs(): { key: TabType; label: string }[] {
-    return this.isCommunityRoute ? this.communitySectionTabs : this.accountSectionTabs;
-  }
-
-  openMoreTab(tab: 'lists' | 'admin'): void {
-    this.activeTab = tab;
-  }
-
-  openCommunityHub(): void {
-    void this.router.navigate(['/comunidad'], {
-      queryParams: { tab: 'social' },
-    });
+  get visibleTabs(): { key: TabType; label: string }[] {
+    return this.sectionTabs;
   }
 
   onUpdateStatus(event: { title: string; mood: string; visibility: 'public' | 'friends' | 'private' }): void {
@@ -249,12 +182,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
 
   onOpenFriendChat(friendId: string): void {
     this.chatService.createConversation(friendId).subscribe(() => {
-      this.activeTab = 'chat';
-      if (!this.isCommunityRoute) {
-        void this.router.navigate(['/comunidad'], {
-          queryParams: { tab: 'chat' },
-        });
-      }
+      this.chatService.requestOpenChat(friendId);
     });
   }
 
@@ -273,6 +201,14 @@ export class UserAreaComponent implements OnInit, OnDestroy {
 
   onToggleFollow(friendId: string): void {
     this.authActionService.toggleFollow(friendId).subscribe();
+  }
+
+  onLikeActivity(activityId: string): void {
+    this.userService.toggleActivityLike(activityId).subscribe();
+  }
+
+  onCommentActivity(event: { activityId: string; text: string }): void {
+    this.userService.addActivityComment(event.activityId, event.text).subscribe();
   }
 
   onSaveSettings(event: {
@@ -323,6 +259,15 @@ export class UserAreaComponent implements OnInit, OnDestroy {
   onSaveProfile(profileData: Partial<UserProfile>): void {
     this.userService.updateProfile(profileData).subscribe(() => {
       this.closeEditProfileModal();
+    });
+  }
+
+  onChangePassword(event: { currentPassword: string; newPassword: string }): void {
+    this.userService.changePassword(event.currentPassword, event.newPassword).subscribe((success) => {
+      this.editProfileModal?.onPasswordChangeResult(
+        success,
+        success ? 'Contraseña actualizada correctamente.' : 'No se pudo cambiar la contraseña. Verifica tu contraseña actual.'
+      );
     });
   }
 
@@ -385,33 +330,19 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     this.isMobileView = width < 768;
   }
 
-  private applyRouteContext(url: string): void {
-    this.isCommunityRoute = this.isCommunityUrl(url);
-    this.menuState.setActive(this.isCommunityRoute ? 'comunidad' : 'mi-cuenta');
-
-    if (
-      this.isCommunityRoute &&
-      !['social', 'chat', 'friends', 'recommendations'].includes(this.activeTab)
-    ) {
-      this.activeTab = 'social';
-    }
-  }
-
-  private isCommunityUrl(url: string): boolean {
-    const path = String(url || '').split('?')[0].split('#')[0];
-    return path === '/comunidad' || path.startsWith('/comunidad/');
+  private mapLegacyTab(value: string): string {
+    if (value === 'social' || value === 'overview') return 'feed';
+    if (value === 'chat' || value === 'recommendations') return 'feed';
+    return value;
   }
 
   private isTabType(value: string): value is TabType {
     return (
-      value === 'overview' ||
-      value === 'lists' ||
-      value === 'social' ||
+      value === 'feed' ||
       value === 'friends' ||
-      value === 'recommendations' ||
+      value === 'lists' ||
       value === 'favorites' ||
       value === 'history' ||
-      value === 'chat' ||
       value === 'settings' ||
       value === 'admin'
     );

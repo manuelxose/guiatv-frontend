@@ -11,7 +11,7 @@
         <span class="text-xl font-black tracking-tight">TV</span>
       </a>
 
-      <div class="hidden items-center gap-2 xl:flex">
+      <div class="hidden items-center gap-2 lg:flex">
         <button
           *ngFor="let route of headerRoutes"
           type="button"
@@ -49,22 +49,63 @@
 
           <div
             *ngIf="isMoreMenuOpen"
-            class="absolute right-0 top-[calc(100%+0.6rem)] z-[90] w-64 overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/98 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.55)]"
+            class="absolute right-0 top-[calc(100%+0.6rem)] z-[90] w-[24rem] overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/98 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.55)]"
           >
-            <button
-              *ngFor="let route of secondaryRoutes.slice(1)"
-              type="button"
-              (click)="navigateTo(route)"
-              class="flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-colors"
-              [ngClass]="isSecondaryRouteActive(route)
-                ? 'bg-slate-100 text-slate-900'
-                : 'text-slate-200 hover:bg-slate-900 hover:text-white'"
-            >
-              <span>{{ route.label }}</span>
-              <span class="text-[10px] uppercase tracking-[0.25em] text-slate-500">
-                {{ route.key === 'peliculas' ? 'Movie' : route.key === 'series' ? 'TV' : 'Extra' }}
-              </span>
-            </button>
+            <div class="space-y-2">
+              <section *ngIf="secondaryRoutes.length > 1" class="rounded-2xl border border-slate-900/70 bg-slate-950/60 p-2">
+                <p class="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">Explorar</p>
+                <button
+                  *ngFor="let route of secondaryRoutes.slice(1)"
+                  type="button"
+                  (click)="navigateTo(route)"
+                  class="flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-colors"
+                  [ngClass]="isSecondaryRouteActive(route)
+                    ? 'bg-slate-100 text-slate-900'
+                    : 'text-slate-200 hover:bg-slate-900 hover:text-white'"
+                >
+                  <span>{{ route.label }}</span>
+                  <span class="text-[10px] uppercase tracking-[0.25em] text-slate-500">
+                    {{ getRouteAccent(route) }}
+                  </span>
+                </button>
+              </section>
+
+              <section *ngIf="resourceRoutes.length" class="rounded-2xl border border-slate-900/70 bg-slate-950/60 p-2">
+                <p class="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">Recursos</p>
+                <button
+                  *ngFor="let route of resourceRoutes"
+                  type="button"
+                  (click)="navigateTo(route)"
+                  class="flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-colors"
+                  [ngClass]="isSecondaryRouteActive(route)
+                    ? 'bg-slate-100 text-slate-900'
+                    : 'text-slate-200 hover:bg-slate-900 hover:text-white'"
+                >
+                  <span>{{ route.label }}</span>
+                  <span class="text-[10px] uppercase tracking-[0.25em] text-slate-500">
+                    {{ getRouteAccent(route) }}
+                  </span>
+                </button>
+              </section>
+
+              <section *ngIf="toolRoutes.length" class="rounded-2xl border border-slate-900/70 bg-slate-950/60 p-2">
+                <p class="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">Herramientas</p>
+                <button
+                  *ngFor="let route of toolRoutes"
+                  type="button"
+                  (click)="navigateTo(route)"
+                  class="flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-colors"
+                  [ngClass]="isSecondaryRouteActive(route)
+                    ? 'bg-slate-100 text-slate-900'
+                    : 'text-slate-200 hover:bg-slate-900 hover:text-white'"
+                >
+                  <span>{{ route.label }}</span>
+                  <span class="text-[10px] uppercase tracking-[0.25em] text-slate-500">
+                    {{ getRouteAccent(route) }}
+                  </span>
+                </button>
+              </section>
+            </div>
           </div>
         </div>
 
@@ -84,11 +125,14 @@
         <button
           *ngIf="isAuthenticated$ | async"
           type="button"
-          (click)="openCommunity()"
+          (click)="openProfile()"
           class="relative inline-flex min-h-[42px] items-center gap-2 rounded-full border border-slate-800 bg-slate-900/80 px-4 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-700 hover:text-white"
-          [ngClass]="activeKey === 'comunidad' ? '!border-red-500/40 !bg-red-500/10 !text-red-100' : ''"
+          [ngClass]="activeKey === 'perfil' ? '!border-red-500/40 !bg-red-500/10 !text-red-100' : ''"
         >
-          Comunidad
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128H5.228A2 2 0 0 1 3.27 17.56c.232-1.166.96-2.3 2.156-3.07a9.386 9.386 0 0 1 4.574-1.362m0 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+          </svg>
+          Mi red
           <span
             *ngIf="(unreadCount$ | async) as count"
             class="inline-flex min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white"
@@ -97,9 +141,11 @@
           </span>
         </button>
 
+        <app-notification-bell *ngIf="isAuthenticated$ | async"></app-notification-bell>
+
         <ng-container *ngIf="isAuthenticated$ | async; else authActions">
           <a
-            [routerLink]="appPaths.account"
+            [routerLink]="appPaths.profile"
             class="inline-flex min-h-[44px] items-center gap-3 rounded-full border border-slate-800 bg-slate-900/80 px-3 pr-4 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-700"
           >
             <ng-container *ngIf="profile$ | async as profile">
@@ -112,7 +158,7 @@
                 />
                 <span *ngIf="!profile.avatar">{{ getInitials(profile.name) }}</span>
               </span>
-              {{ profile.name || 'Mi cuenta' }}
+              {{ profile.name || 'Perfil' }}
             </ng-container>
           </a>
         </ng-container>

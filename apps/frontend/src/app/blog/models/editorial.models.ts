@@ -1,0 +1,78 @@
+export type EditorialContentType = 'guide' | 'ranking' | 'trend';
+export type EditorialRouteRelationKey =
+  | 'platforms'
+  | 'guide'
+  | 'explore'
+  | 'stats'
+  | 'comparison';
+
+export interface EditorialCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  count: number;
+  canonicalPath: string;
+  isRankingCategory: boolean;
+}
+
+export interface EditorialFaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface EditorialPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerptHtml: string;
+  excerptText: string;
+  contentHtml: string;
+  coverImage: string;
+  publishedAt: string;
+  modifiedAt: string;
+  readingMinutes: number;
+  canonicalPath: string;
+  categories: EditorialCategory[];
+  primaryCategory: EditorialCategory | null;
+  contentType: EditorialContentType;
+  featured: boolean;
+  primaryIntent: string | null;
+  targetQuery: string | null;
+  relatedPlatformKeys: string[];
+  relatedRouteKeys: EditorialRouteRelationKey[];
+  faqItems: EditorialFaqItem[];
+  evergreen: boolean;
+  isRanking: boolean;
+  rankingReason: 'type' | 'category' | 'keyword' | 'none';
+  metaTitle: string | null;
+  metaDescription: string | null;
+  raw: any;
+}
+
+export interface EditorialCategorySection {
+  category: EditorialCategory;
+  posts: EditorialPost[];
+}
+
+export interface EditorialHubState {
+  hero: EditorialPost | null;
+  guidePosts: EditorialPost[];
+  rankingPosts: EditorialPost[];
+  trendPosts: EditorialPost[];
+  categorySections: EditorialCategorySection[];
+  categories: EditorialCategory[];
+}
+
+export interface EditorialCategoryPageState {
+  category: EditorialCategory;
+  featuredPost: EditorialPost | null;
+  posts: EditorialPost[];
+  relatedRankings: EditorialPost[];
+  siblingCategories: EditorialCategory[];
+}
+
+export interface EditorialPostPageState {
+  post: EditorialPost;
+  relatedPosts: EditorialPost[];
+}

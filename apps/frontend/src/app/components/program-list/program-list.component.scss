@@ -97,6 +97,81 @@ $bp-xl: 1280px;
   color: $color-text-primary;
 }
 
+:host.program-list--embed {
+  min-height: 100%;
+}
+
+:host.program-list--embed .tv-loading,
+:host.program-list--embed .tv-error {
+  min-height: 420px;
+  min-height: min(80vh, 720px);
+}
+
+:host.program-list--theme-light {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+:host.program-list--theme-light .tv-loading,
+:host.program-list--theme-light .tv-error,
+:host.program-list--theme-light .tv-guide,
+:host.program-list--theme-light .tv-mobile,
+:host.program-list--theme-light .tv-desktop {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+:host.program-list--theme-light .tv-mobile__header,
+:host.program-list--theme-light .tv-channel,
+:host.program-list--theme-light .tv-sheet,
+:host.program-list--theme-light .tv-dropdown__btn,
+:host.program-list--theme-light .tv-dropdown__menu,
+:host.program-list--theme-light .tv-timeslot,
+:host.program-list--theme-light .tv-row,
+:host.program-list--theme-light .tv-row__channel,
+:host.program-list--theme-light .tv-grid__program,
+:host.program-list--theme-light .tv-desktop__banner,
+:host.program-list--theme-light .tv-btn--now {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+:host.program-list--theme-light .tv-program,
+:host.program-list--theme-light .tv-dropdown__item,
+:host.program-list--theme-light .tv-sheet__option,
+:host.program-list--theme-light .tv-sheet__slot,
+:host.program-list--theme-light .tv-chip {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+:host.program-list--theme-light .tv-row__name,
+:host.program-list--theme-light .tv-channel__name,
+:host.program-list--theme-light .tv-program__title,
+:host.program-list--theme-light .tv-grid__title,
+:host.program-list--theme-light .tv-sheet__header h3 {
+  color: #0f172a;
+}
+
+:host.program-list--theme-light .tv-channel__preview,
+:host.program-list--theme-light .tv-program__category,
+:host.program-list--theme-light .tv-grid__time,
+:host.program-list--theme-light .tv-loading__text,
+:host.program-list--theme-light .tv-error__message {
+  color: #475569;
+}
+
+:host.program-list--theme-light .tv-mobile__scroll,
+:host.program-list--theme-light .tv-desktop__scroll {
+  background: transparent;
+}
+
+:host.program-list--theme-light .tv-overlay {
+  background: rgba(15, 23, 42, 0.18);
+}
+
 // ============================================
 // LOADING STATE
 // ============================================

@@ -11,6 +11,20 @@ import { UserActivityModel } from '../../infrastructure/database/models/UserActi
 import { UserFollowModel } from '../../infrastructure/database/models/UserFollow.model';
 import { UserNotificationModel } from '../../infrastructure/database/models/UserNotification.model';
 import { UserContentInteractionModel } from '../../infrastructure/database/models/UserContentInteraction.model';
+import { UserBlockModel } from '../../infrastructure/database/models/UserBlock.model';
+import { UserReportModel } from '../../infrastructure/database/models/UserReport.model';
+import { UserAssistantMemoryModel } from '../../infrastructure/database/models/UserAssistantMemory.model';
+import { UserAssistantConversationModel } from '../../infrastructure/database/models/UserAssistantConversation.model';
+import { ChatConversationModel } from '../../infrastructure/database/models/ChatConversation.model';
+import { ChatMessageModel } from '../../infrastructure/database/models/ChatMessage.model';
+import { ActivityLikeModel } from '../../infrastructure/database/models/ActivityLike.model';
+import { ActivityCommentModel } from '../../infrastructure/database/models/ActivityComment.model';
+import { AuthSessionModel } from '../../infrastructure/database/models/AuthSession.model';
+import { AssistantMemoryService } from '../../application/services/AssistantMemoryService';
+import { scrypt, timingSafeEqual } from 'crypto';
+import { promisify } from 'util';
+
+const scryptAsync = promisify(scrypt);
 
 const DEFAULT_PRIVACY = {
   profilePublic: true,
@@ -113,6 +127,15 @@ export class UserController {
         profile.discoveryDefaults = updates.discoveryDefaults;
       }
       await profile.save();
+
+      if (updates.favoriteGenres || updates.preferredPlatforms) {
+        const memService = new AssistantMemoryService();
+        memService.syncFromProfile(
+          userId,
+          updates.favoriteGenres || [],
+          updates.preferredPlatforms || []
+        ).catch(() => {});
+      }
 
       if (updates.name) {
         userDoc.name = updates.name;
@@ -598,6 +621,178 @@ export class UserController {
       });
 
       res.json(successResponse({ unreadCount }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteAccount(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const password = typeof req.body?.password === 'string' ? req.body.password : '';
+      if (!password) {
+        throw new ValidationError('Password is required to delete account', [
+          { field: 'password', message: 'password is required' },
+        ]);
+      }
+
+      const user = await UserModel.findById(userId).exec();
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+
+      if (!(user as any).passwordHash || !(user as any).passwordSalt) {
+        throw new ValidationError('Password verification not available for this account', [
+          { field: 'password', message: 'Esta cuenta no tiene contraseña configurada' },
+        ]);
+      }
+
+      const derived = (await scryptAsync(password, (user as any).passwordSalt, 64)) as Buffer;
+      const expected = Buffer.from((user as any).passwordHash, 'hex');
+      const valid = expected.length === derived.length && timingSafeEqual(expected, derived);
+      if (!valid) {
+        throw new ValidationError('Incorrect password', [
+          { field: 'password', message: 'La contraseña no es correcta' },
+        ]);
+      }
+
+      await Promise.all([
+        UserProfileModel.deleteMany({ userId }),
+        UserContentInteractionModel.deleteMany({ userId }),
+        UserListItemModel.deleteMany({ userId }),
+        UserListModel.deleteMany({ userId }),
+        UserFavoriteModel.deleteMany({ userId }),
+        UserFollowModel.deleteMany({ $or: [{ followerId: userId }, { followeeId: userId }] }),
+        UserBlockModel.deleteMany({ $or: [{ blockerId: userId }, { blockedId: userId }] }),
+        UserNotificationModel.deleteMany({ $or: [{ recipientId: userId }, { actorId: userId }] }),
+        UserAssistantMemoryModel.deleteMany({ userId }),
+        UserAssistantConversationModel.deleteMany({ userId }),
+        ChatMessageModel.deleteMany({ senderId: userId }),
+        ChatConversationModel.deleteMany({ participants: userId }),
+        UserActivityModel.deleteMany({ userId }),
+        ActivityLikeModel.deleteMany({ userId }),
+        ActivityCommentModel.deleteMany({ userId }),
+        AuthSessionModel.deleteMany({ userId }),
+        UserReportModel.deleteMany({ reporterId: userId }),
+      ]);
+
+      user.name = 'Cuenta eliminada';
+      user.email = `deleted_${userId}@deleted.local`;
+      user.role = 'user';
+      (user as any).status = 'suspended';
+      (user as any).picture = '';
+      (user as any).passwordHash = '';
+      (user as any).passwordSalt = '';
+      (user as any).googleId = '';
+      await user.save();
+
+      res.json(successResponse({ deleted: true }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async exportData(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const userDoc = await UserModel.findById(userId).lean().exec();
+      if (!userDoc) {
+        throw new NotFoundError('User not found');
+      }
+
+      const [
+        profile,
+        interactions,
+        lists,
+        listItems,
+        favorites,
+        activities,
+        follows,
+        notifications,
+        memory,
+      ] = await Promise.all([
+        UserProfileModel.findOne({ userId }).lean().exec(),
+        UserContentInteractionModel.find({ userId }).lean().exec(),
+        UserListModel.find({ userId }).lean().exec(),
+        UserListItemModel.find({ userId }).lean().exec(),
+        UserFavoriteModel.find({ userId }).lean().exec(),
+        UserActivityModel.find({ userId }).sort({ createdAt: -1 }).limit(500).lean().exec(),
+        UserFollowModel.find({ followerId: userId }).lean().exec(),
+        UserNotificationModel.find({ recipientId: userId }).sort({ createdAt: -1 }).limit(200).lean().exec(),
+        UserAssistantMemoryModel.findOne({ userId }).lean().exec(),
+      ]);
+
+      res.json(
+        successResponse({
+          exportedAt: new Date().toISOString(),
+          user: {
+            name: userDoc.name,
+            email: userDoc.email,
+            role: userDoc.role,
+            createdAt: (userDoc as any).createdAt,
+          },
+          profile: profile
+            ? {
+                username: profile.username,
+                bio: profile.bio,
+                location: profile.location,
+                favoriteGenres: profile.favoriteGenres,
+                preferredPlatforms: profile.preferredPlatforms,
+                privacy: profile.privacy,
+                notifications: profile.notifications,
+              }
+            : null,
+          interactions: interactions.map((i: any) => ({
+            contentId: i.contentId,
+            title: i.title,
+            rating: i.rating,
+            watchedAt: i.watchedAt,
+            createdAt: i.createdAt,
+          })),
+          lists: lists.map((l: any) => ({
+            title: l.title,
+            description: l.description,
+            visibility: l.visibility,
+            items: listItems
+              .filter((item: any) => String(item.listId) === String(l._id))
+              .map((item: any) => ({
+                title: item.title,
+                type: item.type,
+                state: item.state,
+                rating: item.rating,
+              })),
+          })),
+          favorites: favorites.map((f: any) => ({
+            title: f.title,
+            type: f.type,
+            createdAt: f.createdAt,
+          })),
+          activities: activities.map((a: any) => ({
+            type: a.type,
+            title: a.title,
+            description: a.description,
+            createdAt: a.createdAt,
+          })),
+          following: follows.map((f: any) => ({
+            followeeId: String(f.followeeId),
+            createdAt: f.createdAt,
+          })),
+          notifications: notifications.map((n: any) => ({
+            type: n.type,
+            title: n.title,
+            createdAt: n.createdAt,
+            readAt: n.readAt,
+          })),
+          assistantMemory: memory
+            ? {
+                likedGenres: (memory as any).likedGenres,
+                dislikedGenres: (memory as any).dislikedGenres,
+                preferredPlatforms: (memory as any).preferredPlatforms,
+                preferredViewingContexts: (memory as any).preferredViewingContexts,
+              }
+            : null,
+        })
+      );
     } catch (error) {
       next(error);
     }

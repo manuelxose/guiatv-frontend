@@ -79,6 +79,7 @@
 
         <!-- Filtros categoría -->
         <button 
+          *ngIf="showCategoryFilter()"
           class="tv-chip"
           [class.tv-chip--active]="isCategoryDropdownOpen() || selectedCategories().size > 0"
           (click)="toggleCategoryDropdown(); $event.stopPropagation()"
@@ -93,7 +94,7 @@
     <main class="tv-mobile__main">
       <div class="tv-mobile__scroll">
         <article
-          *ngFor="let canal of filteredChannels(); let idx = index; trackBy: trackByChannelId"
+          *ngFor="let canal of visibleChannels(); let idx = index; trackBy: trackByChannelId"
           class="tv-channel"
           [class.tv-channel--expanded]="isChannelExpanded(idx)"
         >
@@ -225,7 +226,7 @@
       </div>
 
       <!-- Category Selector -->
-      <div *ngIf="isCategoryDropdownOpen()" class="tv-sheet tv-sheet--tall" (click)="$event.stopPropagation()">
+      <div *ngIf="showCategoryFilter() && isCategoryDropdownOpen()" class="tv-sheet tv-sheet--tall" (click)="$event.stopPropagation()">
         <div class="tv-sheet__handle"></div>
         <div class="tv-sheet__header">
           <h3>Categorías</h3>
@@ -412,7 +413,7 @@
       >
         <!-- Channel Rows -->
         <div
-          *cdkVirtualFor="let canal of filteredChannels(); let idx = index; trackBy: trackByChannelId"
+          *cdkVirtualFor="let canal of visibleChannels(); let idx = index; trackBy: trackByChannelId"
           class="tv-row"
           [class.tv-row--expanded]="isChannelExpanded(idx)"
         >

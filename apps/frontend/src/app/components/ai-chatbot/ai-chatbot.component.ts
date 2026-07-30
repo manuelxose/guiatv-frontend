@@ -9,180 +9,92 @@ import {
   ViewChild,
   inject,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { combineLatest } from 'rxjs';
-import { ChatMessage, ChatbotRecommendation, ChatbotService } from '../../services/chatbot.service';
+import {
+  AssistantMemorySnapshot,
+  ChatMessage,
+  ChatbotRecommendation,
+  ChatbotRequestState,
+  ChatbotSessionState,
+  ConversationSummary,
+} from '../../interfaces/chatbot.interface';
+import { ChatbotService } from '../../services/chatbot.service';
 import { UserService } from '../../services/user.service';
-import { GenreOnboardingComponent } from '../genre-onboarding/genre-onboarding.component';
+
+import { ChatHeaderComponent } from './chat-header/chat-header.component';
+import { ChatMemoryEditorComponent } from './chat-memory-editor/chat-memory-editor.component';
+import { ChatWelcomeScreenComponent } from './chat-welcome-screen/chat-welcome-screen.component';
+import { ChatOnboardingWizardComponent, OnboardingWizardResult } from './chat-onboarding-wizard/chat-onboarding-wizard.component';
+import { ChatMessageBubbleComponent } from './chat-message-bubble/chat-message-bubble.component';
+import { ChatInputBarComponent } from './chat-input-bar/chat-input-bar.component';
+import { ChatPreferencePromptComponent } from './chat-preference-prompt/chat-preference-prompt.component';
+import { ChatSkeletonComponent } from './chat-skeleton/chat-skeleton.component';
+import { ChatConversationSidebarComponent } from './chat-conversation-sidebar/chat-conversation-sidebar.component';
 
 @Component({
   selector: 'app-ai-chatbot',
   standalone: true,
-  imports: [CommonModule, FormsModule, GenreOnboardingComponent],
-  template: `
-    <div class="flex h-full flex-col bg-[#0b0f14] text-slate-100">
-      <header class="flex items-start justify-between border-b border-slate-800/80 px-4 py-4">
-        <div>
-          <p class="text-lg font-bold text-white">Asistente IA</p>
-          <p class="text-xs text-slate-400">Basado en tus gustos y en la TV de hoy</p>
-        </div>
-        <button
-          type="button"
-          (click)="close.emit()"
-          class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 hover:text-white"
-          aria-label="Cerrar asistente"
-        >
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </header>
-
-      <ng-container *ngIf="isAuthenticated$ | async; else loginState">
-        <ng-container *ngIf="needsOnboarding; else chatState">
-          <app-genre-onboarding (completed)="needsOnboarding = false"></app-genre-onboarding>
-        </ng-container>
-      </ng-container>
-
-      <ng-template #chatState>
-        <div #messagesContainer class="flex-1 space-y-4 overflow-y-auto px-4 py-4">
-          <ng-container *ngFor="let message of messages">
-            <div
-              class="flex"
-              [ngClass]="message.role === 'user' ? 'justify-end' : 'justify-start'"
-            >
-              <div
-                class="max-w-[88%] rounded-2xl px-4 py-3"
-                [ngClass]="message.role === 'user'
-                  ? 'bg-red-600 text-white'
-                  : 'bg-slate-900 border border-slate-800 text-slate-100'"
-              >
-                <ng-container *ngIf="!message.isLoading; else loadingBubble">
-                  <p class="whitespace-pre-line text-sm leading-relaxed">
-                    {{ message.content }}
-                  </p>
-
-                  <div *ngIf="message.recommendations?.length" class="mt-3 space-y-2">
-                    <div
-                      *ngFor="let recommendation of message.recommendations"
-                      class="rounded-2xl border border-slate-700/70 bg-slate-950/60 p-3"
-                    >
-                      <div class="flex items-start gap-3">
-                        <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-800 text-xs font-bold text-white">
-                          <img
-                            *ngIf="recommendation.image; else recommendationFallback"
-                            [src]="recommendation.image"
-                            [alt]="recommendation.title"
-                            class="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                          <ng-template #recommendationFallback>
-                            {{ recommendation.type === 'program' ? 'TV' : 'VOD' }}
-                          </ng-template>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                          <p class="truncate text-sm font-semibold text-white">
-                            {{ recommendation.title }}
-                          </p>
-                          <p class="text-xs text-slate-400">
-                            {{ recommendation.platform || recommendation.channel || 'Guia TV' }}
-                            <span *ngIf="recommendation.time"> · {{ recommendation.time }}</span>
-                          </p>
-                          <p class="mt-1 text-xs text-slate-300">
-                            {{ recommendation.reason }}
-                          </p>
-                        </div>
-                      </div>
-                      <div class="mt-3 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          (click)="openRecommendation(recommendation)"
-                          class="min-h-[36px] rounded-full border border-slate-700 px-3 text-xs font-semibold text-slate-100"
-                        >
-                          Ver ficha
-                        </button>
-                        <button
-                          type="button"
-                          (click)="saveRecommendation(recommendation)"
-                          class="min-h-[36px] rounded-full border border-red-500/40 bg-red-500/10 px-3 text-xs font-semibold text-red-100"
-                        >
-                          Guardar en mi lista
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div *ngIf="message.followUpSuggestions?.length" class="mt-3 flex flex-wrap gap-2">
-                    <button
-                      *ngFor="let suggestion of message.followUpSuggestions"
-                      type="button"
-                      (click)="sendSuggestion(suggestion)"
-                      class="rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs text-slate-200"
-                    >
-                      {{ suggestion }}
-                    </button>
-                  </div>
-                </ng-container>
-
-                <ng-template #loadingBubble>
-                  <div class="flex items-center gap-1.5 py-1">
-                    <span class="h-2 w-2 animate-pulse rounded-full bg-slate-400"></span>
-                    <span class="h-2 w-2 animate-pulse rounded-full bg-slate-400 [animation-delay:120ms]"></span>
-                    <span class="h-2 w-2 animate-pulse rounded-full bg-slate-400 [animation-delay:240ms]"></span>
-                  </div>
-                </ng-template>
-              </div>
-            </div>
-          </ng-container>
-        </div>
-
-        <div class="border-t border-slate-800/80 p-4">
-          <div class="flex items-end gap-2 rounded-2xl border border-slate-700 bg-slate-950/70 p-2">
-            <textarea
-              [(ngModel)]="draft"
-              rows="1"
-              (keydown)="onKeydown($event)"
-              class="max-h-32 min-h-[44px] flex-1 resize-none bg-transparent px-2 py-2 text-sm text-white outline-none"
-              placeholder="Escribe tu pregunta..."
-            ></textarea>
-            <button
-              type="button"
-              (click)="sendMessage()"
-              [disabled]="loading || !draft.trim()"
-              class="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white disabled:opacity-40"
-              aria-label="Enviar mensaje"
-            >
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 5l7 7-7 7"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </ng-template>
-
-      <ng-template #loginState>
-        <div class="flex flex-1 flex-col items-center justify-center px-6 text-center">
-          <p class="mb-3 text-lg font-bold text-white">Inicia sesion para usar el asistente</p>
-          <p class="max-w-sm text-sm text-slate-400">
-            El asistente personaliza las recomendaciones con tus generos favoritos,
-            tus valoraciones y la programacion disponible.
-          </p>
-        </div>
-      </ng-template>
-    </div>
-  `,
+  imports: [
+    CommonModule,
+    ChatHeaderComponent,
+    ChatMemoryEditorComponent,
+    ChatWelcomeScreenComponent,
+    ChatOnboardingWizardComponent,
+    ChatMessageBubbleComponent,
+    ChatInputBarComponent,
+    ChatPreferencePromptComponent,
+    ChatSkeletonComponent,
+    ChatConversationSidebarComponent,
+  ],
+  templateUrl: './ai-chatbot.component.html',
 })
 export class AIChatbotComponent implements AfterViewInit {
   @Output() close = new EventEmitter<void>();
   @ViewChild('messagesContainer') private messagesContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('inputBar') inputBar?: ChatInputBarComponent;
+  @ViewChild('memoryEditor') memoryEditor?: ChatMemoryEditorComponent;
 
-  public readonly isAuthenticated$ = this.userService.isAuthenticated$;
-  public draft = '';
   public messages: ChatMessage[] = [];
-  public loading = false;
   public needsOnboarding = false;
+  public sessionState: ChatbotSessionState = 'unknown';
+  public chatState: ChatbotRequestState = 'login_required';
+  public previewSuggestions: string[] = [];
+  public assistantMemory: AssistantMemorySnapshot | null = null;
+  public dismissedPreferencePromptKeys = new Set<string>();
+  public memoryEditorOpen = false;
+  public showScrollFab = false;
+  public sidebarOpen = false;
+  public conversations: ConversationSummary[] = [];
+  public activeConversationId: string | null = null;
+  public readonly memoryEditorFields: Array<{ key: string; label: string; placeholder: string }> = [
+    { key: 'likedGenres', label: 'Géneros favoritos', placeholder: 'Añadir género…' },
+    { key: 'dislikedGenres', label: 'Géneros a evitar', placeholder: 'Añadir género…' },
+    { key: 'preferredPlatforms', label: 'Plataformas', placeholder: 'Añadir plataforma…' },
+    { key: 'avoidedPlatforms', label: 'Plataformas a evitar', placeholder: 'Añadir plataforma…' },
+    { key: 'preferredViewingContexts', label: 'Contexto', placeholder: 'Solo, pareja…' },
+    { key: 'preferredDurations', label: 'Duración', placeholder: 'Corto, largo…' },
+  ];
+  public readonly autonomousCommunities = [
+    'Andalucía',
+    'Aragón',
+    'Asturias',
+    'Baleares',
+    'Canarias',
+    'Cantabria',
+    'Castilla-La Mancha',
+    'Castilla y León',
+    'Cataluña',
+    'Comunidad Valenciana',
+    'Extremadura',
+    'Galicia',
+    'La Rioja',
+    'Madrid',
+    'Murcia',
+    'Navarra',
+    'País Vasco',
+  ];
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -197,14 +109,36 @@ export class AIChatbotComponent implements AfterViewInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((messages) => {
         this.messages = messages;
-        queueMicrotask(() => this.scrollToBottom());
+        this.previewSuggestions = messages[0]?.followUpSuggestions || [];
+        if (!this.showScrollFab) {
+          queueMicrotask(() => this.scrollToBottom());
+        }
       });
 
-    this.chatbotService.isLoading$
+    this.chatbotService.memory$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((loading) => {
-        this.loading = loading;
-        queueMicrotask(() => this.scrollToBottom());
+      .subscribe((memory) => {
+        this.assistantMemory = memory;
+      });
+
+    this.chatbotService.sessionState$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((state) => {
+        this.sessionState = state;
+        if (state === 'authenticated') {
+          this.chatbotService.hydrateConversation().subscribe({
+            error: () => undefined,
+          });
+        }
+      });
+
+    this.chatbotService.chatState$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((state) => {
+        this.chatState = state;
+        if (!this.showScrollFab) {
+          queueMicrotask(() => this.scrollToBottom());
+        }
       });
 
     combineLatest([
@@ -220,64 +154,568 @@ export class AIChatbotComponent implements AfterViewInit {
       });
   }
 
-  onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      this.sendMessage();
-    }
-  }
-
-  sendMessage(): void {
-    const text = this.draft.trim();
-    if (!text || this.loading) {
+  onMessageSent(text: string): void {
+    if (
+      !text ||
+      this.chatState === 'sending' ||
+      this.sessionState !== 'authenticated'
+    ) {
       return;
     }
 
-    this.draft = '';
-    this.chatbotService.sendMessage(text).subscribe({
+    this.chatbotService.sendMessageStream(text).subscribe({
       error: () => undefined,
     });
   }
 
-  sendSuggestion(text: string): void {
-    this.draft = text;
-    this.sendMessage();
-  }
-
-  openRecommendation(recommendation: ChatbotRecommendation): void {
-    if (recommendation.catalogId) {
-      this.router.navigate(['/contenido', recommendation.catalogId]);
+  useSuggestion(text: string): void {
+    const normalized = text.trim();
+    if (!normalized) {
       return;
     }
 
-    this.draft = recommendation.title;
-    this.sendMessage();
+    this.inputBar?.setDraft(normalized);
+    queueMicrotask(() => this.inputBar?.focus());
   }
 
-  private slugifyText(text: string): string {
-    return (text || '').toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]+/g, '')
-      .replace(/--+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'sin-titulo';
+  onUseSavedCommunity(message: ChatMessage): void {
+    const savedCommunity = this.getSavedCommunity(message);
+    if (!savedCommunity) {
+      return;
+    }
+
+    this.sendQuickMessage(`Sí, usa ${savedCommunity} para las autonómicas`);
+  }
+
+  selectCommunity(community: string): void {
+    this.sendQuickMessage(`Mi comunidad es ${community}. Incluye autonómicas`);
+  }
+
+  declineAutonomics(): void {
+    this.sendQuickMessage('No incluyas autonómicas');
+  }
+
+  openRecommendation(recommendation: ChatbotRecommendation): void {
+    this.chatbotService
+      .trackRecommendationAction('open_recommendation', recommendation)
+      .subscribe();
+
+    if (recommendation.detailPath) {
+      this.close.emit();
+      void this.router.navigateByUrl(recommendation.detailPath);
+      return;
+    }
+
+    if (recommendation.catalogId) {
+      this.close.emit();
+      void this.router.navigate(['/contenido', recommendation.catalogId]);
+      return;
+    }
+
+    this.inputBar?.setDraft(`Cuéntame más sobre ${recommendation.title}`);
+    queueMicrotask(() => this.inputBar?.focus());
   }
 
   saveRecommendation(recommendation: ChatbotRecommendation): void {
+    this.chatbotService
+      .trackRecommendationAction('save_recommendation', recommendation)
+      .subscribe();
+
     this.userService
       .toggleWatchlistItem({
-        contentId: String(recommendation.catalogId || recommendation.tmdbId || recommendation.title),
+        contentId: String(
+          recommendation.catalogId || recommendation.tmdbId || recommendation.title
+        ),
         title: recommendation.title,
         type: recommendation.type,
       })
       .subscribe();
   }
 
-  private scrollToBottom(): void {
+  askAboutTitle(recommendation: ChatbotRecommendation): void {
+    this.chatbotService
+      .trackRecommendationAction('follow_recommendation', recommendation)
+      .subscribe();
+    this.inputBar?.setDraft(`Quiero algo parecido a ${recommendation.title}`);
+    queueMicrotask(() => this.inputBar?.focus());
+  }
+
+  ignoreRecommendation(recommendation: ChatbotRecommendation): void {
+    this.chatbotService
+      .trackRecommendationAction('ignore_recommendation', recommendation)
+      .subscribe();
+  }
+
+  ratePositiveRecommendation(recommendation: ChatbotRecommendation): void {
+    this.chatbotService
+      .trackRecommendationAction('rate_positive', recommendation)
+      .subscribe();
+  }
+
+  rateNegativeRecommendation(recommendation: ChatbotRecommendation): void {
+    this.chatbotService
+      .trackRecommendationAction('rate_negative', recommendation)
+      .subscribe();
+  }
+
+  onFeedbackPositive(message: ChatMessage): void {
+    this.applyMessageFeedback(message, 'positive');
+  }
+
+  onFeedbackNegative(message: ChatMessage): void {
+    this.applyMessageFeedback(message, 'negative');
+  }
+
+  private applyMessageFeedback(message: ChatMessage, rating: 'positive' | 'negative'): void {
+    message.feedback = { rating };
+    const conversationId = this.chatbotService.getActiveConversationId();
+    if (!conversationId) return;
+
+    const messageIndex = this.messages.indexOf(message);
+    if (messageIndex < 0) return;
+
+    this.chatbotService
+      .trackMessageFeedback(conversationId, messageIndex, rating)
+      .subscribe();
+  }
+
+  onRemindProgram(recommendation: ChatbotRecommendation): void {
+    this.chatbotService.createProgramReminder(recommendation).subscribe();
+  }
+
+  retryHistory(): void {
+    this.chatbotService.hydrateConversation(true).subscribe({
+      error: () => undefined,
+    });
+  }
+
+  startNewConversation(): void {
+    this.chatbotService.startNewConversation();
+    this.activeConversationId = null;
+    this.dismissedPreferencePromptKeys.clear();
+    this.inputBar?.setDraft('');
+    queueMicrotask(() => this.inputBar?.focus());
+    if (this.sidebarOpen) {
+      this.chatbotService.listConversations().subscribe((list) => {
+        this.conversations = list;
+      });
+    }
+  }
+
+  toggleSidebar(): void {
+    this.sidebarOpen = !this.sidebarOpen;
+    if (this.sidebarOpen) {
+      this.activeConversationId = this.chatbotService.getActiveConversationId();
+      this.chatbotService.listConversations().subscribe((list) => {
+        this.conversations = list;
+      });
+    }
+  }
+
+  onSelectConversation(conversationId: string): void {
+    this.chatbotService.switchConversation(conversationId).subscribe(() => {
+      this.activeConversationId = conversationId;
+      this.sidebarOpen = false;
+      this.dismissedPreferencePromptKeys.clear();
+    });
+  }
+
+  onUpdateConversation(event: { conversationId: string; updates: { sessionTitle?: string; pinned?: boolean; archived?: boolean } }): void {
+    this.chatbotService.updateConversation(event.conversationId, event.updates).subscribe(() => {
+      this.chatbotService.listConversations().subscribe((list) => {
+        this.conversations = list;
+      });
+    });
+  }
+
+  onDeleteConversation(conversationId: string): void {
+    this.chatbotService.deleteConversation(conversationId).subscribe(() => {
+      if (this.activeConversationId === conversationId) {
+        this.activeConversationId = null;
+      }
+      this.chatbotService.listConversations().subscribe((list) => {
+        this.conversations = list;
+      });
+    });
+  }
+
+  onSearchConversations(query: string): void {
+    if (!query.trim()) {
+      this.chatbotService.listConversations().subscribe((list) => {
+        this.conversations = list;
+      });
+      return;
+    }
+    this.chatbotService.searchConversations(query).subscribe((list) => {
+      this.conversations = list;
+    });
+  }
+
+  goToLogin(): void {
+    this.close.emit();
+    void this.router.navigate(['/iniciar-sesion']);
+  }
+
+  goToRegister(): void {
+    this.close.emit();
+    void this.router.navigate(['/registro']);
+  }
+
+  goToAccountSettings(): void {
+    this.close.emit();
+    void this.router.navigate(['/mi-cuenta'], {
+      queryParams: { tab: 'settings' },
+    });
+  }
+
+  scrollToBottom(): void {
     if (!this.messagesContainer) {
       return;
     }
 
     const element = this.messagesContainer.nativeElement;
-    element.scrollTop = element.scrollHeight;
+    element.scrollTo({ top: element.scrollHeight, behavior: 'smooth' });
+  }
+
+  onMessagesScroll(): void {
+    if (!this.messagesContainer) return;
+    const el = this.messagesContainer.nativeElement;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    this.showScrollFab = distanceFromBottom > 120;
+  }
+
+  getMessageSuggestions(message: ChatMessage): string[] {
+    const latestUserMessage = this.getLatestUserMessage();
+    const seen = new Set<string>();
+    const normalizedLast = this.normalize(latestUserMessage);
+    const previousAssistantSuggestions = this.getPreviousAssistantSuggestions(message);
+
+    return (message.followUpSuggestions || [])
+      .filter((suggestion) => {
+        const safe = suggestion.trim();
+        if (!safe) {
+          return false;
+        }
+        const normalized = this.normalize(safe);
+        if (
+          !normalized ||
+          normalized === normalizedLast ||
+          seen.has(normalized) ||
+          previousAssistantSuggestions.has(normalized)
+        ) {
+          return false;
+        }
+        seen.add(normalized);
+        return true;
+      })
+      .slice(0, 3);
+  }
+
+  shouldShowAutonomicPrompt(message: ChatMessage): boolean {
+    return Boolean(
+      message.role === 'assistant' &&
+        message.queryContext?.autonomicPromptRequired &&
+        message.queryContext?.hasAutonomicMatches
+    );
+  }
+
+  getSavedCommunity(message: ChatMessage): string | null {
+    const savedCommunity = String(
+      message.queryContext?.savedAutonomousCommunity || ''
+    ).trim();
+    return savedCommunity || null;
+  }
+
+  getAutonomicPromptText(message: ChatMessage): string {
+    const savedCommunity = this.getSavedCommunity(message);
+    if (savedCommunity) {
+      return `También puedo incluir autonómicas. Tengo guardada ${savedCommunity}. ¿Sigo usando esa comunidad?`;
+    }
+
+    return 'También puedo incluir autonómicas si me dices tu comunidad autónoma.';
+  }
+
+  getPreferencePromptKey(checkDismissed = true): string {
+    if (this.sessionState !== 'authenticated' || this.chatState === 'sending') {
+      return '';
+    }
+
+    const userMessageCount = this.getUserMessageCount();
+    if (userMessageCount < 2) {
+      return '';
+    }
+
+    const profile = this.userService.getProfileSnapshot();
+    const knownPlatforms = new Set([
+      ...(profile.preferredPlatforms || []),
+      ...(this.assistantMemory?.preferredPlatforms || []),
+    ].filter(Boolean));
+    const knownGenres = new Set([
+      ...(profile.favoriteGenres || []),
+      ...(this.assistantMemory?.likedGenres || []),
+    ].filter(Boolean));
+
+    let key = '';
+    if (!knownPlatforms.size) {
+      key = 'platforms';
+    } else if (!knownGenres.size) {
+      key = 'genres';
+    } else if (!(this.assistantMemory?.preferredViewingContexts || []).length) {
+      key = 'context';
+    } else if (!(this.assistantMemory?.preferredDurations || []).length) {
+      key = 'duration';
+    } else if (!(this.assistantMemory?.favoriteFranchisesOrTitles || []).length) {
+      key = 'titles';
+    } else if (
+      this.messages.some((message) => Boolean(message.queryContext?.hasAutonomicMatches)) &&
+      !this.assistantMemory?.preferredAutonomousCommunity
+    ) {
+      key = 'community';
+    } else if (
+      userMessageCount >= 3 &&
+      !(this.assistantMemory?.negativeSignals || []).length
+    ) {
+      key = 'avoid';
+    }
+
+    if (!key) {
+      return '';
+    }
+
+    return checkDismissed && this.dismissedPreferencePromptKeys.has(key) ? '' : key;
+  }
+
+  getPreferencePrompt(): string {
+    if (this.sessionState !== 'authenticated' || this.chatState === 'sending') {
+      return '';
+    }
+    switch (this.getPreferencePromptKey()) {
+      case 'platforms':
+        return '¿Dónde sueles ver más cosas? Si me dices tus plataformas principales, ajusto mejor entre streaming y TV.';
+      case 'genres':
+        return '¿Qué te suele apetecer más? Con un par de géneros afino mucho mejor desde el siguiente turno.';
+      case 'context':
+        return '¿Sueles buscar plan para ver solo, en pareja, en familia o con amigos?';
+      case 'duration':
+        return '¿Hoy te encaja mejor algo corto o también una película larga?';
+      case 'titles':
+        return 'Dime una serie, película o saga que te represente y usaré esa referencia para afinar mejor.';
+      case 'community':
+        return 'Si quieres incluir autonómicas cuando toque, dime tu comunidad autónoma y la recordaré.';
+      case 'avoid':
+        return 'Si quieres, también dime qué prefieres evitar casi siempre. Solo lo usaré como filtro secundario.';
+      default:
+        return '';
+    }
+  }
+
+  getPreferenceOptions(): string[] {
+    switch (this.getPreferencePromptKey()) {
+      case 'platforms':
+        return [
+          'Uso Netflix y Prime Video',
+          'Tengo Movistar+ y Max',
+          'Ahora mismo tiro más de TV',
+        ];
+      case 'genres':
+        return [
+          'Suspense y drama',
+          'Comedia y series',
+          'Más cine que series',
+        ];
+      case 'context':
+        return ['Para ver solo', 'En pareja', 'En familia', 'Con amigos'];
+      case 'duration':
+        return [
+          'Algo corto hoy',
+          'Me va bien una peli larga',
+          'Mejor episodios de 30-45 min',
+        ];
+      case 'titles':
+        return [
+          'Me encantó Succession',
+          'The Bear es muy mi rollo',
+          'Quiero algo tipo La infiltrada',
+        ];
+      case 'community':
+        return ['Andalucía', 'Madrid', 'Cataluña'];
+      case 'avoid':
+        return [
+          'Prefiero evitar terror',
+          'Mejor sin deportes',
+          'Paso de realities',
+        ];
+      default:
+        return [];
+    }
+  }
+
+  dismissPreferencePrompt(): void {
+    const promptKey = this.getPreferencePromptKey(false);
+    if (!promptKey) {
+      return;
+    }
+    this.dismissedPreferencePromptKeys.add(promptKey);
+  }
+
+  getResultSummary(message: ChatMessage): string {
+    const context = message.queryContext;
+    if (!context || !context.totalMatches) {
+      return '';
+    }
+
+    const noun = this.buildRequestedLabel(context.requestedTypes);
+    const scope = context.primaryMatches && context.primaryMatches > 0
+      ? `${Math.min(context.shownCount || 0, context.primaryMatches)} de ${context.primaryMatches}`
+      : `${context.totalMatches}`;
+    return `${scope} ${noun} · ${context.answerWindowLabel}`;
+  }
+
+  private getLatestUserMessage(): string {
+    const latest = [...this.messages].reverse().find((message) => message.role === 'user');
+    return latest?.content || '';
+  }
+
+  private getUserMessageCount(): number {
+    return this.messages.filter((message) => message.role === 'user').length;
+  }
+
+  private buildRequestedLabel(
+    requestedTypes: Array<'movie' | 'series' | 'program'> = []
+  ): string {
+    if (requestedTypes.includes('movie') && !requestedTypes.includes('series')) {
+      return 'películas';
+    }
+    if (requestedTypes.includes('series') && !requestedTypes.includes('movie')) {
+      return 'series';
+    }
+    return 'resultados';
+  }
+
+  private normalize(value: string): string {
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  }
+
+  public sendQuickMessage(text: string): void {
+    const normalized = text.trim();
+    if (
+      !normalized ||
+      this.chatState === 'sending' ||
+      this.sessionState !== 'authenticated'
+    ) {
+      return;
+    }
+
+    const promptKey = this.getPreferencePromptKey(false);
+    if (promptKey) {
+      this.dismissedPreferencePromptKeys.add(promptKey);
+    }
+
+    this.chatbotService.sendMessageStream(normalized).subscribe({
+      error: () => undefined,
+    });
+  }
+
+  onWizardCompleted(result: OnboardingWizardResult): void {
+    const memoryUpdate: Record<string, string[]> = {
+      preferredPlatforms: result.preferredPlatforms,
+      likedGenres: result.likedGenres,
+    };
+    if (result.preferredViewingContexts.length) {
+      memoryUpdate['preferredViewingContexts'] = result.preferredViewingContexts;
+    }
+    if (result.preferredDurations.length) {
+      memoryUpdate['preferredDurations'] = result.preferredDurations;
+    }
+
+    this.chatbotService
+      .updateAssistantMemory(memoryUpdate, result.preferredAutonomousCommunity)
+      .subscribe({ error: () => undefined });
+
+    this.userService
+      .saveGenrePreferences(result.likedGenres, result.preferredPlatforms)
+      .subscribe({ error: () => undefined });
+
+    this.needsOnboarding = false;
+  }
+
+  onWizardSkipped(): void {
+    this.needsOnboarding = false;
+  }
+
+  onMemorySaved(draft: Record<string, string[]>): void {
+    this.chatbotService.updateAssistantMemory(draft).subscribe({
+      next: () => {
+        this.memoryEditor?.onSaveComplete();
+        this.memoryEditorOpen = false;
+      },
+      error: () => undefined,
+    });
+  }
+
+  onRemoveMemoryTag(event: { key: string; value: string }): void {
+    if (!this.assistantMemory) return;
+    const current = (this.assistantMemory as any)[event.key];
+    if (!Array.isArray(current)) return;
+    const updated = current.filter((v: string) => v !== event.value);
+    this.chatbotService
+      .updateAssistantMemory({ [event.key]: updated })
+      .subscribe({ error: () => undefined });
+  }
+
+  getMemoryHighlights(): string[] {
+    const highlights: string[] = [];
+
+    if (this.assistantMemory?.preferredPlatforms?.length) {
+      highlights.push(
+        `Plataformas: ${this.assistantMemory.preferredPlatforms.slice(0, 2).join(', ')}`
+      );
+    }
+    if (this.assistantMemory?.likedGenres?.length) {
+      highlights.push(
+        `Gustos: ${this.assistantMemory.likedGenres.slice(0, 2).join(', ')}`
+      );
+    }
+    if (this.assistantMemory?.preferredViewingContexts?.length) {
+      highlights.push(
+        `Contexto: ${this.assistantMemory.preferredViewingContexts[0]}`
+      );
+    }
+
+    return highlights.slice(0, 3);
+  }
+
+  toggleMemoryEditor(): void {
+    this.memoryEditorOpen = !this.memoryEditorOpen;
+  }
+
+  trackByMessage(_index: number, message: ChatMessage): string {
+    return message.id;
+  }
+
+  private getPreviousAssistantSuggestions(message: ChatMessage): Set<string> {
+    const index = this.messages.findIndex((entry) => entry.id === message.id);
+    if (index <= 0) {
+      return new Set();
+    }
+
+    for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+      const previous = this.messages[cursor];
+      if (previous.role !== 'assistant') {
+        continue;
+      }
+
+      return new Set(
+        (previous.followUpSuggestions || [])
+          .map((suggestion) => this.normalize(suggestion))
+          .filter(Boolean)
+      );
+    }
+
+    return new Set();
   }
 }

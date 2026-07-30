@@ -21,6 +21,7 @@ import { CatalogCardComponent } from '../catalog-card/catalog-card.component';
         <a
           *ngIf="linkLabel && linkPath"
           [routerLink]="linkPath"
+          [queryParams]="linkQueryParams"
           class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
         >
           {{ linkLabel }}
@@ -41,6 +42,6 @@ export class CatalogRailComponent {
   @Input() subtitle = '';
   @Input() linkLabel = '';
   @Input() linkPath: any[] | string | null = null;
+  @Input() linkQueryParams: Record<string, string> | null = null;
   @Input() items: CatalogItem[] = [];
 }
-

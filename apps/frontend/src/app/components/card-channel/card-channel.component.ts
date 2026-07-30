@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiConfigService } from 'src/app/api/api-config.service';
+import { normalizePublicImageUrl } from 'src/app/utils/media-url';
 
 @Component({
   selector: 'app-card-channel',
@@ -71,27 +72,7 @@ export class CardChannelComponent implements OnInit, OnChanges {
    */
   private resolveIconUrl(icon?: string): string | undefined {
     if (!icon) return undefined;
-    
-    // URLs absolutas - retornar tal cual
-    if (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('data:')) {
-      return icon;
-    }
-    
-    // Paths de storage relativos
-    if (icon.startsWith('/storage/')) {
-      const assetBaseUrl = this.apiConfig.getAssetBaseUrl();
-      return `${assetBaseUrl}${icon}`;
-    }
-    
-    // Otros paths relativos
-    if (icon.startsWith('/')) {
-      if (typeof window !== 'undefined') {
-        return `${window.location.origin}${icon}`;
-      }
-      return icon;
-    }
-    
-    return icon;
+    return normalizePublicImageUrl(icon, this.apiConfig.getAssetBaseUrl());
   }
 
   /**

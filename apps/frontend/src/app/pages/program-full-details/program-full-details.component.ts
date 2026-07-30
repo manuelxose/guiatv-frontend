@@ -80,11 +80,6 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
     },
     observer: true,
     observeParents: true,
-    on: {
-      click: (swiper, event) => {
-        console.log('Slide clicked:', event);
-      },
-    },
   };
 
   // Virtual slides optimizado
@@ -232,17 +227,15 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
 
   // Handlers de Swiper
   public onSwiper(swiper: any): void {
-    console.log('Swiper initialized:', swiper);
+    void swiper;
   }
 
   public onSlideChange(): void {
-    console.log('Slide changed');
+    return;
   }
 
   public log(message: string): void {
-    if (console && console.log) {
-      console.log(message);
-    }
+    void message;
   }
 
   private flattenPrograms(data: any[]): any[] {
@@ -286,11 +279,20 @@ export class ProgramFullDetailsComponent implements OnInit, OnDestroy {
       schema['publishedOn'] = {
         '@type': 'BroadcastService',
         name: this.program.channel,
+        broadcastDisplayName: this.program.channel,
+        inLanguage: 'es',
       };
     }
     if (this.program.category?.value || this.program.desc?.category) {
       schema['genre'] = this.program.category?.value || this.program.desc?.category;
     }
+    // Rich snippet: link back to our detail page
+    schema['url'] = `https://guiaprogramaciontv.com/programas/${slug}`;
+    // Potential action for SEO
+    schema['potentialAction'] = {
+      '@type': 'WatchAction',
+      target: `https://guiaprogramaciontv.com/programas/${slug}`,
+    };
 
     try {
       this.ldJson = this.sanitizer.bypassSecurityTrustHtml(

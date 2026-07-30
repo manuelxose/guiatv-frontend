@@ -1,14 +1,15 @@
 import { mergeApplicationConfig, ApplicationConfig, PLATFORM_ID } from '@angular/core';
 import { APP_BASE_HREF } from '@angular/common';
-import { provideServerRendering } from '@angular/platform-server';
 import { provideNoopAnimations } from '@angular/platform-browser/animations'; // 👈 IMPORTANTE
+import { provideServerRendering, withRoutes } from '@angular/ssr';
 import { appConfig } from './app.config';
+import { serverRoutes } from './app.routes.server';
 
 const appBaseHref = process.env['APP_BASE_HREF'] || '/';
 
 const serverConfig: ApplicationConfig = {
   providers: [
-    provideServerRendering(),
+    provideServerRendering(withRoutes(serverRoutes)),
     { provide: PLATFORM_ID, useValue: 'server' },
     { provide: APP_BASE_HREF, useValue: appBaseHref },
     // 🛑 Desactivamos animaciones en el servidor para evitar el crash de injectRenderer2

@@ -1,5 +1,6 @@
 export type AdminGroupId =
   | 'analytics'
+  | 'ai'
   | 'content'
   | 'schedules'
   | 'users'

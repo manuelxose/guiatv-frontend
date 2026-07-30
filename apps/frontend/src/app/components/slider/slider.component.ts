@@ -203,7 +203,7 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
       const slug = slugify(
         programa?.name || programa?.channel || programa?.id || ''
       );
-      this.router.navigate(['programacion-tv/ver-canal', slug]);
+      this.router.navigate(['/canales', slug]);
       return;
     }
 

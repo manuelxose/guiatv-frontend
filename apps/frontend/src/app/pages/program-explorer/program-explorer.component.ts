@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap, Params, Router, RouterModule } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject, combineLatest, takeUntil } from 'rxjs';
 import { CatalogCardComponent } from '../../components/catalog-card/catalog-card.component';
 import { CatalogFiltersComponent } from '../../components/catalog-filters/catalog-filters.component';
@@ -21,6 +22,7 @@ import { MetaService } from '../../services/meta.service';
 import { UserProfile } from '../../interfaces/user.interface';
 import { UserService } from '../../services/user.service';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
+import { generateItemListSchema } from '../../utils/utils';
 
 type ExplorerMode = 'live' | 'featured' | 'platforms';
 
@@ -54,6 +56,7 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
   public total = 0;
   public hasMore = false;
   public breadcrumbItems: BreadcrumbItem[] = [];
+  public safeLdHtml: SafeHtml | null = null;
 
   private readonly destroy$ = new Subject<void>();
   private currentProfile: UserProfile | null = null;
@@ -66,7 +69,8 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
     private readonly metaService: MetaService,
     private readonly catalogService: CatalogService,
     private readonly filtersService: CatalogFiltersService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -305,6 +309,7 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
           } else {
             this.degradedMessage = null;
           }
+          this.buildItemListLd();
           this.loading = false;
         },
         error: () => {
@@ -312,6 +317,22 @@ export class ProgramExplorerComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
       });
+  }
+
+  private buildItemListLd(): void {
+    if (!this.items.length) {
+      this.safeLdHtml = null;
+      return;
+    }
+    const baseUrl = 'https://guiaprogramaciontv.com';
+    const schema = generateItemListSchema(this.items, this.pageTitle, baseUrl);
+    try {
+      this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
+        `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+      );
+    } catch {
+      this.safeLdHtml = null;
+    }
   }
 
   private updateMeta(): void {

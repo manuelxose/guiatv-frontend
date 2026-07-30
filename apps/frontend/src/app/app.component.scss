@@ -6,3 +6,8 @@
   min-height: 100vh;
   min-height: 100dvh;
 }
+
+.app-shell-main {
+  padding-top: var(--top-bar-h, 0px);
+  padding-bottom: var(--bottom-nav-h, 0px);
+}

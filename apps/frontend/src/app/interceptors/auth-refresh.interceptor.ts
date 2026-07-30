@@ -23,6 +23,16 @@ function isAuthRoute(url: string): boolean {
   );
 }
 
+function isPrivateApiRoute(url: string): boolean {
+  const safeUrl = String(url || '').toLowerCase();
+  return (
+    safeUrl.includes('/user/') ||
+    safeUrl.includes('/social/') ||
+    safeUrl.includes('/chat/') ||
+    safeUrl.includes('/ai/chat')
+  );
+}
+
 function readAccessToken(): string | null {
   if (!isBrowser()) return null;
   try {
@@ -48,6 +58,7 @@ function storeTokens(accessToken: string, refreshToken?: string): void {
     if (refreshToken) {
       localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
     }
+    window.dispatchEvent(new CustomEvent('gtv-auth-restored'));
   } catch {
     // noop
   }
@@ -58,6 +69,7 @@ function clearTokens(): void {
   try {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
+    window.dispatchEvent(new CustomEvent('gtv-auth-expired'));
   } catch {
     // noop
   }
@@ -84,6 +96,7 @@ async function refreshAccessToken(): Promise<string | null> {
 
   if (!refreshPromise) {
     const baseUrl = resolveApiBase();
+    window.dispatchEvent(new CustomEvent('gtv-auth-refreshing'));
     refreshPromise = fetch(`${baseUrl}/auth/refresh`, {
       method: 'POST',
       headers: {
@@ -114,6 +127,21 @@ async function refreshAccessToken(): Promise<string | null> {
 export const authRefreshInterceptor: HttpInterceptorFn = (request, next) => {
   if (!isBrowser()) {
     return next(request);
+  }
+
+  if (refreshPromise && isPrivateApiRoute(request.url) && !isAuthRoute(request.url)) {
+    return from(refreshPromise).pipe(
+      switchMap((nextAccessToken) => {
+        const deferred = nextAccessToken
+          ? request.clone({
+              setHeaders: {
+                Authorization: `Bearer ${nextAccessToken}`,
+              },
+            })
+          : request;
+        return next(deferred);
+      })
+    );
   }
 
   const hasAuthHeader = request.headers.has('Authorization');

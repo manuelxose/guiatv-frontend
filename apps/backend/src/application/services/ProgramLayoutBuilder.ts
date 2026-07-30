@@ -1,5 +1,6 @@
 import { Program } from '../../domain/entities/Program';
 import { DateUtils } from '../../shared/utils/dateUtils';
+import { normalizeExternalMediaUrl } from '../../shared/utils/mediaUrl';
 
 const UI_UNITS = {
   MINUTES_PER_SLOT: 30,
@@ -275,25 +276,27 @@ export class ProgramLayoutBuilder {
   // Ensure we return a single string for image to avoid saving arrays/objects into string fields
   private normalizeImageValue(value: any): string | undefined {
     if (!value) return undefined;
-    if (typeof value === 'string') return value;
+    if (typeof value === 'string') return normalizeExternalMediaUrl(value);
     if (Array.isArray(value)) {
       // prefer first string element
       for (const v of value) {
-        if (typeof v === 'string') return v;
+        if (typeof v === 'string') return normalizeExternalMediaUrl(v);
         if (v && typeof v === 'object') {
-          if (typeof v.url === 'string') return v.url;
-          if (typeof v.src === 'string') return v.src;
+          if (typeof v.url === 'string') return normalizeExternalMediaUrl(v.url);
+          if (typeof v.src === 'string') return normalizeExternalMediaUrl(v.src);
         }
       }
       return undefined;
     }
     if (typeof value === 'object') {
-      if (typeof value.url === 'string') return value.url;
-      if (typeof value.src === 'string') return value.src;
+      if (typeof value.url === 'string') return normalizeExternalMediaUrl(value.url);
+      if (typeof value.src === 'string') return normalizeExternalMediaUrl(value.src);
       // try to stringify a simple object fallback (avoid long JSON)
       try {
         const keys = Object.keys(value);
-        if (keys.length === 1 && typeof value[keys[0]] === 'string') return value[keys[0]];
+        if (keys.length === 1 && typeof value[keys[0]] === 'string') {
+          return normalizeExternalMediaUrl(value[keys[0]]);
+        }
       } catch (e) {
         // ignore
       }
