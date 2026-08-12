@@ -56,3 +56,12 @@ releases/
 
 # Local MCP tools
 /tools/mcp/
+
+# Playwright E2E artifacts
+/playwright-report/
+/test-results/
+/blob-report/
+/playwright/.cache/
+
+# Frontend unit-test coverage
+/apps/frontend/coverage/

@@ -20,13 +20,19 @@ describe('UnifiedGuideStateService', () => {
       category: 'all',
       liveView: 'now',
       date: 'today',
+      channel: '',
+      channelType: 'all',
+      region: 'all',
+      flags: [],
     });
     expect(service.discoverFilters().types).toEqual(['program', 'movie', 'series']);
     expect(service.streamingFilters().sort).toBe('popular');
     expect(service.sportsFilters()).toEqual({
       sport: 'all',
       channel: '',
+      competition: '',
       date: 'today',
+      timeRange: 'all',
     });
   });
 
@@ -52,6 +58,7 @@ describe('UnifiedGuideStateService', () => {
       availability: ['live', 'streaming'],
       platforms: ['Netflix', 'Prime Video'],
       genres: ['Drama', 'Acción'],
+      intent: '',
       sort: 'recent',
       date: '20260326',
       page: 3,
@@ -87,10 +94,16 @@ describe('UnifiedGuideStateService', () => {
       category: 'all',
       liveView: 'night',
       date: 'today',
+      channel: '',
+      channelType: 'all',
+      region: 'all',
+      flags: [],
     });
     expect(service.streamingFilters()).toEqual({
       platform: 'Netflix',
       type: 'series',
+      availability: [],
+      genres: [],
       sort: 'rating',
       page: 2,
     });

@@ -1,0 +1,63 @@
+import { test, expect } from '@playwright/test';
+import { assertNoRenderedUndefined, assertNotBlankScreen } from '../fixtures/helpers';
+
+const BACKEND_URL = process.env.E2E_BACKEND_URL || 'http://localhost:4000';
+
+/**
+ * Journey 3 (brief §28.3): Buscar -> suggestions -> resultado -> detalle.
+ *
+ * Setup/data only (never auth/write): reads a real, currently-airing program
+ * title straight from the read-only /v2/tv/read endpoint so the search query
+ * is guaranteed to match real content instead of a hand-picked guess.
+ */
+test.describe('Buscar -> suggestions -> resultado -> detalle', () => {
+  test('typing a real title surfaces suggestions, submitting opens results, opening a result shows its detail', async ({
+    page,
+    request,
+  }) => {
+    const readRes = await request.get(`${BACKEND_URL}/v2/tv/read?view=now`);
+    expect(readRes.ok()).toBeTruthy();
+    const readBody = await readRes.json();
+    const items: Array<{ program?: { title?: string } }> = readBody?.data?.items || [];
+    const realTitle = items.map((i) => i.program?.title).find((t) => t && t.trim().length >= 4);
+    test.skip(!realTitle, 'No live program title available from the backend right now');
+    const queryTerm = realTitle!.slice(0, Math.min(6, realTitle!.length));
+
+    await page.goto('/');
+    await assertNotBlankScreen(page);
+
+    const searchInput = page.locator('#unified-search-input');
+    await searchInput.click();
+    await searchInput.fill(queryTerm);
+
+    const suggestionMenu = page.locator('.search-shell__menu');
+    await expect(suggestionMenu).toBeVisible({ timeout: 10_000 });
+
+    const suggestionOptions = page.locator('.search-shell__option:not(.search-shell__option--history)');
+    await expect(suggestionOptions.first()).toBeVisible({ timeout: 10_000 });
+    const suggestionCount = await suggestionOptions.count();
+    expect(suggestionCount).toBeGreaterThan(0);
+    const firstSuggestionTitle = (
+      await suggestionOptions.first().locator('.search-shell__option-title').innerText()
+    ).trim();
+    expect(firstSuggestionTitle.length).toBeGreaterThan(0);
+
+    // "resultado": submit the full search instead of picking the suggestion directly.
+    const submitButton = page.locator('.search-shell__submit', { hasText: 'Ver resultados completos' });
+    await submitButton.click();
+
+    await page.waitForURL(/[?&]q=/, { timeout: 15_000 });
+    await assertNoRenderedUndefined(page);
+
+    // "detalle": open the first real result from the results grid.
+    const resultCard = page.locator('.program-card').first();
+    await expect(resultCard).toBeVisible({ timeout: 15_000 });
+    await resultCard.locator('a.program-card__tap').click();
+
+    await page.waitForURL(/\/(programas|peliculas|series|detalles)\//, { timeout: 15_000 });
+    const heading = page.locator('h1').first();
+    await expect(heading).toBeVisible({ timeout: 15_000 });
+    expect((await heading.innerText()).trim().length).toBeGreaterThan(0);
+    await assertNoRenderedUndefined(page);
+  });
+});

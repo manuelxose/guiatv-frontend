@@ -18,7 +18,14 @@
     "migrate:social-data": "npm run migrate:social-data -w apps/backend",
     "seo:submit-sitemap": "npm run seo:submit-sitemap -w apps/backend",
     "db:bootstrap": "npm run create-indexes -w apps/backend && npm run job:syncEPG -w apps/backend && npm run job:precompute -w apps/backend",
-    "deploy": "bash ./deploy-guiatv.sh"
+    "deploy": "bash ./deploy-guiatv.sh",
+    "test": "npm run test -w apps/backend && npm run test -w apps/frontend",
+    "test:backend": "npm run test -w apps/backend",
+    "test:frontend": "npm run test -w apps/frontend",
+    "test:e2e": "playwright test",
+    "lint": "npm run lint -w apps/backend && npm run lint -w apps/frontend",
+    "lint:backend": "npm run lint -w apps/backend",
+    "lint:frontend": "npm run lint -w apps/frontend"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
