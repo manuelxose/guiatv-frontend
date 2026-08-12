@@ -116,6 +116,9 @@ body {
   100% { background-position: 200% 0; }
 }
 
+// Named "-red" historically (back when every accent was #dc2626); kept as-is
+// to avoid a call-site rename, now sourced from the general-purpose
+// "interactive" accent (--accent-discover) per docs/visual-directions.md.
 .focus-ring-red {
   outline: 2px solid transparent;
   outline-offset: 2px;
@@ -123,9 +126,9 @@ body {
 }
 
 .focus-ring-red:focus {
-  outline: 2px solid rgba(220, 38, 38, 0.5);
+  outline: 2px solid color-mix(in oklch, var(--accent-discover) 50%, transparent);
   outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent-discover) 10%, transparent);
 }
 
 .scroll-snap-x {
@@ -189,7 +192,7 @@ main {
 .post-content {
   --tw-prose-body: var(--portal-text-soft);
   --tw-prose-headings: var(--portal-text);
-  --tw-prose-links: #dc2626;
+  --tw-prose-links: var(--accent-editorial);
   --tw-prose-pre-bg: var(--portal-surface-strong);
 }
 
@@ -229,10 +232,10 @@ main {
 }
 
 .post-content blockquote {
-  border-left: 4px solid #dc2626;
+  border-left: 4px solid var(--accent-editorial);
   padding-left: 1rem;
   color: var(--portal-text);
-  background: rgba(220, 38, 38, 0.04);
+  background: var(--accent-editorial-soft);
   margin: 1rem 0;
 }
 
@@ -247,7 +250,7 @@ main {
 
 .post-content code {
   background: var(--portal-surface-strong);
-  color: #dc2626;
+  color: var(--accent-editorial);
   padding: 0.15rem 0.4rem;
   border-radius: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
@@ -382,11 +385,11 @@ main {
     }
 
     &--selected {
-      background: rgba(220, 38, 38, 0.08) !important;
-      color: #dc2626 !important;
+      background: var(--accent-discover-soft) !important;
+      color: var(--accent-discover) !important;
 
       svg {
-        color: #dc2626;
+        color: var(--accent-discover);
       }
     }
 
