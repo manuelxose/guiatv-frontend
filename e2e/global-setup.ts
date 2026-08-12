@@ -12,8 +12,14 @@
  */
 const BACKEND_URL = process.env.E2E_BACKEND_URL || 'http://localhost:4000';
 
+// Exact query variants the app's first paint actually requests (captured by
+// tracing real network calls from the home page) — the backend's response
+// cache is keyed by full querystring, so warming a bare path does not warm
+// these.
 const WARMUP_ENDPOINTS = [
-  '/v2/tv/read?view=now',
+  '/v2/tv/read?view=now&date=today&limit=8',
+  '/v2/tv/read?view=night&date=today&limit=12',
+  '/v2/tv/read?view=now&date=today&category=Deportes&limit=20',
   '/v2/discovery/home',
   '/v2/catalog/platforms',
   '/v2/blog',
