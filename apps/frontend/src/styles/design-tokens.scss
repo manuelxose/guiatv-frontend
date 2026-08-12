@@ -3,7 +3,13 @@
   -moz-osx-font-smoothing: grayscale;
   color-scheme: light;
 
-  --font-sans: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  // Direction 3 "Hybrid Signal": Montserrat was never actually loaded (no
+  // @font-face/<link> anywhere), so the app already ran on this fallback
+  // stack in practice. Made explicit + the editorial serif idea from the
+  // visual-directions spec was dropped too, to keep font-loading cost at
+  // zero rather than trade it for a "distinct" editorial identity that a
+  // weight/tracking variant can achieve for free (see docs/visual-directions.md).
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   --text-2xs: clamp(0.68rem, 0.64rem + 0.08vw, 0.72rem);
   --text-xs: clamp(0.76rem, 0.72rem + 0.12vw, 0.82rem);
@@ -29,33 +35,41 @@
   --radius-xl: 1.9rem;
   --radius-pill: 999px;
 
-  --portal-bg: #ffffff;
-  --portal-bg-deep: #f9fafb;
+  // Direction 3 "Hybrid Signal" (docs/visual-directions.md) — cool-neutral
+  // base, replaces the prior plain-white/gray-500 palette.
+  --portal-bg: #f5f6f8;
+  --portal-bg-deep: #eceef2;
   --portal-bg-elevated: #ffffff;
   --portal-surface: #ffffff;
-  --portal-surface-strong: #f3f4f6;
+  --portal-surface-strong: #eceef2;
   --portal-surface-soft: rgba(255, 255, 255, 0.72);
   --portal-card: #ffffff;
   --portal-card-elevated: #ffffff;
-  --portal-border: #e5e7eb;
-  --portal-border-strong: #d1d5db;
-  --portal-divider: #f3f4f6;
+  --portal-border: #dfe2e8;
+  --portal-border-strong: #c7ccd6;
+  --portal-divider: #eceef2;
 
-  --portal-text: #111827;
-  --portal-text-soft: #374151;
-  --portal-text-muted: #6b7280;
+  --portal-text: #1a1d24;
+  --portal-text-soft: #454a54;
+  --portal-text-muted: #6d7280;
   --portal-text-faint: #9ca3af;
 
-  --accent-live: #dc2626;
-  --accent-live-soft: rgba(220, 38, 38, 0.1);
-  --accent-discover: #dc2626;
-  --accent-discover-soft: rgba(220, 38, 38, 0.1);
-  --accent-streaming: #dc2626;
-  --accent-streaming-soft: rgba(220, 38, 38, 0.1);
-  --accent-sports: #dc2626;
-  --accent-sports-soft: rgba(220, 38, 38, 0.1);
-  --accent-editorial: #dc2626;
-  --accent-editorial-soft: rgba(220, 38, 38, 0.1);
+  // Five accents authored in OKLCH at matched lightness/chroma (L=58%,
+  // C=0.19), varying only hue, so none visually dominates the others — the
+  // structural fix for all five previously resolving to the same #dc2626.
+  // `-soft` uses color-mix() for a true 6% tint over --portal-card (the
+  // card-wayfinding mechanism), falling back to rgba() for browsers
+  // without color-mix() support.
+  --accent-live: #dd3a3a;
+  --accent-live-soft: color-mix(in oklch, var(--accent-live) 6%, var(--portal-card));
+  --accent-discover: #4f6df5;
+  --accent-discover-soft: color-mix(in oklch, var(--accent-discover) 6%, var(--portal-card));
+  --accent-streaming: #12a06a;
+  --accent-streaming-soft: color-mix(in oklch, var(--accent-streaming) 6%, var(--portal-card));
+  --accent-sports: #c9821a;
+  --accent-sports-soft: color-mix(in oklch, var(--accent-sports) 6%, var(--portal-card));
+  --accent-editorial: #c34fc0;
+  --accent-editorial-soft: color-mix(in oklch, var(--accent-editorial) 6%, var(--portal-card));
 
   --guide-bg: var(--portal-bg);
   --guide-bg-elevated: var(--portal-bg-elevated);
