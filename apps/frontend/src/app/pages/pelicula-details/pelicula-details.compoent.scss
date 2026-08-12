@@ -140,7 +140,7 @@ $transition-speed: 180ms;
     rgba(255, 255, 255, 0.02),
     rgba(255, 255, 255, 0.01)
   );
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--portal-border);
   border-radius: 50%;
   color: $text-primary;
   cursor: pointer;
@@ -196,14 +196,14 @@ $transition-speed: 180ms;
   border-radius: $border-radius;
   overflow: hidden;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--portal-border);
   transition: all $transition-speed ease;
   cursor: pointer;
 
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--portal-border-strong);
 
     .cast-image {
       transform: scale(1.05);
@@ -261,9 +261,9 @@ $transition-speed: 180ms;
   padding: 0;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--portal-border);
   border-radius: 6px;
-  color: #ffffff;
+  color: var(--portal-text);
   cursor: pointer;
   opacity: 0;
   transform: scale(0.9);
@@ -341,7 +341,7 @@ $transition-speed: 180ms;
   border-radius: $border-radius;
   overflow: hidden;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--portal-border);
   cursor: pointer;
   transition: all $transition-speed ease;
 
@@ -349,7 +349,7 @@ $transition-speed: 180ms;
   &:focus-visible {
     transform: translateY(-4px);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--portal-border-strong);
 
     .related-image {
       transform: scale(1.05);

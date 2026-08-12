@@ -1,194 +1,194 @@
 <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
 
-<div class="min-h-screen bg-[#081018] text-slate-100">
-  <div class="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-    <section
-      class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.18),_rgba(8,16,24,0.92)_52%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-10"
-    >
-      <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_35%,transparent_65%,rgba(56,189,248,0.08))]"></div>
-      <div class="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
-        <div class="space-y-5">
-          <div class="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-red-200">
-            TV + Streaming
-          </div>
-          <div class="space-y-3">
-            <h1 class="max-w-3xl text-4xl font-black tracking-tight text-white md:text-6xl">
-              Todo lo que puedes ver hoy, en directo o en plataformas.
-            </h1>
-            <p class="max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
-              Guía TV ahora mezcla parrilla, streaming y recomendaciones reales para que descubras
-              contenido desde una sola experiencia, tanto en móvil como en desktop.
-            </p>
-          </div>
+<app-unified-portal-shell
+  tone="home"
+  [activeTab]="null"
+  [searchQuery]="searchQuery()"
+  [topPillChips]="topPillChips()"
+  [topPillSelection]="topPillSelection()"
+  topPillLabel="Empieza por aquí"
+  [leftRailSections]="leftRailSections()"
+  [rightRailSections]="rightRailSections()"
+  [rightRailLabel]="rightRailLabel"
+  rightRailVariant="prime"
+  [isAuthenticated]="isAuthenticated()"
+  [profileName]="profile()?.name || 'Cuenta'"
+  [breadcrumbItems]="breadcrumbItems"
+  [showHero]="false"
+  (tabChange)="navigateToTab($event)"
+  (topPillChange)="onTopPillChange($event)"
+  (searchChange)="onSearchChange($event)"
+  (searchSubmit)="onSearchSubmit($event)"
+>
+  <section class="home-page__lead" *ngIf="heroLead() as lead">
+    <div class="home-page__lead-copy">
+      <p class="home-page__lead-eyebrow">Portada unificada</p>
+      <h1>Empieza por lo que está vivo</h1>
+      <p>TV, streaming y deporte en un mismo flujo, con contenido antes que explicación.</p>
 
-          <div class="flex flex-wrap gap-3">
-            <a
-              [routerLink]="appPaths.explore"
-              class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-red-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-red-500"
-            >
-              Explorar catálogo
-            </a>
-            <a
-              [routerLink]="appPaths.platforms"
-              class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-6 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-500 hover:text-white"
-            >
-              Ver plataformas
-            </a>
-            <a
-              [routerLink]="appPaths.live"
-              class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-6 text-sm font-semibold text-emerald-200 transition-colors hover:border-emerald-400/40"
-            >
-              En directo ahora
-            </a>
-          </div>
-        </div>
+      <div class="home-page__lead-actions">
+        <a [routerLink]="appPaths.guide" [queryParams]="{ liveView: 'now' }" class="home-page__lead-pill home-page__lead-pill--live">Ahora en TV</a>
+        <a [routerLink]="appPaths.guide" [queryParams]="{ liveView: 'night' }" class="home-page__lead-pill">Esta noche</a>
+        <a [routerLink]="appPaths.platforms" class="home-page__lead-pill">Plataformas</a>
+        <a [routerLink]="appPaths.sports" [queryParams]="{ timeRange: 'live' }" class="home-page__lead-pill home-page__lead-pill--sports">Deportes en vivo</a>
+      </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Guía TV</p>
-            <p class="mt-2 text-2xl font-bold text-white">Ahora</p>
-            <p class="mt-1 text-sm text-slate-400">Acceso directo a emisiones activas y próximas franjas.</p>
-          </div>
-          <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Explorar</p>
-            <p class="mt-2 text-2xl font-bold text-white">TV + VOD</p>
-            <p class="mt-1 text-sm text-slate-400">Filtros unificados por tipo, género y disponibilidad.</p>
-          </div>
-          <div
-            *ngIf="sections.platforms.length; else heroFallbackPlatforms"
-            class="col-span-2 rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4"
-          >
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Tus plataformas</p>
-            <div class="mt-3 flex flex-wrap gap-2">
-              <span
-                *ngFor="let platform of sections.platforms.slice(0, 8)"
-                class="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs font-semibold text-slate-200"
-              >
-                {{ platform.name }}
-              </span>
-            </div>
-          </div>
-          <ng-template #heroFallbackPlatforms>
-            <div class="col-span-2 rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
-              <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Streaming</p>
-              <p class="mt-2 text-sm font-semibold text-white">TV y plataformas desde una sola portada</p>
-              <p class="mt-1 text-sm text-slate-400">
-                Si el catálogo remoto tarda en responder, mantenemos visibles la guía y los accesos principales.
-              </p>
-            </div>
-          </ng-template>
-        </div>
+      <div class="home-page__lead-platforms" *ngIf="featuredPlatforms().length">
+        <app-platform-badge
+          *ngFor="let platform of featuredPlatforms().slice(0, 4); trackBy: trackByPlatform"
+          [label]="platform.name"
+          [color]="platform.color"
+          [logoUrl]="platform.logoUrl || ''"
+        ></app-platform-badge>
+      </div>
+    </div>
+
+    <app-unified-program-card
+      [item]="lead"
+      variant="live"
+      [showActions]="false"
+    ></app-unified-program-card>
+  </section>
+
+  <section *ngIf="loading()" class="home-page__loading">
+    <app-unified-skeleton-block [count]="6" [columns]="3" cardHeight="15rem"></app-unified-skeleton-block>
+  </section>
+
+  <section *ngIf="error()" class="home-page__error">
+    <h2>Portada no disponible</h2>
+    <p>{{ error() }}</p>
+  </section>
+
+  <ng-container *ngIf="!loading() && !error()">
+    <section *ngIf="liveNow().length" class="home-page__module">
+      <app-unified-section-header
+        eyebrow="Ahora en TV"
+        title="Lo que está en emisión ahora mismo"
+        linkLabel="Abrir TV Directo"
+        [linkPath]="appPaths.guide"
+      ></app-unified-section-header>
+
+      <div class="home-page__rail">
+        <app-unified-program-card
+          *ngFor="let item of liveNow()"
+          [item]="item"
+          variant="compact"
+        ></app-unified-program-card>
       </div>
     </section>
 
-    <div *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-2">
-      <div *ngFor="let index of [1, 2, 3, 4]" class="h-48 animate-pulse rounded-[1.75rem] bg-slate-900/70"></div>
-    </div>
+    <section *ngIf="tonight().length" class="home-page__module">
+      <app-unified-section-header
+        eyebrow="Esta noche"
+        title="Prime time, cine, series y deporte del tramo fuerte"
+        linkLabel="Ver guía nocturna"
+        [linkPath]="appPaths.guide"
+        [linkQueryParams]="{ liveView: 'night' }"
+      ></app-unified-section-header>
 
-    <div
-      *ngIf="error"
-      class="mt-8 rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
-    >
-      {{ error }}
-    </div>
-
-    <div
-      *ngIf="!loading && !error && degradedNotice"
-      class="mt-8 rounded-[1.75rem] border border-amber-500/30 bg-amber-500/10 p-6 text-sm text-amber-100"
-    >
-      {{ degradedNotice }}
-    </div>
-
-    <ng-container *ngIf="!loading && !error">
-      <div class="mt-10 space-y-10">
-        <app-catalog-rail
-          *ngIf="sections.liveItems.length"
-          eyebrow="Guía TV ahora"
-          title="Lo primero que deberías ver"
-          subtitle="Emisiones activas y accesos rápidos a la guía en directo."
-          linkLabel="Abrir guía"
-          [linkPath]="appPaths.guide"
-          [items]="sections.liveItems"
-        ></app-catalog-rail>
-
-        <app-catalog-rail
-          *ngIf="sections.platformItems.length"
-          eyebrow="Explorar streaming"
-          title="Disponible donde ya ves contenido"
-          subtitle="Seleccionado desde tus plataformas preferidas."
-          linkLabel="Abrir plataformas"
-          [linkPath]="appPaths.platforms"
-          [items]="sections.platformItems"
-        ></app-catalog-rail>
-
-        <app-catalog-rail
-          *ngIf="(isAuthenticated$ | async) && sections.personalized.length"
-          eyebrow="Personalizado"
-          title="Para ti"
-          subtitle="Se alimenta de lo que valoras, guardas y ves en la app."
-          linkLabel="Abrir explorar"
-          [linkPath]="appPaths.explore"
-          [items]="sections.personalized"
-        ></app-catalog-rail>
-
-        <app-catalog-rail
-          *ngIf="sections.freeItems.length"
-          eyebrow="Gratis"
-          title="Sin coste extra"
-          subtitle="Opciones free o incluidas sin alquiler."
-          linkLabel="Explorar gratis"
-          [linkPath]="[appPaths.explore]"
-          [items]="sections.freeItems"
-        ></app-catalog-rail>
-
-        <app-catalog-rail
-          *ngIf="sections.trendingItems.length"
-          eyebrow="Tendencias"
-          title="Lo más visto ahora"
-          subtitle="Películas y series destacadas en streaming."
-          linkLabel="Ver más"
-          [linkPath]="appPaths.explore"
-          [items]="sections.trendingItems"
-        ></app-catalog-rail>
-
-        <section *ngIf="sections.platforms.length" class="space-y-5">
-          <div class="flex items-end justify-between gap-4">
-            <div>
-              <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Acceso rápido</p>
-              <h2 class="text-2xl font-semibold text-white">Plataformas destacadas</h2>
-            </div>
-            <a
-              [routerLink]="appPaths.platforms"
-              class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
-            >
-              Ver catálogo completo
-            </a>
-          </div>
-
-          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <a
-              *ngFor="let platform of sections.platforms.slice(0, 8)"
-              [routerLink]="appPaths.platforms"
-              [queryParams]="{ platforms: platform.name, availability: 'streaming', types: 'movie,series' }"
-              class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4 transition-colors hover:border-slate-600"
-            >
-              <div class="flex items-center gap-3">
-                <img
-                  *ngIf="platform.logoUrl"
-                  [src]="platform.logoUrl"
-                  [alt]="platform.name"
-                  class="h-10 w-10 rounded-xl object-contain bg-white/5 p-1"
-                  loading="lazy"
-                />
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-semibold text-white">{{ platform.name }}</p>
-                  <p class="text-xs text-slate-400">Abrir catálogo filtrado</p>
-                </div>
-              </div>
-            </a>
-          </div>
-        </section>
+      <div class="home-page__rail">
+        <app-unified-program-card
+          *ngFor="let item of tonight()"
+          [item]="item"
+          variant="compact"
+        ></app-unified-program-card>
       </div>
-    </ng-container>
-  </div>
-</div>
+    </section>
+
+    <section *ngIf="featuredPlatforms().length" class="home-page__module">
+      <app-unified-section-header
+        eyebrow="Plataformas destacadas"
+        title="Entra al catálogo desde Netflix, Prime Video, Max o Disney+"
+        linkLabel="Abrir streaming"
+        [linkPath]="appPaths.platforms"
+      ></app-unified-section-header>
+
+      <div class="home-page__platform-grid">
+        <a
+          *ngFor="let platform of featuredPlatforms(); trackBy: trackByPlatform"
+          [routerLink]="appPaths.platforms"
+          [queryParams]="{ platform: platform.name }"
+          class="home-page__platform-card"
+        >
+          <app-platform-badge
+            [label]="platform.name"
+            [color]="platform.color"
+            [logoUrl]="platform.logoUrl || ''"
+          ></app-platform-badge>
+          <span>Entrar al catálogo</span>
+        </a>
+      </div>
+    </section>
+
+    <section *ngIf="streamingHighlights().length" class="home-page__module">
+      <app-unified-section-header
+        eyebrow="Streaming en foco"
+        title="Catálogo visible antes que los filtros"
+        linkLabel="Ver plataformas"
+        [linkPath]="appPaths.platforms"
+      ></app-unified-section-header>
+
+      <div class="home-page__grid">
+        <app-unified-program-card
+          *ngFor="let item of streamingHighlights()"
+          [item]="item"
+          variant="streaming"
+        ></app-unified-program-card>
+      </div>
+    </section>
+
+    <section *ngIf="sportsNow().length" class="home-page__module">
+      <app-unified-section-header
+        eyebrow="Deportes en directo"
+        title="Agenda viva y próximos eventos desde la portada"
+        linkLabel="Ir a deportes"
+        [linkPath]="appPaths.sports"
+      ></app-unified-section-header>
+
+      <div class="home-page__grid home-page__grid--sports">
+        <app-unified-program-card
+          *ngFor="let item of sportsNow()"
+          [item]="item"
+          variant="sport"
+        ></app-unified-program-card>
+      </div>
+    </section>
+
+    <app-unified-editorial-module
+      *ngIf="editorialGuides().length"
+      eyebrow="Desde editorial"
+      title="Guías y contexto conectados con la exploración"
+      linkLabel="Abrir editorial"
+      [linkPath]="appPaths.blog"
+      [posts]="editorialGuides()"
+      [columns]="3"
+    ></app-unified-editorial-module>
+
+    <app-unified-editorial-module
+      *ngIf="rankingHighlights().length"
+      eyebrow="Top rankings"
+      title="Selecciones editoriales para decidir rápido"
+      linkLabel="Ver rankings"
+      [linkPath]="appPaths.top10"
+      [posts]="rankingHighlights()"
+      [columns]="4"
+    ></app-unified-editorial-module>
+
+    <section *ngIf="trendingItems().length" class="home-page__module">
+      <app-unified-section-header
+        eyebrow="Tendencias"
+        title="Lo más movido del catálogo ahora"
+        linkLabel="Ver tendencias"
+        [linkPath]="appPaths.stats"
+      ></app-unified-section-header>
+
+      <div class="home-page__grid">
+        <app-unified-program-card
+          *ngFor="let item of trendingItems()"
+          [item]="item"
+          variant="discover"
+        ></app-unified-program-card>
+      </div>
+    </section>
+  </ng-container>
+</app-unified-portal-shell>

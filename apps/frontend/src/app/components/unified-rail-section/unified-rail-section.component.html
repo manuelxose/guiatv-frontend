@@ -1,0 +1,139 @@
+<section
+  class="portal-shell__rail-card"
+  [class.portal-shell__rail-card--feature]="section().variant === 'feature'"
+  [class.portal-shell__rail-card--logos]="section().variant === 'logos'"
+  [class.portal-shell__rail-card--compact]="section().variant === 'compact'"
+  [class.portal-shell__rail-card--right]="contextual()"
+>
+  <div class="portal-shell__rail-head">
+    <div>
+      <p>{{ section().eyebrow }}</p>
+      <h2>{{ section().title }}</h2>
+    </div>
+    <span>{{ section().items.length }}</span>
+  </div>
+
+  @if (section().description) {
+  <p class="portal-shell__rail-description">{{ section().description }}</p>
+  }
+
+  <div
+    class="portal-shell__rail-list"
+    [class.portal-shell__rail-list--context]="contextual()"
+    [class.portal-shell__rail-list--logos]="section().variant === 'logos'"
+    [class.portal-shell__rail-list--compact]="section().variant === 'compact'"
+  >
+    @for (item of section().items; track trackByRailItem($index, item)) {
+      @if (item.path) {
+      <a
+        [routerLink]="item.path"
+        [queryParams]="item.queryParams"
+        class="portal-shell__rail-item"
+        [class.portal-shell__rail-item--context]="contextual()"
+        [class.portal-shell__rail-item--active]="item.active"
+        [attr.title]="collapsed() ? item.label : null"
+        (click)="onNavigate()"
+      >
+        @if (item.iconPath) {
+        <span class="portal-shell__rail-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path
+              [attr.d]="item.iconPath"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+            ></path>
+          </svg>
+        </span>
+        }
+        @if (item.imageUrl) {
+        <img
+          [src]="item.imageUrl"
+          [alt]="''"
+          class="portal-shell__rail-image"
+          loading="lazy"
+        />
+        }
+        <span class="portal-shell__rail-copy">
+          <strong>{{ item.label }}</strong>
+          @if (item.description) {
+          <small>{{ item.description }}</small>
+          }
+        </span>
+        @if (item.badge || item.value) {
+        <span class="portal-shell__rail-badge">{{ item.badge || item.value }}</span>
+        }
+      </a>
+      } @else if (item.actionId) {
+        <button
+          type="button"
+          class="portal-shell__rail-item portal-shell__rail-item--button"
+          [class.portal-shell__rail-item--context]="contextual()"
+          [attr.title]="collapsed() ? item.label : null"
+          (click)="onAction(item)"
+        >
+          @if (item.iconPath) {
+          <span class="portal-shell__rail-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                [attr.d]="item.iconPath"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+              ></path>
+            </svg>
+          </span>
+          }
+          <span class="portal-shell__rail-copy">
+            <strong>{{ item.label }}</strong>
+            @if (item.description) {
+            <small>{{ item.description }}</small>
+            }
+          </span>
+          @if (item.badge || item.value) {
+          <span class="portal-shell__rail-badge">{{ item.badge || item.value }}</span>
+          }
+        </button>
+      } @else {
+        <div
+          class="portal-shell__rail-item portal-shell__rail-item--static"
+          [class.portal-shell__rail-item--context]="contextual()"
+          [attr.title]="collapsed() ? item.label : null"
+        >
+          @if (item.iconPath) {
+          <span class="portal-shell__rail-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                [attr.d]="item.iconPath"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+              ></path>
+            </svg>
+          </span>
+          }
+          <span class="portal-shell__rail-copy">
+            <strong>{{ item.label }}</strong>
+            @if (item.description) {
+            <small>{{ item.description }}</small>
+            }
+          </span>
+          @if (item.badge || item.value) {
+          <span class="portal-shell__rail-badge">{{ item.badge || item.value }}</span>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  @if (showActionLink() && section().actionLabel && section().actionPath && !collapsed()) {
+  <a
+    [routerLink]="section().actionPath"
+    [queryParams]="section().actionQueryParams"
+    class="portal-shell__rail-action"
+    (click)="onNavigate()"
+  >
+    {{ section().actionLabel }}
+  </a>
+  }
+</section>

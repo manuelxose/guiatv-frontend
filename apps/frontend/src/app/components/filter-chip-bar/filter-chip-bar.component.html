@@ -1,0 +1,25 @@
+<div
+  class="chip-bar scrollbar-hide"
+  [class.chip-bar--shelf]="variant === 'shelf'"
+  [attr.aria-label]="ariaLabel"
+>
+  <button
+    *ngFor="let chip of chips; trackBy: trackByChip"
+    type="button"
+    class="chip-bar__item"
+    [class.chip-bar__item--active]="isActive(chip.id)"
+    [attr.aria-pressed]="isActive(chip.id)"
+    [attr.role]="multiSelect ? 'button' : 'tab'"
+    (click)="chipSelect.emit(chip.id)"
+  >
+    <span *ngIf="chip.iconPath" class="chip-bar__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+        <path [attr.d]="chip.iconPath" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </span>
+    <span class="chip-bar__label">{{ chip.label }}</span>
+    <span *ngIf="chip.count !== undefined" class="chip-bar__count" aria-hidden="true">
+      {{ chip.count }}
+    </span>
+  </button>
+</div>

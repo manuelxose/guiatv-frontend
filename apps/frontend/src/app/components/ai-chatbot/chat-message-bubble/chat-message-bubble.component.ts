@@ -37,17 +37,17 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
       <div class="group max-w-[94%] md:max-w-[88%]">
         <div
           class="rounded-[1.4rem] px-4 py-3"
-          [ngClass]="message.role === 'user'
-            ? 'bg-gradient-to-br from-red-600 to-red-700 text-white'
-            : 'border border-slate-800/90 bg-slate-900/96 text-slate-100'"
+            [ngClass]="message.role === 'user'
+            ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md'
+            : 'border border-[var(--portal-border)]/90 bg-[var(--portal-surface)] text-[var(--portal-text)] shadow-sm'"
         >
           <!-- Loading / Thinking state -->
           <ng-container *ngIf="(message.isLoading && !message.isStreaming) || message.isThinking; else contentBlock">
             <div class="flex items-center gap-2 py-1">
-              <span class="h-2 w-2 rounded-full bg-slate-400 animate-[pulse_1.2s_ease-in-out_infinite]"></span>
-              <span class="h-2 w-2 rounded-full bg-slate-400 animate-[pulse_1.2s_ease-in-out_infinite_0.15s]"></span>
-              <span class="h-2 w-2 rounded-full bg-slate-400 animate-[pulse_1.2s_ease-in-out_infinite_0.3s]"></span>
-              <span *ngIf="message.isThinking" class="ml-1 text-xs text-slate-400">Analizando la parrilla…</span>
+              <span class="h-2 w-2 rounded-full bg-[var(--portal-text-muted)] animate-[pulse_1.2s_ease-in-out_infinite]"></span>
+              <span class="h-2 w-2 rounded-full bg-[var(--portal-text-muted)] animate-[pulse_1.2s_ease-in-out_infinite_0.15s]"></span>
+              <span class="h-2 w-2 rounded-full bg-[var(--portal-text-muted)] animate-[pulse_1.2s_ease-in-out_infinite_0.3s]"></span>
+              <span *ngIf="message.isThinking" class="ml-1 text-xs text-[var(--portal-text-muted)]">Analizando la parrilla…</span>
             </div>
           </ng-container>
 
@@ -110,16 +110,16 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
             <!-- Feedback thumbs (assistant only, after typing complete) -->
             <div
               *ngIf="!isTyping && !message.isStreaming && message.role === 'assistant' && message.id !== 'welcome' && !message.isLoading"
-              class="flex items-center gap-1 mt-2 pt-1.5 border-t border-slate-800/40"
+              class="flex items-center gap-1 mt-2 pt-1.5 border-t border-[var(--portal-border)]/40"
             >
-              <span class="text-[10px] text-slate-500 mr-1">¿Útil?</span>
+              <span class="text-[10px] text-[var(--portal-text-muted)] mr-1">¿Útil?</span>
               <button
                 type="button"
                 (click)="feedbackPositive.emit(message)"
                 class="p-1 rounded-md transition-colors"
                 [ngClass]="message.feedback?.rating === 'positive'
                   ? 'text-green-400 bg-green-500/15'
-                  : 'text-slate-500 hover:text-green-400 hover:bg-green-500/10'"
+                  : 'text-[var(--portal-text-muted)] hover:text-green-400 hover:bg-green-500/10'"
                 [disabled]="!!message.feedback"
                 aria-label="Útil"
               >
@@ -134,7 +134,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
                 class="p-1 rounded-md transition-colors"
                 [ngClass]="message.feedback?.rating === 'negative'
                   ? 'text-red-400 bg-red-500/15'
-                  : 'text-slate-500 hover:text-red-400 hover:bg-red-500/10'"
+                  : 'text-[var(--portal-text-muted)] hover:text-red-400 hover:bg-[var(--accent-live-soft)]'"
                 [disabled]="!!message.feedback"
                 aria-label="No útil"
               >
@@ -174,12 +174,12 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
       p { margin-bottom: 0.5rem; }
       p:last-child { margin-bottom: 0; }
 
-      strong, b { font-weight: 600; color: #f1f5f9; }
+      strong, b { font-weight: 700; color: var(--portal-text); }
       em, i { font-style: italic; }
 
       h1, h2, h3, h4 {
         font-weight: 700;
-        color: #f8fafc;
+        color: var(--portal-text);
         margin-top: 0.75rem;
         margin-bottom: 0.25rem;
       }

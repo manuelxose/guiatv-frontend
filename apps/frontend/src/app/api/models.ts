@@ -55,8 +55,16 @@ export interface TvReadProgramDTO {
   editorialCategory: string;
   genre?: string;
   subgenre?: string;
+  sportFacet?: 'Fútbol' | 'Baloncesto' | 'F1' | 'Tenis' | 'MotoGP' | 'Más';
   tmdbId?: number;
   description?: string;
+  titleResolutionState?:
+    | 'specific_source_title'
+    | 'specific_from_registry'
+    | 'specific_from_manual_override'
+    | 'generic_unresolved'
+    | 'generic_suppressed';
+  isResolvedTitle?: boolean;
 }
 
 export interface TvReadAiringDTO {
@@ -96,6 +104,14 @@ export interface TvReadItemDTO {
     score: number;
     reason: string;
   };
+  trustDecision?: {
+    confidence: 'high' | 'medium' | 'low';
+    sourceAgreement: 'merged' | 'primary_only' | 'secondary_only' | 'single_source';
+    featuredSuppressed: boolean;
+    consumerSuppressed?: boolean;
+    suppressionReason?: string;
+    reasons: string[];
+  };
 }
 
 export interface TvReadChannelSummaryDTO {
@@ -120,6 +136,7 @@ export interface TvReadResponseDTO {
   filters: {
     group?: string;
     category?: string;
+    sport?: string;
     channelId?: string;
     q?: string;
   };
@@ -157,6 +174,7 @@ export interface TvGuideSurfaceDTO {
   filters: {
     group?: string;
     category?: string;
+    sport?: string;
   };
   nowItems: TvReadItemDTO[];
   nextItems: TvReadItemDTO[];
@@ -165,6 +183,14 @@ export interface TvGuideSurfaceDTO {
   meta: {
     totalChannels: number;
     totalItems: number;
+    group?: string;
+    category?: string;
+    sport?: string;
+    primeTimeWindowStart: string;
+    primeTimeWindowEnd: string;
+    groupOrder: string[];
+    availableSports?: Array<'Fútbol' | 'Baloncesto' | 'F1' | 'Tenis' | 'MotoGP' | 'Más'>;
+    groupCounts: Record<string, number>;
     generatedAt: string;
     cached?: boolean;
   };

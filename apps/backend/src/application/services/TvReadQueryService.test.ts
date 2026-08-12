@@ -7,6 +7,7 @@ import {
   isFeaturedTvReadItem,
   normalizeTvReadView,
   resolveTvReadLimit,
+  selectPrimeTimeTvItems,
 } from './TvReadQueryService';
 import { TvReadItemDTO } from '../dto/TvReadDTO';
 
@@ -17,7 +18,8 @@ test('normalizeTvReadView falls back to day for invalid input', () => {
 
 test('resolveTvReadLimit preserves large day reads required by guide surfaces', () => {
   assert.equal(resolveTvReadLimit('day', 5000), 5000);
-  assert.equal(resolveTvReadLimit('day', 99999), 5000);
+  assert.equal(resolveTvReadLimit('day', 20000), 20000);
+  assert.equal(resolveTvReadLimit('day', 99999), 20000);
 });
 
 test('resolveTvReadLimit keeps hot paths bounded', () => {
@@ -186,9 +188,158 @@ test('query now collapses overlapping live rows into one featured item per chann
       baseItem('Vida bajo cero', '2026-03-26T10:00:00.000Z', 12),
       baseItem('Mountain Men', '2026-03-26T09:30:00.000Z', 18, true),
     ],
-    new Date('2026-03-26T11:00:00.000Z')
+    new Date('2026-03-26T11:00:00.000Z'),
+    '20260326'
   );
 
   assert.equal(transformed.length, 1);
   assert.equal(transformed[0]?.program.title, 'Mountain Men');
+});
+
+test('selectPrimeTimeTvItems keeps one prime-time featured item per channel', () => {
+  const buildItem = (id: string, channelId: string, title: string, start: string, end: string, options: {
+    poster?: boolean;
+    tmdbId?: number;
+    score?: number;
+  } = {}): TvReadItemDTO => ({
+    id,
+    channel: {
+      id: channelId,
+      name: channelId.toUpperCase(),
+      normalizedName: channelId,
+      aliases: [channelId],
+      sourceIds: [channelId],
+      type: 'TDT',
+      group: 'tdt',
+      subgroups: ['tdt'],
+      sortOrder: channelId === 'la_1' ? 0 : 1,
+    },
+    program: {
+      brandKey: title.toLowerCase(),
+      title,
+      normalizedTitle: title.toLowerCase(),
+      titleAliases: [title.toLowerCase()],
+      editorialCategory: 'Otros',
+      tmdbId: options.tmdbId,
+    },
+    airing: {
+      id,
+      date: '20260326',
+      start,
+      end,
+      durationMinutes: 60,
+      liveNow: false,
+      partOfDay: 'noche',
+      timeSlotKey: '22:00',
+    },
+    assets: options.poster
+      ? {
+          primary: {
+            kind: 'poster',
+            role: 'primary',
+            source: 'epg_program_image',
+            url: 'https://img/poster.jpg',
+          },
+          poster: {
+            kind: 'poster',
+            role: 'primary',
+            source: 'epg_program_image',
+            url: 'https://img/poster.jpg',
+          },
+          fallbackChain: [],
+        }
+      : { fallbackChain: [] },
+    availability: { live: true, catchup: false, streaming: false },
+    sourceProvenance: { schedule: ['primary'], metadata: [], assets: [] },
+    timingContext: { liveNow: false, window: 'tonight', start, end },
+    relevance: { score: options.score ?? 0, reason: 'test' },
+    trustDecision: {
+      confidence: 'high',
+      sourceAgreement: 'single_source',
+      featuredSuppressed: false,
+      reasons: [],
+    },
+  });
+
+  const items = [
+    buildItem('a', 'la_1', 'Telediario 2', '2026-03-26T20:55:00.000+01:00', '2026-03-26T21:40:00.000+01:00'),
+    buildItem('b', 'la_1', 'La revuelta', '2026-03-26T21:45:00.000+01:00', '2026-03-26T23:00:00.000+01:00', { poster: true, tmdbId: 1, score: 10 }),
+    buildItem('c', 'la_2', 'Cifras y letras', '2026-03-26T21:45:00.000+01:00', '2026-03-26T22:20:00.000+01:00', { score: 5 }),
+    buildItem('d', 'la_2', 'Todo a la vez en todas partes', '2026-03-26T22:15:00.000+01:00', '2026-03-27T00:35:00.000+01:00', { poster: true, tmdbId: 2, score: 20 }),
+  ];
+
+  const selected = selectPrimeTimeTvItems(items, '20260326');
+
+  assert.equal(selected.length, 2);
+  assert.deepEqual(
+    selected.map((item) => item.program.title),
+    ['La revuelta', 'Todo a la vez en todas partes']
+  );
+});
+
+test('selectPrimeTimeTvItems can require shows to start inside the prime-time window', () => {
+  const buildItem = (id: string, title: string, start: string, end: string): TvReadItemDTO => ({
+    id,
+    channel: {
+      id: 'la_sexta',
+      name: 'La Sexta',
+      normalizedName: 'la_sexta',
+      aliases: ['la_sexta'],
+      sourceIds: ['la_sexta'],
+      type: 'TDT',
+      group: 'tdt',
+      subgroups: ['tdt'],
+      sortOrder: 5,
+    },
+    program: {
+      brandKey: title.toLowerCase().replace(/\s+/g, '_'),
+      title,
+      normalizedTitle: title.toLowerCase(),
+      titleAliases: [title.toLowerCase()],
+      editorialCategory: 'Otros',
+    },
+    airing: {
+      id,
+      date: '20260326',
+      start,
+      end,
+      durationMinutes: 60,
+      liveNow: false,
+      partOfDay: 'noche',
+      timeSlotKey: '22:00',
+    },
+    assets: { fallbackChain: [] },
+    availability: { live: true, catchup: false, streaming: false },
+    sourceProvenance: { schedule: ['primary'], metadata: [], assets: [] },
+    timingContext: { liveNow: false, window: 'tonight', start, end },
+    relevance: { score: 0, reason: 'test' },
+    trustDecision: {
+      confidence: 'high',
+      sourceAgreement: 'single_source',
+      featuredSuppressed: false,
+      reasons: [],
+    },
+  });
+
+  const selected = selectPrimeTimeTvItems(
+    [
+      buildItem(
+        'a',
+        'El intermedio',
+        '2026-03-26T21:30:00.000+01:00',
+        '2026-03-26T23:00:00.000+01:00'
+      ),
+      buildItem(
+        'b',
+        'El Objetivo',
+        '2026-03-26T23:00:00.000+01:00',
+        '2026-03-27T01:00:00.000+01:00'
+      ),
+    ],
+    '20260326',
+    { requireStartInsideWindow: true }
+  );
+
+  assert.equal(selected.length, 1);
+  assert.equal(selected[0]?.program.title, 'El Objetivo');
 });

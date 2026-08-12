@@ -1,0 +1,226 @@
+<section class="sports-view">
+  <header class="sports-view__masthead">
+    <div class="sports-view__masthead-copy">
+      <p class="sports-view__eyebrow">Deportes</p>
+      <h2>
+        {{
+          guideState.sportsFilters().timeRange === 'live'
+            ? 'En directo ahora'
+            : guideState.sportsFilters().timeRange === 'tonight'
+              ? 'Esta noche'
+              : guideState.sportsFilters().timeRange === 'week'
+                ? 'Esta semana'
+                : 'Agenda deportiva en foco'
+        }}
+      </h2>
+      <p>La vertical entra por eventos y agenda real, no por estadísticas ni módulos introductorios.</p>
+    </div>
+
+    <div class="sports-view__summary" *ngIf="activeFilterSummary().length">
+      <span *ngFor="let item of activeFilterSummary(); trackBy: trackByText">{{ item }}</span>
+    </div>
+  </header>
+
+  <section class="sports-view__feature-grid" *ngIf="heroLead() as lead">
+    <app-unified-program-card
+      [item]="lead"
+      variant="sport"
+      (selected)="openItem(lead)"
+    ></app-unified-program-card>
+
+    <div class="sports-view__feature-stack" *ngIf="heroStack().length">
+      <app-unified-program-card
+        *ngFor="let item of heroStack(); trackBy: trackByItem"
+        [item]="item"
+        variant="compact"
+        (selected)="openItem(item)"
+      ></app-unified-program-card>
+    </div>
+  </section>
+
+  <section class="sports-view__stack" *ngIf="spotlightModules().length">
+    <article *ngFor="let module of spotlightModules()" class="sports-view__module">
+      <header class="sports-view__section-head">
+        <div>
+          <p class="sports-view__eyebrow">{{ module.eyebrow }}</p>
+          <h3>{{ module.title }}</h3>
+        </div>
+      </header>
+
+      <div class="sports-view__rail">
+        <app-unified-program-card
+          *ngFor="let item of module.items; trackBy: trackByItem"
+          [item]="item"
+          variant="compact"
+          (selected)="openItem(item)"
+        ></app-unified-program-card>
+      </div>
+    </article>
+  </section>
+
+  <section class="sports-view__channel-row" *ngIf="availableChannels().length">
+    <button
+      type="button"
+      class="sports-view__channel-chip"
+      [class.sports-view__channel-chip--active]="!guideState.sportsFilters().channel"
+      (click)="selectChannel('')"
+    >
+      Todos los canales
+    </button>
+    <button
+      *ngFor="let channel of availableChannels(); trackBy: trackByChannel"
+      type="button"
+      class="sports-view__channel-chip"
+      [class.sports-view__channel-chip--active]="guideState.sportsFilters().channel === channel.id"
+      (click)="selectChannel(channel.id)"
+    >
+      {{ channel.name }}
+    </button>
+  </section>
+
+  <section *ngIf="footballHighlights().length" class="sports-view__section">
+    <header class="sports-view__section-head">
+      <div>
+        <p class="sports-view__eyebrow">Fútbol primero</p>
+        <h3>La disciplina prioritaria entra sin romper el resto de la vertical</h3>
+      </div>
+    </header>
+
+    <div class="sports-view__list">
+      <app-unified-program-card
+        *ngFor="let item of footballHighlights(); trackBy: trackByItem"
+        [item]="item"
+        variant="epg-row"
+        (selected)="openItem(item)"
+      ></app-unified-program-card>
+    </div>
+  </section>
+
+  <section class="sports-view__section" *ngIf="highlightedAgenda().length">
+    <header class="sports-view__section-head">
+      <div>
+        <p class="sports-view__eyebrow">Agenda</p>
+        <h3>
+          {{
+            guideState.sportsFilters().timeRange === 'live'
+              ? 'En directo ahora'
+              : guideState.sportsFilters().timeRange === 'tonight'
+                ? 'Esta noche'
+                : guideState.sportsFilters().timeRange === 'week'
+                  ? 'Esta semana'
+                  : 'Próximamente'
+          }}
+        </h3>
+      </div>
+    </header>
+
+    <div class="sports-view__list">
+      <app-unified-program-card
+        *ngFor="let item of highlightedAgenda(); trackBy: trackByItem"
+        [item]="item"
+        variant="epg-row"
+        (selected)="openItem(item)"
+      ></app-unified-program-card>
+    </div>
+  </section>
+
+  <section *ngIf="groupedByCompetition().length" class="sports-view__section">
+    <header class="sports-view__section-head">
+      <div>
+        <p class="sports-view__eyebrow">Por competición</p>
+        <h3>Agrupación útil para decidir rápido</h3>
+      </div>
+    </header>
+
+    <div class="sports-view__groups">
+      <article *ngFor="let group of groupedByCompetition(); trackBy: trackByCompetition" class="sports-view__group">
+        <header>
+          <p>{{ group.competition }}</p>
+          <span>{{ group.items.length }} eventos</span>
+        </header>
+        <div class="sports-view__list">
+          <app-unified-program-card
+            *ngFor="let item of group.items; trackBy: trackByItem"
+            [item]="item"
+            variant="epg-row"
+            (selected)="openItem(item)"
+          ></app-unified-program-card>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section *ngIf="groupedBySport().length && guideState.sportsFilters().sport === 'all'" class="sports-view__section">
+    <header class="sports-view__section-head">
+      <div>
+        <p class="sports-view__eyebrow">Por deporte</p>
+        <h3>Basket, motor, tenis y más sin perder jerarquía</h3>
+      </div>
+    </header>
+
+    <div class="sports-view__groups">
+      <article *ngFor="let group of groupedBySport(); trackBy: trackBySport" class="sports-view__group">
+        <header>
+          <p>{{ group.sport }}</p>
+          <span>{{ group.items.length }} eventos</span>
+        </header>
+        <div class="sports-view__list">
+          <app-unified-program-card
+            *ngFor="let item of group.items; trackBy: trackByItem"
+            [item]="item"
+            variant="epg-row"
+            (selected)="openItem(item)"
+          ></app-unified-program-card>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section *ngIf="quickDirectories().length" class="sports-view__directories">
+    <article *ngFor="let section of quickDirectories()" class="sports-view__directory-card">
+      <header class="sports-view__section-head">
+        <div>
+          <p class="sports-view__eyebrow">{{ section.eyebrow }}</p>
+          <h3>{{ section.title }}</h3>
+        </div>
+      </header>
+
+      <div class="sports-view__directory-grid">
+        <button
+          *ngFor="let item of section.items"
+          type="button"
+          class="sports-view__directory-chip"
+          [class.sports-view__directory-chip--active]="item.active"
+          (click)="applyQuickDirectory(section.kind, item.id)"
+        >
+          <strong>{{ item.label }}</strong>
+          <small>{{ item.meta }}</small>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <app-unified-filter-dock
+    [open]="shellUi.isFilterDockOpen()"
+    title="Filtros de Deportes"
+    [activeCount]="activeFilterSummary().length"
+    [sections]="filterDockSections()"
+    (close)="closeDock()"
+    (clear)="clearFilters()"
+    (select)="handleDockSelect($event)"
+  ></app-unified-filter-dock>
+
+  <app-bottom-sheet
+    [open]="!!selectedItem()"
+    [title]="selectedItem()?.program?.title || 'Detalle'"
+    (close)="closeSheet()"
+  >
+    <app-unified-program-card
+      *ngIf="selectedItem() as item"
+      [item]="item"
+      variant="compact"
+      [showActions]="false"
+      (selected)="openItem(item)"
+    ></app-unified-program-card>
+  </app-bottom-sheet>
+</section>

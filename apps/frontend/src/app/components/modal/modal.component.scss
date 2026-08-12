@@ -70,7 +70,7 @@
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--portal-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -129,9 +129,9 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--portal-surface-strong);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--portal-border);
   border-radius: 12px;
   color: white;
   font-size: 0.875rem;
@@ -168,8 +168,8 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.875rem 1.25rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--portal-surface-strong);
+  border: 1px solid var(--portal-border);
   border-radius: 12px;
   color: white;
   font-size: 0.875rem;
@@ -263,13 +263,13 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--portal-surface-strong);
+  border: 1px solid var(--portal-border);
   border-radius: 12px;
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--portal-surface-strong);
     border-color: rgba(220, 38, 38, 0.3);
     transform: translateY(-2px);
   }
@@ -316,7 +316,7 @@
   color: rgba(255, 255, 255, 0.85);
   margin: 0;
   padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--portal-surface-strong);
   border-left: 3px solid #dc2626;
   border-radius: 8px;
 }
@@ -371,12 +371,12 @@
   }
 
   &--secondary {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--portal-surface-strong);
+    border: 1px solid var(--portal-border);
     color: white;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: var(--portal-surface-strong);
       border-color: rgba(220, 38, 38, 0.5);
       transform: translateY(-2px);
     }
@@ -438,7 +438,7 @@
 }
 
 .modal-body::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--portal-surface-strong);
   border-radius: 4px;
 }
 

@@ -13,6 +13,14 @@ import {
 import { ApiCacheService } from './cache.service';
 
 const DEFAULT_TTL = 30_000;
+export type UnifiedTvApiView =
+  | 'now'
+  | 'next'
+  | 'night'
+  | 'day'
+  | 'search'
+  | 'tonight'
+  | 'all';
 
 @Injectable({ providedIn: 'root' })
 export class TvApiService {
@@ -26,20 +34,23 @@ export class TvApiService {
   }
 
   getTvRead(query: {
-    view: 'now' | 'next' | 'night' | 'day' | 'search';
+    view: UnifiedTvApiView;
     date?: DateAlias;
     group?: string;
     category?: string;
+    sport?: string;
     channelId?: string;
     q?: string;
     limit?: number;
     cursor?: string;
   }): Observable<ApiResponse<TvReadResponseDTO>> {
+    const normalizedView = normalizeUnifiedTvView(query.view);
     const params: Record<string, any> = {
-      view: query.view,
+      view: normalizedView,
       date: query.date ?? 'today',
       group: query.group,
       category: query.category,
+      sport: query.sport,
       channelId: query.channelId,
       q: query.q,
       limit: query.limit,
@@ -49,7 +60,7 @@ export class TvApiService {
       `/tv/read:${JSON.stringify(params)}`,
       '/tv/read',
       params,
-      this.resolveReadTtl(query.view)
+      this.resolveReadTtl(normalizedView)
     );
   }
 
@@ -72,17 +83,18 @@ export class TvApiService {
   getTvReadChannelDetail(
     channelId: string,
     date: DateAlias = 'today',
-    view: 'now' | 'next' | 'night' | 'day' = 'day'
+    view: UnifiedTvApiView = 'day'
   ): Observable<ApiResponse<TvReadResponseDTO>> {
+    const normalizedView = normalizeUnifiedTvView(view);
     const params: Record<string, any> = {
       date,
-      view,
+      view: normalizedView,
     };
     return this.cachedGet<ApiResponse<TvReadResponseDTO>>(
       `/tv/read/channels/${channelId}:${JSON.stringify(params)}`,
       `/tv/read/channels/${channelId}`,
       params,
-      view === 'now' ? 60_000 : 15 * 60_000
+      normalizedView === 'now' ? 60_000 : 15 * 60_000
     );
   }
 
@@ -99,6 +111,7 @@ export class TvApiService {
     date?: DateAlias;
     group?: string;
     category?: string;
+    sport?: string;
   }): Observable<ApiResponse<TvGuideSurfaceDTO>> {
     return this.cachedGet<ApiResponse<TvGuideSurfaceDTO>>(
       `/tv/surface/guide:${JSON.stringify(params)}`,
@@ -168,4 +181,14 @@ export class TvApiService {
     if (view === 'search') return 30_000;
     return 15 * 60_000;
   }
+}
+
+export function normalizeUnifiedTvView(view: UnifiedTvApiView): 'now' | 'next' | 'night' | 'day' | 'search' {
+  if (view === 'tonight') {
+    return 'night';
+  }
+  if (view === 'all') {
+    return 'day';
+  }
+  return view;
 }

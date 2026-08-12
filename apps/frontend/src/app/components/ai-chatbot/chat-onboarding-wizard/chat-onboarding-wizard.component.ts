@@ -28,11 +28,11 @@ interface SelectableChip {
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mx-4 mt-3 mb-2 overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/80 backdrop-blur-sm">
+    <div class="mx-4 mt-3 mb-2 overflow-hidden rounded-2xl border border-[var(--portal-border)]/60 bg-[var(--portal-bg)] backdrop-blur-sm">
       <!-- Header -->
-      <div class="border-b border-slate-800/60 px-4 py-3">
-        <h3 class="text-sm font-semibold text-white">Personaliza tu asistente</h3>
-        <p class="mt-0.5 text-xs text-slate-400">Paso {{ currentStep + 1 }} de {{ steps.length }}</p>
+      <div class="border-b border-[var(--portal-border)]/60 px-4 py-3">
+        <h3 class="text-sm font-semibold text-[var(--portal-text)]">Personaliza tu asistente</h3>
+        <p class="mt-0.5 text-xs text-[var(--portal-text-muted)]">Paso {{ currentStep + 1 }} de {{ steps.length }}</p>
       </div>
 
       <!-- Step dots -->
@@ -43,7 +43,7 @@ interface SelectableChip {
           [ngClass]="{
             'w-6 bg-red-500': i === currentStep,
             'w-4 bg-red-500/40': i < currentStep,
-            'w-4 bg-slate-700': i > currentStep
+            'w-4 bg-[var(--portal-border)]': i > currentStep
           }"
         ></div>
       </div>
@@ -52,7 +52,7 @@ interface SelectableChip {
       <div class="px-4 pb-4 pt-3">
         <!-- Step 0: Platforms -->
         <ng-container *ngIf="currentStep === 0">
-          <p class="mb-3 text-xs font-medium text-slate-300">¿Qué plataformas usas?</p>
+          <p class="mb-3 text-xs font-medium text-[var(--portal-text)]">¿Qué plataformas usas?</p>
           <div class="flex flex-wrap gap-2">
             <button
               *ngFor="let p of platformChips"
@@ -64,7 +64,7 @@ interface SelectableChip {
                 : {}"
               [ngClass]="isSelected(selectedPlatforms, p.id)
                 ? ''
-                : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'"
+                : 'border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ p.label }}
             </button>
@@ -73,7 +73,7 @@ interface SelectableChip {
 
         <!-- Step 1: Genres -->
         <ng-container *ngIf="currentStep === 1">
-          <p class="mb-3 text-xs font-medium text-slate-300">¿Qué géneros te interesan?</p>
+          <p class="mb-3 text-xs font-medium text-[var(--portal-text)]">¿Qué géneros te interesan?</p>
           <div class="flex flex-wrap gap-2">
             <button
               *ngFor="let g of genreChips"
@@ -82,7 +82,7 @@ interface SelectableChip {
               class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
               [ngClass]="isSelected(selectedGenres, g.id)
                 ? 'border-red-500/60 bg-red-600/20 text-red-300'
-                : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'"
+                : 'border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ g.label }}
             </button>
@@ -91,7 +91,7 @@ interface SelectableChip {
 
         <!-- Step 2: Context & Duration -->
         <ng-container *ngIf="currentStep === 2">
-          <p class="mb-3 text-xs font-medium text-slate-300">¿Cómo sueles ver la tele?</p>
+          <p class="mb-3 text-xs font-medium text-[var(--portal-text)]">¿Cómo sueles ver la tele?</p>
           <div class="flex flex-wrap gap-2">
             <button
               *ngFor="let c of contextChips"
@@ -100,12 +100,12 @@ interface SelectableChip {
               class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
               [ngClass]="isSelected(selectedContexts, c.id)
                 ? 'border-red-500/60 bg-red-600/20 text-red-300'
-                : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'"
+                : 'border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ c.label }}
             </button>
           </div>
-          <p class="mb-2 mt-4 text-xs font-medium text-slate-300">¿Prefieres algo corto o largo?</p>
+          <p class="mb-2 mt-4 text-xs font-medium text-[var(--portal-text)]">¿Prefieres algo corto o largo?</p>
           <div class="flex flex-wrap gap-2">
             <button
               *ngFor="let d of durationChips"
@@ -114,7 +114,7 @@ interface SelectableChip {
               class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
               [ngClass]="isSelected(selectedDurations, d.id)
                 ? 'border-red-500/60 bg-red-600/20 text-red-300'
-                : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'"
+                : 'border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ d.label }}
             </button>
@@ -123,7 +123,7 @@ interface SelectableChip {
 
         <!-- Step 3: Community -->
         <ng-container *ngIf="currentStep === 3">
-          <p class="mb-3 text-xs font-medium text-slate-300">¿Quieres incluir canales autonómicos?</p>
+          <p class="mb-3 text-xs font-medium text-[var(--portal-text)]">¿Quieres incluir canales autonómicos?</p>
           <div class="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
             <button
               *ngFor="let c of communityChips"
@@ -132,7 +132,7 @@ interface SelectableChip {
               class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
               [ngClass]="selectedCommunity === c.id
                 ? 'border-sky-500/60 bg-sky-600/20 text-sky-300'
-                : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-slate-600 hover:text-slate-300'"
+                : 'border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ c.label }}
             </button>
@@ -140,7 +140,7 @@ interface SelectableChip {
           <button
             type="button"
             (click)="skipCommunity()"
-            class="mt-2 text-xs text-slate-500 transition-colors hover:text-slate-300"
+            class="mt-2 text-xs text-[var(--portal-text-muted)] transition-colors hover:text-[var(--portal-text)]"
           >
             No tengo preferencia
           </button>
@@ -148,12 +148,12 @@ interface SelectableChip {
       </div>
 
       <!-- Navigation -->
-      <div class="flex items-center justify-between border-t border-slate-800/60 px-4 py-3">
+      <div class="flex items-center justify-between border-t border-[var(--portal-border)]/60 px-4 py-3">
         <button
           *ngIf="currentStep > 0; else skipButton"
           type="button"
           (click)="prevStep()"
-          class="text-xs font-medium text-slate-400 transition-colors hover:text-white"
+          class="text-xs font-medium text-[var(--portal-text-muted)] transition-colors hover:text-[var(--portal-text)]"
         >
           ← Atrás
         </button>
@@ -161,7 +161,7 @@ interface SelectableChip {
           <button
             type="button"
             (click)="skipAll()"
-            class="text-xs text-slate-500 transition-colors hover:text-slate-300"
+            class="text-xs text-[var(--portal-text-muted)] transition-colors hover:text-[var(--portal-text)]"
           >
             Saltar
           </button>
@@ -170,7 +170,7 @@ interface SelectableChip {
         <button
           type="button"
           (click)="nextStep()"
-          class="rounded-full bg-red-600 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-500 disabled:opacity-40"
+          class="rounded-full bg-red-600 px-4 py-1.5 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:bg-red-500 disabled:opacity-40"
           [disabled]="!canAdvance"
         >
           {{ isLastStep ? 'Empezar' : 'Siguiente →' }}

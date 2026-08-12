@@ -1,46 +1,207 @@
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import {
-  isFeaturedTvReadItem,
+  PRIME_TIME_WINDOW,
+  selectCurrentTvItems,
+  selectNextTvItems,
+  selectPrimeTimeTvItems,
   TvReadQueryService,
 } from './TvReadQueryService';
+import {
+  GUIDE_GROUP_ORDER,
+  TvSportFacet,
+  getGuideGroupSortOrder,
+  normalizeSportFacet,
+  normalizeTvToken,
+} from '@/shared/utils/tvMetadata';
 import { TvReadChannelSummaryDTO, TvReadItemDTO } from '../dto/TvReadDTO';
 
 function sortTvItems(left: TvReadItemDTO, right: TvReadItemDTO): number {
   return (
+    getGuideGroupSortOrder(left.channel.group) - getGuideGroupSortOrder(right.channel.group) ||
     left.channel.sortOrder - right.channel.sortOrder ||
+    String(left.channel.name || '').localeCompare(String(right.channel.name || ''), 'es', {
+      sensitivity: 'base',
+    }) ||
     new Date(left.airing.start).getTime() - new Date(right.airing.start).getTime()
   );
 }
 
-function hasVisualAsset(item: TvReadItemDTO): boolean {
-  return Boolean(item.assets?.poster?.url || item.assets?.backdrop?.url);
+type GuideGroupKey =
+  | 'all'
+  | 'tdt'
+  | 'cable'
+  | 'movistar'
+  | 'online'
+  | 'deporte'
+  | 'autonomico';
+
+type GuideSportKey =
+  | 'all'
+  | 'futbol'
+  | 'baloncesto'
+  | 'f1'
+  | 'tenis'
+  | 'motogp'
+  | 'mas';
+
+function normalizeGuideGroup(group?: string): GuideGroupKey | undefined {
+  const normalized = normalizeTvToken(group, ' ');
+  if (!normalized || normalized === 'all' || normalized === 'todos') {
+    return undefined;
+  }
+
+  if (
+    normalized === 'tdt' ||
+    normalized === 'cable' ||
+    normalized === 'movistar' ||
+    normalized === 'online' ||
+    normalized === 'deporte' ||
+    normalized === 'autonomico'
+  ) {
+    return normalized;
+  }
+
+  return undefined;
 }
 
-function pickPreferredCurrentItem(
-  current: TvReadItemDTO | undefined,
-  candidate: TvReadItemDTO
-): TvReadItemDTO {
-  if (!current) {
-    return candidate;
+function normalizeGuideCategory(category?: string): string | undefined {
+  const normalized = String(category || '').trim();
+  if (!normalized || normalizeTvToken(normalized, ' ') === 'all') {
+    return undefined;
+  }
+  return normalized;
+}
+
+function shouldHideFromMixedGuide(group?: string): boolean {
+  return normalizeTvToken(group, ' ') === 'autonomico';
+}
+
+function deriveGroupCountsFromItems(items: TvReadItemDTO[]): Record<string, number> {
+  const seen = new Set<string>();
+  const counts: Record<string, number> = {};
+
+  items.forEach((item) => {
+    const group = normalizeTvToken(item.channel.group, ' ');
+    const channelId = String(item.channel.id || '').trim();
+    if (!group || !channelId) {
+      return;
+    }
+
+    const key = `${group}:${channelId}`;
+    if (seen.has(key)) {
+      return;
+    }
+
+    seen.add(key);
+    counts[group] = (counts[group] || 0) + 1;
+  });
+
+  return counts;
+}
+
+function getAvailableSports(items: TvReadItemDTO[]): TvSportFacet[] {
+  const available = new Set<TvSportFacet>();
+  items.forEach((item) => {
+    if (item.program.sportFacet) {
+      available.add(item.program.sportFacet);
+    }
+  });
+
+  return Array.from(available).sort((left, right) => left.localeCompare(right, 'es'));
+}
+
+function applyGuideFilters(
+  items: TvReadItemDTO[],
+  params: {
+    category?: string;
+    sport?: GuideSportKey;
+    group?: GuideGroupKey;
+  }
+): TvReadItemDTO[] {
+  const category = normalizeGuideCategory(params.category);
+  const sport = normalizeSportFacet(params.sport);
+
+  return items.filter((item) => {
+    if (params.group !== 'deporte' && sport && sport !== 'all') {
+      return false;
+    }
+
+    if (category && item.program.editorialCategory !== category) {
+      return false;
+    }
+
+    if (params.group === 'deporte' && sport && sport !== 'all') {
+      return normalizeSportFacet(item.program.sportFacet) === sport;
+    }
+
+    return true;
+  });
+}
+
+function filterGuideChannels(
+  channels: TvReadChannelSummaryDTO[],
+  group?: GuideGroupKey
+): TvReadChannelSummaryDTO[] {
+  return channels.filter((summary) => {
+    if (!group) {
+      return !shouldHideFromMixedGuide(summary.channel.group);
+    }
+    return normalizeTvToken(summary.channel.group, ' ') === group;
+  });
+}
+
+function filterGuideItemsByGroup(
+  items: TvReadItemDTO[],
+  group?: GuideGroupKey
+): TvReadItemDTO[] {
+  return items.filter((item) => {
+    if (!group) {
+      return !shouldHideFromMixedGuide(item.channel.group);
+    }
+    return normalizeTvToken(item.channel.group, ' ') === group;
+  });
+}
+
+function sortChannels(
+  channels: TvReadChannelSummaryDTO[]
+): TvReadChannelSummaryDTO[] {
+  return [...channels].sort(
+    (left, right) =>
+      getGuideGroupSortOrder(left.channel.group) - getGuideGroupSortOrder(right.channel.group) ||
+      left.channel.sortOrder - right.channel.sortOrder ||
+      String(left.channel.name || '').localeCompare(String(right.channel.name || ''), 'es', {
+        sensitivity: 'base',
+      })
+  );
+}
+
+function buildPrimeTimeItems(items: TvReadItemDTO[], dateKey: string): TvReadItemDTO[] {
+  return selectPrimeTimeTvItems(items, dateKey, {
+    uniquePerChannel: true,
+    requireStartInsideWindow: true,
+  }).sort(sortTvItems);
+}
+
+function buildChannelPrimeTimeItems(items: TvReadItemDTO[], dateKey: string): TvReadItemDTO[] {
+  return selectPrimeTimeTvItems(items, dateKey, {
+    uniquePerChannel: false,
+    requireStartInsideWindow: true,
+  }).sort(sortTvItems);
+}
+
+function normalizeGuideSport(
+  sport?: string
+): GuideSportKey | undefined {
+  const normalized = normalizeSportFacet(sport);
+  return normalized || undefined;
+}
+
+function resolveCacheTtl(group?: GuideGroupKey): number {
+  if (group === 'deporte') {
+    return 60;
   }
 
-  if (hasVisualAsset(current) !== hasVisualAsset(candidate)) {
-    return hasVisualAsset(candidate) ? candidate : current;
-  }
-
-  if (Boolean(current.program.tmdbId) !== Boolean(candidate.program.tmdbId)) {
-    return candidate.program.tmdbId ? candidate : current;
-  }
-
-  const currentScore = Number(current.relevance?.score || 0);
-  const candidateScore = Number(candidate.relevance?.score || 0);
-  if (currentScore !== candidateScore) {
-    return candidateScore > currentScore ? candidate : current;
-  }
-
-  const currentStart = new Date(current.airing.start).getTime();
-  const candidateStart = new Date(candidate.airing.start).getTime();
-  return candidateStart < currentStart ? candidate : current;
+  return 60;
 }
 
 export interface TvGuideSurfaceDTO {
@@ -48,6 +209,7 @@ export interface TvGuideSurfaceDTO {
   filters: {
     group?: string;
     category?: string;
+    sport?: string;
   };
   nowItems: TvReadItemDTO[];
   nextItems: TvReadItemDTO[];
@@ -56,6 +218,14 @@ export interface TvGuideSurfaceDTO {
   meta: {
     totalChannels: number;
     totalItems: number;
+    group?: string;
+    category?: string;
+    sport?: string;
+    primeTimeWindowStart: string;
+    primeTimeWindowEnd: string;
+    groupOrder: string[];
+    availableSports?: TvSportFacet[];
+    groupCounts: Record<string, number>;
     generatedAt: string;
     cached?: boolean;
   };
@@ -86,8 +256,12 @@ export class TvSurfaceService {
     date?: string;
     group?: string;
     category?: string;
+    sport?: string;
   }): Promise<TvGuideSurfaceDTO> {
-    const cacheKey = `tv:surface:guide:${params.date || 'today'}:${params.group || 'all'}:${params.category || 'all'}`;
+    const group = normalizeGuideGroup(params.group);
+    const category = normalizeGuideCategory(params.category);
+    const sport = normalizeGuideSport(params.sport);
+    const cacheKey = `tv:surface:guide:${params.date || 'today'}:${group || 'all'}:${category || 'all'}:${sport || 'all'}`;
     const cached = await this.cacheRepository.get<TvGuideSurfaceDTO>(cacheKey);
     if (cached) {
       return {
@@ -99,34 +273,56 @@ export class TvSurfaceService {
     const day = await this.tvReadQueryService.query({
       view: 'day',
       date: params.date,
-      group: params.group,
-      category: params.category,
-      limit: 5000,
+      group,
+      limit: 20000,
+    });
+    const allDay = await this.tvReadQueryService.query({
+      view: 'day',
+      date: params.date || day.date,
+      limit: 20000,
     });
 
-    const nowItems = this.buildCurrentItems(day.items);
-    const nextItems = this.buildNextItems(day.items);
-    const nightItems = day.items
-      .filter((item) => item.airing.partOfDay === 'noche' && isFeaturedTvReadItem(item))
-      .slice(0, 120);
+    const channelSource = group ? day.channels : allDay.channels;
+    const visibleChannels = sortChannels(filterGuideChannels(channelSource, group));
+    const groupScopedItems = filterGuideItemsByGroup(day.items, group);
+    const preFilteredSports = group === 'deporte'
+      ? getAvailableSports(groupScopedItems)
+      : undefined;
+    const filteredItems = applyGuideFilters(groupScopedItems, {
+      category,
+      sport,
+      group,
+    });
+    const nowItems = selectCurrentTvItems(filteredItems);
+    const nextItems = selectNextTvItems(filteredItems, new Date());
+    const nightItems = buildPrimeTimeItems(filteredItems, day.date);
     const surface: TvGuideSurfaceDTO = {
       date: day.date,
       filters: {
-        group: params.group,
-        category: params.category,
+        group,
+        category,
+        sport: group === 'deporte' ? sport : undefined,
       },
       nowItems,
       nextItems,
       nightItems,
-      channels: day.channels,
+      channels: visibleChannels,
       meta: {
-        totalChannels: day.channels.length,
-        totalItems: day.items.length,
+        totalChannels: visibleChannels.length,
+        totalItems: filteredItems.length,
+        group,
+        category,
+        sport: group === 'deporte' ? sport : undefined,
+        primeTimeWindowStart: PRIME_TIME_WINDOW.startLabel,
+        primeTimeWindowEnd: PRIME_TIME_WINDOW.endLabel,
+        groupOrder: GUIDE_GROUP_ORDER,
+        availableSports: group === 'deporte' ? preFilteredSports : undefined,
+        groupCounts: deriveGroupCountsFromItems(allDay.items),
         generatedAt: new Date().toISOString(),
       },
     };
 
-    await this.cacheRepository.set(cacheKey, surface, 60);
+    await this.cacheRepository.set(cacheKey, surface, resolveCacheTtl(group));
     return surface;
   }
 
@@ -146,11 +342,9 @@ export class TvSurfaceService {
     const relatedSource = channel
       ? await this.tvReadQueryService.getChannels(date || 'today', channel.group)
       : { channels: [] };
-    const current = this.buildCurrentItems(response.items)[0];
-    const next = this.buildNextItems(response.items)[0];
-    const tonightItems = response.items
-      .filter((item) => item.airing.partOfDay === 'noche' && isFeaturedTvReadItem(item))
-      .slice(0, 12);
+    const current = selectCurrentTvItems(response.items)[0];
+    const next = selectNextTvItems(response.items, new Date())[0];
+    const tonightItems = buildChannelPrimeTimeItems(response.items, response.date);
     const relatedChannels = (relatedSource.channels || [])
       .filter((entry) => entry.channel.id !== channelId)
       .slice(0, 8);
@@ -173,47 +367,10 @@ export class TvSurfaceService {
     return surface;
   }
 
-  private buildNextItems(items: TvReadItemDTO[]): TvReadItemDTO[] {
-    const now = Date.now();
-    const nextByChannel = new Map<string, TvReadItemDTO>();
-
-    items.forEach((item) => {
-      if (!isFeaturedTvReadItem(item)) {
-        return;
-      }
-      const start = new Date(item.airing.start).getTime();
-      if (start <= now) return;
-
-      const current = nextByChannel.get(item.channel.id);
-      if (!current || start < new Date(current.airing.start).getTime()) {
-        nextByChannel.set(item.channel.id, item);
-      }
-    });
-
-    return Array.from(nextByChannel.values()).sort(sortTvItems);
-  }
-
-  private buildCurrentItems(items: TvReadItemDTO[]): TvReadItemDTO[] {
-    const currentByChannel = new Map<string, TvReadItemDTO>();
-
-    items.forEach((item) => {
-      if (!item.airing.liveNow || !isFeaturedTvReadItem(item)) {
-        return;
-      }
-
-      const current = currentByChannel.get(item.channel.id);
-      currentByChannel.set(item.channel.id, pickPreferredCurrentItem(current, item));
-    });
-
-    return Array.from(currentByChannel.values()).sort(sortTvItems);
-  }
-
   private hydrateChannelSurface(surface: TvChannelSurfaceDTO): TvChannelSurfaceDTO {
-    const current = this.buildCurrentItems(surface.scheduleItems)[0];
-    const next = this.buildNextItems(surface.scheduleItems)[0];
-    const tonightItems = surface.scheduleItems
-      .filter((item) => item.airing.partOfDay === 'noche' && isFeaturedTvReadItem(item))
-      .slice(0, 12);
+    const current = selectCurrentTvItems(surface.scheduleItems)[0];
+    const next = selectNextTvItems(surface.scheduleItems, new Date())[0];
+    const tonightItems = buildChannelPrimeTimeItems(surface.scheduleItems, surface.date);
 
     return {
       ...surface,

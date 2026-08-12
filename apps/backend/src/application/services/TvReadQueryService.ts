@@ -4,7 +4,9 @@ import { DateUtils } from '@/shared/utils/dateUtils';
 import { l1Cache } from '@/infrastructure/cache/L1Cache';
 import {
   buildSearchTokens,
+  getGuideGroupSortOrder,
   inferTimeWindow,
+  normalizeSportFacet,
   normalizeTvToken,
 } from '@/shared/utils/tvMetadata';
 import {
@@ -21,6 +23,7 @@ export interface TvReadQueryParams {
   date?: string;
   group?: string;
   category?: string;
+  sport?: string;
   channelId?: string;
   q?: string;
   limit?: number;
@@ -31,9 +34,16 @@ const TV_READ_LIMITS: Record<TvReadView, { default: number; max: number }> = {
   now: { default: 120, max: 500 },
   next: { default: 120, max: 500 },
   night: { default: 240, max: 1500 },
-  day: { default: 5000, max: 5000 },
+  day: { default: 5000, max: 20000 },
   search: { default: 60, max: 200 },
 };
+
+export const PRIME_TIME_WINDOW = {
+  startMinutes: 21 * 60 + 45,
+  endMinutes: 24 * 60 + 30,
+  startLabel: '21:45',
+  endLabel: '00:30',
+} as const;
 
 export function normalizeTvReadView(input: unknown): TvReadView {
   const value = String(input || '').trim().toLowerCase();
@@ -100,7 +110,11 @@ export function isConsumerVisibleTvReadItem(item: TvReadItemDTO): boolean {
 
 function sortTvItems(left: TvReadItemDTO, right: TvReadItemDTO): number {
   return (
+    getGuideGroupSortOrder(left.channel.group) - getGuideGroupSortOrder(right.channel.group) ||
     left.channel.sortOrder - right.channel.sortOrder ||
+    String(left.channel.name || '').localeCompare(String(right.channel.name || ''), 'es', {
+      sensitivity: 'base',
+    }) ||
     new Date(left.airing.start).getTime() - new Date(right.airing.start).getTime()
   );
 }
@@ -140,15 +154,174 @@ function pickPreferredChannelItem(
   return current;
 }
 
+function airingsOverlap(left: TvReadItemDTO, right: TvReadItemDTO): boolean {
+  const leftStart = new Date(left.airing.start).getTime();
+  const leftEnd = new Date(left.airing.end).getTime();
+  const rightStart = new Date(right.airing.start).getTime();
+  const rightEnd = new Date(right.airing.end).getTime();
+  return leftStart < rightEnd && rightStart < leftEnd;
+}
+
+function buildPrimeTimeRange(dateKey: string): { start: Date; end: Date } {
+  const safe = String(dateKey || '').trim();
+  const year = Number(safe.slice(0, 4));
+  const month = Number(safe.slice(4, 6));
+  const day = Number(safe.slice(6, 8));
+  const start = new Date(year, month - 1, day, 21, 45, 0, 0);
+  const end = new Date(year, month - 1, day + 1, 0, 30, 0, 0);
+  return { start, end };
+}
+
+function overlapsPrimeTimeWindow(item: TvReadItemDTO, dateKey: string): boolean {
+  const window = buildPrimeTimeRange(dateKey);
+  const start = new Date(item.airing.start).getTime();
+  const end = new Date(item.airing.end).getTime();
+  return start < window.end.getTime() && end > window.start.getTime();
+}
+
+function startsInsidePrimeTimeWindow(item: TvReadItemDTO, dateKey: string): boolean {
+  const window = buildPrimeTimeRange(dateKey);
+  const start = new Date(item.airing.start).getTime();
+  return start >= window.start.getTime() && start < window.end.getTime();
+}
+
+function getPrimeTimeOverlapMinutes(item: TvReadItemDTO, dateKey: string): number {
+  const window = buildPrimeTimeRange(dateKey);
+  const start = Math.max(new Date(item.airing.start).getTime(), window.start.getTime());
+  const end = Math.min(new Date(item.airing.end).getTime(), window.end.getTime());
+  return Math.max(0, Math.round((end - start) / 60000));
+}
+
+function pickPreferredPrimeTimeItem(
+  current: TvReadItemDTO | undefined,
+  candidate: TvReadItemDTO,
+  dateKey: string
+): TvReadItemDTO {
+  if (!current) {
+    return candidate;
+  }
+
+  if (
+    startsInsidePrimeTimeWindow(current, dateKey) !==
+    startsInsidePrimeTimeWindow(candidate, dateKey)
+  ) {
+    return startsInsidePrimeTimeWindow(candidate, dateKey) ? candidate : current;
+  }
+
+  if (hasVisualAsset(current) !== hasVisualAsset(candidate)) {
+    return hasVisualAsset(candidate) ? candidate : current;
+  }
+
+  if (Boolean(current.program.tmdbId) !== Boolean(candidate.program.tmdbId)) {
+    return candidate.program.tmdbId ? candidate : current;
+  }
+
+  const currentScore = Number(current.relevance?.score || 0);
+  const candidateScore = Number(candidate.relevance?.score || 0);
+  if (currentScore !== candidateScore) {
+    return candidateScore > currentScore ? candidate : current;
+  }
+
+  const currentOverlap = getPrimeTimeOverlapMinutes(current, dateKey);
+  const candidateOverlap = getPrimeTimeOverlapMinutes(candidate, dateKey);
+  if (currentOverlap !== candidateOverlap) {
+    return candidateOverlap > currentOverlap ? candidate : current;
+  }
+
+  const currentStart = new Date(current.airing.start).getTime();
+  const candidateStart = new Date(candidate.airing.start).getTime();
+  return candidateStart < currentStart ? candidate : current;
+}
+
+export function selectCurrentTvItems(items: TvReadItemDTO[]): TvReadItemDTO[] {
+  const liveByChannel = new Map<string, TvReadItemDTO>();
+  items.forEach((item) => {
+    if (!item.airing.liveNow || !isFeaturedTvReadItem(item)) {
+      return;
+    }
+    const current = liveByChannel.get(item.channel.id);
+    liveByChannel.set(item.channel.id, pickPreferredChannelItem(current, item));
+  });
+
+  return Array.from(liveByChannel.values()).sort(sortTvItems);
+}
+
+export function selectNextTvItems(
+  items: TvReadItemDTO[],
+  reference: Date
+): TvReadItemDTO[] {
+  const nextByChannel = new Map<string, TvReadItemDTO>();
+  items.forEach((item) => {
+    if (!isFeaturedTvReadItem(item)) {
+      return;
+    }
+    const start = new Date(item.airing.start).getTime();
+    if (start <= reference.getTime()) return;
+
+    const current = nextByChannel.get(item.channel.id);
+    if (!current) {
+      nextByChannel.set(item.channel.id, item);
+      return;
+    }
+
+    const currentStart = new Date(current.airing.start).getTime();
+    if (start < currentStart) {
+      nextByChannel.set(item.channel.id, item);
+      return;
+    }
+
+    if (start === currentStart || airingsOverlap(current, item)) {
+      nextByChannel.set(item.channel.id, pickPreferredChannelItem(current, item));
+    }
+  });
+
+  return Array.from(nextByChannel.values()).sort(sortTvItems);
+}
+
+export function selectPrimeTimeTvItems(
+  items: TvReadItemDTO[],
+  dateKey: string,
+  options: { uniquePerChannel?: boolean; requireStartInsideWindow?: boolean } = {}
+): TvReadItemDTO[] {
+  const candidates = items.filter((item) => {
+    if (!isFeaturedTvReadItem(item)) {
+      return false;
+    }
+
+    if (options.requireStartInsideWindow) {
+      return startsInsidePrimeTimeWindow(item, dateKey);
+    }
+
+    return overlapsPrimeTimeWindow(item, dateKey);
+  });
+
+  if (options.uniquePerChannel === false) {
+    return [...candidates].sort(sortTvItems);
+  }
+
+  const byChannel = new Map<string, TvReadItemDTO>();
+  candidates.forEach((item) => {
+    const current = byChannel.get(item.channel.id);
+    byChannel.set(item.channel.id, pickPreferredPrimeTimeItem(current, item, dateKey));
+  });
+
+  return Array.from(byChannel.values()).sort(sortTvItems);
+}
+
 export class TvReadQueryService {
   constructor(private readonly cacheRepository: ICacheRepository) {}
 
   async query(params: TvReadQueryParams): Promise<TvReadResponseDTO> {
     const date = DateUtils.parseDateAlias(params.date || 'today');
     const view = normalizeTvReadView(params.view);
+    const group =
+      normalizeTvToken(params.group, ' ') === 'all' ? undefined : params.group;
+    const category =
+      normalizeTvToken(params.category, ' ') === 'all' ? undefined : params.category;
+    const sport = normalizeSportFacet(params.sport);
     const limit = resolveTvReadLimit(view, params.limit);
     const offset = Number(params.cursor || '0') || 0;
-    const cacheKey = `tv:read:${date}:${view}:${params.group || 'all'}:${params.category || 'all'}:${params.channelId || 'all'}:${params.q || ''}:${limit}:${offset}`;
+    const cacheKey = `tv:read:${date}:${view}:${group || 'all'}:${category || 'all'}:${sport || 'all'}:${params.channelId || 'all'}:${params.q || ''}:${limit}:${offset}`;
     const l1Cached = l1Cache.get(cacheKey) as TvReadResponseDTO | undefined;
     if (l1Cached) {
       const hydrated = this.hydrateResponseRuntimeState(l1Cached);
@@ -171,8 +344,8 @@ export class TvReadQueryService {
     const baseQuery: Record<string, any> = { date };
     const andClauses: Record<string, any>[] = [];
 
-    if (params.group) baseQuery['channel.group'] = params.group;
-    if (params.category) baseQuery['program.editorialCategory'] = params.category;
+    if (group) baseQuery['channel.group'] = group;
+    if (category) baseQuery['program.editorialCategory'] = category;
     if (params.channelId) {
       andClauses.push(this.buildChannelFilterClause(params.channelId));
     }
@@ -205,12 +378,14 @@ export class TvReadQueryService {
     const allMatching = rawItems
       .map((item) => hydrateTvReadItemRuntime(item, reference))
       .filter((item) => isConsumerVisibleTvReadItem(item));
-    const items = this.applyViewTransform(view, allMatching, reference);
+    const filteredMatching = this.applySportFilter(allMatching, sport);
+    const items = this.applyViewTransform(view, filteredMatching, reference, date);
     const channelSummaries = this.buildChannelSummaries(
-      allMatching,
-      params.group,
+      filteredMatching,
+      group,
       params.channelId,
-      reference
+      reference,
+      date
     );
     const paged = items.slice(offset, offset + limit);
     const response: TvReadResponseDTO = {
@@ -219,8 +394,9 @@ export class TvReadQueryService {
       items: paged,
       channels: channelSummaries,
       filters: {
-        group: params.group,
-        category: params.category,
+        group,
+        category,
+        sport,
         channelId: params.channelId,
         q: params.q,
       },
@@ -315,41 +491,19 @@ export class TvReadQueryService {
   private applyViewTransform(
     view: TvReadView,
     items: TvReadItemDTO[],
-    reference: Date
+    reference: Date,
+    dateKey: string
   ): TvReadItemDTO[] {
     if (view === 'now') {
-      const liveByChannel = new Map<string, TvReadItemDTO>();
-      items.forEach((item) => {
-        if (!item.airing.liveNow || !isFeaturedTvReadItem(item)) {
-          return;
-        }
-        const current = liveByChannel.get(item.channel.id);
-        liveByChannel.set(item.channel.id, pickPreferredChannelItem(current, item));
-      });
-
-      return Array.from(liveByChannel.values()).sort(sortTvItems);
+      return selectCurrentTvItems(items);
     }
 
     if (view === 'next') {
-      const nextByChannel = new Map<string, TvReadItemDTO>();
-      items.forEach((item) => {
-        if (!isFeaturedTvReadItem(item)) {
-          return;
-        }
-        const start = new Date(item.airing.start).getTime();
-        if (start <= reference.getTime()) return;
-        const current = nextByChannel.get(item.channel.id);
-        if (!current || start < new Date(current.airing.start).getTime()) {
-          nextByChannel.set(item.channel.id, item);
-        }
-      });
-      return Array.from(nextByChannel.values()).sort(sortTvItems);
+      return selectNextTvItems(items, reference);
     }
 
     if (view === 'night') {
-      return items
-        .filter((item) => item.airing.partOfDay === 'noche' && isFeaturedTvReadItem(item))
-        .sort(sortTvItems);
+      return selectPrimeTimeTvItems(items, dateKey, { requireStartInsideWindow: true });
     }
 
     return items.sort(sortTvItems);
@@ -359,7 +513,8 @@ export class TvReadQueryService {
     items: TvReadItemDTO[],
     group?: string,
     channelId?: string,
-    reference: Date = new Date()
+    reference: Date = new Date(),
+    dateKey?: string
   ): TvReadChannelSummaryDTO[] {
     const map = new Map<string, TvReadChannelSummaryDTO>();
     const sortedItems = [...items].sort(sortTvItems);
@@ -377,18 +532,24 @@ export class TvReadQueryService {
       };
 
       current.counts.total += 1;
-      if (item.airing.liveNow && isFeaturedTvReadItem(item) && !current.current) {
-        current.current = item;
-        current.counts.live += 1;
+      if (item.airing.liveNow && isFeaturedTvReadItem(item)) {
+        const preferredCurrent = pickPreferredChannelItem(current.current, item);
+        if (!current.current) {
+          current.counts.live += 1;
+        }
+        current.current = preferredCurrent;
       }
-      if (
-        !current.next &&
-        isFeaturedTvReadItem(item) &&
-        new Date(item.airing.start).getTime() > reference.getTime()
-      ) {
-        current.next = item;
+      if (isFeaturedTvReadItem(item) && new Date(item.airing.start).getTime() > reference.getTime()) {
+        const preferredNext = pickPreferredChannelItem(current.next, item);
+        if (
+          !current.next ||
+          new Date(item.airing.start).getTime() < new Date(current.next.airing.start).getTime() ||
+          airingsOverlap(current.next, item)
+        ) {
+          current.next = preferredNext;
+        }
       }
-      if (item.airing.partOfDay === 'noche' && isFeaturedTvReadItem(item)) {
+      if (dateKey && overlapsPrimeTimeWindow(item, dateKey) && isFeaturedTvReadItem(item)) {
         current.tonight = [...(current.tonight || []), item].slice(0, 6);
         current.counts.tonight += 1;
       }
@@ -397,7 +558,12 @@ export class TvReadQueryService {
     });
 
     return Array.from(map.values()).sort(
-      (left, right) => left.channel.sortOrder - right.channel.sortOrder
+      (left, right) =>
+        getGuideGroupSortOrder(left.channel.group) - getGuideGroupSortOrder(right.channel.group) ||
+        left.channel.sortOrder - right.channel.sortOrder ||
+        String(left.channel.name || '').localeCompare(String(right.channel.name || ''), 'es', {
+          sensitivity: 'base',
+        })
     );
   }
 
@@ -441,12 +607,13 @@ export class TvReadQueryService {
       hydratedItems,
       response.filters.group,
       response.filters.channelId,
-      reference
+      reference,
+      response.date
     );
 
     return {
       ...response,
-      items: this.applyViewTransform(response.view, hydratedItems, reference),
+      items: this.applyViewTransform(response.view, hydratedItems, reference, response.date),
       channels,
     };
   }
@@ -480,5 +647,18 @@ export class TvReadQueryService {
 
   private escapeRegex(value: string): string {
     return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  private applySportFilter(
+    items: TvReadItemDTO[],
+    sport: ReturnType<typeof normalizeSportFacet>
+  ): TvReadItemDTO[] {
+    if (!sport || sport === 'all') {
+      return items;
+    }
+
+    return items.filter(
+      (item) => normalizeSportFacet(item.program.sportFacet) === sport
+    );
   }
 }

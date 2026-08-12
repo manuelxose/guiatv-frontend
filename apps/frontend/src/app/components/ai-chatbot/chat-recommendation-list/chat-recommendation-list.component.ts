@@ -20,12 +20,12 @@ type ExpandState = 'compact' | 'partial' | 'full';
   imports: [CommonModule, ChatContextBadgeComponent, ChatRecommendationCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mt-4 rounded-[1.4rem] border border-slate-800/90 bg-slate-950/70 p-3 md:p-5">
+    <div class="mt-4 rounded-[1.4rem] border border-[var(--portal-border)]/90 bg-[var(--portal-bg-deep)]/70 p-3 md:p-5">
       <!-- Header: badge + summary + controls -->
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-wrap items-center gap-2">
           <app-chat-context-badge [queryContext]="queryContext" />
-          <span *ngIf="dynamicSummary" class="text-[11px] font-medium text-slate-400">
+          <span *ngIf="dynamicSummary" class="text-[11px] font-medium text-[var(--portal-text-muted)]">
             {{ dynamicSummary }}
           </span>
         </div>
@@ -35,7 +35,7 @@ type ExpandState = 'compact' | 'partial' | 'full';
             *ngIf="allRecommendations.length > 2"
             type="button"
             (click)="carouselMode = !carouselMode"
-            class="flex h-7 w-7 items-center justify-center rounded-full border border-slate-700 bg-slate-900/80 text-slate-400 transition-colors hover:border-slate-500 hover:text-white"
+            class="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] text-[var(--portal-text-muted)] transition-colors hover:border-slate-500 hover:text-[var(--portal-text)]"
             [attr.aria-label]="carouselMode ? 'Vista lista' : 'Vista carrusel'"
           >
             <svg *ngIf="!carouselMode" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -53,7 +53,7 @@ type ExpandState = 'compact' | 'partial' | 'full';
               *ngIf="expandState === 'compact' && moreRecommendations.length > 0"
               type="button"
               (click)="expandState = 'partial'"
-              class="min-h-[28px] rounded-full border border-red-500/30 bg-red-500/10 px-3 text-[10px] font-semibold text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200"
+              class="min-h-[28px] rounded-full border border-[var(--accent-live-soft)] bg-[var(--accent-live-soft)] px-3 text-[10px] font-semibold text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200"
             >
               Ver {{ firstBatchSize }} más
             </button>
@@ -73,7 +73,7 @@ type ExpandState = 'compact' | 'partial' | 'full';
               *ngIf="expandState === 'full'"
               type="button"
               (click)="expandState = 'compact'"
-              class="min-h-[28px] rounded-full border border-slate-700 bg-slate-800/60 px-3 text-[10px] font-medium text-slate-400 transition-colors hover:border-slate-500 hover:text-slate-200"
+              class="min-h-[28px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-3 text-[10px] font-medium text-[var(--portal-text-muted)] transition-colors hover:border-slate-500 hover:text-[var(--portal-text)]"
             >
               Ver menos
             </button>
@@ -86,7 +86,7 @@ type ExpandState = 'compact' | 'partial' | 'full';
         <ng-container *ngFor="let group of groups; trackBy: trackByGroup">
           <p
             *ngIf="groups.length > 1"
-            class="mb-2 mt-3 text-[10px] font-bold uppercase tracking-widest text-slate-500 first:mt-0"
+            class="mb-2 mt-3 text-[10px] font-bold uppercase tracking-widest text-[var(--portal-text-muted)] first:mt-0"
           >
             {{ group.label }}
           </p>
@@ -115,7 +115,7 @@ type ExpandState = 'compact' | 'partial' | 'full';
         <ng-container *ngFor="let group of groups; trackBy: trackByGroup">
           <p
             *ngIf="groups.length > 1"
-            class="mb-2 mt-3 text-[10px] font-bold uppercase tracking-widest text-slate-500 first:mt-0"
+            class="mb-2 mt-3 text-[10px] font-bold uppercase tracking-widest text-[var(--portal-text-muted)] first:mt-0"
           >
             {{ group.label }}
           </p>

@@ -30,6 +30,7 @@ export class MenuStateService {
     'guia-canales': '#f97316',
     'que-ver-hoy': '#f59e0b',
     plataformas: '#38bdf8',
+    deportes: '#22c55e',
     series: '#06b6d4',
     peliculas: '#ea580c',
     editorial: '#8b5cf6',
@@ -152,6 +153,10 @@ export class MenuStateService {
 
     if (path.startsWith('/plataformas')) {
       return 'plataformas';
+    }
+
+    if (path.startsWith('/deportes')) {
+      return 'deportes';
     }
 
     if (path.startsWith('/programacion-tv/en-directo')) {

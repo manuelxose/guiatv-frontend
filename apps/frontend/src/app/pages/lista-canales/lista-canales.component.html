@@ -102,7 +102,10 @@
     </div>
 
     <!-- Row 3: Categorías -->
-    <div class="guide-nav__row guide-nav__row--cats" *ngIf="activeGuideTab !== 'channels'">
+    <div
+      class="guide-nav__row guide-nav__row--cats"
+      *ngIf="activeGuideTab !== 'channels' && !showSportsFilters"
+    >
       <button
         *ngFor="let category of quickCategoryTabs"
         type="button"
@@ -152,6 +155,22 @@
           </button>
         </div>
       </div>
+    </div>
+
+    <div
+      class="guide-nav__row guide-nav__row--cats"
+      *ngIf="activeGuideTab !== 'channels' && showSportsFilters"
+    >
+      <button
+        *ngFor="let sport of sportTabs"
+        type="button"
+        (click)="selectSport(sport.key)"
+        class="guide-nav__chip guide-nav__chip--sm"
+        [class.guide-nav__chip--active]="selectedSport === sport.key"
+        [attr.aria-pressed]="selectedSport === sport.key"
+      >
+        {{ sport.label }}
+      </button>
     </div>
 
     <!-- Row 4: Canales rápidos -->
@@ -325,6 +344,15 @@
             <span class="guide-card__badge guide-card__badge--cat">{{ program.normalizedCategory }}</span>
           </div>
 
+          <div *ngIf="program.image" class="guide-card__img-wrap">
+            <img
+              [src]="program.image"
+              [alt]="program.title"
+              class="guide-card__img"
+              loading="lazy"
+            />
+          </div>
+
           <div *ngIf="program.primaryPlatforms.length" class="guide-card__platforms">
             <span class="guide-card__also-on">También en</span>
             <span
@@ -360,7 +388,7 @@
       aria-labelledby="tab-night"
     >
       <header class="guide-section__head">
-        <div class="guide-section__label">Prime time · 20:00–24:00</div>
+        <div class="guide-section__label">{{ primeTimeLabel }}</div>
         <h2 class="guide-section__title">Lo más fuerte esta noche</h2>
       </header>
 

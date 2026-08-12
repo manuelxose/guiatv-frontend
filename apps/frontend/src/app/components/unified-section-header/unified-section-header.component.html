@@ -1,0 +1,16 @@
+<div class="section-header">
+  <div class="section-header__copy">
+    <p *ngIf="eyebrow" class="section-header__eyebrow">{{ eyebrow }}</p>
+    <h2>{{ title }}</h2>
+    <p *ngIf="description" class="section-header__description">{{ description }}</p>
+  </div>
+
+  <a
+    *ngIf="linkLabel && linkPath"
+    [routerLink]="linkPath"
+    [queryParams]="linkQueryParams"
+    class="section-header__link"
+  >
+    {{ linkLabel }}
+  </a>
+</div>

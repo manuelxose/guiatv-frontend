@@ -63,6 +63,7 @@ export class TvDataService {
       view?: TvReadView;
       group?: string;
       category?: string;
+      sport?: string;
       channelId?: string;
       q?: string;
       limit?: number;
@@ -74,6 +75,7 @@ export class TvDataService {
       date,
       group: query.group,
       category: query.category,
+      sport: query.sport,
       channelId: query.channelId,
       q: query.q,
       limit: query.limit,
@@ -141,9 +143,10 @@ export class TvDataService {
   loadGuideSurface(
     date: DateAlias = 'today',
     group?: string,
-    category?: string
+    category?: string,
+    sport?: string
   ): Observable<TvGuideSurfaceDTO> {
-    const cacheKey = `guide:${date}:${group || 'all'}:${category || 'all'}`;
+    const cacheKey = `guide:${date}:${group || 'all'}:${category || 'all'}:${sport || 'all'}`;
     const cached = this.guideSurfaceByKey.get(cacheKey);
     if (cached) {
       return of(cached);
@@ -154,7 +157,7 @@ export class TvDataService {
       return inFlight;
     }
 
-    const request$ = this.api.getTvGuideSurface({ date, group, category }).pipe(
+    const request$ = this.api.getTvGuideSurface({ date, group, category, sport }).pipe(
       map((resp) => resp.data as TvGuideSurfaceDTO),
       tap((data) => this.guideSurfaceByKey.set(cacheKey, data)),
       finalize(() => this.guideSurfaceInFlight.delete(cacheKey)),

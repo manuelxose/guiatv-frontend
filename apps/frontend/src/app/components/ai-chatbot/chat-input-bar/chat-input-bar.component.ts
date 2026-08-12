@@ -17,7 +17,7 @@ import { ChatbotRequestState, ChatbotSessionState } from '../../../interfaces/ch
   imports: [FormsModule, CommonModule],
   template: `
     <div class="space-y-1.5">
-      <div class="flex items-end gap-2 rounded-[1.35rem] border bg-slate-900/90 p-2 shadow-[0_10px_30px_rgba(0,0,0,0.35)]" [ngClass]="isSearchMode ? 'border-blue-500/60' : 'border-slate-700'">
+      <div class="flex items-end gap-2 rounded-[1.35rem] border bg-[var(--portal-bg)] p-2 shadow-[0_10px_30px_rgba(0,0,0,0.35)]" [ngClass]="isSearchMode ? 'border-blue-500/60' : 'border-[var(--portal-border)]'">
         <textarea
           #chatInput
           [(ngModel)]="draft"
@@ -25,14 +25,14 @@ import { ChatbotRequestState, ChatbotSessionState } from '../../../interfaces/ch
           (keydown)="onKeydown($event)"
           (input)="autoResize()"
           [disabled]="disabled"
-          class="max-h-[160px] min-h-[44px] flex-1 resize-none bg-transparent px-2 py-2.5 text-sm text-white outline-none placeholder:text-slate-500"
+          class="max-h-[160px] min-h-[44px] flex-1 resize-none bg-transparent px-2 py-2.5 text-sm text-[var(--portal-text)] outline-none placeholder:text-[var(--portal-text-muted)]"
           [placeholder]="isSearchMode ? 'Buscando contenido...' : 'Pregúntame qué hay ahora, qué merece la pena esta noche…'"
         ></textarea>
         <button
           type="button"
           (click)="send()"
           [disabled]="disabled || !draft.trim()"
-          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-white transition-all duration-150 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-[var(--portal-text)] transition-all duration-150 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
           aria-label="Enviar mensaje"
         >
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -49,7 +49,7 @@ import { ChatbotRequestState, ChatbotSessionState } from '../../../interfaces/ch
             type="button"
             (click)="onQuickAction(action)"
             [disabled]="disabled"
-            class="rounded-full border border-slate-800 bg-slate-900/60 px-2.5 py-1 text-[11px] text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-200 disabled:opacity-40"
+            class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-2.5 py-1 text-[11px] text-[var(--portal-text-muted)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)] disabled:opacity-40"
           >
             {{ action.label }}
           </button>

@@ -9,6 +9,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/home/home.component').then((m) => m.HomeComponent),
     title: 'Inicio - Guía TV',
+    data: { layout: 'portal-page' },
   },
   {
     path: 'iniciar-sesion',
@@ -17,7 +18,7 @@ export const routes: Routes = [
         (m) => m.LoginComponent
       ),
     title: 'Iniciar sesión - Guía TV',
-    data: { robots: 'noindex, follow' },
+    data: { robots: 'noindex, follow', layout: 'minimal-shell' },
   },
   {
     path: 'registro',
@@ -26,7 +27,7 @@ export const routes: Routes = [
         (m) => m.RegisterComponent
       ),
     title: 'Registro - Guia TV',
-    data: { robots: 'noindex, follow' },
+    data: { robots: 'noindex, follow', layout: 'minimal-shell' },
   },
   {
     path: 'perfil',
@@ -35,7 +36,7 @@ export const routes: Routes = [
         (m) => m.UserAreaComponent
       ),
     title: 'Perfil - Guía TV',
-    data: { defaultTab: 'feed', robots: 'noindex, nofollow' },
+    data: { defaultTab: 'feed', robots: 'noindex, nofollow', layout: 'private-shell' },
   },
   {
     path: 'mi-cuenta',
@@ -54,6 +55,7 @@ export const routes: Routes = [
         (m) => m.PublicProfileComponent
       ),
     title: 'Perfil - Guía TV',
+    data: { layout: 'public-shell' },
   },
   {
     path: 'para-ti',
@@ -62,7 +64,7 @@ export const routes: Routes = [
         (m) => m.ForYouComponent
       ),
     title: 'Para ti - Guía TV',
-    data: { robots: 'noindex, nofollow' },
+    data: { robots: 'noindex, nofollow', layout: 'private-shell' },
   },
   {
     path: 'admin',
@@ -70,14 +72,14 @@ export const routes: Routes = [
       import('./pages/admin/admin.component').then((m) => m.AdminComponent),
     title: 'Admin - Guia TV',
     canActivate: [adminGuard],
-    data: { robots: 'noindex, nofollow' },
+    data: { robots: 'noindex, nofollow', layout: 'private-shell' },
   },
   {
     path: 'programacion-tv/series',
     loadComponent: () =>
       import('./pages/content-page/content-page.component').then((m) => m.ContentPageComponent),
     title: 'Series - Guía TV',
-    data: { type: 'series' }
+    data: { type: 'series', layout: 'public-shell' }
   },
   {
     path: 'programacion-tv/peliculas',
@@ -86,15 +88,16 @@ export const routes: Routes = [
         (m) => m.ContentPageComponent
       ),
     title: 'Películas - Guía TV',
-    data: { type: 'movies' }
+    data: { type: 'movies', layout: 'public-shell' }
   },
   {
     path: 'programacion-tv/guia-canales',
     loadComponent: () =>
-      import('./pages/lista-canales/lista-canales.component').then(
-        (m) => m.ListaCanalesComponent
+      import('./pages/unified-guide/unified-guide.component').then(
+        (m) => m.UnifiedGuideComponent
       ),
     title: 'Guía de Canales - Guía TV',
+    data: { tab: 'live', layout: 'portal-page' },
   },
   {
     path: 'canales/:id',
@@ -103,6 +106,7 @@ export const routes: Routes = [
         (m) => m.CanalCompletoComponent
       ),
     title: 'Canal - Guía TV',
+    data: { layout: 'public-shell' },
   },
   {
     path: 'programacion-tv/ver-canal/:id',
@@ -112,20 +116,29 @@ export const routes: Routes = [
   {
     path: 'programacion-tv/que-ver-hoy',
     loadComponent: () =>
-      import('./pages/program-explorer/program-explorer.component').then(
-        (m) => m.ProgramExplorerComponent
+      import('./pages/unified-guide/unified-guide.component').then(
+        (m) => m.UnifiedGuideComponent
       ),
     title: 'Qué Ver Hoy - Guía TV',
-    data: { mode: 'featured' }
+    data: { tab: 'discover', layout: 'portal-page' }
   },
   {
     path: 'plataformas',
     loadComponent: () =>
-      import('./pages/program-explorer/program-explorer.component').then(
-        (m) => m.ProgramExplorerComponent
+      import('./pages/unified-guide/unified-guide.component').then(
+        (m) => m.UnifiedGuideComponent
       ),
     title: 'Plataformas - Guía TV',
-    data: { mode: 'platforms' }
+    data: { tab: 'streaming', layout: 'portal-page' }
+  },
+  {
+    path: 'deportes',
+    loadComponent: () =>
+      import('./pages/unified-guide/unified-guide.component').then(
+        (m) => m.UnifiedGuideComponent
+      ),
+    title: 'Deportes - Guía TV',
+    data: { tab: 'sports', layout: 'portal-page' }
   },
   {
     path: 'contenido/:catalogId',
@@ -134,6 +147,7 @@ export const routes: Routes = [
         (m) => m.CatalogDetailComponent
       ),
     title: 'Contenido - Guía TV',
+    data: { layout: 'public-shell' },
   },
   {
     path: 'ver-canal/:id',
@@ -148,7 +162,7 @@ export const routes: Routes = [
         (m) => m.CatalogDetailComponent
       ),
     title: 'Detalles del Programa - Guía TV',
-    data: { legacyCatalogMode: 'program', robots: 'noindex, follow' },
+    data: { legacyCatalogMode: 'program', robots: 'noindex, follow', layout: 'public-shell' },
   },
   {
     path: 'pelicula-details/:id',
@@ -157,7 +171,7 @@ export const routes: Routes = [
         (m) => m.CatalogDetailComponent
       ),
     title: 'Películas - Detalle - Guía TV',
-    data: { legacyCatalogMode: 'movie', robots: 'noindex, follow' },
+    data: { legacyCatalogMode: 'movie', robots: 'noindex, follow', layout: 'public-shell' },
   },
 
   // SEO-friendly movie route: slug-only (no id exposed)
@@ -168,7 +182,7 @@ export const routes: Routes = [
         (m) => m.CatalogDetailComponent
       ),
     title: 'Películas - Detalle - Guía TV',
-    data: { contentType: 'movie' }
+    data: { contentType: 'movie', layout: 'public-shell' }
   },
   {
     path: 'series/:slug',
@@ -177,7 +191,7 @@ export const routes: Routes = [
         (m) => m.CatalogDetailComponent
       ),
     title: 'Series - Detalle - Guía TV',
-    data: { contentType: 'series' }
+    data: { contentType: 'series', layout: 'public-shell' }
   },
 
   // SEO-friendly program route: slug-only (no id exposed)
@@ -188,7 +202,7 @@ export const routes: Routes = [
         (m) => m.CatalogDetailComponent
       ),
     title: 'Programas - Detalle - Guía TV',
-    data: { contentType: 'program' }
+    data: { contentType: 'program', layout: 'public-shell' }
   },
 
   {
@@ -200,6 +214,7 @@ export const routes: Routes = [
     path: 'editorial',
     children: BLOG_ROUTES && BLOG_ROUTES.length ? BLOG_ROUTES[0].children : [],
     title: 'Editorial - Guía TV',
+    data: { layout: 'portal-page' },
   },
   {
     path: 'blog/top10',
@@ -228,13 +243,14 @@ export const routes: Routes = [
         (m) => m.CatalogDetailComponent
       ),
     title: 'Detalles del Programa - Guía TV',
-    data: { legacyCatalogMode: 'program', robots: 'noindex, follow' },
+    data: { legacyCatalogMode: 'program', robots: 'noindex, follow', layout: 'public-shell' },
   },
   {
     path: 'sobre-nosotros',
     loadComponent: () =>
       import('./pages/about/about.component').then((m) => m.AboutComponent),
     title: 'Sobre Nosotros - Guía TV',
+    data: { layout: 'public-shell' },
   },
   {
     path: 'prensa',
@@ -243,6 +259,7 @@ export const routes: Routes = [
         (m) => m.PressKitComponent
       ),
     title: 'Kit de Prensa - Guía TV',
+    data: { layout: 'public-shell' },
   },
   {
     path: 'comparador-streaming',
@@ -251,6 +268,7 @@ export const routes: Routes = [
         './pages/streaming-comparison/streaming-comparison.component'
       ).then((m) => m.StreamingComparisonComponent),
     title: 'Comparador de Streaming - Guía TV',
+    data: { layout: 'public-shell' },
   },
   {
     path: 'developers',
@@ -259,6 +277,7 @@ export const routes: Routes = [
         (m) => m.DevelopersComponent
       ),
     title: 'API para Desarrolladores - Guía TV',
+    data: { layout: 'public-shell' },
   },
   {
     path: 'embed/programacion',
@@ -267,6 +286,7 @@ export const routes: Routes = [
         (m) => m.EmbedProgramGuideComponent
       ),
     title: 'Widget de Programación - Guía TV',
+    data: { layout: 'minimal-shell' },
   },
   {
     path: 'embed',
@@ -275,6 +295,7 @@ export const routes: Routes = [
         (m) => m.EmbedPageComponent
       ),
     title: 'Widget Embebible - Guía TV',
+    data: { layout: 'minimal-shell' },
   },
   {
     path: 'tendencias',
@@ -283,6 +304,7 @@ export const routes: Routes = [
         (m) => m.StatsComponent
       ),
     title: 'Tendencias TV y Streaming - Guía TV',
+    data: { layout: 'public-shell' },
   },
   {
     path: 'avisolegal',
@@ -291,6 +313,7 @@ export const routes: Routes = [
         (m) => m.LegalNoticeComponent
       ),
     title: 'Aviso Legal - Guía TV',
+    data: { layout: 'minimal-shell' },
   },
   {
     path: 'privacidad',
@@ -299,6 +322,7 @@ export const routes: Routes = [
         (m) => m.PrivacyComponent
       ),
     title: 'Política de Privacidad - Guía TV',
+    data: { layout: 'minimal-shell' },
   },
   {
     path: 'cookies',
@@ -307,6 +331,7 @@ export const routes: Routes = [
         (m) => m.CookiesComponent
       ),
     title: 'Política de Cookies - Guía TV',
+    data: { layout: 'minimal-shell' },
   },
   {
     path: 'terminos',
@@ -315,6 +340,7 @@ export const routes: Routes = [
         (m) => m.TermsComponent
       ),
     title: 'Términos y Condiciones - Guía TV',
+    data: { layout: 'minimal-shell' },
   },
   {
     path: 'accesibilidad',
@@ -323,6 +349,7 @@ export const routes: Routes = [
         (m) => m.AccessibilityComponent
       ),
     title: 'Accesibilidad - Guía TV',
+    data: { layout: 'minimal-shell' },
   },
   {
     path: 'sitemap',
@@ -331,11 +358,12 @@ export const routes: Routes = [
         (m) => m.SitemapComponent
       ),
     title: 'Mapa del sitio - Guía TV',
-    data: { robots: 'noindex, follow' },
+    data: { robots: 'noindex, follow', layout: 'minimal-shell' },
   },
   {
     path: '**',
     component: NotFoundComponent,
     title: 'Página no encontrada - Guía TV',
+    data: { layout: 'public-shell' },
   },
 ];

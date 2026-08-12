@@ -1,8 +1,10 @@
 export const APP_PATHS = {
   home: '/',
+  forYou: '/para-ti',
   guide: '/programacion-tv/guia-canales',
   explore: '/programacion-tv/que-ver-hoy',
   platforms: '/plataformas',
+  sports: '/deportes',
   live: '/programacion-tv/en-directo',
   series: '/programacion-tv/series',
   movies: '/programacion-tv/peliculas',
@@ -25,9 +27,11 @@ export const APP_PATHS = {
 
 export type AppRouteKey =
   | 'home'
+  | 'para-ti'
   | 'guia-canales'
   | 'que-ver-hoy'
   | 'plataformas'
+  | 'deportes'
   | 'en-directo'
   | 'series'
   | 'peliculas'
@@ -86,6 +90,7 @@ export const TOOL_NAV_ROUTES: AppRouteEntry[] = [
 ];
 
 export const USER_NAV_ROUTES: AppRouteEntry[] = [
+  { key: 'para-ti', label: 'Para ti', path: APP_PATHS.forYou },
   { key: 'perfil', label: 'Perfil', path: APP_PATHS.profile },
   { key: 'comunidad', label: 'Comunidad', path: APP_PATHS.community },
   { key: 'mi-cuenta', label: 'Mi cuenta', path: APP_PATHS.account },

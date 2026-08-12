@@ -16,11 +16,11 @@ interface ProfileCategory {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <header class="border-b border-slate-800/80 bg-[linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.92))] px-5 py-3 backdrop-blur-xl">
+    <header class="border-b border-[var(--portal-border)]/80 bg-[var(--portal-surface-strong)] px-5 py-3 backdrop-blur-xl">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2.5 min-w-0">
-          <p class="text-base font-bold text-white truncate">Asistente IA</p>
-          <span class="shrink-0 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-red-200">
+          <p class="text-base font-bold text-[var(--portal-text)] truncate">Asistente IA</p>
+          <span class="shrink-0 rounded-full border border-[var(--portal-border)] bg-[var(--accent-live-soft)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-[var(--accent-live)]">
             Pro
           </span>
         </div>
@@ -29,7 +29,7 @@ interface ProfileCategory {
             *ngIf="isAuthenticated"
             type="button"
             (click)="toggleSidebar.emit()"
-            class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
             aria-label="Conversaciones"
           >
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -40,7 +40,7 @@ interface ProfileCategory {
             *ngIf="isAuthenticated"
             type="button"
             (click)="toggleMemoryEditor.emit()"
-            class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
             [attr.aria-label]="memoryEditorOpen ? 'Cerrar preferencias' : 'Editar preferencias'"
           >
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -52,7 +52,7 @@ interface ProfileCategory {
             *ngIf="isAuthenticated"
             type="button"
             (click)="newConversation.emit()"
-            class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
             aria-label="Nueva conversación"
           >
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -62,7 +62,7 @@ interface ProfileCategory {
           <button
             type="button"
             (click)="closePanel.emit()"
-            class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
             aria-label="Cerrar asistente"
           >
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -87,20 +87,20 @@ interface ProfileCategory {
           <button
             type="button"
             (click)="profileExpanded = true"
-            class="text-[10px] text-slate-500 hover:text-slate-300 transition-colors"
+            class="text-[10px] text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] transition-colors"
           >
             Tu perfil IA ▾
           </button>
         </div>
 
         <!-- Expanded: full profile -->
-        <div *ngIf="profileExpanded" class="mt-3 rounded-xl border border-slate-700/60 bg-slate-900/50 p-3">
+        <div *ngIf="profileExpanded" class="mt-3 rounded-xl border border-[var(--portal-border)]/60 bg-[var(--portal-surface-strong)] p-3">
           <div class="flex items-center justify-between mb-2.5">
-            <span class="text-xs font-semibold text-white">Tu perfil IA</span>
+            <span class="text-xs font-semibold text-[var(--portal-text)]">Tu perfil IA</span>
             <button
               type="button"
               (click)="profileExpanded = false"
-              class="text-[10px] text-slate-500 hover:text-slate-300 transition-colors"
+              class="text-[10px] text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] transition-colors"
             >
               Cerrar ▴
             </button>
@@ -127,7 +127,7 @@ interface ProfileCategory {
           </div>
           <div *ngIf="community" class="mb-2">
             <p class="mb-1 text-[10px] font-semibold uppercase tracking-wider text-sky-400">Comunidad</p>
-            <span class="inline-flex items-center gap-1 rounded-full border border-sky-500/40 bg-sky-600/15 px-2 py-0.5 text-[10px] font-medium text-sky-300">
+            <span class="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-medium text-sky-700">
               {{ community }}
             </span>
           </div>

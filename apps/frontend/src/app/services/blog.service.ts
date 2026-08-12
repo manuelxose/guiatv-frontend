@@ -13,8 +13,8 @@ import {
   concatMap,
   timer,
 } from 'rxjs';
+import { ApiConfigService } from '../api/api-config.service';
 import { HttpService } from './http.service';
-import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -33,7 +33,7 @@ export class BlogService {
   public posts$ = this._posts.asObservable();
 
   // URL de la API
-  private API_URL = environment.API_BLOG;
+  private API_URL = '';
   private readonly isServer: boolean;
 
   // Error state observable for UI consumption
@@ -42,9 +42,11 @@ export class BlogService {
 
   constructor(
     private httpService: HttpService,
+    private apiConfig: ApiConfigService,
     @Inject(PLATFORM_ID) platformId: object
   ) {
     this.isServer = isPlatformServer(platformId);
+    this.API_URL = this.apiConfig.buildUrl('/blog');
   }
 
   // ============================================

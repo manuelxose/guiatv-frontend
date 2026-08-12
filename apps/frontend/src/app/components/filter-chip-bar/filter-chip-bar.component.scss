@@ -1,0 +1,96 @@
+.chip-bar {
+  display: flex;
+  gap: 0.625rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scroll-snap-type: x proximity;
+}
+
+.chip-bar__item {
+  min-height: 44px;
+  scroll-snap-align: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--portal-border);
+  background: var(--portal-surface);
+  color: var(--portal-text-muted);
+  padding: 0.65rem 1rem;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.chip-bar__item:hover {
+  border-color: var(--portal-border-strong);
+  color: var(--portal-text);
+}
+
+.chip-bar__icon {
+  display: inline-flex;
+  width: 1rem;
+  height: 1rem;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.chip-bar__icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.chip-bar__label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.chip-bar__item--active {
+  border-color: var(--guide-accent, #dc2626);
+  background: color-mix(in srgb, var(--guide-accent, #dc2626) 8%, var(--portal-surface));
+  color: var(--guide-accent, #dc2626);
+}
+
+.chip-bar__count {
+  border-radius: 999px;
+  background: var(--portal-surface-strong);
+  padding: 0.15rem 0.45rem;
+  font-size: 0.6875rem;
+}
+
+.chip-bar--shelf {
+  gap: 0.55rem;
+  padding-bottom: 0;
+}
+
+.chip-bar--shelf .chip-bar__item {
+  min-height: 40px;
+  border-color: var(--portal-border);
+  background: var(--portal-surface);
+  color: var(--portal-text-muted);
+  padding: 0.55rem 0.9rem;
+  box-shadow: none;
+}
+
+.chip-bar--shelf .chip-bar__item:hover {
+  transform: translateY(-1px);
+  background: var(--portal-surface-strong);
+}
+
+.chip-bar--shelf .chip-bar__item--active {
+  border-color: var(--guide-accent, #dc2626);
+  background: color-mix(in srgb, var(--guide-accent, #dc2626) 8%, var(--portal-surface));
+  color: var(--guide-accent, #dc2626);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip-bar__item {
+    transition: none;
+  }
+
+  .chip-bar--shelf .chip-bar__item:hover {
+    transform: none;
+  }
+}

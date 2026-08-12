@@ -9,6 +9,7 @@ import {
   buildSearchTokens,
   inferEditorialCategory,
   inferChannelGroup,
+  inferSportFacet,
   isGenericMovieTitle,
   resolveProgramDisplayTitle,
 } from './tvMetadata';
@@ -134,6 +135,10 @@ test('inferChannelGroup classifies La 2 as TDT and DAZN F1 as deporte', () => {
     'tdt'
   );
   assert.equal(
+    inferChannelGroup({ name: 'FOX', type: 'Cable', sourceId: 'FOX.es' }),
+    'cable'
+  );
+  assert.equal(
     inferChannelGroup({ name: 'Atrescine', type: 'TDT', sourceId: 'Atrescine' }),
     'online'
   );
@@ -195,4 +200,55 @@ test('buildSearchTokens keeps La 2 and Mañaneros discoverable without diacritic
   assert.ok(tokens.includes('2'));
   assert.ok(tokens.includes('mananeros'));
   assert.ok(tokens.includes('360'));
+});
+
+test('inferSportFacet derives canonical sports subfilters', () => {
+  assert.equal(
+    inferSportFacet({ title: 'Champions League', description: 'Fútbol en directo' }),
+    'Fútbol'
+  );
+  assert.equal(
+    inferSportFacet({ title: 'NBA', description: 'Baloncesto desde Estados Unidos' }),
+    'Baloncesto'
+  );
+  assert.equal(
+    inferSportFacet({ title: 'Gran Premio de Australia', description: 'Formula 1' }),
+    'F1'
+  );
+  assert.equal(
+    inferSportFacet({ title: 'ATP Masters 1000', description: 'Tenis' }),
+    'Tenis'
+  );
+  assert.equal(
+    inferSportFacet({ title: 'MotoGP Qatar', description: 'Motociclismo' }),
+    'MotoGP'
+  );
+  assert.equal(
+    inferSportFacet({ title: 'Tour de Francia', description: 'Ciclismo' }),
+    'Más'
+  );
+  assert.equal(
+    inferSportFacet({
+      title: 'Valle Salvaje T3 E143',
+      description:
+        'Adriana descubre que su matrimonio fue concertado y será obligada a trabajar como criada.',
+    }),
+    undefined
+  );
+  assert.equal(
+    inferSportFacet({
+      title: 'Tres jóvenes de Tejas',
+      description:
+        'Película del oeste con reparto de Mitzi Gaynor y producción de Leonard Goldstein.',
+    }),
+    undefined
+  );
+  assert.equal(
+    inferSportFacet({
+      title: 'La Promesa',
+      description: 'Serie dramática diaria ambientada en la España de 1913.',
+      channelName: 'DAZN F1 4K',
+    }),
+    undefined
+  );
 });

@@ -18,6 +18,7 @@ import {
   inferChannelGroup,
   inferEditorialCategory,
   inferPartOfDay,
+  inferSportFacet,
   isGenericMovieTitle,
   normalizeTvToken,
   TvTitleResolutionState,
@@ -134,12 +135,27 @@ export class TvReadModelBuilder {
         isResolvedTitle: !isGenericMovieTitle(program.title),
         consumerSuppressed: isGenericMovieTitle(program.title),
       };
-      const editorialCategory = this.resolveEditorialCategory(program);
+      const rawEditorialCategory = this.resolveEditorialCategory(program);
+      const sportFacet = inferSportFacet({
+        editorialCategory: rawEditorialCategory,
+        genre: program.genre,
+        subgenre: program.subgenre,
+        title: program.title,
+        description: program.description,
+        channelName: channelDoc?.name || resolvedChannelId,
+      });
+      const editorialCategory =
+        rawEditorialCategory === 'Otros' && sportFacet ? 'Deportes' : rawEditorialCategory;
       const brandKey = buildProgramBrandKey(program.title);
       const normalizedTitle = program.normalizedTitle || normalizeTvToken(program.title, ' ');
       const titleAliases = program.titleAliases.length
         ? program.titleAliases
         : buildProgramTitleAliases(program.title);
+      const persistedSortOrder = Number(channelDoc?.order);
+      const computedSortOrder = Number(channelIdentity.sortOrder ?? 999);
+      const effectiveSortOrder = Number.isFinite(persistedSortOrder)
+        ? Math.min(persistedSortOrder, computedSortOrder)
+        : computedSortOrder;
       const assets = this.buildAiringAssets(program, channelDoc?.logo);
       const programImage = assets.poster?.url || assets.backdrop?.url || assets.primary?.url;
       const airingId = buildTvReadAiringId({
@@ -188,7 +204,7 @@ export class TvReadModelBuilder {
               normalizeTvToken(channelDoc?.region, ' '),
             ].filter(Boolean))
           ),
-          sortOrder: Number(channelDoc?.order ?? channelIdentity.sortOrder ?? 999),
+          sortOrder: effectiveSortOrder,
           icon: channelDoc?.logo || undefined,
           country: channelDoc?.country || undefined,
           countryCode: channelDoc?.countryCode || undefined,
@@ -204,6 +220,7 @@ export class TvReadModelBuilder {
           editorialCategory,
           genre: program.genre,
           subgenre: program.subgenre,
+          sportFacet,
           tmdbId: program.tmdbId,
           description: program.description,
           titleResolutionState: titleResolution.state,

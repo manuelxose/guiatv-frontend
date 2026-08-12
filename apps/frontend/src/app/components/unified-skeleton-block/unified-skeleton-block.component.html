@@ -1,0 +1,7 @@
+<div class="skeleton-block" [class]="columnClass()">
+  <div
+    *ngFor="let item of items()"
+    class="skeleton-block__item"
+    [style.height]="cardHeight"
+  ></div>
+</div>

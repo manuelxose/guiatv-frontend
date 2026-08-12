@@ -39,7 +39,7 @@
 }
 
 ::ng-deep .mat-mdc-autocomplete-panel::-webkit-scrollbar-track {
-  background: rgba(55, 65, 81, 0.3);
+  background: var(--portal-surface-strong);
   border-radius: 4px;
 }
 

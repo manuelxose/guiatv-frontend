@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
 import { catchError, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
 import {
@@ -84,7 +85,7 @@ const EMPTY_PROFILE: UserProfile = {
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private readonly isBrowser = typeof window !== 'undefined';
+  private readonly isBrowser: boolean;
   private readonly baseUrl = environment.API_BASE_URL;
   private readonly interactionCacheTtlMs = 60_000;
   private readonly interactionRetryCooldownMs = 25_000;
@@ -124,7 +125,12 @@ export class UserService {
   public readonly loading$ = this.loadingSubject.asObservable();
   public readonly error$ = this.errorSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+
     if (!this.isBrowser) return;
 
     window.addEventListener('gtv-auth-refreshing', this.handleAuthRefreshing);

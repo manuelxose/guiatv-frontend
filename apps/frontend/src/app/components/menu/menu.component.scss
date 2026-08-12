@@ -8,7 +8,7 @@
     rgba(220, 38, 38, 0.15),
     rgba(239, 68, 68, 0.1)
   );
-  color: #ffffff; /* High contrast color for active link */
+  color: var(--portal-text); /* High contrast color for active link */
   font-weight: 600;
   border-right-width: 3px;
   border-right-color: var(--c);

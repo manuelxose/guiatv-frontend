@@ -1,0 +1,43 @@
+.skeleton-block {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.skeleton-block__item {
+  border-radius: 1.45rem;
+  background: linear-gradient(
+    90deg,
+    var(--portal-surface-strong) 25%,
+    var(--portal-border) 50%,
+    var(--portal-surface-strong) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.3s linear infinite;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .skeleton-block--cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .skeleton-block--cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .skeleton-block--cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .skeleton-block--cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

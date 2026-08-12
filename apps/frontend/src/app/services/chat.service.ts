@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -41,7 +42,7 @@ export type ChatRealtimeMode = 'idle' | 'connecting' | 'connected' | 'fallback';
   providedIn: 'root',
 })
 export class ChatService {
-  private readonly isBrowser = typeof window !== 'undefined';
+  private readonly isBrowser: boolean;
   private readonly baseUrl = environment.API_BASE_URL;
   private socket: Socket | null = null;
   private conversationsSubject = new BehaviorSubject<ChatConversation[]>([]);
@@ -58,7 +59,13 @@ export class ChatService {
   private readonly requestOpenChatSubject = new Subject<string>();
   public readonly requestOpenChat$ = this.requestOpenChatSubject.asObservable();
 
-  constructor(private http: HttpClient, private userService: UserService) {
+  constructor(
+    private http: HttpClient,
+    private userService: UserService,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+
     if (!this.isBrowser) return;
 
     this.userService.getProfile().subscribe((profile) => {

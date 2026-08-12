@@ -2,13 +2,17 @@
   display: block;
 }
 
+.editorial-post-page {
+  color: #e2e8f0;
+}
+
 .editorial-post__content {
   color: #d6e3ef;
   line-height: 1.8;
 }
 
 .editorial-post__content :where(h2, h3, h4) {
-  color: #ffffff;
+  color: var(--portal-text);
   font-weight: 700;
   line-height: 1.3;
   margin: 2rem 0 1rem;

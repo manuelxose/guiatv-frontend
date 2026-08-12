@@ -1,228 +1,171 @@
 <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
-<div class="min-h-screen bg-[#081018] text-slate-100">
-  <div class="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-    <section
-      class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.16),_rgba(8,16,24,0.94)_55%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-10"
+
+<app-unified-portal-shell
+  tone="editorial"
+  activeTab="discover"
+  [searchQuery]="searchQuery()"
+  [topPillChips]="topPillChips"
+  topPillLabel="Editorial"
+  [isAuthenticated]="isAuthenticated()"
+  [profileName]="profile()?.name || 'Cuenta'"
+  [breadcrumbItems]="breadcrumbItems"
+  [leftRailSections]="leftRailSections()"
+  [rightRailSections]="rightRailSections()"
+  rightRailLabel="Panel editorial"
+  eyebrow="Editorial"
+  title="Historias, rankings y contexto para entender qué ver dentro del portal"
+  description="La capa editorial ya no vive aparte. Comparte shell, shortcuts, footer y lenguaje visual con discovery, streaming y tendencias."
+  [metrics]="metrics"
+  (tabChange)="navigateToTab($event)"
+  (topPillChange)="onTopPillChange($event)"
+  (searchChange)="onSearchChange($event)"
+  (searchSubmit)="onSearchSubmit($event)"
+>
+  <section *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
+    <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-slate-900/70"></div>
+  </section>
+
+  <div
+    *ngIf="error"
+    class="rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
+  >
+    {{ error }}
+  </div>
+
+  <ng-container *ngIf="!loading && !error">
+    <a
+      *ngIf="hero"
+      [routerLink]="hero.canonicalPath"
+      class="group block overflow-hidden rounded-[1.6rem] border border-slate-800/80 bg-slate-950/70 transition-colors hover:border-slate-600"
     >
-      <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),transparent_35%,transparent_65%,rgba(56,189,248,0.08))]"></div>
-      <div class="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
-        <div class="space-y-6">
-          <div class="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-red-200">
-            Editorial
-          </div>
-          <div class="space-y-4">
-            <h1 class="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
-              Historias, rankings y contexto para entender qué ver en la app.
-            </h1>
-            <p class="max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
-              La capa editorial ya no vive aparte: conecta artículos, rankings y recursos con
-              plataformas, tendencias y el comparador de streaming.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-3">
-            <a
-              [routerLink]="appPaths.top10"
-              class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-red-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-red-500"
-            >
-              Abrir rankings
-            </a>
-            <a
-              [routerLink]="appPaths.platforms"
-              class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-6 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-500 hover:text-white"
-            >
-              Ver plataformas
-            </a>
-            <a
-              [routerLink]="appPaths.streamingComparison"
-              class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-sky-500/30 bg-sky-500/10 px-6 text-sm font-semibold text-sky-200 transition-colors hover:border-sky-400/40"
-            >
-              Comparar streaming
-            </a>
-          </div>
-        </div>
+      <div class="relative aspect-[16/8] overflow-hidden bg-slate-900">
+        <img
+          [src]="hero.coverImage"
+          [alt]="hero.title"
+          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="eager"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+      </div>
 
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-          <a
-            *ngIf="hero"
-            [routerLink]="hero.canonicalPath"
-            class="group overflow-hidden rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 transition-colors hover:border-slate-600"
-          >
-            <div class="relative aspect-[16/10] overflow-hidden">
-              <img
-                [src]="hero.coverImage"
-                [alt]="hero.title"
-                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="eager"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-            </div>
-            <div class="space-y-3 p-4">
-              <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Último reportaje</p>
-              <h2 class="text-xl font-semibold text-white">{{ hero.title }}</h2>
-              <p class="line-clamp-3 text-sm text-slate-400">{{ hero.excerptText }}</p>
-            </div>
-          </a>
-
-          <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-4">
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Conectado con la app</p>
-            <div class="mt-3 space-y-3 text-sm text-slate-300">
-              <p>Los artículos dejan de ser un microsite separado y apuntan a catálogo, tendencias y plataformas.</p>
-              <p>Los rankings ya no son una lista genérica de posts: se clasifican con reglas editoriales explícitas.</p>
-            </div>
-          </div>
+      <div class="grid gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
+        <div class="space-y-3">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Reportaje destacado</p>
+          <h2 class="text-2xl font-semibold text-white">{{ hero.title }}</h2>
+          <p class="line-clamp-3 text-sm text-slate-400">{{ hero.excerptText }}</p>
         </div>
+        <div class="rounded-[1.25rem] border border-slate-800/80 bg-slate-950/80 p-4">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Conectado con el portal</p>
+          <p class="mt-3 text-sm text-slate-300">
+            Desde aquí cruzas editorial con catálogo, plataformas, tendencias y rankings sin abandonar la experiencia unificada.
+          </p>
+        </div>
+      </div>
+    </a>
+
+    <section *ngIf="guidePosts.length" class="space-y-5">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Guias evergreen</p>
+          <h2 class="text-2xl font-semibold text-white">Rutas útiles para decidir qué ver</h2>
+        </div>
+        <a
+          [routerLink]="appPaths.explore"
+          class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+        >
+          Abrir qué ver hoy
+        </a>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <app-editorial-post-card
+          *ngFor="let post of guidePosts"
+          [post]="post"
+        ></app-editorial-post-card>
       </div>
     </section>
 
-    <div *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
-      <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-slate-900/70"></div>
-    </div>
-
-    <div
-      *ngIf="error"
-      class="mt-8 rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
-    >
-      {{ error }}
-    </div>
-
-    <ng-container *ngIf="!loading && !error">
-      <section *ngIf="guidePosts.length" class="mt-10 space-y-5">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Guias evergreen</p>
-            <h2 class="text-2xl font-semibold text-white">Rutas utiles para decidir que ver</h2>
-          </div>
-          <a
-            [routerLink]="appPaths.explore"
-            class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
-          >
-            Abrir Que ver hoy
-          </a>
+    <section *ngIf="rankingPosts.length" class="space-y-5">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Rankings</p>
+          <h2 class="text-2xl font-semibold text-white">Listas y selecciones editoriales</h2>
         </div>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <app-editorial-post-card
-            *ngFor="let post of guidePosts"
-            [post]="post"
-          ></app-editorial-post-card>
-        </div>
-      </section>
-
-      <section *ngIf="rankingPosts.length" class="mt-10 space-y-5">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Rankings</p>
-            <h2 class="text-2xl font-semibold text-white">Listas y selecciones editoriales</h2>
-          </div>
-          <a
-            [routerLink]="appPaths.top10"
-            class="min-h-[40px] rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-100 transition-colors hover:border-amber-400/40"
-          >
-            Abrir rankings
-          </a>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <app-editorial-post-card
-            *ngFor="let post of rankingPosts.slice(0, 4)"
-            [post]="post"
-          ></app-editorial-post-card>
-        </div>
-      </section>
-
-      <section *ngIf="communityLists.length" class="mt-10 space-y-5">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Comunidad</p>
-            <h2 class="text-2xl font-semibold text-white">Listas de los usuarios</h2>
-          </div>
-          <a
-            [routerLink]="appPaths.profile"
-            class="min-h-[40px] rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition-colors hover:border-emerald-400/40"
-          >
-            Crear tu lista
-          </a>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <app-community-list-card
-            *ngFor="let list of communityLists"
-            [list]="list"
-          ></app-community-list-card>
-        </div>
-      </section>
-
-      <section *ngIf="trendPosts.length" class="mt-10 space-y-5">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Tendencias utiles</p>
-            <h2 class="text-2xl font-semibold text-white">Lecturas ligadas a lo que mas se mueve</h2>
-          </div>
-          <a
-            [routerLink]="appPaths.stats"
-            class="min-h-[40px] rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-100 transition-colors hover:border-sky-400/40"
-          >
-            Ver tendencias
-          </a>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <app-editorial-post-card
-            *ngFor="let post of trendPosts"
-            [post]="post"
-          ></app-editorial-post-card>
-        </div>
-      </section>
-
-      <section *ngFor="let section of categorySections" class="mt-10 space-y-5">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Categoría</p>
-            <h2 class="text-2xl font-semibold text-white">{{ section.category.name }}</h2>
-          </div>
-          <a
-            [routerLink]="section.category.canonicalPath"
-            class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
-          >
-            Ver categoría
-          </a>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <app-editorial-post-card
-            *ngFor="let post of section.posts"
-            [post]="post"
-          ></app-editorial-post-card>
-        </div>
-      </section>
-
-      <section class="mt-10 grid gap-4 lg:grid-cols-3">
         <a
-          [routerLink]="appPaths.platforms"
-          class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5 transition-colors hover:border-slate-600"
+          [routerLink]="appPaths.top10"
+          class="min-h-[40px] rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-100 transition-colors hover:border-amber-400/40"
         >
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Plataformas</p>
-          <h2 class="mt-3 text-xl font-semibold text-white">Descubre dónde ver cada título</h2>
-          <p class="mt-2 text-sm text-slate-400">
-            El editorial conecta con el catálogo de streaming real y sus filtros actuales.
-          </p>
+          Abrir rankings
         </a>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <app-editorial-post-card
+          *ngFor="let post of rankingPosts.slice(0, 4)"
+          [post]="post"
+        ></app-editorial-post-card>
+      </div>
+    </section>
+
+    <section *ngIf="communityLists.length" class="space-y-5">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Comunidad</p>
+          <h2 class="text-2xl font-semibold text-white">Listas de los usuarios</h2>
+        </div>
         <a
-          [routerLink]="appPaths.streamingComparison"
-          class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5 transition-colors hover:border-slate-600"
+          [routerLink]="appPaths.profile"
+          class="min-h-[40px] rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition-colors hover:border-emerald-400/40"
         >
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Comparador</p>
-          <h2 class="mt-3 text-xl font-semibold text-white">Compara plataformas con criterio editorial</h2>
-          <p class="mt-2 text-sm text-slate-400">
-            Desde precios y catálogo hasta perfiles de uso, sin salir de la misma experiencia.
-          </p>
+          Crear tu lista
         </a>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <app-community-list-card
+          *ngFor="let list of communityLists"
+          [list]="list"
+        ></app-community-list-card>
+      </div>
+    </section>
+
+    <section *ngIf="trendPosts.length" class="space-y-5">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Tendencias útiles</p>
+          <h2 class="text-2xl font-semibold text-white">Lecturas ligadas a lo que más se mueve</h2>
+        </div>
         <a
           [routerLink]="appPaths.stats"
-          class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5 transition-colors hover:border-slate-600"
+          class="min-h-[40px] rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-100 transition-colors hover:border-sky-400/40"
         >
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Tendencias</p>
-          <h2 class="mt-3 text-xl font-semibold text-white">Cruza análisis con lo que más se mueve ahora</h2>
-          <p class="mt-2 text-sm text-slate-400">
-            El editorial deja de ser decorativo y pasa a formar parte del flujo de descubrimiento.
-          </p>
+          Ver tendencias
         </a>
-      </section>
-    </ng-container>
-  </div>
-</div>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <app-editorial-post-card
+          *ngFor="let post of trendPosts"
+          [post]="post"
+        ></app-editorial-post-card>
+      </div>
+    </section>
+
+    <section *ngFor="let section of categorySections" class="space-y-5">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Categoría</p>
+          <h2 class="text-2xl font-semibold text-white">{{ section.category.name }}</h2>
+        </div>
+        <a
+          [routerLink]="section.category.canonicalPath"
+          class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+        >
+          Ver categoría
+        </a>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <app-editorial-post-card
+          *ngFor="let post of section.posts"
+          [post]="post"
+        ></app-editorial-post-card>
+      </div>
+    </section>
+  </ng-container>
+</app-unified-portal-shell>
