@@ -123,6 +123,17 @@ Three specific production bugs this session, all root-caused with real evidence,
 ## Host resource pressure — now a recurring, cross-cutting constraint
 
 Worth stating plainly: this 7.8GB host is carrying production (`guiatv-api`+`guiatv-ssr`+`mongod`+`valkey`), 4 unrelated sites, and this active dev session's own tooling (~1.5GB) simultaneously. Effects observed this session: two of the three production incidents were traffic-driven memory issues on this same tight budget; a residual ~hourly self-healing OOM pattern remains (`NRestarts` climbing steadily, `guiatv-api` at 9 as of this round) on top of the two specific bugs already fixed; the harness's own Edit-tool hook timed out mid-incident; and now a real Playwright E2E run is failing in a pattern consistent with the same pressure. None of this blocks further code work, but it does mean further resource-heavy operations (a full E2E re-run, Lighthouse/performance profiling, another `job:syncEPG` backfill) should be sequenced with this in mind rather than run back-to-back without checking headroom first.
+
+## Round 10 result — real E2E fixes (CORS + assertion race), residual-OOM hypothesis fix deployed
+
+Abandoned the stuck `test-infra-builder` agent for good (`TaskStop` confirmed it wasn't actually running - each "still waiting" message was a fresh completion, not progress) and drove verification directly instead. Found and fixed two real, distinct bugs myself:
+
+1. **`assertNotBlankScreen` false-negative** (`e2e/fixtures/helpers.ts`): one-shot `innerText()` read with no retry raced the CSR dev build's first paint. Switched to `expect.poll()` (10s). Confirmed via screenshot that the app was rendering real content the whole time - this was a test-helper bug, not a product bug.
+2. **CORS blocking every data-dependent journey** (`playwright.config.ts`) - credit to the stuck agent, which found this correctly despite never delivering a usable final report: the backend's `ALLOWED_ORIGINS` doesn't cover the E2E scratch port. Fixed by launching the E2E Chromium project with `--disable-web-security` rather than touching shared backend/app config used by real dev workflows.
+
+**Result**: clean single-worker run went from 1 passed/12 failed -> 3 passed/10 failed. Real, verified improvement, not yet fully green - remaining failures are `.program-card` visibility timeouts on sports/streaming/etc., needing further per-journey investigation in a future round.
+
+**Also**: while investigating why `guiatv-api` crashed *during* an E2E run (NRestarts 9->10), found a plausible contributing cause via code review - `TvReadQueryService` cached every response (including `day`-view responses up to 20,000 items) into a 200-entry-capped-but-not-byte-capped in-process `L1Cache`, and the Round-8 fix earlier today increased traffic to exactly that large-response path. Excluded `day` view from L1 caching (Redis caching for it untouched) - low-risk, purely a cache-locality change. **Deployed** (release `20260813011948`). Explicitly NOT claiming this as a confirmed root cause - it's a well-reasoned hypothesis from code review, not heap-snapshot-verified, and is being observed via the existing alerting rather than asserted as fixed.
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
