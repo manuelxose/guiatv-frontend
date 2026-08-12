@@ -1,0 +1,71 @@
+// Direction 3 "Hybrid Signal" (docs/visual-directions.md) card wayfinding.
+//
+// Full-width 3px top accent bar + matching `-soft` tint background (6%
+// opacity), keyed to a card's vertical (live/discover/streaming/sports/
+// editorial). Consumed via `data-vertical="<vertical>"` on the card's own
+// root element.
+//
+// This is the ONE shared mixin for ProgramCard (UnifiedProgramCardComponent),
+// PosterCard (CatalogCardComponent) and EditorialCard
+// (EditorialPostCardComponent) — visual-directions.md explicitly calls out
+// per-component copy-pasted vertical styling as a performance-feasibility
+// risk, so every consumer must `@use` + `@include` this instead of
+// reimplementing it.
+//
+// PlatformBadge deliberately does NOT include this mixin — it stays a
+// neutral chip per spec (docs/visual-directions.md, Direction 3, "Card /
+// component treatment").
+@mixin card-vertical-accent($bar-height: 3px) {
+  position: relative;
+  transition: background-color 150ms ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: $bar-height;
+    background: transparent;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &[data-vertical='live'] {
+    background-color: var(--accent-live-soft);
+
+    &::before {
+      background: var(--accent-live);
+    }
+  }
+
+  &[data-vertical='discover'] {
+    background-color: var(--accent-discover-soft);
+
+    &::before {
+      background: var(--accent-discover);
+    }
+  }
+
+  &[data-vertical='streaming'] {
+    background-color: var(--accent-streaming-soft);
+
+    &::before {
+      background: var(--accent-streaming);
+    }
+  }
+
+  &[data-vertical='sports'] {
+    background-color: var(--accent-sports-soft);
+
+    &::before {
+      background: var(--accent-sports);
+    }
+  }
+
+  &[data-vertical='editorial'] {
+    background-color: var(--accent-editorial-soft);
+
+    &::before {
+      background: var(--accent-editorial);
+    }
+  }
+}

@@ -14,41 +14,20 @@
   [isAuthenticated]="isAuthenticated()"
   [profileName]="profile()?.name || 'Cuenta'"
   [breadcrumbItems]="breadcrumbItems"
-  [showHero]="false"
+  [showHero]="!!heroLead()"
+  heroVariant="stage"
   (tabChange)="navigateToTab($event)"
   (topPillChange)="onTopPillChange($event)"
   (searchChange)="onSearchChange($event)"
   (searchSubmit)="onSearchSubmit($event)"
 >
-  <section class="home-page__lead" *ngIf="heroLead() as lead">
-    <div class="home-page__lead-copy">
-      <p class="home-page__lead-eyebrow">Portada unificada</p>
-      <h1>Empieza por lo que está vivo</h1>
-      <p>TV, streaming y deporte en un mismo flujo, con contenido antes que explicación.</p>
-
-      <div class="home-page__lead-actions">
-        <a [routerLink]="appPaths.guide" [queryParams]="{ liveView: 'now' }" class="home-page__lead-pill home-page__lead-pill--live">Ahora en TV</a>
-        <a [routerLink]="appPaths.guide" [queryParams]="{ liveView: 'night' }" class="home-page__lead-pill">Esta noche</a>
-        <a [routerLink]="appPaths.platforms" class="home-page__lead-pill">Plataformas</a>
-        <a [routerLink]="appPaths.sports" [queryParams]="{ timeRange: 'live' }" class="home-page__lead-pill home-page__lead-pill--sports">Deportes en vivo</a>
-      </div>
-
-      <div class="home-page__lead-platforms" *ngIf="featuredPlatforms().length">
-        <app-platform-badge
-          *ngFor="let platform of featuredPlatforms().slice(0, 4); trackBy: trackByPlatform"
-          [label]="platform.name"
-          [color]="platform.color"
-          [logoUrl]="platform.logoUrl || ''"
-        ></app-platform-badge>
-      </div>
-    </div>
-
+  <div class="home-page__hero-live" shell-hero-media *ngIf="heroLead() as lead">
     <app-unified-program-card
       [item]="lead"
       variant="live"
       [showActions]="false"
     ></app-unified-program-card>
-  </section>
+  </div>
 
   <section *ngIf="loading()" class="home-page__loading">
     <app-unified-skeleton-block [count]="6" [columns]="3" cardHeight="15rem"></app-unified-skeleton-block>

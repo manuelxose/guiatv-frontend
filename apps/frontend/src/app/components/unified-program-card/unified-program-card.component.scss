@@ -1,9 +1,24 @@
+@use '../../../styles/card-accent' as cards;
+
 .program-card {
   border: none;
   background: transparent;
   border-radius: 0;
   overflow: visible;
   box-shadow: none;
+}
+
+// Direction 3 "Hybrid Signal" card wayfinding — applied to every variant
+// except epg-row (the EPG grid/list work owns that variant's box model and
+// is being built in parallel; this stays out of it entirely).
+.program-card--boxed {
+  border: 1px solid var(--portal-border);
+  border-radius: var(--guide-radius-md, 1rem);
+  background: var(--portal-card);
+  overflow: hidden;
+  padding: 0.7rem;
+
+  @include cards.card-vertical-accent();
 }
 
 .program-card__tap {
@@ -194,16 +209,16 @@
 }
 
 .program-card__meta-pill--live {
-  background: rgba(220, 38, 38, 0.08);
-  color: #dc2626;
+  background: var(--accent-live-soft);
+  color: var(--accent-live);
 }
 
 .program-card__meta-pill--live i {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 999px;
-  background: #ef4444;
-  box-shadow: 0 0 0 0.18rem rgba(239, 68, 68, 0.18);
+  background: var(--accent-live);
+  box-shadow: 0 0 0 0.18rem color-mix(in oklch, var(--accent-live) 18%, transparent);
 }
 
 .program-card__action {

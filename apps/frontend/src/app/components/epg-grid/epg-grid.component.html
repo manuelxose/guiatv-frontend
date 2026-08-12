@@ -1,0 +1,72 @@
+<div
+  class="epg-grid"
+  role="grid"
+  aria-label="Parrilla de canales y horarios"
+  [class.epg-grid--empty]="!rows().length"
+>
+  <ng-container *ngIf="rows().length; else empty">
+    <div class="epg-grid__scroll">
+      <div class="epg-grid__header" role="row">
+        <div class="epg-grid__header-channel" role="columnheader">Canal</div>
+        <div class="epg-grid__header-timeline" [style.width.px]="timelineWidthPx()">
+          <span
+            *ngFor="let tick of ticks(); trackBy: trackTick"
+            class="epg-grid__tick"
+            [style.left.px]="tick.leftPx"
+          >{{ tick.label }}</span>
+          <span
+            class="epg-grid__now-line epg-grid__now-line--header"
+            *ngIf="nowLeftPx() !== null"
+            [style.left.px]="nowLeftPx()"
+            aria-hidden="true"
+          ></span>
+        </div>
+      </div>
+
+      <div class="epg-grid__body" role="rowgroup" #gridBody>
+        <div class="epg-grid__row" role="row" *ngFor="let row of rows(); let ri = index; trackBy: trackRow">
+          <div class="epg-grid__channel-cell" role="rowheader">
+            <img *ngIf="row.channelIcon" [src]="row.channelIcon" alt="" loading="lazy" />
+            <span class="epg-grid__channel-name">{{ row.channelName }}</span>
+          </div>
+
+          <div class="epg-grid__track" role="presentation" [style.width.px]="timelineWidthPx()">
+            <span
+              class="epg-grid__now-line"
+              *ngIf="nowLeftPx() !== null"
+              [style.left.px]="nowLeftPx()"
+              aria-hidden="true"
+            ></span>
+
+            <a
+              *ngFor="let cell of row.cells; let ci = index; trackBy: trackCell"
+              class="epg-grid__cell"
+              [class.epg-grid__cell--live]="cell.item.airing.liveNow"
+              [class.epg-grid__cell--accent-live]="cell.card.vertical === 'live'"
+              [class.epg-grid__cell--accent-discover]="cell.card.vertical === 'discover'"
+              [class.epg-grid__cell--accent-streaming]="cell.card.vertical === 'streaming'"
+              [class.epg-grid__cell--accent-sports]="cell.card.vertical === 'sports'"
+              role="gridcell"
+              [attr.data-cell]="ri + '-' + ci"
+              [routerLink]="cell.card.detailPath"
+              [tabindex]="isFocused(ri, ci) ? 0 : -1"
+              [attr.aria-label]="cell.ariaLabel"
+              [style.left.px]="cell.leftPx"
+              [style.width.px]="cell.widthPx"
+              (focus)="setFocus(ri, ci)"
+              (keydown)="onCellKeydown($event, ri, ci)"
+            >
+              <span class="epg-grid__cell-time">{{ cell.timeLabel }}</span>
+              <span class="epg-grid__cell-title">{{ cell.item.program.title }}</span>
+              <span class="epg-grid__cell-live-dot" *ngIf="cell.item.airing.liveNow" aria-hidden="true"></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #empty>
+    <p class="epg-grid__empty-message">No hay programación disponible para la parrilla en este momento.</p>
+  </ng-template>
+</div>

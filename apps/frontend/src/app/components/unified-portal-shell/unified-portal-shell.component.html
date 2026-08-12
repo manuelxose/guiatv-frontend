@@ -102,12 +102,16 @@
           class="portal-shell__hero"
           [class.portal-shell__hero--stage]="heroVariant() === 'stage'"
           [class.portal-shell__hero--compact]="heroVariant() === 'compact'"
+          [class.portal-shell__hero--media-only]="!heroHasCopy()"
         >
+          @if (heroHasCopy()) {
           <div class="portal-shell__hero-copy">
             @if (eyebrow()) {
             <p class="portal-shell__eyebrow">{{ eyebrow() }}</p>
             }
+            @if (title()) {
             <h1>{{ title() }}</h1>
+            }
             @if (description()) {
             <p class="portal-shell__hero-description">{{ description() }}</p>
             }
@@ -115,6 +119,7 @@
               <ng-content select="[shell-hero-actions]"></ng-content>
             </div>
           </div>
+          }
 
           @if (heroVariant() === 'stage' || metrics().length) {
           <div class="portal-shell__hero-side">

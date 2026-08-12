@@ -11,7 +11,8 @@ import { EditorialPost } from '../../models/editorial.models';
   template: `
     <a
       [routerLink]="post?.canonicalPath"
-      class="group block overflow-hidden rounded-[1.6rem] border border-slate-800/80 bg-slate-950/70 transition-colors hover:border-slate-600"
+      class="editorial-post-card group relative block overflow-hidden rounded-[1.6rem] border border-slate-800/80 bg-slate-950/70 transition-colors hover:border-slate-600"
+      data-vertical="editorial"
     >
       <div class="relative aspect-[16/10] overflow-hidden bg-slate-900">
         <img
@@ -57,6 +58,15 @@ import { EditorialPost } from '../../models/editorial.models';
       </div>
     </a>
   `,
+  styles: [
+    `
+      @use '../../../../styles/card-accent' as cards;
+
+      .editorial-post-card {
+        @include cards.card-vertical-accent();
+      }
+    `,
+  ],
 })
 export class EditorialPostCardComponent {
   @Input({ required: true }) post!: EditorialPost;

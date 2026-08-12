@@ -1,88 +1,29 @@
-.home-page__lead {
-  display: grid;
-  gap: 1rem;
-  align-items: start;
+// Home's hero is now just the shared shell's media slot populated with the
+// real live-now program — no bespoke copy hero. Description/secondary meta
+// are hidden here (not in UnifiedProgramCardComponent itself, so other
+// consumers of the `live` variant are unaffected) to keep the hero within
+// its height cap (unified-portal-shell.component.scss,
+// `.portal-shell__hero--stage`) — title, channel, time and the
+// `--accent-live` "EN DIRECTO" chip are enough to answer "what's on now".
+.home-page__hero-live {
+  height: 100%;
+
+  // Shorter than the rail cards' 16:9 so the hero still fits its height cap
+  // at full content-column width on desktop (see .portal-shell__hero--stage).
+  ::ng-deep .program-card__media {
+    aspect-ratio: 21 / 7;
+  }
+
+  ::ng-deep .program-card__description,
+  ::ng-deep .program-card__meta-pill:not(.program-card__meta-pill--live) {
+    display: none;
+  }
 }
 
-.home-page__lead-copy {
-  display: grid;
-  gap: 0.85rem;
-}
-
-.home-page__lead-copy h1,
-.home-page__lead-copy p,
-.home-page__lead-eyebrow {
-  margin: 0;
-}
-
-.home-page__lead-eyebrow {
-  color: var(--portal-text-soft);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.home-page__lead-copy h1 {
-  color: var(--portal-text);
-  font-size: clamp(1.7rem, 4vw, 2.7rem);
-  line-height: 0.96;
-  letter-spacing: -0.04em;
-}
-
-.home-page__lead-copy p:last-of-type {
-  color: var(--portal-text-soft);
-  font-size: 0.94rem;
-  line-height: 1.55;
-  max-width: 42rem;
-}
-
-.home-page__lead-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.home-page__lead-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 46px;
-  border-radius: 999px;
-  border: 1px solid var(--portal-border);
-  background: var(--portal-surface-strong);
-  color: var(--portal-text);
-  padding: 0 1.1rem;
-  text-decoration: none;
-  font-size: 0.86rem;
-  font-weight: 800;
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background 180ms ease,
-    box-shadow 180ms ease;
-}
-
-.home-page__lead-pill--live {
-  border-color: rgba(239, 68, 68, 0.35);
-  background: rgba(239, 68, 68, 0.12);
-}
-
-.home-page__lead-pill--sports {
-  border-color: rgba(34, 197, 94, 0.35);
-  background: rgba(34, 197, 94, 0.12);
-}
-
-.home-page__lead-pill:hover {
-  transform: translateY(-1px);
-  border-color: var(--portal-border-strong);
-  box-shadow: var(--shadow-md);
-}
-
-.home-page__lead-platforms {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+@media (min-width: 768px) {
+  .home-page__hero-live ::ng-deep .program-card__media {
+    aspect-ratio: 32 / 9;
+  }
 }
 
 .home-page__loading,
@@ -158,11 +99,6 @@
 }
 
 @media (min-width: 768px) {
-  .home-page__lead {
-    grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 1.15fr);
-    align-items: stretch;
-  }
-
   .home-page__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -177,12 +113,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-page__lead-pill,
   .home-page__platform-card {
     transition: none;
   }
 
-  .home-page__lead-pill:hover,
   .home-page__platform-card:hover {
     transform: none;
   }

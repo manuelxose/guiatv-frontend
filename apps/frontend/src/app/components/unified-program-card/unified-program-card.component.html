@@ -4,6 +4,8 @@
   [class.program-card--epg]="variant === 'epg-row'"
   [class.program-card--sport]="variant === 'sport'"
   [class.program-card--live]="variant === 'live'"
+  [class.program-card--boxed]="variant !== 'epg-row'"
+  [attr.data-vertical]="variant === 'epg-row' ? null : card.vertical"
 >
   <a [routerLink]="card.detailPath" class="program-card__tap" (click)="onSelect()">
     <div class="program-card__media" [class.program-card__media--empty]="!hasVisual">

@@ -261,6 +261,25 @@
   background: color-mix(in srgb, var(--guide-surface-strong) 92%, var(--guide-text) 8%);
 }
 
+// EPG grid vs. rails: mobile-first, breakpoint decided purely by CSS so SSR
+// (which can't know the real device viewport) always emits real content for
+// *both* blocks — the `min-width: 1024px` query below is what actually
+// picks the default per screen size, not JS. `.live-view--rails-mode`
+// (bound from `desktopViewMode()`) only matters at ≥1024px, where it lets
+// the "Ver rails" toggle flip back to the rail view; below 1024px the rail
+// view is shown unconditionally, matching the spec's "mobile unchanged".
+.live-view__mode-toggle {
+  display: none;
+}
+
+.live-view__grid-wrap {
+  display: none;
+}
+
+.live-view__rails-wrap {
+  display: contents;
+}
+
 @media (min-width: 1024px) {
   .live-view__feature-grid {
     grid-template-columns: minmax(0, 1.65fr) minmax(18rem, 0.95fr);
@@ -269,6 +288,49 @@
 
   .live-view__channel-groups {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .live-view__mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: start;
+    min-height: 2.25rem;
+    border-radius: 999px;
+    border: 1px solid var(--guide-border);
+    background: var(--guide-surface);
+    color: var(--guide-text);
+    padding: 0 0.9rem;
+    font-size: 0.76rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .live-view__mode-toggle:hover {
+    background: color-mix(in srgb, var(--guide-surface-strong) 92%, var(--guide-text) 8%);
+  }
+
+  .live-view__mode-toggle:focus-visible {
+    outline: 2px solid var(--accent-discover);
+    outline-offset: 2px;
+  }
+
+  // Default at ≥1024px: grid shown, rails hidden.
+  .live-view__grid-wrap {
+    display: block;
+  }
+
+  .live-view__rails-wrap {
+    display: none;
+  }
+
+  // "Ver rails" toggle flips it: rails shown, grid hidden.
+  .live-view--rails-mode .live-view__grid-wrap {
+    display: none;
+  }
+
+  .live-view--rails-mode .live-view__rails-wrap {
+    display: contents;
   }
 }
 
