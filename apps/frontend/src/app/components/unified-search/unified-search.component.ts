@@ -24,6 +24,30 @@ import { StorageService } from '../../services/storage.service';
 
 const SEARCH_HISTORY_KEY = 'gtv.unified-search.history';
 
+/**
+ * Suggestion grouping is bucketed from `CatalogItem.contentType`, the only
+ * type taxonomy the `/v2/discovery/search` (and canonical `/v2/catalog/suggest`)
+ * response shape actually supports: 'program' | 'movie' | 'series'. There is
+ * no standalone "channel" entity in the response (programs carry a `channel`
+ * object, but channels are never returned as their own result) — see
+ * docs/ux-ia-recommendations.md §6, verified live against the backend.
+ */
+type SuggestionGroupKey = 'program' | 'catalog';
+
+interface SuggestionGroupItem {
+  item: CatalogItem;
+  /** Index into the grouped/flattened `suggestions` array — keyboard nav's source of truth. */
+  index: number;
+}
+
+interface SuggestionGroup {
+  key: SuggestionGroupKey;
+  label: string;
+  /** Matches the shared card-accent tokens (--accent-live / --accent-streaming) — no new colors. */
+  accent: 'live' | 'streaming';
+  items: SuggestionGroupItem[];
+}
+
 @Component({
   selector: 'app-unified-search',
   standalone: true,
@@ -44,6 +68,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
 
   readonly control = new FormControl('', { nonNullable: true });
   suggestions: CatalogItem[] = [];
+  suggestionGroups: SuggestionGroup[] = [];
   history: string[] = [];
   showMenu = false;
   isLoading = false;
@@ -85,7 +110,12 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((items) => {
-        this.suggestions = items;
+        const groups = this.groupSuggestions(items);
+        this.suggestionGroups = groups;
+        // Flatten back out in grouped (display) order — keyboard nav and
+        // openSuggestion() index into this, so traversal always follows
+        // what's on screen (group by group), not the raw API order.
+        this.suggestions = groups.flatMap((group) => group.items.map((entry) => entry.item));
         this.isLoading = false;
         this.focusedIndex = -1;
         // Only show menu if user has interacted with the input
@@ -187,6 +217,36 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
   useHistory(entry: string): void {
     this.control.setValue(entry);
     this.submit();
+  }
+
+  /**
+   * Buckets suggestions by content type, matching the taxonomy the real
+   * `/v2/discovery/search` / `/v2/catalog/suggest` response supports:
+   * 'program' (TV guide airings) vs. 'movie'/'series' (catalog titles).
+   * Empty groups are dropped so a single-type result set (e.g. the 'live'
+   * tab, which only ever returns programs) still renders as one group,
+   * not an empty heading.
+   */
+  private groupSuggestions(items: CatalogItem[]): SuggestionGroup[] {
+    const programItems: CatalogItem[] = [];
+    const catalogItems: CatalogItem[] = [];
+    for (const item of items) {
+      (item.contentType === 'program' ? programItems : catalogItems).push(item);
+    }
+
+    // Index is assigned over the grouped/flattened order (programs, then
+    // catalog titles) — not the original API order — so it lines up with
+    // `this.suggestions` (built via the same group order) for keyboard nav.
+    let index = 0;
+    const toEntries = (list: CatalogItem[]): SuggestionGroupItem[] =>
+      list.map((item) => ({ item, index: index++ }));
+
+    const groups: SuggestionGroup[] = [
+      { key: 'program', label: 'Programas', accent: 'live', items: toEntries(programItems) },
+      { key: 'catalog', label: 'Películas y series', accent: 'streaming', items: toEntries(catalogItems) },
+    ];
+
+    return groups.filter((group) => group.items.length > 0);
   }
 
   private matchesTab(item: CatalogItem): boolean {

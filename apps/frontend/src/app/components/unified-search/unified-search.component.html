@@ -43,25 +43,37 @@
       <span *ngIf="isLoading" class="search-shell__loading-text">Buscando...</span>
     </div>
 
-    <button
-      *ngFor="let suggestion of suggestions; let i = index"
-      type="button"
-      class="search-shell__option"
-      [class.search-shell__option--focused]="focusedIndex === i"
-      (click)="openSuggestion(suggestion)"
+    <div
+      *ngFor="let group of suggestionGroups"
+      class="search-shell__group"
+      role="group"
+      [attr.aria-label]="group.label"
     >
-      <span class="search-shell__option-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M8.25 7.5 16.5 12l-8.25 4.5v-9Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-        </svg>
-      </span>
-      <span class="search-shell__option-copy">
-        <span class="search-shell__option-title">{{ suggestion.title }}</span>
-        <span class="search-shell__option-meta">
-          {{ suggestion.channel?.name || suggestion.primaryPlatforms?.slice(0, 2).join(' · ') || suggestion.contentType }}
+      <p class="search-shell__group-heading" [attr.data-accent]="group.accent">
+        <span class="search-shell__group-dot" aria-hidden="true"></span>
+        {{ group.label }}
+      </p>
+
+      <button
+        *ngFor="let entry of group.items"
+        type="button"
+        class="search-shell__option"
+        [class.search-shell__option--focused]="focusedIndex === entry.index"
+        (click)="openSuggestion(entry.item)"
+      >
+        <span class="search-shell__option-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M8.25 7.5 16.5 12l-8.25 4.5v-9Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+          </svg>
         </span>
-      </span>
-    </button>
+        <span class="search-shell__option-copy">
+          <span class="search-shell__option-title">{{ entry.item.title }}</span>
+          <span class="search-shell__option-meta">
+            {{ entry.item.channel?.name || entry.item.primaryPlatforms?.slice(0, 2).join(' · ') || entry.item.contentType }}
+          </span>
+        </span>
+      </button>
+    </div>
 
     <button
       *ngFor="let entry of !suggestions.length ? history : []; let i = index"
