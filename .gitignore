@@ -4,11 +4,14 @@
 /apps/frontend/node_modules
 
 # Frontend artifacts
+/.angular
 /apps/frontend/.angular
+/dist
 /apps/frontend/dist
 /apps/frontend/releases
 
 # Backend artifacts
+/backend
 /apps/backend/dist
 /apps/backend/lib
 /apps/backend/storage
@@ -45,3 +48,11 @@ Thumbs.db
 tmp-storage/
 current
 releases/
+
+# Generated assets (AI images, smoke tests)
+/generated-assets/
+/apps/backend/generated-assets
+/apps/frontend/generated-assets
+
+# Local MCP tools
+/tools/mcp/
