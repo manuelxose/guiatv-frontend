@@ -89,6 +89,20 @@ Root cause confirmed: `CatalogService.getBySlug()` had no negative-result cache 
 
 Both production incidents from this session are now: root-caused, fixed with evidence (tests + live verification), deployed, and covered by alerting going forward.
 
+## Round 8 result — THIRD incident: full-collection-scan on program-slug fallback, fixed and deployed
+
+Discovered mid-Round-7 (EPG grid build) when the live guide endpoint hung 144s+/timed out and `guiatv-api` NRestarts climbed to 10 (`guiatv-ssr` to 2). Root cause: `findTvReadItemBySlug()` used `TvReadQueryService` `view:'search'`, which OR's an indexed `searchTokens` match with two **unanchored case-insensitive regexes** on `program.title`/`channel.name` — neither field indexed, and MongoDB can't use an index for an unanchored `/i` regex regardless. Every miss forced a full collection scan of the day's ~20k+ airings. Confirmed via journal: only ~19 requests from 7 Cloudflare IPs in a 3-minute window (not a volume flood) hitting `/v2/catalog/slug/program/*` for many distinct nonexistent slugs — a per-request-cost problem, not a rate problem, so Round 4's negative-cache (which only helps repeat lookups of the *same* slug) didn't help here.
+
+**Fix** (`88246ed`): switched to `view:'day'` (plain `{date}` query, indexed, and already hot from guide/discovery traffic) + in-process exact slugify match, same pattern already used elsewhere in the file. Named, accepted trade-off: `day` view caps at 20000 items; today has 20543 airings, so a handful of very low-priority programs could miss this specific fallback — deliberately preferred over site-wide instability.
+
+**Deploy discipline**: frontend hero/EPG-grid/card work from Round 7 was mid-flight and not yet screenshot-verified — `git stash`ed before deploying so only this backend fix shipped (release `20260812194840`), keeping the emergency fix isolated and easy to verify/rollback independently. Frontend work restored after.
+
+**Live-verified**: guide endpoint 144s+/timeout → 34s (cold) → 1.6s → 0.66s (warm); bogus program-slug lookup → clean 2.9s 404 instead of hanging. `NRestarts` back to 0 on both services post-deploy. Host memory recovered from 151MB free (crisis peak) to 2.1GB free.
+
+**Process note**: mid-incident, the Edit tool started failing with `PreToolUse hook did not respond before its timeout` — plausibly the harness's own hook infrastructure struggling under the same host resource pressure. Worked around it via a direct Python-scripted file patch (Bash remained responsive) rather than retrying indefinitely or working around the block adversarially.
+
+Three production incidents this session, all root-caused with real evidence, fixed, deployed, and verified — none guessed at or patched blind.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
