@@ -117,6 +117,40 @@
   color: var(--guide-accent, #ef4444);
 }
 
+.search-shell__group + .search-shell__group {
+  border-top: 1px solid var(--portal-divider);
+}
+
+.search-shell__group-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.7rem 1rem 0.35rem;
+  color: var(--portal-text-muted, #94a3b8);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.search-shell__group-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--accent-discover);
+}
+
+// Keyed to the same vertical accent tokens the shared card-accent mixin
+// uses (docs/visual-directions.md "Hybrid Signal") — no new colors.
+.search-shell__group-heading[data-accent='live'] .search-shell__group-dot {
+  background: var(--accent-live);
+}
+
+.search-shell__group-heading[data-accent='streaming'] .search-shell__group-dot {
+  background: var(--accent-streaming);
+}
+
 .search-shell__option,
 .search-shell__submit {
   width: 100%;
@@ -138,7 +172,7 @@
   background: var(--portal-surface);
 }
 
-.search-shell__option + .search-shell__option,
+.search-shell__group .search-shell__option + .search-shell__option,
 .search-shell__submit {
   border-top: 1px solid var(--portal-divider);
 }

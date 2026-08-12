@@ -103,6 +103,26 @@ Discovered mid-Round-7 (EPG grid build) when the live guide endpoint hung 144s+/
 
 Three production incidents this session, all root-caused with real evidence, fixed, deployed, and verified — none guessed at or patched blind.
 
+## Post-Round-8 observation (session resumed 2026-08-13 00:07 CEST)
+
+`guiatv-api` is NOT fully crash-free after the Round 8 fix — journal shows OOM crashes at 21:26, 21:59, 23:04, 23:36, 00:02 (roughly hourly, down from every ~7 minutes pre-fix). This is a different, lower-severity pattern than either of the two specific bugs already fixed: no single pathological request/job precedes these, consistent with gradual memory growth under sustained normal load compounded by this host's persistent tightness (this dev session's own tooling still occupies ~1.5GB of the 7.8GB host). Each crash self-heals in ~2s via systemd; the health-watchdog/OnFailure alerting is confirmed working (both alert types present in the log). Not treated as a fourth emergency — properly diagnosing gradual memory growth needs sustained heap-snapshot profiling over time, not a rushed live patch. Tracked here as an open item for a dedicated round.
+
+Three specific production bugs this session, all root-caused with real evidence, fixed, deployed, and verified — none guessed at or patched blind. A fourth, lower-severity, self-healing pattern remains open and monitored.
+
+
+## Round 9 result — search grouping DONE; test/E2E infra DONE but not yet green
+
+**Search grouping** (`search-grouping` agent): `unified-search.component.*` now groups suggestions into real, data-backed buckets — "Programas" and "Películas y series" — verified against the actual live `/v2/discovery/search?q=` response shape (flat array, `contentType` only ever program/movie/series — no standalone "channel" entity exists in the data, so no "Canales" group was invented). Also found and correctly left alone two genuinely dead search-shaped components (`search-overlay`, `autocomplete`) and confirmed the round-1-flagged `query`/`q` param inconsistency no longer reproduces. Build clean, diff scoped to the search component only.
+
+**Test/lint/E2E infrastructure**: real work exists — root + per-workspace `test`/`lint` npm scripts wired to real runners (backend: `node --test` + `tsc --noEmit`; frontend: `ng test` + new `eslint.config.js`), `playwright.config.ts` + `e2e/` with 8 real spec files (all 7 brief journeys + error-states), register/login journey correctly uses route-interception mocking instead of writing a throwaway account to the real database. **Not committed yet.**
+
+**Real run happened, but failed**: `test-results/.last-run.json` shows 12/12 E2E tests failed, with real screenshots/videos as evidence (not fabricated). Inspected one failure directly (`home-live.spec.ts`): a 15s `toBeVisible` timeout waiting for the `.home-page__module` "Ahora en TV" section — the selector itself looks structurally correct against the real hero-consolidation changes from Round 7, and the timeout pattern (5-6 of 12 failures explicitly timeout-related) is consistent with the CSR dev-server build waiting on real API data from a `guiatv-api` that is, right now, under sustained CPU/memory pressure (see below) rather than a logic bug in the tests or the app. **Not confirmed for all 12 individually** — needs a clean re-run once host pressure eases to get a trustworthy signal, not patched blind against a plausible-but-unconfirmed timing theory.
+
+**Process note**: the agent building this got stuck in an unproductive wait-loop across 3 resumes (~860K tokens, no real final report each time) — very plausibly the same host resource pressure affecting its own Playwright run. Abandoned resuming it further; verified real state directly via `git status`/`test-results/.last-run.json`/`error-context.md` instead of continuing to wait on unreliable self-reporting.
+
+## Host resource pressure — now a recurring, cross-cutting constraint
+
+Worth stating plainly: this 7.8GB host is carrying production (`guiatv-api`+`guiatv-ssr`+`mongod`+`valkey`), 4 unrelated sites, and this active dev session's own tooling (~1.5GB) simultaneously. Effects observed this session: two of the three production incidents were traffic-driven memory issues on this same tight budget; a residual ~hourly self-healing OOM pattern remains (`NRestarts` climbing steadily, `guiatv-api` at 9 as of this round) on top of the two specific bugs already fixed; the harness's own Edit-tool hook timed out mid-incident; and now a real Playwright E2E run is failing in a pattern consistent with the same pressure. None of this blocks further code work, but it does mean further resource-heavy operations (a full E2E re-run, Lighthouse/performance profiling, another `job:syncEPG` backfill) should be sequenced with this in mind rather than run back-to-back without checking headroom first.
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
