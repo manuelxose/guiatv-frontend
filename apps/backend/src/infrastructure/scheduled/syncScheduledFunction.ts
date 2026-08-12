@@ -23,10 +23,15 @@ import {
 
 // ─── Multi-source EPG helpers ─────────────────────────────────────────────────
 
-interface EPGSourceResult {
+interface EPGSourceProcessed {
   sourceUrl: string;
   xml: string;
-  parsed: { channels: any[]; programmes: any[] };
+  channels: any[];
+  // Programmes already filtered to each sync date's overlap window, keyed
+  // by YYYYMMDD. Filtering happens immediately after parsing (per source)
+  // so the full unfiltered feed never has to stay resident for the whole
+  // multi-date loop below.
+  programmesByDate: Record<string, any[]>;
 }
 
 function normalizeChannelName(name: string): string {
@@ -62,81 +67,98 @@ function parseXmlDate(dateStr: string): Date {
   return new Date(baseUtcMillis - totalOffsetMinutes * 60_000);
 }
 
-function annotateSourceParsedData(
-  sourceUrl: string,
-  parsed: { channels: any[]; programmes: any[] }
-): { channels: any[]; programmes: any[] } {
+function annotateChannels(sourceUrl: string, channels: any[]): any[] {
+  return channels.map((channel: any) => ({
+    ...channel,
+    sourceFeed: sourceUrl,
+  }));
+}
+
+function annotateProgramme(sourceUrl: string, programme: any): any {
   return {
-    channels: parsed.channels.map((channel: any) => ({
-      ...channel,
-      sourceFeed: sourceUrl,
-    })),
-    programmes: parsed.programmes.map((programme: any) => ({
-      ...programme,
-      sourceFeed: sourceUrl,
-      sourceProgrammeId:
-        programme.sourceProgrammeId ||
-        `${programme.channelId}|${programme.start}|${programme.title}`,
-      sourceAssetCandidates: programme.icon
-        ? [
-            {
-              kind: 'poster',
-              role: 'primary',
-              source: 'epg_program_image',
-              url: programme.icon,
-              sourceFeed: sourceUrl,
-            },
-          ]
-        : [],
-      sourceProvenance: {
-        schedule: [sourceUrl],
-        metadata: [sourceUrl],
-        assets: programme.icon ? ['epg_program_image'] : [],
-      },
-    })),
+    ...programme,
+    sourceFeed: sourceUrl,
+    sourceProgrammeId:
+      programme.sourceProgrammeId ||
+      `${programme.channelId}|${programme.start}|${programme.title}`,
+    sourceAssetCandidates: programme.icon
+      ? [
+          {
+            kind: 'poster',
+            role: 'primary',
+            source: 'epg_program_image',
+            url: programme.icon,
+            sourceFeed: sourceUrl,
+          },
+        ]
+      : [],
+    sourceProvenance: {
+      schedule: [sourceUrl],
+      metadata: [sourceUrl],
+      assets: programme.icon ? ['epg_program_image'] : [],
+    },
   };
 }
 
-function filterSourceProgrammesByDate(
+/**
+ * Filters raw programmes down to those overlapping `date` and only then
+ * annotates the surviving (small) subset — filter-then-annotate, so we
+ * never materialize an annotated copy of the *entire* feed the way the
+ * old `annotateSourceParsedData` did. Full programme fields (including
+ * `description`) are preserved, since this output also feeds
+ * `SyncEPGData.execute`, not just the snapshot stats below.
+ */
+function filterAndAnnotateProgrammesByDate(
+  sourceUrl: string,
   programmes: any[],
   date: string
 ): any[] {
   const { start: dayStart, end: dayEnd } = DateUtils.getDayRangeYYYYMMDD(date);
-  return programmes
-    .filter((programme) => {
-      try {
-        const startDate = parseXmlDate(String(programme.start || ''));
-        let endDate = parseXmlDate(String(programme.stop || ''));
-        if (endDate <= startDate) {
-          endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
-        }
-        return startDate < dayEnd && endDate > dayStart;
-      } catch {
-        return false;
+  const kept: any[] = [];
+  for (const programme of programmes) {
+    try {
+      const startDate = parseXmlDate(String(programme.start || ''));
+      let endDate = parseXmlDate(String(programme.stop || ''));
+      if (endDate <= startDate) {
+        endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
       }
-    })
-    .map((programme) => ({
-      channelId: programme.channelId,
-      start: programme.start,
-      stop: programme.stop,
-      title: programme.title,
-      subTitle: programme.subTitle,
-      icon: programme.icon,
-      category: programme.category,
-      year: programme.year,
-      rating: programme.rating,
-      sourceFeed: programme.sourceFeed,
-      sourceProgrammeId: programme.sourceProgrammeId,
-      sourceAssetCandidates: programme.sourceAssetCandidates,
-      sourceProvenance: programme.sourceProvenance,
-    }));
+      if (startDate < dayEnd && endDate > dayStart) {
+        kept.push(annotateProgramme(sourceUrl, programme));
+      }
+    } catch {
+      // skip programme with invalid datetime
+    }
+  }
+  return kept;
 }
 
-function buildSnapshotStats(source: EPGSourceResult, date: string) {
-  const programmesForDate = filterSourceProgrammesByDate(source.parsed.programmes, date);
+/**
+ * Narrows an already date-filtered, annotated programme down to the fields
+ * persisted on EPGSourceSnapshotModel. Only ever called on the small
+ * per-date slice, never the full feed.
+ */
+function toSnapshotProgrammeFields(programme: any) {
+  return {
+    channelId: programme.channelId,
+    start: programme.start,
+    stop: programme.stop,
+    title: programme.title,
+    subTitle: programme.subTitle,
+    icon: programme.icon,
+    category: programme.category,
+    year: programme.year,
+    rating: programme.rating,
+    sourceFeed: programme.sourceFeed,
+    sourceProgrammeId: programme.sourceProgrammeId,
+    sourceAssetCandidates: programme.sourceAssetCandidates,
+    sourceProvenance: programme.sourceProvenance,
+  };
+}
+
+function buildSnapshotStats(channels: any[], programmesForDate: any[]) {
   const tdtChannelAliases = new Set<string>();
 
-  source.parsed.channels.forEach((channel: any) => {
+  channels.forEach((channel: any) => {
     const identity = buildChannelIdentityMetadata({
       name: channel.displayName,
       sourceId: channel.id,
@@ -200,7 +222,7 @@ function buildSnapshotStats(source: EPGSourceResult, date: string) {
   });
 
   return {
-    channelsCount: source.parsed.channels.length,
+    channelsCount: channels.length,
     programmesCount: programmesForDate.length,
     programmeIconsCount,
     genericMovieTitleCount,
@@ -250,30 +272,47 @@ export const syncEPGDataHandler = async (context: any) => {
     const sourceUrls = getConfiguredEpgSourceUrls();
     syncLogger.info('Fetching EPG source(s)', { count: sourceUrls.length, sourceUrls });
 
-    const sourceResults = await Promise.all(
-      sourceUrls.map(async (url: string): Promise<EPGSourceResult | null> => {
-        try {
-          const ds = new EPGDataSource({ url, timeout: 60000, compressed: url.endsWith('.gz') });
-          const xml = await ds.fetchWithRetry(3);
-          const parsed = annotateSourceParsedData(url, await new XMLParser().parse(xml));
-          return { sourceUrl: url, xml, parsed };
-        } catch (err) {
-          syncLogger.error('Failed to fetch/parse EPG source', err as Error, { url });
-          return null;
-        }
-      })
-    );
+    // Process sources sequentially (not Promise.all) so only one full
+    // parsed XMLTV feed is resident in memory at a time. Each source's
+    // programmes are filtered down to the sync date range immediately
+    // after parsing (filter-then-annotate on the reduced slice, never the
+    // full feed); the raw unfiltered parse result falls out of scope
+    // before the next source is fetched, instead of being retained for
+    // the whole 4-date loop below.
+    const validSources: EPGSourceProcessed[] = [];
+    for (const url of sourceUrls) {
+      try {
+        const ds = new EPGDataSource({ url, timeout: 60000, compressed: url.endsWith('.gz') });
+        const xml = await ds.fetchWithRetry(3);
+        const rawParsed = await new XMLParser().parse(xml);
 
-    const validSources = sourceResults.filter(Boolean) as EPGSourceResult[];
+        const channels = annotateChannels(url, rawParsed.channels);
+        const programmesByDate: Record<string, any[]> = {};
+        for (const date of datesToSync) {
+          programmesByDate[date] = filterAndAnnotateProgrammesByDate(
+            url,
+            rawParsed.programmes,
+            date
+          );
+        }
+        // `rawParsed`, including its potentially huge `.programmes` array,
+        // is not referenced further and can be garbage-collected before
+        // the next source is fetched/parsed.
+
+        validSources.push({ sourceUrl: url, xml, channels, programmesByDate });
+      } catch (err) {
+        syncLogger.error('Failed to fetch/parse EPG source', err as Error, { url });
+      }
+    }
+
     if (!validSources.length) throw new Error('All EPG sources failed to load');
 
     for (const date of datesToSync) {
       const snapshotOps = validSources.map((source) => {
-        const programmesForDate = filterSourceProgrammesByDate(
-          source.parsed.programmes,
-          date
+        const programmesForDate = source.programmesByDate[date].map(
+          toSnapshotProgrammeFields
         );
-        const stats = buildSnapshotStats(source, date);
+        const stats = buildSnapshotStats(source.channels, programmesForDate);
         return (
         EPGSourceSnapshotModel.findOneAndUpdate(
           {
@@ -286,7 +325,7 @@ export const syncEPGDataHandler = async (context: any) => {
               sourceKey: normalizeChannelName(source.sourceUrl),
               date,
               payloadHash: createHash('sha1').update(source.xml).digest('hex'),
-              channels: source.parsed.channels.map((channel: any) => ({
+              channels: source.channels.map((channel: any) => ({
                 id: channel.id,
                 displayName: channel.displayName,
                 icon: channel.icon,
@@ -319,7 +358,7 @@ export const syncEPGDataHandler = async (context: any) => {
           date,
           forceRefresh: !results.length,
           xmlContent: source.xml,
-          parsedData: source.parsed,
+          parsedData: { channels: source.channels, programmes: source.programmesByDate[date] },
           skipSaveXml: hasSavedXml,
         });
         hasSavedXml = true;

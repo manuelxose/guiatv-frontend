@@ -108,9 +108,6 @@ export class TvDataFacade {
   }
 
   getChannels(group?: string, date = 'today'): Observable<ChannelMetaDTO[]> {
-    if (!this.isBrowser) {
-      return of([]);
-    }
     return this.tvApi.getTvReadChannels(date, normalizeAll(group)).pipe(
       map((response) =>
         (response.data?.channels || []).map((entry) => entry.channel).filter(Boolean)
@@ -120,9 +117,6 @@ export class TvDataFacade {
   }
 
   getGuideSurface(filters: UnifiedLiveFilters = {}): Observable<TvGuideSurfaceDTO> {
-    if (!this.isBrowser) {
-      return of(this.emptyGuideSurface(filters));
-    }
     return this.tvApi
       .getTvGuideSurface({
         date: filters.date || 'today',
@@ -147,9 +141,6 @@ export class TvDataFacade {
 
   discoverContent(filters: UnifiedDiscoverFilters = {}): Observable<UnifiedDiscoveryResult> {
     const normalized = this.normalizeDiscoverFilters(filters);
-    if (!this.isBrowser) {
-      return of(this.emptyDiscoveryResult(normalized.page, normalized.limit));
-    }
     if (normalized.q) {
       return this.searchContent(normalized.q, normalized);
     }
@@ -209,9 +200,6 @@ export class TvDataFacade {
       ...context,
       q,
     });
-    if (!this.isBrowser) {
-      return of(this.emptyDiscoveryResult(normalized.page, normalized.limit));
-    }
     const singleType =
       normalized.types.length === 1 &&
       normalized.types[0] !== 'program'
@@ -268,20 +256,6 @@ export class TvDataFacade {
       limit: Math.max(1, Number(filters.limit || 24)),
     };
 
-    if (!this.isBrowser) {
-      return of({
-        items: [],
-        meta: {
-          total: 0,
-          page: normalized.page,
-          limit: normalized.limit,
-          hasMore: false,
-        },
-        availableGenres: [],
-        availablePlatforms: FALLBACK_CATALOG_PLATFORMS,
-      });
-    }
-
     const types = normalized.type ? [normalized.type] : (['movie', 'series'] as const);
     const requests = types.map((type) =>
       this.discoveryService.browse({
@@ -320,9 +294,6 @@ export class TvDataFacade {
   }
 
   getPlatforms(): Observable<CatalogPlatform[]> {
-    if (!this.isBrowser) {
-      return of(FALLBACK_CATALOG_PLATFORMS);
-    }
     return this.catalogService.getPlatformsState().pipe(
       map((result) => result.data || FALLBACK_CATALOG_PLATFORMS),
       catchError(() => of(FALLBACK_CATALOG_PLATFORMS))
@@ -330,9 +301,6 @@ export class TvDataFacade {
   }
 
   getForYou(limit = 12): Observable<CatalogItem[]> {
-    if (!this.isBrowser || !this.catalogService) {
-      return of([]);
-    }
     return this.catalogService.getForYouState(limit).pipe(
       map((result) => Array.isArray(result.data) ? (result.data as CatalogItem[]) : []),
       catchError(() => of([]))
@@ -340,9 +308,6 @@ export class TvDataFacade {
   }
 
   getLiveSports(filters: UnifiedSportsFilters = {}): Observable<TvReadItemDTO[]> {
-    if (!this.isBrowser) {
-      return of([]);
-    }
     return this.tvApi
       .getTvRead({
         view: 'now',
@@ -359,9 +324,6 @@ export class TvDataFacade {
   }
 
   getUpcomingSports(filters: UnifiedSportsFilters = {}): Observable<TvReadItemDTO[]> {
-    if (!this.isBrowser) {
-      return of([]);
-    }
     return this.tvApi
       .getTvRead({
         view: 'next',
@@ -378,9 +340,6 @@ export class TvDataFacade {
   }
 
   getTonightSports(filters: UnifiedSportsFilters = {}): Observable<TvReadItemDTO[]> {
-    if (!this.isBrowser) {
-      return of([]);
-    }
     return this.tvApi
       .getTvRead({
         view: 'tonight',
@@ -409,9 +368,6 @@ export class TvDataFacade {
     view: 'now' | 'next' | 'tonight' | 'all' | 'search',
     filters: UnifiedLiveFilters
   ): Observable<TvReadItemDTO[]> {
-    if (!this.isBrowser) {
-      return of([]);
-    }
     return this.tvApi
       .getTvRead({
         view,
