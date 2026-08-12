@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map, shareReplay } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { ApiConfigService } from '../api/api-config.service';
 import {
   CatalogItem,
   CatalogPlatform,
@@ -48,11 +48,16 @@ export interface DiscoveryBrowseResponse {
 
 @Injectable({ providedIn: 'root' })
 export class DiscoveryService {
-  private readonly baseUrl = environment.API_BASE_URL;
+  private readonly baseUrl: string;
   private readonly cache = new Map<string, DiscoveryCacheEntry<unknown>>();
   private readonly inFlight = new Map<string, Observable<unknown>>();
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(
+    private readonly http: HttpClient,
+    private readonly apiConfig: ApiConfigService
+  ) {
+    this.baseUrl = this.apiConfig.getBaseUrl();
+  }
 
   getHome(date?: string): Observable<DiscoveryHomeResponse> {
     const params = date ? { date } : undefined;

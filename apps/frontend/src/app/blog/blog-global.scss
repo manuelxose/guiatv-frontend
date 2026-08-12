@@ -118,7 +118,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(31, 41, 55, 0.5);
+  background: var(--portal-surface-strong);
   border-radius: 4px;
 }
 
@@ -135,7 +135,7 @@
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.8) rgba(31, 41, 55, 0.5);
+  scrollbar-color: var(--portal-border-strong) var(--portal-surface-strong);
 }
 
 /* ============================================

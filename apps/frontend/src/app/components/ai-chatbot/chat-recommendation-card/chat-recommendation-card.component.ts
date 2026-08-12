@@ -18,7 +18,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
       class="group relative overflow-hidden rounded-2xl border bg-[linear-gradient(160deg,rgba(15,23,42,0.97),rgba(15,23,42,0.88))] transition-all duration-200 hover:shadow-lg hover:shadow-black/40"
       [class]="isLiveNow
         ? 'border-emerald-600/50 hover:border-emerald-500/70'
-        : 'border-slate-700/60 hover:border-slate-600/80'"
+        : 'border-[var(--portal-border)]/60 hover:border-[var(--portal-border-strong)]/80'"
     >
       <!-- Live accent stripe -->
       <div
@@ -29,7 +29,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
       <div class="flex gap-3 p-3" [class.pl-4]="isLiveNow">
         <!-- Poster thumbnail -->
         <div
-          class="relative flex h-[120px] w-[80px] flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-800 text-[10px] font-bold text-slate-400 ring-1 ring-white/5"
+          class="relative flex h-[120px] w-[80px] flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[var(--portal-surface-strong)] text-[10px] font-bold text-[var(--portal-text-muted)] ring-1 ring-white/5"
         >
           <img
             *ngIf="recommendation.image; else fallback"
@@ -44,7 +44,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V6a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 6v12.375M6 18.375a1.125 1.125 0 001.125 1.125h9.75a1.125 1.125 0 001.125-1.125M6 18.375V12m9 6.375V12m0 0H9m6 0a3 3 0 00-6 0" />
               </svg>
-              <span class="text-center text-[9px] leading-tight text-slate-500">
+              <span class="text-center text-[9px] leading-tight text-[var(--portal-text-muted)]">
                 {{ recommendation.type === 'program' ? 'TV' : 'VOD' }}
               </span>
             </div>
@@ -64,7 +64,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           <!-- Live badge (top-left) -->
           <div
             *ngIf="isLiveNow"
-            class="absolute left-1 top-1 rounded-md bg-emerald-500/90 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-white"
+            class="absolute left-1 top-1 rounded-md bg-emerald-500/90 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-[var(--portal-text)]"
           >
             LIVE
           </div>
@@ -85,13 +85,13 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
         <div class="min-w-0 flex-1 py-0.5">
           <!-- Title row + overflow menu trigger -->
           <div class="flex items-start gap-1">
-            <p class="flex-1 text-[13px] font-semibold leading-snug text-white line-clamp-2">
+            <p class="flex-1 text-[13px] font-semibold leading-snug text-[var(--portal-text)] line-clamp-2">
               {{ recommendation.title }}
             </p>
             <button
               type="button"
               (click)="menuOpen = !menuOpen"
-              class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-700/60 hover:text-white"
+              class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-border)]/60 hover:text-[var(--portal-text)]"
               aria-label="Más opciones"
             >
               <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
@@ -129,16 +129,16 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
             <span
               *ngIf="timeLabel"
               class="font-medium"
-              [class]="isLiveNow ? 'text-emerald-400' : 'text-slate-300'"
+              [class]="isLiveNow ? 'text-emerald-400' : 'text-[var(--portal-text)]'"
             >
               {{ timeLabel }}
             </span>
-            <span *ngIf="recommendation.durationMinutes" class="text-slate-500">
+            <span *ngIf="recommendation.durationMinutes" class="text-[var(--portal-text-muted)]">
               {{ recommendation.durationMinutes }}min
             </span>
           </div>
           <!-- Live elapsed info -->
-          <div *ngIf="isLiveNow && liveElapsedLabel" class="mt-0.5 flex items-center gap-1 text-[10px] text-slate-500">
+          <div *ngIf="isLiveNow && liveElapsedLabel" class="mt-0.5 flex items-center gap-1 text-[10px] text-[var(--portal-text-muted)]">
             <svg class="h-2.5 w-2.5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/>
             </svg>
@@ -149,7 +149,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           <div *ngIf="displayBadges.length" class="mt-1.5 flex flex-wrap gap-1">
             <span
               *ngFor="let badge of displayBadges; trackBy: trackByText"
-              class="rounded-full border border-slate-700/80 bg-slate-950/80 px-1.5 py-px text-[9px] font-medium text-slate-400"
+              class="rounded-full border border-[var(--portal-border)]/80 bg-[var(--portal-bg-deep)]/80 px-1.5 py-px text-[9px] font-medium text-[var(--portal-text-muted)]"
             >
               {{ badge }}
             </span>
@@ -158,7 +158,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           <!-- Synopsis inline preview -->
           <p
             *ngIf="recommendation.synopsis && !synopsisOpen"
-            class="mt-1.5 line-clamp-2 text-[10px] leading-relaxed text-slate-500"
+            class="mt-1.5 line-clamp-2 text-[10px] leading-relaxed text-[var(--portal-text-muted)]"
           >
             {{ recommendation.synopsis }}
           </p>
@@ -168,29 +168,29 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
       <!-- Expanded synopsis -->
       <div
         *ngIf="synopsisOpen && recommendation.synopsis"
-        class="border-t border-slate-700/50 px-3 py-2"
+        class="border-t border-[var(--portal-border)]/50 px-3 py-2"
       >
-        <p class="text-xs leading-relaxed text-slate-300">{{ recommendation.synopsis }}</p>
+        <p class="text-xs leading-relaxed text-[var(--portal-text)]">{{ recommendation.synopsis }}</p>
       </div>
 
       <!-- Expanded reason -->
       <div
         *ngIf="reasonOpen && recommendation.reason"
-        class="border-t border-slate-700/50 px-3 py-2"
+        class="border-t border-[var(--portal-border)]/50 px-3 py-2"
       >
-        <p class="text-[11px] leading-relaxed text-slate-400">
+        <p class="text-[11px] leading-relaxed text-[var(--portal-text-muted)]">
           <span class="mr-1 text-violet-400">✦</span>{{ recommendation.reason }}
         </p>
       </div>
 
       <!-- Action bar -->
-      <div class="flex items-center justify-between border-t border-slate-700/40 px-2 py-1.5">
+      <div class="flex items-center justify-between border-t border-[var(--portal-border)]/40 px-2 py-1.5">
         <!-- Left: thumbs -->
         <div class="flex items-center gap-0.5">
           <button
             type="button"
             (click)="ratePositive.emit(recommendation)"
-            class="flex h-7 w-7 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-emerald-500/10 hover:text-emerald-400"
+            class="flex h-7 w-7 items-center justify-center rounded-full text-[var(--portal-text-muted)] transition-colors hover:bg-emerald-500/10 hover:text-emerald-400"
             [attr.aria-label]="'Me gusta ' + recommendation.title"
           >
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -200,7 +200,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           <button
             type="button"
             (click)="rateNegative.emit(recommendation)"
-            class="flex h-7 w-7 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-red-500/10 hover:text-red-400"
+            class="flex h-7 w-7 items-center justify-center rounded-full text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--accent-live-soft)] hover:text-red-400"
             [attr.aria-label]="'No me gusta ' + recommendation.title"
           >
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -217,7 +217,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
             type="button"
             (click)="reasonOpen = !reasonOpen; synopsisOpen = false"
             class="flex h-7 items-center gap-0.5 rounded-full px-2 text-[10px] font-medium transition-colors"
-            [class]="reasonOpen ? 'bg-violet-500/20 text-violet-300' : 'text-slate-500 hover:bg-slate-700/50 hover:text-slate-300'"
+            [class]="reasonOpen ? 'bg-violet-500/20 text-violet-300' : 'text-[var(--portal-text-muted)] hover:bg-[var(--portal-border)]/50 hover:text-[var(--portal-text)]'"
           >
             <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -229,7 +229,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           <button
             type="button"
             (click)="openDetail.emit(recommendation)"
-            class="flex h-7 min-w-[80px] items-center justify-center gap-1 rounded-full bg-gradient-to-r from-blue-600/80 to-violet-600/80 px-3 text-[10px] font-semibold text-white transition-all hover:from-blue-500/90 hover:to-violet-500/90 hover:shadow-md hover:shadow-violet-900/30 active:scale-95"
+            class="flex h-7 min-w-[80px] items-center justify-center gap-1 rounded-full bg-gradient-to-r from-blue-600/80 to-violet-600/80 px-3 text-[10px] font-semibold text-[var(--portal-text)] transition-all hover:from-blue-500/90 hover:to-violet-500/90 hover:shadow-md hover:shadow-violet-900/30 active:scale-95"
           >
             Ver ficha
             <svg class="h-3 w-3 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -242,12 +242,12 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
       <!-- Overflow menu -->
       <div
         *ngIf="menuOpen"
-        class="absolute right-2 top-10 z-20 min-w-[160px] rounded-xl border border-slate-700 bg-slate-900 py-1 shadow-xl"
+        class="absolute right-2 top-10 z-20 min-w-[160px] rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg)] py-1 shadow-xl"
       >
         <button
           type="button"
           (click)="menuOpen = false; save.emit(recommendation)"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-200 transition-colors hover:bg-slate-800"
+          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
           <svg class="h-3.5 w-3.5 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -257,7 +257,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
         <button
           type="button"
           (click)="menuOpen = false; followUp.emit(recommendation)"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-200 transition-colors hover:bg-slate-800"
+          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
           <svg class="h-3.5 w-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -267,9 +267,9 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
         <button
           type="button"
           (click)="menuOpen = false; ignore.emit(recommendation)"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-300 transition-colors hover:bg-slate-800"
+          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
-          <svg class="h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <svg class="h-3.5 w-3.5 text-[var(--portal-text-muted)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
           </svg>
           No me interesa
@@ -278,9 +278,9 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           *ngIf="recommendation.synopsis"
           type="button"
           (click)="menuOpen = false; synopsisOpen = !synopsisOpen"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-200 transition-colors hover:bg-slate-800"
+          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
-          <svg class="h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <svg class="h-3.5 w-3.5 text-[var(--portal-text-muted)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           {{ synopsisOpen ? 'Ocultar sinopsis' : 'Ver sinopsis' }}
@@ -289,7 +289,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           *ngIf="recommendation.startTime && !recommendation.liveNow"
           type="button"
           (click)="menuOpen = false; remind.emit(recommendation)"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-slate-200 transition-colors hover:bg-slate-800"
+          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
           <svg class="h-3.5 w-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />

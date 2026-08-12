@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Observable, map, shareReplay } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { Observable, catchError, map, of, shareReplay } from 'rxjs';
 import { BlogService } from '../../services/blog.service';
 import {
   EditorialCategory,
@@ -44,12 +45,22 @@ const VALID_ROUTE_RELATIONS: readonly EditorialRouteRelationKey[] = [
 
 @Injectable({ providedIn: 'root' })
 export class EditorialService {
-  private readonly posts$ = this.blogService.getAllPosts().pipe(
-    map((posts) => this.adaptPosts(posts || [])),
-    shareReplay(1)
-  );
+  private readonly isBrowser: boolean;
+  private readonly posts$: Observable<EditorialPost[]>;
 
-  constructor(private readonly blogService: BlogService) {}
+  constructor(
+    private readonly blogService: BlogService,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+    this.posts$ = this.isBrowser
+      ? this.blogService.getAllPosts().pipe(
+          map((posts) => this.adaptPosts(posts || [])),
+          catchError(() => of([])),
+          shareReplay(1)
+        )
+      : of([]);
+  }
 
   public getPosts(): Observable<EditorialPost[]> {
     return this.posts$;

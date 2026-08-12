@@ -1,42 +1,29 @@
-<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-    <header class="space-y-2">
-      <p class="text-sm text-gray-400 uppercase tracking-[0.2em]">
-        Comunidad Guía TV
-      </p>
-      <h1 class="text-3xl sm:text-4xl font-extrabold">
-        Inicia sesion y entra a la comunidad
-      </h1>
-      <p class="text-gray-300 max-w-3xl">
+<div class="login-page">
+  <div class="login-page__frame">
+    <header class="login-page__header">
+      <p class="login-page__eyebrow">Comunidad Guía TV</p>
+      <h1>Inicia sesión y entra a la comunidad</h1>
+      <p class="login-page__description">
         Accede a tu perfil con email o Google. Si no tienes cuenta, puedes
-        crearla en segundos con email y contrasena.
+        crearla en segundos con email y contraseña.
       </p>
     </header>
 
-    <div class="grid lg:grid-cols-2 gap-6">
-      <section
-        class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm"
-      >
-        <div class="flex items-center justify-between mb-4">
+    <div class="login-page__grid">
+      <section class="login-page__card">
+        <div class="login-page__card-head">
           <div>
-            <p class="text-sm text-gray-400">Acceso seguro</p>
-            <h2 class="text-xl font-semibold">Inicio de sesion</h2>
+            <p class="login-page__card-eyebrow">Acceso seguro</p>
+            <h2>Inicio de sesión</h2>
           </div>
-          <span
-            class="px-3 py-1 rounded-full text-xs bg-green-500/20 text-green-300 border border-green-500/40"
-            *ngIf="isAuthenticated$ | async"
-          >
-            Sesion activa
+          <span class="login-page__badge-active" *ngIf="isAuthenticated$ | async">
+            Sesión activa
           </span>
         </div>
 
-        <form class="space-y-4" (ngSubmit)="onPasswordLogin()">
-          <div>
-            <label
-              class="text-xs text-gray-400 uppercase tracking-wide"
-              for="login-email"
-              >Email</label
-            >
+        <form class="login-page__form" (ngSubmit)="onPasswordLogin()">
+          <div class="login-page__field">
+            <label for="login-email">Email</label>
             <input
               id="login-email"
               name="email"
@@ -44,16 +31,11 @@
               required
               autocomplete="email"
               [(ngModel)]="credentials.email"
-              class="mt-2 w-full min-h-[44px] rounded-lg bg-gray-900/60 border border-gray-700/60 px-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="tu@email.com"
             />
           </div>
-          <div>
-            <label
-              class="text-xs text-gray-400 uppercase tracking-wide"
-              for="login-password"
-              >Contrasena</label
-            >
+          <div class="login-page__field">
+            <label for="login-password">Contraseña</label>
             <input
               id="login-password"
               name="password"
@@ -61,33 +43,28 @@
               required
               autocomplete="current-password"
               [(ngModel)]="credentials.password"
-              class="mt-2 w-full min-h-[44px] rounded-lg bg-gray-900/60 border border-gray-700/60 px-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="********"
             />
           </div>
-          <button
-            type="submit"
-            class="w-full min-h-[44px] rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold shadow disabled:opacity-60"
-            [disabled]="loading"
-          >
+          <button type="submit" class="login-page__submit" [disabled]="loading">
             {{ loading ? 'Entrando...' : 'Entrar con email' }}
           </button>
         </form>
 
-        <div class="flex items-center gap-3 text-xs text-gray-500 my-4">
-          <span class="flex-1 h-px bg-gray-700/60"></span>
+        <div class="login-page__divider">
+          <span></span>
           <span>o</span>
-          <span class="flex-1 h-px bg-gray-700/60"></span>
+          <span></span>
         </div>
 
         <button
           type="button"
-          class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg bg-white text-gray-900 font-semibold shadow hover:shadow-lg transition-all duration-200 mb-4"
+          class="login-page__google-button"
           (click)="onGoogleLogin()"
           [disabled]="loading"
         >
           <svg
-            class="h-5 w-5"
+            class="login-page__google-icon"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 48 48"
           >
@@ -112,101 +89,72 @@
           <span>{{ loading ? 'Conectando...' : 'Continuar con Google' }}</span>
         </button>
 
-        <div class="text-sm text-gray-400">
-          No tienes cuenta?
-          <a
-            routerLink="/registro"
-            class="text-red-300 hover:text-red-200 font-semibold"
-          >
-            Crear cuenta
-          </a>
+        <div class="login-page__footer-text">
+          ¿No tienes cuenta?
+          <a routerLink="/registro">Crear cuenta</a>
         </div>
 
-        <p class="text-xs text-gray-400 mt-4">
-          Al continuar aceptas conectar tu cuenta con GPTV. La API validara tu
-          identidad y guardara tu sesion.
+        <p class="login-page__legal">
+          Al continuar aceptas conectar tu cuenta con GPTV. La API validará tu
+          identidad y guardará tu sesión.
         </p>
 
         <p
           *ngIf="statusMessage"
-          class="mt-4 text-sm rounded-lg px-4 py-3 border"
-          [ngClass]="{
-            'text-green-300 bg-green-500/10 border-green-500/20':
-              statusTone === 'success',
-            'text-red-300 bg-red-500/10 border-red-500/20':
-              statusTone === 'error',
-            'text-sky-300 bg-sky-500/10 border-sky-500/20':
-              statusTone === 'info'
-          }"
+          class="login-page__status"
+          [class.login-page__status--success]="statusTone === 'success'"
+          [class.login-page__status--error]="statusTone === 'error'"
+          [class.login-page__status--info]="statusTone === 'info'"
         >
           {{ statusMessage }}
         </p>
       </section>
 
-      <section
-        class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm space-y-5"
-      >
+      <section class="login-page__card">
         <div>
-          <p class="text-sm text-gray-400">Como funciona</p>
-          <h2 class="text-xl font-semibold">Opciones de acceso</h2>
+          <p class="login-page__card-eyebrow">Cómo funciona</p>
+          <h2>Opciones de acceso</h2>
         </div>
 
-        <div class="space-y-4 text-sm text-gray-300">
-          <div class="flex items-start gap-2">
-            <span
-              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
-              >1</span
-            >
-            <p>
-              Entra con tu email y contrasena para acceder a tu cuenta.
-            </p>
+        <div class="login-page__steps">
+          <div class="login-page__step">
+            <span class="login-page__step-number">1</span>
+            <p>Entra con tu email y contraseña para acceder a tu cuenta.</p>
           </div>
-          <div class="flex items-start gap-2">
-            <span
-              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
-              >2</span
-            >
-            <p>
-              Usa Google si prefieres un acceso rapido y seguro.
-            </p>
+          <div class="login-page__step">
+            <span class="login-page__step-number">2</span>
+            <p>Usa Google si prefieres un acceso rápido y seguro.</p>
           </div>
-          <div class="flex items-start gap-2">
-            <span
-              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
-              >3</span
-            >
-            <p>
-              Entra a Mi cuenta para completar tu perfil y acceder a la comunidad.
-            </p>
+          <div class="login-page__step">
+            <span class="login-page__step-number">3</span>
+            <p>Entra a Mi cuenta para completar tu perfil y acceder a la comunidad.</p>
           </div>
         </div>
 
-        <div class="rounded-xl border border-gray-700/60 bg-gray-900/50 p-4 text-sm text-gray-300">
-          Si no tienes cuenta, puedes crearla en "Registro" con email o Google.
+        <div class="login-page__info-box">
+          Si no tienes cuenta, puedes crearla en &quot;Registro&quot; con email o Google.
         </div>
       </section>
     </div>
 
-    <section
-      class="bg-gray-800/50 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20"
-    >
-      <h3 class="text-lg font-semibold mb-3">Que desbloqueas al entrar</h3>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-300">
-        <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-700/40">
-          <p class="font-semibold text-white">Feed social</p>
-          <p class="text-gray-400">
-            Publica resenas, comenta con amigos y ve en directo que estan viendo.
+    <section class="login-page__card">
+      <h3>Qué desbloqueas al entrar</h3>
+      <div class="login-page__features">
+        <div class="login-page__feature">
+          <p class="login-page__feature-title">Feed social</p>
+          <p>
+            Publica reseñas, comenta con amigos y ve en directo qué están viendo.
           </p>
         </div>
-        <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-700/40">
-          <p class="font-semibold text-white">Listas colaborativas</p>
-          <p class="text-gray-400">
+        <div class="login-page__feature">
+          <p class="login-page__feature-title">Listas colaborativas</p>
+          <p>
             Crea listas de pelis y series compartidas para maratones en grupo.
           </p>
         </div>
-        <div class="p-4 rounded-xl bg-gray-900/60 border border-gray-700/40">
-          <p class="font-semibold text-white">Alertas y avisos</p>
-          <p class="text-gray-400">
+        <div class="login-page__feature">
+          <p class="login-page__feature-title">Alertas y avisos</p>
+          <p>
             Recibe alertas cuando un amigo recomienda algo nuevo o empieza una
             serie.
           </p>

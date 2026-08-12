@@ -8,30 +8,30 @@ import { AssistantMemorySnapshot, MemoryEditorField } from '../../../interfaces/
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="mt-3 max-h-64 space-y-3 overflow-y-auto rounded-2xl border border-slate-700/60 bg-slate-950/80 p-3">
-      <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+    <div class="mt-3 max-h-64 space-y-3 overflow-y-auto rounded-2xl border border-[var(--portal-border)]/60 bg-[var(--portal-bg-deep)]/80 p-3">
+      <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--portal-text-muted)]">
         Preferencias IA
       </p>
 
       <div *ngFor="let field of fields; trackBy: trackByKey" class="space-y-1">
-        <label class="text-[11px] font-medium text-slate-300">{{ field.label }}</label>
+        <label class="text-[11px] font-medium text-[var(--portal-text)]">{{ field.label }}</label>
         <div class="flex flex-wrap gap-1.5">
           <span
             *ngFor="let val of getValues(field.key); trackBy: trackByText"
-            class="flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900/80 px-2 py-0.5 text-[10px] text-slate-200"
+            class="flex items-center gap-1 rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-2 py-0.5 text-[10px] text-[var(--portal-text)]"
           >
             {{ val }}
             <button
               type="button"
               (click)="removeValue(field.key, val)"
-              class="ml-0.5 text-slate-500 hover:text-red-400"
+              class="ml-0.5 text-[var(--portal-text-muted)] hover:text-red-400"
               aria-label="Eliminar"
             >×</button>
           </span>
           <input
             type="text"
             [placeholder]="field.placeholder"
-            class="w-24 rounded-full border border-slate-700 bg-slate-900/60 px-2 py-0.5 text-[10px] text-white outline-none placeholder:text-slate-600 focus:border-red-500/50"
+            class="w-24 rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-2 py-0.5 text-[10px] text-[var(--portal-text)] outline-none placeholder:text-slate-600 focus:border-red-500/50"
             (keydown.enter)="addValue(field.key, $event)"
           />
         </div>
@@ -42,14 +42,14 @@ import { AssistantMemorySnapshot, MemoryEditorField } from '../../../interfaces/
           type="button"
           (click)="saveEdits()"
           [disabled]="saving"
-          class="rounded-full bg-red-600 px-3 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
+          class="rounded-full bg-red-600 px-3 py-1 text-[11px] font-semibold text-[var(--portal-text)] disabled:opacity-50"
         >
           {{ saving ? 'Guardando…' : 'Guardar' }}
         </button>
         <button
           type="button"
           (click)="cancelled.emit()"
-          class="rounded-full border border-slate-700 px-3 py-1 text-[11px] font-medium text-slate-300 transition-colors hover:border-slate-500"
+          class="rounded-full border border-[var(--portal-border)] px-3 py-1 text-[11px] font-medium text-[var(--portal-text)] transition-colors hover:border-slate-500"
         >
           Cancelar
         </button>

@@ -8,8 +8,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: rgba(31, 41, 55, 0.6); // bg-gray-800/60
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--portal-surface-strong); // bg-gray-800/60
+  border: 1px solid var(--portal-border);
   border-radius: 9999px;
   color: #9ca3af; // text-gray-400
   font-size: 0.875rem;
@@ -39,9 +39,9 @@
   }
 
   &:hover {
-    background: rgba(55, 65, 81, 0.8);
-    border-color: rgba(255, 255, 255, 0.15);
-    color: #ffffff;
+    background: var(--portal-surface-strong);
+    border-color: var(--portal-border-strong);
+    color: var(--portal-text);
     transform: translateY(-1px);
   }
 

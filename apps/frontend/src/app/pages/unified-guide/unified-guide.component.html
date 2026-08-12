@@ -1,0 +1,37 @@
+<app-unified-portal-shell
+  class="unified-guide-page"
+  [tone]="activeTab()"
+  [activeTab]="activeTab()"
+  [searchQuery]="searchQuery()"
+  [topPillChips]="topPillChips()"
+  [topPillSelection]="topPillSelection()"
+  [topPillLabel]="topPillLabel()"
+  [isAuthenticated]="isAuthenticated()"
+  [profileName]="profile()?.name || 'Cuenta'"
+  [breadcrumbItems]="breadcrumbItems()"
+  [showHero]="false"
+  rightRailVariant="prime"
+  [showFilterButton]="true"
+  [filterCount]="filterCount()"
+  [leftRailSections]="leftRailSections()"
+  [rightRailSections]="rightRailSections()"
+  [rightRailLabel]="rightRailLabel()"
+  (tabChange)="navigateToTab($event)"
+  (searchChange)="onSearchChange($event)"
+  (searchSubmit)="onSearchSubmit($event)"
+  (topPillChange)="onTopPillChange($event)"
+  (filterToggle)="toggleFilterDock()"
+>
+  <section id="tab-panel-live" role="tabpanel" *ngIf="activeTab() === 'live'">
+    <app-live-guide-view></app-live-guide-view>
+  </section>
+  <section id="tab-panel-discover" role="tabpanel" *ngIf="activeTab() === 'discover'">
+    <app-discover-view></app-discover-view>
+  </section>
+  <section id="tab-panel-streaming" role="tabpanel" *ngIf="activeTab() === 'streaming'">
+    <app-streaming-view></app-streaming-view>
+  </section>
+  <section id="tab-panel-sports" role="tabpanel" *ngIf="activeTab() === 'sports'">
+    <app-sports-view></app-sports-view>
+  </section>
+</app-unified-portal-shell>

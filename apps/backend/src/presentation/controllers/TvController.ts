@@ -18,6 +18,7 @@ export class TvController {
       date: req.query.date ? String(req.query.date) : undefined,
       group: req.query.group ? String(req.query.group) : undefined,
       category: req.query.category ? String(req.query.category) : undefined,
+      sport: req.query.sport ? String(req.query.sport) : undefined,
       channelId: req.query.channelId ? String(req.query.channelId) : undefined,
       q: req.query.q ? String(req.query.q) : undefined,
       limit: req.query.limit ? Number(req.query.limit) : undefined,
@@ -53,6 +54,7 @@ export class TvController {
       date: req.query.date ? String(req.query.date) : undefined,
       group: req.query.group ? String(req.query.group) : undefined,
       category: req.query.category ? String(req.query.category) : undefined,
+      sport: req.query.sport ? String(req.query.sport) : undefined,
     });
 
     res.status(200).json(successResponse(result, result.meta));

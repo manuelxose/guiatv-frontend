@@ -6,8 +6,8 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="mt-4 rounded-2xl border border-slate-700/70 bg-slate-950/60 p-3">
-      <p class="text-xs leading-relaxed text-slate-300">{{ promptText }}</p>
+    <div class="mt-4 rounded-2xl border border-[var(--portal-border)]/70 bg-[var(--portal-bg-deep)]/60 p-3">
+      <p class="text-xs leading-relaxed text-[var(--portal-text)]">{{ promptText }}</p>
 
       <div class="mt-3 flex flex-wrap gap-2">
         <ng-container *ngIf="savedCommunity && !isChooserOpen">
@@ -21,7 +21,7 @@ import { CommonModule } from '@angular/common';
           <button
             type="button"
             (click)="toggleChooser()"
-            class="min-h-[34px] rounded-full border border-slate-700 bg-slate-900/80 px-3 text-xs font-semibold text-slate-100 transition-colors hover:border-slate-500"
+            class="min-h-[34px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:border-slate-500"
           >
             Cambiar
           </button>
@@ -39,7 +39,7 @@ import { CommonModule } from '@angular/common';
           *ngIf="!isChooserOpen"
           type="button"
           (click)="declined.emit()"
-          class="min-h-[34px] rounded-full border border-slate-700 bg-slate-900/80 px-3 text-xs font-semibold text-slate-300 transition-colors hover:border-slate-500"
+          class="min-h-[34px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:border-slate-500"
         >
           No incluir autonómicas
         </button>
@@ -55,7 +55,7 @@ import { CommonModule } from '@angular/common';
             class="rounded-lg border px-2 py-2 text-[11px] font-medium transition-all text-center leading-tight"
             [ngClass]="community === savedCommunity
               ? 'border-sky-500/50 bg-sky-600/20 text-sky-200'
-              : 'border-slate-700/60 bg-slate-900/60 text-slate-300 hover:border-sky-500/30 hover:bg-sky-600/10 hover:text-sky-200'"
+              : 'border-[var(--portal-border)]/60 bg-[var(--portal-bg)] text-[var(--portal-text)] hover:border-sky-500/30 hover:bg-sky-600/10 hover:text-sky-200'"
           >
             {{ community }}
           </button>
@@ -63,7 +63,7 @@ import { CommonModule } from '@angular/common';
         <button
           type="button"
           (click)="toggleChooser()"
-          class="mt-2 text-[10px] text-slate-500 transition-colors hover:text-slate-300"
+          class="mt-2 text-[10px] text-[var(--portal-text-muted)] transition-colors hover:text-[var(--portal-text)]"
         >
           Cancelar
         </button>

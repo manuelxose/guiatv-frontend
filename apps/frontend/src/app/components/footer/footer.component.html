@@ -1,264 +1,81 @@
-<!-- Footer Guía TV - Mobile-First Premium Design -->
-<footer class="bg-gradient-to-b from-gray-900 via-gray-900 to-black border-t border-gray-800/50" role="contentinfo" aria-label="Pie de página">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    
-    <!-- Logo & Tagline -->
-    <div class="flex flex-col items-center md:items-start mb-10">
-      <a routerLink="/" class="flex items-center gap-3 group mb-3">
-        <svg
-          class="h-10 w-10 shrink-0"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 32 32"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="ftr-bg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#ef4444"/>
-              <stop offset="100%" stop-color="#b91c1c"/>
-            </linearGradient>
-          </defs>
-          <rect width="32" height="32" rx="7" fill="url(#ftr-bg)"/>
-          <rect x="4" y="7" width="24" height="15" rx="2.5" fill="#0f0f1a"/>
-          <rect x="5" y="8" width="22" height="13" rx="2" fill="#16172a"/>
-          <path d="M13.5 11.5v9c0 .38.42.6.74.4l7.5-4.5a.47.47 0 0 0 0-.8l-7.5-4.5a.47.47 0 0 0-.74.4z" fill="white"/>
-          <rect x="11" y="22" width="4" height="3" rx="1" fill="#b91c1c"/>
-          <rect x="17" y="22" width="4" height="3" rx="1" fill="#b91c1c"/>
-          <rect x="8.5" y="25" width="15" height="2" rx="1" fill="#991b1b"/>
-        </svg>
-        <span class="text-2xl font-extrabold text-white tracking-tight">
-          GUIA<span class="text-red-500">.</span>TV
+<footer class="portal-footer" role="contentinfo" aria-label="Pie de página">
+  <div class="portal-footer__frame">
+    <section class="portal-footer__hero">
+      <div class="portal-footer__brand">
+        <span class="portal-footer__brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="10" fill="url(#footerBrandGradient)"></rect>
+            <rect x="5" y="8" width="22" height="13" rx="3" fill="#090d16"></rect>
+            <path d="M14 12v6.5c0 .5.55.8.96.53l5.4-3.25a.62.62 0 0 0 0-1.06l-5.4-3.25A.62.62 0 0 0 14 12Z" fill="white"></path>
+            <defs>
+              <linearGradient id="footerBrandGradient" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#ef4444"></stop>
+                <stop offset="0.55" stop-color="#f97316"></stop>
+                <stop offset="1" stop-color="#f59e0b"></stop>
+              </linearGradient>
+            </defs>
+          </svg>
         </span>
-      </a>
-      <p class="text-gray-400 text-sm text-center md:text-left max-w-md">
-        Tu guía de TV y streaming. Descubre qué ver, dónde verlo y qué está pasando ahora mismo.
-      </p>
-    </div>
 
-    <!-- Mobile Accordion / Desktop Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 md:gap-8 mb-10">
-      
-      <!-- Explorar Section -->
-      <div class="border-b border-gray-800/50 md:border-none">
-        <button 
-          (click)="toggleSection('explorar')"
-          class="w-full flex items-center justify-between py-4 md:py-0 md:mb-4 md:cursor-default"
-          [attr.aria-expanded]="isOpen('explorar')"
+        <div class="portal-footer__brand-copy">
+          <p>Portal premium</p>
+          <h2>Guía Programación TV</h2>
+          <span>TV en directo, streaming, deportes y discovery editorial dentro de un único sistema.</span>
+        </div>
+      </div>
+
+      <div class="portal-footer__highlights">
+        <a
+          *ngFor="let item of highlightLinks"
+          [routerLink]="item.path"
+          class="portal-footer__highlight"
         >
-          <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Explorar</h3>
-          <svg 
-            class="w-5 h-5 text-gray-400 md:hidden transition-transform"
-            [ngClass]="{'rotate-180': isOpen('explorar')}"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          <strong>{{ item.label }}</strong>
+          <span>Abrir superficie</span>
+        </a>
+      </div>
+    </section>
+
+    <div class="portal-footer__grid">
+      <section
+        *ngFor="let group of groups"
+        class="portal-footer__column"
+      >
+        <button
+          type="button"
+          class="portal-footer__column-head"
+          [attr.aria-expanded]="isOpen(group.id)"
+          (click)="toggleSection(group.id)"
+        >
+          <span>{{ group.title }}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <path
+              d="m6 9 6 6 6-6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+            ></path>
           </svg>
         </button>
-        <nav 
-          [ngClass]="{'hidden md:block': !isOpen('explorar'), 'block': isOpen('explorar')}"
-          class="pb-4 md:pb-0"
-          aria-label="Enlaces de navegación"
+
+        <nav
+          class="portal-footer__links"
+          [class.portal-footer__links--open]="isOpen(group.id)"
+          [attr.aria-label]="group.title"
         >
-          <ul class="space-y-3">
-            <li><a routerLink="/" class="text-gray-400 hover:text-white transition-colors text-sm">Inicio</a></li>
-            <li><a routerLink="/programacion-tv/guia-canales" class="text-gray-400 hover:text-white transition-colors text-sm">Guía de Canales</a></li>
-            <li><a routerLink="/programacion-tv/peliculas" class="text-gray-400 hover:text-white transition-colors text-sm">Películas</a></li>
-            <li><a routerLink="/programacion-tv/series" class="text-gray-400 hover:text-white transition-colors text-sm">Series</a></li>
-            <li><a routerLink="/programacion-tv/que-ver-hoy" class="text-gray-400 hover:text-white transition-colors text-sm">Qué ver hoy</a></li>
-            <li><a routerLink="/programacion-tv/en-directo" class="text-gray-400 hover:text-white transition-colors text-sm flex items-center gap-2">
-              En directo
-              <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-            </a></li>
-            <li><a routerLink="/editorial" class="text-gray-400 hover:text-white transition-colors text-sm">Editorial</a></li>
-            <li><a routerLink="/editorial/rankings" class="text-gray-400 hover:text-white transition-colors text-sm">Rankings</a></li>
-            <li><a routerLink="/comparador-streaming" class="text-gray-400 hover:text-white transition-colors text-sm">Comparar plataformas</a></li>
-            <li><a routerLink="/tendencias" class="text-gray-400 hover:text-white transition-colors text-sm">Tendencias</a></li>
-          </ul>
+          <a *ngFor="let link of group.links" [routerLink]="link.path">{{ link.label }}</a>
         </nav>
-      </div>
-
-      <!-- Legal Section -->
-      <div class="border-b border-gray-800/50 md:border-none">
-        <button 
-          (click)="toggleSection('legal')"
-          class="w-full flex items-center justify-between py-4 md:py-0 md:mb-4 md:cursor-default"
-          [attr.aria-expanded]="isOpen('legal')"
-        >
-          <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Legal & Políticas</h3>
-          <svg 
-            class="w-5 h-5 text-gray-400 md:hidden transition-transform"
-            [ngClass]="{'rotate-180': isOpen('legal')}"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </button>
-        <nav 
-          [ngClass]="{'hidden md:block': !isOpen('legal'), 'block': isOpen('legal')}"
-          class="pb-4 md:pb-0"
-          aria-label="Enlaces legales"
-        >
-          <ul class="space-y-3">
-            <li><a routerLink="/avisolegal" class="text-gray-400 hover:text-white transition-colors text-sm">Aviso Legal</a></li>
-            <li><a routerLink="/privacidad" class="text-gray-400 hover:text-white transition-colors text-sm">Política de Privacidad</a></li>
-            <li><a routerLink="/cookies" class="text-gray-400 hover:text-white transition-colors text-sm">Política de Cookies</a></li>
-            <li><a routerLink="/terminos" class="text-gray-400 hover:text-white transition-colors text-sm">Términos y Condiciones</a></li>
-            <li><a routerLink="/accesibilidad" class="text-gray-400 hover:text-white transition-colors text-sm">Accesibilidad</a></li>
-            <li><a routerLink="/sobre-nosotros" class="text-gray-400 hover:text-white transition-colors text-sm">Sobre Nosotros</a></li>
-            <li><a routerLink="/prensa" class="text-gray-400 hover:text-white transition-colors text-sm">Prensa</a></li>
-            <li><a routerLink="/developers" class="text-gray-400 hover:text-white transition-colors text-sm">Desarrolladores</a></li>
-            <li><a routerLink="/embed" class="text-gray-400 hover:text-white transition-colors text-sm">Widget</a></li>
-          </ul>
-        </nav>
-      </div>
-
-      <!-- Contacto Section -->
-      <div class="border-b border-gray-800/50 md:border-none">
-        <button 
-          (click)="toggleSection('contacto')"
-          class="w-full flex items-center justify-between py-4 md:py-0 md:mb-4 md:cursor-default"
-          [attr.aria-expanded]="isOpen('contacto')"
-        >
-          <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Contacto</h3>
-          <svg 
-            class="w-5 h-5 text-gray-400 md:hidden transition-transform"
-            [ngClass]="{'rotate-180': isOpen('contacto')}"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </button>
-        <div 
-          [ngClass]="{'hidden md:block': !isOpen('contacto'), 'block': isOpen('contacto')}"
-          class="pb-4 md:pb-0 space-y-4"
-        >
-          <div class="space-y-3">
-            <div class="flex items-center gap-3">
-              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-              </svg>
-              <div>
-                <span class="text-gray-500 text-xs block">Soporte</span>
-                <a href="mailto:soporte@tecnoriasl.com" class="text-gray-400 hover:text-white transition-colors text-sm">soporte&#64;tecnoriasl.com</a>
-              </div>
-            </div>
-            <div class="flex items-center gap-3">
-              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16l-3-3m3 3l3-3"/>
-              </svg>
-              <div>
-                <span class="text-gray-500 text-xs block">Legal</span>
-                <a href="mailto:legal@tecnoriasl.com" class="text-gray-400 hover:text-white transition-colors text-sm">legal&#64;tecnoriasl.com</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Social Section -->
-      <div class="py-4 md:py-0">
-        <h3 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Síguenos</h3>
-        <div class="flex items-center gap-4">
-          <!-- Twitter/X -->
-          <a 
-            href="https://twitter.com/gptv" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="w-10 h-10 rounded-xl bg-gray-800/60 hover:bg-gray-700/80 flex items-center justify-center transition-all hover:scale-110"
-            aria-label="Twitter"
-          >
-            <svg class="w-5 h-5 text-gray-400 hover:text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-            </svg>
-          </a>
-          <!-- Facebook -->
-          <a 
-            href="https://facebook.com/gptv" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="w-10 h-10 rounded-xl bg-gray-800/60 hover:bg-blue-600/20 flex items-center justify-center transition-all hover:scale-110"
-            aria-label="Facebook"
-          >
-            <svg class="w-5 h-5 text-gray-400 hover:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-          </a>
-          <!-- Instagram -->
-          <a 
-            href="https://instagram.com/gptv" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="w-10 h-10 rounded-xl bg-gray-800/60 hover:bg-pink-600/20 flex items-center justify-center transition-all hover:scale-110"
-            aria-label="Instagram"
-          >
-            <svg class="w-5 h-5 text-gray-400 hover:text-pink-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-            </svg>
-          </a>
-          <!-- YouTube -->
-          <a 
-            href="https://youtube.com/gptv" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="w-10 h-10 rounded-xl bg-gray-800/60 hover:bg-red-600/20 flex items-center justify-center transition-all hover:scale-110"
-            aria-label="YouTube"
-          >
-            <svg class="w-5 h-5 text-gray-400 hover:text-red-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
-          </a>
-        </div>
-      </div>
+      </section>
     </div>
 
-    <!-- Divider -->
-    <div class="border-t border-gray-800/50 pt-8">
-      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-        
-        <!-- Copyright -->
-        <div class="text-gray-500 text-sm text-center md:text-left">
-          © {{ currentYear }} <span class="text-gray-400 font-medium">Guía TV</span> • Diseñado con 
-          <span class="text-red-500">♥</span> por 
-          <a href="https://tecnoriasl.com/" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">TecnoRia</a>
-        </div>
-
-        <!-- Secondary Links -->
-        <div class="flex items-center gap-4 text-sm">
-          <a routerLink="/sitemap" class="text-gray-500 hover:text-white transition-colors">Mapa del sitio</a>
-          <span class="text-gray-700">|</span>
-          <a href="/rss.xml" class="text-gray-500 hover:text-white transition-colors flex items-center gap-1">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/>
-            </svg>
-            RSS
-          </a>
-        </div>
+    <div class="portal-footer__meta">
+      <p>© {{ currentYear }} Guía Programación TV. Plataforma viva para TV, streaming y deportes.</p>
+      <div class="portal-footer__meta-links">
+        <a routerLink="/avisolegal">Aviso legal</a>
+        <a routerLink="/privacidad">Privacidad</a>
+        <a routerLink="/cookies">Cookies</a>
+        <a routerLink="/sitemap">Mapa del sitio</a>
       </div>
     </div>
-
   </div>
-
-  <!-- JSON-LD Organization Structured Data for SEO -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Guía TV",
-      "url": "https://guiaprogramaciontv.com/",
-      "logo": "https://guiaprogramaciontv.com/assets/logo.svg",
-      "description": "Tu guía de TV y streaming. Descubre qué ver, dónde verlo y qué está pasando ahora mismo.",
-      "sameAs": [
-        "https://twitter.com/gptv",
-        "https://facebook.com/gptv",
-        "https://instagram.com/gptv",
-        "https://youtube.com/gptv"
-      ],
-      "contactPoint": [
-        {
-          "@type": "ContactPoint",
-          "contactType": "customer support",
-          "email": "soporte@tecnoriasl.com"
-        }
-      ]
-    }
-  </script>
 </footer>

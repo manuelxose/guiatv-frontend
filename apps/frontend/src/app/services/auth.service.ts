@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { tap, map, switchMap, catchError } from 'rxjs/operators';
@@ -29,11 +30,17 @@ export interface AuthResponse {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private googleScriptLoaded = false;
-  private readonly isBrowser = typeof window !== 'undefined';
+  private readonly isBrowser: boolean;
   private readonly accessTokenKey = 'gtv_id_token';
   private readonly refreshTokenKey = 'gtv_refresh_token';
 
-  constructor(private http: HttpClient, private userService: UserService) {}
+  constructor(
+    private http: HttpClient,
+    private userService: UserService,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   private loadGoogleScript(): Promise<void> {
     if (!this.isBrowser) {

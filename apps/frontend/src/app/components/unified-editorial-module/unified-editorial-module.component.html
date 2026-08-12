@@ -1,0 +1,16 @@
+<section class="editorial-module" *ngIf="posts.length">
+  <app-unified-section-header
+    [eyebrow]="eyebrow"
+    [title]="title"
+    [description]="description"
+    [linkLabel]="linkLabel"
+    [linkPath]="linkPath"
+  ></app-unified-section-header>
+
+  <div class="editorial-module__grid" [class]="columnClass()">
+    <app-editorial-post-card
+      *ngFor="let post of posts; trackBy: trackByPost"
+      [post]="post"
+    ></app-editorial-post-card>
+  </div>
+</section>

@@ -47,15 +47,16 @@ export class AppConfigurationService {
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     const isBrowser = isPlatformBrowser(this.platformId);
     const envBaseUrl = (environment as any).API_BASE_URL?.trim();
+    const envSsrBaseUrl = (environment as any).SSR_API_BASE_URL?.trim();
     
     // Respect explicit environment base URL always.
     let baseUrl = envBaseUrl;
     
     // Fallbacks only when not provided
-    if (!baseUrl) {
-      // Browser: Use relative path to allow proxying
-      // Server: Use 127.0.0.1 instead of localhost for better resolution
-      baseUrl = isBrowser ? '/v2' : 'http://127.0.0.1:4000/v2';
+    if (!baseUrl || (!isBrowser && !/^https?:\/\//.test(baseUrl))) {
+      // Browser: use relative path to allow proxying.
+      // Server: always use loopback IPv4 to avoid localhost -> ::1 socket failures.
+      baseUrl = isBrowser ? '/v2' : envSsrBaseUrl || this.resolveServerBaseUrl();
     }
 
     // Normalize trailing slash and ensure leading slash for relative URLs
@@ -143,5 +144,9 @@ export class AppConfigurationService {
 
   private isObject(item: any): boolean {
     return item && typeof item === 'object' && !Array.isArray(item);
+  }
+
+  private resolveServerBaseUrl(): string {
+    return 'http://127.0.0.1:4000/v2';
   }
 }

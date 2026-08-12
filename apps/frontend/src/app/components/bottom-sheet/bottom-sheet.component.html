@@ -1,0 +1,20 @@
+<div *ngIf="open" class="sheet-shell">
+  <button type="button" class="sheet-shell__backdrop" (click)="close.emit()" aria-label="Cerrar detalle"></button>
+  <section
+    class="sheet-shell__panel"
+    role="dialog"
+    aria-modal="true"
+    cdkTrapFocus
+  >
+    <div class="sheet-shell__handle" aria-hidden="true"></div>
+    <header class="sheet-shell__header">
+      <h2>{{ title }}</h2>
+      <button type="button" (click)="close.emit()" aria-label="Cerrar">
+        <span aria-hidden="true">×</span>
+      </button>
+    </header>
+    <div class="sheet-shell__content">
+      <ng-content></ng-content>
+    </div>
+  </section>
+</div>

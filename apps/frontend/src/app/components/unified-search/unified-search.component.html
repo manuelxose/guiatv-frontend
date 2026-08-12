@@ -1,0 +1,88 @@
+<div class="search-shell" (click)="onShellClick($event)">
+  <label class="sr-only" for="unified-search-input">Buscar contenido</label>
+
+  <div class="search-shell__field" [class.search-shell__field--expanded]="expanded">
+    <span class="search-shell__leading-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="11" cy="11" r="6.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></circle>
+        <path d="M16 16l4.5 4.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+      </svg>
+    </span>
+
+    <input
+      id="unified-search-input"
+      type="search"
+      [formControl]="control"
+      [placeholder]="placeholder"
+      autocomplete="off"
+      role="combobox"
+      aria-autocomplete="list"
+      [attr.aria-expanded]="showMenu"
+      (focus)="onFocus()"
+    />
+
+    <button *ngIf="control.value" type="button" class="search-shell__clear" (click)="clear()" aria-label="Limpiar búsqueda">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path d="M6 6 18 18M18 6 6 18" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+      </svg>
+    </button>
+
+    <button type="button" class="search-shell__submit-button" (click)="submit()" aria-label="Buscar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <circle cx="11" cy="11" r="6.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></circle>
+        <path d="M16 16l4.5 4.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+      </svg>
+      <span>Buscar</span>
+    </button>
+  </div>
+
+  <div *ngIf="showMenu" class="search-shell__menu" role="listbox">
+    <div class="search-shell__menu-head">
+      <p>{{ control.value ? 'Sugerencias' : 'Búsqueda rápida' }}</p>
+      <span *ngIf="control.value && !isLoading">{{ suggestions.length || history.length }} resultados</span>
+      <span *ngIf="isLoading" class="search-shell__loading-text">Buscando...</span>
+    </div>
+
+    <button
+      *ngFor="let suggestion of suggestions; let i = index"
+      type="button"
+      class="search-shell__option"
+      [class.search-shell__option--focused]="focusedIndex === i"
+      (click)="openSuggestion(suggestion)"
+    >
+      <span class="search-shell__option-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M8.25 7.5 16.5 12l-8.25 4.5v-9Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+        </svg>
+      </span>
+      <span class="search-shell__option-copy">
+        <span class="search-shell__option-title">{{ suggestion.title }}</span>
+        <span class="search-shell__option-meta">
+          {{ suggestion.channel?.name || suggestion.primaryPlatforms?.slice(0, 2).join(' · ') || suggestion.contentType }}
+        </span>
+      </span>
+    </button>
+
+    <button
+      *ngFor="let entry of !suggestions.length ? history : []; let i = index"
+      type="button"
+      class="search-shell__option search-shell__option--history"
+      [class.search-shell__option--focused]="focusedIndex === i"
+      (click)="useHistory(entry)"
+    >
+      <span class="search-shell__option-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M12 6v6l4.5 2.25M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+        </svg>
+      </span>
+      <span class="search-shell__option-copy">
+        <span class="search-shell__option-title">{{ entry }}</span>
+        <span class="search-shell__option-meta">Historial</span>
+      </span>
+    </button>
+
+    <button *ngIf="control.value" type="button" class="search-shell__submit" (click)="submit()">
+      Ver resultados completos
+    </button>
+  </div>
+</div>

@@ -195,7 +195,7 @@ $transition: cubic-bezier(0.5, 0, 0.1, 1);
   border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--portal-text);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 
   @media (min-width: 1024px) {
@@ -222,7 +222,7 @@ $transition: cubic-bezier(0.5, 0, 0.1, 1);
 .program-title {
   font-size: 1rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--portal-text);
   margin: 0;
   line-height: 1.2;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
@@ -264,12 +264,12 @@ $transition: cubic-bezier(0.5, 0, 0.1, 1);
   display: inline-flex;
   align-self: flex-start;
   padding: 0.25rem 0.625rem;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--portal-surface-strong);
   backdrop-filter: blur(8px);
   border-radius: 3px;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--portal-text);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 
@@ -347,7 +347,7 @@ $transition: cubic-bezier(0.5, 0, 0.1, 1);
   background: rgba(20, 20, 20, 0.7);
   backdrop-filter: blur(8px);
   border: none;
-  color: #fff;
+  color: var(--portal-text);
   font-size: 48px;
   font-weight: 200;
   cursor: pointer;

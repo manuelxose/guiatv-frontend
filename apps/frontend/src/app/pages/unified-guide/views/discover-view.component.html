@@ -1,0 +1,188 @@
+<section class="discover-view">
+  <header class="discover-view__masthead">
+    <div class="discover-view__masthead-copy">
+      <p class="discover-view__eyebrow">Qué Ver</p>
+      <h2>{{ guideState.searchQuery() ? 'Resultados en foco' : 'Discovery editorial y catálogo' }}</h2>
+      <p>
+        {{
+          guideState.searchQuery()
+            ? 'La búsqueda cruza directo, catálogo y streaming sin meter capas explicativas antes del contenido.'
+            : 'La mezcla entre TV, streaming y editorial arranca ya en tarjetas y no en héroes largos.'
+        }}
+      </p>
+    </div>
+
+    <div class="discover-view__summary" *ngIf="activeFilterSummary().length">
+      <span *ngFor="let item of activeFilterSummary(); trackBy: trackByText">{{ item }}</span>
+    </div>
+  </header>
+
+  <section class="discover-view__feature-grid" *ngIf="featureItems().length">
+    <app-unified-program-card
+      [item]="featureItems()[0]"
+      variant="discover"
+      (selected)="openItem(featureItems()[0])"
+    ></app-unified-program-card>
+
+    <div class="discover-view__feature-stack" *ngIf="featureItems().length > 1">
+      <app-unified-program-card
+        *ngFor="let item of featureItems().slice(1); trackBy: trackByItem"
+        [item]="item"
+        variant="compact"
+        (selected)="openItem(item)"
+      ></app-unified-program-card>
+    </div>
+  </section>
+
+  <section class="discover-view__platform-row" *ngIf="availablePlatforms().length">
+    <button
+      *ngFor="let platform of availablePlatforms(); trackBy: trackByPlatform"
+      type="button"
+      class="discover-view__platform-button"
+      [class.discover-view__platform-button--active]="guideState.discoverFilters().platforms.includes(platform.name)"
+      (click)="togglePlatform(platform)"
+    >
+      <app-platform-badge
+        [label]="platform.name"
+        [color]="platform.color"
+        [logoUrl]="platform.logoUrl || ''"
+      ></app-platform-badge>
+    </button>
+  </section>
+
+  <section class="discover-view__stack" *ngIf="forYou().length || discoveryModules().length">
+    <article *ngIf="forYou().length" class="discover-view__module">
+      <header class="discover-view__section-head">
+        <div>
+          <p class="discover-view__eyebrow">Para ti</p>
+          <h3>Recomendaciones conectadas</h3>
+        </div>
+      </header>
+
+      <div class="discover-view__rail">
+        <app-unified-program-card
+          *ngFor="let item of forYou(); trackBy: trackByItem"
+          [item]="item"
+          variant="compact"
+          (selected)="openItem(item)"
+        ></app-unified-program-card>
+      </div>
+    </article>
+
+    <article *ngFor="let module of discoveryModules()" class="discover-view__module">
+      <header class="discover-view__section-head">
+        <div>
+          <p class="discover-view__eyebrow">{{ module.eyebrow }}</p>
+          <h3>{{ module.title }}</h3>
+        </div>
+      </header>
+
+      <div class="discover-view__rail">
+        <app-unified-program-card
+          *ngFor="let item of module.items; trackBy: trackByItem"
+          [item]="item"
+          variant="compact"
+          (selected)="openItem(item)"
+        ></app-unified-program-card>
+      </div>
+    </article>
+  </section>
+
+  <section class="discover-view__section" *ngIf="resultsItems().length">
+    <header class="discover-view__section-head">
+      <div>
+        <p class="discover-view__eyebrow">Resultados</p>
+        <h3>{{ discoverData().meta.total || discoverData().items.length }} opciones para explorar</h3>
+      </div>
+    </header>
+
+    <div class="discover-view__list">
+      <app-unified-program-card
+        *ngFor="let item of resultsItems(); trackBy: trackByItem"
+        [item]="item"
+        variant="epg-row"
+        (selected)="openItem(item)"
+      ></app-unified-program-card>
+    </div>
+
+    <div class="discover-view__more" *ngIf="discoverData().meta.hasMore">
+      <button type="button" class="discover-view__action" (click)="loadMore()">Cargar más</button>
+    </div>
+  </section>
+
+  <section *ngIf="!discoverData().items.length && !featureItems().length" class="discover-view__empty">
+    <h2>No hay resultados con estos filtros</h2>
+    <p>Prueba a limpiar la búsqueda o volver a un rango más amplio.</p>
+    <button type="button" class="discover-view__action" (click)="clearFilters()">Resetear filtros</button>
+  </section>
+
+  <section *ngIf="quickDirectories().length" class="discover-view__directories">
+    <article *ngFor="let section of quickDirectories()" class="discover-view__directory-card">
+      <header class="discover-view__section-head">
+        <div>
+          <p class="discover-view__eyebrow">{{ section.eyebrow }}</p>
+          <h3>{{ section.title }}</h3>
+        </div>
+      </header>
+
+      <div class="discover-view__directory-grid">
+        <button
+          *ngFor="let item of section.items"
+          type="button"
+          class="discover-view__directory-chip"
+          [class.discover-view__directory-chip--active]="item.active"
+          (click)="applyQuickDirectory(section.kind, item.id)"
+        >
+          <strong>{{ item.label }}</strong>
+          <small>{{ item.meta }}</small>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <app-unified-editorial-module
+    *ngIf="editorialHub().guidePosts.length"
+    eyebrow="Editorial integrado"
+    title="Guías útiles dentro del mismo flujo"
+    description="El contexto editorial acompaña al catálogo, pero sin robar el primer viewport."
+    linkLabel="Abrir editorial"
+    [linkPath]="appPaths.blog"
+    [posts]="editorialHub().guidePosts.slice(0, 3)"
+    [columns]="3"
+  ></app-unified-editorial-module>
+
+  <app-unified-editorial-module
+    *ngIf="rankingState().posts.length"
+    eyebrow="Top rankings"
+    title="Selecciones rápidas para decidir"
+    description="Los tops vuelven como capa final de discovery, no como cabecera repetida."
+    linkLabel="Ver rankings"
+    [linkPath]="appPaths.top10"
+    [posts]="rankingState().posts.slice(0, 4)"
+    [columns]="4"
+  ></app-unified-editorial-module>
+
+  <app-bottom-sheet
+    [open]="!!selectedItem()"
+    [title]="selectedTitle()"
+    (close)="closeSheet()"
+  >
+    <app-unified-program-card
+      *ngIf="selectedItem() as item"
+      [item]="item"
+      variant="compact"
+      [showActions]="false"
+      (selected)="openItem(item)"
+    ></app-unified-program-card>
+  </app-bottom-sheet>
+
+  <app-unified-filter-dock
+    [open]="shellUi.isFilterDockOpen()"
+    title="Filtros de discovery"
+    [activeCount]="activeFilterSummary().length"
+    [sections]="filterDockSections()"
+    (close)="closeDock()"
+    (clear)="clearFilters()"
+    (select)="handleDockSelect($event)"
+  ></app-unified-filter-dock>
+</section>

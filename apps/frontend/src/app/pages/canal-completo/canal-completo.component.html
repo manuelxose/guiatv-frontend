@@ -98,7 +98,7 @@
               <div class="rounded-[1.5rem] border border-slate-800 bg-slate-950/70 p-4">
                 <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Esta noche</p>
                 <p class="mt-2 text-base font-semibold text-white">{{ filteredTonightPrograms.length }}</p>
-                <p class="mt-2 text-xs text-slate-400">Selección editorial priorizando cine y series</p>
+                <p class="mt-2 text-xs text-slate-400">Selección de prime time servida por la API canónica</p>
               </div>
             </div>
           </div>
@@ -148,7 +148,7 @@
               <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Parrilla visible</p>
               <p class="mt-2 text-2xl font-black text-white">{{ filteredSchedule.length }}</p>
               <p class="mt-2 text-xs leading-6 text-slate-400">
-                La vista respeta la categoría activa y mantiene el estilo editorial de la nueva guía.
+                La vista respeta el filtro activo y la parrilla canónica del backend.
               </p>
             </div>
           </aside>
@@ -296,7 +296,7 @@
       <div *ngIf="filteredFeaturedPrograms.length" class="mt-8">
         <div class="mb-4">
           <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Destacados del canal</p>
-          <h2 class="mt-1 text-2xl font-semibold text-white">Selección priorizando cine y series</h2>
+          <h2 class="mt-1 text-2xl font-semibold text-white">Selección cronológica del canal</h2>
         </div>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <a

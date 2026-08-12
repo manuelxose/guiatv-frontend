@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
         *ngFor="let suggestion of suggestions; trackBy: trackByText"
         type="button"
         (click)="selected.emit(suggestion)"
-        class="rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+        class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-3 py-1.5 text-xs text-[var(--portal-text)] transition-colors hover:border-slate-500 hover:text-[var(--portal-text)]"
       >
         {{ suggestion }}
       </button>

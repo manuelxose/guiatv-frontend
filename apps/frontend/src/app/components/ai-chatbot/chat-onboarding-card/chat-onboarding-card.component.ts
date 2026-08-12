@@ -5,7 +5,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   standalone: true,
   template: `
     <div class="mx-4 mt-4 rounded-2xl border border-sky-500/20 bg-sky-500/10 px-4 py-3 text-sm text-sky-100">
-      <p class="font-semibold text-white">Mejoraré mucho si completas tus gustos.</p>
+      <p class="font-semibold text-[var(--portal-text)]">Mejoraré mucho si completas tus gustos.</p>
       <p class="mt-1 text-sky-100/90">
         Puedes escribirme tus géneros y plataformas favoritas aquí o ajustarlos desde tu perfil.
       </p>

@@ -1,0 +1,108 @@
+<article
+  class="program-card"
+  [class.program-card--compact]="variant === 'compact'"
+  [class.program-card--epg]="variant === 'epg-row'"
+  [class.program-card--sport]="variant === 'sport'"
+  [class.program-card--live]="variant === 'live'"
+>
+  <a [routerLink]="card.detailPath" class="program-card__tap" (click)="onSelect()">
+    <div class="program-card__media" [class.program-card__media--empty]="!hasVisual">
+      <img *ngIf="hasVisual" [src]="card.image" [alt]="card.title" [loading]="variant === 'live' ? 'eager' : 'lazy'" />
+      <div class="program-card__gradient"></div>
+      <div class="program-card__badges">
+        <span *ngFor="let badge of card.badges.slice(0, 3)" class="program-card__badge">
+          {{ badge }}
+        </span>
+      </div>
+      <div *ngIf="card.liveNow" class="program-card__progress">
+        <span class="program-card__progress-fill" [ngClass]="progressClass"></span>
+      </div>
+    </div>
+
+    <div class="program-card__body">
+      <div class="program-card__eyebrow" *ngIf="showChannel && (card.channelName || card.startTime || card.category)">
+        <span class="program-card__channel" *ngIf="card.channelName">
+          <img *ngIf="card.channelIcon" [src]="card.channelIcon" [alt]="''" loading="lazy" aria-hidden="true" />
+          <span>{{ card.channelName }}</span>
+        </span>
+        <span *ngIf="card.channelName && (timeLabel || card.category)" aria-hidden="true">·</span>
+        <span *ngIf="timeLabel">{{ timeLabel }}</span>
+        <span *ngIf="timeLabel && card.category" aria-hidden="true">·</span>
+        <span *ngIf="card.category">{{ card.category }}</span>
+      </div>
+      <h3 class="program-card__title">{{ card.title }}</h3>
+      <p *ngIf="card.description" class="program-card__description">{{ card.description }}</p>
+
+      <div class="program-card__meta-strip" *ngIf="card.liveNow || card.sport || card.subtitle">
+        <span class="program-card__meta-pill program-card__meta-pill--live" *ngIf="card.liveNow">
+          <i aria-hidden="true"></i>
+          En directo
+        </span>
+        <span class="program-card__meta-pill" *ngIf="card.sport">{{ card.sport }}</span>
+        <span class="program-card__meta-pill" *ngIf="!card.sport && card.subtitle">{{ card.subtitle }}</span>
+      </div>
+
+      <div class="program-card__meta" *ngIf="card.platforms.length">
+        <app-platform-badge
+          *ngFor="let platform of card.platforms.slice(0, 3)"
+          [label]="platform"
+        ></app-platform-badge>
+      </div>
+    </div>
+  </a>
+
+  <div class="program-card__interactive" *ngIf="showActions">
+    <div class="program-card__quick-links" *ngIf="card.channelName || card.sport || quickPlatforms.length">
+      <a
+        *ngIf="card.channelName"
+        [routerLink]="appPaths.guide"
+        [queryParams]="{ q: card.channelName }"
+        class="program-card__quick-link"
+      >
+        Canal
+      </a>
+      <a
+        *ngIf="card.sport"
+        [routerLink]="appPaths.sports"
+        [queryParams]="{ sport: card.sport }"
+        class="program-card__quick-link"
+      >
+        {{ card.sport }}
+      </a>
+      <a
+        *ngFor="let platform of quickPlatforms"
+        [routerLink]="appPaths.platforms"
+        [queryParams]="{ platform: platform }"
+        class="program-card__quick-link"
+      >
+        {{ platform }}
+      </a>
+    </div>
+
+    <div class="program-card__actions">
+      <a [routerLink]="card.detailPath" class="program-card__cta program-card__cta--primary">
+        {{ actionLabel }}
+      </a>
+
+      <button
+        *ngIf="isAuthenticated(); else loginSave"
+        type="button"
+        class="program-card__cta"
+        [class.program-card__cta--active]="isSaved"
+        (click)="toggleWatchlist($event)"
+      >
+        {{ isSaved ? 'Guardado' : 'Guardar' }}
+      </button>
+
+      <ng-template #loginSave>
+        <a
+          [routerLink]="appPaths.login"
+          [queryParams]="{ redirect: card.detailPath }"
+          class="program-card__cta"
+        >
+          Accede para guardar
+        </a>
+      </ng-template>
+    </div>
+  </div>
+</article>

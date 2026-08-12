@@ -15,7 +15,7 @@
 
 .embed-widget--dark {
   background: #081018;
-  color: #f8fafc;
+  color: var(--portal-text);
 }
 
 .embed-widget__header {
@@ -34,7 +34,7 @@
 }
 
 .embed-widget--dark .embed-widget__header {
-  background: rgba(15, 23, 42, 0.72);
+  background: var(--portal-surface-strong);
 }
 
 .embed-widget__eyebrow {
@@ -64,5 +64,5 @@
 }
 
 .embed-widget--dark .embed-widget__brand {
-  color: #f8fafc;
+  color: var(--portal-text);
 }

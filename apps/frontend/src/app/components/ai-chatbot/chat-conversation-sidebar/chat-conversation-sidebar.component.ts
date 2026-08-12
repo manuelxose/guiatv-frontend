@@ -25,17 +25,17 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
     <!-- Sidebar panel -->
     <div
       class="absolute top-0 left-0 bottom-0 z-20
-             w-full md:w-[280px] bg-slate-950
-             border-r border-slate-800
+             w-full md:w-[280px] bg-[var(--portal-bg-deep)]
+             border-r border-[var(--portal-border)]
              flex flex-col shadow-xl"
     >
       <!-- Header -->
-      <div class="flex items-center justify-between px-3 py-2.5 border-b border-slate-800">
-        <span class="text-sm font-semibold text-slate-100">Conversaciones</span>
+      <div class="flex items-center justify-between px-3 py-2.5 border-b border-[var(--portal-border)]">
+        <span class="text-sm font-semibold text-[var(--portal-text)]">Conversaciones</span>
         <div class="flex items-center gap-1">
           <button
             (click)="onNewConversation()"
-            class="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+            class="p-1.5 rounded-lg text-[var(--portal-text-muted)] hover:text-red-400 hover:bg-[var(--accent-live-soft)] transition-colors"
             title="Nueva conversación"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +44,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
           </button>
           <button
             (click)="close.emit()"
-            class="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            class="p-1.5 rounded-lg text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] hover:bg-[var(--portal-surface-strong)] transition-colors"
             title="Cerrar"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -55,9 +55,9 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
       </div>
 
       <!-- Search -->
-      <div class="px-3 py-2 border-b border-slate-800/60">
+      <div class="px-3 py-2 border-b border-[var(--portal-border)]/60">
         <div class="relative">
-          <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--portal-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
           </svg>
           <input
@@ -65,8 +65,8 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             [(ngModel)]="searchQuery"
             (ngModelChange)="onSearchChange($event)"
             placeholder="Buscar conversaciones..."
-            class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-700
-                   bg-slate-900 text-slate-200
+            class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[var(--portal-border)]
+                   bg-[var(--portal-bg)] text-[var(--portal-text)]
                    placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-red-500/50 focus:border-red-500/50"
           />
         </div>
@@ -79,7 +79,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
           <div class="px-3 pt-2 pb-1">
             <button
               (click)="pinnedCollapsed.set(!pinnedCollapsed())"
-              class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-300"
+              class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--portal-text-muted)] hover:text-[var(--portal-text)]"
             >
               <svg class="w-3 h-3 transition-transform" [class.rotate-90]="!pinnedCollapsed()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -100,7 +100,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
         <!-- Recent section -->
         @if (recentList.length > 0) {
           <div class="px-3 pt-2 pb-1">
-            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Recientes</span>
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-[var(--portal-text-muted)]">Recientes</span>
           </div>
           @for (conv of recentList; track conv.conversationId) {
             <ng-container *ngTemplateOutlet="conversationItem; context: { $implicit: conv }"></ng-container>
@@ -112,12 +112,12 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
           <div class="px-3 pt-2 pb-1">
             <button
               (click)="archivedCollapsed.set(!archivedCollapsed())"
-              class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-300"
+              class="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--portal-text-muted)] hover:text-[var(--portal-text)]"
             >
               <svg class="w-3 h-3 transition-transform" [class.rotate-90]="!archivedCollapsed()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
               </svg>
-              <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3 h-3 text-[var(--portal-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/>
               </svg>
               Archivadas
@@ -132,7 +132,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
 
         <!-- Empty state -->
         @if (displayList.length === 0) {
-          <div class="flex flex-col items-center justify-center py-12 text-slate-500">
+          <div class="flex flex-col items-center justify-center py-12 text-[var(--portal-text-muted)]">
             <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
             </svg>
@@ -147,7 +147,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
       <button
         (click)="onSelect(conv)"
         (contextmenu)="onContextMenu($event, conv)"
-        class="w-full text-left px-3 py-2 hover:bg-slate-800/60 transition-colors group relative"
+        class="w-full text-left px-3 py-2 hover:bg-[var(--portal-surface-strong)] transition-colors group relative"
         [ngClass]="{
           'bg-red-900/15 border-l-2 border-red-500': conv.conversationId === activeConversationId
         }"
@@ -162,12 +162,12 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
               (keydown.enter)="onRenameConfirm($event, conv)"
               (keydown.escape)="editingId.set(null)"
               (blur)="onRenameConfirm($event, conv)"
-              class="flex-1 text-xs px-1 py-0.5 rounded border border-red-500/40 bg-slate-900
-                     text-slate-200 focus:outline-none focus:ring-1 focus:ring-red-400"
+              class="flex-1 text-xs px-1 py-0.5 rounded border border-red-500/40 bg-[var(--portal-bg)]
+                     text-[var(--portal-text)] focus:outline-none focus:ring-1 focus:ring-red-400"
               (click)="$event.stopPropagation()"
             />
           } @else {
-            <span class="flex-1 text-xs font-medium text-slate-200 line-clamp-2 leading-snug">
+            <span class="flex-1 text-xs font-medium text-[var(--portal-text)] line-clamp-2 leading-snug">
               {{ conv.sessionTitle }}
             </span>
           }
@@ -176,7 +176,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
           <div class="hidden group-hover:flex items-center gap-0.5 shrink-0" (click)="$event.stopPropagation()">
             <button
               (click)="onTogglePin(conv)"
-              class="p-1 rounded text-slate-500 hover:text-amber-400 transition-colors"
+              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-amber-400 transition-colors"
               [title]="conv.pinned ? 'Desfijar' : 'Fijar'"
             >
               <svg class="w-3 h-3" [class.text-amber-500]="conv.pinned" fill="currentColor" viewBox="0 0 20 20">
@@ -185,7 +185,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             </button>
             <button
               (click)="editingId.set(conv.conversationId)"
-              class="p-1 rounded text-slate-500 hover:text-blue-400 transition-colors"
+              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-blue-400 transition-colors"
               title="Renombrar"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,7 +194,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             </button>
             <button
               (click)="onToggleArchive(conv)"
-              class="p-1 rounded text-slate-500 hover:text-purple-400 transition-colors"
+              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-purple-400 transition-colors"
               [title]="conv.archived ? 'Desarchivar' : 'Archivar'"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,7 +203,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             </button>
             <button
               (click)="onDelete(conv)"
-              class="p-1 rounded text-slate-500 hover:text-red-400 transition-colors"
+              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-red-400 transition-colors"
               title="Eliminar"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,15 +215,15 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
 
         <!-- Meta line -->
         <div class="flex items-center gap-2 mt-0.5">
-          <span class="text-[10px] text-slate-500">{{ formatRelativeTime(conv.lastUsedAt) }}</span>
+          <span class="text-[10px] text-[var(--portal-text-muted)]">{{ formatRelativeTime(conv.lastUsedAt) }}</span>
           @if (conv.messageCount > 0) {
-            <span class="text-[10px] text-slate-500">· {{ conv.messageCount }} msgs</span>
+            <span class="text-[10px] text-[var(--portal-text-muted)]">· {{ conv.messageCount }} msgs</span>
           }
         </div>
 
         <!-- Preview -->
         @if (conv.lastMessage) {
-          <p class="text-[10px] text-slate-500 line-clamp-1 mt-0.5">{{ conv.lastMessage }}</p>
+          <p class="text-[10px] text-[var(--portal-text-muted)] line-clamp-1 mt-0.5">{{ conv.lastMessage }}</p>
         }
       </button>
     </ng-template>

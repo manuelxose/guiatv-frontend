@@ -10,16 +10,16 @@ export type ChatTab = 'ia' | 'social';
   standalone: true,
   imports: [CommonModule, AIChatbotComponent, SocialChatPanelComponent],
   template: `
-    <div class="flex h-full flex-col overflow-hidden bg-[#0b0f14]">
+    <div class="flex h-full flex-col overflow-hidden bg-[var(--portal-bg)]">
       <!-- Tab bar -->
-      <div class="flex border-b border-slate-800/80 bg-slate-950/90">
+      <div class="flex border-b border-[var(--portal-border)] bg-[var(--portal-surface-strong)]">
         <button
           type="button"
           (click)="activeTab = 'ia'"
           class="relative flex-1 py-2.5 text-center text-xs font-semibold transition-colors"
           [ngClass]="activeTab === 'ia'
-            ? 'text-red-400'
-            : 'text-slate-400 hover:text-slate-200'"
+            ? 'text-[var(--guide-accent)]'
+            : 'text-[var(--portal-text-muted)] hover:text-[var(--portal-text)]'"
         >
           <span class="inline-flex items-center gap-1.5">
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -29,7 +29,7 @@ export type ChatTab = 'ia' | 'social';
           </span>
           <span
             *ngIf="activeTab === 'ia'"
-            class="absolute bottom-0 left-4 right-4 h-0.5 rounded-full bg-red-500"
+            class="absolute bottom-0 left-4 right-4 h-0.5 rounded-full bg-[var(--guide-accent)]"
           ></span>
         </button>
         <button
@@ -37,8 +37,8 @@ export type ChatTab = 'ia' | 'social';
           (click)="activeTab = 'social'"
           class="relative flex-1 py-2.5 text-center text-xs font-semibold transition-colors"
           [ngClass]="activeTab === 'social'
-            ? 'text-red-400'
-            : 'text-slate-400 hover:text-slate-200'"
+            ? 'text-[var(--guide-accent)]'
+            : 'text-[var(--portal-text-muted)] hover:text-[var(--portal-text)]'"
         >
           <span class="inline-flex items-center gap-1.5">
             <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -52,7 +52,7 @@ export type ChatTab = 'ia' | 'social';
           </span>
           <span
             *ngIf="activeTab === 'social'"
-            class="absolute bottom-0 left-4 right-4 h-0.5 rounded-full bg-red-500"
+            class="absolute bottom-0 left-4 right-4 h-0.5 rounded-full bg-[var(--guide-accent)]"
           ></span>
         </button>
       </div>

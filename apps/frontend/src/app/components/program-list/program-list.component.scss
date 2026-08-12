@@ -169,7 +169,7 @@ $bp-xl: 1280px;
 }
 
 :host.program-list--theme-light .tv-overlay {
-  background: rgba(15, 23, 42, 0.18);
+  background: var(--portal-surface-strong);
 }
 
 // ============================================
@@ -642,7 +642,7 @@ $bp-xl: 1280px;
 
   &__progress-bar {
     height: 2px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--portal-surface-strong);
     border-radius: 2px;
     overflow: hidden;
   }
@@ -1234,7 +1234,7 @@ $bp-xl: 1280px;
   &__progress {
     flex: 1;
     height: 2px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--portal-surface-strong);
     border-radius: 1px;
     overflow: hidden;
 

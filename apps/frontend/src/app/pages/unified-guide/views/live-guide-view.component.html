@@ -1,0 +1,196 @@
+<section class="live-view">
+  <header class="live-view__masthead">
+    <div class="live-view__masthead-copy">
+      <p class="live-view__eyebrow">TV Directo</p>
+      <h2>{{ sectionTitle() }}</h2>
+      <p>{{ sectionDescription() }}</p>
+    </div>
+
+    <div class="live-view__summary" *ngIf="activeFilterSummary().length">
+      <span *ngFor="let item of activeFilterSummary(); trackBy: trackByText">{{ item }}</span>
+    </div>
+  </header>
+
+  <section class="live-view__feature-grid" *ngIf="leadPrograms().length">
+    <app-unified-program-card
+      [item]="leadPrograms()[0]"
+      variant="live"
+      (selected)="openItem(leadPrograms()[0])"
+    ></app-unified-program-card>
+
+    <div class="live-view__feature-stack" *ngIf="leadPrograms().length > 1">
+      <app-unified-program-card
+        *ngFor="let item of leadPrograms().slice(1); trackBy: trackByItem"
+        [item]="item"
+        variant="compact"
+        (selected)="openItem(item)"
+      ></app-unified-program-card>
+    </div>
+  </section>
+
+  <section class="live-view__channel-row" *ngIf="topChannels().length">
+    <button
+      type="button"
+      class="live-view__channel-chip"
+      [class.live-view__channel-chip--active]="!guideState.liveFilters().channel"
+      (click)="selectChannel('')"
+    >
+      <span class="live-view__channel-chip-copy">
+        <strong>Todos</strong>
+        <small>Zapping abierto</small>
+      </span>
+    </button>
+
+    <button
+      *ngFor="let channel of topChannels(); trackBy: trackByChannel"
+      type="button"
+      class="live-view__channel-chip"
+      [class.live-view__channel-chip--active]="guideState.liveFilters().channel === channel.id"
+      (click)="selectChannel(channel.id)"
+    >
+      <img *ngIf="channel.icon" [src]="channel.icon" [alt]="''" loading="lazy" />
+      <span class="live-view__channel-chip-copy">
+        <strong>{{ channel.name }}</strong>
+        <small>{{ channel.type || 'Canal' }}</small>
+      </span>
+    </button>
+  </section>
+
+  <section class="live-view__stack" *ngIf="spotlightModules().length">
+    <article *ngFor="let module of spotlightModules()" class="live-view__module">
+      <header class="live-view__section-head">
+        <div>
+          <p class="live-view__eyebrow">{{ module.eyebrow }}</p>
+          <h3>{{ module.title }}</h3>
+        </div>
+        <button type="button" class="live-view__section-action" (click)="selectView(module.actionView)">
+          {{ module.actionLabel }}
+        </button>
+      </header>
+
+      <div class="live-view__rail">
+        <app-unified-program-card
+          *ngFor="let item of module.items; trackBy: trackByItem"
+          [item]="item"
+          variant="compact"
+          (selected)="openItem(item)"
+        ></app-unified-program-card>
+      </div>
+    </article>
+  </section>
+
+  <section class="live-view__section" *ngIf="guideState.liveFilters().liveView !== 'day' && gridPrograms().length">
+    <header class="live-view__section-head">
+      <div>
+        <p class="live-view__eyebrow">Sigue viendo</p>
+        <h3>Más emisiones en el mismo flujo</h3>
+      </div>
+      <button type="button" class="live-view__section-action" (click)="selectView('day')">
+        Ver todo el día
+      </button>
+    </header>
+
+    <div class="live-view__list">
+      <app-unified-program-card
+        *ngFor="let item of gridPrograms(); trackBy: trackByItem"
+        [item]="item"
+        variant="epg-row"
+        (selected)="openItem(item)"
+      ></app-unified-program-card>
+    </div>
+  </section>
+
+  <section class="live-view__section" *ngIf="guideState.liveFilters().liveView === 'day' && dayChannelSections().length">
+    <header class="live-view__section-head">
+      <div>
+        <p class="live-view__eyebrow">Parrilla completa</p>
+        <h3>Lectura por canal y franja, sin EPG clásica</h3>
+      </div>
+      <button type="button" class="live-view__section-action" (click)="selectView('night')">
+        Saltar a noche
+      </button>
+    </header>
+
+    <div class="live-view__channel-groups">
+      <article *ngFor="let section of dayChannelSections(); trackBy: trackByChannelSection" class="live-view__channel-group">
+        <header class="live-view__channel-group-head">
+          <div class="live-view__channel-group-copy">
+            <img *ngIf="section.channel.icon" [src]="section.channel.icon" [alt]="''" loading="lazy" />
+            <div>
+              <strong>{{ section.channel.name }}</strong>
+              <small>{{ section.channel.type || 'Canal' }}</small>
+            </div>
+          </div>
+
+          <button type="button" class="live-view__channel-link" (click)="selectChannel(section.channel.id)">
+            Abrir canal
+          </button>
+        </header>
+
+        <div class="live-view__list">
+          <app-unified-program-card
+            *ngFor="let item of section.items; trackBy: trackByItem"
+            [item]="item"
+            variant="epg-row"
+            (selected)="openItem(item)"
+          ></app-unified-program-card>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="live-view__directories" *ngIf="quickAccessSections().length">
+    <article *ngFor="let section of quickAccessSections()" class="live-view__directory-card">
+      <header class="live-view__section-head">
+        <div>
+          <p class="live-view__eyebrow">{{ section.eyebrow }}</p>
+          <h3>{{ section.title }}</h3>
+        </div>
+      </header>
+
+      <div class="live-view__directory-grid">
+        <button
+          *ngFor="let item of section.items"
+          type="button"
+          class="live-view__directory-chip"
+          [class.live-view__directory-chip--active]="item.active"
+          (click)="applyQuickAccess(section.kind, item.id)"
+        >
+          <span class="live-view__directory-chip-icon" *ngIf="item.iconPath as iconPath">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path [attr.d]="iconPath"></path>
+            </svg>
+          </span>
+          <span class="live-view__directory-chip-copy">
+            <strong>{{ item.label }}</strong>
+            <small>{{ item.meta }}</small>
+          </span>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <app-unified-filter-dock
+    [open]="shellUi.isFilterDockOpen()"
+    title="Filtros de TV Directo"
+    [activeCount]="activeFilterSummary().length"
+    [sections]="filterDockSections()"
+    (close)="closeDock()"
+    (clear)="clearFilters()"
+    (select)="handleDockSelect($event)"
+  ></app-unified-filter-dock>
+
+  <app-bottom-sheet
+    [open]="!!selectedItem()"
+    [title]="selectedItem()?.program?.title || 'Detalle'"
+    (close)="closeSheet()"
+  >
+    <app-unified-program-card
+      *ngIf="selectedItem() as item"
+      [item]="item"
+      variant="compact"
+      [showActions]="false"
+      (selected)="openItem(item)"
+    ></app-unified-program-card>
+  </app-bottom-sheet>
+</section>

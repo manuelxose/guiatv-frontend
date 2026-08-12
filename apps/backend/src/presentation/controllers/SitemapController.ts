@@ -297,6 +297,7 @@ export class SitemapController {
       { loc: '/programacion-tv/peliculas', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/programacion-tv/series', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/plataformas', lastmod: today, changefreq: 'daily', priority: 0.9 },
+      { loc: '/deportes', lastmod: today, changefreq: 'hourly', priority: 0.9 },
       { loc: '/tendencias', lastmod: today, changefreq: 'daily', priority: 0.8 },
       { loc: '/comparador-streaming', lastmod: today, changefreq: 'weekly', priority: 0.8 },
       { loc: '/editorial', lastmod: today, changefreq: 'daily', priority: 0.8 },

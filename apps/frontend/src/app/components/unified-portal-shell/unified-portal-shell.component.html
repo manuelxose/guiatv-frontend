@@ -1,0 +1,208 @@
+<main
+  class="portal-shell"
+  [ngClass]="[
+    'portal-shell--' + tone(),
+    'portal-shell--right-' + rightRailVariant(),
+    'portal-shell--hero-' + heroVariant(),
+    leftRailCollapsed() ? 'portal-shell--left-collapsed' : '',
+    hasTopPillShelf() ? 'portal-shell--has-pill-shelf' : ''
+  ]"
+>
+  <app-unified-top-nav
+    [activeTab]="activeTab()"
+    [searchQuery]="searchQuery()"
+    [isAuthenticated]="isAuthenticated()"
+    [profileName]="profileName()"
+    [showLeftRail]="hasLeftRail()"
+    [showRightRail]="showRightRailToggle()"
+    [rightRailLabel]="rightRailLabel()"
+    (tabChange)="tabChange.emit($event)"
+    (searchChange)="searchChange.emit($event)"
+    (searchSubmit)="searchSubmit.emit($event)"
+    (leftRailToggle)="toggleLeftRail()"
+    (rightRailToggle)="toggleRightRail()"
+  ></app-unified-top-nav>
+
+  <div class="portal-shell__body-with-rail">
+    @if (hasLeftRail()) {
+    <aside
+      class="portal-shell__rail portal-shell__rail--left"
+      [class.portal-shell__rail--collapsed]="leftRailCollapsed()"
+    >
+      <div class="portal-shell__rail-inner">
+        @for (section of resolvedLeftRailSections(); track trackByRailSection($index, section)) {
+        <app-unified-rail-section
+          [section]="section"
+          [collapsed]="leftRailCollapsed()"
+          (railAction)="handleRailAction($event)"
+          (railNavigate)="closeDrawers()"
+        ></app-unified-rail-section>
+        }
+      </div>
+    </aside>
+    }
+
+    <div class="portal-shell__content-column">
+
+
+      @if (hasTopPillShelf()) {
+      <section class="portal-shell__pill-shelf">
+        <div class="portal-shell__pill-shelf-frame">
+          @if (topPillChips().length) {
+          <div class="portal-shell__pill-shelf-copy">
+            <p>{{ topPillLabel() }}</p>
+          </div>
+          }
+
+          @if (topPillChips().length) {
+          <div class="portal-shell__pill-shelf-main">
+            <app-filter-chip-bar
+              [chips]="topPillChips()"
+              [active]="topPillSelection()"
+              variant="shelf"
+              ariaLabel="Filtros rápidos"
+              (chipSelect)="emitTopPillChange($event)"
+            ></app-filter-chip-bar>
+          </div>
+          }
+
+          @if (showFilterButton()) {
+          <div class="portal-shell__pill-shelf-actions">
+            <button
+              type="button"
+              class="portal-shell__filter-button portal-shell__filter-button--shelf"
+              (click)="filterToggle.emit()"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path
+                  d="M4.5 6.75h15M7.5 12h9M9.75 17.25h4.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                ></path>
+              </svg>
+              <span>{{ filterButtonLabel() }}</span>
+              <small *ngIf="filterCount()">{{ filterCount() }}</small>
+            </button>
+          </div>
+          }
+        </div>
+      </section>
+      }
+
+      <div class="portal-shell__layout">
+        <div class="portal-shell__surface">
+      <div class="portal-shell__frame">
+        @if (breadcrumbItems().length) {
+        <app-breadcrumb [items]="breadcrumbItems().slice()"></app-breadcrumb>
+        }
+
+        @if (showHero()) {
+        <header
+          class="portal-shell__hero"
+          [class.portal-shell__hero--stage]="heroVariant() === 'stage'"
+          [class.portal-shell__hero--compact]="heroVariant() === 'compact'"
+        >
+          <div class="portal-shell__hero-copy">
+            @if (eyebrow()) {
+            <p class="portal-shell__eyebrow">{{ eyebrow() }}</p>
+            }
+            <h1>{{ title() }}</h1>
+            @if (description()) {
+            <p class="portal-shell__hero-description">{{ description() }}</p>
+            }
+            <div class="portal-shell__hero-actions">
+              <ng-content select="[shell-hero-actions]"></ng-content>
+            </div>
+          </div>
+
+          @if (heroVariant() === 'stage' || metrics().length) {
+          <div class="portal-shell__hero-side">
+            @if (heroVariant() === 'stage') {
+            <div class="portal-shell__hero-media">
+              <ng-content select="[shell-hero-media]"></ng-content>
+            </div>
+            }
+
+            @if (metrics().length) {
+            <section class="portal-shell__metrics">
+              @for (metric of metrics(); track trackByMetric($index, metric)) {
+              <article class="portal-shell__metric">
+                <span class="portal-shell__metric-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path
+                      [attr.d]="metric.iconPath"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.8"
+                    ></path>
+                  </svg>
+                </span>
+                <p>{{ metric.label }}</p>
+                <strong>{{ metric.value }}</strong>
+                <span>{{ metric.detail }}</span>
+              </article>
+              }
+            </section>
+            }
+          </div>
+          }
+        </header>
+        }
+
+        <div class="portal-shell__body">
+          <ng-content></ng-content>
+        </div>
+      </div>
+    </div>
+
+      </div><!-- /layout -->
+    </div><!-- /content-column -->
+  </div><!-- /body-with-rail -->
+
+  <section class="portal-shell__footer">
+    <app-footer></app-footer>
+  </section>
+
+  @if (leftRailOpen() || rightRailOpen()) {
+  <div class="portal-shell__drawer-shell">
+    <button
+      type="button"
+      class="portal-shell__drawer-backdrop"
+      (click)="closeDrawers()"
+      aria-label="Cerrar panel"
+    ></button>
+
+    @if (leftRailOpen()) {
+    <aside
+      class="portal-shell__drawer portal-shell__drawer--left"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Navegación lateral"
+    >
+      <div class="portal-shell__drawer-head">
+        <div>
+          <p>Navegación</p>
+          <h2>Explora el producto</h2>
+        </div>
+        <button type="button" (click)="closeLeftRail()" aria-label="Cerrar navegación lateral">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M6 6 18 18M18 6 6 18" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="portal-shell__drawer-content">
+        @for (section of resolvedLeftRailSections(); track trackByRailSection($index, section)) {
+        <app-unified-rail-section
+          [section]="section"
+          (railAction)="handleRailAction($event)"
+          (railNavigate)="closeLeftRail()"
+        ></app-unified-rail-section>
+        }
+      </div>
+    </aside>
+    }
+  </div>
+  }
+</main>

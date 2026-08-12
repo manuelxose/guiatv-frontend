@@ -14,7 +14,7 @@ export interface TvReadChannelDTO {
   aliases: string[];
   sourceIds: string[];
   type: string;
-  group: 'tdt' | 'autonomico' | 'movistar' | 'online' | 'deporte';
+  group: 'tdt' | 'cable' | 'autonomico' | 'movistar' | 'online' | 'deporte';
   subgroups: string[];
   sortOrder: number;
   icon?: string;
@@ -33,6 +33,7 @@ export interface TvReadProgramDTO {
   editorialCategory: string;
   genre?: string;
   subgenre?: string;
+  sportFacet?: 'Fútbol' | 'Baloncesto' | 'F1' | 'Tenis' | 'MotoGP' | 'Más';
   tmdbId?: number;
   description?: string;
   titleResolutionState?:
@@ -108,6 +109,7 @@ export interface TvReadResponseDTO {
   filters: {
     group?: string;
     category?: string;
+    sport?: string;
     channelId?: string;
     q?: string;
   };

@@ -1,0 +1,83 @@
+<div class="filter-dock" *ngIf="open">
+  <button
+    type="button"
+    class="filter-dock__backdrop"
+    (click)="close.emit()"
+    aria-label="Cerrar filtros"
+  ></button>
+
+  <aside class="filter-dock__panel" role="dialog" aria-modal="true" [attr.aria-label]="title">
+    <header class="filter-dock__head">
+      <div>
+        <p class="filter-dock__eyebrow">Refina resultados</p>
+        <h2>{{ title }}</h2>
+      </div>
+      <button type="button" class="filter-dock__close" (click)="close.emit()" aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M6 6 18 18M18 6 6 18" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+        </svg>
+      </button>
+    </header>
+
+    <div class="filter-dock__meta">
+      <span>{{ activeCount }} activos</span>
+      <button type="button" (click)="clear.emit()">Resetear</button>
+    </div>
+
+    <div class="filter-dock__summary" *ngIf="activeCount">
+      <span *ngFor="let section of sections; trackBy: trackBySection">
+        <ng-container *ngFor="let label of selectedLabels(section)">
+          <em>{{ label }}</em>
+        </ng-container>
+      </span>
+    </div>
+
+    <section
+      *ngFor="let section of sections; trackBy: trackBySection"
+      class="filter-dock__section"
+    >
+      <div class="filter-dock__section-head">
+        <div>
+          <h3>{{ section.title }}</h3>
+          <p *ngIf="section.description">{{ section.description }}</p>
+        </div>
+        <span>{{ selectedCount(section) ? selectedCount(section) + ' activos' : (section.multiSelect ? 'Multi' : 'Único') }}</span>
+      </div>
+
+      <div class="filter-dock__option-list">
+        <button
+          *ngFor="let option of section.options; trackBy: trackByOption"
+          type="button"
+          class="filter-dock__option"
+          [class.filter-dock__option--active]="option.selected"
+          [attr.aria-pressed]="option.selected"
+          (click)="select.emit({ sectionId: section.id, optionId: option.id })"
+        >
+          <span class="filter-dock__option-icon" *ngIf="option.iconPath" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                [attr.d]="option.iconPath"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+              ></path>
+            </svg>
+          </span>
+          <span class="filter-dock__option-copy">
+            <strong>{{ option.label }}</strong>
+            <small *ngIf="option.count !== undefined">{{ option.count }}</small>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <footer class="filter-dock__footer">
+      <button type="button" class="filter-dock__footer-button filter-dock__footer-button--ghost" (click)="clear.emit()">
+        Limpiar todo
+      </button>
+      <button type="button" class="filter-dock__footer-button" (click)="close.emit()">
+        Aplicar filtros
+      </button>
+    </footer>
+  </aside>
+</div>

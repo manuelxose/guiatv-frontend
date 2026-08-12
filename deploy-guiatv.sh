@@ -186,7 +186,7 @@ systemctl daemon-reload
 systemctl restart guiatv-api
 wait_http "http://127.0.0.1:${API_PORT}/v2/health"
 smoke_http "http://127.0.0.1:${API_PORT}/v2/discovery/home" "200"
-smoke_http "http://127.0.0.1:${API_PORT}/v2/discovery/browse?kind=streaming&limit=1" "200"
+smoke_http "http://127.0.0.1:${API_PORT}/v2/discovery/browse?type=movie&availability=streaming&limit=1" "200"
 smoke_http "http://127.0.0.1:${API_PORT}/v2/tv/surface/guide?date=$(date +%F)&group=tdt" "200"
 smoke_http "http://127.0.0.1:${API_PORT}/v2/tv/surface/channels/la_2?date=$(date +%F)" "200"
 smoke_http "http://127.0.0.1:${API_PORT}/v2/catalog/platforms" "200"
@@ -200,6 +200,7 @@ smoke_http "http://127.0.0.1:${SSR_PORT}/" "200"
 smoke_http "http://127.0.0.1:${SSR_PORT}/programacion-tv/guia-canales" "200"
 smoke_http "http://127.0.0.1:${SSR_PORT}/canales/la_2" "200"
 smoke_http "http://127.0.0.1:${SSR_PORT}/plataformas" "200"
+smoke_http "http://127.0.0.1:${SSR_PORT}/deportes" "200"
 smoke_socket_io
 
 echo "Unified release active: $(readlink -f "${CURRENT_RELEASE_LINK}")"

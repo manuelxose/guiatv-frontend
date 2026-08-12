@@ -49,17 +49,6 @@ const PRIMARY_GUIDE_CATEGORIES: Array<{ key: GuideQuickCategory; label: string }
   { key: 'Deportes', label: 'Deportes' },
 ];
 
-const EDITORIAL_CATEGORY_PRIORITY: Record<string, number> = {
-  Cine: 0,
-  Series: 1,
-  Deportes: 2,
-  Noticias: 3,
-  Infantil: 4,
-  Documental: 5,
-  Entretenimiento: 6,
-  Otros: 7,
-};
-
 @Component({
   selector: 'app-canal-completo',
   standalone: true,
@@ -287,8 +276,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     }
 
     const normalizedCategory = this.normalizeCategory(
-      program?.program?.editorialCategory || program?.program?.genre,
-      title
+      program?.program?.editorialCategory || program?.program?.genre
     );
     const contentType: CatalogContentType =
       normalizedCategory === 'Cine' ? 'movie' :
@@ -330,30 +318,10 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       .slice(0, 6);
   }
 
-  private buildTonightPrograms(programs: ChannelProgram[]): ChannelProgram[] {
-    return this.sortEditorial(
-      programs.filter((program) => {
-        const hour = new Date(program.start).getHours();
-        return hour >= 20 && hour <= 23;
-      })
-    ).slice(0, 8);
-  }
-
   private buildFeaturedPrograms(programs: ChannelProgram[]): ChannelProgram[] {
-    return this.sortEditorial(programs).slice(0, 8);
-  }
-
-  private sortEditorial(programs: ChannelProgram[]): ChannelProgram[] {
-    return [...programs].sort((left, right) => {
-      const categoryDiff =
-        this.categoryPriority(left.normalizedCategory) -
-        this.categoryPriority(right.normalizedCategory);
-      if (categoryDiff !== 0) {
-        return categoryDiff;
-      }
-
-      return new Date(left.start).getTime() - new Date(right.start).getTime();
-    });
+    const now = Date.now();
+    const upcoming = programs.filter((program) => new Date(program.end).getTime() >= now);
+    return (upcoming.length ? upcoming : programs).slice(0, 8);
   }
 
   private buildRelatedChannels(surface: TvChannelSurfaceDTO): RelatedChannel[] {
@@ -416,33 +384,8 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     return normalizePublicImageUrl(url, this.apiConfig.getAssetBaseUrl());
   }
 
-  private normalizeCategory(input: unknown, title: string): string {
-    const category = String((input as any)?.value || input || '').trim().toLowerCase();
-    const normalizedTitle = String(title || '').toLowerCase();
-
-    if (category.includes('cine') || category.includes('pelicul') || normalizedTitle.includes('cine')) {
-      return 'Cine';
-    }
-    if (category.includes('serie') || category.includes('telenovela')) {
-      return 'Series';
-    }
-    if (category.includes('deporte') || category.includes('futbol') || category.includes('baloncesto')) {
-      return 'Deportes';
-    }
-    if (category.includes('noticia') || category.includes('informativ')) {
-      return 'Noticias';
-    }
-    if (category.includes('infantil') || category.includes('kids') || category.includes('dibujos')) {
-      return 'Infantil';
-    }
-    if (category.includes('documental')) {
-      return 'Documental';
-    }
-    if (category.includes('entreten')) {
-      return 'Entretenimiento';
-    }
-
-    return 'Otros';
+  private normalizeCategory(input: unknown): string {
+    return String((input as any)?.value || input || '').trim() || 'Otros';
   }
 
   private filterPrograms(programs: ChannelProgram[]): ChannelProgram[] {
@@ -453,9 +396,5 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     return programs.filter(
       (program) => program.normalizedCategory === this.selectedCategory
     );
-  }
-
-  private categoryPriority(category: string): number {
-    return EDITORIAL_CATEGORY_PRIORITY[category] ?? EDITORIAL_CATEGORY_PRIORITY['Otros'];
   }
 }

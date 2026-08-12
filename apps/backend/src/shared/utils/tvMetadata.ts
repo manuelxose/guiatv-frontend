@@ -7,6 +7,7 @@ export type CanonicalChannelType =
 
 export type CanonicalChannelGroup =
   | 'tdt'
+  | 'cable'
   | 'autonomico'
   | 'movistar'
   | 'online'
@@ -31,6 +32,23 @@ export type TvTitleResolutionState =
   | 'specific_from_manual_override'
   | 'generic_unresolved'
   | 'generic_suppressed';
+
+export type TvSportFacet =
+  | 'Fútbol'
+  | 'Baloncesto'
+  | 'F1'
+  | 'Tenis'
+  | 'MotoGP'
+  | 'Más';
+
+export type TvSportFacetKey =
+  | 'all'
+  | 'futbol'
+  | 'baloncesto'
+  | 'f1'
+  | 'tenis'
+  | 'motogp'
+  | 'mas';
 
 export interface ChannelIdentityInput {
   name?: string;
@@ -109,6 +127,23 @@ const NATIONAL_TDT_ORDER = [
   'trece',
   '24_horas',
 ];
+
+export const GUIDE_GROUP_ORDER: CanonicalChannelGroup[] = [
+  'tdt',
+  'cable',
+  'movistar',
+  'online',
+  'deporte',
+];
+
+const GUIDE_GROUP_SORT_ORDER: Record<CanonicalChannelGroup, number> = {
+  tdt: 0,
+  cable: 1,
+  movistar: 2,
+  online: 3,
+  deporte: 4,
+  autonomico: 5,
+};
 
 const CANONICAL_CHANNEL_ALIASES: Record<string, string[]> = {
   la_1: ['la1', 'la_1', 'la primera', 'tve1', 'la 1', 'la1 tv', 'la1_tv', 'la1 can', 'la1_can', 'la1 can tv', 'la1_can_tv'],
@@ -203,6 +238,102 @@ const SPORTS_KEYWORDS = [
   'teledeporte',
   'real madrid tv',
   'gol',
+];
+
+const SPORTS_SIGNAL_KEYWORDS = [
+  ...SPORTS_KEYWORDS,
+  'nba',
+  'acb',
+  'euroliga',
+  'atp',
+  'wta',
+  'roland garros',
+  'wimbledon',
+  'us open',
+  'australian open',
+  'motogp',
+  'moto2',
+  'moto3',
+  'ciclismo',
+  'cycling',
+  'boxeo',
+  'ufc',
+  'rugby',
+  'golf',
+  'atletismo',
+];
+
+const SPORT_FACET_LABELS: Record<Exclude<TvSportFacetKey, 'all'>, TvSportFacet> = {
+  futbol: 'Fútbol',
+  baloncesto: 'Baloncesto',
+  f1: 'F1',
+  tenis: 'Tenis',
+  motogp: 'MotoGP',
+  mas: 'Más',
+};
+
+const SPORT_FACET_PATTERNS: Array<[Exclude<TvSportFacetKey, 'all' | 'mas'>, RegExp[]]> = [
+  [
+    'futbol',
+    [
+      /\bf[uú]tbol\b/i,
+      /\bfootball\b/i,
+      /\blaliga\b/i,
+      /\bliga\b/i,
+      /\bchampions\b/i,
+      /\bpremier\b/i,
+      /\bcopa del rey\b/i,
+      /\buefa\b/i,
+      /\bmundial\b/i,
+    ],
+  ],
+  [
+    'baloncesto',
+    [
+      /\bbaloncesto\b/i,
+      /\bbasket\b/i,
+      /\bnba\b/i,
+      /\bacb\b/i,
+      /\beuroliga\b/i,
+      /\bbasketball\b/i,
+    ],
+  ],
+  [
+    'motogp',
+    [
+      /\bmotogp\b/i,
+      /\bmoto2\b/i,
+      /\bmoto3\b/i,
+      /\bmotociclismo\b/i,
+      /\bmotocross\b/i,
+    ],
+  ],
+  [
+    'f1',
+    [
+      /\bf(?:ormula)?\s*1\b/i,
+      /\bformula one\b/i,
+      /\bsky sports f1\b/i,
+      /\bdazn f1\b/i,
+      /\bpaddock\b/i,
+      /(?:formula\s*1|formula1|f1).*(?:grand prix|gran premio|qualifying|clasificaci[oó]n|pole|box,?\s*box)/i,
+      /(?:grand prix|gran premio).*(?:formula\s*1|formula1|f1)/i,
+    ],
+  ],
+  [
+    'tenis',
+    [
+      /\btenis\b/i,
+      /\btennis\b/i,
+      /\batp\b/i,
+      /\bwta\b/i,
+      /\broland garros\b/i,
+      /\bwimbledon\b/i,
+      /\bus open\b/i,
+      /\baustralian open\b/i,
+      /\bmasters 1000\b/i,
+    ],
+  ],
 ];
 
 const NEWS_KEYWORDS = [
@@ -338,6 +469,123 @@ export function resolveProgramDisplayTitle(
   return safeTitle;
 }
 
+export function normalizeSportFacet(
+  value: string | null | undefined
+): TvSportFacetKey | undefined {
+  const normalized = normalizeTvToken(value, ' ');
+  if (!normalized) {
+    return undefined;
+  }
+  if (normalized === 'todos' || normalized === 'todo' || normalized === 'all') {
+    return 'all';
+  }
+  if (normalized === 'futbol' || normalized === 'futbol sala') return 'futbol';
+  if (normalized === 'baloncesto' || normalized === 'basket') return 'baloncesto';
+  if (normalized === 'f1' || normalized === 'formula 1' || normalized === 'formula1') return 'f1';
+  if (normalized === 'tenis' || normalized === 'tennis') return 'tenis';
+  if (normalized === 'motogp' || normalized === 'moto gp' || normalized === 'motociclismo') return 'motogp';
+  if (normalized === 'mas' || normalized === 'otros' || normalized === 'multideporte' || normalized === 'multisport') {
+    return 'mas';
+  }
+  return undefined;
+}
+
+export function getSportFacetLabel(
+  value: Exclude<TvSportFacetKey, 'all'> | TvSportFacet | null | undefined
+): TvSportFacet | undefined {
+  if (!value) {
+    return undefined;
+  }
+  if (Object.values(SPORT_FACET_LABELS).includes(value as TvSportFacet)) {
+    return value as TvSportFacet;
+  }
+  const normalized = normalizeSportFacet(String(value));
+  if (!normalized || normalized === 'all') {
+    return undefined;
+  }
+  return SPORT_FACET_LABELS[normalized];
+}
+
+function hasNormalizedKeyword(normalized: string, keyword: string): boolean {
+  const safeKeyword = normalizeTvToken(keyword, ' ');
+  if (!safeKeyword) {
+    return false;
+  }
+
+  const escaped = safeKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^| )${escaped}( |$)`, 'i').test(normalized);
+}
+
+export function inferSportFacet(input: {
+  editorialCategory?: string | null;
+  genre?: string | null;
+  subgenre?: string | null;
+  title?: string | null;
+  description?: string | null;
+  channelName?: string | null;
+}): TvSportFacet | undefined {
+  const combined = [
+    input.editorialCategory,
+    input.genre,
+    input.subgenre,
+    input.title,
+    input.description,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const normalized = normalizeTvToken(combined, ' ');
+  if (!normalized) {
+    return undefined;
+  }
+
+  const hasSportsSignal =
+    /(^| )(deport|sport|liga|champions|motogp|formula|f1|nba|acb|tenis|tennis|golf|rugby|boxeo|ufc|ciclismo|cycling)( |$)/.test(
+      normalized
+    ) ||
+    SPORTS_SIGNAL_KEYWORDS.some((keyword) => hasNormalizedKeyword(normalized, keyword));
+
+  if (!hasSportsSignal) {
+    return undefined;
+  }
+
+  for (const [facet, patterns] of SPORT_FACET_PATTERNS) {
+    if (patterns.some((pattern) => pattern.test(combined))) {
+      return SPORT_FACET_LABELS[facet];
+    }
+  }
+
+  return 'Más';
+}
+
+export function getGuideGroupSortOrder(
+  group: CanonicalChannelGroup | string | null | undefined
+): number {
+  const normalized = normalizeTvToken(group, ' ');
+  if (
+    normalized === 'tdt' ||
+    normalized === 'cable' ||
+    normalized === 'movistar' ||
+    normalized === 'online' ||
+    normalized === 'deporte' ||
+    normalized === 'autonomico'
+  ) {
+    return GUIDE_GROUP_SORT_ORDER[normalized];
+  }
+  return 999;
+}
+
+export function isMixedGuideGroup(
+  group: CanonicalChannelGroup | string | null | undefined
+): boolean {
+  const normalized = normalizeTvToken(group, ' ');
+  return normalized === 'tdt' ||
+    normalized === 'cable' ||
+    normalized === 'movistar' ||
+    normalized === 'online' ||
+    normalized === 'deporte';
+}
+
 function stripChannelVariantSuffixes(value: string | null | undefined): string {
   return normalizeTvToken(value, ' ')
     .replace(/\b(hd|uhd|fhd|4k|sd)\b/g, ' ')
@@ -458,6 +706,7 @@ export function inferChannelGroup(
 
   if (isNationalTdt) return 'tdt';
   if (inferredType === 'TDT') return 'tdt';
+  if (inferredType === 'Cable') return 'cable';
   if (inferredType === 'Autonomico') return 'autonomico';
   if (inferredType === 'Movistar') return 'movistar';
   return 'online';
@@ -473,11 +722,12 @@ export function inferChannelSortOrder(input: ChannelIdentityInput): number {
     return nationalIndex;
   }
 
-  const type = inferChannelType(input);
-  if (type === 'Autonomico') return 200;
-  if (type === 'Movistar') return 300;
-  if (type === 'Cable') return 400;
-  if (type === 'OTT') return 500;
+  const group = inferChannelGroup(input);
+  if (group === 'cable') return 200;
+  if (group === 'movistar') return 300;
+  if (group === 'online') return 400;
+  if (group === 'deporte') return 500;
+  if (group === 'autonomico') return 900;
   return 999;
 }
 

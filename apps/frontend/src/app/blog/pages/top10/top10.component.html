@@ -1,140 +1,132 @@
 <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
-<div class="min-h-screen bg-[#081018] text-slate-100">
-  <div class="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
-    <section
-      class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.18),_rgba(8,16,24,0.94)_55%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-10"
-    >
-      <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_35%,transparent_65%,rgba(239,68,68,0.08))]"></div>
-      <div class="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
-        <div class="space-y-6">
-          <div class="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-amber-100">
-            Rankings
-          </div>
-          <div class="space-y-4">
-            <h1 class="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
-              Rankings editoriales conectados con busquedas reales de cine, series y streaming.
-            </h1>
-            <p class="max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
-              Aqui solo entran piezas marcadas como ranking en el CMS editorial; la heuristica queda solo para legacy.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-3">
-            <a
-              [routerLink]="appPaths.blog"
-              class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-6 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-500 hover:text-white"
-            >
-              Volver a editorial
-            </a>
-            <a
-              [routerLink]="appPaths.platforms"
-              class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-red-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-red-500"
-            >
-              Ver plataformas
-            </a>
-          </div>
-        </div>
 
-        <a
-          *ngIf="featured"
-          [routerLink]="featured.canonicalPath"
-          class="group overflow-hidden rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 transition-colors hover:border-slate-600"
+<app-unified-portal-shell
+  tone="rankings"
+  activeTab="discover"
+  [searchQuery]="searchQuery()"
+  [topPillChips]="topPillChips"
+  topPillLabel="Rankings"
+  [isAuthenticated]="isAuthenticated()"
+  [profileName]="profile()?.name || 'Cuenta'"
+  [breadcrumbItems]="breadcrumbItems"
+  [leftRailSections]="leftRailSections()"
+  [rightRailSections]="rightRailSections()"
+  rightRailLabel="Panel rankings"
+  eyebrow="Rankings"
+  title="Rankings editoriales conectados con búsquedas reales, plataformas y catálogo"
+  description="Listas, tops y selecciones editoriales vuelven al portal compartiendo navegación, shell y cierre de página con el resto de la experiencia."
+  [metrics]="metrics"
+  (tabChange)="navigateToTab($event)"
+  (topPillChange)="onTopPillChange($event)"
+  (searchChange)="onSearchChange($event)"
+  (searchSubmit)="onSearchSubmit($event)"
+>
+  <section *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
+    <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-slate-900/70"></div>
+  </section>
+
+  <div
+    *ngIf="error"
+    class="rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
+  >
+    {{ error }}
+  </div>
+
+  <ng-container *ngIf="!loading && !error">
+    <a
+      *ngIf="featured"
+      [routerLink]="featured.canonicalPath"
+      class="group block overflow-hidden rounded-[1.6rem] border border-slate-800/80 bg-slate-950/70 transition-colors hover:border-slate-600"
+    >
+      <div class="relative aspect-[16/8] overflow-hidden">
+        <img
+          [src]="featured.coverImage"
+          [alt]="featured.title"
+          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="eager"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+      </div>
+      <div class="grid gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
+        <div class="space-y-3">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Ranking destacado</p>
+          <h2 class="text-2xl font-semibold text-white">{{ featured.title }}</h2>
+          <p class="line-clamp-3 text-sm text-slate-400">{{ featured.excerptText }}</p>
+        </div>
+        <div class="rounded-[1.25rem] border border-slate-800/80 bg-slate-950/80 p-4">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Conectado con la app</p>
+          <p class="mt-3 text-sm text-slate-300">
+            Los rankings ya no cierran el producto sobre sí mismos: sirven como puertas de entrada a discovery y streaming.
+          </p>
+        </div>
+      </div>
+    </a>
+
+    <section *ngIf="categories.length" class="space-y-4">
+      <div>
+        <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Filtros editoriales</p>
+        <h2 class="mt-2 text-2xl font-semibold text-white">Explora por familia de rankings</h2>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button
+          type="button"
+          (click)="selectCategory('all')"
+          class="rounded-full border px-4 py-2 text-sm font-semibold transition-colors"
+          [ngClass]="selectedCategory === 'all'
+            ? 'border-red-500/40 bg-red-500/10 text-red-100'
+            : 'border-slate-700 bg-slate-950/50 text-slate-200 hover:border-slate-500 hover:text-white'"
         >
-          <div class="relative aspect-[16/10] overflow-hidden">
-            <img
-              [src]="featured.coverImage"
-              [alt]="featured.title"
-              class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="eager"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-          </div>
-          <div class="space-y-3 p-4">
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Ranking destacado</p>
-            <h2 class="text-xl font-semibold text-white">{{ featured.title }}</h2>
-            <p class="line-clamp-3 text-sm text-slate-400">{{ featured.excerptText }}</p>
-          </div>
-        </a>
+          Todos
+        </button>
+        <button
+          *ngFor="let category of categories"
+          type="button"
+          (click)="selectCategory(category.slug)"
+          class="rounded-full border px-4 py-2 text-sm font-semibold transition-colors"
+          [ngClass]="selectedCategory === category.slug
+            ? 'border-red-500/40 bg-red-500/10 text-red-100'
+            : 'border-slate-700 bg-slate-950/50 text-slate-200 hover:border-slate-500 hover:text-white'"
+        >
+          {{ category.name }}
+        </button>
       </div>
     </section>
 
-    <div *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
-      <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-slate-900/70"></div>
-    </div>
-
-    <div
-      *ngIf="error"
-      class="mt-8 rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
-    >
-      {{ error }}
-    </div>
-
-    <ng-container *ngIf="!loading && !error">
-      <section *ngIf="categories.length" class="mt-10 space-y-4">
+    <section class="space-y-5">
+      <div class="flex items-end justify-between gap-4">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Filtros editoriales</p>
-          <h2 class="mt-2 text-2xl font-semibold text-white">Explora por familia de rankings</h2>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Colección</p>
+          <h2 class="text-2xl font-semibold text-white">Rankings disponibles</h2>
         </div>
-        <div class="flex flex-wrap gap-3">
-          <button
-            type="button"
-            (click)="selectCategory('all')"
-            class="rounded-full border px-4 py-2 text-sm font-semibold transition-colors"
-            [ngClass]="selectedCategory === 'all'
-              ? 'border-red-500/40 bg-red-500/10 text-red-100'
-              : 'border-slate-700 bg-slate-950/50 text-slate-200 hover:border-slate-500 hover:text-white'"
-          >
-            Todos
-          </button>
-          <button
-            *ngFor="let category of categories"
-            type="button"
-            (click)="selectCategory(category.slug)"
-            class="rounded-full border px-4 py-2 text-sm font-semibold transition-colors"
-            [ngClass]="selectedCategory === category.slug
-              ? 'border-red-500/40 bg-red-500/10 text-red-100'
-              : 'border-slate-700 bg-slate-950/50 text-slate-200 hover:border-slate-500 hover:text-white'"
-          >
-            {{ category.name }}
-          </button>
-        </div>
-      </section>
+        <span class="text-sm text-slate-400">{{ filteredPosts.length }} artículos</span>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <app-editorial-post-card
+          *ngFor="let post of filteredPosts"
+          [post]="post"
+        ></app-editorial-post-card>
+      </div>
+    </section>
 
-      <section class="mt-10 space-y-5">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Colección</p>
-            <h2 class="text-2xl font-semibold text-white">Rankings disponibles</h2>
-          </div>
-          <span class="text-sm text-slate-400">{{ filteredPosts.length }} artículos</span>
+    <section *ngFor="let section of sections" class="space-y-5">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Bloque temático</p>
+          <h2 class="text-2xl font-semibold text-white">{{ section.category.name }}</h2>
         </div>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <app-editorial-post-card
-            *ngFor="let post of filteredPosts"
-            [post]="post"
-          ></app-editorial-post-card>
-        </div>
-      </section>
-
-      <section *ngFor="let section of sections" class="mt-10 space-y-5">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Bloque temático</p>
-            <h2 class="text-2xl font-semibold text-white">{{ section.category.name }}</h2>
-          </div>
-          <a
-            [routerLink]="section.category.canonicalPath"
-            class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
-          >
-            Ver categoría
-          </a>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <app-editorial-post-card
-            *ngFor="let post of section.posts"
-            [post]="post"
-          ></app-editorial-post-card>
-        </div>
-      </section>
-    </ng-container>
-  </div>
-</div>
+        <a
+          [routerLink]="section.category.canonicalPath"
+          class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+        >
+          Ver categoría
+        </a>
+      </div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <app-editorial-post-card
+          *ngFor="let post of section.posts"
+          [post]="post"
+        ></app-editorial-post-card>
+      </div>
+    </section>
+  </ng-container>
+</app-unified-portal-shell>

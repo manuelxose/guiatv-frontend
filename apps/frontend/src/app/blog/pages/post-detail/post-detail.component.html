@@ -1,6 +1,23 @@
-<div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
-<div class="min-h-screen bg-[#081018] text-slate-100">
-  <div class="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
+<app-unified-portal-shell
+  tone="editorial"
+  [activeTab]="'discover'"
+  [searchQuery]="searchQuery()"
+  [topPillChips]="topPillChips"
+  topPillLabel="Editorial"
+  [isAuthenticated]="isAuthenticated()"
+  [profileName]="profile()?.name || 'Cuenta'"
+  [breadcrumbItems]="breadcrumbItems"
+  [leftRailSections]="leftRailSections()"
+  [rightRailSections]="rightRailSections()"
+  rightRailLabel="Panel editorial"
+  [showHero]="false"
+  (tabChange)="navigateToTab($event)"
+  (topPillChange)="onTopPillChange($event)"
+  (searchChange)="onSearchChange($event)"
+  (searchSubmit)="onSearchSubmit($event)"
+>
+  <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
+  <div class="editorial-post-page mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6 lg:px-8">
     <div *ngIf="loading" class="space-y-6">
       <div class="h-10 w-2/3 animate-pulse rounded bg-slate-900/70"></div>
       <div class="h-96 animate-pulse rounded-[2rem] bg-slate-900/70"></div>
@@ -213,4 +230,4 @@
       </article>
     </ng-container>
   </div>
-</div>
+</app-unified-portal-shell>

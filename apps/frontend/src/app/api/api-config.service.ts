@@ -4,8 +4,9 @@ import { environment } from '../../environments/environment';
 
 /**
  * Minimal config service for API base URLs.
- * Keeps defaults aligned with backend README: local http://localhost:4000/v2
- * and uses relative "/v2" in browser to allow proxying.
+ * Keeps defaults aligned with backend README and uses 127.0.0.1 on SSR
+ * to avoid localhost IPv6 resolution issues on this host.
+ * Uses relative "/v2" in browser to allow proxying.
  */
 @Injectable({ providedIn: 'root' })
 export class ApiConfigService {
@@ -14,6 +15,7 @@ export class ApiConfigService {
   constructor(@Inject(PLATFORM_ID) platformId: object) {
     const isBrowser = isPlatformBrowser(platformId);
     const envBase = (environment as any).API_BASE_URL?.trim();
+    const envSsrBase = (environment as any).SSR_API_BASE_URL?.trim();
 
     // In SSR, always use an absolute URL to the backend API to avoid
     // self-referencing requests that loop back into the SSR server.
@@ -21,7 +23,10 @@ export class ApiConfigService {
     if (isBrowser) {
       base = envBase || '/v2';
     } else {
-      base = 'http://localhost:4000/v2';
+      base =
+        envSsrBase ||
+        (envBase && /^https?:\/\//.test(envBase) ? envBase : '') ||
+        this.resolveServerBaseUrl();
     }
 
     if (base.endsWith('/')) base = base.slice(0, -1);
@@ -63,5 +68,9 @@ export class ApiConfigService {
     }
 
     return this.baseUrl;
+  }
+
+  private resolveServerBaseUrl(): string {
+    return 'http://127.0.0.1:4000/v2';
   }
 }

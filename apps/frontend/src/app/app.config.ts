@@ -10,7 +10,7 @@ import {
   Provider,
 } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 // Importamos withEventReplay para que si el usuario hace clic antes de cargar JS, se guarde el evento
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
@@ -32,7 +32,7 @@ import { environment } from '../environments/environment';
 export const appConfig: ApplicationConfig = {
   providers: [
     // Providers básicos de Angular para standalone
-    provideRouter(routes),
+    provideRouter(routes, withEnabledBlockingInitialNavigation()),
     // Fetch API es requerida para SSR moderno
     provideHttpClient(withFetch(), withInterceptors([authRefreshInterceptor])),
 

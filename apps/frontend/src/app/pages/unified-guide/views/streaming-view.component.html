@@ -1,0 +1,203 @@
+<section class="streaming-view">
+  <header class="streaming-view__masthead">
+    <div class="streaming-view__masthead-copy">
+      <p class="streaming-view__eyebrow">Streaming</p>
+      <h2>{{ activePlatform()?.name || 'Plataformas y catálogo en un mismo flujo' }}</h2>
+      <p>
+        {{
+          activePlatform()
+            ? activePlatform()!.name + ' entra como servicio protagonista con catálogo real debajo.'
+            : 'La tab entra por marcas visibles, contenido destacado y rails consistentes, sin hero vacío.'
+        }}
+      </p>
+    </div>
+
+    <div class="streaming-view__masthead-actions">
+      <div class="streaming-view__summary" *ngIf="activeFilterSummary().length">
+        <span *ngFor="let item of activeFilterSummary(); trackBy: trackByText">{{ item }}</span>
+      </div>
+      <a routerLink="/comparador-streaming" class="streaming-view__action">Comparar plataformas</a>
+    </div>
+  </header>
+
+  <section class="streaming-view__platform-row" *ngIf="platforms().length">
+    <button
+      *ngFor="let platform of platforms(); trackBy: trackByPlatform"
+      type="button"
+      class="streaming-view__platform-button"
+      [class.streaming-view__platform-button--active]="guideState.streamingFilters().platform === platform.name"
+      (click)="selectPlatform(platform.name)"
+    >
+      <app-platform-badge [label]="platform.name" [color]="platform.color" [logoUrl]="platform.logoUrl || ''"></app-platform-badge>
+    </button>
+  </section>
+
+  <section class="streaming-view__feature-grid" *ngIf="featuredItem() as item">
+    <app-unified-program-card
+      [item]="item"
+      variant="streaming"
+      (selected)="openItem(item)"
+    ></app-unified-program-card>
+
+    <div class="streaming-view__feature-stack" *ngIf="featuredStack().length">
+      <app-unified-program-card
+        *ngFor="let secondary of featuredStack(); trackBy: trackByItem"
+        [item]="secondary"
+        variant="compact"
+        (selected)="openItem(secondary)"
+      ></app-unified-program-card>
+    </div>
+  </section>
+
+  <ng-container *ngIf="!showFilteredGrid(); else filteredGrid">
+    <section class="streaming-view__stack">
+      <article class="streaming-view__module" *ngIf="popularRail().items.length">
+        <header class="streaming-view__section-head">
+          <div>
+            <p class="streaming-view__eyebrow">Popular</p>
+            <h3>Lo más visible ahora</h3>
+          </div>
+        </header>
+        <div class="streaming-view__rail">
+          <app-unified-program-card
+            *ngFor="let item of popularRail().items; trackBy: trackByItem"
+            [item]="item"
+            variant="compact"
+            (selected)="openItem(item)"
+          ></app-unified-program-card>
+        </div>
+      </article>
+
+      <article class="streaming-view__module" *ngIf="recentRail().items.length">
+        <header class="streaming-view__section-head">
+          <div>
+            <p class="streaming-view__eyebrow">Novedades</p>
+            <h3>Entradas recientes</h3>
+          </div>
+        </header>
+        <div class="streaming-view__rail">
+          <app-unified-program-card
+            *ngFor="let item of recentRail().items; trackBy: trackByItem"
+            [item]="item"
+            variant="compact"
+            (selected)="openItem(item)"
+          ></app-unified-program-card>
+        </div>
+      </article>
+
+      <article class="streaming-view__module" *ngIf="ratingRail().items.length">
+        <header class="streaming-view__section-head">
+          <div>
+            <p class="streaming-view__eyebrow">Top valorado</p>
+            <h3>La mejor percepción crítica</h3>
+          </div>
+        </header>
+        <div class="streaming-view__rail">
+          <app-unified-program-card
+            *ngFor="let item of ratingRail().items; trackBy: trackByItem"
+            [item]="item"
+            variant="compact"
+            (selected)="openItem(item)"
+          ></app-unified-program-card>
+        </div>
+      </article>
+    </section>
+  </ng-container>
+
+  <ng-template #filteredGrid>
+    <section class="streaming-view__section">
+      <header class="streaming-view__section-head">
+        <div>
+          <p class="streaming-view__eyebrow">Catálogo filtrado</p>
+          <h3>{{ gridData().meta.total || gridData().items.length }} títulos en foco</h3>
+        </div>
+        <button type="button" class="streaming-view__action" (click)="clearFilters()">Limpiar</button>
+      </header>
+
+      <div class="streaming-view__list" *ngIf="gridData().items.length; else streamingEmptyState">
+        <app-unified-program-card
+          *ngFor="let item of gridData().items; trackBy: trackByItem"
+          [item]="item"
+          variant="epg-row"
+          (selected)="openItem(item)"
+        ></app-unified-program-card>
+      </div>
+    </section>
+  </ng-template>
+
+  <ng-template #streamingEmptyState>
+    <section class="streaming-view__empty">
+      <h2>Sin resultados con esta combinación</h2>
+      <p>Prueba a limpiar plataforma, género o disponibilidad para recuperar el catálogo.</p>
+      <button type="button" class="streaming-view__action" (click)="clearFilters()">Limpiar filtros</button>
+    </section>
+  </ng-template>
+
+  <section *ngIf="streamingModules().length" class="streaming-view__stack">
+    <article *ngFor="let module of streamingModules()" class="streaming-view__module">
+      <header class="streaming-view__section-head">
+        <div>
+          <p class="streaming-view__eyebrow">{{ module.eyebrow }}</p>
+          <h3>{{ module.title }}</h3>
+        </div>
+      </header>
+
+      <div class="streaming-view__rail">
+        <app-unified-program-card
+          *ngFor="let item of module.items; trackBy: trackByItem"
+          [item]="item"
+          variant="compact"
+          (selected)="openItem(item)"
+        ></app-unified-program-card>
+      </div>
+    </article>
+  </section>
+
+  <section *ngIf="quickDirectories().length" class="streaming-view__directories">
+    <article *ngFor="let section of quickDirectories()" class="streaming-view__directory-card">
+      <header class="streaming-view__section-head">
+        <div>
+          <p class="streaming-view__eyebrow">{{ section.eyebrow }}</p>
+          <h3>{{ section.title }}</h3>
+        </div>
+      </header>
+
+      <div class="streaming-view__directory-grid">
+        <button
+          *ngFor="let item of section.items"
+          type="button"
+          class="streaming-view__directory-chip"
+          [class.streaming-view__directory-chip--active]="item.active"
+          (click)="applyQuickDirectory(section.id, item.id)"
+        >
+          <strong>{{ item.label }}</strong>
+          <small>{{ item.meta }}</small>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <app-unified-filter-dock
+    [open]="shellUi.isFilterDockOpen()"
+    title="Filtros de streaming"
+    [activeCount]="activeFilterSummary().length"
+    [sections]="filterDockSections()"
+    (close)="closeDock()"
+    (clear)="clearFilters()"
+    (select)="handleDockSelect($event)"
+  ></app-unified-filter-dock>
+
+  <app-bottom-sheet
+    [open]="!!selectedItem()"
+    [title]="selectedItem()?.title || 'Detalle'"
+    (close)="closeSheet()"
+  >
+    <app-unified-program-card
+      *ngIf="selectedItem() as item"
+      [item]="item"
+      variant="compact"
+      [showActions]="false"
+      (selected)="openItem(item)"
+    ></app-unified-program-card>
+  </app-bottom-sheet>
+</section>

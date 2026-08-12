@@ -51,6 +51,7 @@ import { ChatConversationSidebarComponent } from './chat-conversation-sidebar/ch
     ChatConversationSidebarComponent,
   ],
   templateUrl: './ai-chatbot.component.html',
+  styleUrl: './ai-chatbot.component.scss',
 })
 export class AIChatbotComponent implements AfterViewInit {
   @Output() close = new EventEmitter<void>();

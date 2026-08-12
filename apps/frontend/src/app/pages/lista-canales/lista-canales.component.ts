@@ -28,11 +28,13 @@ type GuideTabKey = 'now' | 'next' | 'night' | 'channels';
 type ChannelGroupKey =
   | 'all'
   | 'tdt'
+  | 'cable'
   | 'autonomico'
   | 'movistar'
   | 'online'
   | 'deporte';
 type GuideCategoryKey = 'all' | 'Cine' | 'Series' | 'Deportes' | string;
+type GuideSportKey = 'all' | 'futbol' | 'baloncesto' | 'f1' | 'tenis' | 'motogp' | 'mas';
 
 interface GuideProgram {
   id: string;
@@ -82,6 +84,16 @@ const PRIMARY_GUIDE_CATEGORIES: Array<{ key: GuideCategoryKey; label: string }> 
   { key: 'Deportes', label: 'Deportes' },
 ];
 
+const SPORTS_FILTERS: Array<{ key: GuideSportKey; label: string }> = [
+  { key: 'all', label: 'Todos' },
+  { key: 'futbol', label: 'Fútbol' },
+  { key: 'baloncesto', label: 'Baloncesto' },
+  { key: 'f1', label: 'F1' },
+  { key: 'tenis', label: 'Tenis' },
+  { key: 'motogp', label: 'MotoGP' },
+  { key: 'mas', label: 'Más' },
+];
+
 @Component({
   selector: 'app-lista-canales',
   standalone: true,
@@ -97,14 +109,17 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
     { key: 'channels', label: 'Canales' },
   ];
   public readonly quickCategoryTabs = PRIMARY_GUIDE_CATEGORIES;
+  public readonly sportTabs = SPORTS_FILTERS;
 
   public activeGuideTab: GuideTabKey = 'now';
   public selectedChannelGroup: ChannelGroupKey = 'tdt';
   public selectedCategory: GuideCategoryKey = 'all';
+  public selectedSport: GuideSportKey = 'all';
   public loading = true;
   public error: string | null = null;
   public safeLdHtml: SafeHtml | null = null;
   public isMoreCategoriesOpen = false;
+  public guideMeta: TvGuideSurfaceDTO['meta'] | null = null;
   public readonly breadcrumbItems: BreadcrumbItem[] = [
     { name: 'Inicio', url: '/' },
     { name: 'Guía de Canales', url: '/programacion-tv/guia-canales' },
@@ -184,11 +199,23 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
 
   public selectChannelGroup(group: ChannelGroupKey): void {
     this.selectedChannelGroup = group;
+    if (group === 'deporte') {
+      this.selectedCategory = 'all';
+    } else {
+      this.selectedSport = 'all';
+    }
+    this.loadGuideData();
   }
 
   public selectCategory(category: GuideCategoryKey): void {
     this.selectedCategory = category;
     this.isMoreCategoriesOpen = false;
+    this.loadGuideData();
+  }
+
+  public selectSport(sport: GuideSportKey): void {
+    this.selectedSport = sport;
+    this.loadGuideData();
   }
 
   public toggleMoreCategories(): void {
@@ -226,22 +253,32 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
   }
 
   public get totalChannels(): number {
-    return this.channels.length;
+    return this.guideMeta?.totalChannels ?? this.channels.length;
   }
 
   public get channelGroups(): Array<{ key: ChannelGroupKey; label: string; count: number }> {
-    const countFor = (key: ChannelGroupKey) =>
-      key === 'all'
-        ? this.channels.length
-        : this.sections.find((section) => section.key === key)?.channels.length || 0;
+    const metaCounts = this.guideMeta?.groupCounts || {};
+    const fallbackCounts = this.sections.reduce<Record<string, number>>((acc, section) => {
+      acc[section.key] = section.channels.length;
+      return acc;
+    }, {});
+    const totalFromMeta = Object.values(metaCounts).reduce((sum, value) => sum + Number(value || 0), 0);
+    const countFor = (key: ChannelGroupKey) => {
+      if (key === 'all') {
+        return totalFromMeta || this.channels.length;
+      }
+
+      return Number(metaCounts[key] ?? fallbackCounts[key] ?? 0);
+    };
 
     const groups: Array<{ key: ChannelGroupKey; label: string; count: number }> = [
       { key: 'all', label: 'Todos', count: countFor('all') },
       { key: 'tdt', label: 'TDT', count: countFor('tdt') },
-      { key: 'autonomico', label: 'Autonómicos', count: countFor('autonomico') },
+      { key: 'cable', label: 'Privados', count: countFor('cable') },
       { key: 'movistar', label: 'Movistar+', count: countFor('movistar') },
       { key: 'online', label: 'Online', count: countFor('online') },
       { key: 'deporte', label: 'Deporte', count: countFor('deporte') },
+      { key: 'autonomico', label: 'Autonómicos', count: countFor('autonomico') },
     ];
 
     return groups.filter((group) => group.count > 0);
@@ -278,15 +315,25 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
   }
 
   public get visibleNowPrograms(): GuideProgram[] {
-    return this.filterPrograms(this.nowPrograms);
+    return this.nowPrograms;
   }
 
   public get visibleNextPrograms(): GuideProgram[] {
-    return this.filterPrograms(this.nextPrograms);
+    return this.nextPrograms;
   }
 
   public get visibleTonightPrograms(): GuideProgram[] {
-    return this.filterPrograms(this.tonightPrograms);
+    return this.tonightPrograms;
+  }
+
+  public get showSportsFilters(): boolean {
+    return this.selectedChannelGroup === 'deporte';
+  }
+
+  public get primeTimeLabel(): string {
+    const start = this.guideMeta?.primeTimeWindowStart || '21:45';
+    const end = this.guideMeta?.primeTimeWindowEnd || '00:30';
+    return `Prime time · ${start}–${end}`;
   }
 
   public isMoreCategoryActive(): boolean {
@@ -297,9 +344,18 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
   private loadGuideData(): void {
     this.loading = true;
     this.error = null;
+    const group = this.selectedChannelGroup === 'all' ? undefined : this.selectedChannelGroup;
+    const category =
+      this.selectedChannelGroup === 'deporte' || this.selectedCategory === 'all'
+        ? undefined
+        : this.selectedCategory;
+    const sport =
+      this.selectedChannelGroup === 'deporte' && this.selectedSport !== 'all'
+        ? this.selectedSport
+        : undefined;
 
     this.subscriptions.add(
-      this.tvDataService.loadGuideSurface('today').pipe(
+      this.tvDataService.loadGuideSurface('today', group, category, sport).pipe(
         timeout(12000),
         catchError(() => of(undefined))
       ).subscribe({
@@ -309,6 +365,7 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
           }
           const normalizedChannels = this.normalizeChannels(response);
           const channelMap = new Map(normalizedChannels.map((channel) => [channel.id, channel] as const));
+          this.guideMeta = response.meta || null;
           this.channels = normalizedChannels;
           this.sections = this.buildSections(normalizedChannels);
           this.nowPrograms = this.sortPrograms(this.normalizePrograms(response.nowItems || [], channelMap));
@@ -436,6 +493,11 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
         description: 'Generalistas y temáticos de acceso abierto en el orden habitual de la TDT española.',
       },
       {
+        key: 'cable',
+        title: 'Canales privados',
+        description: 'Señales temáticas de pago y cable fuera del bouquet principal de Movistar+.',
+      },
+      {
         key: 'autonomico',
         title: 'Canales autonómicos',
         description: 'Televisión regional para seguir la programación local y autonómica.',
@@ -504,21 +566,12 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
     });
   }
 
-  private filterPrograms(programs: GuideProgram[]): GuideProgram[] {
-    return programs.filter((program) => {
-      const matchesGroup =
-        this.selectedChannelGroup === 'all' || program.groupKey === this.selectedChannelGroup;
-      const matchesCategory =
-        this.selectedCategory === 'all' || program.normalizedCategory === this.selectedCategory;
-      return matchesGroup && matchesCategory;
-    });
-  }
-
   private resolveChannelGroup(
     channel: Pick<ChannelMetaDTO, 'type' | 'name' | 'group'>
   ): Exclude<ChannelGroupKey, 'all'> {
     const canonicalGroup = String(channel.group || '').trim().toLowerCase();
     if (canonicalGroup === 'tdt') return 'tdt';
+    if (canonicalGroup === 'cable') return 'cable';
     if (canonicalGroup === 'autonomico') return 'autonomico';
     if (canonicalGroup === 'movistar') return 'movistar';
     if (canonicalGroup === 'online') return 'online';
@@ -528,10 +581,11 @@ export class ListaCanalesComponent implements OnInit, OnDestroy {
     const name = String(channel.name || '').trim().toUpperCase();
 
     if (type === 'TDT') return 'tdt';
+    if (type === 'CABLE') return 'cable';
     if (type === 'AUTONOMICO') return 'autonomico';
     if (type === 'MOVISTAR') return 'movistar';
     if (type === 'DEPORTES' || type === 'SPORTS') return 'deporte';
-    if (type === 'CABLE' || type === 'ONLINE' || type === 'OTT') return 'online';
+    if (type === 'ONLINE' || type === 'OTT') return 'online';
     if (name.includes('DAZN') || name.includes('EUROSPORT')) return 'deporte';
     return 'online';
   }
