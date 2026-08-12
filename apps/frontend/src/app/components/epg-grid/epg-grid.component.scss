@@ -1,0 +1,232 @@
+// EPG channel×time grid — Direction 3 "Hybrid Signal" (docs/visual-directions.md),
+// reusing Direction 1 "Broadcast Grid"'s dense row treatment for the grid
+// component itself. Row height is kept within the 2.75–3.25rem spec so
+// ~15 channels fit a 1440px viewport without excessive vertical scroll.
+
+:host {
+  display: block;
+  --epg-row-h: 3rem;
+  --epg-channel-col-w: 10.5rem;
+}
+
+.epg-grid {
+  border: 1px solid var(--portal-border);
+  border-radius: var(--radius-md);
+  background: var(--portal-card);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.epg-grid--empty {
+  padding: 2rem;
+}
+
+.epg-grid__empty-message {
+  margin: 0;
+  color: var(--portal-text-muted);
+  font-size: var(--text-sm);
+}
+
+.epg-grid__scroll {
+  overflow: auto;
+  max-height: 46rem;
+}
+
+.epg-grid__header {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--portal-surface-strong);
+  border-bottom: 1px solid var(--portal-border);
+}
+
+.epg-grid__header-channel {
+  flex: 0 0 var(--epg-channel-col-w);
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  padding: 0 0.85rem;
+  min-height: 2.5rem;
+  background: var(--portal-surface-strong);
+  color: var(--portal-text-muted);
+  font-size: var(--text-2xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-right: 1px solid var(--portal-border);
+}
+
+.epg-grid__header-timeline {
+  position: relative;
+  min-height: 2.5rem;
+  flex: 0 0 auto;
+}
+
+.epg-grid__tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 0.4rem;
+  border-left: 1px solid var(--portal-border);
+  color: var(--portal-text-muted);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.epg-grid__body {
+  display: block;
+}
+
+.epg-grid__row {
+  display: flex;
+  min-height: var(--epg-row-h);
+  border-bottom: 1px solid var(--portal-divider);
+}
+
+.epg-grid__row:last-child {
+  border-bottom: none;
+}
+
+.epg-grid__channel-cell {
+  flex: 0 0 var(--epg-channel-col-w);
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.85rem;
+  background: var(--portal-card);
+  border-right: 1px solid var(--portal-border);
+}
+
+.epg-grid__channel-cell img {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.4rem;
+  object-fit: contain;
+  background: var(--portal-surface);
+  flex: none;
+}
+
+.epg-grid__channel-name {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--portal-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.epg-grid__track {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.epg-grid__now-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent-live);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.epg-grid__now-line--header {
+  top: auto;
+  bottom: 0;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.epg-grid__cell {
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--portal-border);
+  border-left: 2px solid var(--portal-border-strong);
+  background: var(--portal-surface);
+  color: var(--portal-text);
+  text-decoration: none;
+  overflow: hidden;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out;
+}
+
+.epg-grid__cell:hover {
+  background: var(--portal-surface-strong);
+}
+
+.epg-grid__cell:focus-visible {
+  outline: 2px solid var(--accent-discover);
+  outline-offset: 2px;
+}
+
+.epg-grid__cell-time {
+  font-size: var(--text-2xs);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--portal-text-muted);
+}
+
+.epg-grid__cell-title {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.epg-grid__cell-live-dot {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-live);
+  animation: epg-grid-pulse 1.6s ease-in-out infinite;
+}
+
+.epg-grid__cell--accent-discover {
+  border-left-color: var(--accent-discover);
+}
+
+.epg-grid__cell--accent-streaming {
+  border-left-color: var(--accent-streaming);
+}
+
+.epg-grid__cell--accent-sports {
+  border-left-color: var(--accent-sports);
+}
+
+.epg-grid__cell--accent-live,
+.epg-grid__cell--live {
+  border-left-color: var(--accent-live);
+  background: var(--accent-live-soft);
+}
+
+@keyframes epg-grid-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .epg-grid__cell-live-dot {
+    animation: none;
+  }
+}

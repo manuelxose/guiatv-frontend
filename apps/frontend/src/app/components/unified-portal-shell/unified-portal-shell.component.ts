@@ -136,6 +136,13 @@ export class UnifiedPortalShellComponent {
   );
   readonly showRightRailToggle = computed(() => false);
 
+  // True once the hero has real eyebrow/title/description copy to show.
+  // Media-only heroes (e.g. home's live-now hero, docs/visual-directions.md
+  // Direction 3) skip the copy column entirely instead of rendering an empty
+  // one — the projected `shell-hero-media` content is the answer, not a
+  // headline about it.
+  readonly heroHasCopy = computed(() => Boolean(this.eyebrow() || this.title() || this.description()));
+
   trackByMetric(_index: number, metric: UnifiedPortalMetric): string {
     return metric.label;
   }

@@ -1,4 +1,4 @@
-<section class="live-view">
+<section class="live-view" [class.live-view--rails-mode]="desktopViewMode() === 'rails'">
   <header class="live-view__masthead">
     <div class="live-view__masthead-copy">
       <p class="live-view__eyebrow">TV Directo</p>
@@ -9,8 +9,22 @@
     <div class="live-view__summary" *ngIf="activeFilterSummary().length">
       <span *ngFor="let item of activeFilterSummary(); trackBy: trackByText">{{ item }}</span>
     </div>
+
+    <button
+      type="button"
+      class="live-view__mode-toggle"
+      (click)="toggleDesktopViewMode()"
+      [attr.aria-pressed]="desktopViewMode() === 'rails'"
+    >
+      {{ desktopViewMode() === 'grid' ? 'Ver rails' : 'Ver parrilla' }}
+    </button>
   </header>
 
+  <div class="live-view__grid-wrap">
+    <app-epg-grid [items]="allPrograms()"></app-epg-grid>
+  </div>
+
+  <div class="live-view__rails-wrap">
   <section class="live-view__feature-grid" *ngIf="leadPrograms().length">
     <app-unified-program-card
       [item]="leadPrograms()[0]"
@@ -138,6 +152,7 @@
       </article>
     </div>
   </section>
+  </div>
 
   <section class="live-view__directories" *ngIf="quickAccessSections().length">
     <article *ngFor="let section of quickAccessSections()" class="live-view__directory-card">

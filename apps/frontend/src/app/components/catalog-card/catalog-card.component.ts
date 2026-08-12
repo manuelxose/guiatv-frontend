@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CatalogItem } from '../../services/catalog.service';
+import { CardVertical, normalizeCategory, resolveVertical } from '../../utils/tv-normalizers';
 import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
 
 @Component({
@@ -10,8 +11,9 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
   imports: [CommonModule, RouterModule, InteractionButtonsComponent],
   template: `
     <article
-      class="group overflow-hidden rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 shadow-[0_16px_32px_rgba(0,0,0,0.28)]"
+      class="catalog-card group relative overflow-hidden rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 shadow-[0_16px_32px_rgba(0,0,0,0.28)]"
       [ngClass]="compact ? 'min-w-[220px]' : 'h-full'"
+      [attr.data-vertical]="vertical"
     >
       <a
         [routerLink]="detailLink"
@@ -147,11 +149,31 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
       </div>
     </article>
   `,
+  styles: [
+    `
+      @use '../../../styles/card-accent' as cards;
+
+      .catalog-card {
+        @include cards.card-vertical-accent();
+      }
+    `,
+  ],
 })
 export class CatalogCardComponent {
   @Input({ required: true }) item!: CatalogItem;
   @Input() compact = false;
   @Input() showActions = true;
+
+  // PosterCard's vertical, derived from data already on CatalogItem — no
+  // parallel data shape. See utils/tv-normalizers.ts and
+  // styles/_card-accent.scss.
+  get vertical(): CardVertical {
+    return resolveVertical({
+      liveNow: this.item?.liveNow,
+      category: normalizeCategory(this.item?.genres?.[0] || this.item?.contentType || ''),
+      platforms: this.item?.primaryPlatforms,
+    });
+  }
 
   get detailLink(): any[] {
     if (this.item?.detailPath) {

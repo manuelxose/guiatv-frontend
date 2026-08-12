@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { startWith, switchMap } from 'rxjs';
 import { BottomSheetComponent } from '../../../components/bottom-sheet/bottom-sheet.component';
+import { EpgGridComponent } from '../../../components/epg-grid/epg-grid.component';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
@@ -58,6 +59,7 @@ interface LiveSpotlightModule {
     CommonModule,
     RouterModule,
     BottomSheetComponent,
+    EpgGridComponent,
     UnifiedFilterDockComponent,
     UnifiedProgramCardComponent,
   ],
@@ -68,6 +70,20 @@ interface LiveSpotlightModule {
 export class LiveGuideViewComponent {
   private readonly isBrowser: boolean;
   readonly selectedItem = signal<TvReadItemDTO | null>(null);
+
+  /**
+   * Desktop (≥1024px) default view per Direction 3's "gap-closing decisions"
+   * (docs/visual-directions.md): the channel×time grid is the default, not
+   * toggle-gated. This signal only decides which of the two *always
+   * server-rendered* blocks is visible — see the `.live-view__rails-wrap`
+   * / `.live-view__grid-wrap` CSS in the stylesheet for the actual
+   * breakpoint mechanics (SSR can't know the real viewport, so both blocks
+   * always render; a `min-width: 1024px` media query — not this signal —
+   * is what decides the pre-hydration default on any given screen).
+   * Below 1024px the rail view stays the only view regardless of this
+   * signal's value (enforced purely in CSS).
+   */
+  readonly desktopViewMode = signal<'grid' | 'rails'>('grid');
 
   readonly categoryChips: FilterChipItem[] = [
     { id: 'all', label: 'Todo' },
@@ -371,6 +387,10 @@ export class LiveGuideViewComponent {
     @Inject(PLATFORM_ID) platformId: object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
+  }
+
+  toggleDesktopViewMode(): void {
+    this.desktopViewMode.update((mode) => (mode === 'grid' ? 'rails' : 'grid'));
   }
 
   selectView(liveView: string): void {

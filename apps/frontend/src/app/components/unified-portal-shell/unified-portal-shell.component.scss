@@ -328,6 +328,29 @@
   gap: 1rem;
 }
 
+// Direction 3 "Hybrid Signal" home hero: the shared shell's media slot IS the
+// content (live-now program), not a headline about it, so it's capped short
+// enough that real content rails start within the first scroll
+// (docs/visual-directions.md, docs/ux-ia-recommendations.md §8.1/§8.3).
+.portal-shell__hero--stage {
+  max-height: 46vh;
+  overflow: hidden;
+}
+
+.portal-shell__hero--media-only .portal-shell__hero-copy {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .portal-shell__hero--stage {
+    max-height: 40vh;
+  }
+
+  .portal-shell__hero--media-only {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .portal-shell__metrics {
   display: grid;
   gap: 0.85rem;

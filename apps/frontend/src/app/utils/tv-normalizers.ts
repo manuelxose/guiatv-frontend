@@ -3,6 +3,12 @@ import { TvReadItemDTO } from '../api/models';
 import { buildDetailPath, CatalogContentType } from './catalog';
 import { slugify } from './utils';
 
+// The five verticals the design system's accent tokens key off
+// (--accent-live/discover/streaming/sports/editorial). See
+// docs/visual-directions.md, Direction 3 "Hybrid Signal", §"Card / component
+// treatment" and apps/frontend/src/styles/_card-accent.scss.
+export type CardVertical = 'live' | 'discover' | 'streaming' | 'sports' | 'editorial';
+
 export interface UnifiedCardData {
   id: string;
   title: string;
@@ -21,16 +27,46 @@ export interface UnifiedCardData {
   badges: string[];
   progressPercent: number;
   contentType: CatalogContentType;
+  vertical: CardVertical;
 }
 
 export function isTvReadItem(item: TvReadItemDTO | CatalogItem | null | undefined): item is TvReadItemDTO {
   return Boolean(item && 'airing' in item && 'program' in item && 'channel' in item);
 }
 
+/**
+ * Derives the card's wayfinding vertical from signals already present on the
+ * normalized card data — no separate/parallel data shape. `live` (on-air now)
+ * takes priority over `sports` (a live sports airing reads as "live", not
+ * "sports"), which takes priority over `streaming` (has a platform to watch
+ * on), falling back to `discover` for everything else. Editorial content
+ * doesn't flow through here — EditorialCard's vertical is always 'editorial'.
+ */
+export function resolveVertical(params: {
+  liveNow?: boolean;
+  category?: string;
+  sport?: string;
+  platforms?: string[];
+}): CardVertical {
+  if (params.liveNow) {
+    return 'live';
+  }
+  if (params.sport || params.category === 'Deportes') {
+    return 'sports';
+  }
+  if (params.platforms && params.platforms.length) {
+    return 'streaming';
+  }
+  return 'discover';
+}
+
 export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardData {
   if (isTvReadItem(item)) {
     const category = normalizeCategory(item.program.editorialCategory || item.program.genre);
     const contentType = resolveTvContentType(category);
+    const liveNow = Boolean(item.airing.liveNow || item.timingContext?.liveNow);
+    const sport = String(item.program.sportFacet || '').trim();
+    const platforms = item.availability.streaming ? ['Streaming'] : [];
     return {
       id: item.id,
       title: String(item.program.title || 'Sin título').trim(),
@@ -41,18 +77,22 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
       channelIcon: String(item.assets.channelLogo?.url || item.channel.icon || '').trim(),
       startTime: item.airing.start,
       endTime: item.airing.end,
-      liveNow: Boolean(item.airing.liveNow || item.timingContext?.liveNow),
+      liveNow,
       category,
-      platforms: item.availability.streaming ? ['Streaming'] : [],
-      sport: String(item.program.sportFacet || '').trim(),
+      platforms,
+      sport,
       detailPath: buildDetailPath(contentType, item.program.title, slugify),
       badges: buildTvBadges(item, category),
       progressPercent: computeProgress(item.airing.start, item.airing.end),
       contentType,
+      vertical: resolveVertical({ liveNow, category, sport, platforms }),
     };
   }
 
   const contentType = item.contentType || 'program';
+  const category = normalizeCategory(item.genres?.[0] || item.contentType || '');
+  const liveNow = Boolean(item.liveNow);
+  const platforms = item.primaryPlatforms || [];
   return {
     id: String(item.catalogId || item.title || 'content').trim(),
     title: String(item.title || 'Sin título').trim(),
@@ -63,14 +103,15 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
     channelIcon: String(item.channel?.icon || '').trim(),
     startTime: String(item.start || '').trim(),
     endTime: String(item.end || '').trim(),
-    liveNow: Boolean(item.liveNow),
-    category: normalizeCategory(item.genres?.[0] || item.contentType || ''),
-    platforms: item.primaryPlatforms || [],
+    liveNow,
+    category,
+    platforms,
     sport: '',
     detailPath: item.detailPath || buildDetailPath(contentType, item.title, slugify),
     badges: buildCatalogBadges(item),
     progressPercent: computeProgress(item.start, item.end),
     contentType,
+    vertical: resolveVertical({ liveNow, category, platforms }),
   };
 }
 
