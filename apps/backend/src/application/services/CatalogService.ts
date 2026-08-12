@@ -1620,11 +1620,31 @@ export class CatalogService {
     slug: string,
     date: string
   ): Promise<TvReadItemDTO | null> {
+    void searchText;
+    // Was: view:'search', q:searchText. That path OR's an indexed
+    // searchTokens match with two UNANCHORED case-insensitive regexes on
+    // program.title/channel.name, which have no supporting index - MongoDB
+    // can't use an index for an unanchored /i regex, so every miss forced
+    // a full collection scan of the day's ~20k+ airings. Under
+    // enumeration-style traffic hitting many distinct nonexistent program
+    // slugs (each a guaranteed cache miss - cacheSlugNotFound below only
+    // helps on repeat lookups of the SAME slug), this was pegging
+    // guiatv-api's CPU and driving it into an OOM crash-loop
+    // (docs/rebuild-scoreboard.md).
+    //
+    // Fix: use view:'day' instead - a plain {date} query with a
+    // supporting index, and the same query the guide/discovery pages run
+    // constantly so it's usually warm in the L1/Redis cache - then do the
+    // exact slugify comparison in-process. Trade-off: 'day' view caps at
+    // 20000 items (TV_READ_LIMITS.day.max); today already has 20543
+    // airings, so a handful of very low-priority programs could be
+    // excluded from this specific fallback lookup. Accepted deliberately -
+    // a rare program briefly 404ing via slug fallback is a far smaller
+    // problem than the site-wide instability this was causing.
     const response = await this.tvReadQueryService.query({
-      view: 'search',
+      view: 'day',
       date,
-      q: searchText,
-      limit: 20,
+      limit: 20000,
     });
     return (
       response.items.find((item) => this.slugify(item.program.title) === slug) ||
