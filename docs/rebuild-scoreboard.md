@@ -52,6 +52,35 @@ Read-only investigation confirmed:
 
 **Recommended fix** (not yet executed): refactor `syncScheduledFunction.ts` to process EPG sources sequentially instead of `Promise.all`, drop unfiltered arrays immediately after date-filtering, remove the redundant full-array copy in `annotateSourceParsedData`; raise `--max-old-space-size` as a belt-and-suspenders (host has ~4.6GB available); ship as a **targeted hotfix deploy** (bundled with the already-verified SSR facade fix) ahead of the full visual rebuild, given the time-sensitivity and that it's independent of the a11y/perf/SEO/E2E gates governing the final rebuild release. Backfill sync trigger and alerting setup are follow-ups after the fix is live.
 
+## Round 3 result — INCIDENT RESOLVED (2026-08-12 ~16:15 CEST)
+
+Full sequence executed and verified:
+1. Committed `f7618c8` (SSR facade fix + EPG sync memory fix) to `main`.
+2. `sudo ./deploy-guiatv.sh` — new release `20260812161338` live, `guiatv-api`/`guiatv-ssr` restarted, 0 crashes since, all scripted status-code smokes passed.
+3. `npm run job:syncEPG` — all 12 source×date syncs succeeded (0 OOM crashes), ~11,900 real programs saved for 20260812-20260814.
+4. Cleared `precomputed:*`/`schedule:*` Redis keys per RUNBOOK, ran `npm run job:precompute` — 4/4 dates rebuilt (20260812: 20,543 airings, 8,731 brands).
+5. **Extra fix needed beyond RUNBOOK's documented steps**: a separate `tv:read:*` Redis cache namespace (not covered by the RUNBOOK's `precomputed:*`/`schedule:*` clear instructions) was still serving a stale empty result. Cleared it too — **note for RUNBOOK maintainers**: the "Rebuild ventana canónica" section should also clear `tv:read:*`.
+6. Verified with real evidence, live production domain, cache-busted:
+   - `/v2/tv/read` → 5000 items, 828 channels (was 0/0).
+   - `/v2/tv/surface/guide` → 733 nowItems, 695 nextItems, 653 nightItems, 735 channels, 18,068 totalItems (was all 0).
+   - `/programacion-tv/guia-canales` SSR → real live programs, e.g. "LA 1 · 15:50 - 18:30 · Directo al grano" with real description (was empty shell).
+   - `/canales/la_1` SSR → real "Ahora: Directo al grano 15:50-18:30" + related channels (was explicit "Canal no disponible" error state).
+   - Home (`/`) and `/editorial` + `/editorial/:slug` → confirmed real content (nginx `proxy_cache`, 5min TTL, caused a false-negative on the very first post-deploy check — self-expired, non-issue).
+
+**Backend gate: now PASS** (was FAIL). **SSR gate: now PASS** for home/guide/editorial/channel routes (was FAIL). Data staleness (>1 month) resolved for the tested window (today/tomorrow/day-after); the underlying 6-hourly cron will keep it current going forward now that the OOM bug is fixed.
+
+## Alerting — DONE, and it immediately caught a second, separate issue
+
+Built `scripts/health-watchdog.mjs` (checks unit-active, recent OOM/core-dump in journal, EPG-today freshness via real `/v2/tv/read` request; writes to `/var/log/guiatv/health-alerts.log`, optional webhook via `GUIATV_ALERT_WEBHOOK_URL`, heartbeat file for "watchdog itself/host went dark" detection). Wired as `guiatv-health-watchdog.timer` (every 10min, enabled+running) plus `OnFailure=guiatv-crash-alert@%n.service` on both `guiatv-api.service`/`guiatv-ssr.service` for immediate per-crash logging.
+
+**It immediately proved its worth**: shortly after the hotfix deploy, `guiatv-api` started crash-looping again — `NRestarts` went 0→4 within ~20 minutes post-deploy. Investigated properly rather than reflexively re-tuning:
+- **Not the original EPG sync bug** — no sync-related log lines precede these crashes; they occur under plain request traffic (`/v2/catalog/slug/*` lookups, ~90% carrying `userAgent: "node"`, many resulting in 404 + an ~8s TMDB fallback lookup per miss, no evidence of negative-result caching).
+- **Host is genuinely memory-tight right now**: 7.8GB total, `mongod` ~2.67GB RSS (WiredTiger cache itself is already capped at 0.5GB in `/etc/mongod.conf`, so the rest is mostly mapped file pages), Valkey ~0.6GB, 4 *other* sites on this same shared host (~0.3GB combined), and — a real confound — this active Claude Code/VS Code-server session's own tooling (~1.57GB: ts-server ×2, claude-code, cloudcode_cli, file watcher). `free -h` showed as little as 151MB free / ~700MB available with ~2GB swapped during the observed climbs.
+- `guiatv-api` RSS climbed ~2MB/s toward its 1536MB heap cap under this traffic before each restart.
+- **Deliberately did not** re-tune the heap cap (up or down) or touch the TMDB/rate-limit code under this time pressure and uncertainty — the confound from this session's own memory footprint makes it hard to know how much of this is a lasting app issue vs. transient host contention *right now*. Rate limiting (`catalogRateLimit`, 300 req/min/IP, correctly wired to `/v2/catalog/slug/*` with `trust proxy` set) is not the gap — observed rate (~20 req/min) is well under it, so this looks like either distributed/low-and-slow bot traffic or genuine user traffic hitting an expensive uncached path, not a rate-limit hole.
+
+**Net effect**: crashes continue every several minutes right now, but are self-healing (~2s downtime each, systemd `Restart=always`) and — critically — no longer silent. This is a real, separate, lower-severity-than-the-original-incident issue, tracked here rather than guessed at live. **Recommended next investigation** (not yet started): negative-result caching for `/v2/catalog/slug/*` TMDB fallback lookups, and re-measure host memory pressure once this session ends (to separate the session-contention confound from a real app-level leak) before any further heap tuning.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.

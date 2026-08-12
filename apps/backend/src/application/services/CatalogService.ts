@@ -124,6 +124,15 @@ export class CatalogService {
   private readonly suggestionTtlSeconds = 300;
   private readonly hotCacheTtlMs = 30_000;
   private readonly channelMapTtlMs = 60_000;
+  // Negative-result cache for /catalog/slug lookups: short enough that a genuinely
+  // newly-added item doesn't stay "missing" for long, long enough to absorb the
+  // repeated 404 traffic (mostly bots with userAgent "node") that was hammering the
+  // uncached TMDB fallback and driving guiatv-api into repeated OOM crash-loops.
+  private readonly slugNotFoundTtlSeconds = 6 * 60 * 60; // 6 hours
+  // De-dupes identical concurrent /catalog/slug lookups (e.g. bot bursts hitting the
+  // same missing slug in parallel) so N simultaneous requests share one TMDB/DB
+  // lookup instead of each independently paying the up-to-8s TMDB timeout.
+  private readonly inFlightSlugLookups = new Map<string, Promise<CatalogDetailDTO>>();
 
   constructor(
     private readonly channelRepository: IChannelRepository,
@@ -291,6 +300,48 @@ export class CatalogService {
       throw new NotFoundError('Catalog item', slug);
     }
 
+    const negativeCacheKey = this.buildSlugNotFoundCacheKey(contentType, slug);
+    const cachedNotFound = await this.cacheRepository.get<boolean>(negativeCacheKey);
+    if (cachedNotFound) {
+      throw new NotFoundError('Catalog item', slug);
+    }
+
+    // De-dupe identical concurrent lookups (same contentType+slug+user) so a burst of
+    // simultaneous requests for the same not-yet-cached slug doesn't each independently
+    // hit TMDB/the DB.
+    const inFlightKey = `${contentType}:${slug}:${userId || 'anon'}`;
+    const existing = this.inFlightSlugLookups.get(inFlightKey);
+    if (existing) {
+      return existing;
+    }
+
+    const lookupPromise = this.resolveBySlug(
+      contentType,
+      slug,
+      searchText,
+      userId,
+      negativeCacheKey
+    ).finally(() => {
+      this.inFlightSlugLookups.delete(inFlightKey);
+    });
+    this.inFlightSlugLookups.set(inFlightKey, lookupPromise);
+    return lookupPromise;
+  }
+
+  private buildSlugNotFoundCacheKey(
+    contentType: CatalogContentType,
+    slug: string
+  ): string {
+    return `catalog:slug:notfound:${contentType}:${slug}`;
+  }
+
+  private async resolveBySlug(
+    contentType: CatalogContentType,
+    slug: string,
+    searchText: string,
+    userId: string | undefined,
+    negativeCacheKey: string
+  ): Promise<CatalogDetailDTO> {
     // For TMDB content, search TMDB and pick first matching slug
     if (contentType === 'movie' || contentType === 'series') {
       const tmdbType = contentType === 'movie' ? 'movie' : 'tv';
@@ -308,6 +359,7 @@ export class CatalogService {
       if (results.length) {
         return this.getTmdbDetail(results[0].id, tmdbType, userId);
       }
+      await this.cacheSlugNotFound(negativeCacheKey);
       throw new NotFoundError('Catalog item', slug);
     }
 
@@ -326,7 +378,16 @@ export class CatalogService {
       return this.getProgramDetail(foundTomorrow.id, userId);
     }
 
+    await this.cacheSlugNotFound(negativeCacheKey);
     throw new NotFoundError('Catalog item', slug);
+  }
+
+  private async cacheSlugNotFound(negativeCacheKey: string): Promise<void> {
+    try {
+      await this.cacheRepository.set(negativeCacheKey, true, this.slugNotFoundTtlSeconds);
+    } catch {
+      /* non-fatal: worst case we just re-check TMDB next time */
+    }
   }
 
   async resolveRecommendation(
