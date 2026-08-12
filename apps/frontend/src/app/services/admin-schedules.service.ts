@@ -91,15 +91,23 @@ export class AdminSchedulesService {
 
   getChannels(): Observable<AdminChannel[]> {
     return this.http
-      .get<ApiResponse<{ channels: AdminChannel[] }> | AdminChannel[]>(
-        `${this.baseUrl}/channels`,
-        { headers: this.buildHeaders() }
-      )
+      .get<ApiResponse<any> | any[]>(`${this.baseUrl}/tv/read/channels`, {
+        params: { date: 'today' },
+        headers: this.buildHeaders(),
+      })
       .pipe(
         map((resp) => {
-          if (Array.isArray(resp)) return resp;
-          const data: any = (resp as ApiResponse<any>).data;
-          return Array.isArray(data) ? data : data?.channels || [];
+          const payload: any = Array.isArray(resp) ? resp : (resp as ApiResponse<any>).data;
+          const items = Array.isArray(payload) ? payload : payload?.channels || [];
+          return items.map((entry: any) => ({
+            id: String(entry?.channel?.id || ''),
+            name: String(entry?.channel?.name || entry?.channel?.id || ''),
+            icon: entry?.channel?.icon || undefined,
+            type: String(entry?.channel?.type || entry?.channel?.group || 'TV'),
+            country: entry?.channel?.country || entry?.channel?.countryCode || undefined,
+            region: entry?.channel?.region || undefined,
+            isActive: true,
+          }));
         })
       );
   }

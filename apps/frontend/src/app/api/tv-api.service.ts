@@ -133,22 +133,6 @@ export class TvApiService {
     );
   }
 
-  triggerSync(body: { date?: DateAlias; forceRefresh?: boolean; sourceUrl?: string }) {
-    return this.client.post('/v2/admin/sync', body);
-  }
-
-  triggerPrecompute(body: { date?: DateAlias; fields?: 'minimal' | 'full' }) {
-    return this.client.post('/v2/admin/precompute', body);
-  }
-
-  triggerPrecomputeWindow(body: { fields?: 'minimal' | 'full' }) {
-    return this.client.post('/v2/admin/precompute-window', body);
-  }
-
-  triggerCacheClear(body: { pattern?: string }) {
-    return this.client.post('/v2/admin/cache/clear', body);
-  }
-
   private cachedGet<T>(
     cacheKey: string,
     path: string,
