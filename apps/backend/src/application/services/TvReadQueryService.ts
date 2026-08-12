@@ -333,7 +333,16 @@ export class TvReadQueryService {
 
     const cached = await this.cacheRepository.get<TvReadResponseDTO>(cacheKey);
     if (cached) {
-      l1Cache.set(cacheKey, cached, this.resolveTtlMs(view));
+      // Skip the in-process L1 cache for 'day' view: it can hold up to
+      // TV_READ_LIMITS.day.max (20000) items in a single response, and
+      // L1Cache is bounded by entry COUNT (200), not byte size - a handful
+      // of these can dominate guiatv-api's own Node heap. Redis (above)
+      // stays the cache for this view; only the small-response views
+      // (now/next/night/search) get the extra in-process hot-path cache.
+      // See docs/rebuild-scoreboard.md's residual-OOM investigation.
+      if (view !== 'day') {
+        l1Cache.set(cacheKey, cached, this.resolveTtlMs(view));
+      }
       const hydrated = this.hydrateResponseRuntimeState(cached);
       return {
         ...hydrated,
@@ -409,7 +418,9 @@ export class TvReadQueryService {
     };
 
     await this.cacheRepository.set(cacheKey, response, this.resolveTtlSeconds(view));
-    l1Cache.set(cacheKey, response, this.resolveTtlMs(view));
+    if (view !== 'day') {
+      l1Cache.set(cacheKey, response, this.resolveTtlMs(view));
+    }
     return response;
   }
 
