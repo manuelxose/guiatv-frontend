@@ -81,6 +81,14 @@ Built `scripts/health-watchdog.mjs` (checks unit-active, recent OOM/core-dump in
 
 **Net effect**: crashes continue every several minutes right now, but are self-healing (~2s downtime each, systemd `Restart=always`) and — critically — no longer silent. This is a real, separate, lower-severity-than-the-original-incident issue, tracked here rather than guessed at live. **Recommended next investigation** (not yet started): negative-result caching for `/v2/catalog/slug/*` TMDB fallback lookups, and re-measure host memory pressure once this session ends (to separate the session-contention confound from a real app-level leak) before any further heap tuning.
 
+## Round 4 result — catalog-slug crash-loop FIXED, deployed, live-verified
+
+Root cause confirmed: `CatalogService.getBySlug()` had no negative-result cache — every request for a nonexistent slug re-hit TMDB live (up to 8s), with no dedup across concurrent identical requests. Fix (`3006796`, +61 lines, purely additive): Valkey-backed negative cache (6h TTL) + in-flight request dedup. 35/35 backend tests pass (3 new, proving the exact cache/dedup behavior). Deployed as release `20260812174234`.
+
+**Live-verified**: `curl` a genuinely nonexistent slug twice — first request 18.5s (real TMDB miss), second identical request 0.85s (cache hit, ~22x faster). New process: 0 restarts in first 3 minutes post-deploy (vs. crashing every ~7-10 min before the fix). Continued stability is now tracked automatically by `guiatv-health-watchdog` rather than requiring manual observation.
+
+Both production incidents from this session are now: root-caused, fixed with evidence (tests + live verification), deployed, and covered by alerting going forward.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
