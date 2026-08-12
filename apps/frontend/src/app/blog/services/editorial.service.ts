@@ -53,13 +53,11 @@ export class EditorialService {
     @Inject(PLATFORM_ID) platformId: object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
-    this.posts$ = this.isBrowser
-      ? this.blogService.getAllPosts().pipe(
-          map((posts) => this.adaptPosts(posts || [])),
-          catchError(() => of([])),
-          shareReplay(1)
-        )
-      : of([]);
+    this.posts$ = this.blogService.getAllPosts().pipe(
+      map((posts) => this.adaptPosts(posts || [])),
+      catchError(() => of([])),
+      shareReplay(1)
+    );
   }
 
   public getPosts(): Observable<EditorialPost[]> {

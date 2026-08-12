@@ -34,27 +34,6 @@ export class PortalHomeFacade {
   }
 
   getHomeState(): Observable<PortalHomeState> {
-    if (!this.isBrowser) {
-      return of({
-        liveNow: [],
-        tonight: [],
-        streamingHighlights: [],
-        sportsNow: [],
-        editorialHub: {
-          hero: null,
-          guidePosts: [],
-          rankingPosts: [],
-          trendPosts: [],
-          categorySections: [],
-          categories: [],
-        },
-        rankingHighlights: [],
-        featuredPlatforms: [],
-        trendingItems: [],
-        freeItems: [],
-      });
-    }
-
     return combineLatest({
       discovery: this.discoveryService.getHome().pipe(
         catchError(() =>
