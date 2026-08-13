@@ -53,7 +53,15 @@ export class MetaService {
     this.meta.addTag({ property: 'og:site_name', content: 'Guía Programación TV' });
     this.meta.addTag({ property: 'og:locale', content: 'es_ES' });
 
-    const ogImg = config.ogImage || config.image;
+    // og:image/twitter:image must be absolute per the Open Graph spec — unlike
+    // canonicalUrl (resolved below), relative fallback paths (e.g. a local
+    // /assets/... image) were being emitted as-is. Resolve them the same way.
+    const rawOgImg = config.ogImage || config.image;
+    const ogImg = rawOgImg && /^https?:\/\//i.test(rawOgImg)
+      ? rawOgImg
+      : rawOgImg
+        ? this.url + (rawOgImg.startsWith('/') ? rawOgImg : `/${rawOgImg}`)
+        : undefined;
     if (ogImg) {
       this.meta.addTag({ property: 'og:image', content: ogImg });
       this.meta.addTag({ property: 'og:image:width', content: '1200' });
