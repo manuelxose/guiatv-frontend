@@ -36,7 +36,7 @@ test.describe('Editorial -> categoría -> artículo -> artículo relacionado', (
     // artículo: open the first real editorial post card on the category page.
     const articleLink = page.locator('a.editorial-post-card').first();
     await expect(articleLink).toBeVisible({ timeout: 15_000 });
-    const articleTitle = (await articleLink.locator('h3').innerText()).trim();
+    const articleTitle = (await articleLink.locator('h2, h3').first().innerText()).trim();
     expect(articleTitle.length).toBeGreaterThan(0);
     await articleLink.click();
 

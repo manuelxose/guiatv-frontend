@@ -2,7 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID, computed, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { startWith, switchMap } from 'rxjs';
+import { switchMap } from 'rxjs';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
@@ -76,7 +76,7 @@ export class StreamingViewComponent {
     ...this.guideState.streamingFilters(),
     q: this.guideState.searchQuery(),
   }));
-  private readonly filters$ = toObservable(this.filters).pipe(startWith(this.filters()));
+  private readonly filters$ = toObservable(this.filters);
 
   readonly platforms = toSignal(this.facade.getPlatforms(), { initialValue: [] });
   readonly gridData = toSignal(

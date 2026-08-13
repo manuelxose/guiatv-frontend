@@ -215,6 +215,16 @@ Closed all five failures exposed when the frontend runner was wired in Round 11,
 
 **Verification**: full frontend Karma suite **18/18 PASS** in Chrome Headless. This supersedes the Round 11 baseline of 12 pass / 5 fail. Next gate is the full Playwright suite with one worker to avoid amplifying the already-documented shared-host pressure.
 
+## Round 16 result — E2E baseline 9/13; request serialization bug fixed; OOM reproduced
+
+The first full Playwright run with one worker improved from the Round 11 baseline of 3/13 to **9/13 PASS**. Authentication (2), all five failure/empty/404/broken-image states, tonight and sports passed. The focused rerun additionally made Streaming pass after a real frontend bug was fixed.
+
+**Frontend bug**: `DiscoveryService` passed optional `undefined` values through Angular `HttpClient`'s params object, which serialized them as literal query strings such as `q=undefined&platform=undefined`. The backend then applied those as real filters, producing false empty states (including Netflix showing 0 titles while the same API without bogus params returned content). Optional params are now removed before serialization; duplicate initial Streaming signal emission was also removed. Production build PASS; focused Streaming E2E PASS.
+
+**Test contract**: category pages can legitimately contain only their featured article. The featured link now exposes the same `editorial-post-card` hook as archive cards, and the journey accepts its semantic `h2` title as well as card `h3` titles.
+
+**Operational blocker reproduced**: during the first E2E run, the deployed API hit `FATAL ERROR: Reached heap limit` at 10:22:42 CEST and restarted. In the next run, `/v2/tv/read?view=now` took 24–26 seconds and catalog detail requests took 18–22 seconds while the still-deployed unbounded program-slug path was under bot traffic. These timings directly explain the remaining detail/search timeouts and reaffirm that Round 14's bounded lookup must be released before the gate can provide a valid stability signal.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
