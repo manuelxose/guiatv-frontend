@@ -3,10 +3,12 @@
   *ngIf="isVisible"
   class="modal-overlay"
   (click)="closeModal()"
+  (keydown.escape)="closeModal()"
+  tabindex="-1"
   [@fadeIn]
 >
   <!-- Modal Container -->
-  <div class="modal-container" (click)="$event.stopPropagation()" [@slideIn]>
+  <div class="modal-container" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1" [@slideIn]>
     
     <!-- Hero Image Section -->
     <div class="modal-hero">

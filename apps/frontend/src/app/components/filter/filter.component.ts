@@ -1,11 +1,11 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-filter',
   templateUrl: './filter.component.html',
   styleUrls: ['./filter.component.scss']
 })
-export class FilterComponent implements OnInit {
+export class FilterComponent {
   @Output() filterChange = new EventEmitter<any>();
 
   menuItems: any[] = [
@@ -51,10 +51,6 @@ export class FilterComponent implements OnInit {
   selectedProgramType!: string;
   selectedTimeRange!: string;
 
-  constructor() {}
-
-  ngOnInit(): void {}
-
   onCountryChange(country: string) {
     this.selectedCountry = country;
     this.emitFilterChangeEvent();
@@ -89,4 +85,3 @@ export class FilterComponent implements OnInit {
   });
   }
   }
-

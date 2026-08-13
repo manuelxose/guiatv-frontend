@@ -44,7 +44,7 @@ export class AppConfigurationService {
   
   private config: AppConfig;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) private platformId: object) {
     const isBrowser = isPlatformBrowser(this.platformId);
     const envBaseUrl = (environment as any).API_BASE_URL?.trim();
     const envSsrBaseUrl = (environment as any).SSR_API_BASE_URL?.trim();

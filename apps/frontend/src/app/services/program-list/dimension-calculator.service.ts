@@ -19,7 +19,7 @@ export class DimensionCalculatorService implements IDimensionCalculator {
   private columnWidth: number = PROGRAM_LIST_CONFIG.TIME_INDICATOR.COLUMN_WIDTH;
 
   constructor(
-    @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(PLATFORM_ID) private platformId: object,
     private timeManager: TimeManagerService
   ) {
     if (isPlatformBrowser(this.platformId)) {

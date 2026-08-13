@@ -65,4 +65,4 @@ export interface PortalDirectorySection {
   items: readonly UnifiedPortalRailItem[];
 }
 
-export interface PortalContextRailSection extends UnifiedPortalRailSection {}
+export type PortalContextRailSection = UnifiedPortalRailSection;

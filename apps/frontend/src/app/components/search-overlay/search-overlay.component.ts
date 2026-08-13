@@ -52,7 +52,7 @@ type SearchMode = 'all' | 'tv' | 'streaming' | 'free' | 'tonight';
               type="text"
               class="min-h-[54px] rounded-2xl border border-slate-700 bg-slate-950/80 px-4 text-base text-white outline-none transition-colors focus:border-red-500"
               placeholder="Buscar programa, película, serie o plataforma..."
-              autofocus
+
             />
 
             <div class="flex flex-wrap gap-2">

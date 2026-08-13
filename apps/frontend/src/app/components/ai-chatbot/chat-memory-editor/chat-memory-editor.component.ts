@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AssistantMemorySnapshot, MemoryEditorField } from '../../../interfaces/chatbot.interface';
@@ -57,7 +57,7 @@ import { AssistantMemorySnapshot, MemoryEditorField } from '../../../interfaces/
     </div>
   `,
 })
-export class ChatMemoryEditorComponent {
+export class ChatMemoryEditorComponent implements OnChanges, OnInit {
   @Input() memory: AssistantMemorySnapshot | null = null;
   @Input() fields: MemoryEditorField[] = [];
   @Output() saved = new EventEmitter<Record<string, string[]>>();

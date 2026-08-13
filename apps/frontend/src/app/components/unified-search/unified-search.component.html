@@ -1,4 +1,4 @@
-<div class="search-shell" (click)="onShellClick($event)">
+<div class="search-shell" (click)="onShellClick($event)" (keydown)="$event.stopPropagation()" tabindex="-1">
   <label class="sr-only" for="unified-search-input">Buscar contenido</label>
 
   <div class="search-shell__field" [class.search-shell__field--expanded]="expanded">
@@ -17,6 +17,7 @@
       autocomplete="off"
       role="combobox"
       aria-autocomplete="list"
+      aria-controls="unified-search-results"
       [attr.aria-expanded]="showMenu"
       (focus)="onFocus()"
     />
@@ -36,7 +37,7 @@
     </button>
   </div>
 
-  <div *ngIf="showMenu" class="search-shell__menu" role="listbox">
+  <div *ngIf="showMenu" id="unified-search-results" class="search-shell__menu" role="listbox">
     <div class="search-shell__menu-head">
       <p>{{ control.value ? 'Sugerencias' : 'Búsqueda rápida' }}</p>
       <span *ngIf="control.value && !isLoading">{{ suggestions.length || history.length }} resultados</span>

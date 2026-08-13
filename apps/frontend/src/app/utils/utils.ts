@@ -705,9 +705,9 @@ export function slugify(text: string): string {
       // Reemplazar espacios con guiones
       .replace(/\s+/g, '-')
       // Remover caracteres especiales excepto guiones
-      .replace(/[^\w\-]+/g, '')
+      .replace(/[^\w-]+/g, '')
       // Reemplazar múltiples guiones con uno solo
-      .replace(/\-\-+/g, '-')
+      .replace(/--+/g, '-')
       // Remover guiones al inicio y final
       .replace(/^-+/, '')
       .replace(/-+$/, '')

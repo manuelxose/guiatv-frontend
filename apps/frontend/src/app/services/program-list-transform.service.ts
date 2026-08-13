@@ -161,7 +161,7 @@ export class ProgramListTransformService {
 
     const lastHour = currentHours[currentHours.length - 1];
     const [hours, minutes] = lastHour.split(':').map(Number);
-    let lastHourMinutes = hours * 60 + (minutes || 0);
+    const lastHourMinutes = hours * 60 + (minutes || 0);
 
     let slotEndMinutes = lastHourMinutes + UI_CONFIG.MINUTES_PER_SLOT;
 

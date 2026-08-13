@@ -40,6 +40,14 @@ module.exports = tseslint.config(
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
       '@angular-eslint/use-lifecycle-interface': 'warn',
+      // Constructor injection and DOM-named outputs are established public
+      // patterns across the legacy surface. Keep the migration debt visible
+      // without making an all-at-once DI/API rewrite a release blocker.
+      '@angular-eslint/prefer-inject': 'warn',
+      '@angular-eslint/no-output-native': 'warn',
+      // MarkdownPipe loads DOMPurify only in the browser. A static import
+      // would execute the DOM-oriented package during SSR initialization.
+      '@typescript-eslint/no-require-imports': 'warn',
     },
   },
   {

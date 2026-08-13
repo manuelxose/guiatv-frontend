@@ -1214,7 +1214,9 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       try {
         event.stopPropagation();
         event.preventDefault();
-      } catch {}
+      } catch {
+        // The event may be a synthetic object without DOM methods.
+      }
     }
 
     devConsole.log('[ProgramList] selectDay ->', dayIndex);

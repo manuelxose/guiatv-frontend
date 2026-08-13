@@ -36,7 +36,7 @@ export const programListProviders: Provider[] = [
   CategoryStyleManagerService,
   {
     provide: DimensionCalculatorService,
-    useFactory: (platformId: Object, timeManager: TimeManagerService) =>
+    useFactory: (platformId: object, timeManager: TimeManagerService) =>
       new DimensionCalculatorService(platformId, timeManager),
     deps: [PLATFORM_ID, TimeManagerService],
   },
