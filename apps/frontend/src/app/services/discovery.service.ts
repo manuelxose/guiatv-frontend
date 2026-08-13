@@ -85,14 +85,14 @@ export class DiscoveryService {
       return of(this.emptyCatalog());
     }
 
-    const params: Record<string, any> = {
+    const params = compactParams({
       q: normalizedQuery,
       type: query.type,
       genre: query.genre,
       platform: query.platform,
       limit: query.limit || 24,
       page: query.page || 1,
-    };
+    });
 
     return this.request<CatalogResponse>(
       `discovery:search:${JSON.stringify(params)}`,
@@ -115,7 +115,7 @@ export class DiscoveryService {
     limit?: number;
     page?: number;
   }): Observable<DiscoveryBrowseResponse> {
-    const params: Record<string, any> = {
+    const params = compactParams({
       type: query.type,
       q: query.q,
       genre: query.genre,
@@ -124,7 +124,7 @@ export class DiscoveryService {
       sort: query.sort,
       limit: query.limit || 24,
       page: query.page || 1,
-    };
+    });
 
     return this.request<DiscoveryBrowseResponse>(
       `discovery:browse:${JSON.stringify(params)}`,
@@ -213,4 +213,14 @@ export class DiscoveryService {
       generatedAt: new Date().toISOString(),
     };
   }
+}
+
+function compactParams(
+  params: Record<string, string | number | undefined>
+): Record<string, string | number> {
+  return Object.fromEntries(
+    Object.entries(params).filter((entry): entry is [string, string | number] =>
+      entry[1] !== undefined
+    )
+  );
 }
