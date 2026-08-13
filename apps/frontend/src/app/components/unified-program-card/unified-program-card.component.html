@@ -67,6 +67,7 @@
         *ngIf="card.sport"
         [routerLink]="appPaths.sports"
         [queryParams]="{ sport: card.sport }"
+        [attr.aria-label]="card.sport === 'Más' ? 'Ver otros deportes' : null"
         class="program-card__quick-link"
       >
         {{ card.sport }}
