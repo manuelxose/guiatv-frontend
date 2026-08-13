@@ -444,6 +444,29 @@ export class TvReadQueryService {
     };
   }
 
+  async getGroupChannelCounts(dateAliasOrDate: string): Promise<Record<string, number>> {
+    const date = DateUtils.parseDateAlias(dateAliasOrDate || 'today');
+    const rows = await TVReadAiringModel.aggregate<{ _id: string; count: number }>([
+      {
+        $match: {
+          date,
+          'channel.group': { $type: 'string', $ne: '' },
+          'channel.id': { $type: 'string', $ne: '' },
+          'trustDecision.consumerSuppressed': { $ne: true },
+          'program.titleResolutionState': {
+            $nin: ['generic_unresolved', 'generic_suppressed'],
+          },
+        },
+      },
+      { $group: { _id: { group: '$channel.group', channelId: '$channel.id' } } },
+      { $group: { _id: '$_id.group', count: { $sum: 1 } } },
+    ]).exec();
+
+    return Object.fromEntries(
+      rows.map((row) => [normalizeTvToken(row._id, ' '), row.count])
+    );
+  }
+
   async getChannelDetail(
     channelId: string,
     dateAliasOrDate: string,
