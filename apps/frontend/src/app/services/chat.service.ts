@@ -390,7 +390,7 @@ export class ChatService {
     this.realtimeStartTimer = setTimeout(() => {
       this.realtimeStartTimer = null;
       void this.connectSocket();
-    }, 15000);
+    }, 60000);
   }
 
   private startRealtimeConnection(): void {
