@@ -1,8 +1,8 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, PLATFORM_ID, computed, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { startWith, switchMap } from 'rxjs';
+import { of, shareReplay, switchMap } from 'rxjs';
 import { BottomSheetComponent } from '../../../components/bottom-sheet/bottom-sheet.component';
 import { EpgGridComponent } from '../../../components/epg-grid/epg-grid.component';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
@@ -68,7 +68,7 @@ interface LiveSpotlightModule {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LiveGuideViewComponent {
-  private readonly isBrowser: boolean;
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly selectedItem = signal<TvReadItemDTO | null>(null);
 
   /**
@@ -112,37 +112,37 @@ export class LiveGuideViewComponent {
     ...this.guideState.liveFilters(),
     q: this.guideState.searchQuery(),
   }));
-  private readonly filters$ = toObservable(this.filters).pipe(startWith(this.filters()));
+  // toObservable() emits the signal's current value on subscription. A
+  // startWith(this.filters()) here previously duplicated every initial API
+  // request, including the expensive day and guide-surface views.
+  private readonly filters$ = toObservable(this.filters);
+
+  private readonly nowPrograms$ = this.filters$.pipe(
+    switchMap((filters) =>
+      filters.q
+        ? this.facade.searchTvPrograms({ ...filters, limit: 48 })
+        : this.facade.getLivePrograms({ ...filters, limit: 36 })
+    ),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
 
   readonly surface = toSignal(
-    this.filters$.pipe(switchMap((filters) => this.facade.getGuideSurface(filters))),
+    this.filters$.pipe(
+      switchMap((filters) => this.isBrowser ? this.facade.getGuideSurface(filters) : of(null))
+    ),
     { initialValue: null }
   );
-  readonly nowPrograms = toSignal(
-    this.filters$.pipe(
-      switchMap((filters) =>
-        filters.q
-          ? this.facade.searchTvPrograms({ ...filters, limit: 48 })
-          : this.facade.getLivePrograms({ ...filters, limit: 36 })
-      )
-    ),
-    { initialValue: [] as TvReadItemDTO[] }
-  );
-  readonly nextPrograms = toSignal(
-    this.filters$.pipe(switchMap((filters) => this.facade.getNextPrograms({ ...filters, limit: 36 }))),
-    { initialValue: [] as TvReadItemDTO[] }
-  );
-  readonly nightPrograms = toSignal(
-    this.filters$.pipe(switchMap((filters) => this.facade.getTonightPrograms({ ...filters, limit: 48 }))),
-    { initialValue: [] as TvReadItemDTO[] }
-  );
+  readonly nowPrograms = toSignal(this.nowPrograms$, { initialValue: [] as TvReadItemDTO[] });
+  readonly nextPrograms = computed(() => this.surface()?.nextItems || []);
+  readonly nightPrograms = computed(() => this.surface()?.nightItems || []);
   readonly allPrograms = toSignal(
-    this.filters$.pipe(switchMap((filters) => this.facade.getAllPrograms({ ...filters, limit: 240 }))),
+    this.isBrowser
+      ? this.filters$.pipe(switchMap((filters) => this.facade.getAllPrograms({ ...filters, limit: 240 })))
+      : this.nowPrograms$,
     { initialValue: [] as TvReadItemDTO[] }
   );
-  readonly channels = toSignal(
-    this.filters$.pipe(switchMap((filters) => this.facade.getChannels(filters.group, filters.date))),
-    { initialValue: [] as ChannelMetaDTO[] }
+  readonly channels = computed<ChannelMetaDTO[]>(() =>
+    (this.surface()?.channels || []).map((entry) => entry.channel).filter(Boolean)
   );
 
   readonly visiblePrograms = computed(() => {
@@ -383,11 +383,8 @@ export class LiveGuideViewComponent {
     readonly shellUi: UnifiedShellUiStateService,
     private readonly facade: TvDataFacade,
     private readonly router: Router,
-    private readonly viewport: ViewportService,
-    @Inject(PLATFORM_ID) platformId: object
-  ) {
-    this.isBrowser = isPlatformBrowser(platformId);
-  }
+    private readonly viewport: ViewportService
+  ) {}
 
   toggleDesktopViewMode(): void {
     this.desktopViewMode.update((mode) => (mode === 'grid' ? 'rails' : 'grid'));

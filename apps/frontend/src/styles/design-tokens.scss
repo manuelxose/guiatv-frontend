@@ -51,7 +51,7 @@
 
   --portal-text: #1a1d24;
   --portal-text-soft: #454a54;
-  --portal-text-muted: #6d7280;
+  --portal-text-muted: #5d616d;
   --portal-text-faint: #9ca3af;
 
   // Five accents authored in OKLCH at matched lightness/chroma (L=58%,
@@ -60,9 +60,9 @@
   // `-soft` uses color-mix() for a true 6% tint over --portal-card (the
   // card-wayfinding mechanism), falling back to rgba() for browsers
   // without color-mix() support.
-  --accent-live: #dd3a3a;
+  --accent-live: #bc3131;
   --accent-live-soft: color-mix(in oklch, var(--accent-live) 6%, var(--portal-card));
-  --accent-discover: #4f6df5;
+  --accent-discover: #435dd0;
   --accent-discover-soft: color-mix(in oklch, var(--accent-discover) 6%, var(--portal-card));
   --accent-streaming: #12a06a;
   --accent-streaming-soft: color-mix(in oklch, var(--accent-streaming) 6%, var(--portal-card));

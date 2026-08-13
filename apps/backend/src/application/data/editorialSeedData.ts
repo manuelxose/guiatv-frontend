@@ -63,7 +63,7 @@ function buildArticleHtml(
   ].join('');
 }
 
-const blogCover = '/assets/images/blog-og-image.jpg';
+const blogCover = '/assets/images/blog-og-image.webp';
 const rankingCover = '/assets/images/top10-og-image.jpg';
 
 export const EDITORIAL_SEED_POSTS: EditorialSeedEntry[] = [

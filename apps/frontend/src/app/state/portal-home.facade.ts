@@ -1,6 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { catchError, combineLatest, map, Observable, of } from 'rxjs';
+import { catchError, combineLatest, map, Observable, of, timeout } from 'rxjs';
 import { TvReadItemDTO } from '../api/models';
 import { EditorialHubState, EditorialPost } from '../blog/models/editorial.models';
 import { EditorialService } from '../blog/services/editorial.service';
@@ -22,6 +22,7 @@ export interface PortalHomeState {
 
 @Injectable({ providedIn: 'root' })
 export class PortalHomeFacade {
+  private static readonly HOME_EDITORIAL_TIMEOUT_MS = 5_000;
   private readonly isBrowser: boolean;
 
   constructor(
@@ -70,6 +71,12 @@ export class PortalHomeFacade {
         .getPlatforms()
         .pipe(catchError(() => of([] as CatalogPlatform[]))),
       editorialHub: this.editorialService.getHubState().pipe(
+        // BlogService deliberately retries transient client failures for up
+        // to 14 seconds. That policy is useful on editorial pages, but the
+        // home combineLatest must not keep the entire portal in its loading
+        // state while those retries run. Fail soft here without changing the
+        // shared editorial service's resilience policy.
+        timeout({ first: PortalHomeFacade.HOME_EDITORIAL_TIMEOUT_MS }),
         catchError(() =>
           of({
             hero: null,
@@ -82,6 +89,7 @@ export class PortalHomeFacade {
         )
       ),
       rankings: this.editorialService.getRankingsPageState().pipe(
+        timeout({ first: PortalHomeFacade.HOME_EDITORIAL_TIMEOUT_MS }),
         catchError(() =>
           of({
             featured: null,

@@ -111,7 +111,7 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
       description:
         'Reportajes, guías y rankings conectados con la app para descubrir qué ver, dónde verlo y por qué merece la pena.',
       canonicalUrl: '/editorial',
-      image: '/assets/images/blog-og-image.jpg',
+      image: '/assets/images/blog-og-image.webp',
       type: 'website',
     });
     this.buildStructuredData();

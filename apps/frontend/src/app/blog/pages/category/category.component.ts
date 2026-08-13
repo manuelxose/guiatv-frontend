@@ -105,7 +105,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
               `Artículos y rankings editoriales relacionados con ${state.category.name}.`,
             canonicalUrl: state.category.canonicalPath,
             image:
-              state.featuredPost?.coverImage || '/assets/images/blog-og-image.jpg',
+              state.featuredPost?.coverImage || '/assets/images/blog-og-image.webp',
             type: 'website',
           });
           this.buildStructuredData(state);

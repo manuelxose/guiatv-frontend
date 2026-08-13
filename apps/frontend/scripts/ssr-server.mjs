@@ -242,6 +242,28 @@ app.get('/blog', (_req, res) => res.redirect(301, '/editorial'));
 app.get('/mi-cuenta', (_req, res) => res.redirect(301, '/perfil'));
 app.get('/comunidad', (_req, res) => res.redirect(301, '/perfil'));
 
+app.get('/contenido/:catalogId', async (req, res) => {
+  const catalogId = decodeURIComponent(req.params.catalogId || '');
+  if (!catalogId) return res.status(404).send('Not found');
+  try {
+    const apiResponse = await fetch(`${backendOrigin}/v2/catalog/${encodeURIComponent(catalogId)}`);
+    if (apiResponse.ok) {
+      const payload = await apiResponse.json();
+      const detailPath = payload?.data?.detailPath;
+      if (detailPath) return res.redirect(301, detailPath);
+    }
+  } catch {
+    // A legacy URL whose catalog entry cannot be resolved is genuinely gone.
+  }
+  return res.status(404).send('Not found');
+});
+
+app.get(['/programacion-tv/ver-canal/:id', '/ver-canal/:id'], (req, res) => {
+  const slug = encodeURIComponent(String(req.params.id || '').trim());
+  if (!slug) return res.status(404).send('Not found');
+  return res.redirect(301, `/canales/${slug}`);
+});
+
 app.get('*.*', express.static(browserDistPath, { maxAge: '1y', immutable: true }));
 
 app.get(/\.(?:js|mjs|css|map|json|png|jpe?g|webp|gif|svg|ico|woff2?|ttf|otf)$/i, (_req, res) => {
