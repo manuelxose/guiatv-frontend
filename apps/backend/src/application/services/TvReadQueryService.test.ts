@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   TvReadQueryService,
+  applyTvReadTemporalBounds,
   hydrateTvReadItemRuntime,
   isConsumerVisibleTvReadItem,
   isFeaturedTvReadItem,
@@ -26,6 +27,18 @@ test('resolveTvReadLimit keeps hot paths bounded', () => {
   assert.equal(resolveTvReadLimit('now', 99999), 500);
   assert.equal(resolveTvReadLimit('search', undefined), 60);
   assert.equal(resolveTvReadLimit('night', 1200), 1200);
+});
+
+test('applyTvReadTemporalBounds restricts now reads to active airings in Mongo', () => {
+  const reference = new Date('2026-03-26T11:00:00.000Z');
+  assert.deepEqual(applyTvReadTemporalBounds({ date: '20260326' }, 'now', reference), {
+    date: '20260326',
+    'airing.start': { $lte: '2026-03-26T11:00:00.000Z' },
+    'airing.end': { $gt: '2026-03-26T11:00:00.000Z' },
+  });
+  assert.deepEqual(applyTvReadTemporalBounds({ date: '20260326' }, 'day', reference), {
+    date: '20260326',
+  });
 });
 
 test('hydrateTvReadItemRuntime derives liveNow from request time instead of persisted value', () => {

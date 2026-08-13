@@ -50,6 +50,10 @@ TVReadAiringSchema.index(
   { name: 'idx_tvread_date_group_sort_start' }
 );
 TVReadAiringSchema.index(
+  { date: 1, 'airing.start': 1, 'airing.end': 1 },
+  { name: 'idx_tvread_date_airing_window' }
+);
+TVReadAiringSchema.index(
   { 'channel.id': 1, date: 1, 'airing.start': 1 },
   { name: 'idx_tvread_channel_date_start' }
 );

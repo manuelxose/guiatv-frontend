@@ -255,7 +255,15 @@ Post-release measurement found the filtered guide surface taking **17.25s** whil
 
 **Fix**: guide surfaces now materialize one schedule only. Filtered surfaces obtain global group counts with a Mongo aggregation over distinct `(group, channelId)` pairs; unfiltered surfaces derive them from their already-loaded response. The aggregation completes in ~0.2s against production data, while the indexed TDT schedule query examines/returns 972 documents in 9ms at Mongo level. A regression asserts one schedule query and preserves global count metadata.
 
-**Verification**: backend build/typecheck PASS; backend unit **36/36 PASS**; `git diff --check` PASS. The change remains undeployed pending a clean commit and gated release; production latency/memory must be re-measured after activation.
+**Verification**: backend build/typecheck PASS; backend unit **36/36 PASS**; `git diff --check` PASS. Unified release **`20260813112137`** passed the public deployment smoke matrix. Three uncached final-surface keys completed in **0.22–0.27s** (down from 17.25s); production SSR responses for home/guide/channel completed in **0.003–0.004s** once warm. API remained active with zero restarts and no OOM/fatal log entries; initial post-deploy memory was 1.21 GiB current / 1.24 GiB peak, still high enough to require sustained observation rather than a premature stability claim.
+
+## Round 22 result — `now` reads bounded at the database
+
+The post-release E2E warm-up exposed a separate cold-key path: `/tv/read?view=now&limit=8` took 11.1s and an independent new limit key took 20.5s. `TvReadQueryService` queried and hydrated every airing for the day regardless of view or requested limit, then selected currently active rows and sliced the result in memory.
+
+**Fix**: `now` queries now include `airing.start <= requestTime < airing.end` in Mongo before hydration. Added the compound `date/start/end` airing-window index to both the Mongoose model and bootstrap script. This preserves runtime-derived `liveNow` and overlapping-row preference while bounding the source set.
+
+**Evidence before release**: real production explain with the new index returns 852 active source rows in 86ms, examining 852 documents / 2,133 keys instead of the complete day. Backend unit suite expanded to **37/37 PASS**, including an exact temporal-query regression; build/typecheck and diff checks PASS. Deployment and HTTP-level latency validation remain the next gate.
 
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
