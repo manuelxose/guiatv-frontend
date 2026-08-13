@@ -1,6 +1,7 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   DestroyRef,
   EventEmitter,
@@ -81,6 +82,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
     private readonly discoveryService: DiscoveryService,
     private readonly router: Router,
     private readonly storage: StorageService,
+    private readonly changeDetector: ChangeDetectorRef,
     @Inject(PLATFORM_ID) platformId: object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -122,6 +124,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
         if (this.userInteracted) {
           this.showMenu = true;
         }
+        this.changeDetector.markForCheck();
       });
   }
 
