@@ -48,6 +48,10 @@ export class UnifiedProgramCardComponent {
     return Boolean(this.card.image);
   }
 
+  get imageUrl(): string {
+    return optimizeCardImageUrl(this.card.image);
+  }
+
   get progressClass(): string {
     const bucket = Math.max(0, Math.min(100, Math.round(this.card.progressPercent / 10) * 10));
     return `program-card__progress-fill--${bucket}`;
@@ -112,6 +116,14 @@ function formatTimeRange(start?: string, end?: string): string {
     return '';
   }
   return endLabel ? `${startLabel} - ${endLabel}` : startLabel;
+}
+
+export function optimizeCardImageUrl(url?: string): string {
+  const value = String(url || '');
+  if (value.startsWith('https://image.tmdb.org/t/p/original/')) {
+    return value.replace('/t/p/original/', '/t/p/w780/');
+  }
+  return value;
 }
 
 function formatTime(value?: string): string {

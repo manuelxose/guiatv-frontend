@@ -285,6 +285,12 @@ Lighthouse's sole layout-shift node was the portal body: Home initially omitted 
 
 **Verification**: frontend unit **18/18 PASS**, SSR production build PASS. Warm scratch Lighthouse moved from performance 43 / TBT 2.13s / CLS 0.283 to **performance 70 / TBT 430ms / CLS 0**, with accessibility 100 and best-practices 100. The first cold scratch run was resource-contended and is retained as non-release evidence; production must be measured after deployment before closing the performance phase.
 
+## Round 26 result — optional realtime and oversized card media removed from startup
+
+Production release **`20260813122154`** confirms CLS **0** and performance 54 (up from 43), with root response 20ms and zero service restarts. Bundle inspection showed Socket.IO statically imported through the root chat service even for anonymous users who never connect; it is now loaded dynamically only when an authenticated realtime connection is actually required. Initial browser transfer falls from 288.1 to **277.4 KB**, with Socket.IO isolated in a 42.6 KB lazy chunk.
+
+Lighthouse also attributed ~4.7 MB of image waste to TMDB `/original/` backdrops displayed as 366px cards. Unified cards now request TMDB's `w780` variant while preserving non-TMDB sources; a focused unit regression covers both branches. Scratch payload fell from ~7.0 MB to **1.9 MB**, with estimated image waste down to 819 KB. The brand link accessible name now contains its visible label. Frontend lint remains 0 errors, unit baseline remained 18/18 before adding the two image tests, and production build PASS; final unit/release/Lighthouse verification follows.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
