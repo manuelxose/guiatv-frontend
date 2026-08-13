@@ -13,6 +13,8 @@ import { LoginModalService } from '../../services/login-modal.service';
       *ngIf="loginModalService.isOpen$ | async"
       class="fixed inset-0 z-[120] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
       (click)="cancel()"
+      (keydown.escape)="cancel()"
+      tabindex="-1"
     >
       <section
         class="w-full max-w-md rounded-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
@@ -20,6 +22,7 @@ import { LoginModalService } from '../../services/login-modal.service';
         aria-modal="true"
         aria-labelledby="login-modal-title"
         (click)="$event.stopPropagation()"
+        (keydown)="$event.stopPropagation()"
         >
         <div class="flex items-start justify-between gap-3">
           <div>

@@ -1,7 +1,10 @@
 <div
   class="card-list group relative flex w-full cursor-pointer flex-col overflow-hidden rounded-xl bg-gray-900 shadow-lg transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/10 h-full"
   (click)="onClick()"
-  role="article"
+  (keydown.enter)="onClick()"
+  (keydown.space)="$event.preventDefault(); onClick()"
+  role="button"
+  tabindex="0"
   [attr.aria-label]="title"
 >
   <!-- Image Section -->

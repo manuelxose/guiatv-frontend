@@ -145,4 +145,6 @@
   *ngIf="isDropdownOpen" 
   class="fixed inset-0 z-40" 
   (click)="closeDropdown()"
+  (keydown.escape)="closeDropdown()"
+  tabindex="-1"
 ></div>

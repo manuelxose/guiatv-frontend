@@ -312,6 +312,8 @@ interface ChatWindowState {
         *ngIf="selectedOnlineUser as profileUser"
         class="fixed inset-0 z-[95] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
         (click)="closeProfile()"
+        (keydown.escape)="closeProfile()"
+        tabindex="-1"
       >
         <section
           class="w-full max-w-sm rounded-2xl border border-slate-700/80 bg-slate-900 p-4 shadow-[0_22px_50px_rgba(0,0,0,0.45)]"
@@ -319,6 +321,7 @@ interface ChatWindowState {
           aria-modal="true"
           aria-labelledby="desktop-chat-profile-title"
           (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
         >
           <div class="flex items-start justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">

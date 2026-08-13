@@ -152,6 +152,10 @@
               [class.tv-program--live]="isProgramLive(prog)"
               [class.tv-program--selected]="selectedProgram()?.id === prog.id"
               (click)="onProgramSelected(idx, prog); $event.stopPropagation()"
+              (keydown.enter)="onProgramSelected(idx, prog); $event.stopPropagation()"
+              (keydown.space)="$event.preventDefault(); onProgramSelected(idx, prog); $event.stopPropagation()"
+              role="button"
+              tabindex="0"
             >
               <!-- Hora -->
               <div class="tv-program__time">
@@ -179,10 +183,10 @@
     </main>
 
     <!-- Bottom Sheets (Dropdowns) -->
-    <div *ngIf="isAnyDropdownOpen()" class="tv-overlay" (click)="closeAllDropdowns()">
+    <div *ngIf="isAnyDropdownOpen()" class="tv-overlay" (click)="closeAllDropdowns()" (keydown.escape)="closeAllDropdowns()" tabindex="-1">
       
       <!-- Day Selector -->
-      <div *ngIf="isDayDropdownOpen()" class="tv-sheet" (click)="$event.stopPropagation()">
+      <div *ngIf="isDayDropdownOpen()" class="tv-sheet" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1">
         <div class="tv-sheet__handle"></div>
         <div class="tv-sheet__header">
           <h3>Seleccionar día</h3>
@@ -204,7 +208,7 @@
       </div>
 
       <!-- Channel Type Selector -->
-      <div *ngIf="isChannelTypeDropdownOpen()" class="tv-sheet" (click)="$event.stopPropagation()">
+      <div *ngIf="isChannelTypeDropdownOpen()" class="tv-sheet" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1">
         <div class="tv-sheet__handle"></div>
         <div class="tv-sheet__header">
           <h3>Tipo de canal</h3>
@@ -226,7 +230,7 @@
       </div>
 
       <!-- Category Selector -->
-      <div *ngIf="showCategoryFilter() && isCategoryDropdownOpen()" class="tv-sheet tv-sheet--tall" (click)="$event.stopPropagation()">
+      <div *ngIf="showCategoryFilter() && isCategoryDropdownOpen()" class="tv-sheet tv-sheet--tall" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1">
         <div class="tv-sheet__handle"></div>
         <div class="tv-sheet__header">
           <h3>Categorías</h3>
@@ -255,7 +259,7 @@
       </div>
 
       <!-- Time Slot Selector -->
-      <div *ngIf="isTimeSlotDropdownOpen()" class="tv-sheet" (click)="$event.stopPropagation()">
+      <div *ngIf="isTimeSlotDropdownOpen()" class="tv-sheet" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1">
         <div class="tv-sheet__handle"></div>
         <div class="tv-sheet__header">
           <h3>Franja horaria</h3>
@@ -418,7 +422,7 @@
           [class.tv-row--expanded]="isChannelExpanded(idx)"
         >
           <!-- Channel Info Column (Fixed Left) -->
-          <div class="tv-row__channel" (click)="onChannelToggle(idx)">
+          <div class="tv-row__channel" (click)="onChannelToggle(idx)" (keydown.enter)="onChannelToggle(idx)" (keydown.space)="$event.preventDefault(); onChannelToggle(idx)" role="button" tabindex="0">
             <div class="tv-row__logo">
               <img
                 *ngIf="getChannelLogoUrl(canal)"
@@ -445,6 +449,10 @@
                     [style.grid-column-end]="prog.gridColumnEnd"
                     [style.grid-row]="layerIdx + 1"
                     (click)="onProgramSelected(idx, prog); $event.stopPropagation()"
+                    (keydown.enter)="onProgramSelected(idx, prog); $event.stopPropagation()"
+                    (keydown.space)="$event.preventDefault(); onProgramSelected(idx, prog); $event.stopPropagation()"
+                    role="button"
+                    tabindex="0"
                     [title]="getProgramTitle(prog)"
                   >
                     <span class="tv-grid__time">{{ prog.visibleStartTime }}</span>

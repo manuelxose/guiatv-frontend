@@ -51,6 +51,10 @@ import { UserNotification } from '../../interfaces/user.interface';
 
         <div *ngFor="let notification of notifications" 
           (click)="onNotificationClick(notification)"
+          (keydown.enter)="onNotificationClick(notification)"
+          (keydown.space)="$event.preventDefault(); onNotificationClick(notification)"
+          role="button"
+          tabindex="0"
           class="flex items-start gap-3 px-4 py-3 border-b border-slate-800/40 cursor-pointer transition-colors hover:bg-slate-800/30"
           [ngClass]="!notification.readAt ? 'bg-slate-800/20' : ''"
         >
@@ -72,7 +76,7 @@ import { UserNotification } from '../../interfaces/user.interface';
       </div>
     </div>
 
-    <div *ngIf="isOpen" class="fixed inset-0 z-[99]" (click)="isOpen = false"></div>
+    <div *ngIf="isOpen" class="fixed inset-0 z-[99]" (click)="isOpen = false" (keydown.escape)="isOpen = false" tabindex="-1"></div>
   `,
   styles: [],
 })

@@ -137,6 +137,10 @@ interface ForYouItem {
             *ngFor="let rec of items; trackBy: trackById"
             class="group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 transition-colors hover:border-slate-700"
             (click)="openDetail(rec)"
+            (keydown.enter)="openDetail(rec)"
+            (keydown.space)="$event.preventDefault(); openDetail(rec)"
+            role="button"
+            tabindex="0"
           >
             <!-- Image -->
             <div class="relative h-48 overflow-hidden bg-slate-800">
