@@ -11,7 +11,8 @@ import {
 } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
-import { provideClientHydration, withIncrementalHydration } from '@angular/platform-browser';
+// Preserve interactions made before the client bundle finishes hydrating.
+import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 
 // Rutas de la aplicación
@@ -54,7 +55,7 @@ export const appConfig: ApplicationConfig = {
 export const browserAppConfig = mergeApplicationConfig(appConfig, {
   providers: [
     provideAnimations(),
-    provideClientHydration(withIncrementalHydration()),
+    provideClientHydration(withEventReplay()),
   ],
 });
 

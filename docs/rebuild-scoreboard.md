@@ -313,6 +313,8 @@ The public Lighthouse run exposed a deployment correctness issue rather than an 
 
 Final runtime check: API and SSR active, **0 restarts**, approximately 309 MiB and 176 MiB respectively at observation. Production image 503s seen during the deploy/Lighthouse overlap recovered to 200 and were transient. Remaining lint output is the explicitly visible migration backlog (**0 errors / 674 warnings**), not a failing gate.
 
+**Final performance variance note**: repeated public mobile runs ranged from 48 to 78 on the shared host/CDN. The best uncontended run (78, TBT 370ms) and the worst contended run (48, TBT 2.27s) both retained accessibility 100, SEO 100 and CLS 0. Angular incremental hydration was production A/B tested and reverted because it reduced transferred bytes but worsened TBT; the stable event-replay hydration remains active. The release gate therefore records the observed range rather than presenting one favorable sample as deterministic.
+
 > Historical note: the `Known bugs queued for Round 2` section below is retained as the original audit trail. Its functional items were resolved in subsequent rounds and it is not the current work queue.
 
 ## Known bugs queued for Round 2
