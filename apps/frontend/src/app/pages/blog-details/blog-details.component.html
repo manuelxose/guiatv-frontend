@@ -104,6 +104,10 @@
         <article 
           *ngFor="let related of relatedArticles; trackBy: trackByArticleId"
           (click)="navigateToArticle(related)"
+          (keydown.enter)="navigateToArticle(related)"
+          (keydown.space)="$event.preventDefault(); navigateToArticle(related)"
+          role="link"
+          tabindex="0"
           class="group bg-gray-800/40 border border-gray-700/40 rounded-2xl overflow-hidden hover:bg-gray-800/60 hover:border-gray-600/60 transition-all cursor-pointer shadow-lg shadow-black/20">
           
           <div class="relative h-40 overflow-hidden">

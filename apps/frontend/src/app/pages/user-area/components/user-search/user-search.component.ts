@@ -36,6 +36,10 @@ import { UserService } from '../../../../services/user.service';
           *ngFor="let user of results"
           class="flex items-center gap-3 rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 hover:bg-slate-800/40 transition-colors cursor-pointer"
           (click)="openProfile(user.id)"
+          (keydown.enter)="openProfile(user.id)"
+          (keydown.space)="$event.preventDefault(); openProfile(user.id)"
+          role="button"
+          tabindex="0"
         >
           <div class="h-10 w-10 rounded-xl border border-slate-700 bg-slate-800/80 overflow-hidden flex items-center justify-center text-xs text-slate-300 shrink-0">
             <img *ngIf="user.avatar" [src]="user.avatar" class="w-full h-full object-cover" alt="" />

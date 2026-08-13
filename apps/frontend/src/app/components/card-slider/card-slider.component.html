@@ -1,7 +1,10 @@
 <div
   class="card-slider group relative w-full aspect-[2/3] flex-shrink-0 cursor-pointer overflow-hidden rounded-xl bg-gray-900 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-red-500/20"
   (click)="onClick()"
+  (keydown.enter)="onClick()"
+  (keydown.space)="$event.preventDefault(); onClick()"
   role="button"
+  tabindex="0"
   [attr.aria-label]="title"
 >
   <!-- Background Image -->
@@ -46,7 +49,7 @@
   </div>
 
   <!-- Social Actions (Top Left) -->
-  <div class="absolute top-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" (click)="$event.stopPropagation()">
+  <div class="absolute top-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1">
     <app-interaction-buttons
       [itemId]="id"
       [title]="title"

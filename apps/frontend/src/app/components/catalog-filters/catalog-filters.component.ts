@@ -261,11 +261,15 @@ const DATE_OPTIONS = [
         *ngIf="isMobilePanelOpen"
         class="fixed inset-0 z-[120] md:hidden"
         (click)="closeMobilePanel()"
+        (keydown.escape)="closeMobilePanel()"
+        tabindex="-1"
       >
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
         <div
           class="absolute inset-x-0 bottom-0 max-h-[84dvh] overflow-y-auto rounded-t-[2rem] border border-slate-800 bg-slate-950 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
           (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
+          tabindex="-1"
         >
           <div class="mx-auto mb-4 h-1.5 w-14 rounded-full bg-slate-700"></div>
           <div class="space-y-5">

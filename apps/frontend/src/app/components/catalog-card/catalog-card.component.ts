@@ -40,6 +40,8 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
             *ngIf="showActions && compact"
             class="absolute bottom-0 inset-x-0 flex items-center gap-1.5 px-3 pb-3 pt-10 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent transition-opacity duration-200 opacity-100 md:opacity-0 md:group-hover:opacity-100"
             (click)="$event.stopPropagation(); $event.preventDefault()"
+            (keydown)="$event.stopPropagation()"
+            tabindex="-1"
           >
             <app-interaction-buttons
               [itemId]="item.catalogId"

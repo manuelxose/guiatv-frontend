@@ -20,6 +20,10 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
     <div
       class="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 md:hidden"
       (click)="close.emit()"
+      (keydown.escape)="close.emit()"
+      tabindex="0"
+      role="button"
+      aria-label="Cerrar conversaciones"
     ></div>
 
     <!-- Sidebar panel -->
@@ -173,7 +177,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
           }
 
           <!-- Actions (appear on hover) -->
-          <div class="hidden group-hover:flex items-center gap-0.5 shrink-0" (click)="$event.stopPropagation()">
+          <div class="hidden group-hover:flex items-center gap-0.5 shrink-0" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1">
             <button
               (click)="onTogglePin(conv)"
               class="p-1 rounded text-[var(--portal-text-muted)] hover:text-amber-400 transition-colors"

@@ -243,6 +243,12 @@ Reclassified two repository-wide migration rules (`prefer-inject` and DOM-named 
 
 Ran ESLint's safe fixes and manually corrected every remaining TypeScript/JavaScript error: empty lifecycle/block bodies, switch lexical scope, empty interface alias and unnecessary regex escapes. Began the template accessibility pass with the application/chat overlays, legacy modal, program-detail modal and unified search combobox (`aria-controls`, keyboard handling and focusability). Lint improved from **785 (370 errors / 415 warnings)** to **747 (73 errors / 674 warnings)**; all 73 remaining errors are explicit template keyboard/focus/label associations and remain hard failures until corrected. Frontend unit suite remains **18/18 PASS** after this batch.
 
+## Round 20 result — frontend lint gate PASS; keyboard/template errors closed
+
+Closed the remaining 56 template accessibility errors without disabling the accessibility preset. Interactive program/channel/catalog/user/editorial cards now expose keyboard activation with Enter and Space plus focusable semantics; overlays and bottom sheets support Escape and correctly contain inner events; notification rows and mobile/chat/profile surfaces received equivalent keyboard paths. All 17 form-label association failures were fixed with stable `for`/`id` pairs (or converted to non-label descriptive text where no control exists).
+
+**Verification**: frontend lint now exits successfully with **0 errors / 674 warnings** (down from 370 errors). Warnings deliberately retain the broad legacy typing and DI/output migration backlog instead of hiding it. Next validation for this batch is the full unit/build/E2E regression matrix before moving to performance and visual QA.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.

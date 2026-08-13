@@ -19,7 +19,7 @@ type SearchMode = 'all' | 'tv' | 'streaming' | 'free' | 'tonight';
   imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="fixed inset-0 z-[110]">
-      <div class="absolute inset-0 bg-black/70 backdrop-blur-md" (click)="close.emit()"></div>
+      <div class="absolute inset-0 bg-black/70 backdrop-blur-md" (click)="close.emit()" (keydown.escape)="close.emit()" tabindex="-1"></div>
 
       <div class="absolute inset-x-4 top-4 bottom-4 mx-auto flex max-w-4xl flex-col overflow-hidden rounded-[2rem] border border-slate-800 bg-[#081018]/98 shadow-[0_30px_80px_rgba(0,0,0,0.55)] md:top-10 md:bottom-10">
         <div class="border-b border-slate-800/80 p-4 md:p-5">
