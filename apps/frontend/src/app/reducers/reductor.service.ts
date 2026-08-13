@@ -22,7 +22,7 @@ export class ReductorService {
 
   reducer(estadoActual: Estado, action: any): Estado {
     switch (action.type) {
-      case 'SET_PROGRAMAS':
+      case 'SET_PROGRAMAS': {
         const programas = [...action.payload]; // Clonar el arreglo para evitar mutaciones directas
 
         const nuevoEstado = {
@@ -30,6 +30,7 @@ export class ReductorService {
           programas,
         };
         return nuevoEstado;
+      }
       default:
         return estadoActual;
     }

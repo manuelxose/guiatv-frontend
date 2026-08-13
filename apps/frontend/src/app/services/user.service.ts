@@ -745,7 +745,7 @@ export class UserService {
     return this.http
       .delete<ApiResponse<{ blocked: boolean }>>(url, { headers: this.getAuthHeaders() })
       .pipe(
-        map((resp) => !Boolean(resp?.data?.blocked)),
+        map((resp) => !resp?.data?.blocked),
         catchError(this.handleError(false, 'No se pudo desbloquear al usuario.'))
       );
   }

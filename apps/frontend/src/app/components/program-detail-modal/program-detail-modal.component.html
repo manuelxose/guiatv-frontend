@@ -14,7 +14,7 @@
   <div class="modal-backdrop"></div>
 
   <!-- Modal Content -->
-  <div class="modal-content" @modalAnimation (click)="onContentClick($event)">
+  <div class="modal-content" @modalAnimation (click)="onContentClick($event)" (keydown)="$event.stopPropagation()" tabindex="-1">
     <!-- Hero Background with Gradient -->
     <div
       class="modal-hero"

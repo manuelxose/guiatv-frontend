@@ -53,7 +53,7 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(PLATFORM_ID) private platformId: object,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -87,7 +87,9 @@ export class SliderComponent implements OnInit, AfterViewInit, OnDestroy {
               img.removeAttribute('data-src');
               try {
                 this.intersectionObserver?.unobserve(img);
-              } catch (_) {}
+              } catch (_) {
+                // The observer may already have disconnected during teardown.
+              }
             }
           }
         });
