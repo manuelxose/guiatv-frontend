@@ -225,6 +225,12 @@ The first full Playwright run with one worker improved from the Round 11 baselin
 
 **Operational blocker reproduced**: during the first E2E run, the deployed API hit `FATAL ERROR: Reached heap limit` at 10:22:42 CEST and restarted. In the next run, `/v2/tv/read?view=now` took 24–26 seconds and catalog detail requests took 18–22 seconds while the still-deployed unbounded program-slug path was under bot traffic. These timings directly explain the remaining detail/search timeouts and reaffirm that Round 14's bounded lookup must be released before the gate can provide a valid stability signal.
 
+## Round 17 result — search change detection fixed; focused residual E2E green
+
+The search API was returning 200 with real items in 0.8–2 seconds, but the OnPush `UnifiedSearchComponent` mutated its suggestion/loading fields from a manual RxJS subscription without marking the view for checking. The dropdown therefore remained visibly stuck on “Buscando…” even after data arrived. Added the required `ChangeDetectorRef.markForCheck()` and replaced `DiscoveryService`'s eager internal subscription with a `finalize`-managed, ref-counted shared request.
+
+**Verification**: focused search journey **1/1 PASS**; the two data-timing failures from the post-release full run (broken-image resilience and tonight/channel filtering) then passed **6/6** together; frontend unit suite remains **18/18 PASS**. Round 14's deployed slug fix remains effective (program misses now milliseconds rather than tens of seconds), with zero API restarts since release; memory remains under observation because its post-release peak is still high.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.

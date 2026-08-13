@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, map, shareReplay } from 'rxjs/operators';
+import { catchError, finalize, map, shareReplay } from 'rxjs/operators';
 import { ApiConfigService } from '../api/api-config.service';
 import {
   CatalogItem,
@@ -162,11 +162,11 @@ export class DiscoveryService {
         return value;
       }),
       catchError(() => of(fallback)),
-      shareReplay(1)
+      finalize(() => this.inFlight.delete(key)),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
 
     this.inFlight.set(key, request$);
-    request$.subscribe({ complete: () => this.inFlight.delete(key), error: () => this.inFlight.delete(key) });
     return request$;
   }
 
