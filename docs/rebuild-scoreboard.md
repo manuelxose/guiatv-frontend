@@ -206,6 +206,15 @@ Production evidence correlated the SSR timeout with the residual API memory cycl
 
 **Status**: source fix verified, not deployed. Production continues running the prior release and therefore remains monitored/at risk. Next exact step: full QA gates, then safe release + post-deploy latency/restart observation.
 
+## Round 15 result — frontend unit gate green
+
+Closed all five failures exposed when the frontend runner was wired in Round 11, without changing production behavior:
+- isolated `UnifiedGuideStateService` specs from browser `localStorage` and aligned query-param assertions with the intentional null keys Angular uses to remove defaults;
+- corrected the discover fixture so a catalog item included in an `availability: live` test is actually live;
+- migrated the autocomplete/menu smoke tests from NgModule declarations to standalone imports and supplied their HTTP test providers.
+
+**Verification**: full frontend Karma suite **18/18 PASS** in Chrome Headless. This supersedes the Round 11 baseline of 12 pass / 5 fail. Next gate is the full Playwright suite with one worker to avoid amplifying the already-documented shared-host pressure.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
