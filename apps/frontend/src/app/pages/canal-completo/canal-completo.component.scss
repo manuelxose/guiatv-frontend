@@ -3,6 +3,16 @@
  * Optimized for performance, UX/UI, and consistency with app design
  */
 
+/* This route's template is utility-driven. Keep the generated utilities
+ * component-scoped so legacy utility-like class names elsewhere in the light
+ * portal do not acquire unintended Tailwind colors/layout. */
+@tailwind utilities;
+
+/* slate-500 is below AA for the route's small labels on its dark surfaces. */
+.text-slate-500 {
+  color: #cbd5e1;
+}
+
 // ===============================================
 // VARIABLES
 // ===============================================

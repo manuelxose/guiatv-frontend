@@ -2,6 +2,7 @@
   class="chip-bar scrollbar-hide"
   [class.chip-bar--shelf]="variant === 'shelf'"
   [attr.aria-label]="ariaLabel"
+  tabindex="0"
   [attr.role]="multiSelect ? null : 'tablist'"
 >
   <button
