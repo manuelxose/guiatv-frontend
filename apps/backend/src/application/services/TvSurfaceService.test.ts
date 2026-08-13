@@ -116,8 +116,11 @@ test('TvSurfaceService guide surface deduplicates current items per channel', as
     score: 20,
   });
 
+  let queryCalls = 0;
   const tvReadQueryService = {
-    query: async () => ({
+    query: async () => {
+      queryCalls += 1;
+      return ({
       date: '20260326',
       view: 'day',
       items: [otherChannel, duplicateWithoutPoster, duplicateWithPoster],
@@ -127,7 +130,9 @@ test('TvSurfaceService guide surface deduplicates current items per channel', as
       ],
       filters: { group: 'tdt' },
       meta: { total: 3, limit: 5000, generatedAt: new Date().toISOString() },
-    }),
+      });
+    },
+    getGroupChannelCounts: async () => ({ tdt: 2, cable: 4 }),
     getChannels: async () => ({ channels: [] }),
     getChannelDetail: async () => ({
       date: '20260326',
@@ -149,4 +154,6 @@ test('TvSurfaceService guide surface deduplicates current items per channel', as
 
   assert.equal(surface.nowItems.length, 2);
   assert.equal(surface.nowItems.find((item) => item.channel.id === 'dmax')?.program.title, 'La fiebre del oro');
+  assert.equal(queryCalls, 1);
+  assert.deepEqual(surface.meta.groupCounts, { tdt: 2, cable: 4 });
 });

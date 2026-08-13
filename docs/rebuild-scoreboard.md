@@ -249,6 +249,14 @@ Closed the remaining 56 template accessibility errors without disabling the acce
 
 **Verification**: frontend lint now exits successfully with **0 errors / 674 warnings** (down from 370 errors). Warnings deliberately retain the broad legacy typing and DI/output migration backlog instead of hiding it. Next validation for this batch is the full unit/build/E2E regression matrix before moving to performance and visual QA.
 
+## Round 21 result — guide surface duplicate full-day hydration removed
+
+Post-release measurement found the filtered guide surface taking **17.25s** while returning only 22 channels / ~0.8 MB. The service was materializing two day responses at a 20,000-item limit: one for the selected group and a second global response used only to derive six channel counts. On an unfiltered request both reads were identical; on a filtered request the global cached value still had to be deserialized and runtime-hydrated in Node, recreating the heap pressure the earlier L1 exclusion was designed to avoid.
+
+**Fix**: guide surfaces now materialize one schedule only. Filtered surfaces obtain global group counts with a Mongo aggregation over distinct `(group, channelId)` pairs; unfiltered surfaces derive them from their already-loaded response. The aggregation completes in ~0.2s against production data, while the indexed TDT schedule query examines/returns 972 documents in 9ms at Mongo level. A regression asserts one schedule query and preserves global count metadata.
+
+**Verification**: backend build/typecheck PASS; backend unit **36/36 PASS**; `git diff --check` PASS. The change remains undeployed pending a clean commit and gated release; production latency/memory must be re-measured after activation.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.

@@ -276,13 +276,10 @@ export class TvSurfaceService {
       group,
       limit: 20000,
     });
-    const allDay = await this.tvReadQueryService.query({
-      view: 'day',
-      date: params.date || day.date,
-      limit: 20000,
-    });
-
-    const channelSource = group ? day.channels : allDay.channels;
+    const groupCounts = group
+      ? await this.tvReadQueryService.getGroupChannelCounts(day.date)
+      : deriveGroupCountsFromItems(day.items);
+    const channelSource = day.channels;
     const visibleChannels = sortChannels(filterGuideChannels(channelSource, group));
     const groupScopedItems = filterGuideItemsByGroup(day.items, group);
     const preFilteredSports = group === 'deporte'
@@ -317,7 +314,7 @@ export class TvSurfaceService {
         primeTimeWindowEnd: PRIME_TIME_WINDOW.endLabel,
         groupOrder: GUIDE_GROUP_ORDER,
         availableSports: group === 'deporte' ? preFilteredSports : undefined,
-        groupCounts: deriveGroupCountsFromItems(allDay.items),
+        groupCounts,
         generatedAt: new Date().toISOString(),
       },
     };
