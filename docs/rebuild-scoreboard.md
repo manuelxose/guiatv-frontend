@@ -271,6 +271,14 @@ Captured six primary routes (home, guide, streaming, sports, editorial and chann
 
 **Verification**: after scoped remediation, axe reports zero violations on home/guide/streaming/sports/channel at 375/768/1440 and on editorial at 768/1440; the one mobile editorial empty-shelf finding was fixed immediately afterward. Frontend lint **0 errors / 674 visible warnings**, unit **18/18 PASS**, production SSR build PASS. Final post-build axe confirmation, E2E regression and release remain required before this round is marked deployed.
 
+## Round 24 result — visual release validated; hot payload paged
+
+Unified release **`20260813120129`** passed all public deploy smokes. The production-release browser matrix reports **0 axe violations and 0 horizontal overflow** for home, guide, streaming, sports, editorial and channel at 375 and 1440px (the pre-release 768px matrix was also clean). The full E2E rerun passed 12 journeys; Editorial exceeded its former 15s cold-category assertion once, then passed the complete category/article path with a timeout aligned to BlogService's documented 14s retry budget and data-dependently skipped only the absent related-post hop.
+
+Lighthouse then exposed a remaining performance gate: mobile home scored 33 despite accessibility 100 / best-practices 96 / SEO 92. The largest avoidable API contributor was the `now` response returning 797 channel summaries alongside only a handful of paged items (~3 MB). Non-day read views now scope summaries to the channels represented on the requested page; day/guide semantics remain unchanged. Backend unit **38/38 PASS**. Release **`20260813121222`** passed smokes; a cold `now&limit=17` response is now **149 KB / 0.47s with 17 summaries**, and API memory is ~593 MiB with zero restarts.
+
+**Lighthouse after payload fix**: performance **43**, accessibility **100**, best-practices **96**, SEO **92**; root response 20ms, FCP 2.9s, LCP 3.5s, TBT 2.13s, CLS 0.283. This is a material improvement but not a green performance gate. Remaining work is frontend main-thread/layout stabilization (not API/SSR TTFB), especially the portal-shell body shift and shared initial chunk evaluation.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
