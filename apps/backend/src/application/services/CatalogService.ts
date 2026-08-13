@@ -36,7 +36,7 @@ import { UserListModel } from '@/infrastructure/database/models/UserList.model';
 import { UserContentInteractionModel } from '@/infrastructure/database/models/UserContentInteraction.model';
 import { UserFollowModel } from '@/infrastructure/database/models/UserFollow.model';
 import { UserProfileModel } from '@/infrastructure/database/models/UserProfile.model';
-import { buildCatalogAssetSet } from '@/shared/utils/tvMetadata';
+import { buildCatalogAssetSet, buildSearchTokens } from '@/shared/utils/tvMetadata';
 import { l1Cache } from '@/infrastructure/cache/L1Cache';
 import { TvReadItemDTO, TvReadView } from '../dto/TvReadDTO';
 import { TvReadQueryService } from './TvReadQueryService';
@@ -1620,36 +1620,32 @@ export class CatalogService {
     slug: string,
     date: string
   ): Promise<TvReadItemDTO | null> {
-    void searchText;
-    // Was: view:'search', q:searchText. That path OR's an indexed
-    // searchTokens match with two UNANCHORED case-insensitive regexes on
-    // program.title/channel.name, which have no supporting index - MongoDB
-    // can't use an index for an unanchored /i regex, so every miss forced
-    // a full collection scan of the day's ~20k+ airings. Under
-    // enumeration-style traffic hitting many distinct nonexistent program
-    // slugs (each a guaranteed cache miss - cacheSlugNotFound below only
-    // helps on repeat lookups of the SAME slug), this was pegging
-    // guiatv-api's CPU and driving it into an OOM crash-loop
-    // (docs/rebuild-scoreboard.md).
-    //
-    // Fix: use view:'day' instead - a plain {date} query with a
-    // supporting index, and the same query the guide/discovery pages run
-    // constantly so it's usually warm in the L1/Redis cache - then do the
-    // exact slugify comparison in-process. Trade-off: 'day' view caps at
-    // 20000 items (TV_READ_LIMITS.day.max); today already has 20543
-    // airings, so a handful of very low-priority programs could be
-    // excluded from this specific fallback lookup. Accepted deliberately -
-    // a rare program briefly 404ing via slug fallback is a far smaller
-    // problem than the site-wide instability this was causing.
-    const response = await this.tvReadQueryService.query({
-      view: 'day',
+    // Never hydrate the whole day's 20k+ airings for a slug lookup. Bots
+    // enumerate distinct missing slugs, so negative caching cannot protect
+    // this first lookup and the former day-view fallback retained a large
+    // array per concurrent request. searchTokens has a compound Mongo index;
+    // use it to obtain a bounded candidate set, then preserve the canonical
+    // exact-slug comparison in process. Multiple tokens are intentional:
+    // the legacy slugifier drops accented characters ("región" -> "regin"),
+    // so another title token may be the one that locates that real program.
+    const tokens = buildSearchTokens([searchText])
+      .filter((token) => !token.includes(' ') && !token.includes('_') && token.length >= 3)
+      .sort((left, right) => right.length - left.length)
+      .slice(0, 6);
+    if (!tokens.length) {
+      return null;
+    }
+
+    const candidates = (await TVReadAiringModel.find({
       date,
-      limit: 20000,
-    });
-    return (
-      response.items.find((item) => this.slugify(item.program.title) === slug) ||
-      null
-    );
+      searchTokens: { $in: tokens },
+    })
+      .sort({ 'airing.start': 1 })
+      .limit(500)
+      .lean()
+      .exec()) as unknown as TvReadItemDTO[];
+
+    return candidates.find((item) => this.slugify(item.program.title) === slug) || null;
   }
 
   private async loadTvReadItems(

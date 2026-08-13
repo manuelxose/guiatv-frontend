@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { CatalogService } from './CatalogService';
 import { InMemoryCache } from '@/infrastructure/cache/InMemoryCache';
 import { NotFoundError } from '@/shared/errors';
+import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring.model';
 
 /**
  * Regression test for the OOM crash-loop caused by /v2/catalog/slug/:contentType/:slug
@@ -125,6 +126,47 @@ test('getBySlug: distinct missing slugs are cached independently', async () => {
       'two distinct missing slugs should each hit TMDB once'
     );
   } finally {
+    cache.destroy();
+  }
+});
+
+test('getBySlug: missing program slugs use a bounded indexed candidate query instead of hydrating the day view', async () => {
+  const cache = new InMemoryCache();
+  const tmdbCallCounter = { count: 0 };
+  const service = buildService(tmdbCallCounter, cache);
+  const originalFind = TVReadAiringModel.find;
+  const observed: { queries: Record<string, unknown>[]; limits: number[] } = {
+    queries: [],
+    limits: [],
+  };
+
+  (TVReadAiringModel as any).find = (query: Record<string, unknown>) => {
+    observed.queries.push(query);
+    return {
+      sort: () => ({
+        limit: (limit: number) => {
+          observed.limits.push(limit);
+          return { lean: () => ({ exec: async () => [] }) };
+        },
+      }),
+    };
+  };
+
+  try {
+    await assert.rejects(
+      () => service.getBySlug('program', 'programa-inexistente-distinto', undefined),
+      NotFoundError
+    );
+
+    assert.equal(observed.queries.length, 2, 'today and tomorrow should each use one bounded query');
+    assert.deepEqual(observed.limits, [500, 500]);
+    observed.queries.forEach((query) => {
+      assert.deepEqual(query.searchTokens, { $in: ['inexistente', 'programa', 'distinto'] });
+      assert.match(String(query.date), /^\d{8}$/);
+    });
+    assert.equal(tmdbCallCounter.count, 0, 'program lookup must not call TMDB');
+  } finally {
+    (TVReadAiringModel as any).find = originalFind;
     cache.destroy();
   }
 });
