@@ -80,6 +80,16 @@ export function applyTvReadTemporalBounds(
   return query;
 }
 
+export function scopeChannelSummariesToPage(
+  view: TvReadView,
+  summaries: TvReadChannelSummaryDTO[],
+  pagedItems: TvReadItemDTO[]
+): TvReadChannelSummaryDTO[] {
+  if (view === 'day') return summaries;
+  const channelIds = new Set(pagedItems.map((item) => item.channel.id));
+  return summaries.filter((summary) => channelIds.has(summary.channel.id));
+}
+
 export function hydrateTvReadItemRuntime(
   item: TvReadItemDTO,
   reference: Date = new Date()
@@ -403,7 +413,7 @@ export class TvReadQueryService {
       .filter((item) => isConsumerVisibleTvReadItem(item));
     const filteredMatching = this.applySportFilter(allMatching, sport);
     const items = this.applyViewTransform(view, filteredMatching, reference, date);
-    const channelSummaries = this.buildChannelSummaries(
+    const allChannelSummaries = this.buildChannelSummaries(
       filteredMatching,
       group,
       params.channelId,
@@ -411,6 +421,7 @@ export class TvReadQueryService {
       date
     );
     const paged = items.slice(offset, offset + limit);
+    const channelSummaries = scopeChannelSummariesToPage(view, allChannelSummaries, paged);
     const response: TvReadResponseDTO = {
       date,
       view,
