@@ -26,8 +26,13 @@ test.describe('Register/Login -> profile', () => {
     await page.getByRole('button', { name: 'Crear cuenta con email' }).click();
 
     await page.waitForURL(/\/perfil/, { timeout: 15_000 });
-    await expect(page.getByText(MOCK_USER.name, { exact: true })).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText(`@${MOCK_USER.username}`, { exact: true })).toBeVisible({
+    // The profile name renders in both the desktop sidebar card and a
+    // compact/mobile header — real duplicate markup, not a bug — so scope to
+    // the first real match rather than assume a single occurrence.
+    await expect(page.getByText(MOCK_USER.name, { exact: true }).first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText(`@${MOCK_USER.username}`, { exact: true }).first()).toBeVisible({
       timeout: 15_000,
     });
     await assertNoRenderedUndefined(page);
@@ -47,7 +52,9 @@ test.describe('Register/Login -> profile', () => {
     await page.getByRole('button', { name: 'Entrar con email' }).click();
 
     await page.waitForURL(/\/(perfil|mi-cuenta)/, { timeout: 15_000 });
-    await expect(page.getByText(MOCK_USER.name, { exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(MOCK_USER.name, { exact: true }).first()).toBeVisible({
+      timeout: 15_000,
+    });
     await assertNoRenderedUndefined(page);
   });
 });

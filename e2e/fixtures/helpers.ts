@@ -44,8 +44,22 @@ export async function assertNoStuckSpinner(page: Page): Promise<void> {
   }
 }
 
-/** Body must render something — not a blank/white-screen crash. */
+/**
+ * Body must render something — not a blank/white-screen crash.
+ *
+ * This is a one-shot innerText() read polled via expect.poll(), not a
+ * single check: on the CSR dev-server build this test suite targets, the
+ * app can legitimately have zero rendered text for a brief moment after
+ * navigation while Angular finishes its first render pass. A single
+ * immediate read races that window and fails even though the app renders
+ * real content moments later (confirmed via screenshot on a prior false
+ * failure here) - polling for up to 10s removes that race without masking
+ * a genuine blank-screen bug, since a real crash stays empty the whole window.
+ */
 export async function assertNotBlankScreen(page: Page): Promise<void> {
-  const text = (await page.locator('body').innerText()).trim();
-  expect(text.length).toBeGreaterThan(20);
+  await expect
+    .poll(async () => (await page.locator('body').innerText()).trim().length, {
+      timeout: 10_000,
+    })
+    .toBeGreaterThan(20);
 }
