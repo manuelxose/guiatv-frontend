@@ -15,6 +15,11 @@ test.describe('Buscar -> suggestions -> resultado -> detalle', () => {
     page,
     request,
   }) => {
+    // This journey is five sequential network round-trips against the real
+    // backend (setup fetch, typeahead, submit, results render, detail
+    // render) — longer than the suite default is warranted here.
+    test.setTimeout(90_000);
+
     const readRes = await request.get(`${BACKEND_URL}/v2/tv/read?view=now`);
     expect(readRes.ok()).toBeTruthy();
     const readBody = await readRes.json();
@@ -31,10 +36,10 @@ test.describe('Buscar -> suggestions -> resultado -> detalle', () => {
     await searchInput.fill(queryTerm);
 
     const suggestionMenu = page.locator('.search-shell__menu');
-    await expect(suggestionMenu).toBeVisible({ timeout: 10_000 });
+    await expect(suggestionMenu).toBeVisible({ timeout: 20_000 });
 
     const suggestionOptions = page.locator('.search-shell__option:not(.search-shell__option--history)');
-    await expect(suggestionOptions.first()).toBeVisible({ timeout: 10_000 });
+    await expect(suggestionOptions.first()).toBeVisible({ timeout: 20_000 });
     const suggestionCount = await suggestionOptions.count();
     expect(suggestionCount).toBeGreaterThan(0);
     const firstSuggestionTitle = (

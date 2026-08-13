@@ -34,7 +34,12 @@ export default defineConfig({
   globalSetup: require.resolve('./e2e/global-setup.ts'),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // 1 retry in CI; locally, leave at 0 by default so a run reports true
+  // first-attempt reality. This suite hits a real, shared, actively-used
+  // backend (not a dedicated test double) — set PWTEST_RETRIES=1 locally if
+  // you want a retry to absorb transient latency from other traffic on that
+  // same instance.
+  retries: process.env.CI ? 1 : Number(process.env.PWTEST_RETRIES || 0),
   workers: process.env.CI ? 2 : undefined,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   // Generous timeouts: this suite hits a real, shared backend (see the CORS
