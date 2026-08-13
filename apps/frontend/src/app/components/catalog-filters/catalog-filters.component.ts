@@ -276,8 +276,9 @@ const DATE_OPTIONS = [
             </div>
 
             <div>
-              <label class="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Buscar</label>
+              <label for="catalog-filter-query" class="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Buscar</label>
               <input
+                id="catalog-filter-query"
                 [(ngModel)]="queryText"
                 type="text"
                 class="min-h-[48px] w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 text-sm text-white outline-none focus:border-red-500"

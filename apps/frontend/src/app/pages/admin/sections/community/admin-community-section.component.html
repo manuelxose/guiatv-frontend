@@ -140,8 +140,9 @@
         <p class="text-sm text-slate-400">{{ selectedReport.reason }}</p>
 
         <div>
-          <label class="text-[11px] uppercase tracking-wider text-slate-500">Resolution</label>
+          <label for="report-resolution-status" class="text-[11px] uppercase tracking-wider text-slate-500">Resolution</label>
           <select
+            id="report-resolution-status"
             [(ngModel)]="resolutionStatus"
             class="mt-1 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
@@ -151,8 +152,9 @@
         </div>
 
         <div>
-          <label class="text-[11px] uppercase tracking-wider text-slate-500">Action on target user</label>
+          <label for="report-resolution-action" class="text-[11px] uppercase tracking-wider text-slate-500">Action on target user</label>
           <select
+            id="report-resolution-action"
             [(ngModel)]="resolutionAction"
             class="mt-1 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
@@ -162,8 +164,9 @@
         </div>
 
         <div>
-          <label class="text-[11px] uppercase tracking-wider text-slate-500">Note (optional)</label>
+          <label for="report-resolution-note" class="text-[11px] uppercase tracking-wider text-slate-500">Note (optional)</label>
           <textarea
+            id="report-resolution-note"
             [(ngModel)]="resolutionNote"
             rows="3"
             class="mt-1 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
