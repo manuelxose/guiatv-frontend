@@ -254,11 +254,14 @@ export class MongoProgramRepository implements IProgramRepository {
     try {
       const dateRange = this.parseDateToRange(date);
 
-      // Inclusion projection for minimal: only the fields needed for grid rendering.
+      // Inclusion projection for minimal: only the fields needed for grid rendering
+      // plus tmdbId (needed by SitemapController.buildProgramsSitemap() to filter
+      // TMDB-enriched programs — without it every doc.tmdbId is undefined and the
+      // sitemap silently ends up empty regardless of real data).
       // Inclusion is faster than exclusion because Mongo reads fewer fields from disk.
       const projection =
         fields === 'minimal'
-          ? { _id: 0, id: 1, channelId: 1, title: 1, startTime: 1, endTime: 1, category: 1, type: 1 }
+          ? { _id: 0, id: 1, channelId: 1, title: 1, startTime: 1, endTime: 1, category: 1, type: 1, tmdbId: 1 }
           : undefined;
 
       // Use overlap detection: program overlaps with day if:

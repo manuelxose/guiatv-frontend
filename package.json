@@ -28,6 +28,7 @@
     "lint:frontend": "npm run lint -w apps/frontend"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@playwright/test": "^1.62.1",
     "typescript": "5.8.3",
