@@ -64,7 +64,6 @@
       </div>
     </section>
 
-    @defer (hydrate on viewport) {
     <section *ngIf="tonight().length" class="home-page__module">
       <app-unified-section-header
         eyebrow="Esta noche"
@@ -178,6 +177,5 @@
         ></app-unified-program-card>
       </div>
     </section>
-    }
   </ng-container>
 </app-unified-portal-shell>
