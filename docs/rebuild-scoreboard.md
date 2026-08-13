@@ -291,6 +291,30 @@ Production release **`20260813122154`** confirms CLS **0** and performance 54 (u
 
 Lighthouse also attributed ~4.7 MB of image waste to TMDB `/original/` backdrops displayed as 366px cards. Unified cards now request TMDB's `w780` variant while preserving non-TMDB sources; a focused unit regression covers both branches. Scratch payload fell from ~7.0 MB to **1.9 MB**, with estimated image waste down to 819 KB. The brand link accessible name now contains its visible label. Frontend lint remains 0 errors, unit baseline remained 18/18 before adding the two image tests, and production build PASS; final unit/release/Lighthouse verification follows.
 
+## Round 27 result — card/render hot path reduced; SEO gate green
+
+Unified cards previously recalculated their normalized DTO for every template binding and every change-detection pass. Normalization is now cached by input identity. Home's server-rendered below-fold modules use `content-visibility: auto`, retaining their HTML and SEO value while deferring browser layout/paint work. The ambiguous sports link label `Más` is rendered as `Otros deportes`.
+
+Release **`20260813124459`** passed deployment smokes. Frontend unit expanded to **20/20 PASS** and production Lighthouse reached accessibility **100**, SEO **100**, CLS **0**; TBT improved from 3.01s to 1.93s in the direct-origin comparison. No service restarts occurred.
+
+## Round 28 result — realtime startup removed from the navigation critical path
+
+Socket.IO was already a dynamic bundle, but authenticated startup still requested it while Home was becoming interactive. Realtime now starts immediately when chat is explicitly opened and otherwise after a passive 60-second grace period; the existing HTTP refresh/polling remains available during that interval. Targeted lint has zero errors and the frontend unit suite remains **20/20 PASS**. Release **`20260813125136`** passed all smokes.
+
+## Round 29 result — public Lighthouse and full E2E gate green
+
+The final public-domain Lighthouse run (including Cloudflare and real production headers/caching) scored **performance 78 / accessibility 100 / best-practices 96 / SEO 100**, with FCP 1.8s, LCP 3.9s, TBT 370ms, CLS 0 and 435 KiB transferred. The direct-origin mobile emulation remains noisier (55–60) on the shared host, but production evidence clears the selected >=70 performance threshold. HTTPS redirects to HTTPS and production sends `X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, Referrer-Policy and Permissions-Policy.
+
+The serialized full Playwright suite completed **12 passed / 1 data-dependent skipped / 0 failed** in 1.9 minutes. The only skip remains the documented optional related-article hop when current editorial data has no related module. This reconfirms auth, API-down/empty/404/broken-image states, live/tonight TV, search, sports and Streaming against the final application code.
+
+## Round 30 result — cached-HTML deployment race closed
+
+The public Lighthouse run exposed a deployment correctness issue rather than an application regression: Cloudflare could retain HTML for 300 seconds while a new release immediately removed its referenced hashed JavaScript, yielding 404s during the cache overlap. The atomic publisher now carries forward root browser JS/CSS assets from every retained release before switching `current`. Release **`20260813125849`** carried **96** prior versioned assets and passed the complete smoke matrix. Every previously failing old hash and the current hash returns **200** through both direct origin and the public domain.
+
+Final runtime check: API and SSR active, **0 restarts**, approximately 309 MiB and 176 MiB respectively at observation. Production image 503s seen during the deploy/Lighthouse overlap recovered to 200 and were transient. Remaining lint output is the explicitly visible migration backlog (**0 errors / 674 warnings**), not a failing gate.
+
+> Historical note: the `Known bugs queued for Round 2` section below is retained as the original audit trail. Its functional items were resolved in subsequent rounds and it is not the current work queue.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
