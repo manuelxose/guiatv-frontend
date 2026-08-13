@@ -1,5 +1,6 @@
 import {
   cpSync,
+  copyFileSync,
   existsSync,
   mkdirSync,
   readdirSync,
@@ -9,6 +10,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
+import { constants as fsConstants } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -104,6 +106,44 @@ function pruneReleases(releasesRoot, keepCount, protectedReleaseIds) {
   }
 }
 
+function carryForwardBrowserAssets(releasesRoot, destinationBrowserRoot, releaseLimit) {
+  const previousReleaseIds = readdirSync(releasesRoot, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        /^\d{14}$/.test(entry.name) &&
+        existsSync(join(releasesRoot, entry.name, 'release.json'))
+    )
+    .map((entry) => entry.name)
+    .sort((a, b) => b.localeCompare(a))
+    .slice(0, releaseLimit);
+
+  let copied = 0;
+  for (const previousReleaseId of previousReleaseIds) {
+    const previousBrowserRoot = join(
+      releasesRoot,
+      previousReleaseId,
+      'apps/frontend/dist/guiatv/browser'
+    );
+    if (!existsSync(previousBrowserRoot)) continue;
+
+    for (const entry of readdirSync(previousBrowserRoot, { withFileTypes: true })) {
+      if (!entry.isFile() || !/\.(?:css|js|mjs)$/.test(entry.name)) continue;
+      try {
+        copyFileSync(
+          join(previousBrowserRoot, entry.name),
+          join(destinationBrowserRoot, entry.name),
+          fsConstants.COPYFILE_EXCL
+        );
+        copied += 1;
+      } catch (error) {
+        if (error?.code !== 'EEXIST') throw error;
+      }
+    }
+  }
+  return copied;
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = resolve(__dirname, '..');
@@ -149,6 +189,11 @@ mkdirSync(join(releaseFrontendRoot, 'scripts'), { recursive: true });
 cpSync(backendDistRoot, join(releaseBackendRoot, 'dist'), { recursive: true });
 cpSync(frontendDistRoot, join(releaseFrontendRoot, 'dist/guiatv'), { recursive: true });
 cpSync(frontendServerScript, join(releaseFrontendRoot, 'scripts/ssr-server.mjs'));
+const carriedBrowserAssetCount = carryForwardBrowserAssets(
+  releasesRoot,
+  join(releaseFrontendRoot, 'dist/guiatv/browser'),
+  Number.isFinite(keepCount) && keepCount > 0 ? keepCount : 5
+);
 
 const metadata = {
   app: 'guiatv',
@@ -157,6 +202,7 @@ const metadata = {
   gitSha: getGitSha(projectRoot),
   backendFingerprint: fingerprintDirectory(backendDistRoot),
   frontendFingerprint: fingerprintDirectory(frontendDistRoot),
+  carriedBrowserAssetCount,
 };
 
 writeFileSync(join(releaseDir, 'release.json'), `${JSON.stringify(metadata, null, 2)}\n`, 'utf8');
@@ -177,3 +223,4 @@ pruneReleases(releasesRoot, Number.isFinite(keepCount) && keepCount > 0 ? keepCo
 console.log(`[publish-release] Published unified release ${releaseId}`);
 console.log(`[publish-release] Current -> ${releaseDir}`);
 console.log(`[publish-release] Metadata -> ${join(releaseDir, 'release.json')}`);
+console.log(`[publish-release] Carried browser assets -> ${carriedBrowserAssetCount}`);
