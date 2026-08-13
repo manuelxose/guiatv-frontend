@@ -192,6 +192,20 @@ Recovered the exact interrupted Claude session (`/root/.claude/projects/-var-www
 
 **Next exact step**: diagnose the remaining SSR 20s stability timeout and recurrent `guiatv-api` OOM pattern with request/heap evidence, then run/fix the full frontend unit and E2E suites. Do not deploy until those gates pass.
 
+## Round 14 result — residual OOM/latency root cause removed in source (not deployed)
+
+Production evidence correlated the SSR timeout with the residual API memory cycle: `guiatv-api` was at 1.48 GiB current / 2.24 GiB peak with 4 restarts, while bot requests for distinct nonexistent `/v2/catalog/slug/program/*` values occupied the process for 9–44 seconds each. During the same contention, normally hot `/v2/tv/read?view=now` requests rose as high as 39 seconds. The Round-8 change had removed an unindexed Mongo regex scan but still hydrated up to 20,000 full airing DTOs into Node for every first-seen slug; negative caching cannot help enumeration traffic where every slug is different.
+
+**Fix**: `CatalogService.findTvReadItemBySlug()` now queries the compound `searchTokens/date` Mongo index for at most 500 candidates and performs the existing exact canonical-slug match only on that bounded set. It no longer calls `TvReadQueryService`'s full day view. Multiple long title tokens preserve lookup compatibility with the legacy slugifier's accent-dropping behavior.
+
+**Evidence**:
+- New regression proves program misses issue exactly two bounded (today/tomorrow) candidate queries, never TMDB/day hydration: backend **36/36 PASS**.
+- Real Mongo explain: existing-title candidate query 46 documents / 70 keys examined; missing-title sample 49 documents / 52 keys examined; ~0.36–0.61s from `mongosh` including client overhead, versus 9–44s observed in the deployed full-day path.
+- Backend build PASS. Frontend production SSR build PASS after the guide request consolidation.
+- Browser guide request consolidation removed duplicate initial signal emissions and reduced the live-view-specific requests to surface + now + day; 240 real grid cells render. The still-deployed backend remains contended until this backend fix ships, so the final SSR latency gate must be re-measured after a gated release.
+
+**Status**: source fix verified, not deployed. Production continues running the prior release and therefore remains monitored/at risk. Next exact step: full QA gates, then safe release + post-deploy latency/restart observation.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
