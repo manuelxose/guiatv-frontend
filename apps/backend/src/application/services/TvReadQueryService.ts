@@ -66,6 +66,20 @@ export function resolveTvReadLimit(
   return Math.max(1, Math.min(policy.max, Math.floor(parsed)));
 }
 
+export function applyTvReadTemporalBounds(
+  query: Record<string, any>,
+  view: TvReadView,
+  reference: Date
+): Record<string, any> {
+  if (view === 'now') {
+    const timestamp = reference.toISOString();
+    query['airing.start'] = { $lte: timestamp };
+    query['airing.end'] = { $gt: timestamp };
+  }
+
+  return query;
+}
+
 export function hydrateTvReadItemRuntime(
   item: TvReadItemDTO,
   reference: Date = new Date()
@@ -350,7 +364,8 @@ export class TvReadQueryService {
       };
     }
 
-    const baseQuery: Record<string, any> = { date };
+    const reference = new Date();
+    const baseQuery = applyTvReadTemporalBounds({ date }, view, reference);
     const andClauses: Record<string, any>[] = [];
 
     if (group) baseQuery['channel.group'] = group;
@@ -383,7 +398,6 @@ export class TvReadQueryService {
       .lean()
       .exec()) as unknown as TvReadItemDTO[];
 
-    const reference = new Date();
     const allMatching = rawItems
       .map((item) => hydrateTvReadItemRuntime(item, reference))
       .filter((item) => isConsumerVisibleTvReadItem(item));

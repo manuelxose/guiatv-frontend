@@ -227,6 +227,10 @@ async function createIndexes() {
       { date: 1, 'channel.group': 1, 'channel.sortOrder': 1, 'airing.start': 1 },
       { name: 'idx_tvread_date_group_sort_start', background: true }
     );
+    await tvReadAiringsCollection.createIndex(
+      { date: 1, 'airing.start': 1, 'airing.end': 1 },
+      { name: 'idx_tvread_date_airing_window', background: true }
+    );
     try { await tvReadAiringsCollection.dropIndex('channel.id_1_date_1_airing.start_1'); } catch { /* not exists */ }
     await tvReadAiringsCollection.createIndex(
       { 'channel.id': 1, date: 1, 'airing.start': 1 },
