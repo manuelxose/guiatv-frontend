@@ -49,10 +49,26 @@ export class PortalHomeFacade {
           })
         )
       ),
-      liveNow: this.tvDataFacade.getLivePrograms({ date: 'today', limit: 8 }),
-      tonight: this.tvDataFacade.getTonightPrograms({ date: 'today', limit: 12 }),
-      sportsNow: this.tvDataFacade.getLiveSports({ date: 'today' }),
-      platforms: this.tvDataFacade.getPlatforms(),
+      // These four TvDataFacade sources previously had no catchError, unlike
+      // every other source in this combineLatest: a single one erroring
+      // (e.g. a genuine backend outage) meant combineLatest itself would
+      // error and never emit again, leaving the home page's loading state
+      // stuck forever - an infinite spinner, caught by e2e/specs/
+      // error-states.spec.ts's "API unavailable" test. Same
+      // catchError-to-safe-default pattern as discovery/editorialHub/
+      // rankings below.
+      liveNow: this.tvDataFacade
+        .getLivePrograms({ date: 'today', limit: 8 })
+        .pipe(catchError(() => of([] as TvReadItemDTO[]))),
+      tonight: this.tvDataFacade
+        .getTonightPrograms({ date: 'today', limit: 12 })
+        .pipe(catchError(() => of([] as TvReadItemDTO[]))),
+      sportsNow: this.tvDataFacade
+        .getLiveSports({ date: 'today' })
+        .pipe(catchError(() => of([] as TvReadItemDTO[]))),
+      platforms: this.tvDataFacade
+        .getPlatforms()
+        .pipe(catchError(() => of([] as CatalogPlatform[]))),
       editorialHub: this.editorialService.getHubState().pipe(
         catchError(() =>
           of({
