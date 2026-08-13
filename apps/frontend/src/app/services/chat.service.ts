@@ -6,7 +6,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { ChatConversation, ChatMessage, UserFriend } from '../interfaces/user.interface';
 import { environment } from '../../environments/environment';
 import { UserService } from './user.service';
-import { io, Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -77,7 +77,7 @@ export class ChatService {
         this.refreshConversations().subscribe();
         this.refreshOnlineUsers().subscribe();
         this.ensureOnlineRefreshPolling();
-        this.connectSocket();
+        void this.connectSocket();
       } else {
         this.disconnectSocket();
         this.clearOnlineRefreshPolling();
@@ -282,7 +282,7 @@ export class ChatService {
     this.socket.emit('chat:typing', { conversationId, isTyping });
   }
 
-  private connectSocket(): void {
+  private async connectSocket(): Promise<void> {
     if (!this.isBrowser) return;
     const token = this.safeGetToken();
     if (!token) return;
@@ -292,6 +292,13 @@ export class ChatService {
 
     const socketUrl = this.resolveSocketUrl();
     this.realtimeModeSubject.next('connecting');
+    const { io } = await import('socket.io-client');
+    // Authentication may have changed while the optional realtime bundle was
+    // loading. Do not establish a stale connection in that case.
+    if (!this.safeGetToken()) {
+      this.realtimeModeSubject.next('idle');
+      return;
+    }
     this.socket = io(socketUrl, {
       path: '/v2/ws',
       auth: { token },

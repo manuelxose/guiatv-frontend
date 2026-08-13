@@ -9,7 +9,7 @@
 >
   <a [routerLink]="card.detailPath" class="program-card__tap" (click)="onSelect()">
     <div class="program-card__media" [class.program-card__media--empty]="!hasVisual">
-      <img *ngIf="hasVisual" [src]="card.image" [alt]="card.title" [loading]="variant === 'live' ? 'eager' : 'lazy'" />
+      <img *ngIf="hasVisual" [src]="imageUrl" [alt]="card.title" [loading]="variant === 'live' ? 'eager' : 'lazy'" />
       <div class="program-card__gradient"></div>
       <div class="program-card__badges">
         <span *ngFor="let badge of card.badges.slice(0, 3)" class="program-card__badge">
