@@ -47,12 +47,12 @@ verify_frontend_build() {
     exit 1
   fi
 
-  if ! find "${FRONTEND_BUILD_DIR}/browser" -type f | grep -q .; then
+  if [ -z "$(find "${FRONTEND_BUILD_DIR}/browser" -type f -print -quit)" ]; then
     echo "Browser build output is empty"
     exit 1
   fi
 
-  if ! find "${FRONTEND_BUILD_DIR}/server" -type f | grep -q .; then
+  if [ -z "$(find "${FRONTEND_BUILD_DIR}/server" -type f -print -quit)" ]; then
     echo "Server build output is empty"
     exit 1
   fi
