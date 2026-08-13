@@ -59,6 +59,38 @@
           <span>{{ currentStatusLabel }}</span>
         </a>
 
+        <button
+          type="button"
+          class="unified-top-nav__chrome-button unified-top-nav__theme"
+          (click)="cycleTheme()"
+          [attr.aria-label]="themeLabel"
+          [attr.title]="themeLabel"
+        >
+          @switch (theme.mode()) {
+            @case ('dark') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <circle cx="12" cy="12" r="4.2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></circle>
+                <path d="M12 2.5v2M12 19.5v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2.5 12h2M19.5 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+            }
+            @case ('light') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+            }
+            @default {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <rect x="3.5" y="4.5" width="17" height="12" rx="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></rect>
+                <path d="M12 16.5V20M8.5 20h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+            }
+          }
+        </button>
+
+        @if (isAuthenticated()) {
+        <app-notification-bell></app-notification-bell>
+        }
+
         <a
           [routerLink]="isAuthenticated() ? profilePath : loginPath"
           class="unified-top-nav__account"

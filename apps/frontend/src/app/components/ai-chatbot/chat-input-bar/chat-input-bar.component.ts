@@ -32,7 +32,7 @@ import { ChatbotRequestState, ChatbotSessionState } from '../../../interfaces/ch
           type="button"
           (click)="send()"
           [disabled]="disabled || !draft.trim()"
-          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-[var(--portal-text)] transition-all duration-150 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-white transition-all duration-150 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
           aria-label="Enviar mensaje"
         >
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -54,7 +54,7 @@ import { ChatbotRequestState, ChatbotSessionState } from '../../../interfaces/ch
             {{ action.label }}
           </button>
         </div>
-        <span class="text-[10px] text-slate-600">Shift+Enter para salto de línea</span>
+        <span class="text-[10px] text-[var(--portal-text-faint)]">Shift+Enter para salto de línea</span>
       </div>
     </div>
   `,

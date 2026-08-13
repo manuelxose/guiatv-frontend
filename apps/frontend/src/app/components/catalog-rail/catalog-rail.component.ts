@@ -12,17 +12,17 @@ import { CatalogCardComponent } from '../catalog-card/catalog-card.component';
     <section class="space-y-4">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p *ngIf="eyebrow" class="text-[11px] uppercase tracking-[0.35em] text-slate-500">
+          <p *ngIf="eyebrow" class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">
             {{ eyebrow }}
           </p>
-          <h2 class="text-2xl font-semibold text-white">{{ title }}</h2>
-          <p *ngIf="subtitle" class="mt-1 text-sm text-slate-400">{{ subtitle }}</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ title }}</h2>
+          <p *ngIf="subtitle" class="mt-1 text-sm text-[var(--portal-text-muted)]">{{ subtitle }}</p>
         </div>
         <a
           *ngIf="linkLabel && linkPath"
           [routerLink]="linkPath"
           [queryParams]="linkQueryParams"
-          class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+          class="min-h-[40px] rounded-full border border-[var(--portal-border)] px-4 py-2 text-sm font-semibold text-[var(--portal-text-soft)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
         >
           {{ linkLabel }}
         </a>

@@ -23,7 +23,7 @@ const COVER_GRADIENTS = [
   template: `
     <a
       [routerLink]="profilePath"
-      class="group block overflow-hidden rounded-[1.6rem] border border-slate-800/80 bg-slate-950/70 transition-colors hover:border-slate-600"
+      class="group block overflow-hidden rounded-[1.6rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] transition-colors hover:border-[var(--portal-border-strong)]"
     >
       <!-- Cover area -->
       <div class="relative aspect-[16/10] overflow-hidden">
@@ -55,7 +55,7 @@ const COVER_GRADIENTS = [
           [ngClass]="getGradientClass()"
         >
           <div class="h-full w-full flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white/15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[var(--portal-text)]/15" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
             </svg>
           </div>
@@ -67,19 +67,19 @@ const COVER_GRADIENTS = [
       </div>
 
       <div class="space-y-3 p-5">
-        <h3 class="text-lg font-semibold leading-tight text-white group-hover:text-red-200 line-clamp-1">
+        <h3 class="text-lg font-semibold leading-tight text-[var(--portal-text)] group-hover:text-red-200 line-clamp-1">
           {{ list?.title }}
         </h3>
-        <p *ngIf="list?.description" class="line-clamp-2 text-sm text-slate-400">
+        <p *ngIf="list?.description" class="line-clamp-2 text-sm text-[var(--portal-text-muted)]">
           {{ list!.description }}
         </p>
         <div *ngIf="list?.user" class="flex items-center gap-2">
           <img
             [src]="list!.user!.avatar"
             [alt]="list!.user!.name"
-            class="h-6 w-6 rounded-full object-cover border border-slate-700"
+            class="h-6 w-6 rounded-full object-cover border border-[var(--portal-border)]"
           />
-          <span class="text-xs text-slate-400 truncate">{{ list!.user!.name }}</span>
+          <span class="text-xs text-[var(--portal-text-muted)] truncate">{{ list!.user!.name }}</span>
         </div>
       </div>
     </a>

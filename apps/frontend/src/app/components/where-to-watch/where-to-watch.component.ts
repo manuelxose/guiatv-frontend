@@ -24,7 +24,7 @@ import {
 
       <ng-container *ngIf="!isLoading && providers as data">
         <div *ngIf="data.flatrate?.length">
-          <p class="mb-2 text-[10px] uppercase tracking-widest text-slate-500">
+          <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--portal-text-muted)]">
             Incluido en suscripcion
           </p>
           <div class="flex flex-wrap gap-2">
@@ -33,7 +33,7 @@ import {
               [href]="provider.deepLink || data.tmdbLink"
               target="_blank"
               rel="noopener"
-              class="flex items-center gap-2 rounded-xl border border-slate-700/60 bg-slate-800/80 px-3 py-2 no-underline transition-all hover:border-slate-500 active:scale-95"
+              class="flex items-center gap-2 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-3 py-2 no-underline transition-all hover:border-[var(--portal-border-strong)] active:scale-95"
             >
               <img
                 [src]="resolveLogo(provider)"
@@ -41,13 +41,13 @@ import {
                 class="h-6 w-6 rounded object-contain"
                 loading="lazy"
               />
-              <span class="text-xs font-medium text-white">{{ provider.name }}</span>
+              <span class="text-xs font-medium text-[var(--portal-text)]">{{ provider.name }}</span>
             </a>
           </div>
         </div>
 
         <div *ngIf="data.free?.length">
-          <p class="mb-2 text-[10px] uppercase tracking-widest text-slate-500">Gratis</p>
+          <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--portal-text-muted)]">Gratis</p>
           <div class="flex flex-wrap gap-2">
             <a
               *ngFor="let provider of data.free"
@@ -62,13 +62,13 @@ import {
                 class="h-6 w-6 rounded object-contain"
                 loading="lazy"
               />
-              <span class="text-xs font-medium text-white">{{ provider.name }}</span>
+              <span class="text-xs font-medium text-[var(--portal-text)]">{{ provider.name }}</span>
             </a>
           </div>
         </div>
 
         <div *ngIf="data.rent?.length || data.buy?.length">
-          <p class="mb-2 text-[10px] uppercase tracking-widest text-slate-500">
+          <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--portal-text-muted)]">
             Alquilar / Comprar
           </p>
           <div class="flex flex-wrap gap-2">
@@ -85,15 +85,15 @@ import {
                 class="h-6 w-6 rounded object-contain"
                 loading="lazy"
               />
-              <span class="text-xs font-medium text-white">{{ provider.name }}</span>
-              <span *ngIf="provider.price" class="text-[10px] text-slate-400">
+              <span class="text-xs font-medium text-[var(--portal-text)]">{{ provider.name }}</span>
+              <span *ngIf="provider.price" class="text-[10px] text-[var(--portal-text-muted)]">
                 {{ provider.price }}
               </span>
             </a>
           </div>
         </div>
 
-        <div *ngIf="!hasAnyProvider(data)" class="text-xs italic text-slate-500">
+        <div *ngIf="!hasAnyProvider(data)" class="text-xs italic text-[var(--portal-text-muted)]">
           No disponible en plataformas de streaming en Espana actualmente
         </div>
 
@@ -102,7 +102,7 @@ import {
           [href]="data.tmdbLink"
           target="_blank"
           rel="noopener"
-          class="block text-[10px] text-slate-500 hover:text-slate-300"
+          class="block text-[10px] text-[var(--portal-text-muted)] hover:text-[var(--portal-text-soft)]"
         >
           Ver todas las opciones en JustWatch ->
         </a>

@@ -76,7 +76,7 @@ export class StreamingComparisonComponent implements OnInit {
     if (tone === 'caution') {
       return 'border border-amber-500/30 bg-amber-500/10 text-amber-100';
     }
-    return 'border border-slate-700 bg-slate-900/70 text-slate-300';
+    return 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]';
   }
 
   private toComparisonViewModel(entry: StreamingComparisonEntry): StreamingComparisonViewModel {

@@ -17,7 +17,7 @@ import { LoginModalService } from '../../services/login-modal.service';
       tabindex="-1"
     >
       <section
-        class="w-full max-w-md rounded-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
+        class="w-full max-w-md rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="login-modal-title"
@@ -26,28 +26,28 @@ import { LoginModalService } from '../../services/login-modal.service';
         >
         <div class="flex items-start justify-between gap-3">
           <div>
-            <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Comunidad Guía TV</p>
-            <h2 id="login-modal-title" class="text-xl font-semibold text-white mt-1">
+            <p class="text-xs uppercase tracking-[0.18em] text-[var(--portal-text-muted)]">Comunidad Guía TV</p>
+            <h2 id="login-modal-title" class="text-xl font-semibold text-[var(--portal-text)] mt-1">
               Inicia sesión para seguir usuarios
             </h2>
           </div>
           <button
             type="button"
             (click)="cancel()"
-            class="min-h-[36px] min-w-[36px] rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[36px] min-w-[36px] rounded-lg border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             aria-label="Cerrar login"
           >
             ✕
           </button>
         </div>
 
-        <p class="text-sm text-slate-400 mt-3">
+        <p class="text-sm text-[var(--portal-text-muted)] mt-3">
           Tu acción pendiente se aplicará automáticamente tras autenticarte.
         </p>
 
         <form class="space-y-3 mt-4" (ngSubmit)="onPasswordLogin()">
           <div>
-            <label for="modal-login-email" class="text-xs text-slate-400 uppercase tracking-wide">Email</label>
+            <label for="modal-login-email" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wide">Email</label>
             <input
               id="modal-login-email"
               name="email"
@@ -55,12 +55,12 @@ import { LoginModalService } from '../../services/login-modal.service';
               required
               autocomplete="email"
               [(ngModel)]="credentials.email"
-              class="mt-1.5 w-full min-h-[44px] rounded-lg border border-slate-700 bg-slate-950/60 px-3 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="mt-1.5 w-full min-h-[44px] rounded-lg border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               placeholder="tu@email.com"
             />
           </div>
           <div>
-            <label for="modal-login-password" class="text-xs text-slate-400 uppercase tracking-wide">Contraseña</label>
+            <label for="modal-login-password" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wide">Contraseña</label>
             <input
               id="modal-login-password"
               name="password"
@@ -68,7 +68,7 @@ import { LoginModalService } from '../../services/login-modal.service';
               required
               autocomplete="current-password"
               [(ngModel)]="credentials.password"
-              class="mt-1.5 w-full min-h-[44px] rounded-lg border border-slate-700 bg-slate-950/60 px-3 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="mt-1.5 w-full min-h-[44px] rounded-lg border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               placeholder="********"
             />
           </div>
@@ -86,7 +86,7 @@ import { LoginModalService } from '../../services/login-modal.service';
           type="button"
           (click)="onGoogleLogin()"
           [disabled]="loading"
-          class="w-full mt-3 min-h-[44px] rounded-lg border border-slate-700 bg-white text-slate-900 font-semibold hover:bg-slate-100 disabled:opacity-60"
+          class="w-full mt-3 min-h-[44px] rounded-lg border border-[var(--portal-border)] bg-[var(--portal-surface)] text-[var(--portal-text)] font-semibold hover:bg-[var(--portal-surface-strong)] disabled:opacity-60"
         >
           {{ loading ? 'Conectando...' : 'Continuar con Google' }}
         </button>

@@ -21,7 +21,7 @@ import { CommonModule } from '@angular/common';
           <button
             type="button"
             (click)="toggleChooser()"
-            class="min-h-[34px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:border-slate-500"
+            class="min-h-[34px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
           >
             Cambiar
           </button>
@@ -39,7 +39,7 @@ import { CommonModule } from '@angular/common';
           *ngIf="!isChooserOpen"
           type="button"
           (click)="declined.emit()"
-          class="min-h-[34px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:border-slate-500"
+          class="min-h-[34px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
         >
           No incluir autonómicas
         </button>

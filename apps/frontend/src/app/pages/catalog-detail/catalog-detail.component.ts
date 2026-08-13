@@ -34,7 +34,7 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
     ShareButtonsComponent,
   ],
   template: `
-    <div class="min-h-screen bg-[#081018] text-slate-100">
+    <div class="min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]">
       <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
       <div *ngIf="loading" class="flex min-h-[60vh] items-center justify-center">
         <div class="h-12 w-12 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
@@ -44,7 +44,7 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
         <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
           <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
         </div>
-        <section class="relative overflow-hidden border-b border-slate-800/80">
+        <section class="relative overflow-hidden border-b border-[var(--portal-border)]">
           <div class="absolute inset-0">
             <img
               *ngIf="content.backdrop || content.image"
@@ -67,17 +67,17 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                   </span>
                   <span
                     *ngFor="let platform of content.primaryPlatforms.slice(0, 3)"
-                    class="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-[11px] font-semibold text-slate-200"
+                    class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 py-1 text-[11px] font-semibold text-[var(--portal-text-soft)]"
                   >
                     {{ platform }}
                   </span>
                 </div>
 
                 <div>
-                  <h1 class="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
+                  <h1 class="max-w-4xl text-4xl font-black tracking-tight text-[var(--portal-text)] md:text-6xl">
                     {{ content.title }}
                   </h1>
-                  <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-300">
+                  <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-[var(--portal-text-soft)]">
                     <span *ngIf="content.releaseYear">{{ content.releaseYear }}</span>
                     <span *ngIf="content.durationMinutes">{{ content.durationMinutes }} min</span>
                     <span *ngIf="content.channel?.name">{{ content.channel?.name }}</span>
@@ -88,14 +88,14 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                   </div>
                 </div>
 
-                <p class="max-w-3xl text-base leading-8 text-slate-300">
+                <p class="max-w-3xl text-base leading-8 text-[var(--portal-text-soft)]">
                   {{ content.synopsis || 'Sinopsis no disponible.' }}
                 </p>
 
                 <div class="flex flex-wrap gap-2">
                   <span
                     *ngFor="let genre of content.genres"
-                    class="rounded-full border border-slate-700 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-slate-200"
+                    class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 py-1 text-xs font-semibold text-[var(--portal-text-soft)]"
                   >
                     {{ genre }}
                   </span>
@@ -105,7 +105,7 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                   <app-share-buttons [url]="shareUrl" [title]="content.title"></app-share-buttons>
                 </div>
 
-                <div class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/75 p-4">
+                <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
                   <app-interaction-buttons
                     [itemId]="content.catalogId"
                     [title]="content.title"
@@ -120,8 +120,8 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
               </div>
 
               <aside class="space-y-6">
-                <div class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/80 p-6">
-                  <p class="mb-3 text-[11px] uppercase tracking-[0.32em] text-slate-500">Dónde ver</p>
+                <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
+                  <p class="mb-3 text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Dónde ver</p>
                   <app-where-to-watch
                     [providersData]="content.whereToWatch"
                     [tmdbId]="content.tmdbId"
@@ -129,20 +129,20 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                   ></app-where-to-watch>
                 </div>
 
-                <div class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/80 p-6">
-                  <p class="mb-4 text-[11px] uppercase tracking-[0.32em] text-slate-500">Ficha</p>
-                  <div class="space-y-3 text-sm text-slate-300">
-                    <p *ngIf="content.director"><span class="text-slate-500">Dirección:</span> {{ content.director }}</p>
+                <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
+                  <p class="mb-4 text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Ficha</p>
+                  <div class="space-y-3 text-sm text-[var(--portal-text-soft)]">
+                    <p *ngIf="content.director"><span class="text-[var(--portal-text-muted)]">Dirección:</span> {{ content.director }}</p>
                     <p *ngIf="content.socialSummary?.friendsWhoWatched">
-                      <span class="text-slate-500">Tus amigos:</span>
+                      <span class="text-[var(--portal-text-muted)]">Tus amigos:</span>
                       {{ content.socialSummary?.friendsWhoWatched }} lo han visto
                     </p>
                     <p *ngIf="content.userInteraction?.status">
-                      <span class="text-slate-500">Tu estado:</span>
+                      <span class="text-[var(--portal-text-muted)]">Tu estado:</span>
                       {{ humanStatus(content.userInteraction?.status || '') }}
                     </p>
                     <p *ngIf="content.userInteraction?.rating">
-                      <span class="text-slate-500">Tu nota:</span>
+                      <span class="text-[var(--portal-text-muted)]">Tu nota:</span>
                       {{ content.userInteraction?.rating }}/10
                     </p>
                   </div>
@@ -156,15 +156,15 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
           *ngIf="content.airings?.length"
           class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8"
         >
-          <div class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/75 p-6">
-            <p class="mb-4 text-[11px] uppercase tracking-[0.32em] text-slate-500">Próximas emisiones</p>
+          <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
+            <p class="mb-4 text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Próximas emisiones</p>
             <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <div
                 *ngFor="let airing of content.airings"
-                class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4"
+                class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
               >
-                <p class="text-sm font-semibold text-white">{{ airing.channelName }}</p>
-                <p class="mt-1 text-xs text-slate-400">
+                <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.channelName }}</p>
+                <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
                   {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
                 </p>
               </div>
@@ -176,15 +176,15 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
           *ngIf="content.cast?.length"
           class="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8"
         >
-          <div class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/75 p-6">
-            <p class="mb-4 text-[11px] uppercase tracking-[0.32em] text-slate-500">Reparto</p>
+          <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
+            <p class="mb-4 text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Reparto</p>
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
               <div
                 *ngFor="let cast of content.cast"
-                class="rounded-2xl border border-slate-800 bg-slate-900/80 p-4"
+                class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
               >
-                <p class="font-semibold text-white">{{ cast.name }}</p>
-                <p class="mt-1 text-xs text-slate-400">{{ cast.character || 'Reparto' }}</p>
+                <p class="font-semibold text-[var(--portal-text)]">{{ cast.name }}</p>
+                <p class="mt-1 text-xs text-[var(--portal-text-muted)]">{{ cast.character || 'Reparto' }}</p>
               </div>
             </div>
           </div>
@@ -195,8 +195,8 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
           class="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8"
         >
           <div class="mb-5">
-            <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Relacionados</p>
-            <h2 class="mt-1 text-2xl font-semibold text-white">Sigue explorando</h2>
+            <p class="text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Relacionados</p>
+            <h2 class="mt-1 text-2xl font-semibold text-[var(--portal-text)]">Sigue explorando</h2>
           </div>
           <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             <app-catalog-card
@@ -209,14 +209,14 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
 
       <ng-template #emptyState>
         <div *ngIf="!loading" class="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-6 text-center">
-          <p class="text-[11px] uppercase tracking-[0.32em] text-slate-500">Contenido no disponible</p>
-          <h1 class="mt-3 text-3xl font-black tracking-tight text-white">No hemos podido cargar esta ficha</h1>
-          <p class="mt-3 text-sm leading-7 text-slate-400">
+          <p class="text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Contenido no disponible</p>
+          <h1 class="mt-3 text-3xl font-black tracking-tight text-[var(--portal-text)]">No hemos podido cargar esta ficha</h1>
+          <p class="mt-3 text-sm leading-7 text-[var(--portal-text-muted)]">
             Puede que el contenido ya no esté disponible o que la URL antigua no tenga una correspondencia válida.
           </p>
           <a
             routerLink="/programacion-tv/que-ver-hoy"
-            class="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-full border border-slate-700 bg-slate-900/80 px-5 text-sm font-semibold text-white"
+            class="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-5 text-sm font-semibold text-[var(--portal-text)]"
           >
             Volver a explorar
           </a>

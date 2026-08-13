@@ -35,7 +35,7 @@ type ExpandState = 'compact' | 'partial' | 'full';
             *ngIf="allRecommendations.length > 2"
             type="button"
             (click)="carouselMode = !carouselMode"
-            class="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] text-[var(--portal-text-muted)] transition-colors hover:border-slate-500 hover:text-[var(--portal-text)]"
+            class="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] text-[var(--portal-text-muted)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
             [attr.aria-label]="carouselMode ? 'Vista lista' : 'Vista carrusel'"
           >
             <svg *ngIf="!carouselMode" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@ type ExpandState = 'compact' | 'partial' | 'full';
               *ngIf="expandState === 'full'"
               type="button"
               (click)="expandState = 'compact'"
-              class="min-h-[28px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-3 text-[10px] font-medium text-[var(--portal-text-muted)] transition-colors hover:border-slate-500 hover:text-[var(--portal-text)]"
+              class="min-h-[28px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-3 text-[10px] font-medium text-[var(--portal-text-muted)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
             >
               Ver menos
             </button>

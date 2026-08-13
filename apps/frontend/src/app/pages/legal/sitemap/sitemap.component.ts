@@ -84,10 +84,10 @@ export class SitemapComponent {
   }
 
   getPriorityColor(priority: number | undefined): string {
-    if (!priority) return 'text-gray-400';
+    if (!priority) return 'text-[var(--portal-text-muted)]';
     if (priority >= 0.8) return 'text-green-400';
     if (priority >= 0.5) return 'text-yellow-400';
-    return 'text-gray-400';
+    return 'text-[var(--portal-text-muted)]';
   }
 
   getPriorityBg(priority: number | undefined): string {

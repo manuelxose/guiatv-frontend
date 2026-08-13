@@ -71,7 +71,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             placeholder="Buscar conversaciones..."
             class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[var(--portal-border)]
                    bg-[var(--portal-bg)] text-[var(--portal-text)]
-                   placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-red-500/50 focus:border-red-500/50"
+                   placeholder:text-[var(--portal-text-faint)] focus:outline-none focus:ring-1 focus:ring-red-500/50 focus:border-red-500/50"
           />
         </div>
       </div>

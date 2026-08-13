@@ -11,7 +11,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
   imports: [CommonModule, RouterModule, InteractionButtonsComponent],
   template: `
     <article
-      class="catalog-card group relative overflow-hidden rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 shadow-[0_16px_32px_rgba(0,0,0,0.28)]"
+      class="catalog-card group relative overflow-hidden rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] shadow-[0_16px_32px_rgba(0,0,0,0.28)]"
       [ngClass]="compact ? 'min-w-[220px]' : 'h-full'"
       [attr.data-vertical]="vertical"
     >
@@ -19,7 +19,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
         [routerLink]="detailLink"
         class="block"
       >
-        <div class="relative aspect-[16/10] overflow-hidden bg-slate-900">
+        <div class="relative aspect-[16/10] overflow-hidden bg-[var(--portal-surface)]">
           <img
             *ngIf="item?.backdrop || item?.image; else imageFallback"
             [src]="item?.backdrop || item?.image"
@@ -28,7 +28,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
             loading="lazy"
           />
           <ng-template #imageFallback>
-            <div class="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(239,68,68,0.18),_rgba(15,23,42,0.96))] text-xs font-semibold uppercase tracking-[0.25em] text-slate-300">
+            <div class="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(239,68,68,0.18),_rgba(15,23,42,0.96))] text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-soft)]">
               Guia TV
             </div>
           </ng-template>
@@ -64,13 +64,13 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
             </span>
             <span
               *ngIf="item?.channel?.name && !item?.liveNow"
-              class="rounded-full border border-slate-600/80 bg-slate-900/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-200"
+              class="rounded-full border border-[var(--portal-border-strong)] bg-[var(--portal-surface-soft)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--portal-text-soft)]"
             >
               {{ item?.channel?.name }}
             </span>
             <span
               *ngIf="item?.primaryPlatforms?.length"
-              class="rounded-full border border-slate-700/80 bg-slate-950/80 px-2.5 py-1 text-[10px] font-semibold text-slate-100"
+              class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-2.5 py-1 text-[10px] font-semibold text-[var(--portal-text)]"
             >
               {{ item?.primaryPlatforms?.[0] }}
             </span>
@@ -80,7 +80,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
             <div class="min-w-0">
               <p
                 *ngIf="item?.start"
-                class="text-[11px] font-medium uppercase tracking-[0.22em] text-slate-200/90"
+                class="text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--portal-text-soft)]/90"
               >
                 {{ formatTime(item?.start) }}
                 <span *ngIf="item?.end"> - {{ formatTime(item?.end) }}</span>
@@ -105,18 +105,18 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
           <div class="flex flex-wrap gap-2">
             <span
               *ngFor="let genre of (item?.genres || []).slice(0, 2)"
-              class="rounded-full border border-slate-800 bg-slate-900/90 px-2.5 py-1 text-[10px] font-medium text-slate-300"
+              class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface)]/90 px-2.5 py-1 text-[10px] font-medium text-[var(--portal-text-soft)]"
             >
               {{ genre }}
             </span>
           </div>
           <a
             [routerLink]="detailLink"
-            class="line-clamp-2 block text-base font-semibold leading-tight text-white transition-colors hover:text-red-300"
+            class="line-clamp-2 block text-base font-semibold leading-tight text-[var(--portal-text)] transition-colors hover:text-red-300"
           >
             {{ item?.title }}
           </a>
-          <p class="line-clamp-2 text-sm text-slate-400">
+          <p class="line-clamp-2 text-sm text-[var(--portal-text-muted)]">
             {{ item?.synopsis || buildSummary(item) }}
           </p>
         </div>
@@ -124,7 +124,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
         <div *ngIf="item?.primaryPlatforms?.length" class="flex flex-wrap gap-2">
           <span
             *ngFor="let platform of item?.primaryPlatforms?.slice(0, 3)"
-            class="rounded-full border border-slate-700/80 bg-slate-900/70 px-2.5 py-1 text-[11px] text-slate-200"
+            class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-2.5 py-1 text-[11px] text-[var(--portal-text-soft)]"
           >
             {{ platform }}
           </span>
@@ -136,7 +136,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
           </span>
         </div>
 
-        <div *ngIf="showActions && !compact" class="border-t border-slate-800 pt-3">
+        <div *ngIf="showActions && !compact" class="border-t border-[var(--portal-border)] pt-3">
           <app-interaction-buttons
             [itemId]="item.catalogId"
             [title]="item.title"

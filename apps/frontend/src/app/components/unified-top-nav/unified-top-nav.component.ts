@@ -12,7 +12,9 @@ import { Params } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { APP_PATHS } from '../../config/route-map';
 import { PORTAL_ICON_PATHS, PORTAL_PRIMARY_DESTINATIONS } from '../../config/portal-navigation.config';
+import { ThemeService } from '../../services/theme.service';
 import { ViewportService } from '../../services/viewport.service';
+import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 import { UnifiedSearchComponent } from '../unified-search/unified-search.component';
 
 export interface UnifiedTopNavTab {
@@ -34,7 +36,7 @@ export interface UnifiedTopNavShortcut {
 @Component({
   selector: 'app-unified-top-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule, UnifiedSearchComponent],
+  imports: [CommonModule, RouterModule, UnifiedSearchComponent, NotificationBellComponent],
   templateUrl: './unified-top-nav.component.html',
   styleUrl: './unified-top-nav.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +45,7 @@ export class UnifiedTopNavComponent {
   readonly appPaths = APP_PATHS;
   private readonly viewport = inject(ViewportService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  readonly theme = inject(ThemeService);
   readonly activeTab = input<UnifiedTopNavTab['id'] | null>(null);
   readonly searchQuery = input('');
   readonly isAuthenticated = input(false);
@@ -96,5 +99,20 @@ export class UnifiedTopNavComponent {
 
   trackByTab(_index: number, tab: UnifiedTopNavTab): string {
     return tab.id;
+  }
+
+  cycleTheme(): void {
+    this.theme.cycle();
+  }
+
+  get themeLabel(): string {
+    const mode = this.theme.mode();
+    if (mode === 'dark') {
+      return 'Tema oscuro — cambiar a sistema';
+    }
+    if (mode === 'light') {
+      return 'Tema claro — cambiar a oscuro';
+    }
+    return 'Tema según sistema — cambiar a claro';
   }
 }

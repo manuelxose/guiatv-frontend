@@ -7,7 +7,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="flex items-center gap-2 flex-wrap">
-      <span class="text-xs text-slate-500 uppercase tracking-wider mr-1">Compartir</span>
+      <span class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider mr-1">Compartir</span>
 
       <!-- Twitter/X -->
       <a
@@ -105,7 +105,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
   `,
   styles: [`
     .share-btn {
-      @apply w-8 h-8 rounded-full bg-slate-800/60 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all duration-200 hover:scale-110;
+      @apply w-8 h-8 rounded-full bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-surface-strong)] flex items-center justify-center text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] transition-all duration-200 hover:scale-110;
     }
   `],
 })
