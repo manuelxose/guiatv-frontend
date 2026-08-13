@@ -231,6 +231,12 @@ The search API was returning 200 with real items in 0.8–2 seconds, but the OnP
 
 **Verification**: focused search journey **1/1 PASS**; the two data-timing failures from the post-release full run (broken-image resilience and tonight/channel filtering) then passed **6/6** together; frontend unit suite remains **18/18 PASS**. Round 14's deployed slug fix remains effective (program misses now milliseconds rather than tens of seconds), with zero API restarts since release; memory remains under observation because its post-release peak is still high.
 
+## Round 18 result — full E2E gate green; final release active
+
+Published unified release **`20260813104914`** after all deploy smokes passed. The full Playwright suite, serialized to avoid artificial host pressure, completed with **12 passed / 1 data-dependent skipped / 0 failed** in 2.5 minutes. The skipped editorial continuation is intentional: the selected real article had no related-post module, so that optional final hop cannot be exercised against current content. All other brief journeys, including search suggestions/detail, live and tonight TV, Streaming availability, sports, auth, API-down, empty data, both 404 states and broken images passed.
+
+**Current release evidence**: frontend unit **18/18 PASS**; backend unit **36/36 PASS**; production SSR build and deployment smoke matrix PASS. The API's bounded missing-program-slug path is live and avoids the former 20k-item hydration. No API restart occurred during the post-fix full suite. This closes the functional E2E gate; sustained memory observation and the pre-existing broad frontend lint backlog remain separate hardening work and are not represented as complete.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
