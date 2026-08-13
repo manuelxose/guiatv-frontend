@@ -149,6 +149,22 @@ The `test-infra-builder` agent (a788855d903e31eb8) finally delivered a real, sub
 **Still open, honestly**: the specific E2E assertion that surfaced the spinner bug (`error-states.spec.ts`'s "API unavailable" test) *still fails* after the fix, confirmed even after clearing all Angular build caches to rule out staleness. The `home-page__loading` section remains visible under the full-API-abort scenario for a reason not yet determined - possibly a different/additional stuck-skeleton source elsewhere on the page. Not spending further unbounded time on this single assertion right now; tracked as open rather than claimed fixed.
 
 **E2E overall status**: best clean run 3 passed/10 failed; the agent's own repeated runs ranged 1-3 passed depending on host load at that moment (independently corroborates this session's host-resource-pressure findings: it directly observed backend CPU at 131%, host memory 5-6.4/7.8GB used, up to 3GB swapped). Not fully green. Backend unit tests: 35/35 pass, backend lint clean.
+
+## Round 12 result — FOURTH incident: mongod OOM-killed (no restart policy), plus two real sitemap bugs
+
+**Incident, reported by a teammate agent (seo-validator), verified directly, fixed**: `mongod` was OOM-killed at 2026-08-13 02:20:07 CEST (`dmesg`: `oom-kill:...task=mongod,pid=899`, 2.7G memory peak / 1.8G swap peak). Unlike `guiatv-api`/`guiatv-ssr`, the vendor `mongod.service` unit ships **no `Restart=` directive at all** - it stayed down until manually restarted (`systemctl start mongod`, confirmed recovery: `guiatv-api` auto-reconnected, production `/sitemap.xml` and `/` both back to 200 within ~10s). Full site was down (502) for the outage window.
+
+**Hardening applied**:
+- `/etc/systemd/system/mongod.service.d/override.conf` (systemd drop-in, not vendor-file edit): `Restart=on-failure`, `RestartSec=5`, `StartLimitBurst=5`/`StartLimitIntervalSec=300` (circuit breaker against a true crash-loop), plus `OnFailure=guiatv-crash-alert@%n.service` reusing the existing alert wiring.
+- `scripts/health-watchdog.mjs`: added `mongod` + `valkey` to the monitored units (was only checking the app services, not their dependencies - exactly the gap that let this go undetected), broadened the OOM-detection regex to also catch the kernel OOM-killer's log signature (not just Node's own heap-limit message, which mongod doesn't emit).
+
+**Two real bugs found and fixed while investigating why the residual OOM pattern got sharply worse post-recovery (90s-2min cycles vs the prior ~hourly)**:
+1. `SitemapController`: `appendStreamingContent()` can make up to 78 sequential TMDB calls (13 platforms x up to 3 pages x movies+TV) to build the streaming sub-sitemap. In-flight dedup already existed, but the cache TTL was only 5 minutes (`SITEMAP_CACHE_TTL_MS`) against content whose own declared `changefreq` is `'weekly'` - and being an in-process `Map`, it doesn't survive a restart, so every one of this session's frequent `guiatv-api` restarts paid the full 78-call cost again. Raised default TTL to 6h (~72x fewer rebuilds), env-var override preserved.
+2. `MongoProgramRepository`'s `'minimal'` field projection never included `tmdbId`, but `SitemapController.buildProgramsSitemap()` filters on `if (!program.tmdbId) continue` - every program was silently skipped regardless of real data. This is the exact cause of the empty `sitemap-programs.xml` flagged all the way back in Round 1. Fixed by adding `tmdbId` to the projection.
+
+**Deployed** (release `20260813023339`) and **live-verified**: `sitemap-programs.xml` now has 1,654 real URLs (was 0); `sitemap-streaming.xml` cold-build takes ~2.9s and is now cached for 6h; backend health 200 in 3ms.
+
+Four production incidents this session now, all root-caused with real evidence, fixed, deployed, and verified.
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
