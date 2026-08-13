@@ -170,7 +170,7 @@ interface SelectableChip {
         <button
           type="button"
           (click)="nextStep()"
-          class="rounded-full bg-red-600 px-4 py-1.5 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:bg-red-500 disabled:opacity-40"
+          class="rounded-full bg-red-600 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-500 disabled:opacity-40"
           [disabled]="!canAdvance"
         >
           {{ isLastStep ? 'Empezar' : 'Siguiente →' }}

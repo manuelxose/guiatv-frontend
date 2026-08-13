@@ -14,8 +14,9 @@ import { UserNotification } from '../../interfaces/user.interface';
       <button
         type="button"
         (click)="toggleDropdown()"
-        class="relative inline-flex min-h-[42px] min-w-[42px] items-center justify-center rounded-full border border-slate-800 bg-slate-900/80 text-slate-200 transition-colors hover:border-slate-700 hover:text-white"
-        aria-label="Notificaciones"
+        [attr.aria-expanded]="isOpen"
+        class="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface)] text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
+        [attr.aria-label]="unreadCount > 0 ? 'Notificaciones (' + unreadCount + ' sin leer)' : 'Notificaciones'"
       >
         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
@@ -23,7 +24,7 @@ import { UserNotification } from '../../interfaces/user.interface';
         </svg>
         <span
           *ngIf="unreadCount > 0"
-          class="absolute -top-1 -right-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 py-0.5 text-[10px] font-bold text-white"
+          class="absolute -top-1 -right-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[var(--accent-live)] px-1 py-0.5 text-[10px] font-bold text-white"
         >
           {{ unreadCount > 99 ? '99+' : unreadCount }}
         </span>
@@ -31,52 +32,52 @@ import { UserNotification } from '../../interfaces/user.interface';
 
       <div
         *ngIf="isOpen"
-        class="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-2xl border border-slate-800/80 bg-slate-900/98 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] z-[100]"
+        class="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] backdrop-blur-xl shadow-[var(--shadow-lg)] z-[80]"
       >
-        <div class="flex items-center justify-between border-b border-slate-800/60 px-4 py-3">
-          <h3 class="text-sm font-semibold text-white">Notificaciones</h3>
+        <div class="flex items-center justify-between border-b border-[var(--portal-divider)] px-4 py-3">
+          <h3 class="text-sm font-semibold text-[var(--portal-text)]">Notificaciones</h3>
           <button
             *ngIf="unreadCount > 0"
             type="button"
             (click)="markAllRead()"
-            class="text-xs text-red-400 hover:text-red-300 font-medium"
+            class="text-xs text-[var(--accent-live)] hover:text-[var(--accent-live)] font-medium min-h-[32px] px-2"
           >
             Marcar todas
           </button>
         </div>
 
-        <div *ngIf="notifications.length === 0" class="px-4 py-8 text-center text-sm text-slate-500">
+        <div *ngIf="notifications.length === 0" class="px-4 py-8 text-center text-sm text-[var(--portal-text-muted)]">
           No tienes notificaciones
         </div>
 
-        <div *ngFor="let notification of notifications" 
+        <div *ngFor="let notification of notifications"
           (click)="onNotificationClick(notification)"
           (keydown.enter)="onNotificationClick(notification)"
           (keydown.space)="$event.preventDefault(); onNotificationClick(notification)"
           role="button"
           tabindex="0"
-          class="flex items-start gap-3 px-4 py-3 border-b border-slate-800/40 cursor-pointer transition-colors hover:bg-slate-800/30"
-          [ngClass]="!notification.readAt ? 'bg-slate-800/20' : ''"
+          class="flex items-start gap-3 px-4 py-3 border-b border-[var(--portal-divider)] cursor-pointer transition-colors hover:bg-[var(--portal-surface-soft)]"
+          [ngClass]="!notification.readAt ? 'bg-[var(--portal-surface-soft)]' : ''"
         >
           <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
             [ngClass]="getTypeIconClass(notification.type)">
             <span class="text-sm">{{ getTypeIcon(notification.type) }}</span>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-sm text-white line-clamp-2" [ngClass]="!notification.readAt ? 'font-medium' : ''">
+            <p class="text-sm text-[var(--portal-text)] line-clamp-2" [ngClass]="!notification.readAt ? 'font-medium' : ''">
               {{ notification.title }}
             </p>
-            <p *ngIf="notification.description" class="text-xs text-slate-400 mt-0.5 line-clamp-1">
+            <p *ngIf="notification.description" class="text-xs text-[var(--portal-text-muted)] mt-0.5 line-clamp-1">
               {{ notification.description }}
             </p>
-            <p class="text-[10px] text-slate-500 mt-1">{{ formatTime(notification.createdAt) }}</p>
+            <p class="text-[10px] text-[var(--portal-text-faint)] mt-1">{{ formatTime(notification.createdAt) }}</p>
           </div>
-          <div *ngIf="!notification.readAt" class="mt-2 h-2 w-2 shrink-0 rounded-full bg-red-500"></div>
+          <div *ngIf="!notification.readAt" class="mt-2 h-2 w-2 shrink-0 rounded-full bg-[var(--accent-live)]"></div>
         </div>
       </div>
     </div>
 
-    <div *ngIf="isOpen" class="fixed inset-0 z-[99]" (click)="isOpen = false" (keydown.escape)="isOpen = false" tabindex="-1"></div>
+    <div *ngIf="isOpen" class="fixed inset-0 z-[75]" (click)="isOpen = false" (keydown.escape)="isOpen = false" tabindex="-1"></div>
   `,
   styles: [],
 })
@@ -153,7 +154,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       case 'message': return 'bg-green-500/20';
       case 'recommendation': return 'bg-yellow-500/20';
       case 'report_status': return 'bg-purple-500/20';
-      default: return 'bg-slate-700/40';
+      default: return 'bg-[var(--portal-surface-strong)]';
     }
   }
 

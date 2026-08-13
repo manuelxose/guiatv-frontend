@@ -38,7 +38,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
         <div
           class="rounded-[1.4rem] px-4 py-3"
             [ngClass]="message.role === 'user'
-            ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md'
+            ? 'bg-gradient-to-br from-red-600 to-red-700 text-[var(--portal-text)] shadow-md'
             : 'border border-[var(--portal-border)]/90 bg-[var(--portal-surface)] text-[var(--portal-text)] shadow-sm'"
         >
           <!-- Loading / Thinking state -->
@@ -150,7 +150,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
         <!-- Relative timestamp -->
         <p
           *ngIf="!message.isLoading && message.timestamp"
-          class="mt-1 text-[10px] text-slate-600 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+          class="mt-1 text-[10px] text-[var(--portal-text-faint)] opacity-0 transition-opacity duration-200 group-hover:opacity-100"
           [class.text-right]="message.role === 'user'"
         >
           {{ relativeTime }}

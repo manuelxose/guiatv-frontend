@@ -14,19 +14,19 @@ export interface FaqItem {
   imports: [CommonModule],
   template: `
     <section *ngIf="items.length" class="mt-10" itemscope itemtype="https://schema.org/FAQPage">
-      <h2 class="text-lg font-bold text-white mb-4">{{ heading }}</h2>
+      <h2 class="text-lg font-bold text-[var(--portal-text)] mb-4">{{ heading }}</h2>
       <div class="space-y-2">
         <details
           *ngFor="let item of items; let i = index"
-          class="group border border-white/10 rounded-lg bg-white/[0.02]"
+          class="group border border-[var(--portal-border)] rounded-lg bg-[var(--portal-surface-soft)]"
           itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"
         >
           <summary
-            class="flex items-center justify-between gap-4 cursor-pointer select-none px-4 py-3 text-sm font-medium text-gray-200 hover:text-white transition-colors"
+            class="flex items-center justify-between gap-4 cursor-pointer select-none px-4 py-3 text-sm font-medium text-gray-200 hover:text-[var(--portal-text)] transition-colors"
           >
             <span itemprop="name">{{ item.question }}</span>
             <svg
-              class="w-4 h-4 shrink-0 text-gray-500 group-open:rotate-180 transition-transform"
+              class="w-4 h-4 shrink-0 text-[var(--portal-text-muted)] group-open:rotate-180 transition-transform"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -34,7 +34,7 @@ export interface FaqItem {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </summary>
-          <div class="px-4 pb-4 text-sm text-gray-400 leading-relaxed"
+          <div class="px-4 pb-4 text-sm text-[var(--portal-text-muted)] leading-relaxed"
                itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
             <p itemprop="text">{{ item.answer }}</p>
           </div>

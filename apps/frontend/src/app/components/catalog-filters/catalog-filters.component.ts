@@ -46,14 +46,14 @@ const DATE_OPTIONS = [
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <section class="overflow-hidden rounded-[1.75rem] border border-slate-800/80 bg-slate-950/82 shadow-[0_20px_40px_rgba(0,0,0,0.22)]">
-      <div class="border-b border-slate-800/80 p-4 md:p-5">
+    <section class="overflow-hidden rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] shadow-[0_20px_40px_rgba(0,0,0,0.22)]">
+      <div class="border-b border-[var(--portal-border)] p-4 md:p-5">
         <div class="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_auto] xl:items-end">
           <div class="space-y-3">
             <div>
-              <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">{{ eyebrow }}</p>
-              <h2 class="mt-1 text-lg font-semibold text-white">{{ title }}</h2>
-              <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-400">{{ subtitle }}</p>
+              <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">{{ eyebrow }}</p>
+              <h2 class="mt-1 text-lg font-semibold text-[var(--portal-text)]">{{ title }}</h2>
+              <p class="mt-2 max-w-3xl text-sm leading-6 text-[var(--portal-text-muted)]">{{ subtitle }}</p>
             </div>
 
             <div
@@ -66,7 +66,7 @@ const DATE_OPTIONS = [
             <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
               <div class="relative flex-1">
                 <svg
-                  class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+                  class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--portal-text-muted)]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -80,7 +80,7 @@ const DATE_OPTIONS = [
                   [(ngModel)]="queryText"
                   (keyup.enter)="applyQuery()"
                   type="text"
-                  class="min-h-[48px] w-full rounded-2xl border border-slate-700 bg-slate-900/80 pl-11 pr-4 text-sm text-white outline-none transition-colors focus:border-red-500"
+                  class="min-h-[48px] w-full rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] pl-11 pr-4 text-sm text-[var(--portal-text)] outline-none transition-colors focus:border-red-500"
                   placeholder="Buscar dentro de esta vista..."
                 />
               </div>
@@ -89,14 +89,14 @@ const DATE_OPTIONS = [
                 <button
                   type="button"
                   (click)="applyQuery()"
-                  class="min-h-[44px] rounded-full border border-slate-700 px-4 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+                  class="min-h-[44px] rounded-full border border-[var(--portal-border)] px-4 text-sm font-semibold text-[var(--portal-text-soft)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
                 >
                   Buscar
                 </button>
                 <button
                   type="button"
                   (click)="isMobilePanelOpen = true"
-                  class="min-h-[44px] rounded-full border border-slate-700 px-4 text-sm font-semibold text-slate-200 md:hidden"
+                  class="min-h-[44px] rounded-full border border-[var(--portal-border)] px-4 text-sm font-semibold text-[var(--portal-text-soft)] md:hidden"
                 >
                   Filtros
                 </button>
@@ -120,7 +120,7 @@ const DATE_OPTIONS = [
               class="min-h-[40px] rounded-full px-4 text-sm font-semibold transition-colors"
               [ngClass]="isQuickTabActive(option.id)
                 ? 'bg-red-600 text-white'
-                : 'border border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500 hover:text-white'"
+                : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ option.label }}
             </button>
@@ -135,7 +135,7 @@ const DATE_OPTIONS = [
             class="min-h-[36px] rounded-full border px-3 text-xs font-semibold transition-colors"
             [ngClass]="isDateActive(date.id)
               ? 'border-sky-500/40 bg-sky-500/10 text-sky-100'
-              : 'border-slate-700 bg-slate-900/70 text-slate-300'"
+              : 'border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
           >
             {{ date.label }}
           </button>
@@ -143,7 +143,7 @@ const DATE_OPTIONS = [
             *ngIf="filters.date"
             type="button"
             (click)="selectDate('')"
-            class="min-h-[36px] rounded-full border border-slate-700 bg-slate-900/70 px-3 text-xs font-semibold text-slate-300"
+            class="min-h-[36px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-3 text-xs font-semibold text-[var(--portal-text-soft)]"
           >
             Sin fecha fija
           </button>
@@ -152,7 +152,7 @@ const DATE_OPTIONS = [
 
       <div class="hidden gap-4 p-4 md:grid md:grid-cols-2 xl:grid-cols-4">
         <div *ngIf="showTypeControls" class="space-y-2">
-          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Tipo</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Tipo</p>
           <div class="flex flex-wrap gap-2">
             <button
               *ngFor="let option of typeOptions"
@@ -160,8 +160,8 @@ const DATE_OPTIONS = [
               (click)="toggleArrayValue('types', option.id)"
               class="min-h-[38px] rounded-full px-3 text-xs font-semibold transition-colors"
               [ngClass]="includes(filters.types, option.id)
-                ? 'bg-slate-100 text-slate-900'
-                : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
+                ? 'bg-[var(--portal-text)] text-[var(--portal-bg)]'
+                : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
             >
               {{ option.label }}
             </button>
@@ -169,7 +169,7 @@ const DATE_OPTIONS = [
         </div>
 
         <div class="space-y-2">
-          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Disponibilidad</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Disponibilidad</p>
           <div class="flex flex-wrap gap-2">
             <button
               *ngFor="let option of availabilityOptions"
@@ -178,7 +178,7 @@ const DATE_OPTIONS = [
               class="min-h-[38px] rounded-full px-3 text-xs font-semibold transition-colors"
               [ngClass]="includes(filters.availability, option.id)
                 ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
-                : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
+                : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
             >
               {{ option.label }}
             </button>
@@ -186,7 +186,7 @@ const DATE_OPTIONS = [
         </div>
 
         <div class="space-y-2">
-          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Géneros</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Géneros</p>
           <div class="flex max-h-32 flex-wrap gap-2 overflow-auto pr-1">
             <button
               *ngFor="let genre of safeGenres.slice(0, 18)"
@@ -194,8 +194,8 @@ const DATE_OPTIONS = [
               (click)="toggleArrayValue('genres', genre)"
               class="min-h-[38px] rounded-full px-3 text-xs font-semibold transition-colors"
               [ngClass]="includes(filters.genres, genre)
-                ? 'bg-slate-100 text-slate-900'
-                : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
+                ? 'bg-[var(--portal-text)] text-[var(--portal-bg)]'
+                : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
             >
               {{ genre }}
             </button>
@@ -203,7 +203,7 @@ const DATE_OPTIONS = [
         </div>
 
         <div class="space-y-2">
-          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Plataformas</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Plataformas</p>
           <div class="flex max-h-32 flex-wrap gap-2 overflow-auto pr-1">
             <button
               *ngFor="let platform of safePlatforms.slice(0, 16)"
@@ -215,7 +215,7 @@ const DATE_OPTIONS = [
                 : null"
               [ngClass]="includes(filters.platforms, platform.name)
                 ? ''
-                : 'border-slate-700 bg-slate-900/70 text-slate-300'"
+                : 'border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
             >
               {{ platform.name }}
             </button>
@@ -223,9 +223,9 @@ const DATE_OPTIONS = [
         </div>
       </div>
 
-      <div class="border-t border-slate-800/80 p-4">
+      <div class="border-t border-[var(--portal-border)] p-4">
         <div class="flex flex-wrap items-center gap-2">
-          <span class="text-xs uppercase tracking-[0.25em] text-slate-500">Orden</span>
+          <span class="text-xs uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Orden</span>
           <button
             *ngFor="let option of sortOptions"
             type="button"
@@ -233,7 +233,7 @@ const DATE_OPTIONS = [
             class="min-h-[38px] rounded-full px-3 text-xs font-semibold transition-colors"
             [ngClass]="filters.sort === option.id
               ? 'bg-red-600 text-white'
-              : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
+              : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
           >
             {{ option.label }}
           </button>
@@ -241,7 +241,7 @@ const DATE_OPTIONS = [
           <button
             type="button"
             (click)="clearFilters()"
-            class="ml-auto min-h-[38px] rounded-full border border-slate-700 px-3 text-xs font-semibold text-slate-300"
+            class="ml-auto min-h-[38px] rounded-full border border-[var(--portal-border)] px-3 text-xs font-semibold text-[var(--portal-text-soft)]"
           >
             Limpiar filtros
           </button>
@@ -250,7 +250,7 @@ const DATE_OPTIONS = [
         <div *ngIf="activeSummary.length" class="mt-4 flex flex-wrap gap-2">
           <span
             *ngFor="let item of activeSummary"
-            class="rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-[11px] font-semibold text-slate-200"
+            class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-3 py-1.5 text-[11px] font-semibold text-[var(--portal-text-soft)]"
           >
             {{ item }}
           </span>
@@ -266,32 +266,32 @@ const DATE_OPTIONS = [
       >
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
         <div
-          class="absolute inset-x-0 bottom-0 max-h-[84dvh] overflow-y-auto rounded-t-[2rem] border border-slate-800 bg-slate-950 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
+          class="absolute inset-x-0 bottom-0 max-h-[84dvh] overflow-y-auto rounded-t-[2rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
           (click)="$event.stopPropagation()"
           (keydown)="$event.stopPropagation()"
           tabindex="-1"
         >
-          <div class="mx-auto mb-4 h-1.5 w-14 rounded-full bg-slate-700"></div>
+          <div class="mx-auto mb-4 h-1.5 w-14 rounded-full bg-[var(--portal-surface-strong)]"></div>
           <div class="space-y-5">
             <div>
-              <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">{{ eyebrow }}</p>
-              <h3 class="mt-1 text-xl font-semibold text-white">{{ title }}</h3>
-              <p class="mt-2 text-sm text-slate-400">{{ subtitle }}</p>
+              <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">{{ eyebrow }}</p>
+              <h3 class="mt-1 text-xl font-semibold text-[var(--portal-text)]">{{ title }}</h3>
+              <p class="mt-2 text-sm text-[var(--portal-text-muted)]">{{ subtitle }}</p>
             </div>
 
             <div>
-              <label for="catalog-filter-query" class="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Buscar</label>
+              <label for="catalog-filter-query" class="mb-2 block text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Buscar</label>
               <input
                 id="catalog-filter-query"
                 [(ngModel)]="queryText"
                 type="text"
-                class="min-h-[48px] w-full rounded-2xl border border-slate-700 bg-slate-900/80 px-4 text-sm text-white outline-none focus:border-red-500"
+                class="min-h-[48px] w-full rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-4 text-sm text-[var(--portal-text)] outline-none focus:border-red-500"
                 placeholder="Título, género o palabra clave"
               />
             </div>
 
             <div *ngIf="showTypeControls">
-              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Tipo</p>
+              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Tipo</p>
               <div class="flex flex-wrap gap-2">
                 <button
                   *ngFor="let option of typeOptions"
@@ -299,8 +299,8 @@ const DATE_OPTIONS = [
                   (click)="toggleArrayValue('types', option.id)"
                   class="min-h-[40px] rounded-full px-4 text-sm font-semibold"
                   [ngClass]="includes(filters.types, option.id)
-                    ? 'bg-slate-100 text-slate-900'
-                    : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
+                    ? 'bg-[var(--portal-text)] text-[var(--portal-bg)]'
+                    : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
                 >
                   {{ option.label }}
                 </button>
@@ -308,7 +308,7 @@ const DATE_OPTIONS = [
             </div>
 
             <div>
-              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Disponibilidad</p>
+              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Disponibilidad</p>
               <div class="flex flex-wrap gap-2">
                 <button
                   *ngFor="let option of availabilityOptions"
@@ -317,7 +317,7 @@ const DATE_OPTIONS = [
                   class="min-h-[40px] rounded-full px-4 text-sm font-semibold"
                   [ngClass]="includes(filters.availability, option.id)
                     ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
-                    : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
+                    : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
                 >
                   {{ option.label }}
                 </button>
@@ -325,7 +325,7 @@ const DATE_OPTIONS = [
             </div>
 
             <div>
-              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Fecha</p>
+              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Fecha</p>
               <div class="flex flex-wrap gap-2">
                 <button
                   *ngFor="let date of dateOptions"
@@ -334,7 +334,7 @@ const DATE_OPTIONS = [
                   class="min-h-[40px] rounded-full border px-4 text-sm font-semibold"
                   [ngClass]="isDateActive(date.id)
                     ? 'border-sky-500/40 bg-sky-500/10 text-sky-100'
-                    : 'border-slate-700 bg-slate-900/70 text-slate-300'"
+                    : 'border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
                 >
                   {{ date.label }}
                 </button>
@@ -342,7 +342,7 @@ const DATE_OPTIONS = [
             </div>
 
             <div>
-              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Plataformas</p>
+              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Plataformas</p>
               <div class="flex flex-wrap gap-2">
                 <button
                   *ngFor="let platform of safePlatforms"
@@ -354,7 +354,7 @@ const DATE_OPTIONS = [
                     : null"
                   [ngClass]="includes(filters.platforms, platform.name)
                     ? ''
-                    : 'border-slate-700 bg-slate-900/70 text-slate-300'"
+                    : 'border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
                 >
                   {{ platform.name }}
                 </button>
@@ -362,7 +362,7 @@ const DATE_OPTIONS = [
             </div>
 
             <div>
-              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Géneros</p>
+              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Géneros</p>
               <div class="flex flex-wrap gap-2">
                 <button
                   *ngFor="let genre of safeGenres"
@@ -370,8 +370,8 @@ const DATE_OPTIONS = [
                   (click)="toggleArrayValue('genres', genre)"
                   class="min-h-[40px] rounded-full px-4 text-sm font-semibold"
                   [ngClass]="includes(filters.genres, genre)
-                    ? 'bg-slate-100 text-slate-900'
-                    : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
+                    ? 'bg-[var(--portal-text)] text-[var(--portal-bg)]'
+                    : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
                 >
                   {{ genre }}
                 </button>
@@ -379,7 +379,7 @@ const DATE_OPTIONS = [
             </div>
 
             <div>
-              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Orden</p>
+              <p class="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-muted)]">Orden</p>
               <div class="flex flex-wrap gap-2">
                 <button
                   *ngFor="let option of sortOptions"
@@ -388,7 +388,7 @@ const DATE_OPTIONS = [
                   class="min-h-[40px] rounded-full px-4 text-sm font-semibold"
                   [ngClass]="filters.sort === option.id
                     ? 'bg-red-600 text-white'
-                    : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
+                    : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
                 >
                   {{ option.label }}
                 </button>
@@ -396,11 +396,11 @@ const DATE_OPTIONS = [
             </div>
           </div>
 
-          <div class="sticky bottom-0 mt-6 flex gap-3 border-t border-slate-800 bg-slate-950/96 pt-4">
+          <div class="sticky bottom-0 mt-6 flex gap-3 border-t border-[var(--portal-border)] bg-[var(--portal-bg-deep)]/96 pt-4">
             <button
               type="button"
               (click)="clearFilters()"
-              class="flex-1 min-h-[48px] rounded-2xl border border-slate-700 text-sm font-semibold text-slate-200"
+              class="flex-1 min-h-[48px] rounded-2xl border border-[var(--portal-border)] text-sm font-semibold text-[var(--portal-text-soft)]"
             >
               Limpiar
             </button>

@@ -17,7 +17,7 @@ import { CommonModule } from '@angular/common';
         <button
           type="button"
           (click)="dismissed.emit()"
-          class="min-h-[32px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)]/80 px-3 text-[11px] font-semibold text-[var(--portal-text)] transition-colors hover:border-slate-500"
+          class="min-h-[32px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)]/80 px-3 text-[11px] font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
         >
           Más tarde
         </button>
@@ -27,7 +27,7 @@ import { CommonModule } from '@angular/common';
           *ngFor="let option of options; trackBy: trackByText"
           type="button"
           (click)="optionSelected.emit(option)"
-          class="min-h-[34px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-medium text-[var(--portal-text)] transition-colors hover:border-slate-500 hover:text-[var(--portal-text)]"
+          class="min-h-[34px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-medium text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
         >
           {{ option }}
         </button>

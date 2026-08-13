@@ -8,21 +8,13 @@
  * portal do not acquire unintended Tailwind colors/layout. */
 @tailwind utilities;
 
-/* slate-500 is below AA for the route's small labels on its dark surfaces. */
-.text-slate-500 {
-  color: #cbd5e1;
-}
-
 // ===============================================
 // VARIABLES
 // ===============================================
 
-$primary-red: #dc2626;
-$primary-red-hover: #b91c1c;
-$text-primary: #ffffff;
-$text-secondary: #9ca3af;
-$bg-dark: #1f2937;
-$bg-darker: #111827;
+$primary-red: var(--accent-live);
+$text-primary: var(--portal-text);
+$bg-darker: var(--portal-bg-deep);
 $border-color: var(--portal-border-strong);
 $border-radius: 0.75rem;
 $transition-speed: 0.2s;
@@ -33,7 +25,7 @@ $transition-speed: 0.2s;
 
 .canal-completo {
   // EXACT gradient from right-sidebar:
-  // bg-gradient-to-b from-gray-900/95 via-gray-900 to-gray-950 backdrop-blur-xl
+  // bg-gradient-to-b from-[var(--portal-bg)]/95 via-[var(--portal-bg)] to-gray-950 backdrop-blur-xl
   background: var(--portal-bg) !important;
   min-height: 100vh;
   
@@ -214,7 +206,7 @@ button {
 
 select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
   background-position: right 0.5rem center;
   background-repeat: no-repeat;
   background-size: 1.5em 1.5em;
@@ -347,10 +339,10 @@ main {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: var(--portal-surface-strong); // bg-gray-800/80
+  background: var(--portal-surface-strong); // bg-[var(--portal-surface-strong)]/80
   border: 1px solid var(--portal-border);
   border-radius: 9999px; // rounded-full
-  color: #d1d5db; // text-gray-300
+  color: #d1d5db; // text-[var(--portal-text-soft)]
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -1129,7 +1121,7 @@ $bp-xl: 1280px;
 // ============================================
 // ISOLATED BOTTOM SHEET - COMPLETE REWRITE
 // EXACT gradient from right-sidebar:
-// bg-gradient-to-b from-gray-900/95 via-gray-900 to-gray-950 backdrop-blur-xl
+// bg-gradient-to-b from-[var(--portal-bg)]/95 via-[var(--portal-bg)] to-gray-950 backdrop-blur-xl
 // ============================================
 .tv-sheet-isolated {
   position: fixed !important;
@@ -1139,8 +1131,8 @@ $bp-xl: 1280px;
   z-index: 101 !important;
   
   // RIGHT-SIDEBAR GRADIENT (vertical):
-  // from-gray-900/95 = rgba(17, 24, 39, 0.95)
-  // via-gray-900 = #111827
+  // from-[var(--portal-bg)]/95 = rgba(17, 24, 39, 0.95)
+  // via-[var(--portal-bg)] = #111827
   // to-gray-950 = #030712
   background: var(--portal-bg) !important;
   
@@ -1148,7 +1140,7 @@ $bp-xl: 1280px;
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
   
-  // Border like right-sidebar: border-gray-800/50
+  // Border like right-sidebar: border-[var(--portal-border)]
   border-top: 1px solid var(--portal-border) !important;
   
   // Rounded top corners

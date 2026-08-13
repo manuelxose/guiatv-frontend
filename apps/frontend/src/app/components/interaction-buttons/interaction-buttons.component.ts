@@ -22,7 +22,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           'h-9 w-9 justify-center rounded-xl': compact,
           'gap-2 px-4 py-2 rounded-full': !compact,
           'bg-red-600/15 border-red-500/40': isInWatchlist,
-          'bg-slate-800/70 hover:bg-slate-700 border-slate-700/60': !isInWatchlist
+          'bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-surface-strong)] border-[var(--portal-border)]': !isInWatchlist
         }"
       >
         <svg
@@ -33,11 +33,11 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           stroke-width="2"
           [class.h-5]="!compact" [class.w-5]="!compact"
           [class.h-4]="compact" [class.w-4]="compact"
-          [ngClass]="isInWatchlist ? 'text-red-400' : 'text-slate-300'"
+          [ngClass]="isInWatchlist ? 'text-red-400' : 'text-[var(--portal-text-soft)]'"
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isInWatchlist ? 'text-red-300' : 'text-slate-300'">
+        <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isInWatchlist ? 'text-red-300' : 'text-[var(--portal-text-soft)]'">
           {{ isInWatchlist ? 'En lista' : 'Mi lista' }}
         </span>
       </button>
@@ -46,7 +46,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
       <button
         (click)="showModal = true"
         title="Recomendar a amigos"
-        class="flex items-center border border-slate-700/60 bg-slate-800/70 hover:bg-slate-700 transition-all duration-150"
+        class="flex items-center border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-surface-strong)] transition-all duration-150"
         [ngClass]="{
           'h-9 w-9 justify-center rounded-xl': compact,
           'gap-2 px-4 py-2 rounded-full': !compact
@@ -58,13 +58,13 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           stroke="currentColor"
           fill="none"
           stroke-width="2"
-          class="text-slate-300"
+          class="text-[var(--portal-text-soft)]"
           [class.h-5]="!compact" [class.w-5]="!compact"
           [class.h-4]="compact" [class.w-4]="compact"
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium text-slate-300">Recomendar</span>
+        <span *ngIf="!compact" class="text-sm font-medium text-[var(--portal-text-soft)]">Recomendar</span>
       </button>
 
       <!-- Watching Button -->
@@ -76,7 +76,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           'h-9 w-9 justify-center rounded-xl': compact,
           'gap-2 px-4 py-2 rounded-full': !compact,
           'bg-emerald-600/15 border-emerald-500/40': isWatching,
-          'bg-slate-800/70 hover:bg-slate-700 border-slate-700/60': !isWatching
+          'bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-surface-strong)] border-[var(--portal-border)]': !isWatching
         }"
       >
         <svg
@@ -87,11 +87,11 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           stroke-width="2"
           [class.h-5]="!compact" [class.w-5]="!compact"
           [class.h-4]="compact" [class.w-4]="compact"
-          [ngClass]="isWatching ? 'text-emerald-300' : 'text-slate-300'"
+          [ngClass]="isWatching ? 'text-emerald-300' : 'text-[var(--portal-text-soft)]'"
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.55-2.27A1 1 0 0121 8.62v6.76a1 1 0 01-1.45.89L15 14m-9 4h8a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isWatching ? 'text-emerald-200' : 'text-slate-300'">
+        <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isWatching ? 'text-emerald-200' : 'text-[var(--portal-text-soft)]'">
           {{ isWatching ? 'Viendo' : 'Estoy viendo' }}
         </span>
       </button>
@@ -100,7 +100,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
       <button
         (click)="showRatingPanel = !showRatingPanel"
         title="Valorar"
-        class="flex items-center border border-slate-700/60 bg-slate-800/70 hover:bg-slate-700 transition-all duration-150"
+        class="flex items-center border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-surface-strong)] transition-all duration-150"
         [ngClass]="{
           'h-9 w-9 justify-center rounded-xl': compact,
           'gap-2 px-4 py-2 rounded-full': !compact
@@ -114,11 +114,11 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           stroke-width="2"
           [class.h-5]="!compact" [class.w-5]="!compact"
           [class.h-4]="compact" [class.w-4]="compact"
-          class="text-slate-300"
+          class="text-[var(--portal-text-soft)]"
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium text-slate-300">
+        <span *ngIf="!compact" class="text-sm font-medium text-[var(--portal-text-soft)]">
           {{ currentRating ? currentRating + '/10' : 'Valorar' }}
         </span>
       </button>
@@ -127,7 +127,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
       <button
         (click)="shareToChat()"
         title="Compartir por chat"
-        class="flex items-center border border-slate-700/60 bg-slate-800/70 hover:bg-slate-700 transition-all duration-150"
+        class="flex items-center border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-surface-strong)] transition-all duration-150"
         [ngClass]="{
           'h-9 w-9 justify-center rounded-xl': compact,
           'gap-2 px-4 py-2 rounded-full': !compact
@@ -139,21 +139,21 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           stroke="currentColor"
           fill="none"
           stroke-width="2"
-          class="text-slate-300"
+          class="text-[var(--portal-text-soft)]"
           [class.h-5]="!compact" [class.w-5]="!compact"
           [class.h-4]="compact" [class.w-4]="compact"
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m8-2a9 9 0 11-18 0a9 9 0 0118 0z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium text-slate-300">Compartir chat</span>
+        <span *ngIf="!compact" class="text-sm font-medium text-[var(--portal-text-soft)]">Compartir chat</span>
       </button>
 
       <!-- Rating Panel -->
       <div
         *ngIf="showRatingPanel"
-        class="absolute bottom-full left-0 z-20 mb-2 w-[min(20rem,90vw)] rounded-2xl border border-slate-700 bg-slate-900 p-4 shadow-2xl"
+        class="absolute bottom-full left-0 z-20 mb-2 w-[min(20rem,90vw)] rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 shadow-2xl"
       >
-        <p class="mb-3 text-xs text-slate-400">¿Cuánto te gustó?</p>
+        <p class="mb-3 text-xs text-[var(--portal-text-muted)]">¿Cuánto te gustó?</p>
         <div class="flex flex-wrap gap-1">
           <button
             *ngFor="let star of ratings"
@@ -162,13 +162,13 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
             (mouseenter)="hoveredRating = star"
             (mouseleave)="hoveredRating = 0"
             class="h-7 w-7 rounded text-sm font-bold transition-colors"
-            [ngClass]="(hoveredRating || currentRating) >= star ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-400'"
+            [ngClass]="(hoveredRating || currentRating) >= star ? 'bg-red-600 text-white' : 'bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)]'"
           >
             {{ star }}
           </button>
         </div>
         <div class="mt-3 flex gap-2">
-          <button type="button" (click)="markAsSeen()" class="text-xs text-slate-400 hover:text-white">
+          <button type="button" (click)="markAsSeen()" class="text-xs text-[var(--portal-text-muted)] hover:text-[var(--portal-text)]">
             Solo marcar como visto
           </button>
         </div>
@@ -177,22 +177,22 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
 
     <!-- Recommendation Modal -->
     <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-        <button (click)="showModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+        <button (click)="showModal = false" class="absolute top-4 right-4 text-[var(--portal-text-muted)] hover:text-[var(--portal-text)]">
           <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
-        <h3 class="text-xl font-bold text-white mb-4">Recomendar a amigos</h3>
-        <p class="text-slate-300 text-sm mb-6">Comparte "{{ title }}" con tus seguidores.</p>
+        <h3 class="text-xl font-bold text-[var(--portal-text)] mb-4">Recomendar a amigos</h3>
+        <p class="text-[var(--portal-text-soft)] text-sm mb-6">Comparte "{{ title }}" con tus seguidores.</p>
         <div class="space-y-4">
           <div>
-            <label for="recommendation-note" class="block text-sm font-medium text-slate-400 mb-1">Nota (opcional)</label>
+            <label for="recommendation-note" class="block text-sm font-medium text-[var(--portal-text-muted)] mb-1">Nota (opcional)</label>
             <textarea
               id="recommendation-note"
               #noteInput
               rows="3"
-              class="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-red-500 focus:outline-none"
+              class="w-full bg-[var(--portal-surface-strong)] border border-[var(--portal-border)] rounded-lg px-4 py-2 text-[var(--portal-text)] focus:ring-2 focus:ring-red-500 focus:outline-none"
               placeholder="¿Por qué te ha gustado?"
             ></textarea>
           </div>

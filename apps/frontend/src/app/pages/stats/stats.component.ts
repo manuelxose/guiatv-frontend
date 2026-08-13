@@ -19,16 +19,16 @@ interface TrendingItem {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="min-h-screen bg-[#081018] text-slate-100">
+    <div class="min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]">
       <!-- Hero -->
-      <section class="relative overflow-hidden border-b border-slate-800/80">
+      <section class="relative overflow-hidden border-b border-[var(--portal-border)]">
         <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(239,68,68,0.06),transparent_50%)]"></div>
         <div class="relative mx-auto max-w-5xl px-4 py-20 text-center sm:px-6 lg:px-8">
           <p class="text-[11px] uppercase tracking-[0.34em] text-red-500 mb-4">Tendencias</p>
-          <h1 class="text-4xl font-black tracking-tight text-white md:text-6xl">
+          <h1 class="text-4xl font-black tracking-tight text-[var(--portal-text)] md:text-6xl">
             Tendencias TV y Streaming en España
           </h1>
-          <p class="mt-6 text-lg leading-8 text-slate-300 max-w-2xl mx-auto">
+          <p class="mt-6 text-lg leading-8 text-[var(--portal-text-soft)] max-w-2xl mx-auto">
             Descubre qué están viendo los españoles. Datos actualizados en tiempo real basados en la actividad de nuestros usuarios.
           </p>
         </div>
@@ -40,9 +40,9 @@ interface TrendingItem {
         <section class="mb-16">
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div *ngFor="let m of metrics"
-                 class="rounded-2xl border border-slate-800/80 bg-slate-950/75 p-6 text-center">
-              <p class="text-3xl font-black text-white">{{ m.value }}</p>
-              <p class="text-xs text-slate-400 mt-1">{{ m.label }}</p>
+                 class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6 text-center">
+              <p class="text-3xl font-black text-[var(--portal-text)]">{{ m.value }}</p>
+              <p class="text-xs text-[var(--portal-text-muted)] mt-1">{{ m.label }}</p>
             </div>
           </div>
         </section>
@@ -50,8 +50,8 @@ interface TrendingItem {
         <!-- Trending Now -->
         <section class="mb-16">
           <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-white">🔥 Trending ahora</h2>
-            <span class="text-xs text-slate-500">Actualizado cada 15 min</span>
+            <h2 class="text-2xl font-bold text-[var(--portal-text)]">🔥 Trending ahora</h2>
+            <span class="text-xs text-[var(--portal-text-muted)]">Actualizado cada 15 min</span>
           </div>
 
           <div *ngIf="loading" class="text-center py-12">
@@ -60,23 +60,23 @@ interface TrendingItem {
 
           <div *ngIf="!loading" class="space-y-3">
             <div *ngFor="let item of trendingItems; let i = index"
-                 class="rounded-2xl border border-slate-800/80 bg-slate-950/75 p-4 flex items-center gap-4 hover:border-slate-700/80 transition-colors">
+                 class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4 flex items-center gap-4 hover:border-[var(--portal-border)] transition-colors">
               <span class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                    [ngClass]="i < 3 ? 'bg-red-500/20 text-red-400' : 'bg-slate-800/80 text-slate-400'">
+                    [ngClass]="i < 3 ? 'bg-red-500/20 text-red-400' : 'bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)]'">
                 {{ i + 1 }}
               </span>
               <div class="flex-1 min-w-0">
                 <a [routerLink]="item.path"
-                   class="text-sm font-medium text-white hover:text-red-400 transition-colors truncate block">
+                   class="text-sm font-medium text-[var(--portal-text)] hover:text-red-400 transition-colors truncate block">
                   {{ item.title }}
                 </a>
                 <div class="flex items-center gap-2 mt-0.5">
-                  <span *ngIf="item.platform" class="text-xs text-slate-500">{{ item.platform }}</span>
-                  <span *ngIf="item.category" class="text-xs text-slate-600">{{ item.category }}</span>
+                  <span *ngIf="item.platform" class="text-xs text-[var(--portal-text-muted)]">{{ item.platform }}</span>
+                  <span *ngIf="item.category" class="text-xs text-[var(--portal-text-faint)]">{{ item.category }}</span>
                 </div>
               </div>
-              <div class="flex items-center gap-1 text-xs text-slate-400">
-                <div class="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div class="flex items-center gap-1 text-xs text-[var(--portal-text-muted)]">
+                <div class="w-16 h-1.5 bg-[var(--portal-surface-strong)] rounded-full overflow-hidden">
                   <div class="h-full bg-red-500 rounded-full" [style.width.%]="item.score"></div>
                 </div>
               </div>
@@ -86,24 +86,24 @@ interface TrendingItem {
 
         <!-- Insights -->
         <section class="mb-16">
-          <h2 class="text-2xl font-bold text-white mb-6">Datos del ecosistema TV español</h2>
+          <h2 class="text-2xl font-bold text-[var(--portal-text)] mb-6">Datos del ecosistema TV español</h2>
           <div class="grid md:grid-cols-2 gap-6">
-            <div class="rounded-2xl border border-slate-800/80 bg-slate-950/75 p-6">
-              <h3 class="text-base font-bold text-white mb-3">📡 Televisión en abierto (TDT)</h3>
-              <ul class="space-y-2 text-sm text-slate-300">
-                <li>Más de <span class="text-white font-medium">30 canales nacionales</span> en la TDT</li>
+            <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
+              <h3 class="text-base font-bold text-[var(--portal-text)] mb-3">📡 Televisión en abierto (TDT)</h3>
+              <ul class="space-y-2 text-sm text-[var(--portal-text-soft)]">
+                <li>Más de <span class="text-[var(--portal-text)] font-medium">30 canales nacionales</span> en la TDT</li>
                 <li>Los informativos siguen siendo los programas más vistos</li>
-                <li>El horario prime time (21:00-00:00) concentra el <span class="text-white font-medium">65%</span> de la audiencia</li>
-                <li>Los fines de semana se consume un <span class="text-white font-medium">23%</span> más de televisión</li>
+                <li>El horario prime time (21:00-00:00) concentra el <span class="text-[var(--portal-text)] font-medium">65%</span> de la audiencia</li>
+                <li>Los fines de semana se consume un <span class="text-[var(--portal-text)] font-medium">23%</span> más de televisión</li>
               </ul>
             </div>
-            <div class="rounded-2xl border border-slate-800/80 bg-slate-950/75 p-6">
-              <h3 class="text-base font-bold text-white mb-3">🎬 Plataformas de streaming</h3>
-              <ul class="space-y-2 text-sm text-slate-300">
-                <li><span class="text-white font-medium">15+ plataformas</span> de pago y gratuitas en España</li>
-                <li>Netflix, Amazon y Disney+ acumulan el <span class="text-white font-medium">72%</span> de suscripciones</li>
+            <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
+              <h3 class="text-base font-bold text-[var(--portal-text)] mb-3">🎬 Plataformas de streaming</h3>
+              <ul class="space-y-2 text-sm text-[var(--portal-text-soft)]">
+                <li><span class="text-[var(--portal-text)] font-medium">15+ plataformas</span> de pago y gratuitas en España</li>
+                <li>Netflix, Amazon y Disney+ acumulan el <span class="text-[var(--portal-text)] font-medium">72%</span> de suscripciones</li>
                 <li>El contenido español gana peso en los catálogos internacionales</li>
-                <li>El <span class="text-white font-medium">45%</span> de hogares tiene 2 o más suscripciones</li>
+                <li>El <span class="text-[var(--portal-text)] font-medium">45%</span> de hogares tiene 2 o más suscripciones</li>
               </ul>
             </div>
           </div>
@@ -111,9 +111,9 @@ interface TrendingItem {
 
         <!-- Methodology -->
         <section class="mb-16">
-          <h2 class="text-2xl font-bold text-white mb-4">Metodología</h2>
-          <div class="rounded-2xl border border-slate-800/80 bg-slate-950/75 p-6">
-            <p class="text-sm text-slate-300 leading-relaxed">
+          <h2 class="text-2xl font-bold text-[var(--portal-text)] mb-4">Metodología</h2>
+          <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
+            <p class="text-sm text-[var(--portal-text-soft)] leading-relaxed">
               Los datos de tendencias se calculan a partir de las interacciones anónimas de los usuarios de
               Guía Programación TV: búsquedas, visitas a fichas de programas, contenido añadido a favoritos
               y tiempo en página. Los datos se agregan y actualizan cada 15 minutos. Las estadísticas
@@ -125,12 +125,12 @@ interface TrendingItem {
 
         <!-- Citation -->
         <section>
-          <h2 class="text-2xl font-bold text-white mb-4">Citar estos datos</h2>
-          <div class="rounded-2xl border border-slate-800/80 bg-slate-950/75 p-6">
-            <p class="text-sm text-slate-300 mb-3">
+          <h2 class="text-2xl font-bold text-[var(--portal-text)] mb-4">Citar estos datos</h2>
+          <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
+            <p class="text-sm text-[var(--portal-text-soft)] mb-3">
               Si utilizas estos datos en un artículo, informe o publicación, por favor incluye la atribución:
             </p>
-            <div class="bg-slate-900/60 rounded-xl p-4 text-sm text-slate-200 italic">
+            <div class="bg-[var(--portal-surface-soft)] rounded-xl p-4 text-sm text-[var(--portal-text-soft)] italic">
               "Fuente: Guía Programación TV (guiaprogramaciontv.com/tendencias), {{ currentYear }}."
             </div>
           </div>

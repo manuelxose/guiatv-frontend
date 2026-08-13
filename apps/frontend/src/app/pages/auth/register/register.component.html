@@ -1,13 +1,13 @@
-<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+<div class="min-h-screen bg-gradient-to-br from-[var(--portal-bg)] via-[var(--portal-bg-deep)] to-[var(--portal-bg-deep)] text-[var(--portal-text)]">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
     <header class="space-y-2">
-      <p class="text-sm text-gray-400 uppercase tracking-[0.2em]">
+      <p class="text-sm text-[var(--portal-text-muted)] uppercase tracking-[0.2em]">
         Comunidad Guía TV
       </p>
       <h1 class="text-3xl sm:text-4xl font-extrabold">
         Crea tu cuenta en segundos
       </h1>
-      <p class="text-gray-300 max-w-3xl">
+      <p class="text-[var(--portal-text-soft)] max-w-3xl">
         Registra tu cuenta con email y contrasena o con Google. La API valida tu
         identidad y guarda tu sesion automaticamente.
       </p>
@@ -15,11 +15,11 @@
 
     <div class="grid lg:grid-cols-2 gap-6">
       <section
-        class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm"
+        class="bg-[var(--portal-surface-strong)] border border-[var(--portal-border)] rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm"
       >
         <div class="flex items-center justify-between mb-4">
           <div>
-            <p class="text-sm text-gray-400">Registro rapido</p>
+            <p class="text-sm text-[var(--portal-text-muted)]">Registro rapido</p>
             <h2 class="text-xl font-semibold">Crear cuenta</h2>
           </div>
           <span
@@ -33,7 +33,7 @@
         <form class="space-y-4" (ngSubmit)="onPasswordRegister()">
           <div>
             <label
-              class="text-xs text-gray-400 uppercase tracking-wide"
+              class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wide"
               for="register-name"
               >Nombre (opcional)</label
             >
@@ -43,13 +43,13 @@
               type="text"
               autocomplete="name"
               [(ngModel)]="registerData.name"
-              class="mt-2 w-full min-h-[44px] rounded-lg bg-gray-900/60 border border-gray-700/60 px-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="Tu nombre"
             />
           </div>
           <div>
             <label
-              class="text-xs text-gray-400 uppercase tracking-wide"
+              class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wide"
               for="register-email"
               >Email</label
             >
@@ -60,13 +60,13 @@
               required
               autocomplete="email"
               [(ngModel)]="registerData.email"
-              class="mt-2 w-full min-h-[44px] rounded-lg bg-gray-900/60 border border-gray-700/60 px-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="tu@email.com"
             />
           </div>
           <div>
             <label
-              class="text-xs text-gray-400 uppercase tracking-wide"
+              class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wide"
               for="register-password"
               >Contrasena</label
             >
@@ -77,13 +77,13 @@
               required
               autocomplete="new-password"
               [(ngModel)]="registerData.password"
-              class="mt-2 w-full min-h-[44px] rounded-lg bg-gray-900/60 border border-gray-700/60 px-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="Minimo 8 caracteres"
             />
           </div>
           <div>
             <label
-              class="text-xs text-gray-400 uppercase tracking-wide"
+              class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wide"
               for="register-confirm"
               >Confirmar contrasena</label
             >
@@ -94,7 +94,7 @@
               required
               autocomplete="new-password"
               [(ngModel)]="registerData.confirmPassword"
-              class="mt-2 w-full min-h-[44px] rounded-lg bg-gray-900/60 border border-gray-700/60 px-3 text-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-red-500"
               placeholder="Repite la contrasena"
             />
           </div>
@@ -107,10 +107,10 @@
           </button>
         </form>
 
-        <div class="flex items-center gap-3 text-xs text-gray-500 my-4">
-          <span class="flex-1 h-px bg-gray-700/60"></span>
+        <div class="flex items-center gap-3 text-xs text-[var(--portal-text-muted)] my-4">
+          <span class="flex-1 h-px bg-[var(--portal-surface-strong)]/60"></span>
           <span>o</span>
-          <span class="flex-1 h-px bg-gray-700/60"></span>
+          <span class="flex-1 h-px bg-[var(--portal-surface-strong)]/60"></span>
         </div>
 
         <button
@@ -145,7 +145,7 @@
           <span>{{ loading ? 'Conectando...' : 'Crear cuenta con Google' }}</span>
         </button>
 
-        <div class="text-sm text-gray-400">
+        <div class="text-sm text-[var(--portal-text-muted)]">
           Ya tienes cuenta?
           <a
             routerLink="/iniciar-sesion"
@@ -155,7 +155,7 @@
           </a>
         </div>
 
-        <p class="text-xs text-gray-400 mt-4">
+        <p class="text-xs text-[var(--portal-text-muted)] mt-4">
           Al continuar aceptas conectar tu cuenta con GPTV. La API emitira un
           token para tu sesion.
         </p>
@@ -177,14 +177,14 @@
       </section>
 
       <section
-        class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm space-y-5"
+        class="bg-[var(--portal-surface-strong)] border border-[var(--portal-border)] rounded-2xl p-6 shadow-xl shadow-black/20 backdrop-blur-sm space-y-5"
       >
         <div>
-          <p class="text-sm text-gray-400">Tu cuenta incluye</p>
+          <p class="text-sm text-[var(--portal-text-muted)]">Tu cuenta incluye</p>
           <h2 class="text-xl font-semibold">Cuenta lista para la comunidad</h2>
         </div>
 
-        <div class="space-y-4 text-sm text-gray-300">
+        <div class="space-y-4 text-sm text-[var(--portal-text-soft)]">
           <div class="flex items-start gap-2">
             <span
               class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
@@ -214,7 +214,7 @@
           </div>
         </div>
 
-        <div class="rounded-xl border border-gray-700/60 bg-gray-900/50 p-4 text-sm text-gray-300">
+        <div class="rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)]/50 p-4 text-sm text-[var(--portal-text-soft)]">
           La cuenta se crea automaticamente en la API al registrarte con email o
           Google.
         </div>

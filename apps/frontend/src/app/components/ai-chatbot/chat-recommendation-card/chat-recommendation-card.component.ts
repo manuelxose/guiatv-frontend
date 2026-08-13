@@ -40,7 +40,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           />
           <ng-template #fallback>
             <div class="flex flex-col items-center gap-1">
-              <svg class="h-6 w-6 text-slate-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <svg class="h-6 w-6 text-[var(--portal-text-faint)]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 01-1.125-1.125M3.375 19.5h1.5C5.496 19.5 6 18.996 6 18.375m-3.75.125V6a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 6v12.375M6 18.375a1.125 1.125 0 001.125 1.125h9.75a1.125 1.125 0 001.125-1.125M6 18.375V12m9 6.375V12m0 0H9m6 0a3 3 0 00-6 0" />
               </svg>

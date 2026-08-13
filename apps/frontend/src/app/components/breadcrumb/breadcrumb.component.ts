@@ -14,16 +14,16 @@ export interface BreadcrumbItem {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <nav aria-label="Breadcrumb" class="mb-4 text-sm text-slate-400">
+    <nav aria-label="Breadcrumb" class="mb-4 text-sm text-[var(--portal-text-muted)]">
       <ol class="flex flex-wrap items-center gap-1">
         <li *ngFor="let item of items; let last = last">
           <a
             *ngIf="!last"
             [routerLink]="item.url"
-            class="hover:text-white transition-colors"
+            class="hover:text-[var(--portal-text)] transition-colors"
           >{{ item.name }}</a>
-          <span *ngIf="last" class="text-slate-200">{{ item.name }}</span>
-          <span *ngIf="!last" class="mx-1 text-slate-600" aria-hidden="true">›</span>
+          <span *ngIf="last" class="text-[var(--portal-text-soft)]">{{ item.name }}</span>
+          <span *ngIf="!last" class="mx-1 text-[var(--portal-text-faint)]" aria-hidden="true">›</span>
         </li>
       </ol>
     </nav>

@@ -44,9 +44,7 @@
             ],
             "styles": [
               "bootstrap-icons/font/bootstrap-icons.css",
-              "../../node_modules/swiper/swiper.min.css",
-              "src/styles.scss",
-              "leaflet/dist/leaflet.css"
+              "src/styles.scss"
             ],
             "server": "src/main.server.ts",
             "prerender": false,

@@ -10,13 +10,13 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
   template: `
     <div class="grid gap-6" [ngClass]="showSidebar ? 'lg:grid-cols-[2fr_1fr]' : ''">
       <section class="space-y-6">
-        <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)]">
+        <div class="bg-[var(--portal-surface-soft)] border border-[var(--portal-border)] rounded-2xl p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)]">
           <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
             <div>
-              <h2 class="text-lg font-semibold text-white">Pulso de comunidad</h2>
-              <p class="text-sm text-slate-400">Actualiza qué ves, recomienda o crea una lista compartida.</p>
+              <h2 class="text-lg font-semibold text-[var(--portal-text)]">Pulso de comunidad</h2>
+              <p class="text-sm text-[var(--portal-text-muted)]">Actualiza qué ves, recomienda o crea una lista compartida.</p>
             </div>
-            <span class="text-xs text-slate-300 border border-slate-700 px-2 py-1 rounded-full">
+            <span class="text-xs text-[var(--portal-text-soft)] border border-[var(--portal-border)] px-2 py-1 rounded-full">
               Visibilidad:
               {{
                 statusForm.value.visibility === 'public'
@@ -34,7 +34,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
               type="button"
               (click)="composerMode = mode.id"
               class="min-h-[36px] rounded-full px-3 text-xs font-semibold transition-colors"
-              [ngClass]="composerMode === mode.id ? 'bg-red-600 text-white' : 'border border-slate-700 bg-slate-950/60 text-slate-300'"
+              [ngClass]="composerMode === mode.id ? 'bg-red-600 text-white' : 'border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
             >
               {{ mode.label }}
             </button>
@@ -43,33 +43,33 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
           <form [formGroup]="statusForm" (ngSubmit)="onSubmitStatus()" class="space-y-4">
             <div class="grid md:grid-cols-2 gap-4">
               <div class="space-y-2">
-                <label for="social-title" class="text-xs text-slate-400 uppercase tracking-wider">{{ titleLabel }}</label>
+                <label for="social-title" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">{{ titleLabel }}</label>
                 <input
                   id="social-title"
                   type="text"
                   formControlName="title"
                   [placeholder]="titlePlaceholder"
-                  class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 />
               </div>
               <div class="space-y-2">
-                <label for="social-mood" class="text-xs text-slate-400 uppercase tracking-wider">{{ secondaryLabel }}</label>
+                <label for="social-mood" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">{{ secondaryLabel }}</label>
                 <input
                   id="social-mood"
                   type="text"
                   formControlName="mood"
                   [placeholder]="secondaryPlaceholder"
-                  class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 />
               </div>
             </div>
             <div class="grid md:grid-cols-[1fr_auto] gap-4 items-end">
               <div class="space-y-2">
-                <label for="social-visibility" class="text-xs text-slate-400 uppercase tracking-wider">Visibilidad</label>
+                <label for="social-visibility" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Visibilidad</label>
                 <select
                   id="social-visibility"
                   formControlName="visibility"
-                  class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 >
                   <option value="public">Publico</option>
                   <option value="friends">Amigos</option>
@@ -88,18 +88,18 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
         </div>
 
         <div class="space-y-4">
-          <h3 class="text-xs text-slate-500 uppercase tracking-[0.3em]">Actividad de amigos</h3>
+          <h3 class="text-xs text-[var(--portal-text-muted)] uppercase tracking-[0.3em]">Actividad de amigos</h3>
 
-          <div *ngIf="activities.length === 0" class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-6 text-sm text-slate-400">
+          <div *ngIf="activities.length === 0" class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-6 text-sm text-[var(--portal-text-muted)]">
             No hay actividad reciente.
           </div>
 
           <article
             *ngFor="let activity of activities"
-            class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-5"
+            class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-5"
           >
             <div class="flex items-start gap-4">
-              <div class="h-10 w-10 rounded-xl border border-slate-700 bg-slate-800/80 overflow-hidden flex items-center justify-center text-xs text-slate-300">
+              <div class="h-10 w-10 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] overflow-hidden flex items-center justify-center text-xs text-[var(--portal-text-soft)]">
                 <img *ngIf="activity.user?.avatar" [src]="activity.user?.avatar" class="w-full h-full object-cover" alt="" />
                 <span *ngIf="!activity.user?.avatar">{{ (activity.user?.name || 'U').slice(0, 1) }}</span>
               </div>
@@ -107,40 +107,40 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between gap-3">
                   <div class="flex items-center gap-2 text-sm">
-                    <span class="text-white font-medium">{{ activity.user?.name || 'Usuario' }}</span>
-                    <span class="text-slate-500">{{ getActivityVerb(activity.type) }}</span>
+                    <span class="text-[var(--portal-text)] font-medium">{{ activity.user?.name || 'Usuario' }}</span>
+                    <span class="text-[var(--portal-text-muted)]">{{ getActivityVerb(activity.type) }}</span>
                   </div>
-                  <span class="text-xs text-slate-500 whitespace-nowrap">{{ activity.createdAt }}</span>
+                  <span class="text-xs text-[var(--portal-text-muted)] whitespace-nowrap">{{ activity.createdAt }}</span>
                 </div>
 
-                <h4 class="text-sm text-white font-medium mt-2">{{ activity.title }}</h4>
-                <p class="text-sm text-slate-300 mt-1">{{ activity.description }}</p>
+                <h4 class="text-sm text-[var(--portal-text)] font-medium mt-2">{{ activity.title }}</h4>
+                <p class="text-sm text-[var(--portal-text-soft)] mt-1">{{ activity.description }}</p>
 
-                <div *ngIf="activity.image" class="mt-4 rounded-xl overflow-hidden border border-slate-800/80">
+                <div *ngIf="activity.image" class="mt-4 rounded-xl overflow-hidden border border-[var(--portal-border)]">
                   <img [src]="activity.image" class="w-full h-48 object-cover" alt="" />
                 </div>
 
                 <div class="mt-4 flex flex-wrap items-center gap-2" *ngIf="activity.badge">
-                  <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300">
+                  <span class="text-xs px-2 py-1 rounded-full border border-[var(--portal-border)] text-[var(--portal-text-soft)]">
                     {{ activity.badge }}
                   </span>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-3 mt-4 pt-3 border-t border-slate-800/80">
+                <div class="flex flex-wrap items-center gap-3 mt-4 pt-3 border-t border-[var(--portal-border)]">
                   <button
                     type="button"
                     (click)="onLike(activity.id)"
                     class="min-h-[44px] px-4 rounded-lg border text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors"
                     [ngClass]="activity.liked
                       ? 'border-red-500/60 bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                      : 'border-slate-700 text-slate-200 hover:text-white hover:border-slate-500'"
+                      : 'border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]'"
                   >
                     {{ activity.liked ? '❤️' : '🤍' }} Me gusta{{ activity.likes ? ' · ' + activity.likes : '' }}
                   </button>
                   <button
                     type="button"
                     (click)="onToggleComments(activity.id)"
-                    class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   >
                     💬 Comentar{{ activity.comments ? ' · ' + activity.comments : '' }}
                   </button>
@@ -154,7 +154,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                       (input)="commentTexts[activity.id] = $any($event.target).value"
                       (keydown.enter)="onComment(activity.id)"
                       placeholder="Escribe un comentario..."
-                      class="flex-1 min-h-[40px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      class="flex-1 min-h-[40px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     />
                     <button
                       type="button"
@@ -172,12 +172,12 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
       </section>
 
       <aside *ngIf="showSidebar" class="space-y-6">
-        <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
+        <section class="bg-[var(--portal-surface-soft)] border border-[var(--portal-border)] rounded-2xl p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-white">Amigos activos</h3>
+            <h3 class="text-lg font-semibold text-[var(--portal-text)]">Amigos activos</h3>
             <button
               type="button"
-              class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             >
               Buscar
             </button>
@@ -186,19 +186,19 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
           <div class="space-y-4">
             <div *ngFor="let friend of friends" class="flex items-center gap-3">
               <div class="relative">
-                <div class="h-10 w-10 rounded-xl border border-slate-700 bg-slate-800/80 overflow-hidden flex items-center justify-center text-xs text-slate-300">
+                <div class="h-10 w-10 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] overflow-hidden flex items-center justify-center text-xs text-[var(--portal-text-soft)]">
                   <img *ngIf="friend.avatar" [src]="friend.avatar" class="w-full h-full object-cover" alt="" />
                   <span *ngIf="!friend.avatar">{{ friend.name.slice(0, 2).toUpperCase() }}</span>
                 </div>
                 <div
                   class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border border-slate-900"
-                  [ngClass]="friend.isOnline ? 'bg-red-500' : 'bg-slate-500'"
+                  [ngClass]="friend.isOnline ? 'bg-red-500' : 'bg-[var(--portal-text-muted)]'"
                 ></div>
               </div>
 
               <div class="flex-1 min-w-0">
-                <p class="text-sm text-white font-medium truncate">{{ friend.name }}</p>
-                <p class="text-xs text-slate-500 truncate">
+                <p class="text-sm text-[var(--portal-text)] font-medium truncate">{{ friend.name }}</p>
+                <p class="text-xs text-[var(--portal-text-muted)] truncate">
                   {{ friend.lastActivity }} | {{ friend.isOnline ? 'Online' : 'Offline' }}
                 </p>
               </div>
@@ -207,14 +207,14 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                 <button
                   type="button"
                   (click)="onToggleFollow(friend.id)"
-                  class="min-h-[44px] px-3 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 >
                   {{ friend.following ? 'Siguiendo' : 'Seguir' }}
                 </button>
                 <button
                   type="button"
                   (click)="messageFriend.emit(friend.id)"
-                  class="min-h-[44px] px-3 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   aria-label="Enviar mensaje"
                 >
                   Mensaje
@@ -224,40 +224,40 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
           </div>
         </section>
 
-        <section class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6">
-          <h3 class="text-lg font-semibold text-white mb-4">Tendencias de la red</h3>
+        <section class="bg-[var(--portal-surface-soft)] border border-[var(--portal-border)] rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-[var(--portal-text)] mb-4">Tendencias de la red</h3>
           <div class="space-y-3 text-sm">
             <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Lo mas recomendado</span>
-              <span class="text-white font-medium">Dune 2</span>
+              <span class="text-[var(--portal-text-muted)]">Lo mas recomendado</span>
+              <span class="text-[var(--portal-text)] font-medium">Dune 2</span>
             </div>
             <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Lista mas seguida</span>
-              <span class="text-white font-medium">Sci-Fi epico</span>
+              <span class="text-[var(--portal-text-muted)]">Lista mas seguida</span>
+              <span class="text-[var(--portal-text)] font-medium">Sci-Fi epico</span>
             </div>
             <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Mas comentado</span>
-              <span class="text-white font-medium">The Bear T3</span>
+              <span class="text-[var(--portal-text-muted)]">Mas comentado</span>
+              <span class="text-[var(--portal-text)] font-medium">The Bear T3</span>
             </div>
           </div>
         </section>
 
         <section
-          class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-6"
+          class="bg-[var(--portal-surface-soft)] border border-[var(--portal-border)] rounded-2xl p-6"
           *ngIf="recommendations.length > 0"
         >
-          <h3 class="text-lg font-semibold text-white mb-4">Recomendaciones de amigos</h3>
+          <h3 class="text-lg font-semibold text-[var(--portal-text)] mb-4">Recomendaciones de amigos</h3>
           <div class="space-y-3">
             <div
               *ngFor="let rec of recommendations.slice(0, 3)"
-              class="rounded-xl border border-slate-800/80 bg-slate-950/60 p-4"
+              class="rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4"
             >
-              <p class="text-xs text-slate-500 mb-1">{{ rec.user?.name || 'Amigo' }} recomienda</p>
-              <p class="text-sm text-white font-medium truncate">{{ rec.title }}</p>
-              <p class="text-xs text-slate-400 mt-2 line-clamp-2">"{{ rec.note }}"</p>
-              <div class="mt-3 flex items-center justify-between text-xs text-slate-500">
+              <p class="text-xs text-[var(--portal-text-muted)] mb-1">{{ rec.user?.name || 'Amigo' }} recomienda</p>
+              <p class="text-sm text-[var(--portal-text)] font-medium truncate">{{ rec.title }}</p>
+              <p class="text-xs text-[var(--portal-text-muted)] mt-2 line-clamp-2">"{{ rec.note }}"</p>
+              <div class="mt-3 flex items-center justify-between text-xs text-[var(--portal-text-muted)]">
                 <span>{{ rec.createdAt }}</span>
-                <span class="text-slate-300">{{ rec.rating || '-' }}</span>
+                <span class="text-[var(--portal-text-soft)]">{{ rec.rating || '-' }}</span>
               </div>
             </div>
           </div>

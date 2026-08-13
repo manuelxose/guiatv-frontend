@@ -12,8 +12,8 @@ import { UserContentInteraction } from '../../../../interfaces/user.interface';
     <div class="space-y-6">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 class="text-xl font-semibold text-white">Historial</h2>
-          <p class="text-sm text-slate-400">Todo lo que has visto, dejado pendiente o valorado.</p>
+          <h2 class="text-xl font-semibold text-[var(--portal-text)]">Historial</h2>
+          <p class="text-sm text-[var(--portal-text-muted)]">Todo lo que has visto, dejado pendiente o valorado.</p>
         </div>
       </div>
 
@@ -23,30 +23,30 @@ import { UserContentInteraction } from '../../../../interfaces/user.interface';
           type="button"
           (click)="setFilter(option.id)"
           class="min-h-[40px] rounded-full px-4 text-sm font-semibold transition-colors"
-          [ngClass]="activeFilter === option.id ? 'bg-red-600 text-white' : 'border border-slate-700 bg-slate-900/70 text-slate-300'"
+          [ngClass]="activeFilter === option.id ? 'bg-red-600 text-white' : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
         >
           {{ option.label }}
         </button>
       </div>
 
-      <div *ngIf="filteredItems.length === 0" class="rounded-3xl border border-slate-800 bg-slate-900/60 p-8 text-center">
-        <p class="text-base font-semibold text-white">Aún no hay actividad en este filtro.</p>
-        <p class="mt-2 text-sm text-slate-400">Empieza a valorar o marcar contenido como visto para construir tu perfil.</p>
+      <div *ngIf="filteredItems.length === 0" class="rounded-3xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-8 text-center">
+        <p class="text-base font-semibold text-[var(--portal-text)]">Aún no hay actividad en este filtro.</p>
+        <p class="mt-2 text-sm text-[var(--portal-text-muted)]">Empieza a valorar o marcar contenido como visto para construir tu perfil.</p>
       </div>
 
       <div class="space-y-3">
         <div
           *ngFor="let item of filteredItems"
-          class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4"
+          class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
         >
           <div class="flex items-start gap-3">
-            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-slate-800 text-xs font-semibold text-slate-200">
+            <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--portal-surface-strong)] text-xs font-semibold text-[var(--portal-text-soft)]">
               {{ item.contentType === 'program' ? 'TV' : item.contentType === 'movie' ? 'MOV' : 'SER' }}
             </div>
             <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <p class="truncate text-sm font-semibold text-white">{{ item.contentTitle }}</p>
+                  <p class="truncate text-sm font-semibold text-[var(--portal-text)]">{{ item.contentTitle }}</p>
                   <div class="mt-1 flex flex-wrap gap-2">
                     <span
                       *ngIf="item.platform"
@@ -54,7 +54,7 @@ import { UserContentInteraction } from '../../../../interfaces/user.interface';
                     >
                       {{ item.platform }}
                     </span>
-                    <span class="rounded-full border border-slate-700 px-2.5 py-1 text-[10px] font-semibold text-slate-300">
+                    <span class="rounded-full border border-[var(--portal-border)] px-2.5 py-1 text-[10px] font-semibold text-[var(--portal-text-soft)]">
                       {{ humanStatus(item.status) }}
                     </span>
                   </div>
@@ -62,17 +62,17 @@ import { UserContentInteraction } from '../../../../interfaces/user.interface';
                 <a
                   *ngIf="item.contentId"
                   [routerLink]="detailPathFor(item.contentTitle, item.contentType)"
-                  class="min-h-[34px] rounded-full border border-slate-700 px-3 py-1 text-[11px] font-semibold text-slate-200"
+                  class="min-h-[34px] rounded-full border border-[var(--portal-border)] px-3 py-1 text-[11px] font-semibold text-[var(--portal-text-soft)]"
                 >
                   Ver ficha
                 </a>
               </div>
 
               <div class="mt-4 grid gap-3 md:grid-cols-[180px_140px_auto] md:items-center">
-                <label class="text-xs text-slate-400">
+                <label class="text-xs text-[var(--portal-text-muted)]">
                   Estado
                   <select
-                    class="mt-1 min-h-[38px] w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 text-sm text-white"
+                    class="mt-1 min-h-[38px] w-full rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 text-sm text-[var(--portal-text)]"
                     [ngModel]="item.status"
                     (ngModelChange)="updateItem(item, { status: $event })"
                   >
@@ -83,10 +83,10 @@ import { UserContentInteraction } from '../../../../interfaces/user.interface';
                   </select>
                 </label>
 
-                <label class="text-xs text-slate-400">
+                <label class="text-xs text-[var(--portal-text-muted)]">
                   Nota
                   <select
-                    class="mt-1 min-h-[38px] w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 text-sm text-white"
+                    class="mt-1 min-h-[38px] w-full rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 text-sm text-[var(--portal-text)]"
                     [ngModel]="item.rating || 0"
                     (ngModelChange)="updateItem(item, { rating: normalizeRating($event) })"
                   >
@@ -95,7 +95,7 @@ import { UserContentInteraction } from '../../../../interfaces/user.interface';
                   </select>
                 </label>
 
-                <p class="text-xs text-slate-500">
+                <p class="text-xs text-[var(--portal-text-muted)]">
                   {{ item.updatedAt | date: 'short' }}
                 </p>
               </div>

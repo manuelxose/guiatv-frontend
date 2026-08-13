@@ -45,11 +45,11 @@ interface ForYouItem {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <div class="min-h-screen bg-[#0b0f14] text-slate-100">
+    <div class="min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]">
       <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="mb-8">
-          <h1 class="text-2xl font-bold text-white sm:text-3xl">Para ti</h1>
-          <p class="mt-2 text-sm text-slate-400">
+          <h1 class="text-2xl font-bold text-[var(--portal-text)] sm:text-3xl">Para ti</h1>
+          <p class="mt-2 text-sm text-[var(--portal-text-muted)]">
             Recomendaciones personalizadas basadas en tus gustos y plataformas
           </p>
         </div>
@@ -58,21 +58,21 @@ interface ForYouItem {
         <div *ngIf="loading" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <div
             *ngFor="let i of [1,2,3,4,5,6]"
-            class="animate-pulse rounded-2xl border border-slate-800 bg-slate-900/60 p-4"
+            class="animate-pulse rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
           >
-            <div class="mb-3 h-44 rounded-xl bg-slate-800"></div>
-            <div class="mb-2 h-5 w-3/4 rounded bg-slate-800"></div>
-            <div class="h-4 w-full rounded bg-slate-800/60"></div>
+            <div class="mb-3 h-44 rounded-xl bg-[var(--portal-surface-strong)]"></div>
+            <div class="mb-2 h-5 w-3/4 rounded bg-[var(--portal-surface-strong)]"></div>
+            <div class="h-4 w-full rounded bg-[var(--portal-surface-strong)]"></div>
           </div>
         </div>
 
         <!-- Auth gate -->
         <div
           *ngIf="!loading && requiresAuth"
-          class="mx-auto max-w-lg rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center"
+          class="mx-auto max-w-lg rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-8 text-center"
         >
-          <p class="text-lg font-semibold text-white">Inicia sesión para ver tus recomendaciones</p>
-          <p class="mt-2 text-sm text-slate-400">
+          <p class="text-lg font-semibold text-[var(--portal-text)]">Inicia sesión para ver tus recomendaciones</p>
+          <p class="mt-2 text-sm text-[var(--portal-text-muted)]">
             La sección Para ti usa tus gustos, plataformas favoritas y actividad para construir recomendaciones reales.
           </p>
           <button
@@ -87,10 +87,10 @@ interface ForYouItem {
         <!-- No preferences CTA -->
         <div
           *ngIf="!loading && !requiresAuth && noPreferences"
-          class="mx-auto max-w-lg rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center"
+          class="mx-auto max-w-lg rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-8 text-center"
         >
-          <p class="text-lg font-semibold text-white">Aún no tenemos tus gustos</p>
-          <p class="mt-2 text-sm text-slate-400">
+          <p class="text-lg font-semibold text-[var(--portal-text)]">Aún no tenemos tus gustos</p>
+          <p class="mt-2 text-sm text-[var(--portal-text-muted)]">
             Completa tu perfil con tus géneros y plataformas favoritas para que podamos recomendarte contenido personalizado.
           </p>
           <button
@@ -120,10 +120,10 @@ interface ForYouItem {
         <!-- Empty (has preferences but no results) -->
         <div
           *ngIf="!loading && !requiresAuth && !error && !noPreferences && !items.length"
-          class="mx-auto max-w-lg rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-center"
+          class="mx-auto max-w-lg rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-8 text-center"
         >
-          <p class="text-lg font-semibold text-white">Sin recomendaciones ahora</p>
-          <p class="mt-2 text-sm text-slate-400">
+          <p class="text-lg font-semibold text-[var(--portal-text)]">Sin recomendaciones ahora</p>
+          <p class="mt-2 text-sm text-[var(--portal-text-muted)]">
             No hay recomendaciones que coincidan con tus gustos en este momento. Prueba más tarde o ajusta tus preferencias.
           </p>
         </div>
@@ -135,7 +135,7 @@ interface ForYouItem {
         >
           <div
             *ngFor="let rec of items; trackBy: trackById"
-            class="group cursor-pointer overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 transition-colors hover:border-slate-700"
+            class="group cursor-pointer overflow-hidden rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] transition-colors hover:border-[var(--portal-border)]"
             (click)="openDetail(rec)"
             (keydown.enter)="openDetail(rec)"
             (keydown.space)="$event.preventDefault(); openDetail(rec)"
@@ -143,7 +143,7 @@ interface ForYouItem {
             tabindex="0"
           >
             <!-- Image -->
-            <div class="relative h-48 overflow-hidden bg-slate-800">
+            <div class="relative h-48 overflow-hidden bg-[var(--portal-surface-strong)]">
               <img
                 *ngIf="rec.item.image"
                 [src]="rec.item.image"
@@ -153,7 +153,7 @@ interface ForYouItem {
               />
               <div
                 *ngIf="!rec.item.image"
-                class="flex h-full w-full items-center justify-center text-2xl font-bold text-slate-600"
+                class="flex h-full w-full items-center justify-center text-2xl font-bold text-[var(--portal-text-faint)]"
               >
                 {{ rec.item.contentType === 'program' ? 'TV' : 'VOD' }}
               </div>
@@ -161,16 +161,16 @@ interface ForYouItem {
               <span
                 class="absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-bold"
                 [ngClass]="rec.score >= 0.7
-                  ? 'bg-emerald-500/90 text-white'
+                  ? 'bg-emerald-500/90 text-[var(--portal-text)]'
                   : rec.score >= 0.4
-                    ? 'bg-amber-500/90 text-white'
-                    : 'bg-slate-700/90 text-slate-200'"
+                    ? 'bg-amber-500/90 text-[var(--portal-text)]'
+                    : 'bg-[var(--portal-surface-strong)]/90 text-[var(--portal-text-soft)]'"
               >
                 {{ (rec.score * 100) | number:'1.0-0' }}% match
               </span>
               <!-- Content type badge -->
               <span
-                class="absolute right-3 top-3 rounded-full border border-slate-700/80 bg-slate-900/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-200"
+                class="absolute right-3 top-3 rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--portal-text-soft)]"
               >
                 {{ rec.item.contentType === 'movie' ? 'Película'
                    : rec.item.contentType === 'series' ? 'Serie' : 'TV' }}
@@ -179,11 +179,11 @@ interface ForYouItem {
 
             <!-- Content -->
             <div class="p-4">
-              <h3 class="text-sm font-semibold leading-snug text-white line-clamp-2">
+              <h3 class="text-sm font-semibold leading-snug text-[var(--portal-text)] line-clamp-2">
                 {{ rec.item.title }}
               </h3>
 
-              <div *ngIf="rec.item.releaseYear || rec.item.rating" class="mt-1.5 flex items-center gap-2 text-xs text-slate-400">
+              <div *ngIf="rec.item.releaseYear || rec.item.rating" class="mt-1.5 flex items-center gap-2 text-xs text-[var(--portal-text-muted)]">
                 <span *ngIf="rec.item.releaseYear">{{ rec.item.releaseYear }}</span>
                 <span *ngIf="rec.item.rating" class="flex items-center gap-0.5">
                   <span class="text-amber-400">★</span> {{ rec.item.rating | number:'1.1-1' }}
@@ -191,7 +191,7 @@ interface ForYouItem {
                 <span *ngIf="rec.item.durationMinutes">{{ rec.item.durationMinutes }} min</span>
               </div>
 
-              <p class="mt-2 text-xs leading-relaxed text-slate-300 line-clamp-2">
+              <p class="mt-2 text-xs leading-relaxed text-[var(--portal-text-soft)] line-clamp-2">
                 {{ rec.reason }}
               </p>
 
@@ -207,7 +207,7 @@ interface ForYouItem {
 
               <!-- Where to watch -->
               <div *ngIf="rec.whereToWatch?.length" class="mt-3 flex flex-wrap items-center gap-2">
-                <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Ver en</span>
+                <span class="text-[10px] font-semibold uppercase tracking-wider text-[var(--portal-text-muted)]">Ver en</span>
                 <ng-container *ngFor="let provider of rec.whereToWatch.slice(0, 3)">
                   <img
                     *ngIf="provider.logoUrl"
@@ -219,7 +219,7 @@ interface ForYouItem {
                   />
                   <span
                     *ngIf="!provider.logoUrl"
-                    class="rounded-md border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] text-slate-300"
+                    class="rounded-md border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-2 py-0.5 text-[10px] text-[var(--portal-text-soft)]"
                   >
                     {{ provider.name }}
                   </span>
@@ -235,7 +235,7 @@ interface ForYouItem {
             type="button"
             (click)="loadMore()"
             [disabled]="loadingMore"
-            class="rounded-xl border border-slate-700 bg-slate-900/80 px-6 py-2.5 text-sm font-semibold text-slate-200 disabled:opacity-50"
+            class="rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-6 py-2.5 text-sm font-semibold text-[var(--portal-text-soft)] disabled:opacity-50"
           >
             {{ loadingMore ? 'Cargando…' : 'Cargar más' }}
           </button>

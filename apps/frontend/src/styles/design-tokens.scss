@@ -119,3 +119,79 @@
     --portal-pill-shelf-h: 4rem;
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DARK THEME — driven by `data-theme="dark"` on <html>, set by ThemeService
+// (and, pre-hydration, by the inline no-flash script in index.html).
+// `--guide-*` aliases above reference `--portal-*`, so they adapt automatically.
+// ─────────────────────────────────────────────────────────────────────────────
+html[data-theme='dark'] {
+  color-scheme: dark;
+
+  --portal-bg: #0e1116;
+  --portal-bg-deep: #0a0c10;
+  --portal-bg-elevated: #14181f;
+  --portal-surface: #151a22;
+  --portal-surface-strong: #1d242f;
+  --portal-surface-soft: rgba(21, 26, 34, 0.78);
+  --portal-card: #171d26;
+  --portal-card-elevated: #1e2530;
+  --portal-border: #2a323e;
+  --portal-border-strong: #3c4654;
+  --portal-divider: #232a35;
+
+  --portal-text: #e8ebf1;
+  --portal-text-soft: #c5cbd6;
+  --portal-text-muted: #9aa3b0;
+  --portal-text-faint: #67707d;
+
+  // Same hues, raised lightness for AA contrast against the dark surfaces.
+  // `-soft` variants auto-adapt via color-mix over the dark --portal-card.
+  --accent-live: #e05555;
+  --accent-live-soft: color-mix(in oklch, var(--accent-live) 9%, var(--portal-card));
+  --accent-discover: #8398f6;
+  --accent-discover-soft: color-mix(in oklch, var(--accent-discover) 9%, var(--portal-card));
+  --accent-streaming: #43d09b;
+  --accent-streaming-soft: color-mix(in oklch, var(--accent-streaming) 9%, var(--portal-card));
+  --accent-sports: #eba448;
+  --accent-sports-soft: color-mix(in oklch, var(--accent-sports) 9%, var(--portal-card));
+  --accent-editorial: #e181d9;
+  --accent-editorial-soft: color-mix(in oklch, var(--accent-editorial) 9%, var(--portal-card));
+
+  --guide-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+// Fallback when JS has not yet run (e.g. SSR HTML before hydration, or
+// JavaScript disabled): honor the OS preference for `system` users.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --portal-bg: #0e1116;
+    --portal-bg-deep: #0a0c10;
+    --portal-bg-elevated: #14181f;
+    --portal-surface: #151a22;
+    --portal-surface-strong: #1d242f;
+    --portal-surface-soft: rgba(21, 26, 34, 0.78);
+    --portal-card: #171d26;
+    --portal-card-elevated: #1e2530;
+    --portal-border: #2a323e;
+    --portal-border-strong: #3c4654;
+    --portal-divider: #232a35;
+    --portal-text: #e8ebf1;
+    --portal-text-soft: #c5cbd6;
+    --portal-text-muted: #9aa3b0;
+    --portal-text-faint: #67707d;
+    --accent-live: #e05555;
+    --accent-discover: #8398f6;
+    --accent-streaming: #43d09b;
+    --accent-sports: #eba448;
+    --accent-editorial: #e181d9;
+    --guide-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
+  }
+}

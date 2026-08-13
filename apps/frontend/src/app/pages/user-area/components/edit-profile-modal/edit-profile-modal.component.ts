@@ -12,17 +12,17 @@ import { UserProfile } from '../../../../interfaces/user.interface';
       <div class="absolute inset-0 bg-black/70" (click)="onClose()" aria-hidden="true"></div>
 
       <div
-        class="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
+        class="relative w-full max-w-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="edit-profile-title"
       >
-        <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-          <h2 id="edit-profile-title" class="text-lg font-semibold text-white">Editar perfil</h2>
+        <div class="px-6 py-4 border-b border-[var(--portal-border)] flex items-center justify-between">
+          <h2 id="edit-profile-title" class="text-lg font-semibold text-[var(--portal-text)]">Editar perfil</h2>
           <button
             type="button"
             (click)="onClose()"
-            class="min-h-[44px] px-3 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             aria-label="Cerrar"
           >
             Cerrar
@@ -33,96 +33,96 @@ import { UserProfile } from '../../../../interfaces/user.interface';
           <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-6">
             <div class="flex items-center gap-6">
               <div class="relative">
-                <div class="h-24 w-24 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden">
+                <div class="h-24 w-24 rounded-2xl bg-[var(--portal-surface-strong)] border border-[var(--portal-border)] overflow-hidden">
                   <img [src]="profileForm.get('avatar')?.value || '/assets/gpt-avatar.png'" class="w-full h-full object-cover" alt="" />
                 </div>
               </div>
               <div class="flex-1 space-y-2">
-                <label for="profile-avatar" class="text-xs text-slate-400 uppercase tracking-wider">URL del avatar</label>
+                <label for="profile-avatar" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">URL del avatar</label>
                 <input
                   id="profile-avatar"
                   type="text"
                   formControlName="avatar"
-                  class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 />
               </div>
             </div>
 
             <div class="grid md:grid-cols-2 gap-4">
               <div class="space-y-2">
-                <label for="profile-name" class="text-xs text-slate-400 uppercase tracking-wider">Nombre</label>
+                <label for="profile-name" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Nombre</label>
                 <input
                   id="profile-name"
                   type="text"
                   formControlName="name"
-                  class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 />
               </div>
               <div class="space-y-2">
-                <label for="profile-username" class="text-xs text-slate-400 uppercase tracking-wider">Usuario</label>
+                <label for="profile-username" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Usuario</label>
                 <div class="relative">
-                  <span class="absolute left-4 top-3 text-slate-500">&#64;</span>
+                  <span class="absolute left-4 top-3 text-[var(--portal-text-muted)]">&#64;</span>
                   <input
                     type="text"
                     id="profile-username"
                     formControlName="username"
-                    class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl pl-8 pr-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl pl-8 pr-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   />
                 </div>
               </div>
             </div>
 
             <div class="space-y-2">
-              <label for="profile-bio" class="text-xs text-slate-400 uppercase tracking-wider">Bio</label>
+              <label for="profile-bio" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Bio</label>
               <textarea
                 id="profile-bio"
                 formControlName="bio"
                 rows="3"
-                class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 resize-none"
+                class="w-full bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 py-3 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 resize-none"
               ></textarea>
             </div>
 
             <div class="space-y-2">
-              <label for="profile-location" class="text-xs text-slate-400 uppercase tracking-wider">Ubicacion</label>
+              <label for="profile-location" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Ubicacion</label>
               <input
                 id="profile-location"
                 type="text"
                 formControlName="location"
-                class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               />
             </div>
 
-            <div class="border-t border-slate-800 pt-6 space-y-4">
-              <h3 class="text-sm text-slate-300 font-semibold uppercase tracking-wider">Seguridad</h3>
+            <div class="border-t border-[var(--portal-border)] pt-6 space-y-4">
+              <h3 class="text-sm text-[var(--portal-text-soft)] font-semibold uppercase tracking-wider">Seguridad</h3>
               <p *ngIf="passwordSuccess" class="text-sm text-green-400">{{ passwordSuccess }}</p>
               <p *ngIf="passwordError" class="text-sm text-red-400">{{ passwordError }}</p>
               <div class="space-y-4">
                 <div class="space-y-2">
-                  <label for="profile-current-password" class="text-xs text-slate-400 uppercase tracking-wider">Contrasena actual</label>
+                  <label for="profile-current-password" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Contrasena actual</label>
                   <input
                     id="profile-current-password"
                     type="password"
                     formControlName="currentPassword"
-                    class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   />
                 </div>
                 <div class="grid md:grid-cols-2 gap-4">
                   <div class="space-y-2">
-                    <label for="profile-new-password" class="text-xs text-slate-400 uppercase tracking-wider">Nueva contrasena</label>
+                    <label for="profile-new-password" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Nueva contrasena</label>
                     <input
                       id="profile-new-password"
                       type="password"
                       formControlName="password"
-                      class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     />
                   </div>
                   <div class="space-y-2">
-                    <label for="profile-confirm-password" class="text-xs text-slate-400 uppercase tracking-wider">Confirmar contrasena</label>
+                    <label for="profile-confirm-password" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Confirmar contrasena</label>
                     <input
                       id="profile-confirm-password"
                       type="password"
                       formControlName="confirmPassword"
-                      class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     />
                   </div>
                 </div>
@@ -131,11 +131,11 @@ import { UserProfile } from '../../../../interfaces/user.interface';
           </form>
         </div>
 
-        <div class="px-6 py-4 border-t border-slate-800 flex justify-end gap-3">
+        <div class="px-6 py-4 border-t border-[var(--portal-border)] flex justify-end gap-3">
           <button
             type="button"
             (click)="onClose()"
-            class="min-h-[44px] px-4 rounded-xl border border-slate-700 text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[44px] px-4 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             Cancelar
           </button>

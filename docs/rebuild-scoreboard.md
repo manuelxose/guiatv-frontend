@@ -315,6 +315,19 @@ Final runtime check: API and SSR active, **0 restarts**, approximately 309 MiB a
 
 **Final performance variance note**: repeated public mobile runs ranged from 48 to 78 on the shared host/CDN. The best uncontended run (78, TBT 370ms) and the worst contended run (48, TBT 2.27s) both retained accessibility 100, SEO 100 and CLS 0. Angular incremental hydration was production A/B tested and reverted because it reduced transferred bytes but worsened TBT; the stable event-replay hydration remains active. The release gate therefore records the observed range rather than presenting one favorable sample as deterministic.
 
+## Round 31 result — real light/dark theme system + dead-code/dependency cleanup
+
+The final UX/UI gap from the brief (no true light/dark mode, hardcoded theme surfaces) and the cleanup debt were closed:
+
+- **`ThemeService`** (`services/theme.service.ts`, root-provided): `light`/`dark`/`system`, persisted via `StorageService` (SSR-safe no-op on server), mirrored to `documentElement[data-theme]` + `color-scheme`, live-tracks `prefers-color-scheme` for `system`. Inline no-flash script added to `index.html` (resolves persisted/system preference before first paint) with dark-aware critical CSS.
+- **Dark tokens** added to `styles/design-tokens.scss` (`html[data-theme='dark']`) plus a `prefers-color-scheme` fallback for no-JS/SSR; `--guide-*` aliases adapt automatically.
+- **Theme toggle** in `unified-top-nav` (cycles light → dark → system) with `aria-label`/`title` and three-state icon.
+- **Token migration**: chat IA, chat social, `unified-chat-shell`, `notification-bell`, `auth-login-modal`, `interaction-buttons`, `share-buttons`, `where-to-watch`, `breadcrumb`, `catalog-*`, `faq-section`, `user-area` + all secondary pages (`about`, `legal/*`, `register`, `canal-completo`, `catalog-detail`, `streaming-comparison`, `for-you`, `public-profile`, `stats`, `press-kit`, `not-found`, `content-page`) migrated from hardcoded `slate-*/gray-*/#081018/text-white` to semantic tokens (~1.900 replacements). Red-accent buttons keep white text for contrast; inverted active pills use `--portal-text`/`--portal-bg`.
+- **Dead code removed** (selector + class + import + route + tests verified, zero remaining references): 2 blog layout components + 3 blog cards + 2 legacy blog pages, 9 legacy components (`autocomplete`, `card-list`, `card-slider`, `filter`, `menu`, `search-overlay`, `slider`, `unified-shortcut-strip`, `unified-subnav`), `chat-onboarding-card`, `genre-onboarding`, `desktop-chat-dock`/`desktop-chat-rail`, `content-redirect`, `milista`, typo'd `pelicula-details` files, 4 orphaned `user-area` subcomponents. 61 files / −8.233 líneas.
+- **Dead dependencies removed**: `swiper`, `leaflet`, `@types/leaflet`, `embla-carousel`, `@angular/material` (zero imports, lock + node_modules clean); their CSS dropped from `angular.json`.
+
+**Verification**: production build PASS, production SSR build PASS, frontend unit **24/24 PASS** (6 new `ThemeService` cases), frontend lint **0 errors / 674 warnings** (unchanged visible backlog), `git diff --check` PASS. Documentation added: `docs/UXUI_RECOVERY_STATUS.md`. Changes are uncommitted pending visual QA and review.
+
 > Historical note: the `Known bugs queued for Round 2` section below is retained as the original audit trail. Its functional items were resolved in subsequent rounds and it is not the current work queue.
 
 ## Known bugs queued for Round 2

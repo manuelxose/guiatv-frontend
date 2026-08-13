@@ -65,18 +65,18 @@ const SORT_OPTIONS = [
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   template: `
     <div class="mx-auto max-w-4xl space-y-6">
-      <div class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
+      <div class="rounded-3xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 class="text-xl font-semibold text-white">Ajustes de cuenta</h2>
-            <p class="text-sm text-slate-400">
+            <h2 class="text-xl font-semibold text-[var(--portal-text)]">Ajustes de cuenta</h2>
+            <p class="text-sm text-[var(--portal-text-muted)]">
               Perfil, privacidad, plataformas y comportamiento por defecto del explorador.
             </p>
           </div>
           <button
             type="button"
             (click)="onEditProfile()"
-            class="min-h-[44px] rounded-xl border border-slate-700 px-5 py-2.5 text-slate-200 hover:border-slate-500 hover:text-white"
+            class="min-h-[44px] rounded-xl border border-[var(--portal-border)] px-5 py-2.5 text-[var(--portal-text-soft)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
           >
             Editar perfil
           </button>
@@ -84,100 +84,100 @@ const SORT_OPTIONS = [
 
         <form [formGroup]="settingsForm" (ngSubmit)="onSubmit()" class="mt-6 space-y-8">
           <section class="space-y-4">
-            <h3 class="text-xs uppercase tracking-[0.3em] text-slate-500">Perfil</h3>
+            <h3 class="text-xs uppercase tracking-[0.3em] text-[var(--portal-text-muted)]">Perfil</h3>
             <div class="grid gap-4 sm:grid-cols-2">
-              <div class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
-                <p class="text-xs uppercase tracking-wider text-slate-500">Nombre</p>
-                <p class="mt-2 text-sm text-slate-200">{{ profile?.name || '-' }}</p>
+              <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
+                <p class="text-xs uppercase tracking-wider text-[var(--portal-text-muted)]">Nombre</p>
+                <p class="mt-2 text-sm text-[var(--portal-text-soft)]">{{ profile?.name || '-' }}</p>
               </div>
-              <div class="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
-                <p class="text-xs uppercase tracking-wider text-slate-500">Usuario</p>
-                <p class="mt-2 text-sm text-slate-200">{{ profile?.username || '-' }}</p>
+              <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
+                <p class="text-xs uppercase tracking-wider text-[var(--portal-text-muted)]">Usuario</p>
+                <p class="mt-2 text-sm text-[var(--portal-text-soft)]">{{ profile?.username || '-' }}</p>
               </div>
             </div>
           </section>
 
           <section class="space-y-4">
-            <h3 class="text-xs uppercase tracking-[0.3em] text-slate-500">Privacidad</h3>
+            <h3 class="text-xs uppercase tracking-[0.3em] text-[var(--portal-text-muted)]">Privacidad</h3>
             <div class="space-y-3">
-              <label class="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+              <label class="flex items-center justify-between rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
                 <div>
-                  <span class="block text-sm font-medium text-white">Perfil público</span>
-                  <span class="text-xs text-slate-500">Permite que otros usuarios vean tu perfil.</span>
+                  <span class="block text-sm font-medium text-[var(--portal-text)]">Perfil público</span>
+                  <span class="text-xs text-[var(--portal-text-muted)]">Permite que otros usuarios vean tu perfil.</span>
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="profilePublic" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-slate-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
 
-              <label class="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+              <label class="flex items-center justify-between rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
                 <div>
-                  <span class="block text-sm font-medium text-white">Compartir actividad</span>
-                  <span class="text-xs text-slate-500">Publica lo que ves y valoras con tus amigos.</span>
+                  <span class="block text-sm font-medium text-[var(--portal-text)]">Compartir actividad</span>
+                  <span class="text-xs text-[var(--portal-text-muted)]">Publica lo que ves y valoras con tus amigos.</span>
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="shareActivity" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-slate-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
 
-              <label class="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+              <label class="flex items-center justify-between rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
                 <div>
-                  <span class="block text-sm font-medium text-white">Mostrar en línea</span>
-                  <span class="text-xs text-slate-500">Tus amigos pueden saber cuándo estás conectado.</span>
+                  <span class="block text-sm font-medium text-[var(--portal-text)]">Mostrar en línea</span>
+                  <span class="text-xs text-[var(--portal-text-muted)]">Tus amigos pueden saber cuándo estás conectado.</span>
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="showOnline" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-slate-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
             </div>
           </section>
 
           <section class="space-y-4">
-            <h3 class="text-xs uppercase tracking-[0.3em] text-slate-500">Notificaciones</h3>
+            <h3 class="text-xs uppercase tracking-[0.3em] text-[var(--portal-text-muted)]">Notificaciones</h3>
             <div class="space-y-3">
-              <label class="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+              <label class="flex items-center justify-between rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
                 <div>
-                  <span class="block text-sm font-medium text-white">Recomendaciones</span>
-                  <span class="text-xs text-slate-500">Avisos sobre sugerencias sociales y personalizadas.</span>
+                  <span class="block text-sm font-medium text-[var(--portal-text)]">Recomendaciones</span>
+                  <span class="text-xs text-[var(--portal-text-muted)]">Avisos sobre sugerencias sociales y personalizadas.</span>
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="recommendations" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-slate-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
 
-              <label class="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+              <label class="flex items-center justify-between rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
                 <div>
-                  <span class="block text-sm font-medium text-white">Nuevos seguidores</span>
-                  <span class="text-xs text-slate-500">Cuando alguien te sigue o interactúa con tu perfil.</span>
+                  <span class="block text-sm font-medium text-[var(--portal-text)]">Nuevos seguidores</span>
+                  <span class="text-xs text-[var(--portal-text-muted)]">Cuando alguien te sigue o interactúa con tu perfil.</span>
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="followers" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-slate-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
 
-              <label class="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+              <label class="flex items-center justify-between rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
                 <div>
-                  <span class="block text-sm font-medium text-white">Resumen semanal</span>
-                  <span class="text-xs text-slate-500">Actividad, recomendaciones y uso de la semana.</span>
+                  <span class="block text-sm font-medium text-[var(--portal-text)]">Resumen semanal</span>
+                  <span class="text-xs text-[var(--portal-text-muted)]">Actividad, recomendaciones y uso de la semana.</span>
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="weeklySummary" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-slate-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
             </div>
           </section>
 
           <section class="space-y-4">
-            <h3 class="text-xs uppercase tracking-[0.3em] text-slate-500">Gustos y plataformas</h3>
+            <h3 class="text-xs uppercase tracking-[0.3em] text-[var(--portal-text-muted)]">Gustos y plataformas</h3>
 
             <div>
-              <p class="mb-3 text-sm font-medium text-white">Géneros favoritos</p>
+              <p class="mb-3 text-sm font-medium text-[var(--portal-text)]">Géneros favoritos</p>
               <div class="flex flex-wrap gap-2">
                 <button
                   *ngFor="let genre of genreOptions"
@@ -186,7 +186,7 @@ const SORT_OPTIONS = [
                   class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
                   [ngClass]="selectedGenres.includes(genre)
                     ? 'border-red-500 bg-red-600 text-white'
-                    : 'border-slate-700 bg-slate-950/60 text-slate-300'"
+                    : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                 >
                   {{ genre }}
                 </button>
@@ -194,7 +194,7 @@ const SORT_OPTIONS = [
             </div>
 
             <div>
-              <p class="mb-3 text-sm font-medium text-white">Plataformas disponibles</p>
+              <p class="mb-3 text-sm font-medium text-[var(--portal-text)]">Plataformas disponibles</p>
               <div class="flex flex-wrap gap-2">
                 <button
                   *ngFor="let platform of platformOptions"
@@ -203,7 +203,7 @@ const SORT_OPTIONS = [
                   class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
                   [ngClass]="selectedPlatforms.includes(platform)
                     ? 'border-sky-500 bg-sky-500/20 text-sky-100'
-                    : 'border-slate-700 bg-slate-950/60 text-slate-300'"
+                    : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                 >
                   {{ platform }}
                 </button>
@@ -212,11 +212,11 @@ const SORT_OPTIONS = [
           </section>
 
           <section class="space-y-4">
-            <h3 class="text-xs uppercase tracking-[0.3em] text-slate-500">Exploración por defecto</h3>
+            <h3 class="text-xs uppercase tracking-[0.3em] text-[var(--portal-text-muted)]">Exploración por defecto</h3>
 
-            <div class="space-y-4 rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4">
+            <div class="space-y-4 rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
               <div>
-                <p class="mb-3 text-sm font-medium text-white">Tipos de contenido</p>
+                <p class="mb-3 text-sm font-medium text-[var(--portal-text)]">Tipos de contenido</p>
                 <div class="flex flex-wrap gap-2">
                   <button
                     *ngFor="let option of typeOptions"
@@ -225,7 +225,7 @@ const SORT_OPTIONS = [
                     class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
                     [ngClass]="selectedTypes.includes(option.id)
                       ? 'border-emerald-500 bg-emerald-500/20 text-emerald-100'
-                      : 'border-slate-700 bg-slate-950/60 text-slate-300'"
+                      : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                   >
                     {{ option.label }}
                   </button>
@@ -233,7 +233,7 @@ const SORT_OPTIONS = [
               </div>
 
               <div>
-                <p class="mb-3 text-sm font-medium text-white">Disponibilidad</p>
+                <p class="mb-3 text-sm font-medium text-[var(--portal-text)]">Disponibilidad</p>
                 <div class="flex flex-wrap gap-2">
                   <button
                     *ngFor="let option of availabilityOptions"
@@ -242,7 +242,7 @@ const SORT_OPTIONS = [
                     class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
                     [ngClass]="selectedAvailability.includes(option.id)
                       ? 'border-amber-500 bg-amber-500/20 text-amber-100'
-                      : 'border-slate-700 bg-slate-950/60 text-slate-300'"
+                      : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                   >
                     {{ option.label }}
                   </button>
@@ -250,7 +250,7 @@ const SORT_OPTIONS = [
               </div>
 
               <div>
-                <p class="mb-3 text-sm font-medium text-white">Orden inicial</p>
+                <p class="mb-3 text-sm font-medium text-[var(--portal-text)]">Orden inicial</p>
                 <div class="flex flex-wrap gap-2">
                   <button
                     *ngFor="let option of sortOptions"
@@ -259,7 +259,7 @@ const SORT_OPTIONS = [
                     class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
                     [ngClass]="selectedSort === option.id
                       ? 'border-red-500 bg-red-600 text-white'
-                      : 'border-slate-700 bg-slate-950/60 text-slate-300'"
+                      : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                   >
                     {{ option.label }}
                   </button>
@@ -268,11 +268,11 @@ const SORT_OPTIONS = [
             </div>
           </section>
 
-          <div class="flex flex-wrap justify-end gap-3 border-t border-slate-800/80 pt-6">
+          <div class="flex flex-wrap justify-end gap-3 border-t border-[var(--portal-border)] pt-6">
             <button
               type="button"
               (click)="onReset()"
-              class="min-h-[44px] rounded-xl border border-slate-700 px-6 py-2.5 text-slate-200 hover:border-slate-500 hover:text-white"
+              class="min-h-[44px] rounded-xl border border-[var(--portal-border)] px-6 py-2.5 text-[var(--portal-text-soft)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
             >
               Cancelar
             </button>
@@ -287,36 +287,36 @@ const SORT_OPTIONS = [
       </div>
 
       <!-- Sessions section -->
-      <div class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
+      <div class="rounded-3xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h3 class="text-lg font-semibold text-white">Sesiones activas</h3>
-            <p class="text-sm text-slate-400">Dispositivos con sesión iniciada en tu cuenta.</p>
+            <h3 class="text-lg font-semibold text-[var(--portal-text)]">Sesiones activas</h3>
+            <p class="text-sm text-[var(--portal-text-muted)]">Dispositivos con sesión iniciada en tu cuenta.</p>
           </div>
           <button
             type="button"
             (click)="loadSessions()"
-            class="min-h-[36px] rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-200"
+            class="min-h-[36px] rounded-xl border border-[var(--portal-border)] px-4 py-2 text-xs font-semibold text-[var(--portal-text-soft)]"
           >
             {{ sessionsLoaded ? 'Actualizar' : 'Ver sesiones' }}
           </button>
         </div>
 
-        <div *ngIf="sessionsLoading" class="mt-4 text-sm text-slate-400">Cargando sesiones…</div>
+        <div *ngIf="sessionsLoading" class="mt-4 text-sm text-[var(--portal-text-muted)]">Cargando sesiones…</div>
 
         <div *ngIf="sessionsLoaded && !sessionsLoading" class="mt-4 space-y-3">
           <div
             *ngFor="let session of sessions"
-            class="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4"
+            class="flex items-center justify-between rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4"
           >
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-white">
+              <p class="text-sm font-medium text-[var(--portal-text)]">
                 {{ getDeviceLabel(session) }}
                 <span *ngIf="session.current" class="ml-2 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
                   Actual
                 </span>
               </p>
-              <p class="mt-1 text-xs text-slate-500">
+              <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
                 {{ session.ipAddress || 'IP desconocida' }}
                 · Última actividad: {{ formatSessionDate(session.lastUsedAt || session.createdAt) }}
               </p>
@@ -325,13 +325,13 @@ const SORT_OPTIONS = [
               *ngIf="!session.current"
               type="button"
               (click)="revokeSession(session.id)"
-              class="ml-3 min-h-[34px] rounded-xl border border-slate-700 px-3 text-xs font-semibold text-slate-300 hover:border-red-500/50 hover:text-red-300"
+              class="ml-3 min-h-[34px] rounded-xl border border-[var(--portal-border)] px-3 text-xs font-semibold text-[var(--portal-text-soft)] hover:border-red-500/50 hover:text-red-300"
             >
               Cerrar
             </button>
           </div>
 
-          <div *ngIf="!sessions.length" class="text-sm text-slate-500">No se encontraron sesiones activas.</div>
+          <div *ngIf="!sessions.length" class="text-sm text-[var(--portal-text-muted)]">No se encontraron sesiones activas.</div>
 
           <button
             *ngIf="sessions.length > 1"
@@ -345,27 +345,27 @@ const SORT_OPTIONS = [
       </div>
 
       <!-- Blocked users section -->
-      <div class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
+      <div class="rounded-3xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h3 class="text-lg font-semibold text-white">Usuarios bloqueados</h3>
-            <p class="text-sm text-slate-400">Usuarios a los que has bloqueado.</p>
+            <h3 class="text-lg font-semibold text-[var(--portal-text)]">Usuarios bloqueados</h3>
+            <p class="text-sm text-[var(--portal-text-muted)]">Usuarios a los que has bloqueado.</p>
           </div>
           <button
             type="button"
             (click)="loadBlockedUsers()"
-            class="min-h-[36px] rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-200"
+            class="min-h-[36px] rounded-xl border border-[var(--portal-border)] px-4 py-2 text-xs font-semibold text-[var(--portal-text-soft)]"
           >
             {{ blockedLoaded ? 'Actualizar' : 'Ver bloqueados' }}
           </button>
         </div>
 
-        <div *ngIf="blockedLoading" class="mt-4 text-sm text-slate-400">Cargando…</div>
+        <div *ngIf="blockedLoading" class="mt-4 text-sm text-[var(--portal-text-muted)]">Cargando…</div>
 
         <div *ngIf="blockedLoaded && !blockedLoading" class="mt-4 space-y-3">
           <div
             *ngFor="let user of blockedUsers"
-            class="flex items-center justify-between rounded-2xl border border-slate-800/80 bg-slate-950/60 p-4"
+            class="flex items-center justify-between rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4"
           >
             <div class="flex items-center gap-3">
               <img
@@ -374,35 +374,35 @@ const SORT_OPTIONS = [
                 class="h-10 w-10 rounded-full object-cover"
               />
               <div>
-                <p class="text-sm font-medium text-white">{{ user.name }}</p>
-                <p class="text-xs text-slate-500">&#64;{{ user.username }}</p>
+                <p class="text-sm font-medium text-[var(--portal-text)]">{{ user.name }}</p>
+                <p class="text-xs text-[var(--portal-text-muted)]">&#64;{{ user.username }}</p>
               </div>
             </div>
             <button
               type="button"
               (click)="unblockUser(user.id)"
-              class="min-h-[34px] rounded-xl border border-slate-700 px-3 text-xs font-semibold text-slate-300 hover:border-emerald-500/50 hover:text-emerald-300"
+              class="min-h-[34px] rounded-xl border border-[var(--portal-border)] px-3 text-xs font-semibold text-[var(--portal-text-soft)] hover:border-emerald-500/50 hover:text-emerald-300"
             >
               Desbloquear
             </button>
           </div>
 
-          <div *ngIf="!blockedUsers.length" class="text-sm text-slate-500">No tienes usuarios bloqueados.</div>
+          <div *ngIf="!blockedUsers.length" class="text-sm text-[var(--portal-text-muted)]">No tienes usuarios bloqueados.</div>
         </div>
       </div>
 
       <!-- Data export section -->
-      <div class="rounded-3xl border border-slate-800/80 bg-slate-900/60 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
+      <div class="rounded-3xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h3 class="text-lg font-semibold text-white">Exportar mis datos</h3>
-            <p class="text-sm text-slate-400">Descarga un archivo con todos tus datos de la plataforma (RGPD).</p>
+            <h3 class="text-lg font-semibold text-[var(--portal-text)]">Exportar mis datos</h3>
+            <p class="text-sm text-[var(--portal-text-muted)]">Descarga un archivo con todos tus datos de la plataforma (RGPD).</p>
           </div>
           <button
             type="button"
             (click)="exportData()"
             [disabled]="exporting"
-            class="min-h-[44px] rounded-xl border border-slate-700 px-5 py-2.5 text-slate-200 hover:border-slate-500 hover:text-white disabled:opacity-50"
+            class="min-h-[44px] rounded-xl border border-[var(--portal-border)] px-5 py-2.5 text-[var(--portal-text-soft)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)] disabled:opacity-50"
           >
             {{ exporting ? 'Exportando…' : 'Descargar mis datos' }}
           </button>
@@ -412,7 +412,7 @@ const SORT_OPTIONS = [
       <!-- Danger zone -->
       <div class="rounded-3xl border border-red-500/30 bg-red-500/5 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
         <h3 class="text-lg font-semibold text-red-200">Zona de peligro</h3>
-        <p class="mt-1 text-sm text-slate-400">
+        <p class="mt-1 text-sm text-[var(--portal-text-muted)]">
           Eliminar tu cuenta es permanente. Se borrarán todos tus datos: perfil, listas, favoritos, actividad, conversaciones y preferencias del asistente.
         </p>
 
@@ -426,7 +426,7 @@ const SORT_OPTIONS = [
           </button>
         </div>
 
-        <div *ngIf="showDeleteConfirm" class="mt-4 space-y-3 rounded-2xl border border-red-500/30 bg-slate-950/60 p-4">
+        <div *ngIf="showDeleteConfirm" class="mt-4 space-y-3 rounded-2xl border border-red-500/30 bg-[var(--portal-bg-deep)] p-4">
           <p class="text-sm font-medium text-red-100">
             Escribe tu contraseña para confirmar la eliminación de tu cuenta.
           </p>
@@ -434,7 +434,7 @@ const SORT_OPTIONS = [
             type="password"
             [(ngModel)]="deletePassword"
             placeholder="Tu contraseña actual"
-            class="w-full rounded-xl border border-slate-700 bg-slate-900/80 px-4 py-2.5 text-sm text-white outline-none placeholder:text-slate-600 focus:border-red-500/50"
+            class="w-full rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-4 py-2.5 text-sm text-[var(--portal-text)] outline-none placeholder:text-[var(--portal-text-faint)] focus:border-red-500/50"
           />
           <p *ngIf="deleteError" class="text-xs text-red-400">{{ deleteError }}</p>
           <div class="flex gap-3">
@@ -449,7 +449,7 @@ const SORT_OPTIONS = [
             <button
               type="button"
               (click)="showDeleteConfirm = false; deletePassword = ''; deleteError = ''"
-              class="min-h-[44px] rounded-xl border border-slate-700 px-5 py-2.5 text-slate-300"
+              class="min-h-[44px] rounded-xl border border-[var(--portal-border)] px-5 py-2.5 text-[var(--portal-text-soft)]"
             >
               Cancelar
             </button>
@@ -461,7 +461,7 @@ const SORT_OPTIONS = [
         <button
           type="button"
           (click)="onLogout()"
-          class="min-h-[44px] rounded-xl border border-slate-800 px-6 py-2.5 text-slate-400 hover:border-slate-500 hover:text-white"
+          class="min-h-[44px] rounded-xl border border-[var(--portal-border)] px-6 py-2.5 text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
         >
           Cerrar sesión
         </button>

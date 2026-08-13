@@ -15,45 +15,45 @@ import { UserService } from '../../../../services/user.service';
           type="text"
           (input)="onSearch($any($event.target).value)"
           placeholder="Buscar usuarios por nombre..."
-          class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl pl-10 pr-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         />
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--portal-text-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <circle cx="11" cy="11" r="6.5"></circle>
           <path stroke-linecap="round" d="M16 16l4.5 4.5"></path>
         </svg>
       </div>
 
       <div *ngIf="searching" class="text-center py-4">
-        <div class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-slate-600 border-t-red-500"></div>
+        <div class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[var(--portal-border-strong)] border-t-red-500"></div>
       </div>
 
-      <div *ngIf="!searching && results.length === 0 && searched" class="text-center py-6 text-sm text-slate-500">
+      <div *ngIf="!searching && results.length === 0 && searched" class="text-center py-6 text-sm text-[var(--portal-text-muted)]">
         No se encontraron usuarios.
       </div>
 
       <div class="space-y-2">
         <div
           *ngFor="let user of results"
-          class="flex items-center gap-3 rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 hover:bg-slate-800/40 transition-colors cursor-pointer"
+          class="flex items-center gap-3 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-3 hover:bg-[var(--portal-surface-strong)] transition-colors cursor-pointer"
           (click)="openProfile(user.id)"
           (keydown.enter)="openProfile(user.id)"
           (keydown.space)="$event.preventDefault(); openProfile(user.id)"
           role="button"
           tabindex="0"
         >
-          <div class="h-10 w-10 rounded-xl border border-slate-700 bg-slate-800/80 overflow-hidden flex items-center justify-center text-xs text-slate-300 shrink-0">
+          <div class="h-10 w-10 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] overflow-hidden flex items-center justify-center text-xs text-[var(--portal-text-soft)] shrink-0">
             <img *ngIf="user.avatar" [src]="user.avatar" class="w-full h-full object-cover" alt="" />
             <span *ngIf="!user.avatar">{{ (user.name || 'U').slice(0, 1) }}</span>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm text-white font-medium truncate">{{ user.name }}</p>
+            <p class="text-sm text-[var(--portal-text)] font-medium truncate">{{ user.name }}</p>
           </div>
           <button
             type="button"
             (click)="onToggleFollow(user, $event)"
             class="min-h-[36px] px-4 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             [ngClass]="user.isFollowing
-              ? 'border border-slate-700 text-slate-200 hover:border-slate-500'
+              ? 'border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:border-[var(--portal-border-strong)]'
               : 'bg-red-600 text-white hover:bg-red-500'"
           >
             {{ user.isFollowing ? 'Siguiendo' : 'Seguir' }}

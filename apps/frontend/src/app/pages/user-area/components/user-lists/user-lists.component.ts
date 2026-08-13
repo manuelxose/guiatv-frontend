@@ -22,8 +22,8 @@ const COVER_GRADIENTS = [
     <div class="space-y-6">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 class="text-xl font-semibold text-white">Mis listas</h2>
-          <p class="text-sm text-slate-400">Organiza tu contenido favorito con control total.</p>
+          <h2 class="text-xl font-semibold text-[var(--portal-text)]">Mis listas</h2>
+          <p class="text-sm text-[var(--portal-text-muted)]">Organiza tu contenido favorito con control total.</p>
         </div>
         <button
           type="button"
@@ -34,13 +34,13 @@ const COVER_GRADIENTS = [
         </button>
       </div>
 
-      <div *ngIf="lists.length === 0 && !inlineCreating" class="rounded-2xl border border-slate-800/80 bg-slate-900/60 p-8 text-center">
-        <p class="text-white font-medium mb-2">Aún no tienes listas.</p>
-        <p class="text-sm text-slate-400 mb-6">Crea una lista para guardar series, programas y canales.</p>
+      <div *ngIf="lists.length === 0 && !inlineCreating" class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-8 text-center">
+        <p class="text-[var(--portal-text)] font-medium mb-2">Aún no tienes listas.</p>
+        <p class="text-sm text-[var(--portal-text-muted)] mb-6">Crea una lista para guardar series, programas y canales.</p>
         <button
           type="button"
           (click)="startInlineCreate()"
-          class="min-h-[44px] px-6 py-2.5 rounded-xl border border-slate-700 text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="min-h-[44px] px-6 py-2.5 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         >
           Crear primera lista
         </button>
@@ -54,18 +54,18 @@ const COVER_GRADIENTS = [
           tabindex="0"
           (click)="startInlineCreate()"
           (keydown.enter)="startInlineCreate()"
-          class="group relative rounded-2xl border border-dashed border-slate-700/80 bg-slate-900/40 hover:bg-slate-900/60 text-left p-5 min-h-[220px] flex flex-col items-center justify-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="group relative rounded-2xl border border-dashed border-[var(--portal-border)] bg-[var(--portal-surface-soft)] hover:bg-[var(--portal-surface-soft)] text-left p-5 min-h-[220px] flex flex-col items-center justify-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         >
-          <div class="h-12 w-12 rounded-full border border-slate-700 flex items-center justify-center text-slate-300 text-xl">
+          <div class="h-12 w-12 rounded-full border border-[var(--portal-border)] flex items-center justify-center text-[var(--portal-text-soft)] text-xl">
             +
           </div>
-          <span class="text-sm text-slate-300 font-medium">Crear nueva lista</span>
+          <span class="text-sm text-[var(--portal-text-soft)] font-medium">Crear nueva lista</span>
         </div>
 
         <!-- Active inline create form -->
         <div
           *ngIf="inlineCreating"
-          class="rounded-2xl border border-red-500/40 bg-slate-900/80 p-5 min-h-[220px] flex flex-col justify-center gap-3"
+          class="rounded-2xl border border-red-500/40 bg-[var(--portal-surface-soft)] p-5 min-h-[220px] flex flex-col justify-center gap-3"
         >
           <div class="h-10 w-10 mx-auto rounded-full bg-red-600/20 flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -78,14 +78,14 @@ const COVER_GRADIENTS = [
             [(ngModel)]="inlineTitle"
             (keydown.enter)="submitInlineCreate()"
             (keydown.escape)="cancelInlineCreate()"
-            class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             placeholder="Nombre de la lista"
           />
           <div class="flex items-center justify-between gap-2">
             <button
               type="button"
               (click)="onOpenCreateModal()"
-              class="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-2"
+              class="text-xs text-[var(--portal-text-muted)] hover:text-[var(--portal-text-soft)] underline underline-offset-2"
             >
               Más opciones
             </button>
@@ -93,7 +93,7 @@ const COVER_GRADIENTS = [
               <button
                 type="button"
                 (click)="cancelInlineCreate()"
-                class="min-h-[36px] px-3 rounded-lg border border-slate-700 text-xs text-slate-300 hover:text-white hover:border-slate-500"
+                class="min-h-[36px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
               >
                 Cancelar
               </button>
@@ -116,7 +116,7 @@ const COVER_GRADIENTS = [
           tabindex="0"
           (click)="onSelect(list)"
           (keydown.enter)="onSelect(list)"
-          class="group rounded-2xl border border-slate-800/80 bg-slate-900/60 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="group rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         >
           <div class="relative aspect-video">
             <img
@@ -131,7 +131,7 @@ const COVER_GRADIENTS = [
               [ngClass]="getGradientClass(list.title)"
             >
               <div class="absolute inset-0 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[var(--portal-text)]/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
                 </svg>
               </div>
@@ -140,23 +140,23 @@ const COVER_GRADIENTS = [
           <div class="p-4 space-y-3">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <h3 class="text-base font-semibold text-white truncate">{{ list.title }}</h3>
-                <p class="text-xs text-slate-500 line-clamp-2" *ngIf="list.description">
+                <h3 class="text-base font-semibold text-[var(--portal-text)] truncate">{{ list.title }}</h3>
+                <p class="text-xs text-[var(--portal-text-muted)] line-clamp-2" *ngIf="list.description">
                   {{ list.description }}
                 </p>
               </div>
-              <span class="text-xs px-2 py-1 rounded-full border border-slate-700 text-slate-300 whitespace-nowrap">
+              <span class="text-xs px-2 py-1 rounded-full border border-[var(--portal-border)] text-[var(--portal-text-soft)] whitespace-nowrap">
                 {{ list.itemsCount }} items
               </span>
             </div>
             <div class="flex items-center justify-between gap-3">
-              <span class="text-[11px] uppercase tracking-[0.2em] text-slate-500">
+              <span class="text-[11px] uppercase tracking-[0.2em] text-[var(--portal-text-muted)]">
                 {{ list.visibility === 'public' ? 'Público' : list.visibility === 'friends' ? 'Amigos' : 'Privado' }}
               </span>
               <button
                 type="button"
                 (click)="$event.stopPropagation(); onSelect(list)"
-                class="min-h-[44px] px-4 rounded-lg border border-slate-700 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               >
                 Abrir
               </button>

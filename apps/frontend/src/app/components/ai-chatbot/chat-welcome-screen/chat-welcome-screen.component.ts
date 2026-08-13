@@ -33,14 +33,14 @@ import { CommonModule } from '@angular/common';
         <button
           type="button"
           (click)="register.emit()"
-          class="min-h-[44px] rounded-xl bg-red-600 px-5 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:bg-red-500"
+          class="min-h-[44px] rounded-xl bg-red-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
         >
           Crear cuenta gratis
         </button>
         <button
           type="button"
           (click)="login.emit()"
-          class="min-h-[44px] rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg)] px-5 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-slate-500 hover:text-[var(--portal-text)]"
+          class="min-h-[44px] rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg)] px-5 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
         >
           Iniciar sesión
         </button>

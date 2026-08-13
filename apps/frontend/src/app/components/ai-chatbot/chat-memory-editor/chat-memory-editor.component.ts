@@ -31,7 +31,7 @@ import { AssistantMemorySnapshot, MemoryEditorField } from '../../../interfaces/
           <input
             type="text"
             [placeholder]="field.placeholder"
-            class="w-24 rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-2 py-0.5 text-[10px] text-[var(--portal-text)] outline-none placeholder:text-slate-600 focus:border-red-500/50"
+            class="w-24 rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-2 py-0.5 text-[10px] text-[var(--portal-text)] outline-none placeholder:text-[var(--portal-text-faint)] focus:border-red-500/50"
             (keydown.enter)="addValue(field.key, $event)"
           />
         </div>
@@ -42,14 +42,14 @@ import { AssistantMemorySnapshot, MemoryEditorField } from '../../../interfaces/
           type="button"
           (click)="saveEdits()"
           [disabled]="saving"
-          class="rounded-full bg-red-600 px-3 py-1 text-[11px] font-semibold text-[var(--portal-text)] disabled:opacity-50"
+          class="rounded-full bg-red-600 px-3 py-1 text-[11px] font-semibold text-white disabled:opacity-50"
         >
           {{ saving ? 'Guardando…' : 'Guardar' }}
         </button>
         <button
           type="button"
           (click)="cancelled.emit()"
-          class="rounded-full border border-[var(--portal-border)] px-3 py-1 text-[11px] font-medium text-[var(--portal-text)] transition-colors hover:border-slate-500"
+          class="rounded-full border border-[var(--portal-border)] px-3 py-1 text-[11px] font-medium text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
         >
           Cancelar
         </button>
