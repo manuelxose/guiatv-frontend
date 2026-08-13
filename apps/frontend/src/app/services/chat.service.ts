@@ -53,6 +53,7 @@ export class ChatService {
   private currentUserId: string | null = null;
   private fallbackTimer: ReturnType<typeof setInterval> | null = null;
   private onlineRefreshTimer: ReturnType<typeof setInterval> | null = null;
+  private realtimeStartTimer: ReturnType<typeof setTimeout> | null = null;
   private lastOnlineRefreshAt = 0;
 
   /** Emits when a component requests opening the chat shell with a specific user */
@@ -77,7 +78,7 @@ export class ChatService {
         this.refreshConversations().subscribe();
         this.refreshOnlineUsers().subscribe();
         this.ensureOnlineRefreshPolling();
-        void this.connectSocket();
+        this.scheduleRealtimeConnection();
       } else {
         this.disconnectSocket();
         this.clearOnlineRefreshPolling();
@@ -107,6 +108,7 @@ export class ChatService {
   }
 
   requestOpenChat(userId: string): void {
+    this.startRealtimeConnection();
     this.requestOpenChatSubject.next(userId);
   }
 
@@ -381,7 +383,29 @@ export class ChatService {
     // Note: ensureOnlineRefreshPolling is already called by the isAuthenticated$ subscriber
   }
 
+  private scheduleRealtimeConnection(): void {
+    if (this.realtimeStartTimer || this.socket) return;
+    // Chat presence is useful but not render-critical. Give navigation and the
+    // home experience time to become interactive before loading Socket.IO.
+    this.realtimeStartTimer = setTimeout(() => {
+      this.realtimeStartTimer = null;
+      void this.connectSocket();
+    }, 15000);
+  }
+
+  private startRealtimeConnection(): void {
+    if (this.realtimeStartTimer) {
+      clearTimeout(this.realtimeStartTimer);
+      this.realtimeStartTimer = null;
+    }
+    void this.connectSocket();
+  }
+
   private disconnectSocket(): void {
+    if (this.realtimeStartTimer) {
+      clearTimeout(this.realtimeStartTimer);
+      this.realtimeStartTimer = null;
+    }
     if (this.socket) {
       this.socket.removeAllListeners();
       this.socket.disconnect();
