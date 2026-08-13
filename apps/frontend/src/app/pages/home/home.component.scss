@@ -33,6 +33,13 @@
   gap: 1rem;
 }
 
+// Keep all server-rendered discovery content in the document for SEO, while
+// letting the browser postpone layout and paint work for below-the-fold rails.
+.home-page__module {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 28rem;
+}
+
 .home-page__error {
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 1.3rem;

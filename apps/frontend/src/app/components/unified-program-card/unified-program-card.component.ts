@@ -40,8 +40,15 @@ export class UnifiedProgramCardComponent {
 
   constructor(private readonly userService: UserService) {}
 
+  private normalizedItem?: TvReadItemDTO | CatalogItem;
+  private normalizedCard?: ReturnType<typeof normalizeToCard>;
+
   get card() {
-    return normalizeToCard(this.item);
+    if (this.normalizedItem !== this.item || !this.normalizedCard) {
+      this.normalizedItem = this.item;
+      this.normalizedCard = normalizeToCard(this.item);
+    }
+    return this.normalizedCard;
   }
 
   get hasVisual(): boolean {
