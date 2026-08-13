@@ -212,7 +212,7 @@ export class EditorialService {
       contentHtml,
       coverImage:
         String(rawPost?.featured_image?.source_url || rawPost?.seo?.ogImage || '').trim() ||
-        '/assets/images/blog-og-image.jpg',
+        '/assets/images/blog-og-image.webp',
       publishedAt: String(rawPost?.date || rawPost?.publishedAt || new Date().toISOString()),
       modifiedAt: String(
         rawPost?.modified || rawPost?.updatedAt || rawPost?.date || new Date().toISOString()

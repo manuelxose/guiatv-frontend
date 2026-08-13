@@ -153,7 +153,12 @@
 .live-view__directory-chip--active {
   border-color: transparent;
   background: color-mix(in srgb, var(--guide-accent) 12%, var(--guide-surface-strong));
-  color: var(--guide-accent);
+  color: var(--guide-text);
+}
+
+.live-view__channel-chip--active small,
+.live-view__directory-chip--active small {
+  color: var(--guide-text);
 }
 
 .live-view__stack,

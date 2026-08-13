@@ -165,6 +165,33 @@ The `test-infra-builder` agent (a788855d903e31eb8) finally delivered a real, sub
 **Deployed** (release `20260813023339`) and **live-verified**: `sitemap-programs.xml` now has 1,654 real URLs (was 0); `sitemap-streaming.xml` cold-build takes ~2.9s and is now cached for 6h; backend health 200 in 3ms.
 
 Four production incidents this session now, all root-caused with real evidence, fixed, deployed, and verified.
+
+## Round 13 result — resumed Claude handoff: A11Y/SEO completed; home failure mode fixed
+
+Recovered the exact interrupted Claude session (`/root/.claude/projects/-var-www/19a1b754-19cb-4398-91a8-23db53900e5d.jsonl`): it stopped at 02:45:38 CEST on a monthly-limit 429 while the accessibility agent was reviewing the empty EPG grid and the SEO agent was starting redirects/404 verification. Preserved all five unstaged files left by that session.
+
+**Accessibility**:
+- Completed the inherited fixes for empty-grid semantics, filter tab semantics, breadcrumb contrast and muted/accent tokens.
+- Added the missing roving-tab keyboard behavior (`ArrowLeft`/`ArrowRight`/`Home`/`End`) instead of leaving `role="tab"` mouse-only.
+- Fixed one remaining serious axe contrast failure on active live-directory chips.
+- Re-ran axe WCAG A/AA on `/`, `/programacion-tv/guia-canales`, `/canales/la_1` and `/editorial`: **0 violations after remediation**. The inherited keyboard navigation script had already completed exit 0 immediately before Claude's limit interruption. Accessibility automated gate PASS for these primary routes; broader manual mobile/dialog coverage remains part of final QA.
+
+**SEO / redirects / social asset**:
+- Added the missing 1200x630 default editorial OpenGraph asset (`assets/images/blog-og-image.webp`, generated specifically for GuiaTV) and updated all source/seed references. Scratch SSR: asset 200 `image/webp`; editorial `og:image` and `twitter:image` both absolute.
+- Restored production-server parity for legacy `/contenido/:catalogId` and channel routes. Verified: legacy content with a real catalog ID -> 301 canonical slug; missing catalog ID -> 404; legacy guide/blog/account/channel routes -> 301; unknown route -> 404.
+
+**Infinite loading under API failure**:
+- Root cause was not the already-fixed `combineLatest` error handling: `BlogService` retries client failures for 2+4+8 seconds, so the editorial sources prevented the home `combineLatest` from emitting inside the E2E assertion window.
+- Added a home-only 5s first-emission timeout, preserving the shared blog retry policy on editorial routes. New focused unit test: **1/1 PASS**. Real Playwright `API unavailable` journey: **1/1 PASS (8.7s)**, previously consistently failing with a stuck `.home-page__loading`.
+
+**EPG grid follow-up**:
+- The grid was not losing data: under current shared-host load it appeared only after ~35-40s because `startWith` duplicated every initial signal emission and an unused surface subscription added another 20k-item read. Removed duplicate emissions and consolidated next/night/channel data through the guide surface; browser time-to-real-grid improved to ~20s in the same stressed environment (240 real cells).
+- SSR scratch still reaches the existing 20s render timeout on this shared host and falls back to CSR, despite avoiding full-day/surface reads on the server. This remains an open performance/SSR stability gate, together with the already-observed API OOM cycle; it is not claimed fixed.
+
+**Verification**: focused unit 1/1; focused Playwright 1/1; production SSR build PASS; `git diff --check` PASS; redirects/status/meta/asset curl matrix PASS; axe primary-route matrix PASS. No deployment performed because the full release gates are not yet green.
+
+**Next exact step**: diagnose the remaining SSR 20s stability timeout and recurrent `guiatv-api` OOM pattern with request/heap evidence, then run/fix the full frontend unit and E2E suites. Do not deploy until those gates pass.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.

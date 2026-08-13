@@ -1,6 +1,6 @@
 <div
   class="epg-grid"
-  role="grid"
+  [attr.role]="rows().length ? 'grid' : null"
   aria-label="Parrilla de canales y horarios"
   [class.epg-grid--empty]="!rows().length"
 >
