@@ -165,7 +165,7 @@ function makeCatalogItem(
     title,
     genres: ['Drama'],
     primaryPlatforms: ['Netflix'],
-    liveNow: false,
+    liveNow: true,
   };
 }
 

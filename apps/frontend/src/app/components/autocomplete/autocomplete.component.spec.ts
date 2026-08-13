@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { AutocompleteComponent } from './autocomplete.component';
 
@@ -8,7 +10,8 @@ describe('AutocompleteComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [AutocompleteComponent]
+      imports: [AutocompleteComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
     });
     fixture = TestBed.createComponent(AutocompleteComponent);
     component = fixture.componentInstance;

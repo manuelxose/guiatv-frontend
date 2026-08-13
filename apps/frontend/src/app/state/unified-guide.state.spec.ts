@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { StorageService } from '../services/storage.service';
 import { UnifiedGuideStateService } from './unified-guide.state';
 
 describe('UnifiedGuideStateService', () => {
@@ -6,7 +7,16 @@ describe('UnifiedGuideStateService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [UnifiedGuideStateService],
+      providers: [
+        UnifiedGuideStateService,
+        {
+          provide: StorageService,
+          useValue: {
+            readJson: (_key: string, fallback: unknown) => fallback,
+            writeJson: () => undefined,
+          },
+        },
+      ],
     });
 
     service = TestBed.inject(UnifiedGuideStateService);
@@ -69,6 +79,7 @@ describe('UnifiedGuideStateService', () => {
       availability: 'live,streaming',
       platforms: 'Netflix,Prime Video',
       genres: 'Drama,Acción',
+      intent: null,
       sort: 'recent',
       date: '20260326',
       page: 3,
@@ -79,6 +90,10 @@ describe('UnifiedGuideStateService', () => {
       category: null,
       liveView: null,
       date: null,
+      channel: null,
+      channelType: null,
+      region: null,
+      flags: null,
     });
   });
 
