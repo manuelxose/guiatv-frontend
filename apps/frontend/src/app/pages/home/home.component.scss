@@ -131,3 +131,9 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+.home-page__hero-loading,
+.home-page__hero-loading app-unified-skeleton-block {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
