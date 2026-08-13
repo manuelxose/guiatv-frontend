@@ -187,8 +187,9 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
         <p class="text-slate-300 text-sm mb-6">Comparte "{{ title }}" con tus seguidores.</p>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-slate-400 mb-1">Nota (opcional)</label>
+            <label for="recommendation-note" class="block text-sm font-medium text-slate-400 mb-1">Nota (opcional)</label>
             <textarea
+              id="recommendation-note"
               #noteInput
               rows="3"
               class="w-full bg-slate-800/80 border border-slate-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-red-500 focus:outline-none"

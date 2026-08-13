@@ -31,10 +31,11 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
         <div class="p-6">
           <form [formGroup]="addForm" (ngSubmit)="onSubmit()" class="space-y-6">
             <div class="space-y-2">
-              <label class="text-xs text-slate-400 uppercase tracking-wider">Buscar contenido</label>
+              <label for="list-content-query" class="text-xs text-slate-400 uppercase tracking-wider">Buscar contenido</label>
               <div class="relative">
                 <input
                   type="text"
+                  id="list-content-query"
                   formControlName="query"
                   placeholder="Buscar peliculas, series..."
                   class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 pl-10 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
@@ -55,8 +56,9 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-2">
-                <label class="text-xs text-slate-400 uppercase tracking-wider">Tipo</label>
+                <label for="list-content-type" class="text-xs text-slate-400 uppercase tracking-wider">Tipo</label>
                 <select
+                  id="list-content-type"
                   formControlName="type"
                   class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 >
@@ -65,8 +67,9 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
                 </select>
               </div>
               <div class="space-y-2">
-                <label class="text-xs text-slate-400 uppercase tracking-wider">Estado</label>
+                <label for="list-content-state" class="text-xs text-slate-400 uppercase tracking-wider">Estado</label>
                 <select
+                  id="list-content-state"
                   formControlName="state"
                   class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 >

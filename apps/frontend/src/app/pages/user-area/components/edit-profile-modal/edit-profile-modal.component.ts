@@ -38,8 +38,9 @@ import { UserProfile } from '../../../../interfaces/user.interface';
                 </div>
               </div>
               <div class="flex-1 space-y-2">
-                <label class="text-xs text-slate-400 uppercase tracking-wider">URL del avatar</label>
+                <label for="profile-avatar" class="text-xs text-slate-400 uppercase tracking-wider">URL del avatar</label>
                 <input
+                  id="profile-avatar"
                   type="text"
                   formControlName="avatar"
                   class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
@@ -49,19 +50,21 @@ import { UserProfile } from '../../../../interfaces/user.interface';
 
             <div class="grid md:grid-cols-2 gap-4">
               <div class="space-y-2">
-                <label class="text-xs text-slate-400 uppercase tracking-wider">Nombre</label>
+                <label for="profile-name" class="text-xs text-slate-400 uppercase tracking-wider">Nombre</label>
                 <input
+                  id="profile-name"
                   type="text"
                   formControlName="name"
                   class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 />
               </div>
               <div class="space-y-2">
-                <label class="text-xs text-slate-400 uppercase tracking-wider">Usuario</label>
+                <label for="profile-username" class="text-xs text-slate-400 uppercase tracking-wider">Usuario</label>
                 <div class="relative">
                   <span class="absolute left-4 top-3 text-slate-500">&#64;</span>
                   <input
                     type="text"
+                    id="profile-username"
                     formControlName="username"
                     class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl pl-8 pr-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   />
@@ -70,8 +73,9 @@ import { UserProfile } from '../../../../interfaces/user.interface';
             </div>
 
             <div class="space-y-2">
-              <label class="text-xs text-slate-400 uppercase tracking-wider">Bio</label>
+              <label for="profile-bio" class="text-xs text-slate-400 uppercase tracking-wider">Bio</label>
               <textarea
+                id="profile-bio"
                 formControlName="bio"
                 rows="3"
                 class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 resize-none"
@@ -79,8 +83,9 @@ import { UserProfile } from '../../../../interfaces/user.interface';
             </div>
 
             <div class="space-y-2">
-              <label class="text-xs text-slate-400 uppercase tracking-wider">Ubicacion</label>
+              <label for="profile-location" class="text-xs text-slate-400 uppercase tracking-wider">Ubicacion</label>
               <input
+                id="profile-location"
                 type="text"
                 formControlName="location"
                 class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
@@ -93,8 +98,9 @@ import { UserProfile } from '../../../../interfaces/user.interface';
               <p *ngIf="passwordError" class="text-sm text-red-400">{{ passwordError }}</p>
               <div class="space-y-4">
                 <div class="space-y-2">
-                  <label class="text-xs text-slate-400 uppercase tracking-wider">Contrasena actual</label>
+                  <label for="profile-current-password" class="text-xs text-slate-400 uppercase tracking-wider">Contrasena actual</label>
                   <input
+                    id="profile-current-password"
                     type="password"
                     formControlName="currentPassword"
                     class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
@@ -102,16 +108,18 @@ import { UserProfile } from '../../../../interfaces/user.interface';
                 </div>
                 <div class="grid md:grid-cols-2 gap-4">
                   <div class="space-y-2">
-                    <label class="text-xs text-slate-400 uppercase tracking-wider">Nueva contrasena</label>
+                    <label for="profile-new-password" class="text-xs text-slate-400 uppercase tracking-wider">Nueva contrasena</label>
                     <input
+                      id="profile-new-password"
                       type="password"
                       formControlName="password"
                       class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     />
                   </div>
                   <div class="space-y-2">
-                    <label class="text-xs text-slate-400 uppercase tracking-wider">Confirmar contrasena</label>
+                    <label for="profile-confirm-password" class="text-xs text-slate-400 uppercase tracking-wider">Confirmar contrasena</label>
                     <input
+                      id="profile-confirm-password"
                       type="password"
                       formControlName="confirmPassword"
                       class="w-full min-h-[44px] bg-slate-950/60 border border-slate-800 rounded-xl px-4 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"

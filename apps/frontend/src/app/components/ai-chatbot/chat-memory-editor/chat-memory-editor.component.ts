@@ -14,7 +14,7 @@ import { AssistantMemorySnapshot, MemoryEditorField } from '../../../interfaces/
       </p>
 
       <div *ngFor="let field of fields; trackBy: trackByKey" class="space-y-1">
-        <label class="text-[11px] font-medium text-[var(--portal-text)]">{{ field.label }}</label>
+        <p class="text-[11px] font-medium text-[var(--portal-text)]">{{ field.label }}</p>
         <div class="flex flex-wrap gap-1.5">
           <span
             *ngFor="let val of getValues(field.key); trackBy: trackByText"
