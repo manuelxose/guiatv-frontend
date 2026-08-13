@@ -14,7 +14,7 @@
   [isAuthenticated]="isAuthenticated()"
   [profileName]="profile()?.name || 'Cuenta'"
   [breadcrumbItems]="breadcrumbItems"
-  [showHero]="!!heroLead()"
+  [showHero]="loading() || !!heroLead()"
   heroVariant="stage"
   (tabChange)="navigateToTab($event)"
   (topPillChange)="onTopPillChange($event)"
@@ -27,6 +27,14 @@
       variant="live"
       [showActions]="false"
     ></app-unified-program-card>
+  </div>
+
+  <div class="home-page__hero-loading" shell-hero-media *ngIf="loading()">
+    <app-unified-skeleton-block
+      [count]="1"
+      [columns]="1"
+      cardHeight="100%"
+    ></app-unified-skeleton-block>
   </div>
 
   <section *ngIf="loading()" class="home-page__loading">

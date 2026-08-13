@@ -333,7 +333,7 @@
 // enough that real content rails start within the first scroll
 // (docs/visual-directions.md, docs/ux-ia-recommendations.md §8.1/§8.3).
 .portal-shell__hero--stage {
-  max-height: 46vh;
+  height: clamp(16rem, 46vh, 22rem);
   overflow: hidden;
 }
 
@@ -343,7 +343,7 @@
 
 @media (min-width: 768px) {
   .portal-shell__hero--stage {
-    max-height: 40vh;
+    height: clamp(17rem, 40vh, 22rem);
   }
 
   .portal-shell__hero--media-only {

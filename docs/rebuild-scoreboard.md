@@ -279,6 +279,12 @@ Lighthouse then exposed a remaining performance gate: mobile home scored 33 desp
 
 **Lighthouse after payload fix**: performance **43**, accessibility **100**, best-practices **96**, SEO **92**; root response 20ms, FCP 2.9s, LCP 3.5s, TBT 2.13s, CLS 0.283. This is a material improvement but not a green performance gate. Remaining work is frontend main-thread/layout stabilization (not API/SSR TTFB), especially the portal-shell body shift and shared initial chunk evaluation.
 
+## Round 25 result — home layout shift eliminated in source
+
+Lighthouse's sole layout-shift node was the portal body: Home initially omitted its data-driven stage hero and inserted it after the asynchronous state arrived, pushing every module down. Home now renders a same-size hero skeleton during loading and the shared stage uses a stable responsive height.
+
+**Verification**: frontend unit **18/18 PASS**, SSR production build PASS. Warm scratch Lighthouse moved from performance 43 / TBT 2.13s / CLS 0.283 to **performance 70 / TBT 430ms / CLS 0**, with accessibility 100 and best-practices 100. The first cold scratch run was resource-contended and is retained as non-release evidence; production must be measured after deployment before closing the performance phase.
+
 ## Known bugs queued for Round 2
 1. `tv-data.facade.ts` — 10 `isBrowser` guards returning empty (lines 111-113, 123-125, 150-152, 212-214, 271-283, 323-325, 333-335, 343-345, 362-364, 381-383, 412-414).
 2. `portal-home.facade.ts:37-56` — redundant SSR gate.
