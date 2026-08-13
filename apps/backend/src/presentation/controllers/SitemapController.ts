@@ -23,7 +23,19 @@ interface SitemapUrlEntry {
 }
 
 const DEFAULT_BASE_URL = 'https://guiaprogramaciontv.com';
-const CACHE_TTL_MS = Number(process.env.SITEMAP_CACHE_TTL_MS) || 5 * 60 * 1000;
+// Was 5 minutes - far shorter than this content needs (the streaming
+// sitemap declares changefreq:'weekly' for its own URLs) and far shorter
+// than its build cost justifies: appendStreamingContent() can make up to
+// 78 sequential TMDB calls (13 platforms x up to 3 pages x movies+TV).
+// In-flight dedup (inflightMap below) already prevents concurrent
+// requests from each re-running that build, but a 5-minute TTL still
+// meant it re-ran ~12x/hour under any steady traffic, plus once per
+// guiatv-api restart (this is an in-process Map, not Redis-backed, so it
+// doesn't survive a restart) - a real contributor to memory pressure
+// during this session's residual-OOM investigation
+// (docs/rebuild-scoreboard.md). 6h keeps the sitemap far fresher than its
+// own declared weekly changefreq while cutting rebuild frequency ~72x.
+const CACHE_TTL_MS = Number(process.env.SITEMAP_CACHE_TTL_MS) || 6 * 60 * 60 * 1000;
 
 /** Channel types included in the sitemap (curated subset) */
 const INDEXABLE_CHANNEL_TYPES: ReadonlySet<ChannelType> = new Set<ChannelType>([

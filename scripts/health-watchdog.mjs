@@ -37,7 +37,15 @@ import https from 'node:https';
 const ALERT_LOG = process.env.GUIATV_ALERT_LOG || '/var/log/guiatv/health-alerts.log';
 const HEARTBEAT_FILE = process.env.GUIATV_HEARTBEAT_FILE || '/var/log/guiatv/health-heartbeat.json';
 const WEBHOOK_URL = process.env.GUIATV_ALERT_WEBHOOK_URL || '';
-const UNITS = ['guiatv-api', 'guiatv-ssr'];
+// Includes mongod and valkey-server: on 2026-08-13, mongod was OOM-killed
+// and had no systemd Restart= directive at all (unlike the app units),
+// so it stayed down silently for ~3 minutes — guiatv-api crash-looped on
+// ECONNREFUSED the whole time, but this watchdog only checked the app
+// units themselves, not their dependencies, so the real root cause
+// wasn't flagged. A Restart=on-failure drop-in now exists for mongod
+// too (/etc/systemd/system/mongod.service.d/override.conf), but this
+// check stays as a second layer in case that ever fails to recover it.
+const UNITS = ['guiatv-api', 'guiatv-ssr', 'mongod', 'valkey'];
 const OOM_LOOKBACK = process.env.GUIATV_OOM_LOOKBACK || '-30 minutes';
 const API_BASE = process.env.GUIATV_API_BASE || 'http://127.0.0.1:4000';
 
@@ -70,7 +78,10 @@ function checkNoRecentOom(unit) {
       ['-u', unit, '--since', OOM_LOOKBACK, '--no-pager', '-q'],
       { encoding: 'utf8' }
     );
-    if (/heap out of memory|core-dump|FATAL ERROR/i.test(out)) {
+    // Node's own OOM signature plus the kernel OOM-killer's (mongod has no
+    // Node heap limit to report - it just gets SIGKILLed by the kernel and
+    // systemd logs "killed by the OOM killer" / "Failed with result 'oom-kill'").
+    if (/heap out of memory|core-dump|FATAL ERROR|killed by the oom killer|result 'oom-kill'/i.test(out)) {
       problems.push(`${unit} had an OOM/core-dump event within ${OOM_LOOKBACK}`);
     }
   } catch {
