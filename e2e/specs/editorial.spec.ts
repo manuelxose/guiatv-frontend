@@ -30,7 +30,9 @@ test.describe('Editorial -> categoría -> artículo -> artículo relacionado', (
 
     await page.waitForURL(/\/editorial\/categoria\//, { timeout: 15_000 });
     const categoryHeading = page.locator('h1').first();
-    await expect(categoryHeading).toBeVisible({ timeout: 15_000 });
+    // A cold editorial read may consume the shared BlogService retry budget
+    // (2s + 4s + 8s) before its terminal response on this shared host.
+    await expect(categoryHeading).toBeVisible({ timeout: 30_000 });
     expect((await categoryHeading.innerText()).trim().length).toBeGreaterThan(0);
 
     // artículo: open the first real editorial post card on the category page.

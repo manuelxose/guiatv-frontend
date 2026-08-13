@@ -8,6 +8,7 @@ import {
   isFeaturedTvReadItem,
   normalizeTvReadView,
   resolveTvReadLimit,
+  scopeChannelSummariesToPage,
   selectPrimeTimeTvItems,
 } from './TvReadQueryService';
 import { TvReadItemDTO } from '../dto/TvReadDTO';
@@ -39,6 +40,16 @@ test('applyTvReadTemporalBounds restricts now reads to active airings in Mongo',
   assert.deepEqual(applyTvReadTemporalBounds({ date: '20260326' }, 'day', reference), {
     date: '20260326',
   });
+});
+
+test('scopeChannelSummariesToPage keeps hot-view payloads aligned with paged items', () => {
+  const item = { channel: { id: 'la_1' } } as TvReadItemDTO;
+  const summaries = [
+    { channel: { id: 'la_1' } },
+    { channel: { id: 'la_2' } },
+  ] as any;
+  assert.deepEqual(scopeChannelSummariesToPage('now', summaries, [item]), [summaries[0]]);
+  assert.equal(scopeChannelSummariesToPage('day', summaries, [item]).length, 2);
 });
 
 test('hydrateTvReadItemRuntime derives liveNow from request time instead of persisted value', () => {
