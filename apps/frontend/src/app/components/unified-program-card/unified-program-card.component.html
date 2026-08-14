@@ -15,8 +15,8 @@
         [src]="imageUrl"
         [alt]="card.title"
         [loading]="variant === 'live' || variant === 'feature' ? 'eager' : 'lazy'"
-        [fetchpriority]="variant === 'live' || variant === 'feature' ? 'high' : 'auto'"
-        [decoding]="variant === 'live' || variant === 'feature' ? 'sync' : 'async'"
+        [attr.fetchpriority]="variant === 'live' || variant === 'feature' ? 'high' : 'auto'"
+        [attr.decoding]="variant === 'live' || variant === 'feature' ? 'sync' : 'async'"
         (error)="useFallbackImage($event)"
       />
       <div class="program-card__gradient"></div>
