@@ -190,6 +190,14 @@ interface ChatWindowState {
       </div>
     </ng-template>
   `,
+  styles: [`
+    :host {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+    }
+  `],
 })
 export class SocialChatPanelComponent implements OnInit, OnDestroy {
   conversations: ChatConversation[] = [];

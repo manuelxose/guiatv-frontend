@@ -1,9 +1,8 @@
 import { Inject, Pipe, PipeTransform, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import DOMPurify from 'dompurify';
 import { marked } from 'marked';
-
-let _DOMPurify: any;
 
 @Pipe({ name: 'markdown', standalone: true })
 export class MarkdownPipe implements PipeTransform {
@@ -16,9 +15,6 @@ export class MarkdownPipe implements PipeTransform {
     this.isBrowser = isPlatformBrowser(platformId);
     marked.setOptions({ breaks: true, gfm: true });
 
-    if (this.isBrowser && !_DOMPurify) {
-      _DOMPurify = require('dompurify');
-    }
   }
 
   transform(value: string | null | undefined): SafeHtml {
@@ -28,11 +24,11 @@ export class MarkdownPipe implements PipeTransform {
 
     const raw = marked.parse(value, { async: false }) as string;
 
-    if (!this.isBrowser || !_DOMPurify) {
+    if (!this.isBrowser) {
       return this.sanitizer.bypassSecurityTrustHtml(raw);
     }
 
-    const clean = _DOMPurify.sanitize(raw, {
+    const clean = DOMPurify.sanitize(raw, {
       ALLOWED_TAGS: [
         'p', 'br', 'strong', 'em', 'b', 'i', 'u',
         'ul', 'ol', 'li',

@@ -13,9 +13,9 @@ import { CommonModule } from '@angular/common';
           <path stroke-linecap="round" stroke-linejoin="round" d="M18.5 3.5 19 5l1.5.5L19 6l-.5 1.5L18 6l-1.5-.5L18 5l.5-1.5Z"></path>
         </svg>
       </div>
-      <p class="mb-2 text-lg font-bold text-[var(--portal-text)]">Asistente IA de recomendaciones</p>
+      <p class="mb-2 text-lg font-bold text-[var(--portal-text)]">Encuentra qué ver</p>
       <p class="max-w-sm text-sm text-[var(--portal-text-muted)]">
-        Regístrate o inicia sesión para acceder al asistente. Cruza tus gustos con la parrilla real y tus plataformas para darte recomendaciones personalizadas.
+        Inicia sesión para recibir recomendaciones según tus gustos, plataformas y la programación real.
       </p>
 
       <div class="mt-5 flex max-w-sm flex-wrap justify-center gap-2">
@@ -35,7 +35,7 @@ import { CommonModule } from '@angular/common';
           (click)="register.emit()"
           class="min-h-[44px] rounded-xl bg-red-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
         >
-          Crear cuenta gratis
+          Crear cuenta
         </button>
         <button
           type="button"
@@ -47,6 +47,14 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
+  styles: [`
+    :host {
+      display: flex;
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+    }
+  `],
 })
 export class ChatWelcomeScreenComponent {
   @Input() previewSuggestions: string[] = [];

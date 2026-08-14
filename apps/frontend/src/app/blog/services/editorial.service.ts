@@ -155,14 +155,18 @@ export class EditorialService {
           return null;
         }
 
-        const primaryCategory = post.primaryCategory?.slug;
+        const categorySlugs = new Set(post.categories.map((category) => category.slug));
         const relatedPosts = posts
           .filter((entry) => entry.slug !== slug)
-          .filter((entry) =>
-            primaryCategory
-              ? entry.categories.some((category) => category.slug === primaryCategory)
-              : entry.contentType === post.contentType
+          .map((entry) => ({
+            entry,
+            sharedCategories: entry.categories.filter((category) => categorySlugs.has(category.slug)).length,
+          }))
+          .filter(({ entry, sharedCategories }) =>
+            categorySlugs.size ? sharedCategories > 0 : entry.contentType === post.contentType
           )
+          .sort((left, right) => right.sharedCategories - left.sharedCategories)
+          .map(({ entry }) => entry)
           .slice(0, 3);
 
         return { post, relatedPosts };

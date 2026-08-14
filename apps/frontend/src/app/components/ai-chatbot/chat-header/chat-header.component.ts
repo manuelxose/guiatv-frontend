@@ -19,10 +19,7 @@ interface ProfileCategory {
     <header class="border-b border-[var(--portal-border)]/80 bg-[var(--portal-surface-strong)] px-5 py-3 backdrop-blur-xl">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2.5 min-w-0">
-          <p class="text-base font-bold text-[var(--portal-text)] truncate">Asistente IA</p>
-          <span class="shrink-0 rounded-full border border-[var(--portal-border)] bg-[var(--accent-live-soft)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.15em] text-[var(--accent-live)]">
-            Pro
-          </span>
+          <p class="text-base font-bold text-[var(--portal-text)] truncate">Recomendaciones</p>
         </div>
         <div class="flex items-center gap-1.5">
           <button

@@ -1,6 +1,6 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { catchError, combineLatest, map, Observable, of, shareReplay, switchMap, timer } from 'rxjs';
+import { catchError, combineLatest, map, Observable, of, retry, shareReplay, switchMap, timer } from 'rxjs';
 import { TvApiService } from '../api/tv-api.service';
 import { ChannelMetaDTO, TvGuideSurfaceDTO, TvReadItemDTO } from '../api/models';
 import { CatalogItem, CatalogPlatform, CatalogResponse, FALLBACK_CATALOG_GENRES, FALLBACK_CATALOG_PLATFORMS } from '../services/catalog.service';
@@ -124,6 +124,7 @@ export class TvDataFacade {
         category: normalizeCategory(filters.category),
       })
       .pipe(
+        retry({ count: 2, delay: 350 }),
         map(
           (response) => response.data || this.emptyGuideSurface(filters)
         ),
@@ -318,6 +319,7 @@ export class TvDataFacade {
         limit: 20,
       })
       .pipe(
+        retry({ count: 2, delay: 350 }),
         map((response) => this.applySportsFilters(response.data?.items || [], filters)),
         catchError(() => of([]))
       );
@@ -334,6 +336,7 @@ export class TvDataFacade {
         limit: 30,
       })
       .pipe(
+        retry({ count: 2, delay: 350 }),
         map((response) => this.applySportsFilters(response.data?.items || [], filters)),
         catchError(() => of([]))
       );
@@ -350,6 +353,7 @@ export class TvDataFacade {
         limit: 30,
       })
       .pipe(
+        retry({ count: 2, delay: 350 }),
         map((response) => this.applySportsFilters(response.data?.items || [], filters)),
         catchError(() => of([]))
       );
@@ -379,6 +383,7 @@ export class TvDataFacade {
         limit: filters.limit,
       })
       .pipe(
+        retry({ count: 2, delay: 350 }),
         map((response) => this.applyLiveFilters(response.data?.items || [], filters)),
         catchError(() => of([]))
       );

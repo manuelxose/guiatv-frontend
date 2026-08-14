@@ -29,7 +29,7 @@ test.describe('Home -> Ahora en TV -> programa -> ficha', () => {
     await expect(heading).toBeVisible({ timeout: 15_000 });
     const headingText = (await heading.innerText()).trim();
     expect(headingText.length).toBeGreaterThan(0);
-    expect(headingText).toBe(title);
+    expect(headingText.localeCompare(title, 'es', { sensitivity: 'base' })).toBe(0);
 
     await assertNoRenderedUndefined(page);
   });

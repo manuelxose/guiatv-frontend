@@ -19,18 +19,18 @@
   <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
   <div class="editorial-post-page mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6 lg:px-8">
     <div *ngIf="loading" class="space-y-6">
-      <div class="h-10 w-2/3 animate-pulse rounded bg-slate-900/70"></div>
-      <div class="h-96 animate-pulse rounded-[2rem] bg-slate-900/70"></div>
+      <div class="h-10 w-2/3 animate-pulse rounded bg-[var(--portal-surface-strong)]"></div>
+      <div class="h-96 animate-pulse rounded-[2rem] bg-[var(--portal-surface-strong)]"></div>
       <div class="space-y-3">
-        <div class="h-4 animate-pulse rounded bg-slate-900/70"></div>
-        <div class="h-4 w-5/6 animate-pulse rounded bg-slate-900/70"></div>
-        <div class="h-4 w-4/6 animate-pulse rounded bg-slate-900/70"></div>
+        <div class="h-4 animate-pulse rounded bg-[var(--portal-surface-strong)]"></div>
+        <div class="h-4 w-5/6 animate-pulse rounded bg-[var(--portal-surface-strong)]"></div>
+        <div class="h-4 w-4/6 animate-pulse rounded bg-[var(--portal-surface-strong)]"></div>
       </div>
     </div>
 
     <div
       *ngIf="error"
-      class="rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
+      class="rounded-[1.75rem] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-6 text-sm text-[var(--accent-live)]"
     >
       {{ error }}
     </div>
@@ -39,15 +39,15 @@
       <article class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div class="space-y-8">
           <section
-            class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.12),_rgba(8,16,24,0.95)_55%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-10"
+            class="relative overflow-hidden rounded-[2rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-6 shadow-[var(--shadow-lg)] md:p-10"
           >
             <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_35%,transparent_65%,rgba(56,189,248,0.08))]"></div>
             <div class="relative space-y-6">
-              <nav class="flex flex-wrap items-center gap-2 text-sm text-slate-400" aria-label="Breadcrumb">
-                <a [routerLink]="appPaths.blog" class="transition-colors hover:text-white">Editorial</a>
+              <nav class="flex flex-wrap items-center gap-2 text-sm text-[var(--portal-text-soft)]" aria-label="Breadcrumb">
+                <a [routerLink]="appPaths.blog" class="transition-colors hover:text-[var(--portal-text)]">Editorial</a>
                 <ng-container *ngIf="state.post.primaryCategory">
                   <span>/</span>
-                  <a [routerLink]="state.post.primaryCategory.canonicalPath" class="transition-colors hover:text-white">
+                  <a [routerLink]="state.post.primaryCategory.canonicalPath" class="transition-colors hover:text-[var(--portal-text)]">
                     {{ state.post.primaryCategory.name }}
                   </a>
                 </ng-container>
@@ -55,28 +55,28 @@
 
               <div class="flex flex-wrap gap-2">
                 <span
-                  class="rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-red-100"
+                  class="rounded-full border border-[var(--accent-editorial)] bg-[var(--accent-editorial-soft)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--accent-editorial)]"
                 >
                   {{ state.post.contentType === 'ranking' ? 'Ranking' : state.post.contentType === 'trend' ? 'Tendencia' : 'Guia' }}
                 </span>
                 <span
                   *ngFor="let category of state.post.categories"
-                  class="rounded-full border border-slate-700 bg-slate-950/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-200"
+                  class="rounded-full border border-[var(--portal-border-strong)] bg-[var(--portal-surface)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--portal-text)]"
                 >
                   {{ category.name }}
                 </span>
               </div>
 
               <div class="space-y-4">
-                <h1 class="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
+                <h1 class="max-w-4xl text-4xl font-black tracking-tight text-[var(--portal-text)] md:text-6xl">
                   {{ state.post.title }}
                 </h1>
-                <p class="max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
+                <p class="max-w-3xl text-base leading-7 text-[var(--portal-text-soft)] md:text-lg">
                   {{ state.post.excerptText }}
                 </p>
               </div>
 
-              <div class="flex flex-wrap items-center gap-4 text-sm text-slate-400">
+              <div class="flex flex-wrap items-center gap-4 text-sm text-[var(--portal-text-soft)]">
                 <span>{{ state.post.publishedAt | date : 'dd MMMM yyyy' }}</span>
                 <span>•</span>
                 <span>{{ state.post.readingMinutes }} min de lectura</span>
@@ -85,7 +85,7 @@
             </div>
           </section>
 
-          <figure class="overflow-hidden rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70">
+          <figure class="overflow-hidden rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)]">
             <img
               [src]="state.post.coverImage"
               [alt]="state.post.title"
@@ -95,7 +95,7 @@
           </figure>
 
           <div
-            class="editorial-post__content rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 p-6 md:p-8"
+            class="editorial-post__content rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-6 md:p-8"
             [innerHTML]="state.post.contentHtml"
           ></div>
 
@@ -136,15 +136,15 @@
             [items]="guideRailItems"
           ></app-catalog-rail>
 
-          <section *ngIf="trendingItems.length" class="space-y-5 rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 p-6">
+          <section *ngIf="trendingItems.length" class="space-y-5 rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-6">
             <div class="flex items-end justify-between gap-4">
               <div>
-                <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Tendencias</p>
-                <h2 class="mt-2 text-2xl font-semibold text-white">Lo que mas se mueve ahora</h2>
+                <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Tendencias</p>
+                <h2 class="mt-2 text-2xl font-semibold text-[var(--portal-text)]">Lo que mas se mueve ahora</h2>
               </div>
               <a
                 [routerLink]="appPaths.stats"
-                class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+                class="min-h-[40px] rounded-full border border-[var(--portal-border-strong)] px-4 py-2 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
               >
                 Ver tendencias
               </a>
@@ -153,13 +153,13 @@
               <a
                 *ngFor="let item of trendingItems"
                 [routerLink]="item.path"
-                class="rounded-[1.25rem] border border-slate-800/80 bg-slate-900/70 p-4 transition-colors hover:border-slate-600"
+                class="rounded-[1.25rem] border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] p-4 transition-colors hover:border-[var(--portal-border-strong)]"
               >
                 <div class="flex items-center justify-between gap-3">
-                  <h3 class="text-sm font-semibold text-white">{{ item.title }}</h3>
-                  <span class="text-xs text-red-300">{{ item.score }}%</span>
+                  <h3 class="text-sm font-semibold text-[var(--portal-text)]">{{ item.title }}</h3>
+                  <span class="text-xs text-[var(--accent-editorial)]">{{ item.score }}%</span>
                 </div>
-                <p class="mt-2 text-xs text-slate-500">
+                <p class="mt-2 text-xs text-[var(--portal-text-muted)]">
                   {{ item.platform || 'TV / streaming' }}<span *ngIf="item.category"> · {{ item.category }}</span>
                 </p>
               </a>
@@ -168,8 +168,8 @@
 
           <section *ngIf="state.relatedPosts.length" class="space-y-5">
             <div>
-              <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Sigue leyendo</p>
-              <h2 class="mt-2 text-2xl font-semibold text-white">Artículos relacionados</h2>
+              <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Sigue leyendo</p>
+              <h2 class="mt-2 text-2xl font-semibold text-[var(--portal-text)]">Artículos relacionados</h2>
             </div>
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               <app-editorial-post-card
@@ -181,8 +181,8 @@
         </div>
 
         <aside class="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <div class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 p-5">
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Compartir</p>
+          <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5">
+            <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Compartir</p>
             <div class="mt-4">
               <app-share-buttons
                 [url]="currentUrl"
@@ -194,11 +194,11 @@
           <a
             [routerLink]="appPaths.platforms"
             [queryParams]="platformCatalogQueryParams"
-            class="block rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 p-5 transition-colors hover:border-slate-600"
+            class="block rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 transition-colors hover:border-[var(--portal-border-strong)]"
           >
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Plataformas</p>
-            <h2 class="mt-3 text-xl font-semibold text-white">Cruza la lectura con el catálogo real</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-400">
+            <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Plataformas</p>
+            <h2 class="mt-3 text-xl font-semibold text-[var(--portal-text)]">Cruza la lectura con el catálogo real</h2>
+            <p class="mt-2 text-sm leading-6 text-[var(--portal-text-soft)]">
               Salta de un artículo editorial a las plataformas donde ya puedes ver ese contenido.
             </p>
           </a>
@@ -206,11 +206,11 @@
           <a
             *ngIf="hasRouteRelation('comparison')"
             [routerLink]="appPaths.streamingComparison"
-            class="block rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 p-5 transition-colors hover:border-slate-600"
+            class="block rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 transition-colors hover:border-[var(--portal-border-strong)]"
           >
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Comparador</p>
-            <h2 class="mt-3 text-xl font-semibold text-white">Decide mejor entre servicios</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-400">
+            <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Comparador</p>
+            <h2 class="mt-3 text-xl font-semibold text-[var(--portal-text)]">Decide mejor entre servicios</h2>
+            <p class="mt-2 text-sm leading-6 text-[var(--portal-text-soft)]">
               Usa el comparador de plataformas sin abandonar el flujo editorial de la app.
             </p>
           </a>
@@ -218,11 +218,11 @@
           <a
             *ngIf="hasRouteRelation('stats')"
             [routerLink]="appPaths.stats"
-            class="block rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 p-5 transition-colors hover:border-slate-600"
+            class="block rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 transition-colors hover:border-[var(--portal-border-strong)]"
           >
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Tendencias</p>
-            <h2 class="mt-3 text-xl font-semibold text-white">Valida esta lectura con datos vivos</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-400">
+            <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Tendencias</p>
+            <h2 class="mt-3 text-xl font-semibold text-[var(--portal-text)]">Valida esta lectura con datos vivos</h2>
+            <p class="mt-2 text-sm leading-6 text-[var(--portal-text-soft)]">
               Cruza el articulo con la capa de señales y contenidos en tendencia de la app.
             </p>
           </a>

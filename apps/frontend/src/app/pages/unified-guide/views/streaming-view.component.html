@@ -6,8 +6,8 @@
       <p>
         {{
           activePlatform()
-            ? activePlatform()!.name + ' entra como servicio protagonista con catálogo real debajo.'
-            : 'La tab entra por marcas visibles, contenido destacado y rails consistentes, sin hero vacío.'
+            ? 'Explora el catálogo disponible de ' + activePlatform()!.name + ' y abre cada título para consultar dónde verlo.'
+            : 'Elige una plataforma y descubre sus títulos populares, novedades y contenidos mejor valorados.'
         }}
       </p>
     </div>
@@ -35,8 +35,7 @@
   <section class="streaming-view__feature-grid" *ngIf="featuredItem() as item">
     <app-unified-program-card
       [item]="item"
-      variant="streaming"
-      (selected)="openItem(item)"
+      variant="feature"
     ></app-unified-program-card>
 
     <div class="streaming-view__feature-stack" *ngIf="featuredStack().length">
@@ -44,7 +43,6 @@
         *ngFor="let secondary of featuredStack(); trackBy: trackByItem"
         [item]="secondary"
         variant="compact"
-        (selected)="openItem(secondary)"
       ></app-unified-program-card>
     </div>
   </section>
@@ -63,7 +61,6 @@
             *ngFor="let item of popularRail().items; trackBy: trackByItem"
             [item]="item"
             variant="compact"
-            (selected)="openItem(item)"
           ></app-unified-program-card>
         </div>
       </article>
@@ -80,7 +77,6 @@
             *ngFor="let item of recentRail().items; trackBy: trackByItem"
             [item]="item"
             variant="compact"
-            (selected)="openItem(item)"
           ></app-unified-program-card>
         </div>
       </article>
@@ -97,7 +93,6 @@
             *ngFor="let item of ratingRail().items; trackBy: trackByItem"
             [item]="item"
             variant="compact"
-            (selected)="openItem(item)"
           ></app-unified-program-card>
         </div>
       </article>
@@ -114,12 +109,11 @@
         <button type="button" class="streaming-view__action" (click)="clearFilters()">Limpiar</button>
       </header>
 
-      <div class="streaming-view__list" *ngIf="gridData().items.length; else streamingEmptyState">
+      <div class="streaming-view__results-grid" *ngIf="gridData().items.length; else streamingEmptyState">
         <app-unified-program-card
           *ngFor="let item of gridData().items; trackBy: trackByItem"
           [item]="item"
-          variant="epg-row"
-          (selected)="openItem(item)"
+          variant="streaming"
         ></app-unified-program-card>
       </div>
     </section>
@@ -133,50 +127,6 @@
     </section>
   </ng-template>
 
-  <section *ngIf="streamingModules().length" class="streaming-view__stack">
-    <article *ngFor="let module of streamingModules()" class="streaming-view__module">
-      <header class="streaming-view__section-head">
-        <div>
-          <p class="streaming-view__eyebrow">{{ module.eyebrow }}</p>
-          <h3>{{ module.title }}</h3>
-        </div>
-      </header>
-
-      <div class="streaming-view__rail">
-        <app-unified-program-card
-          *ngFor="let item of module.items; trackBy: trackByItem"
-          [item]="item"
-          variant="compact"
-          (selected)="openItem(item)"
-        ></app-unified-program-card>
-      </div>
-    </article>
-  </section>
-
-  <section *ngIf="quickDirectories().length" class="streaming-view__directories">
-    <article *ngFor="let section of quickDirectories()" class="streaming-view__directory-card">
-      <header class="streaming-view__section-head">
-        <div>
-          <p class="streaming-view__eyebrow">{{ section.eyebrow }}</p>
-          <h3>{{ section.title }}</h3>
-        </div>
-      </header>
-
-      <div class="streaming-view__directory-grid">
-        <button
-          *ngFor="let item of section.items"
-          type="button"
-          class="streaming-view__directory-chip"
-          [class.streaming-view__directory-chip--active]="item.active"
-          (click)="applyQuickDirectory(section.id, item.id)"
-        >
-          <strong>{{ item.label }}</strong>
-          <small>{{ item.meta }}</small>
-        </button>
-      </div>
-    </article>
-  </section>
-
   <app-unified-filter-dock
     [open]="shellUi.isFilterDockOpen()"
     title="Filtros de streaming"
@@ -187,17 +137,4 @@
     (select)="handleDockSelect($event)"
   ></app-unified-filter-dock>
 
-  <app-bottom-sheet
-    [open]="!!selectedItem()"
-    [title]="selectedItem()?.title || 'Detalle'"
-    (close)="closeSheet()"
-  >
-    <app-unified-program-card
-      *ngIf="selectedItem() as item"
-      [item]="item"
-      variant="compact"
-      [showActions]="false"
-      (selected)="openItem(item)"
-    ></app-unified-program-card>
-  </app-bottom-sheet>
 </section>

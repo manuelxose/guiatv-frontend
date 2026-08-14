@@ -4,7 +4,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs';
 import {
-  getPortalPublicContextualLeftRailSection,
   getPortalPublicRightRailLabel,
   getPortalPublicRightRailSections,
   getPortalPublicTopPillLabel,
@@ -92,10 +91,10 @@ export class AppPublicLayoutShellComponent {
   readonly topPillSelection = computed(() => this.topPillChips()[0]?.id || 'all');
   readonly rightRailLabel = computed(() => getPortalPublicRightRailLabel(this.section()));
   readonly leftRailSections = computed<UnifiedPortalRailSection[]>(() =>
-    buildSecondaryLeftRail(this.section(), this.isAuthenticated())
+    []
   );
   readonly rightRailSections = computed<UnifiedPortalRailSection[]>(() =>
-    getPortalPublicRightRailSections(this.section())
+    []
   );
 
   onSearchChange(value: string): void {
@@ -173,43 +172,29 @@ function resolvePublicShellSection(path: string): PortalPublicShellSection {
 }
 
 function buildSecondaryLeftRail(
-  section: PortalPublicShellSection,
-  isAuthenticated: boolean
+  section: PortalPublicShellSection
 ): UnifiedPortalRailSection[] {
   return [
-    getPortalPublicContextualLeftRailSection(section),
     {
-      id: 'public-directories',
-      eyebrow: 'Directorios',
-      title: 'Saltos rápidos',
-      description: 'Canales, plataformas y deportes siempre accesibles.',
+      id: 'public-explore',
+      eyebrow: 'Navegación',
+      title: 'Explorar',
       items: [
-        { id: 'public-dir-channels', label: 'Canales', description: 'Abrir por señal', iconPath: PORTAL_ICON_PATHS.channels, path: APP_PATHS.guide, queryParams: { liveView: 'day' } },
-        { id: 'public-dir-platforms', label: 'Plataformas', description: 'Ver servicios', iconPath: PORTAL_ICON_PATHS.platforms, path: APP_PATHS.platforms },
-        { id: 'public-dir-sports', label: 'Deportes', description: 'Agenda y eventos', iconPath: PORTAL_ICON_PATHS.sports, path: APP_PATHS.sports },
-        { id: 'public-dir-editorial', label: 'Editorial', description: 'Guías y rankings', iconPath: PORTAL_ICON_PATHS.editorial, path: APP_PATHS.blog },
+        { id: 'public-nav-live', label: 'TV', iconPath: PORTAL_ICON_PATHS.channels, path: APP_PATHS.guide, active: section === 'live' },
+        { id: 'public-nav-discover', label: 'Qué ver', iconPath: PORTAL_ICON_PATHS.sparkles, path: APP_PATHS.explore, active: section === 'discover' },
+        { id: 'public-nav-platforms', label: 'Plataformas', iconPath: PORTAL_ICON_PATHS.platforms, path: APP_PATHS.platforms, active: section === 'streaming' },
+        { id: 'public-nav-sports', label: 'Deportes', iconPath: PORTAL_ICON_PATHS.sports, path: APP_PATHS.sports, active: section === 'sports' },
+        { id: 'public-nav-editorial', label: 'Editorial', iconPath: PORTAL_ICON_PATHS.editorial, path: APP_PATHS.blog, active: section === 'editorial' || section === 'rankings' },
       ],
-    },
-    {
-      id: 'public-personal',
-      eyebrow: 'Tu espacio',
-      title: isAuthenticated ? 'Cuenta' : 'Acceso',
-      description: isAuthenticated ? 'Perfil y recomendaciones personales.' : 'Activa guardados y seguimiento.',
-      items: isAuthenticated
-        ? [
-            { id: 'public-personal-profile', label: 'Mi perfil', description: 'Actividad y preferencias', iconPath: PORTAL_ICON_PATHS.account, path: APP_PATHS.profile },
-            { id: 'public-personal-for-you', label: 'Para ti', description: 'Discovery personalizado', iconPath: PORTAL_ICON_PATHS.sparkles, path: APP_PATHS.forYou },
-          ]
-        : [
-            { id: 'public-personal-login', label: 'Iniciar sesión', description: 'Guardar favoritos y listas', iconPath: PORTAL_ICON_PATHS.account, path: APP_PATHS.login },
-            { id: 'public-personal-register', label: 'Crear cuenta', description: 'Empieza a personalizar', iconPath: PORTAL_ICON_PATHS.sparkles, path: APP_PATHS.register },
-          ],
     },
   ];
 }
 
 function buildBreadcrumbItems(path: string): { name: string; url: string }[] {
-  if (path === APP_PATHS.home) {
+  if (
+    path === APP_PATHS.home ||
+    /^\/(peliculas|series|programas|contenido|detalles|pelicula-details)\//.test(path)
+  ) {
     return [];
   }
   return [{ name: 'Inicio', url: APP_PATHS.home }];

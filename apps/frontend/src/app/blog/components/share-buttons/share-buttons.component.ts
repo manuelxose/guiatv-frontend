@@ -7,7 +7,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="flex items-center gap-3">
-      <span class="text-sm text-gray-400 mr-2">Compartir:</span>
+      <span class="mr-2 text-sm text-[var(--portal-text-soft)]">Compartir:</span>
 
       <!-- Facebook -->
       <a
@@ -79,7 +79,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
       <!-- Copy Link -->
       <button
         (click)="copyToClipboard()"
-        class="share-btn bg-gray-700 hover:bg-gray-600"
+        class="share-btn bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-border-strong)]"
         [class.copied]="copied"
         aria-label="Copiar enlace"
       >
@@ -117,7 +117,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
   styles: [
     `
       .share-btn {
-        @apply p-2 rounded-full text-white transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900;
+        @apply p-2 rounded-full text-white transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2;
+        --tw-ring-offset-color: var(--portal-surface);
       }
 
       .share-btn.copied {

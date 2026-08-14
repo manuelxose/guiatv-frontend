@@ -3,13 +3,13 @@
   <!-- Header -->
   <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
-      <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Channels / EPG</p>
-      <h3 class="text-2xl font-semibold text-white">Scheduling control</h3>
-      <p class="text-sm text-slate-400">Trigger EPG syncs, precompute schedules, and manage data retention.</p>
+      <p class="text-[10px] uppercase tracking-[0.3em] text-[var(--portal-text-muted)]">Channels / EPG</p>
+      <h3 class="text-2xl font-semibold text-[var(--portal-text)]">Scheduling control</h3>
+      <p class="text-sm text-[var(--portal-text-soft)]">Trigger EPG syncs, precompute schedules, and manage data retention.</p>
     </div>
     <button
       type="button"
-      class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500"
+      class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
       (click)="loadData()"
     >
       Refresh
@@ -23,27 +23,27 @@
 
   <!-- Stats from health endpoint -->
   <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">Channels tracked</p>
-      <p class="text-2xl font-semibold text-white mt-2">{{ channels.length }}</p>
-      <p class="text-xs text-slate-500 mt-1">{{ activeChannels }} active &middot; {{ channelTypes.length }} types</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Channels tracked</p>
+      <p class="text-2xl font-semibold text-[var(--portal-text)] mt-2">{{ channels.length }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">{{ activeChannels }} active &middot; {{ channelTypes.length }} types</p>
     </div>
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">System status</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">System status</p>
       <p class="text-2xl font-semibold mt-2" [ngClass]="health?.status === 'healthy' ? 'text-emerald-200' : 'text-amber-200'">
         {{ health?.status || '…' }}
       </p>
-      <p class="text-xs text-slate-500 mt-1">Cache: {{ health?.services?.cache?.status || '…' }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">Cache: {{ health?.services?.cache?.status || '…' }}</p>
     </div>
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">Uptime</p>
-      <p class="text-2xl font-semibold text-white mt-2">{{ health?.uptime || '…' }}</p>
-      <p class="text-xs text-slate-500 mt-1">v{{ health?.version || '…' }}</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Uptime</p>
+      <p class="text-2xl font-semibold text-[var(--portal-text)] mt-2">{{ health?.uptime || '…' }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">v{{ health?.version || '…' }}</p>
     </div>
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">Memory</p>
-      <p class="text-2xl font-semibold text-white mt-2">{{ health?.memory?.heapUsed || '…' }}</p>
-      <p class="text-xs text-slate-500 mt-1">of {{ health?.memory?.heapTotal || '…' }}</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Memory</p>
+      <p class="text-2xl font-semibold text-[var(--portal-text)] mt-2">{{ health?.memory?.heapUsed || '…' }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">of {{ health?.memory?.heapTotal || '…' }}</p>
     </div>
   </div>
 
@@ -51,21 +51,21 @@
   <div class="grid xl:grid-cols-2 gap-6">
 
     <!-- EPG Sync -->
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6 space-y-4">
-      <h4 class="text-lg font-semibold text-white">EPG Sync</h4>
-      <p class="text-xs text-slate-400">Download and process the XMLTV source for a given date.</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-4">
+      <h4 class="text-lg font-semibold text-[var(--portal-text)]">EPG Sync</h4>
+      <p class="text-xs text-[var(--portal-text-soft)]">Download and process the XMLTV source for a given date.</p>
       <div class="flex flex-wrap items-end gap-3">
         <div>
-          <label class="block text-xs text-slate-400 mb-1" for="sync-date">Date (YYYYMMDD)</label>
+          <label class="block text-xs text-[var(--portal-text-soft)] mb-1" for="sync-date">Date (YYYYMMDD)</label>
           <input id="sync-date" type="text" [(ngModel)]="syncDate" placeholder="today"
-            class="w-40 bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+            class="w-40 bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
         </div>
-        <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-          <input type="checkbox" [(ngModel)]="syncForceRefresh" class="h-4 w-4 rounded border-slate-700 bg-slate-950" />
+        <label class="flex items-center gap-2 text-xs text-[var(--portal-text-soft)] cursor-pointer">
+          <input type="checkbox" [(ngModel)]="syncForceRefresh" class="h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-bg-elevated)]" />
           Force refresh
         </label>
-        <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
-          <input type="checkbox" [(ngModel)]="syncAsync" class="h-4 w-4 rounded border-slate-700 bg-slate-950" />
+        <label class="flex items-center gap-2 text-xs text-[var(--portal-text-soft)] cursor-pointer">
+          <input type="checkbox" [(ngModel)]="syncAsync" class="h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-bg-elevated)]" />
           Async
         </label>
         <button type="button" [disabled]="syncLoading"
@@ -77,19 +77,19 @@
     </div>
 
     <!-- Precompute -->
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6 space-y-4">
-      <h4 class="text-lg font-semibold text-white">Precompute</h4>
-      <p class="text-xs text-slate-400">Generate precomputed schedule snapshots for fast delivery.</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-4">
+      <h4 class="text-lg font-semibold text-[var(--portal-text)]">Precompute</h4>
+      <p class="text-xs text-[var(--portal-text-soft)]">Generate precomputed schedule snapshots for fast delivery.</p>
       <div class="flex flex-wrap items-end gap-3">
         <div>
-          <label class="block text-xs text-slate-400 mb-1" for="precompute-date">Date (YYYYMMDD)</label>
+          <label class="block text-xs text-[var(--portal-text-soft)] mb-1" for="precompute-date">Date (YYYYMMDD)</label>
           <input id="precompute-date" type="text" [(ngModel)]="precomputeDate" placeholder="today"
-            class="w-40 bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+            class="w-40 bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1" for="precompute-fields">Fields</label>
+          <label class="block text-xs text-[var(--portal-text-soft)] mb-1" for="precompute-fields">Fields</label>
           <select id="precompute-fields" [(ngModel)]="precomputeFields"
-            class="bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white">
+            class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)]">
             <option value="full">Full</option>
             <option value="minimal">Minimal</option>
           </select>
@@ -100,7 +100,7 @@
           {{ precomputeLoading ? 'Running…' : 'Precompute date' }}
         </button>
         <button type="button" [disabled]="precomputeWindowLoading"
-          class="px-4 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 disabled:opacity-40"
+          class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] disabled:opacity-40"
           (click)="runPrecomputeWindow()">
           {{ precomputeWindowLoading ? 'Running…' : 'Rolling window' }}
         </button>
@@ -108,14 +108,14 @@
     </div>
 
     <!-- Cleanup -->
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6 space-y-4">
-      <h4 class="text-lg font-semibold text-white">Cleanup</h4>
-      <p class="text-xs text-slate-400">Remove old programs beyond the retention window.</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-4">
+      <h4 class="text-lg font-semibold text-[var(--portal-text)]">Cleanup</h4>
+      <p class="text-xs text-[var(--portal-text-soft)]">Remove old programs beyond the retention window.</p>
       <div class="flex flex-wrap items-end gap-3">
         <div>
-          <label class="block text-xs text-slate-400 mb-1" for="cleanup-days">Days to keep</label>
+          <label class="block text-xs text-[var(--portal-text-soft)] mb-1" for="cleanup-days">Days to keep</label>
           <input id="cleanup-days" type="number" [(ngModel)]="cleanupDays" min="1" max="90"
-            class="w-24 bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+            class="w-24 bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
         </div>
         <button type="button" [disabled]="cleanupLoading"
           class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-xs text-red-100 hover:bg-red-500/30 disabled:opacity-40"
@@ -126,12 +126,12 @@
     </div>
 
     <!-- Reset -->
-    <div class="bg-slate-900/60 border border-red-900/40 rounded-2xl p-6 space-y-4">
+    <div class="bg-[var(--portal-surface)] border border-red-900/40 rounded-2xl p-6 space-y-4">
       <h4 class="text-lg font-semibold text-red-200">System Reset</h4>
-      <p class="text-xs text-slate-400">Full reset: clears cache, DB collections, storage, then re-syncs everything.</p>
+      <p class="text-xs text-[var(--portal-text-soft)]">Full reset: clears cache, DB collections, storage, then re-syncs everything.</p>
       <div class="flex flex-wrap items-end gap-3">
         <label class="flex items-center gap-2 text-xs text-red-200 cursor-pointer">
-          <input type="checkbox" [(ngModel)]="confirmReset" class="h-4 w-4 rounded border-red-700 bg-slate-950" />
+          <input type="checkbox" [(ngModel)]="confirmReset" class="h-4 w-4 rounded border-red-700 bg-[var(--portal-bg-elevated)]" />
           I understand this is destructive
         </label>
         <button type="button" [disabled]="resetLoading || !confirmReset"
@@ -145,12 +145,12 @@
 
   <!-- Channel list -->
   <div class="space-y-4" *ngIf="channels.length">
-    <div class="flex items-center justify-between text-xs text-slate-500">
+    <div class="flex items-center justify-between text-xs text-[var(--portal-text-muted)]">
       <span>{{ channels.length }} channels loaded</span>
     </div>
-    <div class="hidden lg:block overflow-auto border border-slate-800/70 rounded-2xl">
+    <div class="hidden lg:block overflow-auto border border-[var(--portal-border)] rounded-2xl">
       <table class="min-w-[700px] w-full text-sm text-left">
-        <thead class="sticky top-0 bg-slate-950/90 text-[11px] uppercase text-slate-500">
+        <thead class="sticky top-0 bg-[var(--portal-surface)] text-[11px] uppercase text-[var(--portal-text-muted)]">
           <tr>
             <th class="px-4 py-3">Channel</th>
             <th class="px-4 py-3">Type</th>
@@ -160,14 +160,14 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-800/70">
-          <tr *ngFor="let ch of channels" class="hover:bg-slate-900/40">
-            <td class="px-4 py-3 text-white font-medium">{{ ch.name }}</td>
-            <td class="px-4 py-3 text-slate-400">{{ ch.type }}</td>
-            <td class="px-4 py-3 text-slate-400">{{ ch.region || '—' }}</td>
-            <td class="px-4 py-3 text-slate-400">{{ ch.country || '—' }}</td>
+          <tr *ngFor="let ch of channels" class="hover:bg-[var(--portal-surface)]">
+            <td class="px-4 py-3 text-[var(--portal-text)] font-medium">{{ ch.name }}</td>
+            <td class="px-4 py-3 text-[var(--portal-text-soft)]">{{ ch.type }}</td>
+            <td class="px-4 py-3 text-[var(--portal-text-soft)]">{{ ch.region || '—' }}</td>
+            <td class="px-4 py-3 text-[var(--portal-text-soft)]">{{ ch.country || '—' }}</td>
             <td class="px-4 py-3">
               <span class="text-[11px] px-2 py-1 rounded-full border"
-                [ngClass]="ch.isActive ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-slate-600/40 text-slate-400 bg-slate-500/10'">
+                [ngClass]="ch.isActive ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-[var(--portal-border-strong)] text-[var(--portal-text-soft)] bg-[var(--portal-surface-strong)]'">
                 {{ ch.isActive ? 'active' : 'inactive' }}
               </span>
             </td>
@@ -176,29 +176,29 @@
       </table>
     </div>
     <div class="lg:hidden space-y-3">
-      <div *ngFor="let ch of channels" class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
+      <div *ngFor="let ch of channels" class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
         <div class="flex items-center justify-between">
-          <p class="text-white font-medium">{{ ch.name }}</p>
+          <p class="text-[var(--portal-text)] font-medium">{{ ch.name }}</p>
           <span class="text-[11px] px-2 py-1 rounded-full border"
-            [ngClass]="ch.isActive ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-slate-600/40 text-slate-400 bg-slate-500/10'">
+            [ngClass]="ch.isActive ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-[var(--portal-border-strong)] text-[var(--portal-text-soft)] bg-[var(--portal-surface-strong)]'">
             {{ ch.isActive ? 'active' : 'inactive' }}
           </span>
         </div>
-        <div class="mt-2 text-xs text-slate-500">{{ ch.type }} &middot; {{ ch.region || ch.country || '—' }}</div>
+        <div class="mt-2 text-xs text-[var(--portal-text-muted)]">{{ ch.type }} &middot; {{ ch.region || ch.country || '—' }}</div>
       </div>
     </div>
   </div>
 
   <!-- Action results log -->
-  <div *ngIf="actionResults.length" class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-    <h4 class="text-lg font-semibold text-white mb-4">Action log</h4>
+  <div *ngIf="actionResults.length" class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+    <h4 class="text-lg font-semibold text-[var(--portal-text)] mb-4">Action log</h4>
     <div class="space-y-2 text-xs">
       <div *ngFor="let r of actionResults" class="flex items-start gap-3">
-        <span class="text-slate-500">{{ r.time | date:'HH:mm:ss' }}</span>
+        <span class="text-[var(--portal-text-muted)]">{{ r.time | date:'HH:mm:ss' }}</span>
         <span [ngClass]="r.success ? 'text-emerald-300' : 'text-red-300'" class="text-[10px] uppercase tracking-[0.2em]">
           {{ r.success ? 'ok' : 'fail' }}
         </span>
-        <span class="text-slate-400">{{ r.message }}</span>
+        <span class="text-[var(--portal-text-soft)]">{{ r.message }}</span>
       </div>
     </div>
   </div>

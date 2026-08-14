@@ -16,6 +16,8 @@ export interface UnifiedCardData {
   description: string;
   image: string;
   channelName: string;
+  channelId: string;
+  channelPath: string;
   channelIcon: string;
   startTime: string;
   endTime: string;
@@ -74,6 +76,8 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
       description: String(item.program.description || '').trim(),
       image: resolveTvImage(item),
       channelName: String(item.channel.name || '').trim(),
+      channelId: String(item.channel.id || '').trim(),
+      channelPath: item.channel.id ? `/canales/${encodeURIComponent(item.channel.id)}` : '',
       channelIcon: String(item.assets.channelLogo?.url || item.channel.icon || '').trim(),
       startTime: item.airing.start,
       endTime: item.airing.end,
@@ -100,6 +104,8 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
     description: String(item.synopsis || '').trim(),
     image: String(item.backdrop || item.image || '').trim(),
     channelName: String(item.channel?.name || '').trim(),
+    channelId: String(item.channel?.id || '').trim(),
+    channelPath: item.channel?.id ? `/canales/${encodeURIComponent(item.channel.id)}` : '',
     channelIcon: String(item.channel?.icon || '').trim(),
     startTime: String(item.start || '').trim(),
     endTime: String(item.end || '').trim(),

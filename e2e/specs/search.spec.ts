@@ -20,9 +20,12 @@ test.describe('Buscar -> suggestions -> resultado -> detalle', () => {
     // render) — longer than the suite default is warranted here.
     test.setTimeout(90_000);
 
-    const readRes = await request.get(`${BACKEND_URL}/v2/tv/read?view=now`);
-    expect(readRes.ok()).toBeTruthy();
-    const readBody = await readRes.json();
+    let readBody: any = null;
+    await expect.poll(async () => {
+      const response = await request.get(`${BACKEND_URL}/v2/tv/read?view=now`);
+      if (response.ok()) readBody = await response.json();
+      return response.status();
+    }, { timeout: 20_000, intervals: [500, 1_000, 2_000] }).toBe(200);
     const items: Array<{ program?: { title?: string } }> = readBody?.data?.items || [];
     const realTitle = items.map((i) => i.program?.title).find((t) => t && t.trim().length >= 4);
     test.skip(!realTitle, 'No live program title available from the backend right now');

@@ -12,3 +12,9 @@ Default behavior:
 - If the image becomes part of the shipped app, also save a second copy to the final project asset path, for example `apps/frontend/src/assets/...`, using `assetOutputPath` in the same generation when possible.
 - Prefer Spanish prompts for Spanish-facing content unless the task explicitly requires another language.
 - Never expose, duplicate, or hardcode the SiliconFlow API key in tracked files, prompts, logs, or responses.
+
+## Frontend design system & theme (always apply)
+- All frontend theming goes through semantic tokens in `apps/frontend/src/styles/design-tokens.scss` (`--portal-*`, `--accent-*`, `--guide-*`).
+- Real light/dark/system theme is owned by `apps/frontend/src/app/services/theme.service.ts`, mirrored on `<html data-theme>` + `color-scheme`, with an inline no-flash script in `apps/frontend/src/index.html`.
+- NEVER hardcode semantic surfaces in components: `slate-*`, `gray-*`, `text-white`, `bg-white`, `bg-black`, `#081018`. Use `bg-[var(--portal-*)]` / `text-[var(--portal-*)]` / `border-[var(--portal-border)]`. Exceptions: `text-white` on red accent buttons; `bg-black/<opacity>` modal backdrops only.
+- Verify both light and dark themes on any UI change.

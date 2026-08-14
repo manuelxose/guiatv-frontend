@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -79,7 +79,8 @@ export class CategoryComponent implements OnInit, OnDestroy {
     private readonly editorialService: EditorialService,
     private readonly metaService: MetaService,
     private readonly sanitizer: DomSanitizer,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly changeDetector: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -109,10 +110,12 @@ export class CategoryComponent implements OnInit, OnDestroy {
             type: 'website',
           });
           this.buildStructuredData(state);
+          this.changeDetector.markForCheck();
         },
         error: () => {
           this.error = 'No se ha podido cargar esta categoría editorial.';
           this.loading = false;
+          this.changeDetector.markForCheck();
         },
       });
   }

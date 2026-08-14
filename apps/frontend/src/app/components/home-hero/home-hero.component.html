@@ -1,0 +1,56 @@
+<section
+  *ngIf="activeItem as item"
+  class="home-hero"
+  aria-roledescription="carrusel"
+  [attr.aria-label]="item.title"
+  (mouseenter)="pause()"
+  (mouseleave)="resume()"
+  (focusin)="pause()"
+  (focusout)="resume()"
+>
+  <img class="home-hero__backdrop" [src]="item.image" alt="" aria-hidden="true" fetchpriority="high" />
+  <img
+    class="home-hero__image"
+    [class.home-hero__image--contain]="imageLayout() === 'contain'"
+    [src]="item.image"
+    [alt]="item.title"
+    fetchpriority="high"
+    (load)="updateImageLayout($event)"
+    (error)="useFallbackImage($event)"
+  />
+  <div class="home-hero__overlay"></div>
+
+  <div class="home-hero__content">
+    <p class="home-hero__eyebrow"><span></span>{{ item.eyebrow }}</p>
+    <h1 [class.home-hero__title--long]="item.title.length > 34" [class.home-hero__title--very-long]="item.title.length > 58">
+      {{ item.title }}
+    </h1>
+    <p class="home-hero__meta">{{ item.meta }}</p>
+    <p class="home-hero__description" *ngIf="item.description">{{ item.description }}</p>
+
+    <div class="home-hero__actions">
+      <a [routerLink]="item.primaryPath" class="home-hero__primary">{{ item.primaryLabel }}</a>
+      <a *ngIf="item.secondaryPath" [routerLink]="item.secondaryPath" class="home-hero__secondary">
+        {{ item.secondaryLabel }}
+      </a>
+    </div>
+  </div>
+
+  <div class="home-hero__progress" *ngIf="item.progress > 0">
+    <span [style.width.%]="item.progress"></span>
+  </div>
+
+  <div class="home-hero__controls" *ngIf="items.length > 1">
+    <button type="button" (click)="previous()" aria-label="Destacado anterior">‹</button>
+    <button
+      *ngFor="let candidate of items; let index = index; trackBy: trackByItem"
+      type="button"
+      class="home-hero__dot"
+      [class.home-hero__dot--active]="activeIndex() === index"
+      (click)="select(index)"
+      [attr.aria-label]="'Mostrar ' + candidate.title"
+      [attr.aria-current]="activeIndex() === index ? 'true' : null"
+    ></button>
+    <button type="button" (click)="next()" aria-label="Siguiente destacado">›</button>
+  </div>
+</section>

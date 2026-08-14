@@ -42,7 +42,30 @@ describe('UnifiedGuideStateService', () => {
       channel: '',
       competition: '',
       date: 'today',
-      timeRange: 'all',
+      timeRange: 'live',
+    });
+  });
+
+  it('does not inherit stale filters when the URL has no parameters', () => {
+    service.updateLiveFilters({
+      group: 'autonomico',
+      category: 'Series',
+      channel: 'punt3_tv',
+      region: 'Valencia',
+      flags: ['streaming'],
+    });
+
+    service.syncFromQueryParams({}, 'live');
+
+    expect(service.liveFilters()).toEqual({
+      group: 'tdt',
+      category: 'all',
+      liveView: 'now',
+      date: 'today',
+      channel: '',
+      channelType: 'all',
+      region: 'all',
+      flags: [],
     });
   });
 

@@ -25,7 +25,7 @@ export type ChatTab = 'ia' | 'social';
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 3 13.8 8.2 19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/>
             </svg>
-            Asistente IA
+            Asistente
           </span>
           <span
             *ngIf="activeTab === 'ia'"
@@ -74,6 +74,14 @@ export type ChatTab = 'ia' | 'social';
       </div>
     </div>
   `,
+  styles: [`
+    :host {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+    }
+  `],
 })
 export class UnifiedChatShellComponent {
   @Output() close = new EventEmitter<void>();

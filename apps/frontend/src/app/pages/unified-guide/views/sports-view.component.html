@@ -25,7 +25,6 @@
     <app-unified-program-card
       [item]="lead"
       variant="sport"
-      (selected)="openItem(lead)"
     ></app-unified-program-card>
 
     <div class="sports-view__feature-stack" *ngIf="heroStack().length">
@@ -33,7 +32,6 @@
         *ngFor="let item of heroStack(); trackBy: trackByItem"
         [item]="item"
         variant="compact"
-        (selected)="openItem(item)"
       ></app-unified-program-card>
     </div>
   </section>
@@ -52,7 +50,6 @@
           *ngFor="let item of module.items; trackBy: trackByItem"
           [item]="item"
           variant="compact"
-          (selected)="openItem(item)"
         ></app-unified-program-card>
       </div>
     </article>
@@ -91,7 +88,6 @@
         *ngFor="let item of footballHighlights(); trackBy: trackByItem"
         [item]="item"
         variant="epg-row"
-        (selected)="openItem(item)"
       ></app-unified-program-card>
     </div>
   </section>
@@ -119,7 +115,6 @@
         *ngFor="let item of highlightedAgenda(); trackBy: trackByItem"
         [item]="item"
         variant="epg-row"
-        (selected)="openItem(item)"
       ></app-unified-program-card>
     </div>
   </section>
@@ -143,7 +138,6 @@
             *ngFor="let item of group.items; trackBy: trackByItem"
             [item]="item"
             variant="epg-row"
-            (selected)="openItem(item)"
           ></app-unified-program-card>
         </div>
       </article>
@@ -169,35 +163,10 @@
             *ngFor="let item of group.items; trackBy: trackByItem"
             [item]="item"
             variant="epg-row"
-            (selected)="openItem(item)"
           ></app-unified-program-card>
         </div>
       </article>
     </div>
-  </section>
-
-  <section *ngIf="quickDirectories().length" class="sports-view__directories">
-    <article *ngFor="let section of quickDirectories()" class="sports-view__directory-card">
-      <header class="sports-view__section-head">
-        <div>
-          <p class="sports-view__eyebrow">{{ section.eyebrow }}</p>
-          <h3>{{ section.title }}</h3>
-        </div>
-      </header>
-
-      <div class="sports-view__directory-grid">
-        <button
-          *ngFor="let item of section.items"
-          type="button"
-          class="sports-view__directory-chip"
-          [class.sports-view__directory-chip--active]="item.active"
-          (click)="applyQuickDirectory(section.kind, item.id)"
-        >
-          <strong>{{ item.label }}</strong>
-          <small>{{ item.meta }}</small>
-        </button>
-      </div>
-    </article>
   </section>
 
   <app-unified-filter-dock
@@ -210,17 +179,4 @@
     (select)="handleDockSelect($event)"
   ></app-unified-filter-dock>
 
-  <app-bottom-sheet
-    [open]="!!selectedItem()"
-    [title]="selectedItem()?.program?.title || 'Detalle'"
-    (close)="closeSheet()"
-  >
-    <app-unified-program-card
-      *ngIf="selectedItem() as item"
-      [item]="item"
-      variant="compact"
-      [showActions]="false"
-      (selected)="openItem(item)"
-    ></app-unified-program-card>
-  </app-bottom-sheet>
 </section>

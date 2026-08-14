@@ -1,29 +1,10 @@
-// Home's hero is now just the shared shell's media slot populated with the
-// real live-now program — no bespoke copy hero. Description/secondary meta
-// are hidden here (not in UnifiedProgramCardComponent itself, so other
-// consumers of the `live` variant are unaffected) to keep the hero within
-// its height cap (unified-portal-shell.component.scss,
-// `.portal-shell__hero--stage`) — title, channel, time and the
-// `--accent-live` "EN DIRECTO" chip are enough to answer "what's on now".
 .home-page__hero-live {
   height: 100%;
-
-  // Shorter than the rail cards' 16:9 so the hero still fits its height cap
-  // at full content-column width on desktop (see .portal-shell__hero--stage).
-  ::ng-deep .program-card__media {
-    aspect-ratio: 21 / 7;
-  }
-
-  ::ng-deep .program-card__description,
-  ::ng-deep .program-card__meta-pill:not(.program-card__meta-pill--live) {
-    display: none;
-  }
 }
 
-@media (min-width: 768px) {
-  .home-page__hero-live ::ng-deep .program-card__media {
-    aspect-ratio: 32 / 9;
-  }
+.home-page__hero-live app-home-hero {
+  display: block;
+  height: 100%;
 }
 
 .home-page__loading,
@@ -64,6 +45,12 @@
   gap: 0.9rem;
   overflow-x: auto;
   padding-bottom: 0.25rem;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-inline: contain;
+}
+
+.home-page__rail app-unified-program-card {
+  scroll-snap-align: start;
 }
 
 .home-page__grid {
@@ -116,6 +103,28 @@
 
   .home-page__platform-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .home-page__module {
+    gap: 0.75rem;
+  }
+
+  .home-page__rail {
+    grid-auto-columns: minmax(14.75rem, 82vw);
+    margin-inline: -0.15rem;
+    padding-inline: 0.15rem;
+  }
+
+  .home-page__platform-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .home-page__platform-card {
+    min-height: 5.5rem;
+    padding: 0.75rem;
   }
 }
 

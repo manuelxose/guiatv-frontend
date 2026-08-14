@@ -106,7 +106,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateViewportState();
-    this.menuState.setActive('perfil');
+    this.menuState.setActive(this.router.url.startsWith('/comunidad') ? 'comunidad' : 'perfil');
 
     this.isAdmin$
       .pipe(takeUntil(this.destroy$))
@@ -143,6 +143,11 @@ export class UserAreaComponent implements OnInit, OnDestroy {
 
   setActiveTab(tab: TabType): void {
     this.activeTab = tab;
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: tab === 'feed' ? null : tab },
+      queryParamsHandling: 'merge',
+    });
   }
 
   get visibleTabs(): { key: TabType; label: string }[] {

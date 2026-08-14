@@ -7,7 +7,6 @@ import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedEditorialModuleComponent } from '../../../components/unified-editorial-module/unified-editorial-module.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
-import { BottomSheetComponent } from '../../../components/bottom-sheet/bottom-sheet.component';
 import { TvDataFacade, UnifiedDiscoveryItem } from '../../../state/tv-data.facade';
 import { UnifiedGuideStateService } from '../../../state/unified-guide.state';
 import { UnifiedShellUiStateService } from '../../../state/unified-shell-ui.state';
@@ -49,7 +48,6 @@ interface DiscoverModule {
     UnifiedFilterDockComponent,
     UnifiedEditorialModuleComponent,
     UnifiedProgramCardComponent,
-    BottomSheetComponent,
     PlatformBadgeComponent,
   ],
   templateUrl: './discover-view.component.html',

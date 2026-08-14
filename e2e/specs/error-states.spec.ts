@@ -24,7 +24,7 @@ test.describe('Error states degrade gracefully', () => {
 
     // The shell chrome (top nav / brand) is static markup, not API-gated —
     // it must still render even when every API call fails.
-    await expect(page.getByText('GUIAPROGRAMACIONTV')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('GUÍA TV', { exact: true })).toBeVisible({ timeout: 15_000 });
   });
 
   test('empty response: home renders without crashing when APIs return no items', async ({
@@ -52,7 +52,7 @@ test.describe('Error states degrade gracefully', () => {
     await assertNotBlankScreen(page);
     await assertNoStuckSpinner(page);
     await assertNoRenderedUndefined(page);
-    await expect(page.getByText('GUIAPROGRAMACIONTV')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('GUÍA TV', { exact: true })).toBeVisible({ timeout: 15_000 });
   });
 
   test('404: an unknown route renders the real not-found page, not a blank screen', async ({ page }) => {

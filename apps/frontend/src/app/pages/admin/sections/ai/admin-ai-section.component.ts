@@ -25,11 +25,11 @@ import {
     <div class="space-y-6">
       <!-- Header -->
       <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold text-white">AI Chatbot Analytics</h2>
+        <h2 class="text-lg font-semibold text-[var(--portal-text)]">AI Chatbot Analytics</h2>
         <button
           type="button"
           (click)="refresh()"
-          class="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700/60 transition-colors"
+          class="rounded-lg border border-[var(--portal-border-strong)] bg-[var(--portal-surface-strong)] px-3 py-1.5 text-xs text-[var(--portal-text-soft)] hover:bg-[var(--portal-border-strong)] transition-colors"
         >
           Refresh
         </button>
@@ -37,78 +37,78 @@ import {
 
       <!-- KPI cards -->
       <div *ngIf="overview" class="grid sm:grid-cols-2 xl:grid-cols-5 gap-4">
-        <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Conversations</p>
-          <p class="text-3xl font-semibold text-white mt-2">{{ overview.totalConversations }}</p>
-          <p class="text-xs text-slate-500 mt-1">Total</p>
+        <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+          <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Conversations</p>
+          <p class="text-3xl font-semibold text-[var(--portal-text)] mt-2">{{ overview.totalConversations }}</p>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">Total</p>
         </div>
-        <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Messages</p>
-          <p class="text-3xl font-semibold text-white mt-2">{{ overview.totalMessages }}</p>
-          <p class="text-xs text-slate-500 mt-1">Avg {{ overview.avgMessagesPerConversation }}/conv</p>
+        <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+          <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Messages</p>
+          <p class="text-3xl font-semibold text-[var(--portal-text)] mt-2">{{ overview.totalMessages }}</p>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">Avg {{ overview.avgMessagesPerConversation }}/conv</p>
         </div>
-        <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Active Today</p>
-          <p class="text-3xl font-semibold text-white mt-2">{{ overview.activeUsersToday }}</p>
-          <p class="text-xs text-slate-500 mt-1">Week: {{ overview.activeUsersWeek }}</p>
+        <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+          <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Active Today</p>
+          <p class="text-3xl font-semibold text-[var(--portal-text)] mt-2">{{ overview.activeUsersToday }}</p>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">Week: {{ overview.activeUsersWeek }}</p>
         </div>
-        <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Feedback</p>
+        <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+          <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Feedback</p>
           <p class="text-2xl font-semibold mt-2">
             <span class="text-emerald-300">+{{ overview.feedbackSummary.positive }}</span>
-            <span class="text-slate-600 mx-1">/</span>
+            <span class="text-[var(--portal-text-faint)] mx-1">/</span>
             <span class="text-red-300">-{{ overview.feedbackSummary.negative }}</span>
           </p>
-          <p class="text-xs text-slate-500 mt-1">Thumbs up / down</p>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">Thumbs up / down</p>
         </div>
-        <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-          <p class="text-xs text-slate-500 uppercase tracking-wider">Subscriptions</p>
+        <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+          <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Subscriptions</p>
           <p class="text-2xl font-semibold mt-2">
-            <span class="text-white">{{ overview.subscriptionBreakdown.free }}</span>
-            <span class="text-slate-600 mx-1">/</span>
+            <span class="text-[var(--portal-text)]">{{ overview.subscriptionBreakdown.free }}</span>
+            <span class="text-[var(--portal-text-faint)] mx-1">/</span>
             <span class="text-amber-300">{{ overview.subscriptionBreakdown.premium }}</span>
           </p>
-          <p class="text-xs text-slate-500 mt-1">Free / Premium</p>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">Free / Premium</p>
         </div>
       </div>
 
       <!-- Top genres & platforms -->
       <div *ngIf="overview" class="grid md:grid-cols-2 gap-6">
-        <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-          <h3 class="text-sm font-medium text-slate-300 mb-3">Top Genres</h3>
+        <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+          <h3 class="text-sm font-medium text-[var(--portal-text-soft)] mb-3">Top Genres</h3>
           <div class="space-y-2">
             <div
               *ngFor="let g of overview.topGenres; let i = index"
               class="flex items-center justify-between text-sm"
             >
-              <span class="text-slate-200">{{ i + 1 }}. {{ g.genre }}</span>
-              <span class="text-slate-500">{{ g.count }}</span>
+              <span class="text-[var(--portal-text)]">{{ i + 1 }}. {{ g.genre }}</span>
+              <span class="text-[var(--portal-text-muted)]">{{ g.count }}</span>
             </div>
-            <p *ngIf="!overview.topGenres.length" class="text-xs text-slate-600">No genre data yet</p>
+            <p *ngIf="!overview.topGenres.length" class="text-xs text-[var(--portal-text-faint)]">No genre data yet</p>
           </div>
         </div>
-        <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-          <h3 class="text-sm font-medium text-slate-300 mb-3">Top Platforms</h3>
+        <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+          <h3 class="text-sm font-medium text-[var(--portal-text-soft)] mb-3">Top Platforms</h3>
           <div class="space-y-2">
             <div
               *ngFor="let p of overview.topPlatforms; let i = index"
               class="flex items-center justify-between text-sm"
             >
-              <span class="text-slate-200">{{ i + 1 }}. {{ p.platform }}</span>
-              <span class="text-slate-500">{{ p.count }}</span>
+              <span class="text-[var(--portal-text)]">{{ i + 1 }}. {{ p.platform }}</span>
+              <span class="text-[var(--portal-text-muted)]">{{ p.count }}</span>
             </div>
-            <p *ngIf="!overview.topPlatforms.length" class="text-xs text-slate-600">No platform data yet</p>
+            <p *ngIf="!overview.topPlatforms.length" class="text-xs text-[var(--portal-text-faint)]">No platform data yet</p>
           </div>
         </div>
       </div>
 
       <!-- Activity timeline (table) -->
-      <div *ngIf="timeSeries.length" class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-        <h3 class="text-sm font-medium text-slate-300 mb-3">Daily Activity (last 30 days)</h3>
+      <div *ngIf="timeSeries.length" class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+        <h3 class="text-sm font-medium text-[var(--portal-text-soft)] mb-3">Daily Activity (last 30 days)</h3>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
-              <tr class="text-left text-xs text-slate-500 border-b border-slate-800">
+              <tr class="text-left text-xs text-[var(--portal-text-muted)] border-b border-[var(--portal-border)]">
                 <th class="pb-2 pr-4">Date</th>
                 <th class="pb-2 pr-4 text-right">Conversations</th>
                 <th class="pb-2 text-right">Messages</th>
@@ -117,11 +117,11 @@ import {
             <tbody>
               <tr
                 *ngFor="let row of timeSeries"
-                class="border-b border-slate-800/40 last:border-0"
+                class="border-b border-[var(--portal-border)]/40 last:border-0"
               >
-                <td class="py-1.5 pr-4 text-slate-300">{{ row.date }}</td>
-                <td class="py-1.5 pr-4 text-right text-slate-400">{{ row.conversations }}</td>
-                <td class="py-1.5 text-right text-slate-400">{{ row.messages }}</td>
+                <td class="py-1.5 pr-4 text-[var(--portal-text-soft)]">{{ row.date }}</td>
+                <td class="py-1.5 pr-4 text-right text-[var(--portal-text-soft)]">{{ row.conversations }}</td>
+                <td class="py-1.5 text-right text-[var(--portal-text-soft)]">{{ row.messages }}</td>
               </tr>
             </tbody>
           </table>
@@ -130,7 +130,7 @@ import {
 
       <!-- Loading / empty -->
       <div *ngIf="!overview" class="flex items-center justify-center py-16">
-        <p class="text-sm text-slate-500">Loading AI analytics…</p>
+        <p class="text-sm text-[var(--portal-text-muted)]">Loading AI analytics…</p>
       </div>
     </div>
   `,

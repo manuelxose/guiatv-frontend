@@ -7,7 +7,6 @@ import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
 import { PlatformBadgeComponent } from '../../../components/platform-badge/platform-badge.component';
-import { BottomSheetComponent } from '../../../components/bottom-sheet/bottom-sheet.component';
 import { TvDataFacade } from '../../../state/tv-data.facade';
 import { UnifiedGuideStateService } from '../../../state/unified-guide.state';
 import { UnifiedShellUiStateService } from '../../../state/unified-shell-ui.state';
@@ -45,7 +44,6 @@ interface StreamingModule {
     UnifiedFilterDockComponent,
     UnifiedProgramCardComponent,
     PlatformBadgeComponent,
-    BottomSheetComponent,
   ],
   templateUrl: './streaming-view.component.html',
   styleUrl: './streaming-view.component.scss',

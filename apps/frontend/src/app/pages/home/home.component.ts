@@ -9,6 +9,7 @@ import {
 } from '../../components/unified-portal-shell/unified-portal-shell.component';
 import { FilterChipItem } from '../../components/filter-chip-bar/filter-chip-bar.component';
 import { UnifiedProgramCardComponent } from '../../components/unified-program-card/unified-program-card.component';
+import { HomeHeroComponent, HomeHeroItem } from '../../components/home-hero/home-hero.component';
 import { PlatformBadgeComponent } from '../../components/platform-badge/platform-badge.component';
 import { UnifiedEditorialModuleComponent } from '../../components/unified-editorial-module/unified-editorial-module.component';
 import { UnifiedSectionHeaderComponent } from '../../components/unified-section-header/unified-section-header.component';
@@ -34,6 +35,7 @@ import { UnifiedPortalRailSection } from '../../models/portal-shell.models';
     RouterModule,
     UnifiedPortalShellComponent,
     UnifiedProgramCardComponent,
+    HomeHeroComponent,
     PlatformBadgeComponent,
     UnifiedEditorialModuleComponent,
     UnifiedSectionHeaderComponent,
@@ -77,6 +79,35 @@ export class HomeComponent {
   public readonly heroLead = computed(() =>
     this.liveNow()[0] || this.tonight()[0] || this.streamingHighlights()[0] || null
   );
+  public readonly heroItems = computed<HomeHeroItem[]>(() => {
+    const candidates = [
+      ...this.liveNow().slice(0, 3).map((item) => ({ item, source: 'live' as const })),
+      ...this.tonight().slice(0, 2).map((item) => ({ item, source: 'tonight' as const })),
+      ...this.streamingHighlights().slice(0, 2).map((item) => ({ item, source: 'platform' as const })),
+    ];
+    const seen = new Set<string>();
+
+    return candidates.flatMap(({ item, source }) => {
+      const card = normalizeToCard(item);
+      if (!card.title || !card.image || !card.detailPath || seen.has(card.detailPath)) return [];
+      seen.add(card.detailPath);
+
+      const secondaryPath = source === 'platform' ? APP_PATHS.platforms : card.channelPath;
+      return [{
+        id: `${source}-${card.id}`,
+        eyebrow: source === 'live' ? 'En emisión' : source === 'tonight' ? 'Esta noche' : 'Estreno en plataformas',
+        title: card.title,
+        description: card.description,
+        meta: card.subtitle || [card.channelName, card.category].filter(Boolean).join(' · '),
+        image: card.image,
+        progress: source === 'live' ? card.progressPercent : 0,
+        primaryLabel: 'Ver programa',
+        primaryPath: card.detailPath,
+        secondaryLabel: source === 'platform' ? 'Ver en plataformas' : 'Abrir canal',
+        secondaryPath,
+      } satisfies HomeHeroItem];
+    }).slice(0, 5);
+  });
   public readonly rightRailLabel = 'Portada';
   public readonly leftRailSections = computed<UnifiedPortalRailSection[]>(() => [
     {

@@ -19,36 +19,36 @@
   <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
   <div class="editorial-category-page mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6 lg:px-8">
     <div *ngIf="loading" class="grid gap-6 lg:grid-cols-3">
-      <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-slate-900/70"></div>
+      <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-[var(--portal-surface-strong)]"></div>
     </div>
 
     <div
       *ngIf="error"
-      class="rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
+      class="rounded-[1.75rem] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-6 text-sm text-[var(--accent-live)]"
     >
       {{ error }}
     </div>
 
     <ng-container *ngIf="!loading && state">
       <section
-        class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.16),_rgba(8,16,24,0.94)_55%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-10"
+        class="relative overflow-hidden rounded-[2rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-6 shadow-[var(--shadow-lg)] md:p-10"
       >
         <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_35%,transparent_65%,rgba(239,68,68,0.08))]"></div>
         <div class="relative space-y-5">
-          <nav class="flex flex-wrap items-center gap-2 text-sm text-slate-400" aria-label="Breadcrumb">
-            <a [routerLink]="appPaths.blog" class="transition-colors hover:text-white">Editorial</a>
+          <nav class="flex flex-wrap items-center gap-2 text-sm text-[var(--portal-text-soft)]" aria-label="Breadcrumb">
+            <a [routerLink]="appPaths.blog" class="transition-colors hover:text-[var(--portal-text)]">Editorial</a>
             <span>/</span>
-            <span class="text-slate-200">{{ state.category.name }}</span>
+            <span class="text-[var(--portal-text)]">{{ state.category.name }}</span>
           </nav>
 
           <div class="space-y-3">
-            <div class="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-sky-100">
+            <div class="inline-flex items-center rounded-full border border-[var(--accent-editorial)] bg-[var(--accent-editorial-soft)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-[var(--accent-editorial)]">
               Categoría
             </div>
-            <h1 class="max-w-4xl text-4xl font-black tracking-tight text-white md:text-5xl">
+            <h1 class="max-w-4xl text-4xl font-black tracking-tight text-[var(--portal-text)] md:text-5xl">
               {{ state.category.name }}
             </h1>
-            <p class="max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
+            <p class="max-w-2xl text-base leading-7 text-[var(--portal-text-soft)] md:text-lg">
               {{ state.category.description || ('Reportajes, guías y lecturas conectadas con ' + state.category.name + ' dentro de la app.') }}
             </p>
           </div>
@@ -58,7 +58,7 @@
       <section *ngIf="state.featuredPost" class="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
         <a
           [routerLink]="state.featuredPost.canonicalPath"
-          class="editorial-post-card group overflow-hidden rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 transition-colors hover:border-slate-600"
+          class="editorial-post-card group overflow-hidden rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] transition-colors hover:border-[var(--portal-border-strong)]"
         >
           <div class="relative aspect-[16/9] overflow-hidden">
             <img
@@ -70,27 +70,27 @@
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
           </div>
           <div class="space-y-4 p-6">
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Artículo destacado</p>
-            <h2 class="text-3xl font-semibold text-white">{{ state.featuredPost.title }}</h2>
-            <p class="text-sm leading-6 text-slate-400">{{ state.featuredPost.excerptText }}</p>
+            <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Artículo destacado</p>
+            <h2 class="text-3xl font-semibold text-[var(--portal-text)]">{{ state.featuredPost.title }}</h2>
+            <p class="text-sm leading-6 text-[var(--portal-text-soft)]">{{ state.featuredPost.excerptText }}</p>
           </div>
         </a>
 
-        <div class="space-y-4 rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 p-6">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Contexto</p>
-          <p class="text-sm leading-6 text-slate-300">
+        <div class="space-y-4 rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-6">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Contexto</p>
+          <p class="text-sm leading-6 text-[var(--portal-text-soft)]">
             Esta categoría ya forma parte del mismo flujo de descubrimiento que el resto de la app.
           </p>
           <div class="grid gap-3">
             <a
               [routerLink]="appPaths.platforms"
-              class="rounded-[1.25rem] border border-slate-800/80 bg-slate-900/80 px-4 py-4 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-600"
+              class="rounded-[1.25rem] border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-4 py-4 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
             >
               Ver plataformas relacionadas
             </a>
             <a
               [routerLink]="appPaths.top10"
-              class="rounded-[1.25rem] border border-slate-800/80 bg-slate-900/80 px-4 py-4 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-600"
+              class="rounded-[1.25rem] border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-4 py-4 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
             >
               Abrir rankings editoriales
             </a>
@@ -100,8 +100,8 @@
 
       <section *ngIf="state.relatedRankings.length" class="mt-10 space-y-5">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Relacionados</p>
-          <h2 class="mt-2 text-2xl font-semibold text-white">Rankings dentro de esta categoría</h2>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Relacionados</p>
+          <h2 class="mt-2 text-2xl font-semibold text-[var(--portal-text)]">Rankings dentro de esta categoría</h2>
         </div>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <app-editorial-post-card
@@ -114,10 +114,10 @@
       <section *ngIf="state.posts.length" class="mt-10 space-y-5">
         <div class="flex items-end justify-between gap-4">
           <div>
-            <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Archivo</p>
-            <h2 class="text-2xl font-semibold text-white">Más lecturas sobre {{ state.category.name }}</h2>
+            <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Archivo</p>
+            <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Más lecturas sobre {{ state.category.name }}</h2>
           </div>
-          <span class="text-sm text-slate-400">{{ state.posts.length }} artículos</span>
+          <span class="text-sm text-[var(--portal-text-soft)]">{{ state.posts.length }} artículos</span>
         </div>
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <app-editorial-post-card
@@ -129,14 +129,14 @@
 
       <section *ngIf="state.siblingCategories.length" class="mt-10 space-y-5">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Otras rutas editoriales</p>
-          <h2 class="mt-2 text-2xl font-semibold text-white">Sigue explorando</h2>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Otras rutas editoriales</p>
+          <h2 class="mt-2 text-2xl font-semibold text-[var(--portal-text)]">Sigue explorando</h2>
         </div>
         <div class="flex flex-wrap gap-3">
           <a
             *ngFor="let category of state.siblingCategories"
             [routerLink]="category.canonicalPath"
-            class="rounded-full border border-slate-700 bg-slate-950/50 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+            class="rounded-full border border-[var(--portal-border-strong)] bg-[var(--portal-surface)] px-4 py-2 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
           >
             {{ category.name }}
           </a>

@@ -22,12 +22,12 @@
   (searchSubmit)="onSearchSubmit($event)"
 >
   <section *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
-    <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-slate-900/70"></div>
+    <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-[var(--portal-surface-strong)]"></div>
   </section>
 
   <div
     *ngIf="error"
-    class="rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
+    class="rounded-[1.75rem] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-6 text-sm text-[var(--accent-live)]"
   >
     {{ error }}
   </div>
@@ -36,9 +36,9 @@
     <a
       *ngIf="hero"
       [routerLink]="hero.canonicalPath"
-      class="group block overflow-hidden rounded-[1.6rem] border border-slate-800/80 bg-slate-950/70 transition-colors hover:border-slate-600"
+      class="group block overflow-hidden rounded-[1.6rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] transition-colors hover:border-[var(--portal-border-strong)]"
     >
-      <div class="relative aspect-[16/8] overflow-hidden bg-slate-900">
+      <div class="relative aspect-[16/8] overflow-hidden bg-[var(--portal-surface-strong)]">
         <img
           [src]="hero.coverImage"
           [alt]="hero.title"
@@ -50,13 +50,13 @@
 
       <div class="grid gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
         <div class="space-y-3">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Reportaje destacado</p>
-          <h2 class="text-2xl font-semibold text-white">{{ hero.title }}</h2>
-          <p class="line-clamp-3 text-sm text-slate-400">{{ hero.excerptText }}</p>
+          <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Reportaje destacado</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ hero.title }}</h2>
+          <p class="line-clamp-3 text-sm text-[var(--portal-text-soft)]">{{ hero.excerptText }}</p>
         </div>
-        <div class="rounded-[1.25rem] border border-slate-800/80 bg-slate-950/80 p-4">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Conectado con el portal</p>
-          <p class="mt-3 text-sm text-slate-300">
+        <div class="rounded-[1.25rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Conectado con el portal</p>
+          <p class="mt-3 text-sm text-[var(--portal-text-soft)]">
             Desde aquí cruzas editorial con catálogo, plataformas, tendencias y rankings sin abandonar la experiencia unificada.
           </p>
         </div>
@@ -66,12 +66,12 @@
     <section *ngIf="guidePosts.length" class="space-y-5">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Guias evergreen</p>
-          <h2 class="text-2xl font-semibold text-white">Rutas útiles para decidir qué ver</h2>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Guias evergreen</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Rutas útiles para decidir qué ver</h2>
         </div>
         <a
           [routerLink]="appPaths.explore"
-          class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+          class="min-h-[40px] rounded-full border border-[var(--portal-border-strong)] px-4 py-2 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
         >
           Abrir qué ver hoy
         </a>
@@ -87,12 +87,12 @@
     <section *ngIf="rankingPosts.length" class="space-y-5">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Rankings</p>
-          <h2 class="text-2xl font-semibold text-white">Listas y selecciones editoriales</h2>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Rankings</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Listas y selecciones editoriales</h2>
         </div>
         <a
           [routerLink]="appPaths.top10"
-          class="min-h-[40px] rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-100 transition-colors hover:border-amber-400/40"
+          class="min-h-[40px] rounded-full border border-[var(--accent-sports)] bg-[var(--accent-sports-soft)] px-4 py-2 text-sm font-semibold text-[var(--accent-sports)] transition-colors"
         >
           Abrir rankings
         </a>
@@ -108,12 +108,12 @@
     <section *ngIf="communityLists.length" class="space-y-5">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Comunidad</p>
-          <h2 class="text-2xl font-semibold text-white">Listas de los usuarios</h2>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Comunidad</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Listas de los usuarios</h2>
         </div>
         <a
           [routerLink]="appPaths.profile"
-          class="min-h-[40px] rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition-colors hover:border-emerald-400/40"
+          class="min-h-[40px] rounded-full border border-[var(--accent-streaming)] bg-[var(--accent-streaming-soft)] px-4 py-2 text-sm font-semibold text-[var(--accent-streaming)] transition-colors"
         >
           Crear tu lista
         </a>
@@ -129,12 +129,12 @@
     <section *ngIf="trendPosts.length" class="space-y-5">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Tendencias útiles</p>
-          <h2 class="text-2xl font-semibold text-white">Lecturas ligadas a lo que más se mueve</h2>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Tendencias útiles</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Lecturas ligadas a lo que más se mueve</h2>
         </div>
         <a
           [routerLink]="appPaths.stats"
-          class="min-h-[40px] rounded-full border border-sky-500/30 bg-sky-500/10 px-4 py-2 text-sm font-semibold text-sky-100 transition-colors hover:border-sky-400/40"
+          class="min-h-[40px] rounded-full border border-[var(--accent-discover)] bg-[var(--accent-discover-soft)] px-4 py-2 text-sm font-semibold text-[var(--accent-discover)] transition-colors"
         >
           Ver tendencias
         </a>
@@ -150,12 +150,12 @@
     <section *ngFor="let section of categorySections" class="space-y-5">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Categoría</p>
-          <h2 class="text-2xl font-semibold text-white">{{ section.category.name }}</h2>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Categoría</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ section.category.name }}</h2>
         </div>
         <a
           [routerLink]="section.category.canonicalPath"
-          class="min-h-[40px] rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+          class="min-h-[40px] rounded-full border border-[var(--portal-border-strong)] px-4 py-2 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
         >
           Ver categoría
         </a>

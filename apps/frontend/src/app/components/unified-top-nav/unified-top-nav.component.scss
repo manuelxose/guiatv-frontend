@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   width: 100%;
-  z-index: 70;
+  z-index: var(--z-header);
   backdrop-filter: blur(24px);
   background: var(--portal-surface-strong);
   border-bottom: 1px solid var(--portal-border);
@@ -14,14 +14,6 @@
 /* When pill-shelf is present, remove top-nav's own border – pill-shelf provides it */
 .portal-shell--has-pill-shelf .unified-top-nav {
   border-bottom: none;
-}
-
-/* Remove bottom border over the sidebar area on desktop to unify vertically */
-@media (min-width: 1100px) {
-  .unified-top-nav__leading {
-    border-bottom: 1px solid var(--portal-surface-strong); /* Blot out the parent border */
-    margin-bottom: -1px;
-  }
 }
 
 .unified-top-nav__frame {
@@ -37,8 +29,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
     'leading actions'
-    'search search'
-    'tabs tabs';
+    'search search';
   align-items: center;
 }
 
@@ -48,13 +39,6 @@
   align-items: center;
   gap: 0.7rem;
   min-width: 0;
-  /* Match sidebar width on desktop for unification */
-  @media (min-width: 1100px) {
-    min-width: var(--portal-left-rail-w, 17rem);
-    border-right: 1px solid var(--portal-border);
-    margin-right: -0.7rem; /* Adjust for gap */
-    padding-right: 0.7rem;
-  }
 }
 
 .unified-top-nav__search {
@@ -160,6 +144,10 @@
   gap: 0.08rem;
 }
 
+.unified-top-nav__brand-short {
+  display: none;
+}
+
 .unified-top-nav__brand-copy strong,
 .unified-top-nav__brand-copy small,
 .unified-top-nav__tab-copy strong,
@@ -174,6 +162,7 @@
 }
 
 .unified-top-nav__brand-copy small {
+  display: none;
   color: var(--portal-text-muted);
   font-size: 0.72rem;
   line-height: 1.3;
@@ -254,9 +243,8 @@
 }
 
 .unified-top-nav--compact .unified-top-nav__frame {
-  /* Parent portal-shell should handle the top margin for fixed header */
-  padding-top: var(--unified-top-nav-h, 6.9rem);
-  padding-bottom: 0.5rem;
+  padding-top: max(var(--safe-top, 0px), 0.35rem);
+  padding-bottom: 0.45rem;
 }
 
 .unified-top-nav--compact .unified-top-nav__brand-mark {
@@ -265,6 +253,10 @@
 }
 
 @media (max-width: 767px) {
+  .unified-top-nav__tabs {
+    display: none;
+  }
+
   .unified-top-nav__frame {
     width: min(100% - 1rem, 100%);
   }
@@ -273,6 +265,14 @@
   .unified-top-nav__status-pill,
   .unified-top-nav__account span {
     display: none;
+  }
+
+  .unified-top-nav__brand-full {
+    display: none;
+  }
+
+  .unified-top-nav__brand-short {
+    display: inline;
   }
 }
 
@@ -287,10 +287,8 @@
 
 @media (min-width: 1280px) {
   .unified-top-nav__bar {
-    grid-template-columns: auto minmax(26rem, 1fr) auto;
-    grid-template-areas:
-      'leading search actions'
-      'tabs tabs tabs';
+    grid-template-columns: auto auto minmax(20rem, 1fr) auto;
+    grid-template-areas: 'leading tabs search actions';
   }
 
   .unified-top-nav__tabs {
@@ -303,9 +301,6 @@
     width: min(100% - 1.5rem, calc(var(--portal-content-max) + 4rem));
   }
 
-  .unified-top-nav__brand-copy small {
-    display: block;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

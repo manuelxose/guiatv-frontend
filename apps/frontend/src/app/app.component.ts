@@ -1,14 +1,13 @@
-import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import {
   Component,
   HostListener,
   Inject,
   OnDestroy,
   OnInit,
-  PLATFORM_ID,
   inject,
 } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { Subject, filter, takeUntil } from 'rxjs';
 import { AuthLoginModalComponent } from './components/auth-login-modal/auth-login-modal.component';
 import { AppPublicLayoutShellComponent } from './components/app-public-layout-shell/app-public-layout-shell.component';
@@ -19,6 +18,7 @@ import { ChatService } from './services/chat.service';
 import { MetaService } from './services/meta.service';
 import { ViewportService } from './services/viewport.service';
 import { environment } from '../environments/environment';
+import { MOBILE_APP_TABS, AppRouteEntry, normalizePath as normalizeRoutePath } from './config/route-map';
 
 type AppLayoutMode = 'portal-page' | 'public-shell' | 'minimal-shell' | 'private-shell';
 
@@ -28,6 +28,7 @@ type AppLayoutMode = 'portal-page' | 'public-shell' | 'minimal-shell' | 'private
   imports: [
     CommonModule,
     RouterOutlet,
+    RouterModule,
     AppPublicLayoutShellComponent,
     ModalComponent,
     AuthLoginModalComponent,
@@ -41,9 +42,10 @@ export class AppComponent implements OnInit, OnDestroy {
   public currentLayout: AppLayoutMode = 'public-shell';
   public isChatbotOpen = false;
   public isChatMinimized = false;
-  public chatPanelWidth = 736;
+  public chatPanelWidth = 440;
   public swipeOffsetY = 0;
   public swipeAnimating = false;
+  public readonly mobileTabs: AppRouteEntry[] = MOBILE_APP_TABS;
 
   public readonly aiChatbotEnabled = environment.ai.chatbotEnabled;
 
@@ -58,7 +60,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
-    @Inject(PLATFORM_ID) private readonly platformId: object,
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
     private readonly metaService: MetaService,
@@ -184,6 +185,22 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.canRenderChatbot() && !this.viewport.isMobile();
   }
 
+  public shouldShowMobileNavigation(): boolean {
+    return this.currentLayout !== 'minimal-shell';
+  }
+
+  public isMobileTabActive(tab: AppRouteEntry): boolean {
+    const path = normalizeRoutePath(this.currentPath);
+    if (tab.key === 'home') return path === '/';
+    if (tab.key === 'guia-canales') {
+      return path.startsWith('/programacion-tv/guia-canales') || path.startsWith('/canales/');
+    }
+    if (tab.key === 'que-ver-hoy') {
+      return path.startsWith('/programacion-tv/que-ver-hoy') || path.startsWith('/programas/') || path.startsWith('/peliculas/') || path.startsWith('/series/');
+    }
+    return path.startsWith(normalizeRoutePath(tab.path));
+  }
+
   private cleanupResizeListeners(): void {
     if (this.resizeMoveHandler) {
       this.document.removeEventListener('mousemove', this.resizeMoveHandler);
@@ -237,8 +254,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private canRenderChatbot(): boolean {
     return (
       this.aiChatbotEnabled &&
-      this.currentLayout !== 'minimal-shell' &&
-      this.currentLayout !== 'private-shell'
+      this.currentLayout !== 'minimal-shell'
     );
   }
 }

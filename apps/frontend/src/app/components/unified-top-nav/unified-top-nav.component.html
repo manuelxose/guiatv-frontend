@@ -20,7 +20,7 @@
         </button>
         }
 
-        <a [routerLink]="homePath" class="unified-top-nav__brand" aria-label="GUIAPROGRAMACIONTV — Inicio">
+        <a [routerLink]="homePath" class="unified-top-nav__brand" aria-label="Guía TV — Inicio">
           <span class="unified-top-nav__brand-mark" aria-hidden="true">
             <svg viewBox="0 0 32 32" fill="none">
               <rect width="32" height="32" rx="10" fill="url(#brandGradientPortal)"></rect>
@@ -37,11 +37,30 @@
           </span>
 
           <span class="unified-top-nav__brand-copy">
-            <strong>GUIAPROGRAMACIONTV</strong>
+            <strong>
+              <span class="unified-top-nav__brand-full">GUÍA TV</span>
+            </strong>
             <small>TV en directo, streaming, deportes y discovery editorial</small>
           </span>
         </a>
       </div>
+
+      <nav class="unified-top-nav__tabs" aria-label="Secciones principales">
+        <a
+          *ngFor="let tab of tabs; trackBy: trackByTab"
+          [routerLink]="tab.path"
+          class="unified-top-nav__tab"
+          [class.unified-top-nav__tab--active]="activeTab() === tab.id"
+          [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
+        >
+          <span class="unified-top-nav__tab-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path [attr.d]="tab.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+            </svg>
+          </span>
+          <span class="unified-top-nav__tab-copy"><strong>{{ tab.label }}</strong></span>
+        </a>
+      </nav>
 
       <div class="unified-top-nav__search">
         <app-unified-search
@@ -54,11 +73,6 @@
       </div>
 
       <div class="unified-top-nav__actions">
-        <a [routerLink]="appPaths.guide" class="unified-top-nav__status-pill">
-          <span class="unified-top-nav__status-dot" aria-hidden="true"></span>
-          <span>{{ currentStatusLabel }}</span>
-        </a>
-
         <button
           type="button"
           class="unified-top-nav__chrome-button unified-top-nav__theme"

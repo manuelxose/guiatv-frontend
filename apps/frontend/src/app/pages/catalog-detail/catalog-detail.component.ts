@@ -3,7 +3,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Data, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { combineLatest, of, Subject } from 'rxjs';
-import { catchError, map, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
 import { CatalogCardComponent } from '../../components/catalog-card/catalog-card.component';
 import { InteractionButtonsComponent } from '../../components/interaction-buttons/interaction-buttons.component';
 import { WhereToWatchComponent } from '../../components/where-to-watch/where-to-watch.component';
@@ -44,19 +44,20 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
         <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
           <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
         </div>
-        <section class="relative overflow-hidden border-b border-[var(--portal-border)]">
+        <section class="relative overflow-hidden border-b border-[var(--portal-border)] bg-slate-950">
           <div class="absolute inset-0">
             <img
               *ngIf="content.backdrop || content.image"
               [src]="content.backdrop || content.image"
               [alt]="content.title"
-              class="h-full w-full object-cover opacity-35"
+              class="h-full w-full object-cover opacity-55"
             />
-            <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,16,24,0.12),rgba(8,16,24,0.98))]"></div>
+            <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,10,18,0.98)_0%,rgba(5,10,18,0.88)_48%,rgba(5,10,18,0.58)_100%)]"></div>
+            <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,10,18,0.18),rgba(5,10,18,0.92))]"></div>
           </div>
 
-          <div class="relative mx-auto max-w-7xl px-4 pb-12 pt-12 sm:px-6 lg:px-8 lg:pt-20">
-            <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div class="relative mx-auto flex min-h-[30rem] max-w-7xl items-end px-4 pb-10 pt-12 sm:px-6 lg:px-8 lg:pt-16">
+            <div class="grid w-full gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
               <div class="space-y-6">
                 <div class="flex flex-wrap gap-2">
                   <span
@@ -67,17 +68,17 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                   </span>
                   <span
                     *ngFor="let platform of content.primaryPlatforms.slice(0, 3)"
-                    class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 py-1 text-[11px] font-semibold text-[var(--portal-text-soft)]"
+                    class="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] font-semibold text-white/85 backdrop-blur-sm"
                   >
                     {{ platform }}
                   </span>
                 </div>
 
                 <div>
-                  <h1 class="max-w-4xl text-4xl font-black tracking-tight text-[var(--portal-text)] md:text-6xl">
+                  <h1 class="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
                     {{ content.title }}
                   </h1>
-                  <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-[var(--portal-text-soft)]">
+                  <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-white/70">
                     <span *ngIf="content.releaseYear">{{ content.releaseYear }}</span>
                     <span *ngIf="content.durationMinutes">{{ content.durationMinutes }} min</span>
                     <span *ngIf="content.channel?.name">{{ content.channel?.name }}</span>
@@ -88,24 +89,20 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                   </div>
                 </div>
 
-                <p class="max-w-3xl text-base leading-8 text-[var(--portal-text-soft)]">
+                <p class="max-w-3xl text-base leading-8 text-white/80">
                   {{ content.synopsis || 'Sinopsis no disponible.' }}
                 </p>
 
                 <div class="flex flex-wrap gap-2">
                   <span
                     *ngFor="let genre of content.genres"
-                    class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 py-1 text-xs font-semibold text-[var(--portal-text-soft)]"
+                    class="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-xs font-semibold text-white/80 backdrop-blur-sm"
                   >
                     {{ genre }}
                   </span>
                 </div>
 
-                <div class="flex items-center gap-3 flex-wrap">
-                  <app-share-buttons [url]="shareUrl" [title]="content.title"></app-share-buttons>
-                </div>
-
-                <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
+                <div class="space-y-4 rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 shadow-xl">
                   <app-interaction-buttons
                     [itemId]="content.catalogId"
                     [title]="content.title"
@@ -116,21 +113,25 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                     [platform]="content.primaryPlatforms?.[0]"
                     [preloadInteraction]="true"
                   ></app-interaction-buttons>
+                  <div class="border-t border-[var(--portal-border)] pt-3">
+                    <app-share-buttons [url]="shareUrl" [title]="content.title"></app-share-buttons>
+                  </div>
                 </div>
               </div>
 
               <aside class="space-y-6">
-                <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
-                  <p class="mb-3 text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Dónde ver</p>
+                <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 shadow-xl">
+                  <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--portal-text-muted)]">Dónde ver</p>
                   <app-where-to-watch
                     [providersData]="content.whereToWatch"
+                    [primaryPlatforms]="content.primaryPlatforms"
                     [tmdbId]="content.tmdbId"
                     [contentType]="providerContentType(content)"
                   ></app-where-to-watch>
                 </div>
 
-                <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
-                  <p class="mb-4 text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Ficha</p>
+                <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 shadow-xl">
+                  <p class="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--portal-text-muted)]">Detalles</p>
                   <div class="space-y-3 text-sm text-[var(--portal-text-soft)]">
                     <p *ngIf="content.director"><span class="text-[var(--portal-text-muted)]">Dirección:</span> {{ content.director }}</p>
                     <p *ngIf="content.socialSummary?.friendsWhoWatched">
@@ -261,7 +262,10 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
               }
 
               return this.loadFallbackRelated(item).pipe(
-                map((related) => ({ item, related }))
+                map((related) => ({ item, related })),
+                // The detail is the primary result. Do not keep the whole page in
+                // a loading state while a secondary related-content query runs.
+                startWith({ item, related: [] as CatalogItem[] })
               );
             })
           );

@@ -2,8 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { Observable, combineLatest, startWith, switchMap, timer } from 'rxjs';
-import { BottomSheetComponent } from '../../../components/bottom-sheet/bottom-sheet.component';
+import { Observable, combineLatest, switchMap, timer } from 'rxjs';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
@@ -41,7 +40,6 @@ interface SportsModule {
   standalone: true,
   imports: [
     CommonModule,
-    BottomSheetComponent,
     UnifiedFilterDockComponent,
     UnifiedProgramCardComponent,
   ],
@@ -62,7 +60,7 @@ export class SportsViewComponent {
   ];
 
   private readonly filters = computed(() => this.guideState.sportsFilters());
-  private readonly filters$ = toObservable(this.filters).pipe(startWith(this.filters()));
+  private readonly filters$ = toObservable(this.filters);
   readonly liveSports = toSignal(
     this.buildPollingStream((filters) => this.facade.getLiveSports(filters)),
     { initialValue: [] as TvReadItemDTO[] }
@@ -262,7 +260,7 @@ export class SportsViewComponent {
       filters.channel ? this.availableChannels().find((channel) => channel.id === filters.channel)?.name || filters.channel : '',
       filters.competition,
       filters.date !== 'today' ? this.dateChips().find((chip) => chip.id === filters.date)?.label || filters.date : '',
-      filters.timeRange !== 'all' ? this.timeRangeChips.find((chip) => chip.id === filters.timeRange)?.label || filters.timeRange : '',
+      filters.timeRange !== 'live' ? this.timeRangeChips.find((chip) => chip.id === filters.timeRange)?.label || filters.timeRange : '',
     ].filter(Boolean);
     if (this.guideState.searchQuery()) {
       labels.push(`"${this.guideState.searchQuery()}"`);
@@ -375,7 +373,7 @@ export class SportsViewComponent {
       channel: '',
       competition: '',
       date: 'today',
-      timeRange: 'all',
+      timeRange: 'live',
     });
   }
 
