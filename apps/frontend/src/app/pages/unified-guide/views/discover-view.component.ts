@@ -1,6 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID, computed, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { of, startWith, switchMap } from 'rxjs';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
@@ -45,6 +45,7 @@ interface DiscoverModule {
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     UnifiedFilterDockComponent,
     UnifiedEditorialModuleComponent,
     UnifiedProgramCardComponent,

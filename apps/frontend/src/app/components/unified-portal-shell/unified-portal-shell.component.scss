@@ -733,8 +733,17 @@
   }
 
   .portal-shell__pill-shelf-frame {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem 0.5rem;
+  }
+
+  .portal-shell__pill-shelf-copy {
+    display: none;
+  }
+
+  app-breadcrumb {
+    display: none;
   }
 
   .portal-shell__hero-copy h1 {

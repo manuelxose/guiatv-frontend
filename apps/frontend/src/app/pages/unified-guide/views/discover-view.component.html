@@ -107,8 +107,12 @@
 
   <section *ngIf="!discoverData().items.length && !featureItems().length" class="discover-view__empty">
     <h2>No hay resultados con estos filtros</h2>
-    <p>Prueba a limpiar la búsqueda o volver a un rango más amplio.</p>
-    <button type="button" class="discover-view__action" (click)="clearFilters()">Resetear filtros</button>
+    <p>No es un callejón sin salida: prueba a ampliar el rango o salta a una superficie con contenido seguro.</p>
+    <div class="discover-view__empty-actions">
+      <button type="button" class="discover-view__action" (click)="clearFilters()">Limpiar filtros</button>
+      <a class="discover-view__action discover-view__action--ghost" [routerLink]="appPaths.guide">TV en directo</a>
+      <a class="discover-view__action discover-view__action--ghost" [routerLink]="appPaths.platforms">Plataformas</a>
+    </div>
   </section>
 
   <app-unified-editorial-module

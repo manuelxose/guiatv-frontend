@@ -757,9 +757,12 @@ function normalizeSport(value?: string): string | undefined {
 
 function inferCompetition(item: TvReadItemDTO): string {
   const title = String(item.program.title || '').trim();
-  const titleLead = title.split(':')[0]?.trim();
+  // ":" and "·" both separate a competition/context lead from the matchup
+  // ("Fútbol Conmebol Copa Sudamericana · Vasco da Gama vs. Olimpia").
+  const titleLead = title.split(/[:·]/)[0]?.trim();
   if (titleLead && titleLead.length >= 4) {
-    return titleLead;
+    // A leading "Fútbol" is a category tag, not part of the competition name.
+    return titleLead.replace(/^(f[úu]tbol|futbol)\s+/i, '').trim();
   }
   return String(item.program.sportFacet || item.program.editorialCategory || 'Otros').trim();
 }

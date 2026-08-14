@@ -1,0 +1,155 @@
+.match-card {
+  display: grid;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--portal-border);
+  border-radius: var(--radius-md, 1rem);
+  background: var(--portal-card);
+  color: var(--portal-text);
+  padding: 0.7rem 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.match-card:hover {
+  border-color: var(--portal-border-strong);
+  transform: translateY(-1px);
+}
+
+.match-card:focus-visible {
+  outline: 2px solid var(--guide-accent);
+  outline-offset: 2px;
+}
+
+.match-card--live {
+  border-color: color-mix(in srgb, var(--accent-live) 45%, var(--portal-border));
+  background: color-mix(in srgb, var(--accent-live) 6%, var(--portal-card));
+}
+
+.match-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.match-card__competition {
+  color: var(--portal-text-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-card__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--portal-surface-strong);
+  color: var(--portal-text-muted);
+  padding: 0.18rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.match-card__status--live {
+  background: var(--accent-live-soft);
+  color: var(--accent-live);
+}
+
+.match-card__live-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--accent-live);
+  box-shadow: 0 0 0 0.18rem color-mix(in oklch, var(--accent-live) 18%, transparent);
+}
+
+.match-card__teams {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.match-card__team {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.match-card__team:last-child {
+  text-align: right;
+}
+
+.match-card__versus {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--portal-text-faint);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.match-card__versus-line {
+  display: block;
+  width: 0.7rem;
+  height: 1px;
+  background: var(--portal-border-strong);
+}
+
+.match-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.match-card__stage,
+.match-card__channel,
+.match-card__platform {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  background: var(--portal-surface-strong);
+  color: var(--portal-text-soft);
+  padding: 0.22rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.match-card__channel svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.match-card__platform {
+  color: var(--accent-streaming);
+}
+
+@media (min-width: 768px) {
+  .match-card__team {
+    font-size: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .match-card {
+    transition: none;
+  }
+
+  .match-card:hover {
+    transform: none;
+  }
+}

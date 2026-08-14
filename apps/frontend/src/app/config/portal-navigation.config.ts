@@ -199,12 +199,11 @@ export const PORTAL_GUIDE_SHELL_CONFIG: Record<'live' | 'discover' | 'streaming'
   sports: {
     topPillLabel: 'Deportes',
     rightRailLabel: 'Panel deportivo',
-    topPills: [
-      { id: 'live', label: 'En directo', iconPath: PORTAL_ICON_PATHS.liveDot, tone: 'sports' },
-      { id: 'next', label: 'Próximos', iconPath: PORTAL_ICON_PATHS.clock, tone: 'sports' },
-      { id: 'tonight', label: 'Esta noche', iconPath: 'M18 15.75A6.75 6.75 0 1 1 8.25 6a6 6 0 1 0 9.75 9.75Z', tone: 'sports' },
-      { id: 'week', label: 'Semana', iconPath: PORTAL_ICON_PATHS.calendar, tone: 'sports' },
-    ],
+    // Football-first: the vertical leads with its own temporal sections
+    // (live → today → upcoming) and a discipline selector. The top shelf
+    // keeps only the "Más filtros" entry so there is no duplicated temporal
+    // navigation competing with the in-view agenda.
+    topPills: [],
   },
 } as const;
 

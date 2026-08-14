@@ -5,8 +5,15 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { Observable, combineLatest, switchMap, timer } from 'rxjs';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
+import { FootballMatchCardComponent } from '../../../components/football-match-card/football-match-card.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
 import { TvReadItemDTO } from '../../../api/models';
+import {
+  FootballEvent,
+  isFootballItem,
+  normalizeFootballEvent,
+  resolveDiscipline,
+} from '../../../models/sports-event.model';
 import { UnifiedGuideStateService } from '../../../state/unified-guide.state';
 import { UnifiedShellUiStateService } from '../../../state/unified-shell-ui.state';
 import { TvDataFacade } from '../../../state/tv-data.facade';
@@ -42,6 +49,7 @@ interface SportsModule {
     CommonModule,
     UnifiedFilterDockComponent,
     UnifiedProgramCardComponent,
+    FootballMatchCardComponent,
   ],
   templateUrl: './sports-view.component.html',
   styleUrl: './sports-view.component.scss',
@@ -104,8 +112,8 @@ export class SportsViewComponent {
   readonly availableCompetitions = computed(() =>
     Array.from(
       new Set(
-        [...this.liveSports(), ...this.nextSports(), ...this.tonightSports()]
-          .map((item) => inferCompetition(item))
+        [...this.footballLive(), ...this.footballToday(), ...this.footballUpcoming()]
+          .map((event) => event.competition)
           .filter(Boolean)
       )
     )
@@ -177,13 +185,62 @@ export class SportsViewComponent {
       .map(([competition, items]) => ({ competition, items: items.slice(0, 4) }))
       .slice(0, 6);
   });
+
+  /* ── Football-first surface ───────────────────────────────────────────
+     The sports vertical leads with football: live matches, then today's,
+     then upcoming. Other disciplines stay reachable below. */
+  readonly footballLive = computed<FootballEvent[]>(() =>
+    this.liveSports()
+      .filter((item) => isFootballItem(item))
+      .map((item) => normalizeFootballEvent(item))
+      .filter((event): event is FootballEvent => Boolean(event))
+      .slice(0, 8)
+  );
+  readonly footballToday = computed<FootballEvent[]>(() =>
+    this.nextSports()
+      .filter((item) => isFootballItem(item))
+      .map((item) => normalizeFootballEvent(item))
+      .filter((event): event is FootballEvent => Boolean(event))
+      .slice(0, 8)
+  );
+  readonly footballUpcoming = computed<FootballEvent[]>(() =>
+    this.tonightSports()
+      .filter((item) => isFootballItem(item))
+      .map((item) => normalizeFootballEvent(item))
+      .filter((event): event is FootballEvent => Boolean(event))
+      .slice(0, 8)
+  );
+  readonly footballFocused = computed(() => {
+    const sport = this.guideState.sportsFilters().sport;
+    return sport === 'all' || /f[úu]tbol|futbol/i.test(sport);
+  });
+  readonly nonFootballGroups = computed(() => {
+    const groups = new Map<string, TvReadItemDTO[]>();
+    [...this.liveSports(), ...this.nextSports(), ...this.tonightSports()]
+      .filter((item) => !isFootballItem(item))
+      .forEach((item) => {
+        const key = resolveDiscipline(item);
+        const list = groups.get(key) || [];
+        list.push(item);
+        groups.set(key, list);
+      });
+    return Array.from(groups.entries()).map(([sport, items]) => ({ sport, items: items.slice(0, 4) }));
+  });
+
+  readonly sportSelector = computed(() => {
+    const sports = this.availableSports();
+    const football = sports.find((sport) => /f[úu]tbol/i.test(sport));
+    const others = sports.filter((sport) => sport !== football);
+    return [...(football ? [football] : []), ...others].slice(0, 6);
+  });
+
   readonly quickDirectories = computed<SportsDirectorySection[]>(() => [
     {
       id: 'sport-directory',
       kind: 'sport',
       eyebrow: 'Disciplinas',
-      title: 'Quick sports directories',
-      description: 'Fútbol, baloncesto, motor y más visibles antes del grid principal.',
+      title: 'Selector de deporte',
+      description: 'Fútbol por defecto; el resto de disciplinas en segundo nivel.',
       items: [
         {
           id: 'all',
@@ -352,6 +409,14 @@ export class SportsViewComponent {
     });
   }
 
+  isSportActive(sport: string): boolean {
+    const current = this.guideState.sportsFilters().sport;
+    if (/f[úu]tbol/i.test(sport)) {
+      return current === 'all' || /f[úu]tbol/i.test(current);
+    }
+    return current === sport;
+  }
+
   selectCompetition(competition: string): void {
     this.guideState.updateSportsFilters({
       competition:
@@ -405,6 +470,17 @@ export class SportsViewComponent {
       return;
     }
     void this.router.navigateByUrl(normalizeToCard(item).detailPath);
+  }
+
+  openFootballEvent(event: FootballEvent): void {
+    if (!event.detailPath) {
+      return;
+    }
+    void this.router.navigateByUrl(event.detailPath);
+  }
+
+  trackByFootballEvent(_index: number, event: FootballEvent): string {
+    return event.id;
   }
 
   closeSheet(): void {

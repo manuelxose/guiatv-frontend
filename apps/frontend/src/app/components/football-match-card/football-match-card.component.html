@@ -1,0 +1,43 @@
+<button
+  type="button"
+  class="match-card"
+  [class.match-card--live]="isLive"
+  [attr.aria-label]="accessibleLabel"
+  (click)="onSelect()"
+>
+  <div class="match-card__top">
+    <span *ngIf="showCompetition && event.competition" class="match-card__competition">
+      {{ event.competition }}
+    </span>
+    <span class="match-card__status" [class.match-card__status--live]="isLive">
+      <i *ngIf="isLive" class="match-card__live-dot" aria-hidden="true"></i>
+      {{ statusLabel }}
+    </span>
+  </div>
+
+  <div class="match-card__teams">
+    <span class="match-card__team">{{ event.homeTeam }}</span>
+    <span class="match-card__versus" aria-hidden="true">
+      <span class="match-card__versus-line"></span>
+      <span>vs</span>
+      <span class="match-card__versus-line"></span>
+    </span>
+    <span class="match-card__team">{{ event.awayTeam || '—' }}</span>
+  </div>
+
+  <div class="match-card__meta">
+    <span *ngIf="event.stage" class="match-card__stage">{{ event.stage }}</span>
+    <span *ngIf="event.channel" class="match-card__channel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path
+          d="M4.5 7.5h15v9h-15zM7.5 19.5h9"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.8"
+        ></path>
+      </svg>
+      {{ event.channel }}
+    </span>
+    <span *ngIf="event.platform" class="match-card__platform">{{ event.platform }}</span>
+  </div>
+</button>
