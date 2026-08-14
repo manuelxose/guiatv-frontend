@@ -10,7 +10,15 @@
 >
   <a [routerLink]="card.detailPath" class="program-card__tap">
     <div class="program-card__media" [class.program-card__media--empty]="!hasVisual">
-      <img *ngIf="hasVisual" [src]="imageUrl" [alt]="card.title" [loading]="variant === 'live' || variant === 'feature' ? 'eager' : 'lazy'" (error)="useFallbackImage($event)" />
+      <img
+        *ngIf="hasVisual"
+        [src]="imageUrl"
+        [alt]="card.title"
+        [loading]="variant === 'live' || variant === 'feature' ? 'eager' : 'lazy'"
+        [fetchpriority]="variant === 'live' || variant === 'feature' ? 'high' : 'auto'"
+        [decoding]="variant === 'live' || variant === 'feature' ? 'sync' : 'async'"
+        (error)="useFallbackImage($event)"
+      />
       <div class="program-card__gradient"></div>
       <div class="program-card__badges">
         <span *ngFor="let badge of card.badges.slice(0, 3)" class="program-card__badge">

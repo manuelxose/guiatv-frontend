@@ -452,6 +452,19 @@
 }
 
 @media (max-width: 767px) {
+  .live-view__masthead {
+    padding: 0.8rem 0.9rem;
+  }
+
+  /* Mobile-first: no long editorial intro before the guide. */
+  .live-view__masthead-copy > p:last-child {
+    display: none;
+  }
+
+  .live-view__masthead h1 {
+    font-size: 1.2rem;
+  }
+
   .live-view__loading {
     grid-template-columns: 1fr;
   }

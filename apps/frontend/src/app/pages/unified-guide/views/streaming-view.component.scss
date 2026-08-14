@@ -225,6 +225,30 @@
   background: var(--portal-surface-strong);
 }
 
+@media (max-width: 767px) {
+  .streaming-view {
+    gap: 1rem;
+  }
+
+  .streaming-view__masthead,
+  .streaming-view__module,
+  .streaming-view__section,
+  .streaming-view__directory-card,
+  .streaming-view__empty {
+    padding: 0.8rem 0.9rem;
+    border-radius: 1rem;
+  }
+
+  /* Mobile-first: no long editorial intro before the catalog. */
+  .streaming-view__masthead-copy > p:last-child {
+    display: none;
+  }
+
+  .streaming-view__masthead h2 {
+    font-size: 1.2rem;
+  }
+}
+
 @media (min-width: 1024px) {
   .streaming-view__feature-grid {
     grid-template-columns: minmax(0, 1.65fr) minmax(18rem, 0.95fr);
