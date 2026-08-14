@@ -7,6 +7,7 @@ import {
   inject,
   input,
   output,
+  signal,
 } from '@angular/core';
 import { Params } from '@angular/router';
 import { RouterModule } from '@angular/router';
@@ -65,6 +66,7 @@ export class UnifiedTopNavComponent {
   readonly profilePath = APP_PATHS.profile;
   readonly iconPaths = PORTAL_ICON_PATHS;
   isShrunk = false;
+  readonly mobileSearchOpen = signal(false);
   readonly tabs: UnifiedTopNavTab[] = PORTAL_PRIMARY_DESTINATIONS.map((destination) => ({
     id: destination.id as UnifiedTopNavTab['id'],
     label: destination.label,
@@ -103,6 +105,26 @@ export class UnifiedTopNavComponent {
 
   cycleTheme(): void {
     this.theme.cycle();
+  }
+
+  openMobileSearch(): void {
+    this.mobileSearchOpen.set(true);
+  }
+
+  closeMobileSearch(): void {
+    this.mobileSearchOpen.set(false);
+  }
+
+  onSearchSubmit(value: string): void {
+    this.mobileSearchOpen.set(false);
+    this.searchSubmit.emit(value);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.mobileSearchOpen()) {
+      this.mobileSearchOpen.set(false);
+    }
   }
 
   get themeLabel(): string {

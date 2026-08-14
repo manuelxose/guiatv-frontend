@@ -1,173 +1,183 @@
 <section class="sports-view">
   <header class="sports-view__masthead">
     <div class="sports-view__masthead-copy">
-      <p class="sports-view__eyebrow">Deportes</p>
-      <h2>
-        {{
-          guideState.sportsFilters().timeRange === 'live'
-            ? 'En directo ahora'
-            : guideState.sportsFilters().timeRange === 'tonight'
-              ? 'Esta noche'
-              : guideState.sportsFilters().timeRange === 'week'
-                ? 'Esta semana'
-                : 'Agenda deportiva en foco'
-        }}
-      </h2>
-      <p>La vertical entra por eventos y agenda real, no por estadísticas ni módulos introductorios.</p>
+      <h1>Deportes</h1>
+      <p *ngIf="footballFocused()">Fútbol primero: directos, hoy y próximos partidos.</p>
+      <p *ngIf="!footballFocused()">Agenda deportiva por disciplina.</p>
     </div>
-
     <div class="sports-view__summary" *ngIf="activeFilterSummary().length">
       <span *ngFor="let item of activeFilterSummary(); trackBy: trackByText">{{ item }}</span>
     </div>
   </header>
 
-  <section class="sports-view__feature-grid" *ngIf="heroLead() as lead">
-    <app-unified-program-card
-      [item]="lead"
-      variant="sport"
-    ></app-unified-program-card>
+  <!-- Sport selector: Fútbol is the default discipline. -->
+  <div class="sports-view__sport-row" *ngIf="sportSelector().length">
+    <button
+      type="button"
+      class="sports-view__sport-chip"
+      [class.sports-view__sport-chip--active]="guideState.sportsFilters().sport === 'all'"
+      (click)="selectSport('all')"
+    >
+      Todos
+    </button>
+    <button
+      *ngFor="let sport of sportSelector(); trackBy: trackByText"
+      type="button"
+      class="sports-view__sport-chip"
+      [class.sports-view__sport-chip--active]="isSportActive(sport)"
+      (click)="selectSport(sport)"
+    >
+      {{ sport }}
+    </button>
+  </div>
 
-    <div class="sports-view__feature-stack" *ngIf="heroStack().length">
-      <app-unified-program-card
-        *ngFor="let item of heroStack(); trackBy: trackByItem"
-        [item]="item"
-        variant="compact"
-      ></app-unified-program-card>
-    </div>
-  </section>
-
-  <section class="sports-view__stack" *ngIf="spotlightModules().length">
-    <article *ngFor="let module of spotlightModules()" class="sports-view__module">
+  <ng-container *ngIf="footballFocused(); else otherSportsView">
+    <!-- Live football first — the privileged surface. -->
+    <section class="sports-view__section" *ngIf="footballLive().length">
       <header class="sports-view__section-head">
         <div>
-          <p class="sports-view__eyebrow">{{ module.eyebrow }}</p>
-          <h3>{{ module.title }}</h3>
+          <p class="sports-view__eyebrow">En directo</p>
+          <h2>
+            {{ footballLive().length }}
+            {{ footballLive().length === 1 ? 'partido' : 'partidos' }} en juego
+          </h2>
+        </div>
+        <span class="sports-view__live-pill" aria-hidden="true"><i></i>LIVE</span>
+      </header>
+      <div class="sports-view__match-list">
+        <app-football-match-card
+          *ngFor="let event of footballLive(); trackBy: trackByFootballEvent"
+          [event]="event"
+          (selected)="openFootballEvent($event)"
+        ></app-football-match-card>
+      </div>
+    </section>
+
+    <!-- Helpful empty state when there is nothing live right now. -->
+    <section class="sports-view__section sports-view__empty" *ngIf="!footballLive().length">
+      <p class="sports-view__eyebrow">Sin directos ahora</p>
+      <h2>Próximos partidos de fútbol</h2>
+      <p class="sports-view__empty-copy">
+        No hay partidos en directo en este momento. Esto es lo que viene.
+      </p>
+      <div class="sports-view__empty-actions">
+        <a class="sports-view__empty-link" href="#football-hoy">Partidos de hoy</a>
+        <a class="sports-view__empty-link" href="#football-proximos">Próximos</a>
+      </div>
+    </section>
+
+    <section id="football-hoy" class="sports-view__section" *ngIf="footballToday().length">
+      <header class="sports-view__section-head">
+        <div>
+          <p class="sports-view__eyebrow">Hoy</p>
+          <h2>Partidos de hoy</h2>
         </div>
       </header>
+      <div class="sports-view__match-list">
+        <app-football-match-card
+          *ngFor="let event of footballToday(); trackBy: trackByFootballEvent"
+          [event]="event"
+          (selected)="openFootballEvent($event)"
+        ></app-football-match-card>
+      </div>
+    </section>
 
-      <div class="sports-view__rail">
+    <section id="football-proximos" class="sports-view__section" *ngIf="footballUpcoming().length">
+      <header class="sports-view__section-head">
+        <div>
+          <p class="sports-view__eyebrow">Próximos</p>
+          <h2>Esta noche y después</h2>
+        </div>
+      </header>
+      <div class="sports-view__match-list">
+        <app-football-match-card
+          *ngFor="let event of footballUpcoming(); trackBy: trackByFootballEvent"
+          [event]="event"
+          (selected)="openFootballEvent($event)"
+        ></app-football-match-card>
+      </div>
+    </section>
+
+    <!-- Competitions as compact pills, not another huge list. -->
+    <section class="sports-view__section" *ngIf="availableCompetitions().length">
+      <header class="sports-view__section-head">
+        <div>
+          <p class="sports-view__eyebrow">Competiciones</p>
+          <h2>Filtra por torneo</h2>
+        </div>
+      </header>
+      <div class="sports-view__competition-row">
+        <button
+          type="button"
+          class="sports-view__channel-chip"
+          [class.sports-view__channel-chip--active]="!guideState.sportsFilters().competition"
+          (click)="selectCompetition('')"
+        >
+          Todas
+        </button>
+        <button
+          *ngFor="let competition of availableCompetitions(); trackBy: trackByText"
+          type="button"
+          class="sports-view__channel-chip"
+          [class.sports-view__channel-chip--active]="guideState.sportsFilters().competition === competition"
+          (click)="selectCompetition(competition)"
+        >
+          {{ competition }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Other disciplines stay reachable, in second place. -->
+    <section class="sports-view__section" *ngIf="nonFootballGroups().length">
+      <header class="sports-view__section-head">
+        <div>
+          <p class="sports-view__eyebrow">Más deportes</p>
+          <h2>Baloncesto, tenis, motor y más</h2>
+        </div>
+      </header>
+      <div class="sports-view__groups">
+        <article *ngFor="let group of nonFootballGroups(); trackBy: trackBySport" class="sports-view__group">
+          <header>
+            <p>{{ group.sport }}</p>
+            <span>{{ group.items.length }} eventos</span>
+          </header>
+          <div class="sports-view__list">
+            <app-unified-program-card
+              *ngFor="let item of group.items; trackBy: trackByItem"
+              [item]="item"
+              variant="epg-row"
+            ></app-unified-program-card>
+          </div>
+        </article>
+      </div>
+    </section>
+  </ng-container>
+
+  <ng-template #otherSportsView>
+    <section class="sports-view__section" *ngIf="highlightedAgenda().length">
+      <header class="sports-view__section-head">
+        <div>
+          <p class="sports-view__eyebrow">Agenda</p>
+          <h2>{{ guideState.sportsFilters().sport || 'Eventos' }}</h2>
+        </div>
+      </header>
+      <div class="sports-view__list">
         <app-unified-program-card
-          *ngFor="let item of module.items; trackBy: trackByItem"
+          *ngFor="let item of highlightedAgenda(); trackBy: trackByItem"
           [item]="item"
-          variant="compact"
+          variant="epg-row"
         ></app-unified-program-card>
       </div>
-    </article>
-  </section>
+    </section>
 
-  <section class="sports-view__channel-row" *ngIf="availableChannels().length">
-    <button
-      type="button"
-      class="sports-view__channel-chip"
-      [class.sports-view__channel-chip--active]="!guideState.sportsFilters().channel"
-      (click)="selectChannel('')"
-    >
-      Todos los canales
-    </button>
-    <button
-      *ngFor="let channel of availableChannels(); trackBy: trackByChannel"
-      type="button"
-      class="sports-view__channel-chip"
-      [class.sports-view__channel-chip--active]="guideState.sportsFilters().channel === channel.id"
-      (click)="selectChannel(channel.id)"
-    >
-      {{ channel.name }}
-    </button>
-  </section>
-
-  <section *ngIf="footballHighlights().length" class="sports-view__section">
-    <header class="sports-view__section-head">
-      <div>
-        <p class="sports-view__eyebrow">Fútbol primero</p>
-        <h3>La disciplina prioritaria entra sin romper el resto de la vertical</h3>
-      </div>
-    </header>
-
-    <div class="sports-view__list">
-      <app-unified-program-card
-        *ngFor="let item of footballHighlights(); trackBy: trackByItem"
-        [item]="item"
-        variant="epg-row"
-      ></app-unified-program-card>
-    </div>
-  </section>
-
-  <section class="sports-view__section" *ngIf="highlightedAgenda().length">
-    <header class="sports-view__section-head">
-      <div>
-        <p class="sports-view__eyebrow">Agenda</p>
-        <h3>
-          {{
-            guideState.sportsFilters().timeRange === 'live'
-              ? 'En directo ahora'
-              : guideState.sportsFilters().timeRange === 'tonight'
-                ? 'Esta noche'
-                : guideState.sportsFilters().timeRange === 'week'
-                  ? 'Esta semana'
-                  : 'Próximamente'
-          }}
-        </h3>
-      </div>
-    </header>
-
-    <div class="sports-view__list">
-      <app-unified-program-card
-        *ngFor="let item of highlightedAgenda(); trackBy: trackByItem"
-        [item]="item"
-        variant="epg-row"
-      ></app-unified-program-card>
-    </div>
-  </section>
-
-  <section *ngIf="groupedByCompetition().length" class="sports-view__section">
-    <header class="sports-view__section-head">
-      <div>
-        <p class="sports-view__eyebrow">Por competición</p>
-        <h3>Agrupación útil para decidir rápido</h3>
-      </div>
-    </header>
-
-    <div class="sports-view__groups">
-      <article *ngFor="let group of groupedByCompetition(); trackBy: trackByCompetition" class="sports-view__group">
-        <header>
-          <p>{{ group.competition }}</p>
-          <span>{{ group.items.length }} eventos</span>
-        </header>
-        <div class="sports-view__list">
-          <app-unified-program-card
-            *ngFor="let item of group.items; trackBy: trackByItem"
-            [item]="item"
-            variant="epg-row"
-          ></app-unified-program-card>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section *ngIf="groupedBySport().length && guideState.sportsFilters().sport === 'all'" class="sports-view__section">
-    <header class="sports-view__section-head">
-      <div>
-        <p class="sports-view__eyebrow">Por deporte</p>
-        <h3>Basket, motor, tenis y más sin perder jerarquía</h3>
-      </div>
-    </header>
-
-    <div class="sports-view__groups">
-      <article *ngFor="let group of groupedBySport(); trackBy: trackBySport" class="sports-view__group">
-        <header>
-          <p>{{ group.sport }}</p>
-          <span>{{ group.items.length }} eventos</span>
-        </header>
-        <div class="sports-view__list">
-          <app-unified-program-card
-            *ngFor="let item of group.items; trackBy: trackByItem"
-            [item]="item"
-            variant="epg-row"
-          ></app-unified-program-card>
-        </div>
-      </article>
-    </div>
-  </section>
+    <section class="sports-view__section" *ngIf="!highlightedAgenda().length">
+      <p class="sports-view__eyebrow">Sin eventos</p>
+      <h2>No hay eventos para este deporte ahora</h2>
+      <p class="sports-view__empty-copy">
+        Prueba a cambiar la disciplina o revisa la agenda de fútbol.
+      </p>
+    </section>
+  </ng-template>
 
   <app-unified-filter-dock
     [open]="shellUi.isFilterDockOpen()"
@@ -178,5 +188,4 @@
     (clear)="clearFilters()"
     (select)="handleDockSelect($event)"
   ></app-unified-filter-dock>
-
 </section>

@@ -123,6 +123,15 @@
   }
 }
 
+/* Mobile-first: the header is a single compact row; the permanent search
+   field is replaced by an overlay so content starts immediately below. */
+@media (max-width: 767px) {
+  :root {
+    --unified-top-nav-h: 3.5rem;
+    --portal-pill-shelf-h: 3.4rem;
+  }
+}
+
 @media (min-width: 1100px) {
   :root {
     --unified-top-nav-h: 8.25rem;

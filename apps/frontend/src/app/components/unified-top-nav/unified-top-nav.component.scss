@@ -46,6 +46,13 @@
   min-width: 0;
 }
 
+/* Search overlay chrome — mobile only, hidden by default. */
+.unified-top-nav__search-trigger,
+.unified-top-nav__search-backdrop,
+.unified-top-nav__search-cancel {
+  display: none;
+}
+
 .unified-top-nav__actions {
   grid-area: actions;
   display: flex;
@@ -258,7 +265,23 @@
   }
 
   .unified-top-nav__frame {
-    width: min(100% - 1rem, 100%);
+    width: min(100% - 0.75rem, 100%);
+    padding: max(var(--safe-top, 0px), 0.3rem) 0 0.3rem;
+  }
+
+  .unified-top-nav__bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'leading actions';
+    gap: 0.4rem;
+  }
+
+  .unified-top-nav__brand {
+    gap: 0.55rem;
+  }
+
+  .unified-top-nav__brand-mark {
+    width: 2.1rem;
+    height: 2.1rem;
   }
 
   .unified-top-nav__brand-copy small,
@@ -273,6 +296,72 @@
 
   .unified-top-nav__brand-short {
     display: inline;
+  }
+
+  .unified-top-nav__chrome-button {
+    min-width: 44px;
+    padding: 0;
+  }
+
+  .unified-top-nav__actions {
+    gap: 0.35rem;
+  }
+
+  /* Search is a fullscreen overlay on mobile, not a permanent field. */
+  .unified-top-nav__search-trigger {
+    display: inline-flex;
+  }
+
+  .unified-top-nav__search {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .unified-top-nav__search--open {
+    display: flex;
+  }
+
+  .unified-top-nav__search-backdrop {
+    position: absolute;
+    inset: 0;
+    display: block;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(3px);
+  }
+
+  .unified-top-nav__search-panel {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    align-items: center;
+    padding: max(var(--safe-top, 0px), 0.4rem) 0.75rem 0.75rem;
+    background: var(--portal-bg);
+    border-bottom: 1px solid var(--portal-border);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .unified-top-nav__search-field {
+    min-width: 0;
+  }
+
+  .unified-top-nav__search-cancel {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 0.6rem;
+    border: 0;
+    background: transparent;
+    color: var(--portal-text);
+    font-size: 0.88rem;
+    font-weight: 700;
+    white-space: nowrap;
   }
 }
 

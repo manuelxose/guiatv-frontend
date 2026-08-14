@@ -49,15 +49,18 @@
   text-transform: uppercase;
 }
 
+.sports-view__masthead h1,
 .sports-view__masthead h2,
+.sports-view__section-head h2,
 .sports-view__section-head h3,
 .sports-view__group header p {
   margin: 0;
   color: var(--guide-text);
 }
 
+.sports-view__masthead h1,
 .sports-view__masthead h2 {
-  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  font-size: clamp(1.3rem, 2.2vw, 2rem);
   line-height: 1.05;
   letter-spacing: -0.03em;
 }
@@ -125,6 +128,7 @@
   margin-bottom: 0.9rem;
 }
 
+.sports-view__section-head h2,
 .sports-view__section-head h3 {
   font-size: 1.08rem;
   line-height: 1.18;
@@ -203,6 +207,121 @@
   transform: translateY(-2px);
   border-color: var(--portal-border-strong);
   background: var(--portal-surface-strong);
+}
+
+/* Football-first additions */
+.sports-view__sport-row,
+.sports-view__competition-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  width: 100%;
+  min-width: 0;
+  padding-bottom: 0.15rem;
+  scrollbar-width: none;
+}
+
+.sports-view__sport-row::-webkit-scrollbar,
+.sports-view__competition-row::-webkit-scrollbar {
+  display: none;
+}
+
+.sports-view__sport-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid var(--portal-border);
+  background: var(--portal-surface);
+  color: var(--portal-text-muted);
+  padding: 0 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sports-view__sport-chip--active {
+  border-color: var(--sports-accent);
+  background: color-mix(in srgb, var(--sports-accent) 12%, var(--portal-surface));
+  color: var(--sports-accent);
+}
+
+.sports-view__match-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.sports-view__live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  background: var(--accent-live-soft);
+  color: var(--accent-live);
+  padding: 0.3rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.sports-view__live-pill i {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--accent-live);
+  box-shadow: 0 0 0 0.18rem color-mix(in oklch, var(--accent-live) 18%, transparent);
+}
+
+.sports-view__empty h2 {
+  margin: 0;
+  color: var(--guide-text);
+  font-size: 1.15rem;
+}
+
+.sports-view__empty-copy {
+  margin: 0.4rem 0 0;
+  color: var(--guide-text-soft);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.sports-view__empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.sports-view__empty-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--portal-border);
+  background: var(--portal-surface);
+  color: var(--portal-text);
+  text-decoration: none;
+  padding: 0 1rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+@media (max-width: 767px) {
+  .sports-view {
+    gap: 1rem;
+  }
+
+  .sports-view__masthead,
+  .sports-view__module,
+  .sports-view__section,
+  .sports-view__directory-card,
+  .sports-view__group {
+    padding: 0.8rem 0.9rem;
+    border-radius: 1rem;
+  }
 }
 
 @media (min-width: 1024px) {

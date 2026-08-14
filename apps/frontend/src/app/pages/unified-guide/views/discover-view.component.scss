@@ -203,6 +203,23 @@
   justify-items: start;
 }
 
+.discover-view__empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.discover-view__action {
+  text-decoration: none;
+}
+
+.discover-view__action--ghost {
+  background: transparent;
+  border-color: var(--portal-border);
+  color: var(--portal-text-soft);
+}
+
 .discover-view__platform-button:hover,
 .discover-view__directory-chip:hover,
 .discover-view__action:hover {

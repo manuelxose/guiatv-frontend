@@ -8,6 +8,7 @@ import {
   computed,
   effect,
   inject,
+  signal,
   untracked,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -22,7 +23,7 @@ import {
 } from '../../config/portal-navigation.config';
 import { APP_PATHS } from '../../config/route-map';
 import { MetaService } from '../../services/meta.service';
-import { TvDataFacade } from '../../state/tv-data.facade';
+import { CatalogPlatform } from '../../services/catalog.service';
 import { UserService } from '../../services/user.service';
 import { UnifiedGuideStateService, UnifiedGuideTab } from '../../state/unified-guide.state';
 import { UnifiedShellUiStateService } from '../../state/unified-shell-ui.state';
@@ -80,7 +81,6 @@ export class UnifiedGuideComponent {
   private readonly shellUi = inject(UnifiedShellUiStateService);
   private readonly meta = inject(MetaService);
   private readonly userService = inject(UserService);
-  private readonly facade = inject(TvDataFacade);
   private readonly isBrowser: boolean;
 
   readonly activeTab = this.state.activeTab;
@@ -90,21 +90,16 @@ export class UnifiedGuideComponent {
   readonly profile = toSignal(this.userService.getProfile(), {
     initialValue: this.userService.getProfileSnapshot(),
   });
-  readonly livePreview = toSignal(this.facade.getLivePrograms({ date: 'today', limit: 6 }), {
-    initialValue: [],
-  });
-  readonly tonightPreview = toSignal(this.facade.getTonightPrograms({ date: 'today', limit: 6 }), {
-    initialValue: [],
-  });
-  readonly platformPreview = toSignal(this.facade.getPlatforms(), {
-    initialValue: [],
-  });
-  readonly sportsLivePreview = toSignal(this.facade.getLiveSports({ date: 'today' }), {
-    initialValue: [],
-  });
-  readonly sportsNextPreview = toSignal(this.facade.getUpcomingSports({ date: 'today' }), {
-    initialValue: [],
-  });
+
+  // Desktop left/right rails are currently disabled (`[leftRailSections]="[]"`),
+  // so these previews must NOT subscribe eagerly: doing so fires duplicate API
+  // calls on SSR and after hydration, which was the root cause of a ~20s SSR
+  // render timeout on the guide surfaces.
+  readonly livePreview = signal<TvReadItemDTO[]>([]);
+  readonly tonightPreview = signal<TvReadItemDTO[]>([]);
+  readonly platformPreview = signal<CatalogPlatform[]>([]);
+  readonly sportsLivePreview = signal<TvReadItemDTO[]>([]);
+  readonly sportsNextPreview = signal<TvReadItemDTO[]>([]);
   readonly pageMeta = computed(() => TAB_META[this.activeTab()]);
   readonly shellConfig = computed(() => PORTAL_GUIDE_SHELL_CONFIG[this.activeTab()]);
   readonly topPillChips = computed<FilterChipItem[]>(() =>

@@ -62,17 +62,51 @@
         </a>
       </nav>
 
-      <div class="unified-top-nav__search">
-        <app-unified-search
-          [activeTab]="activeTab()"
-          [query]="searchQuery()"
-          [expanded]="true"
-          (searchChange)="searchChange.emit($event)"
-          (searchSubmit)="searchSubmit.emit($event)"
-        ></app-unified-search>
+      <div
+        class="unified-top-nav__search"
+        [class.unified-top-nav__search--open]="mobileSearchOpen()"
+      >
+        <button
+          type="button"
+          class="unified-top-nav__search-backdrop"
+          (click)="closeMobileSearch()"
+          aria-label="Cerrar búsqueda"
+          tabindex="-1"
+        ></button>
+
+        <div class="unified-top-nav__search-panel">
+          <div class="unified-top-nav__search-field">
+            <app-unified-search
+              [activeTab]="activeTab()"
+              [query]="searchQuery()"
+              [expanded]="true"
+              (searchChange)="searchChange.emit($event)"
+              (searchSubmit)="onSearchSubmit($event)"
+            ></app-unified-search>
+          </div>
+          <button
+            type="button"
+            class="unified-top-nav__search-cancel"
+            (click)="closeMobileSearch()"
+          >
+            Cancelar
+          </button>
+        </div>
       </div>
 
       <div class="unified-top-nav__actions">
+        <button
+          type="button"
+          class="unified-top-nav__chrome-button unified-top-nav__search-trigger"
+          (click)="openMobileSearch()"
+          aria-label="Buscar"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></circle>
+            <path d="M16 16l4.5 4.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+          </svg>
+        </button>
+
         <button
           type="button"
           class="unified-top-nav__chrome-button unified-top-nav__theme"
