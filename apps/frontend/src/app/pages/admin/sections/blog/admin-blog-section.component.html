@@ -1,15 +1,15 @@
 <section class="space-y-6">
   <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
-      <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Editorial CMS</p>
-      <h3 class="text-2xl font-semibold text-white">Editorial y SEO</h3>
-      <p class="text-sm text-slate-400">
+      <p class="text-[10px] uppercase tracking-[0.3em] text-[var(--portal-text-muted)]">Editorial CMS</p>
+      <h3 class="text-2xl font-semibold text-[var(--portal-text)]">Editorial y SEO</h3>
+      <p class="text-sm text-[var(--portal-text-soft)]">
         Gestiona guias, rankings y tendencias enlazadas con la app y con la API editorial.
       </p>
     </div>
     <div class="flex items-center gap-2">
       <button
-        class="px-4 py-2 rounded-xl border border-slate-700/70 text-slate-200 text-sm hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] text-sm hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         type="button"
         (click)="refreshBlog()"
       >
@@ -27,20 +27,20 @@
 
   <div class="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] gap-6">
     <form
-      class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6 space-y-6"
+      class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-6"
       [formGroup]="blogForm"
       (ngSubmit)="submitBlogPost()"
     >
       <div class="flex items-center justify-between gap-4">
         <div>
-          <h4 class="text-lg font-semibold text-white">
+          <h4 class="text-lg font-semibold text-[var(--portal-text)]">
             {{ isEditingBlogPost ? 'Editar articulo editorial' : 'Crear articulo editorial' }}
           </h4>
-          <p class="text-xs text-slate-500 mt-1">
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">
             Modelo SEO first con tipos editoriales, FAQs y relaciones con recursos de la app.
           </p>
         </div>
-        <span *ngIf="blogSaving" class="text-xs text-slate-400">Guardando...</span>
+        <span *ngIf="blogSaving" class="text-xs text-[var(--portal-text-soft)]">Guardando...</span>
         <span *ngIf="!blogSaving" class="text-xs text-emerald-300">
           {{ isEditingBlogPost ? 'Modo edicion' : 'Modo alta' }}
         </span>
@@ -55,12 +55,12 @@
 
       <div class="grid gap-4 md:grid-cols-2">
         <div class="md:col-span-2">
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-title">Titulo</label>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-title">Titulo</label>
           <input
             id="blog-title"
             formControlName="title"
             type="text"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             placeholder="Escribe un titular orientado a busqueda real"
           />
           <p *ngIf="blogForm.get('title')?.invalid && blogForm.get('title')?.touched" class="text-xs text-red-300 mt-1">
@@ -69,35 +69,35 @@
         </div>
 
         <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-slug">Slug</label>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-slug">Slug</label>
           <input
             id="blog-slug"
             formControlName="slug"
             type="text"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             [placeholder]="blogPreviewSlug || 'slug-del-articulo'"
           />
-          <p class="text-xs text-slate-500 mt-1">Se genera si lo dejas vacio.</p>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">Se genera si lo dejas vacio.</p>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-status">Estado</label>
+            <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-status">Estado</label>
             <select
               id="blog-status"
               formControlName="status"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             >
               <option value="draft">Borrador</option>
               <option value="publish">Publicado</option>
             </select>
           </div>
           <div>
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-type">Tipo</label>
+            <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-type">Tipo</label>
             <select
               id="blog-type"
               formControlName="contentType"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             >
               <option value="guide">Guia</option>
               <option value="ranking">Ranking</option>
@@ -109,21 +109,21 @@
 
       <div class="grid gap-4 md:grid-cols-2">
         <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-published">Fecha de publicacion</label>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-published">Fecha de publicacion</label>
           <input
             id="blog-published"
             formControlName="publishedAt"
             type="datetime-local"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           />
         </div>
         <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-cover">Imagen de portada</label>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-cover">Imagen de portada</label>
           <input
             id="blog-cover"
             formControlName="coverImage"
             type="text"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             placeholder="/assets/images/blog-og-image.webp"
           />
         </div>
@@ -131,59 +131,59 @@
 
       <div class="grid gap-4 md:grid-cols-2">
         <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-intent">Primary intent</label>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-intent">Primary intent</label>
           <input
             id="blog-intent"
             formControlName="primaryIntent"
             type="text"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             placeholder="discovery, comparison, family-weekend..."
           />
         </div>
         <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-target-query">Query objetivo</label>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-target-query">Query objetivo</label>
           <input
             id="blog-target-query"
             formControlName="targetQuery"
             type="text"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             placeholder="que ver hoy en tv y streaming"
           />
         </div>
       </div>
 
       <div class="grid gap-4 md:grid-cols-2">
-        <label class="flex items-center gap-3 rounded-2xl border border-slate-800/70 bg-slate-950/60 px-4 py-3 text-sm text-slate-200">
-          <input type="checkbox" formControlName="featured" class="h-4 w-4 rounded border-slate-600 bg-slate-900 text-red-500 focus:ring-red-500" />
+        <label class="flex items-center gap-3 rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 py-3 text-sm text-[var(--portal-text)]">
+          <input type="checkbox" formControlName="featured" class="h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-red-500 focus:ring-red-500" />
           Destacar en hubs editoriales
         </label>
-        <label class="flex items-center gap-3 rounded-2xl border border-slate-800/70 bg-slate-950/60 px-4 py-3 text-sm text-slate-200">
-          <input type="checkbox" formControlName="evergreen" class="h-4 w-4 rounded border-slate-600 bg-slate-900 text-red-500 focus:ring-red-500" />
+        <label class="flex items-center gap-3 rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 py-3 text-sm text-[var(--portal-text)]">
+          <input type="checkbox" formControlName="evergreen" class="h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-red-500 focus:ring-red-500" />
           Contenido evergreen
         </label>
       </div>
 
       <div>
-        <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-excerpt">Extracto</label>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-excerpt">Extracto</label>
         <textarea
           id="blog-excerpt"
           formControlName="excerpt"
           rows="3"
-          class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           placeholder="Resumen corto y util para cards y snippets"
         ></textarea>
       </div>
 
       <div>
-        <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-content">Contenido HTML</label>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-content">Contenido HTML</label>
         <textarea
           id="blog-content"
           formControlName="content"
           rows="12"
-          class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           placeholder="HTML permitido. Usa enlaces internos a /plataformas, /comparador-streaming, /tendencias..."
         ></textarea>
-        <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
+        <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-[var(--portal-text-muted)]">
           <span>{{ blogWordCount }} palabras</span>
           <span>{{ blogReadingTime }} min de lectura</span>
           <span>Slug: {{ blogPreviewSlug || '-' }}</span>
@@ -192,41 +192,41 @@
 
       <div class="grid gap-4 md:grid-cols-2">
         <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-categories">Categorias</label>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-categories">Categorias</label>
           <input
             id="blog-categories"
             formControlName="categories"
             type="text"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             placeholder="Guias, Streaming, Netflix"
           />
-          <p class="text-xs text-slate-500 mt-1">Separadas por coma.</p>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">Separadas por coma.</p>
         </div>
         <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-keywords">Keywords SEO</label>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-keywords">Keywords SEO</label>
           <input
             id="blog-keywords"
             formControlName="keywords"
             type="text"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             placeholder="que ver hoy, netflix, guia tv"
           />
         </div>
       </div>
 
-      <fieldset class="border border-slate-800/70 rounded-2xl p-4 space-y-4">
-        <legend class="px-2 text-xs text-slate-400 uppercase tracking-wider">Relaciones con la app</legend>
+      <fieldset class="border border-[var(--portal-border)] rounded-2xl p-4 space-y-4">
+        <legend class="px-2 text-xs text-[var(--portal-text-soft)] uppercase tracking-wider">Relaciones con la app</legend>
 
         <div>
-          <p class="text-xs text-slate-400 uppercase tracking-wider">Plataformas relacionadas</p>
+          <p class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider">Plataformas relacionadas</p>
           <div class="mt-3 grid gap-3 sm:grid-cols-2">
             <label
               *ngFor="let option of platformOptions"
-              class="flex items-start gap-3 rounded-xl border border-slate-800/70 bg-slate-950/60 px-4 py-3 text-sm text-slate-200"
+              class="flex items-start gap-3 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 py-3 text-sm text-[var(--portal-text)]"
             >
               <input
                 type="checkbox"
-                class="mt-0.5 h-4 w-4 rounded border-slate-600 bg-slate-900 text-red-500 focus:ring-red-500"
+                class="mt-0.5 h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-red-500 focus:ring-red-500"
                 [checked]="isArraySelectionActive('relatedPlatformKeys', option.key)"
                 (change)="toggleArraySelection('relatedPlatformKeys', option.key, $any($event.target).checked)"
               />
@@ -236,45 +236,45 @@
         </div>
 
         <div>
-          <p class="text-xs text-slate-400 uppercase tracking-wider">Modulos y CTAs relacionados</p>
+          <p class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider">Modulos y CTAs relacionados</p>
           <div class="mt-3 grid gap-3 sm:grid-cols-2">
             <label
               *ngFor="let option of routeOptions"
-              class="flex items-start gap-3 rounded-xl border border-slate-800/70 bg-slate-950/60 px-4 py-3 text-sm text-slate-200"
+              class="flex items-start gap-3 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 py-3 text-sm text-[var(--portal-text)]"
             >
               <input
                 type="checkbox"
-                class="mt-0.5 h-4 w-4 rounded border-slate-600 bg-slate-900 text-red-500 focus:ring-red-500"
+                class="mt-0.5 h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-red-500 focus:ring-red-500"
                 [checked]="isArraySelectionActive('relatedRouteKeys', option.key)"
                 (change)="toggleArraySelection('relatedRouteKeys', option.key, $any($event.target).checked)"
               />
               <span>
-                <span class="block font-semibold text-white">{{ option.label }}</span>
-                <span class="block text-xs text-slate-500">{{ option.description }}</span>
+                <span class="block font-semibold text-[var(--portal-text)]">{{ option.label }}</span>
+                <span class="block text-xs text-[var(--portal-text-muted)]">{{ option.description }}</span>
               </span>
             </label>
           </div>
         </div>
       </fieldset>
 
-      <fieldset class="border border-slate-800/70 rounded-2xl p-4 space-y-4">
-        <legend class="px-2 text-xs text-slate-400 uppercase tracking-wider">FAQs y snippet SEO</legend>
+      <fieldset class="border border-[var(--portal-border)] rounded-2xl p-4 space-y-4">
+        <legend class="px-2 text-xs text-[var(--portal-text-soft)] uppercase tracking-wider">FAQs y snippet SEO</legend>
 
         <div>
-          <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-faqs">FAQs</label>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-faqs">FAQs</label>
           <textarea
             id="blog-faqs"
             formControlName="faqItems"
             rows="5"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             placeholder="Pregunta::Respuesta&#10;Otra pregunta::Otra respuesta"
           ></textarea>
-          <p class="text-xs text-slate-500 mt-1">Una FAQ por linea con el formato <code>Pregunta::Respuesta</code>.</p>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">Una FAQ por linea con el formato <code>Pregunta::Respuesta</code>.</p>
         </div>
 
         <div>
           <div class="flex items-center justify-between">
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-meta-title">Meta title</label>
+            <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-meta-title">Meta title</label>
             <span class="text-xs" [ngClass]="isSeoTitleOk() ? 'text-emerald-300' : 'text-amber-300'">
               {{ blogSeoTitleLength }}/{{ seoTitleMax }}
             </span>
@@ -283,14 +283,14 @@
             id="blog-meta-title"
             formControlName="metaTitle"
             type="text"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             placeholder="Por defecto usa el titulo"
           />
         </div>
 
         <div>
           <div class="flex items-center justify-between">
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-meta-description">Meta description</label>
+            <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-meta-description">Meta description</label>
             <span class="text-xs" [ngClass]="isSeoDescriptionOk() ? 'text-emerald-300' : 'text-amber-300'">
               {{ blogSeoDescriptionLength }}/{{ seoDescriptionMax }}
             </span>
@@ -299,29 +299,29 @@
             id="blog-meta-description"
             formControlName="metaDescription"
             rows="3"
-            class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             placeholder="Por defecto usa el extracto"
           ></textarea>
         </div>
 
         <div class="grid gap-4 md:grid-cols-2">
           <div>
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-og">OG image</label>
+            <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-og">OG image</label>
             <input
               id="blog-og"
               formControlName="ogImage"
               type="text"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               placeholder="https://..."
             />
           </div>
           <div>
-            <label class="text-xs text-slate-400 uppercase tracking-wider" for="blog-canonical">Canonical</label>
+            <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-canonical">Canonical</label>
             <input
               id="blog-canonical"
               formControlName="canonicalUrl"
               type="text"
-              class="mt-2 w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               [ngClass]="{ 'border-red-500/60': !isCanonicalValid() }"
               placeholder="/editorial/slug o https://..."
             />
@@ -333,7 +333,7 @@
       <div class="flex flex-wrap items-center justify-end gap-3 pt-2">
         <button
           type="button"
-          class="px-4 py-2 rounded-xl border border-slate-700/70 text-slate-200 text-sm hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] text-sm hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           (click)="resetBlogForm(true)"
         >
           Limpiar
@@ -349,67 +349,67 @@
     </form>
 
     <div class="space-y-6">
-      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
         <div class="flex items-center justify-between">
-          <h4 class="text-lg font-semibold text-white">Preview SEO</h4>
-          <span class="text-xs text-slate-500">Snippet de busqueda</span>
+          <h4 class="text-lg font-semibold text-[var(--portal-text)]">Preview SEO</h4>
+          <span class="text-xs text-[var(--portal-text-muted)]">Snippet de busqueda</span>
         </div>
         <div class="mt-4 space-y-2">
-          <div class="text-xs text-slate-500 break-all">{{ blogPreviewUrl }}</div>
+          <div class="text-xs text-[var(--portal-text-muted)] break-all">{{ blogPreviewUrl }}</div>
           <div class="text-xl font-semibold text-blue-200">{{ blogPreviewTitle }}</div>
-          <p class="text-sm text-slate-300">
+          <p class="text-sm text-[var(--portal-text-soft)]">
             {{ blogPreviewDescription || 'Anade una descripcion util para mejorar el CTR.' }}
           </p>
         </div>
         <div class="mt-5 grid sm:grid-cols-3 gap-3 text-xs">
-          <div class="p-3 rounded-xl bg-slate-950/50 border border-slate-800/70">
-            <p class="text-slate-500">Palabras</p>
-            <p class="text-white font-semibold">{{ blogWordCount }}</p>
+          <div class="p-3 rounded-xl bg-[var(--portal-surface)] border border-[var(--portal-border)]">
+            <p class="text-[var(--portal-text-muted)]">Palabras</p>
+            <p class="text-[var(--portal-text)] font-semibold">{{ blogWordCount }}</p>
           </div>
-          <div class="p-3 rounded-xl bg-slate-950/50 border border-slate-800/70">
-            <p class="text-slate-500">Lectura</p>
-            <p class="text-white font-semibold">{{ blogReadingTime }} min</p>
+          <div class="p-3 rounded-xl bg-[var(--portal-surface)] border border-[var(--portal-border)]">
+            <p class="text-[var(--portal-text-muted)]">Lectura</p>
+            <p class="text-[var(--portal-text)] font-semibold">{{ blogReadingTime }} min</p>
           </div>
-          <div class="p-3 rounded-xl bg-slate-950/50 border border-slate-800/70">
-            <p class="text-slate-500">Titulo SEO</p>
-            <p class="text-white font-semibold">{{ blogSeoTitleLength }}</p>
+          <div class="p-3 rounded-xl bg-[var(--portal-surface)] border border-[var(--portal-border)]">
+            <p class="text-[var(--portal-text-muted)]">Titulo SEO</p>
+            <p class="text-[var(--portal-text)] font-semibold">{{ blogSeoTitleLength }}</p>
           </div>
         </div>
         <button
           type="button"
-          class="mt-4 w-full px-4 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="mt-4 w-full px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           (click)="openBlogPreview()"
         >
           Abrir preview
         </button>
       </div>
 
-      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
-            <h4 class="text-lg font-semibold text-white">Articulos</h4>
-            <p class="text-xs text-slate-500">
+            <h4 class="text-lg font-semibold text-[var(--portal-text)]">Articulos</h4>
+            <p class="text-xs text-[var(--portal-text-muted)]">
               {{ blogPosts.length }} resultados
               <span *ngIf="blogLastLoaded"> | actualizado {{ blogLastLoaded | date: 'shortTime' }}</span>
             </p>
           </div>
           <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             <select
-              class="bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               [value]="blogStatusFilter"
               (change)="setBlogStatus($any($event.target).value)"
             >
               <option *ngFor="let option of blogStatusOptions" [value]="option.id">{{ option.label }}</option>
             </select>
             <select
-              class="bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               [value]="blogTypeFilter"
               (change)="setBlogType($any($event.target).value)"
             >
               <option *ngFor="let option of blogTypeOptions" [value]="option.id">{{ option.label }}</option>
             </select>
             <select
-              class="bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               [value]="blogCategoryFilter"
               (change)="setBlogCategory($any($event.target).value)"
             >
@@ -418,7 +418,7 @@
             </select>
             <input
               type="text"
-              class="bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
               placeholder="Buscar articulos"
               [value]="blogSearchTerm"
               (input)="onBlogSearchInput($event)"
@@ -427,29 +427,29 @@
           </div>
         </div>
 
-        <div *ngIf="blogLoading" class="text-sm text-slate-500 py-6 text-center">
+        <div *ngIf="blogLoading" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">
           Cargando articulos...
         </div>
         <div *ngIf="blogError" class="text-sm text-red-300 py-3">
           {{ blogError }}
         </div>
-        <div *ngIf="!blogLoading && !blogError && blogPosts.length === 0" class="text-sm text-slate-500 py-6 text-center">
+        <div *ngIf="!blogLoading && !blogError && blogPosts.length === 0" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">
           No hay articulos para estos filtros.
         </div>
 
         <div *ngIf="blogPosts.length" class="space-y-4 max-h-[680px] overflow-auto pr-1">
           <article
             *ngFor="let post of blogPosts; trackBy: trackByBlogPost"
-            class="p-4 rounded-2xl bg-slate-950/50 border space-y-3"
-            [ngClass]="selectedBlogPostId === post.id ? 'border-red-500/40' : 'border-slate-800/70'"
+            class="p-4 rounded-2xl bg-[var(--portal-surface)] border space-y-3"
+            [ngClass]="selectedBlogPostId === post.id ? 'border-red-500/40' : 'border-[var(--portal-border)]'"
           >
             <div class="flex items-start gap-3">
-              <div class="h-20 w-28 rounded-xl bg-slate-900/70 border border-slate-800/70 overflow-hidden flex-shrink-0">
+              <div class="h-20 w-28 rounded-xl bg-[var(--portal-surface)] border border-[var(--portal-border)] overflow-hidden flex-shrink-0">
                 <ng-container *ngIf="getPostImage(post) as image; else noImage">
                   <img [src]="image" alt="" class="h-full w-full object-cover" />
                 </ng-container>
                 <ng-template #noImage>
-                  <div class="h-full w-full flex items-center justify-center text-[10px] text-slate-500 bg-slate-950/40">
+                  <div class="h-full w-full flex items-center justify-center text-[10px] text-[var(--portal-text-muted)] bg-[var(--portal-bg-elevated)]/40">
                     Sin imagen
                   </div>
                 </ng-template>
@@ -458,14 +458,14 @@
               <div class="flex-1 min-w-0 space-y-3">
                 <div class="flex items-start justify-between gap-3">
                   <div>
-                    <h5 class="text-white text-sm font-semibold">{{ getPostTitle(post) }}</h5>
-                    <p class="text-xs text-slate-500 mt-1 break-all">{{ post.slug }}</p>
+                    <h5 class="text-[var(--portal-text)] text-sm font-semibold">{{ getPostTitle(post) }}</h5>
+                    <p class="text-xs text-[var(--portal-text-muted)] mt-1 break-all">{{ post.slug }}</p>
                   </div>
                   <div class="flex flex-wrap justify-end gap-2">
                     <span class="text-[10px] px-2 py-1 rounded-full border" [ngClass]="getPostStatusClass(post.status)">
                       {{ post.status || 'draft' }}
                     </span>
-                    <span class="text-[10px] px-2 py-1 rounded-full border border-slate-700 bg-slate-900/80 text-slate-200">
+                    <span class="text-[10px] px-2 py-1 rounded-full border border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-[var(--portal-text)]">
                       {{ getPostTypeLabel(post) }}
                     </span>
                     <span *ngIf="post.featured" class="text-[10px] px-2 py-1 rounded-full border border-red-500/40 bg-red-500/10 text-red-100">
@@ -474,9 +474,9 @@
                   </div>
                 </div>
 
-                <p class="text-sm text-slate-300">{{ getPostExcerpt(post) }}</p>
+                <p class="text-sm text-[var(--portal-text-soft)]">{{ getPostExcerpt(post) }}</p>
 
-                <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                <div class="flex flex-wrap items-center gap-2 text-xs text-[var(--portal-text-muted)]">
                   <span>{{ getPostCategories(post) }}</span>
                   <span *ngIf="post.date">| {{ post.date | date: 'mediumDate' }}</span>
                   <span>| SEO {{ getPostSeoTitle(post).length }}/{{ seoTitleMax }}</span>
@@ -485,7 +485,7 @@
                 <div class="flex flex-wrap items-center gap-2 text-xs">
                   <button
                     type="button"
-                    class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 hover:text-white hover:border-slate-500"
+                    class="px-3 py-1.5 rounded-lg border border-[var(--portal-border-strong)] text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
                     (click)="editBlogPost(post)"
                   >
                     Editar
@@ -501,7 +501,7 @@
                     [href]="getPostUrl(post)"
                     target="_blank"
                     rel="noopener"
-                    class="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-200 hover:text-white hover:border-slate-500"
+                    class="px-3 py-1.5 rounded-lg border border-[var(--portal-border-strong)] text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
                   >
                     Abrir
                   </a>

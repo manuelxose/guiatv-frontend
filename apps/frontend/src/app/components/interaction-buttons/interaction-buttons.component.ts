@@ -92,7 +92,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.55-2.27A1 1 0 0121 8.62v6.76a1 1 0 01-1.45.89L15 14m-9 4h8a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z"/>
         </svg>
         <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isWatching ? 'text-emerald-200' : 'text-[var(--portal-text-soft)]'">
-          {{ isWatching ? 'Viendo' : 'Estoy viendo' }}
+          Viendo
         </span>
       </button>
 
@@ -145,7 +145,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m8-2a9 9 0 11-18 0a9 9 0 0118 0z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium text-[var(--portal-text-soft)]">Compartir chat</span>
+        <span *ngIf="!compact" class="text-sm font-medium text-[var(--portal-text-soft)]">Enviar</span>
       </button>
 
       <!-- Rating Panel -->

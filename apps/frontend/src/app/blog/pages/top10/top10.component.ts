@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -94,7 +94,8 @@ export class Top10Component implements OnInit, OnDestroy {
     private readonly metaService: MetaService,
     private readonly sanitizer: DomSanitizer,
     private readonly router: Router,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly changeDetector: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -118,10 +119,12 @@ export class Top10Component implements OnInit, OnDestroy {
           this.sections = state.sections;
           this.buildStructuredData();
           this.loading = false;
+          this.changeDetector.markForCheck();
         },
         error: () => {
           this.error = 'No se han podido cargar los rankings editoriales.';
           this.loading = false;
+          this.changeDetector.markForCheck();
         },
       });
   }
@@ -167,6 +170,7 @@ export class Top10Component implements OnInit, OnDestroy {
   public selectCategory(slug: string): void {
     this.selectedCategory = slug;
     this.buildStructuredData();
+    this.changeDetector.markForCheck();
   }
 
   public get filteredPosts(): EditorialPost[] {

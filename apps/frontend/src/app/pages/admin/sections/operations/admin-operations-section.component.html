@@ -1,12 +1,12 @@
 <section class="space-y-6">
   <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
-      <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Operations</p>
-      <h3 class="text-2xl font-semibold text-white">Control room</h3>
-      <p class="text-sm text-slate-400">Cache management and system health monitoring.</p>
+      <p class="text-[10px] uppercase tracking-[0.3em] text-[var(--portal-text-muted)]">Operations</p>
+      <h3 class="text-2xl font-semibold text-[var(--portal-text)]">Control room</h3>
+      <p class="text-sm text-[var(--portal-text-soft)]">Cache management and system health monitoring.</p>
     </div>
     <button type="button"
-      class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500"
+      class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
       (click)="loadHealth()">
       Refresh
     </button>
@@ -18,44 +18,44 @@
 
   <!-- Health stats -->
   <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">System status</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">System status</p>
       <p class="text-2xl font-semibold mt-2"
         [ngClass]="health?.status === 'healthy' ? 'text-emerald-200' : 'text-amber-200'">
         {{ health?.status || '…' }}
       </p>
-      <p class="text-xs text-slate-500 mt-1">v{{ health?.version || '…' }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">v{{ health?.version || '…' }}</p>
     </div>
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">Cache</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Cache</p>
       <p class="text-2xl font-semibold mt-2"
         [ngClass]="health?.services?.cache?.status === 'healthy' ? 'text-emerald-200' : 'text-amber-200'">
         {{ health?.services?.cache?.status || '…' }}
       </p>
-      <p class="text-xs text-slate-500 mt-1">Valkey/Redis</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">Valkey/Redis</p>
     </div>
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">Uptime</p>
-      <p class="text-2xl font-semibold text-white mt-2">{{ health?.uptime || '…' }}</p>
-      <p class="text-xs text-slate-500 mt-1">Process</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Uptime</p>
+      <p class="text-2xl font-semibold text-[var(--portal-text)] mt-2">{{ health?.uptime || '…' }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">Process</p>
     </div>
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-4">
-      <p class="text-xs text-slate-500 uppercase tracking-wider">Memory</p>
-      <p class="text-2xl font-semibold text-white mt-2">{{ health?.memory?.heapUsed || '…' }}</p>
-      <p class="text-xs text-slate-500 mt-1">of {{ health?.memory?.heapTotal || '…' }} heap</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Memory</p>
+      <p class="text-2xl font-semibold text-[var(--portal-text)] mt-2">{{ health?.memory?.heapUsed || '…' }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">of {{ health?.memory?.heapTotal || '…' }} heap</p>
     </div>
   </div>
 
   <!-- Cache management -->
   <div class="grid xl:grid-cols-2 gap-6">
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6 space-y-4">
-      <h4 class="text-lg font-semibold text-white">Cache Management</h4>
-      <p class="text-xs text-slate-400">Clear all or targeted cache entries by pattern (e.g. <code class="text-slate-300">program:*</code>, <code class="text-slate-300">schedule:*</code>).</p>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-4">
+      <h4 class="text-lg font-semibold text-[var(--portal-text)]">Cache Management</h4>
+      <p class="text-xs text-[var(--portal-text-soft)]">Clear all or targeted cache entries by pattern (e.g. <code class="text-[var(--portal-text-soft)]">program:*</code>, <code class="text-[var(--portal-text-soft)]">schedule:*</code>).</p>
       <div class="flex flex-wrap items-end gap-3">
         <div class="flex-1 min-w-[200px]">
-          <label class="block text-xs text-slate-400 mb-1" for="cache-pattern">Pattern (optional)</label>
+          <label class="block text-xs text-[var(--portal-text-soft)] mb-1" for="cache-pattern">Pattern (optional)</label>
           <input id="cache-pattern" type="text" [(ngModel)]="cachePattern" placeholder="e.g. program:*"
-            class="w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+            class="w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
         </div>
         <button type="button" [disabled]="clearLoading"
           class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-xs text-red-100 hover:bg-red-500/30 disabled:opacity-40"
@@ -65,44 +65,44 @@
       </div>
     </div>
 
-    <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
-      <h4 class="text-lg font-semibold text-white">Memory breakdown</h4>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
+      <h4 class="text-lg font-semibold text-[var(--portal-text)]">Memory breakdown</h4>
       <div class="mt-4 space-y-3 text-sm" *ngIf="health">
         <div class="flex items-center justify-between">
-          <span class="text-slate-400">RSS</span>
-          <span class="text-white">{{ health.memory.rss }}</span>
+          <span class="text-[var(--portal-text-soft)]">RSS</span>
+          <span class="text-[var(--portal-text)]">{{ health.memory.rss }}</span>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-slate-400">Heap Used</span>
-          <span class="text-white">{{ health.memory.heapUsed }}</span>
+          <span class="text-[var(--portal-text-soft)]">Heap Used</span>
+          <span class="text-[var(--portal-text)]">{{ health.memory.heapUsed }}</span>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-slate-400">Heap Total</span>
-          <span class="text-white">{{ health.memory.heapTotal }}</span>
+          <span class="text-[var(--portal-text-soft)]">Heap Total</span>
+          <span class="text-[var(--portal-text)]">{{ health.memory.heapTotal }}</span>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-slate-400">API Version</span>
-          <span class="text-white">{{ health.version }}</span>
+          <span class="text-[var(--portal-text-soft)]">API Version</span>
+          <span class="text-[var(--portal-text)]">{{ health.version }}</span>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-slate-400">Timestamp</span>
-          <span class="text-white">{{ health.timestamp }}</span>
+          <span class="text-[var(--portal-text-soft)]">Timestamp</span>
+          <span class="text-[var(--portal-text)]">{{ health.timestamp }}</span>
         </div>
       </div>
-      <p *ngIf="!health" class="text-sm text-slate-500 mt-4">Loading health data…</p>
+      <p *ngIf="!health" class="text-sm text-[var(--portal-text-muted)] mt-4">Loading health data…</p>
     </div>
   </div>
 
   <!-- Action results -->
-  <div *ngIf="actionResults.length" class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-    <h4 class="text-lg font-semibold text-white mb-4">Action log</h4>
+  <div *ngIf="actionResults.length" class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+    <h4 class="text-lg font-semibold text-[var(--portal-text)] mb-4">Action log</h4>
     <div class="space-y-2 text-xs">
       <div *ngFor="let r of actionResults" class="flex items-start gap-3">
-        <span class="text-slate-500">{{ r.time | date:'HH:mm:ss' }}</span>
+        <span class="text-[var(--portal-text-muted)]">{{ r.time | date:'HH:mm:ss' }}</span>
         <span [ngClass]="r.success ? 'text-emerald-300' : 'text-red-300'" class="text-[10px] uppercase tracking-[0.2em]">
           {{ r.success ? 'ok' : 'fail' }}
         </span>
-        <span class="text-slate-400">{{ r.message }}</span>
+        <span class="text-[var(--portal-text-soft)]">{{ r.message }}</span>
       </div>
     </div>
   </div>

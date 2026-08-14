@@ -27,6 +27,8 @@ describe('tv-normalizers', () => {
     expect(normalized.title).toBe('Partido estelar');
     expect(normalized.contentType).toBe('program');
     expect(normalized.channelName).toBe('La 1');
+    expect(normalized.channelId).toBe('la-1');
+    expect(normalized.channelPath).toBe('/canales/la-1');
     expect(normalized.badges).toContain('LIVE');
     expect(normalized.badges).toContain('Fútbol');
     expect(normalized.badges).toContain('Deportes');

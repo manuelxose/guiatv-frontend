@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { TvReadItemDTO } from '../../api/models';
-import { APP_PATHS } from '../../config/route-map';
 import { CatalogItem } from '../../services/catalog.service';
 import { UserService } from '../../services/user.service';
 import { normalizeCatalogInteractionId } from '../../utils/catalog';
@@ -12,6 +11,7 @@ import { PlatformBadgeComponent } from '../platform-badge/platform-badge.compone
 
 export type UnifiedProgramCardVariant =
   | 'live'
+  | 'feature'
   | 'discover'
   | 'streaming'
   | 'sport'
@@ -27,7 +27,6 @@ export type UnifiedProgramCardVariant =
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UnifiedProgramCardComponent {
-  readonly appPaths = APP_PATHS;
   readonly isAuthenticated = toSignal(this.userService.isAuthenticated$, { initialValue: false });
   readonly watchlist = toSignal(this.userService.getWatchlist(), { initialValue: [] });
 
@@ -72,7 +71,7 @@ export class UnifiedProgramCardComponent {
     if (this.variant === 'sport') {
       return 'Seguir evento';
     }
-    if (this.variant === 'live' || this.variant === 'epg-row') {
+    if (this.variant === 'live' || this.variant === 'feature' || this.variant === 'epg-row') {
       return 'Abrir emisión';
     }
     if (this.variant === 'streaming') {
@@ -98,6 +97,17 @@ export class UnifiedProgramCardComponent {
 
   onSelect(): void {
     this.selected.emit(this.item);
+  }
+
+  useFallbackImage(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    if (!image.src.endsWith('/assets/images/default-movie-poster.svg')) {
+      image.src = '/assets/images/default-movie-poster.svg';
+    }
+  }
+
+  hideBrokenImage(event: Event): void {
+    (event.target as HTMLImageElement).hidden = true;
   }
 
   toggleWatchlist(event: Event): void {

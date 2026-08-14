@@ -191,7 +191,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                   <span *ngIf="!friend.avatar">{{ friend.name.slice(0, 2).toUpperCase() }}</span>
                 </div>
                 <div
-                  class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border border-slate-900"
+                  class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border border-[var(--portal-surface)]"
                   [ngClass]="friend.isOnline ? 'bg-red-500' : 'bg-[var(--portal-text-muted)]'"
                 ></div>
               </div>

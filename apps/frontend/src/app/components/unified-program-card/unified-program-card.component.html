@@ -4,12 +4,13 @@
   [class.program-card--epg]="variant === 'epg-row'"
   [class.program-card--sport]="variant === 'sport'"
   [class.program-card--live]="variant === 'live'"
+  [class.program-card--feature]="variant === 'feature'"
   [class.program-card--boxed]="variant !== 'epg-row'"
   [attr.data-vertical]="variant === 'epg-row' ? null : card.vertical"
 >
-  <a [routerLink]="card.detailPath" class="program-card__tap" (click)="onSelect()">
+  <a [routerLink]="card.detailPath" class="program-card__tap">
     <div class="program-card__media" [class.program-card__media--empty]="!hasVisual">
-      <img *ngIf="hasVisual" [src]="imageUrl" [alt]="card.title" [loading]="variant === 'live' ? 'eager' : 'lazy'" />
+      <img *ngIf="hasVisual" [src]="imageUrl" [alt]="card.title" [loading]="variant === 'live' || variant === 'feature' ? 'eager' : 'lazy'" (error)="useFallbackImage($event)" />
       <div class="program-card__gradient"></div>
       <div class="program-card__badges">
         <span *ngFor="let badge of card.badges.slice(0, 3)" class="program-card__badge">
@@ -24,7 +25,7 @@
     <div class="program-card__body">
       <div class="program-card__eyebrow" *ngIf="showChannel && (card.channelName || card.startTime || card.category)">
         <span class="program-card__channel" *ngIf="card.channelName">
-          <img *ngIf="card.channelIcon" [src]="card.channelIcon" [alt]="''" loading="lazy" aria-hidden="true" />
+          <img *ngIf="card.channelIcon" [src]="card.channelIcon" [alt]="''" loading="lazy" aria-hidden="true" (error)="hideBrokenImage($event)" />
           <span>{{ card.channelName }}</span>
         </span>
         <span *ngIf="card.channelName && (timeLabel || card.category)" aria-hidden="true">·</span>
@@ -54,30 +55,12 @@
   </a>
 
   <div class="program-card__interactive" *ngIf="showActions">
-    <div class="program-card__quick-links" *ngIf="card.channelName || card.sport || quickPlatforms.length">
+    <div class="program-card__quick-links" *ngIf="card.channelPath">
       <a
-        *ngIf="card.channelName"
-        [routerLink]="appPaths.guide"
-        [queryParams]="{ q: card.channelName }"
+        [routerLink]="card.channelPath"
         class="program-card__quick-link"
       >
-        Canal
-      </a>
-      <a
-        *ngIf="card.sport"
-        [routerLink]="appPaths.sports"
-        [queryParams]="{ sport: card.sport }"
-        class="program-card__quick-link"
-      >
-        {{ card.sport === 'Más' ? 'Otros deportes' : card.sport }}
-      </a>
-      <a
-        *ngFor="let platform of quickPlatforms"
-        [routerLink]="appPaths.platforms"
-        [queryParams]="{ platform: platform }"
-        class="program-card__quick-link"
-      >
-        {{ platform }}
+        Ver canal
       </a>
     </div>
 
@@ -87,7 +70,7 @@
       </a>
 
       <button
-        *ngIf="isAuthenticated(); else loginSave"
+        *ngIf="isAuthenticated()"
         type="button"
         class="program-card__cta"
         [class.program-card__cta--active]="isSaved"
@@ -95,16 +78,6 @@
       >
         {{ isSaved ? 'Guardado' : 'Guardar' }}
       </button>
-
-      <ng-template #loginSave>
-        <a
-          [routerLink]="appPaths.login"
-          [queryParams]="{ redirect: card.detailPath }"
-          class="program-card__cta"
-        >
-          Accede para guardar
-        </a>
-      </ng-template>
     </div>
   </div>
 </article>

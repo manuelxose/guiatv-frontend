@@ -1,133 +1,113 @@
 # UX/UI Recovery Status
 
-Estado de la reconstrucción correctiva integral de **Guía Programación TV**.
-Complementa `docs/rebuild-scoreboard.md` (30 rondas, calidad funcional ya verde:
-E2E 12/13, unit 20/20, lint 0 errores, Lighthouse performance 78 / a11y 100 /
-SEO 100 / CLS 0). Este documento se centra en la **recuperación UX/UI** y la
-**limpieza definitiva**.
+Fecha de verificación: **2026-08-14**. Estado de la reconstrucción correctiva
+de Guía Programación TV sobre `main`, tomando como referencias históricas
+`d16eb524` (pre-rebuild) y `c782d129` (rebuild). No se aplicó un revert masivo:
+cada recuperación se contrastó con el código actual y con datos reales del API.
 
-## Regresiones detectadas
+## Resultado actual
 
-| Regresión | Causa | Estado |
+La experiencia pública y privada vuelve a compartir shell, navegación, tema y
+chat. Inicio, Guía TV, Deportes, Streaming, Editorial y fichas consumen el
+backend real; Perfil/Comunidad usan el mismo shell y conservan sus guardas de
+autenticación. La compilación CSR/SSR, los tests unitarios y los recorridos E2E
+están verdes.
+
+## Regresiones confirmadas y corregidas
+
+| Regresión | Causa real | Corrección |
 |---|---|---|
-| Sin dark mode real | `index.html` forzaba fondo oscuro; tokens solo claros; `user-area`/`chat`/`catalog` hardcodeaban `slate-*` | **CORREGIDO** |
-| Flash claro→oscuro en hidratación | No existía script de arranque de tema SSR-safe | **CORREGIDO** |
-| Chat con estilos incompatibles | `social-chat-panel`, `unified-chat-shell`, `ai-chatbot/*` usaban `bg-slate-900`, `text-white`, `border-slate-800` | **CORREGIDO** |
-| Perfil/social/catálogo oscuros a la fuerza | `user-area`, `catalog-*`, `interaction-buttons`, `where-to-watch`, `auth-login-modal` con `slate-*` | **CORREGIDO** |
-| Páginas secundarias forzadas a oscuro | `about`, `legal/*`, `register`, `canal-completo`, `catalog-detail`, `streaming-comparison`, `for-you`, `public-profile`, `stats`, `press-kit`, `not-found`, `content-page` con `bg-[#081018]` + `slate-*` | **CORREGIDO** |
-| Texto blanco sobre superficie temática | `canal-completo.scss` `$text-primary: #ffffff` + `.text-slate-500 { color:#cbd5e1 }` | **CORREGIDO** |
-| Chevron de `<select>` blanco ilegible en claro | `canal-completo.scss` data-URI `stroke='%23fff'` | **CORREGIDO** |
+| Tailwind no generaba utilidades | Se habían retirado `@tailwind base/components/utilities` aunque muchas plantillas seguían dependiendo de ellas | Directivas restauradas; build y vistas verificadas |
+| Rail desktop cubría el viewport móvil | `display:flex` del rail izquierdo anulaba su estado base oculto | Rail persistente sólo desde 1100 px |
+| Guía y Deportes ensanchaban el documento hasta ~1.1–5.1 kpx | Grids anidados tomaban el ancho intrínseco de rails horizontales | Columnas `minmax(0,1fr)`, hijos encogibles y scroll local real |
+| El overflow se ocultaba globalmente | `main` y `.container-safe` imponían `max-width:100vw` + `overflow-x:hidden` | Parche global eliminado; se corrigieron los contenedores causantes |
+| No existía navegación inferior operativa | La configuración tenía cuatro entradas y no se renderizaba | Cinco destinos únicos: Inicio, Guía TV, Deportes, Explorar y Perfil |
+| Rutas privadas quedaban fuera del shell | `private-shell` proyectaba sólo el `router-outlet` | Shell compartido también para Perfil y Comunidad |
+| `/comunidad` redirigía a `/perfil` | Ruta provisional nunca recuperada | Comunidad abre `UserAreaComponent` en pestaña `feed`; el estado se refleja en la URL |
+| El chat no abría en rutas privadas | El root lo bloqueaba por tipo de layout | Disponible en shells público y privado; sólo se excluye el shell mínimo |
+| El chat se desmontaba al abrir | `MarkdownPipe` ejecutaba `require('dompurify')`, incompatible con Vite | Importación ESM; apertura IA/Personas sin errores de página |
+| Fichas podían quedar en blanco | La ficha esperaba la consulta secundaria de relacionados antes de publicar el contenido principal | La ficha principal se muestra inmediatamente y relacionados llegan después |
+| Editorial quedaba en skeleton | Componentes OnPush mutaban estado desde suscripciones sin notificar CD | `markForCheck()` en home, categoría, ranking y detalle |
+| Artículos sin módulo relacionado pese a compartir etiquetas | Sólo se comparaba la categoría primaria | Intersección de todas las categorías, priorizada por coincidencias |
+| Tema claro incompleto | Editorial, perfil y 14 piezas admin conservaban superficies `slate-*`/fondos oscuros rígidos | Sustitución por tokens semánticos claro/oscuro |
+| Listener del tema no se liberaba correctamente | Se eliminaba una función distinta y se registraban APIs moderna y legacy a la vez | Handler estable, API moderna o fallback Safari, y test de identidad |
+| Marca superior se cortaba a 390 px | Nombre largo sin variante compacta | Variante móvil “GUÍA TV” |
 
-## Funciones recuperadas desde versiones anteriores
+## Arquitectura consolidada
 
-Ninguna funcionalidad de `d16eb52` se perdió en el rebuild: la reconciliación
-histórica confirmó que la parrilla EPG, la navegación completa, el chat IA +
-social, deportes, streaming, editorial y comunidad ya operan sobre el backend
-actual (ver scoreboard Rondas 1–30). El trabajo de esta fase recuperó la
-**coherencia visual temática** que faltaba, no funcionalidad extraviada.
+- Shell público/privado: `app-public-layout-shell` +
+  `unified-portal-shell` + `unified-top-nav`.
+- Navegación canónica: `route-map.ts` y `portal-navigation.config.ts`.
+- Design system: `styles/design-tokens.scss`, con superficies, texto, bordes,
+  acentos, sombras, radios, safe areas y escala de z-index en claro y oscuro.
+- Chat único: `unified-chat-shell`, con IA y Personas, panel redimensionable en
+  desktop y bottom-sheet/FAB por encima de la navegación en móvil.
+- Datos: no se añadieron mocks de producto. Los mocks E2E se limitan a auth y
+  escrituras sociales para no contaminar la base compartida; TV, catálogo,
+  deportes, streaming y editorial usan lecturas reales.
 
-## Arquitectura final
+## Funciones recuperadas o confirmadas
 
-- **Un solo shell**: `unified-portal-shell` (público/privado/admin) + `unified-top-nav`.
-- **Un sistema de navegación**: `portal-navigation.config.ts` + `route-map.ts`.
-- **Un design system**: `styles/design-tokens.scss` con tokens semánticos
-  (`--portal-*`, `--accent-*`, `--guide-*`, `--shadow-*`, `--radius-*`) en claro
-  y oscuro.
-- **Un chat**: `unified-chat-shell` (dock desktop / bottom-sheet móvil) con
-  `social-chat-panel` y `ai-chatbot`.
-- **Una capa social**: `user-area` + `public-profile` + `notification-bell` +
-  `interaction-buttons` + `share-buttons`.
+- EPG/Guía: filtros, canales, ahora/siguiente/noche, parrilla desktop, rails
+  móviles, fichas y navegación temporal.
+- Deportes: agenda real, filtros, agrupaciones, tarjetas y destino de detalle.
+- Descubrimiento/Streaming: búsqueda, sugerencias, plataformas, catálogo y
+  disponibilidad “Dónde ver”.
+- Social: Perfil, Comunidad, feed, listas, favoritos, actividad, personas,
+  notificaciones y apertura del chat desde el shell privado.
+- Editorial: portada, categorías, rankings, artículos, módulos relacionados y
+  estados vacíos/error sin skeleton infinito.
 
-## Componentes eliminados (código muerto confirmado)
+## Tema y responsive
 
-Verificación: selector + clase + import + ruta + tests. Cero referencias
-restantes (los 3 falsos positivos del escaneo eran `filter-chip-bar`,
-`admin-analytics-section` y `EditorialPostCardComponent`, componentes distintos
-que siguen vivos).
+`ThemeService` mantiene `light | dark | system`, persiste la elección mediante
+`StorageService`, aplica `data-theme`/`color-scheme` y respeta cambios del
+sistema. El script previo a hidratación evita el flash inicial.
 
-- `blog/components/{post-card, post-card-horizontal, category-filter}` + `blog/layout`
-- `blog/pages/{blog-category, blog-details}` (redirigidas/obsoletas)
-- `components/{autocomplete, card-list, card-slider, filter, menu, search-overlay, slider, unified-shortcut-strip, unified-subnav}`
-- `components/ai-chatbot/chat-onboarding-card` + `components/genre-onboarding`
-- `components/desktop-chat-dock` + `components/desktop-chat-rail` (reemplazados por `unified-chat-shell`)
-- `pages/{content-redirect, milista}` + `pages/pelicula-details` (archivos con typo `compoent`)
-- `pages/user-area/components/{admin-analytics, user-chat, user-profile-header, user-stats}`
+Matriz navegada con Chromium en **390, 768, 1366 y 1920 px**, en claro y oscuro,
+sobre Inicio, Guía, Deportes y Editorial. Resultado final: `scrollWidth ===
+clientWidth` en todos los casos, rail oculto por debajo de 1100 px, navegación
+inferior sólo por debajo de 768 px y cero errores de página. Además se comprobaron
+chat desktop, ficha, Perfil autenticado y menú/rail.
 
-## Servicios eliminados
+## Limpieza ya presente en la rama
 
-Ninguno en esta fase (auditados; los que parecían sin consumidores tenían
-consumo dinámico vía router/inyección).
+La recuperación previa eliminó componentes duplicados/obsoletos de blog,
+sliders, menús, docks de chat y vistas de usuario, además de `swiper`, `leaflet`,
+`embla-carousel` y Angular Material. Esta pasada verificó que las dependencias
+instaladas resuelven (`npm install` y build) y no reintrodujo alternativas
+paralelas.
 
-## CSS eliminado
+## Verificación ejecutada
 
-- `swiper/swiper.min.css` y `leaflet/dist/leaflet.css` retirados de `angular.json` (dependencias sin uso).
-- Selector roto `.text-[var(--portal-text-muted)]` y variable Sass muerta en `canal-completo.scss`.
-- Colores hardcodeados `slate-*/gray-*/#081018/#0b0f14` sustituidos por tokens (~1.900 reemplazos).
+- `npm install`: **PASS** (árbol al día).
+- Frontend unit: **28/28 PASS**; incluye 7 casos de tema y 3 de navegación móvil.
+- Backend unit: **38/38 PASS**.
+- E2E: **16/16 recorridos PASS** en Chromium contra el backend real, salvo el
+  aislamiento explícito de auth/escrituras.
+- Lint: **0 errores / 571 warnings heredados**.
+- Build producción backend + frontend CSR/SSR: **PASS**.
+- Smoke SSR construido: **200** en `/`, Guía, Deportes, Editorial y Perfil;
+  HTML de 10–380 kB con títulos SSR en rutas públicas.
 
-## Dependencias eliminadas
+## Riesgos y deuda declarada
 
-`swiper`, `leaflet`, `@types/leaflet`, `embla-carousel`, `@angular/material`.
-Verificación: cero imports en `src/` y cero entradas en `package-lock.json`;
-`node_modules` ya no los contiene. (Se conserva `bootstrap-icons` — en uso.)
+- `npm audit` informa **77 vulnerabilidades transitivas** (2 low, 26 moderate,
+  45 high, 4 critical). No se ejecutó `npm audit fix --force` porque implicaría
+  actualizaciones potencialmente rompedoras fuera del alcance UX/UI.
+- El lint sigue acumulando 571 warnings de DI/tipado heredados; no bloquean la
+  compilación, pero deben reducirse de forma incremental.
+- `canal-completo.component.scss` conserva bastante SCSS legacy no aplicado
+  por la plantilla utility-driven actual. Conviene reducirlo en una tarea
+  específica tras mapear sus clases históricas; ya no contiene el parche de
+  overflow que enmascaraba anchuras.
+- El API compartido puede mostrar latencia bajo sincronización EPG. La suite se
+  ejecutó secuencialmente para no convertir contención externa en flakiness.
 
-## Rutas recuperadas
+## Criterio de cierre
 
-Todas accesibles desde la navegación: inicio, TV/en-directo/guía/ahora/esta
-noche/canales, qué-ver, deportes, streaming/plataformas, editorial,
-comunidad/perfil. Sin botones muertos.
-
-## Social
-
-Perfil, perfil público, favoritos, listas, actividad, personas, conversaciones,
-chat general + DM, notificaciones e interacciones conectados al backend real.
-Sin UI falsa.
-
-## Chat
-
-IA (streaming, markdown, recomendaciones, memoria, reintentos) y social
-(conversaciones, online, DM, realtime Socket.IO diferido). Dock desktop y
-bottom-sheet móvil, ambos temáticos.
-
-## Tema
-
-`ThemeService` (proveído en raíz): `light` / `dark` / `system`, persistido en
-`localStorage` vía `StorageService` (SSR-safe), reflejado en
-`document.documentElement[data-theme]` + `color-scheme`. Script inline en
-`index.html` aplica la resolución antes del primer paint (sin flash). Selector
-accesible en `unified-top-nav` (cicla claro → oscuro → sistema) con `aria-label`
-dinámico. Test unitario dedicado: 6 casos.
-
-## Mobile
-
-Navegación inferior, safe-area (`--safe-top`/`--safe-bottom`), touch targets
-≥44px, bottom-sheet de chat con `100dvh`, EPG móvil específico. Sin
-`overflow-x:hidden` global como parche (auditoría de overflow horizontal: 0 en
-375/768/1440 en las rutas principales).
-
-## Desktop
-
-EPG de escritorio con columna sticky, now-line, scroll horizontal/vertical,
-progreso, logos, filtros y detalle.
-
-## Bugs pendientes
-
-- `guiatv-api` residual con OOM autorrecuperable (~horario) bajo contención de
-  host compartido — en observación con `health-watchdog`, no es un defecto UX.
-- `canal-completo.component.scss` conserva `overflow-x: hidden` scoped al
-  contenedor (revisar en una futura pasada de overflow específica de esa ruta).
-- Backlog de warnings de lint (674) tipográficos/DI heredados — visibles, no
-  bloqueantes.
-
-## Tests
-
-- Frontend unit: **24/24 PASS** (incluye 6 nuevos de `ThemeService`).
-- Backend unit: **36/36 PASS** (scoreboard).
-- Build producción + SSR: **PASS**.
-- Lint frontend: **0 errores / 674 warnings** (backlog declarado).
-
-## Próximo paso
-
-1. Auditoría visual final con navegador en 390/768/1366/1920 × claro/oscuro
-   (requiere servidor con datos reales; el host compartido está bajo presión).
-2. Cerrar el backlog de warnings de lint (migración `inject()` y tipados).
-3. Observación continuada de la memoria del API antes de declarar estabilidad.
+La recuperación UX/UI solicitada queda funcionalmente cerrada: no hay rutas
+principales huérfanas, el shell y el tema son coherentes, móvil no depende de
+ocultar overflow, las fichas y Editorial no bloquean el primer render, y las
+pruebas cubren los recorridos críticos. La deuda restante está identificada y
+no se presenta como trabajo completado.

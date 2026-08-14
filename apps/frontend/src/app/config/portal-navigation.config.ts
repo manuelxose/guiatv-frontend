@@ -83,21 +83,21 @@ export type PortalPublicShellSection =
 export const PORTAL_PRIMARY_DESTINATIONS: readonly PortalDestination[] = [
   {
     id: 'live',
-    label: 'TV Directo',
+    label: 'TV',
     hint: 'Emisión activa, parrilla y canales',
     path: APP_PATHS.guide,
     iconPath: PORTAL_ICON_PATHS.live,
   },
   {
     id: 'discover',
-    label: 'Qué Ver',
+    label: 'Qué ver',
     hint: 'Discovery editorial y catálogo',
     path: APP_PATHS.explore,
     iconPath: PORTAL_ICON_PATHS.discover,
   },
   {
     id: 'streaming',
-    label: 'Streaming',
+    label: 'Plataformas',
     hint: 'Plataformas, tops y comparador',
     path: APP_PATHS.platforms,
     iconPath: PORTAL_ICON_PATHS.streaming,
@@ -173,8 +173,6 @@ export const PORTAL_GUIDE_SHELL_CONFIG: Record<'live' | 'discover' | 'streaming'
       { id: 'next', label: 'A continuación', iconPath: PORTAL_ICON_PATHS.clock, tone: 'live' },
       { id: 'night', label: 'Esta noche', iconPath: 'M18 15.75A6.75 6.75 0 1 1 8.25 6a6 6 0 1 0 9.75 9.75Z', tone: 'live' },
       { id: 'day', label: 'Parrilla', iconPath: PORTAL_ICON_PATHS.channels, tone: 'live' },
-      { id: 'tdt', label: 'TDT', iconPath: PORTAL_ICON_PATHS.live, tone: 'live' },
-      { id: 'sports-tv', label: 'Deportes TV', iconPath: PORTAL_ICON_PATHS.sports, tone: 'live' },
     ],
   },
   discover: {
@@ -182,11 +180,10 @@ export const PORTAL_GUIDE_SHELL_CONFIG: Record<'live' | 'discover' | 'streaming'
     rightRailLabel: 'Panel editorial',
     topPills: [
       { id: 'all', label: 'Todo', iconPath: PORTAL_ICON_PATHS.discover, tone: 'discover' },
-      { id: 'live', label: 'En directo', iconPath: PORTAL_ICON_PATHS.liveDot, tone: 'discover' },
-      { id: 'free', label: 'Gratis', iconPath: 'M12 6v12m4.5-8.25c0-1.65-2.01-3-4.5-3s-4.5 1.35-4.5 3 2.01 3 4.5 3 4.5 1.35 4.5 3-2.01 3-4.5 3-4.5-1.35-4.5-3', tone: 'discover' },
+      { id: 'live', label: 'En TV', iconPath: PORTAL_ICON_PATHS.liveDot, tone: 'discover' },
       { id: 'movie', label: 'Películas', iconPath: PORTAL_ICON_PATHS.play, tone: 'discover' },
       { id: 'series', label: 'Series', iconPath: PORTAL_ICON_PATHS.editorial, tone: 'discover' },
-      { id: 'featured', label: 'Destacado', iconPath: PORTAL_ICON_PATHS.sparkles, tone: 'discover' },
+      { id: 'free', label: 'Gratis', iconPath: 'M12 6v12m4.5-8.25c0-1.65-2.01-3-4.5-3s-4.5 1.35-4.5 3 2.01 3 4.5 3 4.5 1.35 4.5 3-2.01 3-4.5 3-4.5-1.35-4.5-3', tone: 'discover' },
     ],
   },
   streaming: {
@@ -195,9 +192,7 @@ export const PORTAL_GUIDE_SHELL_CONFIG: Record<'live' | 'discover' | 'streaming'
     topPills: [
       { id: 'popular', label: 'Popular', iconPath: PORTAL_ICON_PATHS.trends, tone: 'streaming' },
       { id: 'recent', label: 'Novedades', iconPath: PORTAL_ICON_PATHS.clock, tone: 'streaming' },
-      { id: 'rating', label: 'Top valorado', iconPath: PORTAL_ICON_PATHS.rankings, tone: 'streaming' },
-      { id: 'movie', label: 'Películas', iconPath: PORTAL_ICON_PATHS.play, tone: 'streaming' },
-      { id: 'series', label: 'Series', iconPath: PORTAL_ICON_PATHS.editorial, tone: 'streaming' },
+      { id: 'rating', label: 'Mejor valoradas', iconPath: PORTAL_ICON_PATHS.rankings, tone: 'streaming' },
       { id: 'free', label: 'Gratis', iconPath: 'M12 6v12m4.5-8.25c0-1.65-2.01-3-4.5-3s-4.5 1.35-4.5 3 2.01 3 4.5 3 4.5 1.35 4.5 3-2.01 3-4.5 3-4.5-1.35-4.5-3', tone: 'streaming' },
     ],
   },
@@ -206,11 +201,9 @@ export const PORTAL_GUIDE_SHELL_CONFIG: Record<'live' | 'discover' | 'streaming'
     rightRailLabel: 'Panel deportivo',
     topPills: [
       { id: 'live', label: 'En directo', iconPath: PORTAL_ICON_PATHS.liveDot, tone: 'sports' },
-      { id: 'all', label: 'Hoy', iconPath: PORTAL_ICON_PATHS.calendar, tone: 'sports' },
+      { id: 'next', label: 'Próximos', iconPath: PORTAL_ICON_PATHS.clock, tone: 'sports' },
       { id: 'tonight', label: 'Esta noche', iconPath: 'M18 15.75A6.75 6.75 0 1 1 8.25 6a6 6 0 1 0 9.75 9.75Z', tone: 'sports' },
       { id: 'week', label: 'Semana', iconPath: PORTAL_ICON_PATHS.calendar, tone: 'sports' },
-      { id: 'football', label: 'Fútbol', iconPath: PORTAL_ICON_PATHS.sports, tone: 'sports' },
-      { id: 'motor', label: 'Motor', iconPath: 'M4.5 14.25h4.5l2.25-3h8.25m-10.5 5.25a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm10.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z', tone: 'sports' },
     ],
   },
 } as const;

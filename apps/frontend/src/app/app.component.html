@@ -4,8 +4,36 @@
       <router-outlet></router-outlet>
     </app-public-layout-shell>
 
+    <app-public-layout-shell *ngSwitchCase="'private-shell'">
+      <router-outlet></router-outlet>
+    </app-public-layout-shell>
+
     <router-outlet *ngSwitchDefault></router-outlet>
   </ng-container>
+
+  <nav
+    *ngIf="shouldShowMobileNavigation()"
+    class="app-shell__mobile-nav"
+    aria-label="Navegación principal móvil"
+  >
+    <a
+      *ngFor="let tab of mobileTabs"
+      [routerLink]="tab.path"
+      class="app-shell__mobile-tab"
+      [class.app-shell__mobile-tab--active]="isMobileTabActive(tab)"
+      [attr.aria-current]="isMobileTabActive(tab) ? 'page' : null"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path
+          [attr.d]="isMobileTabActive(tab) ? tab.iconFilled : tab.iconOutline"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.8"
+        ></path>
+      </svg>
+      <span>{{ tab.label }}</span>
+    </a>
+  </nav>
 
   <button
     *ngIf="shouldShowMobileChatbotFab()"
@@ -30,7 +58,7 @@
       <svg class="h-5 w-5 text-[var(--guide-accent)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3 13.8 8.2 19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"></path>
       </svg>
-      <span class="flex-1 text-sm font-medium">Asistente IA</span>
+      <span class="flex-1 text-sm font-medium">Recomendaciones</span>
       <svg class="h-4 w-4 text-[var(--portal-text-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"></path>
       </svg>
@@ -81,7 +109,7 @@
       <path stroke-linecap="round" stroke-linejoin="round" d="M12 3 13.8 8.2 19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"></path>
       <path stroke-linecap="round" stroke-linejoin="round" d="M18.5 3.5 19 5l1.5.5L19 6l-.5 1.5L18 6l-1.5-.5L18 5l.5-1.5Z"></path>
     </svg>
-    Asistente IA
+    Recomendaciones
   </button>
 
   <div

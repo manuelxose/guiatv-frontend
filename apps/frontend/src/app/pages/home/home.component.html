@@ -4,37 +4,22 @@
   tone="home"
   [activeTab]="null"
   [searchQuery]="searchQuery()"
-  [topPillChips]="topPillChips()"
-  [topPillSelection]="topPillSelection()"
-  topPillLabel="Empieza por aquí"
-  [leftRailSections]="leftRailSections()"
-  [rightRailSections]="rightRailSections()"
+  [topPillChips]="[]"
+  [leftRailSections]="[]"
+  [rightRailSections]="[]"
   [rightRailLabel]="rightRailLabel"
   rightRailVariant="prime"
   [isAuthenticated]="isAuthenticated()"
   [profileName]="profile()?.name || 'Cuenta'"
   [breadcrumbItems]="breadcrumbItems"
-  [showHero]="loading() || !!heroLead()"
+  [showHero]="heroItems().length > 0"
   heroVariant="stage"
   (tabChange)="navigateToTab($event)"
-  (topPillChange)="onTopPillChange($event)"
   (searchChange)="onSearchChange($event)"
   (searchSubmit)="onSearchSubmit($event)"
 >
-  <div class="home-page__hero-live" shell-hero-media *ngIf="heroLead() as lead">
-    <app-unified-program-card
-      [item]="lead"
-      variant="live"
-      [showActions]="false"
-    ></app-unified-program-card>
-  </div>
-
-  <div class="home-page__hero-loading" shell-hero-media *ngIf="loading()">
-    <app-unified-skeleton-block
-      [count]="1"
-      [columns]="1"
-      cardHeight="100%"
-    ></app-unified-skeleton-block>
+  <div class="home-page__hero-live" shell-hero-media *ngIf="heroItems().length">
+    <app-home-hero [items]="heroItems()"></app-home-hero>
   </div>
 
   <section *ngIf="loading()" class="home-page__loading">
@@ -60,7 +45,33 @@
           *ngFor="let item of liveNow()"
           [item]="item"
           variant="compact"
+          [showActions]="false"
         ></app-unified-program-card>
+      </div>
+    </section>
+
+    <section *ngIf="featuredPlatforms().length" class="home-page__module">
+      <app-unified-section-header
+        eyebrow="Plataformas"
+        title="Tus 13 servicios, siempre a mano"
+        linkLabel="Ver todos los catálogos"
+        [linkPath]="appPaths.platforms"
+      ></app-unified-section-header>
+
+      <div class="home-page__platform-grid">
+        <a
+          *ngFor="let platform of featuredPlatforms(); trackBy: trackByPlatform"
+          [routerLink]="appPaths.platforms"
+          [queryParams]="{ platform: platform.name }"
+          class="home-page__platform-card"
+        >
+          <app-platform-badge
+            [label]="platform.name"
+            [color]="platform.color"
+            [logoUrl]="platform.logoUrl || ''"
+          ></app-platform-badge>
+          <span>Ver catálogo</span>
+        </a>
       </div>
     </section>
 
@@ -78,32 +89,8 @@
           *ngFor="let item of tonight()"
           [item]="item"
           variant="compact"
+          [showActions]="false"
         ></app-unified-program-card>
-      </div>
-    </section>
-
-    <section *ngIf="featuredPlatforms().length" class="home-page__module">
-      <app-unified-section-header
-        eyebrow="Plataformas destacadas"
-        title="Entra al catálogo desde Netflix, Prime Video, Max o Disney+"
-        linkLabel="Abrir streaming"
-        [linkPath]="appPaths.platforms"
-      ></app-unified-section-header>
-
-      <div class="home-page__platform-grid">
-        <a
-          *ngFor="let platform of featuredPlatforms(); trackBy: trackByPlatform"
-          [routerLink]="appPaths.platforms"
-          [queryParams]="{ platform: platform.name }"
-          class="home-page__platform-card"
-        >
-          <app-platform-badge
-            [label]="platform.name"
-            [color]="platform.color"
-            [logoUrl]="platform.logoUrl || ''"
-          ></app-platform-badge>
-          <span>Entrar al catálogo</span>
-        </a>
       </div>
     </section>
 
@@ -137,6 +124,7 @@
           *ngFor="let item of sportsNow()"
           [item]="item"
           variant="sport"
+          [showActions]="false"
         ></app-unified-program-card>
       </div>
     </section>

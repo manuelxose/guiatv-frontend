@@ -2,12 +2,12 @@
   <header class="discover-view__masthead">
     <div class="discover-view__masthead-copy">
       <p class="discover-view__eyebrow">Qué Ver</p>
-      <h2>{{ guideState.searchQuery() ? 'Resultados en foco' : 'Discovery editorial y catálogo' }}</h2>
+      <h2>{{ guideState.searchQuery() ? 'Resultados para tu búsqueda' : 'Encuentra qué ver hoy' }}</h2>
       <p>
         {{
           guideState.searchQuery()
-            ? 'La búsqueda cruza directo, catálogo y streaming sin meter capas explicativas antes del contenido.'
-            : 'La mezcla entre TV, streaming y editorial arranca ya en tarjetas y no en héroes largos.'
+            ? 'Resultados de televisión y plataformas reunidos para que encuentres una opción rápidamente.'
+            : 'TV, películas, series y opciones gratuitas reunidas para decidir rápido.'
         }}
       </p>
     </div>
@@ -20,8 +20,7 @@
   <section class="discover-view__feature-grid" *ngIf="featureItems().length">
     <app-unified-program-card
       [item]="featureItems()[0]"
-      variant="discover"
-      (selected)="openItem(featureItems()[0])"
+      variant="feature"
     ></app-unified-program-card>
 
     <div class="discover-view__feature-stack" *ngIf="featureItems().length > 1">
@@ -29,7 +28,6 @@
         *ngFor="let item of featureItems().slice(1); trackBy: trackByItem"
         [item]="item"
         variant="compact"
-        (selected)="openItem(item)"
       ></app-unified-program-card>
     </div>
   </section>
@@ -64,7 +62,6 @@
           *ngFor="let item of forYou(); trackBy: trackByItem"
           [item]="item"
           variant="compact"
-          (selected)="openItem(item)"
         ></app-unified-program-card>
       </div>
     </article>
@@ -82,7 +79,6 @@
           *ngFor="let item of module.items; trackBy: trackByItem"
           [item]="item"
           variant="compact"
-          (selected)="openItem(item)"
         ></app-unified-program-card>
       </div>
     </article>
@@ -96,12 +92,11 @@
       </div>
     </header>
 
-    <div class="discover-view__list">
+    <div class="discover-view__results-grid">
       <app-unified-program-card
         *ngFor="let item of resultsItems(); trackBy: trackByItem"
         [item]="item"
-        variant="epg-row"
-        (selected)="openItem(item)"
+        variant="discover"
       ></app-unified-program-card>
     </div>
 
@@ -114,30 +109,6 @@
     <h2>No hay resultados con estos filtros</h2>
     <p>Prueba a limpiar la búsqueda o volver a un rango más amplio.</p>
     <button type="button" class="discover-view__action" (click)="clearFilters()">Resetear filtros</button>
-  </section>
-
-  <section *ngIf="quickDirectories().length" class="discover-view__directories">
-    <article *ngFor="let section of quickDirectories()" class="discover-view__directory-card">
-      <header class="discover-view__section-head">
-        <div>
-          <p class="discover-view__eyebrow">{{ section.eyebrow }}</p>
-          <h3>{{ section.title }}</h3>
-        </div>
-      </header>
-
-      <div class="discover-view__directory-grid">
-        <button
-          *ngFor="let item of section.items"
-          type="button"
-          class="discover-view__directory-chip"
-          [class.discover-view__directory-chip--active]="item.active"
-          (click)="applyQuickDirectory(section.kind, item.id)"
-        >
-          <strong>{{ item.label }}</strong>
-          <small>{{ item.meta }}</small>
-        </button>
-      </div>
-    </article>
   </section>
 
   <app-unified-editorial-module
@@ -161,20 +132,6 @@
     [posts]="rankingState().posts.slice(0, 4)"
     [columns]="4"
   ></app-unified-editorial-module>
-
-  <app-bottom-sheet
-    [open]="!!selectedItem()"
-    [title]="selectedTitle()"
-    (close)="closeSheet()"
-  >
-    <app-unified-program-card
-      *ngIf="selectedItem() as item"
-      [item]="item"
-      variant="compact"
-      [showActions]="false"
-      (selected)="openItem(item)"
-    ></app-unified-program-card>
-  </app-bottom-sheet>
 
   <app-unified-filter-dock
     [open]="shellUi.isFilterDockOpen()"

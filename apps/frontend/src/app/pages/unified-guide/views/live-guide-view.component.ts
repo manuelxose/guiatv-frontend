@@ -1,9 +1,8 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, PLATFORM_ID, computed, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { of, shareReplay, switchMap } from 'rxjs';
-import { BottomSheetComponent } from '../../../components/bottom-sheet/bottom-sheet.component';
 import { EpgGridComponent } from '../../../components/epg-grid/epg-grid.component';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
@@ -13,7 +12,6 @@ import { UnifiedGuideStateService } from '../../../state/unified-guide.state';
 import { UnifiedShellUiStateService } from '../../../state/unified-shell-ui.state';
 import { TvDataFacade } from '../../../state/tv-data.facade';
 import { normalizeToCard } from '../../../utils/tv-normalizers';
-import { ViewportService } from '../../../services/viewport.service';
 
 interface EpgRow {
   channelId: string;
@@ -27,38 +25,12 @@ interface EpgRow {
   }>;
 }
 
-interface LiveDirectorySection {
-  id: string;
-  kind: 'group' | 'category' | 'flag';
-  eyebrow: string;
-  title: string;
-  description: string;
-  items: Array<{
-    id: string;
-    label: string;
-    meta: string;
-    iconPath?: string;
-    active: boolean;
-  }>;
-}
-
-interface LiveSpotlightModule {
-  id: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  actionLabel: string;
-  actionView: 'now' | 'next' | 'night' | 'day';
-  items: TvReadItemDTO[];
-}
-
 @Component({
   selector: 'app-live-guide-view',
   standalone: true,
   imports: [
     CommonModule,
     RouterModule,
-    BottomSheetComponent,
     EpgGridComponent,
     UnifiedFilterDockComponent,
     UnifiedProgramCardComponent,
@@ -69,21 +41,6 @@ interface LiveSpotlightModule {
 })
 export class LiveGuideViewComponent {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-  readonly selectedItem = signal<TvReadItemDTO | null>(null);
-
-  /**
-   * Desktop (≥1024px) default view per Direction 3's "gap-closing decisions"
-   * (docs/visual-directions.md): the channel×time grid is the default, not
-   * toggle-gated. This signal only decides which of the two *always
-   * server-rendered* blocks is visible — see the `.live-view__rails-wrap`
-   * / `.live-view__grid-wrap` CSS in the stylesheet for the actual
-   * breakpoint mechanics (SSR can't know the real viewport, so both blocks
-   * always render; a `min-width: 1024px` media query — not this signal —
-   * is what decides the pre-hydration default on any given screen).
-   * Below 1024px the rail view stays the only view regardless of this
-   * signal's value (enforced purely in CSS).
-   */
-  readonly desktopViewMode = signal<'grid' | 'rails'>('grid');
 
   readonly categoryChips: FilterChipItem[] = [
     { id: 'all', label: 'Todo' },
@@ -133,17 +90,29 @@ export class LiveGuideViewComponent {
     { initialValue: null }
   );
   readonly nowPrograms = toSignal(this.nowPrograms$, { initialValue: [] as TvReadItemDTO[] });
-  readonly nextPrograms = computed(() => this.surface()?.nextItems || []);
-  readonly nightPrograms = computed(() => this.surface()?.nightItems || []);
+  readonly nextPrograms = toSignal(
+    this.filters$.pipe(switchMap((filters) => this.facade.getNextPrograms({ ...filters, limit: 48 }))),
+    { initialValue: [] as TvReadItemDTO[] }
+  );
+  readonly nightPrograms = toSignal(
+    this.filters$.pipe(switchMap((filters) => this.facade.getTonightPrograms({ ...filters, limit: 48 }))),
+    { initialValue: [] as TvReadItemDTO[] }
+  );
   readonly allPrograms = toSignal(
     this.isBrowser
       ? this.filters$.pipe(switchMap((filters) => this.facade.getAllPrograms({ ...filters, limit: 240 })))
       : this.nowPrograms$,
     { initialValue: [] as TvReadItemDTO[] }
   );
-  readonly channels = computed<ChannelMetaDTO[]>(() =>
-    (this.surface()?.channels || []).map((entry) => entry.channel).filter(Boolean)
-  );
+  readonly channels = computed<ChannelMetaDTO[]>(() => {
+    const unique = new Map<string, ChannelMetaDTO>();
+    (this.surface()?.channels || []).forEach((entry) => unique.set(entry.channel.id, entry.channel));
+    [...this.nowPrograms(), ...this.nextPrograms(), ...this.nightPrograms()].forEach((item) =>
+      unique.set(item.channel.id, item.channel)
+    );
+    return Array.from(unique.values());
+  });
+  readonly loading = computed(() => this.surface() === null);
 
   readonly visiblePrograms = computed(() => {
     const view = this.guideState.liveFilters().liveView;
@@ -164,7 +133,7 @@ export class LiveGuideViewComponent {
     if (view === 'next') return 'El siguiente salto de zapping aparece primero y sin interfaz densa.';
     if (view === 'night') return 'Prime time y bloques fuertes con lectura rápida por contenido.';
     if (view === 'day') return 'Todo el día se lee como catálogo por canal y franja, no como EPG clásica.';
-    return 'La emisión activa entra antes que filtros, métricas o paneles pesados.';
+    return 'Descubre qué están emitiendo ahora y cambia de canal sin perder el hilo.';
   });
   readonly leadPrograms = computed(() => this.visiblePrograms().slice(0, 4));
   readonly leadProgram = computed(() =>
@@ -217,98 +186,29 @@ export class LiveGuideViewComponent {
       )
     ).sort((left, right) => left.localeCompare(right, 'es'))
   );
-  readonly activeFilterSummary = computed(() => {
+  readonly activeFilters = computed(() => {
     const filters = this.guideState.liveFilters();
-    const summary = [
-      filters.group !== 'all' ? filters.group : '',
-      filters.category !== 'all' ? filters.category : '',
-      filters.channelType !== 'all' ? filters.channelType : '',
-      filters.region !== 'all' ? filters.region : '',
-      filters.channel ? this.channels().find((channel) => channel.id === filters.channel)?.name || filters.channel : '',
-      ...filters.flags.map((flag) => flag === 'live' ? 'Directo' : flag === 'catchup' ? 'Catch-up' : 'Streaming'),
-      filters.date !== 'today' ? 'Mañana' : '',
-    ].filter(Boolean);
+    const summary: Array<{ key: string; label: string }> = [];
+    if (filters.group !== 'tdt') summary.push({ key: 'group', label: humanizeGroup(filters.group) });
+    if (filters.category !== 'all') summary.push({ key: 'category', label: filters.category });
+    if (filters.channelType !== 'all') summary.push({ key: 'channelType', label: filters.channelType });
+    if (filters.region !== 'all') summary.push({ key: 'region', label: filters.region });
+    if (filters.channel) {
+      summary.push({
+        key: 'channel',
+        label: this.channels().find((channel) => channel.id === filters.channel)?.name || filters.channel,
+      });
+    }
+    filters.flags.forEach((flag) => summary.push({
+      key: `flag:${flag}`,
+      label: flag === 'live' ? 'Directo' : flag === 'catchup' ? 'Catch-up' : 'Streaming',
+    }));
+    if (filters.date !== 'today') summary.push({ key: 'date', label: 'Mañana' });
     if (this.guideState.searchQuery()) {
-      summary.push(`"${this.guideState.searchQuery()}"`);
+      summary.push({ key: 'search', label: `"${this.guideState.searchQuery()}"` });
     }
     return summary;
   });
-  readonly quickAccessSections = computed<LiveDirectorySection[]>(() => {
-    const filters = this.guideState.liveFilters();
-    return [
-      {
-        id: 'groups',
-        kind: 'group',
-        eyebrow: 'Directorio',
-        title: 'Grupos de canal',
-        description: 'TDT, cable, autonómico y operadores principales accesibles desde el primer scroll.',
-        items: this.groupChips.map((chip) => ({
-          id: chip.id,
-          label: chip.label,
-          meta: describeLiveGroup(chip.id),
-          iconPath: chip.iconPath,
-          active: filters.group === chip.id,
-        })),
-      },
-      {
-        id: 'categories',
-        kind: 'category',
-        eyebrow: 'Editorial',
-        title: 'Categorías rápidas',
-        description: 'Cine, series, deportes y otros bloques útiles sin abrir el panel avanzado.',
-        items: this.categoryChips.map((chip) => ({
-          id: chip.id,
-          label: chip.label,
-          meta: describeLiveCategory(chip.id),
-          iconPath: chip.iconPath,
-          active: filters.category === chip.id,
-        })),
-      },
-      {
-        id: 'flags',
-        kind: 'flag',
-        eyebrow: 'Señales',
-        title: 'Disponibilidad',
-        description: 'Directo, catch-up y streaming viven como capa secundaria, no como reemplazo del contenido.',
-        items: this.liveFlagChips.map((chip) => ({
-          id: chip.id,
-          label: chip.label,
-          meta: describeLiveFlag(chip.id),
-          iconPath: chip.iconPath,
-          active: filters.flags.includes(chip.id as 'live' | 'catchup' | 'streaming'),
-        })),
-      },
-    ];
-  });
-  readonly spotlightModules = computed<LiveSpotlightModule[]>(() => [
-    {
-      id: 'spotlight-now',
-      eyebrow: 'Ahora',
-      title: 'En emisión',
-      description: 'Lectura inmediata del lineal activo con acceso directo a detalle.',
-      actionLabel: 'Ver ahora',
-      actionView: 'now',
-      items: this.nowPrograms().slice(0, 4),
-    },
-    {
-      id: 'spotlight-next',
-      eyebrow: 'Siguiente',
-      title: 'A continuación',
-      description: 'El siguiente bloque de zapping aparece sin perder el primer viewport.',
-      actionLabel: 'Abrir siguiente',
-      actionView: 'next',
-      items: this.nextPrograms().slice(0, 4),
-    },
-    {
-      id: 'spotlight-night',
-      eyebrow: 'Prime time',
-      title: 'Esta noche',
-      description: 'Cine, series y deportes del tramo fuerte desde una vista editorial.',
-      actionLabel: 'Ir a noche',
-      actionView: 'night',
-      items: this.nightPrograms().slice(0, 4),
-    },
-  ]);
   readonly filterDockSections = computed<UnifiedFilterDockSection[]>(() => [
     {
       id: 'group',
@@ -317,15 +217,6 @@ export class LiveGuideViewComponent {
         id: chip.id,
         label: chip.label,
         selected: this.guideState.liveFilters().group === chip.id,
-      })),
-    },
-    {
-      id: 'category',
-      title: 'Categoría',
-      options: this.categoryChips.map((chip) => ({
-        id: chip.id,
-        label: chip.label,
-        selected: this.guideState.liveFilters().category === chip.id,
       })),
     },
     {
@@ -363,32 +254,14 @@ export class LiveGuideViewComponent {
         selected: this.guideState.liveFilters().flags.includes(chip.id as 'live' | 'catchup' | 'streaming'),
       })),
     },
-    {
-      id: 'channel',
-      title: 'Canal',
-      description: 'Directorio rápido dentro del mismo flujo',
-      options: [
-        { id: '', label: 'Todos los canales', selected: !this.guideState.liveFilters().channel },
-        ...this.topChannels().map((channel) => ({
-          id: channel.id,
-          label: channel.name,
-          selected: this.guideState.liveFilters().channel === channel.id,
-        })),
-      ],
-    },
   ]);
 
   constructor(
     readonly guideState: UnifiedGuideStateService,
     readonly shellUi: UnifiedShellUiStateService,
     private readonly facade: TvDataFacade,
-    private readonly router: Router,
-    private readonly viewport: ViewportService
+    private readonly router: Router
   ) {}
-
-  toggleDesktopViewMode(): void {
-    this.desktopViewMode.update((mode) => (mode === 'grid' ? 'rails' : 'grid'));
-  }
 
   selectView(liveView: string): void {
     if (liveView === 'now' || liveView === 'next' || liveView === 'night' || liveView === 'day') {
@@ -424,18 +297,6 @@ export class LiveGuideViewComponent {
     this.guideState.updateLiveFilters({ flags: Array.from(nextFlags) });
   }
 
-  applyQuickAccess(kind: LiveDirectorySection['kind'], optionId: string): void {
-    if (kind === 'group') {
-      this.selectGroup(optionId);
-      return;
-    }
-    if (kind === 'category') {
-      this.selectCategory(optionId);
-      return;
-    }
-    this.toggleFlag(optionId);
-  }
-
   clearFilters(): void {
     this.guideState.updateLiveFilters({
       group: 'tdt',
@@ -447,6 +308,23 @@ export class LiveGuideViewComponent {
       region: 'all',
       flags: [],
     });
+  }
+
+  removeFilter(key: string): void {
+    if (key.startsWith('flag:')) {
+      this.toggleFlag(key.slice(5));
+      return;
+    }
+    if (key === 'search') {
+      this.guideState.setSearch('');
+      return;
+    }
+    if (key === 'group') this.guideState.updateLiveFilters({ group: 'tdt' });
+    if (key === 'category') this.guideState.updateLiveFilters({ category: 'all' });
+    if (key === 'channel') this.guideState.updateLiveFilters({ channel: '' });
+    if (key === 'channelType') this.guideState.updateLiveFilters({ channelType: 'all' });
+    if (key === 'region') this.guideState.updateLiveFilters({ region: 'all' });
+    if (key === 'date') this.guideState.updateLiveFilters({ date: 'today' });
   }
 
   closeDock(): void {
@@ -480,15 +358,7 @@ export class LiveGuideViewComponent {
   }
 
   openItem(item: TvReadItemDTO): void {
-    if (this.isBrowser && this.viewport.isMobile()) {
-      this.selectedItem.set(item);
-      return;
-    }
     void this.router.navigateByUrl(normalizeToCard(item).detailPath);
-  }
-
-  closeSheet(): void {
-    this.selectedItem.set(null);
   }
 
   trackByItem(_index: number, item: TvReadItemDTO): string {
@@ -506,6 +376,23 @@ export class LiveGuideViewComponent {
   trackByText(_index: number, value: string): string {
     return value;
   }
+
+  trackByFilter(_index: number, filter: { key: string }): string {
+    return filter.key;
+  }
+}
+
+function humanizeGroup(value: string): string {
+  const labels: Record<string, string> = {
+    all: 'Todos los grupos',
+    tdt: 'TDT',
+    autonomico: 'Autonómicos',
+    cable: 'Cable',
+    movistar: 'Movistar+',
+    online: 'Online',
+    deporte: 'Deportes',
+  };
+  return labels[value] || value;
 }
 
 function buildEpgRows(items: TvReadItemDTO[]): EpgRow[] {

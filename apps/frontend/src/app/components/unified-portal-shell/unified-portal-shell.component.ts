@@ -126,7 +126,7 @@ export class UnifiedPortalShellComponent {
 
   readonly personalLeftRailSections = computed(() => this.buildPersonalLeftRailSections());
   readonly resolvedLeftRailSections = computed(() =>
-    [...this.leftRailSections(), ...this.personalLeftRailSections()].filter((section) => section.items.length > 0)
+    this.leftRailSections().filter((section) => section.items.length > 0)
   );
   readonly hasLeftRail = computed(() =>
     this.resolvedLeftRailSections().some((section) => section.items.length > 0)

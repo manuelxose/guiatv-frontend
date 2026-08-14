@@ -108,7 +108,7 @@ const DEFAULT_STATE: UnifiedGuideState = {
     channel: '',
     competition: '',
     date: 'today',
-    timeRange: 'all',
+    timeRange: 'live',
   },
 };
 
@@ -222,7 +222,7 @@ export class UnifiedGuideStateService {
   syncFromQueryParams(params: Params | null | undefined, tab = this.activeTab()): void {
     const current = this.stateSignal();
     const safeParams = params || {};
-    const searchQuery = readString(safeParams['q']) || current.searchQuery;
+    const searchQuery = readString(safeParams['q']);
 
     const nextState: UnifiedGuideState = {
       ...current,
@@ -232,61 +232,61 @@ export class UnifiedGuideStateService {
 
     if (tab === 'live') {
       nextState.liveFilters = {
-        group: readString(safeParams['group']) || current.liveFilters.group,
-        category: readString(safeParams['category']) || current.liveFilters.category,
-        liveView: readLiveView(safeParams['liveView']) || current.liveFilters.liveView,
-        date: readString(safeParams['date']) || current.liveFilters.date,
-        channel: readString(safeParams['channel']) || current.liveFilters.channel,
-        channelType: readString(safeParams['channelType']) || current.liveFilters.channelType,
-        region: readString(safeParams['region']) || current.liveFilters.region,
-        flags: (readCsvOrDefault(safeParams['flags'], current.liveFilters.flags) as UnifiedLiveFlag[]),
+        group: readString(safeParams['group']) || DEFAULT_STATE.liveFilters.group,
+        category: readString(safeParams['category']) || DEFAULT_STATE.liveFilters.category,
+        liveView: readLiveView(safeParams['liveView']) || DEFAULT_STATE.liveFilters.liveView,
+        date: readString(safeParams['date']) || DEFAULT_STATE.liveFilters.date,
+        channel: readString(safeParams['channel']),
+        channelType: readString(safeParams['channelType']) || DEFAULT_STATE.liveFilters.channelType,
+        region: readString(safeParams['region']) || DEFAULT_STATE.liveFilters.region,
+        flags: readCsv(safeParams['flags']) as UnifiedLiveFlag[],
       };
     }
 
     if (tab === 'discover') {
       nextState.discoverFilters = {
         types:
-          (readCsvOrDefault(safeParams['types'], current.discoverFilters.types) as UnifiedContentType[]),
+          (readCsvOrDefault(safeParams['types'], DEFAULT_STATE.discoverFilters.types) as UnifiedContentType[]),
         availability:
           (readCsvOrDefault(
             safeParams['availability'],
-            current.discoverFilters.availability
+            DEFAULT_STATE.discoverFilters.availability
           ) as UnifiedAvailability[]),
         platforms: readCsvOrDefault(
           safeParams['platforms'],
-          current.discoverFilters.platforms
+          DEFAULT_STATE.discoverFilters.platforms
         ),
-        genres: readCsvOrDefault(safeParams['genres'], current.discoverFilters.genres),
-        intent: readIntent(safeParams['intent']) || current.discoverFilters.intent,
-        sort: readSort(safeParams['sort']) || current.discoverFilters.sort,
-        date: readString(safeParams['date']) || current.discoverFilters.date,
-        page: readPositiveNumber(safeParams['page']) || current.discoverFilters.page,
+        genres: readCsvOrDefault(safeParams['genres'], DEFAULT_STATE.discoverFilters.genres),
+        intent: readIntent(safeParams['intent']) || DEFAULT_STATE.discoverFilters.intent,
+        sort: readSort(safeParams['sort']) || DEFAULT_STATE.discoverFilters.sort,
+        date: readString(safeParams['date']) || DEFAULT_STATE.discoverFilters.date,
+        page: readPositiveNumber(safeParams['page']) || DEFAULT_STATE.discoverFilters.page,
       };
     }
 
     if (tab === 'streaming') {
       const nextType = readString(safeParams['type']);
       nextState.streamingFilters = {
-        platform: readString(safeParams['platform']) || current.streamingFilters.platform,
-        type: nextType === 'movie' || nextType === 'series' ? nextType : current.streamingFilters.type,
+        platform: readString(safeParams['platform']),
+        type: nextType === 'movie' || nextType === 'series' ? nextType : DEFAULT_STATE.streamingFilters.type,
         availability:
           (readCsvOrDefault(
             safeParams['availability'],
-            current.streamingFilters.availability
+            DEFAULT_STATE.streamingFilters.availability
           ) as UnifiedAvailability[]),
-        genres: readCsvOrDefault(safeParams['genres'], current.streamingFilters.genres),
-        sort: (readString(safeParams['sort']) as UnifiedGuideState['streamingFilters']['sort']) || current.streamingFilters.sort,
-        page: readPositiveNumber(safeParams['page']) || current.streamingFilters.page,
+        genres: readCsvOrDefault(safeParams['genres'], DEFAULT_STATE.streamingFilters.genres),
+        sort: (readString(safeParams['sort']) as UnifiedGuideState['streamingFilters']['sort']) || DEFAULT_STATE.streamingFilters.sort,
+        page: readPositiveNumber(safeParams['page']) || DEFAULT_STATE.streamingFilters.page,
       };
     }
 
     if (tab === 'sports') {
       nextState.sportsFilters = {
-        sport: readString(safeParams['sport']) || current.sportsFilters.sport,
-        channel: readString(safeParams['channel']) || current.sportsFilters.channel,
-        competition: readString(safeParams['competition']) || current.sportsFilters.competition,
-        date: readString(safeParams['date']) || current.sportsFilters.date,
-        timeRange: readTimeRange(safeParams['timeRange']) || current.sportsFilters.timeRange,
+        sport: readString(safeParams['sport']) || DEFAULT_STATE.sportsFilters.sport,
+        channel: readString(safeParams['channel']),
+        competition: readString(safeParams['competition']),
+        date: readString(safeParams['date']) || DEFAULT_STATE.sportsFilters.date,
+        timeRange: readTimeRange(safeParams['timeRange']) || DEFAULT_STATE.sportsFilters.timeRange,
       };
     }
 
@@ -372,7 +372,7 @@ export class UnifiedGuideStateService {
       channel: nullable(state.sportsFilters.channel),
       competition: nullable(state.sportsFilters.competition),
       date: nullable(state.sportsFilters.date, 'today'),
-      timeRange: nullable(state.sportsFilters.timeRange, 'all'),
+      timeRange: nullable(state.sportsFilters.timeRange, 'live'),
     };
   }
 
@@ -402,7 +402,6 @@ export class UnifiedGuideStateService {
     }
     return {
       ...DEFAULT_STATE,
-      ...parsed,
       shellPrefs: {
         ...DEFAULT_STATE.shellPrefs,
         ...(parsed.shellPrefs || {}),
@@ -419,7 +418,7 @@ export class UnifiedGuideStateService {
   }
 
   private persist(state: UnifiedGuideState): void {
-    this.storage.writeJson(UNIFIED_GUIDE_STATE_KEY, state);
+    this.storage.writeJson(UNIFIED_GUIDE_STATE_KEY, { shellPrefs: state.shellPrefs });
   }
 }
 

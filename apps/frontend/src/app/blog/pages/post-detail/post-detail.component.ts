@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Inject, OnDestroy, OnInit, PLATFORM_ID, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, PLATFORM_ID, computed, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -113,6 +113,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     private readonly sanitizer: DomSanitizer,
     private readonly catalogService: CatalogService,
     private readonly userService: UserService,
+    private readonly changeDetector: ChangeDetectorRef,
     @Inject(PLATFORM_ID) platformId: object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -153,6 +154,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
 
           this.buildStructuredData(state);
           this.loadLinkedModules(state.post);
+          this.changeDetector.markForCheck();
 
           if (this.isBrowser) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -161,6 +163,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
         error: () => {
           this.error = 'No se ha podido cargar este artículo.';
           this.loading = false;
+          this.changeDetector.markForCheck();
         },
       });
   }
@@ -317,6 +320,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
         this.exploreRailItems = modules.exploreRailItems;
         this.guideRailItems = modules.guideRailItems;
         this.trendingItems = modules.trendingItems.slice(0, 4);
+        this.changeDetector.markForCheck();
       });
   }
 

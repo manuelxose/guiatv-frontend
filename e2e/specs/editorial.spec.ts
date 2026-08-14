@@ -15,8 +15,18 @@ test.describe('Editorial -> categoría -> artículo -> artículo relacionado', (
     const blogRes = await request.get(`${BACKEND_URL}/v2/blog`);
     expect(blogRes.ok()).toBeTruthy();
     const posts: Array<{ categories_name?: Array<{ name: string; slug: string }> }> = await blogRes.json();
-    const firstCategory = posts.flatMap((p) => p.categories_name || [])[0];
-    test.skip(!firstCategory, 'No editorial categories available from the backend right now');
+    const categories = posts.flatMap((post) => post.categories_name || []);
+    const categoryFrequency = new Map<string, number>();
+    categories.forEach((category) => {
+      categoryFrequency.set(category.slug, (categoryFrequency.get(category.slug) || 0) + 1);
+    });
+    const firstCategory = categories
+      .filter((category) => (categoryFrequency.get(category.slug) || 0) > 1)
+      .sort(
+        (left, right) =>
+          (categoryFrequency.get(right.slug) || 0) - (categoryFrequency.get(left.slug) || 0)
+      )[0];
+    expect(firstCategory, 'The editorial journey needs a category with related posts').toBeTruthy();
 
     await page.goto('/editorial');
     await assertNotBlankScreen(page);

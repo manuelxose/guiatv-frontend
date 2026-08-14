@@ -45,8 +45,12 @@ export const routes: Routes = [
   },
   {
     path: 'comunidad',
-    redirectTo: 'perfil',
-    pathMatch: 'full',
+    loadComponent: () =>
+      import('./pages/user-area/user-area.component').then(
+        (m) => m.UserAreaComponent
+      ),
+    title: 'Comunidad - Guía TV',
+    data: { defaultTab: 'feed', robots: 'noindex, nofollow', layout: 'private-shell' },
   },
   {
     path: 'perfil/:userId',

@@ -115,6 +115,7 @@ export class WhereToWatchComponent implements OnChanges {
   @Input() tmdbId?: number | null;
   @Input() contentType?: 'movie' | 'tv' | null;
   @Input() providersData?: ContentProvidersDTO | null;
+  @Input() primaryPlatforms: string[] = [];
 
   public providers: ContentProvidersDTO | null = null;
   public isLoading = false;
@@ -122,13 +123,26 @@ export class WhereToWatchComponent implements OnChanges {
   private readonly providersService = inject(StreamingProvidersService);
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['contentId'] || changes['tmdbId'] || changes['contentType']) {
+    if (
+      changes['providersData'] ||
+      changes['primaryPlatforms'] ||
+      changes['contentId'] ||
+      changes['tmdbId'] ||
+      changes['contentType']
+    ) {
       this.loadProviders();
     }
   }
 
   paidProviders(data: ContentProvidersDTO): ProviderChipDTO[] {
-    return [...(data.rent || []), ...(data.buy || [])];
+    const unique = new Map<string, ProviderChipDTO>();
+    [...(data.rent || []), ...(data.buy || [])].forEach((provider) => {
+      const key = provider.name.trim().toLocaleLowerCase('es');
+      if (!unique.has(key)) {
+        unique.set(key, provider);
+      }
+    });
+    return Array.from(unique.values());
   }
 
   hasAnyProvider(data: ContentProvidersDTO): boolean {
@@ -142,14 +156,15 @@ export class WhereToWatchComponent implements OnChanges {
   }
 
   private loadProviders(): void {
-    if (this.providersData) {
+    if (this.providersData && this.hasAnyProvider(this.providersData)) {
       this.providers = this.providersData;
       this.isLoading = false;
       return;
     }
 
     if (!this.contentId && !this.tmdbId) {
-      this.providers = null;
+      this.providers = this.fallbackProviders();
+      this.isLoading = false;
       return;
     }
 
@@ -160,8 +175,22 @@ export class WhereToWatchComponent implements OnChanges {
         : this.providersService.getProviders(String(this.contentId || ''));
 
     request$.subscribe((providers) => {
-      this.providers = providers;
+      this.providers = this.hasAnyProvider(providers) ? providers : this.fallbackProviders();
       this.isLoading = false;
     });
+  }
+
+  private fallbackProviders(): ContentProvidersDTO | null {
+    const names = Array.from(new Set((this.primaryPlatforms || []).map((name) => name.trim()).filter(Boolean)));
+    if (!names.length) {
+      return this.providersData || null;
+    }
+    return {
+      flatrate: names.map((name, index) => ({
+        id: -(index + 1),
+        name,
+        type: 'flatrate' as const,
+      })),
+    };
   }
 }

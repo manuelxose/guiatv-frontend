@@ -118,15 +118,11 @@ export class UnifiedGuideComponent {
   readonly topPillLabel = computed(() => this.shellConfig().topPillLabel);
   readonly topPillSelection = computed(() => {
     if (this.activeTab() === 'live') {
-      const filters = this.state.liveFilters();
-      if (filters.group === 'tdt') return 'tdt';
-      if (filters.group === 'deporte') return 'sports-tv';
-      return filters.liveView;
+      return this.state.liveFilters().liveView;
     }
 
     if (this.activeTab() === 'discover') {
       const filters = this.state.discoverFilters();
-      if (filters.intent === 'featured') return 'featured';
       if (filters.types.length === 1 && filters.types[0] === 'movie') return 'movie';
       if (filters.types.length === 1 && filters.types[0] === 'series') return 'series';
       if (filters.availability.includes('live')) return 'live';
@@ -136,83 +132,45 @@ export class UnifiedGuideComponent {
 
     if (this.activeTab() === 'streaming') {
       const filters = this.state.streamingFilters();
-      if (filters.type === 'movie') return 'movie';
-      if (filters.type === 'series') return 'series';
       if (filters.availability.includes('free')) return 'free';
       return filters.sort;
     }
 
-    const filters = this.state.sportsFilters();
-    if (filters.sport === 'Fútbol') return 'football';
-    if (filters.sport === 'F1' || filters.sport === 'MotoGP') return 'motor';
-    return filters.timeRange;
+    return this.state.sportsFilters().timeRange;
   });
   readonly breadcrumbItems = computed(() => [
     { name: 'Inicio', url: APP_PATHS.home },
     { name: this.pageMeta().title, url: this.pageMeta().path },
   ]);
-  readonly summaryPills = computed(() => {
+  readonly filterCount = computed(() => {
     if (this.activeTab() === 'live') {
       const filters = this.state.liveFilters();
-      const labels = [
-        filters.group,
-        filters.liveView,
-        filters.category,
-        filters.date,
-        filters.channel,
-        filters.channelType,
-        filters.region,
-        ...filters.flags,
-      ];
-      if (this.state.searchQuery()) {
-        labels.push(`"${this.state.searchQuery()}"`);
-      }
-      return labels.filter((value) => value && value !== 'all' && value !== 'today');
+      return Number(filters.group !== 'tdt') + Number(filters.category !== 'all') +
+        Number(Boolean(filters.channel)) + Number(filters.channelType !== 'all') +
+        Number(filters.region !== 'all') + filters.flags.length +
+        Number(filters.date !== 'today') + Number(Boolean(this.state.searchQuery()));
     }
 
     if (this.activeTab() === 'discover') {
       const filters = this.state.discoverFilters();
-      const labels = [
-        ...filters.types.filter((type) => type !== 'program'),
-        ...filters.availability,
-        ...filters.platforms,
-        ...filters.genres,
-      ];
-      if (filters.intent) {
-        labels.push(filters.intent);
-      }
-      if (filters.sort !== 'popular') {
-        labels.push(filters.sort);
-      }
-      if (filters.date !== 'today') {
-        labels.push(filters.date);
-      }
-      if (this.state.searchQuery()) {
-        labels.push(`"${this.state.searchQuery()}"`);
-      }
-      return labels;
+      const defaultTypes = filters.types.length === 3 && ['program', 'movie', 'series'].every((type) => filters.types.includes(type as any));
+      return Number(!defaultTypes) + filters.availability.length + filters.platforms.length +
+        filters.genres.length + Number(Boolean(filters.intent)) + Number(filters.sort !== 'popular') +
+        Number(filters.date !== 'today') + Number(Boolean(this.state.searchQuery()));
     }
 
     if (this.activeTab() === 'streaming') {
       const filters = this.state.streamingFilters();
-      const labels = [filters.platform, filters.type, ...filters.availability, ...filters.genres];
-      if (filters.sort !== 'popular') {
-        labels.push(filters.sort);
-      }
-      if (this.state.searchQuery()) {
-        labels.push(`"${this.state.searchQuery()}"`);
-      }
-      return labels.filter(Boolean);
+      return Number(Boolean(filters.platform)) + Number(Boolean(filters.type)) +
+        filters.availability.length + filters.genres.length + Number(filters.sort !== 'popular') +
+        Number(Boolean(this.state.searchQuery()));
     }
 
     const filters = this.state.sportsFilters();
-    const labels = [filters.sport, filters.channel, filters.competition, filters.date, filters.timeRange];
-    if (this.state.searchQuery()) {
-      labels.push(`"${this.state.searchQuery()}"`);
-    }
-    return labels.filter((value) => value && value !== 'all' && value !== 'today');
+    return Number(filters.sport !== 'all') + Number(Boolean(filters.channel)) +
+      Number(Boolean(filters.competition)) + Number(filters.date !== 'today') +
+      Number(filters.timeRange !== 'live') + Number(Boolean(this.state.searchQuery()));
   });
-  readonly filterCount = computed(() => this.summaryPills().length);
   readonly rightRailLabel = computed(() => this.shellConfig().rightRailLabel);
   readonly leftRailSections = computed<UnifiedPortalRailSection[]>(() => {
     if (this.activeTab() === 'live') {
@@ -550,14 +508,6 @@ export class UnifiedGuideComponent {
 
   onTopPillChange(value: string): void {
     if (this.activeTab() === 'live') {
-      if (value === 'tdt') {
-        this.state.updateLiveFilters({ group: 'tdt' });
-        return;
-      }
-      if (value === 'sports-tv') {
-        this.state.updateLiveFilters({ group: 'deporte' });
-        return;
-      }
       if (value === 'now' || value === 'next' || value === 'night' || value === 'day') {
         this.state.updateLiveFilters({ liveView: value });
       }
@@ -572,10 +522,6 @@ export class UnifiedGuideComponent {
         this.state.updateDiscoverFilters({ types: ['series'], page: 1 });
         return;
       }
-      if (value === 'featured') {
-        this.state.updateDiscoverFilters({ intent: 'featured', page: 1 });
-        return;
-      }
       this.state.updateDiscoverFilters({
         types: ['program', 'movie', 'series'],
         intent: '',
@@ -585,23 +531,11 @@ export class UnifiedGuideComponent {
       return;
     }
     if (this.activeTab() === 'streaming') {
-      if (value === 'movie' || value === 'series') {
-        this.state.updateStreamingFilters({ type: value, page: 1 });
-        return;
-      }
       if (value === 'free') {
         this.state.updateStreamingFilters({ availability: ['free'], page: 1 });
         return;
       }
       this.state.updateStreamingFilters({ type: '', availability: [], sort: value as any, page: 1 });
-      return;
-    }
-    if (value === 'football') {
-      this.state.updateSportsFilters({ sport: 'Fútbol' });
-      return;
-    }
-    if (value === 'motor') {
-      this.state.updateSportsFilters({ sport: 'F1' });
       return;
     }
     this.state.updateSportsFilters({ sport: 'all', timeRange: value as any });

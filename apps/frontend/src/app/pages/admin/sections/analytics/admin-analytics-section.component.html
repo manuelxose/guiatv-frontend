@@ -5,16 +5,16 @@
 
   <div class="flex flex-wrap items-start justify-between gap-4">
     <div>
-      <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">Dashboard</p>
-      <h3 class="text-2xl font-semibold text-white">Analytics Overview</h3>
-      <p class="text-sm text-slate-400">Realtime control center for traffic, content performance, and behavior.</p>
+      <p class="text-[10px] uppercase tracking-[0.3em] text-[var(--portal-text-muted)]">Dashboard</p>
+      <h3 class="text-2xl font-semibold text-[var(--portal-text)]">Analytics Overview</h3>
+      <p class="text-sm text-[var(--portal-text-soft)]">Realtime control center for traffic, content performance, and behavior.</p>
     </div>
     <div class="flex flex-wrap items-center gap-2">
-      <div class="flex items-center gap-2 rounded-full border border-slate-800/70 bg-slate-900/70 px-2 py-1">
+      <div class="flex items-center gap-2 rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface)] px-2 py-1">
         <button
           *ngFor="let range of ranges"
           class="px-3 py-1.5 rounded-full text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-          [ngClass]="rangeHours === range.value ? 'bg-red-500/20 text-red-100' : 'text-slate-400 hover:text-white'"
+          [ngClass]="rangeHours === range.value ? 'bg-red-500/20 text-red-100' : 'text-[var(--portal-text-soft)] hover:text-[var(--portal-text)]'"
           (click)="selectRange(range.value)"
           type="button"
           [attr.aria-pressed]="rangeHours === range.value"
@@ -24,7 +24,7 @@
       </div>
       <button
         type="button"
-        class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
       >
         Export
       </button>
@@ -36,7 +36,7 @@
       *ngFor="let tab of analyticsTabs"
       type="button"
       class="px-3 py-2 rounded-xl text-xs border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-      [ngClass]="activeItem === tab.id ? 'bg-slate-900/80 border-red-500/40 text-white' : 'border-slate-800/80 text-slate-400 hover:text-white hover:border-slate-600'"
+      [ngClass]="activeItem === tab.id ? 'bg-[var(--portal-surface)] border-red-500/40 text-[var(--portal-text)]' : 'border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]'"
       (click)="selectTab(tab.id)"
       [attr.aria-current]="activeItem === tab.id ? 'page' : null"
     >
@@ -49,7 +49,7 @@
       <button
         *ngFor="let filter of eventFilters"
         class="px-3 py-1.5 rounded-full text-xs border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-        [ngClass]="eventFilter === filter.type ? 'bg-white/10 border-white/20 text-white' : 'border-slate-800/80 text-slate-400 hover:text-white'"
+        [ngClass]="eventFilter === filter.type ? 'bg-[var(--portal-surface-strong)] border-[var(--portal-border-strong)] text-[var(--portal-text)]' : 'border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)]'"
         (click)="selectEventFilter(filter.type)"
         type="button"
         [attr.aria-pressed]="eventFilter === filter.type"
@@ -59,7 +59,7 @@
     </div>
     <div class="flex flex-wrap items-center gap-2 text-xs">
       <select
-        class="bg-slate-900/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         aria-label="Segment"
       >
         <option>All segments</option>
@@ -68,7 +68,7 @@
         <option>Editors</option>
       </select>
       <select
-        class="bg-slate-900/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         aria-label="Device"
       >
         <option>All devices</option>
@@ -77,7 +77,7 @@
         <option>Tablet</option>
       </select>
       <select
-        class="bg-slate-900/70 border border-slate-800/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         aria-label="Comparison"
       >
         <option>Compare to previous period</option>
@@ -86,7 +86,7 @@
       </select>
       <button
         type="button"
-        class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
       >
         Save view
       </button>
@@ -97,78 +97,78 @@
     <div *ngSwitchCase="'overview'" class="space-y-6">
       <ng-container *ngIf="overview; else overviewSkeleton">
         <div class="grid sm:grid-cols-2 xl:grid-cols-5 gap-4">
-          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Active Now</p>
-            <p class="text-3xl font-semibold text-white mt-2">{{ activeNow !== null ? activeNow : (overview?.activeNow || 0) }}</p>
-            <p class="text-xs text-slate-500 mt-1">Last 90s</p>
+          <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+            <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Active Now</p>
+            <p class="text-3xl font-semibold text-[var(--portal-text)] mt-2">{{ activeNow !== null ? activeNow : (overview?.activeNow || 0) }}</p>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-1">Last 90s</p>
           </div>
-          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Sessions</p>
-            <p class="text-3xl font-semibold text-white mt-2">{{ overview?.totalSessions || 0 }}</p>
-            <p class="text-xs text-slate-500 mt-1">Unique {{ overview?.uniqueVisitors || 0 }}</p>
+          <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+            <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Sessions</p>
+            <p class="text-3xl font-semibold text-[var(--portal-text)] mt-2">{{ overview?.totalSessions || 0 }}</p>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-1">Unique {{ overview?.uniqueVisitors || 0 }}</p>
           </div>
-          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Page Views</p>
-            <p class="text-3xl font-semibold text-white mt-2">{{ overview?.totalPageViews || 0 }}</p>
-            <p class="text-xs text-slate-500 mt-1">Tracked pages</p>
+          <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+            <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Page Views</p>
+            <p class="text-3xl font-semibold text-[var(--portal-text)] mt-2">{{ overview?.totalPageViews || 0 }}</p>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-1">Tracked pages</p>
           </div>
-          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-            <p class="text-xs text-slate-500 uppercase tracking-wider">Avg Session</p>
-            <p class="text-3xl font-semibold text-white mt-2">{{ formatDuration(overview?.avgSessionDurationSec || 0) }}</p>
-            <p class="text-xs text-slate-500 mt-1">Ended sessions</p>
+          <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+            <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Avg Session</p>
+            <p class="text-3xl font-semibold text-[var(--portal-text)] mt-2">{{ formatDuration(overview?.avgSessionDurationSec || 0) }}</p>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-1">Ended sessions</p>
           </div>
-          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-5">
-            <p class="text-xs text-slate-500 uppercase tracking-wider">System</p>
+          <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+            <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">System</p>
             <p class="text-2xl font-semibold text-emerald-200 mt-2">Operational</p>
-            <p class="text-xs text-slate-500 mt-1">1 warning</p>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-1">1 warning</p>
           </div>
         </div>
 
         <div class="grid xl:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] gap-6">
           <div class="space-y-6">
-            <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+            <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
               <div class="flex items-center justify-between mb-4">
-                <h4 class="text-lg font-semibold text-white">Sessions trend</h4>
-                <span class="text-xs text-slate-500">Last {{ rangeHours }} hours</span>
+                <h4 class="text-lg font-semibold text-[var(--portal-text)]">Sessions trend</h4>
+                <span class="text-xs text-[var(--portal-text-muted)]">Last {{ rangeHours }} hours</span>
               </div>
-              <div *ngIf="overview?.sessionsByDay?.length === 0" class="text-sm text-slate-500">No data yet.</div>
+              <div *ngIf="overview?.sessionsByDay?.length === 0" class="text-sm text-[var(--portal-text-muted)]">No data yet.</div>
               <div *ngIf="overview?.sessionsByDay?.length" class="space-y-3">
                 <div *ngFor="let item of overview?.sessionsByDay" class="space-y-1">
-                  <div class="flex items-center justify-between text-xs text-slate-400">
+                  <div class="flex items-center justify-between text-xs text-[var(--portal-text-soft)]">
                     <span>{{ item.date }}</span>
                     <span>{{ item.count }}</span>
                   </div>
-                  <div class="h-2 rounded-full bg-slate-950/80">
+                  <div class="h-2 rounded-full bg-[var(--portal-surface)]">
                     <div class="h-2 rounded-full bg-red-500/60" [style.width]="getDayBarWidth(item.count)"></div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+            <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
               <div class="flex items-center justify-between mb-4">
-                <h4 class="text-lg font-semibold text-white">Top pages</h4>
+                <h4 class="text-lg font-semibold text-[var(--portal-text)]">Top pages</h4>
                 <button
                   type="button"
-                  class="text-xs text-slate-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 >
                   View all
                 </button>
               </div>
-              <div *ngIf="overview?.topPages?.length === 0" class="text-sm text-slate-500">No data yet.</div>
+              <div *ngIf="overview?.topPages?.length === 0" class="text-sm text-[var(--portal-text-muted)]">No data yet.</div>
               <div *ngIf="overview?.topPages?.length" class="space-y-3">
                 <div *ngFor="let page of overview?.topPages" class="flex items-center justify-between text-sm">
-                  <span class="text-slate-200 truncate pr-3">{{ page.path }}</span>
-                  <span class="text-slate-400">{{ page.count }}</span>
+                  <span class="text-[var(--portal-text)] truncate pr-3">{{ page.path }}</span>
+                  <span class="text-[var(--portal-text-soft)]">{{ page.count }}</span>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="space-y-6">
-            <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
-              <h4 class="text-lg font-semibold text-white mb-4">System status</h4>
-              <div class="space-y-3 text-sm text-slate-400">
+            <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
+              <h4 class="text-lg font-semibold text-[var(--portal-text)] mb-4">System status</h4>
+              <div class="space-y-3 text-sm text-[var(--portal-text-soft)]">
                 <div class="flex items-center justify-between">
                   <span>API Gateway</span>
                   <span class="text-emerald-300">OK</span>
@@ -188,13 +188,13 @@
               </div>
             </div>
 
-            <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
-              <h4 class="text-lg font-semibold text-white mb-4">Top referrers</h4>
-              <div *ngIf="overview?.topReferrers?.length === 0" class="text-sm text-slate-500">No data yet.</div>
+            <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
+              <h4 class="text-lg font-semibold text-[var(--portal-text)] mb-4">Top referrers</h4>
+              <div *ngIf="overview?.topReferrers?.length === 0" class="text-sm text-[var(--portal-text-muted)]">No data yet.</div>
               <div *ngIf="overview?.topReferrers?.length" class="space-y-2">
                 <div *ngFor="let ref of overview?.topReferrers" class="flex items-center justify-between text-sm">
-                  <span class="text-slate-200 truncate pr-3">{{ ref.referrer }}</span>
-                  <span class="text-slate-400">{{ ref.count }}</span>
+                  <span class="text-[var(--portal-text)] truncate pr-3">{{ ref.referrer }}</span>
+                  <span class="text-[var(--portal-text-soft)]">{{ ref.count }}</span>
                 </div>
               </div>
             </div>
@@ -204,36 +204,36 @@
 
       <ng-template #overviewSkeleton>
         <div class="grid sm:grid-cols-2 xl:grid-cols-5 gap-4 animate-pulse">
-          <div class="h-24 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
-          <div class="h-24 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
-          <div class="h-24 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
-          <div class="h-24 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
-          <div class="h-24 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
+          <div class="h-24 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"></div>
+          <div class="h-24 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"></div>
+          <div class="h-24 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"></div>
+          <div class="h-24 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"></div>
+          <div class="h-24 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"></div>
         </div>
         <div class="grid xl:grid-cols-2 gap-6 animate-pulse">
-          <div class="h-56 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
-          <div class="h-56 rounded-2xl bg-slate-900/60 border border-slate-800/70"></div>
+          <div class="h-56 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"></div>
+          <div class="h-56 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"></div>
         </div>
       </ng-template>
     </div>
 
     <div *ngSwitchCase="'pages'" class="space-y-6">
-      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
-            <h4 class="text-lg font-semibold text-white">Pages performance</h4>
-            <p class="text-xs text-slate-500">Drill down by path, device, and segment.</p>
+            <h4 class="text-lg font-semibold text-[var(--portal-text)]">Pages performance</h4>
+            <p class="text-xs text-[var(--portal-text-muted)]">Drill down by path, device, and segment.</p>
           </div>
           <button
             type="button"
-            class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             Export table
           </button>
         </div>
-        <div class="overflow-auto max-h-[520px] border border-slate-800/70 rounded-2xl">
+        <div class="overflow-auto max-h-[520px] border border-[var(--portal-border)] rounded-2xl">
           <table class="min-w-[720px] w-full text-sm text-left">
-            <thead class="sticky top-0 bg-slate-950/90 text-[11px] uppercase text-slate-500">
+            <thead class="sticky top-0 bg-[var(--portal-surface)] text-[11px] uppercase text-[var(--portal-text-muted)]">
               <tr>
                 <th class="px-4 py-3">Page</th>
                 <th class="px-4 py-3">Views</th>
@@ -244,15 +244,15 @@
             </thead>
             <tbody class="divide-y divide-slate-800/70">
               <tr *ngIf="!overview">
-                <td colspan="5" class="px-4 py-6 text-center text-slate-500">Loading data...</td>
+                <td colspan="5" class="px-4 py-6 text-center text-[var(--portal-text-muted)]">Loading data...</td>
               </tr>
               <tr *ngIf="overview?.topPages?.length === 0">
-                <td colspan="5" class="px-4 py-6 text-center text-slate-500">No data yet.</td>
+                <td colspan="5" class="px-4 py-6 text-center text-[var(--portal-text-muted)]">No data yet.</td>
               </tr>
-              <tr *ngFor="let page of overview?.topPages" class="hover:bg-slate-900/40">
-                <td class="px-4 py-4 text-slate-200">{{ page.path }}</td>
-                <td class="px-4 py-4 text-slate-400">{{ page.count }}</td>
-                <td class="px-4 py-4 text-slate-400">
+              <tr *ngFor="let page of overview?.topPages" class="hover:bg-[var(--portal-surface)]">
+                <td class="px-4 py-4 text-[var(--portal-text)]">{{ page.path }}</td>
+                <td class="px-4 py-4 text-[var(--portal-text-soft)]">{{ page.count }}</td>
+                <td class="px-4 py-4 text-[var(--portal-text-soft)]">
                   {{ ((page.count / (overview?.totalPageViews || 1)) * 100) | number: '1.0-1' }}%
                 </td>
                 <td class="px-4 py-4 text-emerald-300">+{{ (page.count % 10) + 2 }}%</td>
@@ -273,40 +273,40 @@
 
     <div *ngSwitchCase="'live'" class="space-y-6">
       <div class="grid xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] gap-6">
-        <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+        <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <h4 class="text-lg font-semibold text-white">Live sessions</h4>
-              <p class="text-xs text-slate-500">Realtime active users and paths.</p>
+              <h4 class="text-lg font-semibold text-[var(--portal-text)]">Live sessions</h4>
+              <p class="text-xs text-[var(--portal-text-muted)]">Realtime active users and paths.</p>
             </div>
-            <span class="text-xs text-slate-400">
+            <span class="text-xs text-[var(--portal-text-soft)]">
               {{ activeNow !== null ? activeNow : liveSessions.length }} users
             </span>
           </div>
-          <div *ngIf="liveSessions.length === 0" class="text-sm text-slate-500 py-6 text-center">
+          <div *ngIf="liveSessions.length === 0" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">
             No active sessions right now.
           </div>
           <div class="space-y-3 max-h-[520px] overflow-auto pr-1" *ngIf="liveSessions.length > 0">
             <div
               *ngFor="let session of liveSessions; trackBy: trackBySession"
-              class="p-4 rounded-2xl bg-slate-950/50 border border-slate-800/70 space-y-3"
+              class="p-4 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)] space-y-3"
             >
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
-                  <p class="text-white text-sm font-medium">{{ session.lastPath || '/' }}</p>
-                  <p class="text-xs text-slate-500">
+                  <p class="text-[var(--portal-text)] text-sm font-medium">{{ session.lastPath || '/' }}</p>
+                  <p class="text-xs text-[var(--portal-text-muted)]">
                     {{ session.sessionId.slice(0, 8) }} | {{ formatDuration(session.durationSec || 0) }}
                     <span *ngIf="getIdleLabel(session)" class="ml-2 text-amber-300">
                       {{ getIdleLabel(session) }}
                     </span>
                   </p>
                 </div>
-                <div class="text-xs text-slate-500">
+                <div class="text-xs text-[var(--portal-text-muted)]">
                   Last seen: {{ session.lastSeenAt | date: 'shortTime' }}
                 </div>
               </div>
 
-              <div class="text-xs text-slate-500 flex flex-wrap gap-2">
+              <div class="text-xs text-[var(--portal-text-muted)] flex flex-wrap gap-2">
                 <span>{{ getDeviceSummary(session) }}</span>
                 <span *ngIf="getBrowserSummary(session.userAgent)">| {{ getBrowserSummary(session.userAgent) }}</span>
                 <span *ngIf="getOsSummary(session.userAgent)">| {{ getOsSummary(session.userAgent) }}</span>
@@ -321,30 +321,30 @@
                 {{ isExpanded(session.sessionId) ? 'Hide details' : 'Show details' }}
               </button>
 
-              <div *ngIf="isExpanded(session.sessionId)" class="text-xs text-slate-400 grid sm:grid-cols-2 gap-2">
-                <div><span class="text-slate-500">IP:</span> {{ session.ip || 'unknown' }}</div>
-                <div><span class="text-slate-500">Referrer:</span> {{ session.referrer || 'direct' }}</div>
-                <div><span class="text-slate-500">Language:</span> {{ session.language || '-' }}</div>
-                <div><span class="text-slate-500">Timezone:</span> {{ session.timezone || '-' }}</div>
-                <div><span class="text-slate-500">Screen:</span> {{ session.screen?.width || '-' }}x{{ session.screen?.height || '-' }}</div>
-                <div><span class="text-slate-500">Viewport:</span> {{ session.viewport?.width || '-' }}x{{ session.viewport?.height || '-' }}</div>
+              <div *ngIf="isExpanded(session.sessionId)" class="text-xs text-[var(--portal-text-soft)] grid sm:grid-cols-2 gap-2">
+                <div><span class="text-[var(--portal-text-muted)]">IP:</span> {{ session.ip || 'unknown' }}</div>
+                <div><span class="text-[var(--portal-text-muted)]">Referrer:</span> {{ session.referrer || 'direct' }}</div>
+                <div><span class="text-[var(--portal-text-muted)]">Language:</span> {{ session.language || '-' }}</div>
+                <div><span class="text-[var(--portal-text-muted)]">Timezone:</span> {{ session.timezone || '-' }}</div>
+                <div><span class="text-[var(--portal-text-muted)]">Screen:</span> {{ session.screen?.width || '-' }}x{{ session.screen?.height || '-' }}</div>
+                <div><span class="text-[var(--portal-text-muted)]">Viewport:</span> {{ session.viewport?.width || '-' }}x{{ session.viewport?.height || '-' }}</div>
                 <div class="sm:col-span-2">
-                  <span class="text-slate-500">UA:</span>
+                  <span class="text-[var(--portal-text-muted)]">UA:</span>
                   <span class="break-all">{{ session.userAgent || '-' }}</span>
                 </div>
                 <div *ngIf="session.metadata?.utm" class="sm:col-span-2">
-                  <span class="text-slate-500">UTM:</span>
+                  <span class="text-[var(--portal-text-muted)]">UTM:</span>
                   {{ session.metadata?.utm | json }}
                 </div>
                 <div class="sm:col-span-2">
-                  <span class="text-slate-500">Events:</span>
-                  <div *ngIf="sessionEvents[session.sessionId] === null" class="text-slate-500">Loading...</div>
+                  <span class="text-[var(--portal-text-muted)]">Events:</span>
+                  <div *ngIf="sessionEvents[session.sessionId] === null" class="text-[var(--portal-text-muted)]">Loading...</div>
                   <div *ngIf="sessionEvents[session.sessionId]?.length" class="mt-2 space-y-2">
-                    <div *ngFor="let event of sessionEvents[session.sessionId]; trackBy: trackByEvent" class="text-xs text-slate-300">
+                    <div *ngFor="let event of sessionEvents[session.sessionId]; trackBy: trackByEvent" class="text-xs text-[var(--portal-text-soft)]">
                       {{ event.type }} | {{ event.path || event.name || '-' }} | {{ event.occurredAt | date: 'shortTime' }}
                     </div>
                   </div>
-                  <div *ngIf="sessionEvents[session.sessionId]?.length === 0" class="text-slate-500">No events</div>
+                  <div *ngIf="sessionEvents[session.sessionId]?.length === 0" class="text-[var(--portal-text-muted)]">No events</div>
                 </div>
               </div>
             </div>
@@ -352,9 +352,9 @@
         </div>
 
         <div class="space-y-6">
-          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
-            <h4 class="text-lg font-semibold text-white mb-4">Realtime health</h4>
-            <div class="space-y-3 text-sm text-slate-400">
+          <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
+            <h4 class="text-lg font-semibold text-[var(--portal-text)] mb-4">Realtime health</h4>
+            <div class="space-y-3 text-sm text-[var(--portal-text-soft)]">
               <div class="flex items-center justify-between">
                 <span>Streaming latency</span>
                 <span class="text-emerald-300">120ms</span>
@@ -365,14 +365,14 @@
               </div>
               <div class="flex items-center justify-between">
                 <span>Active endpoints</span>
-                <span class="text-slate-200">14</span>
+                <span class="text-[var(--portal-text)]">14</span>
               </div>
             </div>
           </div>
 
-          <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
-            <h4 class="text-lg font-semibold text-white mb-4">Realtime segments</h4>
-            <div class="space-y-2 text-sm text-slate-400">
+          <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
+            <h4 class="text-lg font-semibold text-[var(--portal-text)] mb-4">Realtime segments</h4>
+            <div class="space-y-2 text-sm text-[var(--portal-text-soft)]">
               <div class="flex items-center justify-between">
                 <span>Desktop</span>
                 <span>62%</span>
@@ -392,26 +392,26 @@
     </div>
 
     <div *ngSwitchCase="'events'" class="space-y-6">
-      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
         <div class="flex items-center justify-between mb-4">
-          <h4 class="text-lg font-semibold text-white">Event stream</h4>
-          <span class="text-xs text-slate-500">Last {{ recentEvents.length }} events</span>
+          <h4 class="text-lg font-semibold text-[var(--portal-text)]">Event stream</h4>
+          <span class="text-xs text-[var(--portal-text-muted)]">Last {{ recentEvents.length }} events</span>
         </div>
         <div *ngIf="recentEvents.length === 0 && !lastUpdated" class="space-y-3 animate-pulse">
-          <div class="h-14 rounded-2xl bg-slate-950/60 border border-slate-800/70"></div>
-          <div class="h-14 rounded-2xl bg-slate-950/60 border border-slate-800/70"></div>
-          <div class="h-14 rounded-2xl bg-slate-950/60 border border-slate-800/70"></div>
+          <div class="h-14 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"></div>
+          <div class="h-14 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"></div>
+          <div class="h-14 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"></div>
         </div>
-        <div *ngIf="recentEvents.length === 0 && lastUpdated" class="text-sm text-slate-500 py-6 text-center">
+        <div *ngIf="recentEvents.length === 0 && lastUpdated" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">
           No events yet.
         </div>
         <div *ngIf="recentEvents.length" class="space-y-3 max-h-[520px] overflow-auto pr-1">
           <div
             *ngFor="let event of recentEvents; trackBy: trackByEvent"
-            class="p-4 rounded-2xl bg-slate-950/50 border border-slate-800/70"
+            class="p-4 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]"
           >
-            <p class="text-white text-sm font-medium">{{ event.path || event.name || event.type }}</p>
-            <p class="text-xs text-slate-500">
+            <p class="text-[var(--portal-text)] text-sm font-medium">{{ event.path || event.name || event.type }}</p>
+            <p class="text-xs text-[var(--portal-text-muted)]">
               {{ event.type }} | {{ event.occurredAt | date: 'shortTime' }} | {{ event.sessionId.slice(0, 8) }}
             </p>
           </div>
@@ -420,57 +420,57 @@
     </div>
 
     <div *ngSwitchCase="'journeys'" class="space-y-6">
-      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h4 class="text-lg font-semibold text-white">Journeys</h4>
-            <p class="text-xs text-slate-500">Define funnels and editorial conversions.</p>
+            <h4 class="text-lg font-semibold text-[var(--portal-text)]">Journeys</h4>
+            <p class="text-xs text-[var(--portal-text-muted)]">Define funnels and editorial conversions.</p>
           </div>
           <button
             type="button"
-            class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             Create journey
           </button>
         </div>
-        <div class="grid md:grid-cols-3 gap-4 text-sm text-slate-400">
-          <div class="rounded-2xl border border-slate-800/70 bg-slate-950/50 p-4">
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Step 1</p>
-            <p class="text-white mt-2">Landing page view</p>
-            <p class="text-xs text-slate-500 mt-3">Conversion 100%</p>
+        <div class="grid md:grid-cols-3 gap-4 text-sm text-[var(--portal-text-soft)]">
+          <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-[var(--portal-text-muted)]">Step 1</p>
+            <p class="text-[var(--portal-text)] mt-2">Landing page view</p>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-3">Conversion 100%</p>
           </div>
-          <div class="rounded-2xl border border-slate-800/70 bg-slate-950/50 p-4">
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Step 2</p>
-            <p class="text-white mt-2">Program detail</p>
-            <p class="text-xs text-slate-500 mt-3">Conversion 46%</p>
+          <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-[var(--portal-text-muted)]">Step 2</p>
+            <p class="text-[var(--portal-text)] mt-2">Program detail</p>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-3">Conversion 46%</p>
           </div>
-          <div class="rounded-2xl border border-slate-800/70 bg-slate-950/50 p-4">
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Step 3</p>
-            <p class="text-white mt-2">Schedule reminder</p>
-            <p class="text-xs text-slate-500 mt-3">Conversion 18%</p>
+          <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4">
+            <p class="text-xs uppercase tracking-[0.2em] text-[var(--portal-text-muted)]">Step 3</p>
+            <p class="text-[var(--portal-text)] mt-2">Schedule reminder</p>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-3">Conversion 18%</p>
           </div>
         </div>
-        <p class="text-xs text-slate-500 mt-4">Define event groups to unlock advanced breakdowns and cohort drill-down.</p>
+        <p class="text-xs text-[var(--portal-text-muted)] mt-4">Define event groups to unlock advanced breakdowns and cohort drill-down.</p>
       </div>
     </div>
 
     <div *ngSwitchCase="'retention'" class="space-y-6">
-      <div class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-6">
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h4 class="text-lg font-semibold text-white">Retention</h4>
-            <p class="text-xs text-slate-500">Measure editorial stickiness and return rate.</p>
+            <h4 class="text-lg font-semibold text-[var(--portal-text)]">Retention</h4>
+            <p class="text-xs text-[var(--portal-text-muted)]">Measure editorial stickiness and return rate.</p>
           </div>
           <button
             type="button"
-            class="px-3 py-2 rounded-xl border border-slate-700/70 text-xs text-slate-200 hover:text-white hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
             Configure cohorts
           </button>
         </div>
-        <div class="overflow-auto border border-slate-800/70 rounded-2xl">
+        <div class="overflow-auto border border-[var(--portal-border)] rounded-2xl">
           <table class="min-w-[620px] w-full text-sm text-left">
-            <thead class="bg-slate-950/90 text-[11px] uppercase text-slate-500">
+            <thead class="bg-[var(--portal-surface)] text-[11px] uppercase text-[var(--portal-text-muted)]">
               <tr>
                 <th class="px-4 py-3">Cohort</th>
                 <th class="px-4 py-3">Week 1</th>
@@ -481,25 +481,25 @@
             </thead>
             <tbody class="divide-y divide-slate-800/70">
               <tr>
-                <td class="px-4 py-4 text-slate-200">Nov 01 - Nov 07</td>
+                <td class="px-4 py-4 text-[var(--portal-text)]">Nov 01 - Nov 07</td>
                 <td class="px-4 py-4 text-emerald-300">42%</td>
                 <td class="px-4 py-4 text-amber-300">31%</td>
-                <td class="px-4 py-4 text-slate-400">22%</td>
-                <td class="px-4 py-4 text-slate-400">18%</td>
+                <td class="px-4 py-4 text-[var(--portal-text-soft)]">22%</td>
+                <td class="px-4 py-4 text-[var(--portal-text-soft)]">18%</td>
               </tr>
               <tr>
-                <td class="px-4 py-4 text-slate-200">Nov 08 - Nov 14</td>
+                <td class="px-4 py-4 text-[var(--portal-text)]">Nov 08 - Nov 14</td>
                 <td class="px-4 py-4 text-emerald-300">38%</td>
                 <td class="px-4 py-4 text-amber-300">27%</td>
-                <td class="px-4 py-4 text-slate-400">20%</td>
-                <td class="px-4 py-4 text-slate-400">15%</td>
+                <td class="px-4 py-4 text-[var(--portal-text-soft)]">20%</td>
+                <td class="px-4 py-4 text-[var(--portal-text-soft)]">15%</td>
               </tr>
               <tr>
-                <td class="px-4 py-4 text-slate-200">Nov 15 - Nov 21</td>
+                <td class="px-4 py-4 text-[var(--portal-text)]">Nov 15 - Nov 21</td>
                 <td class="px-4 py-4 text-emerald-300">36%</td>
                 <td class="px-4 py-4 text-amber-300">25%</td>
-                <td class="px-4 py-4 text-slate-400">19%</td>
-                <td class="px-4 py-4 text-slate-400">14%</td>
+                <td class="px-4 py-4 text-[var(--portal-text-soft)]">19%</td>
+                <td class="px-4 py-4 text-[var(--portal-text-soft)]">14%</td>
               </tr>
             </tbody>
           </table>
@@ -507,9 +507,9 @@
       </div>
     </div>
 
-    <div *ngSwitchDefault class="bg-slate-900/60 border border-slate-800/70 rounded-2xl p-8">
-      <h4 class="text-xl font-semibold text-white mb-2">This view is ready for build-out.</h4>
-      <p class="text-slate-400 text-sm">Define the data model and permissions to unlock this section.</p>
+    <div *ngSwitchDefault class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-8">
+      <h4 class="text-xl font-semibold text-[var(--portal-text)] mb-2">This view is ready for build-out.</h4>
+      <p class="text-[var(--portal-text-soft)] text-sm">Define the data model and permissions to unlock this section.</p>
     </div>
   </ng-container>
 </section>

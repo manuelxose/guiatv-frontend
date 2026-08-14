@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -102,7 +102,8 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
     private readonly metaService: MetaService,
     private readonly userService: UserService,
     private readonly sanitizer: DomSanitizer,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly changeDetector: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -127,10 +128,12 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
           this.trendPosts = state.trendPosts;
           this.categorySections = state.categorySections;
           this.loading = false;
+          this.changeDetector.markForCheck();
         },
         error: () => {
           this.error = 'No se ha podido cargar la capa editorial.';
           this.loading = false;
+          this.changeDetector.markForCheck();
         },
       });
 
@@ -139,6 +142,7 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((lists) => {
         this.communityLists = lists;
+        this.changeDetector.markForCheck();
       });
   }
 

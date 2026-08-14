@@ -40,7 +40,7 @@ export class AdminCommunitySectionComponent implements OnInit, OnDestroy {
     open: 'border-amber-500/40 text-amber-200 bg-amber-500/10',
     reviewing: 'border-blue-500/40 text-blue-200 bg-blue-500/10',
     resolved: 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10',
-    dismissed: 'border-slate-600/40 text-slate-300 bg-slate-500/10',
+    dismissed: 'border-[var(--portal-border-strong)] text-[var(--portal-text-soft)] bg-[var(--portal-surface-strong)]',
   };
 
   constructor(private usersService: AdminUsersService) {}

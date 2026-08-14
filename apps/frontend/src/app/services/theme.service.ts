@@ -1,13 +1,11 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   DestroyRef,
-  Inject,
   Injectable,
   PLATFORM_ID,
   inject,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StorageService } from './storage.service';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -47,6 +45,7 @@ export class ThemeService {
   readonly mode = signal<ThemeMode>(this.readStoredMode());
 
   private systemMediaQuery: MediaQueryList | null = null;
+  private readonly systemThemeChangeHandler = () => this.apply('system');
 
   constructor() {
     this.apply(this.mode());
@@ -118,11 +117,11 @@ export class ThemeService {
     }
     this.detachSystemListener();
     this.systemMediaQuery = media;
-    const update = () => this.apply('system');
-    media.addEventListener?.('change', update);
-    // Older Safari fallback.
-    if (typeof media.addListener === 'function') {
-      media.addListener(update);
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', this.systemThemeChangeHandler);
+    } else if (typeof media.addListener === 'function') {
+      // Older Safari fallback.
+      media.addListener(this.systemThemeChangeHandler);
     }
     // Remove the listener when the service is torn down.
     this.destroyRef.onDestroy(() => this.detachSystemListener());
@@ -130,7 +129,11 @@ export class ThemeService {
 
   private detachSystemListener(): void {
     if (this.systemMediaQuery) {
-      this.systemMediaQuery.removeEventListener?.('change', () => undefined);
+      if (typeof this.systemMediaQuery.removeEventListener === 'function') {
+        this.systemMediaQuery.removeEventListener('change', this.systemThemeChangeHandler);
+      } else if (typeof this.systemMediaQuery.removeListener === 'function') {
+        this.systemMediaQuery.removeListener(this.systemThemeChangeHandler);
+      }
       this.systemMediaQuery = null;
     }
   }

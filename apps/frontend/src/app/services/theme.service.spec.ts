@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { ThemeService, ThemeMode } from './theme.service';
+import { ThemeService } from './theme.service';
 import { StorageService } from './storage.service';
 
 describe('ThemeService', () => {
@@ -100,5 +100,26 @@ describe('ThemeService', () => {
     store['guiatv-theme'] = 'sepia';
     service = createService();
     expect(service.mode()).toBe('system');
+  });
+
+  it('removes the exact system listener when switching to an explicit mode', () => {
+    let addedHandler: EventListenerOrEventListenerObject | undefined;
+    let removedHandler: EventListenerOrEventListenerObject | undefined;
+    spyOn(window, 'matchMedia').and.returnValue({
+      matches: false,
+      media: '(prefers-color-scheme: dark)',
+      onchange: null,
+      addEventListener: (_type, handler) => (addedHandler = handler),
+      removeEventListener: (_type, handler) => (removedHandler = handler),
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    } as MediaQueryList);
+
+    service = TestBed.inject(ThemeService);
+    service.setMode('dark');
+
+    expect(addedHandler).toBeDefined();
+    expect(removedHandler).toBe(addedHandler);
   });
 });
