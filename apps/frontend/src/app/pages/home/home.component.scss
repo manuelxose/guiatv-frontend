@@ -58,6 +58,42 @@
   gap: 1rem;
 }
 
+.home-page__football-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border: 1px solid var(--portal-border);
+  border-radius: 1.3rem;
+  background: var(--portal-surface-strong);
+  color: var(--portal-text);
+  padding: 1.1rem 1.25rem;
+  text-decoration: none;
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.home-page__football-cta:hover {
+  transform: translateY(-2px);
+  border-color: #22c55e;
+}
+
+.home-page__football-cta-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #22c55e;
+}
+
+.home-page__football-cta-sub {
+  font-size: 0.85rem;
+  color: var(--guide-text-muted, #94a3b8);
+}
+
+.home-page__football-cta-action {
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--portal-text);
+}
+
 .home-page__platform-grid {
   display: grid;
   gap: 0.9rem;
@@ -99,6 +135,10 @@
 
   .home-page__grid--sports {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .home-page__football-cta {
+    grid-column: 1 / -1;
   }
 
   .home-page__platform-grid {

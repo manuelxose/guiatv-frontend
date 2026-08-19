@@ -200,7 +200,7 @@ smoke_http "http://127.0.0.1:${SSR_PORT}/" "200"
 smoke_http "http://127.0.0.1:${SSR_PORT}/programacion-tv/guia-canales" "200"
 smoke_http "http://127.0.0.1:${SSR_PORT}/canales/la_2" "200"
 smoke_http "http://127.0.0.1:${SSR_PORT}/plataformas" "200"
-smoke_http "http://127.0.0.1:${SSR_PORT}/deportes" "200"
+smoke_http "http://127.0.0.1:${SSR_PORT}/deportes/futbol" "200"
 smoke_socket_io
 
 echo "Unified release active: $(readlink -f "${CURRENT_RELEASE_LINK}")"

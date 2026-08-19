@@ -4,7 +4,8 @@ export const APP_PATHS = {
   guide: '/programacion-tv/guia-canales',
   explore: '/programacion-tv/que-ver-hoy',
   platforms: '/plataformas',
-  sports: '/deportes',
+  sports: '/deportes/futbol',
+  football: '/deportes/futbol',
   live: '/programacion-tv/en-directo',
   series: '/programacion-tv/series',
   movies: '/programacion-tv/peliculas',
@@ -128,7 +129,7 @@ export const MOBILE_APP_TABS: AppRouteEntry[] = [
   },
   {
     key: 'deportes',
-    label: 'Deportes',
+    label: 'Fútbol',
     path: APP_PATHS.sports,
     iconOutline:
       'M6.75 4.5h10.5l3 5.25-3 9.75H6.75l-3-9.75 3-5.25Zm0 0L12 9l5.25-4.5M3.75 9.75 12 14l8.25-4.25M12 9v5m-5.25 5.5L12 14l5.25 5.5',

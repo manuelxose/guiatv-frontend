@@ -71,6 +71,11 @@ export class ApiConfigService {
   }
 
   private resolveServerBaseUrl(): string {
-    return 'http://127.0.0.1:4000/v2';
+    // Allow the SSR process to point at a specific backend (env-driven), then
+    // fall back to the local default.
+    const envSsr = (typeof process !== 'undefined' && process.env?.SSR_API_BASE_URL) || '';
+    const envOrigin = (typeof process !== 'undefined' && process.env?.API_ORIGIN) || '';
+    const base = envSsr || envOrigin || 'http://127.0.0.1:4000';
+    return base.endsWith('/v2') ? base : `${base.replace(/\/$/, '')}/v2`;
   }
 }

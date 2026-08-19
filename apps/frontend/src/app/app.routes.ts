@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { BLOG_ROUTES } from './blog/blog.routes';
+import { FOOTBALL_ROUTES } from './features/football/football.routes';
 import { adminGuard } from './guards/admin.guard';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 
@@ -137,12 +138,13 @@ export const routes: Routes = [
   },
   {
     path: 'deportes',
-    loadComponent: () =>
-      import('./pages/unified-guide/unified-guide.component').then(
-        (m) => m.UnifiedGuideComponent
-      ),
-    title: 'Deportes - Guía TV',
-    data: { tab: 'sports', layout: 'portal-page' }
+    pathMatch: 'full',
+    redirectTo: 'deportes/futbol',
+  },
+  {
+    path: 'deportes',
+    children: FOOTBALL_ROUTES,
+    data: { layout: 'portal-page' },
   },
   {
     path: 'contenido/:catalogId',

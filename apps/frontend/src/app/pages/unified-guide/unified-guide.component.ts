@@ -30,9 +30,9 @@ import { UnifiedShellUiStateService } from '../../state/unified-shell-ui.state';
 import { normalizeToCard } from '../../utils/tv-normalizers';
 import { DiscoverViewComponent } from './views/discover-view.component';
 import { LiveGuideViewComponent } from './views/live-guide-view.component';
-import { SportsViewComponent } from './views/sports-view.component';
 import { StreamingViewComponent } from './views/streaming-view.component';
 import { UnifiedPortalRailSection } from '../../models/portal-shell.models';
+import { UnifiedTopNavTab } from '../../components/unified-top-nav/unified-top-nav.component';
 
 const TAB_META: Record<UnifiedGuideTab, { title: string; description: string; path: string }> = {
   live: {
@@ -50,11 +50,6 @@ const TAB_META: Record<UnifiedGuideTab, { title: string; description: string; pa
     description: 'Explora plataformas, novedades y catálogo en streaming dentro del mismo sistema.',
     path: APP_PATHS.platforms,
   },
-  sports: {
-    title: 'Deportes',
-    description: 'Sigue deporte en directo y próximos eventos desde una vertical integrada.',
-    path: APP_PATHS.sports,
-  },
 };
 
 @Component({
@@ -67,7 +62,6 @@ const TAB_META: Record<UnifiedGuideTab, { title: string; description: string; pa
     LiveGuideViewComponent,
     DiscoverViewComponent,
     StreamingViewComponent,
-    SportsViewComponent,
   ],
   templateUrl: './unified-guide.component.html',
   styleUrl: './unified-guide.component.scss',
@@ -98,8 +92,6 @@ export class UnifiedGuideComponent {
   readonly livePreview = signal<TvReadItemDTO[]>([]);
   readonly tonightPreview = signal<TvReadItemDTO[]>([]);
   readonly platformPreview = signal<CatalogPlatform[]>([]);
-  readonly sportsLivePreview = signal<TvReadItemDTO[]>([]);
-  readonly sportsNextPreview = signal<TvReadItemDTO[]>([]);
   readonly pageMeta = computed(() => TAB_META[this.activeTab()]);
   readonly shellConfig = computed(() => PORTAL_GUIDE_SHELL_CONFIG[this.activeTab()]);
   readonly topPillChips = computed<FilterChipItem[]>(() =>
@@ -131,7 +123,7 @@ export class UnifiedGuideComponent {
       return filters.sort;
     }
 
-    return this.state.sportsFilters().timeRange;
+    return '';
   });
   readonly breadcrumbItems = computed(() => [
     { name: 'Inicio', url: APP_PATHS.home },
@@ -161,10 +153,7 @@ export class UnifiedGuideComponent {
         Number(Boolean(this.state.searchQuery()));
     }
 
-    const filters = this.state.sportsFilters();
-    return Number(filters.sport !== 'all') + Number(Boolean(filters.channel)) +
-      Number(Boolean(filters.competition)) + Number(filters.date !== 'today') +
-      Number(filters.timeRange !== 'live') + Number(Boolean(this.state.searchQuery()));
+    return 0;
   });
   readonly rightRailLabel = computed(() => this.shellConfig().rightRailLabel);
   readonly leftRailSections = computed<UnifiedPortalRailSection[]>(() => {
@@ -302,34 +291,7 @@ export class UnifiedGuideComponent {
       ];
     }
 
-    const sportFilters = this.state.sportsFilters();
-    return [
-      {
-        id: 'sports-context',
-        eyebrow: 'Deportes',
-        title: 'Agenda deportiva',
-        description: 'Franja, agenda y ritmo competitivo dentro de la misma navegación.',
-        items: [
-          { id: 'sports-live', label: 'Live now', description: 'Eventos en directo', iconPath: this.iconPaths.liveDot, path: APP_PATHS.sports, queryParams: { timeRange: 'live' }, active: sportFilters.timeRange === 'live' },
-          { id: 'sports-tonight', label: 'Esta noche', description: 'Prime time deportivo', iconPath: 'M18 15.75A6.75 6.75 0 1 1 8.25 6a6 6 0 0 0 9.75 9.75Z', path: APP_PATHS.sports, queryParams: { timeRange: 'tonight' }, active: sportFilters.timeRange === 'tonight' },
-          { id: 'sports-week', label: 'Esta semana', description: 'Calendario completo', iconPath: this.iconPaths.calendar, path: APP_PATHS.sports, queryParams: { timeRange: 'week' }, active: sportFilters.timeRange === 'week' },
-          { id: 'sports-guide', label: 'Cruce con TV', description: 'Volver a canales y parrilla', iconPath: this.iconPaths.live, path: APP_PATHS.guide },
-        ],
-      },
-      {
-        id: 'sports-disciplines',
-        eyebrow: 'Disciplinas',
-        title: 'Quick sports directories',
-        description: 'Fútbol y resto de deportes con prioridad real.',
-        items: [
-          { id: 'sport-futbol', label: 'Fútbol', description: 'Cobertura protagonista', iconPath: this.iconPaths.sports, path: APP_PATHS.sports, queryParams: { sport: 'Fútbol' }, active: sportFilters.sport === 'Fútbol' },
-          { id: 'sport-baloncesto', label: 'Baloncesto', description: 'Liga y torneos', iconPath: 'M12 3.75c4.56 0 8.25 3.69 8.25 8.25S16.56 20.25 12 20.25 3.75 16.56 3.75 12 7.44 3.75 12 3.75Zm0 0v16.5m-5.83-12.38c3.9 1.67 7.76 1.67 11.66 0M6.17 16.13c3.9-1.67 7.76-1.67 11.66 0', path: APP_PATHS.sports, queryParams: { sport: 'Baloncesto' }, active: sportFilters.sport === 'Baloncesto' },
-          { id: 'sport-f1', label: 'F1', description: 'Motor de precisión', iconPath: 'M3.75 15.75h5.5l1.75-4.5h9.25M6 10.5h3.75m4.5 0h5.25', path: APP_PATHS.sports, queryParams: { sport: 'F1' }, active: sportFilters.sport === 'F1' },
-          { id: 'sport-tenis', label: 'Tenis', description: 'Grand slams y circuito', iconPath: 'M8.25 4.5h7.5m-7.5 15h7.5M7.5 6.75c1.8 1.8 1.8 8.7 0 10.5m9-10.5c-1.8 1.8-1.8 8.7 0 10.5', path: APP_PATHS.sports, queryParams: { sport: 'Tenis' }, active: sportFilters.sport === 'Tenis' },
-          { id: 'sport-motogp', label: 'MotoGP', description: 'Velocidad y agenda', iconPath: 'M4.5 14.25h4.5l2.25-3h8.25m-10.5 5.25a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm10.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z', path: APP_PATHS.sports, queryParams: { sport: 'MotoGP' }, active: sportFilters.sport === 'MotoGP' },
-        ],
-      },
-    ];
+    return [];
   });
   readonly rightRailSections = computed<UnifiedPortalRailSection[]>(() => {
     if (this.activeTab() === 'live') {
@@ -422,24 +384,7 @@ export class UnifiedGuideComponent {
       ];
     }
 
-    return [
-      {
-        id: 'sports-live',
-        eyebrow: 'Live now',
-        title: 'Eventos en directo',
-        description: 'La columna auxiliar vuelve a ser útil de verdad.',
-        variant: 'feature',
-        items: this.sportsLivePreview().slice(0, 5).map((item, index) => programToRailItem(item, `sports-live-${index}`)),
-      },
-      {
-        id: 'sports-next',
-        eyebrow: 'Agenda',
-        title: 'Próximos eventos',
-        description: 'La semana deportiva sigue accesible sin cambiar de vista.',
-        variant: 'compact',
-        items: this.sportsNextPreview().slice(0, 5).map((item, index) => programToRailItem(item, `sports-next-${index}`)),
-      },
-    ];
+    return [];
   });
 
   constructor(
@@ -488,7 +433,14 @@ export class UnifiedGuideComponent {
       .subscribe(() => this.updateMeta());
   }
 
-  navigateToTab(tab: UnifiedGuideTab): void {
+  navigateToTab(tab: UnifiedTopNavTab['id']): void {
+    // Football left the unified guide and now lives at /deportes/futbol.
+    if (tab === 'sports') {
+      this.shellUi.closeFilterDock();
+      void this.router.navigateByUrl(APP_PATHS.sports);
+      return;
+    }
+
     const queryParams = this.state.toQueryParams(tab);
     this.shellUi.closeFilterDock();
     if (this.isBrowser) {
@@ -533,7 +485,6 @@ export class UnifiedGuideComponent {
       this.state.updateStreamingFilters({ type: '', availability: [], sort: value as any, page: 1 });
       return;
     }
-    this.state.updateSportsFilters({ sport: 'all', timeRange: value as any });
   }
 
   onSearchChange(value: string): void {

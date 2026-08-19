@@ -25,12 +25,10 @@ describe('PortalHomeFacade', () => {
     const tvData = jasmine.createSpyObj<TvDataFacade>('TvDataFacade', [
       'getLivePrograms',
       'getTonightPrograms',
-      'getLiveSports',
       'getPlatforms',
     ]);
     tvData.getLivePrograms.and.returnValue(of([]));
     tvData.getTonightPrograms.and.returnValue(of([]));
-    tvData.getLiveSports.and.returnValue(of([]));
     tvData.getPlatforms.and.returnValue(of([]));
 
     const editorial = jasmine.createSpyObj<EditorialService>('EditorialService', [

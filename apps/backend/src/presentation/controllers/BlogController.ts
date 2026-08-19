@@ -28,6 +28,11 @@ interface BlogWritePayload {
   targetQuery?: string;
   relatedPlatformKeys?: string[] | string;
   relatedRouteKeys?: string[] | string;
+  sportsRelations?: {
+    teamIds?: string[] | string;
+    competitionIds?: string[] | string;
+    matchIds?: string[] | string;
+  };
   faqItems?: Array<{ question?: string; answer?: string }> | string;
   evergreen?: boolean | string;
   coverImage?: string;
@@ -44,6 +49,10 @@ const CONTENT_TYPES: ReadonlySet<BlogContentType> = new Set([
   'guide',
   'ranking',
   'trend',
+  'news',
+  'analysis',
+  'preview',
+  'match-report',
 ]);
 const RELATED_ROUTE_KEYS = new Set([
   'platforms',
@@ -69,6 +78,11 @@ interface NormalizedBlogPayload {
   targetQuery?: string;
   relatedPlatformKeys: string[];
   relatedRouteKeys: string[];
+  sportsRelations?: {
+    teamIds: string[];
+    competitionIds: string[];
+    matchIds: string[];
+  };
   faqItems: IBlogFaqItem[];
   evergreen: boolean;
   featuredImage?: {
@@ -160,7 +174,7 @@ export class BlogController {
           throw new ValidationError('Invalid contentType', [
             {
               field: 'contentType',
-              message: 'Expected guide, ranking or trend',
+              message: 'Expected guide, ranking, trend, news, analysis, preview or match-report',
               value: contentType,
             },
           ]);
@@ -252,6 +266,7 @@ export class BlogController {
       existing.targetQuery = normalized.targetQuery;
       existing.relatedPlatformKeys = normalized.relatedPlatformKeys;
       existing.relatedRouteKeys = normalized.relatedRouteKeys;
+      existing.sportsRelations = normalized.sportsRelations;
       existing.faqItems = normalized.faqItems;
       existing.evergreen = normalized.evergreen;
       existing.featuredImage = normalized.featuredImage;
@@ -374,6 +389,7 @@ export class BlogController {
       relatedRouteKeys: Array.isArray(post.relatedRouteKeys)
         ? post.relatedRouteKeys
         : [],
+      sportsRelations: post.sportsRelations || { teamIds: [], competitionIds: [], matchIds: [] },
       faqItems: Array.isArray(post.faqItems) ? post.faqItems : [],
       evergreen: post.evergreen !== false,
     };
@@ -414,6 +430,7 @@ export class BlogController {
       RELATED_ROUTE_KEYS,
       'relatedRouteKeys'
     );
+    const sportsRelations = this.normalizeSportsRelations(payload.sportsRelations, existing?.sportsRelations);
     const faqItems = this.normalizeFaqItems(payload.faqItems, existing?.faqItems);
     const evergreen = this.normalizeBoolean(payload.evergreen, existing?.evergreen, true);
     const featuredImageSource = this.resolveFeaturedImage(payload, existing);
@@ -443,6 +460,7 @@ export class BlogController {
       targetQuery,
       relatedPlatformKeys,
       relatedRouteKeys,
+      sportsRelations,
       faqItems,
       evergreen,
       featuredImage: featuredImageSource
@@ -495,12 +513,41 @@ export class BlogController {
       throw new ValidationError('Invalid contentType', [
         {
           field: 'contentType',
-          message: 'Expected guide, ranking or trend',
+          message: 'Expected guide, ranking, trend, news, analysis, preview or match-report',
           value,
         },
       ]);
     }
     return normalized;
+  }
+
+  private normalizeSportsRelations(
+    input: BlogWritePayload['sportsRelations'],
+    fallback?: IBlogPostDocument['sportsRelations']
+  ): NonNullable<IBlogPostDocument['sportsRelations']> {
+    if (input === undefined) {
+      return fallback || { teamIds: [], competitionIds: [], matchIds: [] };
+    }
+    return {
+      teamIds: this.normalizeStringArray(
+        input.teamIds,
+        fallback?.teamIds,
+        undefined,
+        'sportsRelations.teamIds'
+      ),
+      competitionIds: this.normalizeStringArray(
+        input.competitionIds,
+        fallback?.competitionIds,
+        undefined,
+        'sportsRelations.competitionIds'
+      ),
+      matchIds: this.normalizeStringArray(
+        input.matchIds,
+        fallback?.matchIds,
+        undefined,
+        'sportsRelations.matchIds'
+      ),
+    };
   }
 
   private normalizeCategories(
@@ -570,7 +617,7 @@ export class BlogController {
   private normalizeStringArray(
     input: string[] | string | undefined,
     fallback: string[] | undefined,
-    allowlist: ReadonlySet<string>,
+    allowlist: ReadonlySet<string> | undefined,
     field: string
   ): string[] {
     if (input === undefined) {
@@ -585,7 +632,7 @@ export class BlogController {
     const normalized = list
       .map((value) => String(value || '').trim().toLowerCase())
       .filter(Boolean);
-    const invalid = normalized.filter((value) => !allowlist.has(value));
+    const invalid = allowlist ? normalized.filter((value) => !allowlist.has(value)) : [];
     if (invalid.length) {
       throw new ValidationError(`Invalid ${field}`, [
         {

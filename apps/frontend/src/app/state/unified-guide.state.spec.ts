@@ -37,13 +37,6 @@ describe('UnifiedGuideStateService', () => {
     });
     expect(service.discoverFilters().types).toEqual(['program', 'movie', 'series']);
     expect(service.streamingFilters().sort).toBe('popular');
-    expect(service.sportsFilters()).toEqual({
-      sport: 'all',
-      channel: '',
-      competition: '',
-      date: 'today',
-      timeRange: 'live',
-    });
   });
 
   it('does not inherit stale filters when the URL has no parameters', () => {

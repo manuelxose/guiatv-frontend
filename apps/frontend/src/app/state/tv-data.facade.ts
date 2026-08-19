@@ -12,7 +12,6 @@ import {
   UnifiedDiscoverIntent,
   UnifiedLiveFlag,
   UnifiedLiveView,
-  UnifiedSportsTimeRange,
 } from './unified-guide.state';
 
 export type UnifiedDiscoveryItem = TvReadItemDTO | CatalogItem;
@@ -63,14 +62,6 @@ export interface UnifiedStreamingFilters {
   sort?: string;
   page?: number;
   limit?: number;
-}
-
-export interface UnifiedSportsFilters {
-  sport?: string;
-  channel?: string;
-  competition?: string;
-  date?: string;
-  timeRange?: UnifiedSportsTimeRange;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -305,66 +296,6 @@ export class TvDataFacade {
     return this.catalogService.getForYouState(limit).pipe(
       map((result) => Array.isArray(result.data) ? (result.data as CatalogItem[]) : []),
       catchError(() => of([]))
-    );
-  }
-
-  getLiveSports(filters: UnifiedSportsFilters = {}): Observable<TvReadItemDTO[]> {
-    return this.tvApi
-      .getTvRead({
-        view: 'now',
-        date: filters.date || 'today',
-        category: 'Deportes',
-        sport: normalizeSport(filters.sport),
-        channelId: filters.channel || undefined,
-        limit: 20,
-      })
-      .pipe(
-        retry({ count: 2, delay: 350 }),
-        map((response) => this.applySportsFilters(response.data?.items || [], filters)),
-        catchError(() => of([]))
-      );
-  }
-
-  getUpcomingSports(filters: UnifiedSportsFilters = {}): Observable<TvReadItemDTO[]> {
-    return this.tvApi
-      .getTvRead({
-        view: 'next',
-        date: filters.date || 'today',
-        category: 'Deportes',
-        sport: normalizeSport(filters.sport),
-        channelId: filters.channel || undefined,
-        limit: 30,
-      })
-      .pipe(
-        retry({ count: 2, delay: 350 }),
-        map((response) => this.applySportsFilters(response.data?.items || [], filters)),
-        catchError(() => of([]))
-      );
-  }
-
-  getTonightSports(filters: UnifiedSportsFilters = {}): Observable<TvReadItemDTO[]> {
-    return this.tvApi
-      .getTvRead({
-        view: 'tonight',
-        date: filters.date || 'today',
-        category: 'Deportes',
-        sport: normalizeSport(filters.sport),
-        channelId: filters.channel || undefined,
-        limit: 30,
-      })
-      .pipe(
-        retry({ count: 2, delay: 350 }),
-        map((response) => this.applySportsFilters(response.data?.items || [], filters)),
-        catchError(() => of([]))
-      );
-  }
-
-  watchSportsLive(filters: UnifiedSportsFilters = {}, isActive$: Observable<boolean>): Observable<TvReadItemDTO[]> {
-    return combineLatest([isActive$, timer(0, 30_000)]).pipe(
-      switchMap(([isActive]) =>
-        isActive && this.shouldPoll() ? this.getLiveSports(filters) : of([])
-      ),
-      shareReplay({ bufferSize: 1, refCount: true })
     );
   }
 
@@ -695,15 +626,6 @@ export class TvDataFacade {
     });
   }
 
-  private applySportsFilters(items: TvReadItemDTO[], filters: UnifiedSportsFilters): TvReadItemDTO[] {
-    return items.filter((item) => {
-      if (filters.competition) {
-        return inferCompetition(item) === filters.competition;
-      }
-      return true;
-    });
-  }
-
   private compareDiscoveryItems(
     left: UnifiedDiscoveryItem,
     right: UnifiedDiscoveryItem,
@@ -745,26 +667,6 @@ function normalizeCategory(value?: string): string | undefined {
     return undefined;
   }
   return safe;
-}
-
-function normalizeSport(value?: string): string | undefined {
-  const safe = String(value || '').trim();
-  if (!safe || safe === 'all') {
-    return undefined;
-  }
-  return safe;
-}
-
-function inferCompetition(item: TvReadItemDTO): string {
-  const title = String(item.program.title || '').trim();
-  // ":" and "·" both separate a competition/context lead from the matchup
-  // ("Fútbol Conmebol Copa Sudamericana · Vasco da Gama vs. Olimpia").
-  const titleLead = title.split(/[:·]/)[0]?.trim();
-  if (titleLead && titleLead.length >= 4) {
-    // A leading "Fútbol" is a category tag, not part of the competition name.
-    return titleLead.replace(/^(f[úu]tbol|futbol)\s+/i, '').trim();
-  }
-  return String(item.program.sportFacet || item.program.editorialCategory || 'Otros').trim();
 }
 
 function scoreOf(item: UnifiedDiscoveryItem): number {
