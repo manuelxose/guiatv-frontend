@@ -25,6 +25,9 @@ import { UserAssistantMemoryModel } from './models/UserAssistantMemory.model';
 import { EPGSourceSnapshotModel } from './models/EPGSourceSnapshot.model';
 import { TVProgramBrandModel } from './models/TVProgramBrand.model';
 import { TVReadAiringModel } from './models/TVReadAiring.model';
+import { FootballTeamModel } from '../sports/models/FootballTeam.model';
+import { FootballCompetitionModel } from '../sports/models/FootballCompetition.model';
+import { FootballBroadcastMappingModel } from '../sports/models/FootballBroadcastMapping.model';
 
 /**
  * Ensure required Mongo collections exist and indexes are in place.
@@ -53,6 +56,9 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     { name: 'epg_source_snapshots', model: EPGSourceSnapshotModel },
     { name: 'tv_program_brands', model: TVProgramBrandModel },
     { name: 'tv_read_airings', model: TVReadAiringModel },
+    { name: 'football_teams', model: FootballTeamModel },
+    { name: 'football_competitions', model: FootballCompetitionModel },
+    { name: 'football_broadcast_mappings', model: FootballBroadcastMappingModel },
     { name: 'chat_conversations', model: ChatConversationModel },
     { name: 'chat_messages', model: ChatMessageModel },
     { name: 'auth_sessions', model: AuthSessionModel },

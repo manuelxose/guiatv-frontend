@@ -12,7 +12,6 @@ export interface PortalHomeState {
   liveNow: TvReadItemDTO[];
   tonight: TvReadItemDTO[];
   streamingHighlights: DiscoveryHomeResponse['platformItems'];
-  sportsNow: TvReadItemDTO[];
   editorialHub: EditorialHubState;
   rankingHighlights: EditorialPost[];
   featuredPlatforms: CatalogPlatform[];
@@ -64,9 +63,6 @@ export class PortalHomeFacade {
       tonight: this.tvDataFacade
         .getTonightPrograms({ date: 'today', limit: 12 })
         .pipe(catchError(() => of([] as TvReadItemDTO[]))),
-      sportsNow: this.tvDataFacade
-        .getLiveSports({ date: 'today' })
-        .pipe(catchError(() => of([] as TvReadItemDTO[]))),
       platforms: this.tvDataFacade
         .getPlatforms()
         .pipe(catchError(() => of([] as CatalogPlatform[]))),
@@ -100,11 +96,10 @@ export class PortalHomeFacade {
         )
       ),
     }).pipe(
-      map(({ discovery, liveNow, tonight, sportsNow, platforms, editorialHub, rankings }) => ({
+      map(({ discovery, liveNow, tonight, platforms, editorialHub, rankings }) => ({
         liveNow,
         tonight,
         streamingHighlights: discovery.platformItems || [],
-        sportsNow,
         editorialHub,
         rankingHighlights: rankings.posts.slice(0, 6),
         featuredPlatforms: (discovery.platforms?.length ? discovery.platforms : platforms).slice(0, 8),

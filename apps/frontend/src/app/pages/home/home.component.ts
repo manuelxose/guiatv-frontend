@@ -70,7 +70,6 @@ export class HomeComponent {
   public readonly loading = computed(() => !this.error() && !this.homeState());
   public readonly liveNow = computed(() => this.homeState()?.liveNow || []);
   public readonly tonight = computed(() => this.homeState()?.tonight || []);
-  public readonly sportsNow = computed(() => this.homeState()?.sportsNow.slice(0, 6) || []);
   public readonly featuredPlatforms = computed(() => this.homeState()?.featuredPlatforms || []);
   public readonly streamingHighlights = computed(() => this.homeState()?.streamingHighlights.slice(0, 8) || []);
   public readonly trendingItems = computed(() => this.homeState()?.trendingItems.slice(0, 8) || []);
@@ -221,11 +220,19 @@ export class HomeComponent {
     },
     {
       id: 'home-sports',
-      eyebrow: 'Deportes',
-      title: 'Agenda viva',
-      description: 'Eventos deportivos en directo sin salir de la portada.',
+      eyebrow: 'Fútbol',
+      title: 'Partidos y dónde verlos',
+      description: 'La suite de fútbol con partidos en directo y dónde ver cada uno.',
       variant: 'compact',
-      items: this.sportsNow().slice(0, 4).map((item, index) => toRailProgramItem(item, `home-sports-${index}`)),
+      items: [
+        {
+          id: 'home-football',
+          label: 'Fútbol hoy',
+          description: 'Partidos en directo, horarios y dónde verlos',
+          iconPath: this.iconPaths.sports,
+          path: APP_PATHS.sports,
+        },
+      ],
     },
   ]);
 

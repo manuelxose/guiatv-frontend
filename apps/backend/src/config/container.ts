@@ -270,6 +270,41 @@ export class Container {
     const tvSurfaceService = new TvSurfaceService(tvReadQueryService, this.get('cacheRepository'));
     this.dependencies.set('tvSurfaceService', tvSurfaceService);
 
+    // Football bounded context (provider abstraction + reconciliation + BFF).
+    const { EpgFootballDataProvider } = await import(
+      '../infrastructure/sports/providers/EpgFootballDataProvider'
+    );
+    const { BroadcastReconciliationService } = await import(
+      '../application/sports/services/BroadcastReconciliationService'
+    );
+    const { FootballQueryService } = await import(
+      '../application/sports/services/FootballQueryService'
+    );
+
+    const footballApiKey = process.env.FOOTBALL_DATA_API_KEY;
+    let footballProvider: any;
+    if (footballApiKey) {
+      const { FootballDataOrgAdapter } = await import(
+        '../infrastructure/sports/providers/FootballDataOrgAdapter'
+      );
+      footballProvider = new FootballDataOrgAdapter(footballApiKey);
+      logger.info('Football provider: football-data.org (live scores enabled)');
+    } else {
+      footballProvider = new EpgFootballDataProvider();
+      logger.info('Football provider: EPG (real fixtures/broadcasts, no live scores)');
+    }
+    this.dependencies.set('footballProvider', footballProvider);
+
+    const broadcastReconciliationService = new BroadcastReconciliationService();
+    this.dependencies.set('broadcastReconciliationService', broadcastReconciliationService);
+
+    const footballQueryService = new FootballQueryService(
+      footballProvider,
+      broadcastReconciliationService,
+      this.get('cacheRepository')
+    );
+    this.dependencies.set('footballQueryService', footballQueryService);
+
     const blogBaseUrl =
       process.env.BLOG_API_URL ||
       process.env.API_BLOG ||
@@ -509,6 +544,13 @@ export class Container {
       this.get('tvSurfaceService')
     );
     this.dependencies.set('tvController', tvController);
+
+    const { FootballController } = await import('../presentation/controllers/FootballController');
+    const footballController = new FootballController(
+      this.get('footballQueryService'),
+      this.get('broadcastReconciliationService')
+    );
+    this.dependencies.set('footballController', footballController);
 
     const blogController = new BlogController();
     this.dependencies.set('blogController', blogController);

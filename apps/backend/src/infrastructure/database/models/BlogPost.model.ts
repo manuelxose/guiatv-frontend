@@ -1,7 +1,14 @@
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
 
-export type BlogContentType = 'guide' | 'ranking' | 'trend';
+export type BlogContentType =
+  | 'guide'
+  | 'ranking'
+  | 'trend'
+  | 'news'
+  | 'analysis'
+  | 'preview'
+  | 'match-report';
 
 export interface IBlogPostCategory {
   id: number;
@@ -27,6 +34,11 @@ export interface IBlogPostDocument {
   targetQuery?: string;
   relatedPlatformKeys: string[];
   relatedRouteKeys: string[];
+  sportsRelations?: {
+    teamIds: string[];
+    competitionIds: string[];
+    matchIds: string[];
+  };
   faqItems: IBlogFaqItem[];
   evergreen?: boolean;
   seo?: {
@@ -81,7 +93,7 @@ const BlogPostSchema = new Schema<IBlogPostDocument>(
     categories: { type: [BlogPostCategorySchema], default: [] },
     contentType: {
       type: String,
-      enum: ['guide', 'ranking', 'trend'],
+      enum: ['guide', 'ranking', 'trend', 'news', 'analysis', 'preview', 'match-report'],
       default: 'guide',
       index: true,
     },
@@ -90,6 +102,11 @@ const BlogPostSchema = new Schema<IBlogPostDocument>(
     targetQuery: { type: String, trim: true },
     relatedPlatformKeys: { type: [String], default: [] },
     relatedRouteKeys: { type: [String], default: [] },
+    sportsRelations: {
+      teamIds: { type: [String], default: [] },
+      competitionIds: { type: [String], default: [] },
+      matchIds: { type: [String], default: [] },
+    },
     faqItems: { type: [BlogFaqItemSchema], default: [] },
     evergreen: { type: Boolean, default: true, index: true },
     seo: {

@@ -58,6 +58,7 @@ const KNOWN_ROUTES = [
   /^\/canales\/[^/]+$/,
   /^\/plataformas$/,
   /^\/deportes$/,
+  /^\/deportes\/futbol(\/.*)?$/,
   /^\/contenido\/[^/]+$/,
   /^\/peliculas\/[^/]+$/,
   /^\/series\/[^/]+$/,

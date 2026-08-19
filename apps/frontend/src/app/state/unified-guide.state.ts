@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Params } from '@angular/router';
 import { StorageService } from '../services/storage.service';
 
-export type UnifiedGuideTab = 'live' | 'discover' | 'streaming' | 'sports';
+export type UnifiedGuideTab = 'live' | 'discover' | 'streaming';
 export type UnifiedLiveView = 'now' | 'next' | 'night' | 'day';
 export type UnifiedContentType = 'program' | 'movie' | 'series';
 export type UnifiedAvailability =
@@ -15,7 +15,6 @@ export type UnifiedAvailability =
 export type UnifiedSort = 'personalized' | 'popular' | 'rating' | 'airtime' | 'recent';
 export type UnifiedLiveFlag = 'live' | 'catchup' | 'streaming';
 export type UnifiedDiscoverIntent = '' | 'featured' | 'popular' | 'rating' | 'recent';
-export type UnifiedSportsTimeRange = 'all' | 'live' | 'next' | 'tonight' | 'week';
 
 export interface UnifiedGuideState {
   activeTab: UnifiedGuideTab;
@@ -52,13 +51,6 @@ export interface UnifiedGuideState {
     sort: Exclude<UnifiedSort, 'personalized' | 'airtime'> | 'popular';
     page: number;
   };
-  sportsFilters: {
-    sport: string;
-    channel: string;
-    competition: string;
-    date: string;
-    timeRange: UnifiedSportsTimeRange;
-  };
 }
 
 const UNIFIED_GUIDE_STATE_KEY = 'gtv.unified-guide.state';
@@ -71,7 +63,6 @@ const DEFAULT_STATE: UnifiedGuideState = {
       live: 'now',
       discover: 'featured',
       streaming: 'popular',
-      sports: 'live',
     },
     lastSearchByTab: {},
   },
@@ -103,13 +94,6 @@ const DEFAULT_STATE: UnifiedGuideState = {
     sort: 'popular',
     page: 1,
   },
-  sportsFilters: {
-    sport: 'all',
-    channel: '',
-    competition: '',
-    date: 'today',
-    timeRange: 'live',
-  },
 };
 
 @Injectable({ providedIn: 'root' })
@@ -123,7 +107,6 @@ export class UnifiedGuideStateService {
   readonly liveFilters = computed(() => this.stateSignal().liveFilters);
   readonly discoverFilters = computed(() => this.stateSignal().discoverFilters);
   readonly streamingFilters = computed(() => this.stateSignal().streamingFilters);
-  readonly sportsFilters = computed(() => this.stateSignal().sportsFilters);
   readonly shellPrefs = computed(() => this.stateSignal().shellPrefs);
 
   constructor() {
@@ -202,23 +185,6 @@ export class UnifiedGuideStateService {
     });
   }
 
-  updateSportsFilters(partial: Partial<UnifiedGuideState['sportsFilters']>): void {
-    const next = {
-      ...this.stateSignal().sportsFilters,
-      ...partial,
-    };
-    this.patchState({
-      sportsFilters: next,
-      shellPrefs: {
-        ...this.stateSignal().shellPrefs,
-        lastSubmodeByTab: {
-          ...this.stateSignal().shellPrefs.lastSubmodeByTab,
-          sports: deriveSportsSubmode(next),
-        },
-      },
-    });
-  }
-
   syncFromQueryParams(params: Params | null | undefined, tab = this.activeTab()): void {
     const current = this.stateSignal();
     const safeParams = params || {};
@@ -280,16 +246,6 @@ export class UnifiedGuideStateService {
       };
     }
 
-    if (tab === 'sports') {
-      nextState.sportsFilters = {
-        sport: readString(safeParams['sport']) || DEFAULT_STATE.sportsFilters.sport,
-        channel: readString(safeParams['channel']),
-        competition: readString(safeParams['competition']),
-        date: readString(safeParams['date']) || DEFAULT_STATE.sportsFilters.date,
-        timeRange: readTimeRange(safeParams['timeRange']) || DEFAULT_STATE.sportsFilters.timeRange,
-      };
-    }
-
     nextState.shellPrefs = {
       ...current.shellPrefs,
       lastSearchByTab: {
@@ -301,7 +257,6 @@ export class UnifiedGuideStateService {
         live: deriveLiveSubmode(nextState.liveFilters),
         discover: deriveDiscoverSubmode(nextState.discoverFilters),
         streaming: deriveStreamingSubmode(nextState.streamingFilters),
-        sports: deriveSportsSubmode(nextState.sportsFilters),
       },
     };
     this.stateSignal.set(nextState);
@@ -368,11 +323,6 @@ export class UnifiedGuideStateService {
 
     return {
       ...base,
-      sport: nullable(state.sportsFilters.sport, 'all'),
-      channel: nullable(state.sportsFilters.channel),
-      competition: nullable(state.sportsFilters.competition),
-      date: nullable(state.sportsFilters.date, 'today'),
-      timeRange: nullable(state.sportsFilters.timeRange, 'live'),
     };
   }
 
@@ -480,14 +430,6 @@ function readIntent(value: unknown): UnifiedDiscoverIntent | null {
   return null;
 }
 
-function readTimeRange(value: unknown): UnifiedSportsTimeRange | null {
-  const raw = readString(value);
-  if (raw === 'all' || raw === 'live' || raw === 'next' || raw === 'tonight' || raw === 'week') {
-    return raw;
-  }
-  return null;
-}
-
 function nullable(value: string | number | null | undefined, fallback?: string): string | number | null {
   if (value == null || value === '' || value === fallback) {
     return null;
@@ -512,8 +454,4 @@ function deriveDiscoverSubmode(filters: UnifiedGuideState['discoverFilters']): s
 
 function deriveStreamingSubmode(filters: UnifiedGuideState['streamingFilters']): string {
   return filters.type || filters.platform || filters.sort || 'popular';
-}
-
-function deriveSportsSubmode(filters: UnifiedGuideState['sportsFilters']): string {
-  return filters.timeRange !== 'all' ? filters.timeRange : filters.sport || 'live';
 }

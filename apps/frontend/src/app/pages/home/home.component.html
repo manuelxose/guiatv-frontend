@@ -111,21 +111,22 @@
       </div>
     </section>
 
-    <section *ngIf="sportsNow().length" class="home-page__module">
+    <section class="home-page__module">
       <app-unified-section-header
-        eyebrow="Deportes en directo"
-        title="Agenda viva y próximos eventos desde la portada"
-        linkLabel="Ir a deportes"
+        eyebrow="Fútbol"
+        title="Partidos de hoy, en directo, y dónde verlos"
+        linkLabel="Ver todos los partidos"
         [linkPath]="appPaths.sports"
       ></app-unified-section-header>
 
       <div class="home-page__grid home-page__grid--sports">
-        <app-unified-program-card
-          *ngFor="let item of sportsNow()"
-          [item]="item"
-          variant="sport"
-          [showActions]="false"
-        ></app-unified-program-card>
+        <a class="home-page__football-cta" [routerLink]="appPaths.sports">
+          <span class="home-page__football-cta-title">Fútbol hoy</span>
+          <span class="home-page__football-cta-sub">
+            Partidos en directo, horarios, competiciones y dónde ver cada partido.
+          </span>
+          <span class="home-page__football-cta-action">Entrar →</span>
+        </a>
       </div>
     </section>
 
