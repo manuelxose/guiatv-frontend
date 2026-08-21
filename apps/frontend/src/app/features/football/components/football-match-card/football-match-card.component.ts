@@ -34,7 +34,7 @@ export type FootballMatchCardVariant = 'default' | 'live' | 'compact' | 'feature
       (click)="onSelect()"
     >
       <span class="card__competition">
-        <img *ngIf="match.competition.logo" [src]="match.competition.logo" [alt]="''" class="card__comp-logo" />
+        <img *ngIf="match.competition.logo" [src]="match.competition.logo" [alt]="''" class="card__comp-logo" width="16" height="16" loading="lazy" decoding="async" />
         {{ match.competition.shortName || match.competition.name }}
       </span>
 

@@ -14,6 +14,8 @@
         *ngIf="hasVisual"
         [src]="imageUrl"
         [alt]="card.title"
+        width="640"
+        height="360"
         [loading]="variant === 'live' || variant === 'feature' ? 'eager' : 'lazy'"
         [attr.fetchpriority]="variant === 'live' || variant === 'feature' ? 'high' : 'auto'"
         [attr.decoding]="variant === 'live' || variant === 'feature' ? 'sync' : 'async'"
@@ -33,7 +35,7 @@
     <div class="program-card__body">
       <div class="program-card__eyebrow" *ngIf="showChannel && (card.channelName || card.startTime || card.category)">
         <span class="program-card__channel" *ngIf="card.channelName">
-          <img *ngIf="card.channelIcon" [src]="card.channelIcon" [alt]="''" loading="lazy" aria-hidden="true" (error)="hideBrokenImage($event)" />
+          <img *ngIf="card.channelIcon" [src]="card.channelIcon" [alt]="''" width="48" height="48" loading="lazy" aria-hidden="true" (error)="hideBrokenImage($event)" />
           <span>{{ card.channelName }}</span>
         </span>
         <span *ngIf="card.channelName && (timeLabel || card.category)" aria-hidden="true">·</span>

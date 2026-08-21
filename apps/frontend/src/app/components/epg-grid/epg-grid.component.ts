@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { interval } from 'rxjs';
 import { TvReadItemDTO } from '../../api/models';
 import { normalizeToCard, UnifiedCardData } from '../../utils/tv-normalizers';
@@ -63,13 +64,13 @@ interface EpgGridTick {
 @Component({
   selector: 'app-epg-grid',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ScrollingModule],
   templateUrl: './epg-grid.component.html',
   styleUrl: './epg-grid.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EpgGridComponent {
-  @ViewChild('gridBody') private readonly gridBody?: ElementRef<HTMLElement>;
+  @ViewChild('gridBody', { read: ElementRef }) private readonly gridBody?: ElementRef<HTMLElement>;
 
   private readonly itemsSignal = signal<TvReadItemDTO[]>([]);
   @Input({ required: true })

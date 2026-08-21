@@ -1,0 +1,22 @@
+name: Build, test, and performance budgets
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npm run lint:backend
+      - run: npm run test:backend
+      - name: Production build with Angular bundle budgets
+        run: npm run build

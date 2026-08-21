@@ -22,7 +22,7 @@ import {
     <section class="scoreboard" [attr.aria-label]="accessibleLabel">
       <header class="scoreboard__head">
         <span class="scoreboard__competition">
-          <img *ngIf="match.competition.logo" [src]="match.competition.logo" [alt]="''" />
+          <img *ngIf="match.competition.logo" [src]="match.competition.logo" [alt]="''" width="24" height="24" loading="lazy" decoding="async" />
           {{ match.competition.name }}
         </span>
         <span *ngIf="match.round" class="scoreboard__round">{{ match.round }}</span>

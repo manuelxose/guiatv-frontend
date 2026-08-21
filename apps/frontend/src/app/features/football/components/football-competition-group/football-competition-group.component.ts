@@ -25,7 +25,7 @@ export interface FootballCompetitionMatchGroup {
   template: `
     <section class="group" [attr.aria-label]="group.competitionName">
       <a class="group__header" [routerLink]="['/deportes/futbol/competiciones', group.competitionSlug]">
-        <img *ngIf="group.competitionLogo" [src]="group.competitionLogo" [alt]="''" class="group__logo" />
+        <img *ngIf="group.competitionLogo" [src]="group.competitionLogo" [alt]="''" class="group__logo" width="20" height="20" loading="lazy" decoding="async" />
         <span class="group__names">
           <span *ngIf="group.country" class="group__country">{{ group.country }}</span>
           <span class="group__title">{{ group.competitionName }}</span>

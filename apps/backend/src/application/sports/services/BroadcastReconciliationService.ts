@@ -10,6 +10,8 @@
 
 import { TVReadAiringModel } from '../../../infrastructure/database/models/TVReadAiring.model';
 import { FootballBroadcastMappingModel } from '../../../infrastructure/sports/models/FootballBroadcastMapping.model';
+import { ICacheRepository } from '../../../domain/repositories/ICacheRepository';
+import { StaleWhileRevalidateCache } from '../../../infrastructure/cache/StaleWhileRevalidateCache';
 import {
   BroadcastConfidence,
   FootballMatch,
@@ -32,6 +34,12 @@ interface Candidate {
 }
 
 export class BroadcastReconciliationService {
+  private readonly airingCache: StaleWhileRevalidateCache;
+
+  constructor(cacheRepository?: ICacheRepository) {
+    this.airingCache = new StaleWhileRevalidateCache(cacheRepository);
+  }
+
   /** Attach broadcasts to matches by reconciling with the EPG read model. */
   async reconcile(matches: FootballMatch[]): Promise<FootballMatch[]> {
     if (!matches.length) {
@@ -40,6 +48,7 @@ export class BroadcastReconciliationService {
 
     const airings = await this.loadSportsAirings();
     const overrides = await this.loadOverrides(matches.map((match) => match.id));
+    const airingsByHour = this.indexAiringsByHour(airings);
 
     return matches.map((match) => {
       const existing = match.broadcasts.filter((broadcast) => broadcast.provenance === 'airing');
@@ -64,7 +73,7 @@ export class BroadcastReconciliationService {
       }
 
       // 3. Reconcile against EPG airings.
-      const candidates = this.matchCandidates(match, airings);
+      const candidates = this.matchCandidates(match, this.nearbyAirings(match, airingsByHour));
       if (candidates.length) {
         const best = candidates[0];
         if (best.confidence !== 'low') {
@@ -114,6 +123,15 @@ export class BroadcastReconciliationService {
   }
 
   private async loadSportsAirings(): Promise<any[]> {
+    const windowKey = new Date().toISOString().slice(0, 10);
+    return this.airingCache.getOrLoad(
+      `v2:football:reconciliation:airings:${windowKey}`,
+      { freshSeconds: 5 * 60, staleSeconds: 30 * 60 },
+      () => this.querySportsAirings()
+    );
+  }
+
+  private async querySportsAirings(): Promise<any[]> {
     const now = new Date();
     const from = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
     const to = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -126,6 +144,7 @@ export class BroadcastReconciliationService {
       ],
       'airing.start': { $gte: from.toISOString(), $lte: to.toISOString() },
     })
+      .select({ channel: 1, program: 1, airing: 1, availability: 1, sourceProvenance: 1 })
       .lean()
       .exec();
     return (docs as any[]).filter((doc) => isFootballAiring(toNormalizedAiringInput(doc)));
@@ -198,6 +217,26 @@ export class BroadcastReconciliationService {
     return candidates
       .filter((candidate) => candidate.confidence !== 'low')
       .sort((a, b) => b.score - a.score);
+  }
+
+  private indexAiringsByHour(airings: any[]): Map<number, any[]> {
+    const index = new Map<number, any[]>();
+    for (const airing of airings) {
+      const start = new Date(toNormalizedAiringInput(airing).start).getTime();
+      if (!Number.isFinite(start)) continue;
+      const bucket = Math.floor(start / (60 * 60 * 1000));
+      const entries = index.get(bucket) || [];
+      entries.push(airing);
+      index.set(bucket, entries);
+    }
+    return index;
+  }
+
+  private nearbyAirings(match: FootballMatch, index: Map<number, any[]>): any[] {
+    const kickoff = new Date(match.kickoffAt).getTime();
+    if (!Number.isFinite(kickoff)) return [];
+    const bucket = Math.floor(kickoff / (60 * 60 * 1000));
+    return [bucket - 1, bucket, bucket + 1].flatMap((key) => index.get(key) || []);
   }
 
   private teamAliasScore(a: { name: string }, b: string): number {

@@ -8,6 +8,9 @@ import {
 } from '../../infrastructure/database/models/BlogPost.model';
 import { CATALOG_PLATFORM_REGISTRY } from '../../application/dto/CatalogDTO';
 import { successResponse } from '../../shared/types/ApiResponse';
+import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
+import { StaleWhileRevalidateCache } from '../../infrastructure/cache/StaleWhileRevalidateCache';
+import { measureTiming } from '../../shared/utils/performanceTiming';
 import {
   ConflictError,
   ForbiddenError,
@@ -99,10 +102,33 @@ interface NormalizedBlogPayload {
   publishedAt?: Date;
 }
 
+const BLOG_LIST_PROJECTION = {
+  title: 1,
+  slug: 1,
+  status: 1,
+  excerpt: 1,
+  categories: 1,
+  contentType: 1,
+  featured: 1,
+  featuredImage: 1,
+  publishedAt: 1,
+  createdAt: 1,
+  updatedAt: 1,
+  'seo.metaTitle': 1,
+  'seo.metaDescription': 1,
+  'seo.ogImage': 1,
+} as const;
+
 /**
  * Blog controller that serves posts from MongoDB with a WordPress-like shape.
  */
 export class BlogController {
+  private readonly cache: StaleWhileRevalidateCache;
+
+  constructor(cacheRepository?: ICacheRepository) {
+    this.cache = new StaleWhileRevalidateCache(cacheRepository);
+  }
+
   public getPosts = async (
     req: Request,
     res: Response,
@@ -196,13 +222,29 @@ export class BlogController {
         filters.$text = { $search: search.trim() };
       }
 
-      const posts = await BlogPostModel.find(filters)
+      const includeDetailFields = Boolean(filters.slug) || isAdminRequest;
+      const query = BlogPostModel.find(filters)
         .sort({ featured: -1, publishedAt: -1, createdAt: -1 })
-        .limit(limitValue)
-        .lean()
-        .exec();
+        .limit(limitValue);
 
-      res.json(posts.map((post) => this.mapPost(post)));
+      if (!includeDetailFields) {
+        query.select(BLOG_LIST_PROJECTION);
+      }
+
+      const cacheKey = `v2:editorial:${filters.slug
+        ? `detail:${encodeURIComponent(String(filters.slug))}`
+        : `list:${stableQueryKey(req.query)}`}`;
+      const posts = isAdminRequest
+        ? await measureTiming('db', () => query.lean().exec())
+        : await this.cache.getOrLoad(
+            cacheKey,
+            filters.slug
+              ? { freshSeconds: 15 * 60, staleSeconds: 60 * 60 }
+              : { freshSeconds: 5 * 60, staleSeconds: 30 * 60 },
+            () => measureTiming('db', () => query.lean().exec())
+          );
+
+      res.json(posts.map((post) => includeDetailFields ? this.mapPost(post) : this.mapPostListItem(post)));
     } catch (error) {
       next(error);
     }
@@ -221,6 +263,7 @@ export class BlogController {
       const created = await BlogPostModel.create({
         ...normalized,
       });
+      await this.invalidatePublicReads();
 
       res.status(201).json(
         successResponse({
@@ -274,6 +317,7 @@ export class BlogController {
       existing.publishedAt = normalized.publishedAt;
 
       await existing.save();
+      await this.invalidatePublicReads();
 
       res.status(200).json(
         successResponse({
@@ -302,6 +346,7 @@ export class BlogController {
       if (!deleted) {
         throw new NotFoundError('Editorial post not found');
       }
+      await this.invalidatePublicReads();
 
       res.status(200).json(
         successResponse({
@@ -320,35 +365,44 @@ export class BlogController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const filters = this.isAdminRequest(req) ? {} : { status: 'publish' };
-      const posts = await BlogPostModel.find(filters)
-        .select({ categories: 1 })
-        .lean()
-        .exec();
+      const isAdminRequest = this.isAdminRequest(req);
+      const match = isAdminRequest ? {} : { status: 'publish' };
+      const loadCategories = () => BlogPostModel.aggregate<{
+        _id: number;
+        count: number;
+        name: string;
+        slug: string;
+      }>([
+        { $match: match },
+        { $unwind: '$categories' },
+        {
+          $group: {
+            _id: '$categories.id',
+            count: { $sum: 1 },
+            name: { $first: '$categories.name' },
+            slug: { $first: '$categories.slug' },
+          },
+        },
+        { $sort: { count: -1, name: 1 } },
+      ]).exec();
+      const categories = isAdminRequest
+        ? await measureTiming('db', loadCategories)
+        : await this.cache.getOrLoad('v2:editorial:categories', {
+            freshSeconds: 30 * 60,
+            staleSeconds: 6 * 60 * 60,
+          }, () => measureTiming('db', loadCategories));
 
-      const categoryMap = new Map<number, any>();
-      posts.forEach((post) => {
-        (post.categories || []).forEach((category: IBlogPostCategory) => {
-          const existing = categoryMap.get(category.id);
-          if (existing) {
-            existing.count += 1;
-          } else {
-            categoryMap.set(category.id, {
-              id: category.id,
-              count: 1,
-              description: '',
-              link: `/editorial/categoria/${category.slug}`,
-              name: category.name,
-              slug: category.slug,
-              taxonomy: 'category',
-              parent: 0,
-              meta: [],
-            });
-          }
-        });
-      });
-
-      res.json(Array.from(categoryMap.values()).sort((left, right) => right.count - left.count));
+      res.json(categories.map((category) => ({
+        id: category._id,
+        count: category.count,
+        description: '',
+        link: `/editorial/categoria/${category.slug}`,
+        name: category.name,
+        slug: category.slug,
+        taxonomy: 'category',
+        parent: 0,
+        meta: [],
+      })));
     } catch (error) {
       next(error);
     }
@@ -393,6 +447,39 @@ export class BlogController {
       faqItems: Array.isArray(post.faqItems) ? post.faqItems : [],
       evergreen: post.evergreen !== false,
     };
+  }
+
+  private mapPostListItem(post: any): any {
+    return {
+      id: String(post._id || post.id),
+      date: post.publishedAt || post.createdAt || new Date().toISOString(),
+      date_gmt: post.publishedAt || post.createdAt || new Date().toISOString(),
+      modified: post.updatedAt || post.publishedAt || post.createdAt || new Date().toISOString(),
+      modified_gmt: post.updatedAt || post.publishedAt || post.createdAt || new Date().toISOString(),
+      slug: post.slug,
+      status: post.status,
+      type: 'post',
+      link: `/editorial/${post.slug}`,
+      title: { rendered: post.title },
+      excerpt: { rendered: post.excerpt || '' },
+      categories: (post.categories || []).map((cat: IBlogPostCategory) => cat.id),
+      categories_name: post.categories || [],
+      featured_image: {
+        source_url: post.featuredImage?.sourceUrl || post.seo?.ogImage || '',
+        caption: post.featuredImage?.caption || '',
+      },
+      seo: post.seo,
+      contentType: post.contentType || 'guide',
+      featured: Boolean(post.featured),
+    };
+  }
+
+  private async invalidatePublicReads(): Promise<void> {
+    await Promise.all([
+      this.cache.clear('v2:editorial:*'),
+      this.cache.clear('v2:football:news:*'),
+      this.cache.clear('v2:football:home*'),
+    ]);
   }
 
   private normalizePayload(
@@ -798,4 +885,12 @@ export class BlogController {
       : undefined;
     return headerKey === requiredKey || bearerKey === requiredKey;
   }
+}
+
+function stableQueryKey(query: Request['query']): string {
+  return Object.entries(query)
+    .filter(([, value]) => value !== undefined)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .join('&') || 'default';
 }

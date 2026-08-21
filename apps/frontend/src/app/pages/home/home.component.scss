@@ -7,6 +7,13 @@
   height: 100%;
 }
 
+.home-page__hero-placeholder {
+  min-height: 20rem;
+  border-radius: 1.35rem;
+  background: linear-gradient(110deg, var(--portal-surface) 8%, var(--portal-surface-strong) 30%, var(--portal-surface) 52%);
+  background-size: 200% 100%;
+}
+
 .home-page__loading,
 .home-page__module,
 .home-page__error {
@@ -16,7 +23,7 @@
 
 // Keep all server-rendered discovery content in the document for SEO, while
 // letting the browser postpone layout and paint work for below-the-fold rails.
-.home-page__module {
+.home-page__module:nth-child(n + 3) {
   content-visibility: auto;
   contain-intrinsic-block-size: auto 28rem;
 }

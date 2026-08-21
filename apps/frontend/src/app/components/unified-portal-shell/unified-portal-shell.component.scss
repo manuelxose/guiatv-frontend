@@ -383,6 +383,11 @@
   overflow: hidden;
 }
 
+.portal-shell__hero--stage.portal-shell__hero--media-only {
+  height: 23rem;
+  min-height: 23rem;
+}
+
 .portal-shell__hero--media-only .portal-shell__hero-copy {
   display: none;
 }

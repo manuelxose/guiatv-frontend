@@ -1,6 +1,6 @@
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { catchError, combineLatest, map, Observable, of, retry, shareReplay, switchMap, timer } from 'rxjs';
+import { EMPTY, catchError, combineLatest, expand, map, Observable, of, retry, scan, shareReplay, switchMap, timer } from 'rxjs';
 import { TvApiService } from '../api/tv-api.service';
 import { ChannelMetaDTO, TvGuideSurfaceDTO, TvReadItemDTO } from '../api/models';
 import { CatalogItem, CatalogPlatform, CatalogResponse, FALLBACK_CATALOG_GENRES, FALLBACK_CATALOG_PLATFORMS } from '../services/catalog.service';
@@ -91,7 +91,32 @@ export class TvDataFacade {
   }
 
   getAllPrograms(filters: UnifiedLiveFilters = {}): Observable<TvReadItemDTO[]> {
-    return this.readView('all', filters);
+    const limit = Math.min(Math.max(filters.limit || 240, 1), 240);
+    const requestPage = (cursor?: string) => this.tvApi.getTvRead({
+      view: 'day',
+      date: filters.date || 'today',
+      group: normalizeAll(filters.group),
+      category: normalizeCategory(filters.category),
+      channelId: filters.channel,
+      q: filters.q,
+      limit,
+      cursor,
+      includeChannels: false,
+    });
+
+    return requestPage().pipe(
+      expand((response, pageIndex) => {
+        const cursor = response.data?.meta.nextCursor;
+        // SSR transfers only the bounded first viewport. The hydrated browser
+        // progressively appends a few batches without exposing pagination UI.
+        return this.isBrowser && cursor && pageIndex < 3
+          ? requestPage(cursor).pipe(catchError(() => EMPTY))
+          : EMPTY;
+      }),
+      map((response) => response.data?.items || []),
+      scan((items, page) => [...items, ...page], [] as TvReadItemDTO[]),
+      catchError(() => of([]))
+    );
   }
 
   searchTvPrograms(filters: UnifiedLiveFilters = {}): Observable<TvReadItemDTO[]> {
@@ -312,6 +337,7 @@ export class TvDataFacade {
         channelId: filters.channel || undefined,
         q: String(filters.q || '').trim() || undefined,
         limit: filters.limit,
+        includeChannels: false,
       })
       .pipe(
         retry({ count: 2, delay: 350 }),

@@ -6,7 +6,7 @@ import { cleanOldProgramsJob } from './cleanOldPrograms';
 /**
  * Inicializar todos los jobs programados usando node-cron
  */
-export function initializeJobs(): void {
+export function initializeJobs(options: { refreshFootballHome?: () => Promise<unknown> } = {}): void {
   console.log('[Jobs] Configurando jobs programados...');
 
   // Sincronizar EPG cada 6 horas (00:00, 06:00, 12:00, 18:00)
@@ -56,6 +56,21 @@ export function initializeJobs(): void {
     }
   );
   console.log('  - cleanOldPrograms: cada dia a las 3:00 AM (0 3 * * *)');
+
+  if (options.refreshFootballHome) {
+    const refresh = async () => {
+      try {
+        await options.refreshFootballHome?.();
+      } catch (error) {
+        console.error('Error refrescando football home read model:', error);
+      }
+    };
+    // A one-minute trigger is inexpensive on a fresh cache and guarantees
+    // provider/reconciliation work happens outside visitor requests.
+    cron.schedule('* * * * *', refresh, { timezone: 'Europe/Madrid' });
+    setImmediate(() => void refresh());
+    console.log('  - footballHomeReadModel: cada minuto (* * * * *)');
+  }
 
   console.log('[Jobs] Jobs programados configurados correctamente');
 }

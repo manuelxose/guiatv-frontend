@@ -48,8 +48,10 @@
         }
         @if (item.imageUrl) {
         <img
-          [src]="item.imageUrl"
+          [src]="optimizedImageUrl(item.imageUrl)"
           [alt]="''"
+          width="48"
+          height="48"
           class="portal-shell__rail-image"
           loading="lazy"
         />

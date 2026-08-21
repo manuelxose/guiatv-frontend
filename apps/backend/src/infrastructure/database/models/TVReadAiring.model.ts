@@ -50,6 +50,14 @@ TVReadAiringSchema.index(
   { name: 'idx_tvread_date_group_sort_start' }
 );
 TVReadAiringSchema.index(
+  { date: 1, 'channel.sortOrder': 1, 'airing.start': 1 },
+  { name: 'idx_tvread_date_sort_start' }
+);
+TVReadAiringSchema.index(
+  { date: 1, 'airing.partOfDay': 1, 'channel.sortOrder': 1, 'airing.start': 1 },
+  { name: 'idx_tvread_date_partofday_sort_start' }
+);
+TVReadAiringSchema.index(
   { date: 1, 'airing.start': 1, 'airing.end': 1 },
   { name: 'idx_tvread_date_airing_window' }
 );
@@ -64,6 +72,14 @@ TVReadAiringSchema.index(
 TVReadAiringSchema.index(
   { searchTokens: 1, date: 1 },
   { name: 'idx_tvread_search_tokens' }
+);
+TVReadAiringSchema.index(
+  { 'program.sportFacet': 1, date: 1, 'airing.start': 1 },
+  { name: 'idx_tvread_sport_date_start' }
+);
+TVReadAiringSchema.index(
+  { 'program.editorialCategory': 1, date: 1, 'airing.start': 1 },
+  { name: 'idx_tvread_category_date_start' }
 );
 
 export const TVReadAiringModel = mongoose.model<ITVReadAiringDocument>(

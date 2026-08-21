@@ -3,12 +3,18 @@
 <app-unified-portal-shell
   tone="home"
   [breadcrumbItems]="breadcrumbItems"
-  [showHero]="heroItems().length > 0"
+  [showHero]="true"
   heroVariant="stage"
 >
   <div class="home-page__hero-live" shell-hero-media *ngIf="heroItems().length">
     <app-home-hero [items]="heroItems()"></app-home-hero>
   </div>
+  <div
+    *ngIf="!heroItems().length"
+    shell-hero-media
+    class="home-page__hero-placeholder"
+    aria-hidden="true"
+  ></div>
 
   <section *ngIf="loading()" class="home-page__loading">
     <app-unified-skeleton-block [count]="6" [columns]="3" cardHeight="15rem"></app-unified-skeleton-block>

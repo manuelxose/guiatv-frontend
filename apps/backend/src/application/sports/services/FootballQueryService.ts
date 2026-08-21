@@ -8,7 +8,9 @@
 
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import { BlogPostModel } from '@/infrastructure/database/models/BlogPost.model';
+import { CacheFreshnessPolicy, StaleWhileRevalidateCache } from '@/infrastructure/cache/StaleWhileRevalidateCache';
 import { NotFoundError } from '@/shared/errors';
+import { measureTiming } from '@/shared/utils/performanceTiming';
 import {
   FootballCompetition,
   FootballDataProvider,
@@ -36,60 +38,69 @@ import {
 // empty rather than guessing.
 const FOOTBALL_CATEGORY_SLUGS = ['futbol', 'football', 'deportes', 'sports'];
 
-const HOME_CACHE_KEY = 'football:home';
-const HOME_CACHE_TTL_SECONDS = 45;
+const CACHE_PREFIX = 'v2:football';
+const CACHE_POLICIES = {
+  home: { freshSeconds: 45, staleSeconds: 5 * 60 },
+  live: { freshSeconds: 8, staleSeconds: 45 },
+  today: { freshSeconds: 45, staleSeconds: 5 * 60 },
+  fixtures: { freshSeconds: 10 * 60, staleSeconds: 60 * 60 },
+  historical: { freshSeconds: 24 * 60 * 60, staleSeconds: 7 * 24 * 60 * 60 },
+  detail: { freshSeconds: 60, staleSeconds: 15 * 60 },
+  metadata: { freshSeconds: 6 * 60 * 60, staleSeconds: 24 * 60 * 60 },
+  competition: { freshSeconds: 5 * 60, staleSeconds: 60 * 60 },
+  news: { freshSeconds: 3 * 60, staleSeconds: 30 * 60 },
+  newsDetail: { freshSeconds: 60 * 60, staleSeconds: 24 * 60 * 60 },
+  search: { freshSeconds: 60, staleSeconds: 5 * 60 },
+} satisfies Record<string, CacheFreshnessPolicy>;
 
 // The frontend polls this endpoint client-side for live matches (every
 // ~25s per open tab, spec §49-51). Providers like football-data.org rate
 // limit their free tier around 10 req/min, so this cache decouples N
 // concurrent pollers from N upstream calls — short enough that scores
 // still feel live, long enough to absorb a fleet of open tabs.
-const LIVE_CACHE_KEY = 'football:live';
-const LIVE_CACHE_TTL_SECONDS = 15;
-
-// Competitions are near-static reference data (13 items, rarely change) —
-// a long TTL both survives a provider rate-limit hit gracefully and cuts
-// real upstream call volume, which is the actual cause of hitting that
-// limit in the first place (every uncached page view was a fresh call).
-const COMPETITIONS_CACHE_KEY = 'football:competitions';
-const COMPETITIONS_CACHE_TTL_SECONDS = 6 * 60 * 60;
-
 export class FootballQueryService {
+  private readonly swrCache: StaleWhileRevalidateCache;
+
   constructor(
     private readonly provider: FootballDataProvider,
     private readonly reconciliation: BroadcastReconciliationService,
     private readonly cacheRepository?: ICacheRepository
-  ) {}
+  ) {
+    this.swrCache = new StaleWhileRevalidateCache(cacheRepository);
+  }
+
+  /** Invalidate only football public read snapshots after admin mutations. */
+  async invalidatePublicReads(): Promise<void> {
+    await this.cacheRepository?.clear(`${CACHE_PREFIX}:*`);
+  }
 
   async getHome(): Promise<FootballHomeDTO> {
-    const cached = await this.readCache<FootballHomeDTO>(HOME_CACHE_KEY);
-    if (cached) {
-      return cached;
-    }
-
+    return this.swrCache.getOrLoad(`${CACHE_PREFIX}:home`, CACHE_POLICIES.home, async () => {
     const now = new Date();
     const todayKey = 'today';
     const tomorrowKey = 'tomorrow';
 
-    const [liveMatches, todayMatches, upcomingMatches] = await Promise.all([
+    const [liveMatches, todayMatches, upcomingMatches] = await measureTiming('provider', () => Promise.all([
       this.provider.getLiveMatches(),
       this.provider.getMatches({ date: todayKey }),
       this.provider.getMatches({ date: tomorrowKey }),
-    ]);
+    ]));
 
-    const reconciled = await this.reconciliation.reconcile([
+    const reconciled = await measureTiming('reconcile', () => this.reconciliation.reconcile([
       ...liveMatches,
       ...todayMatches,
       ...upcomingMatches,
-    ]);
+    ]));
 
     const byId = new Map(reconciled.map((match) => [match.id, match]));
     const reconciledLive = liveMatches.map((match) => byId.get(match.id) ?? match);
     const reconciledToday = todayMatches.map((match) => byId.get(match.id) ?? match);
     const reconciledUpcoming = upcomingMatches.map((match) => byId.get(match.id) ?? match);
 
-    const competitions = await this.provider.getCompetitions();
-    const latestNews = await this.getNews({ limit: 6 });
+    const [competitions, latestNews] = await Promise.all([
+      measureTiming('provider', () => settle(this.provider.getCompetitions(), [])),
+      settle(this.getNews({ limit: 6 }), []),
+    ]);
 
     const home: FootballHomeDTO = {
       liveMatches: reconciledLive,
@@ -101,44 +112,43 @@ export class FootballQueryService {
       generatedAt: now.toISOString(),
     };
 
-    await this.writeCache(HOME_CACHE_KEY, home, HOME_CACHE_TTL_SECONDS);
     return home;
+    });
   }
 
   async getMatches(query: FootballMatchQuery): Promise<FootballMatchesResponseDTO> {
-    const matches = await this.provider.getMatches(query);
-    const reconciled = await this.reconciliation.reconcile(matches);
-    return {
-      matches: reconciled,
-      meta: {
-        total: reconciled.length,
-        date: query.date,
-        status: query.status,
-        competitionSlug: query.competitionSlug,
-        teamSlug: query.teamSlug,
-        generatedAt: new Date().toISOString(),
-      },
-    };
+    const policy = resolveMatchesPolicy(query);
+    const key = `${CACHE_PREFIX}:matches:${stableKey(query)}`;
+    return this.swrCache.getOrLoad(key, policy, async () => {
+      const matches = await measureTiming('provider', () => this.provider.getMatches(query));
+      const reconciled = await measureTiming('reconcile', () => this.reconciliation.reconcile(matches));
+      return {
+        matches: reconciled,
+        meta: {
+          total: reconciled.length,
+          date: query.date,
+          status: query.status,
+          competitionSlug: query.competitionSlug,
+          teamSlug: query.teamSlug,
+          generatedAt: new Date().toISOString(),
+        },
+      };
+    });
   }
 
   async getLiveMatches(): Promise<FootballMatchesResponseDTO> {
-    const cached = await this.readCache<FootballMatchesResponseDTO>(LIVE_CACHE_KEY);
-    if (cached) {
-      return cached;
-    }
-
-    const matches = await this.provider.getLiveMatches();
-    const reconciled = await this.reconciliation.reconcile(matches);
-    const result: FootballMatchesResponseDTO = {
-      matches: reconciled,
-      meta: { total: reconciled.length, status: 'live', generatedAt: new Date().toISOString() },
-    };
-
-    await this.writeCache(LIVE_CACHE_KEY, result, LIVE_CACHE_TTL_SECONDS);
-    return result;
+    return this.swrCache.getOrLoad(`${CACHE_PREFIX}:matches:live`, CACHE_POLICIES.live, async () => {
+      const matches = await measureTiming('provider', () => this.provider.getLiveMatches());
+      const reconciled = await measureTiming('reconcile', () => this.reconciliation.reconcile(matches));
+      return {
+        matches: reconciled,
+        meta: { total: reconciled.length, status: 'live', generatedAt: new Date().toISOString() },
+      };
+    });
   }
 
   async getMatch(idOrSlug: string): Promise<FootballMatchDetailDTO> {
+    return this.swrCache.getOrLoad(`${CACHE_PREFIX}:match:${encodeURIComponent(idOrSlug)}`, CACHE_POLICIES.detail, async () => {
     const match = await this.provider.getMatch(idOrSlug);
     if (!match) {
       throw new NotFoundError('Football match', idOrSlug);
@@ -157,6 +167,7 @@ export class FootballQueryService {
       relatedNews,
       meta: { generatedAt: new Date().toISOString() },
     };
+    });
   }
 
   async getCompetitions(): Promise<FootballCompetitionsResponseDTO> {
@@ -170,24 +181,22 @@ export class FootballQueryService {
     // production logs. Competitions are near-static reference data (13
     // items, rarely change), so a long cache both fixes the crash and
     // meaningfully cuts upstream pressure — the actual root cause.
-    const cached = await this.readCache<FootballCompetitionsResponseDTO>(COMPETITIONS_CACHE_KEY);
-    if (cached) {
-      return cached;
-    }
-
-    const competitions = await settle(this.provider.getCompetitions(), []);
-    const result: FootballCompetitionsResponseDTO = {
-      competitions,
-      meta: { total: competitions.length, generatedAt: new Date().toISOString() },
-    };
-
-    if (competitions.length) {
-      await this.writeCache(COMPETITIONS_CACHE_KEY, result, COMPETITIONS_CACHE_TTL_SECONDS);
-    }
-    return result;
+    return this.swrCache.getOrLoad(
+      `${CACHE_PREFIX}:competitions`,
+      CACHE_POLICIES.metadata,
+      async () => {
+        const competitions = await measureTiming('provider', () => settle(this.provider.getCompetitions(), []));
+        return {
+          competitions,
+          meta: { total: competitions.length, generatedAt: new Date().toISOString() },
+        };
+      },
+      (result) => result.competitions.length > 0
+    );
   }
 
   async getCompetition(slug: string): Promise<FootballCompetitionDetailDTO> {
+    return this.swrCache.getOrLoad(`${CACHE_PREFIX}:competition:${encodeURIComponent(slug)}`, CACHE_POLICIES.competition, async () => {
     const competition = await this.provider.getCompetition(slug);
     if (!competition) {
       throw new NotFoundError('Football competition', slug);
@@ -208,9 +217,11 @@ export class FootballQueryService {
       news,
       meta: { generatedAt: new Date().toISOString() },
     };
+    });
   }
 
   async getTeam(slug: string): Promise<FootballTeamDetailDTO> {
+    return this.swrCache.getOrLoad(`${CACHE_PREFIX}:team:${encodeURIComponent(slug)}`, CACHE_POLICIES.competition, async () => {
     const team = await this.provider.getTeam(slug);
     if (!team) {
       throw new NotFoundError('Football team', slug);
@@ -238,6 +249,7 @@ export class FootballQueryService {
       news,
       meta: { generatedAt: new Date().toISOString() },
     };
+    });
   }
 
   async search(q: string): Promise<FootballSearchResponseDTO> {
@@ -246,6 +258,7 @@ export class FootballQueryService {
       return { query: '', matches: [], teams: [], competitions: [], news: [], meta: { generatedAt: new Date().toISOString() } };
     }
 
+    return this.swrCache.getOrLoad(`${CACHE_PREFIX}:search:${encodeURIComponent(normalizeQuery(query))}`, CACHE_POLICIES.search, async () => {
     // Same isolation as getCompetition()/getTeam()/getMatch(): one entity
     // type failing (teams/competitions listings, news) must not blank out
     // the others — a user searching should still see whichever result
@@ -273,21 +286,30 @@ export class FootballQueryService {
       news,
       meta: { generatedAt: new Date().toISOString() },
     };
+    });
   }
 
   async getNews(filters: NewsFilters = {}): Promise<FootballNewsItem[]> {
-    const query = buildNewsQuery(filters);
+    const policy = filters.slug ? CACHE_POLICIES.newsDetail : CACHE_POLICIES.news;
+    return this.swrCache.getOrLoad(`${CACHE_PREFIX}:news:${stableKey(filters)}`, policy, async () => {
+      const query = buildNewsQuery(filters);
+      const includeContent = Boolean(filters.slug);
+      const projection = includeContent
+        ? undefined
+        : {
+            title: 1, slug: 1, excerpt: 1, contentType: 1, author: 1,
+            featuredImage: 1, 'seo.ogImage': 1, publishedAt: 1, updatedAt: 1,
+            sportsRelations: 1,
+          };
 
-    const posts = await BlogPostModel.find(query)
-      .sort({ featured: -1, publishedAt: -1, createdAt: -1 })
-      .skip(Math.max(filters.offset || 0, 0))
-      .limit(Math.min(filters.limit || 12, 30))
-      .lean()
-      .exec();
-
-    // Full body is only worth the payload for a single-article lookup
-    // (news-detail); list surfaces (home, news list) never need it.
-    return posts.map((post: any) => this.mapNewsItem(post, !!filters.slug));
+      const mongoQuery = BlogPostModel.find(query)
+        .sort({ featured: -1, publishedAt: -1, createdAt: -1 })
+        .skip(Math.max(filters.offset || 0, 0))
+        .limit(Math.min(filters.limit || 12, 30));
+      if (projection) mongoQuery.select(projection);
+      const posts = await measureTiming('db', () => mongoQuery.lean().exec());
+      return posts.map((post: any) => this.mapNewsItem(post, includeContent));
+    });
   }
 
   private mapNewsItem(post: any, includeContent = false): FootballNewsItem {
@@ -315,27 +337,21 @@ export class FootballQueryService {
     return pool.slice(0, 4);
   }
 
-  private async readCache<T>(key: string): Promise<T | null> {
-    if (!this.cacheRepository || typeof this.cacheRepository.get !== 'function') {
-      return null;
-    }
-    try {
-      return (await this.cacheRepository.get(key)) as T | null;
-    } catch {
-      return null;
-    }
-  }
+}
 
-  private async writeCache<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
-    if (!this.cacheRepository || typeof this.cacheRepository.set !== 'function') {
-      return;
-    }
-    try {
-      await this.cacheRepository.set(key, value, ttlSeconds);
-    } catch {
-      // Cache writes are best-effort.
-    }
-  }
+function stableKey(value: object): string {
+  return Object.entries(value as Record<string, unknown>)
+    .filter(([, entry]) => entry !== undefined && entry !== null && entry !== '')
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, entry]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(entry))}`)
+    .join('&') || 'all';
+}
+
+function resolveMatchesPolicy(query: FootballMatchQuery): CacheFreshnessPolicy {
+  if (query.status === 'live') return CACHE_POLICIES.live;
+  if (query.status === 'finished') return CACHE_POLICIES.historical;
+  if (query.date === 'today') return CACHE_POLICIES.today;
+  return CACHE_POLICIES.fixtures;
 }
 
 function normalizeQuery(q: string): string {
