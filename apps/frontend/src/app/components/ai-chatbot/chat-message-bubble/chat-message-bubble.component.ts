@@ -54,14 +54,14 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
             <!-- User message: plain text -->
             <p
               *ngIf="message.role === 'user'"
-              class="whitespace-pre-line text-sm leading-relaxed"
+              class="whitespace-pre-line text-sm leading-relaxed break-words"
             >{{ message.content }}</p>
 
             <!-- Assistant message: markdown rendered with optional typewriter -->
             <div
               *ngIf="message.role === 'assistant'"
               #contentEl
-              class="chat-prose text-sm leading-relaxed"
+              class="chat-prose text-sm leading-relaxed break-words"
               [innerHTML]="displayContent | markdown"
             ></div>
 
@@ -159,6 +159,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
   styles: [`
     :host {
       display: block;
+      min-width: 0;
     }
 
     /* Typewriter cursor blink */
@@ -169,6 +170,9 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
 
     /* Markdown prose styles for assistant messages */
     :host ::ng-deep .chat-prose {
+      overflow-wrap: break-word;
+      word-break: break-word;
+
       p { margin-bottom: 0.5rem; }
       p:last-child { margin-bottom: 0; }
 
@@ -198,6 +202,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
         color: var(--accent-live);
         text-decoration: underline;
         text-underline-offset: 2px;
+        overflow-wrap: anywhere;
         &:hover { opacity: 0.85; }
       }
 
@@ -209,6 +214,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
         border-radius: 0.375rem;
         padding: 0.125rem 0.375rem;
         color: var(--portal-text);
+        overflow-wrap: anywhere;
       }
 
       pre {
@@ -268,8 +274,8 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
   // the narrower cap so reading line length doesn't regress on a wide panel.
   get outerWidthClass(): string {
     return this.message.recommendations?.length
-      ? 'group w-full md:max-w-[96%]'
-      : 'group max-w-[94%] md:max-w-[88%]';
+      ? 'group w-full md:max-w-[96%] min-w-0'
+      : 'group max-w-[94%] md:max-w-[88%] min-w-0';
   }
 
   get bubbleClasses(): string {

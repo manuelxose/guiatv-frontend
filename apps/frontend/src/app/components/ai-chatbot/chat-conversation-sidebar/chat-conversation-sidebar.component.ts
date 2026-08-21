@@ -18,7 +18,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
   template: `
     <!-- Backdrop (mobile) -->
     <div
-      class="absolute inset-0 bg-black/50 backdrop-blur-sm z-[var(--z-dropdown)] md:hidden"
+      class="absolute inset-0 bg-black/50 backdrop-blur-sm z-[var(--z-dropdown)]"
       (click)="close.emit()"
       (keydown.escape)="close.emit()"
       tabindex="0"
