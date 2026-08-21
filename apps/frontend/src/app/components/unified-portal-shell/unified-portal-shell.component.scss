@@ -683,10 +683,13 @@
 }
 
 .portal-shell--discover,
-.portal-shell--home,
+.portal-shell--home {
+  --guide-accent: var(--guide-accent-discover, #f59e0b);
+}
+
 .portal-shell--editorial,
 .portal-shell--rankings {
-  --guide-accent: var(--guide-accent-discover, #f59e0b);
+  --guide-accent: var(--accent-editorial);
 }
 
 .portal-shell--streaming {

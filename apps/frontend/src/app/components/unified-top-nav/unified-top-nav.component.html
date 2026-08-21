@@ -62,44 +62,9 @@
           <span class="unified-top-nav__tab-copy"><strong>{{ tab.label }}</strong></span>
         </a>
 
-        <div class="unified-top-nav__more">
-          <button
-            type="button"
-            class="unified-top-nav__more-trigger"
-            (click)="toggleMore()"
-            [attr.aria-expanded]="moreOpen()"
-            aria-controls="portal-explore-menu"
-          >
-            <span>Editorial y más</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-              <path d="m7.5 9.75 4.5 4.5 4.5-4.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-            </svg>
-          </button>
-
-          @if (moreOpen()) {
-          <div id="portal-explore-menu" class="unified-top-nav__more-menu" role="menu" aria-label="Editorial y más">
-            <p>Explorar</p>
-            @for (destination of exploreDestinations; track destination.id) {
-            <a [routerLink]="destination.path" role="menuitem" (click)="closeMore()">
-              <span class="unified-top-nav__more-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path [attr.d]="destination.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
-              </span>
-              <span><strong>{{ destination.label }}</strong><small>{{ destination.hint }}</small></span>
-            </a>
-            }
-            <div class="unified-top-nav__theme-options" role="group" aria-label="Preferencia de tema">
-              <span>Tema</span>
-              @for (mode of ['system', 'light', 'dark']; track mode) {
-              <button type="button" (click)="setTheme(mode)" [class.is-selected]="theme.mode() === mode">
-                {{ mode === 'system' ? 'Sistema' : mode === 'light' ? 'Claro' : 'Oscuro' }}
-              </button>
-              }
-            </div>
-          </div>
-          }
-        </div>
       </nav>
 
+      @if (!viewport.isMobile() || mobileSearchOpen()) {
       <div
         class="unified-top-nav__search"
         [class.unified-top-nav__search--open]="mobileSearchOpen()"
@@ -115,10 +80,9 @@
         <div class="unified-top-nav__search-panel">
           <div class="unified-top-nav__search-field">
             <app-unified-search
-              [activeTab]="activeTab()"
               [query]="searchQuery()"
               [expanded]="true"
-              (searchChange)="searchChange.emit($event)"
+              (searchChange)="searchQuery.set($event)"
               (searchSubmit)="onSearchSubmit($event)"
               (suggestionOpen)="closeMobileSearch()"
             ></app-unified-search>
@@ -132,9 +96,12 @@
           </button>
         </div>
       </div>
+      }
 
       <div class="unified-top-nav__actions">
+        @if (viewport.isMobile()) {
         <button
+          #mobileSearchTrigger
           type="button"
           class="unified-top-nav__chrome-button unified-top-nav__search-trigger"
           (click)="openMobileSearch()"
@@ -145,6 +112,7 @@
             <path d="M16 16l4.5 4.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
           </svg>
         </button>
+        }
 
         <button
           type="button"

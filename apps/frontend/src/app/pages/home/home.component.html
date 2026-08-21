@@ -2,21 +2,9 @@
 
 <app-unified-portal-shell
   tone="home"
-  [activeTab]="null"
-  [searchQuery]="searchQuery()"
-  [topPillChips]="[]"
-  [leftRailSections]="[]"
-  [rightRailSections]="[]"
-  [rightRailLabel]="rightRailLabel"
-  rightRailVariant="prime"
-  [isAuthenticated]="isAuthenticated()"
-  [profileName]="profile()?.name || 'Cuenta'"
   [breadcrumbItems]="breadcrumbItems"
   [showHero]="heroItems().length > 0"
   heroVariant="stage"
-  (tabChange)="navigateToTab($event)"
-  (searchChange)="onSearchChange($event)"
-  (searchSubmit)="onSearchSubmit($event)"
 >
   <div class="home-page__hero-live" shell-hero-media *ngIf="heroItems().length">
     <app-home-hero [items]="heroItems()"></app-home-hero>

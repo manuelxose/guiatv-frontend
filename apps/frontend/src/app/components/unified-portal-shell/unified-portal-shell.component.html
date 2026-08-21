@@ -10,16 +10,11 @@
   ]"
 >
   <app-unified-top-nav
-    [activeTab]="activeTab()"
-    [searchQuery]="searchQuery()"
     [isAuthenticated]="isAuthenticated()"
-    [profileName]="profileName()"
+    [profileName]="profile()?.name || 'Cuenta'"
     [showLeftRail]="hasLeftRail()"
     [showRightRail]="showRightRailToggle()"
     [rightRailLabel]="rightRailLabel()"
-    (tabChange)="tabChange.emit($event)"
-    (searchChange)="searchChange.emit($event)"
-    (searchSubmit)="searchSubmit.emit($event)"
     (leftRailToggle)="toggleLeftRail()"
     (rightRailToggle)="toggleRightRail()"
   ></app-unified-top-nav>

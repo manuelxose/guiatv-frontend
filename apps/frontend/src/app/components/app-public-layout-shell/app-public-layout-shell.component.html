@@ -1,23 +1,8 @@
 <app-unified-portal-shell
   class="app-public-layout-shell"
   [tone]="tone()"
-  [activeTab]="activeTab()"
-  [searchQuery]="searchQuery()"
-  [topPillChips]="topPillChips()"
-  [topPillSelection]="topPillSelection()"
-  [topPillLabel]="topPillLabel()"
-  [isAuthenticated]="isAuthenticated()"
-  [profileName]="profile()?.name || 'Cuenta'"
   [breadcrumbItems]="breadcrumbItems()"
   [showHero]="false"
-  [leftRailSections]="leftRailSections()"
-  [rightRailSections]="rightRailSections()"
-  [rightRailLabel]="rightRailLabel()"
-  rightRailVariant="prime"
-  (tabChange)="onTabChange($event)"
-  (searchChange)="onSearchChange($event)"
-  (searchSubmit)="onSearchSubmit($event)"
-  (topPillChange)="onTopPillChange($event)"
 >
   <div class="app-public-layout-shell__content">
     <ng-content></ng-content>

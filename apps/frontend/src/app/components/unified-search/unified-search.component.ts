@@ -61,7 +61,6 @@ interface SuggestionGroup {
 export class UnifiedSearchComponent implements OnInit, OnChanges {
   private readonly destroyRef = inject(DestroyRef);
 
-  @Input() activeTab: 'live' | 'discover' | 'streaming' | 'sports' | null = 'discover';
   @Input() query = '';
   @Input() expanded = false;
 
@@ -109,7 +108,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
           }
           this.isLoading = true;
           return this.discoveryService.search({ q, limit: 5 }).pipe(
-            map((response) => (response.items || []).filter((item) => this.matchesTab(item)))
+            map((response) => response.items || [])
           );
         }),
         takeUntilDestroyed(this.destroyRef)
@@ -138,16 +137,11 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
   }
 
   get placeholder(): string {
-    if (this.activeTab === 'live') {
-      return 'Buscar programas, franjas o canales';
-    }
-    if (this.activeTab === 'streaming') {
-      return 'Buscar títulos, plataformas o géneros';
-    }
-    if (this.activeTab === 'sports') {
-      return 'Buscar eventos, deportes o competiciones';
-    }
-    return 'Buscar en todo el portal';
+    return 'Buscar programas, películas y series';
+  }
+
+  get activeDescendantId(): string | null {
+    return this.focusedIndex >= 0 ? `unified-search-option-${this.focusedIndex}` : null;
   }
 
   @HostListener('document:click')
@@ -202,7 +196,6 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
 
   clear(): void {
     this.control.setValue('');
-    this.searchChange.emit('');
     this.showMenu = false;
   }
 
@@ -257,19 +250,6 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
     ];
 
     return groups.filter((group) => group.items.length > 0);
-  }
-
-  private matchesTab(item: CatalogItem): boolean {
-    if (!this.activeTab) {
-      return true;
-    }
-    if (this.activeTab === 'live' || this.activeTab === 'sports') {
-      return item.source === 'program';
-    }
-    if (this.activeTab === 'streaming') {
-      return item.source !== 'program';
-    }
-    return true;
   }
 
   private persistHistory(value: string): void {
