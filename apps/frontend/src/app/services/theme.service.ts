@@ -73,6 +73,16 @@ export class ThemeService {
     return next;
   }
 
+  /**
+   * The prominent UI control must always resolve to a visibly different
+   * palette. System remains a preference, but is selected explicitly.
+   */
+  toggle(): ResolvedTheme {
+    const next: ResolvedTheme = this.resolved === 'dark' ? 'light' : 'dark';
+    this.setMode(next);
+    return next;
+  }
+
   private readStoredMode(): ThemeMode {
     const raw = this.storage.getItem(THEME_STORAGE_KEY);
     return isThemeMode(raw) ? raw : 'system';

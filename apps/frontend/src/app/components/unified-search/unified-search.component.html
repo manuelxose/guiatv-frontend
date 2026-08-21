@@ -1,4 +1,4 @@
-<div class="search-shell" (click)="onShellClick($event)" (keydown)="$event.stopPropagation()" tabindex="-1">
+<div class="search-shell" (click)="onShellClick($event)" (keydown)="handleKeyboard($event)" tabindex="-1">
   <label class="sr-only" for="unified-search-input">Buscar contenido</label>
 
   <div class="search-shell__field" [class.search-shell__field--expanded]="expanded">
@@ -10,8 +10,11 @@
     </span>
 
     <input
+      #searchInput
       id="unified-search-input"
-      type="search"
+      type="text"
+      inputmode="search"
+      enterkeyhint="search"
       [formControl]="control"
       [placeholder]="placeholder"
       autocomplete="off"
@@ -28,13 +31,6 @@
       </svg>
     </button>
 
-    <button type="button" class="search-shell__submit-button" (click)="submit()" aria-label="Buscar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <circle cx="11" cy="11" r="6.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></circle>
-        <path d="M16 16l4.5 4.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-      </svg>
-      <span>Buscar</span>
-    </button>
   </div>
 
   <div *ngIf="showMenu" id="unified-search-results" class="search-shell__menu" role="listbox">

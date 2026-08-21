@@ -1,23 +1,23 @@
-import { APP_PATHS, MOBILE_APP_TABS, normalizePath } from './route-map';
+import { APP_PATHS, normalizePath } from './route-map';
+import {
+  PORTAL_EXPLORE_DESTINATIONS,
+  PORTAL_MOBILE_PRIMARY_DESTINATIONS,
+} from './portal-navigation.config';
 
 describe('route map', () => {
-  it('defines exactly four distinct, actionable mobile product tabs', () => {
-    expect(MOBILE_APP_TABS.length).toBe(4);
-    expect(new Set(MOBILE_APP_TABS.map((tab) => tab.key)).size).toBe(4);
-    expect(new Set(MOBILE_APP_TABS.map((tab) => tab.path)).size).toBe(4);
-    MOBILE_APP_TABS.forEach((tab) => {
+  it('defines five deliberate mobile destinations from the shared portal model', () => {
+    expect(PORTAL_MOBILE_PRIMARY_DESTINATIONS.map((tab) => tab.id)).toEqual([
+      'home', 'live', 'sports', 'discover', 'more',
+    ]);
+    PORTAL_MOBILE_PRIMARY_DESTINATIONS.forEach((tab) => {
       expect(tab.label.length).toBeGreaterThan(0);
-      expect(tab.path.startsWith('/')).toBeTrue();
-      expect(tab.iconOutline).toBeTruthy();
-      expect(tab.iconFilled).toBeTruthy();
+      expect(tab.iconPath).toBeTruthy();
     });
   });
 
-  it('keeps the same four product destinations on mobile', () => {
-    expect(MOBILE_APP_TABS.map((tab) => tab.path)).toContain(APP_PATHS.guide);
-    expect(MOBILE_APP_TABS.map((tab) => tab.path)).toContain(APP_PATHS.explore);
-    expect(MOBILE_APP_TABS.map((tab) => tab.path)).toContain(APP_PATHS.platforms);
-    expect(MOBILE_APP_TABS.map((tab) => tab.path)).toContain(APP_PATHS.sports);
+  it('keeps editorial and rankings reachable from the shared More model', () => {
+    expect(PORTAL_EXPLORE_DESTINATIONS.map((tab) => tab.path)).toContain(APP_PATHS.blog);
+    expect(PORTAL_EXPLORE_DESTINATIONS.map((tab) => tab.path)).toContain(APP_PATHS.top10);
   });
 
   it('normalizes query strings, hashes, and trailing slashes', () => {

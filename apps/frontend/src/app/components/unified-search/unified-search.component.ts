@@ -13,6 +13,7 @@ import {
   Output,
   PLATFORM_ID,
   SimpleChanges,
+  ViewChild,
   inject,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -66,6 +67,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
 
   @Output() searchChange = new EventEmitter<string>();
   @Output() searchSubmit = new EventEmitter<string>();
+  @Output() suggestionOpen = new EventEmitter<void>();
 
   readonly control = new FormControl('', { nonNullable: true });
   suggestions: CatalogItem[] = [];
@@ -75,6 +77,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
   isLoading = false;
   focusedIndex = -1;
   private userInteracted = false;
+  @ViewChild('searchInput') private readonly searchInput?: { nativeElement: HTMLInputElement };
 
   private readonly isBrowser: boolean;
 
@@ -162,7 +165,6 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
     event.stopPropagation();
   }
 
-  @HostListener('keydown', ['$event'])
   handleKeyboard(event: KeyboardEvent): void {
     if (!this.showMenu) {
       if (event.key === 'ArrowDown' || event.key === 'Enter') {
@@ -204,6 +206,10 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
     this.showMenu = false;
   }
 
+  focusInput(): void {
+    this.searchInput?.nativeElement.focus();
+  }
+
   submit(): void {
     const value = String(this.control.value || '').trim();
     this.persistHistory(value);
@@ -214,6 +220,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
   openSuggestion(item: CatalogItem): void {
     this.persistHistory(item.title);
     this.showMenu = false;
+    this.suggestionOpen.emit();
     void this.router.navigateByUrl(item.detailPath || `/contenido/${item.catalogId}`);
   }
 

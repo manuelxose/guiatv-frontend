@@ -88,12 +88,27 @@ describe('ThemeService', () => {
     expect(htmlElement.style.colorScheme).toBe('light');
   });
 
-  it('cycles light → dark → system → light', () => {
+  it('toggles between concrete themes without a visually ambiguous system step', () => {
     service = createService();
     service.setMode('light');
-    expect(service.cycle()).toBe('dark');
-    expect(service.cycle()).toBe('system');
-    expect(service.cycle()).toBe('light');
+    expect(service.toggle()).toBe('dark');
+    expect(service.mode()).toBe('dark');
+    expect(htmlElement.getAttribute('data-theme')).toBe('dark');
+    expect(htmlElement.style.colorScheme).toBe('dark');
+    expect(store['guiatv-theme']).toBe('dark');
+    expect(service.toggle()).toBe('light');
+    expect(service.mode()).toBe('light');
+    expect(htmlElement.getAttribute('data-theme')).toBe('light');
+  });
+
+  it('turns a system preference into the opposite explicit resolved theme', () => {
+    setSystemPrefersDark(false);
+    service = createService();
+    expect(service.mode()).toBe('system');
+    expect(service.toggle()).toBe('dark');
+    service.setMode('system');
+    setSystemPrefersDark(true);
+    expect(service.toggle()).toBe('light');
   });
 
   it('ignores an invalid stored value', () => {

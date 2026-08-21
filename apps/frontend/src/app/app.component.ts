@@ -5,6 +5,8 @@ import {
   Inject,
   OnDestroy,
   OnInit,
+  ElementRef,
+  ViewChild,
   inject,
 } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
@@ -18,7 +20,14 @@ import { ChatService } from './services/chat.service';
 import { MetaService } from './services/meta.service';
 import { ViewportService } from './services/viewport.service';
 import { environment } from '../environments/environment';
-import { MOBILE_APP_TABS, AppRouteEntry, normalizePath as normalizeRoutePath } from './config/route-map';
+import { normalizePath as normalizeRoutePath } from './config/route-map';
+import {
+  PORTAL_ACCOUNT_DESTINATIONS,
+  PORTAL_EXPLORE_DESTINATIONS,
+  PORTAL_MOBILE_PRIMARY_DESTINATIONS,
+  PortalMobileDestination,
+} from './config/portal-navigation.config';
+import { ThemeMode, ThemeService } from './services/theme.service';
 
 type AppLayoutMode = 'portal-page' | 'public-shell' | 'minimal-shell' | 'private-shell';
 
@@ -45,7 +54,12 @@ export class AppComponent implements OnInit, OnDestroy {
   public chatPanelWidth = 440;
   public swipeOffsetY = 0;
   public swipeAnimating = false;
-  public readonly mobileTabs: AppRouteEntry[] = MOBILE_APP_TABS;
+  public readonly mobileTabs = PORTAL_MOBILE_PRIMARY_DESTINATIONS;
+  public readonly exploreDestinations = PORTAL_EXPLORE_DESTINATIONS;
+  public readonly accountDestinations = PORTAL_ACCOUNT_DESTINATIONS;
+  public mobileMoreOpen = false;
+  public readonly theme = inject(ThemeService);
+  @ViewChild('mobileMoreTrigger') private readonly mobileMoreTrigger?: ElementRef<HTMLButtonElement>;
 
   public readonly aiChatbotEnabled = environment.ai.chatbotEnabled;
 
@@ -101,6 +115,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.cleanupResizeListeners();
+    this.document.body.classList.remove('portal-overlay-open');
   }
 
   @HostListener('window:resize')
@@ -189,16 +204,40 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.currentLayout !== 'minimal-shell';
   }
 
-  public isMobileTabActive(tab: AppRouteEntry): boolean {
+  public isMobileTabActive(tab: PortalMobileDestination): boolean {
     const path = normalizeRoutePath(this.currentPath);
-    if (tab.key === 'home') return path === '/';
-    if (tab.key === 'guia-canales') {
+    if (tab.id === 'more') return false;
+    if (tab.id === 'home') return path === '/';
+    if (tab.id === 'live') {
       return path.startsWith('/programacion-tv/guia-canales') || path.startsWith('/canales/');
     }
-    if (tab.key === 'que-ver-hoy') {
+    if (tab.id === 'discover') {
       return path.startsWith('/programacion-tv/que-ver-hoy') || path.startsWith('/programas/') || path.startsWith('/peliculas/') || path.startsWith('/series/');
     }
-    return path.startsWith(normalizeRoutePath(tab.path));
+    return Boolean(tab.path && path.startsWith(normalizeRoutePath(tab.path)));
+  }
+
+  public toggleMobileMore(): void {
+    this.mobileMoreOpen = !this.mobileMoreOpen;
+    this.document.body.classList.toggle('portal-overlay-open', this.mobileMoreOpen);
+  }
+
+  public closeMobileMore(): void {
+    if (!this.mobileMoreOpen) return;
+    this.mobileMoreOpen = false;
+    this.document.body.classList.remove('portal-overlay-open');
+    setTimeout(() => this.mobileMoreTrigger?.nativeElement.focus());
+  }
+
+  public setTheme(mode: ThemeMode | string): void {
+    if (mode === 'light' || mode === 'dark' || mode === 'system') {
+      this.theme.setMode(mode);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  public onEscape(): void {
+    this.closeMobileMore();
   }
 
   private cleanupResizeListeners(): void {

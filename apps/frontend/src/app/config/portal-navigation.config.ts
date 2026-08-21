@@ -58,6 +58,19 @@ export interface PortalDestination {
   iconPath: string;
 }
 
+/**
+ * The compact mobile bar is intentionally a subset of the global model.  The
+ * final item opens the secondary navigation surface; it is not a duplicate
+ * route disguised as a tab.
+ */
+export interface PortalMobileDestination {
+  id: PortalDestination['id'] | 'more';
+  label: string;
+  path?: string;
+  iconPath: string;
+  kind: 'route' | 'more';
+}
+
 export interface PortalPillDefinition {
   id: string;
   label: string;
@@ -148,6 +161,32 @@ export const PORTAL_GLOBAL_DESTINATIONS: readonly PortalDestination[] = [
     path: APP_PATHS.streamingComparison,
     iconPath: PORTAL_ICON_PATHS.compare,
   },
+] as const;
+
+/** Destinations disclosed from the shared Editorial / Más surface. */
+export const PORTAL_EXPLORE_DESTINATIONS: readonly PortalDestination[] =
+  PORTAL_GLOBAL_DESTINATIONS.filter((destination) =>
+    ['editorial', 'rankings', 'trends', 'compare'].includes(destination.id)
+  );
+
+/** One mobile-first navigation model, shared by the fixed bar and its sheet. */
+export const PORTAL_MOBILE_PRIMARY_DESTINATIONS: readonly PortalMobileDestination[] = [
+  { ...PORTAL_GLOBAL_DESTINATIONS.find((destination) => destination.id === 'home')!, kind: 'route' },
+  { ...PORTAL_GLOBAL_DESTINATIONS.find((destination) => destination.id === 'live')!, kind: 'route' },
+  { ...PORTAL_GLOBAL_DESTINATIONS.find((destination) => destination.id === 'sports')!, kind: 'route' },
+  { ...PORTAL_GLOBAL_DESTINATIONS.find((destination) => destination.id === 'discover')!, kind: 'route' },
+  {
+    id: 'more',
+    label: 'Más',
+    iconPath: PORTAL_ICON_PATHS.menu,
+    kind: 'more',
+  },
+] as const;
+
+export const PORTAL_ACCOUNT_DESTINATIONS = [
+  { id: 'profile', label: 'Perfil', path: APP_PATHS.profile, iconPath: PORTAL_ICON_PATHS.account },
+  { id: 'for-you', label: 'Para ti', path: APP_PATHS.forYou, iconPath: PORTAL_ICON_PATHS.sparkles },
+  { id: 'community', label: 'Comunidad', path: APP_PATHS.community, iconPath: PORTAL_ICON_PATHS.history },
 ] as const;
 
 export const PORTAL_HOME_TOP_PILLS: readonly PortalPillDefinition[] = [

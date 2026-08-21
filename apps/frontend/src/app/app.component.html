@@ -1,4 +1,4 @@
-<div class="app-shell">
+<div class="app-shell" [class.app-shell--more-open]="mobileMoreOpen">
   <ng-container [ngSwitch]="currentLayout">
     <app-public-layout-shell *ngSwitchCase="'public-shell'">
       <router-outlet></router-outlet>
@@ -16,24 +16,49 @@
     class="app-shell__mobile-nav"
     aria-label="Navegación principal móvil"
   >
-    <a
-      *ngFor="let tab of mobileTabs"
-      [routerLink]="tab.path"
-      class="app-shell__mobile-tab"
-      [class.app-shell__mobile-tab--active]="isMobileTabActive(tab)"
-      [attr.aria-current]="isMobileTabActive(tab) ? 'page' : null"
-    >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path
-          [attr.d]="isMobileTabActive(tab) ? tab.iconFilled : tab.iconOutline"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="1.8"
-        ></path>
-      </svg>
-      <span>{{ tab.label }}</span>
-    </a>
+    <ng-container *ngFor="let tab of mobileTabs">
+      @if (tab.kind === 'route') {
+      <a
+        [routerLink]="tab.path"
+        class="app-shell__mobile-tab"
+        [class.app-shell__mobile-tab--active]="isMobileTabActive(tab)"
+        [attr.aria-current]="isMobileTabActive(tab) ? 'page' : null"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path [attr.d]="tab.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+        <span>{{ tab.label }}</span>
+      </a>
+      } @else {
+      <button
+        #mobileMoreTrigger
+        type="button"
+        class="app-shell__mobile-tab"
+        (click)="toggleMobileMore()"
+        [attr.aria-expanded]="mobileMoreOpen"
+        aria-controls="mobile-more-sheet"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path [attr.d]="tab.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+        <span>{{ tab.label }}</span>
+      </button>
+      }
+    </ng-container>
   </nav>
+
+  @if (mobileMoreOpen) {
+  <div class="app-shell__more-overlay">
+    <button type="button" class="app-shell__more-backdrop" (click)="closeMobileMore()" aria-label="Cerrar más opciones"></button>
+    <section id="mobile-more-sheet" class="app-shell__more-sheet" role="dialog" aria-modal="true" aria-label="Más opciones">
+      <div class="app-shell__more-handle" aria-hidden="true"></div>
+      <header><div><p>Explorar</p><h2>Más en Guía TV</h2></div><button type="button" (click)="closeMobileMore()" aria-label="Cerrar más opciones">×</button></header>
+      <nav aria-label="Explorar más contenidos">
+        @for (destination of exploreDestinations; track destination.id) {
+        <a [routerLink]="destination.path" (click)="closeMobileMore()"><span class="app-shell__more-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path [attr.d]="destination.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg></span><span><strong>{{ destination.label }}</strong><small>{{ destination.hint }}</small></span></a>
+        }
+      </nav>
+      <section class="app-shell__more-account" aria-label="Tu cuenta"><p>Tu cuenta</p><div>@for (destination of accountDestinations; track destination.id) {<a [routerLink]="destination.path" (click)="closeMobileMore()">{{ destination.label }}</a>}</div></section>
+      <section class="app-shell__more-theme" aria-label="Preferencia de tema"><p>Tema</p><div>@for (mode of ['system', 'light', 'dark']; track mode) {<button type="button" (click)="setTheme(mode)" [class.is-selected]="theme.mode() === mode">{{ mode === 'system' ? 'Sistema' : mode === 'light' ? 'Claro' : 'Oscuro' }}</button>}</div></section>
+    </section>
+  </div>
+  }
 
   <button
     *ngIf="shouldShowMobileChatbotFab()"
