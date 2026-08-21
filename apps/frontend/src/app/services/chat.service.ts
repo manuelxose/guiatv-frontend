@@ -1,7 +1,7 @@
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, combineLatest, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { ChatConversation, ChatMessage, UserFriend } from '../interfaces/user.interface';
 import { environment } from '../../environments/environment';
@@ -55,6 +55,16 @@ export class ChatService {
   private onlineRefreshTimer: ReturnType<typeof setInterval> | null = null;
   private realtimeStartTimer: ReturnType<typeof setTimeout> | null = null;
   private lastOnlineRefreshAt = 0;
+  /**
+   * Gates online-presence polling and the Socket.IO connection behind the chat
+   * UI actually being used at least once this session. `refreshConversations()`
+   * stays eager on auth because unread-badge (user-area) and general-conversation
+   * lookups (interaction-buttons) depend on it without ever opening chat — but
+   * nothing outside chat components reads online-users/connected-count, so those
+   * (and their recurring timers/socket) can wait for real activation instead of
+   * running on every authenticated route.
+   */
+  private readonly chatActivatedSubject = new BehaviorSubject<boolean>(false);
 
   /** Emits when a component requests opening the chat shell with a specific user */
   private readonly requestOpenChatSubject = new Subject<string>();
@@ -76,10 +86,8 @@ export class ChatService {
     this.userService.isAuthenticated$.subscribe((isAuthenticated) => {
       if (isAuthenticated) {
         this.refreshConversations().subscribe();
-        this.refreshOnlineUsers().subscribe();
-        this.ensureOnlineRefreshPolling();
-        this.scheduleRealtimeConnection();
       } else {
+        this.chatActivatedSubject.next(false);
         this.disconnectSocket();
         this.clearOnlineRefreshPolling();
         this.conversationsSubject.next([]);
@@ -89,6 +97,22 @@ export class ChatService {
         this.messagesByConversation.clear();
       }
     });
+
+    combineLatest([this.userService.isAuthenticated$, this.chatActivatedSubject]).subscribe(
+      ([isAuthenticated, activated]) => {
+        if (isAuthenticated && activated) {
+          this.refreshOnlineUsers().subscribe();
+          this.ensureOnlineRefreshPolling();
+          this.scheduleRealtimeConnection();
+        }
+      }
+    );
+  }
+
+  /** Marks chat as actually in use this session, starting presence polling/realtime. */
+  activateChat(): void {
+    if (!this.isBrowser) return;
+    this.chatActivatedSubject.next(true);
   }
 
   getConversations(): Observable<ChatConversation[]> {
@@ -108,6 +132,7 @@ export class ChatService {
   }
 
   requestOpenChat(userId: string): void {
+    this.activateChat();
     this.startRealtimeConnection();
     this.requestOpenChatSubject.next(userId);
   }
