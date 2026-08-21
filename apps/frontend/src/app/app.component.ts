@@ -132,6 +132,9 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
     this.isChatbotOpen = !this.isChatbotOpen;
+    if (this.isChatbotOpen) {
+      this.chatService.activateChat();
+    }
   }
 
   public closeChatbot(): void {

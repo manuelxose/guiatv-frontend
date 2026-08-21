@@ -124,7 +124,9 @@
         >
           <div class="app-shell__chat-handle-bar"></div>
         </div>
-        <app-unified-chat-shell (close)="minimizeChatbot()"></app-unified-chat-shell>
+        @defer (when isChatbotOpen) {
+          <app-unified-chat-shell (close)="minimizeChatbot()"></app-unified-chat-shell>
+        }
       </div>
 
       <div
@@ -138,7 +140,9 @@
           class="app-shell__chat-resize"
           (mousedown)="onResizeStart($event)"
         ></div>
-        <app-unified-chat-shell (close)="closeChatbot()"></app-unified-chat-shell>
+        @defer (when isChatbotOpen) {
+          <app-unified-chat-shell (close)="closeChatbot()"></app-unified-chat-shell>
+        }
       </div>
     </div>
   </ng-container>
