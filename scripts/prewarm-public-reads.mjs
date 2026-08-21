@@ -11,12 +11,14 @@ const urls = [
   `${apiBase}/v2/sports/football/home`,
   `${apiBase}/v2/sports/football/matches?date=today`,
   `${apiBase}/v2/sports/football/competitions`,
+  `${apiBase}/v2/sports/football/news?limit=12`,
   `${apiBase}/v2/blog?limit=20`,
   `${apiBase}/v2/blog/categories`,
   `${frontendBase}/`,
   `${frontendBase}/programacion-tv/guia-canales`,
   `${frontendBase}/deportes`,
   `${frontendBase}/editorial`,
+  `${frontendBase}/deportes/futbol/noticias`,
 ];
 
 let failed = false;

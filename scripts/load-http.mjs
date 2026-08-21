@@ -8,6 +8,7 @@ const routes = String(process.env.PERF_LOAD_ROUTES || [
   '/v2/tv/read?view=now&limit=36&includeChannels=false',
   '/v2/tv/read?view=day&limit=240&includeChannels=false',
   '/v2/sports/football/home',
+  '/v2/sports/football/news?limit=12',
   '/v2/blog?limit=20',
 ].join('|')).split('|').filter(Boolean);
 
