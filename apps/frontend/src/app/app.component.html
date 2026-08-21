@@ -1,4 +1,9 @@
 <div class="app-shell" [class.app-shell--more-open]="mobileMoreOpen">
+  <div
+    class="app-shell__route-content"
+    [attr.inert]="mobileMoreOpen ? '' : null"
+    [attr.aria-hidden]="mobileMoreOpen ? 'true' : null"
+  >
   <ng-container [ngSwitch]="currentLayout">
     <app-public-layout-shell *ngSwitchCase="'public-shell'">
       <router-outlet></router-outlet>
@@ -10,6 +15,7 @@
 
     <router-outlet *ngSwitchDefault></router-outlet>
   </ng-container>
+  </div>
 
   <nav
     *ngIf="shouldShowMobileNavigation()"
@@ -47,7 +53,7 @@
   @if (mobileMoreOpen) {
   <div class="app-shell__more-overlay">
     <button type="button" class="app-shell__more-backdrop" (click)="closeMobileMore()" aria-label="Cerrar más opciones"></button>
-    <section id="mobile-more-sheet" class="app-shell__more-sheet" role="dialog" aria-modal="true" aria-label="Más opciones">
+    <section #mobileMoreSheet id="mobile-more-sheet" class="app-shell__more-sheet" role="dialog" aria-modal="true" aria-label="Más opciones" tabindex="-1">
       <div class="app-shell__more-handle" aria-hidden="true"></div>
       <header><div><p>Explorar</p><h2>Más en Guía TV</h2></div><button type="button" (click)="closeMobileMore()" aria-label="Cerrar más opciones">×</button></header>
       <nav aria-label="Explorar más contenidos">
@@ -56,7 +62,7 @@
         }
       </nav>
       <section class="app-shell__more-account" aria-label="Tu cuenta"><p>Tu cuenta</p><div>@for (destination of accountDestinations; track destination.id) {<a [routerLink]="destination.path" (click)="closeMobileMore()">{{ destination.label }}</a>}</div></section>
-      <section class="app-shell__more-theme" aria-label="Preferencia de tema"><p>Tema</p><div>@for (mode of ['system', 'light', 'dark']; track mode) {<button type="button" (click)="setTheme(mode)" [class.is-selected]="theme.mode() === mode">{{ mode === 'system' ? 'Sistema' : mode === 'light' ? 'Claro' : 'Oscuro' }}</button>}</div></section>
+      <section class="app-shell__more-theme" aria-label="Preferencia de tema"><p>Tema</p><div>@for (mode of ['system', 'light', 'dark']; track mode) {<button type="button" (click)="setTheme(mode)" [class.is-selected]="theme.mode() === mode" [attr.aria-pressed]="theme.mode() === mode">{{ mode === 'system' ? 'Sistema' : mode === 'light' ? 'Claro' : 'Oscuro' }}</button>}</div></section>
     </section>
   </div>
   }

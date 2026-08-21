@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Params, RouterModule } from '@angular/router';
 import { APP_PATHS } from '../../config/route-map';
 import { getCatalogPlatformByKey } from '../../data/catalog-platforms.data';
-import { PortalContextNavComponent } from '../../components/portal-context-nav/portal-context-nav.component';
 import {
   STREAMING_COMPARISON_ENTRIES,
   STREAMING_COMPARISON_FAQ_ITEMS,
@@ -24,7 +23,7 @@ interface StreamingComparisonViewModel extends StreamingComparisonEntry {
 @Component({
   selector: 'app-streaming-comparison',
   standalone: true,
-  imports: [CommonModule, RouterModule, PortalContextNavComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './streaming-comparison.component.html',
   styleUrls: ['./streaming-comparison.component.scss'],
 })

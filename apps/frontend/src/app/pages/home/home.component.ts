@@ -7,7 +7,6 @@ import { catchError, of } from 'rxjs';
 import {
   UnifiedPortalShellComponent,
 } from '../../components/unified-portal-shell/unified-portal-shell.component';
-import { FilterChipItem } from '../../components/filter-chip-bar/filter-chip-bar.component';
 import { UnifiedProgramCardComponent } from '../../components/unified-program-card/unified-program-card.component';
 import { HomeHeroComponent, HomeHeroItem } from '../../components/home-hero/home-hero.component';
 import { PlatformBadgeComponent } from '../../components/platform-badge/platform-badge.component';
@@ -15,7 +14,6 @@ import { UnifiedEditorialModuleComponent } from '../../components/unified-editor
 import { UnifiedSectionHeaderComponent } from '../../components/unified-section-header/unified-section-header.component';
 import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
 import {
-  PORTAL_HOME_TOP_PILLS,
   PORTAL_ICON_PATHS,
 } from '../../config/portal-navigation.config';
 import { APP_PATHS } from '../../config/route-map';
@@ -49,8 +47,6 @@ export class HomeComponent {
   public readonly appPaths = APP_PATHS;
   public readonly iconPaths = PORTAL_ICON_PATHS;
   public readonly safeLdHtml: SafeHtml | null;
-  public readonly topPillChips = computed<FilterChipItem[]>(() => [...PORTAL_HOME_TOP_PILLS]);
-  public readonly topPillSelection = computed(() => 'live-now');
   public readonly breadcrumbItems: { name: string; url: string }[] = [];
   public readonly error = signal<string | null>(null);
   public readonly homeState = toSignal(

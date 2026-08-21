@@ -1,0 +1,59 @@
+:host { display: block; min-width: 0; }
+
+.portal-local-toolbar {
+  overflow-x: auto;
+  padding: 0.4rem;
+  border: 1px solid var(--guide-border, var(--portal-border));
+  border-radius: 1rem;
+  background: var(--guide-surface-strong, var(--portal-surface-strong));
+  box-shadow: var(--shadow-sm);
+  scrollbar-width: none;
+}
+
+.portal-local-toolbar::-webkit-scrollbar { display: none; }
+.portal-local-toolbar__track { display: flex; min-width: max-content; gap: 0.35rem; }
+
+.portal-local-toolbar a,
+.portal-local-toolbar button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--portal-text-soft, var(--portal-text-muted));
+  padding: 0.5rem 0.85rem;
+  font: inherit;
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 750;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.portal-local-toolbar a:hover,
+.portal-local-toolbar button:hover {
+  border-color: var(--portal-border);
+  background: var(--portal-surface-strong);
+  color: var(--portal-text);
+}
+
+.portal-local-toolbar a:focus-visible,
+.portal-local-toolbar button:focus-visible {
+  outline: 2px solid var(--guide-accent, var(--accent-sports));
+  outline-offset: 2px;
+}
+
+.portal-local-toolbar .is-active {
+  border-color: color-mix(in srgb, var(--guide-accent, var(--accent-sports)) 45%, var(--portal-border));
+  background: color-mix(in srgb, var(--guide-accent, var(--accent-sports)) 12%, var(--portal-surface-strong));
+  color: var(--portal-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-local-toolbar a,
+  .portal-local-toolbar button { transition: none; }
+}

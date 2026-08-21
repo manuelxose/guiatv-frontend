@@ -5,6 +5,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { of, shareReplay, switchMap } from 'rxjs';
 import { EpgGridComponent } from '../../../components/epg-grid/epg-grid.component';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
+import { PortalLocalToolbarComponent } from '../../../components/portal-local-toolbar/portal-local-toolbar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
 import { ChannelMetaDTO, TvReadItemDTO } from '../../../api/models';
@@ -33,6 +34,7 @@ interface EpgRow {
     RouterModule,
     EpgGridComponent,
     UnifiedFilterDockComponent,
+    PortalLocalToolbarComponent,
     UnifiedProgramCardComponent,
   ],
   templateUrl: './live-guide-view.component.html',

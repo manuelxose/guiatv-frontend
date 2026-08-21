@@ -9,6 +9,8 @@ import { FootballNewsCardComponent } from '@app/features/football/components/foo
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
+import { PortalLocalToolbarComponent } from '@app/components/portal-local-toolbar/portal-local-toolbar.component';
+import { PortalContextDestination } from '@app/config/portal-navigation.config';
 
 const PAGE_SIZE = 12;
 
@@ -25,7 +27,7 @@ const CONTENT_TYPE_LABELS: Record<FootballContentType, string> = {
 @Component({
   selector: 'app-football-news',
   standalone: true,
-  imports: [CommonModule, FootballNewsCardComponent],
+  imports: [CommonModule, FootballNewsCardComponent, PortalLocalToolbarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './football-news.component.html',
   styleUrl: './football-news.component.scss',
@@ -63,6 +65,10 @@ export class FootballNewsComponent implements OnInit {
     return Array.from(counts.keys());
   });
   readonly showTypeFilter = computed(() => this.availableTypes().length > 1);
+  readonly typeItems = computed<readonly PortalContextDestination[]>(() => [
+    { id: 'all', label: 'Todas', kind: 'action' },
+    ...this.availableTypes().map((type) => ({ id: type, label: this.typeLabel(type), kind: 'action' as const })),
+  ]);
 
   readonly activeType = signal<FootballContentType | 'all'>('all');
   readonly filteredNews = computed(() => {
@@ -98,8 +104,8 @@ export class FootballNewsComponent implements OnInit {
     return CONTENT_TYPE_LABELS[type] ?? type;
   }
 
-  selectType(type: FootballContentType | 'all'): void {
-    this.activeType.set(type);
+  selectType(type: string): void {
+    this.activeType.set(type as FootballContentType | 'all');
   }
 
   loadMore(): void {

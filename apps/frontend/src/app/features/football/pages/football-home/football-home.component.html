@@ -15,13 +15,6 @@
     </a>
   </header>
 
-  <nav class="home__nav" aria-label="Navegación de fútbol">
-    <a class="home__nav-item home__nav-item--active" [routerLink]="['/deportes/futbol']">Inicio</a>
-    <a class="home__nav-item" [routerLink]="['/deportes/futbol/partidos-hoy']">Partidos</a>
-    <a class="home__nav-item" [routerLink]="['/deportes/futbol/competiciones']">Competiciones</a>
-    <a class="home__nav-item" [routerLink]="['/deportes/futbol/noticias']">Noticias</a>
-  </nav>
-
   <main class="home__content">
     <!-- LOADING SKELETON -->
     <div *ngIf="loading()" class="home__skeleton" aria-hidden="true">

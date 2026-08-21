@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { PortalLocalToolbarComponent } from '@app/components/portal-local-toolbar/portal-local-toolbar.component';
 
 export type FootballMatchFilter = 'all' | 'live' | 'upcoming' | 'finished';
 
@@ -17,55 +17,27 @@ const FILTERS: Array<{ id: FootballMatchFilter; label: string }> = [
 @Component({
   selector: 'app-football-filter-bar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [PortalLocalToolbarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="bar" role="tablist" aria-label="Filtrar partidos">
-      <button
-        *ngFor="let filter of filters"
-        type="button"
-        role="tab"
-        class="bar__item"
-        [class.bar__item--active]="active === filter.id"
-        [attr.aria-selected]="active === filter.id"
-        (click)="filterChange.emit(filter.id)"
-      >
-        {{ filter.label }}
-      </button>
-    </div>
+    <app-portal-local-toolbar
+      [items]="filters"
+      [active]="active"
+      ariaLabel="Filtrar partidos"
+      (itemSelect)="selectFilter($event)"
+    ></app-portal-local-toolbar>
   `,
-  styles: `
-    .bar {
-      display: flex;
-      gap: 0.375rem;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .bar::-webkit-scrollbar { display: none; }
-    .bar__item {
-      flex: 0 0 auto;
-      min-height: 44px;
-      padding: 0.4rem 0.9rem;
-      border-radius: 9999px;
-      border: 1px solid var(--portal-border);
-      background: var(--portal-card);
-      color: var(--portal-text-muted);
-      font-size: 0.8125rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .bar__item--active {
-      background: var(--accent-sports);
-      border-color: var(--accent-sports);
-      color: var(--portal-bg-elevated);
-    }
-  `,
+  styles: `:host { display: block; min-width: 0; }`,
 })
 export class FootballFilterBarComponent {
   @Input() active: FootballMatchFilter = 'all';
   @Output() filterChange = new EventEmitter<FootballMatchFilter>();
 
   readonly filters = FILTERS;
+
+  selectFilter(id: string): void {
+    this.filterChange.emit(id as FootballMatchFilter);
+  }
 }
 
 export function applyFootballMatchFilter<T extends { status: string }>(

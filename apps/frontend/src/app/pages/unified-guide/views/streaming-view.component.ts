@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
+import { PortalLocalToolbarComponent } from '../../../components/portal-local-toolbar/portal-local-toolbar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
 import { PlatformBadgeComponent } from '../../../components/platform-badge/platform-badge.component';
@@ -13,7 +14,6 @@ import { UnifiedShellUiStateService } from '../../../state/unified-shell-ui.stat
 import { CatalogItem } from '../../../services/catalog.service';
 import { normalizeToCard } from '../../../utils/tv-normalizers';
 import { ViewportService } from '../../../services/viewport.service';
-import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
 
 interface StreamingDirectorySection {
   id: string;
@@ -45,7 +45,7 @@ interface StreamingModule {
     UnifiedFilterDockComponent,
     UnifiedProgramCardComponent,
     PlatformBadgeComponent,
-    PortalContextNavComponent,
+    PortalLocalToolbarComponent,
   ],
   templateUrl: './streaming-view.component.html',
   styleUrl: './streaming-view.component.scss',

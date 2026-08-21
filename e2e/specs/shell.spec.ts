@@ -17,9 +17,12 @@ test.describe('Shared responsive shell', () => {
     await more.click();
     const sheet = page.getByRole('dialog', { name: 'Más opciones' });
     await expect(sheet).toBeVisible();
+    await expect(page.locator('.app-shell__route-content')).toHaveAttribute('inert', '');
     await expect(sheet.getByRole('link', { name: /Plataformas/ })).toBeVisible();
     await expect(sheet.getByRole('link', { name: /Blog/ })).toBeVisible();
     await expect(sheet.getByRole('link', { name: /Rankings/ })).toHaveCount(0);
+    await page.keyboard.press('Shift+Tab');
+    await expect(sheet.locator(':focus')).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(sheet).toBeHidden();
     await expect(more).toBeFocused();

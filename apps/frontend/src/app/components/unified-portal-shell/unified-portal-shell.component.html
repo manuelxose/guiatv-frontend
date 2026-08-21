@@ -6,7 +6,7 @@
     'portal-shell--hero-' + heroVariant(),
     hasLeftRail() ? 'portal-shell--has-left-rail' : '',
     leftRailCollapsed() ? 'portal-shell--left-collapsed' : '',
-    hasTopPillShelf() ? 'portal-shell--has-pill-shelf' : ''
+    ''
   ]"
 >
   <app-unified-top-nav
@@ -39,53 +39,6 @@
     }
 
     <div class="portal-shell__content-column">
-
-
-      @if (hasTopPillShelf()) {
-      <section class="portal-shell__pill-shelf">
-        <div class="portal-shell__pill-shelf-frame">
-          @if (topPillChips().length) {
-          <div class="portal-shell__pill-shelf-copy">
-            <p>{{ topPillLabel() }}</p>
-          </div>
-          }
-
-          @if (topPillChips().length) {
-          <div class="portal-shell__pill-shelf-main">
-            <app-filter-chip-bar
-              [chips]="topPillChips()"
-              [active]="topPillSelection()"
-              variant="shelf"
-              ariaLabel="Filtros rápidos"
-              (chipSelect)="emitTopPillChange($event)"
-            ></app-filter-chip-bar>
-          </div>
-          }
-
-          @if (showFilterButton()) {
-          <div class="portal-shell__pill-shelf-actions">
-            <button
-              type="button"
-              class="portal-shell__filter-button portal-shell__filter-button--shelf"
-              (click)="filterToggle.emit()"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                <path
-                  d="M4.5 6.75h15M7.5 12h9M9.75 17.25h4.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="1.8"
-                ></path>
-              </svg>
-              <span>{{ filterButtonLabel() }}</span>
-              <small *ngIf="filterCount()">{{ filterCount() }}</small>
-            </button>
-          </div>
-          }
-        </div>
-      </section>
-      }
-
       <div class="portal-shell__layout">
         <div class="portal-shell__surface">
       <div class="portal-shell__frame">

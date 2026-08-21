@@ -18,6 +18,8 @@ import {
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
+import { PortalLocalToolbarComponent } from '@app/components/portal-local-toolbar/portal-local-toolbar.component';
+import { PortalContextDestination } from '@app/config/portal-navigation.config';
 
 type CompetitionTab = 'resumen' | 'calendario' | 'clasificacion';
 
@@ -53,6 +55,7 @@ export function groupByRound(matches: FootballMatchDTO[]): RoundGroup[] {
     FootballSectionHeaderComponent,
     FootballMatchRowComponent,
     FootballFilterBarComponent,
+    PortalLocalToolbarComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './football-competition-detail.component.html',
@@ -64,10 +67,10 @@ export class FootballCompetitionDetailComponent {
   private readonly meta = inject(MetaService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  readonly tabs: Array<{ id: CompetitionTab; label: string }> = [
-    { id: 'resumen', label: 'Resumen' },
-    { id: 'calendario', label: 'Calendario' },
-    { id: 'clasificacion', label: 'Clasificación' },
+  readonly tabs: readonly PortalContextDestination[] = [
+    { id: 'resumen', label: 'Resumen', kind: 'action' },
+    { id: 'calendario', label: 'Calendario', kind: 'action' },
+    { id: 'clasificacion', label: 'Clasificación', kind: 'action' },
   ];
   readonly activeTab = signal<CompetitionTab>('resumen');
   readonly filter = signal<FootballMatchFilter>('all');
@@ -124,8 +127,8 @@ export class FootballCompetitionDetailComponent {
     });
   }
 
-  selectTab(tab: CompetitionTab): void {
-    this.activeTab.set(tab);
+  selectTab(tab: string): void {
+    this.activeTab.set(tab as CompetitionTab);
   }
 
   onFilterChange(filter: FootballMatchFilter): void {

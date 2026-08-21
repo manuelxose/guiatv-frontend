@@ -19,17 +19,12 @@
     </div>
   </header>
 
-  <nav class="live-view__basic-filters" aria-label="Filtrar por categoría">
-    <span>Categoría</span>
-    <button
-      *ngFor="let category of categoryChips"
-      type="button"
-      [class.live-view__basic-filter--active]="guideState.liveFilters().category === category.id"
-      (click)="selectCategory(category.id)"
-    >
-      {{ category.label }}
-    </button>
-  </nav>
+  <app-portal-local-toolbar
+    [items]="categoryChips"
+    [active]="guideState.liveFilters().category"
+    ariaLabel="Filtrar TV por categoría"
+    (itemSelect)="selectCategory($event)"
+  ></app-portal-local-toolbar>
 
   <section class="live-view__channels" *ngIf="topChannels().length">
     <header class="live-view__section-head">

@@ -6,18 +6,11 @@
     <p class="head__sub">{{ subtitle }}</p>
   </header>
 
-  <nav class="tabs" aria-label="Vista de partidos">
-    <button
-      *ngFor="let tab of tabs"
-      type="button"
-      class="tabs__item"
-      [class.tabs__item--active]="view() === tab.id"
-      [attr.aria-current]="view() === tab.id ? 'page' : null"
-      (click)="selectTab(tab.id)"
-    >
-      {{ tab.label }}
-    </button>
-  </nav>
+  <app-portal-local-toolbar
+    [items]="tabs"
+    [active]="view()"
+    ariaLabel="Vista de partidos"
+  ></app-portal-local-toolbar>
 
   <app-football-date-strip
     *ngIf="view() === 'calendar'"
