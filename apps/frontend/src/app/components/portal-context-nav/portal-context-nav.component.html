@@ -1,12 +1,20 @@
-<nav class="portal-context-nav" [attr.aria-label]="label()">
-  <div class="portal-context-nav__track">
-    @for (item of items(); track item.id) {
-      <a
-        [routerLink]="item.path"
-        [fragment]="item.fragment || null"
-        [class.portal-context-nav__link--active]="activeId() === item.id"
-        [attr.aria-current]="activeId() === item.id ? 'page' : null"
-      >{{ item.label }}</a>
-    }
+<section class="portal-context-nav">
+  <div class="portal-context-nav__hierarchy">
+    <app-breadcrumb
+      [items]="resolvedBreadcrumbItems()"
+      [embedded]="true"
+    ></app-breadcrumb>
   </div>
-</nav>
+  <nav class="portal-context-nav__tabs" [attr.aria-label]="label()">
+    <div class="portal-context-nav__track">
+      @for (item of items(); track item.id) {
+        <a
+          [routerLink]="item.path"
+          [fragment]="item.fragment || null"
+          [class.portal-context-nav__link--active]="activeId() === item.id"
+          [attr.aria-current]="activeId() === item.id ? 'page' : null"
+        >{{ item.label }}</a>
+      }
+    </div>
+  </nav>
+</section>

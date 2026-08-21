@@ -4,7 +4,7 @@
   [topPillChips]="platformMode() === 'compare' ? [] : topPillChips()"
   [topPillSelection]="topPillSelection()"
   [topPillLabel]="topPillLabel()"
-  [breadcrumbItems]="breadcrumbItems()"
+  [breadcrumbItems]="activeTab() === 'streaming' ? [] : breadcrumbItems()"
   [showHero]="false"
   [showFilterButton]="platformMode() !== 'compare'"
   filterButtonLabel="Más filtros"

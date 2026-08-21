@@ -2,10 +2,10 @@
 
 <app-unified-portal-shell
   tone="rankings"
-  [breadcrumbItems]="breadcrumbItems"
+  [breadcrumbItems]="[]"
   [showHero]="false"
 >
-  <app-portal-context-nav kind="blog"></app-portal-context-nav>
+  <app-portal-context-nav kind="blog" [breadcrumbItems]="breadcrumbItems"></app-portal-context-nav>
   <header class="blog-page-header"><p>Blog</p><h1>Rankings</h1><span>Listas y selecciones para encontrar tu próxima película, serie o programa.</span></header>
   <section *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
     <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-[var(--portal-surface-strong)]"></div>

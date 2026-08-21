@@ -1,9 +1,9 @@
 <app-unified-portal-shell
   tone="editorial"
-  [breadcrumbItems]="breadcrumbItems"
+  [breadcrumbItems]="[]"
   [showHero]="false"
 >
-  <app-portal-context-nav kind="blog"></app-portal-context-nav>
+  <app-portal-context-nav kind="blog" [breadcrumbItems]="breadcrumbItems"></app-portal-context-nav>
   <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
   <div class="editorial-category-page mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6 lg:px-8">
     <div *ngIf="loading" class="grid gap-6 lg:grid-cols-3">
