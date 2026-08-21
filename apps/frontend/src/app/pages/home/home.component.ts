@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { catchError, of } from 'rxjs';
@@ -241,6 +241,16 @@ export class HomeComponent {
       type: 'website',
     });
     this.safeLdHtml = this.buildStructuredData();
+
+    // The hero's first item is the page's LCP candidate and its artwork is
+    // frequently hosted on a third-party streaming-platform origin the
+    // browser hasn't connected to yet. Preconnecting as soon as SSR (or the
+    // client) resolves it — rather than waiting for the browser to discover
+    // the <img> tag — shaves the DNS/TCP/TLS handshake off the image's real
+    // load time instead of only its transfer time.
+    effect(() => {
+      this.metaService.preconnectImageOrigin(this.heroItems()[0]?.image);
+    });
   }
 
   onTopPillChange(value: string): void {

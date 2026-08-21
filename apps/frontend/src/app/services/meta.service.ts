@@ -141,4 +141,31 @@ export class MetaService {
     oembedLink.setAttribute('title', 'oEmbed');
     this.document.head.appendChild(oembedLink);
   }
+
+  /**
+   * Opens the DNS/TCP/TLS connection to a third-party image origin (e.g. a
+   * streaming platform's artwork host) as early as possible, before the
+   * browser would otherwise discover the <img> tag itself. Meant for the
+   * page's actual LCP candidate — an image hosted on a cold origin the page
+   * hasn't connected to yet can lose hundreds of ms to connection setup
+   * alone. Idempotent: safe to call again with the same or a different URL
+   * (e.g. a hero carousel rotating between platforms) without piling up
+   * duplicate hints.
+   */
+  preconnectImageOrigin(imageUrl: string | null | undefined): void {
+    if (!imageUrl) return;
+    let origin: string;
+    try {
+      origin = new URL(imageUrl).origin;
+    } catch {
+      return;
+    }
+    if (this.document.querySelector(`link[rel="preconnect"][href="${origin}"]`)) return;
+
+    const link = this.document.createElement('link');
+    link.setAttribute('rel', 'preconnect');
+    link.setAttribute('href', origin);
+    link.setAttribute('crossorigin', '');
+    this.document.head.appendChild(link);
+  }
 }
