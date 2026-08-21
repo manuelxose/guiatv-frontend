@@ -7,6 +7,7 @@ import {
   Output,
 } from '@angular/core';
 import { AssistantMemorySnapshot } from '../../../interfaces/chatbot.interface';
+import { PLATFORM_BADGE_TONE_COLORS, resolveBadgeTone } from '../../platform-badge/platform-badge.component';
 
 export interface OnboardingWizardResult {
   preferredPlatforms: string[];
@@ -19,7 +20,6 @@ export interface OnboardingWizardResult {
 interface SelectableChip {
   id: string;
   label: string;
-  color?: string;
 }
 
 @Component({
@@ -59,9 +59,7 @@ interface SelectableChip {
               type="button"
               (click)="toggle(selectedPlatforms, p.id)"
               class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
-              [ngStyle]="isSelected(selectedPlatforms, p.id)
-                ? { 'background-color': p.color + '22', 'color': p.color, 'border-color': p.color + '88' }
-                : {}"
+              [ngStyle]="isSelected(selectedPlatforms, p.id) ? platformSelectedStyle(p.label) : {}"
               [ngClass]="isSelected(selectedPlatforms, p.id)
                 ? ''
                 : 'border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
@@ -194,19 +192,19 @@ export class ChatOnboardingWizardComponent {
   selectedCommunity: string | null = null;
 
   readonly platformChips: SelectableChip[] = [
-    { id: 'Netflix', label: 'Netflix', color: '#E50914' },
-    { id: 'Prime Video', label: 'Prime Video', color: '#00A8E1' },
-    { id: 'Disney+', label: 'Disney+', color: '#113CCF' },
-    { id: 'Max', label: 'Max', color: '#002BE7' },
-    { id: 'Movistar+', label: 'Movistar+', color: '#00A19A' },
-    { id: 'SkyShowtime', label: 'SkyShowtime', color: '#6B3FA0' },
-    { id: 'Apple TV+', label: 'Apple TV+', color: '#ffffff' },
-    { id: 'Filmin', label: 'Filmin', color: '#D8231D' },
-    { id: 'RTVE Play', label: 'RTVE Play', color: '#E84E1B' },
-    { id: 'ATRESplayer', label: 'ATRESplayer', color: '#5BC53A' },
-    { id: 'Mitele', label: 'Mitele', color: '#ED1C24' },
-    { id: 'Pluto TV', label: 'Pluto TV', color: '#FFDF00' },
-    { id: 'Rakuten TV', label: 'Rakuten TV', color: '#6E2E92' },
+    { id: 'Netflix', label: 'Netflix' },
+    { id: 'Prime Video', label: 'Prime Video' },
+    { id: 'Disney+', label: 'Disney+' },
+    { id: 'Max', label: 'Max' },
+    { id: 'Movistar+', label: 'Movistar+' },
+    { id: 'SkyShowtime', label: 'SkyShowtime' },
+    { id: 'Apple TV+', label: 'Apple TV+' },
+    { id: 'Filmin', label: 'Filmin' },
+    { id: 'RTVE Play', label: 'RTVE Play' },
+    { id: 'ATRESplayer', label: 'ATRESplayer' },
+    { id: 'Mitele', label: 'Mitele' },
+    { id: 'Pluto TV', label: 'Pluto TV' },
+    { id: 'Rakuten TV', label: 'Rakuten TV' },
   ];
 
   readonly genreChips: SelectableChip[] = [
@@ -271,6 +269,15 @@ export class ChatOnboardingWizardComponent {
 
   isSelected(list: string[], id: string): boolean {
     return list.includes(id);
+  }
+
+  platformSelectedStyle(label: string): Record<string, string> {
+    const tone = PLATFORM_BADGE_TONE_COLORS[resolveBadgeTone('', label)];
+    return {
+      'background-color': tone.bg,
+      color: tone.color,
+      'border-color': tone.border,
+    };
   }
 
   toggle(list: string[], id: string): void {

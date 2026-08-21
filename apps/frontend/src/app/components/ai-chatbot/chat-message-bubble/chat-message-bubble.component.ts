@@ -34,12 +34,10 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
       [class.justify-end]="message.role === 'user'"
       [class.justify-start]="message.role !== 'user'"
     >
-      <div class="group max-w-[94%] md:max-w-[88%]">
+      <div [class]="outerWidthClass">
         <div
-          class="rounded-[1.4rem] px-4 py-3"
-            [ngClass]="message.role === 'user'
-            ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md'
-            : 'border border-[var(--portal-border)]/90 bg-[var(--portal-surface)] text-[var(--portal-text)] shadow-sm'"
+          class="rounded-[1.4rem]"
+          [ngClass]="bubbleClasses"
         >
           <!-- Loading / Thinking state -->
           <ng-container *ngIf="(message.isLoading && !message.isStreaming) || message.isThinking; else contentBlock">
@@ -264,6 +262,25 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
   displayContent = '';
   isTyping = false;
   relativeTime = '';
+
+  // Recommendation-bearing messages get the full available panel width (cards
+  // need the room, see chat-recommendation-list); plain-text messages keep
+  // the narrower cap so reading line length doesn't regress on a wide panel.
+  get outerWidthClass(): string {
+    return this.message.recommendations?.length
+      ? 'group w-full md:max-w-[96%]'
+      : 'group max-w-[94%] md:max-w-[88%]';
+  }
+
+  get bubbleClasses(): string {
+    const role = this.message.role === 'user'
+      ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md'
+      : 'border border-[var(--portal-border)]/90 bg-[var(--portal-surface)] text-[var(--portal-text)] shadow-sm';
+    // Recommendation cards/list already re-pad their own content internally,
+    // so the bubble's own padding can shrink to avoid stacking two paddings.
+    const padding = this.message.recommendations?.length ? 'px-2.5 py-3 md:px-3' : 'px-4 py-3';
+    return `${role} ${padding}`;
+  }
 
   private typewriterRafId = 0;
   private typewriterIdx = 0;

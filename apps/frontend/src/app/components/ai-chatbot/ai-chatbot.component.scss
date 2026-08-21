@@ -17,6 +17,7 @@
 .chatbot-shell__messages {
   position: relative;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   touch-action: pan-y;

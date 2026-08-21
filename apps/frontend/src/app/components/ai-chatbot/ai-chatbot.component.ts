@@ -66,9 +66,7 @@ export class AIChatbotComponent implements AfterViewInit {
   public previewSuggestions: string[] = [];
   public assistantMemory: AssistantMemorySnapshot | null = null;
   public dismissedPreferencePromptKeys = new Set<string>();
-  public memoryEditorOpen = false;
   public showScrollFab = false;
-  public sidebarOpen = false;
   public conversations: ConversationSummary[] = [];
   public activeConversationId: string | null = null;
   public readonly memoryEditorFields: Array<{ key: string; label: string; placeholder: string }> = [
@@ -105,6 +103,37 @@ export class AIChatbotComponent implements AfterViewInit {
 
   private get isMobile(): boolean {
     return isPlatformBrowser(this.platformId) && window.innerWidth < 768;
+  }
+
+  // Single "which panel is open" state for the header's profile block, the
+  // memory editor, and the conversation sidebar — they used to be three
+  // independent booleans that could all be true at once, which is what
+  // caused them to visually overlap and obscure each other. Opening any one
+  // now closes the others. Kept as getter/setter pairs (rather than renaming
+  // every call site to a method) so `sidebarOpen`/`memoryEditorOpen` keep
+  // working exactly as before everywhere they're already read/assigned,
+  // including directly from templates (e.g. `(close)="sidebarOpen = false"`).
+  private _activePanel: 'none' | 'profile' | 'memory' | 'sidebar' = 'none';
+
+  get sidebarOpen(): boolean {
+    return this._activePanel === 'sidebar';
+  }
+  set sidebarOpen(value: boolean) {
+    this._activePanel = value ? 'sidebar' : this._activePanel === 'sidebar' ? 'none' : this._activePanel;
+  }
+
+  get memoryEditorOpen(): boolean {
+    return this._activePanel === 'memory';
+  }
+  set memoryEditorOpen(value: boolean) {
+    this._activePanel = value ? 'memory' : this._activePanel === 'memory' ? 'none' : this._activePanel;
+  }
+
+  get profileExpanded(): boolean {
+    return this._activePanel === 'profile';
+  }
+  set profileExpanded(value: boolean) {
+    this._activePanel = value ? 'profile' : this._activePanel === 'profile' ? 'none' : this._activePanel;
   }
 
   constructor(

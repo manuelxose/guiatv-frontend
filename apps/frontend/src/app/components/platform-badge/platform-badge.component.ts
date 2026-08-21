@@ -20,11 +20,11 @@ export class PlatformBadgeComponent {
 
   get resolvedLogoUrl(): string {
     const provided = String(this.logoUrl || '').trim();
-    if (provided) return provided;
+    if (provided) return provided.replace('/t/p/original/', '/t/p/w92/');
 
     // Known platform logos from TMDB image CDN — fuzzy match by keyword
     const knownLogos: Array<[string, string]> = [
-      ['netflix', 'https://image.tmdb.org/t/p/original/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg'],
+      ['netflix', 'https://image.tmdb.org/t/p/w92/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg'],
       ['prime video', 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg'],
       ['amazon', 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg'],
       ['disney', 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg'],
@@ -45,7 +45,7 @@ export class PlatformBadgeComponent {
 
     const normalized = this.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     for (const [keyword, url] of knownLogos) {
-      if (normalized.includes(keyword)) return url;
+      if (normalized.includes(keyword)) return url.replace('/t/p/original/', '/t/p/w92/');
     }
 
     return '';
@@ -69,7 +69,23 @@ export class PlatformBadgeComponent {
 }
 
 
-function resolveBadgeTone(color: string, label: string): string {
+// Mirrors the 7 tone-variant colors hardcoded in platform-badge.component.scss
+// (.platform-badge--red/blue/cyan/violet/green/amber/slate) — keep both in
+// sync. Exported so other components that need the same platform→color
+// mapping for interactive UI (e.g. clickable chips, which this read-only
+// badge component doesn't support) can reuse the color source without
+// duplicating a second brand-hex list.
+export const PLATFORM_BADGE_TONE_COLORS: Record<string, { bg: string; border: string; color: string }> = {
+  slate: { bg: 'rgba(100, 116, 139, 0.08)', border: 'rgba(100, 116, 139, 0.3)', color: '#475569' },
+  red: { bg: 'rgba(220, 38, 38, 0.08)', border: 'rgba(220, 38, 38, 0.3)', color: '#a91616' },
+  blue: { bg: 'rgba(37, 99, 235, 0.08)', border: 'rgba(37, 99, 235, 0.3)', color: '#1746b3' },
+  cyan: { bg: 'rgba(6, 182, 212, 0.08)', border: 'rgba(6, 182, 212, 0.3)', color: '#075f78' },
+  violet: { bg: 'rgba(124, 58, 237, 0.08)', border: 'rgba(124, 58, 237, 0.3)', color: '#6630c7' },
+  green: { bg: 'rgba(22, 163, 74, 0.08)', border: 'rgba(22, 163, 74, 0.3)', color: '#0d7431' },
+  amber: { bg: 'rgba(217, 119, 6, 0.08)', border: 'rgba(217, 119, 6, 0.3)', color: '#965105' },
+};
+
+export function resolveBadgeTone(color: string, label: string): string {
   const safeColor = String(color || '').toLowerCase();
   const safeLabel = String(label || '').toLowerCase();
 
