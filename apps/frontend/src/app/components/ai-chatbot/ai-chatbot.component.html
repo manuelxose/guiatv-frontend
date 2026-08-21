@@ -65,18 +65,6 @@
       class="chatbot-shell__messages"
       (scroll)="onMessagesScroll()"
     >
-      <!-- Conversation sidebar -->
-      <app-chat-conversation-sidebar
-        *ngIf="sidebarOpen"
-        [conversations]="conversations"
-        [activeConversationId]="activeConversationId"
-        (selectConversation)="onSelectConversation($event)"
-        (newConversation)="startNewConversation()"
-        (updateConversationEvent)="onUpdateConversation($event)"
-        (deleteConversationEvent)="onDeleteConversation($event)"
-        (search)="onSearchConversations($event)"
-        (close)="sidebarOpen = false"
-      />
       <app-chat-message-bubble
         *ngFor="let message of messages; trackBy: trackByMessage"
         [message]="message"
@@ -133,5 +121,19 @@
         (messageSent)="onMessageSent($event)"
       />
     </div>
+
+    <!-- Conversation sidebar: sibling of header/messages/input so it can
+         cover the whole panel (position: relative is on .chatbot-shell) -->
+    <app-chat-conversation-sidebar
+      *ngIf="sidebarOpen"
+      [conversations]="conversations"
+      [activeConversationId]="activeConversationId"
+      (selectConversation)="onSelectConversation($event)"
+      (newConversation)="startNewConversation()"
+      (updateConversationEvent)="onUpdateConversation($event)"
+      (deleteConversationEvent)="onDeleteConversation($event)"
+      (search)="onSearchConversations($event)"
+      (close)="sidebarOpen = false"
+    />
   </ng-template>
 </div>
