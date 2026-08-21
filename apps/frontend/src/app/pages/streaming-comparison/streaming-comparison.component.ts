@@ -1,10 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Params, RouterModule } from '@angular/router';
-import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
 import { APP_PATHS } from '../../config/route-map';
 import { getCatalogPlatformByKey } from '../../data/catalog-platforms.data';
-import { MetaService } from '../../services/meta.service';
 import {
   STREAMING_COMPARISON_ENTRIES,
   STREAMING_COMPARISON_FAQ_ITEMS,
@@ -25,11 +23,11 @@ interface StreamingComparisonViewModel extends StreamingComparisonEntry {
 @Component({
   selector: 'app-streaming-comparison',
   standalone: true,
-  imports: [CommonModule, RouterModule, BreadcrumbComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './streaming-comparison.component.html',
   styleUrls: ['./streaming-comparison.component.scss'],
 })
-export class StreamingComparisonComponent implements OnInit {
+export class StreamingComparisonComponent {
   public readonly appPaths = APP_PATHS;
   public readonly currentYear = new Date().getFullYear();
   public readonly lastReviewedAt = STREAMING_COMPARISON_LAST_REVIEWED_AT;
@@ -40,11 +38,6 @@ export class StreamingComparisonComponent implements OnInit {
     { label: 'Según plan / depende de la oferta', tone: 'caution' },
     { label: 'No o no aplica', tone: 'neutral' },
   ];
-  public readonly breadcrumbItems: BreadcrumbItem[] = [
-    { name: 'Inicio', url: APP_PATHS.home },
-    { name: 'Plataformas', url: APP_PATHS.platforms },
-    { name: 'Comparador', url: APP_PATHS.streamingComparison },
-  ];
   public readonly profileCards = STREAMING_COMPARISON_PROFILE_CARDS.map((profile) => ({
     ...profile,
     platformNames: profile.platformKeys
@@ -54,29 +47,18 @@ export class StreamingComparisonComponent implements OnInit {
   public readonly platformComparisons: StreamingComparisonViewModel[] =
     STREAMING_COMPARISON_ENTRIES.map((entry) => this.toComparisonViewModel(entry));
 
-  constructor(private readonly metaService: MetaService) {}
-
-  ngOnInit(): void {
-    this.metaService.setMetaTags({
-      title: `Comparador de plataformas de streaming en España ${this.currentYear} | Guía TV`,
-      description: `Compara precios de entrada, límites y encaje editorial de Netflix, Prime Video, Disney+, Max, Movistar+ y más plataformas conectadas al catálogo real de Guía TV. Revisión: ${this.lastReviewedAt}.`,
-      canonicalUrl: APP_PATHS.streamingComparison,
-      type: 'website',
-    });
-  }
-
   public trackByPlatformKey(index: number, comparison: StreamingComparisonViewModel): string {
     return comparison.platform.key;
   }
 
   public statusClasses(tone: StreamingComparisonTone): string {
     if (tone === 'positive') {
-      return 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-100';
+      return 'comparison-status--positive';
     }
     if (tone === 'caution') {
-      return 'border border-amber-500/30 bg-amber-500/10 text-amber-100';
+      return 'comparison-status--caution';
     }
-    return 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]';
+    return 'comparison-status--neutral';
   }
 
   private toComparisonViewModel(entry: StreamingComparisonEntry): StreamingComparisonViewModel {
@@ -92,9 +74,8 @@ export class StreamingComparisonComponent implements OnInit {
       platform,
       initials: this.getPlatformInitials(platform.name),
       queryParams: {
-        platforms: platform.name,
+        platform: platform.name,
         availability: 'streaming',
-        types: 'movie,series',
       },
     };
   }

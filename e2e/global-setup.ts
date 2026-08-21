@@ -23,6 +23,13 @@ const WARMUP_ENDPOINTS = [
   '/v2/discovery/home',
   '/v2/catalog/platforms',
   '/v2/blog',
+  // Football: /home aggregates several provider calls (live/today/upcoming/
+  // competitions/news) — the same combineLatest-shaped cold-start cost as
+  // the TV home page above. /competitions and /matches back the Competitions
+  // hub and Partidos/Calendario views the football.spec.ts suite exercises.
+  '/v2/sports/football/home',
+  '/v2/sports/football/competitions',
+  '/v2/sports/football/matches',
 ];
 
 export default async function globalSetup(): Promise<void> {

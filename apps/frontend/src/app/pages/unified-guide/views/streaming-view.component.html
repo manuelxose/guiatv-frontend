@@ -20,6 +20,13 @@
     </div>
   </header>
 
+  <app-portal-local-toolbar
+    [items]="sortChips"
+    [active]="guideState.streamingFilters().sort"
+    ariaLabel="Ordenar catálogo de plataformas"
+    (itemSelect)="selectSort($event)"
+  ></app-portal-local-toolbar>
+
   <section class="streaming-view__platform-row" *ngIf="platforms().length">
     <button
       *ngFor="let platform of platforms(); trackBy: trackByPlatform"

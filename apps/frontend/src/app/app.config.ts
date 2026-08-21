@@ -35,6 +35,9 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withEnabledBlockingInitialNavigation()),
     // Fetch API es requerida para SSR moderno
     provideHttpClient(withFetch(), withInterceptors([authRefreshInterceptor])),
+    // Must be present in both browser and server application configs so SSR
+    // emits a hydratable tree and HTTP transfer-cache records.
+    provideClientHydration(withEventReplay()),
 
     {
       provide: ErrorHandler,
@@ -55,7 +58,6 @@ export const appConfig: ApplicationConfig = {
 export const browserAppConfig = mergeApplicationConfig(appConfig, {
   providers: [
     provideAnimations(),
-    provideClientHydration(withEventReplay()),
   ],
 });
 

@@ -44,7 +44,9 @@ async function startServer() {
     });
 
     const { initializeJobs } = await import('../jobs');
-    initializeJobs();
+    initializeJobs({
+      refreshFootballHome: () => container.get<any>('footballQueryService').getHome(),
+    });
 
     const httpServer = createServer(app);
     ChatSocketHub.getInstance().initialize(httpServer, container.get('authService'));

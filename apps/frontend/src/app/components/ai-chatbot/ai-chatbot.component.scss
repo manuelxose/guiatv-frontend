@@ -6,6 +6,7 @@
 }
 
 .chatbot-shell {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -17,6 +18,7 @@
 .chatbot-shell__messages {
   position: relative;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior-y: contain;
   touch-action: pan-y;
@@ -45,18 +47,18 @@
 }
 
 .chatbot-shell__banner--warning {
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  color: #92400e;
+  background: var(--status-warning-soft);
+  border: 1px solid color-mix(in oklch, var(--status-warning) 35%, transparent);
+  color: var(--status-warning);
 }
 
 .chatbot-shell__banner-action {
   border-radius: 0.5rem;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid color-mix(in oklch, var(--status-warning) 45%, transparent);
   padding: 0.35rem 0.75rem;
   font-size: 0.72rem;
   font-weight: 600;
-  color: #92400e;
+  color: var(--status-warning);
   background: transparent;
   cursor: pointer;
 }

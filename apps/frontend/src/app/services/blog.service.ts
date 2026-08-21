@@ -1,5 +1,5 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformServer } from '@angular/common';
+import { Injectable, Inject, PLATFORM_ID, TransferState, makeStateKey } from '@angular/core';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import {
   BehaviorSubject,
   Observable,
@@ -35,6 +35,8 @@ export class BlogService {
   // URL de la API
   private API_URL = '';
   private readonly isServer: boolean;
+  private readonly isBrowser: boolean;
+  private readonly listStateKey = makeStateKey<any[]>('editorial-list-v2');
 
   // Error state observable for UI consumption
   private _error = new BehaviorSubject<string | null>(null);
@@ -43,9 +45,11 @@ export class BlogService {
   constructor(
     private httpService: HttpService,
     private apiConfig: ApiConfigService,
+    private transferState: TransferState,
     @Inject(PLATFORM_ID) platformId: object
   ) {
     this.isServer = isPlatformServer(platformId);
+    this.isBrowser = isPlatformBrowser(platformId);
     this.API_URL = this.apiConfig.buildUrl('/blog');
   }
 
@@ -83,6 +87,13 @@ export class BlogService {
    * Obtiene todos los posts con caché inteligente
    */
   public getAllPosts(): Observable<any[]> {
+    if (this.isBrowser && this.transferState.hasKey(this.listStateKey)) {
+      const posts = this.transferState.get(this.listStateKey, []);
+      this.setPosts(posts);
+      this.cacheTimestamp = Date.now();
+      return of(posts);
+    }
+
     const now = Date.now();
     const currentPosts = this.getPosts();
 
@@ -127,6 +138,7 @@ export class BlogService {
         this._error.next(null);
         this.setPosts(posts);
         this.cacheTimestamp = now;
+        if (this.isServer) this.transferState.set(this.listStateKey, posts);
       }),
       catchError((error) => {
         console.error('Error fetching posts:', error);
@@ -148,7 +160,14 @@ export class BlogService {
    * Obtiene un post por slug
    */
   public getPostBySlug(slug: string): Observable<any[]> {
+    const stateKey = makeStateKey<any[]>(`editorial-detail-v2:${slug}`);
+    if (this.isBrowser && this.transferState.hasKey(stateKey)) {
+      return of(this.transferState.get(stateKey, []));
+    }
     return this.httpService.get<any[]>(`${this.API_URL}?slug=${slug}`).pipe(
+      tap((posts) => {
+        if (this.isServer) this.transferState.set(stateKey, posts);
+      }),
       catchError((error) => {
         console.error('Error fetching post by slug:', error);
         return of([]);

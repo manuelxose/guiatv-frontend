@@ -22,6 +22,7 @@
       aria-autocomplete="list"
       aria-controls="unified-search-results"
       [attr.aria-expanded]="showMenu"
+      [attr.aria-activedescendant]="activeDescendantId"
       (focus)="onFocus()"
     />
 
@@ -36,7 +37,7 @@
   <div *ngIf="showMenu" id="unified-search-results" class="search-shell__menu" role="listbox">
     <div class="search-shell__menu-head">
       <p>{{ control.value ? 'Sugerencias' : 'Búsqueda rápida' }}</p>
-      <span *ngIf="control.value && !isLoading">{{ suggestions.length || history.length }} resultados</span>
+      <span *ngIf="control.value && !isLoading" aria-live="polite">{{ suggestions.length }} resultados</span>
       <span *ngIf="isLoading" class="search-shell__loading-text">Buscando...</span>
     </div>
 
@@ -54,6 +55,9 @@
       <button
         *ngFor="let entry of group.items"
         type="button"
+        role="option"
+        [id]="'unified-search-option-' + entry.index"
+        [attr.aria-selected]="focusedIndex === entry.index"
         class="search-shell__option"
         [class.search-shell__option--focused]="focusedIndex === entry.index"
         (click)="openSuggestion(entry.item)"
@@ -75,6 +79,9 @@
     <button
       *ngFor="let entry of !suggestions.length ? history : []; let i = index"
       type="button"
+      role="option"
+      [id]="'unified-search-option-' + i"
+      [attr.aria-selected]="focusedIndex === i"
       class="search-shell__option search-shell__option--history"
       [class.search-shell__option--focused]="focusedIndex === i"
       (click)="useHistory(entry)"

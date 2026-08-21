@@ -22,10 +22,13 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
         <div class="relative aspect-[16/10] overflow-hidden bg-[var(--portal-surface)]">
           <img
             *ngIf="item?.backdrop || item?.image; else imageFallback"
-            [src]="item?.backdrop || item?.image"
+            [src]="optimizedImageUrl(item?.backdrop || item?.image)"
             [alt]="item?.title"
             class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            width="560"
+            height="350"
             loading="lazy"
+            decoding="async"
           />
           <ng-template #imageFallback>
             <div class="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(239,68,68,0.18),_rgba(15,23,42,0.96))] text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-soft)]">
@@ -165,6 +168,10 @@ export class CatalogCardComponent {
   @Input({ required: true }) item!: CatalogItem;
   @Input() compact = false;
   @Input() showActions = true;
+
+  optimizedImageUrl(value: string | undefined): string {
+    return value?.replace('https://image.tmdb.org/t/p/original/', 'https://image.tmdb.org/t/p/w780/') || '';
+  }
 
   // PosterCard's vertical, derived from data already on CatalogItem — no
   // parallel data shape. See utils/tv-normalizers.ts and

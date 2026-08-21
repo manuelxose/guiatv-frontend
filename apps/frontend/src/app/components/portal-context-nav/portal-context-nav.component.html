@@ -1,0 +1,59 @@
+<section
+  class="portal-context-nav"
+  [class.portal-context-nav--compact]="compact()"
+  [attr.data-section]="kind()"
+  data-testid="portal-section-nav"
+>
+  <div
+    class="portal-context-nav__hierarchy"
+    [attr.aria-hidden]="compact() ? 'true' : null"
+    [attr.inert]="compact() ? '' : null"
+  >
+    <app-breadcrumb
+      [items]="resolvedBreadcrumbItems()"
+      [embedded]="true"
+    ></app-breadcrumb>
+  </div>
+  <nav class="portal-context-nav__tabs" [attr.aria-label]="label()">
+    <div class="portal-context-nav__track">
+      @for (item of items(); track item.id) {
+        @if ((item.kind || 'route') === 'route') {
+        <a
+          #navItem
+          [attr.data-nav-id]="item.id"
+          [routerLink]="item.path"
+          [fragment]="item.fragment || null"
+          [queryParams]="item.queryParams || null"
+          [class.portal-context-nav__link--active]="activeId() === item.id"
+          [attr.aria-current]="activeId() === item.id ? 'page' : null"
+        >
+          @if (item.iconPath) {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path [attr.d]="item.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+          }
+          {{ item.label }}
+        </a>
+        } @else {
+        <button
+          #navItem
+          type="button"
+          [attr.data-nav-id]="item.id"
+          [class.portal-context-nav__link--active]="activeId() === item.id"
+          [attr.aria-pressed]="activeId() === item.id"
+          (click)="select(item)"
+        >
+          @if (item.iconPath) {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path [attr.d]="item.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+          }
+          {{ item.label }}
+        </button>
+        }
+      }
+    </div>
+    @if (actionLabel()) {
+      <button type="button" class="portal-context-nav__action" (click)="action.emit()">
+        {{ actionLabel() }}
+        @if (actionCount() > 0) { <span>{{ actionCount() }}</span> }
+      </button>
+    }
+  </nav>
+</section>

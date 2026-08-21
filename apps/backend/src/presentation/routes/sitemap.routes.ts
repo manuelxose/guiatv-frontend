@@ -22,6 +22,9 @@ export const createSitemapRoutes = (controller: SitemapController): Router => {
   router.get('/sitemap-streaming.xml', (req, res, next) => {
     void controller.getStreamingSitemap(req, res, next);
   });
+  router.get('/sitemap-football.xml', (req, res, next) => {
+    void controller.getFootballSitemap(req, res, next);
+  });
 
   return router;
 };

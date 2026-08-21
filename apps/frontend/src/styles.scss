@@ -190,7 +190,7 @@ img {
 .post-content {
   --tw-prose-body: var(--portal-text-soft);
   --tw-prose-headings: var(--portal-text);
-  --tw-prose-links: var(--accent-editorial);
+  --tw-prose-links: var(--portal-text);
   --tw-prose-pre-bg: var(--portal-surface-strong);
 }
 
@@ -208,6 +208,14 @@ img {
   color: var(--portal-text-soft);
   line-height: 1.75;
   margin-bottom: 1rem;
+}
+
+.post-content a {
+  color: var(--portal-text);
+  font-weight: 650;
+  text-decoration-color: var(--accent-editorial);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
 }
 
 .post-content img {
@@ -248,7 +256,7 @@ img {
 
 .post-content code {
   background: var(--portal-surface-strong);
-  color: var(--accent-editorial);
+  color: var(--portal-text);
   padding: 0.15rem 0.4rem;
   border-radius: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;

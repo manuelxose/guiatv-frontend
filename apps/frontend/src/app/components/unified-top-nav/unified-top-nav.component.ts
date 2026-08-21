@@ -2,21 +2,25 @@ import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   HostListener,
   PLATFORM_ID,
   ViewChild,
+  computed,
   inject,
   input,
   output,
   signal,
 } from '@angular/core';
-import { Params } from '@angular/router';
-import { RouterModule } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Params, Router, RouterModule } from '@angular/router';
+import { filter } from 'rxjs';
 import { APP_PATHS } from '../../config/route-map';
 import {
-  PORTAL_EXPLORE_DESTINATIONS,
   PORTAL_ICON_PATHS,
   PORTAL_PRIMARY_DESTINATIONS,
+  PortalPrimaryDestinationId,
+  resolvePortalPrimaryDestination,
 } from '../../config/portal-navigation.config';
 import { ThemeService } from '../../services/theme.service';
 import { ViewportService } from '../../services/viewport.service';
@@ -24,7 +28,7 @@ import { NotificationBellComponent } from '../notification-bell/notification-bel
 import { UnifiedSearchComponent } from '../unified-search/unified-search.component';
 
 export interface UnifiedTopNavTab {
-  id: 'live' | 'discover' | 'streaming' | 'sports';
+  id: PortalPrimaryDestinationId;
   label: string;
   path: string;
   hint: string;
@@ -49,21 +53,17 @@ export interface UnifiedTopNavShortcut {
 })
 export class UnifiedTopNavComponent {
   readonly appPaths = APP_PATHS;
-  private readonly viewport = inject(ViewportService);
+  readonly viewport = inject(ViewportService);
+  private readonly router = inject(Router);
   private readonly document = inject(DOCUMENT);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly theme = inject(ThemeService);
-  readonly activeTab = input<UnifiedTopNavTab['id'] | null>(null);
-  readonly searchQuery = input('');
   readonly isAuthenticated = input(false);
   readonly profileName = input('Cuenta');
   readonly showLeftRail = input(true);
   readonly showRightRail = input(false);
   readonly rightRailLabel = input('Panel contextual');
 
-  readonly tabChange = output<UnifiedTopNavTab['id']>();
-  readonly searchChange = output<string>();
-  readonly searchSubmit = output<string>();
   readonly leftRailToggle = output<void>();
   readonly rightRailToggle = output<void>();
 
@@ -73,8 +73,16 @@ export class UnifiedTopNavComponent {
   readonly iconPaths = PORTAL_ICON_PATHS;
   isShrunk = false;
   readonly mobileSearchOpen = signal(false);
-  readonly moreOpen = signal(false);
+  readonly searchQuery = signal('');
   @ViewChild(UnifiedSearchComponent) private readonly search?: UnifiedSearchComponent;
+  @ViewChild('mobileSearchTrigger') private readonly mobileSearchTrigger?: ElementRef<HTMLButtonElement>;
+  private readonly navigation = toSignal(
+    this.router.events.pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd)),
+    { initialValue: null }
+  );
+  readonly activeTab = computed(() =>
+    resolvePortalPrimaryDestination(this.navigation()?.urlAfterRedirects || this.router.url)
+  );
   readonly tabs: UnifiedTopNavTab[] = PORTAL_PRIMARY_DESTINATIONS.map((destination) => ({
     id: destination.id as UnifiedTopNavTab['id'],
     label: destination.label,
@@ -82,7 +90,6 @@ export class UnifiedTopNavComponent {
     hint: destination.hint,
     iconPath: destination.iconPath,
   }));
-  readonly exploreDestinations = PORTAL_EXPLORE_DESTINATIONS;
 
   get currentStatusLabel(): string {
     if (this.activeTab() === 'streaming') {
@@ -125,36 +132,24 @@ export class UnifiedTopNavComponent {
   }
 
   closeMobileSearch(): void {
+    const wasOpen = this.mobileSearchOpen();
     this.mobileSearchOpen.set(false);
     this.setDocumentScrollLocked(false);
+    if (wasOpen && this.isBrowser) {
+      setTimeout(() => this.mobileSearchTrigger?.nativeElement.focus());
+    }
   }
 
   onSearchSubmit(value: string): void {
     this.closeMobileSearch();
-    this.searchSubmit.emit(value);
-  }
-
-  toggleMore(): void {
-    this.moreOpen.update((open) => !open);
-  }
-
-  closeMore(): void {
-    this.moreOpen.set(false);
-  }
-
-  setTheme(mode: 'light' | 'dark' | 'system' | string): void {
-    if (mode === 'light' || mode === 'dark' || mode === 'system') {
-      this.theme.setMode(mode);
-    }
+    this.searchQuery.set(value);
+    void this.router.navigate([APP_PATHS.explore], { queryParams: value ? { q: value } : {} });
   }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.mobileSearchOpen()) {
       this.closeMobileSearch();
-    }
-    if (this.moreOpen()) {
-      this.closeMore();
     }
   }
 

@@ -18,7 +18,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
   template: `
     <!-- Backdrop (mobile) -->
     <div
-      class="absolute inset-0 bg-black/50 backdrop-blur-sm z-10 md:hidden"
+      class="absolute inset-0 bg-black/50 backdrop-blur-sm z-[var(--z-dropdown)]"
       (click)="close.emit()"
       (keydown.escape)="close.emit()"
       tabindex="0"
@@ -28,8 +28,8 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
 
     <!-- Sidebar panel -->
     <div
-      class="absolute top-0 left-0 bottom-0 z-20
-             w-full md:w-[280px] bg-[var(--portal-bg-deep)]
+      class="absolute top-0 left-0 bottom-0 z-[var(--z-drawer)]
+             w-full md:w-[min(280px,70%)] bg-[var(--portal-bg-deep)]
              border-r border-[var(--portal-border)]
              flex flex-col shadow-xl"
     >

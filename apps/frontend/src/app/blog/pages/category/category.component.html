@@ -1,21 +1,9 @@
 <app-unified-portal-shell
   tone="editorial"
-  [activeTab]="'discover'"
-  [searchQuery]="searchQuery()"
-  [topPillChips]="topPillChips"
-  topPillLabel="Editorial"
-  [isAuthenticated]="isAuthenticated()"
-  [profileName]="profile()?.name || 'Cuenta'"
-  [breadcrumbItems]="breadcrumbItems"
-  [leftRailSections]="leftRailSections()"
-  [rightRailSections]="rightRailSections()"
-  rightRailLabel="Panel editorial"
+  [breadcrumbItems]="[]"
   [showHero]="false"
-  (tabChange)="navigateToTab($event)"
-  (topPillChange)="onTopPillChange($event)"
-  (searchChange)="onSearchChange($event)"
-  (searchSubmit)="onSearchSubmit($event)"
 >
+  <app-portal-context-nav kind="blog" [breadcrumbItems]="breadcrumbItems"></app-portal-context-nav>
   <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
   <div class="editorial-category-page mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6 lg:px-8">
     <div *ngIf="loading" class="grid gap-6 lg:grid-cols-3">
@@ -36,7 +24,7 @@
         <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_35%,transparent_65%,rgba(239,68,68,0.08))]"></div>
         <div class="relative space-y-5">
           <nav class="flex flex-wrap items-center gap-2 text-sm text-[var(--portal-text-soft)]" aria-label="Breadcrumb">
-            <a [routerLink]="appPaths.blog" class="transition-colors hover:text-[var(--portal-text)]">Editorial</a>
+            <a [routerLink]="appPaths.blog" class="transition-colors hover:text-[var(--portal-text)]">Blog</a>
             <span>/</span>
             <span class="text-[var(--portal-text)]">{{ state.category.name }}</span>
           </nav>
@@ -48,9 +36,7 @@
             <h1 class="max-w-4xl text-4xl font-black tracking-tight text-[var(--portal-text)] md:text-5xl">
               {{ state.category.name }}
             </h1>
-            <p class="max-w-2xl text-base leading-7 text-[var(--portal-text-soft)] md:text-lg">
-              {{ state.category.description || ('Reportajes, guías y lecturas conectadas con ' + state.category.name + ' dentro de la app.') }}
-            </p>
+            <p *ngIf="state.category.description" class="max-w-2xl text-base leading-7 text-[var(--portal-text-soft)] md:text-lg">{{ state.category.description }}</p>
           </div>
         </div>
       </section>
@@ -76,11 +62,7 @@
           </div>
         </a>
 
-        <div class="space-y-4 rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-6">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Contexto</p>
-          <p class="text-sm leading-6 text-[var(--portal-text-soft)]">
-            Esta categoría ya forma parte del mismo flujo de descubrimiento que el resto de la app.
-          </p>
+        <div class="space-y-4 p-6">
           <div class="grid gap-3">
             <a
               [routerLink]="appPaths.platforms"
@@ -92,7 +74,7 @@
               [routerLink]="appPaths.top10"
               class="rounded-[1.25rem] border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-4 py-4 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
             >
-              Abrir rankings editoriales
+              Abrir rankings
             </a>
           </div>
         </div>

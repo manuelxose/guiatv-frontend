@@ -18,12 +18,14 @@ import { EditorialPost } from '../../models/editorial.models';
         <img
           [src]="post?.coverImage"
           [alt]="post?.title || 'Artículo editorial'"
+          width="640"
+          height="400"
           class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/25 to-transparent"></div>
         <div class="absolute left-4 top-4 inline-flex items-center rounded-full border border-white/25 bg-black/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white">
-          {{ post?.primaryCategory?.name || (post?.isRanking ? 'Rankings' : 'Editorial') }}
+          {{ post?.primaryCategory?.name || (post?.isRanking ? 'Rankings' : 'Blog') }}
         </div>
       </div>
 

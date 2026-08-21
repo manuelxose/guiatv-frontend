@@ -1,6 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { catchError, combineLatest, map, Observable, of, timeout } from 'rxjs';
+import { Inject, Injectable, PLATFORM_ID, TransferState, makeStateKey } from '@angular/core';
+import { catchError, combineLatest, map, Observable, of, tap, timeout } from 'rxjs';
 import { TvReadItemDTO } from '../api/models';
 import { EditorialHubState, EditorialPost } from '../blog/models/editorial.models';
 import { EditorialService } from '../blog/services/editorial.service';
@@ -19,6 +19,8 @@ export interface PortalHomeState {
   freeItems: DiscoveryHomeResponse['freeItems'];
 }
 
+const PORTAL_HOME_STATE = makeStateKey<PortalHomeState>('portal-home-state-v2');
+
 @Injectable({ providedIn: 'root' })
 export class PortalHomeFacade {
   private static readonly HOME_EDITORIAL_TIMEOUT_MS = 5_000;
@@ -28,12 +30,22 @@ export class PortalHomeFacade {
     private readonly discoveryService: DiscoveryService,
     private readonly tvDataFacade: TvDataFacade,
     private readonly editorialService: EditorialService,
+    private readonly transferState: TransferState,
     @Inject(PLATFORM_ID) platformId: object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
   getHomeState(): Observable<PortalHomeState> {
+    if (this.isBrowser && this.transferState.hasKey(PORTAL_HOME_STATE)) {
+      const transferred = this.transferState.get(PORTAL_HOME_STATE, null as unknown as PortalHomeState);
+      // Keep this route-level snapshot for the whole hydration pass. Angular
+      // can construct the routed component more than once while reconciling
+      // nested outlets; removing it on first read makes the second instance
+      // fall through to the network and briefly render an empty state.
+      if (transferred) return of(transferred);
+    }
+
     return combineLatest({
       discovery: this.discoveryService.getHome().pipe(
         catchError(() =>
@@ -105,7 +117,10 @@ export class PortalHomeFacade {
         featuredPlatforms: (discovery.platforms?.length ? discovery.platforms : platforms).slice(0, 8),
         trendingItems: discovery.trendingItems || [],
         freeItems: discovery.freeItems || [],
-      }))
+      })),
+      tap((state) => {
+        if (!this.isBrowser) this.transferState.set(PORTAL_HOME_STATE, state);
+      })
     );
   }
 }

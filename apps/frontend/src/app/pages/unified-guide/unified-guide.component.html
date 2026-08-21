@@ -1,28 +1,17 @@
 <app-unified-portal-shell
   class="unified-guide-page"
   [tone]="activeTab()"
-  [activeTab]="activeTab()"
-  [searchQuery]="searchQuery()"
-  [topPillChips]="topPillChips()"
-  [topPillSelection]="topPillSelection()"
-  [topPillLabel]="topPillLabel()"
-  [isAuthenticated]="isAuthenticated()"
-  [profileName]="profile()?.name || 'Cuenta'"
-  [breadcrumbItems]="breadcrumbItems()"
+  [breadcrumbItems]="[]"
   [showHero]="false"
-  rightRailVariant="prime"
-  [showFilterButton]="true"
-  filterButtonLabel="Más filtros"
-  [filterCount]="filterCount()"
-  [leftRailSections]="[]"
-  [rightRailSections]="[]"
-  [rightRailLabel]="rightRailLabel()"
-  (tabChange)="navigateToTab($event)"
-  (searchChange)="onSearchChange($event)"
-  (searchSubmit)="onSearchSubmit($event)"
-  (topPillChange)="onTopPillChange($event)"
-  (filterToggle)="toggleFilterDock()"
 >
+  <app-portal-context-nav
+    [kind]="contextNavKind()"
+    [active]="activeTab() === 'streaming' ? null : sectionSelection()"
+    [actionLabel]="platformMode() === 'compare' ? null : 'Más filtros'"
+    [actionCount]="filterCount()"
+    (itemSelect)="onSectionSelect($event)"
+    (action)="toggleFilterDock()"
+  ></app-portal-context-nav>
   <section id="tab-panel-live" role="tabpanel" *ngIf="activeTab() === 'live'">
     <app-live-guide-view></app-live-guide-view>
   </section>
@@ -30,6 +19,7 @@
     <app-discover-view></app-discover-view>
   </section>
   <section id="tab-panel-streaming" role="tabpanel" *ngIf="activeTab() === 'streaming'">
-    <app-streaming-view></app-streaming-view>
+    <app-streaming-view *ngIf="platformMode() === 'catalog'"></app-streaming-view>
+    <app-streaming-comparison *ngIf="platformMode() === 'compare'"></app-streaming-comparison>
   </section>
 </app-unified-portal-shell>

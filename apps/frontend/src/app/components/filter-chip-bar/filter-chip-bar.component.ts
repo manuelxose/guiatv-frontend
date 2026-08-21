@@ -53,8 +53,8 @@ export class FilterChipBarComponent {
 
     const nextChip = this.chips[nextIndex];
     this.chipSelect.emit(nextChip.id);
-    const tablist = (event.currentTarget as HTMLElement).parentElement;
-    queueMicrotask(() => tablist?.querySelectorAll<HTMLElement>('[role="tab"]')[nextIndex]?.focus());
+    const group = (event.currentTarget as HTMLElement).parentElement;
+    queueMicrotask(() => group?.querySelectorAll<HTMLElement>('button')[nextIndex]?.focus());
   }
 
   trackByChip(_index: number, chip: FilterChipItem): string {

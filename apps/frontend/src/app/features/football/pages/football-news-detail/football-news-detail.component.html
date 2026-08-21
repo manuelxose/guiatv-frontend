@@ -1,0 +1,47 @@
+<div class="shell">
+  <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
+
+  <article *ngIf="article() as data" class="article">
+    <header class="article__head">
+      <p class="article__eyebrow">{{ contentTypeLabel(data.contentType) }}</p>
+      <h1 class="article__title">{{ data.title }}</h1>
+      <div class="article__meta">
+        <span *ngIf="data.author?.name">Por {{ data.author?.name }}</span>
+        <time [attr.datetime]="data.publishedAt">{{ formatDate(data.publishedAt) }}</time>
+        <span *ngIf="data.externalSource">
+          · Fuente: <a [href]="data.externalSource.url" target="_blank" rel="noopener">{{ data.externalSource.name }}</a>
+        </span>
+      </div>
+    </header>
+
+    <img *ngIf="data.coverImage" [src]="data.coverImage" [alt]="data.title" class="article__cover" />
+
+    <div *ngIf="body() as html" class="article__body" [innerHTML]="html"></div>
+
+    <footer *ngIf="data.sportsRelations.competitionIds.length || data.sportsRelations.teamIds.length" class="article__relations">
+      <a
+        *ngFor="let competitionId of data.sportsRelations.competitionIds"
+        class="relation"
+        [routerLink]="['/deportes/futbol/competiciones', competitionId.replace('catalog:', '')]"
+      >
+        Ver competición
+      </a>
+      <a
+        *ngFor="let teamId of data.sportsRelations.teamIds"
+        class="relation"
+        [routerLink]="['/deportes/futbol/equipos', teamId]"
+      >
+        Ver equipo
+      </a>
+    </footer>
+  </article>
+
+  <div *ngIf="loading()" class="empty" aria-hidden="true">
+    <div class="empty__skeleton"></div>
+  </div>
+
+  <div *ngIf="!article() && !loading()" class="empty">
+    <p class="empty__title">Artículo no encontrado</p>
+    <a class="empty__link" routerLink="/deportes/futbol/noticias">Ver noticias</a>
+  </div>
+</div>

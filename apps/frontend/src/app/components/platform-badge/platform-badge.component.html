@@ -1,5 +1,5 @@
 <span class="platform-badge" [ngClass]="toneClass">
   <span *ngIf="!hasLogo" class="platform-badge__mark" aria-hidden="true">{{ initials }}</span>
-  <img *ngIf="hasLogo" [src]="resolvedLogoUrl" [alt]="''" loading="lazy" aria-hidden="true" />
+  <img *ngIf="hasLogo" [src]="resolvedLogoUrl" [alt]="''" width="24" height="24" loading="lazy" aria-hidden="true" />
   <span>{{ label }}</span>
 </span>

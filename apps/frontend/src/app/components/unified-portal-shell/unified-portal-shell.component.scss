@@ -321,18 +321,18 @@
 
 .portal-shell__surface {
   min-width: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .portal-shell__frame {
   width: 100%;
   min-width: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .portal-shell__body {
   min-width: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .portal-shell__hero {
@@ -381,6 +381,11 @@
   height: auto;
   min-height: 0;
   overflow: hidden;
+}
+
+.portal-shell__hero--stage.portal-shell__hero--media-only {
+  height: 23rem;
+  min-height: 23rem;
 }
 
 .portal-shell__hero--media-only .portal-shell__hero-copy {
@@ -683,10 +688,13 @@
 }
 
 .portal-shell--discover,
-.portal-shell--home,
+.portal-shell--home {
+  --guide-accent: var(--guide-accent-discover, #f59e0b);
+}
+
 .portal-shell--editorial,
 .portal-shell--rankings {
-  --guide-accent: var(--guide-accent-discover, #f59e0b);
+  --guide-accent: var(--accent-editorial);
 }
 
 .portal-shell--streaming {
@@ -742,7 +750,7 @@
     display: none;
   }
 
-  app-breadcrumb {
+  .portal-shell__frame > app-breadcrumb {
     display: none;
   }
 

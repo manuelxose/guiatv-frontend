@@ -43,10 +43,10 @@ import { FootballBroadcastDTO } from '@app/features/football/football.models';
   `,
   styles: `
     .broadcasts {
-      border: 1px solid var(--football-border, rgba(148, 163, 184, 0.18));
+      border: 1px solid var(--portal-border);
       border-radius: 0.75rem;
       padding: 1rem;
-      background: var(--football-card-bg, rgba(15, 23, 42, 0.6));
+      background: var(--portal-card);
     }
     .broadcasts__title {
       margin: 0 0 0.625rem;
@@ -54,28 +54,28 @@ import { FootballBroadcastDTO } from '@app/features/football/football.models';
       font-weight: 800;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: var(--football-text-muted, #94a3b8);
+      color: var(--portal-text-muted);
     }
     .broadcasts__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
     .broadcasts__link, .broadcasts__plain {
       display: flex;
       align-items: center;
       gap: 0.625rem;
-      color: var(--football-text, #e2e8f0);
+      color: var(--portal-text);
       text-decoration: none;
       font-weight: 650;
       font-size: 0.875rem;
     }
     .broadcasts__link:hover { text-decoration: underline; }
-    .broadcasts__icon { width: 1.1rem; height: 1.1rem; color: var(--football-accent, #22c55e); }
+    .broadcasts__icon { width: 1.1rem; height: 1.1rem; color: var(--accent-sports); }
     .broadcasts__tag {
       margin-left: auto;
       font-size: 0.6875rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: var(--football-text-muted, #64748b);
-      border: 1px solid var(--football-border, rgba(148, 163, 184, 0.2));
+      color: var(--portal-text-muted);
+      border: 1px solid var(--portal-border);
       border-radius: 9999px;
       padding: 0.125rem 0.5rem;
     }

@@ -71,6 +71,15 @@
   --accent-editorial: #c34fc0;
   --accent-editorial-soft: color-mix(in oklch, var(--accent-editorial) 6%, var(--portal-card));
 
+  // Match-status semantics (live/postponed) for the football vertical.
+  // Aliases, not new hues: "live" reuses the Live-vertical red, "warning"
+  // reuses the Sports-vertical amber — both already theme-aware above, so
+  // no separate light/dark block is needed for these.
+  --status-live: var(--accent-live);
+  --status-live-soft: var(--accent-live-soft);
+  --status-warning: var(--accent-sports);
+  --status-warning-soft: var(--accent-sports-soft);
+
   --guide-bg: var(--portal-bg);
   --guide-bg-elevated: var(--portal-bg-elevated);
   --guide-surface: var(--portal-surface);

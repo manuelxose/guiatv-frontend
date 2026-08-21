@@ -66,8 +66,10 @@ export class FootballController {
       teamId: req.query.team ? String(req.query.team) : undefined,
       competitionId: req.query.competition ? String(req.query.competition) : undefined,
       matchId: req.query.match ? String(req.query.match) : undefined,
+      slug: req.query.slug ? String(req.query.slug) : undefined,
       q: req.query.q ? String(req.query.q) : undefined,
       limit: req.query.limit ? Number(req.query.limit) : undefined,
+      offset: req.query.offset ? Number(req.query.offset) : undefined,
     });
     res.status(200).json(
       successResponse(
@@ -99,6 +101,7 @@ export class FootballController {
       String(channelId),
       String(channelName)
     );
+    await this.footballQueryService.invalidatePublicReads();
     res.status(200).json(successResponse({ saved: true }));
   }
 
@@ -110,6 +113,7 @@ export class FootballController {
       ]);
     }
     await this.reconciliation.clearOverride(String(matchId), String(channelId));
+    await this.footballQueryService.invalidatePublicReads();
     res.status(200).json(successResponse({ cleared: true }));
   }
 }

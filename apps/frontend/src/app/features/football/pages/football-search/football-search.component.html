@@ -1,0 +1,77 @@
+<div class="shell">
+  <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
+
+  <header class="head">
+    <h1 class="head__title">Buscar en fútbol</h1>
+    <form class="search" (ngSubmit)="onSubmit()">
+      <label class="sr-only" for="football-search-input">Buscar equipos, partidos o competiciones</label>
+      <input
+        id="football-search-input"
+        type="search"
+        class="search__input"
+        placeholder="Equipos, partidos, competiciones…"
+        [ngModel]="inputValue()"
+        (ngModelChange)="inputValue.set($event)"
+        name="q"
+        autocomplete="off"
+      />
+      <button type="submit" class="search__submit">Buscar</button>
+    </form>
+  </header>
+
+  <ng-container *ngIf="query(); else prompt">
+    <div *ngIf="loading()" class="skeleton" aria-hidden="true">
+      <div class="skeleton__row" *ngFor="let i of [1, 2, 3]"></div>
+    </div>
+
+    <ng-container *ngIf="!loading()">
+      <section *ngIf="teams().length" class="block">
+        <app-football-section-header eyebrow="Equipos" title="Equipos"></app-football-section-header>
+        <div class="team-grid">
+          <a
+            *ngFor="let team of teams(); trackBy: trackByTeam"
+            class="team-link"
+            [routerLink]="['/deportes/futbol/equipos', team.slug]"
+          >
+            <app-football-team-badge [team]="team"></app-football-team-badge>
+          </a>
+        </div>
+      </section>
+
+      <section *ngIf="matches().length" class="block">
+        <app-football-section-header eyebrow="Partidos" title="Partidos"></app-football-section-header>
+        <div class="rows">
+          <app-football-match-row *ngFor="let match of matches(); trackBy: trackByMatch" [match]="match"></app-football-match-row>
+        </div>
+      </section>
+
+      <section *ngIf="competitions().length" class="block">
+        <app-football-section-header eyebrow="Competiciones" title="Competiciones"></app-football-section-header>
+        <div class="grid">
+          <app-football-competition-card
+            *ngFor="let competition of competitions(); trackBy: trackByCompetition"
+            [competition]="competition"
+          ></app-football-competition-card>
+        </div>
+      </section>
+
+      <section *ngIf="news().length" class="block">
+        <app-football-section-header eyebrow="Noticias" title="Noticias"></app-football-section-header>
+        <div class="news-grid">
+          <app-football-news-card *ngFor="let article of news(); trackBy: trackByArticle" [item]="article"></app-football-news-card>
+        </div>
+      </section>
+
+      <div *ngIf="!hasResults()" class="empty">
+        <p class="empty__title">Sin resultados para "{{ query() }}"</p>
+        <p class="empty__sub">Prueba con el nombre de un equipo, competición o partido.</p>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #prompt>
+    <div class="empty">
+      <p class="empty__title">Busca un equipo, partido o competición</p>
+    </div>
+  </ng-template>
+</div>

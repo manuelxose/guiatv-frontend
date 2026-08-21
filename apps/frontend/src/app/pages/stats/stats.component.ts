@@ -1,220 +1,55 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { MetaService } from '../../services/meta.service';
-import { Subject, takeUntil, catchError, of } from 'rxjs';
+import { Subject, catchError, of, takeUntil } from 'rxjs';
+import { PortalContextNavComponent } from '../../components/portal-context-nav/portal-context-nav.component';
 import { APP_PATHS } from '../../config/route-map';
 import { CatalogService } from '../../services/catalog.service';
+import { MetaService } from '../../services/meta.service';
 
-interface TrendingItem {
-  title: string;
-  path: string;
-  platform?: string;
-  category?: string;
-  score: number;
-}
+interface PopularItem { title: string; path: string; platform?: string; category?: string; }
 
 @Component({
-  selector: 'app-stats',
-  standalone: true,
-  imports: [CommonModule, RouterModule],
+  selector: 'app-stats', standalone: true,
+  imports: [CommonModule, RouterModule, PortalContextNavComponent],
   template: `
-    <div class="min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]">
-      <!-- Hero -->
-      <section class="relative overflow-hidden border-b border-[var(--portal-border)]">
-        <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(239,68,68,0.06),transparent_50%)]"></div>
-        <div class="relative mx-auto max-w-5xl px-4 py-20 text-center sm:px-6 lg:px-8">
-          <p class="text-[11px] uppercase tracking-[0.34em] text-red-500 mb-4">Tendencias</p>
-          <h1 class="text-4xl font-black tracking-tight text-[var(--portal-text)] md:text-6xl">
-            Tendencias TV y Streaming en España
-          </h1>
-          <p class="mt-6 text-lg leading-8 text-[var(--portal-text-soft)] max-w-2xl mx-auto">
-            Descubre qué están viendo los españoles. Datos actualizados en tiempo real basados en la actividad de nuestros usuarios.
-          </p>
-        </div>
-      </section>
-
-      <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
-
-        <!-- Key Metrics -->
-        <section class="mb-16">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div *ngFor="let m of metrics"
-                 class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6 text-center">
-              <p class="text-3xl font-black text-[var(--portal-text)]">{{ m.value }}</p>
-              <p class="text-xs text-[var(--portal-text-muted)] mt-1">{{ m.label }}</p>
-            </div>
-          </div>
+    <div class="popular-page">
+      <app-portal-context-nav kind="blog"></app-portal-context-nav>
+      <header class="popular-page__header"><p>Blog</p><h1>Tendencias</h1><span>Contenidos populares del catálogo de Guía TV.</span></header>
+      @if (loading) { <p class="popular-page__status" role="status">Cargando contenidos populares…</p> }
+      @else if (error) { <p class="popular-page__status" role="alert">No hemos podido cargar las tendencias ahora mismo.</p> }
+      @else if (!items.length) { <p class="popular-page__status">Todavía no hay contenidos populares disponibles.</p> }
+      @else {
+        <section aria-labelledby="popular-heading">
+          <div class="popular-page__section-heading"><h2 id="popular-heading">Popular ahora</h2><a [routerLink]="appPaths.explore">Explorar catálogo</a></div>
+          <ol class="popular-page__list">
+            @for (item of items; track item.path; let index = $index) {
+              <li><span class="popular-page__rank" aria-hidden="true">{{ index + 1 }}</span><a [routerLink]="item.path">{{ item.title }}</a>
+                @if (item.platform || item.category) { <small>{{ item.platform }}{{ item.platform && item.category ? ' · ' : '' }}{{ item.category }}</small> }
+              </li>
+            }
+          </ol>
         </section>
-
-        <!-- Trending Now -->
-        <section class="mb-16">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-[var(--portal-text)]">🔥 Trending ahora</h2>
-            <span class="text-xs text-[var(--portal-text-muted)]">Actualizado cada 15 min</span>
-          </div>
-
-          <div *ngIf="loading" class="text-center py-12">
-            <div class="inline-block w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-
-          <div *ngIf="!loading" class="space-y-3">
-            <div *ngFor="let item of trendingItems; let i = index"
-                 class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4 flex items-center gap-4 hover:border-[var(--portal-border)] transition-colors">
-              <span class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                    [ngClass]="i < 3 ? 'bg-red-500/20 text-red-400' : 'bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)]'">
-                {{ i + 1 }}
-              </span>
-              <div class="flex-1 min-w-0">
-                <a [routerLink]="item.path"
-                   class="text-sm font-medium text-[var(--portal-text)] hover:text-red-400 transition-colors truncate block">
-                  {{ item.title }}
-                </a>
-                <div class="flex items-center gap-2 mt-0.5">
-                  <span *ngIf="item.platform" class="text-xs text-[var(--portal-text-muted)]">{{ item.platform }}</span>
-                  <span *ngIf="item.category" class="text-xs text-[var(--portal-text-faint)]">{{ item.category }}</span>
-                </div>
-              </div>
-              <div class="flex items-center gap-1 text-xs text-[var(--portal-text-muted)]">
-                <div class="w-16 h-1.5 bg-[var(--portal-surface-strong)] rounded-full overflow-hidden">
-                  <div class="h-full bg-red-500 rounded-full" [style.width.%]="item.score"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Insights -->
-        <section class="mb-16">
-          <h2 class="text-2xl font-bold text-[var(--portal-text)] mb-6">Datos del ecosistema TV español</h2>
-          <div class="grid md:grid-cols-2 gap-6">
-            <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
-              <h3 class="text-base font-bold text-[var(--portal-text)] mb-3">📡 Televisión en abierto (TDT)</h3>
-              <ul class="space-y-2 text-sm text-[var(--portal-text-soft)]">
-                <li>Más de <span class="text-[var(--portal-text)] font-medium">30 canales nacionales</span> en la TDT</li>
-                <li>Los informativos siguen siendo los programas más vistos</li>
-                <li>El horario prime time (21:00-00:00) concentra el <span class="text-[var(--portal-text)] font-medium">65%</span> de la audiencia</li>
-                <li>Los fines de semana se consume un <span class="text-[var(--portal-text)] font-medium">23%</span> más de televisión</li>
-              </ul>
-            </div>
-            <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
-              <h3 class="text-base font-bold text-[var(--portal-text)] mb-3">🎬 Plataformas de streaming</h3>
-              <ul class="space-y-2 text-sm text-[var(--portal-text-soft)]">
-                <li><span class="text-[var(--portal-text)] font-medium">15+ plataformas</span> de pago y gratuitas en España</li>
-                <li>Netflix, Amazon y Disney+ acumulan el <span class="text-[var(--portal-text)] font-medium">72%</span> de suscripciones</li>
-                <li>El contenido español gana peso en los catálogos internacionales</li>
-                <li>El <span class="text-[var(--portal-text)] font-medium">45%</span> de hogares tiene 2 o más suscripciones</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <!-- Methodology -->
-        <section class="mb-16">
-          <h2 class="text-2xl font-bold text-[var(--portal-text)] mb-4">Metodología</h2>
-          <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
-            <p class="text-sm text-[var(--portal-text-soft)] leading-relaxed">
-              Los datos de tendencias se calculan a partir de las interacciones anónimas de los usuarios de
-              Guía Programación TV: búsquedas, visitas a fichas de programas, contenido añadido a favoritos
-              y tiempo en página. Los datos se agregan y actualizan cada 15 minutos. Las estadísticas
-              del ecosistema se basan en fuentes públicas (CNMC, Barlovento Comunicación, informes sectoriales)
-              y en datos propios.
-            </p>
-          </div>
-        </section>
-
-        <!-- Citation -->
-        <section>
-          <h2 class="text-2xl font-bold text-[var(--portal-text)] mb-4">Citar estos datos</h2>
-          <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
-            <p class="text-sm text-[var(--portal-text-soft)] mb-3">
-              Si utilizas estos datos en un artículo, informe o publicación, por favor incluye la atribución:
-            </p>
-            <div class="bg-[var(--portal-surface-soft)] rounded-xl p-4 text-sm text-[var(--portal-text-soft)] italic">
-              "Fuente: Guía Programación TV (guiaprogramaciontv.com/tendencias), {{ currentYear }}."
-            </div>
-          </div>
-        </section>
-      </div>
+      }
     </div>
   `,
+  styles: [`
+    :host{display:block}.popular-page{width:min(100%,72rem);margin:0 auto;padding:0 1rem 5rem;color:var(--portal-text)}
+    .popular-page__header{padding:clamp(2rem,6vw,4.5rem) 0 2.5rem;border-bottom:1px solid var(--portal-divider)}
+    .popular-page__header p{margin:0 0 .55rem;color:var(--guide-accent);font-size:var(--text-xs);font-weight:800}.popular-page__header h1{margin:0;font-size:clamp(2.25rem,6vw,4.25rem);line-height:1;letter-spacing:-.04em}.popular-page__header span{display:block;margin-top:1rem;color:var(--portal-text-soft);font-size:var(--text-lg)}
+    .popular-page__status{padding:3rem 0;color:var(--portal-text-soft)}.popular-page section{padding-top:2.5rem}.popular-page__section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:1rem}.popular-page__section-heading h2{margin:0;font-size:var(--text-2xl)}.popular-page__section-heading a{color:var(--guide-accent);font-weight:700}
+    .popular-page__list{list-style:none;margin:0;padding:0;border-top:1px solid var(--portal-divider)}.popular-page__list li{display:grid;grid-template-columns:2.5rem minmax(0,1fr) auto;gap:.75rem;align-items:center;min-height:4.5rem;border-bottom:1px solid var(--portal-divider)}.popular-page__rank{color:var(--portal-text-muted);font-size:var(--text-xl);font-weight:900;font-variant-numeric:tabular-nums}.popular-page__list a{color:var(--portal-text);font-weight:750;text-decoration:none}.popular-page__list a:hover,.popular-page__list a:focus-visible{color:var(--guide-accent)}.popular-page__list small{color:var(--portal-text-muted);text-align:right}
+    @media(max-width:639px){.popular-page__list li{grid-template-columns:2rem minmax(0,1fr);padding:.75rem 0}.popular-page__list small{grid-column:2;text-align:left}}
+  `], changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatsComponent implements OnInit, OnDestroy {
-  readonly appPaths = APP_PATHS;
-  currentYear = new Date().getFullYear();
-  loading = false;
-  trendingItems: TrendingItem[] = [];
-  private destroy$ = new Subject<void>();
-
-  metrics = [
-    { value: '100+', label: 'Canales monitorizados' },
-    { value: '15+', label: 'Plataformas streaming' },
-    { value: '24/7', label: 'Datos en tiempo real' },
-    { value: '50K+', label: 'Programas indexados' },
-  ];
-
-  // Fallback data when API is unavailable
-  private fallbackTrending: TrendingItem[] = [
-    { title: 'La Casa de Papel: Berlín', path: APP_PATHS.explore, platform: 'Netflix', category: 'Series', score: 97 },
-    { title: 'El Hormiguero', path: APP_PATHS.explore, platform: 'Antena 3', category: 'Entretenimiento', score: 89 },
-    { title: 'Entrevías T3', path: APP_PATHS.explore, platform: 'Telecinco', category: 'Series', score: 84 },
-    { title: 'Supervivientes', path: APP_PATHS.explore, platform: 'Telecinco', category: 'Reality', score: 78 },
-    { title: 'Andor', path: APP_PATHS.explore, platform: 'Disney+', category: 'Series', score: 75 },
-    { title: 'Telediario 1', path: APP_PATHS.explore, platform: 'La 1', category: 'Informativos', score: 72 },
-    { title: 'La Promesa', path: APP_PATHS.explore, platform: 'La 1', category: 'Series', score: 68 },
-    { title: 'El Internado: Las Cumbres', path: APP_PATHS.explore, platform: 'Prime Video', category: 'Series', score: 65 },
-    { title: 'The Last of Us', path: APP_PATHS.explore, platform: 'Max', category: 'Series', score: 62 },
-    { title: 'Pasapalabra', path: APP_PATHS.explore, platform: 'Antena 3', category: 'Concursos', score: 58 },
-  ];
-
-  constructor(
-    private readonly metaService: MetaService,
-    private readonly catalogService: CatalogService,
-  ) {}
-
-  ngOnInit(): void {
-    this.metaService.setMetaTags({
-      title: `Tendencias TV y Streaming en España ${this.currentYear} - Guía Programación TV`,
-      description: `Descubre qué están viendo los españoles. Ranking en tiempo real de programas de TV y contenidos de streaming más populares. Datos actualizados de ${this.currentYear}.`,
-      canonicalUrl: '/tendencias',
+  readonly appPaths=APP_PATHS; loading=true; error=false; items:PopularItem[]=[]; private readonly destroy$=new Subject<void>();
+  constructor(private readonly metaService:MetaService,private readonly catalogService:CatalogService){}
+  ngOnInit():void{
+    this.metaService.setMetaTags({title:'Tendencias de TV y streaming | Guía TV',description:'Consulta los contenidos populares del catálogo de Guía TV.',canonicalUrl:APP_PATHS.stats});
+    this.catalogService.queryState({sort:'popular',limit:10}).pipe(takeUntil(this.destroy$),catchError(()=>{this.error=true;return of({data:{items:[]}} as any);})).subscribe(result=>{
+      const source=(result.data?.items||[]) as any[];this.items=source.map(item=>({title:item.title,path:item.detailPath||APP_PATHS.explore,platform:item.primaryPlatforms?.[0]||item.channel?.name,category:item.genres?.[0]}));this.loading=false;
     });
-
-    // Render fallback data identically on server and client to avoid hydration mismatch
-    this.trendingItems = this.fallbackTrending;
-
-    this.loading = true;
-    this.catalogService
-      .queryState({
-        sort: 'popular',
-        limit: 10,
-      })
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError(() =>
-          of({
-            data: { items: this.fallbackTrending as any[] },
-            unavailable: true,
-            stale: false,
-          } as any)
-        ),
-      )
-      .subscribe((result) => {
-        const items = (result.data?.items || []) as any[];
-        this.trendingItems = items.length
-          ? items.map((item, index) => ({
-              title: item.title,
-              path: item.detailPath || APP_PATHS.explore,
-              platform: item.primaryPlatforms?.[0] || item.channel?.name,
-              category: item.genres?.[0],
-              score: Math.max(50, 100 - index * 5),
-            }))
-          : this.fallbackTrending;
-        this.loading = false;
-      });
   }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
+  ngOnDestroy():void{this.destroy$.next();this.destroy$.complete();}
 }
