@@ -2,10 +2,10 @@
 
 <app-unified-portal-shell
   tone="editorial"
-  [breadcrumbItems]="breadcrumbItems"
+  [breadcrumbItems]="[]"
   [showHero]="false"
 >
-  <app-portal-context-nav kind="blog"></app-portal-context-nav>
+  <app-portal-context-nav kind="blog" [breadcrumbItems]="breadcrumbItems"></app-portal-context-nav>
   <header class="blog-page-header">
     <p>Blog</p>
     <h1>Historias y guías para elegir qué ver</h1>

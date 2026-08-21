@@ -42,6 +42,9 @@ test.describe('Canonical Blog and Platforms navigation', () => {
       await expect(
         page.getByRole('navigation', { name: contextLabel }).getByRole('link', { name: route.active, exact: true })
       ).toHaveAttribute('aria-current', 'page');
+      await expect(page.locator('app-portal-context-nav app-breadcrumb')).toHaveCount(1);
+      await expect(page.locator('app-breadcrumb')).toHaveCount(1);
+      await expect(page.locator('app-portal-context-nav .portal-context-nav')).toHaveCSS('border-radius', /16px|20px/);
 
       if (route.path.startsWith('/editorial') || route.path === '/tendencias') {
         await expect(page.getByRole('navigation', { name: 'Secciones del Blog' })).toBeVisible();
@@ -57,11 +60,30 @@ test.describe('Canonical Blog and Platforms navigation', () => {
       await page.setViewportSize(viewport);
       for (const path of visualRoutes) {
         await page.goto(path);
+        await expect(page.locator('app-unified-top-nav')).toBeVisible();
+        if (
+          path === '/plataformas' ||
+          path === '/comparador-streaming' ||
+          path.startsWith('/editorial') ||
+          path === '/tendencias'
+        ) {
+          await expect(page.locator('app-portal-context-nav')).toBeVisible();
+        }
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width);
         await page.screenshot({
           path: testInfo.outputPath(`${path.replaceAll('/', '-') || 'home'}-${viewport.width}x${viewport.height}.png`),
         });
       }
+    }
+  });
+
+  test('contextual navigation and hierarchy stay visible on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const route of routes) {
+      await page.goto(route.path);
+      await expect(page.getByRole('heading', { name: route.heading }).first()).toBeVisible();
+      await expect(page.locator('app-portal-context-nav')).toBeVisible();
+      await expect(page.locator('app-portal-context-nav app-breadcrumb')).toBeVisible();
     }
   });
 

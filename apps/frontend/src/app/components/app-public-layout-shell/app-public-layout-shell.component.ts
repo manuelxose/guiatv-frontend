@@ -94,6 +94,7 @@ function resolvePublicShellSection(path: string): PortalPublicShellSection {
 function buildBreadcrumbItems(path: string): { name: string; url: string }[] {
   if (
     path === APP_PATHS.home ||
+    path.startsWith(APP_PATHS.stats) ||
     /^\/(peliculas|series|programas|contenido|detalles|pelicula-details)\//.test(path)
   ) {
     return [];

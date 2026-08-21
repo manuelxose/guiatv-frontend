@@ -47,7 +47,7 @@ const TAB_META: Record<UnifiedGuideTab, { title: string; description: string; pa
     path: APP_PATHS.explore,
   },
   streaming: {
-    title: 'Streaming',
+    title: 'Plataformas',
     description: 'Explora plataformas, novedades y catálogo en streaming dentro del mismo sistema.',
     path: APP_PATHS.platforms,
   },
