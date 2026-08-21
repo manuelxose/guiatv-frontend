@@ -10,6 +10,10 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+body.portal-overlay-open {
+  overflow: hidden;
+}
+
 #__next {
   height: 100%;
 }

@@ -36,7 +36,9 @@ test.describe('Buscar -> suggestions -> resultado -> detalle', () => {
 
     const searchInput = page.locator('#unified-search-input');
     await searchInput.click();
+    await expect(page.getByRole('button', { name: 'Limpiar búsqueda' })).toHaveCount(0);
     await searchInput.fill(queryTerm);
+    await expect(page.getByRole('button', { name: 'Limpiar búsqueda' })).toHaveCount(1);
 
     const suggestionMenu = page.locator('.search-shell__menu');
     await expect(suggestionMenu).toBeVisible({ timeout: 20_000 });

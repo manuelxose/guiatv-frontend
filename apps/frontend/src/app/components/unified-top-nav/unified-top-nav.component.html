@@ -39,6 +39,7 @@
           <span class="unified-top-nav__brand-copy">
             <strong>
               <span class="unified-top-nav__brand-full">GUÍA TV</span>
+              <span class="unified-top-nav__brand-short">GUÍA TV</span>
             </strong>
             <small>TV en directo, streaming, deportes y discovery editorial</small>
           </span>
@@ -60,6 +61,43 @@
           </span>
           <span class="unified-top-nav__tab-copy"><strong>{{ tab.label }}</strong></span>
         </a>
+
+        <div class="unified-top-nav__more">
+          <button
+            type="button"
+            class="unified-top-nav__more-trigger"
+            (click)="toggleMore()"
+            [attr.aria-expanded]="moreOpen()"
+            aria-controls="portal-explore-menu"
+          >
+            <span>Editorial y más</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+              <path d="m7.5 9.75 4.5 4.5 4.5-4.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+            </svg>
+          </button>
+
+          @if (moreOpen()) {
+          <div id="portal-explore-menu" class="unified-top-nav__more-menu" role="menu" aria-label="Editorial y más">
+            <p>Explorar</p>
+            @for (destination of exploreDestinations; track destination.id) {
+            <a [routerLink]="destination.path" role="menuitem" (click)="closeMore()">
+              <span class="unified-top-nav__more-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path [attr.d]="destination.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+              </span>
+              <span><strong>{{ destination.label }}</strong><small>{{ destination.hint }}</small></span>
+            </a>
+            }
+            <div class="unified-top-nav__theme-options" role="group" aria-label="Preferencia de tema">
+              <span>Tema</span>
+              @for (mode of ['system', 'light', 'dark']; track mode) {
+              <button type="button" (click)="setTheme(mode)" [class.is-selected]="theme.mode() === mode">
+                {{ mode === 'system' ? 'Sistema' : mode === 'light' ? 'Claro' : 'Oscuro' }}
+              </button>
+              }
+            </div>
+          </div>
+          }
+        </div>
       </nav>
 
       <div
@@ -82,6 +120,7 @@
               [expanded]="true"
               (searchChange)="searchChange.emit($event)"
               (searchSubmit)="onSearchSubmit($event)"
+              (suggestionOpen)="closeMobileSearch()"
             ></app-unified-search>
           </div>
           <button
@@ -114,13 +153,7 @@
           [attr.aria-label]="themeLabel"
           [attr.title]="themeLabel"
         >
-          @switch (theme.mode()) {
-            @case ('dark') {
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                <circle cx="12" cy="12" r="4.2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></circle>
-                <path d="M12 2.5v2M12 19.5v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2.5 12h2M19.5 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-              </svg>
-            }
+          @switch (theme.resolved) {
             @case ('light') {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
@@ -128,8 +161,8 @@
             }
             @default {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                <rect x="3.5" y="4.5" width="17" height="12" rx="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></rect>
-                <path d="M12 16.5V20M8.5 20h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                <circle cx="12" cy="12" r="4.2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></circle>
+                <path d="M12 2.5v2M12 19.5v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2.5 12h2M19.5 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
               </svg>
             }
           }

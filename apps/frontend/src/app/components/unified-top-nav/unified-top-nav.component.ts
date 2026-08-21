@@ -1,9 +1,10 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   HostListener,
   PLATFORM_ID,
+  ViewChild,
   inject,
   input,
   output,
@@ -12,7 +13,11 @@ import {
 import { Params } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { APP_PATHS } from '../../config/route-map';
-import { PORTAL_ICON_PATHS, PORTAL_PRIMARY_DESTINATIONS } from '../../config/portal-navigation.config';
+import {
+  PORTAL_EXPLORE_DESTINATIONS,
+  PORTAL_ICON_PATHS,
+  PORTAL_PRIMARY_DESTINATIONS,
+} from '../../config/portal-navigation.config';
 import { ThemeService } from '../../services/theme.service';
 import { ViewportService } from '../../services/viewport.service';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
@@ -45,6 +50,7 @@ export interface UnifiedTopNavShortcut {
 export class UnifiedTopNavComponent {
   readonly appPaths = APP_PATHS;
   private readonly viewport = inject(ViewportService);
+  private readonly document = inject(DOCUMENT);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly theme = inject(ThemeService);
   readonly activeTab = input<UnifiedTopNavTab['id'] | null>(null);
@@ -67,6 +73,8 @@ export class UnifiedTopNavComponent {
   readonly iconPaths = PORTAL_ICON_PATHS;
   isShrunk = false;
   readonly mobileSearchOpen = signal(false);
+  readonly moreOpen = signal(false);
+  @ViewChild(UnifiedSearchComponent) private readonly search?: UnifiedSearchComponent;
   readonly tabs: UnifiedTopNavTab[] = PORTAL_PRIMARY_DESTINATIONS.map((destination) => ({
     id: destination.id as UnifiedTopNavTab['id'],
     label: destination.label,
@@ -74,6 +82,7 @@ export class UnifiedTopNavComponent {
     hint: destination.hint,
     iconPath: destination.iconPath,
   }));
+  readonly exploreDestinations = PORTAL_EXPLORE_DESTINATIONS;
 
   get currentStatusLabel(): string {
     if (this.activeTab() === 'streaming') {
@@ -104,37 +113,60 @@ export class UnifiedTopNavComponent {
   }
 
   cycleTheme(): void {
-    this.theme.cycle();
+    this.theme.toggle();
   }
 
   openMobileSearch(): void {
     this.mobileSearchOpen.set(true);
+    this.setDocumentScrollLocked(true);
+    if (this.isBrowser) {
+      setTimeout(() => this.search?.focusInput());
+    }
   }
 
   closeMobileSearch(): void {
     this.mobileSearchOpen.set(false);
+    this.setDocumentScrollLocked(false);
   }
 
   onSearchSubmit(value: string): void {
-    this.mobileSearchOpen.set(false);
+    this.closeMobileSearch();
     this.searchSubmit.emit(value);
+  }
+
+  toggleMore(): void {
+    this.moreOpen.update((open) => !open);
+  }
+
+  closeMore(): void {
+    this.moreOpen.set(false);
+  }
+
+  setTheme(mode: 'light' | 'dark' | 'system' | string): void {
+    if (mode === 'light' || mode === 'dark' || mode === 'system') {
+      this.theme.setMode(mode);
+    }
   }
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.mobileSearchOpen()) {
-      this.mobileSearchOpen.set(false);
+      this.closeMobileSearch();
+    }
+    if (this.moreOpen()) {
+      this.closeMore();
     }
   }
 
   get themeLabel(): string {
-    const mode = this.theme.mode();
-    if (mode === 'dark') {
-      return 'Tema oscuro — cambiar a sistema';
+    return this.theme.resolved === 'dark'
+      ? 'Cambiar a tema claro'
+      : 'Cambiar a tema oscuro';
+  }
+
+  private setDocumentScrollLocked(locked: boolean): void {
+    if (this.isBrowser) {
+      this.document.body.classList.toggle('portal-overlay-open', locked);
     }
-    if (mode === 'light') {
-      return 'Tema claro — cambiar a oscuro';
-    }
-    return 'Tema según sistema — cambiar a claro';
   }
 }
