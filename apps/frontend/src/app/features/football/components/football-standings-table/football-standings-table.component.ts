@@ -1,15 +1,21 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { FootballStandingRowDTO } from '@app/features/football/football.models';
 
 /**
- * Mobile-friendly standings table. Key columns always visible; secondary
- * stats hidden on narrow viewports.
+ * Compact standings table: position, team, played, goal difference, points.
+ * W/D/L and a full form strip are intentionally out of this compact view —
+ * see the competition-page rebuild for the full table (deferred).
+ *
+ * Reused (not duplicated) for match-centre standings context: pass
+ * `highlightTeamIds` to mark the two playing teams, and `windowSize` to show
+ * only the rows around them (spec §29) instead of the whole table.
  */
 @Component({
   selector: 'app-football-standings-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="standings" role="table" aria-label="Clasificación">
@@ -21,13 +27,14 @@ import { FootballStandingRowDTO } from '@app/features/football/football.models';
         <span class="standings__cell standings__pts" role="columnheader">Pts</span>
       </div>
       <div
-        *ngFor="let row of standings; trackBy: trackByPosition"
+        *ngFor="let row of visibleRows; trackBy: trackByPosition"
         class="standings__row"
+        [class.standings__row--highlight]="isHighlighted(row)"
         role="row"
       >
         <span class="standings__pos" role="cell">{{ row.position }}</span>
         <span class="standings__team" role="cell">
-          <span class="standings__name">{{ row.team.shortName || row.team.name }}</span>
+          <a class="standings__name" [routerLink]="['/deportes/futbol/equipos', row.team.slug]">{{ row.team.shortName || row.team.name }}</a>
           <span *ngIf="row.form" class="standings__form">{{ row.form }}</span>
         </span>
         <span class="standings__cell" role="cell">{{ row.played }}</span>
@@ -41,10 +48,10 @@ import { FootballStandingRowDTO } from '@app/features/football/football.models';
   `,
   styles: `
     .standings {
-      border: 1px solid var(--football-border, rgba(148, 163, 184, 0.18));
+      border: 1px solid var(--portal-border);
       border-radius: 0.75rem;
       overflow: hidden;
-      background: var(--football-card-bg, rgba(15, 23, 42, 0.6));
+      background: var(--portal-card);
     }
     .standings__head, .standings__row {
       display: grid;
@@ -57,38 +64,78 @@ import { FootballStandingRowDTO } from '@app/features/football/football.models';
       font-size: 0.6875rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--football-text-muted, #94a3b8);
-      border-bottom: 1px solid var(--football-border, rgba(148, 163, 184, 0.18));
+      color: var(--portal-text-muted);
+      border-bottom: 1px solid var(--portal-border);
     }
     .standings__row {
       font-size: 0.875rem;
-      color: var(--football-text, #e2e8f0);
-      border-bottom: 1px solid var(--football-border, rgba(148, 163, 184, 0.1));
+      color: var(--portal-text);
+      border-bottom: 1px solid var(--portal-divider);
     }
     .standings__row:last-child { border-bottom: none; }
+    .standings__row--highlight { background: var(--status-warning-soft); font-weight: 750; }
     .standings__pos {
       font-weight: 750;
-      color: var(--football-text-muted, #94a3b8);
+      color: var(--portal-text-muted);
       text-align: center;
     }
+    .standings__row--highlight .standings__pos { color: var(--status-warning); }
     .standings__team {
       display: flex;
       flex-direction: column;
       min-width: 0;
     }
-    .standings__name { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .standings__name {
+      display: inline-block;
+      max-width: 100%;
+      font-weight: 650;
+      color: inherit;
+      text-decoration: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .standings__name:hover, .standings__name:focus-visible { color: var(--accent-sports); text-decoration: underline; }
+    .standings__name:focus-visible { outline: 2px solid var(--accent-sports); outline-offset: 2px; }
     .standings__form {
       font-size: 0.6875rem;
       letter-spacing: 0.08em;
-      color: var(--football-text-muted, #64748b);
+      color: var(--portal-text-muted);
     }
     .standings__cell { text-align: center; font-variant-numeric: tabular-nums; }
-    .standings__pts { font-weight: 850; color: var(--football-accent, #22c55e); }
-    .standings__empty { padding: 1.25rem; text-align: center; color: var(--football-text-muted, #94a3b8); font-size: 0.875rem; }
+    .standings__pts { font-weight: 850; color: var(--accent-sports); }
+    .standings__empty { padding: 1.25rem; text-align: center; color: var(--portal-text-muted); font-size: 0.875rem; }
   `,
 })
 export class FootballStandingsTableComponent {
   @Input() standings: FootballStandingRowDTO[] = [];
+  /** Team ids to visually mark (e.g. the two teams in a match). */
+  @Input() highlightTeamIds: string[] = [];
+  /** When set alongside `highlightTeamIds`, shows only rows within this many
+   *  positions of each highlighted team instead of the full table. */
+  @Input() windowSize?: number;
+
+  get visibleRows(): FootballStandingRowDTO[] {
+    if (!this.windowSize || !this.highlightTeamIds.length || !this.standings.length) {
+      return this.standings;
+    }
+    const highlightedIndexes = this.standings
+      .map((row, index) => (this.highlightTeamIds.includes(row.team.id) ? index : -1))
+      .filter((index) => index >= 0);
+    if (!highlightedIndexes.length) return this.standings;
+
+    const keep = new Set<number>();
+    for (const index of highlightedIndexes) {
+      for (let i = Math.max(0, index - this.windowSize); i <= Math.min(this.standings.length - 1, index + this.windowSize); i++) {
+        keep.add(i);
+      }
+    }
+    return this.standings.filter((_, index) => keep.has(index));
+  }
+
+  isHighlighted(row: FootballStandingRowDTO): boolean {
+    return this.highlightTeamIds.includes(row.team.id);
+  }
 
   signed(value: number): string {
     return value > 0 ? `+${value}` : String(value);

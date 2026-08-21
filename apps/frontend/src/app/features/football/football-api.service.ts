@@ -61,7 +61,9 @@ export class FootballApiService {
     return this.client.get<ApiResponse<FootballTeamDetailDTO>>(`/sports/football/teams/${slug}`);
   }
 
-  getNews(params: { team?: string; competition?: string; match?: string; q?: string; limit?: number } = {}): Observable<ApiResponse<{ news: FootballNewsDTO[] }>> {
+  getNews(
+    params: { team?: string; competition?: string; match?: string; slug?: string; q?: string; limit?: number; offset?: number } = {}
+  ): Observable<ApiResponse<{ news: FootballNewsDTO[] }>> {
     return this.client.get<ApiResponse<{ news: FootballNewsDTO[] }>>('/sports/football/news', params);
   }
 

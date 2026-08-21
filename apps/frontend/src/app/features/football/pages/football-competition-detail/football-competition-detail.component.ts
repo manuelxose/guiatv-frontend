@@ -1,18 +1,46 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { map, switchMap } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FootballFacade } from '@app/features/football/football.facade';
-import { FootballCompetitionDetailDTO } from '@app/features/football/football.models';
-import { FootballMatchCardComponent } from '@app/features/football/components/football-match-card/football-match-card.component';
+import { FootballCompetitionDetailDTO, FootballMatchDTO } from '@app/features/football/football.models';
 import { FootballNewsCardComponent } from '@app/features/football/components/football-news-card/football-news-card.component';
 import { FootballStandingsTableComponent } from '@app/features/football/components/football-standings-table/football-standings-table.component';
 import { FootballSectionHeaderComponent } from '@app/features/football/components/football-section-header/football-section-header.component';
+import { FootballMatchRowComponent } from '@app/features/football/components/football-match-row/football-match-row.component';
+import {
+  applyFootballMatchFilter,
+  FootballFilterBarComponent,
+  FootballMatchFilter,
+} from '@app/features/football/components/football-filter-bar/football-filter-bar.component';
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
+
+type CompetitionTab = 'resumen' | 'calendario' | 'clasificacion';
+
+type CompetitionState =
+  | { status: 'loading' }
+  | { status: 'found'; detail: FootballCompetitionDetailDTO }
+  | { status: 'not-found' };
+
+interface RoundGroup {
+  round: string;
+  matches: FootballMatchDTO[];
+}
+
+export function groupByRound(matches: FootballMatchDTO[]): RoundGroup[] {
+  const groups = new Map<string, FootballMatchDTO[]>();
+  for (const match of matches) {
+    const key = match.round || 'Partidos';
+    const list = groups.get(key) || [];
+    list.push(match);
+    groups.set(key, list);
+  }
+  return Array.from(groups.entries()).map(([round, matches]) => ({ round, matches }));
+}
 
 @Component({
   selector: 'app-football-competition-detail',
@@ -20,110 +48,99 @@ import { generateFootballBreadcrumbSchema } from '@app/features/football/footbal
   imports: [
     CommonModule,
     RouterModule,
-    FootballMatchCardComponent,
     FootballNewsCardComponent,
     FootballStandingsTableComponent,
     FootballSectionHeaderComponent,
+    FootballMatchRowComponent,
+    FootballFilterBarComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="shell">
-      <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
-
-      <div *ngIf="detail() as data">
-        <header class="head">
-          <img *ngIf="data.competition.logo" [src]="data.competition.logo" [alt]="''" class="head__logo" />
-          <div>
-            <h1 class="head__title">{{ data.competition.name }}</h1>
-            <p class="head__sub">{{ data.competition.country }}</p>
-          </div>
-        </header>
-
-        <section *ngIf="data.standings?.length" class="block">
-          <app-football-section-header eyebrow="Tabla" title="Clasificación"></app-football-section-header>
-          <app-football-standings-table [standings]="data.standings"></app-football-standings-table>
-        </section>
-
-        <section class="block">
-          <app-football-section-header eyebrow="Partidos" title="Partidos y resultados"></app-football-section-header>
-          <div class="grid">
-            <app-football-match-card
-              *ngFor="let match of data.matches"
-              [match]="match"
-              variant="compact"
-            ></app-football-match-card>
-          </div>
-          <p *ngIf="!data.matches?.length" class="muted">Sin partidos disponibles para esta competición.</p>
-        </section>
-
-        <section *ngIf="data.news?.length" class="block">
-          <app-football-section-header eyebrow="Actualidad" title="Noticias"></app-football-section-header>
-          <div class="news-grid">
-            <app-football-news-card *ngFor="let article of data.news" [item]="article"></app-football-news-card>
-          </div>
-        </section>
-      </div>
-
-      <div *ngIf="!detail() && !loading()" class="empty">
-        <p class="empty__title">Competición no encontrada</p>
-        <a class="empty__link" routerLink="/deportes/futbol/competiciones">Ver competiciones</a>
-      </div>
-    </div>
-  `,
-  styles: `
-    .shell { max-width: 72rem; margin: 0 auto; padding: 1rem; display: flex; flex-direction: column; gap: 1.25rem; }
-    .head { display: flex; align-items: center; gap: 0.875rem; }
-    .head__logo { width: 3rem; height: 3rem; object-fit: contain; }
-    .head__title { margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--football-text, #f1f5f9); }
-    .head__sub { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--football-text-muted, #94a3b8); }
-    .block { display: flex; flex-direction: column; gap: 0.625rem; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 0.625rem; }
-    @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-    .news-grid { display: grid; grid-template-columns: 1fr; gap: 0.625rem; }
-    @media (min-width: 640px) { .news-grid { grid-template-columns: repeat(2, 1fr); } }
-    .muted { color: var(--football-text-muted, #94a3b8); font-size: 0.875rem; }
-    .empty { border: 1px dashed var(--football-border, rgba(148, 163, 184, 0.25)); border-radius: 0.75rem; padding: 2rem; text-align: center; }
-    .empty__title { margin: 0 0 0.5rem; font-weight: 750; color: var(--football-text, #e2e8f0); }
-    .empty__link { color: var(--football-accent, #22c55e); font-weight: 700; }
-  `,
+  templateUrl: './football-competition-detail.component.html',
+  styleUrl: './football-competition-detail.component.scss',
 })
-export class FootballCompetitionDetailComponent implements OnInit {
+export class FootballCompetitionDetailComponent {
   private readonly facade = inject(FootballFacade);
   private readonly route = inject(ActivatedRoute);
   private readonly meta = inject(MetaService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  readonly loading = signal(true);
-  safeLdHtml: SafeHtml | null = null;
+  readonly tabs: Array<{ id: CompetitionTab; label: string }> = [
+    { id: 'resumen', label: 'Resumen' },
+    { id: 'calendario', label: 'Calendario' },
+    { id: 'clasificacion', label: 'Clasificación' },
+  ];
+  readonly activeTab = signal<CompetitionTab>('resumen');
+  readonly filter = signal<FootballMatchFilter>('all');
 
-  readonly detail = toSignal(
+  // Same discriminated state as football-match-detail — and for the same
+  // reason: a naive "set noindex, then clear it once data arrives" ordering
+  // is exactly what shipped every match page as noindex to crawlers before
+  // that fix. This never sets meta at all until the real outcome is known.
+  readonly state = toSignal(
     this.route.paramMap.pipe(
       map((params) => params.get('slug') || ''),
-      switchMap((slug) => this.facade.getCompetition(slug))
+      switchMap((slug) =>
+        this.facade.getCompetition(slug).pipe(
+          map((detail): CompetitionState => (detail ? { status: 'found', detail } : { status: 'not-found' }))
+        )
+      )
     ),
-    { initialValue: null as FootballCompetitionDetailDTO | null }
+    { initialValue: { status: 'loading' } as CompetitionState }
   );
+
+  readonly loading = computed(() => this.state().status === 'loading');
+  readonly detail = computed(() => {
+    const state = this.state();
+    return state.status === 'found' ? state.detail : null;
+  });
+
+  private readonly matches = computed(() => this.detail()?.matches ?? []);
+  readonly filteredMatches = computed(() => applyFootballMatchFilter(this.matches(), this.filter()));
+  readonly roundGroups = computed(() => groupByRound(this.filteredMatches()));
+
+  readonly upcomingPreview = computed(() =>
+    this.matches()
+      .filter((m) => m.status === 'scheduled')
+      .slice(0, 5)
+  );
+  readonly resultsPreview = computed(() =>
+    this.matches()
+      .filter((m) => m.status === 'finished')
+      .slice(-5)
+      .reverse()
+  );
+  readonly standingsPreview = computed(() => (this.detail()?.standings ?? []).slice(0, 5));
+
+  safeLdHtml: SafeHtml | null = null;
 
   constructor() {
     effect(() => {
-      const detail = this.detail();
-      this.loading.set(false);
-      if (detail) {
-        this.applyMeta(detail);
+      const state = this.state();
+      if (state.status === 'found') {
+        this.applyDetailMeta(state.detail);
+      } else if (state.status === 'not-found') {
+        this.applyNotFoundMeta();
       }
     });
   }
 
-  ngOnInit(): void {
-    this.meta.setMetaTags({
-      title: 'Competición de fútbol - Guía TV',
-      description: 'Partidos, clasificación y noticias de la competición.',
-      canonicalUrl: '/deportes/futbol/competiciones',
-      robots: 'noindex, follow',
-    });
+  selectTab(tab: CompetitionTab): void {
+    this.activeTab.set(tab);
   }
 
-  private applyMeta(detail: FootballCompetitionDetailDTO): void {
+  onFilterChange(filter: FootballMatchFilter): void {
+    this.filter.set(filter);
+  }
+
+  trackByRound(_index: number, group: RoundGroup): string {
+    return group.round;
+  }
+
+  trackByMatch(_index: number, match: FootballMatchDTO): string {
+    return match.id;
+  }
+
+  private applyDetailMeta(detail: FootballCompetitionDetailDTO): void {
     const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';
     this.meta.setMetaTags({
       title: `${detail.competition.name} - partidos, clasificación y dónde verlos - Guía TV`,
@@ -143,5 +160,14 @@ export class FootballCompetitionDetailComponent implements OnInit {
         )
       )}</script>`
     );
+  }
+
+  private applyNotFoundMeta(): void {
+    this.meta.setMetaTags({
+      title: 'Competición no encontrada - Guía TV',
+      description: 'Esta competición no está disponible.',
+      canonicalUrl: '/deportes/futbol/competiciones',
+      robots: 'noindex, follow',
+    });
   }
 }

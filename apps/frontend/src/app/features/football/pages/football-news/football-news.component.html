@@ -1,0 +1,49 @@
+<div class="shell">
+  <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
+
+  <header class="head">
+    <h1 class="head__title">Noticias de fútbol</h1>
+    <p class="head__sub">Última hora, previas, crónicas y análisis.</p>
+  </header>
+
+  <nav *ngIf="showTypeFilter()" class="tabs" aria-label="Filtrar noticias por tipo">
+    <button
+      type="button"
+      class="tabs__item"
+      [class.tabs__item--active]="activeType() === 'all'"
+      (click)="selectType('all')"
+    >
+      Todas
+    </button>
+    <button
+      *ngFor="let type of availableTypes()"
+      type="button"
+      class="tabs__item"
+      [class.tabs__item--active]="activeType() === type"
+      (click)="selectType(type)"
+    >
+      {{ typeLabel(type) }}
+    </button>
+  </nav>
+
+  <div *ngIf="loading()" class="skeleton" aria-hidden="true">
+    <div class="skeleton__card" *ngFor="let i of [1, 2, 3, 4, 5, 6]"></div>
+  </div>
+
+  <ng-container *ngIf="!loading()">
+    <div *ngIf="filteredNews().length; else empty" class="grid">
+      <app-football-news-card *ngFor="let article of filteredNews(); trackBy: trackByArticle" [item]="article"></app-football-news-card>
+    </div>
+
+    <ng-template #empty>
+      <div class="empty">
+        <p class="empty__title">Todavía no hay noticias</p>
+        <p class="empty__sub">Las noticias de fútbol aparecerán aquí cuando estén disponibles.</p>
+      </div>
+    </ng-template>
+
+    <button *ngIf="filteredNews().length && hasMore() && activeType() === 'all'" type="button" class="load-more" (click)="loadMore()">
+      Cargar más
+    </button>
+  </ng-container>
+</div>

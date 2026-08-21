@@ -1,0 +1,90 @@
+<div class="shell">
+  <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
+
+  <!-- Mobile sticky score bar — only mounts once the main scoreboard has scrolled out of view. -->
+  <div
+    *ngIf="stickyVisible() && detail() as sticky"
+    class="sticky-score"
+    role="status"
+    [attr.aria-label]="stickyAccessibleLabel(sticky)"
+  >
+    <span class="sticky-score__team">{{ sticky.match.homeTeam.shortName || sticky.match.homeTeam.name }}</span>
+    <span class="sticky-score__center">
+      <ng-container *ngIf="sticky.match.score.home !== null && sticky.match.score.away !== null; else stickyTime">
+        {{ sticky.match.score.home }}–{{ sticky.match.score.away }}
+      </ng-container>
+      <ng-template #stickyTime>{{ stickyStatusLabel(sticky) }}</ng-template>
+    </span>
+    <span class="sticky-score__team sticky-score__team--away">{{ sticky.match.awayTeam.shortName || sticky.match.awayTeam.name }}</span>
+    <span *ngIf="isLive(sticky)" class="sticky-score__minute">{{ stickyStatusLabel(sticky) }}</span>
+  </div>
+
+  <div *ngIf="detail() as data">
+    <div #scoreboardAnchor>
+      <app-football-scoreboard [match]="data.match"></app-football-scoreboard>
+    </div>
+
+    <div class="grid">
+      <main class="grid__main">
+        <section *ngIf="data.match.broadcasts?.length" class="block">
+          <app-football-broadcast-list [broadcasts]="data.match.broadcasts"></app-football-broadcast-list>
+        </section>
+
+        <section *ngIf="data.match.venue" class="block">
+          <h2 class="block__title">Estadio</h2>
+          <p class="block__text">{{ data.match.venue }}</p>
+        </section>
+
+        <!-- Standings context (spec §29) — only rendered when the backend
+             actually has a table for this competition; never guessed. -->
+        <section *ngIf="standings().length" class="block">
+          <app-football-section-header
+            eyebrow="Contexto"
+            title="Clasificación"
+            [link]="'/deportes/futbol/competiciones/' + data.match.competition.slug"
+            linkLabel="Ver tabla completa"
+          ></app-football-section-header>
+          <app-football-standings-table
+            [standings]="standings()"
+            [highlightTeamIds]="[data.match.homeTeam.id, data.match.awayTeam.id]"
+            [windowSize]="2"
+          ></app-football-standings-table>
+        </section>
+
+        <section *ngIf="data.relatedNews?.length" class="block">
+          <app-football-section-header eyebrow="Información" title="Noticias sobre este partido"></app-football-section-header>
+          <div class="news-grid">
+            <app-football-news-card
+              *ngFor="let article of data.relatedNews"
+              [item]="article"
+            ></app-football-news-card>
+          </div>
+        </section>
+      </main>
+
+      <aside class="grid__aside">
+        <a
+          class="aside-link"
+          [routerLink]="['/deportes/futbol/competiciones', data.match.competition.slug]"
+        >
+          Ver competición: {{ data.match.competition.name }}
+        </a>
+        <a class="aside-link" [routerLink]="['/deportes/futbol/equipos', data.match.homeTeam.slug]">
+          {{ data.match.homeTeam.name }}
+        </a>
+        <a class="aside-link" [routerLink]="['/deportes/futbol/equipos', data.match.awayTeam.slug]">
+          {{ data.match.awayTeam.name }}
+        </a>
+      </aside>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="empty" aria-hidden="true">
+    <div class="empty__skeleton"></div>
+  </div>
+
+  <div *ngIf="!detail() && !loading()" class="empty">
+    <p class="empty__title">Partido no encontrado</p>
+    <a class="empty__link" routerLink="/deportes/futbol/partidos-hoy">Ver partidos de hoy</a>
+  </div>
+</div>

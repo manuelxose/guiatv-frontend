@@ -1,17 +1,30 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { map, switchMap } from 'rxjs';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { distinctUntilChanged, map, of, switchMap } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FootballFacade } from '@app/features/football/football.facade';
-import { FootballTeamDetailDTO } from '@app/features/football/football.models';
-import { FootballMatchCardComponent } from '@app/features/football/components/football-match-card/football-match-card.component';
+import { FootballStandingRowDTO, FootballTeamDetailDTO } from '@app/features/football/football.models';
 import { FootballNewsCardComponent } from '@app/features/football/components/football-news-card/football-news-card.component';
 import { FootballSectionHeaderComponent } from '@app/features/football/components/football-section-header/football-section-header.component';
+import { FootballMatchRowComponent } from '@app/features/football/components/football-match-row/football-match-row.component';
+import { FootballStandingsTableComponent } from '@app/features/football/components/football-standings-table/football-standings-table.component';
+import {
+  applyFootballMatchFilter,
+  FootballFilterBarComponent,
+  FootballMatchFilter,
+} from '@app/features/football/components/football-filter-bar/football-filter-bar.component';
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballBreadcrumbSchema, generateFootballTeamSchema } from '@app/features/football/football-seo';
+
+type TeamTab = 'resumen' | 'partidos';
+
+type TeamState =
+  | { status: 'loading' }
+  | { status: 'found'; detail: FootballTeamDetailDTO }
+  | { status: 'not-found' };
 
 @Component({
   selector: 'app-football-team-detail',
@@ -19,134 +32,89 @@ import { generateFootballBreadcrumbSchema, generateFootballTeamSchema } from '@a
   imports: [
     CommonModule,
     RouterModule,
-    FootballMatchCardComponent,
     FootballNewsCardComponent,
     FootballSectionHeaderComponent,
+    FootballMatchRowComponent,
+    FootballStandingsTableComponent,
+    FootballFilterBarComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="shell">
-      <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
-
-      <div *ngIf="detail() as data">
-        <header class="head">
-          <img
-            *ngIf="data.team.crest; else crestFallback"
-            [src]="data.team.crest"
-            [alt]="'Escudo de ' + data.team.name"
-            class="head__crest"
-          />
-          <ng-template #crestFallback>
-            <span class="head__crest head__crest--fallback">{{ initials(data.team.name) }}</span>
-          </ng-template>
-          <div>
-            <h1 class="head__title">{{ data.team.name }}</h1>
-            <p class="head__sub" *ngIf="data.team.country">{{ data.team.country }}</p>
-          </div>
-        </header>
-
-        <section *ngIf="data.nextMatch" class="block">
-          <app-football-section-header eyebrow="Próximo" title="Próximo partido"></app-football-section-header>
-          <app-football-match-card [match]="data.nextMatch" variant="featured"></app-football-match-card>
-        </section>
-
-        <section *ngIf="data.lastResult" class="block">
-          <app-football-section-header eyebrow="Resultado" title="Último resultado"></app-football-section-header>
-          <app-football-match-card [match]="data.lastResult"></app-football-match-card>
-        </section>
-
-        <section class="block">
-          <app-football-section-header eyebrow="Agenda" title="Calendario"></app-football-section-header>
-          <div class="grid">
-            <app-football-match-card
-              *ngFor="let match of data.matches"
-              [match]="match"
-              variant="compact"
-            ></app-football-match-card>
-          </div>
-          <p *ngIf="!data.matches?.length" class="muted">Sin partidos próximos.</p>
-        </section>
-
-        <section *ngIf="data.news?.length" class="block">
-          <app-football-section-header eyebrow="Noticias" [title]="'Últimas noticias de ' + data.team.name"></app-football-section-header>
-          <div class="news-grid">
-            <app-football-news-card *ngFor="let article of data.news" [item]="article"></app-football-news-card>
-          </div>
-        </section>
-      </div>
-
-      <div *ngIf="!detail() && !loading()" class="empty">
-        <p class="empty__title">Equipo no encontrado</p>
-        <a class="empty__link" routerLink="/deportes/futbol">Volver a fútbol</a>
-      </div>
-    </div>
-  `,
-  styles: `
-    .shell { max-width: 72rem; margin: 0 auto; padding: 1rem; display: flex; flex-direction: column; gap: 1.25rem; }
-    .head { display: flex; align-items: center; gap: 0.875rem; }
-    .head__crest {
-      width: 3.5rem;
-      height: 3.5rem;
-      object-fit: contain;
-      border-radius: 9999px;
-      background: rgba(148, 163, 184, 0.14);
-    }
-    .head__crest--fallback {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 900;
-      color: var(--football-text-muted, #94a3b8);
-      text-transform: uppercase;
-    }
-    .head__title { margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--football-text, #f1f5f9); }
-    .head__sub { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--football-text-muted, #94a3b8); }
-    .block { display: flex; flex-direction: column; gap: 0.625rem; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 0.625rem; }
-    @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-    .news-grid { display: grid; grid-template-columns: 1fr; gap: 0.625rem; }
-    @media (min-width: 640px) { .news-grid { grid-template-columns: repeat(2, 1fr); } }
-    .muted { color: var(--football-text-muted, #94a3b8); font-size: 0.875rem; }
-    .empty { border: 1px dashed var(--football-border, rgba(148, 163, 184, 0.25)); border-radius: 0.75rem; padding: 2rem; text-align: center; }
-    .empty__title { margin: 0 0 0.5rem; font-weight: 750; color: var(--football-text, #e2e8f0); }
-    .empty__link { color: var(--football-accent, #22c55e); font-weight: 700; }
-  `,
+  templateUrl: './football-team-detail.component.html',
+  styleUrl: './football-team-detail.component.scss',
 })
-export class FootballTeamDetailComponent implements OnInit {
+export class FootballTeamDetailComponent {
   private readonly facade = inject(FootballFacade);
   private readonly route = inject(ActivatedRoute);
   private readonly meta = inject(MetaService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  readonly loading = signal(true);
-  safeLdHtml: SafeHtml | null = null;
+  readonly tabs: Array<{ id: TeamTab; label: string }> = [
+    { id: 'resumen', label: 'Resumen' },
+    { id: 'partidos', label: 'Partidos' },
+  ];
+  readonly activeTab = signal<TeamTab>('resumen');
+  readonly filter = signal<FootballMatchFilter>('all');
 
-  readonly detail = toSignal(
+  // Same discriminated state as the match/competition detail pages, for the
+  // same reason: meta must only ever resolve to noindex once we positively
+  // know the team is missing, never as a default that races SSR.
+  readonly state = toSignal(
     this.route.paramMap.pipe(
       map((params) => params.get('slug') || ''),
-      switchMap((slug) => this.facade.getTeam(slug))
+      switchMap((slug) =>
+        this.facade.getTeam(slug).pipe(
+          map((detail): TeamState => (detail ? { status: 'found', detail } : { status: 'not-found' }))
+        )
+      )
     ),
-    { initialValue: null as FootballTeamDetailDTO | null }
+    { initialValue: { status: 'loading' } as TeamState }
   );
+
+  readonly loading = computed(() => this.state().status === 'loading');
+  readonly detail = computed(() => {
+    const state = this.state();
+    return state.status === 'found' ? state.detail : null;
+  });
+
+  readonly filteredMatches = computed(() => applyFootballMatchFilter(this.detail()?.matches ?? [], this.filter()));
+
+  // League position (spec §40): resolved from whichever competition the
+  // team's next/last match belongs to — the DTO itself has no direct
+  // "primary competition" concept, so this is the best real signal
+  // available. Degrades to nothing if neither exists or standings don't.
+  private readonly contextCompetitionSlug$ = toObservable(this.state).pipe(
+    map((state) => {
+      if (state.status !== 'found') return null;
+      return state.detail.nextMatch?.competition.slug ?? state.detail.lastResult?.competition.slug ?? null;
+    }),
+    distinctUntilChanged()
+  );
+  readonly standingsContext = toSignal(
+    this.contextCompetitionSlug$.pipe(
+      switchMap((slug) => (slug ? this.facade.getCompetition(slug).pipe(map((c) => c?.standings ?? [])) : of([])))
+    ),
+    { initialValue: [] as FootballStandingRowDTO[] }
+  );
+
+  safeLdHtml: SafeHtml | null = null;
 
   constructor() {
     effect(() => {
-      const detail = this.detail();
-      this.loading.set(false);
-      if (detail) {
-        this.applyMeta(detail);
+      const state = this.state();
+      if (state.status === 'found') {
+        this.applyDetailMeta(state.detail);
+      } else if (state.status === 'not-found') {
+        this.applyNotFoundMeta();
       }
     });
   }
 
-  ngOnInit(): void {
-    this.meta.setMetaTags({
-      title: 'Equipo de fútbol - Guía TV',
-      description: 'Próximos partidos, resultados y noticias del equipo.',
-      canonicalUrl: '/deportes/futbol/equipos',
-      robots: 'noindex, follow',
-    });
+  selectTab(tab: TeamTab): void {
+    this.activeTab.set(tab);
+  }
+
+  onFilterChange(filter: FootballMatchFilter): void {
+    this.filter.set(filter);
   }
 
   initials(name: string): string {
@@ -158,7 +126,11 @@ export class FootballTeamDetailComponent implements OnInit {
       .join('');
   }
 
-  private applyMeta(detail: FootballTeamDetailDTO): void {
+  trackByMatch(_index: number, match: { id: string }): string {
+    return match.id;
+  }
+
+  private applyDetailMeta(detail: FootballTeamDetailDTO): void {
     const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';
     this.meta.setMetaTags({
       title: `${detail.team.name} - partidos, resultados y noticias - Guía TV`,
@@ -183,5 +155,14 @@ export class FootballTeamDetailComponent implements OnInit {
         .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)
         .join('')
     );
+  }
+
+  private applyNotFoundMeta(): void {
+    this.meta.setMetaTags({
+      title: 'Equipo no encontrado - Guía TV',
+      description: 'Este equipo no está disponible.',
+      canonicalUrl: '/deportes/futbol',
+      robots: 'noindex, follow',
+    });
   }
 }

@@ -1,0 +1,45 @@
+<div class="shell">
+  <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
+
+  <header class="head">
+    <h1 class="head__title">{{ title }}</h1>
+    <p class="head__sub">{{ subtitle }}</p>
+  </header>
+
+  <nav class="tabs" aria-label="Vista de partidos">
+    <button
+      *ngFor="let tab of tabs"
+      type="button"
+      class="tabs__item"
+      [class.tabs__item--active]="view() === tab.id"
+      [attr.aria-current]="view() === tab.id ? 'page' : null"
+      (click)="selectTab(tab.id)"
+    >
+      {{ tab.label }}
+    </button>
+  </nav>
+
+  <app-football-date-strip
+    *ngIf="view() === 'calendar'"
+    [selected]="selectedDateKey"
+    (dateChange)="onDateChange($event)"
+  ></app-football-date-strip>
+
+  <app-football-filter-bar [active]="filter()" (filterChange)="onFilterChange($event)"></app-football-filter-bar>
+
+  <main class="content">
+    <ng-container *ngIf="grouped().length; else empty">
+      <app-football-competition-group
+        *ngFor="let group of grouped(); trackBy: trackByGroup"
+        [group]="group"
+      ></app-football-competition-group>
+    </ng-container>
+
+    <ng-template #empty>
+      <div class="empty">
+        <p class="empty__title">{{ emptyTitle }}</p>
+        <p class="empty__sub">{{ emptySubtitle }}</p>
+      </div>
+    </ng-template>
+  </main>
+</div>

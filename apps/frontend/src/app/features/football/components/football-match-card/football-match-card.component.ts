@@ -3,18 +3,20 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
 import { RouterModule } from '@angular/router';
 import { FootballMatchDTO } from '@app/features/football/football.models';
 import { FootballTeamBadgeComponent } from '@app/features/football/components/football-team-badge/football-team-badge.component';
+import {
+  formatMatchAccessibleLabel,
+  formatMatchStatusLabel,
+  hasFinalScore,
+  isLiveStatus,
+  primaryBroadcast,
+} from '@app/features/football/football-status.util';
 
-export type FootballMatchCardVariant = 'default' | 'live' | 'compact' | 'schedule' | 'featured';
-
-function formatTime(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-}
+export type FootballMatchCardVariant = 'default' | 'live' | 'compact' | 'featured';
 
 /**
  * Purpose-built football match card. NOT a program/poster card: a match reads
- * as "who plays, when, score/status, where to watch".
+ * as "who plays, when, score/status, where to watch". Used for featured/
+ * secondary sections; the primary scanning list uses `football-match-row`.
  */
 @Component({
   selector: 'app-football-match-card',
@@ -61,8 +63,8 @@ function formatTime(iso: string): string {
         <span class="card__meta">
           <span *ngIf="isLive" class="card__live-dot" aria-hidden="true"></span>
           <span class="card__status">{{ statusLabel }}</span>
-          <span *ngIf="primaryBroadcast" class="card__broadcast">
-            {{ primaryBroadcast.channelName }}
+          <span *ngIf="broadcast" class="card__broadcast">
+            {{ broadcast.channelName }}
           </span>
         </span>
       </span>
@@ -75,15 +77,16 @@ function formatTime(iso: string): string {
       flex-direction: column;
       gap: 0.625rem;
       padding: 0.875rem 1rem;
-      border: 1px solid var(--football-border, rgba(148, 163, 184, 0.18));
+      border: 1px solid var(--portal-border);
       border-radius: 0.75rem;
-      background: var(--football-card-bg, rgba(15, 23, 42, 0.6));
+      background: var(--portal-card);
       color: inherit;
       text-decoration: none;
       transition: border-color 0.15s ease, background 0.15s ease;
     }
-    .card:hover { border-color: rgba(34, 197, 94, 0.4); }
-    .card--live { border-left: 3px solid #ef4444; }
+    .card:hover, .card:focus-visible { border-color: var(--accent-sports); }
+    .card:focus-visible { outline: 2px solid var(--accent-sports); outline-offset: 2px; }
+    .card--live { border-left: 3px solid var(--status-live); }
     .card--featured { padding: 1.25rem; }
     .card--compact { padding: 0.625rem 0.75rem; gap: 0.375rem; }
 
@@ -95,7 +98,7 @@ function formatTime(iso: string): string {
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--football-text-muted, #94a3b8);
+      color: var(--portal-text-muted);
     }
     .card__comp-logo { width: 1rem; height: 1rem; object-fit: contain; }
 
@@ -119,15 +122,16 @@ function formatTime(iso: string): string {
     .card__score-value {
       font-size: 1.5rem;
       font-weight: 850;
-      color: var(--football-text, #f1f5f9);
+      color: var(--portal-text);
     }
-    .card--live .card__score-value { color: #ef4444; }
-    .card__score-sep { color: var(--football-text-muted, #64748b); }
+    .card--live .card__score-value { color: var(--status-live); }
+    .card__score-sep { color: var(--portal-text-muted); }
     .card__time {
       font-size: 0.875rem;
       font-weight: 750;
-      color: var(--football-text, #f1f5f9);
+      color: var(--portal-text);
       white-space: nowrap;
+      font-variant-numeric: tabular-nums;
     }
 
     .card__meta {
@@ -135,20 +139,23 @@ function formatTime(iso: string): string {
       align-items: center;
       gap: 0.5rem;
       font-size: 0.75rem;
-      color: var(--football-text-muted, #94a3b8);
+      color: var(--portal-text-muted);
     }
     .card__live-dot {
       width: 0.5rem;
       height: 0.5rem;
       border-radius: 9999px;
-      background: #ef4444;
-      animation: pulse 1.4s ease-in-out infinite;
+      background: var(--status-live);
+      animation: football-pulse 1.4s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card__live-dot { animation: none; }
     }
     .card__status { font-weight: 650; }
-    .card--live .card__status { color: #fca5a5; }
+    .card--live .card__status { color: var(--status-live); }
     .card__broadcast { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    @keyframes pulse {
+    @keyframes football-pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.35; }
     }
@@ -165,43 +172,23 @@ export class FootballMatchCardComponent {
   }
 
   get isLive(): boolean {
-    return this.match.status === 'live' || this.match.status === 'halftime';
+    return isLiveStatus(this.match.status);
   }
 
   get hasScore(): boolean {
-    return this.match.score?.home != null && this.match.score?.away != null;
+    return hasFinalScore(this.match.score);
   }
 
   get statusLabel(): string {
-    if (this.match.status === 'live') return this.match.minute ? `${this.match.minute}'` : 'En directo';
-    if (this.match.status === 'halftime') return 'Descanso';
-    if (this.match.status === 'finished') return 'Final';
-    if (this.match.status === 'postponed') return 'Aplazado';
-    if (this.match.status === 'suspended') return 'Suspendido';
-    if (this.match.status === 'cancelled') return 'Cancelado';
-    return formatTime(this.match.kickoffAt);
+    return formatMatchStatusLabel(this.match, 'short');
   }
 
-  get primaryBroadcast() {
-    return this.match.broadcasts?.find((broadcast) => broadcast.confidence !== 'low') ?? null;
+  get broadcast() {
+    return primaryBroadcast(this.match);
   }
 
-  /**
-   * Accessible sentence: "Real Madrid contra Barcelona, en directo, 2 a 1,
-   * Movistar LaLiga" — not an incoherent run of numbers.
-   */
   get accessibleLabel(): string {
-    const teams = `${this.match.homeTeam.name} contra ${this.match.awayTeam.name}`;
-    const score = this.hasScore ? `, ${this.match.score.home} a ${this.match.score.away}` : '';
-    const status = this.isLive
-      ? this.match.minute
-        ? `, minuto ${this.match.minute}`
-        : ', en directo'
-      : this.match.status === 'finished'
-        ? ', finalizado'
-        : '';
-    const broadcast = this.primaryBroadcast ? `, ${this.primaryBroadcast.channelName}` : '';
-    return `${teams}${score}${status}${broadcast}`;
+    return formatMatchAccessibleLabel(this.match, this.broadcast?.channelName);
   }
 
   onSelect(): void {

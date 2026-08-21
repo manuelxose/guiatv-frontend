@@ -1,0 +1,107 @@
+<div class="shell">
+  <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
+
+  <div *ngIf="detail() as data">
+    <header class="head">
+      <img *ngIf="data.competition.logo" [src]="data.competition.logo" [alt]="''" class="head__logo" />
+      <span *ngIf="!data.competition.logo" class="head__logo head__logo--fallback">{{ data.competition.shortName || data.competition.name.slice(0, 2) }}</span>
+      <div class="head__body">
+        <h1 class="head__title">{{ data.competition.name }}</h1>
+        <p class="head__sub">
+          {{ data.competition.country }}
+          <ng-container *ngIf="data.competition.currentSeason"> · {{ data.competition.currentSeason }}</ng-container>
+        </p>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Secciones de la competición">
+      <button
+        *ngFor="let tab of tabs"
+        type="button"
+        class="tabs__item"
+        [class.tabs__item--active]="activeTab() === tab.id"
+        [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
+        (click)="selectTab(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+    </nav>
+
+    <!-- RESUMEN -->
+    <div *ngIf="activeTab() === 'resumen'" class="panel">
+      <section *ngIf="upcomingPreview().length" class="block">
+        <app-football-section-header eyebrow="Agenda" title="Próximos partidos"></app-football-section-header>
+        <div class="rows">
+          <app-football-match-row
+            *ngFor="let match of upcomingPreview(); trackBy: trackByMatch"
+            [match]="match"
+          ></app-football-match-row>
+        </div>
+      </section>
+
+      <section *ngIf="resultsPreview().length" class="block">
+        <app-football-section-header eyebrow="Resultados" title="Últimos resultados"></app-football-section-header>
+        <div class="rows">
+          <app-football-match-row
+            *ngFor="let match of resultsPreview(); trackBy: trackByMatch"
+            [match]="match"
+          ></app-football-match-row>
+        </div>
+      </section>
+
+      <section *ngIf="standingsPreview().length" class="block">
+        <app-football-section-header eyebrow="Tabla" title="Clasificación"></app-football-section-header>
+        <app-football-standings-table [standings]="standingsPreview()"></app-football-standings-table>
+        <button type="button" class="see-all" (click)="selectTab('clasificacion')">Ver clasificación completa</button>
+      </section>
+
+      <section *ngIf="data.news?.length" class="block">
+        <app-football-section-header eyebrow="Actualidad" title="Noticias"></app-football-section-header>
+        <div class="news-grid">
+          <app-football-news-card *ngFor="let article of data.news" [item]="article"></app-football-news-card>
+        </div>
+      </section>
+
+      <div *ngIf="!upcomingPreview().length && !resultsPreview().length && !standingsPreview().length && !data.news?.length" class="empty">
+        <p class="empty__title">Sin información disponible por ahora</p>
+        <p class="empty__sub">Consulta el calendario o vuelve más tarde.</p>
+      </div>
+    </div>
+
+    <!-- CALENDARIO -->
+    <div *ngIf="activeTab() === 'calendario'" class="panel">
+      <app-football-filter-bar [active]="filter()" (filterChange)="onFilterChange($event)"></app-football-filter-bar>
+
+      <ng-container *ngIf="roundGroups().length; else noMatches">
+        <section *ngFor="let group of roundGroups(); trackBy: trackByRound" class="block">
+          <app-football-section-header [title]="group.round"></app-football-section-header>
+          <div class="rows">
+            <app-football-match-row
+              *ngFor="let match of group.matches; trackBy: trackByMatch"
+              [match]="match"
+            ></app-football-match-row>
+          </div>
+        </section>
+      </ng-container>
+      <ng-template #noMatches>
+        <div class="empty">
+          <p class="empty__title">Sin partidos disponibles para esta competición</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- CLASIFICACIÓN -->
+    <div *ngIf="activeTab() === 'clasificacion'" class="panel">
+      <app-football-standings-table [standings]="data.standings"></app-football-standings-table>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="empty" aria-hidden="true">
+    <div class="empty__skeleton"></div>
+  </div>
+
+  <div *ngIf="!detail() && !loading()" class="empty">
+    <p class="empty__title">Competición no encontrada</p>
+    <a class="empty__link" routerLink="/deportes/futbol/competiciones">Ver competiciones</a>
+  </div>
+</div>

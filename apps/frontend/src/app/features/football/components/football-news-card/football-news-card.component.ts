@@ -38,20 +38,20 @@ import { FootballNewsDTO } from '@app/features/football/football.models';
       display: flex;
       gap: 0.75rem;
       padding: 0.75rem;
-      border: 1px solid var(--football-border, rgba(148, 163, 184, 0.18));
+      border: 1px solid var(--portal-border);
       border-radius: 0.75rem;
-      background: var(--football-card-bg, rgba(15, 23, 42, 0.6));
+      background: var(--portal-card);
       color: inherit;
       text-decoration: none;
       transition: border-color 0.15s ease;
     }
-    .news:hover { border-color: rgba(34, 197, 94, 0.4); }
+    .news:hover { border-color: var(--accent-sports); }
     .news__image {
       flex: 0 0 4.5rem;
       height: 4.5rem;
       border-radius: 0.5rem;
       overflow: hidden;
-      background: rgba(148, 163, 184, 0.12);
+      background: var(--portal-surface-strong);
     }
     .news__image img { width: 100%; height: 100%; object-fit: cover; }
     .news__body { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
@@ -60,12 +60,12 @@ import { FootballNewsDTO } from '@app/features/football/football.models';
       font-weight: 700;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--football-text-muted, #94a3b8);
+      color: var(--portal-text-muted);
     }
     .news__title {
       font-weight: 700;
       font-size: 0.875rem;
-      color: var(--football-text, #f1f5f9);
+      color: var(--portal-text);
       line-height: 1.3;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -74,7 +74,7 @@ import { FootballNewsDTO } from '@app/features/football/football.models';
     }
     .news__excerpt {
       font-size: 0.75rem;
-      color: var(--football-text-muted, #94a3b8);
+      color: var(--portal-text-muted);
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;

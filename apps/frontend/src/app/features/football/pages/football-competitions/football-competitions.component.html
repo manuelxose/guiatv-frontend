@@ -1,0 +1,39 @@
+<div class="shell">
+  <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
+
+  <header class="head">
+    <h1 class="head__title">Competiciones de fútbol</h1>
+    <p class="head__sub">Ligas, copas y torneos internacionales.</p>
+  </header>
+
+  <div *ngIf="loading()" class="skeleton" aria-hidden="true">
+    <div class="skeleton__row" *ngFor="let i of [1, 2, 3, 4, 5, 6]"></div>
+  </div>
+
+  <ng-container *ngIf="!loading()">
+    <section *ngIf="featured().length" class="section">
+      <app-football-section-header eyebrow="Destacadas" title="Las más seguidas"></app-football-section-header>
+      <div class="grid">
+        <app-football-competition-card
+          *ngFor="let competition of featured(); trackBy: trackByCompetition"
+          [competition]="competition"
+        ></app-football-competition-card>
+      </div>
+    </section>
+
+    <section *ngFor="let group of groups(); trackBy: trackByCountry" class="section">
+      <app-football-section-header [title]="group.country"></app-football-section-header>
+      <div class="grid">
+        <app-football-competition-card
+          *ngFor="let competition of group.competitions; trackBy: trackByCompetition"
+          [competition]="competition"
+        ></app-football-competition-card>
+      </div>
+    </section>
+
+    <div *ngIf="!featured().length && !groups().length" class="empty">
+      <p class="empty__title">No hay competiciones disponibles ahora mismo</p>
+      <p class="empty__sub">Vuelve a intentarlo en unos minutos.</p>
+    </div>
+  </ng-container>
+</div>
