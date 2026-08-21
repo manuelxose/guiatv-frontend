@@ -21,7 +21,7 @@ interface ProfileCategory {
         <div class="flex items-center gap-2.5 min-w-0">
           <p class="text-base font-bold text-[var(--portal-text)] truncate">Recomendaciones</p>
         </div>
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1.5 shrink-0">
           <button
             *ngIf="isAuthenticated"
             type="button"
@@ -83,7 +83,7 @@ interface ProfileCategory {
           </span>
           <button
             type="button"
-            (click)="profileExpanded = true"
+            (click)="profileExpandedChange.emit(true)"
             class="text-[10px] text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] transition-colors"
           >
             Tu perfil IA ▾
@@ -96,7 +96,7 @@ interface ProfileCategory {
             <span class="text-xs font-semibold text-[var(--portal-text)]">Tu perfil IA</span>
             <button
               type="button"
-              (click)="profileExpanded = false"
+              (click)="profileExpandedChange.emit(false)"
               class="text-[10px] text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] transition-colors"
             >
               Cerrar ▴
@@ -138,13 +138,13 @@ export class ChatHeaderComponent {
   @Input() memoryHighlights: string[] = [];
   @Input() memory: AssistantMemorySnapshot | null = null;
   @Input() memoryEditorOpen = false;
+  @Input() profileExpanded = false;
   @Output() newConversation = new EventEmitter<void>();
   @Output() closePanel = new EventEmitter<void>();
   @Output() toggleMemoryEditor = new EventEmitter<void>();
   @Output() toggleSidebar = new EventEmitter<void>();
   @Output() removeTag = new EventEmitter<{ key: string; value: string }>();
-
-  profileExpanded = false;
+  @Output() profileExpandedChange = new EventEmitter<boolean>();
 
   private static readonly CATEGORY_CONFIG: Array<{
     key: keyof AssistantMemorySnapshot;

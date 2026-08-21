@@ -7,23 +7,39 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
+import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.component';
 
 @Component({
   selector: 'app-chat-recommendation-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PlatformBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    /* app-platform-badge is sized for looser layouts (unified-program-card);
+       compact it here to fit this card's dense info column. */
+    .rec-platform-badge ::ng-deep .platform-badge {
+      min-height: 20px;
+      gap: 0.3rem;
+      padding: 0.15rem 0.5rem 0.15rem 0.3rem;
+      font-size: 0.62rem;
+    }
+    .rec-platform-badge ::ng-deep .platform-badge__mark,
+    .rec-platform-badge ::ng-deep .platform-badge img {
+      width: 1rem;
+      height: 1rem;
+    }
+  `],
   template: `
     <div
-      class="group relative overflow-hidden rounded-2xl border bg-[linear-gradient(160deg,rgba(15,23,42,0.97),rgba(15,23,42,0.88))] transition-all duration-200 hover:shadow-lg hover:shadow-black/40"
+      class="group relative overflow-hidden rounded-2xl border bg-[var(--portal-card)] transition-all duration-200 hover:shadow-lg hover:shadow-black/40"
       [class]="isLiveNow
-        ? 'border-emerald-600/50 hover:border-emerald-500/70'
+        ? 'border-[color-mix(in_oklch,var(--accent-live)_50%,transparent)] hover:border-[var(--accent-live)]'
         : 'border-[var(--portal-border)]/60 hover:border-[var(--portal-border-strong)]/80'"
     >
       <!-- Live accent stripe -->
       <div
         *ngIf="isLiveNow"
-        class="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-l-2xl"
+        class="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-[var(--accent-live)] to-[color-mix(in_oklch,var(--accent-live)_70%,black)] rounded-l-2xl"
       ></div>
 
       <div class="flex gap-3 p-3" [class.pl-4]="isLiveNow">
@@ -50,7 +66,11 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
             </div>
           </ng-template>
 
-          <!-- Rating overlay (top-right) -->
+          <!-- Rating overlay (top-right). Deliberately fixed (not token) colors:
+               this sits directly on unpredictable poster artwork, not a themed
+               app surface, so it needs a fixed dark scrim + fixed bright amber
+               for legibility regardless of data-theme — same reasoning as the
+               user message bubble's fixed white-on-red text. -->
           <div
             *ngIf="recommendation.rating"
             class="absolute right-1 top-1 flex items-center gap-0.5 rounded-md bg-black/75 px-1 py-0.5 backdrop-blur-sm"
@@ -64,18 +84,18 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           <!-- Live badge (top-left) -->
           <div
             *ngIf="isLiveNow"
-            class="absolute left-1 top-1 rounded-md bg-emerald-500/90 px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-[var(--portal-text)]"
+            class="absolute left-1 top-1 rounded-md bg-[color-mix(in_oklch,var(--accent-live)_90%,transparent)] px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider text-white"
           >
             LIVE
           </div>
 
-          <!-- Live progress bar -->
+          <!-- Live progress bar (track stays a fixed dark scrim, same reasoning as the rating overlay above) -->
           <div
             *ngIf="isLiveNow && liveProgress > 0"
             class="absolute bottom-0 left-0 right-0 h-1 bg-black/50"
           >
             <div
-              class="h-full rounded-full bg-emerald-400 transition-all"
+              class="h-full rounded-full bg-[var(--accent-live)] transition-all"
               [style.width.%]="liveProgress"
             ></div>
           </div>
@@ -103,25 +123,12 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           </div>
 
           <!-- Platform -->
-          <div class="mt-1.5 flex items-center gap-1.5">
-            <img
-              *ngIf="recommendation.platformLogo; else platformBadge"
-              [src]="recommendation.platformLogo"
-              [alt]="platformName"
-              class="h-5 max-w-[72px] object-contain"
-              loading="lazy"
+          <div class="mt-1.5 flex items-center gap-1.5 rec-platform-badge">
+            <app-platform-badge
+              *ngIf="platformName"
+              [label]="platformName"
+              [logoUrl]="recommendation.platformLogo || ''"
             />
-            <ng-template #platformBadge>
-              <span
-                *ngIf="platformName"
-                class="rounded-md px-1.5 py-px text-[9px] font-bold uppercase tracking-wider"
-                [style.background-color]="platformColor + '22'"
-                [style.color]="platformColor"
-                [style.border]="'1px solid ' + platformColor + '44'"
-              >
-                {{ platformName }}
-              </span>
-            </ng-template>
           </div>
 
           <!-- Time + duration row -->
@@ -129,7 +136,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
             <span
               *ngIf="timeLabel"
               class="font-medium"
-              [class]="isLiveNow ? 'text-emerald-400' : 'text-[var(--portal-text)]'"
+              [class]="isLiveNow ? 'text-[var(--accent-live)]' : 'text-[var(--portal-text)]'"
             >
               {{ timeLabel }}
             </span>
@@ -179,7 +186,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
         class="border-t border-[var(--portal-border)]/50 px-3 py-2"
       >
         <p class="text-[11px] leading-relaxed text-[var(--portal-text-muted)]">
-          <span class="mr-1 text-violet-400">✦</span>{{ recommendation.reason }}
+          <span class="mr-1 text-[var(--accent-editorial)]">✦</span>{{ recommendation.reason }}
         </p>
       </div>
 
@@ -190,7 +197,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           <button
             type="button"
             (click)="ratePositive.emit(recommendation)"
-            class="flex h-7 w-7 items-center justify-center rounded-full text-[var(--portal-text-muted)] transition-colors hover:bg-emerald-500/10 hover:text-emerald-400"
+            class="flex h-7 w-7 items-center justify-center rounded-full text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--accent-streaming-soft)] hover:text-[var(--accent-streaming)]"
             [attr.aria-label]="'Me gusta ' + recommendation.title"
           >
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -200,7 +207,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           <button
             type="button"
             (click)="rateNegative.emit(recommendation)"
-            class="flex h-7 w-7 items-center justify-center rounded-full text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--accent-live-soft)] hover:text-red-400"
+            class="flex h-7 w-7 items-center justify-center rounded-full text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--accent-live-soft)] hover:text-[var(--accent-live)]"
             [attr.aria-label]="'No me gusta ' + recommendation.title"
           >
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -217,7 +224,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
             type="button"
             (click)="reasonOpen = !reasonOpen; synopsisOpen = false"
             class="flex h-7 items-center gap-0.5 rounded-full px-2 text-[10px] font-medium transition-colors"
-            [class]="reasonOpen ? 'bg-violet-500/20 text-violet-300' : 'text-[var(--portal-text-muted)] hover:bg-[var(--portal-border)]/50 hover:text-[var(--portal-text)]'"
+            [class]="reasonOpen ? 'bg-[var(--accent-editorial-soft)] text-[var(--accent-editorial)]' : 'text-[var(--portal-text-muted)] hover:bg-[var(--portal-border)]/50 hover:text-[var(--portal-text)]'"
           >
             <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -229,7 +236,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           <button
             type="button"
             (click)="openDetail.emit(recommendation)"
-            class="flex h-7 min-w-[80px] items-center justify-center gap-1 rounded-full bg-gradient-to-r from-blue-600/80 to-violet-600/80 px-3 text-[10px] font-semibold text-[var(--portal-text)] transition-all hover:from-blue-500/90 hover:to-violet-500/90 hover:shadow-md hover:shadow-violet-900/30 active:scale-95"
+            class="flex h-7 min-w-[80px] items-center justify-center gap-1 rounded-full border border-[color-mix(in_srgb,var(--guide-accent)_35%,var(--portal-border))] bg-[color-mix(in_srgb,var(--guide-accent)_14%,var(--portal-surface))] px-3 text-[10px] font-semibold text-[var(--portal-text)] transition-all hover:bg-[color-mix(in_srgb,var(--guide-accent)_22%,var(--portal-surface))] active:scale-95"
           >
             Ver ficha
             <svg class="h-3 w-3 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -249,7 +256,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           (click)="menuOpen = false; save.emit(recommendation)"
           class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
-          <svg class="h-3.5 w-3.5 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <svg class="h-3.5 w-3.5 text-[var(--accent-live)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
           Guardar en mi lista
@@ -259,7 +266,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           (click)="menuOpen = false; followUp.emit(recommendation)"
           class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
-          <svg class="h-3.5 w-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <svg class="h-3.5 w-3.5 text-[var(--accent-discover)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
           Seguir con este título
@@ -291,7 +298,7 @@ import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
           (click)="menuOpen = false; remind.emit(recommendation)"
           class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
-          <svg class="h-3.5 w-3.5 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <svg class="h-3.5 w-3.5 text-[var(--status-warning)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
           Recordar
@@ -313,22 +320,6 @@ export class ChatRecommendationCardComponent {
   menuOpen = false;
   synopsisOpen = false;
   reasonOpen = false;
-
-  private static readonly PLATFORM_COLORS: Record<string, string> = {
-    netflix: '#E50914',
-    'prime-video': '#00A8E1',
-    'disney-plus': '#113CCF',
-    max: '#002BE7',
-    'movistar-plus': '#00A19A',
-    skyshowtime: '#6B3FA0',
-    'apple-tv-plus': '#555555',
-    filmin: '#D8231D',
-    'rtve-play': '#E84E1B',
-    atresplayer: '#5BC53A',
-    mitele: '#ED1C24',
-    'pluto-tv': '#FFDF00',
-    'rakuten-tv': '#6E2E92',
-  };
 
   get isLiveNow(): boolean {
     if (this.recommendation.liveNow) return true;
@@ -401,13 +392,6 @@ export class ChatRecommendationCardComponent {
       this.recommendation.platform ||
       ''
     );
-  }
-
-  get platformColor(): string {
-    const key = (this.recommendation.platform || this.platformName || '')
-      .toLowerCase()
-      .replace(/\s+/g, '-');
-    return ChatRecommendationCardComponent.PLATFORM_COLORS[key] || '#94a3b8';
   }
 
   get displayBadges(): string[] {

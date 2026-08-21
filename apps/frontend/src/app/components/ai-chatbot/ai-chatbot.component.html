@@ -5,6 +5,8 @@
     [memoryHighlights]="getMemoryHighlights()"
     [memory]="assistantMemory"
     [memoryEditorOpen]="memoryEditorOpen"
+    [profileExpanded]="profileExpanded"
+    (profileExpandedChange)="profileExpanded = $event"
     (newConversation)="startNewConversation()"
     (closePanel)="close.emit()"
     (toggleMemoryEditor)="toggleMemoryEditor()"

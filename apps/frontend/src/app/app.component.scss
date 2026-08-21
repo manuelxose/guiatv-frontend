@@ -132,8 +132,47 @@
   bottom: 0;
   left: 0;
   z-index: 2;
-  width: 0.45rem;
+  width: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: col-resize;
+}
+
+// Persistent (not hover-only) grip so the drag-to-resize affordance is
+// discoverable without already knowing to hover this ~10px strip.
+.app-shell__chat-resize::before {
+  content: '';
+  width: 3px;
+  height: 100%;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--portal-border-strong) 70%, transparent);
+  transition: background-color 150ms ease, width 150ms ease;
+}
+
+.app-shell__chat-resize::after {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 28px;
+  border-radius: 999px;
+  background-image: radial-gradient(circle, currentColor 1.4px, transparent 1.6px);
+  background-size: 3px 8px;
+  background-repeat: repeat-y;
+  color: var(--portal-border-strong);
+  opacity: 0.7;
+  transition: opacity 150ms ease;
+}
+
+.app-shell__chat-resize:hover::before,
+.app-shell__chat-resize:active::before {
+  width: 4px;
+  background: var(--guide-accent, var(--accent-live));
+}
+
+.app-shell__chat-resize:hover::after,
+.app-shell__chat-resize:active::after {
+  opacity: 1;
 }
 
 .app-shell__mobile-nav {
