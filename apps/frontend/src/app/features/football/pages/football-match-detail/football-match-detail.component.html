@@ -55,7 +55,7 @@
           <app-football-section-header eyebrow="Información" title="Noticias sobre este partido"></app-football-section-header>
           <div class="news-grid">
             <app-football-news-card
-              *ngFor="let article of data.relatedNews"
+              *ngFor="let article of data.relatedNews; trackBy: trackByNewsSlug"
               [item]="article"
             ></app-football-news-card>
           </div>

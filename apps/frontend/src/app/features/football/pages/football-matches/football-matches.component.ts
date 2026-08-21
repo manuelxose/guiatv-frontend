@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { combineLatest, map, shareReplay, switchMap } from 'rxjs';
+import { combineLatest, map, shareReplay, switchMap, tap } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FootballFacade } from '@app/features/football/football.facade';
 import { FootballMatchDTO } from '@app/features/football/football.models';
@@ -67,6 +67,14 @@ export class FootballMatchesComponent implements OnInit {
   readonly filter = signal<FootballMatchFilter>('all');
   safeLdHtml: SafeHtml | null = null;
 
+  // Mirrors the sibling detail pages' loading semantics: true only until the
+  // very first emission ever arrives, so a fresh page load reserves space
+  // with a skeleton instead of flashing the (smaller) empty-state box, but a
+  // later date/filter change doesn't re-flash a skeleton over already-visible
+  // content.
+  private readonly hasLoadedOnce = signal(false);
+  readonly loading = computed(() => !this.hasLoadedOnce());
+
   // Single source of truth for "which day": the `date` QUERY param (fixes
   // the previous bug where the calendar view wrote a `day` query param but
   // read a `date` PATH param the route never actually defined).
@@ -79,6 +87,7 @@ export class FootballMatchesComponent implements OnInit {
       this.filter.set(filter);
       return this.loadFor(requestedView, date);
     }),
+    tap(() => this.hasLoadedOnce.set(true)),
     // Shared: both `baseMatches` and the live-refresh's "is anything live"
     // check subscribe to this — without sharing, each would independently
     // re-trigger the underlying facade call.

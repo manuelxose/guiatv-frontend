@@ -133,6 +133,10 @@ export class FootballTeamDetailComponent {
     return match.id;
   }
 
+  trackByNewsSlug(_index: number, article: { slug: string }): string {
+    return article.slug;
+  }
+
   private applyDetailMeta(detail: FootballTeamDetailDTO): void {
     const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';
     this.meta.setMetaTags({

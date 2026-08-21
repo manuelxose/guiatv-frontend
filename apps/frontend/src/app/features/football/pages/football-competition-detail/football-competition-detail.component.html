@@ -3,7 +3,16 @@
 
   <div *ngIf="detail() as data">
     <header class="head">
-      <img *ngIf="data.competition.logo" [src]="data.competition.logo" [alt]="''" class="head__logo" />
+      <img
+        *ngIf="data.competition.logo"
+        [src]="data.competition.logo"
+        [alt]="data.competition.name"
+        class="head__logo"
+        width="48"
+        height="48"
+        decoding="async"
+        fetchpriority="high"
+      />
       <span *ngIf="!data.competition.logo" class="head__logo head__logo--fallback">{{ data.competition.shortName || data.competition.name.slice(0, 2) }}</span>
       <div class="head__body">
         <h1 class="head__title">{{ data.competition.name }}</h1>
@@ -52,7 +61,7 @@
       <section *ngIf="data.news?.length" class="block">
         <app-football-section-header eyebrow="Actualidad" title="Noticias"></app-football-section-header>
         <div class="news-grid">
-          <app-football-news-card *ngFor="let article of data.news" [item]="article"></app-football-news-card>
+          <app-football-news-card *ngFor="let article of data.news; trackBy: trackByNewsSlug" [item]="article"></app-football-news-card>
         </div>
       </section>
 

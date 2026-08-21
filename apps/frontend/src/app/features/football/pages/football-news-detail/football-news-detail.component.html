@@ -14,7 +14,17 @@
       </div>
     </header>
 
-    <img *ngIf="data.coverImage" [src]="data.coverImage" [alt]="data.title" class="article__cover" />
+    <img
+      *ngIf="data.coverImage"
+      [src]="data.coverImage"
+      [alt]="data.title"
+      class="article__cover"
+      width="1200"
+      height="675"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+    />
 
     <div *ngIf="body() as html" class="article__body" [innerHTML]="html"></div>
 
