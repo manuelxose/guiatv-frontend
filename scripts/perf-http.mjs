@@ -29,10 +29,15 @@ const frontendRoutes = [
   '/programacion-tv/guia-canales',
   '/deportes',
   '/editorial',
+  '/deportes/futbol/noticias',
 ];
 
+const discovered = await discoverDetailRoutes(apiBase);
 if (mode !== 'frontend') {
-  apiRoutes.push(...await discoverDetailRoutes(apiBase));
+  apiRoutes.push(...discovered.apiPaths);
+}
+if (mode !== 'api') {
+  frontendRoutes.push(...discovered.frontendPaths);
 }
 
 const targets = mode === 'api'
@@ -127,24 +132,47 @@ function round(value) {
 }
 
 async function discoverDetailRoutes(base) {
-  const routes = [];
+  const apiPaths = [];
+  const frontendPaths = [];
   try {
-    const [homeResponse, competitionsResponse, blogResponse] = await Promise.all([
+    const [homeResponse, competitionsResponse, blogResponse, newsResponse] = await Promise.all([
       fetch(`${base}/v2/sports/football/home`, { headers: { 'x-forwarded-for': '198.19.250.1' } }),
       fetch(`${base}/v2/sports/football/competitions`, { headers: { 'x-forwarded-for': '198.19.250.2' } }),
       fetch(`${base}/v2/blog?limit=1`, { headers: { 'x-forwarded-for': '198.19.250.3' } }),
+      fetch(`${base}/v2/sports/football/news?limit=1`, { headers: { 'x-forwarded-for': '198.19.250.4' } }),
     ]);
     const home = (await homeResponse.json())?.data || {};
     const competitions = (await competitionsResponse.json())?.data?.competitions || [];
     const postsPayload = await blogResponse.json();
     const posts = Array.isArray(postsPayload) ? postsPayload : postsPayload?.data?.posts || [];
+    const newsPayload = await newsResponse.json();
+    const newsItems = newsPayload?.data?.news || [];
+
     const match = [...(home.liveMatches || []), ...(home.todayMatches || []), ...(home.upcomingMatches || [])][0];
-    if (match?.slug || match?.id) routes.push(`/v2/sports/football/matches/${encodeURIComponent(match.slug || match.id)}`);
-    if (match?.homeTeam?.slug) routes.push(`/v2/sports/football/teams/${encodeURIComponent(match.homeTeam.slug)}`);
-    if (competitions[0]?.slug) routes.push(`/v2/sports/football/competitions/${encodeURIComponent(competitions[0].slug)}`);
-    if (posts[0]?.slug) routes.push(`/v2/blog?slug=${encodeURIComponent(posts[0].slug)}`);
+    const matchSlug = match?.slug || match?.id;
+    const teamSlug = match?.homeTeam?.slug;
+    const competitionSlug = competitions[0]?.slug;
+    const newsSlug = newsItems[0]?.slug;
+
+    if (matchSlug) {
+      apiPaths.push(`/v2/sports/football/matches/${encodeURIComponent(matchSlug)}`);
+      frontendPaths.push(`/deportes/futbol/partido/${encodeURIComponent(matchSlug)}`);
+    }
+    if (teamSlug) {
+      apiPaths.push(`/v2/sports/football/teams/${encodeURIComponent(teamSlug)}`);
+      frontendPaths.push(`/deportes/futbol/equipos/${encodeURIComponent(teamSlug)}`);
+    }
+    if (competitionSlug) {
+      apiPaths.push(`/v2/sports/football/competitions/${encodeURIComponent(competitionSlug)}`);
+      frontendPaths.push(`/deportes/futbol/competiciones/${encodeURIComponent(competitionSlug)}`);
+    }
+    if (posts[0]?.slug) apiPaths.push(`/v2/blog?slug=${encodeURIComponent(posts[0].slug)}`);
+    if (newsSlug) {
+      apiPaths.push(`/v2/sports/football/news?slug=${encodeURIComponent(newsSlug)}`);
+      frontendPaths.push(`/deportes/futbol/noticias/${encodeURIComponent(newsSlug)}`);
+    }
   } catch {
     // Core benchmark routes remain useful when optional discovery data is unavailable.
   }
-  return routes;
+  return { apiPaths, frontendPaths };
 }
