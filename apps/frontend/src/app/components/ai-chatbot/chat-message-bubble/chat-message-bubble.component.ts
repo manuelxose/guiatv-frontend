@@ -34,12 +34,10 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
       [class.justify-end]="message.role === 'user'"
       [class.justify-start]="message.role !== 'user'"
     >
-      <div class="group max-w-[94%] md:max-w-[88%]">
+      <div [class]="outerWidthClass">
         <div
-          class="rounded-[1.4rem] px-4 py-3"
-            [ngClass]="message.role === 'user'
-            ? 'bg-gradient-to-br from-red-600 to-red-700 text-[var(--portal-text)] shadow-md'
-            : 'border border-[var(--portal-border)]/90 bg-[var(--portal-surface)] text-[var(--portal-text)] shadow-sm'"
+          class="rounded-[1.4rem]"
+          [ngClass]="bubbleClasses"
         >
           <!-- Loading / Thinking state -->
           <ng-container *ngIf="(message.isLoading && !message.isStreaming) || message.isThinking; else contentBlock">
@@ -56,14 +54,14 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
             <!-- User message: plain text -->
             <p
               *ngIf="message.role === 'user'"
-              class="whitespace-pre-line text-sm leading-relaxed"
+              class="whitespace-pre-line text-sm leading-relaxed break-words"
             >{{ message.content }}</p>
 
             <!-- Assistant message: markdown rendered with optional typewriter -->
             <div
               *ngIf="message.role === 'assistant'"
               #contentEl
-              class="chat-prose text-sm leading-relaxed"
+              class="chat-prose text-sm leading-relaxed break-words"
               [innerHTML]="displayContent | markdown"
             ></div>
 
@@ -161,6 +159,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
   styles: [`
     :host {
       display: block;
+      min-width: 0;
     }
 
     /* Typewriter cursor blink */
@@ -171,6 +170,9 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
 
     /* Markdown prose styles for assistant messages */
     :host ::ng-deep .chat-prose {
+      overflow-wrap: break-word;
+      word-break: break-word;
+
       p { margin-bottom: 0.5rem; }
       p:last-child { margin-bottom: 0; }
 
@@ -197,24 +199,27 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
       li { margin-bottom: 0.125rem; }
 
       a {
-        color: #f87171;
+        color: var(--accent-live);
         text-decoration: underline;
         text-underline-offset: 2px;
-        &:hover { color: #fca5a5; }
+        overflow-wrap: anywhere;
+        &:hover { opacity: 0.85; }
       }
 
       code {
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 0.8125rem;
-        background: rgba(30, 41, 59, 0.8);
-        border: 1px solid rgba(51, 65, 85, 0.5);
+        background: var(--portal-surface-strong);
+        border: 1px solid var(--portal-border);
         border-radius: 0.375rem;
         padding: 0.125rem 0.375rem;
+        color: var(--portal-text);
+        overflow-wrap: anywhere;
       }
 
       pre {
-        background: rgba(15, 23, 42, 0.9);
-        border: 1px solid rgba(51, 65, 85, 0.5);
+        background: var(--portal-bg-deep);
+        border: 1px solid var(--portal-border);
         border-radius: 0.75rem;
         padding: 0.75rem 1rem;
         overflow-x: auto;
@@ -227,10 +232,10 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
       }
 
       blockquote {
-        border-left: 3px solid #ef4444;
+        border-left: 3px solid var(--guide-accent);
         padding-left: 0.75rem;
         margin: 0.5rem 0;
-        color: #94a3b8;
+        color: var(--portal-text-muted);
         font-style: italic;
       }
     }
@@ -263,6 +268,25 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
   displayContent = '';
   isTyping = false;
   relativeTime = '';
+
+  // Recommendation-bearing messages get the full available panel width (cards
+  // need the room, see chat-recommendation-list); plain-text messages keep
+  // the narrower cap so reading line length doesn't regress on a wide panel.
+  get outerWidthClass(): string {
+    return this.message.recommendations?.length
+      ? 'group w-full md:max-w-[96%] min-w-0'
+      : 'group max-w-[94%] md:max-w-[88%] min-w-0';
+  }
+
+  get bubbleClasses(): string {
+    const role = this.message.role === 'user'
+      ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md'
+      : 'border border-[var(--portal-border)]/90 bg-[var(--portal-surface)] text-[var(--portal-text)] shadow-sm';
+    // Recommendation cards/list already re-pad their own content internally,
+    // so the bubble's own padding can shrink to avoid stacking two paddings.
+    const padding = this.message.recommendations?.length ? 'px-2.5 py-3 md:px-3' : 'px-4 py-3';
+    return `${role} ${padding}`;
+  }
 
   private typewriterRafId = 0;
   private typewriterIdx = 0;

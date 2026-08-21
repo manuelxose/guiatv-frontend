@@ -2,19 +2,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { StreamingComparisonComponent } from './streaming-comparison.component';
-import { MetaService } from '../../services/meta.service';
 
 describe('StreamingComparisonComponent', () => {
   let component: StreamingComparisonComponent;
   let fixture: ComponentFixture<StreamingComparisonComponent>;
-  let metaService: jasmine.SpyObj<MetaService>;
-
   beforeEach(async () => {
-    metaService = jasmine.createSpyObj<MetaService>('MetaService', ['setMetaTags']);
-
     await TestBed.configureTestingModule({
       imports: [StreamingComparisonComponent],
-      providers: [provideRouter([]), { provide: MetaService, useValue: metaService }],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(StreamingComparisonComponent);
@@ -24,10 +19,8 @@ describe('StreamingComparisonComponent', () => {
 
   it('should create and render the main sections', () => {
     expect(component).toBeTruthy();
-    expect(fixture.nativeElement.textContent).toContain(
-      'Compara plataformas sin salir del catálogo real de la app.'
-    );
-    expect(fixture.nativeElement.textContent).toContain('Tabla comparativa');
+    expect(fixture.nativeElement.textContent).toContain('Comparador de plataformas');
+    expect(fixture.nativeElement.textContent).toContain('Precios y prestaciones');
     expect(fixture.nativeElement.textContent).toContain('Preguntas frecuentes');
     expect(component.platformComparisons.length).toBeGreaterThan(0);
   });
@@ -39,18 +32,15 @@ describe('StreamingComparisonComponent', () => {
 
     expect(primeVideo).toBeDefined();
     expect(primeVideo?.queryParams).toEqual({
-      platforms: 'Prime Video',
+      platform: 'Prime Video',
       availability: 'streaming',
-      types: 'movie,series',
     });
   });
 
-  it('should configure canonical metadata and avoid legacy streaming routes', () => {
-    expect(metaService.setMetaTags).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        canonicalUrl: '/comparador-streaming',
-      })
-    );
+  it('should render as an inner Platforms view without duplicating shell navigation', () => {
+    expect(fixture.nativeElement.querySelector('app-portal-context-nav')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('app-breadcrumb').length).toBe(0);
+    expect(fixture.nativeElement.querySelector('app-unified-portal-shell')).toBeNull();
     expect(fixture.nativeElement.innerHTML).not.toContain('routerlink="/streaming"');
     expect(fixture.nativeElement.innerHTML).not.toContain('href="/streaming"');
   });

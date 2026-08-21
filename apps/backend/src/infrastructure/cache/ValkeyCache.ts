@@ -2,6 +2,7 @@
 
 import { createClient, RedisClientType } from 'redis';
 import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
+import { recordCacheError, recordCacheLookup, updateCacheRuntime } from '../../shared/utils/runtimeMetrics';
 
 /**
  * Valkey-backed cache repository (Redis compatible) with resilience defaults.
@@ -9,6 +10,7 @@ import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
 export class ValkeyCache implements ICacheRepository {
   private client: RedisClientType;
   private isConnected: boolean = false;
+  private lastStatsRefreshAt = 0;
 
   constructor(
     private readonly redisUrl: string,
@@ -43,16 +45,19 @@ export class ValkeyCache implements ICacheRepository {
     this.client.on('ready', () => {
       console.log('[ValkeyCache] Valkey connection ready');
       this.isConnected = true;
+      updateCacheRuntime({ connected: true });
     });
 
     this.client.on('error', (err: Error) => {
       console.error('[ValkeyCache] Valkey error:', err);
       this.isConnected = false;
+      updateCacheRuntime({ connected: false });
     });
 
     this.client.on('end', () => {
       console.log('[ValkeyCache] Valkey connection closed');
       this.isConnected = false;
+      updateCacheRuntime({ connected: false });
     });
   }
 
@@ -64,6 +69,7 @@ export class ValkeyCache implements ICacheRepository {
     try {
       await this.client.connect();
       this.isConnected = true;
+      await this.refreshRuntimeStats();
     } catch (error) {
       console.error('[ValkeyCache] Failed to connect:', error);
       this.isConnected = false;
@@ -86,20 +92,26 @@ export class ValkeyCache implements ICacheRepository {
   }
 
   async get<T>(key: string): Promise<T | null> {
+    const started = performance.now();
     try {
       if (!this.isConnected) {
         console.warn('[ValkeyCache] Not connected, skipping get');
+        recordCacheLookup(false, performance.now() - started);
         return null;
       }
 
       const value = await this.client.get(key);
+      if (Date.now() - this.lastStatsRefreshAt > 60_000) void this.refreshRuntimeStats();
 
       if (!value) {
+        recordCacheLookup(false, performance.now() - started);
         return null;
       }
 
+      recordCacheLookup(true, performance.now() - started);
       return JSON.parse(value) as T;
     } catch (error) {
+      recordCacheError();
       console.error(`[ValkeyCache] Error getting key ${key}:`, error);
       return null;
     }
@@ -150,6 +162,29 @@ export class ValkeyCache implements ICacheRepository {
     } catch (error) {
       console.error(`[ValkeyCache] Error incrementing key ${key}:`, error);
       return 0;
+    }
+  }
+
+  async setIfAbsent(key: string, value: string, ttlSeconds: number): Promise<boolean> {
+    if (!this.isConnected) return false;
+    try {
+      const result = await this.client.set(key, value, { NX: true, EX: ttlSeconds });
+      return result === 'OK';
+    } catch (error) {
+      console.error(`[ValkeyCache] Error acquiring lock ${key}:`, error);
+      return false;
+    }
+  }
+
+  async releaseLock(key: string, value: string): Promise<void> {
+    if (!this.isConnected) return;
+    try {
+      await this.client.eval(
+        'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end',
+        { keys: [key], arguments: [value] }
+      );
+    } catch (error) {
+      console.error(`[ValkeyCache] Error releasing lock ${key}:`, error);
     }
   }
 
@@ -287,5 +322,23 @@ export class ValkeyCache implements ICacheRepository {
 
   getConnectionStatus(): boolean {
     return this.isConnected;
+  }
+
+  private async refreshRuntimeStats(): Promise<void> {
+    if (!this.isConnected) return;
+    try {
+      const [memoryInfo, statsInfo] = await Promise.all([
+        this.client.info('memory'),
+        this.client.info('stats'),
+      ]);
+      updateCacheRuntime({
+        connected: true,
+        memoryBytes: Number(/^used_memory:(\d+)/m.exec(memoryInfo)?.[1] || 0),
+        evictions: Number(/^evicted_keys:(\d+)/m.exec(statsInfo)?.[1] || 0),
+      });
+      this.lastStatsRefreshAt = Date.now();
+    } catch {
+      recordCacheError();
+    }
   }
 }

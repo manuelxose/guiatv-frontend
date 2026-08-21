@@ -1,10 +1,12 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Injectable({ providedIn: 'root' })
 export class ViewportService {
   private readonly breakpointObserver = inject(BreakpointObserver);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly widthSignal = signal(1440);
 
   readonly width = computed(() => this.widthSignal());
@@ -16,6 +18,17 @@ export class ViewportService {
   readonly shouldShrinkTopNav = computed(() => this.widthSignal() < 1024);
 
   constructor() {
+    // `matchMedia` isn't real during SSR (no actual viewport exists yet), so
+    // BreakpointObserver would resolve every query to "not matched" there and
+    // fall through to a hardcoded mobile guess — hiding the desktop chat
+    // launcher (and other desktop-only UI) in the server-rendered HTML for
+    // every visitor until client-side hydration corrects it. Only observe
+    // real breakpoints in the browser; SSR keeps the safe desktop-first
+    // default above so server and first client render agree.
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     this.breakpointObserver
       .observe([
         '(max-width: 767.98px)',

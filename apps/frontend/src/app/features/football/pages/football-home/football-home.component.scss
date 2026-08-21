@@ -1,0 +1,76 @@
+.shell { max-width: 72rem; margin: 0 auto; padding: 1rem; min-width: 0; }
+
+.home__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.home__eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-sports);
+}
+.home__title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--portal-text);
+}
+.home__search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--portal-text-muted);
+  text-decoration: none;
+  border: 1px solid var(--portal-border);
+  border-radius: 9999px;
+  padding: 0.375rem 0.875rem;
+}
+.home__search:hover, .home__search:focus-visible { border-color: var(--accent-sports); color: var(--portal-text); }
+.home__search svg { width: 1rem; height: 1rem; flex: 0 0 auto; }
+
+.home__content { display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
+.home__section { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.home__grid { display: grid; grid-template-columns: 1fr; gap: 0.625rem; }
+@media (min-width: 640px) { .home__grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .home__grid { grid-template-columns: repeat(3, 1fr); } }
+
+.home__news { display: grid; grid-template-columns: 1fr; gap: 0.625rem; }
+@media (min-width: 640px) { .home__news { grid-template-columns: repeat(2, 1fr); } }
+
+.home__competitions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.home__empty {
+  border: 1px dashed var(--portal-border-strong);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+.home__empty-title { margin: 0 0 0.25rem; font-weight: 750; color: var(--portal-text); }
+.home__empty-sub { margin: 0; font-size: 0.875rem; color: var(--portal-text-muted); }
+
+.home__skeleton { display: flex; flex-direction: column; gap: 0.625rem; }
+.home__skeleton-row {
+  height: 3.25rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(90deg, var(--portal-surface-strong) 25%, var(--portal-card) 37%, var(--portal-surface-strong) 63%);
+  background-size: 400% 100%;
+  animation: football-skeleton 1.4s ease infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home__skeleton-row { animation: none; }
+}
+@keyframes football-skeleton {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}

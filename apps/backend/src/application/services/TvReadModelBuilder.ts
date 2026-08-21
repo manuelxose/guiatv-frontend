@@ -372,14 +372,18 @@ export class TvReadModelBuilder {
       await TVProgramBrandModel.bulkWrite(brandOps, { ordered: false });
     }
 
-    await this.cacheRepository.clear(`tv:read:${date}:*`);
+    await this.cacheRepository.clear(`v3:tv:read:${date}:*`);
     await this.cacheRepository.clear(`tv:channels:${date}:*`);
     await this.cacheRepository.clear('tv:surface:*');
     await this.cacheRepository.clear('tv:read:item:*');
-    l1Cache.invalidatePrefix(`tv:read:${date}:`);
+    await this.cacheRepository.clear('v2:surface:discovery:home:*');
+    await this.cacheRepository.clear('v2:football:reconciliation:airings:*');
+    await this.cacheRepository.clear('v2:football:*');
+    l1Cache.invalidatePrefix(`v3:tv:read:${date}:`);
     l1Cache.invalidatePrefix(`tv:channels:${date}:`);
     l1Cache.invalidatePrefix('tv:surface:');
     l1Cache.invalidatePrefix('tv:read:item:');
+    l1Cache.invalidatePrefix('v2:surface:discovery:home:');
 
     this.log.info('TV read model rebuilt', {
       date,

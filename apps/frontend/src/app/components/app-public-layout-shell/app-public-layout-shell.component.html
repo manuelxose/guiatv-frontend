@@ -1,24 +1,12 @@
 <app-unified-portal-shell
   class="app-public-layout-shell"
   [tone]="tone()"
-  [activeTab]="activeTab()"
-  [searchQuery]="searchQuery()"
-  [topPillChips]="topPillChips()"
-  [topPillSelection]="topPillSelection()"
-  [topPillLabel]="topPillLabel()"
-  [isAuthenticated]="isAuthenticated()"
-  [profileName]="profile()?.name || 'Cuenta'"
   [breadcrumbItems]="breadcrumbItems()"
   [showHero]="false"
-  [leftRailSections]="leftRailSections()"
-  [rightRailSections]="rightRailSections()"
-  [rightRailLabel]="rightRailLabel()"
-  rightRailVariant="prime"
-  (tabChange)="onTabChange($event)"
-  (searchChange)="onSearchChange($event)"
-  (searchSubmit)="onSearchSubmit($event)"
-  (topPillChange)="onTopPillChange($event)"
 >
+  @if (section() === 'sports') {
+    <app-portal-context-nav kind="sports"></app-portal-context-nav>
+  }
   <div class="app-public-layout-shell__content">
     <ng-content></ng-content>
   </div>

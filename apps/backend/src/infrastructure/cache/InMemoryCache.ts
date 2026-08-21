@@ -56,6 +56,18 @@ export class InMemoryCache implements ICacheRepository {
     return nextValue;
   }
 
+  async setIfAbsent(key: string, value: string, ttlSeconds: number): Promise<boolean> {
+    if (await this.get(key) !== null) return false;
+    await this.set(key, value, ttlSeconds);
+    return true;
+  }
+
+  async releaseLock(key: string, value: string): Promise<void> {
+    if ((await this.get<string>(key)) === value) {
+      await this.delete(key);
+    }
+  }
+
   async clear(pattern?: string): Promise<void> {
     if (!pattern) {
       this.cache.clear();

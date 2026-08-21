@@ -2,25 +2,15 @@
 
 <app-unified-portal-shell
   tone="editorial"
-  activeTab="discover"
-  [searchQuery]="searchQuery()"
-  [topPillChips]="topPillChips"
-  topPillLabel="Editorial"
-  [isAuthenticated]="isAuthenticated()"
-  [profileName]="profile()?.name || 'Cuenta'"
-  [breadcrumbItems]="breadcrumbItems"
-  [leftRailSections]="leftRailSections()"
-  [rightRailSections]="rightRailSections()"
-  rightRailLabel="Panel editorial"
-  eyebrow="Editorial"
-  title="Historias, rankings y contexto para entender qué ver dentro del portal"
-  description="La capa editorial ya no vive aparte. Comparte shell, shortcuts, footer y lenguaje visual con discovery, streaming y tendencias."
-  [metrics]="metrics"
-  (tabChange)="navigateToTab($event)"
-  (topPillChange)="onTopPillChange($event)"
-  (searchChange)="onSearchChange($event)"
-  (searchSubmit)="onSearchSubmit($event)"
+  [breadcrumbItems]="[]"
+  [showHero]="false"
 >
+  <app-portal-context-nav kind="blog" [breadcrumbItems]="breadcrumbItems"></app-portal-context-nav>
+  <header class="blog-page-header">
+    <p>Blog</p>
+    <h1>Historias y guías para elegir qué ver</h1>
+    <span>Actualidad, recomendaciones y análisis de televisión y streaming.</span>
+  </header>
   <section *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
     <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-[var(--portal-surface-strong)]"></div>
   </section>
@@ -48,26 +38,20 @@
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
       </div>
 
-      <div class="grid gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
+      <div class="p-5">
         <div class="space-y-3">
           <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Reportaje destacado</p>
           <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ hero.title }}</h2>
           <p class="line-clamp-3 text-sm text-[var(--portal-text-soft)]">{{ hero.excerptText }}</p>
         </div>
-        <div class="rounded-[1.25rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Conectado con el portal</p>
-          <p class="mt-3 text-sm text-[var(--portal-text-soft)]">
-            Desde aquí cruzas editorial con catálogo, plataformas, tendencias y rankings sin abandonar la experiencia unificada.
-          </p>
-        </div>
       </div>
     </a>
 
-    <section *ngIf="guidePosts.length" class="space-y-5">
+    <section id="guias" *ngIf="guidePosts.length" class="space-y-5 scroll-mt-32">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Guias evergreen</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Rutas útiles para decidir qué ver</h2>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Guías</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Ideas para decidir qué ver</h2>
         </div>
         <a
           [routerLink]="appPaths.explore"
@@ -102,27 +86,6 @@
           *ngFor="let post of rankingPosts.slice(0, 4)"
           [post]="post"
         ></app-editorial-post-card>
-      </div>
-    </section>
-
-    <section *ngIf="communityLists.length" class="space-y-5">
-      <div class="flex items-end justify-between gap-4">
-        <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Comunidad</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Listas de los usuarios</h2>
-        </div>
-        <a
-          [routerLink]="appPaths.profile"
-          class="min-h-[40px] rounded-full border border-[var(--accent-streaming)] bg-[var(--accent-streaming-soft)] px-4 py-2 text-sm font-semibold text-[var(--accent-streaming)] transition-colors"
-        >
-          Crear tu lista
-        </a>
-      </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <app-community-list-card
-          *ngFor="let list of communityLists"
-          [list]="list"
-        ></app-community-list-card>
       </div>
     </section>
 

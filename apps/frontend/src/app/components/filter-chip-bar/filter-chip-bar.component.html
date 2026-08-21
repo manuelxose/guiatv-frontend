@@ -2,18 +2,14 @@
   class="chip-bar scrollbar-hide"
   [class.chip-bar--shelf]="variant === 'shelf'"
   [attr.aria-label]="ariaLabel"
-  tabindex="0"
-  [attr.role]="multiSelect ? null : 'tablist'"
+  role="group"
 >
   <button
     *ngFor="let chip of chips; trackBy: trackByChip"
     type="button"
     class="chip-bar__item"
     [class.chip-bar__item--active]="isActive(chip.id)"
-    [attr.aria-pressed]="multiSelect ? isActive(chip.id) : null"
-    [attr.aria-selected]="multiSelect ? null : isActive(chip.id)"
-    [attr.role]="multiSelect ? 'button' : 'tab'"
-    [attr.tabindex]="multiSelect || isActive(chip.id) ? 0 : -1"
+    [attr.aria-pressed]="isActive(chip.id)"
     (click)="chipSelect.emit(chip.id)"
     (keydown)="onChipKeydown($event, chip.id)"
   >

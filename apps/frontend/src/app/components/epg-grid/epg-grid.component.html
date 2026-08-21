@@ -23,10 +23,10 @@
         </div>
       </div>
 
-      <div class="epg-grid__body" role="rowgroup" #gridBody>
-        <div class="epg-grid__row" role="row" *ngFor="let row of rows(); let ri = index; trackBy: trackRow">
+      <cdk-virtual-scroll-viewport class="epg-grid__body" role="rowgroup" #gridBody itemSize="48" minBufferPx="240" maxBufferPx="480">
+        <div class="epg-grid__row" role="row" *cdkVirtualFor="let row of rows(); let ri = index; trackBy: trackRow">
           <div class="epg-grid__channel-cell" role="rowheader">
-            <img *ngIf="row.channelIcon" [src]="row.channelIcon" alt="" loading="lazy" />
+            <img *ngIf="row.channelIcon" [src]="row.channelIcon" alt="" width="48" height="48" loading="lazy" />
             <span class="epg-grid__channel-name">{{ row.channelName }}</span>
           </div>
 
@@ -62,7 +62,7 @@
             </a>
           </div>
         </div>
-      </div>
+      </cdk-virtual-scroll-viewport>
     </div>
   </ng-container>
 

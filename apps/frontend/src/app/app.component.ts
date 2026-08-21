@@ -18,12 +18,11 @@ import { UnifiedChatShellComponent } from './components/unified-chat-shell/unifi
 import { AnalyticsService } from './services/analytics.service';
 import { ChatService } from './services/chat.service';
 import { MetaService } from './services/meta.service';
-import { ViewportService } from './services/viewport.service';
 import { environment } from '../environments/environment';
-import { normalizePath as normalizeRoutePath } from './config/route-map';
+import { APP_PATHS, normalizePath as normalizeRoutePath } from './config/route-map';
 import {
   PORTAL_ACCOUNT_DESTINATIONS,
-  PORTAL_EXPLORE_DESTINATIONS,
+  PORTAL_MOBILE_MORE_DESTINATIONS,
   PORTAL_MOBILE_PRIMARY_DESTINATIONS,
   PortalMobileDestination,
 } from './config/portal-navigation.config';
@@ -55,11 +54,12 @@ export class AppComponent implements OnInit, OnDestroy {
   public swipeOffsetY = 0;
   public swipeAnimating = false;
   public readonly mobileTabs = PORTAL_MOBILE_PRIMARY_DESTINATIONS;
-  public readonly exploreDestinations = PORTAL_EXPLORE_DESTINATIONS;
+  public readonly moreDestinations = PORTAL_MOBILE_MORE_DESTINATIONS;
   public readonly accountDestinations = PORTAL_ACCOUNT_DESTINATIONS;
   public mobileMoreOpen = false;
   public readonly theme = inject(ThemeService);
   @ViewChild('mobileMoreTrigger') private readonly mobileMoreTrigger?: ElementRef<HTMLButtonElement>;
+  @ViewChild('mobileMoreSheet') private readonly mobileMoreSheet?: ElementRef<HTMLElement>;
 
   public readonly aiChatbotEnabled = environment.ai.chatbotEnabled;
 
@@ -70,7 +70,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private resizeUpHandler: (() => void) | null = null;
   private readonly destroy$ = new Subject<void>();
   private readonly analytics = inject(AnalyticsService);
-  private readonly viewport = inject(ViewportService);
 
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
@@ -80,6 +79,10 @@ export class AppComponent implements OnInit, OnDestroy {
     private readonly chatService: ChatService
   ) {
     void this.chatService;
+    // Select the same router-outlet branch before the first render on SSR and
+    // in the hydrating browser. Deferring this until ngOnInit makes hydration
+    // briefly instantiate the default public shell for portal routes.
+    this.applyRouteState(this.router.url);
   }
 
   ngOnInit(): void {
@@ -94,7 +97,6 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.applyRouteState(this.router.url);
     this.applyRobotsMeta();
 
     this.router.events
@@ -192,12 +194,22 @@ export class AppComponent implements OnInit, OnDestroy {
     }, 300);
   }
 
+  // Deliberately not gated on viewport.isMobile(): that signal starts at a
+  // guessed default and only settles after client-side hydration, which
+  // raced with SSR/first paint and could leave desktop visitors with no
+  // visible chat entry point (FAB hidden by CSS, launcher not yet rendered)
+  // until the guess corrected itself. The FAB/launcher pair's CSS already
+  // fully owns the 768px breakpoint (see .app-shell__chat-fab /
+  // .app-shell__chat-launcher in app.component.scss), so both can render
+  // unconditionally here and let CSS be the single source of truth for
+  // which one is visible at a given width — matching how the mobile/desktop
+  // chat panels already resolve their own visibility.
   public shouldShowMobileChatbotFab(): boolean {
-    return this.canRenderChatbot() && this.viewport.isMobile() && !this.isChatbotOpen && !this.isChatMinimized;
+    return this.canRenderChatbot() && !this.isChatbotOpen && !this.isChatMinimized;
   }
 
   public shouldShowDesktopChatbotLauncher(): boolean {
-    return this.canRenderChatbot() && !this.viewport.isMobile();
+    return this.canRenderChatbot();
   }
 
   public shouldShowMobileNavigation(): boolean {
@@ -206,7 +218,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   public isMobileTabActive(tab: PortalMobileDestination): boolean {
     const path = normalizeRoutePath(this.currentPath);
-    if (tab.id === 'more') return false;
+    if (tab.id === 'more') {
+      return this.mobileMoreOpen || path.startsWith(APP_PATHS.platforms) || path.startsWith(APP_PATHS.streamingComparison) || path.startsWith(APP_PATHS.blog) || path.startsWith(APP_PATHS.stats);
+    }
     if (tab.id === 'home') return path === '/';
     if (tab.id === 'live') {
       return path.startsWith('/programacion-tv/guia-canales') || path.startsWith('/canales/');
@@ -218,8 +232,17 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public toggleMobileMore(): void {
-    this.mobileMoreOpen = !this.mobileMoreOpen;
-    this.document.body.classList.toggle('portal-overlay-open', this.mobileMoreOpen);
+    if (this.mobileMoreOpen) {
+      this.closeMobileMore();
+      return;
+    }
+    this.mobileMoreOpen = true;
+    this.document.body.classList.add('portal-overlay-open');
+    setTimeout(() => {
+      const first = this.getMoreSheetFocusables()[0];
+      if (first) first.focus();
+      else this.mobileMoreSheet?.nativeElement.focus();
+    });
   }
 
   public closeMobileMore(): void {
@@ -238,6 +261,30 @@ export class AppComponent implements OnInit, OnDestroy {
   @HostListener('document:keydown.escape')
   public onEscape(): void {
     this.closeMobileMore();
+    if (this.isChatbotOpen) {
+      this.closeChatbot();
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  public trapMobileMoreFocus(event: KeyboardEvent): void {
+    if (!this.mobileMoreOpen || event.key !== 'Tab') return;
+    const focusable = this.getMoreSheetFocusables();
+    if (!focusable.length) {
+      event.preventDefault();
+      this.mobileMoreSheet?.nativeElement.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = this.document.activeElement;
+    if (event.shiftKey && (active === first || !this.mobileMoreSheet?.nativeElement.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   private cleanupResizeListeners(): void {
@@ -249,6 +296,14 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     this.resizeMoveHandler = null;
     this.resizeUpHandler = null;
+  }
+
+  private getMoreSheetFocusables(): HTMLElement[] {
+    const sheet = this.mobileMoreSheet?.nativeElement;
+    if (!sheet) return [];
+    return Array.from(
+      sheet.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')
+    );
   }
 
   private applyRouteState(url: string): void {

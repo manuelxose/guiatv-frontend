@@ -1,6 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, PLATFORM_ID, computed, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, forkJoin, map, of, switchMap, takeUntil } from 'rxjs';
@@ -10,13 +9,9 @@ import { FaqSectionComponent } from '../../../components/faq-section/faq-section
 import { ShareButtonsComponent } from '../../../components/share-buttons/share-buttons.component';
 import { APP_PATHS } from '../../../config/route-map';
 import { UnifiedPortalShellComponent } from '../../../components/unified-portal-shell/unified-portal-shell.component';
-import { UnifiedTopNavTab } from '../../../components/unified-top-nav/unified-top-nav.component';
-import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
-import { PORTAL_ICON_PATHS } from '../../../config/portal-navigation.config';
 import { getCatalogPlatformByKey } from '../../../data/catalog-platforms.data';
 import { CatalogItem, CatalogService } from '../../../services/catalog.service';
 import { MetaService } from '../../../services/meta.service';
-import { UserService } from '../../../services/user.service';
 import {
   generateBreadcrumbSchema,
   generateEditorialArticleSchema,
@@ -24,7 +19,7 @@ import {
 import { EditorialPostPageState } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
 import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
-import { UnifiedPortalRailSection } from '../../../models/portal-shell.models';
+import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
 
 interface TrendingItem {
   title: string;
@@ -45,6 +40,7 @@ interface TrendingItem {
     EditorialPostCardComponent,
     CatalogRailComponent,
     FaqSectionComponent,
+    PortalContextNavComponent,
   ],
   templateUrl: './post-detail.component.html',
   styleUrls: ['./post-detail.component.scss'],
@@ -52,47 +48,7 @@ interface TrendingItem {
 })
 export class PostDetailComponent implements OnInit, OnDestroy {
   public readonly appPaths = APP_PATHS;
-  public readonly iconPaths = PORTAL_ICON_PATHS;
   public readonly isBrowser: boolean;
-  public readonly searchQuery = signal('');
-  public readonly isAuthenticated = toSignal(this.userService.isAuthenticated$, { initialValue: false });
-  public readonly profile = toSignal(this.userService.getProfile(), {
-    initialValue: this.userService.getProfileSnapshot(),
-  });
-  public readonly topPillChips: FilterChipItem[] = [
-    { id: 'editorial', label: 'Editorial', iconPath: this.iconPaths.editorial, tone: 'discover' },
-    { id: 'rankings', label: 'Rankings', iconPath: this.iconPaths.rankings, tone: 'discover' },
-    { id: 'discover', label: 'Qué Ver', iconPath: this.iconPaths.discover, tone: 'discover' },
-    { id: 'platforms', label: 'Plataformas', iconPath: this.iconPaths.platforms, tone: 'streaming' },
-  ];
-  public readonly leftRailSections = computed<UnifiedPortalRailSection[]>(() => [
-    {
-      id: 'post-left',
-      eyebrow: 'Editorial',
-      title: 'Volver al flujo',
-      description: 'Este artículo vive dentro del portal, no aparte.',
-      items: [
-        { id: 'post-left-home', label: 'Editorial', description: 'Portada editorial', iconPath: this.iconPaths.editorial, path: APP_PATHS.blog },
-        { id: 'post-left-rankings', label: 'Rankings', description: 'Top listas', iconPath: this.iconPaths.rankings, path: APP_PATHS.top10 },
-        { id: 'post-left-discover', label: 'Qué Ver', description: 'Discovery principal', iconPath: this.iconPaths.discover, path: APP_PATHS.explore },
-      ],
-    },
-  ]);
-  public readonly rightRailSections = computed<UnifiedPortalRailSection[]>(() => [
-    {
-      id: 'post-right',
-      eyebrow: 'Contexto',
-      title: 'Siguientes pasos',
-      description: 'Cruza editorial con plataformas, guía y tendencias.',
-      variant: 'compact',
-      items: [
-        { id: 'post-right-platforms', label: 'Plataformas', description: 'Abrir servicios', iconPath: this.iconPaths.platforms, path: APP_PATHS.platforms },
-        { id: 'post-right-guide', label: 'TV Directo', description: 'Ir a la guía', iconPath: this.iconPaths.live, path: APP_PATHS.guide },
-        { id: 'post-right-trends', label: 'Tendencias', description: 'Pulso del catálogo', iconPath: this.iconPaths.trends, path: APP_PATHS.stats },
-      ],
-    },
-  ]);
-
   public loading = true;
   public error: string | null = null;
   public state: EditorialPostPageState | null = null;
@@ -112,7 +68,6 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     private readonly metaService: MetaService,
     private readonly sanitizer: DomSanitizer,
     private readonly catalogService: CatalogService,
-    private readonly userService: UserService,
     private readonly changeDetector: ChangeDetectorRef,
     @Inject(PLATFORM_ID) platformId: object
   ) {
@@ -141,7 +96,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
             : `https://guiaprogramaciontv.com${state.post.canonicalPath}`;
 
           this.metaService.setMetaTags({
-            title: state.post.metaTitle || `${state.post.title} | Editorial Guía TV`,
+            title: state.post.metaTitle || `${state.post.title} | Blog Guía TV`,
             description:
               state.post.metaDescription || state.post.excerptText || 'Artículo editorial de Guía TV.',
             canonicalUrl: state.post.canonicalPath,
@@ -194,45 +149,12 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   public get breadcrumbItems(): Array<{ name: string; url: string }> {
     return [
       { name: 'Inicio', url: APP_PATHS.home },
-      { name: 'Editorial', url: APP_PATHS.blog },
+      { name: 'Blog', url: APP_PATHS.blog },
       ...(this.state?.post.primaryCategory
         ? [{ name: this.state.post.primaryCategory.name, url: this.state.post.primaryCategory.canonicalPath }]
         : []),
       ...(this.state ? [{ name: this.state.post.title, url: this.state.post.canonicalPath }] : []),
     ];
-  }
-
-  public navigateToTab(tab: UnifiedTopNavTab['id']): void {
-    const pathMap: Record<UnifiedTopNavTab['id'], string> = {
-      live: APP_PATHS.guide,
-      discover: APP_PATHS.explore,
-      streaming: APP_PATHS.platforms,
-      sports: APP_PATHS.sports,
-    };
-    void this.router.navigateByUrl(pathMap[tab]);
-  }
-
-  public onSearchChange(value: string): void {
-    this.searchQuery.set(value);
-  }
-
-  public onSearchSubmit(value: string): void {
-    this.searchQuery.set(value);
-    void this.router.navigate([APP_PATHS.explore], {
-      queryParams: value ? { q: value } : {},
-    });
-  }
-
-  public onTopPillChange(value: string): void {
-    const target = {
-      editorial: APP_PATHS.blog,
-      rankings: APP_PATHS.top10,
-      discover: APP_PATHS.explore,
-      platforms: APP_PATHS.platforms,
-    }[value];
-    if (target) {
-      void this.router.navigateByUrl(target);
-    }
   }
 
   private loadLinkedModules(post: EditorialPostPageState['post']): void {
@@ -327,7 +249,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   private buildStructuredData(state: EditorialPostPageState): void {
     const baseUrl = 'https://guiaprogramaciontv.com';
     const breadcrumbItems = [
-      { name: 'Editorial', url: '/editorial' },
+      { name: 'Blog', url: '/editorial' },
       ...(state.post.primaryCategory
         ? [{ name: state.post.primaryCategory.name, url: state.post.primaryCategory.canonicalPath }]
         : []),

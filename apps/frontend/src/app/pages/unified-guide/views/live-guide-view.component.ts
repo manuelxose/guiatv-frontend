@@ -1,10 +1,11 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, PLATFORM_ID, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { of, shareReplay, switchMap } from 'rxjs';
+import { switchMap } from 'rxjs';
 import { EpgGridComponent } from '../../../components/epg-grid/epg-grid.component';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
+import { PortalLocalToolbarComponent } from '../../../components/portal-local-toolbar/portal-local-toolbar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
 import { ChannelMetaDTO, TvReadItemDTO } from '../../../api/models';
@@ -33,6 +34,7 @@ interface EpgRow {
     RouterModule,
     EpgGridComponent,
     UnifiedFilterDockComponent,
+    PortalLocalToolbarComponent,
     UnifiedProgramCardComponent,
   ],
   templateUrl: './live-guide-view.component.html',
@@ -40,8 +42,6 @@ interface EpgRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LiveGuideViewComponent {
-  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-
   readonly categoryChips: FilterChipItem[] = [
     { id: 'all', label: 'Todo' },
     { id: 'Cine', label: 'Cine' },
@@ -74,53 +74,38 @@ export class LiveGuideViewComponent {
   // request, including the expensive day and guide-surface views.
   private readonly filters$ = toObservable(this.filters);
 
-  private readonly nowPrograms$ = this.filters$.pipe(
-    switchMap((filters) =>
-      filters.q
-        ? this.facade.searchTvPrograms({ ...filters, limit: 48 })
-        : this.facade.getLivePrograms({ ...filters, limit: 36 })
-    ),
-    shareReplay({ bufferSize: 1, refCount: true })
-  );
-
-  readonly surface = toSignal(
+  private readonly selectedPrograms = toSignal(
     this.filters$.pipe(
-      switchMap((filters) => this.isBrowser ? this.facade.getGuideSurface(filters) : of(null))
+      switchMap((filters) => {
+        if (filters.q) {
+          return this.facade.searchTvPrograms({ ...filters, limit: 48 });
+        }
+        if (filters.liveView === 'next') {
+          return this.facade.getNextPrograms({ ...filters, limit: 48 });
+        }
+        if (filters.liveView === 'night') {
+          return this.facade.getTonightPrograms({ ...filters, limit: 48 });
+        }
+        if (filters.liveView === 'day') {
+          return this.facade.getAllPrograms({ ...filters, limit: 240 });
+        }
+        return this.facade.getLivePrograms({ ...filters, limit: 36 });
+      })
     ),
-    { initialValue: null }
+    { initialValue: null as TvReadItemDTO[] | null }
   );
-  readonly nowPrograms = toSignal(this.nowPrograms$, { initialValue: [] as TvReadItemDTO[] });
-  readonly nextPrograms = toSignal(
-    this.filters$.pipe(switchMap((filters) => this.facade.getNextPrograms({ ...filters, limit: 48 }))),
-    { initialValue: [] as TvReadItemDTO[] }
-  );
-  readonly nightPrograms = toSignal(
-    this.filters$.pipe(switchMap((filters) => this.facade.getTonightPrograms({ ...filters, limit: 48 }))),
-    { initialValue: [] as TvReadItemDTO[] }
-  );
-  readonly allPrograms = toSignal(
-    this.isBrowser
-      ? this.filters$.pipe(switchMap((filters) => this.facade.getAllPrograms({ ...filters, limit: 240 })))
-      : this.nowPrograms$,
-    { initialValue: [] as TvReadItemDTO[] }
+  readonly visiblePrograms = computed(() => this.selectedPrograms() ?? []);
+  readonly allPrograms = computed(() =>
+    this.guideState.liveFilters().liveView === 'day' ? this.visiblePrograms() : []
   );
   readonly channels = computed<ChannelMetaDTO[]>(() => {
     const unique = new Map<string, ChannelMetaDTO>();
-    (this.surface()?.channels || []).forEach((entry) => unique.set(entry.channel.id, entry.channel));
-    [...this.nowPrograms(), ...this.nextPrograms(), ...this.nightPrograms()].forEach((item) =>
+    this.visiblePrograms().forEach((item) =>
       unique.set(item.channel.id, item.channel)
     );
     return Array.from(unique.values());
   });
-  readonly loading = computed(() => this.surface() === null);
-
-  readonly visiblePrograms = computed(() => {
-    const view = this.guideState.liveFilters().liveView;
-    if (view === 'next') return this.nextPrograms();
-    if (view === 'night') return this.nightPrograms();
-    if (view === 'day') return this.allPrograms();
-    return this.nowPrograms();
-  });
+  readonly loading = computed(() => this.selectedPrograms() === null);
   readonly sectionTitle = computed(() => {
     const view = this.guideState.liveFilters().liveView;
     if (view === 'next') return 'A continuación';

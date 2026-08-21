@@ -17,8 +17,12 @@ test.describe('Shared responsive shell', () => {
     await more.click();
     const sheet = page.getByRole('dialog', { name: 'Más opciones' });
     await expect(sheet).toBeVisible();
-    await expect(sheet.getByRole('link', { name: /Editorial/ })).toBeVisible();
-    await expect(sheet.getByRole('link', { name: /Rankings/ })).toBeVisible();
+    await expect(page.locator('.app-shell__route-content')).toHaveAttribute('inert', '');
+    await expect(sheet.getByRole('link', { name: /Plataformas/ })).toBeVisible();
+    await expect(sheet.getByRole('link', { name: /Blog/ })).toBeVisible();
+    await expect(sheet.getByRole('link', { name: /Rankings/ })).toHaveCount(0);
+    await page.keyboard.press('Shift+Tab');
+    await expect(sheet.locator(':focus')).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(sheet).toBeHidden();
     await expect(more).toBeFocused();
@@ -49,14 +53,13 @@ test.describe('Shared responsive shell', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', before!);
   });
 
-  test('desktop makes editorial and rankings globally reachable', async ({ page }) => {
+  test('desktop exposes the five canonical sibling destinations', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/');
-    const more = page.getByRole('button', { name: 'Editorial y más' });
-    await more.click();
-    const menu = page.getByRole('menu', { name: 'Editorial y más' });
-    await expect(menu.getByRole('menuitem', { name: /Editorial/ })).toBeVisible();
-    await expect(menu.getByRole('menuitem', { name: /Rankings/ })).toBeVisible();
+    const nav = page.getByRole('navigation', { name: 'Secciones principales' });
+    await expect(nav.getByRole('link')).toHaveCount(5);
+    await expect(nav.getByRole('link', { name: 'Blog', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Editorial y más' })).toHaveCount(0);
   });
 
   test('shell keeps a single document width across supported responsive widths', async ({ page }) => {

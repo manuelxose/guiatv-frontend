@@ -8,6 +8,7 @@ import { createSitemapRoutes } from './sitemap.routes';
 import { corsMiddleware } from '../middlewares/cors';
 import { compressionMiddleware } from '../middlewares/compression';
 import { requestLogger } from '../middlewares/requestLogger';
+import { publicCachePolicy } from '../middlewares/publicCachePolicy';
 import { errorHandler } from '../middlewares/errorHandler';
 import { notFoundHandler } from '../middlewares/notFoundHandler';
 
@@ -19,22 +20,14 @@ import { notFoundHandler } from '../middlewares/notFoundHandler';
 export const createApp = (dependencies: RoutesDependencies): Application => {
   const app = express();
 
-  // Evitar respuestas 304 por etag en datos dinámicos
-  app.disable('etag');
+  // Weak ETags let browsers/edges revalidate bounded public representations.
+  app.set('etag', 'weak');
   app.set('trust proxy', 1);
 
   // Sitemap — mounted before the no-store middleware so it can send its own Cache-Control headers
   app.use('/', createSitemapRoutes(dependencies.sitemapController));
 
-  // Forzar que los datos de la API no se sirvan desde cache del navegador
-  app.use((req, res, next) => {
-    delete req.headers['if-none-match'];
-    delete req.headers['if-modified-since'];
-    res.set('Cache-Control', 'no-store');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-    next();
-  });
+  app.use(publicCachePolicy);
 
   // Serve storage from configured local path when available.
   const storagePath = process.env.STORAGE_LOCAL_PATH

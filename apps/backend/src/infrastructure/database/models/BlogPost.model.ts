@@ -135,6 +135,18 @@ const BlogPostSchema = new Schema<IBlogPostDocument>(
 BlogPostSchema.index({ status: 1, publishedAt: -1 });
 BlogPostSchema.index({ contentType: 1, status: 1, publishedAt: -1 });
 BlogPostSchema.index({ 'categories.slug': 1, publishedAt: -1 });
+BlogPostSchema.index(
+  { status: 1, featured: -1, publishedAt: -1, createdAt: -1 },
+  { name: 'idx_blog_public_featured_published' }
+);
+BlogPostSchema.index(
+  { status: 1, contentType: 1, featured: -1, publishedAt: -1 },
+  { name: 'idx_blog_public_type_featured' }
+);
+BlogPostSchema.index(
+  { status: 1, 'categories.slug': 1, featured: -1, publishedAt: -1 },
+  { name: 'idx_blog_public_category_featured' }
+);
 BlogPostSchema.index({ title: 'text', excerpt: 'text', content: 'text' });
 
 export const BlogPostModel = mongoose.model<IBlogPostDocument>(

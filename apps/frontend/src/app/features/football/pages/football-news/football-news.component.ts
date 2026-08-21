@@ -1,56 +1,81 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs';
 import { FootballFacade } from '@app/features/football/football.facade';
+import { FootballContentType, FootballNewsDTO } from '@app/features/football/football.models';
 import { FootballNewsCardComponent } from '@app/features/football/components/football-news-card/football-news-card.component';
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
+import { PortalLocalToolbarComponent } from '@app/components/portal-local-toolbar/portal-local-toolbar.component';
+import { PortalContextDestination } from '@app/config/portal-navigation.config';
+
+const PAGE_SIZE = 12;
+
+const CONTENT_TYPE_LABELS: Record<FootballContentType, string> = {
+  news: 'Noticias',
+  analysis: 'Análisis',
+  preview: 'Previas',
+  'match-report': 'Crónicas',
+  guide: 'Guías',
+  ranking: 'Rankings',
+  trend: 'Tendencias',
+};
 
 @Component({
   selector: 'app-football-news',
   standalone: true,
-  imports: [CommonModule, FootballNewsCardComponent],
+  imports: [CommonModule, FootballNewsCardComponent, PortalLocalToolbarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="shell">
-      <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
-
-      <header class="head">
-        <h1 class="head__title">Noticias de fútbol</h1>
-        <p class="head__sub">Última hora, previas, crónicas y análisis.</p>
-      </header>
-
-      <div class="grid">
-        <app-football-news-card *ngFor="let article of news()" [item]="article"></app-football-news-card>
-      </div>
-
-      <div *ngIf="!news()?.length" class="empty">
-        <p class="empty__title">Todavía no hay noticias</p>
-        <p class="empty__sub">Las noticias de fútbol aparecerán aquí cuando estén disponibles.</p>
-      </div>
-    </div>
-  `,
-  styles: `
-    .shell { max-width: 72rem; margin: 0 auto; padding: 1rem; }
-    .head { margin-bottom: 1rem; }
-    .head__title { margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--football-text, #f1f5f9); }
-    .head__sub { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--football-text-muted, #94a3b8); }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 0.625rem; }
-    @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-    .empty { border: 1px dashed var(--football-border, rgba(148, 163, 184, 0.25)); border-radius: 0.75rem; padding: 2rem; text-align: center; }
-    .empty__title { margin: 0 0 0.25rem; font-weight: 750; color: var(--football-text, #e2e8f0); }
-    .empty__sub { margin: 0; font-size: 0.875rem; color: var(--football-text-muted, #94a3b8); }
-  `,
+  templateUrl: './football-news.component.html',
+  styleUrl: './football-news.component.scss',
 })
 export class FootballNewsComponent implements OnInit {
   private readonly facade = inject(FootballFacade);
   private readonly meta = inject(MetaService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  readonly news = toSignal(this.facade.getNews({ limit: 24 }), { initialValue: [] });
+  // Cumulative limit ("load more" grows this rather than paging with an
+  // offset+merge) — simplest correct approach for a page this size, and it
+  // naturally reuses the facade's TransferState cache per distinct limit.
+  private readonly requestedCount = signal(PAGE_SIZE);
+  readonly loadedCount$ = toObservable(this.requestedCount);
+
+  private readonly newsResult = toSignal(
+    this.loadedCount$.pipe(switchMap((limit) => this.facade.getNews({ limit }))),
+    { initialValue: null as FootballNewsDTO[] | null }
+  );
+
+  readonly loading = computed(() => this.newsResult() === null);
+  readonly news = computed(() => this.newsResult() ?? []);
+  // Heuristic: if the last fetch returned fewer than requested, there's
+  // nothing more to load — no separate total-count endpoint exists.
+  readonly hasMore = computed(() => this.news().length >= this.requestedCount());
+
+  // Content-type filter (spec §44): only ever shown when the real, already-
+  // loaded data actually has 2+ distinct types with content — never an
+  // empty or single-choice taxonomy tab strip.
+  readonly availableTypes = computed(() => {
+    const counts = new Map<FootballContentType, number>();
+    for (const item of this.news()) {
+      counts.set(item.contentType, (counts.get(item.contentType) ?? 0) + 1);
+    }
+    return Array.from(counts.keys());
+  });
+  readonly showTypeFilter = computed(() => this.availableTypes().length > 1);
+  readonly typeItems = computed<readonly PortalContextDestination[]>(() => [
+    { id: 'all', label: 'Todas', kind: 'action' },
+    ...this.availableTypes().map((type) => ({ id: type, label: this.typeLabel(type), kind: 'action' as const })),
+  ]);
+
+  readonly activeType = signal<FootballContentType | 'all'>('all');
+  readonly filteredNews = computed(() => {
+    const type = this.activeType();
+    return type === 'all' ? this.news() : this.news().filter((item) => item.contentType === type);
+  });
+
   safeLdHtml: SafeHtml | null = null;
 
   ngOnInit(): void {
@@ -73,5 +98,21 @@ export class FootballNewsComponent implements OnInit {
         )
       )}</script>`
     );
+  }
+
+  typeLabel(type: FootballContentType): string {
+    return CONTENT_TYPE_LABELS[type] ?? type;
+  }
+
+  selectType(type: string): void {
+    this.activeType.set(type as FootballContentType | 'all');
+  }
+
+  loadMore(): void {
+    this.requestedCount.update((count) => count + PAGE_SIZE);
+  }
+
+  trackByArticle(_index: number, article: FootballNewsDTO): string {
+    return article.slug;
   }
 }

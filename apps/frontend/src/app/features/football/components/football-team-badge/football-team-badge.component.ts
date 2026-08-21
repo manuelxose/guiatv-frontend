@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FootballTeamDTO } from '@app/features/football/football.models';
 
 /**
@@ -12,13 +12,16 @@ import { FootballTeamDTO } from '@app/features/football/football.models';
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <span class="badge" [class.badge--vertical]="layout === 'vertical'">
+    <span class="badge" [class.badge--vertical]="layout === 'vertical'" [class.badge--reversed]="reversed">
       <span class="badge__crest" aria-hidden="true">
         <img
-          *ngIf="team.crest; else crestFallback"
+          *ngIf="team.crest && !crestFailed; else crestFallback"
           [src]="team.crest"
           [alt]="''"
+          width="32"
+          height="32"
           loading="lazy"
+          decoding="async"
           (error)="onCrestError()"
         />
         <ng-template #crestFallback>
@@ -40,6 +43,8 @@ import { FootballTeamDTO } from '@app/features/football/football.models';
       gap: 0.375rem;
       text-align: center;
     }
+    /* Away-side rows: crest sits nearest the edge, name nearest the score. */
+    .badge--reversed { flex-direction: row-reverse; text-align: right; }
     .badge__crest {
       display: inline-flex;
       align-items: center;
@@ -49,8 +54,8 @@ import { FootballTeamDTO } from '@app/features/football/football.models';
       flex: 0 0 auto;
       border-radius: 9999px;
       overflow: hidden;
-      background: var(--football-crest-bg, rgba(148, 163, 184, 0.16));
-      border: 1px solid var(--football-border, rgba(148, 163, 184, 0.2));
+      background: var(--portal-surface-strong);
+      border: 1px solid var(--portal-border);
     }
     .badge__crest img {
       width: 100%;
@@ -61,12 +66,12 @@ import { FootballTeamDTO } from '@app/features/football/football.models';
       font-size: 0.65rem;
       font-weight: 800;
       letter-spacing: 0.02em;
-      color: var(--football-text-muted, #94a3b8);
+      color: var(--portal-text-muted);
       text-transform: uppercase;
     }
     .badge__name {
       font-weight: 650;
-      color: var(--football-text, #e2e8f0);
+      color: var(--portal-text);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -79,9 +84,22 @@ import { FootballTeamDTO } from '@app/features/football/football.models';
     }
   `,
 })
-export class FootballTeamBadgeComponent {
+export class FootballTeamBadgeComponent implements OnChanges {
   @Input({ required: true }) team!: FootballTeamDTO;
   @Input() layout: 'horizontal' | 'vertical' = 'horizontal';
+  /** Horizontal layout only: crest outermost, name innermost (away-side rows). */
+  @Input() reversed = false;
+
+  crestFailed = false;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // A row/card component can be reused for a different team without
+    // destroying the view (e.g. *ngFor with trackBy) — reset the fallback
+    // flag so a previous team's broken crest doesn't stick to the new one.
+    if (changes['team']) {
+      this.crestFailed = false;
+    }
+  }
 
   get initials(): string {
     const name = this.team.shortName || this.team.name || '';
@@ -94,7 +112,8 @@ export class FootballTeamBadgeComponent {
   }
 
   onCrestError(): void {
-    // Fallback is handled via the `else` template; simply clear the src.
-    this.team = { ...this.team, crest: null };
+    // Local view flag rather than reassigning the @Input — the fallback
+    // template takes over without mutating the caller's data.
+    this.crestFailed = true;
   }
 }

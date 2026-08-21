@@ -220,6 +220,10 @@
 }
 
 @media (max-width: 767px) {
+  .home-hero__backdrop {
+    display: none;
+  }
+
   .home-hero,
   .home-hero__content {
     min-height: 22rem;

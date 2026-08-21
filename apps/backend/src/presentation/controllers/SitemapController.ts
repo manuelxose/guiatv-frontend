@@ -5,6 +5,7 @@ import { BlogPostModel } from '../../infrastructure/database/models/BlogPost.mod
 import { TMDBService } from '../../infrastructure/external/TMDBService';
 import { CATALOG_PLATFORM_REGISTRY } from '../../application/dto/CatalogDTO';
 import { ChannelType } from '../../domain/entities/Channel';
+import { FootballQueryService } from '../../application/sports/services/FootballQueryService';
 
 type Changefreq =
   | 'always'
@@ -55,7 +56,8 @@ export class SitemapController {
   constructor(
     private readonly channelRepository: IChannelRepository,
     private readonly programRepository: IProgramRepository,
-    private readonly tmdbService?: TMDBService
+    private readonly tmdbService?: TMDBService,
+    private readonly footballQueryService?: FootballQueryService
   ) {}
 
   /* ------------------------------------------------------------------ */
@@ -106,6 +108,14 @@ export class SitemapController {
   async getStreamingSitemap(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const xml = await this.getCached('streaming', () => this.buildStreamingSitemap());
+      this.sendXml(res, xml);
+    } catch (error) { next(error); }
+  }
+
+  /** GET /sitemap-football.xml — competitions, matches, teams (spec §79-81). */
+  async getFootballSitemap(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const xml = await this.getCached('football', () => this.buildFootballSitemap());
       this.sendXml(res, xml);
     } catch (error) { next(error); }
   }
@@ -165,6 +175,7 @@ export class SitemapController {
       'sitemap-blog.xml',
     ];
     if (this.tmdbService) subs.push('sitemap-streaming.xml');
+    if (this.footballQueryService) subs.push('sitemap-football.xml');
 
     const lines: string[] = [
       '<?xml version="1.0" encoding="UTF-8"?>',
@@ -279,6 +290,65 @@ export class SitemapController {
         priority: 0.5,
       });
     }
+    return this.renderUrlset(urls);
+  }
+
+  /**
+   * Competition, match and team detail pages were entirely absent from
+   * every sitemap — only the 5 static football hub routes were ever
+   * listed (sitemap-static.xml). Those pages are indexable and reachable
+   * via internal links regardless, but a sitemap materially speeds up
+   * discovery for content this time-sensitive. Each section is isolated
+   * (try/catch) so one provider hiccup doesn't blank the whole sitemap —
+   * same resilience principle as the rest of the football domain.
+   */
+  private async buildFootballSitemap(): Promise<string> {
+    const todayIso = this.formatDate(new Date());
+    const urls: SitemapUrlEntry[] = [];
+    if (!this.footballQueryService) return this.renderUrlset(urls);
+
+    try {
+      const { competitions } = await this.footballQueryService.getCompetitions();
+      for (const competition of competitions) {
+        if (!competition.slug) continue;
+        urls.push({
+          loc: `/deportes/futbol/competiciones/${competition.slug}`,
+          lastmod: todayIso,
+          changefreq: 'daily',
+          priority: 0.6,
+        });
+      }
+    } catch (err) {
+      console.error('[Sitemap] Error fetching football competitions:', err);
+    }
+
+    try {
+      const { matches } = await this.footballQueryService.getMatches({});
+      const seenTeamSlugs = new Set<string>();
+      for (const match of matches) {
+        if (match.slug) {
+          urls.push({
+            loc: `/deportes/futbol/partido/${match.slug}`,
+            lastmod: this.formatDate(match.lastUpdatedAt || match.kickoffAt),
+            changefreq: match.status === 'live' ? 'hourly' : 'daily',
+            priority: 0.6,
+          });
+        }
+        for (const team of [match.homeTeam, match.awayTeam]) {
+          if (!team.slug || seenTeamSlugs.has(team.slug)) continue;
+          seenTeamSlugs.add(team.slug);
+          urls.push({
+            loc: `/deportes/futbol/equipos/${team.slug}`,
+            lastmod: todayIso,
+            changefreq: 'weekly',
+            priority: 0.5,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('[Sitemap] Error fetching football matches/teams:', err);
+    }
+
     return this.renderUrlset(urls);
   }
 

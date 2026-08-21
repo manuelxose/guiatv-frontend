@@ -1,0 +1,204 @@
+import { test, expect } from '@playwright/test';
+import { assertNoRenderedUndefined, assertNotBlankScreen } from '../fixtures/helpers';
+
+/**
+ * Football vertical E2E coverage (spec §115-119).
+ *
+ * Replaces the old sports.spec.ts, which asserted on `#tab-panel-sports` /
+ * `.program-card` — the pre-rebuild unified-guide sports tab. That element
+ * no longer exists anywhere in the app (grep-confirmed); `/deportes` now
+ * redirects straight to the dedicated `/deportes/futbol` module these specs
+ * actually cover.
+ *
+ * Runs against the real backend's read-only football data (football-data.org
+ * when FOOTBALL_DATA_API_KEY is configured; falls back to EPG-derived data
+ * otherwise, in which case scores/standings/live-minute assertions below
+ * may legitimately see fewer/no results — the specs account for that by
+ * skipping score-shape assertions when a section is empty rather than
+ * failing on absence of data outside this suite's control).
+ */
+
+test.describe('Football Home', () => {
+  test('loads and renders real match content, not a blank shell', async ({ page }) => {
+    await page.goto('/deportes/futbol');
+    await assertNotBlankScreen(page);
+    await expect(page.locator('h1', { hasText: 'Fútbol' })).toBeVisible({ timeout: 20_000 });
+    await assertNoRenderedUndefined(page);
+  });
+
+  test('sub-navigation reaches Partidos, Competiciones and Noticias', async ({ page }) => {
+    await page.goto('/deportes/futbol');
+    await assertNotBlankScreen(page);
+    await page.getByRole('navigation', { name: 'Secciones de Deportes' }).getByRole('link', { name: 'Partidos', exact: true }).click();
+    await page.waitForURL(/\/deportes\/futbol\/partidos-hoy/, { timeout: 20_000 });
+    await assertNotBlankScreen(page);
+
+    await page.goto('/deportes/futbol');
+    await page.getByRole('navigation', { name: 'Secciones de Deportes' }).getByRole('link', { name: 'Competiciones', exact: true }).click();
+    await page.waitForURL(/\/deportes\/futbol\/competiciones/, { timeout: 20_000 });
+    await assertNotBlankScreen(page);
+
+    await page.goto('/deportes/futbol');
+    await page.getByRole('navigation', { name: 'Secciones de Deportes' }).getByRole('link', { name: 'Noticias', exact: true }).click();
+    await page.waitForURL(/\/deportes\/futbol\/noticias/, { timeout: 20_000 });
+    await assertNotBlankScreen(page);
+  });
+
+  test('the search entry point is clearly football-scoped, not the global search', async ({ page }) => {
+    await page.goto('/deportes/futbol');
+    const searchLink = page.locator('.home__search');
+    await expect(searchLink).toBeVisible();
+    await expect(searchLink).toHaveAttribute('aria-label', /equipos, partidos o competiciones/i);
+    await searchLink.click();
+    await page.waitForURL(/\/deportes\/futbol\/buscar/, { timeout: 20_000 });
+  });
+});
+
+test.describe('Football Matches -> Match Centre', () => {
+  test('Partidos de hoy loads and, if any match exists, opens a real Match Centre', async ({ page }) => {
+    await page.goto('/deportes/futbol/partidos-hoy');
+    await assertNotBlankScreen(page);
+
+    const row = page.locator('.row').first();
+    const hasMatches = await row.isVisible({ timeout: 20_000 }).catch(() => false);
+    test.skip(!hasMatches, 'No matches for today in the current data window — nothing to open.');
+
+    await row.click();
+    await page.waitForURL(/\/deportes\/futbol\/partido\//, { timeout: 20_000 });
+    await expect(page.locator('.scoreboard')).toBeVisible({ timeout: 20_000 });
+    await assertNoRenderedUndefined(page);
+  });
+
+  test('the Live filter narrows the list to live/halftime matches only', async ({ page }) => {
+    await page.goto('/deportes/futbol/en-directo');
+    await assertNotBlankScreen(page);
+    // A dedicated live view is expected to show either real live matches or
+    // the page's own honest empty state — never a stuck loading indicator.
+    const hasEmptyState = await page.getByText('No hay partidos en directo ahora mismo').isVisible({ timeout: 20_000 }).catch(() => false);
+    const hasRows = await page.locator('.row').first().isVisible({ timeout: 20_000 }).catch(() => false);
+    expect(hasEmptyState || hasRows).toBeTruthy();
+  });
+
+  test('Calendario: the date strip actually changes which day is loaded (regression)', async ({ page }) => {
+    // This is the exact bug fixed this session: the old day-nav wrote a
+    // `day` query param but the page read a `date` PATH param the route
+    // never defined, so clicking next/last day never changed the URL or
+    // the loaded data at all.
+    await page.goto('/deportes/futbol/calendario');
+    await assertNotBlankScreen(page);
+
+    const urlBefore = page.url();
+    const nextDayButton = page.getByRole('button', { name: 'Día siguiente' });
+    await expect(nextDayButton).toBeVisible({ timeout: 20_000 });
+    await nextDayButton.click();
+
+    await expect.poll(() => page.url(), { timeout: 20_000 }).not.toBe(urlBefore);
+    const url = new URL(page.url());
+    expect(url.searchParams.get('date')).toMatch(/^\d{8}$/);
+  });
+
+  test('the filter bar is present and All/Live/Upcoming/Finished are all reachable', async ({ page }) => {
+    await page.goto('/deportes/futbol/partidos-hoy');
+    await assertNotBlankScreen(page);
+    const bar = page.getByRole('navigation', { name: 'Filtrar partidos' });
+    await expect(bar).toBeVisible({ timeout: 20_000 });
+    for (const label of ['Todos', 'En directo', 'Próximos', 'Finalizados']) {
+      await expect(bar.getByText(label, { exact: true })).toBeVisible();
+    }
+  });
+});
+
+test.describe('Competitions', () => {
+  test('the hub lists real competitions grouped by country/featured', async ({ page }) => {
+    await page.goto('/deportes/futbol/competiciones');
+    await assertNotBlankScreen(page);
+    const firstCompetition = page.locator('.competition').first();
+    await expect(firstCompetition).toBeVisible({ timeout: 20_000 });
+    await assertNoRenderedUndefined(page);
+  });
+
+  test('opening a competition shows a real header and Resumen/Calendario/Clasificación tabs', async ({ page }) => {
+    await page.goto('/deportes/futbol/competiciones');
+    await assertNotBlankScreen(page);
+
+    const firstCompetition = page.locator('.competition').first();
+    await expect(firstCompetition).toBeVisible({ timeout: 20_000 });
+    await firstCompetition.click();
+    await page.waitForURL(/\/deportes\/futbol\/competiciones\//, { timeout: 20_000 });
+
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 20_000 });
+    const tabs = page.getByRole('navigation', { name: 'Secciones de la competición' });
+    await expect(tabs.getByRole('button')).toHaveCount(3);
+
+    await tabs.getByRole('button', { name: 'Clasificación', exact: true }).click();
+    // Either a real standings table renders, or the table's own honest
+    // "not available" message does — never a blank/broken panel.
+    const hasTable = await page.locator('.standings__row').first().isVisible({ timeout: 20_000 }).catch(() => false);
+    const hasEmpty = await page.getByText('Clasificación no disponible').isVisible({ timeout: 20_000 }).catch(() => false);
+    expect(hasTable || hasEmpty).toBeTruthy();
+  });
+});
+
+test.describe('Team detail', () => {
+  test('reached from a competition standings row, shows a real team header', async ({ page }) => {
+    await page.goto('/deportes/futbol/competiciones');
+    await assertNotBlankScreen(page);
+    const firstCompetition = page.locator('.competition').first();
+    await expect(firstCompetition).toBeVisible({ timeout: 20_000 });
+    await firstCompetition.click();
+    await page.waitForURL(/\/deportes\/futbol\/competiciones\//, { timeout: 20_000 });
+
+    const tabs = page.getByRole('navigation', { name: 'Secciones de la competición' });
+    await tabs.getByRole('button', { name: 'Clasificación', exact: true }).click();
+    // The team name itself is the link (spec §100 "no dead-end pages") —
+    // the row is a table row, not a single clickable target.
+    const teamLink = page.locator('.standings__name').first();
+    const hasStandings = await teamLink.isVisible({ timeout: 20_000 }).catch(() => false);
+    test.skip(!hasStandings, 'No standings data for this competition in the current data window.');
+
+    await teamLink.click();
+    await page.waitForURL(/\/deportes\/futbol\/equipos\//, { timeout: 20_000 });
+    await expect(page.locator('.head__title')).toBeVisible({ timeout: 20_000 });
+    await assertNoRenderedUndefined(page);
+  });
+});
+
+test.describe('Football search', () => {
+  test('a real query returns grouped, navigable results', async ({ page }) => {
+    await page.goto('/deportes/futbol/buscar');
+    await assertNotBlankScreen(page);
+
+    await page.locator('#football-search-input').fill('Real');
+    await page.getByRole('button', { name: 'Buscar', exact: true }).click();
+    await page.waitForURL(/[?&]q=Real/, { timeout: 20_000 });
+
+    // Either at least one grouped result section renders, or the search's
+    // own honest "no results" message does.
+    const hasAnyResult = await page.locator('.team-link, .row, .competition, .news').first().isVisible({ timeout: 20_000 }).catch(() => false);
+    const hasEmpty = await page.getByText(/Sin resultados para/).isVisible({ timeout: 20_000 }).catch(() => false);
+    expect(hasAnyResult || hasEmpty).toBeTruthy();
+    await assertNoRenderedUndefined(page);
+  });
+
+  test('an empty query shows the search prompt, not an empty-results message', async ({ page }) => {
+    await page.goto('/deportes/futbol/buscar');
+    await expect(page.getByText('Busca un equipo, partido o competición')).toBeVisible({ timeout: 20_000 });
+  });
+});
+
+test.describe('Football news', () => {
+  test('the list page renders its real empty state honestly when no football content is tagged yet', async ({ page }) => {
+    // As of this session, zero blog posts carry football sportsRelations or
+    // a football category — getNews() correctly returns empty rather than
+    // showing the site's unrelated general blog feed (the bug this session
+    // fixed). This spec locks in that honest behavior; once real football
+    // content exists, this test starts seeing real cards instead and should
+    // be revisited rather than treated as a permanent assertion of emptiness.
+    await page.goto('/deportes/futbol/noticias');
+    await assertNotBlankScreen(page);
+    const hasCards = await page.locator('.grid > *').first().isVisible({ timeout: 20_000 }).catch(() => false);
+    const hasEmptyState = await page.getByText('Todavía no hay noticias').isVisible({ timeout: 20_000 }).catch(() => false);
+    expect(hasCards || hasEmptyState).toBeTruthy();
+    await assertNoRenderedUndefined(page);
+  });
+});

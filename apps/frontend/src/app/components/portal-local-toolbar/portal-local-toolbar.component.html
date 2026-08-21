@@ -1,0 +1,22 @@
+<nav class="portal-local-toolbar" [attr.aria-label]="ariaLabel()">
+  <div class="portal-local-toolbar__track" role="group">
+    @for (item of items(); track item.id) {
+      @if ((item.kind || 'action') === 'route') {
+        <a
+          [routerLink]="item.path"
+          [fragment]="item.fragment || null"
+          [queryParams]="item.queryParams || null"
+          [class.is-active]="active() === item.id"
+          [attr.aria-current]="active() === item.id ? 'page' : null"
+        >{{ item.label }}</a>
+      } @else {
+        <button
+          type="button"
+          [class.is-active]="active() === item.id"
+          [attr.aria-pressed]="active() === item.id"
+          (click)="itemSelect.emit(item.id)"
+        >{{ item.label }}</button>
+      }
+    }
+  </div>
+</nav>

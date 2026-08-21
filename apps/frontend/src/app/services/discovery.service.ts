@@ -163,7 +163,9 @@ export class DiscoveryService {
       }),
       catchError(() => of(fallback)),
       finalize(() => this.inFlight.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: true })
+      // Keep an initiated GET alive through route/hydration subscriber churn;
+      // otherwise refCount teardown can cancel and immediately repeat it.
+      shareReplay({ bufferSize: 1, refCount: false })
     );
 
     this.inFlight.set(key, request$);

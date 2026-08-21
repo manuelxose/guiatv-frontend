@@ -20,7 +20,7 @@ type ExpandState = 'compact' | 'partial' | 'full';
   imports: [CommonModule, ChatContextBadgeComponent, ChatRecommendationCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mt-4 rounded-[1.4rem] border border-[var(--portal-border)]/90 bg-[var(--portal-bg-deep)]/70 p-3 md:p-5">
+    <div class="mt-4 p-3 md:p-5">
       <!-- Header: badge + summary + controls -->
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-wrap items-center gap-2">
@@ -90,7 +90,7 @@ type ExpandState = 'compact' | 'partial' | 'full';
           >
             {{ group.label }}
           </p>
-          <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700/50">
+          <div class="flex min-w-0 gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700/50">
             <div
               *ngFor="let rec of group.items; trackBy: trackByRec"
               class="w-[280px] flex-shrink-0 md:w-[300px]"

@@ -219,7 +219,7 @@ export const routes: Routes = [
   {
     path: 'editorial',
     children: BLOG_ROUTES && BLOG_ROUTES.length ? BLOG_ROUTES[0].children : [],
-    title: 'Editorial - Guía TV',
+    title: 'Blog - Guía TV',
     data: { layout: 'portal-page' },
   },
   {
@@ -270,11 +270,11 @@ export const routes: Routes = [
   {
     path: 'comparador-streaming',
     loadComponent: () =>
-      import(
-        './pages/streaming-comparison/streaming-comparison.component'
-      ).then((m) => m.StreamingComparisonComponent),
+      import('./pages/unified-guide/unified-guide.component').then(
+        (m) => m.UnifiedGuideComponent
+      ),
     title: 'Comparador de Streaming - Guía TV',
-    data: { layout: 'public-shell' },
+    data: { tab: 'streaming', platformMode: 'compare', layout: 'portal-page' },
   },
   {
     path: 'developers',

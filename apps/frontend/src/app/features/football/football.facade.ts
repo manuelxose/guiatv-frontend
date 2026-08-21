@@ -96,6 +96,16 @@ export class FootballFacade {
     ).pipe(catchError(() => of([])));
   }
 
+  /**
+   * Single article by slug — goes through the same football-scoped API/
+   * TransferState pipeline as every other detail page. Replaces the old
+   * football-news-detail pattern of fetching the entire blog collection
+   * client-side and filtering by slug in memory.
+   */
+  getNewsItem(slug: string): Observable<FootballNewsDTO | null> {
+    return this.getNews({ slug, limit: 1 }).pipe(map((items) => items[0] ?? null));
+  }
+
   private transferable<T>(key: string, producer: () => Observable<T>): Observable<T> {
     const stateKey = makeStateKey<T>(key);
 

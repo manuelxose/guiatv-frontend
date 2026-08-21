@@ -20,6 +20,10 @@ export interface ICacheRepository {
    * Atomically increments a numeric key and optionally refreshes its TTL.
    */
   increment?(key: string, ttlSeconds?: number): Promise<number>;
+  /** Acquires a short-lived distributed lock when the key does not exist. */
+  setIfAbsent?(key: string, value: string, ttlSeconds: number): Promise<boolean>;
+  /** Releases a distributed lock only when it is still owned by `value`. */
+  releaseLock?(key: string, value: string): Promise<void>;
   /**
    * Clears cache entries, optionally using a pattern for partial eviction.
    */

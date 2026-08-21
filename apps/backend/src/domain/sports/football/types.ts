@@ -136,6 +136,9 @@ export interface FootballNewsItem {
     name: string;
     url: string;
   };
+  /** Full article HTML — only populated for a single-article (slug) lookup,
+   *  never on list surfaces (home, news list), per this file's no-overfetch rule. */
+  content?: string;
 }
 
 /**

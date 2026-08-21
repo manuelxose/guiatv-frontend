@@ -21,7 +21,7 @@ interface ProfileCategory {
         <div class="flex items-center gap-2.5 min-w-0">
           <p class="text-base font-bold text-[var(--portal-text)] truncate">Recomendaciones</p>
         </div>
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1.5 shrink-0">
           <button
             *ngIf="isAuthenticated"
             type="button"
@@ -83,7 +83,7 @@ interface ProfileCategory {
           </span>
           <button
             type="button"
-            (click)="profileExpanded = true"
+            (click)="profileExpandedChange.emit(true)"
             class="text-[10px] text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] transition-colors"
           >
             Tu perfil IA ▾
@@ -96,7 +96,7 @@ interface ProfileCategory {
             <span class="text-xs font-semibold text-[var(--portal-text)]">Tu perfil IA</span>
             <button
               type="button"
-              (click)="profileExpanded = false"
+              (click)="profileExpandedChange.emit(false)"
               class="text-[10px] text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] transition-colors"
             >
               Cerrar ▴
@@ -123,8 +123,8 @@ interface ProfileCategory {
             </div>
           </div>
           <div *ngIf="community" class="mb-2">
-            <p class="mb-1 text-[10px] font-semibold uppercase tracking-wider text-sky-400">Comunidad</p>
-            <span class="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-medium text-sky-700">
+            <p class="mb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--accent-discover)]">Comunidad</p>
+            <span class="inline-flex items-center gap-1 rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-2 py-0.5 text-[10px] font-medium text-[var(--portal-text)]">
               {{ community }}
             </span>
           </div>
@@ -138,13 +138,13 @@ export class ChatHeaderComponent {
   @Input() memoryHighlights: string[] = [];
   @Input() memory: AssistantMemorySnapshot | null = null;
   @Input() memoryEditorOpen = false;
+  @Input() profileExpanded = false;
   @Output() newConversation = new EventEmitter<void>();
   @Output() closePanel = new EventEmitter<void>();
   @Output() toggleMemoryEditor = new EventEmitter<void>();
   @Output() toggleSidebar = new EventEmitter<void>();
   @Output() removeTag = new EventEmitter<{ key: string; value: string }>();
-
-  profileExpanded = false;
+  @Output() profileExpandedChange = new EventEmitter<boolean>();
 
   private static readonly CATEGORY_CONFIG: Array<{
     key: keyof AssistantMemorySnapshot;
@@ -153,15 +153,15 @@ export class ChatHeaderComponent {
     bgColor: string;
     borderColor: string;
   }> = [
-    { key: 'preferredPlatforms', label: 'Plataformas', color: '#38bdf8', bgColor: '#0c4a6e22', borderColor: '#0ea5e944' },
-    { key: 'likedGenres', label: 'Géneros', color: '#f87171', bgColor: '#7f1d1d22', borderColor: '#ef444444' },
-    { key: 'preferredViewingContexts', label: 'Contexto', color: '#a78bfa', bgColor: '#4c1d9522', borderColor: '#8b5cf644' },
-    { key: 'preferredDurations', label: 'Duración', color: '#fbbf24', bgColor: '#78350f22', borderColor: '#f59e0b44' },
-    { key: 'favoriteFranchisesOrTitles', label: 'Favoritos', color: '#34d399', bgColor: '#064e3b22', borderColor: '#10b98144' },
-    { key: 'dislikedGenres', label: 'Evitar', color: '#fb923c', bgColor: '#7c2d1222', borderColor: '#f9731644' },
-    { key: 'avoidedPlatforms', label: 'Plat. evitadas', color: '#fb923c', bgColor: '#7c2d1222', borderColor: '#f9731644' },
-    { key: 'negativeSignals', label: 'No me gusta', color: '#f43f5e', bgColor: '#881337 22', borderColor: '#e11d4844' },
-    { key: 'recentTopics', label: 'Temas recientes', color: '#94a3b8', bgColor: '#1e293b44', borderColor: '#47556944' },
+    { key: 'preferredPlatforms', label: 'Plataformas', color: 'var(--accent-discover)', bgColor: 'var(--accent-discover-soft)', borderColor: 'color-mix(in oklch, var(--accent-discover) 45%, transparent)' },
+    { key: 'likedGenres', label: 'Géneros', color: 'var(--accent-live)', bgColor: 'var(--accent-live-soft)', borderColor: 'color-mix(in oklch, var(--accent-live) 45%, transparent)' },
+    { key: 'preferredViewingContexts', label: 'Contexto', color: 'var(--accent-editorial)', bgColor: 'var(--accent-editorial-soft)', borderColor: 'color-mix(in oklch, var(--accent-editorial) 45%, transparent)' },
+    { key: 'preferredDurations', label: 'Duración', color: 'var(--accent-sports)', bgColor: 'var(--accent-sports-soft)', borderColor: 'color-mix(in oklch, var(--accent-sports) 45%, transparent)' },
+    { key: 'favoriteFranchisesOrTitles', label: 'Favoritos', color: 'var(--accent-streaming)', bgColor: 'var(--accent-streaming-soft)', borderColor: 'color-mix(in oklch, var(--accent-streaming) 45%, transparent)' },
+    { key: 'dislikedGenres', label: 'Evitar', color: 'var(--accent-sports)', bgColor: 'var(--accent-sports-soft)', borderColor: 'color-mix(in oklch, var(--accent-sports) 45%, transparent)' },
+    { key: 'avoidedPlatforms', label: 'Plat. evitadas', color: 'var(--accent-sports)', bgColor: 'var(--accent-sports-soft)', borderColor: 'color-mix(in oklch, var(--accent-sports) 45%, transparent)' },
+    { key: 'negativeSignals', label: 'No me gusta', color: 'var(--accent-live)', bgColor: 'var(--accent-live-soft)', borderColor: 'color-mix(in oklch, var(--accent-live) 45%, transparent)' },
+    { key: 'recentTopics', label: 'Temas recientes', color: 'var(--portal-text-muted)', bgColor: 'var(--portal-surface-strong)', borderColor: 'var(--portal-border)' },
   ];
 
   get profileCategories(): ProfileCategory[] {
