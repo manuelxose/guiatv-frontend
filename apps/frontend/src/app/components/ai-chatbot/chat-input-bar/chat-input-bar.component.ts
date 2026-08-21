@@ -17,7 +17,7 @@ import { ChatbotRequestState, ChatbotSessionState } from '../../../interfaces/ch
   imports: [FormsModule, CommonModule],
   template: `
     <div class="space-y-1.5">
-      <div class="flex items-end gap-2 rounded-[1.35rem] border bg-[var(--portal-bg)] p-2 shadow-[0_10px_30px_rgba(0,0,0,0.35)]" [ngClass]="isSearchMode ? 'border-blue-500/60' : 'border-[var(--portal-border)]'">
+      <div class="flex items-end gap-2 rounded-[1.35rem] border bg-[var(--portal-bg)] p-2 shadow-[var(--shadow-lg)]" [ngClass]="isSearchMode ? 'border-blue-500/60' : 'border-[var(--portal-border)]'">
         <textarea
           #chatInput
           [(ngModel)]="draft"

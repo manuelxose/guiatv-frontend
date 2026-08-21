@@ -38,7 +38,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
         <div
           class="rounded-[1.4rem] px-4 py-3"
             [ngClass]="message.role === 'user'
-            ? 'bg-gradient-to-br from-red-600 to-red-700 text-[var(--portal-text)] shadow-md'
+            ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md'
             : 'border border-[var(--portal-border)]/90 bg-[var(--portal-surface)] text-[var(--portal-text)] shadow-sm'"
         >
           <!-- Loading / Thinking state -->
@@ -197,24 +197,25 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
       li { margin-bottom: 0.125rem; }
 
       a {
-        color: #f87171;
+        color: var(--accent-live);
         text-decoration: underline;
         text-underline-offset: 2px;
-        &:hover { color: #fca5a5; }
+        &:hover { opacity: 0.85; }
       }
 
       code {
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: 0.8125rem;
-        background: rgba(30, 41, 59, 0.8);
-        border: 1px solid rgba(51, 65, 85, 0.5);
+        background: var(--portal-surface-strong);
+        border: 1px solid var(--portal-border);
         border-radius: 0.375rem;
         padding: 0.125rem 0.375rem;
+        color: var(--portal-text);
       }
 
       pre {
-        background: rgba(15, 23, 42, 0.9);
-        border: 1px solid rgba(51, 65, 85, 0.5);
+        background: var(--portal-bg-deep);
+        border: 1px solid var(--portal-border);
         border-radius: 0.75rem;
         padding: 0.75rem 1rem;
         overflow-x: auto;
@@ -227,10 +228,10 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
       }
 
       blockquote {
-        border-left: 3px solid #ef4444;
+        border-left: 3px solid var(--guide-accent);
         padding-left: 0.75rem;
         margin: 0.5rem 0;
-        color: #94a3b8;
+        color: var(--portal-text-muted);
         font-style: italic;
       }
     }

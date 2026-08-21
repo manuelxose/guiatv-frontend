@@ -5,12 +5,26 @@
   right: 0;
   width: 100%;
   // The Explore surface belongs to the global header and must clear sticky
-  // contextual shelves/rails while remaining below drawers and dialogs.
-  z-index: var(--z-toast);
+  // contextual shelves/rails while remaining below drawers and dialogs —
+  // hence --z-header, not --z-toast: at --z-toast the header sat above
+  // every backdrop (chat, modal) in the app, creating a dead zone across
+  // its own screen height where "click outside to close" never reached the
+  // backdrop underneath. The nested __search overlay below still needs to
+  // sit above everything while it's open (it's a fullscreen search, not
+  // page chrome) even though it inherits this element's stacking context —
+  // see .unified-top-nav--search-open.
+  z-index: var(--z-header);
   backdrop-filter: blur(24px);
   background: var(--portal-surface-strong);
   border-bottom: 1px solid var(--portal-border);
   box-shadow: none;
+}
+
+// Temporarily restore top-of-stack while the fullscreen search overlay
+// (a descendant, so capped by this element's own stacking context) is open,
+// so opening search still wins over any open modal/chat/drawer as before.
+.unified-top-nav--search-open {
+  z-index: var(--z-toast);
 }
 
 /* When pill-shelf is present, remove top-nav's own border – pill-shelf provides it */

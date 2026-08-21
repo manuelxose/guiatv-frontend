@@ -99,7 +99,6 @@
     <div
       *ngIf="isChatbotOpen"
       class="app-shell__chat-overlay"
-      [class.app-shell__chat-overlay--desktop]="!shouldShowMobileChatbotFab()"
       [class.invisible]="isChatMinimized"
       [class.pointer-events-none]="isChatMinimized"
       (click)="closeChatbot()"
@@ -127,6 +126,20 @@
         </div>
         <app-unified-chat-shell (close)="minimizeChatbot()"></app-unified-chat-shell>
       </div>
+
+      <div
+        class="app-shell__chat-panel app-shell__chat-panel--desktop"
+        [style.width.px]="chatPanelWidth"
+        (click)="$event.stopPropagation()"
+        (keydown)="$event.stopPropagation()"
+        tabindex="-1"
+      >
+        <div
+          class="app-shell__chat-resize"
+          (mousedown)="onResizeStart($event)"
+        ></div>
+        <app-unified-chat-shell (close)="closeChatbot()"></app-unified-chat-shell>
+      </div>
     </div>
   </ng-container>
 
@@ -143,18 +156,6 @@
     </svg>
     Recomendaciones
   </button>
-
-  <div
-    *ngIf="shouldShowDesktopChatbotLauncher() && isChatbotOpen"
-    class="app-shell__chat-panel app-shell__chat-panel--desktop"
-    [style.width.px]="chatPanelWidth"
-  >
-    <div
-      class="app-shell__chat-resize"
-      (mousedown)="onResizeStart($event)"
-    ></div>
-    <app-unified-chat-shell (close)="closeChatbot()"></app-unified-chat-shell>
-  </div>
 
   <app-modal></app-modal>
   <app-auth-login-modal></app-auth-login-modal>
