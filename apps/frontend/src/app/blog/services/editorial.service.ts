@@ -214,9 +214,9 @@ export class EditorialService {
       excerptHtml,
       excerptText: this.stripHtml(excerptHtml),
       contentHtml,
-      coverImage:
-        String(rawPost?.featured_image?.source_url || rawPost?.seo?.ogImage || '').trim() ||
-        '/assets/images/blog-og-image.webp',
+      coverImage: this.normalizeCoverImage(
+        rawPost?.featured_image?.source_url || rawPost?.seo?.ogImage
+      ),
       publishedAt: String(rawPost?.date || rawPost?.publishedAt || new Date().toISOString()),
       modifiedAt: String(
         rawPost?.modified || rawPost?.updatedAt || rawPost?.date || new Date().toISOString()
@@ -239,6 +239,18 @@ export class EditorialService {
       metaDescription: this.ensureString(rawPost?.seo?.metaDescription) || null,
       raw: rawPost,
     };
+  }
+
+  private normalizeCoverImage(value: unknown): string {
+    const image = String(value || '').trim();
+    if (
+      !image ||
+      image.endsWith('/assets/images/blog-og-image.jpg') ||
+      image.endsWith('/assets/images/top10-og-image.jpg')
+    ) {
+      return '/assets/images/blog-og-image.webp';
+    }
+    return image;
   }
 
   private adaptCategory(rawCategory: any): EditorialCategory {

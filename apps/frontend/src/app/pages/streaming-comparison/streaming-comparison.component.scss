@@ -1,174 +1,450 @@
 :host {
   display: block;
+  min-width: 0;
+}
+
+.platform-comparison {
+  --comparison-accent: var(--accent-streaming);
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.platform-comparison > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.platform-comparison__masthead,
+.platform-comparison__section,
+.platform-comparison__summary > article {
+  border: 1px solid var(--guide-border);
+  border-radius: 1.5rem;
+  background: var(--guide-surface-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.platform-comparison__masthead,
+.platform-comparison__section {
+  padding: 1rem 1.1rem;
+}
+
+.platform-comparison__masthead {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.platform-comparison__masthead-copy {
+  display: grid;
+  gap: 0.45rem;
+  max-width: 48rem;
+}
+
+.platform-comparison__eyebrow {
+  margin: 0;
+  color: var(--comparison-accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.platform-comparison h1,
+.platform-comparison h2,
+.platform-comparison h3,
+.platform-comparison p {
+  margin-top: 0;
+}
+
+.platform-comparison h1 {
+  margin-bottom: 0;
+  color: var(--guide-text);
+  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.platform-comparison__masthead-copy > p:last-child,
+.platform-comparison__section-head > p,
+.platform-comparison__cards article > p,
+.platform-comparison__profiles article > p,
+.platform-comparison__faq article > p,
+.platform-comparison__note {
+  color: var(--portal-text-soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.platform-comparison__masthead-copy > p:last-child {
+  margin-bottom: 0;
+}
+
+.platform-comparison__masthead-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.55rem;
+  flex: 0 0 auto;
+  color: var(--portal-text-muted);
+  font-size: 0.72rem;
+}
+
+.platform-comparison__masthead-actions a,
+.platform-comparison__cards article > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.4rem;
+  border: 1px solid color-mix(in srgb, var(--comparison-accent) 45%, var(--guide-border));
+  border-radius: 999px;
+  background: var(--accent-streaming-soft);
+  color: var(--portal-text);
+  padding: 0.45rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.platform-comparison__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.platform-comparison__summary > article {
+  display: grid;
+  gap: 0.28rem;
+  padding: 0.9rem 1rem;
+}
+
+.platform-comparison__summary span {
+  color: var(--portal-text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.platform-comparison__summary strong {
+  color: var(--portal-text);
+  font-size: 1.35rem;
+}
+
+.platform-comparison__summary p {
+  margin-bottom: 0;
+  color: var(--portal-text-soft);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.platform-comparison__section-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.platform-comparison__section-head h2 {
+  margin: 0.2rem 0 0;
+  color: var(--guide-text);
+  font-size: 1.08rem;
+  line-height: 1.2;
+}
+
+.platform-comparison__section-head > p {
+  max-width: 28rem;
+  margin-bottom: 0;
+  text-align: right;
+}
+
+.comparison-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--guide-border);
+  border-radius: 1.15rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--portal-border-strong) var(--portal-surface-strong);
 }
 
 .comparison-table {
-  min-width: 1120px;
+  width: 100%;
+  min-width: 70rem;
+  border-collapse: collapse;
+  color: var(--portal-text-soft);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--guide-border);
+  white-space: nowrap;
+}
+
+.comparison-table thead th {
+  background: var(--portal-surface-strong);
+  color: var(--portal-text);
+  font-weight: 800;
+}
+
+.comparison-table tbody tr:last-child th,
+.comparison-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.comparison-table tbody tr:hover td,
+.comparison-table tbody tr:hover th {
+  background: var(--accent-streaming-soft);
 }
 
 .comparison-table__sticky {
   position: sticky;
   left: 0;
   z-index: 1;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  min-width: 13rem;
+  background: var(--guide-surface-strong);
+  text-align: left;
 }
 
 .comparison-table__sticky--header {
   z-index: 2;
 }
 
-.comparison-table-wrap {
-  scrollbar-width: thin;
-  scrollbar-color: var(--portal-border-strong) var(--portal-surface-strong);
+.platform-comparison__platform-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--portal-text);
+  text-decoration: none;
 }
 
-.comparison-table-wrap::-webkit-scrollbar {
-  height: 10px;
+.platform-comparison__platform-link > span:last-child {
+  display: grid;
+  gap: 0.18rem;
 }
 
-.comparison-table-wrap::-webkit-scrollbar-track {
-  background: var(--portal-surface-strong);
-}
-
-.comparison-table-wrap::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.65);
-  border-radius: 9999px;
+.platform-comparison__platform-link small {
+  color: var(--portal-text-muted);
+  font-weight: 500;
 }
 
 .platform-avatar {
   display: inline-flex;
-  height: 2.75rem;
-  width: 2.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 1rem;
-  border: 1px solid var(--portal-border);
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #475569, #0f172a);
+  border: 1px solid var(--guide-border);
+  border-radius: 0.8rem;
+  background: var(--portal-surface-strong);
   color: var(--portal-text);
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+}
+
+.platform-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .platform-avatar--small {
-  height: 2.5rem;
-  width: 2.5rem;
+  width: 2.4rem;
+  height: 2.4rem;
 }
 
-.platform-avatar--netflix {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #e50914, #0f172a);
+.comparison-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--guide-border);
+  border-radius: 999px;
+  padding: 0.26rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 800;
 }
 
-.platform-avatar--prime-video {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #00a8e1, #0f172a);
+.comparison-status--positive {
+  border-color: color-mix(in srgb, var(--comparison-accent) 45%, var(--guide-border));
+  background: var(--accent-streaming-soft);
+  color: var(--portal-text);
 }
 
-.platform-avatar--disney-plus {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #113ccf, #0f172a);
+.comparison-status--caution {
+  border-color: color-mix(in srgb, var(--accent-sports) 45%, var(--guide-border));
+  background: var(--accent-sports-soft);
+  color: var(--portal-text);
 }
 
-.platform-avatar--max {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #2962ff, #0f172a);
+.comparison-status--neutral {
+  background: var(--portal-surface-strong);
+  color: var(--portal-text-soft);
 }
 
-.platform-avatar--movistar-plus {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #00c6ff, #0f172a);
+.platform-comparison__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
 }
 
-.platform-avatar--skyshowtime {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #1d9bf0, #0f172a);
+.platform-comparison__note {
+  margin: 0.65rem 0 0;
+  font-size: 0.72rem;
 }
 
-.platform-avatar--apple-tv-plus {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #a3a3a3, #0f172a);
+.platform-comparison__profiles,
+.platform-comparison__cards,
+.platform-comparison__faq {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
 }
 
-.platform-avatar--filmin {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #00d1b2, #0f172a);
+.platform-comparison__profiles article,
+.platform-comparison__cards article,
+.platform-comparison__faq article {
+  border: 1px solid var(--guide-border);
+  border-radius: 1.15rem;
+  background: var(--portal-surface-strong);
+  padding: 0.9rem 1rem;
 }
 
-.platform-avatar--rtve-play {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #f59e0b, #0f172a);
+.platform-comparison__profiles h3,
+.platform-comparison__cards h3,
+.platform-comparison__faq h3 {
+  margin-bottom: 0.45rem;
+  color: var(--portal-text);
+  font-size: 0.9rem;
 }
 
-.platform-avatar--atresplayer {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #f97316, #0f172a);
+.platform-comparison__profiles article > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
-.platform-avatar--mitele {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #ec4899, #0f172a);
+.platform-comparison__profiles article > div span {
+  border: 1px solid var(--guide-border);
+  border-radius: 999px;
+  color: var(--portal-text-soft);
+  padding: 0.28rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
-.platform-avatar--pluto-tv {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #9333ea, #0f172a);
+.platform-comparison__cards article {
+  display: grid;
+  gap: 0.8rem;
 }
 
-.platform-avatar--rakuten-tv {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 42%),
-    linear-gradient(135deg, #ef4444, #0f172a);
+.platform-comparison__cards article header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
 }
 
-.editorial-card,
-.faq-card {
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease;
+.platform-comparison__cards article header h3 {
+  margin: 0;
 }
 
-.editorial-card:hover,
-.faq-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--portal-text-muted);
-  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
+.platform-comparison__cards article header div > span {
+  color: var(--comparison-accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.platform-comparison__cards article > p,
+.platform-comparison__faq article > p {
+  margin-bottom: 0;
+}
+
+.platform-comparison__cards dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.platform-comparison__cards dl > div {
+  border-radius: 0.8rem;
+  background: var(--guide-surface-strong);
+  padding: 0.6rem;
+}
+
+.platform-comparison__cards dt {
+  color: var(--portal-text-muted);
+  font-size: 0.66rem;
+}
+
+.platform-comparison__cards dd {
+  margin: 0.15rem 0 0;
+  color: var(--portal-text);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.platform-comparison__cards article > a {
+  justify-self: start;
 }
 
 @media (max-width: 767px) {
+  .platform-comparison {
+    gap: 1rem;
+  }
+
+  .platform-comparison__masthead,
+  .platform-comparison__section {
+    padding: 0.8rem 0.9rem;
+    border-radius: 1rem;
+  }
+
+  .platform-comparison__masthead {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .platform-comparison__masthead-copy > p:last-child {
+    display: none;
+  }
+
+  .platform-comparison h1 {
+    font-size: 1.2rem;
+  }
+
+  .platform-comparison__masthead-actions {
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .platform-comparison__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .platform-comparison__section-head {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .platform-comparison__section-head > p {
+    text-align: left;
+  }
+
   .comparison-table {
-    min-width: 980px;
+    min-width: 62rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .editorial-card,
-  .faq-card {
-    transition: none;
-  }
-
-  .editorial-card:hover,
-  .faq-card:hover {
-    transform: none;
-    box-shadow: none;
+  .platform-comparison * {
+    scroll-behavior: auto;
   }
 }

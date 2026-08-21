@@ -48,12 +48,7 @@ import { UnifiedPortalRailSection } from '../../models/portal-shell.models';
 export class HomeComponent {
   public readonly appPaths = APP_PATHS;
   public readonly iconPaths = PORTAL_ICON_PATHS;
-  public readonly searchQuery = signal('');
   public readonly safeLdHtml: SafeHtml | null;
-  public readonly isAuthenticated = toSignal(this.userService.isAuthenticated$, { initialValue: false });
-  public readonly profile = toSignal(this.userService.getProfile(), {
-    initialValue: this.userService.getProfileSnapshot(),
-  });
   public readonly topPillChips = computed<FilterChipItem[]>(() => [...PORTAL_HOME_TOP_PILLS]);
   public readonly topPillSelection = computed(() => 'live-now');
   public readonly breadcrumbItems: { name: string; url: string }[] = [];
@@ -239,7 +234,6 @@ export class HomeComponent {
   constructor(
     private readonly portalHomeFacade: PortalHomeFacade,
     private readonly metaService: MetaService,
-    private readonly userService: UserService,
     private readonly sanitizer: DomSanitizer,
     private readonly router: Router
   ) {
@@ -251,27 +245,6 @@ export class HomeComponent {
       type: 'website',
     });
     this.safeLdHtml = this.buildStructuredData();
-  }
-
-  navigateToTab(tab: UnifiedTopNavTab['id']): void {
-    const pathMap: Record<UnifiedTopNavTab['id'], string> = {
-      live: APP_PATHS.guide,
-      discover: APP_PATHS.explore,
-      streaming: APP_PATHS.platforms,
-      sports: APP_PATHS.sports,
-    };
-    void this.router.navigateByUrl(pathMap[tab]);
-  }
-
-  onSearchChange(value: string): void {
-    this.searchQuery.set(value);
-  }
-
-  onSearchSubmit(value: string): void {
-    this.searchQuery.set(value);
-    void this.router.navigate([APP_PATHS.explore], {
-      queryParams: value ? { q: value } : {},
-    });
   }
 
   onTopPillChange(value: string): void {

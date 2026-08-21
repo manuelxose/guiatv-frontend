@@ -31,6 +31,7 @@ import { normalizeToCard } from '../../utils/tv-normalizers';
 import { DiscoverViewComponent } from './views/discover-view.component';
 import { LiveGuideViewComponent } from './views/live-guide-view.component';
 import { StreamingViewComponent } from './views/streaming-view.component';
+import { StreamingComparisonComponent } from '../streaming-comparison/streaming-comparison.component';
 import { UnifiedPortalRailSection } from '../../models/portal-shell.models';
 import { UnifiedTopNavTab } from '../../components/unified-top-nav/unified-top-nav.component';
 
@@ -62,6 +63,7 @@ const TAB_META: Record<UnifiedGuideTab, { title: string; description: string; pa
     LiveGuideViewComponent,
     DiscoverViewComponent,
     StreamingViewComponent,
+    StreamingComparisonComponent,
   ],
   templateUrl: './unified-guide.component.html',
   styleUrl: './unified-guide.component.scss',
@@ -78,6 +80,7 @@ export class UnifiedGuideComponent {
   private readonly isBrowser: boolean;
 
   readonly activeTab = this.state.activeTab;
+  readonly platformMode = signal<'catalog' | 'compare'>('catalog');
   readonly searchQuery = this.state.searchQuery;
   readonly iconPaths = PORTAL_ICON_PATHS;
   readonly isAuthenticated = toSignal(this.userService.isAuthenticated$, { initialValue: false });
@@ -92,7 +95,16 @@ export class UnifiedGuideComponent {
   readonly livePreview = signal<TvReadItemDTO[]>([]);
   readonly tonightPreview = signal<TvReadItemDTO[]>([]);
   readonly platformPreview = signal<CatalogPlatform[]>([]);
-  readonly pageMeta = computed(() => TAB_META[this.activeTab()]);
+  readonly pageMeta = computed(() => {
+    if (this.platformMode() === 'compare') {
+      return {
+        title: 'Comparador de plataformas',
+        description: 'Compara precios, pantallas, resolución y funciones de las principales plataformas de streaming en España.',
+        path: APP_PATHS.streamingComparison,
+      };
+    }
+    return TAB_META[this.activeTab()];
+  });
   readonly shellConfig = computed(() => PORTAL_GUIDE_SHELL_CONFIG[this.activeTab()]);
   readonly topPillChips = computed<FilterChipItem[]>(() =>
     this.shellConfig().topPills.map((pill) => ({
@@ -232,7 +244,7 @@ export class UnifiedGuideComponent {
             { id: 'discover-all', label: 'Todo', description: 'TV, catálogo y streaming', iconPath: this.iconPaths.discover, path: APP_PATHS.explore, active: !filters.availability.length },
             { id: 'discover-live', label: 'En directo', description: 'Cruce con la parrilla actual', iconPath: this.iconPaths.liveDot, path: APP_PATHS.explore, queryParams: { availability: 'live' }, active: filters.availability.includes('live') },
             { id: 'discover-free', label: 'Gratis', description: 'Sin pago adicional', iconPath: 'M12 6v12m4.5-8.25c0-1.65-2.01-3-4.5-3s-4.5 1.35-4.5 3 2.01 3 4.5 3 4.5 1.35 4.5 3-2.01 3-4.5 3-4.5-1.35-4.5-3', path: APP_PATHS.explore, queryParams: { availability: 'free' }, active: filters.availability.includes('free') },
-            { id: 'discover-editorial', label: 'Editorial', description: 'Guías y contexto útil', iconPath: this.iconPaths.editorial, path: APP_PATHS.blog },
+            { id: 'discover-editorial', label: 'Blog', description: 'Guías y contexto útil', iconPath: this.iconPaths.editorial, path: APP_PATHS.blog },
             { id: 'discover-rankings', label: 'Rankings', description: 'Selecciones rápidas', iconPath: this.iconPaths.rankings, path: APP_PATHS.top10 },
           ],
         },
@@ -397,6 +409,7 @@ export class UnifiedGuideComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((data) => {
         const tab = (data['tab'] || 'live') as UnifiedGuideTab;
+        this.platformMode.set(data['platformMode'] === 'compare' ? 'compare' : 'catalog');
         this.state.selectTab(tab);
         this.shellUi.closeFilterDock();
         this.state.syncFromQueryParams(this.route.snapshot.queryParams, tab);
@@ -433,26 +446,6 @@ export class UnifiedGuideComponent {
       .subscribe(() => this.updateMeta());
   }
 
-  navigateToTab(tab: UnifiedTopNavTab['id']): void {
-    // Football left the unified guide and now lives at /deportes/futbol.
-    if (tab === 'sports') {
-      this.shellUi.closeFilterDock();
-      void this.router.navigateByUrl(APP_PATHS.sports);
-      return;
-    }
-
-    const queryParams = this.state.toQueryParams(tab);
-    this.shellUi.closeFilterDock();
-    if (this.isBrowser) {
-      this.document.defaultView?.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    void this.router.navigateByUrl(
-      this.router.createUrlTree([this.pathForTab(tab)], {
-        queryParams,
-      })
-    );
-  }
-
   onTopPillChange(value: string): void {
     if (this.activeTab() === 'live') {
       if (value === 'now' || value === 'next' || value === 'night' || value === 'day') {
@@ -485,14 +478,6 @@ export class UnifiedGuideComponent {
       this.state.updateStreamingFilters({ type: '', availability: [], sort: value as any, page: 1 });
       return;
     }
-  }
-
-  onSearchChange(value: string): void {
-    this.state.setSearch(value);
-  }
-
-  onSearchSubmit(value: string): void {
-    this.state.setSearch(value);
   }
 
   toggleFilterDock(): void {

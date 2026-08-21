@@ -32,6 +32,7 @@
         #mobileMoreTrigger
         type="button"
         class="app-shell__mobile-tab"
+        [class.app-shell__mobile-tab--active]="isMobileTabActive(tab)"
         (click)="toggleMobileMore()"
         [attr.aria-expanded]="mobileMoreOpen"
         aria-controls="mobile-more-sheet"
@@ -50,7 +51,7 @@
       <div class="app-shell__more-handle" aria-hidden="true"></div>
       <header><div><p>Explorar</p><h2>Más en Guía TV</h2></div><button type="button" (click)="closeMobileMore()" aria-label="Cerrar más opciones">×</button></header>
       <nav aria-label="Explorar más contenidos">
-        @for (destination of exploreDestinations; track destination.id) {
+        @for (destination of moreDestinations; track destination.id) {
         <a [routerLink]="destination.path" (click)="closeMobileMore()"><span class="app-shell__more-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path [attr.d]="destination.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg></span><span><strong>{{ destination.label }}</strong><small>{{ destination.hint }}</small></span></a>
         }
       </nav>

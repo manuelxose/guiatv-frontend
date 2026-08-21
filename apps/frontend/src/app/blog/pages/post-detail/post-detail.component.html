@@ -1,21 +1,9 @@
 <app-unified-portal-shell
   tone="editorial"
-  [activeTab]="'discover'"
-  [searchQuery]="searchQuery()"
-  [topPillChips]="topPillChips"
-  topPillLabel="Editorial"
-  [isAuthenticated]="isAuthenticated()"
-  [profileName]="profile()?.name || 'Cuenta'"
   [breadcrumbItems]="breadcrumbItems"
-  [leftRailSections]="leftRailSections()"
-  [rightRailSections]="rightRailSections()"
-  rightRailLabel="Panel editorial"
   [showHero]="false"
-  (tabChange)="navigateToTab($event)"
-  (topPillChange)="onTopPillChange($event)"
-  (searchChange)="onSearchChange($event)"
-  (searchSubmit)="onSearchSubmit($event)"
 >
+  <app-portal-context-nav kind="blog"></app-portal-context-nav>
   <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
   <div class="editorial-post-page mx-auto max-w-7xl px-4 pb-20 pt-2 sm:px-6 lg:px-8">
     <div *ngIf="loading" class="space-y-6">
@@ -44,7 +32,7 @@
             <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_35%,transparent_65%,rgba(56,189,248,0.08))]"></div>
             <div class="relative space-y-6">
               <nav class="flex flex-wrap items-center gap-2 text-sm text-[var(--portal-text-soft)]" aria-label="Breadcrumb">
-                <a [routerLink]="appPaths.blog" class="transition-colors hover:text-[var(--portal-text)]">Editorial</a>
+                <a [routerLink]="appPaths.blog" class="transition-colors hover:text-[var(--portal-text)]">Blog</a>
                 <ng-container *ngIf="state.post.primaryCategory">
                   <span>/</span>
                   <a [routerLink]="state.post.primaryCategory.canonicalPath" class="transition-colors hover:text-[var(--portal-text)]">
@@ -95,7 +83,7 @@
           </figure>
 
           <div
-            class="editorial-post__content rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-6 md:p-8"
+            class="editorial-post__content post-content rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-6 md:p-8"
             [innerHTML]="state.post.contentHtml"
           ></div>
 

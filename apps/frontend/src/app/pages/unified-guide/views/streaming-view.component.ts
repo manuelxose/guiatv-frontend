@@ -13,6 +13,7 @@ import { UnifiedShellUiStateService } from '../../../state/unified-shell-ui.stat
 import { CatalogItem } from '../../../services/catalog.service';
 import { normalizeToCard } from '../../../utils/tv-normalizers';
 import { ViewportService } from '../../../services/viewport.service';
+import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
 
 interface StreamingDirectorySection {
   id: string;
@@ -44,6 +45,7 @@ interface StreamingModule {
     UnifiedFilterDockComponent,
     UnifiedProgramCardComponent,
     PlatformBadgeComponent,
+    PortalContextNavComponent,
   ],
   templateUrl: './streaming-view.component.html',
   styleUrl: './streaming-view.component.scss',

@@ -71,6 +71,13 @@ export interface PortalMobileDestination {
   kind: 'route' | 'more';
 }
 
+export interface PortalContextDestination {
+  id: string;
+  label: string;
+  path: string;
+  fragment?: string;
+}
+
 export interface PortalPillDefinition {
   id: string;
   label: string;
@@ -122,6 +129,13 @@ export const PORTAL_PRIMARY_DESTINATIONS: readonly PortalDestination[] = [
     path: APP_PATHS.sports,
     iconPath: PORTAL_ICON_PATHS.sports,
   },
+  {
+    id: 'editorial',
+    label: 'Blog',
+    hint: 'Guías, rankings y tendencias',
+    path: APP_PATHS.blog,
+    iconPath: PORTAL_ICON_PATHS.editorial,
+  },
 ] as const;
 
 export const PORTAL_GLOBAL_DESTINATIONS: readonly PortalDestination[] = [
@@ -133,13 +147,6 @@ export const PORTAL_GLOBAL_DESTINATIONS: readonly PortalDestination[] = [
     iconPath: PORTAL_ICON_PATHS.home,
   },
   ...PORTAL_PRIMARY_DESTINATIONS,
-  {
-    id: 'editorial',
-    label: 'Editorial',
-    hint: 'Guías, listas y contexto útil',
-    path: APP_PATHS.blog,
-    iconPath: PORTAL_ICON_PATHS.editorial,
-  },
   {
     id: 'rankings',
     label: 'Rankings',
@@ -163,11 +170,45 @@ export const PORTAL_GLOBAL_DESTINATIONS: readonly PortalDestination[] = [
   },
 ] as const;
 
-/** Destinations disclosed from the shared Editorial / Más surface. */
-export const PORTAL_EXPLORE_DESTINATIONS: readonly PortalDestination[] =
+/** Contextual navigation for the Blog family. URLs remain stable for SEO. */
+export const PORTAL_BLOG_DESTINATIONS: readonly PortalContextDestination[] = [
+  { id: 'latest', label: 'Últimos', path: APP_PATHS.blog },
+  { id: 'guides', label: 'Guías', path: APP_PATHS.blog, fragment: 'guias' },
+  { id: 'rankings', label: 'Rankings', path: APP_PATHS.top10 },
+  { id: 'trends', label: 'Tendencias', path: APP_PATHS.stats },
+] as const;
+
+/** Destinations progressively disclosed from the compact mobile bar. */
+export const PORTAL_MOBILE_MORE_DESTINATIONS: readonly PortalDestination[] =
   PORTAL_GLOBAL_DESTINATIONS.filter((destination) =>
-    ['editorial', 'rankings', 'trends', 'compare'].includes(destination.id)
+    ['streaming', 'editorial'].includes(destination.id)
   );
+
+/** Contextual navigation for the platform family. */
+export const PORTAL_PLATFORM_DESTINATIONS: readonly PortalContextDestination[] = [
+  { id: 'platforms', label: 'Plataformas', path: APP_PATHS.platforms },
+  { id: 'compare', label: 'Comparador', path: APP_PATHS.streamingComparison },
+] as const;
+
+export type PortalPrimaryDestinationId = 'live' | 'discover' | 'streaming' | 'sports' | 'editorial';
+
+export function resolvePortalPrimaryDestination(path: string): PortalPrimaryDestinationId | null {
+  const normalized = path.split('?')[0].split('#')[0].replace(/\/$/, '') || '/';
+
+  if (normalized.startsWith(APP_PATHS.blog) || normalized.startsWith(APP_PATHS.top10) || normalized.startsWith(APP_PATHS.stats)) {
+    return 'editorial';
+  }
+  if (normalized.startsWith(APP_PATHS.sports)) return 'sports';
+  if (normalized.startsWith(APP_PATHS.platforms) || normalized.startsWith(APP_PATHS.streamingComparison)) return 'streaming';
+  if (normalized.startsWith(APP_PATHS.guide) || normalized.startsWith('/canales/')) return 'live';
+  if (
+    normalized.startsWith(APP_PATHS.explore) ||
+    normalized.startsWith(APP_PATHS.movies) ||
+    normalized.startsWith(APP_PATHS.series) ||
+    /^\/(contenido|peliculas|series|programas|detalles|pelicula-details)\//.test(normalized)
+  ) return 'discover';
+  return null;
+}
 
 /** One mobile-first navigation model, shared by the fixed bar and its sheet. */
 export const PORTAL_MOBILE_PRIMARY_DESTINATIONS: readonly PortalMobileDestination[] = [
@@ -352,7 +393,7 @@ export function getPortalPublicContextualLeftRailSection(
         title: 'Contexto útil',
         description: 'Guías, rankings y cruces con discovery.',
         items: [
-          { id: 'public-editorial-home', label: 'Editorial', description: 'Portada editorial', iconPath: PORTAL_ICON_PATHS.editorial, path: APP_PATHS.blog },
+          { id: 'public-editorial-home', label: 'Blog', description: 'Portada del Blog', iconPath: PORTAL_ICON_PATHS.editorial, path: APP_PATHS.blog },
           { id: 'public-editorial-rankings', label: 'Rankings', description: 'Top listas conectadas', iconPath: PORTAL_ICON_PATHS.rankings, path: APP_PATHS.top10 },
           { id: 'public-editorial-explore', label: 'Qué Ver', description: 'Volver al discovery', iconPath: PORTAL_ICON_PATHS.discover, path: APP_PATHS.explore },
         ],

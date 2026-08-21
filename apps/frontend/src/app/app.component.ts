@@ -20,10 +20,10 @@ import { ChatService } from './services/chat.service';
 import { MetaService } from './services/meta.service';
 import { ViewportService } from './services/viewport.service';
 import { environment } from '../environments/environment';
-import { normalizePath as normalizeRoutePath } from './config/route-map';
+import { APP_PATHS, normalizePath as normalizeRoutePath } from './config/route-map';
 import {
   PORTAL_ACCOUNT_DESTINATIONS,
-  PORTAL_EXPLORE_DESTINATIONS,
+  PORTAL_MOBILE_MORE_DESTINATIONS,
   PORTAL_MOBILE_PRIMARY_DESTINATIONS,
   PortalMobileDestination,
 } from './config/portal-navigation.config';
@@ -55,7 +55,7 @@ export class AppComponent implements OnInit, OnDestroy {
   public swipeOffsetY = 0;
   public swipeAnimating = false;
   public readonly mobileTabs = PORTAL_MOBILE_PRIMARY_DESTINATIONS;
-  public readonly exploreDestinations = PORTAL_EXPLORE_DESTINATIONS;
+  public readonly moreDestinations = PORTAL_MOBILE_MORE_DESTINATIONS;
   public readonly accountDestinations = PORTAL_ACCOUNT_DESTINATIONS;
   public mobileMoreOpen = false;
   public readonly theme = inject(ThemeService);
@@ -206,7 +206,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   public isMobileTabActive(tab: PortalMobileDestination): boolean {
     const path = normalizeRoutePath(this.currentPath);
-    if (tab.id === 'more') return false;
+    if (tab.id === 'more') {
+      return this.mobileMoreOpen || path.startsWith(APP_PATHS.platforms) || path.startsWith(APP_PATHS.streamingComparison) || path.startsWith(APP_PATHS.blog) || path.startsWith(APP_PATHS.stats);
+    }
     if (tab.id === 'home') return path === '/';
     if (tab.id === 'live') {
       return path.startsWith('/programacion-tv/guia-canales') || path.startsWith('/canales/');

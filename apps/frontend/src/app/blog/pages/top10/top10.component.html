@@ -2,25 +2,11 @@
 
 <app-unified-portal-shell
   tone="rankings"
-  activeTab="discover"
-  [searchQuery]="searchQuery()"
-  [topPillChips]="topPillChips"
-  topPillLabel="Rankings"
-  [isAuthenticated]="isAuthenticated()"
-  [profileName]="profile()?.name || 'Cuenta'"
   [breadcrumbItems]="breadcrumbItems"
-  [leftRailSections]="leftRailSections()"
-  [rightRailSections]="rightRailSections()"
-  rightRailLabel="Panel rankings"
-  eyebrow="Rankings"
-  title="Rankings editoriales conectados con búsquedas reales, plataformas y catálogo"
-  description="Listas, tops y selecciones editoriales vuelven al portal compartiendo navegación, shell y cierre de página con el resto de la experiencia."
-  [metrics]="metrics"
-  (tabChange)="navigateToTab($event)"
-  (topPillChange)="onTopPillChange($event)"
-  (searchChange)="onSearchChange($event)"
-  (searchSubmit)="onSearchSubmit($event)"
+  [showHero]="false"
 >
+  <app-portal-context-nav kind="blog"></app-portal-context-nav>
+  <header class="blog-page-header"><p>Blog</p><h1>Rankings</h1><span>Listas y selecciones para encontrar tu próxima película, serie o programa.</span></header>
   <section *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
     <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-[var(--portal-surface-strong)]"></div>
   </section>
@@ -47,17 +33,11 @@
         />
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
       </div>
-      <div class="grid gap-4 p-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-end">
+      <div class="p-5">
         <div class="space-y-3">
           <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Ranking destacado</p>
           <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ featured.title }}</h2>
           <p class="line-clamp-3 text-sm text-[var(--portal-text-soft)]">{{ featured.excerptText }}</p>
-        </div>
-        <div class="rounded-[1.25rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Conectado con la app</p>
-          <p class="mt-3 text-sm text-[var(--portal-text-soft)]">
-            Los rankings ya no cierran el producto sobre sí mismos: sirven como puertas de entrada a discovery y streaming.
-          </p>
         </div>
       </div>
     </a>
@@ -71,6 +51,7 @@
         <button
           type="button"
           (click)="selectCategory('all')"
+          [attr.aria-pressed]="selectedCategory === 'all'"
           class="rounded-full border px-4 py-2 text-sm font-semibold transition-colors"
           [ngClass]="selectedCategory === 'all'
             ? 'border-[var(--accent-editorial)] bg-[var(--accent-editorial-soft)] text-[var(--accent-editorial)]'
@@ -82,6 +63,7 @@
           *ngFor="let category of categories"
           type="button"
           (click)="selectCategory(category.slug)"
+          [attr.aria-pressed]="selectedCategory === category.slug"
           class="rounded-full border px-4 py-2 text-sm font-semibold transition-colors"
           [ngClass]="selectedCategory === category.slug
             ? 'border-[var(--accent-editorial)] bg-[var(--accent-editorial-soft)] text-[var(--accent-editorial)]'
