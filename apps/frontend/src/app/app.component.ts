@@ -60,6 +60,7 @@ export class AppComponent implements OnInit, OnDestroy {
   public mobileMoreOpen = false;
   public readonly theme = inject(ThemeService);
   @ViewChild('mobileMoreTrigger') private readonly mobileMoreTrigger?: ElementRef<HTMLButtonElement>;
+  @ViewChild('mobileMoreSheet') private readonly mobileMoreSheet?: ElementRef<HTMLElement>;
 
   public readonly aiChatbotEnabled = environment.ai.chatbotEnabled;
 
@@ -220,8 +221,17 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public toggleMobileMore(): void {
-    this.mobileMoreOpen = !this.mobileMoreOpen;
-    this.document.body.classList.toggle('portal-overlay-open', this.mobileMoreOpen);
+    if (this.mobileMoreOpen) {
+      this.closeMobileMore();
+      return;
+    }
+    this.mobileMoreOpen = true;
+    this.document.body.classList.add('portal-overlay-open');
+    setTimeout(() => {
+      const first = this.getMoreSheetFocusables()[0];
+      if (first) first.focus();
+      else this.mobileMoreSheet?.nativeElement.focus();
+    });
   }
 
   public closeMobileMore(): void {
@@ -242,6 +252,27 @@ export class AppComponent implements OnInit, OnDestroy {
     this.closeMobileMore();
   }
 
+  @HostListener('document:keydown', ['$event'])
+  public trapMobileMoreFocus(event: KeyboardEvent): void {
+    if (!this.mobileMoreOpen || event.key !== 'Tab') return;
+    const focusable = this.getMoreSheetFocusables();
+    if (!focusable.length) {
+      event.preventDefault();
+      this.mobileMoreSheet?.nativeElement.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = this.document.activeElement;
+    if (event.shiftKey && (active === first || !this.mobileMoreSheet?.nativeElement.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   private cleanupResizeListeners(): void {
     if (this.resizeMoveHandler) {
       this.document.removeEventListener('mousemove', this.resizeMoveHandler);
@@ -251,6 +282,14 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     this.resizeMoveHandler = null;
     this.resizeUpHandler = null;
+  }
+
+  private getMoreSheetFocusables(): HTMLElement[] {
+    const sheet = this.mobileMoreSheet?.nativeElement;
+    if (!sheet) return [];
+    return Array.from(
+      sheet.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')
+    );
   }
 
   private applyRouteState(url: string): void {

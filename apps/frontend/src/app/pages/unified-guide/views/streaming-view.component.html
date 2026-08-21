@@ -1,5 +1,4 @@
 <section class="streaming-view">
-  <app-portal-context-nav kind="platforms"></app-portal-context-nav>
   <header class="streaming-view__masthead">
     <div class="streaming-view__masthead-copy">
       <p class="streaming-view__eyebrow">Streaming</p>
@@ -20,6 +19,13 @@
       <a routerLink="/comparador-streaming" class="streaming-view__action">Comparar plataformas</a>
     </div>
   </header>
+
+  <app-portal-local-toolbar
+    [items]="sortChips"
+    [active]="guideState.streamingFilters().sort"
+    ariaLabel="Ordenar catálogo de plataformas"
+    (itemSelect)="selectSort($event)"
+  ></app-portal-local-toolbar>
 
   <section class="streaming-view__platform-row" *ngIf="platforms().length">
     <button

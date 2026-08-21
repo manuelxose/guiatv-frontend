@@ -15,10 +15,9 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Params, Router, RouterModule } from '@angular/router';
 import { filter } from 'rxjs';
 import { TvReadItemDTO } from '../../api/models';
-import { FilterChipItem } from '../../components/filter-chip-bar/filter-chip-bar.component';
+import { PortalContextNavComponent, PortalContextNavKind } from '../../components/portal-context-nav/portal-context-nav.component';
 import { UnifiedPortalShellComponent } from '../../components/unified-portal-shell/unified-portal-shell.component';
 import {
-  PORTAL_GUIDE_SHELL_CONFIG,
   PORTAL_ICON_PATHS,
 } from '../../config/portal-navigation.config';
 import { APP_PATHS } from '../../config/route-map';
@@ -60,6 +59,7 @@ const TAB_META: Record<UnifiedGuideTab, { title: string; description: string; pa
     CommonModule,
     RouterModule,
     UnifiedPortalShellComponent,
+    PortalContextNavComponent,
     LiveGuideViewComponent,
     DiscoverViewComponent,
     StreamingViewComponent,
@@ -105,17 +105,11 @@ export class UnifiedGuideComponent {
     }
     return TAB_META[this.activeTab()];
   });
-  readonly shellConfig = computed(() => PORTAL_GUIDE_SHELL_CONFIG[this.activeTab()]);
-  readonly topPillChips = computed<FilterChipItem[]>(() =>
-    this.shellConfig().topPills.map((pill) => ({
-      id: pill.id,
-      label: pill.label,
-      iconPath: pill.iconPath,
-      tone: pill.tone,
-    }))
-  );
-  readonly topPillLabel = computed(() => this.shellConfig().topPillLabel);
-  readonly topPillSelection = computed(() => {
+  readonly contextNavKind = computed<PortalContextNavKind>(() => {
+    const tab = this.activeTab();
+    return tab === 'streaming' ? 'platforms' : tab;
+  });
+  readonly sectionSelection = computed(() => {
     if (this.activeTab() === 'live') {
       return this.state.liveFilters().liveView;
     }
@@ -167,7 +161,6 @@ export class UnifiedGuideComponent {
 
     return 0;
   });
-  readonly rightRailLabel = computed(() => this.shellConfig().rightRailLabel);
   readonly leftRailSections = computed<UnifiedPortalRailSection[]>(() => {
     if (this.activeTab() === 'live') {
       const filters = this.state.liveFilters();
@@ -446,7 +439,7 @@ export class UnifiedGuideComponent {
       .subscribe(() => this.updateMeta());
   }
 
-  onTopPillChange(value: string): void {
+  onSectionSelect(value: string): void {
     if (this.activeTab() === 'live') {
       if (value === 'now' || value === 'next' || value === 'night' || value === 'day') {
         this.state.updateLiveFilters({ liveView: value });

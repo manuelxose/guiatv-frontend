@@ -5,6 +5,10 @@ import {
   PORTAL_MOBILE_PRIMARY_DESTINATIONS,
   PORTAL_PLATFORM_DESTINATIONS,
   PORTAL_PRIMARY_DESTINATIONS,
+  PORTAL_DISCOVER_DESTINATIONS,
+  PORTAL_SECTION_NAVIGATION,
+  PORTAL_SPORTS_DESTINATIONS,
+  PORTAL_TV_DESTINATIONS,
   resolvePortalPrimaryDestination,
 } from './portal-navigation.config';
 
@@ -27,7 +31,24 @@ describe('route map', () => {
       'Últimos', 'Guías', 'Rankings', 'Tendencias',
     ]);
     expect(PORTAL_PLATFORM_DESTINATIONS.map((tab) => tab.label)).toEqual(['Plataformas', 'Comparador']);
+    expect(PORTAL_TV_DESTINATIONS.map((tab) => tab.label)).toEqual([
+      'En emisión', 'A continuación', 'Esta noche', 'Parrilla',
+    ]);
+    expect(PORTAL_DISCOVER_DESTINATIONS.map((tab) => tab.label)).toEqual([
+      'Todo', 'En TV', 'Películas', 'Series', 'Gratis',
+    ]);
+    expect(PORTAL_SPORTS_DESTINATIONS.map((tab) => tab.label)).toEqual([
+      'Inicio', 'Partidos', 'Competiciones', 'Noticias',
+    ]);
     expect(PORTAL_MOBILE_MORE_DESTINATIONS.map((tab) => tab.label)).toEqual(['Plataformas', 'Blog']);
+  });
+
+  it('uses one canonical section model with route and action semantics', () => {
+    expect(Object.keys(PORTAL_SECTION_NAVIGATION)).toEqual([
+      'live', 'discover', 'platforms', 'sports', 'blog',
+    ]);
+    expect(PORTAL_SECTION_NAVIGATION.live.items.every((item) => item.kind === 'action')).toBeTrue();
+    expect(PORTAL_SECTION_NAVIGATION.sports.items.every((item) => item.kind === 'route')).toBeTrue();
   });
 
   it('resolves active primary destinations from canonical and detail routes', () => {

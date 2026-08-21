@@ -1,17 +1,17 @@
 <app-unified-portal-shell
   class="unified-guide-page"
   [tone]="activeTab()"
-  [topPillChips]="platformMode() === 'compare' ? [] : topPillChips()"
-  [topPillSelection]="topPillSelection()"
-  [topPillLabel]="topPillLabel()"
-  [breadcrumbItems]="activeTab() === 'streaming' ? [] : breadcrumbItems()"
+  [breadcrumbItems]="[]"
   [showHero]="false"
-  [showFilterButton]="platformMode() !== 'compare'"
-  filterButtonLabel="Más filtros"
-  [filterCount]="filterCount()"
-  (topPillChange)="onTopPillChange($event)"
-  (filterToggle)="toggleFilterDock()"
 >
+  <app-portal-context-nav
+    [kind]="contextNavKind()"
+    [active]="activeTab() === 'streaming' ? null : sectionSelection()"
+    [actionLabel]="platformMode() === 'compare' ? null : 'Más filtros'"
+    [actionCount]="filterCount()"
+    (itemSelect)="onSectionSelect($event)"
+    (action)="toggleFilterDock()"
+  ></app-portal-context-nav>
   <section id="tab-panel-live" role="tabpanel" *ngIf="activeTab() === 'live'">
     <app-live-guide-view></app-live-guide-view>
   </section>

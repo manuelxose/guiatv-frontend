@@ -4,6 +4,9 @@
   [breadcrumbItems]="breadcrumbItems()"
   [showHero]="false"
 >
+  @if (section() === 'sports') {
+    <app-portal-context-nav kind="sports"></app-portal-context-nav>
+  }
   <div class="app-public-layout-shell__content">
     <ng-content></ng-content>
   </div>

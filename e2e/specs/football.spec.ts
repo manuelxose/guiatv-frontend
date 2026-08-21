@@ -27,24 +27,19 @@ test.describe('Football Home', () => {
   });
 
   test('sub-navigation reaches Partidos, Competiciones and Noticias', async ({ page }) => {
-    // `.home__nav-item` only exists on the Home page itself — Partidos and
-    // Competiciones each land on a different page with their own separate
-    // sub-navigation (football-matches' Live/Hoy/Calendario tabs,
-    // football-competition-detail's own tab strip), so this checks each
-    // link from a fresh Home load rather than chaining through them.
     await page.goto('/deportes/futbol');
     await assertNotBlankScreen(page);
-    await page.locator('.home__nav-item', { hasText: 'Partidos' }).click();
+    await page.getByRole('navigation', { name: 'Secciones de Deportes' }).getByRole('link', { name: 'Partidos', exact: true }).click();
     await page.waitForURL(/\/deportes\/futbol\/partidos-hoy/, { timeout: 20_000 });
     await assertNotBlankScreen(page);
 
     await page.goto('/deportes/futbol');
-    await page.locator('.home__nav-item', { hasText: 'Competiciones' }).click();
+    await page.getByRole('navigation', { name: 'Secciones de Deportes' }).getByRole('link', { name: 'Competiciones', exact: true }).click();
     await page.waitForURL(/\/deportes\/futbol\/competiciones/, { timeout: 20_000 });
     await assertNotBlankScreen(page);
 
     await page.goto('/deportes/futbol');
-    await page.locator('.home__nav-item', { hasText: 'Noticias' }).click();
+    await page.getByRole('navigation', { name: 'Secciones de Deportes' }).getByRole('link', { name: 'Noticias', exact: true }).click();
     await page.waitForURL(/\/deportes\/futbol\/noticias/, { timeout: 20_000 });
     await assertNotBlankScreen(page);
   });
@@ -105,7 +100,7 @@ test.describe('Football Matches -> Match Centre', () => {
   test('the filter bar is present and All/Live/Upcoming/Finished are all reachable', async ({ page }) => {
     await page.goto('/deportes/futbol/partidos-hoy');
     await assertNotBlankScreen(page);
-    const bar = page.locator('[role="tablist"]');
+    const bar = page.getByRole('navigation', { name: 'Filtrar partidos' });
     await expect(bar).toBeVisible({ timeout: 20_000 });
     for (const label of ['Todos', 'En directo', 'Próximos', 'Finalizados']) {
       await expect(bar.getByText(label, { exact: true })).toBeVisible();
@@ -132,10 +127,10 @@ test.describe('Competitions', () => {
     await page.waitForURL(/\/deportes\/futbol\/competiciones\//, { timeout: 20_000 });
 
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 20_000 });
-    const tabs = page.locator('.tabs__item');
-    await expect(tabs).toHaveCount(3);
+    const tabs = page.getByRole('navigation', { name: 'Secciones de la competición' });
+    await expect(tabs.getByRole('button')).toHaveCount(3);
 
-    await tabs.filter({ hasText: 'Clasificación' }).click();
+    await tabs.getByRole('button', { name: 'Clasificación', exact: true }).click();
     // Either a real standings table renders, or the table's own honest
     // "not available" message does — never a blank/broken panel.
     const hasTable = await page.locator('.standings__row').first().isVisible({ timeout: 20_000 }).catch(() => false);
@@ -153,8 +148,8 @@ test.describe('Team detail', () => {
     await firstCompetition.click();
     await page.waitForURL(/\/deportes\/futbol\/competiciones\//, { timeout: 20_000 });
 
-    const tabs = page.locator('.tabs__item');
-    await tabs.filter({ hasText: 'Clasificación' }).click();
+    const tabs = page.getByRole('navigation', { name: 'Secciones de la competición' });
+    await tabs.getByRole('button', { name: 'Clasificación', exact: true }).click();
     // The team name itself is the link (spec §100 "no dead-end pages") —
     // the row is a table row, not a single clickable target.
     const teamLink = page.locator('.standings__name').first();

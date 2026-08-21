@@ -74,8 +74,20 @@ export interface PortalMobileDestination {
 export interface PortalContextDestination {
   id: string;
   label: string;
-  path: string;
+  kind?: 'route' | 'action';
+  path?: string;
   fragment?: string;
+  queryParams?: Record<string, string>;
+  iconPath?: string;
+}
+
+export type PortalSection = 'live' | 'discover' | 'platforms' | 'sports' | 'blog';
+
+export interface PortalSectionNavigation {
+  label: string;
+  rootLabel: string;
+  rootPath: string;
+  items: readonly PortalContextDestination[];
 }
 
 export interface PortalPillDefinition {
@@ -172,10 +184,10 @@ export const PORTAL_GLOBAL_DESTINATIONS: readonly PortalDestination[] = [
 
 /** Contextual navigation for the Blog family. URLs remain stable for SEO. */
 export const PORTAL_BLOG_DESTINATIONS: readonly PortalContextDestination[] = [
-  { id: 'latest', label: 'Últimos', path: APP_PATHS.blog },
-  { id: 'guides', label: 'Guías', path: APP_PATHS.blog, fragment: 'guias' },
-  { id: 'rankings', label: 'Rankings', path: APP_PATHS.top10 },
-  { id: 'trends', label: 'Tendencias', path: APP_PATHS.stats },
+  { id: 'latest', label: 'Últimos', kind: 'route', path: APP_PATHS.blog },
+  { id: 'guides', label: 'Guías', kind: 'route', path: APP_PATHS.blog, fragment: 'guias' },
+  { id: 'rankings', label: 'Rankings', kind: 'route', path: APP_PATHS.top10 },
+  { id: 'trends', label: 'Tendencias', kind: 'route', path: APP_PATHS.stats },
 ] as const;
 
 /** Destinations progressively disclosed from the compact mobile bar. */
@@ -186,9 +198,65 @@ export const PORTAL_MOBILE_MORE_DESTINATIONS: readonly PortalDestination[] =
 
 /** Contextual navigation for the platform family. */
 export const PORTAL_PLATFORM_DESTINATIONS: readonly PortalContextDestination[] = [
-  { id: 'platforms', label: 'Plataformas', path: APP_PATHS.platforms },
-  { id: 'compare', label: 'Comparador', path: APP_PATHS.streamingComparison },
+  { id: 'platforms', label: 'Plataformas', kind: 'route', path: APP_PATHS.platforms },
+  { id: 'compare', label: 'Comparador', kind: 'route', path: APP_PATHS.streamingComparison },
 ] as const;
+
+export const PORTAL_TV_DESTINATIONS: readonly PortalContextDestination[] = [
+  { id: 'now', label: 'En emisión', kind: 'action', iconPath: PORTAL_ICON_PATHS.liveDot },
+  { id: 'next', label: 'A continuación', kind: 'action', iconPath: PORTAL_ICON_PATHS.clock },
+  { id: 'night', label: 'Esta noche', kind: 'action', iconPath: PORTAL_ICON_PATHS.clock },
+  { id: 'day', label: 'Parrilla', kind: 'action', iconPath: PORTAL_ICON_PATHS.channels },
+] as const;
+
+export const PORTAL_DISCOVER_DESTINATIONS: readonly PortalContextDestination[] = [
+  { id: 'all', label: 'Todo', kind: 'action', iconPath: PORTAL_ICON_PATHS.discover },
+  { id: 'live', label: 'En TV', kind: 'action', iconPath: PORTAL_ICON_PATHS.liveDot },
+  { id: 'movie', label: 'Películas', kind: 'action', iconPath: PORTAL_ICON_PATHS.play },
+  { id: 'series', label: 'Series', kind: 'action', iconPath: PORTAL_ICON_PATHS.editorial },
+  { id: 'free', label: 'Gratis', kind: 'action', iconPath: PORTAL_ICON_PATHS.sparkles },
+] as const;
+
+export const PORTAL_SPORTS_DESTINATIONS: readonly PortalContextDestination[] = [
+  { id: 'home', label: 'Inicio', kind: 'route', path: APP_PATHS.football },
+  { id: 'matches', label: 'Partidos', kind: 'route', path: `${APP_PATHS.football}/partidos-hoy` },
+  { id: 'competitions', label: 'Competiciones', kind: 'route', path: `${APP_PATHS.football}/competiciones` },
+  { id: 'news', label: 'Noticias', kind: 'route', path: `${APP_PATHS.football}/noticias` },
+] as const;
+
+/** Canonical source for the primary contextual navigation of every portal section. */
+export const PORTAL_SECTION_NAVIGATION: Readonly<Record<PortalSection, PortalSectionNavigation>> = {
+  live: {
+    label: 'Secciones de TV',
+    rootLabel: 'TV',
+    rootPath: APP_PATHS.guide,
+    items: PORTAL_TV_DESTINATIONS,
+  },
+  discover: {
+    label: 'Secciones de Qué ver',
+    rootLabel: 'Qué ver',
+    rootPath: APP_PATHS.explore,
+    items: PORTAL_DISCOVER_DESTINATIONS,
+  },
+  platforms: {
+    label: 'Secciones de Plataformas',
+    rootLabel: 'Plataformas',
+    rootPath: APP_PATHS.platforms,
+    items: PORTAL_PLATFORM_DESTINATIONS,
+  },
+  sports: {
+    label: 'Secciones de Deportes',
+    rootLabel: 'Deportes',
+    rootPath: APP_PATHS.football,
+    items: PORTAL_SPORTS_DESTINATIONS,
+  },
+  blog: {
+    label: 'Secciones del Blog',
+    rootLabel: 'Blog',
+    rootPath: APP_PATHS.blog,
+    items: PORTAL_BLOG_DESTINATIONS,
+  },
+} as const;
 
 export type PortalPrimaryDestinationId = 'live' | 'discover' | 'streaming' | 'sports' | 'editorial';
 

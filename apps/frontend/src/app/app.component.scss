@@ -138,16 +138,17 @@
 
 .app-shell__mobile-nav {
   position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  right: 0.5rem;
+  bottom: max(0.35rem, var(--safe-bottom));
+  left: 0.5rem;
   z-index: var(--z-bottom-nav);
   display: flex;
-  min-height: calc(var(--bottom-nav-h) + var(--safe-bottom));
-  padding: 0.35rem 0.25rem var(--safe-bottom);
-  border-top: 1px solid var(--portal-border);
-  background: color-mix(in srgb, var(--portal-surface) 92%, transparent);
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+  min-height: var(--bottom-nav-h);
+  padding: 0.3rem;
+  border: 1px solid var(--portal-border);
+  border-radius: 1.15rem;
+  background: color-mix(in srgb, var(--portal-surface-strong) 94%, transparent);
+  box-shadow: var(--shadow-lg);
   backdrop-filter: blur(18px);
 }
 
@@ -160,7 +161,7 @@
   justify-content: center;
   flex-direction: column;
   gap: 0.2rem;
-  border-radius: var(--radius-sm);
+  border-radius: 0.9rem;
   color: var(--portal-text-muted);
   font-size: 0.68rem;
   font-weight: 650;
@@ -233,7 +234,8 @@
 
 .app-shell__mobile-tab--active {
   color: var(--guide-accent);
-  background: color-mix(in oklch, var(--guide-accent) 9%, transparent);
+  background: color-mix(in srgb, var(--guide-accent) 11%, var(--portal-surface-strong));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--guide-accent) 30%, transparent);
 }
 
 @media (min-width: 768px) {

@@ -8,6 +8,8 @@ const routes = [
 ] as const;
 
 const viewports = [
+  { width: 320, height: 720 },
+  { width: 360, height: 800 },
   { width: 390, height: 844 },
   { width: 430, height: 932 },
   { width: 768, height: 1024 },
@@ -31,7 +33,7 @@ const visualRoutes = [
   '/editorial/estrenos-en-streaming-esta-semana',
 ] as const;
 
-test.describe('Canonical Blog and Platforms navigation', () => {
+test.describe('Canonical section navigation', () => {
   for (const route of routes) {
     test(`${route.path} exposes its contextual active state`, async ({ page }) => {
       await page.goto(route.path);
@@ -60,13 +62,8 @@ test.describe('Canonical Blog and Platforms navigation', () => {
       await page.setViewportSize(viewport);
       for (const path of visualRoutes) {
         await page.goto(path);
-        await expect(page.locator('app-unified-top-nav')).toBeVisible();
-        if (
-          path === '/plataformas' ||
-          path === '/comparador-streaming' ||
-          path.startsWith('/editorial') ||
-          path === '/tendencias'
-        ) {
+        await expect(page.locator('.unified-top-nav')).toBeVisible();
+        if (path !== '/') {
           await expect(page.locator('app-portal-context-nav')).toBeVisible();
         }
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width);
@@ -84,6 +81,22 @@ test.describe('Canonical Blog and Platforms navigation', () => {
       await expect(page.getByRole('heading', { name: route.heading }).first()).toBeVisible();
       await expect(page.locator('app-portal-context-nav')).toBeVisible();
       await expect(page.locator('app-portal-context-nav app-breadcrumb')).toBeVisible();
+    }
+  });
+
+  test('TV, Qué ver and Deportes share the same contextual structure', async ({ page }) => {
+    const sections = [
+      { path: '/programacion-tv/guia-canales', label: 'Secciones de TV', items: ['En emisión', 'A continuación', 'Esta noche', 'Parrilla'] },
+      { path: '/programacion-tv/que-ver-hoy', label: 'Secciones de Qué ver', items: ['Todo', 'En TV', 'Películas', 'Series', 'Gratis'] },
+      { path: '/deportes/futbol', label: 'Secciones de Deportes', items: ['Inicio', 'Partidos', 'Competiciones', 'Noticias'] },
+    ] as const;
+
+    for (const section of sections) {
+      await page.goto(section.path);
+      await expect(page.locator('[data-testid="portal-section-nav"]')).toHaveCount(1);
+      await expect(page.locator('app-breadcrumb')).toHaveCount(1);
+      const nav = page.getByRole('navigation', { name: section.label });
+      for (const item of section.items) await expect(nav.getByText(item, { exact: true })).toBeVisible();
     }
   });
 

@@ -64,7 +64,12 @@ function fromKey(key: string): Date | null {
       display: flex;
       align-items: center;
       gap: 0.375rem;
-      padding: 0.25rem 0;
+      overflow: hidden;
+      padding: 0.4rem;
+      border: 1px solid var(--guide-border, var(--portal-border));
+      border-radius: 1rem;
+      background: var(--guide-surface-strong, var(--portal-surface-strong));
+      box-shadow: var(--shadow-sm);
     }
     .strip__nav {
       flex: 0 0 auto;
@@ -98,7 +103,7 @@ function fromKey(key: string): Date | null {
       min-width: 44px;
       min-height: 44px;
       padding: 0.4rem 0.75rem;
-      border-radius: 0.5rem;
+      border-radius: 9999px;
       border: 1px solid transparent;
       background: transparent;
       color: var(--portal-text-muted);
@@ -110,9 +115,9 @@ function fromKey(key: string): Date | null {
     }
     .strip__day--today { border-color: var(--portal-border-strong); color: var(--portal-text); }
     .strip__day--selected {
-      background: var(--accent-sports);
-      border-color: var(--accent-sports);
-      color: var(--portal-bg-elevated);
+      background: color-mix(in srgb, var(--guide-accent, var(--accent-sports)) 12%, var(--portal-surface-strong));
+      border-color: color-mix(in srgb, var(--guide-accent, var(--accent-sports)) 45%, var(--portal-border));
+      color: var(--portal-text);
       font-weight: 800;
     }
 
@@ -125,7 +130,7 @@ function fromKey(key: string): Date | null {
       min-height: 44px;
       padding: 0.25rem 0.4rem;
       border: 1px solid var(--portal-border);
-      border-radius: 0.5rem;
+      border-radius: 9999px;
       background: var(--portal-card);
       color: var(--portal-text);
       font-size: 0.8125rem;

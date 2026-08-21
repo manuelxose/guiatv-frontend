@@ -13,7 +13,6 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
-import { FilterChipBarComponent, FilterChipItem } from '../filter-chip-bar/filter-chip-bar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { UnifiedRailSectionComponent } from '../unified-rail-section/unified-rail-section.component';
 import { UnifiedTopNavComponent } from '../unified-top-nav/unified-top-nav.component';
@@ -48,7 +47,6 @@ export type {
     RouterModule,
     UnifiedTopNavComponent,
     BreadcrumbComponent,
-    FilterChipBarComponent,
     FooterComponent,
     UnifiedRailSectionComponent,
   ],
@@ -66,9 +64,6 @@ export class UnifiedPortalShellComponent {
   readonly tone = input<
     'home' | 'live' | 'discover' | 'streaming' | 'sports' | 'editorial' | 'rankings'
   >('home');
-  readonly topPillChips = input<readonly FilterChipItem[]>([]);
-  readonly topPillSelection = input<string | readonly string[]>('all');
-  readonly topPillLabel = input('Filtros rápidos');
   readonly breadcrumbItems = input<readonly { name: string; url: string }[]>([]);
   readonly showHero = input(true);
   readonly eyebrow = input('');
@@ -76,17 +71,12 @@ export class UnifiedPortalShellComponent {
   readonly description = input('');
   readonly heroVariant = input<UnifiedPortalHeroVariant>('default');
   readonly metrics = input<readonly UnifiedPortalMetric[]>([]);
-  readonly filterButtonLabel = input('Filtros');
-  readonly showFilterButton = input(false);
-  readonly filterCount = input(0);
   readonly rightRailLabel = input('Panel contextual');
   readonly rightRailVariant = input<UnifiedPortalRightRailVariant>('default');
   readonly leftRailSections = input<readonly UnifiedPortalRailSection[]>([]);
   readonly rightRailSections = input<readonly UnifiedPortalRailSection[]>([]);
 
-  @Output() topPillChange = new EventEmitter<string>();
   @Output() quickFilterChange = new EventEmitter<string>();
-  @Output() filterToggle = new EventEmitter<void>();
 
   readonly iconPaths = PORTAL_ICON_PATHS;
   readonly leftRailOpen = signal(false);
@@ -102,9 +92,6 @@ export class UnifiedPortalShellComponent {
   );
   readonly hasLeftRail = computed(() =>
     this.resolvedLeftRailSections().some((section) => section.items.length > 0)
-  );
-  readonly hasTopPillShelf = computed(
-    () => this.topPillChips().length > 0 || this.showFilterButton()
   );
   readonly showRightRailToggle = computed(() => false);
 
@@ -158,11 +145,6 @@ export class UnifiedPortalShellComponent {
       this.chatService.requestOpenChat('portal-assistant');
       this.closeDrawers();
     }
-  }
-
-  emitTopPillChange(value: string): void {
-    this.topPillChange.emit(value);
-    this.quickFilterChange.emit(value);
   }
 
 }

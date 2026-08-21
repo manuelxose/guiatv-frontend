@@ -37,12 +37,9 @@ describe('StreamingComparisonComponent', () => {
     });
   });
 
-  it('should render as an inner Platforms view with one integrated hierarchy', () => {
-    expect(fixture.nativeElement.querySelector('app-portal-context-nav')).not.toBeNull();
-    expect(fixture.nativeElement.querySelectorAll('app-breadcrumb').length).toBe(1);
-    expect(
-      fixture.nativeElement.querySelector('app-portal-context-nav app-breadcrumb')
-    ).not.toBeNull();
+  it('should render as an inner Platforms view without duplicating shell navigation', () => {
+    expect(fixture.nativeElement.querySelector('app-portal-context-nav')).toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('app-breadcrumb').length).toBe(0);
     expect(fixture.nativeElement.querySelector('app-unified-portal-shell')).toBeNull();
     expect(fixture.nativeElement.innerHTML).not.toContain('routerlink="/streaming"');
     expect(fixture.nativeElement.innerHTML).not.toContain('href="/streaming"');

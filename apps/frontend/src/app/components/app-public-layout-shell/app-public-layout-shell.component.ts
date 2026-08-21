@@ -6,13 +6,14 @@ import { filter } from 'rxjs';
 import { PortalPublicShellSection } from '../../config/portal-navigation.config';
 import { APP_PATHS, normalizePath } from '../../config/route-map';
 import { UnifiedPortalShellComponent } from '../unified-portal-shell/unified-portal-shell.component';
+import { PortalContextNavComponent } from '../portal-context-nav/portal-context-nav.component';
 
 type PublicShellTone = 'home' | 'live' | 'discover' | 'streaming' | 'sports' | 'editorial' | 'rankings';
 
 @Component({
   selector: 'app-public-layout-shell',
   standalone: true,
-  imports: [CommonModule, RouterModule, UnifiedPortalShellComponent],
+  imports: [CommonModule, RouterModule, UnifiedPortalShellComponent, PortalContextNavComponent],
   templateUrl: './app-public-layout-shell.component.html',
   styleUrl: './app-public-layout-shell.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,7 +30,9 @@ export class AppPublicLayoutShellComponent {
     normalizePath(this.currentUrl()?.urlAfterRedirects || this.router.url)
   );
   readonly section = computed<PortalPublicShellSection>(() => resolvePublicShellSection(this.normalizedPath()));
-  readonly breadcrumbItems = computed(() => buildBreadcrumbItems(this.normalizedPath()));
+  readonly breadcrumbItems = computed(() =>
+    this.section() === 'sports' ? [] : buildBreadcrumbItems(this.normalizedPath())
+  );
   readonly tone = computed<PublicShellTone>(() => {
     const section = this.section();
     switch (section) {
