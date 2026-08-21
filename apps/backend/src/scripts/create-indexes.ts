@@ -28,6 +28,7 @@ async function createIndexes() {
     const tvProgramBrandsCollection = db.collection('tv_program_brands');
     const epgSnapshotsCollection = db.collection('epg_source_snapshots');
     const interactionsCollection = db.collection('user_content_interactions');
+    const blogPostsCollection = db.collection('blog_posts');
 
     logger.info('Creating indexes for programs collection...');
 
@@ -228,6 +229,14 @@ async function createIndexes() {
       { name: 'idx_tvread_date_group_sort_start', background: true }
     );
     await tvReadAiringsCollection.createIndex(
+      { date: 1, 'channel.sortOrder': 1, 'airing.start': 1 },
+      { name: 'idx_tvread_date_sort_start', background: true }
+    );
+    await tvReadAiringsCollection.createIndex(
+      { date: 1, 'airing.partOfDay': 1, 'channel.sortOrder': 1, 'airing.start': 1 },
+      { name: 'idx_tvread_date_partofday_sort_start', background: true }
+    );
+    await tvReadAiringsCollection.createIndex(
       { date: 1, 'airing.start': 1, 'airing.end': 1 },
       { name: 'idx_tvread_date_airing_window', background: true }
     );
@@ -246,6 +255,14 @@ async function createIndexes() {
       { searchTokens: 1, date: 1 },
       { name: 'idx_tvread_search_tokens', background: true }
     );
+    await tvReadAiringsCollection.createIndex(
+      { 'program.sportFacet': 1, date: 1, 'airing.start': 1 },
+      { name: 'idx_tvread_sport_date_start', background: true }
+    );
+    await tvReadAiringsCollection.createIndex(
+      { 'program.editorialCategory': 1, date: 1, 'airing.start': 1 },
+      { name: 'idx_tvread_category_date_start', background: true }
+    );
     logger.info('✅ Created tv_read_airings indexes');
 
     logger.info('Creating indexes for epg_source_snapshots collection...');
@@ -260,6 +277,21 @@ async function createIndexes() {
       { name: 'idx_epg_snapshots_payloadHash', background: true }
     );
     logger.info('✅ Created epg_source_snapshots indexes');
+
+    logger.info('Creating indexes for blog_posts collection...');
+    await blogPostsCollection.createIndex(
+      { status: 1, featured: -1, publishedAt: -1, createdAt: -1 },
+      { name: 'idx_blog_public_featured_published', background: true }
+    );
+    await blogPostsCollection.createIndex(
+      { status: 1, contentType: 1, featured: -1, publishedAt: -1 },
+      { name: 'idx_blog_public_type_featured', background: true }
+    );
+    await blogPostsCollection.createIndex(
+      { status: 1, 'categories.slug': 1, featured: -1, publishedAt: -1 },
+      { name: 'idx_blog_public_category_featured', background: true }
+    );
+    logger.info('✅ Created blog_posts indexes');
 
     // List all indexes
     const indexes = await programsCollection.indexes();

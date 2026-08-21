@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, Injectable, PLATFORM_ID, TransferState, makeStateKey } from '@angular/core';
+import { Observable, finalize, of, shareReplay, tap } from 'rxjs';
 import { ApiClientService } from './api-client.service';
 import {
   ApiResponse,
@@ -24,10 +25,17 @@ export type UnifiedTvApiView =
 
 @Injectable({ providedIn: 'root' })
 export class TvApiService {
+  private readonly inFlight = new Map<string, Observable<unknown>>();
+  private readonly isBrowser: boolean;
+
   constructor(
     private client: ApiClientService,
-    private cache: ApiCacheService
-  ) {}
+    private cache: ApiCacheService,
+    private transferState: TransferState,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   getHealth(): Observable<ApiResponse<any>> {
     return this.client.get<ApiResponse<any>>('/health');
@@ -43,6 +51,7 @@ export class TvApiService {
     q?: string;
     limit?: number;
     cursor?: string;
+    includeChannels?: boolean;
   }): Observable<ApiResponse<TvReadResponseDTO>> {
     const normalizedView = normalizeUnifiedTvView(query.view);
     const params: Record<string, any> = {
@@ -55,6 +64,7 @@ export class TvApiService {
       q: query.q,
       limit: query.limit,
       cursor: query.cursor,
+      includeChannels: query.includeChannels,
     };
     return this.cachedGet<ApiResponse<TvReadResponseDTO>>(
       `/tv/read:${JSON.stringify(params)}`,
@@ -139,24 +149,35 @@ export class TvApiService {
     params?: Record<string, any>,
     ttlMs: number = DEFAULT_TTL
   ): Observable<T> {
-    const cached = this.cache.get<T>(cacheKey);
-    if (cached) {
-      return new Observable((subscriber) => {
-        subscriber.next(cached);
-        subscriber.complete();
-      });
+    const stateKey = makeStateKey<T>(`tv-api-v2:${cacheKey}`);
+    if (this.isBrowser && this.transferState.hasKey(stateKey)) {
+      const transferred = this.transferState.get(stateKey, null as unknown as T);
+      if (transferred) {
+        this.cache.set(cacheKey, transferred, ttlMs);
+        return of(transferred);
+      }
     }
 
-    return new Observable((subscriber) => {
-      this.client.get<T>(path, params).subscribe({
-        next: (resp) => {
-          this.cache.set(cacheKey, resp, ttlMs);
-          subscriber.next(resp);
-          subscriber.complete();
-        },
-        error: (err) => subscriber.error(err),
-      });
-    });
+    const cached = this.cache.get<T>(cacheKey);
+    if (cached) {
+      return of(cached);
+    }
+
+    const existing = this.inFlight.get(cacheKey) as Observable<T> | undefined;
+    if (existing) {
+      return existing;
+    }
+
+    const request = this.client.get<T>(path, params).pipe(
+      tap((response) => {
+        this.cache.set(cacheKey, response, ttlMs);
+        if (!this.isBrowser) this.transferState.set(stateKey, response);
+      }),
+      finalize(() => this.inFlight.delete(cacheKey)),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+    this.inFlight.set(cacheKey, request);
+    return request;
   }
 
   private resolveReadTtl(view: 'now' | 'next' | 'night' | 'day' | 'search'): number {

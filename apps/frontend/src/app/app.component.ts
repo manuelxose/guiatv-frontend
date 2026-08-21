@@ -79,6 +79,10 @@ export class AppComponent implements OnInit, OnDestroy {
     private readonly chatService: ChatService
   ) {
     void this.chatService;
+    // Select the same router-outlet branch before the first render on SSR and
+    // in the hydrating browser. Deferring this until ngOnInit makes hydration
+    // briefly instantiate the default public shell for portal routes.
+    this.applyRouteState(this.router.url);
   }
 
   ngOnInit(): void {
@@ -93,7 +97,6 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       });
 
-    this.applyRouteState(this.router.url);
     this.applyRobotsMeta();
 
     this.router.events

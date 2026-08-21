@@ -18,7 +18,10 @@ import { FootballTeamDTO } from '@app/features/football/football.models';
           *ngIf="team.crest && !crestFailed; else crestFallback"
           [src]="team.crest"
           [alt]="''"
+          width="32"
+          height="32"
           loading="lazy"
+          decoding="async"
           (error)="onCrestError()"
         />
         <ng-template #crestFallback>

@@ -50,7 +50,7 @@ export class GetDiscoveryHome {
         ? DateUtils.parseDateAlias(request.date)
         : DateUtils.getTodayYYYYMMDD();
 
-    const cacheKey = ['surface:discovery:home', date, request.userId || 'anon'].join(':');
+    const cacheKey = ['v2:surface:discovery:home', date, request.userId || 'anon'].join(':');
     const hotCached = l1Cache.get(cacheKey) as DiscoveryHomeViewDTO | undefined;
     if (hotCached) {
       return {
@@ -79,7 +79,8 @@ export class GetDiscoveryHome {
         this.tvReadQueryService.query({
           view: 'now',
           date,
-          limit: 12,
+          limit: 8,
+          includeChannels: false,
         }),
         Math.min(this.segmentTimeoutMs, 1500),
         this.emptyTvReadResult()
@@ -89,6 +90,7 @@ export class GetDiscoveryHome {
           view: 'night',
           date,
           limit: 12,
+          includeChannels: false,
         }),
         Math.min(this.segmentTimeoutMs, 1500),
         this.emptyTvReadResult()

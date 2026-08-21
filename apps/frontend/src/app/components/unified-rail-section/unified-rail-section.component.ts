@@ -32,6 +32,12 @@ export class UnifiedRailSectionComponent {
     return item.id;
   }
 
+  optimizedImageUrl(url: string): string {
+    return url.startsWith('https://image.tmdb.org/t/p/original/')
+      ? url.replace('/t/p/original/', '/t/p/w185/')
+      : url;
+  }
+
   onAction(item: UnifiedPortalRailItem): void {
     this.railAction.emit(item);
   }

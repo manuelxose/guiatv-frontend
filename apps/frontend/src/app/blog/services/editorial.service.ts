@@ -1,6 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { Observable, catchError, map, of, shareReplay } from 'rxjs';
+import { Observable, catchError, combineLatest, map, of, shareReplay } from 'rxjs';
 import { BlogService } from '../../services/blog.service';
 import {
   EditorialCategory,
@@ -148,9 +148,14 @@ export class EditorialService {
   }
 
   public getPostPageState(slug: string): Observable<EditorialPostPageState | null> {
-    return this.getPosts().pipe(
-      map((posts) => {
-        const post = posts.find((entry) => entry.slug === slug);
+    return combineLatest([
+      this.getPosts(),
+      this.blogService.getPostBySlug(slug).pipe(
+        map((posts) => posts[0] ? this.adaptPost(posts[0]) : null)
+      ),
+    ]).pipe(
+      map(([posts, detailPost]) => {
+        const post = detailPost ?? posts.find((entry) => entry.slug === slug);
         if (!post) {
           return null;
         }
@@ -204,7 +209,9 @@ export class EditorialService {
     const contentType = this.resolveContentType(rawPost, categories);
     const rankingReason = this.getRankingReason(rawPost, categories, contentType);
     const excerptHtml = this.ensureString(rawPost?.excerpt?.rendered || rawPost?.excerpt);
-    const contentHtml = this.ensureString(rawPost?.content?.rendered || rawPost?.content);
+    const contentHtml = this.optimizeContentHtml(
+      this.ensureString(rawPost?.content?.rendered || rawPost?.content)
+    );
     const title = this.ensureString(rawPost?.title?.rendered || rawPost?.title);
 
     return {
@@ -251,6 +258,13 @@ export class EditorialService {
       return '/assets/images/blog-og-image.webp';
     }
     return image;
+  }
+
+  private optimizeContentHtml(contentHtml: string): string {
+    return contentHtml
+      .replace(/https:\/\/image\.tmdb\.org\/t\/p\/original\//g, 'https://image.tmdb.org/t/p/w780/')
+      .replace(/<img\b(?![^>]*\bloading=)([^>]*)>/gi, '<img loading="lazy"$1>')
+      .replace(/<img\b(?![^>]*\bdecoding=)([^>]*)>/gi, '<img decoding="async"$1>');
   }
 
   private adaptCategory(rawCategory: any): EditorialCategory {

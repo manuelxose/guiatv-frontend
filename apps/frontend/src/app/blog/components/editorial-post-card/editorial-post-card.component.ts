@@ -18,6 +18,8 @@ import { EditorialPost } from '../../models/editorial.models';
         <img
           [src]="post?.coverImage"
           [alt]="post?.title || 'Artículo editorial'"
+          width="640"
+          height="400"
           class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />

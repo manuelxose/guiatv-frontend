@@ -3,6 +3,7 @@
 import { Router, Request, Response } from 'express';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { successResponse } from '../../shared/types/ApiResponse';
+import { runtimeMetricsSnapshot } from '../../shared/utils/runtimeMetrics';
 
 /**
  * Simple health-check routes used by uptime monitors and load balancers.
@@ -64,6 +65,10 @@ export const createHealthRoutes = (): Router => {
       );
     })
   );
+
+  router.get('/metrics', (_req: Request, res: Response) => {
+    res.status(200).json(successResponse(runtimeMetricsSnapshot(), { cached: false }));
+  });
 
   return router;
 };

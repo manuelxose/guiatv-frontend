@@ -18,10 +18,10 @@ test('normalizeTvReadView falls back to day for invalid input', () => {
   assert.equal(normalizeTvReadView(undefined), 'day');
 });
 
-test('resolveTvReadLimit preserves large day reads required by guide surfaces', () => {
-  assert.equal(resolveTvReadLimit('day', 5000), 5000);
-  assert.equal(resolveTvReadLimit('day', 20000), 20000);
-  assert.equal(resolveTvReadLimit('day', 99999), 20000);
+test('resolveTvReadLimit bounds day reads for progressive fetching', () => {
+  assert.equal(resolveTvReadLimit('day', undefined), 240);
+  assert.equal(resolveTvReadLimit('day', 5000), 1000);
+  assert.equal(resolveTvReadLimit('day', 99999), 1000);
 });
 
 test('resolveTvReadLimit keeps hot paths bounded', () => {

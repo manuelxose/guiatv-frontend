@@ -295,7 +295,9 @@ export class Container {
     }
     this.dependencies.set('footballProvider', footballProvider);
 
-    const broadcastReconciliationService = new BroadcastReconciliationService();
+    const broadcastReconciliationService = new BroadcastReconciliationService(
+      this.get('cacheRepository')
+    );
     this.dependencies.set('broadcastReconciliationService', broadcastReconciliationService);
 
     const footballQueryService = new FootballQueryService(
@@ -552,7 +554,7 @@ export class Container {
     );
     this.dependencies.set('footballController', footballController);
 
-    const blogController = new BlogController();
+    const blogController = new BlogController(this.get('cacheRepository'));
     this.dependencies.set('blogController', blogController);
 
     const analyticsController = new AnalyticsController(this.get('analyticsService'));

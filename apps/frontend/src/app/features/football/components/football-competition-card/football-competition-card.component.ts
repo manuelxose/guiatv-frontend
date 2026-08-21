@@ -22,7 +22,7 @@ export type FootballCompetitionCardVariant = 'row' | 'chip';
       [class.competition--chip]="variant === 'chip'"
       [routerLink]="['/deportes/futbol/competiciones', competition.slug]"
     >
-      <img *ngIf="competition.logo" [src]="competition.logo" [alt]="''" class="competition__logo" />
+      <img *ngIf="competition.logo" [src]="competition.logo" [alt]="''" class="competition__logo" width="48" height="48" loading="lazy" decoding="async" />
       <span *ngIf="!competition.logo" class="competition__logo competition__logo--fallback">{{ initials }}</span>
       <span class="competition__body">
         <span class="competition__name">{{ variant === 'chip' ? (competition.shortName || competition.name) : competition.name }}</span>

@@ -173,6 +173,9 @@ const COMPETITIONS_LIST_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 // scores/tables update through the day; still long enough to absorb a
 // realistic burst of page views for the same competition.
 const COMPETITION_SUBRESOURCE_CACHE_TTL_MS = 5 * 60 * 1000;
+const PROVIDER_TIMEOUT_MS = Number(process.env.FOOTBALL_PROVIDER_TIMEOUT_MS || 4_000);
+const CIRCUIT_FAILURE_THRESHOLD = 3;
+const CIRCUIT_OPEN_MS = 30_000;
 
 export class FootballDataOrgAdapter implements FootballDataProvider {
   readonly key = 'football-data-org';
@@ -182,11 +185,31 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
   private competitionsListCache: { value: FootballCompetition[]; expiresAt: number } | null = null;
   private readonly competitionMatchesCache = new Map<string, { value: FootballMatch[]; expiresAt: number }>();
   private readonly standingsCache = new Map<string, { value: FootballStandingRow[]; expiresAt: number }>();
+  private consecutiveFailures = 0;
+  private circuitOpenUntil = 0;
 
   constructor(private readonly apiKey: string) {}
 
   private headers(): Record<string, string> {
     return { 'X-Auth-Token': this.apiKey };
+  }
+
+  private async fetch<T = any>(url: string, config: Record<string, unknown> = {}): Promise<{ data: T }> {
+    if (this.circuitOpenUntil > Date.now()) {
+      throw new Error('football-data.org circuit is temporarily open');
+    }
+    try {
+      const response = await axios.get<T>(url, { ...config, timeout: PROVIDER_TIMEOUT_MS });
+      this.consecutiveFailures = 0;
+      this.circuitOpenUntil = 0;
+      return response;
+    } catch (error) {
+      this.consecutiveFailures += 1;
+      if (this.consecutiveFailures >= CIRCUIT_FAILURE_THRESHOLD) {
+        this.circuitOpenUntil = Date.now() + CIRCUIT_OPEN_MS;
+      }
+      throw error;
+    }
   }
 
   /** The one real HTTP call behind every "bare" matches query — cached. */
@@ -195,7 +218,7 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
     if (this.generalMatchesCache && this.generalMatchesCache.expiresAt > now) {
       return this.generalMatchesCache.value;
     }
-    const { data } = await axios.get(`${BASE_URL}/matches`, { headers: this.headers() });
+    const { data } = await this.fetch<any>(`${BASE_URL}/matches`, { headers: this.headers() });
     const matches = (data.matches || []).map((raw: any) => mapFootballDataOrgMatch(raw)).filter(Boolean) as FootballMatch[];
     this.generalMatchesCache = { value: matches, expiresAt: now + GENERAL_MATCHES_CACHE_TTL_MS };
     return matches;
@@ -220,7 +243,7 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
       if (query.dateFrom) params.dateFrom = query.dateFrom;
       if (query.dateTo) params.dateTo = query.dateTo;
       if (query.status && query.status !== 'live') params.status = query.status.toUpperCase();
-      const { data } = await axios.get(`${BASE_URL}/matches`, { headers: this.headers(), params });
+      const { data } = await this.fetch<any>(`${BASE_URL}/matches`, { headers: this.headers(), params });
       matches = (data.matches || []).map((raw: any) => mapFootballDataOrgMatch(raw)).filter(Boolean) as FootballMatch[];
     } else {
       // `date`/`status: 'live'` are both effectively no-ops on this
@@ -271,7 +294,7 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
     if (query.dateTo) params.dateTo = query.dateTo;
     if (query.status && query.status !== 'live') params.status = query.status.toUpperCase();
 
-    const { data } = await axios.get(`${BASE_URL}/competitions/${providerId}/matches`, {
+    const { data } = await this.fetch<any>(`${BASE_URL}/competitions/${providerId}/matches`, {
       headers: this.headers(),
       params,
     });
@@ -298,7 +321,7 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
     // detail page 404s. Numeric ids still take the direct fast path.
     if (/^\d+$/.test(idOrSlug)) {
       try {
-        const { data } = await axios.get(`${BASE_URL}/matches/${idOrSlug}`, { headers: this.headers() });
+        const { data } = await this.fetch<any>(`${BASE_URL}/matches/${idOrSlug}`, { headers: this.headers() });
         return mapFootballDataOrgMatch(data);
       } catch {
         return null;
@@ -325,7 +348,7 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
     if (this.competitionsListCache && this.competitionsListCache.expiresAt > now) {
       return this.competitionsListCache.value;
     }
-    const { data } = await axios.get(`${BASE_URL}/competitions`, { headers: this.headers() });
+    const { data } = await this.fetch<any>(`${BASE_URL}/competitions`, { headers: this.headers() });
     const competitions = (data.competitions || []).map((raw: any) => mapFootballDataOrgCompetition(raw));
     this.competitionsListCache = { value: competitions, expiresAt: now + COMPETITIONS_LIST_CACHE_TTL_MS };
     return competitions;
@@ -352,7 +375,7 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
       return cached.value;
     }
 
-    const { data } = await axios.get(
+    const { data } = await this.fetch<any>(
       `${BASE_URL}/competitions/${providerId}/standings`,
       { headers: this.headers() }
     );
@@ -384,7 +407,7 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
     // without a competition filter and hasn't been verified to.
     if (/^\d+$/.test(slug)) {
       try {
-        const { data } = await axios.get(`${BASE_URL}/teams/${slug}`, { headers: this.headers() });
+        const { data } = await this.fetch<any>(`${BASE_URL}/teams/${slug}`, { headers: this.headers() });
         return mapFootballDataOrgTeam(data);
       } catch {
         return null;

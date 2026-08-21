@@ -101,6 +101,7 @@ export class FootballController {
       String(channelId),
       String(channelName)
     );
+    await this.footballQueryService.invalidatePublicReads();
     res.status(200).json(successResponse({ saved: true }));
   }
 
@@ -112,6 +113,7 @@ export class FootballController {
       ]);
     }
     await this.reconciliation.clearOverride(String(matchId), String(channelId));
+    await this.footballQueryService.invalidatePublicReads();
     res.status(200).json(successResponse({ cleared: true }));
   }
 }

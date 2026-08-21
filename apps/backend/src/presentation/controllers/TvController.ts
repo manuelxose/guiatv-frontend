@@ -23,6 +23,7 @@ export class TvController {
       q: req.query.q ? String(req.query.q) : undefined,
       limit: req.query.limit ? Number(req.query.limit) : undefined,
       cursor: req.query.cursor ? String(req.query.cursor) : undefined,
+      includeChannels: String(req.query.includeChannels || 'true') !== 'false',
     });
 
     res.status(200).json(successResponse(result, result.meta));

@@ -2,6 +2,7 @@ import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring.model';
 import { DateUtils } from '@/shared/utils/dateUtils';
 import { l1Cache } from '@/infrastructure/cache/L1Cache';
+import { addTiming, measureTiming, setCacheTiming } from '@/shared/utils/performanceTiming';
 import {
   buildSearchTokens,
   getGuideGroupSortOrder,
@@ -28,13 +29,14 @@ export interface TvReadQueryParams {
   q?: string;
   limit?: number;
   cursor?: string;
+  includeChannels?: boolean;
 }
 
 const TV_READ_LIMITS: Record<TvReadView, { default: number; max: number }> = {
   now: { default: 120, max: 500 },
   next: { default: 120, max: 500 },
   night: { default: 240, max: 1500 },
-  day: { default: 5000, max: 20000 },
+  day: { default: 240, max: 1000 },
   search: { default: 60, max: 200 },
 };
 
@@ -130,6 +132,56 @@ export function isConsumerVisibleTvReadItem(item: TvReadItemDTO): boolean {
 
   return item.program.titleResolutionState !== 'generic_unresolved' &&
     item.program.titleResolutionState !== 'generic_suppressed';
+}
+
+/** Compact card/grid representation; full provenance remains on item detail. */
+export function compactTvReadItem(item: TvReadItemDTO): TvReadItemDTO {
+  return {
+    id: item.id,
+    channel: {
+      id: item.channel.id,
+      name: item.channel.name,
+      normalizedName: item.channel.normalizedName,
+      aliases: [],
+      sourceIds: [],
+      type: item.channel.type,
+      group: item.channel.group,
+      subgroups: item.channel.subgroups || [],
+      sortOrder: item.channel.sortOrder,
+      icon: item.channel.icon,
+      country: item.channel.country,
+      countryCode: item.channel.countryCode,
+      region: item.channel.region,
+    },
+    program: {
+      brandKey: item.program.brandKey,
+      title: item.program.title,
+      subtitle: item.program.subtitle,
+      normalizedTitle: item.program.normalizedTitle,
+      titleAliases: [],
+      editorialCategory: item.program.editorialCategory,
+      genre: item.program.genre,
+      subgenre: item.program.subgenre,
+      sportFacet: item.program.sportFacet,
+      tmdbId: item.program.tmdbId,
+      description: item.program.description?.slice(0, 320),
+      titleResolutionState: item.program.titleResolutionState,
+      isResolvedTitle: item.program.isResolvedTitle,
+    },
+    airing: item.airing,
+    assets: {
+      primary: item.assets?.primary,
+      poster: item.assets?.poster,
+      backdrop: item.assets?.backdrop,
+      channelLogo: item.assets?.channelLogo,
+      platformLogo: item.assets?.platformLogo,
+      fallbackChain: (item.assets?.fallbackChain || []).slice(0, 2),
+    },
+    availability: item.availability,
+    sourceProvenance: { schedule: [], metadata: [], assets: [] },
+    timingContext: item.timingContext,
+    relevance: item.relevance,
+  };
 }
 
 function sortTvItems(left: TvReadItemDTO, right: TvReadItemDTO): number {
@@ -345,9 +397,13 @@ export class TvReadQueryService {
     const sport = normalizeSportFacet(params.sport);
     const limit = resolveTvReadLimit(view, params.limit);
     const offset = Number(params.cursor || '0') || 0;
-    const cacheKey = `tv:read:${date}:${view}:${group || 'all'}:${category || 'all'}:${sport || 'all'}:${params.channelId || 'all'}:${params.q || ''}:${limit}:${offset}`;
+    const includeChannels = params.includeChannels !== false;
+    // v3 separates the compact list-item schema from responses cached before
+    // payload compaction was introduced.
+    const cacheKey = `v3:tv:read:${date}:${view}:${group || 'all'}:${category || 'all'}:${sport || 'all'}:${params.channelId || 'all'}:${params.q || ''}:${limit}:${offset}:${includeChannels ? 'channels' : 'items'}`;
     const l1Cached = l1Cache.get(cacheKey) as TvReadResponseDTO | undefined;
     if (l1Cached) {
+      setCacheTiming('hit');
       const hydrated = this.hydrateResponseRuntimeState(l1Cached);
       return {
         ...hydrated,
@@ -355,8 +411,9 @@ export class TvReadQueryService {
       };
     }
 
-    const cached = await this.cacheRepository.get<TvReadResponseDTO>(cacheKey);
+    const cached = await measureTiming('cache', () => this.cacheRepository.get<TvReadResponseDTO>(cacheKey));
     if (cached) {
+      setCacheTiming('hit');
       // Skip the in-process L1 cache for 'day' view: it can hold up to
       // TV_READ_LIMITS.day.max (20000) items in a single response, and
       // L1Cache is bounded by entry COUNT (200), not byte size - a handful
@@ -373,10 +430,19 @@ export class TvReadQueryService {
         meta: { ...hydrated.meta, cached: true },
       };
     }
+    setCacheTiming('miss');
 
     const reference = new Date();
     const baseQuery = applyTvReadTemporalBounds({ date }, view, reference);
     const andClauses: Record<string, any>[] = [];
+
+    // Visibility is persisted in the public read model, so Mongo can reject
+    // suppressed rows before hydration/serialization instead of making Node
+    // scan and discard them.
+    baseQuery['trustDecision.consumerSuppressed'] = { $ne: true };
+    baseQuery['program.titleResolutionState'] = {
+      $nin: ['generic_unresolved', 'generic_suppressed'],
+    };
 
     if (group) baseQuery['channel.group'] = group;
     if (category) baseQuery['program.editorialCategory'] = category;
@@ -397,18 +463,42 @@ export class TvReadQueryService {
 
     if (view === 'night') {
       baseQuery['airing.partOfDay'] = 'noche';
+      const primeTime = buildPrimeTimeRange(date);
+      baseQuery['airing.start'] = {
+        $gte: primeTime.start.toISOString(),
+        $lt: primeTime.end.toISOString(),
+      };
+    }
+
+    if (view === 'next') {
+      baseQuery['airing.start'] = { $gt: reference.toISOString() };
+    }
+
+    if (sport && sport !== 'all') {
+      baseQuery['program.sportFacet'] = sport;
     }
 
     if (andClauses.length) {
       baseQuery.$and = andClauses;
     }
 
-    const rawItems = (await TVReadAiringModel.find(baseQuery)
-      .sort({ 'channel.sortOrder': 1, 'airing.start': 1 })
-      .lean()
-      .exec()) as unknown as TvReadItemDTO[];
+    const databasePaged = view === 'day' || view === 'search';
+    const itemQuery = TVReadAiringModel.find(baseQuery)
+      .sort({ 'channel.sortOrder': 1, 'airing.start': 1 });
+    if (databasePaged) {
+      itemQuery.skip(offset).limit(limit + 1);
+    }
 
-    const allMatching = rawItems
+    const [rawItems, databaseTotal] = await measureTiming('db', () => Promise.all([
+      itemQuery.lean().exec() as unknown as Promise<TvReadItemDTO[]>,
+      databasePaged ? TVReadAiringModel.countDocuments(baseQuery).exec() : Promise.resolve(0),
+    ]));
+
+    const hasMoreDatabaseRows = databasePaged && rawItems.length > limit;
+    const boundedRawItems = databasePaged ? rawItems.slice(0, limit) : rawItems;
+
+    const transformStarted = process.hrtime.bigint();
+    const allMatching = boundedRawItems
       .map((item) => hydrateTvReadItemRuntime(item, reference))
       .filter((item) => isConsumerVisibleTvReadItem(item));
     const filteredMatching = this.applySportFilter(allMatching, sport);
@@ -420,12 +510,15 @@ export class TvReadQueryService {
       reference,
       date
     );
-    const paged = items.slice(offset, offset + limit);
-    const channelSummaries = scopeChannelSummariesToPage(view, allChannelSummaries, paged);
+    const paged = databasePaged ? items : items.slice(offset, offset + limit);
+    const channelSummaries = includeChannels
+      ? scopeChannelSummariesToPage(view, allChannelSummaries, paged)
+      : [];
+    const publicItems = paged.map(compactTvReadItem);
     const response: TvReadResponseDTO = {
       date,
       view,
-      items: paged,
+      items: publicItems,
       channels: channelSummaries,
       filters: {
         group,
@@ -435,12 +528,15 @@ export class TvReadQueryService {
         q: params.q,
       },
       meta: {
-        total: items.length,
+        total: databasePaged ? databaseTotal : items.length,
         limit,
-        nextCursor: offset + limit < items.length ? String(offset + limit) : undefined,
+        nextCursor: databasePaged
+          ? (hasMoreDatabaseRows ? String(offset + limit) : undefined)
+          : (offset + limit < items.length ? String(offset + limit) : undefined),
         generatedAt: new Date().toISOString(),
       },
     };
+    addTiming('transform', Number(process.hrtime.bigint() - transformStarted) / 1_000_000);
 
     await this.cacheRepository.set(cacheKey, response, this.resolveTtlSeconds(view));
     if (view !== 'day') {
@@ -662,13 +758,15 @@ export class TvReadQueryService {
     const hydratedItems = response.items.map((item) =>
       hydrateTvReadItemRuntime(item, reference)
     );
-    const channels = this.buildChannelSummaries(
-      hydratedItems,
-      response.filters.group,
-      response.filters.channelId,
-      reference,
-      response.date
-    );
+    const channels = response.channels.length
+      ? this.buildChannelSummaries(
+          hydratedItems,
+          response.filters.group,
+          response.filters.channelId,
+          reference,
+          response.date
+        )
+      : [];
 
     return {
       ...response,

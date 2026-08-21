@@ -82,11 +82,15 @@
 
 .epg-grid__body {
   display: block;
+  height: min(43rem, calc(100vh - 15rem));
+  min-height: 18rem;
+  width: max-content;
+  min-width: 100%;
 }
 
 .epg-grid__row {
   display: flex;
-  min-height: var(--epg-row-h);
+  height: var(--epg-row-h);
   border-bottom: 1px solid var(--portal-divider);
 }
 
