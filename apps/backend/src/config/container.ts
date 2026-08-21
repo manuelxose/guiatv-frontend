@@ -593,7 +593,8 @@ export class Container {
     const sitemapController = new SitemapController(
       this.get('channelRepository'),
       this.get('programRepository'),
-      this.has('tmdbService') ? this.get('tmdbService') : undefined
+      this.has('tmdbService') ? this.get('tmdbService') : undefined,
+      this.has('footballQueryService') ? this.get('footballQueryService') : undefined
     );
     this.dependencies.set('sitemapController', sitemapController);
 

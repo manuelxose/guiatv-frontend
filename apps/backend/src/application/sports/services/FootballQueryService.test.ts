@@ -1,0 +1,180 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { buildNewsQuery, FootballQueryService, settle } from './FootballQueryService';
+import { FootballDataProvider } from '../../../domain/sports/football/types';
+
+// Regression coverage for a real production bug: getCompetition()/getTeam()/
+// getMatch() used to await several provider calls together (Promise.all or
+// plain sequential awaits), so ONE secondary lookup failing (standings, in
+// practice — a real 400 from the provider, see FootballDataOrgAdapter's
+// getStandings fix) rejected the whole endpoint even though the primary
+// data (competition/team/match) was already in hand. `settle()` is the
+// extracted mechanism behind the fix — tested directly here since the
+// methods that use it also touch Mongo (via getNews) with no DB available
+// in this test run, which would hang rather than fail fast.
+
+test('settle() returns the resolved value on success', async () => {
+  const result = await settle(Promise.resolve(['a', 'b']), []);
+  assert.deepEqual(result, ['a', 'b']);
+});
+
+test('settle() returns the fallback when the promise rejects', async () => {
+  const result = await settle(Promise.reject(new Error('provider 400')), []);
+  assert.deepEqual(result, []);
+});
+
+test('settle() returns the fallback for a synchronously-thrown rejection', async () => {
+  const rejecting = (async () => {
+    throw new Error('boom');
+  })();
+  const result = await settle(rejecting, 'fallback');
+  assert.equal(result, 'fallback');
+});
+
+test('settle() preserves a falsy-but-valid resolved value (does not treat it as failure)', async () => {
+  const result = await settle(Promise.resolve(0), -1);
+  assert.equal(result, 0);
+});
+
+test('settle() supports non-array fallbacks (e.g. a single match object)', async () => {
+  const original = { id: 'm1' };
+  const result = await settle(Promise.reject(new Error('reconciliation down')), original);
+  assert.equal(result, original);
+});
+
+// Regression coverage for a real, verified-live production bug: getNews()
+// with no filters (the home feed, the news list page) returned the site's
+// entire general blog feed — streaming/movie guides with zero football
+// relevance — relabeled as "football news", because nothing scoped the
+// query to football at all. buildNewsQuery() is the fix.
+
+test('buildNewsQuery() scopes a bare listing to genuine football signals', () => {
+  const query = buildNewsQuery({});
+  assert.equal(query.status, 'publish');
+  assert.ok(Array.isArray(query.$and), 'expected a football-relevance $and clause on an unscoped listing');
+  const scopeClause = query.$and[0];
+  assert.deepEqual(
+    scopeClause.$or.map((c: any) => Object.keys(c)[0]),
+    ['categories.slug', 'sportsRelations.teamIds.0', 'sportsRelations.competitionIds.0', 'sportsRelations.matchIds.0']
+  );
+});
+
+test('buildNewsQuery() does NOT scope-narrow a request already filtered by team/competition/match', () => {
+  const byTeam = buildNewsQuery({ teamId: 't1' });
+  assert.equal(byTeam['sportsRelations.teamIds'], 't1');
+  assert.equal(byTeam.$and, undefined, 'a teamId filter is already football-relevant on its own');
+});
+
+test('buildNewsQuery() still scopes a slug lookup — a guessed URL must not surface unrelated content', () => {
+  const query = buildNewsQuery({ slug: 'estrenos-en-streaming-esta-semana' });
+  assert.equal(query.slug, 'estrenos-en-streaming-esta-semana');
+  assert.ok(Array.isArray(query.$and), 'slug alone is not proof of football relevance');
+});
+
+test('buildNewsQuery() combines a text search with the football scope via $and, not $or', () => {
+  const query = buildNewsQuery({ q: 'champions' });
+  assert.equal(query.$and.length, 2);
+  const [searchClause, scopeClause] = query.$and;
+  assert.ok(searchClause.$or.some((c: any) => 'title' in c));
+  assert.ok(scopeClause.$or.some((c: any) => 'categories.slug' in c));
+});
+
+test('buildNewsQuery() escapes regex special characters in a text query', () => {
+  const query = buildNewsQuery({ q: 'a.b*c' });
+  const titleClause = query.$and[0].$or.find((c: any) => 'title' in c);
+  assert.equal(titleClause.title.$regex, 'a\\.b\\*c');
+});
+
+// Regression coverage for a real, production-observed bug: getCompetitions()
+// had neither a cache nor any error handling — unlike every other football
+// endpoint. Found via actual E2E test runs against the real backend: enough
+// cumulative requests (normal testing traffic — every uncached page view
+// hits this) triggered a real 429 from football-data.org's rate limit,
+// which propagated straight to an unhandled 500 (confirmed in production
+// logs). Competitions are near-static reference data, so caching also
+// meaningfully cuts the upstream call volume that caused the 429.
+
+function fakeProvider(overrides: Partial<FootballDataProvider> = {}): FootballDataProvider {
+  return {
+    key: 'fake',
+    name: 'fake',
+    getMatches: async () => [],
+    getLiveMatches: async () => [],
+    getMatch: async () => null,
+    getCompetitions: async () => [],
+    getCompetition: async () => null,
+    getStandings: async () => [],
+    getTeams: async () => [],
+    getTeam: async () => null,
+    supportsLiveScores: () => false,
+    ...overrides,
+  };
+}
+
+const fakeReconciliation = { reconcile: async (matches: unknown[]) => matches } as any;
+
+function fakeCache() {
+  const store = new Map<string, unknown>();
+  return {
+    get: async (key: string) => store.get(key) ?? null,
+    set: async (key: string, value: unknown) => {
+      store.set(key, value);
+    },
+    delete: async (key: string) => {
+      store.delete(key);
+    },
+    store,
+  };
+}
+
+test('getCompetitions() degrades to an empty list instead of a 500 when the provider rejects', async () => {
+  const provider = fakeProvider({
+    getCompetitions: async () => {
+      throw Object.assign(new Error('Request failed with status code 429'), { status: 429 });
+    },
+  });
+  const service = new FootballQueryService(provider, fakeReconciliation);
+  const result = await service.getCompetitions();
+  assert.deepEqual(result.competitions, []);
+  assert.equal(result.meta.total, 0);
+});
+
+test('getCompetitions() caches a successful result so a later rate-limit hit still serves real data', async () => {
+  let callCount = 0;
+  const provider = fakeProvider({
+    getCompetitions: async () => {
+      callCount++;
+      if (callCount === 1) return [{ id: 'c1', slug: 'laliga', name: 'LaLiga', type: 'league', providerIds: {}, lastUpdatedAt: '' }];
+      throw new Error('429 — should never reach here, first result should be cached');
+    },
+  });
+  const cache = fakeCache();
+  const service = new FootballQueryService(provider, fakeReconciliation, cache as any);
+
+  const first = await service.getCompetitions();
+  assert.equal(first.competitions.length, 1);
+
+  const second = await service.getCompetitions();
+  assert.equal(second.competitions.length, 1);
+  assert.equal(callCount, 1, 'the second call should be served from cache, not hit the provider again');
+});
+
+test('getCompetitions() never caches an empty/failed result — a transient 429 must not poison the cache for its full TTL', async () => {
+  let callCount = 0;
+  const provider = fakeProvider({
+    getCompetitions: async () => {
+      callCount++;
+      if (callCount === 1) throw new Error('429');
+      return [{ id: 'c1', slug: 'laliga', name: 'LaLiga', type: 'league', providerIds: {}, lastUpdatedAt: '' }];
+    },
+  });
+  const cache = fakeCache();
+  const service = new FootballQueryService(provider, fakeReconciliation, cache as any);
+
+  const first = await service.getCompetitions();
+  assert.deepEqual(first.competitions, []);
+
+  const second = await service.getCompetitions();
+  assert.equal(second.competitions.length, 1, 'a real result on the next call should not have been blocked by a cached empty list');
+  assert.equal(callCount, 2);
+});

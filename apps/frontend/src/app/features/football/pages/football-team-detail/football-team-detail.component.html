@@ -1,0 +1,98 @@
+<div class="shell">
+  <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
+
+  <div *ngIf="detail() as data">
+    <header class="head">
+      <img
+        *ngIf="data.team.crest; else crestFallback"
+        [src]="data.team.crest"
+        [alt]="'Escudo de ' + data.team.name"
+        class="head__crest"
+      />
+      <ng-template #crestFallback>
+        <span class="head__crest head__crest--fallback">{{ initials(data.team.name) }}</span>
+      </ng-template>
+      <div>
+        <h1 class="head__title">{{ data.team.name }}</h1>
+        <p class="head__sub" *ngIf="data.team.country">{{ data.team.country }}</p>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Secciones del equipo">
+      <button
+        *ngFor="let tab of tabs"
+        type="button"
+        class="tabs__item"
+        [class.tabs__item--active]="activeTab() === tab.id"
+        [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
+        (click)="selectTab(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+    </nav>
+
+    <!-- RESUMEN -->
+    <div *ngIf="activeTab() === 'resumen'" class="panel">
+      <section *ngIf="data.nextMatch" class="block">
+        <app-football-section-header eyebrow="Próximo" title="Próximo partido"></app-football-section-header>
+        <div class="rows">
+          <app-football-match-row [match]="data.nextMatch"></app-football-match-row>
+        </div>
+      </section>
+
+      <section *ngIf="data.lastResult" class="block">
+        <app-football-section-header eyebrow="Resultado" title="Último resultado"></app-football-section-header>
+        <div class="rows">
+          <app-football-match-row [match]="data.lastResult"></app-football-match-row>
+        </div>
+      </section>
+
+      <section *ngIf="standingsContext().length" class="block">
+        <app-football-section-header eyebrow="Contexto" title="Posición en la liga"></app-football-section-header>
+        <app-football-standings-table
+          [standings]="standingsContext()"
+          [highlightTeamIds]="[data.team.id]"
+          [windowSize]="2"
+        ></app-football-standings-table>
+      </section>
+
+      <section *ngIf="data.news?.length" class="block">
+        <app-football-section-header eyebrow="Noticias" [title]="'Últimas noticias de ' + data.team.name"></app-football-section-header>
+        <div class="news-grid">
+          <app-football-news-card *ngFor="let article of data.news" [item]="article"></app-football-news-card>
+        </div>
+      </section>
+
+      <div *ngIf="!data.nextMatch && !data.lastResult && !standingsContext().length && !data.news?.length" class="empty">
+        <p class="empty__title">Sin información disponible por ahora</p>
+        <p class="empty__sub">Consulta el calendario del equipo.</p>
+      </div>
+    </div>
+
+    <!-- PARTIDOS -->
+    <div *ngIf="activeTab() === 'partidos'" class="panel">
+      <app-football-filter-bar [active]="filter()" (filterChange)="onFilterChange($event)"></app-football-filter-bar>
+
+      <div *ngIf="filteredMatches().length; else noMatches" class="rows">
+        <app-football-match-row
+          *ngFor="let match of filteredMatches(); trackBy: trackByMatch"
+          [match]="match"
+        ></app-football-match-row>
+      </div>
+      <ng-template #noMatches>
+        <div class="empty">
+          <p class="empty__title">Sin partidos disponibles</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="empty" aria-hidden="true">
+    <div class="empty__skeleton"></div>
+  </div>
+
+  <div *ngIf="!detail() && !loading()" class="empty">
+    <p class="empty__title">Equipo no encontrado</p>
+    <a class="empty__link" routerLink="/deportes/futbol">Volver a fútbol</a>
+  </div>
+</div>

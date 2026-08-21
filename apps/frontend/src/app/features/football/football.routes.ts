@@ -98,6 +98,15 @@ export const FOOTBALL_ROUTES: Routes = [
         title: 'Noticia de fútbol - Guía TV',
         data: { layout: 'public-shell' },
       },
+      {
+        path: 'buscar',
+        loadComponent: () =>
+          import('./pages/football-search/football-search.component').then(
+            (m) => m.FootballSearchComponent
+          ),
+        title: 'Buscar en fútbol - Guía TV',
+        data: { layout: 'public-shell' },
+      },
     ],
   },
 ];

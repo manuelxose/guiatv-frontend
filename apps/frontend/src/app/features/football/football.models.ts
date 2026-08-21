@@ -106,6 +106,8 @@ export interface FootballNewsDTO {
   updatedAt?: string;
   sportsRelations: { teamIds: string[]; competitionIds: string[]; matchIds: string[] };
   externalSource?: { name: string; url: string };
+  /** Full article HTML — only present when fetched by slug (news-detail). */
+  content?: string;
 }
 
 export interface FootballHomeDTO {
