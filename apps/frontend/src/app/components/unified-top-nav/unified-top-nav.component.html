@@ -1,4 +1,8 @@
-<header class="unified-top-nav" [class.unified-top-nav--compact]="isShrunk">
+<header
+  class="unified-top-nav"
+  [class.unified-top-nav--compact]="isShrunk"
+  [class.unified-top-nav--search-open]="mobileSearchOpen()"
+>
   <div class="unified-top-nav__frame">
     <div class="unified-top-nav__bar">
       <div class="unified-top-nav__leading">

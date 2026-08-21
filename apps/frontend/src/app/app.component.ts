@@ -18,7 +18,6 @@ import { UnifiedChatShellComponent } from './components/unified-chat-shell/unifi
 import { AnalyticsService } from './services/analytics.service';
 import { ChatService } from './services/chat.service';
 import { MetaService } from './services/meta.service';
-import { ViewportService } from './services/viewport.service';
 import { environment } from '../environments/environment';
 import { APP_PATHS, normalizePath as normalizeRoutePath } from './config/route-map';
 import {
@@ -71,7 +70,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private resizeUpHandler: (() => void) | null = null;
   private readonly destroy$ = new Subject<void>();
   private readonly analytics = inject(AnalyticsService);
-  private readonly viewport = inject(ViewportService);
 
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
@@ -193,12 +191,22 @@ export class AppComponent implements OnInit, OnDestroy {
     }, 300);
   }
 
+  // Deliberately not gated on viewport.isMobile(): that signal starts at a
+  // guessed default and only settles after client-side hydration, which
+  // raced with SSR/first paint and could leave desktop visitors with no
+  // visible chat entry point (FAB hidden by CSS, launcher not yet rendered)
+  // until the guess corrected itself. The FAB/launcher pair's CSS already
+  // fully owns the 768px breakpoint (see .app-shell__chat-fab /
+  // .app-shell__chat-launcher in app.component.scss), so both can render
+  // unconditionally here and let CSS be the single source of truth for
+  // which one is visible at a given width — matching how the mobile/desktop
+  // chat panels already resolve their own visibility.
   public shouldShowMobileChatbotFab(): boolean {
-    return this.canRenderChatbot() && this.viewport.isMobile() && !this.isChatbotOpen && !this.isChatMinimized;
+    return this.canRenderChatbot() && !this.isChatbotOpen && !this.isChatMinimized;
   }
 
   public shouldShowDesktopChatbotLauncher(): boolean {
-    return this.canRenderChatbot() && !this.viewport.isMobile();
+    return this.canRenderChatbot();
   }
 
   public shouldShowMobileNavigation(): boolean {
@@ -250,6 +258,9 @@ export class AppComponent implements OnInit, OnDestroy {
   @HostListener('document:keydown.escape')
   public onEscape(): void {
     this.closeMobileMore();
+    if (this.isChatbotOpen) {
+      this.closeChatbot();
+    }
   }
 
   @HostListener('document:keydown', ['$event'])
