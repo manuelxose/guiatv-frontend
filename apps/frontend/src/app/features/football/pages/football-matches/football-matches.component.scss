@@ -48,3 +48,23 @@ app-football-filter-bar { display: block; margin-bottom: 1rem; }
 }
 .empty__title { margin: 0 0 0.25rem; font-weight: 750; color: var(--portal-text); }
 .empty__sub { margin: 0; font-size: 0.875rem; color: var(--portal-text-muted); }
+
+.matches__skeleton { display: flex; flex-direction: column; gap: 0.75rem; }
+.matches__skeleton-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.matches__skeleton-header,
+.matches__skeleton-row {
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, var(--portal-surface-strong) 25%, var(--portal-card) 37%, var(--portal-surface-strong) 63%);
+  background-size: 400% 100%;
+  animation: football-matches-skeleton 1.4s ease infinite;
+}
+.matches__skeleton-header { height: 1.25rem; width: 40%; }
+.matches__skeleton-row { height: 3.25rem; }
+@media (prefers-reduced-motion: reduce) {
+  .matches__skeleton-header,
+  .matches__skeleton-row { animation: none; }
+}
+@keyframes football-matches-skeleton {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}

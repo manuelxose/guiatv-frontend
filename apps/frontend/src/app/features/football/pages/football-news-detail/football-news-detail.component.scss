@@ -13,7 +13,7 @@
 .article__title { margin: 0; font-size: 1.75rem; font-weight: 900; line-height: 1.2; color: var(--portal-text); }
 .article__meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8125rem; color: var(--portal-text-muted); }
 .article__meta a { color: var(--accent-sports); }
-.article__cover { width: 100%; border-radius: 0.75rem; object-fit: cover; }
+.article__cover { width: 100%; aspect-ratio: 16 / 9; border-radius: 0.75rem; object-fit: cover; }
 .article__body { color: var(--portal-text); line-height: 1.7; }
 .article__relations {
   display: flex;

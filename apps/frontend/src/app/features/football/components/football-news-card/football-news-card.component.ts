@@ -20,7 +20,7 @@ import { FootballNewsDTO } from '@app/features/football/football.models';
       [rel]="item.externalSource ? 'noopener' : undefined"
     >
       <span class="news__image" *ngIf="item.coverImage">
-        <img [src]="item.coverImage" [alt]="''" loading="lazy" />
+        <img [src]="item.coverImage" [alt]="item.title" width="72" height="72" loading="lazy" decoding="async" />
       </span>
       <span class="news__body">
         <span class="news__eyebrow">

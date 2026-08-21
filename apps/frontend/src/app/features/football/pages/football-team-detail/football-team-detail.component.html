@@ -8,6 +8,10 @@
         [src]="data.team.crest"
         [alt]="'Escudo de ' + data.team.name"
         class="head__crest"
+        width="56"
+        height="56"
+        decoding="async"
+        fetchpriority="high"
       />
       <ng-template #crestFallback>
         <span class="head__crest head__crest--fallback">{{ initials(data.team.name) }}</span>
@@ -53,7 +57,7 @@
       <section *ngIf="data.news?.length" class="block">
         <app-football-section-header eyebrow="Noticias" [title]="'Últimas noticias de ' + data.team.name"></app-football-section-header>
         <div class="news-grid">
-          <app-football-news-card *ngFor="let article of data.news" [item]="article"></app-football-news-card>
+          <app-football-news-card *ngFor="let article of data.news; trackBy: trackByNewsSlug" [item]="article"></app-football-news-card>
         </div>
       </section>
 

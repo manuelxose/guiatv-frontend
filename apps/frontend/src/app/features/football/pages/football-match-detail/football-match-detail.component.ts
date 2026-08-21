@@ -143,6 +143,10 @@ export class FootballMatchDetailComponent implements AfterViewInit, OnDestroy {
     return formatMatchAccessibleLabel(detail.match);
   }
 
+  trackByNewsSlug(_index: number, article: { slug: string }): string {
+    return article.slug;
+  }
+
   private applyDetailMeta(detail: FootballMatchDetailDTO): void {
     const match = detail.match;
     const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';

@@ -21,18 +21,27 @@
   <app-football-filter-bar [active]="filter()" (filterChange)="onFilterChange($event)"></app-football-filter-bar>
 
   <main class="content">
-    <ng-container *ngIf="grouped().length; else empty">
-      <app-football-competition-group
-        *ngFor="let group of grouped(); trackBy: trackByGroup"
-        [group]="group"
-      ></app-football-competition-group>
-    </ng-container>
-
-    <ng-template #empty>
-      <div class="empty">
-        <p class="empty__title">{{ emptyTitle }}</p>
-        <p class="empty__sub">{{ emptySubtitle }}</p>
+    <div *ngIf="loading()" class="matches__skeleton" aria-hidden="true">
+      <div class="matches__skeleton-group" *ngFor="let group of [1, 2]">
+        <div class="matches__skeleton-header"></div>
+        <div class="matches__skeleton-row" *ngFor="let row of [1, 2, 3]"></div>
       </div>
-    </ng-template>
+    </div>
+
+    <ng-container *ngIf="!loading()">
+      <ng-container *ngIf="grouped().length; else empty">
+        <app-football-competition-group
+          *ngFor="let group of grouped(); trackBy: trackByGroup"
+          [group]="group"
+        ></app-football-competition-group>
+      </ng-container>
+
+      <ng-template #empty>
+        <div class="empty">
+          <p class="empty__title">{{ emptyTitle }}</p>
+          <p class="empty__sub">{{ emptySubtitle }}</p>
+        </div>
+      </ng-template>
+    </ng-container>
   </main>
 </div>
