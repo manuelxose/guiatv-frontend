@@ -319,7 +319,7 @@ export class TvDataFacade {
 
   getForYou(limit = 12): Observable<CatalogItem[]> {
     return this.catalogService.getForYouState(limit).pipe(
-      map((result) => Array.isArray(result.data) ? (result.data as CatalogItem[]) : []),
+      map((result) => (Array.isArray(result.data) ? result.data : []).map(unwrapForYouItem)),
       catchError(() => of([]))
     );
   }
@@ -677,6 +677,20 @@ export class TvDataFacade {
 
 function isTvItem(item: UnifiedDiscoveryItem): item is TvReadItemDTO {
   return 'airing' in item;
+}
+
+/**
+ * GET /discovery/for-you responds with a wrapper per recommendation
+ * (`{ item, score, reason, matchedGenres, whereToWatch }`, see backend's
+ * `PersonalizedRecommendation`), not a flat `CatalogItem`. Unwrap it here so
+ * `normalizeToCard` receives the shape it expects — otherwise every field
+ * (title, image, catalogId...) reads as undefined and cards render blank.
+ */
+function unwrapForYouItem(entry: unknown): CatalogItem {
+  if (entry && typeof entry === 'object' && 'item' in entry) {
+    return (entry as { item: CatalogItem }).item;
+  }
+  return entry as CatalogItem;
 }
 
 function normalizeAll(value?: string): string | undefined {

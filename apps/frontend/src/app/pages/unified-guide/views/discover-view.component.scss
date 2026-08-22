@@ -1,7 +1,20 @@
 .discover-view {
   --discover-accent: #38bdf8;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.discover-view > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.discover-view__stack {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .discover-view__masthead,
