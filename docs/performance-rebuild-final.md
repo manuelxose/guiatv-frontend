@@ -125,6 +125,25 @@ Notes, reported honestly rather than smoothed over:
 - All 5 new football routes render correctly with real production data (verified via network-request inspection: 0 unexpected failures, only 3 pre-existing/unrelated `/v2/telemetry/*` 500s during local pre-deploy testing, absent from the production run above) and were previously entirely unmeasured.
 - Football matches' CLS (.00143) is marginally above its four sibling detail pages (0–.00115) even after adding its loading skeleton; still well within the ≤0.10 target and far below its pre-fix state (no skeleton at all), but worth a closer look in a future round if it grows.
 
+### 2026-08-22, second follow-up: home LCP image preconnect
+
+A user-provided Lighthouse trace on `/` identified the actual LCP element: the home hero image (already correctly `fetchpriority="high"`, sized, eager, discoverable in the initial HTML — the frontend was already doing everything right here). Its `lcp-breakdown-insight` showed 453 ms of real (unthrottled) `resourceLoadDuration` despite the image itself being only 34 KB, because it's hosted on a streaming platform's own origin (e.g. `movistarplus.es`) that the page had never connected to before the `<img>` tag was discovered — DNS+TCP+TLS setup to a cold third-party origin, not transfer time, was the dominant cost.
+
+Fix: `MetaService.preconnectImageOrigin()` appends a `<link rel="preconnect">` for a given image URL's origin (idempotent). `HomeComponent` calls it via an `effect()` reacting to the first resolved hero item, so the hint targets whichever platform's artwork actually won the hero slot that day, not a static guess. Verified via SSR output to render the correct origin for the live-resolved image.
+
+Measured before/after on production (one sample each; see the TBT/score noise caveat above — the hard bytes-based numbers are what changed here):
+
+| Subpart | Before | After |
+| --- | ---: | ---: |
+| Time to first byte | 75.6 ms | 67.8 ms |
+| Resource load delay | 66.3 ms | 49.0 ms |
+| **Resource load duration** | **453.3 ms** | **366.8 ms** |
+| Element render delay | 124.6 ms | 224.6 ms |
+
+`resourceLoadDuration` — the subpart this fix directly targets — dropped 19% (453→367 ms), consistent with the connection-setup savings a preconnect hint is expected to produce. `elementRenderDelay`'s increase is attributed to the same host-contention noise flagged above, not a regression from this change.
+
+Also investigated and consciously deferred from this pass: Lighthouse's "reduce unused JavaScript"/"reduce unused CSS" audits (chunk-QBI6B2E6.js, main-PJARL6TH.js, styles-QLY6XH3L.css). Bundle analysis via `ng build --stats-json` showed chunk-QBI6B2E6.js is almost entirely `@angular/core`/`common`/`platform-browser`/rxjs framework runtime (not application code), and Lighthouse's per-page code-coverage audit inherently flags framework/global-CSS paths unused by any single route as "unused" even though other routes exercise them — chasing that number without real route-level critical-CSS/code splitting (a materially bigger change) risks removing code other pages need. Recommended as a separately-scoped follow-up, not attempted here.
+
 ## Architecture and operational controls
 
 - External providers feed normalization/canonical storage; public football home is refreshed at startup and every minute, with provider timeout (4 s), circuit breaker and stale fallback.
