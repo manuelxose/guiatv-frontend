@@ -1,10 +1,15 @@
 .streaming-view {
   --streaming-accent: #036b9e;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
   min-width: 0;
   max-width: 100%;
   overflow-x: clip;
+}
+
+.streaming-view__stack {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .streaming-view > * {
