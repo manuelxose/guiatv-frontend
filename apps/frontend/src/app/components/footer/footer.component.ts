@@ -22,7 +22,7 @@ export class FooterComponent {
     { label: 'TV Directo', path: APP_PATHS.guide },
     { label: 'Qué Ver', path: APP_PATHS.explore },
     { label: 'Streaming', path: APP_PATHS.platforms },
-    { label: 'Deportes', path: APP_PATHS.sports },
+    { label: 'Fútbol', path: APP_PATHS.sports },
   ];
   readonly groups: FooterLinkGroup[] = [
     {
@@ -33,7 +33,7 @@ export class FooterComponent {
         { label: 'TV Directo', path: APP_PATHS.guide },
         { label: 'Qué Ver Hoy', path: APP_PATHS.explore },
         { label: 'Plataformas', path: APP_PATHS.platforms },
-        { label: 'Deportes', path: APP_PATHS.sports },
+        { label: 'Fútbol', path: APP_PATHS.sports },
       ],
     },
     {

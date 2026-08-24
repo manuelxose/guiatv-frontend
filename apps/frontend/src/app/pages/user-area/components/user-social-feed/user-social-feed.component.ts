@@ -34,7 +34,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
               type="button"
               (click)="composerMode = mode.id"
               class="min-h-[36px] rounded-full px-3 text-xs font-semibold transition-colors"
-              [ngClass]="composerMode === mode.id ? 'bg-red-600 text-white' : 'border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
+              [ngClass]="composerMode === mode.id ? 'bg-[var(--accent-live-strong)] text-white' : 'border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
             >
               {{ mode.label }}
             </button>
@@ -49,7 +49,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                   type="text"
                   formControlName="title"
                   [placeholder]="titlePlaceholder"
-                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 />
               </div>
               <div class="space-y-2">
@@ -59,7 +59,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                   type="text"
                   formControlName="mood"
                   [placeholder]="secondaryPlaceholder"
-                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 />
               </div>
             </div>
@@ -69,7 +69,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                 <select
                   id="social-visibility"
                   formControlName="visibility"
-                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 >
                   <option value="public">Publico</option>
                   <option value="friends">Amigos</option>
@@ -79,7 +79,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
               <button
                 type="submit"
                 [disabled]="statusForm.invalid"
-                class="min-h-[44px] px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="min-h-[44px] px-6 py-2.5 rounded-xl bg-[var(--accent-live-strong)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               >
                 {{ submitLabel }}
               </button>
@@ -130,9 +130,9 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                   <button
                     type="button"
                     (click)="onLike(activity.id)"
-                    class="min-h-[44px] px-4 rounded-lg border text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors"
+                    class="min-h-[44px] px-4 rounded-lg border text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)] transition-colors"
                     [ngClass]="activity.liked
-                      ? 'border-red-500/60 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                      ? 'border-transparent bg-[var(--accent-live-soft)] text-[var(--accent-live)] hover:opacity-90'
                       : 'border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]'"
                   >
                     {{ activity.liked ? '❤️' : '🤍' }} Me gusta{{ activity.likes ? ' · ' + activity.likes : '' }}
@@ -140,7 +140,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                   <button
                     type="button"
                     (click)="onToggleComments(activity.id)"
-                    class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                   >
                     💬 Comentar{{ activity.comments ? ' · ' + activity.comments : '' }}
                   </button>
@@ -154,12 +154,12 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                       (input)="commentTexts[activity.id] = $any($event.target).value"
                       (keydown.enter)="onComment(activity.id)"
                       placeholder="Escribe un comentario..."
-                      class="flex-1 min-h-[40px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      class="flex-1 min-h-[40px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                     />
                     <button
                       type="button"
                       (click)="onComment(activity.id)"
-                      class="min-h-[40px] px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      class="min-h-[40px] px-4 rounded-xl bg-[var(--accent-live-strong)] hover:opacity-90 text-white text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                     >
                       Enviar
                     </button>
@@ -177,7 +177,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
             <h3 class="text-lg font-semibold text-[var(--portal-text)]">Amigos activos</h3>
             <button
               type="button"
-              class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
             >
               Buscar
             </button>
@@ -192,7 +192,7 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                 </div>
                 <div
                   class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border border-[var(--portal-surface)]"
-                  [ngClass]="friend.isOnline ? 'bg-red-500' : 'bg-[var(--portal-text-muted)]'"
+                  [ngClass]="friend.isOnline ? 'bg-[var(--accent-live)]' : 'bg-[var(--portal-text-muted)]'"
                 ></div>
               </div>
 
@@ -207,14 +207,14 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
                 <button
                   type="button"
                   (click)="onToggleFollow(friend.id)"
-                  class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 >
                   {{ friend.following ? 'Siguiendo' : 'Seguir' }}
                 </button>
                 <button
                   type="button"
                   (click)="messageFriend.emit(friend.id)"
-                  class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                   aria-label="Enviar mensaje"
                 >
                   Mensaje

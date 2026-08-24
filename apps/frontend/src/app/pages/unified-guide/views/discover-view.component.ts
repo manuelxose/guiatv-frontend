@@ -2,11 +2,12 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID, computed, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { of, startWith, switchMap } from 'rxjs';
+import { of, startWith, switchMap, tap } from 'rxjs';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedEditorialModuleComponent } from '../../../components/unified-editorial-module/unified-editorial-module.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
+import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skeleton-block/unified-skeleton-block.component';
 import { TvDataFacade, UnifiedDiscoveryItem } from '../../../state/tv-data.facade';
 import { UnifiedGuideStateService } from '../../../state/unified-guide.state';
 import { UnifiedShellUiStateService } from '../../../state/unified-shell-ui.state';
@@ -49,6 +50,7 @@ interface DiscoverModule {
     UnifiedFilterDockComponent,
     UnifiedEditorialModuleComponent,
     UnifiedProgramCardComponent,
+    UnifiedSkeletonBlockComponent,
     PlatformBadgeComponent,
   ],
   templateUrl: './discover-view.component.html',
@@ -95,8 +97,14 @@ export class DiscoverViewComponent {
   }));
   private readonly filters$ = toObservable(this.filters).pipe(startWith(this.filters()));
 
+  /** True while the first discover request (or a filter change) is in flight. */
+  readonly discoverLoading = signal(true);
   readonly discoverData = toSignal(
-    this.filters$.pipe(switchMap((filters) => this.facade.discoverContent(filters))),
+    this.filters$.pipe(
+      tap(() => this.discoverLoading.set(true)),
+      switchMap((filters) => this.facade.discoverContent(filters)),
+      tap(() => this.discoverLoading.set(false))
+    ),
     {
       initialValue: {
         items: [],

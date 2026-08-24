@@ -59,11 +59,11 @@ interface ChatWindowState {
             <div
               class="max-w-[85%] rounded-2xl px-3 py-2 text-xs"
               [ngClass]="msg.senderId === currentUserId
-                ? 'bg-red-600 text-white'
+                ? 'bg-[var(--accent-live-strong)] text-white'
                 : 'border border-[var(--portal-border)] bg-[var(--portal-surface)] text-[var(--portal-text)]'"
             >
               <p *ngIf="msg.senderId !== currentUserId && isGroupConversation(activeWindow.conversationId)"
-                 class="mb-0.5 text-[10px] font-semibold text-red-300">{{ getSenderName(msg.senderId) }}</p>
+                 class="mb-0.5 text-[10px] font-semibold text-[var(--accent-live)]">{{ getSenderName(msg.senderId) }}</p>
               <p class="break-words leading-relaxed">{{ msg.text || 'Adjunto' }}</p>
               <p class="mt-1 text-[10px] opacity-60">{{ msg.createdAt | date: 'shortTime' }}</p>
             </div>
@@ -78,13 +78,13 @@ interface ChatWindowState {
               [(ngModel)]="activeWindow.draft"
               (keydown.enter)="sendMessage()"
               placeholder="Escribe un mensaje..."
-              class="flex-1 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] px-3 py-2 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:border-red-500/50 focus:outline-none focus:ring-1 focus:ring-red-500/30"
+              class="flex-1 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] px-3 py-2 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:border-[var(--accent-live)]/50 focus:outline-none focus:ring-1 focus:ring-[var(--accent-live)]/30"
             />
             <button
               type="button"
               (click)="sendMessage()"
               [disabled]="!activeWindow.draft?.trim()"
-              class="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600 text-white transition-colors hover:bg-red-500 disabled:opacity-40"
+              class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--accent-live-strong)] text-white transition-colors hover:opacity-90 disabled:opacity-40"
             >
               <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
@@ -103,14 +103,14 @@ interface ChatWindowState {
           <button
             type="button"
             (click)="openGeneralChat()"
-            class="flex w-full items-center gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-left transition-colors hover:bg-red-500/20"
+            class="flex w-full items-center gap-3 rounded-2xl border border-transparent bg-[var(--accent-live-soft)] px-4 py-3 text-left transition-colors hover:opacity-90"
           >
             <span class="relative flex h-3 w-3">
-              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-              <span class="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent-live)] opacity-75"></span>
+              <span class="relative inline-flex h-3 w-3 rounded-full bg-[var(--accent-live)]"></span>
             </span>
             <span class="flex-1 text-sm font-semibold text-[var(--portal-text)]">Chat general</span>
-            <span class="text-xs text-red-300">{{ connectedUsersCount }} online</span>
+            <span class="text-xs text-[var(--accent-live)]">{{ connectedUsersCount }} online</span>
           </button>
         </div>
 
@@ -134,7 +134,7 @@ interface ChatWindowState {
               <p class="truncate text-xs font-medium text-[var(--portal-text)]">{{ getConversationTitle(conv) }}</p>
               <span
                 *ngIf="conv.unreadCount"
-                class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] text-white"
+                class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--accent-live-strong)] px-1 text-[10px] text-white"
               >{{ conv.unreadCount }}</span>
             </div>
             <p class="mt-0.5 truncate text-[11px] text-[var(--portal-text-muted)]">
@@ -173,7 +173,7 @@ interface ChatWindowState {
               </div>
               <span
                 class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-950"
-                [ngClass]="user.isOnline ? 'bg-emerald-400' : 'bg-[var(--portal-border-strong)]'"
+                [ngClass]="user.isOnline ? 'bg-[var(--accent-streaming)]' : 'bg-[var(--portal-border-strong)]'"
               ></span>
             </div>
             <div class="min-w-0 flex-1">

@@ -40,7 +40,10 @@ export default defineConfig({
   // you want a retry to absorb transient latency from other traffic on that
   // same instance.
   retries: process.env.CI ? 1 : Number(process.env.PWTEST_RETRIES || 0),
-  workers: process.env.CI ? 2 : undefined,
+  // The suite hits a real, shared, actively-used backend. Keep local workers
+  // bounded (2) so parallel journeys don't saturate the shared API and flake
+  // on pure latency. CI uses 2 as well; override with PWTEST_WORKERS.
+  workers: process.env.CI ? 2 : Number(process.env.PWTEST_WORKERS || 2),
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   // Generous timeouts: this suite hits a real, shared backend (see the CORS
   // note above) whose first-touch response for a given query can take

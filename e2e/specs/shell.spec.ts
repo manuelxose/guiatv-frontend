@@ -20,7 +20,9 @@ test.describe('Shared responsive shell', () => {
     await expect(page.locator('.app-shell__route-content')).toHaveAttribute('inert', '');
     await expect(sheet.getByRole('link', { name: /Plataformas/ })).toBeVisible();
     await expect(sheet.getByRole('link', { name: /Blog/ })).toBeVisible();
-    await expect(sheet.getByRole('link', { name: /Rankings/ })).toHaveCount(0);
+    // Rankings are intentionally discoverable from the More sheet (design system §33).
+    await expect(sheet.getByRole('link', { name: /Rankings/ })).toBeVisible();
+    await expect(sheet.getByRole('link', { name: /Tendencias/ })).toBeVisible();
     await page.keyboard.press('Shift+Tab');
     await expect(sheet.locator(':focus')).toHaveCount(1);
     await page.keyboard.press('Escape');

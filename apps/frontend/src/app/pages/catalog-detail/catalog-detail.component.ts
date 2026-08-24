@@ -8,7 +8,7 @@ import { CatalogCardComponent } from '../../components/catalog-card/catalog-card
 import { InteractionButtonsComponent } from '../../components/interaction-buttons/interaction-buttons.component';
 import { WhereToWatchComponent } from '../../components/where-to-watch/where-to-watch.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
-import { ShareButtonsComponent } from '../../blog/components/share-buttons/share-buttons.component';
+import { ShareButtonsComponent } from '../../components/share-buttons/share-buttons.component';
 import {
   CatalogContentType,
   CatalogItem,
@@ -37,14 +37,14 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
     <div class="min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]">
       <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
       <div *ngIf="loading" class="flex min-h-[60vh] items-center justify-center">
-        <div class="h-12 w-12 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
+        <div class="h-12 w-12 animate-spin rounded-full border-2 border-[var(--accent-live)] border-t-transparent"></div>
       </div>
 
       <ng-container *ngIf="!loading && item as content; else emptyState">
         <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
           <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
         </div>
-        <section class="relative overflow-hidden border-b border-[var(--portal-border)] bg-slate-950">
+        <section class="relative overflow-hidden border-b border-[var(--portal-border)] bg-[var(--hero-bg)]">
           <div class="absolute inset-0">
             <img
               *ngIf="content.backdrop || content.image"
@@ -52,8 +52,8 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
               [alt]="content.title"
               class="h-full w-full object-cover opacity-55"
             />
-            <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,10,18,0.98)_0%,rgba(5,10,18,0.88)_48%,rgba(5,10,18,0.58)_100%)]"></div>
-            <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,10,18,0.18),rgba(5,10,18,0.92))]"></div>
+            <div class="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_oklch,var(--hero-bg)_98%,transparent)_0%,color-mix(in_oklch,var(--hero-bg)_88%,transparent)_48%,color-mix(in_oklch,var(--hero-bg)_58%,transparent)_100%)]"></div>
+            <div class="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_oklch,var(--hero-bg)_18%,transparent),color-mix(in_oklch,var(--hero-bg)_92%,transparent))]"></div>
           </div>
 
           <div class="relative mx-auto flex min-h-[30rem] max-w-7xl items-end px-4 pb-10 pt-12 sm:px-6 lg:px-8 lg:pt-16">
@@ -62,41 +62,41 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                 <div class="flex flex-wrap gap-2">
                   <span
                     *ngIf="content.liveNow"
-                    class="rounded-full border border-red-500/40 bg-red-600/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-white"
+                    class="rounded-full border border-transparent bg-[var(--accent-live-strong)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-white"
                   >
                     En directo
                   </span>
                   <span
                     *ngFor="let platform of content.primaryPlatforms.slice(0, 3)"
-                    class="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-[11px] font-semibold text-white/85 backdrop-blur-sm"
+                    class="rounded-full border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-3 py-1 text-[11px] font-semibold text-[var(--hero-text-muted)] backdrop-blur-sm"
                   >
                     {{ platform }}
                   </span>
                 </div>
 
                 <div>
-                  <h1 class="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
+                  <h1 class="max-w-4xl text-4xl font-black tracking-tight text-[var(--hero-text)] md:text-6xl">
                     {{ content.title }}
                   </h1>
-                  <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-white/70">
+                  <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-[var(--hero-text-muted)]">
                     <span *ngIf="content.releaseYear">{{ content.releaseYear }}</span>
                     <span *ngIf="content.durationMinutes">{{ content.durationMinutes }} min</span>
                     <span *ngIf="content.channel?.name">{{ content.channel?.name }}</span>
                     <span *ngIf="content.start">{{ formatTime(content.start) }}</span>
-                    <span *ngIf="content.rating" class="text-amber-300">
+                    <span *ngIf="content.rating" class="text-[var(--status-warning)]">
                       {{ content.rating | number:'1.0-1' }}/10
                     </span>
                   </div>
                 </div>
 
-                <p class="max-w-3xl text-base leading-8 text-white/80">
+                <p class="max-w-3xl text-base leading-8 text-[var(--hero-text-muted)]">
                   {{ content.synopsis || 'Sinopsis no disponible.' }}
                 </p>
 
                 <div class="flex flex-wrap gap-2">
                   <span
                     *ngFor="let genre of content.genres"
-                    class="rounded-full border border-white/20 bg-black/30 px-3 py-1 text-xs font-semibold text-white/80 backdrop-blur-sm"
+                    class="rounded-full border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-3 py-1 text-xs font-semibold text-[var(--hero-text-muted)] backdrop-blur-sm"
                   >
                     {{ genre }}
                   </span>
@@ -114,7 +114,7 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                     [preloadInteraction]="true"
                   ></app-interaction-buttons>
                   <div class="border-t border-[var(--portal-border)] pt-3">
-                    <app-share-buttons [url]="shareUrl" [title]="content.title"></app-share-buttons>
+                    <app-share-buttons variant="branded" [url]="shareUrl" [title]="content.title"></app-share-buttons>
                   </div>
                 </div>
               </div>

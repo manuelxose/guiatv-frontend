@@ -60,6 +60,31 @@ describe('tv-normalizers', () => {
     expect(normalized.detailPath).toContain('/peliculas/');
   });
 
+  it('keeps base letters of accented characters in movie/series slugs (regression)', () => {
+    const catalogItem: CatalogItem = {
+      catalogId: 'tmdb:movie:999',
+      source: 'tmdb',
+      contentType: 'movie',
+      title: 'Avatar Aang, el último maestro del aire',
+      genres: [],
+      primaryPlatforms: [],
+    };
+
+    const normalized = normalizeToCard(catalogItem);
+
+    // Legacy slugify dropped the accented vowel entirely ("ltimo"); the
+    // movie/series slugifier must keep the base letter so the backend slug
+    // lookup and the TMDB search derived from it can resolve the title.
+    expect(normalized.detailPath).toBe('/peliculas/avatar-aang-el-ultimo-maestro-del-aire');
+
+    // Program slugs (EPG-sourced) intentionally keep the legacy slugifier to
+    // preserve already-indexed public URLs (accented letters are dropped:
+    // "fútbol" -> "ftbol", "región" -> "regin").
+    const tvItem = makeTvItem({ editorialCategory: 'Deportes', title: 'Fútbol por la región' });
+    const program = normalizeToCard(tvItem);
+    expect(program.detailPath).toBe('/programas/ftbol-por-la-regin');
+  });
+
   it('normalizes editorial labels consistently', () => {
     expect(normalizeCategory('película romántica')).toBe('Cine');
     expect(normalizeCategory('serie de suspense')).toBe('Series');
@@ -74,6 +99,7 @@ function makeTvItem(overrides: {
   liveNow?: boolean;
   editorialCategory?: string;
   sportFacet?: TvReadItemDTO['program']['sportFacet'];
+  title?: string;
 } = {}): TvReadItemDTO {
   return {
     id: 'airing-1',
@@ -87,8 +113,8 @@ function makeTvItem(overrides: {
     },
     program: {
       brandKey: 'brand-1',
-      title: 'Partido estelar',
-      normalizedTitle: 'partido estelar',
+      title: overrides.title || 'Partido estelar',
+      normalizedTitle: (overrides.title || 'Partido estelar').toLowerCase(),
       titleAliases: [],
       editorialCategory: overrides.editorialCategory || 'Deportes',
       sportFacet: overrides.sportFacet,

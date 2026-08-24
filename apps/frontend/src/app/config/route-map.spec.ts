@@ -25,7 +25,7 @@ describe('route map', () => {
 
   it('defines the canonical desktop hierarchy and contextual children', () => {
     expect(PORTAL_PRIMARY_DESTINATIONS.map((tab) => tab.label)).toEqual([
-      'TV', 'Qué ver', 'Plataformas', 'Deportes', 'Blog',
+      'TV', 'Qué ver', 'Plataformas', 'Fútbol', 'Blog',
     ]);
     expect(PORTAL_BLOG_DESTINATIONS.map((tab) => tab.label)).toEqual([
       'Últimos', 'Guías', 'Rankings', 'Tendencias',
@@ -40,7 +40,9 @@ describe('route map', () => {
     expect(PORTAL_SPORTS_DESTINATIONS.map((tab) => tab.label)).toEqual([
       'Inicio', 'Partidos', 'Competiciones', 'Noticias',
     ]);
-    expect(PORTAL_MOBILE_MORE_DESTINATIONS.map((tab) => tab.label)).toEqual(['Plataformas', 'Blog']);
+    expect(PORTAL_MOBILE_MORE_DESTINATIONS.map((tab) => tab.label)).toEqual([
+      'Plataformas', 'Blog', 'Rankings', 'Tendencias',
+    ]);
   });
 
   it('uses one canonical section model with route and action semantics', () => {

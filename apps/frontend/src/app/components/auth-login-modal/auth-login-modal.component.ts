@@ -34,7 +34,7 @@ import { LoginModalService } from '../../services/login-modal.service';
           <button
             type="button"
             (click)="cancel()"
-            class="min-h-[36px] min-w-[36px] rounded-lg border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[36px] min-w-[36px] rounded-lg border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
             aria-label="Cerrar login"
           >
             ✕
@@ -55,7 +55,7 @@ import { LoginModalService } from '../../services/login-modal.service';
               required
               autocomplete="email"
               [(ngModel)]="credentials.email"
-              class="mt-1.5 w-full min-h-[44px] rounded-lg border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="mt-1.5 w-full min-h-[44px] rounded-lg border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               placeholder="tu@email.com"
             />
           </div>
@@ -68,7 +68,7 @@ import { LoginModalService } from '../../services/login-modal.service';
               required
               autocomplete="current-password"
               [(ngModel)]="credentials.password"
-              class="mt-1.5 w-full min-h-[44px] rounded-lg border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="mt-1.5 w-full min-h-[44px] rounded-lg border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               placeholder="********"
             />
           </div>
@@ -76,7 +76,7 @@ import { LoginModalService } from '../../services/login-modal.service';
           <button
             type="submit"
             [disabled]="loading"
-            class="w-full min-h-[44px] rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold disabled:opacity-60"
+            class="w-full min-h-[44px] rounded-lg bg-[var(--accent-live-strong)] hover:opacity-90 text-white font-semibold disabled:opacity-60"
           >
             {{ loading ? 'Validando...' : 'Entrar con email' }}
           </button>
@@ -95,9 +95,9 @@ import { LoginModalService } from '../../services/login-modal.service';
           *ngIf="statusMessage"
           class="mt-3 text-sm rounded-lg px-3 py-2 border"
           [ngClass]="{
-            'text-green-300 bg-green-500/10 border-green-500/20': statusTone === 'success',
-            'text-red-300 bg-red-500/10 border-red-500/20': statusTone === 'error',
-            'text-sky-300 bg-sky-500/10 border-sky-500/20': statusTone === 'info'
+            'text-[var(--accent-streaming)] bg-[var(--accent-streaming-soft)] border-transparent': statusTone === 'success',
+            'text-[var(--accent-live)] bg-[var(--accent-live-soft)] border-transparent': statusTone === 'error',
+            'text-[var(--accent-discover)] bg-[var(--accent-discover-soft)] border-transparent': statusTone === 'info'
           }"
         >
           {{ statusMessage }}

@@ -15,7 +15,7 @@ import { UserService } from '../../../../services/user.service';
           type="text"
           (input)="onSearch($any($event.target).value)"
           placeholder="Buscar usuarios por nombre..."
-          class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl pl-10 pr-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl pl-10 pr-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
         />
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--portal-text-muted)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <circle cx="11" cy="11" r="6.5"></circle>
@@ -24,7 +24,7 @@ import { UserService } from '../../../../services/user.service';
       </div>
 
       <div *ngIf="searching" class="text-center py-4">
-        <div class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[var(--portal-border-strong)] border-t-red-500"></div>
+        <div class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-[var(--portal-border-strong)] border-t-[var(--accent-live)]"></div>
       </div>
 
       <div *ngIf="!searching && results.length === 0 && searched" class="text-center py-6 text-sm text-[var(--portal-text-muted)]">
@@ -51,10 +51,10 @@ import { UserService } from '../../../../services/user.service';
           <button
             type="button"
             (click)="onToggleFollow(user, $event)"
-            class="min-h-[36px] px-4 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[36px] px-4 rounded-lg text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
             [ngClass]="user.isFollowing
               ? 'border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:border-[var(--portal-border-strong)]'
-              : 'bg-red-600 text-white hover:bg-red-500'"
+              : 'bg-[var(--accent-live-strong)] text-white hover:opacity-90'"
           >
             {{ user.isFollowing ? 'Siguiendo' : 'Seguir' }}
           </button>

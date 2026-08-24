@@ -113,7 +113,7 @@ import {
     .row__score-value { font-weight: 800; font-size: 1rem; color: var(--portal-text); }
     .row--live .row__score-value { color: var(--status-live); }
     .row__score-sep { color: var(--portal-text-muted); }
-    .row__vs { font-size: 0.75rem; font-weight: 650; color: var(--portal-text-faint); }
+    .row__vs { font-size: 0.75rem; font-weight: 650; color: var(--portal-text-muted); }
 
     .row__broadcast { justify-self: end; }
 

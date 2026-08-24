@@ -66,7 +66,15 @@ test.describe('Canonical section navigation', () => {
         if (path !== '/') {
           await expect(page.locator('app-portal-context-nav')).toBeVisible();
         }
-        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width);
+        // Late-rendering content (rails, EPG cells, skeletons settling under
+        // shared-backend load) can momentarily widen the document. Poll until
+        // the page settles to exactly the viewport width; a route that truly
+        // overflows fails the poll instead of flaking on a transient state.
+        await expect
+          .poll(async () => page.evaluate(() => document.documentElement.scrollWidth), {
+            timeout: 12_000,
+          })
+          .toBe(viewport.width);
         await page.screenshot({
           path: testInfo.outputPath(`${path.replaceAll('/', '-') || 'home'}-${viewport.width}x${viewport.height}.png`),
         });
@@ -88,7 +96,7 @@ test.describe('Canonical section navigation', () => {
     const sections = [
       { path: '/programacion-tv/guia-canales', label: 'Secciones de TV', items: ['En emisión', 'A continuación', 'Esta noche', 'Parrilla'] },
       { path: '/programacion-tv/que-ver-hoy', label: 'Secciones de Qué ver', items: ['Todo', 'En TV', 'Películas', 'Series', 'Gratis'] },
-      { path: '/deportes/futbol', label: 'Secciones de Deportes', items: ['Inicio', 'Partidos', 'Competiciones', 'Noticias'] },
+      { path: '/deportes/futbol', label: 'Secciones de Fútbol', items: ['Inicio', 'Partidos', 'Competiciones', 'Noticias'] },
     ] as const;
 
     for (const section of sections) {

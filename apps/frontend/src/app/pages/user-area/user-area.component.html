@@ -25,7 +25,7 @@
                       {{ getProfileInitials(profile.name) }}
                     </span>
                   </div>
-                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[var(--portal-bg)]"></span>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[var(--accent-streaming)] border-2 border-[var(--portal-bg)]"></span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <h2 class="text-sm font-bold text-[var(--portal-text)] truncate">{{ profile.name }}</h2>
@@ -116,7 +116,7 @@
           <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4">
             <div class="flex items-center justify-between mb-3">
               <p class="text-[10px] uppercase tracking-widest text-[var(--portal-text-muted)]">Amigos online</p>
-              <button type="button" (click)="setActiveTab('friends')" class="text-xs text-red-400 min-h-[28px]">Ver todos</button>
+              <button type="button" (click)="setActiveTab('friends')" class="text-xs text-[var(--accent-live)] min-h-[28px]">Ver todos</button>
             </div>
             <div class="space-y-2">
               <ng-container *ngFor="let friend of ((friends$ | async) || []).slice(0, 5)">
@@ -128,11 +128,11 @@
                         {{ friend.name.slice(0, 2).toUpperCase() }}
                       </div>
                     </div>
-                    <span class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-[var(--portal-bg)]"></span>
+                    <span class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[var(--accent-streaming)] border-2 border-[var(--portal-bg)]"></span>
                   </div>
                   <span class="text-xs text-[var(--portal-text-soft)] truncate flex-1">{{ friend.name }}</span>
                   <button type="button" (click)="onOpenFriendChat(friend.id)"
-                    class="min-h-[28px] px-2 rounded-lg text-[10px] text-red-300 hover:text-red-200 border border-red-500/30 hover:border-red-500/50">
+                    class="min-h-[28px] px-2 rounded-lg text-[10px] text-[var(--accent-live)] hover:opacity-90 border border-[var(--accent-live)] hover:border-[var(--accent-live)]/50">
                     Chat
                   </button>
                 </div>
@@ -156,7 +156,7 @@
                       {{ getProfileInitials(profile.name) }}
                     </span>
                   </div>
-                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[var(--portal-bg)]"></span>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[var(--accent-streaming)] border-2 border-[var(--portal-bg)]"></span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <h1 class="text-base font-bold text-[var(--portal-text)] truncate leading-tight">{{ profile.name }}</h1>
@@ -194,9 +194,9 @@
                 (click)="setActiveTab(section.key)"
                 role="tab"
                 [attr.aria-selected]="activeTab === section.key"
-                class="snap-start flex-shrink-0 min-h-[40px] px-5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 active:scale-95"
+                class="snap-start flex-shrink-0 min-h-[40px] px-5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)] active:scale-95"
                 [ngClass]="activeTab === section.key
-                  ? 'bg-red-600 text-white shadow-lg shadow-red-900/30'
+                  ? 'bg-[var(--accent-live-strong)] text-white shadow-lg shadow-black/10'
                   : 'bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] border border-[var(--portal-border)]'"
               >
                 {{ section.label }}
@@ -207,9 +207,9 @@
                 (click)="setActiveTab('admin')"
                 role="tab"
                 [attr.aria-selected]="activeTab === 'admin'"
-                class="snap-start flex-shrink-0 min-h-[40px] px-5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 active:scale-95"
+                class="snap-start flex-shrink-0 min-h-[40px] px-5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)] active:scale-95"
                 [ngClass]="activeTab === 'admin'
-                  ? 'bg-red-600 text-white shadow-lg shadow-red-900/30'
+                  ? 'bg-[var(--accent-live-strong)] text-white shadow-lg shadow-black/10'
                   : 'bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] border border-[var(--portal-border)]'"
               >
                 Admin
@@ -218,7 +218,33 @@
           </div>
 
           <!-- ═══ TAB PANELS ═══ -->
-          <div [ngSwitch]="activeTab">
+
+          <!-- Error state -->
+          <ng-container *ngIf="error$ | async as error">
+            <div
+              class="mb-5 flex items-start gap-3 rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
+              role="alert"
+            >
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-[var(--portal-text)]">No se pudo cargar tu área</p>
+                <p class="text-xs text-[var(--portal-text-muted)] mt-0.5">{{ error }}</p>
+              </div>
+              <button
+                type="button"
+                (click)="retryLoad()"
+                class="min-h-[40px] flex-shrink-0 px-4 rounded-full bg-[var(--accent-live-strong)] text-white text-[13px] font-semibold active:scale-95 transition-transform"
+              >
+                Reintentar
+              </button>
+            </div>
+          </ng-container>
+
+          <!-- Loading skeleton -->
+          <div *ngIf="(loading$ | async) === true" class="space-y-3 py-1" aria-busy="true" aria-label="Cargando tu área">
+            <div *ngFor="let _ of [1, 2, 3]" class="h-24 rounded-2xl bg-[var(--portal-surface-strong)] animate-pulse"></div>
+          </div>
+
+          <div *ngIf="(loading$ | async) !== true" [ngSwitch]="activeTab">
 
             <!-- ── FEED ── -->
             <ng-container *ngSwitchCase="'feed'">
@@ -226,7 +252,7 @@
                 <!-- "Viendo ahora" banner -->
                 <ng-container *ngIf="(profile$ | async)?.watchingNow?.title as watching">
                   <div class="mb-4 flex items-center gap-3 p-3 bg-[var(--portal-surface-soft)] border border-[var(--portal-border)] rounded-2xl">
-                    <span class="flex-shrink-0 w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    <span class="flex-shrink-0 w-2 h-2 rounded-full bg-[var(--status-live)] animate-pulse"></span>
                     <p class="text-xs text-[var(--portal-text-muted)]"><span class="font-semibold text-[var(--portal-text)]">Viendo ahora:</span> {{ watching }}</p>
                   </div>
                 </ng-container>
@@ -259,10 +285,10 @@
                         </div>
                         <div class="space-y-2 p-4">
                           <div class="flex flex-wrap gap-1.5">
-                            <span class="rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-100">
+                            <span class="rounded-full border border-transparent bg-[var(--accent-live-soft)] px-2 py-0.5 text-[10px] font-semibold text-[var(--portal-text)]">
                               {{ rec.type }}
                             </span>
-                            <span *ngIf="rec.platform" class="rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-100">
+                            <span *ngIf="rec.platform" class="rounded-full border border-transparent bg-[var(--accent-discover-soft)] px-2 py-0.5 text-[10px] font-semibold text-[var(--portal-text)]">
                               {{ rec.platform }}
                             </span>
                           </div>
@@ -308,7 +334,7 @@
                       </div>
                       <span
                         class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#0b0f14]"
-                        [ngClass]="friend.isOnline ? 'bg-emerald-500' : 'bg-[var(--portal-border-strong)]'"
+                        [ngClass]="friend.isOnline ? 'bg-[var(--accent-streaming)]' : 'bg-[var(--portal-border-strong)]'"
                       ></span>
                     </div>
 
@@ -328,7 +354,7 @@
                       <button
                         type="button"
                         (click)="onOpenFriendChat(friend.id)"
-                        class="min-h-[44px] rounded-xl border border-red-500/40 bg-red-500/10 px-4 text-xs font-semibold text-red-100 active:scale-95 transition-transform"
+                        class="min-h-[44px] rounded-xl border border-transparent bg-[var(--accent-live-soft)] px-4 text-xs font-semibold text-[var(--portal-text)] active:scale-95 transition-transform"
                       >
                         Chat
                       </button>
@@ -446,7 +472,7 @@
             <div class="flex flex-col sm:flex-row gap-3">
               <a
                 routerLink="/admin"
-                class="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-xl bg-[var(--accent-live-strong)] hover:opacity-90 text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               >
                 Ir al panel completo
               </a>
@@ -524,7 +550,7 @@
       <div class="mb-8">
         <div class="flex items-center justify-center gap-2 mb-4">
           <span class="text-4xl font-black text-[var(--portal-text)] tracking-tight">GUIA</span>
-          <span class="w-3 h-3 rounded-full bg-red-500"></span>
+          <span class="w-3 h-3 rounded-full bg-[var(--accent-live)]"></span>
           <span class="text-4xl font-black text-[var(--portal-text)] tracking-tight">TV</span>
         </div>
         <p class="text-[var(--portal-text-muted)] text-sm leading-relaxed max-w-xs">
@@ -542,7 +568,7 @@
       <div class="w-full max-w-xs space-y-3">
         <a
           routerLink="/registro"
-          class="block w-full min-h-[52px] flex items-center justify-center rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-base shadow-lg shadow-red-900/30 active:scale-[0.98] transition-transform"
+          class="block w-full min-h-[52px] flex items-center justify-center rounded-2xl bg-[var(--accent-live-strong)] hover:opacity-90 text-white font-bold text-base shadow-lg shadow-red-900/30 active:scale-[0.98] transition-transform"
         >
           Crear cuenta gratis
         </a>

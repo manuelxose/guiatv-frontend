@@ -18,7 +18,7 @@ import { FaqSectionComponent, FaqItem } from '../../components/faq-section/faq-s
       <section class="relative overflow-hidden border-b border-[var(--portal-border)]">
         <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(239,68,68,0.08),transparent_50%)]"></div>
         <div class="relative mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 lg:px-8">
-          <p class="text-[11px] uppercase tracking-[0.34em] text-red-500 mb-4">Sobre nosotros</p>
+          <p class="text-[11px] uppercase tracking-[0.34em] text-[var(--accent-live)] mb-4">Sobre nosotros</p>
           <h1 class="text-4xl font-black tracking-tight text-[var(--portal-text)] md:text-6xl">
             La guía de TV y streaming<br>de referencia en España
           </h1>
@@ -45,19 +45,19 @@ import { FaqSectionComponent, FaqItem } from '../../components/faq-section/faq-s
         <!-- Numbers -->
         <section class="mb-16 grid grid-cols-2 md:grid-cols-4 gap-6">
           <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6 text-center">
-            <p class="text-3xl font-black text-red-500">100+</p>
+            <p class="text-3xl font-black text-[var(--accent-live)]">100+</p>
             <p class="mt-1 text-sm text-[var(--portal-text-muted)]">Canales de TV</p>
           </div>
           <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6 text-center">
-            <p class="text-3xl font-black text-red-500">15+</p>
+            <p class="text-3xl font-black text-[var(--accent-live)]">15+</p>
             <p class="mt-1 text-sm text-[var(--portal-text-muted)]">Plataformas streaming</p>
           </div>
           <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6 text-center">
-            <p class="text-3xl font-black text-red-500">24/7</p>
+            <p class="text-3xl font-black text-[var(--accent-live)]">24/7</p>
             <p class="mt-1 text-sm text-[var(--portal-text-muted)]">Actualización en tiempo real</p>
           </div>
           <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6 text-center">
-            <p class="text-3xl font-black text-red-500">100%</p>
+            <p class="text-3xl font-black text-[var(--accent-live)]">100%</p>
             <p class="mt-1 text-sm text-[var(--portal-text-muted)]">Gratuito</p>
           </div>
         </section>
@@ -99,7 +99,7 @@ import { FaqSectionComponent, FaqItem } from '../../components/faq-section/faq-s
         <section class="mb-16">
           <h2 class="text-2xl font-bold text-[var(--portal-text)] mb-4">Equipo</h2>
           <p class="text-[var(--portal-text-soft)] leading-8 mb-6">
-            Guía Programación TV es un proyecto de <a href="https://tecnoriasl.com/" target="_blank" rel="noopener" class="text-red-400 hover:text-red-300 transition-colors">TecnoRia S.L.</a>,
+            Guía Programación TV es un proyecto de <a href="https://tecnoriasl.com/" target="_blank" rel="noopener" class="text-[var(--accent-live)] hover:opacity-75 transition-opacity">TecnoRia S.L.</a>,
             empresa tecnológica española especializada en desarrollo de productos digitales.
           </p>
         </section>

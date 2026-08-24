@@ -2,11 +2,12 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Inject, PLATFORM_ID, computed, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs';
+import { switchMap, tap } from 'rxjs';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
 import { PortalLocalToolbarComponent } from '../../../components/portal-local-toolbar/portal-local-toolbar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
+import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skeleton-block/unified-skeleton-block.component';
 import { PlatformBadgeComponent } from '../../../components/platform-badge/platform-badge.component';
 import { TvDataFacade } from '../../../state/tv-data.facade';
 import { UnifiedGuideStateService } from '../../../state/unified-guide.state';
@@ -44,6 +45,7 @@ interface StreamingModule {
     RouterModule,
     UnifiedFilterDockComponent,
     UnifiedProgramCardComponent,
+    UnifiedSkeletonBlockComponent,
     PlatformBadgeComponent,
     PortalLocalToolbarComponent,
   ],
@@ -78,9 +80,15 @@ export class StreamingViewComponent {
   }));
   private readonly filters$ = toObservable(this.filters);
 
+  /** True while the streaming catalogue request (or a filter change) is in flight. */
+  readonly gridLoading = signal(true);
   readonly platforms = toSignal(this.facade.getPlatforms(), { initialValue: [] });
   readonly gridData = toSignal(
-    this.filters$.pipe(switchMap((filters) => this.facade.getStreamingContent(filters))),
+    this.filters$.pipe(
+      tap(() => this.gridLoading.set(true)),
+      switchMap((filters) => this.facade.getStreamingContent(filters)),
+      tap(() => this.gridLoading.set(false))
+    ),
     {
       initialValue: {
         items: [],

@@ -7,7 +7,7 @@ import { TvChannelSurfaceDTO, TvReadItemDTO } from 'src/app/api/models';
 import { InteractionButtonsComponent } from 'src/app/components/interaction-buttons/interaction-buttons.component';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvDataService } from 'src/app/state/tv-data.service';
-import { buildDetailPath, CatalogContentType } from 'src/app/utils/catalog';
+import { buildDetailPath, CatalogContentType, slugifyTitle } from 'src/app/utils/catalog';
 import { normalizePublicImageUrl } from 'src/app/utils/media-url';
 import { slugify } from 'src/app/utils/utils';
 
@@ -306,7 +306,11 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       start,
       end,
       liveNow: Boolean(program?.airing?.liveNow),
-      detailPath: buildDetailPath(contentType, title, slugify),
+      detailPath: buildDetailPath(
+        contentType,
+        title,
+        contentType === 'program' ? slugify : slugifyTitle
+      ),
       durationMinutes: program?.airing?.durationMinutes || durationMinutes,
     };
   }

@@ -29,17 +29,17 @@ test.describe('Football Home', () => {
   test('sub-navigation reaches Partidos, Competiciones and Noticias', async ({ page }) => {
     await page.goto('/deportes/futbol');
     await assertNotBlankScreen(page);
-    await page.getByRole('navigation', { name: 'Secciones de Deportes' }).getByRole('link', { name: 'Partidos', exact: true }).click();
+    await page.getByRole('navigation', { name: 'Secciones de Fútbol' }).getByRole('link', { name: 'Partidos', exact: true }).click();
     await page.waitForURL(/\/deportes\/futbol\/partidos-hoy/, { timeout: 20_000 });
     await assertNotBlankScreen(page);
 
     await page.goto('/deportes/futbol');
-    await page.getByRole('navigation', { name: 'Secciones de Deportes' }).getByRole('link', { name: 'Competiciones', exact: true }).click();
+    await page.getByRole('navigation', { name: 'Secciones de Fútbol' }).getByRole('link', { name: 'Competiciones', exact: true }).click();
     await page.waitForURL(/\/deportes\/futbol\/competiciones/, { timeout: 20_000 });
     await assertNotBlankScreen(page);
 
     await page.goto('/deportes/futbol');
-    await page.getByRole('navigation', { name: 'Secciones de Deportes' }).getByRole('link', { name: 'Noticias', exact: true }).click();
+    await page.getByRole('navigation', { name: 'Secciones de Fútbol' }).getByRole('link', { name: 'Noticias', exact: true }).click();
     await page.waitForURL(/\/deportes\/futbol\/noticias/, { timeout: 20_000 });
     await assertNotBlankScreen(page);
   });
@@ -70,12 +70,15 @@ test.describe('Football Matches -> Match Centre', () => {
   });
 
   test('the Live filter narrows the list to live/halftime matches only', async ({ page }) => {
+    test.setTimeout(90_000);
     await page.goto('/deportes/futbol/en-directo');
     await assertNotBlankScreen(page);
     // A dedicated live view is expected to show either real live matches or
     // the page's own honest empty state — never a stuck loading indicator.
-    const hasEmptyState = await page.getByText('No hay partidos en directo ahora mismo').isVisible({ timeout: 20_000 }).catch(() => false);
-    const hasRows = await page.locator('.row').first().isVisible({ timeout: 20_000 }).catch(() => false);
+    // The live feed is EPG-derived and the shared backend can take a while
+    // under parallel load, so poll rather than wait once.
+    const hasEmptyState = await page.getByText('No hay partidos en directo ahora mismo').isVisible({ timeout: 30_000 }).catch(() => false);
+    const hasRows = await page.locator('.row').first().isVisible({ timeout: 30_000 }).catch(() => false);
     expect(hasEmptyState || hasRows).toBeTruthy();
   });
 
@@ -113,20 +116,21 @@ test.describe('Competitions', () => {
     await page.goto('/deportes/futbol/competiciones');
     await assertNotBlankScreen(page);
     const firstCompetition = page.locator('.competition').first();
-    await expect(firstCompetition).toBeVisible({ timeout: 20_000 });
+    await expect(firstCompetition).toBeVisible({ timeout: 30_000 });
     await assertNoRenderedUndefined(page);
   });
 
   test('opening a competition shows a real header and Resumen/Calendario/Clasificación tabs', async ({ page }) => {
+    test.setTimeout(90_000);
     await page.goto('/deportes/futbol/competiciones');
     await assertNotBlankScreen(page);
 
     const firstCompetition = page.locator('.competition').first();
-    await expect(firstCompetition).toBeVisible({ timeout: 20_000 });
+    await expect(firstCompetition).toBeVisible({ timeout: 30_000 });
     await firstCompetition.click();
-    await page.waitForURL(/\/deportes\/futbol\/competiciones\//, { timeout: 20_000 });
+    await page.waitForURL(/\/deportes\/futbol\/competiciones\//, { timeout: 30_000 });
 
-    await expect(page.locator('h1').first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 30_000 });
     const tabs = page.getByRole('navigation', { name: 'Secciones de la competición' });
     await expect(tabs.getByRole('button')).toHaveCount(3);
 
@@ -141,24 +145,25 @@ test.describe('Competitions', () => {
 
 test.describe('Team detail', () => {
   test('reached from a competition standings row, shows a real team header', async ({ page }) => {
+    test.setTimeout(90_000);
     await page.goto('/deportes/futbol/competiciones');
     await assertNotBlankScreen(page);
     const firstCompetition = page.locator('.competition').first();
-    await expect(firstCompetition).toBeVisible({ timeout: 20_000 });
+    await expect(firstCompetition).toBeVisible({ timeout: 30_000 });
     await firstCompetition.click();
-    await page.waitForURL(/\/deportes\/futbol\/competiciones\//, { timeout: 20_000 });
+    await page.waitForURL(/\/deportes\/futbol\/competiciones\//, { timeout: 30_000 });
 
     const tabs = page.getByRole('navigation', { name: 'Secciones de la competición' });
     await tabs.getByRole('button', { name: 'Clasificación', exact: true }).click();
     // The team name itself is the link (spec §100 "no dead-end pages") —
     // the row is a table row, not a single clickable target.
     const teamLink = page.locator('.standings__name').first();
-    const hasStandings = await teamLink.isVisible({ timeout: 20_000 }).catch(() => false);
+    const hasStandings = await teamLink.isVisible({ timeout: 30_000 }).catch(() => false);
     test.skip(!hasStandings, 'No standings data for this competition in the current data window.');
 
     await teamLink.click();
-    await page.waitForURL(/\/deportes\/futbol\/equipos\//, { timeout: 20_000 });
-    await expect(page.locator('.head__title')).toBeVisible({ timeout: 20_000 });
+    await page.waitForURL(/\/deportes\/futbol\/equipos\//, { timeout: 30_000 });
+    await expect(page.locator('.head__title')).toBeVisible({ timeout: 30_000 });
     await assertNoRenderedUndefined(page);
   });
 });
@@ -196,8 +201,8 @@ test.describe('Football news', () => {
     // be revisited rather than treated as a permanent assertion of emptiness.
     await page.goto('/deportes/futbol/noticias');
     await assertNotBlankScreen(page);
-    const hasCards = await page.locator('.grid > *').first().isVisible({ timeout: 20_000 }).catch(() => false);
-    const hasEmptyState = await page.getByText('Todavía no hay noticias').isVisible({ timeout: 20_000 }).catch(() => false);
+    const hasCards = await page.locator('.grid > *').first().isVisible({ timeout: 30_000 }).catch(() => false);
+    const hasEmptyState = await page.getByText('Todavía no hay noticias').isVisible({ timeout: 30_000 }).catch(() => false);
     expect(hasCards || hasEmptyState).toBeTruthy();
     await assertNoRenderedUndefined(page);
   });

@@ -21,36 +21,36 @@ interface DeveloperLinkCard {
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="min-h-screen bg-[#081018] text-slate-100">
-      <section class="relative overflow-hidden border-b border-slate-800/70">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.16),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(239,68,68,0.12),transparent_36%)]"></div>
+    <div class="min-h-screen bg-[var(--hero-bg)] text-[var(--hero-text)]">
+      <section class="relative overflow-hidden border-b border-[var(--hero-border)]">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--hero-accent-strong)_14%,transparent),transparent_42%),radial-gradient(circle_at_bottom_right,color-mix(in_oklch,var(--hero-accent-live)_10%,transparent),transparent_36%)]"></div>
         <div class="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-          <p class="text-[11px] font-semibold uppercase tracking-[0.32em] text-sky-300">Desarrolladores</p>
+          <p class="text-[11px] font-semibold uppercase tracking-[0.32em] text-[var(--hero-accent)]">Desarrolladores</p>
           <div class="mt-4 grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
             <div class="space-y-5">
-              <h1 class="max-w-3xl text-4xl font-black tracking-tight text-white md:text-6xl">
+              <h1 class="max-w-3xl text-4xl font-black tracking-tight text-[var(--hero-text)] md:text-6xl">
                 API y widget embebible para TV, catálogo y programación.
               </h1>
-              <p class="max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
+              <p class="max-w-3xl text-base leading-7 text-[var(--hero-text-muted)] md:text-lg">
                 Documentación pública para consultar canales, parrillas, layouts, catálogo y búsqueda.
                 También puedes integrar el widget real de programación con parámetros soportados y oEmbed.
               </p>
               <div class="flex flex-wrap gap-3">
                 <a
                   href="/v2/docs"
-                  class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-sky-500 px-6 text-sm font-semibold text-slate-950 transition-colors hover:bg-sky-400"
+                  class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-[var(--hero-accent-strong)] px-6 text-sm font-semibold text-[var(--hero-bg)] transition-colors hover:bg-[var(--hero-accent)]"
                 >
                   Abrir docs API
                 </a>
                 <a
                   [routerLink]="'/embed'"
-                  class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-6 text-sm font-semibold text-slate-100 transition-colors hover:border-slate-500 hover:text-white"
+                  class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-6 text-sm font-semibold text-[var(--hero-text)] transition-colors hover:border-[var(--hero-accent-strong)]"
                 >
                   Ver widget
                 </a>
                 <a
                   [routerLink]="'/embed/programacion'"
-                  class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-6 text-sm font-semibold text-emerald-200 transition-colors hover:border-emerald-400/40"
+                  class="inline-flex min-h-[48px] items-center justify-center rounded-full border border-transparent bg-[var(--hero-success-soft)] px-6 text-sm font-semibold text-[var(--hero-success)] transition-colors hover:border-[var(--hero-success)]"
                 >
                   Probar iframe real
                 </a>
@@ -58,15 +58,15 @@ interface DeveloperLinkCard {
             </div>
 
             <div class="grid gap-3">
-              <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5">
-                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Cobertura</p>
-                <p class="mt-2 text-2xl font-bold text-white">Canales, layouts y catálogo</p>
-                <p class="mt-2 text-sm text-slate-400">La misma superficie técnica que alimenta la app pública.</p>
+              <div class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-5">
+                <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Cobertura</p>
+                <p class="mt-2 text-2xl font-bold text-[var(--hero-text)]">Canales, layouts y catálogo</p>
+                <p class="mt-2 text-sm text-[var(--hero-text-muted)]">La misma superficie técnica que alimenta la app pública.</p>
               </div>
-              <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5">
-                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Widget</p>
-                <p class="mt-2 text-2xl font-bold text-white">Programación embebible</p>
-                <p class="mt-2 text-sm text-slate-400">Parrilla real basada en <code>ProgramListComponent</code>, no una demo estática.</p>
+              <div class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-5">
+                <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Widget</p>
+                <p class="mt-2 text-2xl font-bold text-[var(--hero-text)]">Programación embebible</p>
+                <p class="mt-2 text-sm text-[var(--hero-text-muted)]">Parrilla real basada en <code>ProgramListComponent</code>, no una demo estática.</p>
               </div>
             </div>
           </div>
@@ -78,27 +78,27 @@ interface DeveloperLinkCard {
           <div class="space-y-10">
             <section class="space-y-4">
               <div>
-                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">API pública</p>
-                <h2 class="mt-2 text-2xl font-semibold text-white">Endpoints reales disponibles</h2>
+                <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">API pública</p>
+                <h2 class="mt-2 text-2xl font-semibold text-[var(--hero-text)]">Endpoints reales disponibles</h2>
               </div>
 
               <div class="space-y-3">
                 <article
                   *ngFor="let endpoint of endpoints"
-                  class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5"
+                  class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-5"
                 >
                   <div class="flex items-start gap-3">
                     <span
                       class="inline-flex min-w-[52px] items-center justify-center rounded-full px-2.5 py-1 text-[11px] font-bold"
                       [ngClass]="endpoint.method === 'GET'
-                        ? 'bg-emerald-500/15 text-emerald-200'
-                        : 'bg-sky-500/15 text-sky-200'"
+                        ? 'bg-[var(--hero-success-soft)] text-[var(--hero-success)]'
+                        : 'bg-[var(--hero-accent-soft)] text-[var(--hero-accent)]'"
                     >
                       {{ endpoint.method }}
                     </span>
                     <div class="min-w-0">
-                      <code class="break-all text-sm font-semibold text-white">{{ endpoint.path }}</code>
-                      <p class="mt-1 text-sm text-slate-400">{{ endpoint.description }}</p>
+                      <code class="break-all text-sm font-semibold text-[var(--hero-text)]">{{ endpoint.path }}</code>
+                      <p class="mt-1 text-sm text-[var(--hero-text-muted)]">{{ endpoint.description }}</p>
                     </div>
                   </div>
                 </article>
@@ -108,12 +108,12 @@ interface DeveloperLinkCard {
             <section class="grid gap-4 lg:grid-cols-2">
               <article
                 *ngFor="let card of linkCards"
-                class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5"
+                class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-5"
               >
-                <p class="text-sm font-semibold text-white">{{ card.title }}</p>
-                <p class="mt-2 text-sm leading-6 text-slate-400">{{ card.description }}</p>
+                <p class="text-sm font-semibold text-[var(--hero-text)]">{{ card.title }}</p>
+                <p class="mt-2 text-sm leading-6 text-[var(--hero-text-muted)]">{{ card.description }}</p>
                 <a
-                  class="mt-4 inline-flex text-sm font-semibold text-sky-300 hover:text-sky-200"
+                  class="mt-4 inline-flex text-sm font-semibold text-[var(--hero-accent)] hover:text-[var(--hero-accent-strong)]"
                   [href]="card.href"
                   [attr.target]="card.external ? '_blank' : null"
                   [attr.rel]="card.external ? 'noopener noreferrer' : null"
@@ -125,52 +125,52 @@ interface DeveloperLinkCard {
 
             <section class="space-y-4">
               <div>
-                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Inicio rápido</p>
-                <h2 class="mt-2 text-2xl font-semibold text-white">Consultas de ejemplo</h2>
+                <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Inicio rápido</p>
+                <h2 class="mt-2 text-2xl font-semibold text-[var(--hero-text)]">Consultas de ejemplo</h2>
               </div>
 
-              <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/80 overflow-hidden">
-                <div class="border-b border-slate-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">cURL</div>
-                <pre class="overflow-x-auto p-4 text-sm text-emerald-200"><code>{{ curlExample }}</code></pre>
+              <div class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] overflow-hidden">
+                <div class="border-b border-[var(--hero-border)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hero-text-muted)]">cURL</div>
+                <pre class="overflow-x-auto p-4 text-sm text-[var(--hero-success)]"><code>{{ curlExample }}</code></pre>
               </div>
 
-              <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/80 overflow-hidden">
-                <div class="border-b border-slate-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">JavaScript</div>
-                <pre class="overflow-x-auto p-4 text-sm text-sky-100"><code>{{ jsExample }}</code></pre>
+              <div class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] overflow-hidden">
+                <div class="border-b border-[var(--hero-border)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hero-text-muted)]">JavaScript</div>
+                <pre class="overflow-x-auto p-4 text-sm text-[var(--hero-accent)]"><code>{{ jsExample }}</code></pre>
               </div>
 
-              <div class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/80 overflow-hidden">
-                <div class="border-b border-slate-800/70 px-4 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Python</div>
-                <pre class="overflow-x-auto p-4 text-sm text-slate-100"><code>{{ pythonExample }}</code></pre>
+              <div class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] overflow-hidden">
+                <div class="border-b border-[var(--hero-border)] px-4 py-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--hero-text-muted)]">Python</div>
+                <pre class="overflow-x-auto p-4 text-sm text-[var(--hero-text)]"><code>{{ pythonExample }}</code></pre>
               </div>
             </section>
 
             <section class="space-y-4">
               <div>
-                <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Widget</p>
-                <h2 class="mt-2 text-2xl font-semibold text-white">Contrato público soportado</h2>
+                <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Widget</p>
+                <h2 class="mt-2 text-2xl font-semibold text-[var(--hero-text)]">Contrato público soportado</h2>
               </div>
               <div class="grid gap-3 md:grid-cols-2">
                 <div
                   *ngFor="let param of widgetParams"
-                  class="rounded-[1.25rem] border border-slate-800/80 bg-slate-950/70 p-4"
+                  class="rounded-[1.25rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-4"
                 >
-                  <code class="text-sm font-semibold text-white">{{ param.name }}</code>
-                  <p class="mt-2 text-sm text-slate-400">{{ param.description }}</p>
+                  <code class="text-sm font-semibold text-[var(--hero-text)]">{{ param.name }}</code>
+                  <p class="mt-2 text-sm text-[var(--hero-text-muted)]">{{ param.description }}</p>
                 </div>
               </div>
             </section>
           </div>
 
           <aside class="space-y-6">
-            <section class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5">
-              <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Respuesta tipo</p>
-              <pre class="mt-3 overflow-x-auto text-xs leading-6 text-slate-200"><code>{{ responseExample }}</code></pre>
+            <section class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-5">
+              <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Respuesta tipo</p>
+              <pre class="mt-3 overflow-x-auto text-xs leading-6 text-[var(--hero-text)]"><code>{{ responseExample }}</code></pre>
             </section>
 
-            <section class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5">
-              <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Buenas prácticas</p>
-              <ul class="mt-4 space-y-3 text-sm text-slate-300">
+            <section class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-5">
+              <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Buenas prácticas</p>
+              <ul class="mt-4 space-y-3 text-sm text-[var(--hero-text-muted)]">
                 <li>Usa <code>/v2/docs</code> como referencia principal del contrato HTTP.</li>
                 <li>Para embebidos, prioriza <code>/v2/oembed</code>, <code>/embed</code> y <code>/embed/programacion</code>.</li>
                 <li>Los endpoints personalizados como <code>/v2/discovery/for-you</code> requieren sesión.</li>
@@ -178,11 +178,11 @@ interface DeveloperLinkCard {
               </ul>
             </section>
 
-            <section class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5">
-              <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Contacto técnico</p>
-              <p class="mt-3 text-sm text-slate-300">
+            <section class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-5">
+              <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Contacto técnico</p>
+              <p class="mt-3 text-sm text-[var(--hero-text-muted)]">
                 Para integraciones, incidencias o acuerdos de uso, contacta con
-                <a href="mailto:dev@tecnoriasl.com" class="font-semibold text-sky-300 hover:text-sky-200">
+                <a href="mailto:dev@tecnoriasl.com" class="font-semibold text-[var(--hero-accent)] hover:text-[var(--hero-accent-strong)]">
                   dev&#64;tecnoriasl.com
                 </a>.
               </p>

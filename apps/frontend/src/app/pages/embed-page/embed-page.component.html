@@ -1,28 +1,28 @@
-<div class="min-h-screen bg-[#081018] text-slate-100">
+<div class="min-h-screen bg-[var(--hero-bg)] text-[var(--hero-text)]">
   <div class="mx-auto max-w-6xl px-4 pb-20 pt-6 sm:px-6 lg:px-8">
     <section
-      class="relative overflow-hidden rounded-[2rem] border border-slate-800/80 bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_rgba(8,16,24,0.94)_55%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-10"
+      class="relative overflow-hidden rounded-[2rem] border border-[var(--hero-border)] bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_rgba(8,16,24,0.94)_55%)] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.28)] md:p-10"
     >
       <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_35%,transparent_65%,rgba(56,189,248,0.08))]"></div>
       <div class="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
         <div class="space-y-6">
-          <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-emerald-100">
+          <div class="inline-flex items-center gap-2 rounded-full border border-transparent bg-[var(--hero-success-soft)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.32em] text-[var(--hero-success)]">
             Widget
           </div>
           <div class="space-y-4">
-            <h1 class="max-w-4xl text-4xl font-black tracking-tight text-white md:text-6xl">
+            <h1 class="max-w-4xl text-4xl font-black tracking-tight text-[var(--hero-text)] md:text-6xl">
               El embed ahora usa la parrilla real de la app, no una preview falsa.
             </h1>
-            <p class="max-w-2xl text-base leading-7 text-slate-300 md:text-lg">
+            <p class="max-w-2xl text-base leading-7 text-[var(--hero-text-muted)] md:text-lg">
               `/embed` queda como distribución y docs. El iframe real vive en
               `/embed/programacion` y se monta sobre `ProgramListComponent`.
             </p>
           </div>
         </div>
 
-        <div class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 p-5">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Contrato público</p>
-          <div class="mt-4 space-y-3 text-sm text-slate-300">
+        <div class="rounded-[1.75rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-5">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Contrato público</p>
+          <div class="mt-4 space-y-3 text-sm text-[var(--hero-text-muted)]">
             <p>`theme`, `channels`, `channelIds`, `date`, `timeSlot`, `channelTypes`, `category`, `autorefresh`, `lang`.</p>
             <p>`oEmbed` y la documentación ya apuntan al mismo widget funcional.</p>
           </div>
@@ -33,58 +33,58 @@
     <section class="mt-10 grid gap-8 lg:grid-cols-[420px_minmax(0,1fr)]">
       <div class="space-y-4">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500">Vista previa</p>
-          <h2 class="mt-2 text-2xl font-semibold text-white">Iframe real</h2>
+          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--hero-text-muted)]">Vista previa</p>
+          <h2 class="mt-2 text-2xl font-semibold text-[var(--hero-text)]">Iframe real</h2>
         </div>
-        <div class="overflow-hidden rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 p-3 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+        <div class="overflow-hidden rounded-[1.75rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-3 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
           <iframe
             [src]="previewSrc"
             title="Vista previa del widget"
-            class="h-[720px] w-full rounded-[1.25rem] border border-slate-800/80 bg-white"
+            class="h-[720px] w-full rounded-[1.25rem] border border-[var(--hero-border)] bg-[var(--portal-surface)]"
             loading="lazy"
           ></iframe>
         </div>
       </div>
 
       <div class="space-y-8">
-        <section class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70">
-          <div class="flex items-center justify-between border-b border-slate-800/60 px-5 py-4">
+        <section class="rounded-[1.75rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)]">
+          <div class="flex items-center justify-between border-b border-[var(--hero-border)] px-5 py-4">
             <div>
-              <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Código</p>
-              <h2 class="mt-1 text-lg font-semibold text-white">Snippet de inserción</h2>
+              <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Código</p>
+              <h2 class="mt-1 text-lg font-semibold text-[var(--hero-text)]">Snippet de inserción</h2>
             </div>
             <button
               type="button"
               (click)="copyCode()"
-              class="rounded-full border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 transition-colors hover:border-slate-500 hover:text-white"
+              class="rounded-full border border-[var(--hero-border)] px-4 py-2 text-sm font-semibold text-[var(--hero-text)] transition-colors hover:border-[var(--hero-accent-strong)] hover:text-[var(--hero-text)]"
             >
               {{ copied ? 'Copiado' : 'Copiar código' }}
             </button>
           </div>
-          <pre class="overflow-x-auto p-5 text-sm leading-7 text-emerald-300"><code>{{ embedCode }}</code></pre>
+          <pre class="overflow-x-auto p-5 text-sm leading-7 text-[var(--hero-success)]"><code>{{ embedCode }}</code></pre>
         </section>
 
-        <section class="rounded-[1.75rem] border border-slate-800/80 bg-slate-950/70 overflow-hidden">
-          <div class="border-b border-slate-800/60 px-5 py-4">
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Parámetros</p>
-            <h2 class="mt-1 text-lg font-semibold text-white">Opciones reales del widget</h2>
+        <section class="rounded-[1.75rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] overflow-hidden">
+          <div class="border-b border-[var(--hero-border)] px-5 py-4">
+            <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Parámetros</p>
+            <h2 class="mt-1 text-lg font-semibold text-[var(--hero-text)]">Opciones reales del widget</h2>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full min-w-[680px] text-sm">
               <thead>
-                <tr class="border-b border-slate-800/60 bg-slate-900/40">
-                  <th class="px-5 py-3 text-left font-semibold text-slate-200">Parámetro</th>
-                  <th class="px-5 py-3 text-left font-semibold text-slate-200">Tipo</th>
-                  <th class="px-5 py-3 text-left font-semibold text-slate-200">Descripción</th>
+                <tr class="border-b border-[var(--hero-border)] bg-[var(--hero-bg-soft)]">
+                  <th class="px-5 py-3 text-left font-semibold text-[var(--hero-text)]">Parámetro</th>
+                  <th class="px-5 py-3 text-left font-semibold text-[var(--hero-text)]">Tipo</th>
+                  <th class="px-5 py-3 text-left font-semibold text-[var(--hero-text)]">Descripción</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let param of params; let last = last" [class.border-b]="!last" class="border-slate-800/40">
+                <tr *ngFor="let param of params; let last = last" [class.border-b]="!last" class="border-[var(--hero-border)]">
                   <td class="px-5 py-3">
-                    <code class="rounded bg-slate-900 px-2 py-1 text-xs text-white">{{ param.name }}</code>
+                    <code class="rounded bg-[var(--hero-bg-soft)] px-2 py-1 text-xs text-[var(--hero-text)]">{{ param.name }}</code>
                   </td>
-                  <td class="px-5 py-3 text-slate-400">{{ param.type }}</td>
-                  <td class="px-5 py-3 text-slate-300">{{ param.description }}</td>
+                  <td class="px-5 py-3 text-[var(--hero-text-muted)]">{{ param.type }}</td>
+                  <td class="px-5 py-3 text-[var(--hero-text-muted)]">{{ param.description }}</td>
                 </tr>
               </tbody>
             </table>
@@ -93,16 +93,16 @@
 
         <section class="space-y-4">
           <div>
-            <p class="text-[11px] uppercase tracking-[0.28em] text-slate-500">Ejemplos</p>
-            <h2 class="mt-1 text-lg font-semibold text-white">Casos de uso</h2>
+            <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Ejemplos</p>
+            <h2 class="mt-1 text-lg font-semibold text-[var(--hero-text)]">Casos de uso</h2>
           </div>
           <div class="space-y-4">
             <article
               *ngFor="let example of examples"
-              class="rounded-[1.5rem] border border-slate-800/80 bg-slate-950/70 p-5"
+              class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-5"
             >
-              <h3 class="text-sm font-semibold text-white">{{ example.title }}</h3>
-              <pre class="mt-3 overflow-x-auto text-xs leading-6 text-emerald-300"><code>{{ example.code }}</code></pre>
+              <h3 class="text-sm font-semibold text-[var(--hero-text)]">{{ example.title }}</h3>
+              <pre class="mt-3 overflow-x-auto text-xs leading-6 text-[var(--hero-success)]"><code>{{ example.code }}</code></pre>
             </article>
           </div>
         </section>

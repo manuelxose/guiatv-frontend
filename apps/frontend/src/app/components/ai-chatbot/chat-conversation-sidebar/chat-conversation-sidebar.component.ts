@@ -39,7 +39,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
         <div class="flex items-center gap-1">
           <button
             (click)="onNewConversation()"
-            class="p-1.5 rounded-lg text-[var(--portal-text-muted)] hover:text-red-400 hover:bg-[var(--accent-live-soft)] transition-colors"
+            class="p-1.5 rounded-lg text-[var(--portal-text-muted)] hover:text-[var(--accent-live)] hover:bg-[var(--accent-live-soft)] transition-colors"
             title="Nueva conversación"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +71,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             placeholder="Buscar conversaciones..."
             class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[var(--portal-border)]
                    bg-[var(--portal-bg)] text-[var(--portal-text)]
-                   placeholder:text-[var(--portal-text-faint)] focus:outline-none focus:ring-1 focus:ring-red-500/50 focus:border-red-500/50"
+                   placeholder:text-[var(--portal-text-faint)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-live)]/50 focus:border-[var(--accent-live)]/50"
           />
         </div>
       </div>
@@ -88,7 +88,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
               <svg class="w-3 h-3 transition-transform" [class.rotate-90]="!pinnedCollapsed()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
               </svg>
-              <svg class="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-3 h-3 text-[var(--status-warning)]" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
               Fijadas
@@ -153,7 +153,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
         (contextmenu)="onContextMenu($event, conv)"
         class="w-full text-left px-3 py-2 hover:bg-[var(--portal-surface-strong)] transition-colors group relative"
         [ngClass]="{
-          'bg-red-900/15 border-l-2 border-red-500': conv.conversationId === activeConversationId
+          'bg-[var(--accent-live-soft)] border-l-2 border-transparent': conv.conversationId === activeConversationId
         }"
       >
         <div class="flex items-start justify-between gap-2">
@@ -166,8 +166,8 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
               (keydown.enter)="onRenameConfirm($event, conv)"
               (keydown.escape)="editingId.set(null)"
               (blur)="onRenameConfirm($event, conv)"
-              class="flex-1 text-xs px-1 py-0.5 rounded border border-red-500/40 bg-[var(--portal-bg)]
-                     text-[var(--portal-text)] focus:outline-none focus:ring-1 focus:ring-red-400"
+              class="flex-1 text-xs px-1 py-0.5 rounded border border-[var(--accent-live)] bg-[var(--portal-bg)]
+                     text-[var(--portal-text)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-live)]"
               (click)="$event.stopPropagation()"
             />
           } @else {
@@ -180,16 +180,16 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
           <div class="hidden group-hover:flex items-center gap-0.5 shrink-0" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1">
             <button
               (click)="onTogglePin(conv)"
-              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-amber-400 transition-colors"
+              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-[var(--status-warning)] transition-colors"
               [title]="conv.pinned ? 'Desfijar' : 'Fijar'"
             >
-              <svg class="w-3 h-3" [class.text-amber-500]="conv.pinned" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-3 h-3" [ngClass]="conv.pinned ? 'text-[var(--status-warning)]' : ''" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
               </svg>
             </button>
             <button
               (click)="editingId.set(conv.conversationId)"
-              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-blue-400 transition-colors"
+              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-[var(--accent-discover)] transition-colors"
               title="Renombrar"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,7 +198,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             </button>
             <button
               (click)="onToggleArchive(conv)"
-              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-purple-400 transition-colors"
+              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-[var(--accent-editorial)] transition-colors"
               [title]="conv.archived ? 'Desarchivar' : 'Archivar'"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -207,7 +207,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             </button>
             <button
               (click)="onDelete(conv)"
-              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-red-400 transition-colors"
+              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-[var(--accent-live)] transition-colors"
               title="Eliminar"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

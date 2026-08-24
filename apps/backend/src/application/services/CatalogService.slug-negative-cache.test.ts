@@ -43,10 +43,27 @@ function buildService(tmdbCallCounter: { count: number }, cache: InMemoryCache) 
   );
 }
 
+/**
+ * The movie/series not-found path now falls back to a bounded TV-read
+ * candidate query (EPG serials without a TMDB entry) before negative-caching.
+ * Stub the static model so these tests stay hermetic; the test that asserts
+ * the bounded-query shape overrides this with its own spy.
+ */
+function stubTvReadFind(): void {
+  (TVReadAiringModel as any).find = () => ({
+    sort: () => ({
+      limit: () => ({
+        lean: () => ({ exec: async () => [] }),
+      }),
+    }),
+  });
+}
+
 test('getBySlug: first lookup of a missing slug hits TMDB, second identical lookup is served from the negative cache', async () => {
   const tmdbCallCounter = { count: 0 };
   const cache = new InMemoryCache();
   const service = buildService(tmdbCallCounter, cache);
+  stubTvReadFind();
 
   try {
     await assert.rejects(
@@ -80,6 +97,7 @@ test('getBySlug: concurrent identical lookups for a not-yet-cached slug are de-d
   const tmdbCallCounter = { count: 0 };
   const cache = new InMemoryCache();
   const service = buildService(tmdbCallCounter, cache);
+  stubTvReadFind();
 
   try {
     const results = await Promise.allSettled([
@@ -115,6 +133,7 @@ test('getBySlug: distinct missing slugs are cached independently', async () => {
   const tmdbCallCounter = { count: 0 };
   const cache = new InMemoryCache();
   const service = buildService(tmdbCallCounter, cache);
+  stubTvReadFind();
 
   try {
     await assert.rejects(() => service.getBySlug('movie', 'slug-one', undefined), NotFoundError);

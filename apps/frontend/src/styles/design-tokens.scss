@@ -61,6 +61,7 @@
   // card-wayfinding mechanism), falling back to rgba() for browsers
   // without color-mix() support.
   --accent-live: #bc3131;
+  --accent-live-strong: #dc2626;
   --accent-live-soft: color-mix(in oklch, var(--accent-live) 6%, var(--portal-card));
   --accent-discover: #435dd0;
   --accent-discover-soft: color-mix(in oklch, var(--accent-discover) 6%, var(--portal-card));
@@ -113,6 +114,21 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.12);
+
+  // Cinematic hero surfaces — constant across themes: image-backed heroes
+  // (content detail, channel detail) stay dark in light and dark modes.
+  --hero-bg: #050a12;
+  --hero-bg-soft: rgba(5, 10, 18, 0.3);
+  --hero-text: #f1f5f9;
+  --hero-text-muted: rgba(241, 245, 249, 0.72);
+  --hero-border: rgba(255, 255, 255, 0.2);
+  // Constant-dark code/doc surfaces (developers, code samples).
+  --hero-accent: #7dd3fc;
+  --hero-accent-strong: #38bdf8;
+  --hero-accent-soft: rgba(56, 189, 248, 0.15);
+  --hero-accent-live: #f87171;
+  --hero-success: #6ee7b7;
+  --hero-success-soft: rgba(16, 185, 129, 0.15);
 
   --z-content: 0;
   --z-sticky: 10;
@@ -181,7 +197,12 @@ html[data-theme='dark'] {
 
   // Same hues, raised lightness for AA contrast against the dark surfaces.
   // `-soft` variants auto-adapt via color-mix over the dark --portal-card.
+  // `--accent-live-strong` is a constant fill for white-text buttons (white on
+  // the lifted accent fails AA; white on red-600 passes in both themes).
   --accent-live: #e05555;
+  --accent-live-strong: #dc2626;
+  // Live status text sits on the soft tint, where the lifted accent wins.
+  --status-live: #ee7171;
   --accent-live-soft: color-mix(in oklch, var(--accent-live) 9%, var(--portal-card));
   --accent-discover: #8398f6;
   --accent-discover-soft: color-mix(in oklch, var(--accent-discover) 9%, var(--portal-card));
@@ -218,6 +239,8 @@ html[data-theme='dark'] {
     --portal-text-muted: #9aa3b0;
     --portal-text-faint: #67707d;
     --accent-live: #e05555;
+    --accent-live-strong: #dc2626;
+    --status-live: #ee7171;
     --accent-discover: #8398f6;
     --accent-streaming: #43d09b;
     --accent-sports: #eba448;

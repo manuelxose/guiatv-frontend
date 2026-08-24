@@ -1,0 +1,28 @@
+/* Global dark-theme overrides for platform badges.
+ *
+ * Kept OUTSIDE the component SCSS on purpose: Angular emulated encapsulation
+ * rewrites `html[data-theme='dark'] …` selectors inside component styles by
+ * appending `[_ngcontent-xxx]` to the `html` element, which can never match.
+ * Global styles are emitted verbatim, so the attribute guard works.
+ */
+html[data-theme='dark'] {
+  .platform-badge--slate { color: #b9c2cf; }
+  .platform-badge--red { color: #f28b82; }
+  .platform-badge--blue { color: #8ab4ff; }
+  .platform-badge--cyan { color: #7ddcf0; }
+  .platform-badge--violet { color: #c4a7ff; }
+  .platform-badge--green { color: #7ed89a; }
+  .platform-badge--amber { color: #f4b860; }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    .platform-badge--slate { color: #b9c2cf; }
+    .platform-badge--red { color: #f28b82; }
+    .platform-badge--blue { color: #8ab4ff; }
+    .platform-badge--cyan { color: #7ddcf0; }
+    .platform-badge--violet { color: #c4a7ff; }
+    .platform-badge--green { color: #7ed89a; }
+    .platform-badge--amber { color: #f4b860; }
+  }
+}

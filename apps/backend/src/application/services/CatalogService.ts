@@ -350,10 +350,33 @@ export class CatalogService {
         : await this.tmdbService.searchTV(searchText, { page: 1, limit: 10 });
 
       const match = results.find(
-        (entry) => this.slugify(entry.title || entry.name || '') === slug
+        (entry) =>
+          this.slugify(entry.title || entry.name || '') === slug ||
+          this.slugifyTitle(entry.title || entry.name || '') === slug
       );
       if (match) {
         return this.getTmdbDetail(match.id, tmdbType, userId);
+      }
+      // Fallback: the TV read model. EPG serials are classified as
+      // 'series'/'movie' by category inference, but daily serials have no
+      // TMDB entry and must still resolve against today's TV airings.
+      if (!results.length) {
+        const tvFound = await this.findTvReadItemBySlug(
+          searchText,
+          slug,
+          DateUtils.getTodayYYYYMMDD()
+        );
+        if (tvFound) {
+          return this.getProgramDetail(tvFound.id, userId);
+        }
+        const tvTomorrow = await this.findTvReadItemBySlug(
+          searchText,
+          slug,
+          DateUtils.getTomorrowYYYYMMDD()
+        );
+        if (tvTomorrow) {
+          return this.getProgramDetail(tvTomorrow.id, userId);
+        }
       }
       // Fallback: first result
       if (results.length) {
@@ -750,6 +773,22 @@ export class CatalogService {
       .replace(/^-+|-+$/g, '') || 'sin-titulo';
   }
 
+  /**
+   * Slugifier for TMDB-sourced movie/series titles. The legacy slugifier drops
+   * accented characters entirely ("último" -> "ltimo"), which corrupts the
+   * TMDB search text derived from the slug and leaves detail pages
+   * unresolvable for accented Spanish titles. This variant keeps the base
+   * letter ("último" -> "ultimo") so generated detail URLs and slug lookups
+   * resolve. Program/EPG URLs intentionally keep the legacy slugifier to
+   * preserve already-indexed public URLs.
+   */
+  private slugifyTitle(text: string): string {
+    const transliterated = String(text || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    return this.slugify(transliterated);
+  }
+
   private buildDetailPath(contentType: CatalogContentType, slug: string): string {
     const prefix =
       contentType === 'movie' ? '/peliculas' :
@@ -766,7 +805,7 @@ export class CatalogService {
     const whereToWatch = providers ? this.mapWatchProviders(providers) : undefined;
     const contentType: CatalogContentType = type === 'movie' ? 'movie' : 'series';
     const title = entry.title || entry.name || '';
-    const slug = this.slugify(title);
+    const slug = this.slugifyTitle(title);
     const primaryPlatform = this.extractPrimaryPlatforms(whereToWatch)[0];
     const assets = buildCatalogAssetSet({
       poster: this.tmdbService.getImageUrl(entry.poster_path),

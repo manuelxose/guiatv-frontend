@@ -107,7 +107,7 @@ const SORT_OPTIONS = [
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="profilePublic" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[var(--accent-live)] peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
 
@@ -118,7 +118,7 @@ const SORT_OPTIONS = [
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="shareActivity" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[var(--accent-live)] peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
 
@@ -129,7 +129,7 @@ const SORT_OPTIONS = [
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="showOnline" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[var(--accent-live)] peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
             </div>
@@ -145,7 +145,7 @@ const SORT_OPTIONS = [
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="recommendations" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[var(--accent-live)] peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
 
@@ -156,7 +156,7 @@ const SORT_OPTIONS = [
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="followers" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[var(--accent-live)] peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
 
@@ -167,7 +167,7 @@ const SORT_OPTIONS = [
                 </div>
                 <div class="relative inline-flex items-center">
                   <input type="checkbox" formControlName="weeklySummary" class="peer sr-only" />
-                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-red-600 peer-checked:after:translate-x-full"></div>
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[var(--accent-live)] peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
             </div>
@@ -185,7 +185,7 @@ const SORT_OPTIONS = [
                   (click)="toggleGenre(genre)"
                   class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
                   [ngClass]="selectedGenres.includes(genre)
-                    ? 'border-red-500 bg-red-600 text-white'
+                    ? 'border-[var(--accent-live)] bg-[var(--accent-live-strong)] text-white'
                     : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                 >
                   {{ genre }}
@@ -202,7 +202,7 @@ const SORT_OPTIONS = [
                   (click)="togglePlatform(platform)"
                   class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
                   [ngClass]="selectedPlatforms.includes(platform)
-                    ? 'border-sky-500 bg-sky-500/20 text-sky-100'
+                    ? 'border-transparent bg-[var(--accent-discover-soft)] text-[var(--portal-text)]'
                     : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                 >
                   {{ platform }}
@@ -224,7 +224,7 @@ const SORT_OPTIONS = [
                     (click)="toggleDefaultType(option.id)"
                     class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
                     [ngClass]="selectedTypes.includes(option.id)
-                      ? 'border-emerald-500 bg-emerald-500/20 text-emerald-100'
+                      ? 'border-transparent bg-[var(--accent-streaming-soft)] text-[var(--portal-text)]'
                       : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                   >
                     {{ option.label }}
@@ -241,7 +241,7 @@ const SORT_OPTIONS = [
                     (click)="toggleDefaultAvailability(option.id)"
                     class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
                     [ngClass]="selectedAvailability.includes(option.id)
-                      ? 'border-amber-500 bg-amber-500/20 text-amber-100'
+                      ? 'border-transparent bg-[var(--status-warning-soft)] text-[var(--portal-text)]'
                       : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                   >
                     {{ option.label }}
@@ -258,7 +258,7 @@ const SORT_OPTIONS = [
                     (click)="selectedSort = option.id"
                     class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
                     [ngClass]="selectedSort === option.id
-                      ? 'border-red-500 bg-red-600 text-white'
+                      ? 'border-[var(--accent-live)] bg-[var(--accent-live-strong)] text-white'
                       : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                   >
                     {{ option.label }}
@@ -278,7 +278,7 @@ const SORT_OPTIONS = [
             </button>
             <button
               type="submit"
-              class="min-h-[44px] rounded-xl bg-red-600 px-6 py-2.5 font-semibold text-white hover:bg-red-500"
+              class="min-h-[44px] rounded-xl bg-[var(--accent-live-strong)] px-6 py-2.5 font-semibold text-white hover:opacity-90"
             >
               Guardar cambios
             </button>
@@ -312,7 +312,7 @@ const SORT_OPTIONS = [
             <div class="min-w-0 flex-1">
               <p class="text-sm font-medium text-[var(--portal-text)]">
                 {{ getDeviceLabel(session) }}
-                <span *ngIf="session.current" class="ml-2 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                <span *ngIf="session.current" class="ml-2 rounded-full bg-[var(--accent-streaming-soft)] px-2 py-0.5 text-[10px] font-semibold text-[var(--accent-streaming)]">
                   Actual
                 </span>
               </p>
@@ -325,7 +325,7 @@ const SORT_OPTIONS = [
               *ngIf="!session.current"
               type="button"
               (click)="revokeSession(session.id)"
-              class="ml-3 min-h-[34px] rounded-xl border border-[var(--portal-border)] px-3 text-xs font-semibold text-[var(--portal-text-soft)] hover:border-red-500/50 hover:text-red-300"
+              class="ml-3 min-h-[34px] rounded-xl border border-[var(--portal-border)] px-3 text-xs font-semibold text-[var(--portal-text-soft)] hover:border-[var(--accent-live)]/50 hover:text-[var(--accent-live)]"
             >
               Cerrar
             </button>
@@ -337,7 +337,7 @@ const SORT_OPTIONS = [
             *ngIf="sessions.length > 1"
             type="button"
             (click)="logoutAllDevices()"
-            class="mt-2 min-h-[36px] rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs font-semibold text-red-200"
+            class="mt-2 min-h-[36px] rounded-xl border border-transparent bg-[var(--accent-live-soft)] px-4 py-2 text-xs font-semibold text-[var(--accent-live)]"
           >
             Cerrar todas las sesiones excepto esta
           </button>
@@ -381,7 +381,7 @@ const SORT_OPTIONS = [
             <button
               type="button"
               (click)="unblockUser(user.id)"
-              class="min-h-[34px] rounded-xl border border-[var(--portal-border)] px-3 text-xs font-semibold text-[var(--portal-text-soft)] hover:border-emerald-500/50 hover:text-emerald-300"
+              class="min-h-[34px] rounded-xl border border-[var(--portal-border)] px-3 text-xs font-semibold text-[var(--portal-text-soft)] hover:border-[var(--accent-streaming)]/50 hover:text-[var(--accent-streaming)]"
             >
               Desbloquear
             </button>
@@ -410,8 +410,8 @@ const SORT_OPTIONS = [
       </div>
 
       <!-- Danger zone -->
-      <div class="rounded-3xl border border-red-500/30 bg-red-500/5 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
-        <h3 class="text-lg font-semibold text-red-200">Zona de peligro</h3>
+      <div class="rounded-3xl border border-transparent bg-[var(--accent-live-soft)] p-6 shadow-[0_20px_40px_rgba(0,0,0,0.35)] md:p-8">
+        <h3 class="text-lg font-semibold text-[var(--accent-live)]">Zona de peligro</h3>
         <p class="mt-1 text-sm text-[var(--portal-text-muted)]">
           Eliminar tu cuenta es permanente. Se borrarán todos tus datos: perfil, listas, favoritos, actividad, conversaciones y preferencias del asistente.
         </p>
@@ -420,29 +420,29 @@ const SORT_OPTIONS = [
           <button
             type="button"
             (click)="showDeleteConfirm = true"
-            class="min-h-[44px] rounded-xl border border-red-500/50 bg-red-500/10 px-5 py-2.5 font-semibold text-red-200 hover:bg-red-500/20"
+            class="min-h-[44px] rounded-xl border border-transparent bg-[var(--accent-live-soft)] px-5 py-2.5 font-semibold text-[var(--accent-live)] hover:opacity-90"
           >
             Eliminar mi cuenta
           </button>
         </div>
 
-        <div *ngIf="showDeleteConfirm" class="mt-4 space-y-3 rounded-2xl border border-red-500/30 bg-[var(--portal-bg-deep)] p-4">
-          <p class="text-sm font-medium text-red-100">
+        <div *ngIf="showDeleteConfirm" class="mt-4 space-y-3 rounded-2xl border border-[var(--accent-live)] bg-[var(--portal-bg-deep)] p-4">
+          <p class="text-sm font-medium text-[var(--accent-live)]">
             Escribe tu contraseña para confirmar la eliminación de tu cuenta.
           </p>
           <input
             type="password"
             [(ngModel)]="deletePassword"
             placeholder="Tu contraseña actual"
-            class="w-full rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-4 py-2.5 text-sm text-[var(--portal-text)] outline-none placeholder:text-[var(--portal-text-faint)] focus:border-red-500/50"
+            class="w-full rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-4 py-2.5 text-sm text-[var(--portal-text)] outline-none placeholder:text-[var(--portal-text-faint)] focus:border-[var(--accent-live)]/50"
           />
-          <p *ngIf="deleteError" class="text-xs text-red-400">{{ deleteError }}</p>
+          <p *ngIf="deleteError" class="text-xs text-[var(--accent-live)]">{{ deleteError }}</p>
           <div class="flex gap-3">
             <button
               type="button"
               (click)="confirmDeleteAccount()"
               [disabled]="deleting || !deletePassword"
-              class="min-h-[44px] rounded-xl bg-red-600 px-5 py-2.5 font-semibold text-white disabled:opacity-50"
+              class="min-h-[44px] rounded-xl bg-[var(--accent-live-strong)] px-5 py-2.5 font-semibold text-white disabled:opacity-50"
             >
               {{ deleting ? 'Eliminando…' : 'Confirmar eliminación' }}
             </button>
