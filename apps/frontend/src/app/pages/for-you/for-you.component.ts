@@ -78,7 +78,7 @@ interface ForYouItem {
           <button
             type="button"
             (click)="goToLogin()"
-            class="mt-5 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white"
+            class="mt-5 rounded-xl bg-[var(--accent-live-strong)] px-5 py-2.5 text-sm font-semibold text-white"
           >
             Acceder
           </button>
@@ -96,7 +96,7 @@ interface ForYouItem {
           <button
             type="button"
             (click)="goToSettings()"
-            class="mt-5 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white"
+            class="mt-5 rounded-xl bg-[var(--accent-live-strong)] px-5 py-2.5 text-sm font-semibold text-white"
           >
             Completar perfil
           </button>
@@ -105,13 +105,14 @@ interface ForYouItem {
         <!-- Error -->
         <div
           *ngIf="!loading && !requiresAuth && error"
-          class="mx-auto max-w-lg rounded-2xl border border-amber-500/30 bg-amber-500/10 p-6 text-center"
+          class="mx-auto max-w-lg rounded-2xl border border-transparent bg-[var(--status-warning-soft)] p-6 text-center"
+          role="alert"
         >
-          <p class="text-sm text-amber-100">{{ error }}</p>
+          <p class="text-sm text-[var(--portal-text)]">{{ error }}</p>
           <button
             type="button"
             (click)="loadRecommendations()"
-            class="mt-4 rounded-xl border border-amber-400/30 px-4 py-2 text-xs font-semibold text-amber-50"
+            class="mt-4 rounded-xl border border-[var(--status-warning)] px-4 py-2 text-xs font-semibold text-[var(--status-warning)]"
           >
             Reintentar
           </button>
@@ -161,9 +162,9 @@ interface ForYouItem {
               <span
                 class="absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-bold"
                 [ngClass]="rec.score >= 0.7
-                  ? 'bg-emerald-500/90 text-[var(--portal-text)]'
+                  ? 'bg-[var(--accent-streaming)] text-[var(--portal-bg-elevated)]'
                   : rec.score >= 0.4
-                    ? 'bg-amber-500/90 text-[var(--portal-text)]'
+                    ? 'bg-[var(--accent-sports)] text-[var(--portal-bg-elevated)]'
                     : 'bg-[var(--portal-surface-strong)]/90 text-[var(--portal-text-soft)]'"
               >
                 {{ (rec.score * 100) | number:'1.0-0' }}% match
@@ -186,7 +187,7 @@ interface ForYouItem {
               <div *ngIf="rec.item.releaseYear || rec.item.rating" class="mt-1.5 flex items-center gap-2 text-xs text-[var(--portal-text-muted)]">
                 <span *ngIf="rec.item.releaseYear">{{ rec.item.releaseYear }}</span>
                 <span *ngIf="rec.item.rating" class="flex items-center gap-0.5">
-                  <span class="text-amber-400">★</span> {{ rec.item.rating | number:'1.1-1' }}
+                  <span class="text-[var(--status-warning)]">★</span> {{ rec.item.rating | number:'1.1-1' }}
                 </span>
                 <span *ngIf="rec.item.durationMinutes">{{ rec.item.durationMinutes }} min</span>
               </div>
@@ -199,7 +200,7 @@ interface ForYouItem {
               <div *ngIf="rec.matchedGenres.length" class="mt-3 flex flex-wrap gap-1.5">
                 <span
                   *ngFor="let genre of rec.matchedGenres.slice(0, 3)"
-                  class="rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-medium text-red-200"
+                  class="rounded-full border border-transparent bg-[var(--accent-live-soft)] px-2 py-0.5 text-[10px] font-medium text-[var(--accent-live)]"
                 >
                   {{ genre }}
                 </span>

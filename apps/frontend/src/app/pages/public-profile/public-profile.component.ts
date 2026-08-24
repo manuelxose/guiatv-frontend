@@ -11,7 +11,7 @@ import { UserService } from '../../services/user.service';
     <div class="min-h-screen bg-gradient-to-br from-[var(--portal-bg)] via-[var(--portal-bg-deep)] to-[var(--portal-bg-deep)] py-8 px-4">
       <div class="max-w-3xl mx-auto">
         <div *ngIf="loading" class="text-center py-20">
-          <div class="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[var(--portal-border-strong)] border-t-red-500"></div>
+          <div class="inline-block h-8 w-8 animate-spin rounded-full border-2 border-[var(--portal-border-strong)] border-t-[var(--accent-live)]"></div>
         </div>
 
         <div *ngIf="error" class="text-center py-20">
@@ -41,10 +41,10 @@ import { UserService } from '../../services/user.service';
                     <button
                       type="button"
                       (click)="onToggleFollow()"
-                      class="min-h-[40px] px-5 rounded-xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      class="min-h-[40px] px-5 rounded-xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                       [ngClass]="profile.isFollowing
                         ? 'border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-soft)] hover:border-[var(--portal-border-strong)]'
-                        : 'bg-red-600 text-white hover:bg-red-500'"
+                        : 'bg-[var(--accent-live-strong)] text-white hover:opacity-90'"
                     >
                       {{ profile.isFollowing ? 'Siguiendo' : 'Seguir' }}
                     </button>

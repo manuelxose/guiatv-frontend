@@ -7,7 +7,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="flex items-center gap-2 flex-wrap">
-      <span class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider mr-1">Compartir</span>
+      <span class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider mr-1">{{ variant === 'branded' ? 'Compartir:' : 'Compartir' }}</span>
 
       <!-- Twitter/X -->
       <a
@@ -15,6 +15,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
         target="_blank"
         rel="noopener noreferrer"
         class="share-btn"
+        [class.share-btn--brand-x]="variant === 'branded'"
         aria-label="Compartir en X"
       >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -28,6 +29,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
         target="_blank"
         rel="noopener noreferrer"
         class="share-btn"
+        [class.share-btn--brand-facebook]="variant === 'branded'"
         aria-label="Compartir en Facebook"
       >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -41,6 +43,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
         target="_blank"
         rel="noopener noreferrer"
         class="share-btn"
+        [class.share-btn--brand-linkedin]="variant === 'branded'"
         aria-label="Compartir en LinkedIn"
       >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -54,6 +57,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
         target="_blank"
         rel="noopener noreferrer"
         class="share-btn"
+        [class.share-btn--brand-whatsapp]="variant === 'branded'"
         aria-label="Compartir en WhatsApp"
       >
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -91,7 +95,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
       <button
         (click)="copyToClipboard()"
         class="share-btn"
-        [class.!bg-green-600]="copied"
+        [class.share-btn--copied]="copied"
         aria-label="Copiar enlace"
       >
         <svg *ngIf="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,13 +109,19 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
   `,
   styles: [`
     .share-btn {
-      @apply w-8 h-8 rounded-full bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-surface-strong)] flex items-center justify-center text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] transition-all duration-200 hover:scale-110;
+      @apply w-8 h-8 rounded-full bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-border-strong)] flex items-center justify-center text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] transition-all duration-200 hover:scale-110;
     }
+    .share-btn--copied { @apply bg-[var(--accent-streaming)] text-white; }
+    .share-btn--brand-x { @apply bg-black text-white hover:bg-black/80; }
+    .share-btn--brand-facebook { @apply bg-[#1877F2] text-white hover:bg-[#166FE5]; }
+    .share-btn--brand-linkedin { @apply bg-[#0A66C2] text-white hover:bg-[#004182]; }
+    .share-btn--brand-whatsapp { @apply bg-[#25D366] text-white hover:bg-[#1DA851]; }
   `],
 })
 export class ShareButtonsComponent {
   @Input() url = '';
   @Input() title = '';
+  @Input() variant: 'neutral' | 'branded' = 'neutral';
 
   copied = false;
   private isBrowser: boolean;

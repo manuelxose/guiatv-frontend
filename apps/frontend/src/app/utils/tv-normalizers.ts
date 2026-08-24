@@ -1,6 +1,6 @@
 import { CatalogItem } from '../services/catalog.service';
 import { TvReadItemDTO } from '../api/models';
-import { buildDetailPath, CatalogContentType } from './catalog';
+import { buildDetailPath, CatalogContentType, slugifyTitle } from './catalog';
 import { slugify } from './utils';
 
 // The five verticals the design system's accent tokens key off
@@ -85,7 +85,11 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
       category,
       platforms,
       sport,
-      detailPath: buildDetailPath(contentType, item.program.title, slugify),
+      detailPath: buildDetailPath(
+        contentType,
+        item.program.title,
+        contentType === 'program' ? slugify : slugifyTitle
+      ),
       badges: buildTvBadges(item, category),
       progressPercent: computeProgress(item.airing.start, item.airing.end),
       contentType,
@@ -113,7 +117,13 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
     category,
     platforms,
     sport: '',
-    detailPath: item.detailPath || buildDetailPath(contentType, item.title, slugify),
+    // Movie/series paths are always derived from the title so a stale cached
+    // detailPath (pre-transliteration) can never resurface; program paths keep
+    // the API-provided value (or the legacy slugifier) for URL stability.
+    detailPath:
+      contentType === 'program'
+        ? item.detailPath || buildDetailPath(contentType, item.title, slugify)
+        : buildDetailPath(contentType, item.title, slugifyTitle),
     badges: buildCatalogBadges(item),
     progressPercent: computeProgress(item.start, item.end),
     contentType,

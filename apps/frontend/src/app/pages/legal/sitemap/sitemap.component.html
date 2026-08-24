@@ -26,7 +26,7 @@
 
       <div class="w-px h-8 bg-[var(--portal-surface-strong)] mx-2 hidden sm:block"></div>
 
-      <button (click)="downloadRss()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-xl text-blue-300 text-sm font-medium transition-all">
+      <button (click)="downloadRss()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--accent-discover-soft)] hover:opacity-90 border border-transparent rounded-xl text-[var(--accent-discover)] text-sm font-medium transition-all">
         Descargar rss.xml
       </button>
       <button (click)="toggleRssPreview()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-surface-strong)] border border-[var(--portal-border)] rounded-xl text-[var(--portal-text-soft)] text-sm font-medium transition-all">
@@ -58,16 +58,16 @@
     <div class="bg-[var(--portal-surface-strong)] rounded-2xl border border-[var(--portal-border)] overflow-hidden">
       <ng-container *ngFor="let url of sitemapUrls; let i = index">
         <div class="flex items-center justify-between p-4 hover:bg-[var(--portal-surface-strong)] transition-colors border-b border-[var(--portal-border)] last:border-b-0" [ngClass]="{'bg-[var(--portal-surface-strong)]/20': i % 2 === 0}">
-          <a [routerLink]="url.loc" class="text-[var(--portal-text)] hover:text-red-400 transition-colors text-sm flex items-center gap-2 flex-1">
+          <a [routerLink]="url.loc" class="text-[var(--portal-text)] hover:text-[var(--accent-live)] transition-colors text-sm flex items-center gap-2 flex-1">
             {{ url.loc }}
           </a>
           <div class="flex items-center gap-4">
             <span class="text-[var(--portal-text-muted)] text-xs capitalize hidden sm:block">{{ url.changefreq }}</span>
             <span class="px-2 py-1 rounded-full text-xs font-medium"
                   [ngClass]="{
-                    'bg-green-500/20 text-green-400': url.priority >= 0.8,
-                    'bg-yellow-500/20 text-yellow-400': url.priority < 0.8 && url.priority >= 0.5,
-                    'bg-gray-500/20 text-[var(--portal-text-muted)]': url.priority < 0.5
+                    'bg-[var(--accent-streaming-soft)] text-[var(--accent-streaming)]': url.priority >= 0.8,
+                    'bg-[var(--status-warning-soft)] text-[var(--status-warning)]': url.priority < 0.8 && url.priority >= 0.5,
+                    'bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)]': url.priority < 0.5
                   }">
               {{ url.priority }}
             </span>

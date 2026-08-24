@@ -58,7 +58,7 @@ const DATE_OPTIONS = [
 
             <div
               *ngIf="degraded"
-              class="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-100"
+              class="rounded-2xl border border-transparent bg-[var(--status-warning-soft)] px-4 py-3 text-xs text-[var(--portal-text)]"
             >
               {{ degradedMessage || 'Algunas fuentes del catálogo no están disponibles. Se muestran filtros locales para que puedas seguir navegando.' }}
             </div>
@@ -80,7 +80,7 @@ const DATE_OPTIONS = [
                   [(ngModel)]="queryText"
                   (keyup.enter)="applyQuery()"
                   type="text"
-                  class="min-h-[48px] w-full rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] pl-11 pr-4 text-sm text-[var(--portal-text)] outline-none transition-colors focus:border-red-500"
+                  class="min-h-[48px] w-full rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] pl-11 pr-4 text-sm text-[var(--portal-text)] outline-none transition-colors focus:border-[var(--accent-live)]"
                   placeholder="Buscar dentro de esta vista..."
                 />
               </div>
@@ -104,7 +104,7 @@ const DATE_OPTIONS = [
                   *ngIf="showSaveDefaults"
                   type="button"
                   (click)="saveDefaults.emit()"
-                  class="min-h-[44px] rounded-full border border-red-500/40 bg-red-500/10 px-4 text-sm font-semibold text-red-200"
+                  class="min-h-[44px] rounded-full border border-transparent bg-[var(--accent-live-soft)] px-4 text-sm font-semibold text-[var(--accent-live)]"
                 >
                   Guardar predeterminado
                 </button>
@@ -119,7 +119,7 @@ const DATE_OPTIONS = [
               (click)="selectQuickTab(option.id)"
               class="min-h-[40px] rounded-full px-4 text-sm font-semibold transition-colors"
               [ngClass]="isQuickTabActive(option.id)
-                ? 'bg-red-600 text-white'
+                ? 'bg-[var(--accent-live-strong)] text-white'
                 : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ option.label }}
@@ -134,7 +134,7 @@ const DATE_OPTIONS = [
             (click)="selectDate(date.id)"
             class="min-h-[36px] rounded-full border px-3 text-xs font-semibold transition-colors"
             [ngClass]="isDateActive(date.id)
-              ? 'border-sky-500/40 bg-sky-500/10 text-sky-100'
+              ? 'border-transparent bg-[var(--accent-discover-soft)] text-[var(--portal-text)]'
               : 'border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
           >
             {{ date.label }}
@@ -177,7 +177,7 @@ const DATE_OPTIONS = [
               (click)="toggleArrayValue('availability', option.id)"
               class="min-h-[38px] rounded-full px-3 text-xs font-semibold transition-colors"
               [ngClass]="includes(filters.availability, option.id)
-                ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
+                ? 'border border-transparent bg-[var(--accent-streaming-soft)] text-[var(--portal-text)]'
                 : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
             >
               {{ option.label }}
@@ -232,7 +232,7 @@ const DATE_OPTIONS = [
             (click)="updateFilters({ sort: option.id })"
             class="min-h-[38px] rounded-full px-3 text-xs font-semibold transition-colors"
             [ngClass]="filters.sort === option.id
-              ? 'bg-red-600 text-white'
+              ? 'bg-[var(--accent-live-strong)] text-white'
               : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
           >
             {{ option.label }}
@@ -285,7 +285,7 @@ const DATE_OPTIONS = [
                 id="catalog-filter-query"
                 [(ngModel)]="queryText"
                 type="text"
-                class="min-h-[48px] w-full rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-4 text-sm text-[var(--portal-text)] outline-none focus:border-red-500"
+                class="min-h-[48px] w-full rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-4 text-sm text-[var(--portal-text)] outline-none focus:border-[var(--accent-live)]"
                 placeholder="Título, género o palabra clave"
               />
             </div>
@@ -316,7 +316,7 @@ const DATE_OPTIONS = [
                   (click)="toggleArrayValue('availability', option.id)"
                   class="min-h-[40px] rounded-full px-4 text-sm font-semibold"
                   [ngClass]="includes(filters.availability, option.id)
-                    ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
+                    ? 'border border-transparent bg-[var(--accent-streaming-soft)] text-[var(--portal-text)]'
                     : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
                 >
                   {{ option.label }}
@@ -333,7 +333,7 @@ const DATE_OPTIONS = [
                   (click)="selectDate(date.id)"
                   class="min-h-[40px] rounded-full border px-4 text-sm font-semibold"
                   [ngClass]="isDateActive(date.id)
-                    ? 'border-sky-500/40 bg-sky-500/10 text-sky-100'
+                    ? 'border-transparent bg-[var(--accent-discover-soft)] text-[var(--portal-text)]'
                     : 'border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
                 >
                   {{ date.label }}
@@ -387,7 +387,7 @@ const DATE_OPTIONS = [
                   (click)="updateFilters({ sort: option.id })"
                   class="min-h-[40px] rounded-full px-4 text-sm font-semibold"
                   [ngClass]="filters.sort === option.id
-                    ? 'bg-red-600 text-white'
+                    ? 'bg-[var(--accent-live-strong)] text-white'
                     : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
                 >
                   {{ option.label }}
@@ -407,7 +407,7 @@ const DATE_OPTIONS = [
             <button
               type="button"
               (click)="applyAndCloseMobile()"
-              class="flex-1 min-h-[48px] rounded-2xl bg-red-600 text-sm font-semibold text-white"
+              class="flex-1 min-h-[48px] rounded-2xl bg-[var(--accent-live-strong)] text-sm font-semibold text-white"
             >
               Ver resultados
             </button>

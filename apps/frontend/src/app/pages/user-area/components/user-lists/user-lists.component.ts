@@ -28,7 +28,7 @@ const COVER_GRADIENTS = [
         <button
           type="button"
           (click)="onOpenCreateModal()"
-          class="min-h-[44px] px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="min-h-[44px] px-5 py-2.5 rounded-xl bg-[var(--accent-live-strong)] hover:opacity-90 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
         >
           Crear lista
         </button>
@@ -40,7 +40,7 @@ const COVER_GRADIENTS = [
         <button
           type="button"
           (click)="startInlineCreate()"
-          class="min-h-[44px] px-6 py-2.5 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="min-h-[44px] px-6 py-2.5 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
         >
           Crear primera lista
         </button>
@@ -54,7 +54,7 @@ const COVER_GRADIENTS = [
           tabindex="0"
           (click)="startInlineCreate()"
           (keydown.enter)="startInlineCreate()"
-          class="group relative rounded-2xl border border-dashed border-[var(--portal-border)] bg-[var(--portal-surface-soft)] hover:bg-[var(--portal-surface-soft)] text-left p-5 min-h-[220px] flex flex-col items-center justify-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="group relative rounded-2xl border border-dashed border-[var(--portal-border)] bg-[var(--portal-surface-soft)] hover:bg-[var(--portal-surface-soft)] text-left p-5 min-h-[220px] flex flex-col items-center justify-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
         >
           <div class="h-12 w-12 rounded-full border border-[var(--portal-border)] flex items-center justify-center text-[var(--portal-text-soft)] text-xl">
             +
@@ -65,10 +65,10 @@ const COVER_GRADIENTS = [
         <!-- Active inline create form -->
         <div
           *ngIf="inlineCreating"
-          class="rounded-2xl border border-red-500/40 bg-[var(--portal-surface-soft)] p-5 min-h-[220px] flex flex-col justify-center gap-3"
+          class="rounded-2xl border border-[var(--accent-live)] bg-[var(--portal-surface-soft)] p-5 min-h-[220px] flex flex-col justify-center gap-3"
         >
-          <div class="h-10 w-10 mx-auto rounded-full bg-red-600/20 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="h-10 w-10 mx-auto rounded-full bg-[var(--accent-live-soft)] flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--accent-live)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
           </div>
@@ -78,7 +78,7 @@ const COVER_GRADIENTS = [
             [(ngModel)]="inlineTitle"
             (keydown.enter)="submitInlineCreate()"
             (keydown.escape)="cancelInlineCreate()"
-            class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
             placeholder="Nombre de la lista"
           />
           <div class="flex items-center justify-between gap-2">
@@ -101,7 +101,7 @@ const COVER_GRADIENTS = [
                 type="button"
                 (click)="submitInlineCreate()"
                 [disabled]="!inlineTitle.trim()"
-                class="min-h-[36px] px-4 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-xs text-white font-semibold"
+                class="min-h-[36px] px-4 rounded-lg bg-[var(--accent-live-strong)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-xs text-white font-semibold"
               >
                 Crear
               </button>
@@ -116,7 +116,7 @@ const COVER_GRADIENTS = [
           tabindex="0"
           (click)="onSelect(list)"
           (keydown.enter)="onSelect(list)"
-          class="group rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="group rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
         >
           <div class="relative aspect-video">
             <img
@@ -156,7 +156,7 @@ const COVER_GRADIENTS = [
               <button
                 type="button"
                 (click)="$event.stopPropagation(); onSelect(list)"
-                class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               >
                 Abrir
               </button>

@@ -13,7 +13,7 @@ import { MetaService } from '../../services/meta.service';
       <section class="relative overflow-hidden border-b border-[var(--portal-border)]">
         <div class="absolute inset-0 bg-[linear-gradient(135deg,rgba(239,68,68,0.06),transparent_50%)]"></div>
         <div class="relative mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 lg:px-8">
-          <p class="text-[11px] uppercase tracking-[0.34em] text-red-500 mb-4">Prensa</p>
+          <p class="text-[11px] uppercase tracking-[0.34em] text-[var(--accent-live)] mb-4">Prensa</p>
           <h1 class="text-4xl font-black tracking-tight text-[var(--portal-text)] md:text-6xl">
             Kit de Prensa
           </h1>
@@ -101,14 +101,14 @@ import { MetaService } from '../../services/meta.service';
                 <img src="/assets/logo.svg" alt="Logo Guía TV" class="h-16 w-auto" loading="lazy" />
               </div>
               <p class="text-sm text-[var(--portal-text-muted)]">Logo principal (fondo oscuro)</p>
-              <a href="/assets/logo.svg" download class="text-sm text-red-400 hover:text-red-300 transition-colors">Descargar SVG</a>
+              <a href="/assets/logo.svg" download class="text-sm text-[var(--accent-live)] hover:opacity-75 transition-opacity">Descargar SVG</a>
             </div>
             <div class="rounded-2xl border border-[var(--portal-border)] bg-white p-8 flex flex-col items-center gap-4">
               <div class="p-6 flex items-center justify-center">
                 <img src="/assets/logo.svg" alt="Logo Guía TV" class="h-16 w-auto" loading="lazy" />
               </div>
               <p class="text-sm text-[var(--portal-text-faint)]">Logo principal (fondo claro)</p>
-              <a href="/assets/logo.svg" download class="text-sm text-red-500 hover:text-red-400 transition-colors">Descargar SVG</a>
+              <a href="/assets/logo.svg" download class="text-sm text-[var(--accent-live)] hover:opacity-75 transition-opacity">Descargar SVG</a>
             </div>
           </div>
           <div class="mt-4 rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
@@ -156,7 +156,7 @@ import { MetaService } from '../../services/meta.service';
               <li>En menciones posteriores se acepta "Guía TV", "GuíaTV" o "GPTV".</li>
               <li>No distorsiones, recortes ni modifiques los logotipos.</li>
               <li>Respeta los colores originales sin modificar la paleta.</li>
-              <li>Incluye un enlace a <a href="https://guiaprogramaciontv.com" class="text-red-400 hover:text-red-300">guiaprogramaciontv.com</a> cuando sea posible.</li>
+              <li>Incluye un enlace a <a href="https://guiaprogramaciontv.com" class="text-[var(--accent-live)] hover:opacity-75 transition-opacity">guiaprogramaciontv.com</a> cuando sea posible.</li>
             </ul>
           </div>
         </section>

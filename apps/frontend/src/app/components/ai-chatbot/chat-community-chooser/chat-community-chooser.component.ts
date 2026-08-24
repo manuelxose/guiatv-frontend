@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
           <button
             type="button"
             (click)="useSaved.emit()"
-            class="min-h-[34px] rounded-full border border-sky-500/40 bg-sky-600/15 px-3 text-xs font-semibold text-sky-200 transition-colors hover:bg-sky-600/25"
+            class="min-h-[34px] rounded-full border border-transparent bg-[var(--accent-discover-soft)] px-3 text-xs font-semibold text-[var(--accent-discover)] transition-colors hover:opacity-90"
           >
             Usar {{ savedCommunity }}
           </button>
@@ -30,7 +30,7 @@ import { CommonModule } from '@angular/common';
           <button
             type="button"
             (click)="toggleChooser()"
-            class="min-h-[34px] rounded-full border border-sky-500/40 bg-sky-600/15 px-3 text-xs font-semibold text-sky-200 transition-colors hover:bg-sky-600/25"
+            class="min-h-[34px] rounded-full border border-transparent bg-[var(--accent-discover-soft)] px-3 text-xs font-semibold text-[var(--accent-discover)] transition-colors hover:opacity-90"
           >
             Elegir comunidad
           </button>
@@ -54,8 +54,8 @@ import { CommonModule } from '@angular/common';
             (click)="communitySelected.emit(community)"
             class="rounded-lg border px-2 py-2 text-[11px] font-medium transition-all text-center leading-tight"
             [ngClass]="community === savedCommunity
-              ? 'border-sky-500/50 bg-sky-600/20 text-sky-200'
-              : 'border-[var(--portal-border)]/60 bg-[var(--portal-bg)] text-[var(--portal-text)] hover:border-sky-500/30 hover:bg-sky-600/10 hover:text-sky-200'"
+              ? 'border-transparent bg-[var(--accent-discover-soft)] text-[var(--accent-discover)]'
+              : 'border-[var(--portal-border)]/60 bg-[var(--portal-bg)] text-[var(--portal-text)] hover:border-[var(--accent-discover)]/30 hover:bg-[var(--accent-discover-soft)] hover:text-[var(--accent-discover)]'"
           >
             {{ community }}
           </button>

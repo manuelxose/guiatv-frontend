@@ -104,10 +104,14 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
+  /** Re-fetch all user-area data after a failed load. */
+  public retryLoad(): void {
+    this.userService.loadUserAreaData().subscribe();
+  }
+
   ngOnInit(): void {
     this.updateViewportState();
     this.menuState.setActive(this.router.url.startsWith('/comunidad') ? 'comunidad' : 'perfil');
-
     this.isAdmin$
       .pipe(takeUntil(this.destroy$))
       .subscribe((isAdmin) => {

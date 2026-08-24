@@ -136,7 +136,7 @@ export const PORTAL_PRIMARY_DESTINATIONS: readonly PortalDestination[] = [
   },
   {
     id: 'sports',
-    label: 'Deportes',
+    label: 'Fútbol',
     hint: 'Directo, agenda y próximos',
     path: APP_PATHS.sports,
     iconPath: PORTAL_ICON_PATHS.sports,
@@ -193,7 +193,7 @@ export const PORTAL_BLOG_DESTINATIONS: readonly PortalContextDestination[] = [
 /** Destinations progressively disclosed from the compact mobile bar. */
 export const PORTAL_MOBILE_MORE_DESTINATIONS: readonly PortalDestination[] =
   PORTAL_GLOBAL_DESTINATIONS.filter((destination) =>
-    ['streaming', 'editorial'].includes(destination.id)
+    ['streaming', 'editorial', 'rankings', 'trends'].includes(destination.id)
   );
 
 /** Contextual navigation for the platform family. */
@@ -245,8 +245,8 @@ export const PORTAL_SECTION_NAVIGATION: Readonly<Record<PortalSection, PortalSec
     items: PORTAL_PLATFORM_DESTINATIONS,
   },
   sports: {
-    label: 'Secciones de Deportes',
-    rootLabel: 'Deportes',
+    label: 'Secciones de Fútbol',
+    rootLabel: 'Fútbol',
     rootPath: APP_PATHS.football,
     items: PORTAL_SPORTS_DESTINATIONS,
   },
@@ -302,7 +302,7 @@ export const PORTAL_HOME_TOP_PILLS: readonly PortalPillDefinition[] = [
   { id: 'live-now', label: 'Ahora en TV', iconPath: PORTAL_ICON_PATHS.liveDot, tone: 'live' },
   { id: 'tonight', label: 'Esta noche', iconPath: PORTAL_ICON_PATHS.clock, tone: 'live' },
   { id: 'platforms', label: 'Plataformas', iconPath: PORTAL_ICON_PATHS.platforms, tone: 'streaming' },
-  { id: 'sports-live', label: 'Deportes en vivo', iconPath: PORTAL_ICON_PATHS.sports, tone: 'sports' },
+  { id: 'sports-live', label: 'Fútbol en vivo', iconPath: PORTAL_ICON_PATHS.sports, tone: 'sports' },
   { id: 'trending', label: 'Tendencias', iconPath: PORTAL_ICON_PATHS.trends, tone: 'discover' },
   {
     id: 'free',
@@ -345,8 +345,8 @@ export const PORTAL_GUIDE_SHELL_CONFIG: Record<'live' | 'discover' | 'streaming'
     ],
   },
   sports: {
-    topPillLabel: 'Deportes',
-    rightRailLabel: 'Panel deportivo',
+    topPillLabel: 'Fútbol',
+    rightRailLabel: 'Panel de fútbol',
     // Football-first: the vertical leads with its own temporal sections
     // (live → today → upcoming) and a discipline selector. The top shelf
     // keeps only the "Más filtros" entry so there is no duplicated temporal

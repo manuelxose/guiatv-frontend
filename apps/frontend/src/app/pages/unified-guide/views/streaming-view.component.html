@@ -27,6 +27,15 @@
     (itemSelect)="selectSort($event)"
   ></app-portal-local-toolbar>
 
+  <section
+    *ngIf="gridLoading() && !featuredItem()"
+    class="streaming-view__loading"
+    aria-label="Cargando catálogo"
+    aria-busy="true"
+  >
+    <app-unified-skeleton-block [count]="8" [columns]="4" cardHeight="9rem"></app-unified-skeleton-block>
+  </section>
+
   <section class="streaming-view__platform-row" *ngIf="platforms().length">
     <button
       *ngFor="let platform of platforms(); trackBy: trackByPlatform"
@@ -116,13 +125,19 @@
         <button type="button" class="streaming-view__action" (click)="clearFilters()">Limpiar</button>
       </header>
 
-      <div class="streaming-view__results-grid" *ngIf="gridData().items.length; else streamingEmptyState">
+      <div class="streaming-view__results-grid" *ngIf="gridData().items.length; else streamingGridPending">
         <app-unified-program-card
           *ngFor="let item of gridData().items; trackBy: trackByItem"
           [item]="item"
           variant="streaming"
         ></app-unified-program-card>
       </div>
+    </section>
+  </ng-template>
+
+  <ng-template #streamingGridPending>
+    <section *ngIf="gridLoading(); else streamingEmptyState" class="streaming-view__loading" aria-label="Cargando catálogo" aria-busy="true">
+      <app-unified-skeleton-block [count]="8" [columns]="4" cardHeight="9rem"></app-unified-skeleton-block>
     </section>
   </ng-template>
 

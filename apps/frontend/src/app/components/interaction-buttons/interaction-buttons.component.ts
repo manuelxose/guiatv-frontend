@@ -21,7 +21,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
         [ngClass]="{
           'h-9 w-9 justify-center rounded-xl': compact,
           'gap-2 px-4 py-2 rounded-full': !compact,
-          'bg-red-600/15 border-red-500/40': isInWatchlist,
+          'bg-[var(--accent-live-soft)] border-transparent': isInWatchlist,
           'bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-surface-strong)] border-[var(--portal-border)]': !isInWatchlist
         }"
       >
@@ -33,11 +33,11 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           stroke-width="2"
           [class.h-5]="!compact" [class.w-5]="!compact"
           [class.h-4]="compact" [class.w-4]="compact"
-          [ngClass]="isInWatchlist ? 'text-red-400' : 'text-[var(--portal-text-soft)]'"
+          [ngClass]="isInWatchlist ? 'text-[var(--accent-live)]' : 'text-[var(--portal-text-soft)]'"
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isInWatchlist ? 'text-red-300' : 'text-[var(--portal-text-soft)]'">
+        <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isInWatchlist ? 'text-[var(--accent-live)]' : 'text-[var(--portal-text-soft)]'">
           {{ isInWatchlist ? 'En lista' : 'Mi lista' }}
         </span>
       </button>
@@ -75,7 +75,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
         [ngClass]="{
           'h-9 w-9 justify-center rounded-xl': compact,
           'gap-2 px-4 py-2 rounded-full': !compact,
-          'bg-emerald-600/15 border-emerald-500/40': isWatching,
+          'bg-[var(--accent-streaming-soft)] border-transparent': isWatching,
           'bg-[var(--portal-surface-strong)] hover:bg-[var(--portal-surface-strong)] border-[var(--portal-border)]': !isWatching
         }"
       >
@@ -87,11 +87,11 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
           stroke-width="2"
           [class.h-5]="!compact" [class.w-5]="!compact"
           [class.h-4]="compact" [class.w-4]="compact"
-          [ngClass]="isWatching ? 'text-emerald-300' : 'text-[var(--portal-text-soft)]'"
+          [ngClass]="isWatching ? 'text-[var(--accent-streaming)]' : 'text-[var(--portal-text-soft)]'"
         >
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.55-2.27A1 1 0 0121 8.62v6.76a1 1 0 01-1.45.89L15 14m-9 4h8a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z"/>
         </svg>
-        <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isWatching ? 'text-emerald-200' : 'text-[var(--portal-text-soft)]'">
+        <span *ngIf="!compact" class="text-sm font-medium" [ngClass]="isWatching ? 'text-[var(--accent-streaming)]' : 'text-[var(--portal-text-soft)]'">
           Viendo
         </span>
       </button>
@@ -162,7 +162,7 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
             (mouseenter)="hoveredRating = star"
             (mouseleave)="hoveredRating = 0"
             class="h-7 w-7 rounded text-sm font-bold transition-colors"
-            [ngClass]="(hoveredRating || currentRating) >= star ? 'bg-red-600 text-white' : 'bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)]'"
+            [ngClass]="(hoveredRating || currentRating) >= star ? 'bg-[var(--accent-live-strong)] text-white' : 'bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)]'"
           >
             {{ star }}
           </button>
@@ -192,13 +192,13 @@ import { normalizeCatalogInteractionId } from '../../utils/catalog';
               id="recommendation-note"
               #noteInput
               rows="3"
-              class="w-full bg-[var(--portal-surface-strong)] border border-[var(--portal-border)] rounded-lg px-4 py-2 text-[var(--portal-text)] focus:ring-2 focus:ring-red-500 focus:outline-none"
+              class="w-full bg-[var(--portal-surface-strong)] border border-[var(--portal-border)] rounded-lg px-4 py-2 text-[var(--portal-text)] focus:ring-2 focus:ring-[var(--accent-live)] focus:outline-none"
               placeholder="¿Por qué te ha gustado?"
             ></textarea>
           </div>
           <button
             (click)="submitRecommendation(noteInput.value)"
-            class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition-colors"
+            class="w-full bg-[var(--accent-live-strong)] hover:opacity-90 text-white font-bold py-3 rounded-xl transition-colors"
           >
             Enviar recomendación
           </button>

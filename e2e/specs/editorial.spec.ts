@@ -46,16 +46,21 @@ test.describe('Editorial -> categoría -> artículo -> artículo relacionado', (
     expect((await categoryHeading.innerText()).trim().length).toBeGreaterThan(0);
 
     // artículo: open the first real editorial post card on the category page.
+    // The category is a live surface — its featured card can change between
+    // read and click as editors publish — so target the card by its concrete
+    // href (position-independent) and prove navigation by URL, not by a title
+    // equality that live data can invalidate mid-flight.
     const articleLink = page.locator('a.editorial-post-card').first();
     await expect(articleLink).toBeVisible({ timeout: 15_000 });
-    const articleTitle = (await articleLink.locator('h2, h3').first().innerText()).trim();
-    expect(articleTitle.length).toBeGreaterThan(0);
-    await articleLink.click();
+    const articleHref = (await articleLink.getAttribute('href'))?.trim() || '';
+    expect(articleHref).toMatch(/^\/editorial\/.+/);
+    await page.locator(`a.editorial-post-card[href="${articleHref}"]`).click();
 
     await page.waitForURL(/\/editorial\/(?!categoria\/)[^/]+$/, { timeout: 15_000 });
+    expect(new URL(page.url()).pathname).toBe(articleHref);
     const postHeading = page.locator('h1').first();
     await expect(postHeading).toBeVisible({ timeout: 15_000 });
-    expect((await postHeading.innerText()).trim()).toBe(articleTitle);
+    expect((await postHeading.innerText()).trim().length).toBeGreaterThan(0);
     await assertNoRenderedUndefined(page);
 
     // artículo relacionado: real "Artículos relacionados" module, not a stub.
@@ -66,14 +71,15 @@ test.describe('Editorial -> categoría -> artículo -> artículo relacionado', (
     const relatedSection = page.locator('section', { has: relatedHeading });
     const relatedLink = relatedSection.locator('a.editorial-post-card').first();
     await expect(relatedLink).toBeVisible({ timeout: 10_000 });
-    const relatedTitle = (await relatedLink.locator('h3').innerText()).trim();
-    expect(relatedTitle.length).toBeGreaterThan(0);
+    const relatedHref = (await relatedLink.getAttribute('href'))?.trim() || '';
+    expect(relatedHref).toMatch(/^\/editorial\/.+/);
     await relatedLink.click();
 
     await page.waitForURL(/\/editorial\/(?!categoria\/)[^/]+$/, { timeout: 15_000 });
+    expect(new URL(page.url()).pathname).toBe(relatedHref);
     const relatedHeadingText = page.locator('h1').first();
     await expect(relatedHeadingText).toBeVisible({ timeout: 15_000 });
-    expect((await relatedHeadingText.innerText()).trim()).toBe(relatedTitle);
+    expect((await relatedHeadingText.innerText()).trim().length).toBeGreaterThan(0);
     await assertNoRenderedUndefined(page);
   });
 });

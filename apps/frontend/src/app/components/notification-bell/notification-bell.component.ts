@@ -24,7 +24,7 @@ import { UserNotification } from '../../interfaces/user.interface';
         </svg>
         <span
           *ngIf="unreadCount > 0"
-          class="absolute -top-1 -right-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[var(--accent-live)] px-1 py-0.5 text-[10px] font-bold text-white"
+          class="absolute -top-1 -right-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[var(--accent-live-strong)] px-1 py-0.5 text-[10px] font-bold text-white"
         >
           {{ unreadCount > 99 ? '99+' : unreadCount }}
         </span>

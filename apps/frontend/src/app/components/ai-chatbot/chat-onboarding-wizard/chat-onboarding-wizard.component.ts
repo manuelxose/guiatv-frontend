@@ -41,8 +41,8 @@ interface SelectableChip {
           *ngFor="let step of steps; let i = index"
           class="h-1.5 rounded-full transition-all duration-300"
           [ngClass]="{
-            'w-6 bg-red-500': i === currentStep,
-            'w-4 bg-red-500/40': i < currentStep,
+            'w-6 bg-[var(--accent-live-strong)]': i === currentStep,
+            'w-4 bg-[var(--accent-live-strong)]/40': i < currentStep,
             'w-4 bg-[var(--portal-border)]': i > currentStep
           }"
         ></div>
@@ -79,7 +79,7 @@ interface SelectableChip {
               (click)="toggle(selectedGenres, g.id)"
               class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
               [ngClass]="isSelected(selectedGenres, g.id)
-                ? 'border-red-500/60 bg-red-600/20 text-red-300'
+                ? 'border-transparent bg-[var(--accent-live-soft)] text-[var(--accent-live)]'
                 : 'border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ g.label }}
@@ -97,7 +97,7 @@ interface SelectableChip {
               (click)="toggle(selectedContexts, c.id)"
               class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
               [ngClass]="isSelected(selectedContexts, c.id)
-                ? 'border-red-500/60 bg-red-600/20 text-red-300'
+                ? 'border-transparent bg-[var(--accent-live-soft)] text-[var(--accent-live)]'
                 : 'border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ c.label }}
@@ -111,7 +111,7 @@ interface SelectableChip {
               (click)="toggle(selectedDurations, d.id)"
               class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
               [ngClass]="isSelected(selectedDurations, d.id)
-                ? 'border-red-500/60 bg-red-600/20 text-red-300'
+                ? 'border-transparent bg-[var(--accent-live-soft)] text-[var(--accent-live)]'
                 : 'border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ d.label }}
@@ -129,7 +129,7 @@ interface SelectableChip {
               (click)="selectCommunity(c.id)"
               class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
               [ngClass]="selectedCommunity === c.id
-                ? 'border-sky-500/60 bg-sky-600/20 text-sky-300'
+                ? 'border-transparent bg-[var(--accent-discover-soft)] text-[var(--accent-discover)]'
                 : 'border-[var(--portal-border)] bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
             >
               {{ c.label }}
@@ -168,7 +168,7 @@ interface SelectableChip {
         <button
           type="button"
           (click)="nextStep()"
-          class="rounded-full bg-red-600 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-500 disabled:opacity-40"
+          class="rounded-full bg-[var(--accent-live-strong)] px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90 disabled:opacity-40"
           [disabled]="!canAdvance"
         >
           {{ isLastStep ? 'Empezar' : 'Siguiente →' }}

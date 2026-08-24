@@ -11,7 +11,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
   imports: [CommonModule, RouterModule, InteractionButtonsComponent],
   template: `
     <article
-      class="catalog-card group relative overflow-hidden rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] shadow-[0_16px_32px_rgba(0,0,0,0.28)]"
+      class="catalog-card group relative overflow-hidden rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] shadow-[var(--shadow-md)]"
       [ngClass]="compact ? 'min-w-[220px]' : 'h-full'"
       [attr.data-vertical]="vertical"
     >
@@ -31,17 +31,17 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
             decoding="async"
           />
           <ng-template #imageFallback>
-            <div class="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(239,68,68,0.18),_rgba(15,23,42,0.96))] text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-soft)]">
+            <div class="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top,color-mix(in_oklch,var(--accent-live)_16%,transparent),color-mix(in_oklch,var(--portal-bg-deep)_96%,var(--portal-bg-deep)))] text-xs font-semibold uppercase tracking-[0.25em] text-[var(--portal-text-soft)]">
               Guia TV
             </div>
           </ng-template>
 
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/25 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
 
-          <!-- Action overlay — compact mode: buttons over image, never blocks navigation -->
+          <!-- Action overlay — compact mode: buttons over image, always reachable on touch, never blocks navigation -->
           <div
             *ngIf="showActions && compact"
-            class="absolute bottom-0 inset-x-0 flex items-center gap-1.5 px-3 pb-3 pt-10 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent transition-opacity duration-200 opacity-100 md:opacity-0 md:group-hover:opacity-100"
+            class="absolute bottom-0 inset-x-0 flex items-center gap-1.5 px-3 pb-3 pt-10 bg-gradient-to-t from-black/90 via-black/50 to-transparent"
             (click)="$event.stopPropagation(); $event.preventDefault()"
             (keydown)="$event.stopPropagation()"
             tabindex="-1"
@@ -61,7 +61,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
           <div class="absolute left-3 top-3 flex flex-wrap gap-2">
             <span
               *ngIf="item?.liveNow"
-              class="rounded-full border border-red-500/50 bg-red-600/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-white"
+              class="rounded-full border border-transparent bg-[var(--accent-live-strong)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-white"
             >
               En directo
             </span>
@@ -92,7 +92,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
 
             <span
               *ngIf="item?.rating"
-              class="inline-flex flex-shrink-0 items-center gap-1 rounded-full border border-amber-400/20 bg-black/40 px-2.5 py-1 text-[11px] font-semibold text-amber-300"
+              class="inline-flex flex-shrink-0 items-center gap-1 rounded-full border border-transparent bg-[var(--status-warning-soft)] px-2.5 py-1 text-[11px] font-semibold text-[var(--status-warning)]"
             >
               <svg class="h-3.5 w-3.5 fill-current" viewBox="0 0 20 20">
                 <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.07 3.29a1 1 0 0 0 .95.69h3.46c.97 0 1.37 1.24.59 1.81l-2.8 2.03a1 1 0 0 0-.37 1.12l1.07 3.29c.3.92-.75 1.69-1.54 1.12l-2.8-2.04a1 1 0 0 0-1.17 0l-2.8 2.04c-.78.57-1.84-.2-1.54-1.12l1.07-3.29a1 1 0 0 0-.36-1.12L2.98 8.72c-.78-.57-.38-1.81.59-1.81h3.46a1 1 0 0 0 .95-.69l1.07-3.29Z"></path>
@@ -115,7 +115,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
           </div>
           <a
             [routerLink]="detailLink"
-            class="line-clamp-2 block text-base font-semibold leading-tight text-[var(--portal-text)] transition-colors hover:text-red-300"
+            class="line-clamp-2 block text-base font-semibold leading-tight text-[var(--portal-text)] transition-colors hover:text-[var(--accent-live)]"
           >
             {{ item?.title }}
           </a>
@@ -133,7 +133,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
           </span>
           <span
             *ngIf="item?.userInteraction?.status"
-            class="rounded-full border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-[11px] font-semibold text-red-100"
+            class="rounded-full border border-transparent bg-[var(--accent-live-soft)] px-2.5 py-1 text-[11px] font-semibold text-[var(--accent-live)]"
           >
             {{ humanStatus(item?.userInteraction?.status || '') }}
           </span>

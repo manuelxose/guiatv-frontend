@@ -17,6 +17,17 @@
     </div>
   </header>
 
+  <section
+    *ngIf="discoverLoading() && !discoverData().items.length"
+    class="discover-view__loading"
+    aria-label="Cargando contenido"
+    aria-busy="true"
+  >
+    <app-unified-skeleton-block [count]="8" [columns]="4" cardHeight="9rem"></app-unified-skeleton-block>
+  </section>
+
+  <ng-container *ngIf="!discoverLoading() || discoverData().items.length">
+
   <section class="discover-view__feature-grid" *ngIf="featureItems().length">
     <app-unified-program-card
       [item]="featureItems()[0]"
@@ -136,6 +147,7 @@
     [posts]="rankingState().posts.slice(0, 4)"
     [columns]="4"
   ></app-unified-editorial-module>
+  </ng-container>
 
   <app-unified-filter-dock
     [open]="shellUi.isFilterDockOpen()"

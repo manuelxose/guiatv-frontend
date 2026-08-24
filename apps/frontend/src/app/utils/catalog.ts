@@ -86,3 +86,25 @@ export function buildDetailPath(
   return `${prefix}/${slug}`;
 }
 
+/**
+ * Slugifier for movie/series (TMDB-sourced) titles. The legacy `slugify` drops
+ * accented characters entirely ("último" -> "ltimo"), which breaks the backend
+ * slug lookup and the TMDB search derived from it. This variant keeps the base
+ * letter ("último" -> "ultimo"). Program/EPG slugs keep the legacy slugifier to
+ * preserve already-indexed public URLs.
+ */
+export function slugifyTitle(text: string): string {
+  const safe = String(text || '').toString();
+  const transliterated = safe.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return (
+    transliterated
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '')
+  );
+}
+

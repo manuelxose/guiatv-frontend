@@ -23,7 +23,7 @@
             <h2 class="text-xl font-semibold">Crear cuenta</h2>
           </div>
           <span
-            class="px-3 py-1 rounded-full text-xs bg-green-500/20 text-green-300 border border-green-500/40"
+            class="px-3 py-1 rounded-full text-xs bg-[var(--accent-streaming-soft)] text-[var(--accent-streaming)] border border-transparent"
             *ngIf="isAuthenticated$ | async"
           >
             Sesion activa
@@ -43,7 +43,7 @@
               type="text"
               autocomplete="name"
               [(ngModel)]="registerData.name"
-              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-red-500"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-live)]"
               placeholder="Tu nombre"
             />
           </div>
@@ -60,7 +60,7 @@
               required
               autocomplete="email"
               [(ngModel)]="registerData.email"
-              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-red-500"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-live)]"
               placeholder="tu@email.com"
             />
           </div>
@@ -77,7 +77,7 @@
               required
               autocomplete="new-password"
               [(ngModel)]="registerData.password"
-              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-red-500"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-live)]"
               placeholder="Minimo 8 caracteres"
             />
           </div>
@@ -94,13 +94,13 @@
               required
               autocomplete="new-password"
               [(ngModel)]="registerData.confirmPassword"
-              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-red-500"
+              class="mt-2 w-full min-h-[44px] rounded-lg bg-[var(--portal-surface)]/60 border border-[var(--portal-border)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-live)]"
               placeholder="Repite la contrasena"
             />
           </div>
           <button
             type="submit"
-            class="w-full min-h-[44px] rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold shadow disabled:opacity-60"
+            class="w-full min-h-[44px] rounded-lg bg-[var(--accent-live-strong)] hover:opacity-90 text-white font-semibold shadow disabled:opacity-60"
             [disabled]="loading"
           >
             {{ loading ? 'Creando...' : 'Crear cuenta con email' }}
@@ -115,7 +115,7 @@
 
         <button
           type="button"
-          class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg bg-white text-gray-900 font-semibold shadow hover:shadow-lg transition-all duration-200 mb-4"
+          class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-lg bg-[var(--portal-surface)] text-[var(--portal-text)] font-semibold shadow hover:shadow-lg transition-all duration-200 mb-4"
           (click)="onGoogleRegister()"
           [disabled]="loading"
         >
@@ -149,7 +149,7 @@
           Ya tienes cuenta?
           <a
             routerLink="/iniciar-sesion"
-            class="text-red-300 hover:text-red-200 font-semibold"
+            class="text-[var(--accent-live)] hover:opacity-90 font-semibold"
           >
             Iniciar sesion
           </a>
@@ -164,11 +164,11 @@
           *ngIf="statusMessage"
           class="mt-4 text-sm rounded-lg px-4 py-3 border"
           [ngClass]="{
-            'text-green-300 bg-green-500/10 border-green-500/20':
+            'text-[var(--accent-streaming)] bg-[var(--accent-streaming-soft)] border-transparent':
               statusTone === 'success',
-            'text-red-300 bg-red-500/10 border-red-500/20':
+            'text-[var(--accent-live)] bg-[var(--accent-live-soft)] border-transparent':
               statusTone === 'error',
-            'text-sky-300 bg-sky-500/10 border-sky-500/20':
+            'text-[var(--accent-discover)] bg-[var(--accent-discover-soft)] border-transparent':
               statusTone === 'info'
           }"
         >
@@ -187,7 +187,7 @@
         <div class="space-y-4 text-sm text-[var(--portal-text-soft)]">
           <div class="flex items-start gap-2">
             <span
-              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
+              class="h-6 w-6 rounded-full bg-[var(--accent-live-soft)] text-[var(--accent-live)] flex items-center justify-center text-xs"
               >1</span
             >
             <p>
@@ -196,7 +196,7 @@
           </div>
           <div class="flex items-start gap-2">
             <span
-              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
+              class="h-6 w-6 rounded-full bg-[var(--accent-live-soft)] text-[var(--accent-live)] flex items-center justify-center text-xs"
               >2</span
             >
             <p>
@@ -205,7 +205,7 @@
           </div>
           <div class="flex items-start gap-2">
             <span
-              class="h-6 w-6 rounded-full bg-red-500/20 text-red-300 flex items-center justify-center text-xs"
+              class="h-6 w-6 rounded-full bg-[var(--accent-live-soft)] text-[var(--accent-live)] flex items-center justify-center text-xs"
               >3</span
             >
             <p>
