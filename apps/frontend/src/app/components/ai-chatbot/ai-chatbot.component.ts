@@ -21,9 +21,11 @@ import {
   ChatbotRequestState,
   ChatbotSessionState,
   ConversationSummary,
+  isChatbotBusyState,
 } from '../../interfaces/chatbot.interface';
 import { ChatbotService } from '../../services/chatbot.service';
 import { UserService } from '../../services/user.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 import { ChatHeaderComponent } from './chat-header/chat-header.component';
 import { ChatMemoryEditorComponent } from './chat-memory-editor/chat-memory-editor.component';
@@ -55,6 +57,7 @@ import { ChatConversationSidebarComponent } from './chat-conversation-sidebar/ch
 })
 export class AIChatbotComponent implements AfterViewInit {
   @Output() close = new EventEmitter<void>();
+  @Output() openSocial = new EventEmitter<void>();
   @ViewChild('messagesContainer') private messagesContainer?: ElementRef<HTMLDivElement>;
   @ViewChild('inputBar') inputBar?: ChatInputBarComponent;
   @ViewChild('memoryEditor') memoryEditor?: ChatMemoryEditorComponent;
@@ -139,7 +142,8 @@ export class AIChatbotComponent implements AfterViewInit {
   constructor(
     private readonly chatbotService: ChatbotService,
     private readonly userService: UserService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly analytics: AnalyticsService
   ) {}
 
   ngAfterViewInit(): void {
@@ -199,12 +203,13 @@ export class AIChatbotComponent implements AfterViewInit {
   onMessageSent(text: string): void {
     if (
       !text ||
-      this.chatState === 'sending' ||
+      isChatbotBusyState(this.chatState) ||
       this.sessionState !== 'authenticated'
     ) {
       return;
     }
 
+    this.analytics.trackEvent('assistant_prompt_sent', { promptLength: text.length });
     this.chatbotService.sendMessageStream(text).subscribe({
       error: () => undefined,
     });
@@ -232,6 +237,7 @@ export class AIChatbotComponent implements AfterViewInit {
   }
 
   openRecommendation(recommendation: ChatbotRecommendation): void {
+    this.analytics.trackEvent('assistant_recommendation_opened', { type: recommendation.type });
     this.chatbotService
       .trackRecommendationAction('open_recommendation', recommendation)
       .subscribe();
@@ -329,6 +335,24 @@ export class AIChatbotComponent implements AfterViewInit {
     this.chatbotService.hydrateConversation(true).subscribe({
       error: () => undefined,
     });
+  }
+
+  stopGeneration(): void {
+    this.analytics.trackEvent('assistant_generation_stopped');
+    this.chatbotService.stopGeneration();
+  }
+
+  retryLastPrompt(): void {
+    this.analytics.trackEvent('assistant_prompt_retried');
+    this.chatbotService.retryLastPrompt().subscribe({ error: () => undefined });
+  }
+
+  canRetryLastPrompt(): boolean {
+    return this.chatbotService.hasRetryablePrompt() &&
+      (this.chatState === 'cancelled' ||
+        this.chatState === 'rate_limited' ||
+        this.chatState === 'offline' ||
+        this.chatState === 'unavailable');
   }
 
   startNewConversation(): void {
@@ -478,7 +502,7 @@ export class AIChatbotComponent implements AfterViewInit {
   }
 
   getPreferencePromptKey(checkDismissed = true): string {
-    if (this.sessionState !== 'authenticated' || this.chatState === 'sending') {
+    if (this.sessionState !== 'authenticated' || isChatbotBusyState(this.chatState)) {
       return '';
     }
 
@@ -528,7 +552,7 @@ export class AIChatbotComponent implements AfterViewInit {
   }
 
   getPreferencePrompt(): string {
-    if (this.sessionState !== 'authenticated' || this.chatState === 'sending') {
+    if (this.sessionState !== 'authenticated' || isChatbotBusyState(this.chatState)) {
       return '';
     }
     switch (this.getPreferencePromptKey()) {
@@ -646,7 +670,7 @@ export class AIChatbotComponent implements AfterViewInit {
     const normalized = text.trim();
     if (
       !normalized ||
-      this.chatState === 'sending' ||
+      isChatbotBusyState(this.chatState) ||
       this.sessionState !== 'authenticated'
     ) {
       return;

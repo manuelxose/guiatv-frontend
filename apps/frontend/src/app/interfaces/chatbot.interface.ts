@@ -33,7 +33,7 @@ export interface ChatbotRecommendation {
 }
 
 export interface ChatbotQueryContext {
-  mode: 'tv_now' | 'tv_tonight' | 'streaming' | 'general';
+  mode: 'tv_now' | 'tv_tonight' | 'streaming' | 'football_today' | 'general';
   requestedTypes: Array<'movie' | 'series' | 'program'>;
   totalMatches: number;
   primaryMatches?: number;
@@ -54,6 +54,7 @@ export interface ChatMessage {
   moreRecommendations?: ChatbotRecommendation[];
   followUpSuggestions?: string[];
   queryContext?: ChatbotQueryContext;
+  matches?: AssistantMatchCard[];
   isLoading?: boolean;
   /** True while SSE tokens are still arriving. */
   isStreaming?: boolean;
@@ -62,6 +63,84 @@ export interface ChatMessage {
   /** True only for messages created via sendMessage(), false/undefined for hydrated history. */
   isNewMessage?: boolean;
   feedback?: { rating: 'positive' | 'negative' };
+  /** Set when the user explicitly stopped this response. Excluded from prompt history. */
+  isCancelled?: boolean;
+}
+
+export interface AssistantMatchCard {
+  id: string;
+  slug: string;
+  competition: string;
+  kickoffAt: string;
+  status: 'scheduled' | 'live' | 'halftime' | 'finished' | 'postponed' | 'suspended' | 'cancelled';
+  homeTeam: string;
+  awayTeam: string;
+  homeScore?: number | null;
+  awayScore?: number | null;
+  broadcasters: Array<{ name: string; path?: string }>;
+  detailPath: string;
+}
+
+export type AssistantIntent =
+  | 'tv_now'
+  | 'tv_later'
+  | 'tv_channel'
+  | 'program_lookup'
+  | 'movie_discovery'
+  | 'series_discovery'
+  | 'streaming_availability'
+  | 'football_today'
+  | 'football_match'
+  | 'football_team'
+  | 'football_competition'
+  | 'recommendation'
+  | 'comparison'
+  | 'reminder'
+  | 'account_preference'
+  | 'general_chat';
+
+export type AssistantContextKind =
+  | 'global'
+  | 'programme'
+  | 'movie'
+  | 'series'
+  | 'channel'
+  | 'football_match'
+  | 'football_team'
+  | 'football_competition';
+
+export interface AssistantLaunchContext {
+  kind: AssistantContextKind;
+  entityId?: string;
+  title?: string;
+  channel?: string;
+  kickoff?: string;
+  competition?: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  broadcasters?: string[];
+}
+
+export interface AssistantSource {
+  id: string;
+  kind: 'epg' | 'catalog' | 'streaming_provider' | 'football_provider' | 'user_profile';
+  label: string;
+  entityId?: string;
+  retrievedAt?: string;
+}
+
+export interface AssistantAction {
+  id: string;
+  type: 'open_detail' | 'watch_now' | 'create_reminder' | 'retry' | 'set_preference';
+  label: string;
+  targetId?: string;
+}
+
+export interface AssistantSection {
+  id: string;
+  kind: 'summary' | 'programmes' | 'recommendations' | 'matches' | 'comparison' | 'note';
+  title?: string;
+  text?: string;
 }
 
 export interface AssistantMemorySnapshot {
@@ -99,9 +178,24 @@ export type ChatbotSessionState =
 
 export type ChatbotRequestState =
   | 'idle'
-  | 'sending'
+  | 'connecting'
+  | 'retrieving'
+  | 'composing'
+  | 'streaming'
+  | 'recovering'
+  | 'cancelled'
+  | 'rate_limited'
+  | 'offline'
   | 'login_required'
   | 'unavailable';
+
+export function isChatbotBusyState(state: ChatbotRequestState): boolean {
+  return state === 'connecting' ||
+    state === 'retrieving' ||
+    state === 'composing' ||
+    state === 'streaming' ||
+    state === 'recovering';
+}
 
 /** Fields editable in the memory editor panel. */
 export interface MemoryEditorField {

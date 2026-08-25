@@ -9,83 +9,193 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ChatbotRequestState, ChatbotSessionState } from '../../../interfaces/chatbot.interface';
+import {
+  ChatbotRequestState,
+  ChatbotSessionState,
+  isChatbotBusyState,
+} from '../../../interfaces/chatbot.interface';
 
 @Component({
   selector: 'app-chat-input-bar',
   standalone: true,
   imports: [FormsModule, CommonModule],
   template: `
-    <div class="space-y-1.5">
-      <div class="flex items-end gap-2 rounded-[1.35rem] border bg-[var(--portal-bg)] p-2 shadow-[var(--shadow-lg)]" [ngClass]="isSearchMode ? 'border-blue-500/60' : 'border-[var(--portal-border)]'">
+    <div class="chat-composer">
+      <div
+        class="chat-composer__surface"
+        [class.chat-composer__surface--search]="isSearchMode"
+        [class.chat-composer__surface--busy]="isBusy"
+      >
         <textarea
           #chatInput
+          id="assistant-message"
+          name="assistant-message"
+          aria-label="Mensaje para el asistente"
+          autocomplete="off"
+          maxlength="2000"
           [(ngModel)]="draft"
           rows="1"
           (keydown)="onKeydown($event)"
           (input)="autoResize()"
-          [disabled]="disabled"
-          class="max-h-[160px] min-h-[44px] flex-1 resize-none bg-transparent px-2 py-2.5 text-sm text-[var(--portal-text)] outline-none placeholder:text-[var(--portal-text-muted)]"
-          [placeholder]="isSearchMode ? 'Buscando contenido...' : 'Pregúntame qué hay ahora, qué merece la pena esta noche…'"
+          [disabled]="inputDisabled"
+          class="chat-composer__input"
+          [placeholder]="isSearchMode ? 'Busca un título, canal o equipo…' : 'Pregunta qué ver ahora, esta noche o en tus plataformas…'"
         ></textarea>
+
         <button
+          *ngIf="!isBusy; else stopButton"
           type="button"
           (click)="send()"
-          [disabled]="disabled || !draft.trim()"
-          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-white transition-all duration-150 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100"
+          [disabled]="sendDisabled"
+          class="chat-composer__submit"
           aria-label="Enviar mensaje"
         >
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 5l7 7-7 7"></path>
           </svg>
         </button>
+        <ng-template #stopButton>
+          <button
+            type="button"
+            (click)="stopGeneration.emit()"
+            class="chat-composer__submit chat-composer__submit--stop"
+            aria-label="Detener respuesta"
+          >
+            <span aria-hidden="true"></span>
+          </button>
+        </ng-template>
       </div>
 
-      <!-- Quick actions row -->
-      <div class="flex items-center justify-between px-2">
-        <div class="flex gap-1">
-          <button
-            *ngFor="let action of quickActions"
-            type="button"
-            (click)="onQuickAction(action)"
-            [disabled]="disabled"
-            class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-2.5 py-1 text-[11px] text-[var(--portal-text-muted)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)] disabled:opacity-40"
-          >
-            {{ action.label }}
-          </button>
-        </div>
-        <span class="text-[10px] text-[var(--portal-text-faint)]">Shift+Enter para salto de línea</span>
+      <div class="chat-composer__quick-actions" aria-label="Consultas rápidas">
+        <button
+          *ngFor="let action of quickActions"
+          type="button"
+          (click)="onQuickAction(action)"
+          [disabled]="inputDisabled"
+          class="chat-composer__quick-action"
+        >
+          {{ action.label }}
+        </button>
+      </div>
+
+      <div class="chat-composer__meta">
+        <p
+          *ngIf="statusLabel"
+          class="chat-composer__status"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {{ statusLabel }}
+        </p>
+        <span *ngIf="!statusLabel" class="chat-composer__shortcut">Enter para enviar · Shift+Enter para nueva línea</span>
+        <button
+          *ngIf="canRetry && !isBusy"
+          type="button"
+          class="chat-composer__retry"
+          (click)="retryRequested.emit()"
+          aria-label="Reintentar última consulta"
+        >
+          Reintentar
+        </button>
       </div>
     </div>
   `,
+  styles: [`
+    :host { display: block; min-width: 0; }
+    .chat-composer { display: grid; gap: .55rem; min-width: 0; }
+    .chat-composer__surface {
+      display: flex; align-items: flex-end; gap: .5rem; min-width: 0;
+      border: 1px solid var(--portal-border); border-radius: 1.15rem;
+      background: var(--portal-bg-elevated); padding: .45rem;
+      box-shadow: var(--shadow-sm); transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+    .chat-composer__surface:focus-within { border-color: var(--guide-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--guide-accent) 18%, transparent); }
+    .chat-composer__surface--search { border-color: var(--accent-discover); }
+    .chat-composer__surface--busy { border-color: color-mix(in srgb, var(--guide-accent) 55%, var(--portal-border)); }
+    .chat-composer__input {
+      min-width: 0; min-height: 44px; max-height: 144px; flex: 1; resize: none;
+      border: 0; outline: 0; background: transparent; color: var(--portal-text);
+      padding: .7rem .65rem; font: inherit; font-size: var(--text-sm); line-height: 1.45;
+    }
+    .chat-composer__input::placeholder { color: var(--portal-text-muted); }
+    .chat-composer__submit {
+      display: inline-flex; width: 44px; height: 44px; flex: 0 0 44px; align-items: center; justify-content: center;
+      border: 0; border-radius: .85rem; background: var(--guide-accent); color: #fff;
+      cursor: pointer; transition: transform 150ms ease, opacity 150ms ease, background-color 150ms ease;
+      touch-action: manipulation;
+    }
+    .chat-composer__submit:hover:not(:disabled) { transform: translateY(-1px); }
+    .chat-composer__submit:active:not(:disabled) { transform: translateY(0); }
+    .chat-composer__submit:focus-visible,
+    .chat-composer__quick-action:focus-visible,
+    .chat-composer__retry:focus-visible { outline: 3px solid color-mix(in srgb, var(--guide-accent) 45%, transparent); outline-offset: 2px; }
+    .chat-composer__submit:disabled { cursor: not-allowed; opacity: .42; }
+    .chat-composer__submit svg { width: 1.2rem; height: 1.2rem; }
+    .chat-composer__submit--stop { background: var(--portal-text); }
+    .chat-composer__submit--stop span { width: .75rem; height: .75rem; border-radius: .18rem; background: var(--portal-bg-elevated); }
+    .chat-composer__quick-actions {
+      display: flex; min-width: 0; gap: .4rem; overflow-x: auto; padding: .1rem .15rem .25rem;
+      overscroll-behavior-inline: contain; scrollbar-width: none;
+    }
+    .chat-composer__quick-actions::-webkit-scrollbar { display: none; }
+    .chat-composer__quick-action {
+      min-height: 44px; flex: 0 0 auto; border: 1px solid var(--portal-border); border-radius: 999px;
+      background: var(--portal-bg-elevated); color: var(--portal-text-soft); padding: .45rem .72rem;
+      font-size: .72rem; font-weight: 650; cursor: pointer; touch-action: manipulation;
+      transition: color 150ms ease, border-color 150ms ease, background-color 150ms ease;
+    }
+    .chat-composer__quick-action:hover:not(:disabled) { color: var(--portal-text); border-color: var(--portal-border-strong); background: var(--portal-surface-strong); }
+    .chat-composer__quick-action:disabled { opacity: .45; cursor: not-allowed; }
+    .chat-composer__meta { display: flex; min-height: 1rem; align-items: center; justify-content: space-between; gap: .75rem; padding: 0 .35rem; }
+    .chat-composer__status, .chat-composer__shortcut { margin: 0; color: var(--portal-text-muted); font-size: .68rem; line-height: 1.3; }
+    .chat-composer__retry { border: 0; background: transparent; color: var(--guide-accent); font-size: .72rem; font-weight: 750; cursor: pointer; }
+    @media (max-width: 430px) { .chat-composer__shortcut { display: none; } }
+    @media (prefers-reduced-motion: reduce) { .chat-composer__surface, .chat-composer__submit, .chat-composer__quick-action { transition: none; } }
+  `],
 })
 export class ChatInputBarComponent implements AfterViewInit {
   @Input() sessionState: ChatbotSessionState = 'unknown';
   @Input() chatState: ChatbotRequestState = 'idle';
+  @Input() canRetry = false;
   @Output() messageSent = new EventEmitter<string>();
+  @Output() stopGeneration = new EventEmitter<void>();
+  @Output() retryRequested = new EventEmitter<void>();
 
   @ViewChild('chatInput') chatInput?: ElementRef<HTMLTextAreaElement>;
 
   draft = '';
 
   readonly quickActions = [
-    { label: '📺 ¿Qué hay ahora?', prompt: '¿Qué puedo ver ahora mismo en televisión?' },
-    { label: '⭐ Lo mejor hoy', prompt: '¿Qué es lo mejor que puedo ver hoy?' },
-    { label: '🎬 Películas', prompt: '¿Qué películas echan hoy en televisión?' },
-    { label: '🔍 Buscar', prompt: '/buscar ' },
+    { label: 'En TV ahora', prompt: '¿Qué puedo ver ahora mismo en televisión?' },
+    { label: 'Fútbol hoy', prompt: '¿Qué partidos de fútbol hay hoy y dónde puedo verlos?' },
+    { label: 'Esta noche', prompt: '¿Qué merece la pena ver esta noche?' },
+    { label: 'Mis plataformas', prompt: '¿Qué puedo ver en mis plataformas?' },
+    { label: 'Películas', prompt: '¿Qué películas puedo ver hoy?' },
+    { label: 'Series', prompt: 'Recomiéndame una serie para ver ahora.' },
   ];
 
-  get disabled(): boolean {
-    return this.sessionState !== 'authenticated' || this.chatState === 'sending';
+  get isBusy(): boolean { return isChatbotBusyState(this.chatState); }
+  get inputDisabled(): boolean { return this.sessionState !== 'authenticated' || this.isBusy; }
+  get sendDisabled(): boolean { return this.inputDisabled || !this.draft.trim(); }
+  get isSearchMode(): boolean { return this.draft.trimStart().toLowerCase().startsWith('/buscar '); }
+
+  get statusLabel(): string {
+    switch (this.chatState) {
+      case 'connecting': return 'Conectando con GuíaTV…';
+      case 'retrieving': return 'Consultando la programación y el catálogo…';
+      case 'composing': return 'Preparando una respuesta…';
+      case 'streaming': return 'Respondiendo…';
+      case 'recovering': return 'Recuperando la respuesta…';
+      case 'cancelled': return 'Generación detenida. Puedes reintentar.';
+      case 'rate_limited': return 'Hay muchas consultas. Reintenta en unos segundos.';
+      case 'offline': return 'Sin conexión. Tu conversación sigue aquí.';
+      case 'unavailable': return 'El asistente no está disponible. Puedes reintentar.';
+      default: return '';
+    }
   }
 
-  get isSearchMode(): boolean {
-    return this.draft.trimStart().toLowerCase().startsWith('/buscar ');
-  }
-
-  ngAfterViewInit(): void {
-    this.autoResize();
-  }
+  ngAfterViewInit(): void { this.autoResize(); }
 
   onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -96,24 +206,18 @@ export class ChatInputBarComponent implements AfterViewInit {
 
   send(): void {
     const text = this.draft.trim();
-    if (!text || this.disabled) return;
+    if (!text || this.sendDisabled) return;
     this.draft = '';
     this.resetTextareaHeight();
-
-    // /buscar command: strip prefix and emit as search
     if (text.toLowerCase().startsWith('/buscar ')) {
       const query = text.slice(8).trim();
-      if (query) {
-        this.messageSent.emit(`Busca contenido: ${query}`);
-      }
+      if (query) this.messageSent.emit(`Busca contenido: ${query}`);
       return;
     }
-
     this.messageSent.emit(text);
   }
 
   onQuickAction(action: { label: string; prompt: string }): void {
-    // If action starts with /, set draft instead of sending
     if (action.prompt.startsWith('/')) {
       this.setDraft(action.prompt);
       return;
@@ -121,7 +225,6 @@ export class ChatInputBarComponent implements AfterViewInit {
     this.messageSent.emit(action.prompt);
   }
 
-  /** Set draft text from outside (e.g. suggestion chips). */
   setDraft(text: string): void {
     this.draft = text;
     queueMicrotask(() => {
@@ -130,20 +233,17 @@ export class ChatInputBarComponent implements AfterViewInit {
     });
   }
 
-  focus(): void {
-    queueMicrotask(() => this.chatInput?.nativeElement.focus());
-  }
+  focus(): void { queueMicrotask(() => this.chatInput?.nativeElement.focus()); }
 
   autoResize(): void {
-    const el = this.chatInput?.nativeElement;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+    const element = this.chatInput?.nativeElement;
+    if (!element) return;
+    element.style.height = 'auto';
+    element.style.height = Math.min(element.scrollHeight, 144) + 'px';
   }
 
   private resetTextareaHeight(): void {
-    const el = this.chatInput?.nativeElement;
-    if (!el) return;
-    el.style.height = 'auto';
+    const element = this.chatInput?.nativeElement;
+    if (element) element.style.height = 'auto';
   }
 }

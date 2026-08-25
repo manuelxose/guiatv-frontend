@@ -16,17 +16,27 @@ interface ProfileCategory {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <header class="border-b border-[var(--portal-border)]/80 bg-[var(--portal-surface-strong)] px-5 py-3 backdrop-blur-xl">
+    <header class="chat-header border-b border-[var(--portal-border)]/80 bg-[var(--portal-surface-strong)] px-5 py-2 backdrop-blur-xl">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2.5 min-w-0">
-          <p class="text-base font-bold text-[var(--portal-text)] truncate">Recomendaciones</p>
+          <h2 class="m-0 text-base font-bold text-[var(--portal-text)] truncate">Asistente GuíaTV</h2>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            (click)="openSocial.emit()"
+            class="flex h-11 w-11 items-center justify-center rounded-xl text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-bg-elevated)] hover:text-[var(--portal-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--guide-accent)]"
+            aria-label="Abrir chat con personas"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </button>
           <button
             *ngIf="isAuthenticated"
             type="button"
             (click)="toggleSidebar.emit()"
-            class="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
+            class="chat-header__desktop-action flex h-8 w-8 items-center justify-center rounded-lg text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
             aria-label="Conversaciones"
           >
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -37,7 +47,7 @@ interface ProfileCategory {
             *ngIf="isAuthenticated"
             type="button"
             (click)="toggleMemoryEditor.emit()"
-            class="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
+            class="chat-header__desktop-action flex h-8 w-8 items-center justify-center rounded-lg text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
             [attr.aria-label]="memoryEditorOpen ? 'Cerrar preferencias' : 'Editar preferencias'"
           >
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -49,7 +59,7 @@ interface ProfileCategory {
             *ngIf="isAuthenticated"
             type="button"
             (click)="newConversation.emit()"
-            class="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
+            class="chat-header__desktop-action flex h-8 w-8 items-center justify-center rounded-lg text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
             aria-label="Nueva conversación"
           >
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -132,6 +142,15 @@ interface ProfileCategory {
       </ng-container>
     </header>
   `,
+  styles: [`
+    .chat-header { padding-top: max(.5rem, var(--safe-top)); }
+    .chat-header button { min-width: 44px; min-height: 44px; touch-action: manipulation; }
+    .chat-header button:focus-visible { outline: 3px solid color-mix(in srgb, var(--guide-accent) 45%, transparent); outline-offset: 2px; }
+    @media (max-width: 430px) {
+      .chat-header { padding-right: .65rem; padding-left: .85rem; }
+      .chat-header__desktop-action { display: none; }
+    }
+  `],
 })
 export class ChatHeaderComponent {
   @Input() isAuthenticated = false;
@@ -144,6 +163,7 @@ export class ChatHeaderComponent {
   @Output() toggleMemoryEditor = new EventEmitter<void>();
   @Output() toggleSidebar = new EventEmitter<void>();
   @Output() removeTag = new EventEmitter<{ key: string; value: string }>();
+  @Output() openSocial = new EventEmitter<void>();
   @Output() profileExpandedChange = new EventEmitter<boolean>();
 
   private static readonly CATEGORY_CONFIG: Array<{

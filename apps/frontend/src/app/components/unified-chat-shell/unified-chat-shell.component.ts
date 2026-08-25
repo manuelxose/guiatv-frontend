@@ -1,91 +1,92 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AIChatbotComponent } from '../ai-chatbot/ai-chatbot.component';
 import { SocialChatPanelComponent } from './social-chat-panel/social-chat-panel.component';
+import { ChatService } from '../../services/chat.service';
 
-export type ChatTab = 'ia' | 'social';
+export type ChatDestination = 'assistant' | 'social';
 
 @Component({
   selector: 'app-unified-chat-shell',
   standalone: true,
   imports: [CommonModule, AIChatbotComponent, SocialChatPanelComponent],
   template: `
-    <div class="flex h-full flex-col overflow-hidden bg-[var(--portal-bg)]">
-      <!-- Tab bar -->
-      <div class="flex border-b border-[var(--portal-border)] bg-[var(--portal-surface-strong)]">
-        <button
-          type="button"
-          (click)="activeTab = 'ia'"
-          class="relative flex-1 py-2.5 text-center text-xs font-semibold transition-colors"
-          [ngClass]="activeTab === 'ia'
-            ? 'text-[var(--guide-accent)]'
-            : 'text-[var(--portal-text-muted)] hover:text-[var(--portal-text)]'"
-        >
-          <span class="inline-flex items-center gap-1.5">
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3 13.8 8.2 19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/>
-            </svg>
-            Asistente
-          </span>
-          <span
-            *ngIf="activeTab === 'ia'"
-            class="absolute bottom-0 left-4 right-4 h-0.5 rounded-full bg-[var(--guide-accent)]"
-          ></span>
-        </button>
-        <button
-          type="button"
-          (click)="activeTab = 'social'"
-          class="relative flex-1 py-2.5 text-center text-xs font-semibold transition-colors"
-          [ngClass]="activeTab === 'social'
-            ? 'text-[var(--guide-accent)]'
-            : 'text-[var(--portal-text-muted)] hover:text-[var(--portal-text)]'"
-        >
-          <span class="inline-flex items-center gap-1.5">
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/>
-            </svg>
-            Personas
-            <span
-              *ngIf="unreadSocialCount > 0"
-              class="ml-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] text-white"
-            >{{ unreadSocialCount > 9 ? '9+' : unreadSocialCount }}</span>
-          </span>
-          <span
-            *ngIf="activeTab === 'social'"
-            class="absolute bottom-0 left-4 right-4 h-0.5 rounded-full bg-[var(--guide-accent)]"
-          ></span>
-        </button>
-      </div>
+    <div class="unified-chat">
+      <app-ai-chatbot
+        *ngIf="activeDestination === 'assistant'"
+        (close)="close.emit()"
+        (openSocial)="openSocialChat()"
+      />
 
-      <!-- Tab content -->
-      <div class="relative flex-1 overflow-hidden">
-        <div
-          class="absolute inset-0 transition-transform duration-200 ease-out"
-          [style.transform]="activeTab === 'ia' ? 'translateX(0)' : 'translateX(-100%)'"
-        >
-          <app-ai-chatbot (close)="close.emit()"></app-ai-chatbot>
+      <section
+        *ngIf="activeDestination === 'social'"
+        class="unified-chat__social"
+        aria-labelledby="social-chat-title"
+      >
+        <header class="unified-chat__social-header">
+          <button
+            type="button"
+            class="unified-chat__icon-button"
+            (click)="activeDestination = 'assistant'"
+            aria-label="Volver al asistente"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"></path>
+            </svg>
+          </button>
+          <div class="unified-chat__social-title">
+            <h2 id="social-chat-title">Personas</h2>
+            <span *ngIf="unreadSocialCount > 0" aria-label="Mensajes sin leer">
+              {{ unreadSocialCount > 9 ? '9+' : unreadSocialCount }}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="unified-chat__icon-button"
+            (click)="close.emit()"
+            aria-label="Cerrar chat"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </header>
+        <div class="unified-chat__social-body">
+          <app-social-chat-panel />
         </div>
-        <div
-          class="absolute inset-0 transition-transform duration-200 ease-out"
-          [style.transform]="activeTab === 'social' ? 'translateX(0)' : 'translateX(100%)'"
-        >
-          <app-social-chat-panel></app-social-chat-panel>
-        </div>
-      </div>
+      </section>
     </div>
   `,
   styles: [`
-    :host {
-      display: block;
-      width: 100%;
-      min-width: 0;
-      height: 100%;
+    :host { display: block; width: 100%; min-width: 0; height: 100%; }
+    .unified-chat { width: 100%; min-width: 0; height: 100%; overflow: hidden; background: var(--portal-bg); }
+    app-ai-chatbot { display: block; width: 100%; height: 100%; }
+    .unified-chat__social { display: flex; min-width: 0; height: 100%; flex-direction: column; }
+    .unified-chat__social-header {
+      display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center;
+      gap: .5rem; min-height: 64px; border-bottom: 1px solid var(--portal-border);
+      background: var(--portal-surface-strong); padding: max(.35rem, var(--safe-top)) .75rem .35rem;
     }
+    .unified-chat__social-title { display: flex; min-width: 0; align-items: center; justify-content: center; gap: .45rem; }
+    .unified-chat__social-title h2 { margin: 0; color: var(--portal-text); font-size: var(--text-base); font-weight: 800; text-wrap: balance; }
+    .unified-chat__social-title span { display: inline-flex; min-width: 1.2rem; height: 1.2rem; align-items: center; justify-content: center; border-radius: 999px; background: var(--guide-accent); color: #fff; padding: 0 .3rem; font-size: .65rem; font-weight: 800; }
+    .unified-chat__icon-button { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border: 0; border-radius: .8rem; background: transparent; color: var(--portal-text-muted); cursor: pointer; touch-action: manipulation; }
+    .unified-chat__icon-button:hover { background: var(--portal-bg-elevated); color: var(--portal-text); }
+    .unified-chat__icon-button:focus-visible { outline: 3px solid color-mix(in srgb, var(--guide-accent) 45%, transparent); outline-offset: 2px; }
+    .unified-chat__icon-button svg { width: 1.15rem; height: 1.15rem; }
+    .unified-chat__social-body { min-height: 0; flex: 1; overflow: hidden; }
   `],
 })
 export class UnifiedChatShellComponent {
   @Output() close = new EventEmitter<void>();
   @Input() unreadSocialCount = 0;
 
-  activeTab: ChatTab = 'ia';
+  activeDestination: ChatDestination = 'assistant';
+
+  constructor(private readonly chatService: ChatService) {}
+
+  openSocialChat(): void {
+    this.chatService.activateChat();
+    this.activeDestination = 'social';
+  }
 }

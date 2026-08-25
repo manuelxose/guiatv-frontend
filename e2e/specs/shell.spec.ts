@@ -78,14 +78,16 @@ test.describe('Shared responsive shell', () => {
     }
   });
 
-  test('chat opens from the desktop shell and exposes IA and Personas modes', async ({ page }) => {
+  test('chat opens assistant-first and keeps Personas as secondary navigation', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 900 });
     await page.goto('/');
     await page.getByRole('button', { name: 'Abrir asistente de recomendaciones' }).click();
 
     const panel = page.locator('.app-shell__chat-panel--desktop');
     await expect(panel).toBeVisible();
-    await expect(panel.getByRole('button', { name: 'Asistente', exact: true })).toBeVisible();
-    await expect(panel.getByRole('button', { name: 'Personas', exact: true })).toBeVisible();
+    await expect(panel.getByRole('heading', { name: 'Asistente GuíaTV' })).toBeVisible();
+    await expect(panel.getByRole('button', { name: 'Abrir chat con personas' })).toBeVisible();
+    await expect(panel.getByRole('button', { name: 'Personas', exact: true })).toHaveCount(0);
+    await page.screenshot({ path: '.impeccable/review/assistant-desktop-light.png' });
   });
 });

@@ -41,6 +41,14 @@ const backendClient = backendUrl.protocol === 'https:' ? https : http;
 const SSR_TIMEOUT_MS = 20000;
 const SSR_CACHE_TTL_MS = 5 * 60 * 1000;
 const SSR_CACHE_MAX_ENTRIES = 200;
+const SSR_ALLOWED_HOSTS = [
+  'guiaprogramaciontv.com',
+  'www.guiaprogramaciontv.com',
+  '127.0.0.1',
+  'localhost',
+];
+const SSR_ALLOWED_HOST_SET = new Set(SSR_ALLOWED_HOSTS);
+const SSR_TRUST_PROXY_HEADERS = ['x-forwarded-for', 'x-forwarded-proto'];
 const proxyPaths = ['/v2', '/storage', '/sitemap.xml'];
 const ssrCache = new Map();
 
@@ -199,7 +207,10 @@ async function createAngularEngine() {
   ɵsetAngularAppManifest(appManifestModule.default ?? appManifestModule);
   ɵsetAngularAppEngineManifest(appEngineManifestModule.default ?? appEngineManifestModule);
 
-  return new AngularNodeAppEngine();
+  return new AngularNodeAppEngine({
+    allowedHosts: SSR_ALLOWED_HOSTS,
+    trustProxyHeaders: SSR_TRUST_PROXY_HEADERS,
+  });
 }
 
 const angularAppEngine = await createAngularEngine();
@@ -208,6 +219,20 @@ const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', true);
 app.set('etag', 'strong');
+
+app.use((req, res, next) => {
+  const hostHeader = Array.isArray(req.headers.host) ? req.headers.host[0] : req.headers.host;
+  let hostname = '';
+  try {
+    hostname = new URL(`http://${hostHeader || ''}`).hostname.toLowerCase();
+  } catch {
+    // Invalid or missing Host headers are rejected below.
+  }
+  if (!SSR_ALLOWED_HOST_SET.has(hostname)) {
+    return res.status(400).send('Bad Request');
+  }
+  return next();
+});
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');

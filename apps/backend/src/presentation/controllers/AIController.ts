@@ -11,6 +11,11 @@ import {
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import { DateUtils } from '@/shared/utils/dateUtils';
 import { logger } from '@/shared/utils/logger';
+import { randomUUID } from 'node:crypto';
+import {
+  AssistantRequestValidationError,
+  parseAssistantRequestPayload,
+} from '@/application/dto/AssistantDTO';
 
 export class AIController {
   constructor(
@@ -36,10 +41,7 @@ export class AIController {
       throw new ValidationError('Authentication required', []);
     }
 
-    const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
-    if (!messages.length) {
-      throw new ValidationError('messages array is required', []);
-    }
+    const payload = this.parseChatPayload(req.body);
 
     const limit = this.getDailyLimit(req.user?.subscription);
     if (limit > 0 && this.cacheRepository.increment) {
@@ -53,11 +55,9 @@ export class AIController {
 
     const data = await this.chatbotRecommend.execute({
       userId,
-      messages,
-      conversationId:
-        typeof req.body?.conversationId === 'string'
-          ? req.body.conversationId
-          : undefined,
+      messages: payload.messages,
+      conversationId: payload.conversationId,
+      context: payload.context,
     });
 
     res.status(200).json(successResponse(data));
@@ -73,10 +73,7 @@ export class AIController {
       throw new ValidationError('Authentication required', []);
     }
 
-    const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
-    if (!messages.length) {
-      throw new ValidationError('messages array is required', []);
-    }
+    const payload = this.parseChatPayload(req.body);
 
     const limit = this.getDailyLimit(req.user?.subscription);
     if (limit > 0 && this.cacheRepository.increment) {
@@ -88,30 +85,42 @@ export class AIController {
       }
     }
 
+    const requestId = randomUUID();
+    let clientDisconnected = false;
+
     // SSE headers
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('X-Accel-Buffering', 'no');
+    res.setHeader('X-Request-Id', requestId);
     res.flushHeaders();
+    res.on('close', () => {
+      if (!res.writableEnded) {
+        clientDisconnected = true;
+        logger.info('[AIController] chatStream cancelled', { requestId, userId });
+      }
+    });
     // Immediately signal connection is alive — prevents frontend "isThinking" freeze
     // during the heavy DB + catalog pre-fetch phase inside executeStream
-    res.write('event: ping\ndata: {}\n\n');
+    res.write(`event: ping\ndata: ${JSON.stringify({ requestId })}\n\n`);
+    res.write(`event: progress\ndata: ${JSON.stringify({ phase: 'retrieving', label: 'Consultando GuíaTV…' })}\n\n`);
 
-    const conversationId = typeof req.body?.conversationId === 'string'
-      ? req.body.conversationId
-      : undefined;
+    const conversationId = payload.conversationId;
 
     const t0 = Date.now();
-    logger.info('[AIController] chatStream start', { userId, conversationId });
+    logger.info('[AIController] chatStream start', { requestId, userId, conversationId });
 
     try {
       const result = await this.chatbotRecommend.executeStream({
         userId,
-        messages,
+        messages: payload.messages,
         conversationId,
+        context: payload.context,
       });
-      logger.info('[AIController] executeStream resolved', { userId, kind: result.kind, elapsedMs: Date.now() - t0 });
+      logger.info('[AIController] executeStream resolved', { requestId, userId, kind: result.kind, elapsedMs: Date.now() - t0 });
+
+      if (clientDisconnected) return;
 
       if (result.kind === 'direct') {
         res.write(`event: full\ndata: ${JSON.stringify(result.response)}\n\n`);
@@ -124,15 +133,19 @@ export class AIController {
       // still allows finalize() to run and persist whatever text arrived
       let fullText = '';
       let chunkCount = 0;
+      let firstTokenMs: number | undefined;
+      res.write(`event: progress\ndata: ${JSON.stringify({ phase: 'composing', label: 'Preparando una respuesta…' })}\n\n`);
       try {
         for await (const chunk of result.textStream) {
+          if (clientDisconnected) break;
           fullText += chunk;
           chunkCount++;
+          if (typeof firstTokenMs === 'undefined') firstTokenMs = Date.now() - t0;
           res.write(`event: text\ndata: ${JSON.stringify({ t: chunk })}\n\n`);
         }
       } catch (streamErr) {
         logger.warn('[AIController] text stream interrupted', {
-          userId,
+          requestId, userId,
           chunkCount,
           partialLength: fullText.length,
           elapsedMs: Date.now() - t0,
@@ -140,7 +153,8 @@ export class AIController {
         });
         // Continue to finalize with whatever text arrived
       }
-      logger.info('[AIController] text stream done', { userId, chunkCount, fullTextLength: fullText.length, elapsedMs: Date.now() - t0 });
+      if (clientDisconnected) return;
+      logger.info('[AIController] text stream done', { requestId, userId, chunkCount, firstTokenMs, fullTextLength: fullText.length, elapsedMs: Date.now() - t0 });
 
       // Finalize: resolve recommendations, persist — isolated so errors send a safe fallback
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -149,7 +163,7 @@ export class AIController {
         finalResponse = await result.finalize(fullText);
       } catch (finalizeErr) {
         logger.error('[AIController] finalize error', {
-          userId,
+          requestId, userId,
           elapsedMs: Date.now() - t0,
           error: finalizeErr instanceof Error ? finalizeErr.message : 'unknown',
         });
@@ -163,11 +177,20 @@ export class AIController {
       res.write(`event: result\ndata: ${JSON.stringify(finalResponse)}\n\n`);
       res.write('event: done\ndata: {}\n\n');
       res.end();
+      logger.info('[AIController] chatStream complete', {
+        requestId,
+        userId,
+        firstTokenMs,
+        resultCount: Array.isArray(finalResponse?.recommendations)
+          ? finalResponse.recommendations.length
+          : 0,
+        elapsedMs: Date.now() - t0,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Stream error';
-      logger.error('[AIController] chatStream error', { userId, elapsedMs: Date.now() - t0, message });
-      if (!res.writableEnded) {
-        res.write(`event: error\ndata: ${JSON.stringify({ error: message })}\n\n`);
+      logger.error('[AIController] chatStream error', { requestId, userId, elapsedMs: Date.now() - t0, message });
+      if (!clientDisconnected && !res.writableEnded) {
+        res.write(`event: error\ndata: ${JSON.stringify({ error: 'No se pudo completar la respuesta.' })}\n\n`);
         // Always close the SSE stream so the frontend exits the reader loop
         res.write('event: done\ndata: {}\n\n');
         res.end();
@@ -299,6 +322,17 @@ export class AIController {
     return Math.max(60, Math.ceil((tomorrow.getTime() - now.getTime()) / 1000));
   }
 
+  private parseChatPayload(body: unknown) {
+    try {
+      return parseAssistantRequestPayload(body);
+    } catch (error) {
+      if (error instanceof AssistantRequestValidationError) {
+        throw new ValidationError(error.message, []);
+      }
+      throw error;
+    }
+  }
+
   async listConversations(req: AuthenticatedRequest, res: Response): Promise<void> {
     const userId = req.user?.id;
     if (!userId) throw new ValidationError('Authentication required', []);
@@ -400,8 +434,13 @@ export class AIController {
     if (!userId) throw new ValidationError('Authentication required', []);
 
     const { title, type, channel, platform, startTime } = req.body || {};
-    if (!title || typeof title !== 'string') {
+    if (!title || typeof title !== 'string' || title.trim().length > 200) {
       throw new ValidationError('title is required', []);
+    }
+
+    const parsedStartTime = typeof startTime === 'string' ? new Date(startTime) : null;
+    if (!parsedStartTime || !Number.isFinite(parsedStartTime.getTime()) || parsedStartTime.getTime() <= Date.now()) {
+      throw new ValidationError('A valid future startTime is required', []);
     }
 
     const created = await this.assistantMemoryService.createProgramReminder(userId, {
@@ -409,7 +448,7 @@ export class AIController {
       type: typeof type === 'string' ? type : undefined,
       channel: typeof channel === 'string' ? channel : undefined,
       platform: typeof platform === 'string' ? platform : undefined,
-      startTime: typeof startTime === 'string' ? startTime : undefined,
+      startTime: parsedStartTime.toISOString(),
     });
 
     res.status(200).json(successResponse({ created }));

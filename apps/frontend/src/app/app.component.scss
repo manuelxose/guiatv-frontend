@@ -56,6 +56,9 @@
 .app-shell__chat-backdrop {
   position: absolute;
   inset: 0;
+  width: 100%;
+  border: 0;
+  padding: 0;
   background: rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(4px);
 }
@@ -73,21 +76,8 @@
   bottom: 0;
   left: 0;
   height: 100dvh;
-  border-radius: 1.75rem 1.75rem 0 0;
-}
-
-.app-shell__chat-handle {
-  display: flex;
-  justify-content: center;
-  padding: 0.8rem 0 0.65rem;
-  cursor: grab;
-}
-
-.app-shell__chat-handle-bar {
-  height: 0.35rem;
-  width: 3rem;
-  border-radius: 999px;
-  background: var(--portal-border-strong);
+  border: 0;
+  border-radius: 0;
 }
 
 .app-shell__chat-launcher {
@@ -147,7 +137,7 @@
   height: 100%;
   border-radius: 999px;
   background: color-mix(in oklch, var(--portal-border-strong) 70%, transparent);
-  transition: background-color 150ms ease, width 150ms ease;
+  transition: background-color 150ms ease;
 }
 
 .app-shell__chat-resize::after {
@@ -166,7 +156,6 @@
 
 .app-shell__chat-resize:hover::before,
 .app-shell__chat-resize:active::before {
-  width: 4px;
   background: var(--guide-accent, var(--accent-live));
 }
 
@@ -312,4 +301,11 @@
     height: 3rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
   }
+
+  .app-shell__chat-backdrop { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell__chat-launcher,
+  .app-shell__chat-panel { transition: none !important; }
 }
