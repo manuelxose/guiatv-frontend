@@ -51,8 +51,6 @@ export class AppComponent implements OnInit, OnDestroy {
   public isChatbotOpen = false;
   public isChatMinimized = false;
   public chatPanelWidth = 440;
-  public swipeOffsetY = 0;
-  public swipeAnimating = false;
   public readonly mobileTabs = PORTAL_MOBILE_PRIMARY_DESTINATIONS;
   public readonly moreDestinations = PORTAL_MOBILE_MORE_DESTINATIONS;
   public readonly accountDestinations = PORTAL_ACCOUNT_DESTINATIONS;
@@ -60,16 +58,17 @@ export class AppComponent implements OnInit, OnDestroy {
   public readonly theme = inject(ThemeService);
   @ViewChild('mobileMoreTrigger') private readonly mobileMoreTrigger?: ElementRef<HTMLButtonElement>;
   @ViewChild('mobileMoreSheet') private readonly mobileMoreSheet?: ElementRef<HTMLElement>;
+  @ViewChild('chatMinibar') private readonly chatMinibar?: ElementRef<HTMLButtonElement>;
 
   public readonly aiChatbotEnabled = environment.ai.chatbotEnabled;
 
-  private swipeStartY = 0;
   private resizeStartX = 0;
   private resizeStartWidth = 0;
   private resizeMoveHandler: ((e: MouseEvent) => void) | null = null;
   private resizeUpHandler: (() => void) | null = null;
   private readonly destroy$ = new Subject<void>();
   private readonly analytics = inject(AnalyticsService);
+  private chatReturnFocus: HTMLElement | null = null;
 
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
@@ -92,8 +91,10 @@ export class AppComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         if (this.canRenderChatbot()) {
+          this.chatReturnFocus = this.document.activeElement as HTMLElement | null;
           this.isChatbotOpen = true;
           this.isChatMinimized = false;
+          this.focusChatDialog();
         }
       });
 
@@ -133,22 +134,30 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     this.isChatbotOpen = !this.isChatbotOpen;
     if (this.isChatbotOpen) {
-      this.chatService.activateChat();
+      this.analytics.trackEvent('assistant_opened', { surface: 'global_shell' });
+      this.chatReturnFocus = this.document.activeElement as HTMLElement | null;
+      this.focusChatDialog();
+    } else {
+      this.restoreChatFocus();
     }
   }
 
   public closeChatbot(): void {
+    if (this.isChatbotOpen) this.analytics.trackEvent('assistant_closed');
     this.isChatbotOpen = false;
     this.isChatMinimized = false;
+    this.restoreChatFocus();
   }
 
   public minimizeChatbot(): void {
     this.isChatMinimized = true;
+    setTimeout(() => this.chatMinibar?.nativeElement.focus());
   }
 
   public restoreChatbot(): void {
     this.isChatMinimized = false;
     this.isChatbotOpen = true;
+    this.focusChatDialog();
   }
 
   public onResizeStart(event: MouseEvent): void {
@@ -166,35 +175,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.document.addEventListener('mousemove', this.resizeMoveHandler);
     this.document.addEventListener('mouseup', this.resizeUpHandler);
-  }
-
-  public onSwipePanelStart(event: TouchEvent): void {
-    this.swipeAnimating = false;
-    this.swipeStartY = event.touches[0].clientY;
-    this.swipeOffsetY = 0;
-  }
-
-  public onSwipePanelMove(event: TouchEvent): void {
-    const delta = event.touches[0].clientY - this.swipeStartY;
-    this.swipeOffsetY = Math.max(0, delta);
-  }
-
-  public onSwipePanelEnd(): void {
-    this.swipeAnimating = true;
-    if (this.swipeOffsetY > 120) {
-      this.swipeOffsetY = this.document.defaultView?.innerHeight || 0;
-      setTimeout(() => {
-        this.minimizeChatbot();
-        this.swipeOffsetY = 0;
-        this.swipeAnimating = false;
-      }, 300);
-      return;
-    }
-
-    this.swipeOffsetY = 0;
-    setTimeout(() => {
-      this.swipeAnimating = false;
-    }, 300);
   }
 
   // Deliberately not gated on viewport.isMobile(): that signal starts at a
@@ -271,7 +251,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   public trapMobileMoreFocus(event: KeyboardEvent): void {
-    if (!this.mobileMoreOpen || event.key !== 'Tab') return;
+    if (event.key !== 'Tab') return;
+    if (!this.mobileMoreOpen && this.isChatbotOpen && !this.isChatMinimized) {
+      this.trapChatDialogFocus(event);
+      return;
+    }
+    if (!this.mobileMoreOpen) return;
     const focusable = this.getMoreSheetFocusables();
     if (!focusable.length) {
       event.preventDefault();
@@ -299,6 +284,61 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     this.resizeMoveHandler = null;
     this.resizeUpHandler = null;
+  }
+
+  private focusChatDialog(): void {
+    setTimeout(() => {
+      const dialog = this.getVisibleChatDialog();
+      const first = dialog?.querySelector<HTMLElement>('textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])');
+      (first || dialog)?.focus();
+    });
+  }
+
+  private restoreChatFocus(): void {
+    const target = this.chatReturnFocus;
+    this.chatReturnFocus = null;
+    setTimeout(() => {
+      if (target?.isConnected) {
+        target.focus();
+        return;
+      }
+      const launcher = Array.from(this.document.querySelectorAll<HTMLElement>(
+        '.app-shell__chat-fab, .app-shell__chat-launcher'
+      )).find((element) => element.getClientRects().length > 0);
+      launcher?.focus();
+    });
+  }
+
+  private getVisibleChatDialog(): HTMLElement | null {
+    if (this.isChatMinimized) return null;
+    return Array.from(this.document.querySelectorAll<HTMLElement>('[role="dialog"][aria-label="Asistente GuíaTV"]'))
+      .find((element) => {
+        const style = this.document.defaultView?.getComputedStyle(element);
+        return element.getClientRects().length > 0 && style?.visibility !== 'hidden' && style?.display !== 'none';
+      }) || null;
+  }
+
+  private trapChatDialogFocus(event: KeyboardEvent): void {
+    const dialog = this.getVisibleChatDialog();
+    if (!dialog) return;
+    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
+      'a[href], textarea:not([disabled]), input:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    ));
+    if (!focusable.length) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = this.document.activeElement;
+    if (event.shiftKey && (active === first || !dialog.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   private getMoreSheetFocusables(): HTMLElement[] {

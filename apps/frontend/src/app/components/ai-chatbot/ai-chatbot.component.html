@@ -12,6 +12,7 @@
     (toggleMemoryEditor)="toggleMemoryEditor()"
     (toggleSidebar)="toggleSidebar()"
     (removeTag)="onRemoveMemoryTag($event)"
+    (openSocial)="openSocial.emit()"
   />
 
   <!-- Memory editor panel (inside header area) -->
@@ -118,7 +119,10 @@
         #inputBar
         [sessionState]="sessionState"
         [chatState]="chatState"
+        [canRetry]="canRetryLastPrompt()"
         (messageSent)="onMessageSent($event)"
+        (stopGeneration)="stopGeneration()"
+        (retryRequested)="retryLastPrompt()"
       />
     </div>
 

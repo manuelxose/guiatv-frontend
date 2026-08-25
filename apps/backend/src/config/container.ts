@@ -486,7 +486,8 @@ export class Container {
         catalogService,
         this.get('assistantMemoryService'),
         this.has('cacheRepository') ? this.get('cacheRepository') : undefined,
-        this.get('tvReadQueryService')
+        this.get('tvReadQueryService'),
+        this.has('footballQueryService') ? this.get('footballQueryService') : undefined
       );
       this.dependencies.set('chatbotRecommend', chatbotRecommend);
     }

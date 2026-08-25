@@ -1,10 +1,8 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
-  NgZone,
   OnChanges,
   OnDestroy,
   Output,
@@ -57,7 +55,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
               class="whitespace-pre-line text-sm leading-relaxed break-words"
             >{{ message.content }}</p>
 
-            <!-- Assistant message: markdown rendered with optional typewriter -->
+            <!-- Assistant message: rendered immediately; only genuine SSE tokens stream. -->
             <div
               *ngIf="message.role === 'assistant'"
               #contentEl
@@ -65,15 +63,15 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
               [innerHTML]="displayContent | markdown"
             ></div>
 
-            <!-- Blinking cursor during typewriter or streaming -->
+            <!-- Blinking cursor only while genuine server streaming is active. -->
             <span
-              *ngIf="isTyping || message.isStreaming"
+              *ngIf="message.isStreaming"
               class="inline-block h-4 w-[2px] translate-y-[2px] animate-[blink_0.8s_step-end_infinite] bg-slate-300"
             ></span>
 
             <!-- Recommendations -->
             <app-chat-recommendation-list
-              *ngIf="!isTyping && !message.isStreaming && message.recommendations?.length"
+              *ngIf="!message.isStreaming && message.recommendations?.length"
               [recommendations]="message.recommendations!"
               [moreRecommendations]="message.moreRecommendations || []"
               [queryContext]="message.queryContext"
@@ -87,9 +85,29 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
               (remind)="remind.emit($event)"
             />
 
+            <div *ngIf="!message.isStreaming && message.matches?.length" class="mt-3 grid gap-2" aria-label="Partidos de fútbol">
+              <a
+                *ngFor="let match of message.matches"
+                [href]="match.detailPath"
+                class="block rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] p-3 text-inherit no-underline transition-colors hover:border-[var(--accent-live)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-live)]"
+              >
+                <div class="flex items-center justify-between gap-3 text-[11px] text-[var(--portal-text-muted)]">
+                  <span>{{ match.competition }}</span>
+                  <time [attr.datetime]="match.kickoffAt">{{ match.kickoffAt | date:'HH:mm' }}</time>
+                </div>
+                <div class="mt-2 grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 text-sm font-semibold">
+                  <span>{{ match.homeTeam }}</span><span>{{ match.homeScore ?? '–' }}</span>
+                  <span>{{ match.awayTeam }}</span><span>{{ match.awayScore ?? '–' }}</span>
+                </div>
+                <p class="mt-2 text-xs text-[var(--portal-text-muted)]">
+                  {{ match.broadcasters.length ? 'Dónde ver: ' + match.broadcasters[0].name : 'Emisión por confirmar' }}
+                </p>
+              </a>
+            </div>
+
             <!-- Autonomic community chooser -->
             <app-chat-community-chooser
-              *ngIf="!isTyping && !message.isStreaming && showAutonomicPrompt"
+              *ngIf="!message.isStreaming && showAutonomicPrompt"
               [savedCommunity]="savedCommunity"
               [promptText]="autonomicPromptText"
               [communities]="autonomousCommunities"
@@ -100,14 +118,14 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
 
             <!-- Follow-up suggestions -->
             <app-chat-suggestion-chips
-              *ngIf="!isTyping && !message.isStreaming && message.id !== 'welcome'"
+              *ngIf="!message.isStreaming && message.id !== 'welcome'"
               [suggestions]="filteredSuggestions"
               (selected)="suggestionSelected.emit($event)"
             />
 
             <!-- Feedback thumbs (assistant only, after typing complete) -->
             <div
-              *ngIf="!isTyping && !message.isStreaming && message.role === 'assistant' && message.id !== 'welcome' && !message.isLoading"
+              *ngIf="!message.isStreaming && message.role === 'assistant' && message.id !== 'welcome' && !message.isLoading"
               class="flex items-center gap-1 mt-2 pt-1.5 border-t border-[var(--portal-border)]/40"
             >
               <span class="text-[10px] text-[var(--portal-text-muted)] mr-1">¿Útil?</span>
@@ -232,8 +250,9 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
       }
 
       blockquote {
-        border-left: 3px solid var(--guide-accent);
-        padding-left: 0.75rem;
+        border-radius: 0.75rem;
+        background: var(--portal-surface-strong);
+        padding: 0.65rem 0.75rem;
         margin: 0.5rem 0;
         color: var(--portal-text-muted);
         font-style: italic;
@@ -266,7 +285,6 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
   @Output() remind = new EventEmitter<ChatbotRecommendation>();
 
   displayContent = '';
-  isTyping = false;
   relativeTime = '';
 
   // Recommendation-bearing messages get the full available panel width (cards
@@ -288,15 +306,7 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
     return `${role} ${padding}`;
   }
 
-  private typewriterRafId = 0;
-  private typewriterIdx = 0;
   private timerInterval: ReturnType<typeof setInterval> | null = null;
-  private revealed = new Set<string>();
-
-  constructor(
-    private readonly zone: NgZone,
-    private readonly cdr: ChangeDetectorRef,
-  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['message']) {
@@ -307,7 +317,6 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.cancelTypewriter();
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
     }
@@ -317,66 +326,9 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
     const msg = this.message;
     if (!msg || (msg.isLoading && !msg.isStreaming)) {
       this.displayContent = '';
-      this.isTyping = false;
       return;
     }
-
-    // Streaming messages: show content live, no typewriter
-    if (msg.isStreaming) {
-      this.displayContent = msg.content;
-      this.isTyping = false;
-      return;
-    }
-
-    // User messages or already-revealed messages: show immediately
-    if (msg.role === 'user' || !msg.isNewMessage || this.revealed.has(msg.id)) {
-      this.displayContent = msg.content;
-      this.isTyping = false;
-      return;
-    }
-
-    // New assistant message: start typewriter
-    this.revealed.add(msg.id);
-    this.startTypewriter(msg.content);
-  }
-
-  private startTypewriter(fullText: string): void {
-    this.cancelTypewriter();
-    this.displayContent = '';
-    this.isTyping = true;
-    this.typewriterIdx = 0;
-
-    const charsPerFrame = Math.max(1, Math.ceil(fullText.length / 60));
-
-    this.zone.runOutsideAngular(() => {
-      const step = () => {
-        this.typewriterIdx += charsPerFrame;
-        if (this.typewriterIdx >= fullText.length) {
-          this.typewriterIdx = fullText.length;
-          this.displayContent = fullText;
-          this.isTyping = false;
-          this.typewriterRafId = 0;
-          this.zone.run(() => {
-            this.cdr.markForCheck();
-            this.revealComplete.emit();
-          });
-          return;
-        }
-
-        this.displayContent = fullText.slice(0, this.typewriterIdx);
-        this.zone.run(() => this.cdr.markForCheck());
-        this.typewriterRafId = requestAnimationFrame(step);
-      };
-
-      this.typewriterRafId = requestAnimationFrame(step);
-    });
-  }
-
-  private cancelTypewriter(): void {
-    if (this.typewriterRafId) {
-      cancelAnimationFrame(this.typewriterRafId);
-      this.typewriterRafId = 0;
-    }
+    this.displayContent = msg.content;
   }
 
   private startTimestampTimer(): void {

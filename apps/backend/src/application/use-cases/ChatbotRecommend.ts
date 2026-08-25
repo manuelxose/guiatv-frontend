@@ -23,15 +23,20 @@ import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import * as crypto from 'crypto';
 import { logger } from '../../shared/utils/logger';
 import { TvReadQueryService } from '../services/TvReadQueryService';
+import { AssistantLaunchContext } from '../dto/AssistantDTO';
+import { resolveGroundedRecommendations } from './AssistantGrounding';
+import { FootballQueryService } from '../sports/services/FootballQueryService';
+import { FootballMatch } from '@/domain/sports/football/types';
 
 export interface ChatbotRecommendRequest {
   userId: string;
   messages: ChatbotMessage[];
   conversationId?: string;
+  context?: AssistantLaunchContext;
 }
 
 interface ChatQueryIntent {
-  mode: 'tv_now' | 'tv_tonight' | 'streaming' | 'general';
+  mode: 'tv_now' | 'tv_tonight' | 'streaming' | 'football_today' | 'general';
   requestedTypes: Array<'movie' | 'series' | 'program'>;
   explicitGenres: string[];
   explicitPlatforms: string[];
@@ -351,7 +356,8 @@ export class ChatbotRecommend {
     private readonly catalogService: CatalogService,
     private readonly assistantMemoryService: AssistantMemoryService,
     private readonly cacheRepository?: ICacheRepository,
-    private readonly tvReadQueryService?: TvReadQueryService
+    private readonly tvReadQueryService?: TvReadQueryService,
+    private readonly footballQueryService?: FootballQueryService
   ) {}
 
   async execute(
@@ -414,6 +420,16 @@ export class ChatbotRecommend {
     }
 
     const intent = this.analyzeIntent(latestUserMessage);
+    if (intent.mode === 'football_today' && this.footballQueryService && latestUserMessage) {
+      const response = await this.buildFootballTodayResponse();
+      const persisted = await this.assistantMemoryService.saveChatTurn({
+        userId: request.userId,
+        conversationId: request.conversationId || history.conversationId || undefined,
+        userMessage: latestUserMessage,
+        assistantResponse: response,
+      });
+      return { ...response, conversationId: persisted.conversationId, assistantMemorySnapshot: persisted.memory };
+    }
     const liveTypesForExecute = this.resolveLiveTypes(intent);
     const effectiveCommunity =
       communityReply.kind === 'set'
@@ -656,6 +672,16 @@ export class ChatbotRecommend {
     }
 
     const intent = this.analyzeIntent(latestUserMessage);
+    if (intent.mode === 'football_today' && this.footballQueryService && latestUserMessage) {
+      const response = await this.buildFootballTodayResponse();
+      const persisted = await this.assistantMemoryService.saveChatTurn({
+        userId: request.userId,
+        conversationId: request.conversationId || history.conversationId || undefined,
+        userMessage: latestUserMessage,
+        assistantResponse: response,
+      });
+      return { kind: 'direct', response: { ...response, conversationId: persisted.conversationId, assistantMemorySnapshot: persisted.memory } };
+    }
     const liveTypesForStream = this.resolveLiveTypes(intent);
     const effectiveCommunity =
       communityReply.kind === 'set'
@@ -1383,7 +1409,9 @@ export class ChatbotRecommend {
     ].filter(Boolean);
 
     let mode: ChatQueryIntent['mode'] = 'general';
-    if ((wantsTv && wantsNow) || /en parrilla ahora/.test(normalized) || (wantsNow && !wantsStreaming)) {
+    if (/futbol|fútbol|partidos?|champions|laliga|liga de campeones/.test(normalized)) {
+      mode = 'football_today';
+    } else if ((wantsTv && wantsNow) || /en parrilla ahora/.test(normalized) || (wantsNow && !wantsStreaming)) {
       mode = 'tv_now';
     } else if ((wantsTv && wantsTonight) || (wantsTonight && !wantsStreaming)) {
       mode = 'tv_tonight';
@@ -1401,6 +1429,11 @@ export class ChatbotRecommend {
       wantsPrimeTime: /prime\s*time/.test(normalized),
       negativeSignals,
     };
+  }
+
+  private async buildFootballTodayResponse(): Promise<ChatbotResponse> {
+    const { matches } = await this.footballQueryService!.getMatches({ date: 'today', limit: 12 });
+    return buildFootballTodayPayload(matches);
   }
 
   private resolveStreamingTypes(
@@ -1746,27 +1779,17 @@ export class ChatbotRecommend {
   private async resolveRecommendations(
     recommendations: ChatbotRecommendationPayload[]
   ): Promise<ChatbotRecommendationPayload[]> {
-    const resolved = await Promise.all(
-      recommendations.map(async (recommendation) => {
-        if (recommendation.catalogId && recommendation.title) {
-          return {
-            ...recommendation,
-            title: this.cleanDisplayTitle(
-              recommendation.title,
-              recommendation.type
-            ),
-          };
-        }
-
-        const match = await this.catalogService.resolveRecommendation({
+    const resolved = await resolveGroundedRecommendations(
+      recommendations,
+      (recommendation) => this.catalogService.resolveRecommendation({
           title: recommendation.title,
           type: recommendation.type,
           platform: recommendation.platform,
           channel: recommendation.channel,
-        });
-
+        }),
+      (recommendation, match) => {
         // Validate EPG timing: don't surface stale airtime data from the catalog match
-        const matchStartMs = match?.start ? new Date(match.start).getTime() : null;
+        const matchStartMs = match.start ? new Date(match.start).getTime() : null;
         const now = Date.now();
         const epgIsStale = matchStartMs !== null && matchStartMs < now - 3 * 3_600_000;
         const epgIsFutureTooFar = matchStartMs !== null && matchStartMs > now + 48 * 3_600_000;
@@ -1774,21 +1797,21 @@ export class ChatbotRecommend {
 
         return {
           ...recommendation,
-          catalogId: recommendation.catalogId || match?.catalogId,
-          detailPath: recommendation.detailPath || match?.detailPath,
-          source: recommendation.source || match?.source,
-          tmdbId: match?.tmdbId || recommendation.tmdbId,
-          image: match?.image || recommendation.image,
+          catalogId: match.catalogId,
+          detailPath: match.detailPath,
+          source: match.source,
+          tmdbId: match.tmdbId,
+          image: match.image,
           title: this.cleanDisplayTitle(recommendation.title, recommendation.type),
           platform:
             recommendation.platform ||
-            match?.primaryPlatforms[0] ||
+            match.primaryPlatforms[0] ||
             recommendation.channel,
-          channel: recommendation.channel || match?.channel?.name,
-          liveNow: useEpgTimes ? Boolean(match?.liveNow) : false,
+          channel: recommendation.channel || match.channel?.name,
+          liveNow: useEpgTimes ? Boolean(match.liveNow) : false,
           time:
             recommendation.time ||
-            (useEpgTimes && match?.start
+            (useEpgTimes && match.start
               ? new Date(match.start).toLocaleTimeString('es-ES', {
                   hour: '2-digit',
                   minute: '2-digit',
@@ -1796,13 +1819,13 @@ export class ChatbotRecommend {
               : undefined),
           platformLogo:
             recommendation.platformLogo ||
-            match?.assets?.channelLogo?.url ||
-            match?.assets?.platformLogo?.url ||
-            match?.channel?.icon,
-          startTime: useEpgTimes ? (recommendation.startTime || (match?.start ? this.formatTime(match.start) : undefined)) : recommendation.startTime,
-          endTime: useEpgTimes ? (recommendation.endTime || (match?.end ? this.formatTime(match.end) : undefined)) : recommendation.endTime,
+            match.assets?.channelLogo?.url ||
+            match.assets?.platformLogo?.url ||
+            match.channel?.icon,
+          startTime: useEpgTimes ? (match.start ? this.formatTime(match.start) : undefined) : undefined,
+          endTime: useEpgTimes ? (match.end ? this.formatTime(match.end) : undefined) : undefined,
         };
-      })
+      }
     );
 
     return this.dedupeRecommendations(resolved);
@@ -2621,4 +2644,40 @@ export class ChatbotRecommend {
 
     return badges.slice(0, 3);
   }
+}
+
+/** Pure presenter kept outside the use case so grounding invariants remain regression-testable. */
+export function buildFootballTodayPayload(matches: FootballMatch[]): ChatbotResponse {
+  const visible = matches.slice(0, 8);
+  return {
+    text: visible.length
+      ? `He encontrado ${visible.length} ${visible.length === 1 ? 'partido' : 'partidos'} para hoy con datos verificados de GuíaTV.`
+      : 'No encuentro partidos confirmados para hoy en las fuentes de GuíaTV.',
+    intent: 'football_today',
+    confidence: 1,
+    sections: [{ id: 'football-today', kind: 'matches', title: 'Fútbol hoy' }],
+    matches: visible.map((match) => ({
+      id: match.id,
+      slug: match.slug,
+      competition: match.competition.shortName || match.competition.name,
+      kickoffAt: match.kickoffAt,
+      status: match.status,
+      homeTeam: match.homeTeam.name,
+      awayTeam: match.awayTeam.name,
+      homeScore: match.score.home,
+      awayScore: match.score.away,
+      broadcasters: match.broadcasts.map((broadcast) => ({
+        name: broadcast.channelName,
+        path: broadcast.channelPath,
+      })),
+      detailPath: `/futbol/partido/${match.slug}`,
+    })),
+    sources: [{
+      id: 'football-provider-today',
+      kind: 'football_provider',
+      label: 'Datos de fútbol de GuíaTV',
+      retrievedAt: new Date().toISOString(),
+    }],
+    followUpSuggestions: ['¿Qué hay ahora en TV?', 'Películas para esta noche'],
+  };
 }

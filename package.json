@@ -27,14 +27,15 @@
     "lint:backend": "npm run lint -w apps/backend",
     "lint:frontend": "npm run lint -w apps/frontend",
     "agent:setup": "node scripts/setup-agent-environment.mjs",
-    "agent:verify": "node scripts/verify-agent-environment.mjs"
-    ,"perf:api": "node scripts/perf-http.mjs api"
-    ,"perf:frontend": "node scripts/perf-http.mjs frontend"
-    ,"perf:critical": "node scripts/perf-http.mjs critical"
-    ,"cache:prewarm": "node scripts/prewarm-public-reads.mjs"
-    ,"perf:load": "node scripts/load-http.mjs"
+    "agent:verify": "node scripts/verify-agent-environment.mjs",
+    "perf:api": "node scripts/perf-http.mjs api",
+    "perf:frontend": "node scripts/perf-http.mjs frontend",
+    "perf:critical": "node scripts/perf-http.mjs critical",
+    "cache:prewarm": "node scripts/prewarm-public-reads.mjs",
+    "perf:load": "node scripts/load-http.mjs"
   },
   "devDependencies": {
+    "@angular/animations": "20.3.29",
     "@axe-core/playwright": "^4.13.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@playwright/test": "^1.62.1",

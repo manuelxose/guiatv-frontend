@@ -1,8 +1,8 @@
 <div class="app-shell" [class.app-shell--more-open]="mobileMoreOpen">
   <div
     class="app-shell__route-content"
-    [attr.inert]="mobileMoreOpen ? '' : null"
-    [attr.aria-hidden]="mobileMoreOpen ? 'true' : null"
+    [attr.inert]="mobileMoreOpen || (isChatbotOpen && !isChatMinimized) ? '' : null"
+    [attr.aria-hidden]="mobileMoreOpen || (isChatbotOpen && !isChatMinimized) ? 'true' : null"
   >
   <ng-container [ngSwitch]="currentLayout">
     <app-public-layout-shell *ngSwitchCase="'public-shell'">
@@ -21,6 +21,8 @@
     *ngIf="shouldShowMobileNavigation()"
     class="app-shell__mobile-nav"
     aria-label="Navegación principal móvil"
+    [attr.inert]="isChatbotOpen && !isChatMinimized ? '' : null"
+    [attr.aria-hidden]="isChatbotOpen && !isChatMinimized ? 'true' : null"
   >
     <ng-container *ngFor="let tab of mobileTabs">
       @if (tab.kind === 'route') {
@@ -82,6 +84,7 @@
 
   <ng-container *ngIf="isChatbotOpen || isChatMinimized">
     <button
+      #chatMinibar
       *ngIf="isChatMinimized"
       type="button"
       (click)="restoreChatbot()"
@@ -101,46 +104,42 @@
       class="app-shell__chat-overlay"
       [class.invisible]="isChatMinimized"
       [class.pointer-events-none]="isChatMinimized"
-      (click)="closeChatbot()"
       (keydown.escape)="closeChatbot()"
       tabindex="-1"
     >
-      <div class="app-shell__chat-backdrop"></div>
+      <button
+        type="button"
+        class="app-shell__chat-backdrop"
+        (click)="closeChatbot()"
+        tabindex="-1"
+        aria-hidden="true"
+      ></button>
 
       <div
         class="app-shell__chat-panel app-shell__chat-panel--mobile md:hidden"
-        (click)="$event.stopPropagation()"
-        (keydown)="$event.stopPropagation()"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Asistente GuíaTV"
         tabindex="-1"
-        [style.transform]="'translateY(' + swipeOffsetY + 'px)'"
-        [style.transition]="swipeAnimating ? 'transform 0.3s ease' : 'none'"
       >
-        <div
-          class="app-shell__chat-handle"
-          style="touch-action: none"
-          (touchstart)="onSwipePanelStart($event)"
-          (touchmove)="onSwipePanelMove($event)"
-          (touchend)="onSwipePanelEnd()"
-        >
-          <div class="app-shell__chat-handle-bar"></div>
-        </div>
-        @defer (when isChatbotOpen) {
+        @defer (on immediate) {
           <app-unified-chat-shell (close)="minimizeChatbot()"></app-unified-chat-shell>
         }
       </div>
 
       <div
         class="app-shell__chat-panel app-shell__chat-panel--desktop"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Asistente GuíaTV"
         [style.width.px]="chatPanelWidth"
-        (click)="$event.stopPropagation()"
-        (keydown)="$event.stopPropagation()"
         tabindex="-1"
       >
         <div
           class="app-shell__chat-resize"
           (mousedown)="onResizeStart($event)"
         ></div>
-        @defer (when isChatbotOpen) {
+        @defer (on immediate) {
           <app-unified-chat-shell (close)="closeChatbot()"></app-unified-chat-shell>
         }
       </div>
