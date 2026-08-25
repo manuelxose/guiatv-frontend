@@ -177,6 +177,39 @@ const PROVIDER_TIMEOUT_MS = Number(process.env.FOOTBALL_PROVIDER_TIMEOUT_MS || 4
 const CIRCUIT_FAILURE_THRESHOLD = 3;
 const CIRCUIT_OPEN_MS = 30_000;
 
+export interface FootballDataOrgThrottleState {
+  remaining: number | null;
+  blockedUntil: number;
+}
+
+function readHeader(headers: any, name: string): string | undefined {
+  const value = typeof headers?.get === 'function'
+    ? headers.get(name)
+    : headers?.[name] ?? headers?.[name.toLowerCase()];
+  if (value === undefined || value === null || value === '') return undefined;
+  return String(value);
+}
+
+/** Converts the provider's response headers into a local request gate. */
+export function parseFootballDataOrgThrottleHeaders(
+  headers: any,
+  now = Date.now(),
+  status?: number
+): FootballDataOrgThrottleState {
+  const remainingValue = Number(readHeader(headers, 'x-requests-available-minute'));
+  const resetSeconds = Number(readHeader(headers, 'x-requestcounter-reset'));
+  const retryAfterSeconds = Number(readHeader(headers, 'retry-after'));
+  const remaining = Number.isFinite(remainingValue) ? remainingValue : null;
+  const shouldBlock = status === 429 || remaining === 0;
+  const waitSeconds = Number.isFinite(retryAfterSeconds)
+    ? retryAfterSeconds
+    : Number.isFinite(resetSeconds) ? resetSeconds : 60;
+  return {
+    remaining,
+    blockedUntil: shouldBlock ? now + Math.max(1, waitSeconds) * 1_000 : 0,
+  };
+}
+
 export class FootballDataOrgAdapter implements FootballDataProvider {
   readonly key = 'football-data-org';
   readonly name = 'football-data.org';
@@ -187,6 +220,7 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
   private readonly standingsCache = new Map<string, { value: FootballStandingRow[]; expiresAt: number }>();
   private consecutiveFailures = 0;
   private circuitOpenUntil = 0;
+  private throttleBlockedUntil = 0;
 
   constructor(private readonly apiKey: string) {}
 
@@ -195,20 +229,31 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
   }
 
   private async fetch<T = any>(url: string, config: Record<string, unknown> = {}): Promise<{ data: T }> {
-    if (this.circuitOpenUntil > Date.now()) {
+    const now = Date.now();
+    if (this.throttleBlockedUntil > now) {
+      throw new Error('football-data.org request deferred by response-header throttle');
+    }
+    if (this.circuitOpenUntil > now) {
       throw new Error('football-data.org circuit is temporarily open');
     }
     try {
       const response = await axios.get<T>(url, { ...config, timeout: PROVIDER_TIMEOUT_MS });
+      const throttle = parseFootballDataOrgThrottleHeaders(response.headers, Date.now(), response.status);
+      this.throttleBlockedUntil = throttle.blockedUntil;
       this.consecutiveFailures = 0;
       this.circuitOpenUntil = 0;
-      return response;
-    } catch (error) {
+      return { data: response.data };
+    } catch (error: any) {
+      const status = Number(error?.response?.status) || undefined;
+      const throttle = parseFootballDataOrgThrottleHeaders(error?.response?.headers, Date.now(), status);
+      this.throttleBlockedUntil = Math.max(this.throttleBlockedUntil, throttle.blockedUntil);
       this.consecutiveFailures += 1;
       if (this.consecutiveFailures >= CIRCUIT_FAILURE_THRESHOLD) {
         this.circuitOpenUntil = Date.now() + CIRCUIT_OPEN_MS;
       }
-      throw error;
+      // Never propagate Axios' request config: it contains X-Auth-Token and
+      // can leak the secret when generic error serializers log the object.
+      throw new Error(`football-data.org request failed${status ? ` (status ${status})` : ''}`);
     }
   }
 

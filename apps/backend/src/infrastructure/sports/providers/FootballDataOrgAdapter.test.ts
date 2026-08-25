@@ -8,6 +8,7 @@ import {
   mapFootballDataOrgMatch,
   mapFootballDataOrgStandingRow,
   mapFootballDataOrgTeam,
+  parseFootballDataOrgThrottleHeaders,
 } from './FootballDataOrgAdapter';
 import { buildMatchSlug } from '../../../application/sports/services/FootballNormalizer';
 
@@ -163,4 +164,27 @@ test('dedupeTeamsFromMatches deduplicates a team appearing across multiple match
 
 test('dedupeTeamsFromMatches returns an empty array for no matches', () => {
   assert.deepEqual(dedupeTeamsFromMatches([]), []);
+});
+
+test('response headers block new requests until the provider counter resets', () => {
+  const now = 1_000_000;
+  const state = parseFootballDataOrgThrottleHeaders({
+    'x-requests-available-minute': '0',
+    'x-requestcounter-reset': '23',
+  }, now, 200);
+  assert.deepEqual(state, { remaining: 0, blockedUntil: now + 23_000 });
+});
+
+test('a 429 honors Retry-After even when remaining headers are absent', () => {
+  const now = 2_000_000;
+  const state = parseFootballDataOrgThrottleHeaders({ 'retry-after': '17' }, now, 429);
+  assert.deepEqual(state, { remaining: null, blockedUntil: now + 17_000 });
+});
+
+test('available quota leaves the local request gate open', () => {
+  const state = parseFootballDataOrgThrottleHeaders({
+    'x-requests-available-minute': '8',
+    'x-requestcounter-reset': '41',
+  }, 3_000_000, 200);
+  assert.deepEqual(state, { remaining: 8, blockedUntil: 0 });
 });
