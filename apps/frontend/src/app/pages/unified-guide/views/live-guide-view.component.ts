@@ -58,6 +58,7 @@ export class LiveGuideViewComponent {
     { id: 'cable', label: 'Cable' },
     { id: 'movistar', label: 'Movistar+' },
     { id: 'online', label: 'Online' },
+    { id: 'deporte', label: 'Deportes' },
   ];
   readonly liveFlagChips: FilterChipItem[] = [
     { id: 'live', label: 'Directo' },
@@ -284,7 +285,7 @@ export class LiveGuideViewComponent {
 
   clearFilters(): void {
     this.guideState.updateLiveFilters({
-      group: 'tdt',
+      group: 'all',
       category: 'all',
       liveView: 'now',
       date: 'today',
@@ -304,7 +305,7 @@ export class LiveGuideViewComponent {
       this.guideState.setSearch('');
       return;
     }
-    if (key === 'group') this.guideState.updateLiveFilters({ group: 'tdt' });
+    if (key === 'group') this.guideState.updateLiveFilters({ group: 'all' });
     if (key === 'category') this.guideState.updateLiveFilters({ category: 'all' });
     if (key === 'channel') this.guideState.updateLiveFilters({ channel: '' });
     if (key === 'channelType') this.guideState.updateLiveFilters({ channelType: 'all' });

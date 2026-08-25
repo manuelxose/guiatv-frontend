@@ -32,7 +32,8 @@
     "perf:frontend": "node scripts/perf-http.mjs frontend",
     "perf:critical": "node scripts/perf-http.mjs critical",
     "cache:prewarm": "node scripts/prewarm-public-reads.mjs",
-    "perf:load": "node scripts/load-http.mjs"
+    "perf:load": "node scripts/load-http.mjs",
+    "validate:tv:operational": "node scripts/validate-tv-operational.mjs"
   },
   "devDependencies": {
     "@angular/animations": "20.3.29",

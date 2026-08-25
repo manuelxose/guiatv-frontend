@@ -197,12 +197,6 @@ export function isChatbotBusyState(state: ChatbotRequestState): boolean {
     state === 'recovering';
 }
 
-/** Fields editable in the memory editor panel. */
-export interface MemoryEditorField {
-  key: string;
-  label: string;
-  placeholder: string;
-}
 
 export interface ConversationSummary {
   conversationId: string;

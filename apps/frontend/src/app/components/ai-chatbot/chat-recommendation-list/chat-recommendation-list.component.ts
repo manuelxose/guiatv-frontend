@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy, inject, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import {
   ChatbotQueryContext,
   ChatbotRecommendation,
@@ -20,7 +20,7 @@ type ExpandState = 'compact' | 'partial' | 'full';
   imports: [CommonModule, ChatContextBadgeComponent, ChatRecommendationCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mt-4 p-3 md:p-5">
+    <section class="mt-3" aria-label="Recomendaciones">
       <!-- Header: badge + summary + controls -->
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-wrap items-center gap-2">
@@ -29,89 +29,9 @@ type ExpandState = 'compact' | 'partial' | 'full';
             {{ dynamicSummary }}
           </span>
         </div>
-        <div class="flex items-center gap-2">
-          <!-- List / Carousel toggle -->
-          <button
-            *ngIf="allRecommendations.length > 2"
-            type="button"
-            (click)="carouselMode = !carouselMode"
-            class="flex h-7 w-7 items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] text-[var(--portal-text-muted)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
-            [attr.aria-label]="carouselMode ? 'Vista lista' : 'Vista carrusel'"
-          >
-            <svg *ngIf="!carouselMode" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-            <svg *ngIf="carouselMode" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          <!-- Expand controls -->
-          <ng-container>
-            <!-- Compact → Partial: always "Ver N más" -->
-            <button
-              *ngIf="expandState === 'compact' && moreRecommendations.length > 0"
-              type="button"
-              (click)="expandState = 'partial'"
-              class="min-h-[28px] rounded-full border border-[var(--accent-live-soft)] bg-[var(--accent-live-soft)] px-3 text-[10px] font-semibold text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200"
-            >
-              Ver {{ firstBatchSize }} más
-            </button>
-
-            <!-- Partial → Full: when loaded items < context total -->
-            <button
-              *ngIf="expandState === 'partial' && hasMoreBeyondLoaded"
-              type="button"
-              (click)="expandState = 'full'"
-              class="min-h-[28px] rounded-full border border-violet-500/30 bg-violet-500/10 px-3 text-[10px] font-semibold text-violet-300 transition-colors hover:bg-violet-500/20 hover:text-violet-200"
-            >
-              Ver todos ({{ allRecommendations.length - visibleItems.length }} más)
-            </button>
-
-            <!-- Collapse button only in full state -->
-            <button
-              *ngIf="expandState === 'full'"
-              type="button"
-              (click)="expandState = 'compact'"
-              class="min-h-[28px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-3 text-[10px] font-medium text-[var(--portal-text-muted)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
-            >
-              Ver menos
-            </button>
-          </ng-container>
-        </div>
       </div>
 
-      <!-- Carousel mode -->
-      <div *ngIf="carouselMode; else listMode">
-        <ng-container *ngFor="let group of groups; trackBy: trackByGroup">
-          <p
-            *ngIf="groups.length > 1"
-            class="mb-2 mt-3 text-[10px] font-bold uppercase tracking-widest text-[var(--portal-text-muted)] first:mt-0"
-          >
-            {{ group.label }}
-          </p>
-          <div class="flex min-w-0 gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700/50">
-            <div
-              *ngFor="let rec of group.items; trackBy: trackByRec"
-              class="w-[280px] flex-shrink-0 md:w-[300px]"
-            >
-              <app-chat-recommendation-card
-                [recommendation]="rec"
-                (openDetail)="openDetail.emit($event)"
-                (save)="save.emit($event)"
-                (followUp)="followUp.emit($event)"
-                (ignore)="ignore.emit($event)"
-                (ratePositive)="ratePositive.emit($event)"
-                (rateNegative)="rateNegative.emit($event)"
-                (remind)="remind.emit($event)"
-              />
-            </div>
-          </div>
-        </ng-container>
-      </div>
-
-      <!-- List mode -->
-      <ng-template #listMode>
+      <div class="space-y-3">
         <ng-container *ngFor="let group of groups; trackBy: trackByGroup">
           <p
             *ngIf="groups.length > 1"
@@ -133,8 +53,27 @@ type ExpandState = 'compact' | 'partial' | 'full';
             />
           </div>
         </ng-container>
-      </ng-template>
-    </div>
+      </div>
+
+      <div *ngIf="hasMoreBeyondLoaded || expandState !== 'compact'" class="mt-3 flex justify-center">
+        <button
+          *ngIf="hasMoreBeyondLoaded"
+          type="button"
+          (click)="showMore()"
+          class="min-h-11 w-full rounded-xl border border-[var(--assistant-chip-border)] bg-[var(--assistant-chip-bg)] px-4 text-sm font-bold text-[var(--assistant-chip-text)] transition-colors hover:bg-[var(--assistant-chip-hover-bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--guide-accent)]"
+        >
+          Ver {{ remainingCount }} resultados más
+        </button>
+        <button
+          *ngIf="!hasMoreBeyondLoaded && expandState !== 'compact'"
+          type="button"
+          (click)="expandState = 'compact'"
+          class="min-h-11 rounded-xl px-5 text-sm font-semibold text-[var(--portal-text-muted)] hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)]"
+        >
+          Mostrar menos
+        </button>
+      </div>
+    </section>
   `,
 })
 export class ChatRecommendationListComponent {
@@ -151,10 +90,7 @@ export class ChatRecommendationListComponent {
   @Output() rateNegative = new EventEmitter<ChatbotRecommendation>();
   @Output() remind = new EventEmitter<ChatbotRecommendation>();
 
-  private readonly platformId = inject(PLATFORM_ID);
-
   expandState: ExpandState = 'compact';
-  carouselMode = isPlatformBrowser(this.platformId) && window.innerWidth < 768;
 
   /** Dynamic summary reflecting how many items are currently visible vs total from queryContext. */
   get dynamicSummary(): string {
@@ -170,11 +106,6 @@ export class ChatRecommendationListComponent {
     return [...this.recommendations, ...this.moreRecommendations];
   }
 
-  /** Size of the first expansion batch (capped at 9). */
-  get firstBatchSize(): number {
-    return Math.min(9, this.moreRecommendations.length);
-  }
-
   /** Total results reported by the backend context (may exceed loaded items). */
   get totalFromContext(): number {
     return this.queryContext?.primaryMatches || this.queryContext?.totalMatches || this.allRecommendations.length;
@@ -187,11 +118,21 @@ export class ChatRecommendationListComponent {
 
   /** Items currently visible based on expand state. */
   get visibleItems(): ChatbotRecommendation[] {
-    if (this.expandState === 'compact') return this.recommendations;
+    if (this.expandState === 'compact') return this.allRecommendations.slice(0, 5);
     if (this.expandState === 'partial') {
-      return [...this.recommendations, ...this.moreRecommendations.slice(0, 9)];
+      return this.allRecommendations.slice(0, 12);
     }
     return this.allRecommendations;
+  }
+
+  get remainingCount(): number {
+    return Math.max(0, this.allRecommendations.length - this.visibleItems.length);
+  }
+
+  showMore(): void {
+    this.expandState = this.expandState === 'compact' && this.allRecommendations.length > 12
+      ? 'partial'
+      : 'full';
   }
 
   get groups(): RecommendationGroup[] {

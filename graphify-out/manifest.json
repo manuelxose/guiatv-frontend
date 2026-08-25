@@ -156,16 +156,16 @@
     "semantic_hash": "c2f07ebb844fc3bfc1e47b4a334c1a4e"
   },
   "apps/backend/src/application/services/TvReadQueryService.test.ts": {
-    "mtime": 1787347718.6268246,
-    "seen": 1787599616.7521973,
-    "ast_hash": "4b18cee4cde0e73b224e87a071d76a0b",
-    "semantic_hash": "4b18cee4cde0e73b224e87a071d76a0b"
+    "mtime": 1787677441.5206635,
+    "seen": 1787677595.2562153,
+    "ast_hash": "0c9878ec36980462328afc18d879ac21",
+    "semantic_hash": ""
   },
   "apps/backend/src/application/services/TvReadQueryService.ts": {
-    "mtime": 1787347718.6268246,
-    "seen": 1787599616.7521994,
-    "ast_hash": "a7954cdcbca6ccc5ae6c0b34f45320f8",
-    "semantic_hash": "a7954cdcbca6ccc5ae6c0b34f45320f8"
+    "mtime": 1787677441.5166636,
+    "seen": 1787677595.2562184,
+    "ast_hash": "5be70b6fdd71e69576472635d0dac215",
+    "semantic_hash": ""
   },
   "apps/backend/src/application/services/TvSurfaceService.test.ts": {
     "mtime": 1786612672.3113728,
@@ -336,10 +336,10 @@
     "semantic_hash": "e1c9715d9ea5c1acb65be8993f696ef2"
   },
   "apps/backend/src/application/use-cases/SyncEPGData.ts": {
-    "mtime": 1774525731.5058537,
-    "seen": 1787599616.752261,
-    "ast_hash": "b7b1e1be5d1b50da67a58fea2cd2a307",
-    "semantic_hash": "b7b1e1be5d1b50da67a58fea2cd2a307"
+    "mtime": 1787679866.980237,
+    "seen": 1787680300.2904391,
+    "ast_hash": "1d01958dcb699a0a36941342676dbcdb",
+    "semantic_hash": ""
   },
   "apps/backend/src/application/use-cases/SyncProgramData.ts": {
     "mtime": 1766096979.010109,
@@ -1404,16 +1404,16 @@
     "semantic_hash": "0bfba8ed96b8175a30fbda288595db57"
   },
   "apps/backend/src/shared/utils/tvMetadata.test.ts": {
-    "mtime": 1774547374.3851352,
-    "seen": 1787599616.752617,
-    "ast_hash": "42b479d9b6d1b14ecc61e94d328bd87b",
-    "semantic_hash": "42b479d9b6d1b14ecc61e94d328bd87b"
+    "mtime": 1787678990.2836487,
+    "seen": 1787679850.3792517,
+    "ast_hash": "e107c20fdc15cc25997bf062993eda9e",
+    "semantic_hash": ""
   },
   "apps/backend/src/shared/utils/tvMetadata.ts": {
-    "mtime": 1774547369.7152133,
-    "seen": 1787599616.7526188,
-    "ast_hash": "c0c6d6bc57494a9f7d3cd7514a60217f",
-    "semantic_hash": "c0c6d6bc57494a9f7d3cd7514a60217f"
+    "mtime": 1787678990.2796488,
+    "seen": 1787679850.379256,
+    "ast_hash": "21f57c1d83d41ef6b157a7b10f66b1bd",
+    "semantic_hash": ""
   },
   "apps/backend/src/ssr/handler.ts": {
     "mtime": 1766096979.0161088,
@@ -1560,9 +1560,9 @@
     "semantic_hash": "1a86f2247e49d4eee437b264d3252420"
   },
   "apps/frontend/src/app/app.component.ts": {
-    "mtime": 1787661471.75361,
-    "seen": 1787661677.8902621,
-    "ast_hash": "1165e1592f498d65c298afa97fe3e523",
+    "mtime": 1787669039.841507,
+    "seen": 1787669661.9971154,
+    "ast_hash": "8c15557995a617c71fde8f8e77cc5768",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/app.config.server.ts": {
@@ -1638,9 +1638,9 @@
     "semantic_hash": "805abfdef744d965a1573f83529d8880"
   },
   "apps/frontend/src/app/components/ai-chatbot/ai-chatbot.component.ts": {
-    "mtime": 1787658115.2006714,
-    "seen": 1787660388.1337132,
-    "ast_hash": "89d5c2095165875a23a1b9d248051658",
+    "mtime": 1787669604.8711534,
+    "seen": 1787669661.99715,
+    "ast_hash": "742cb0a7893851391650002da1f2b04b",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/components/ai-chatbot/chat-community-chooser/chat-community-chooser.component.ts": {
@@ -1650,64 +1650,46 @@
     "semantic_hash": "1f0527958931d39a35474779c4d36dad"
   },
   "apps/frontend/src/app/components/ai-chatbot/chat-context-badge/chat-context-badge.component.ts": {
-    "mtime": 1773223098.9609468,
-    "seen": 1787599616.7526925,
-    "ast_hash": "c9353615d62ae7ce7d3e84739f2f7cd1",
-    "semantic_hash": "c9353615d62ae7ce7d3e84739f2f7cd1"
+    "mtime": 1787672076.2941527,
+    "seen": 1787673141.8807418,
+    "ast_hash": "28ac9568f33ce7dc2978278d751a6c6e",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/components/ai-chatbot/chat-conversation-sidebar/chat-conversation-sidebar.component.ts": {
-    "mtime": 1787408081.758423,
-    "seen": 1787599616.7526944,
-    "ast_hash": "ee628b35a853c815b27b1f5e547e074c",
-    "semantic_hash": "ee628b35a853c815b27b1f5e547e074c"
+    "mtime": 1787673008.1613538,
+    "seen": 1787673141.880748,
+    "ast_hash": "4ee7b57cc0cdad2c2ef84725883d3534",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/components/ai-chatbot/chat-header/chat-header.component.ts": {
-    "mtime": 1787660316.5360315,
-    "seen": 1787660388.1337242,
-    "ast_hash": "63dda1fa98f98f2612884f8a51feae70",
+    "mtime": 1787671835.9769151,
+    "seen": 1787673141.8807518,
+    "ast_hash": "9b459853292839c124e25ccf03ad5f28",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/components/ai-chatbot/chat-input-bar/chat-input-bar.component.ts": {
-    "mtime": 1787658292.77296,
-    "seen": 1787660388.1337264,
-    "ast_hash": "1219ce46c3258169d24072a1c3462896",
+    "mtime": 1787668825.0360491,
+    "seen": 1787669661.9972785,
+    "ast_hash": "2d9a0add83b245ed906d6671df202566",
     "semantic_hash": ""
-  },
-  "apps/frontend/src/app/components/ai-chatbot/chat-memory-editor/chat-memory-editor.component.ts": {
-    "mtime": 1786656753.8569076,
-    "seen": 1787599616.7526991,
-    "ast_hash": "68b9d1f4dffef6adf7ae8f5f3c686023",
-    "semantic_hash": "68b9d1f4dffef6adf7ae8f5f3c686023"
   },
   "apps/frontend/src/app/components/ai-chatbot/chat-message-bubble/chat-message-bubble.component.ts": {
-    "mtime": 1787658282.9811099,
-    "seen": 1787660388.133731,
-    "ast_hash": "202af2c1f6fefc520b23c446f020b6de",
+    "mtime": 1787673008.1763537,
+    "seen": 1787673141.8807554,
+    "ast_hash": "712e5bc52be10e7c73e537c7880a3cf1",
     "semantic_hash": ""
   },
-  "apps/frontend/src/app/components/ai-chatbot/chat-onboarding-wizard/chat-onboarding-wizard.component.ts": {
-    "mtime": 1787591380.9145749,
-    "seen": 1787599616.7527025,
-    "ast_hash": "11ed78cae109d183268f88df3c75e43b",
-    "semantic_hash": "11ed78cae109d183268f88df3c75e43b"
-  },
-  "apps/frontend/src/app/components/ai-chatbot/chat-preference-prompt/chat-preference-prompt.component.ts": {
-    "mtime": 1786656697.8050044,
-    "seen": 1787599616.752704,
-    "ast_hash": "131f44ab8308ac57137a3d5fdd93e76d",
-    "semantic_hash": "131f44ab8308ac57137a3d5fdd93e76d"
-  },
   "apps/frontend/src/app/components/ai-chatbot/chat-recommendation-card/chat-recommendation-card.component.ts": {
-    "mtime": 1787591435.381461,
-    "seen": 1787599616.7527056,
-    "ast_hash": "35ba4934f0f94e48863872791f616c80",
-    "semantic_hash": "35ba4934f0f94e48863872791f616c80"
+    "mtime": 1787673008.1683538,
+    "seen": 1787673141.880763,
+    "ast_hash": "f7b8513eb3d88f426c74cce4a16c4767",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/components/ai-chatbot/chat-recommendation-list/chat-recommendation-list.component.ts": {
-    "mtime": 1787347718.737823,
-    "seen": 1787599616.7527072,
-    "ast_hash": "db94927b83db3dfc2261f8c312db1bdb",
-    "semantic_hash": "db94927b83db3dfc2261f8c312db1bdb"
+    "mtime": 1787672010.8241816,
+    "seen": 1787673141.8807664,
+    "ast_hash": "168c6fe89272f45bbdd5bed12add07f3",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/components/ai-chatbot/chat-skeleton/chat-skeleton.component.ts": {
     "mtime": 1787591435.3744612,
@@ -1872,9 +1854,9 @@
     "semantic_hash": "9216865f907508dd35c3692b67a3a8cc"
   },
   "apps/frontend/src/app/components/unified-chat-shell/unified-chat-shell.component.ts": {
-    "mtime": 1787659260.4566782,
-    "seen": 1787660388.1338153,
-    "ast_hash": "a631d4a6fdd93e20eaf4bdf3790113cd",
+    "mtime": 1787668899.7858317,
+    "seen": 1787669661.9973605,
+    "ast_hash": "b2fcf578747857d212d2d1f75e77e453",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/components/unified-editorial-module/unified-editorial-module.component.ts": {
@@ -2298,9 +2280,9 @@
     "semantic_hash": "52310142e2bbc893d3c5200e9f72c3f9"
   },
   "apps/frontend/src/app/interfaces/chatbot.interface.ts": {
-    "mtime": 1787657211.5068138,
-    "seen": 1787660388.1340158,
-    "ast_hash": "06e98f1adbd2ec969a39cd27cd3c9a90",
+    "mtime": 1787669524.6934721,
+    "seen": 1787669661.997565,
+    "ast_hash": "13d89988549905db0fff7ddd57f9b350",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/interfaces/featured-movie.interface.ts": {
@@ -2610,10 +2592,10 @@
     "semantic_hash": "ee3accf6208844b24ae31f838eb33c16"
   },
   "apps/frontend/src/app/pages/unified-guide/views/live-guide-view.component.ts": {
-    "mtime": 1787347718.9948192,
-    "seen": 1787599616.7529233,
-    "ast_hash": "8212a8975242ac301300d8949dd55b8d",
-    "semantic_hash": "8212a8975242ac301300d8949dd55b8d"
+    "mtime": 1787677441.5266635,
+    "seen": 1787677595.2573016,
+    "ast_hash": "5ef224627bcbd86e6a66e27de5a9ae47",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/pages/unified-guide/views/streaming-view.component.ts": {
     "mtime": 1787408081.7574232,
@@ -3018,10 +3000,10 @@
     "semantic_hash": "e8b236cc2523acabb9c9d4d803bed746"
   },
   "apps/frontend/src/app/state/unified-guide.state.ts": {
-    "mtime": 1786715001.8369184,
-    "seen": 1787599616.753002,
-    "ast_hash": "1ed987f45535adf27e27530ff7c39a89",
-    "semantic_hash": "1ed987f45535adf27e27530ff7c39a89"
+    "mtime": 1787677441.5226636,
+    "seen": 1787677595.2575839,
+    "ast_hash": "1105890e86b19f888bf57b64c52e7c2c",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/state/unified-shell-ui.state.ts": {
     "mtime": 1775052048.1308572,
@@ -3156,10 +3138,10 @@
     "semantic_hash": "fbed86a1789964c9c4a7713f9b4978ba"
   },
   "e2e/fixtures/auth-mock.ts": {
-    "mtime": 1786574738.4609725,
-    "seen": 1787599616.7530289,
-    "ast_hash": "c004adbeec68a69715f424c4709eff6f",
-    "semantic_hash": "c004adbeec68a69715f424c4709eff6f"
+    "mtime": 1787672226.263788,
+    "seen": 1787673141.8811748,
+    "ast_hash": "e40e74652dea8f1e202d4e4f7b7813ba",
+    "semantic_hash": ""
   },
   "e2e/fixtures/helpers.ts": {
     "mtime": 1786576136.6687808,
@@ -3234,9 +3216,9 @@
     "semantic_hash": "19ce8f20ae82f59c9e0f1017986a036e"
   },
   "package.json": {
-    "mtime": 1787660112.0972424,
-    "seen": 1787660388.1344295,
-    "ast_hash": "c517940ed8dbcf190bb0ddfcbd4de390",
+    "mtime": 1787678635.864903,
+    "seen": 1787679850.3798752,
+    "ast_hash": "3f2f8aee15d16cca13cce5f72fe3d7ca",
     "semantic_hash": ""
   },
   "playwright.config.ts": {
@@ -3420,9 +3402,9 @@
     "semantic_hash": ""
   },
   "apps/frontend/src/app/app.component.html": {
-    "mtime": 1787661293.7694488,
-    "seen": 1787661677.891556,
-    "ast_hash": "6a578479cf149b30da6d240ed84c528b",
+    "mtime": 1787668872.8122709,
+    "seen": 1787669661.9982145,
+    "ast_hash": "fd0ff56ad4537687cc7936a761bcec5f",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.html": {
@@ -3450,9 +3432,9 @@
     "semantic_hash": ""
   },
   "apps/frontend/src/app/components/ai-chatbot/ai-chatbot.component.html": {
-    "mtime": 1787656458.060438,
-    "seen": 1787660388.1346905,
-    "ast_hash": "accb067f5679c5291a39a2fb2993b8a7",
+    "mtime": 1787668732.2445612,
+    "seen": 1787669661.998224,
+    "ast_hash": "af15cd8c61d4c6ead3af69e6e2aa0506",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/components/app-public-layout-shell/app-public-layout-shell.component.html": {
@@ -4326,9 +4308,9 @@
     "semantic_hash": ""
   },
   "e2e/specs/assistant.spec.ts": {
-    "mtime": 1787661471.75461,
-    "seen": 1787661677.891301,
-    "ast_hash": "62fbb8e2200b0d4ac69e67b37a4797b0",
+    "mtime": 1787672528.4049983,
+    "seen": 1787673141.88118,
+    "ast_hash": "eeb6406c873b0016070b7520eb55a6f4",
     "semantic_hash": ""
   },
   "apps/frontend/PRODUCT.md": {
@@ -4344,9 +4326,9 @@
     "semantic_hash": ""
   },
   "docs/chatbot-production-readiness.md": {
-    "mtime": 1787660711.7848294,
-    "seen": 1787661061.2570317,
-    "ast_hash": "68146cd61d99f08ba576f5c8b9ae89c8",
+    "mtime": 1787663192.2790082,
+    "seen": 1787669661.998347,
+    "ast_hash": "2837d894c2a14599ef3bfa823e5b7b10",
     "semantic_hash": ""
   },
   "docs/decisions/0001-assistant-grounded-additive-contract.md": {
@@ -4362,9 +4344,9 @@
     "semantic_hash": ""
   },
   ".impeccable/review/assistant-mobile-light.png": {
-    "mtime": 1787661551.064348,
-    "seen": 1787661677.8918002,
-    "ast_hash": "85f00001bb2a9383fd840e6425db2d21",
+    "mtime": 1787672461.829056,
+    "seen": 1787673141.8814971,
+    "ast_hash": "9e262af3f6e61a85e6c6a35bbdd83256",
     "semantic_hash": ""
   },
   "docs/evidence/chatbot-baseline/desktop-light.png": {
@@ -4377,6 +4359,90 @@
     "mtime": 1787655359.6187732,
     "seen": 1787660388.134953,
     "ast_hash": "9f70373117f8e4b8ab470ead4137fc94",
+    "semantic_hash": ""
+  },
+  "apps/frontend/src/app/app.component.spec.ts": {
+    "mtime": 1787669039.843507,
+    "seen": 1787669661.9971116,
+    "ast_hash": "ecc12e73ed33f7c41e7767a4674b2b79",
+    "semantic_hash": ""
+  },
+  "apps/frontend/src/app/components/ai-chatbot/chat-profile-panel/chat-profile-panel.component.spec.ts": {
+    "mtime": 1787669234.460266,
+    "seen": 1787669661.997284,
+    "ast_hash": "f99228834b3ea9d0adaf28beebf00546",
+    "semantic_hash": ""
+  },
+  "apps/frontend/src/app/components/ai-chatbot/chat-profile-panel/chat-profile-panel.component.ts": {
+    "mtime": 1787669487.17709,
+    "seen": 1787669661.9972858,
+    "ast_hash": "5ee3101f06489bc5dfa8aeaf81ee4d36",
+    "semantic_hash": ""
+  },
+  "apps/frontend/src/app/components/ai-chatbot/chat-profile-panel/chat-profile.types.ts": {
+    "mtime": 1787668554.5144613,
+    "seen": 1787669661.9972878,
+    "ast_hash": "3198a93b1e08c147538f8e6df0aeadb6",
+    "semantic_hash": ""
+  },
+  ".impeccable/review/assistant-mobile-dark.png": {
+    "mtime": 1787672463.5810282,
+    "seen": 1787673141.8814957,
+    "ast_hash": "fa60484ebe4872d73ae8d04429f51ade",
+    "semantic_hash": ""
+  },
+  ".impeccable/review/assistant-profile-mobile-light.png": {
+    "mtime": 1787672458.4501097,
+    "seen": 1787673141.8815017,
+    "ast_hash": "6a14dbc54bd75a1527f3057f109cfdb9",
+    "semantic_hash": ""
+  },
+  "apps/frontend/src/app/components/ai-chatbot/chat-conversation-sidebar/chat-conversation-sidebar.component.spec.ts": {
+    "mtime": 1787672202.782159,
+    "seen": 1787673141.8807452,
+    "ast_hash": "2cfb0198e5d38f16c5d8136f2dc32c0c",
+    "semantic_hash": ""
+  },
+  "apps/frontend/src/app/components/ai-chatbot/chat-header/chat-header.component.spec.ts": {
+    "mtime": 1787672202.781159,
+    "seen": 1787673141.8807502,
+    "ast_hash": "d20dc200af5384190146d12a0545645c",
+    "semantic_hash": ""
+  },
+  "apps/frontend/src/app/components/ai-chatbot/chat-recommendation-list/chat-recommendation-list.component.spec.ts": {
+    "mtime": 1787672202.783159,
+    "seen": 1787673141.8807647,
+    "ast_hash": "933d6d68ced2aa68db6b3c30d1631984",
+    "semantic_hash": ""
+  },
+  ".impeccable/review/assistant-platform-results-dark.png": {
+    "mtime": 1787672896.611134,
+    "seen": 1787673141.8814986,
+    "ast_hash": "ecd7621da40c624f62ae46460e7ea5b0",
+    "semantic_hash": ""
+  },
+  ".impeccable/review/assistant-platform-results-light.png": {
+    "mtime": 1787672892.348202,
+    "seen": 1787673141.8815005,
+    "ast_hash": "1399679774d93aa1e69915ec3994153d",
+    "semantic_hash": ""
+  },
+  "docs/tv-canonical-platform.md": {
+    "mtime": 1787677507.9219754,
+    "seen": 1787677595.2581105,
+    "ast_hash": "a2feb33fbeebc7e029ac2ad4c891689e",
+    "semantic_hash": ""
+  },
+  "e2e/specs/tv-pay-operational.spec.ts": {
+    "mtime": 1787678788.8886454,
+    "seen": 1787679850.3798718,
+    "ast_hash": "958156fda4c51ab66cf5474692be1173",
+    "semantic_hash": ""
+  },
+  "scripts/validate-tv-operational.mjs": {
+    "mtime": 1787680219.042615,
+    "seen": 1787680300.2916212,
+    "ast_hash": "a347d1e980ae447971ac24f2730fc072",
     "semantic_hash": ""
   }
 }

@@ -59,6 +59,23 @@ test('buildChannelIdentityMetadata maps TDTChannels aliases to canonical TDT cha
   assert.equal(cuatro.canonicalId, 'cuatro');
 });
 
+test('buildChannelIdentityMetadata resolves representative pay-TV aliases canonically', () => {
+  const tcm = buildChannelIdentityMetadata({ name: 'TCM HD', sourceId: 'tcm.es' });
+  const axn = buildChannelIdentityMetadata({ name: 'AXN', sourceId: 'axn.es' });
+  const hits = buildChannelIdentityMetadata({ name: 'M+ Hits', sourceId: 'movistar-hits' });
+
+  assert.equal(tcm.canonicalId, 'tcm');
+  assert.equal(tcm.inferredGroup, 'cable');
+  assert.equal(axn.canonicalId, 'axn');
+  assert.equal(axn.inferredGroup, 'cable');
+  assert.equal(hits.canonicalId, 'movistar_hits');
+  assert.equal(hits.inferredGroup, 'movistar');
+  assert.equal(
+    inferChannelGroup({ name: 'M+ Estrenos', type: 'OTT' }),
+    'movistar'
+  );
+});
+
 test('buildChannelIdentityMetadata collapses Discovery Max and Discovery into DMAX TDT', () => {
   const discoveryMax = buildChannelIdentityMetadata({
     name: 'Discovery Max',

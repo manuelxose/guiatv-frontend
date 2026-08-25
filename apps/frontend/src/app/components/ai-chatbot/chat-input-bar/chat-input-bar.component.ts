@@ -78,7 +78,7 @@ import {
         </button>
       </div>
 
-      <div class="chat-composer__meta">
+      <div class="chat-composer__meta" [class.chat-composer__meta--empty]="!statusLabel && !canRetry">
         <p
           *ngIf="statusLabel"
           class="chat-composer__status"
@@ -140,17 +140,19 @@ import {
     }
     .chat-composer__quick-actions::-webkit-scrollbar { display: none; }
     .chat-composer__quick-action {
-      min-height: 44px; flex: 0 0 auto; border: 1px solid var(--portal-border); border-radius: 999px;
-      background: var(--portal-bg-elevated); color: var(--portal-text-soft); padding: .45rem .72rem;
+      display: inline-flex; min-height: 44px; max-width: 12rem; flex: 0 0 auto; align-items: center; justify-content: center;
+      border: 1px solid var(--assistant-chip-border); border-radius: 999px;
+      background: var(--assistant-chip-bg); color: var(--assistant-chip-text); padding: .45rem .78rem;
       font-size: .72rem; font-weight: 650; cursor: pointer; touch-action: manipulation;
       transition: color 150ms ease, border-color 150ms ease, background-color 150ms ease;
+      overflow: hidden; text-align: center; text-overflow: ellipsis; white-space: nowrap;
     }
-    .chat-composer__quick-action:hover:not(:disabled) { color: var(--portal-text); border-color: var(--portal-border-strong); background: var(--portal-surface-strong); }
+    .chat-composer__quick-action:hover:not(:disabled), .chat-composer__quick-action:active:not(:disabled) { color: var(--portal-text); border-color: var(--assistant-chip-hover-border); background: var(--assistant-chip-hover-bg); }
     .chat-composer__quick-action:disabled { opacity: .45; cursor: not-allowed; }
     .chat-composer__meta { display: flex; min-height: 1rem; align-items: center; justify-content: space-between; gap: .75rem; padding: 0 .35rem; }
     .chat-composer__status, .chat-composer__shortcut { margin: 0; color: var(--portal-text-muted); font-size: .68rem; line-height: 1.3; }
     .chat-composer__retry { border: 0; background: transparent; color: var(--guide-accent); font-size: .72rem; font-weight: 750; cursor: pointer; }
-    @media (max-width: 430px) { .chat-composer__shortcut { display: none; } }
+    @media (max-width: 767px) { .chat-composer__shortcut, .chat-composer__meta--empty { display: none; } }
     @media (prefers-reduced-motion: reduce) { .chat-composer__surface, .chat-composer__submit, .chat-composer__quick-action { transition: none; } }
   `],
 })

@@ -30,6 +30,12 @@ import { ThemeMode, ThemeService } from './services/theme.service';
 
 type AppLayoutMode = 'portal-page' | 'public-shell' | 'minimal-shell' | 'private-shell';
 
+export function shouldMinimizeChatDrag(distance: number, elapsedMs: number): boolean {
+  const safeDistance = Math.max(0, distance);
+  const velocity = safeDistance / Math.max(1, elapsedMs);
+  return safeDistance >= 96 || (safeDistance >= 24 && velocity >= 0.7);
+}
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -69,6 +75,11 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly analytics = inject(AnalyticsService);
   private chatReturnFocus: HTMLElement | null = null;
+  public chatDragOffset = 0;
+  public chatDragging = false;
+  private chatDragPointerId: number | null = null;
+  private chatDragStartY = 0;
+  private chatDragStartTime = 0;
 
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
@@ -150,6 +161,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public minimizeChatbot(): void {
+    this.resetChatDrag();
     this.isChatMinimized = true;
     setTimeout(() => this.chatMinibar?.nativeElement.focus());
   }
@@ -245,8 +257,48 @@ export class AppComponent implements OnInit, OnDestroy {
   public onEscape(): void {
     this.closeMobileMore();
     if (this.isChatbotOpen) {
-      this.closeChatbot();
+      if (this.isMobileChatLayout()) this.minimizeChatbot();
+      else this.closeChatbot();
     }
+  }
+
+  public onChatDragStart(event: PointerEvent): void {
+    if (!event.isPrimary || event.button !== 0 || !this.isMobileChatLayout()) return;
+    this.chatDragPointerId = event.pointerId;
+    this.chatDragStartY = event.clientY;
+    this.chatDragStartTime = event.timeStamp;
+    this.chatDragOffset = 0;
+    this.chatDragging = true;
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    event.preventDefault();
+  }
+
+  public onChatDragMove(event: PointerEvent): void {
+    if (!this.chatDragging || event.pointerId !== this.chatDragPointerId) return;
+    this.chatDragOffset = Math.max(0, event.clientY - this.chatDragStartY);
+    event.preventDefault();
+  }
+
+  public onChatDragEnd(event: PointerEvent): void {
+    if (!this.chatDragging || event.pointerId !== this.chatDragPointerId) return;
+    const shouldMinimize = shouldMinimizeChatDrag(
+      this.chatDragOffset,
+      event.timeStamp - this.chatDragStartTime
+    );
+    const target = event.currentTarget as HTMLElement;
+    if (target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
+    this.chatDragging = false;
+    this.chatDragPointerId = null;
+    if (shouldMinimize) {
+      this.minimizeChatbot();
+      return;
+    }
+    this.chatDragOffset = 0;
+  }
+
+  public onChatDragCancel(event: PointerEvent): void {
+    if (event.pointerId !== this.chatDragPointerId) return;
+    this.resetChatDrag();
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -284,6 +336,16 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     this.resizeMoveHandler = null;
     this.resizeUpHandler = null;
+  }
+
+  private resetChatDrag(): void {
+    this.chatDragging = false;
+    this.chatDragPointerId = null;
+    this.chatDragOffset = 0;
+  }
+
+  private isMobileChatLayout(): boolean {
+    return (this.document.defaultView?.innerWidth || 1024) < 768;
   }
 
   private focusChatDialog(): void {

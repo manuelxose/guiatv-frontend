@@ -17,30 +17,32 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Backdrop (mobile) -->
-    <div
+    <button
+      type="button"
       class="absolute inset-0 bg-black/50 backdrop-blur-sm z-[var(--z-dropdown)]"
       (click)="close.emit()"
-      (keydown.escape)="close.emit()"
-      tabindex="0"
-      role="button"
-      aria-label="Cerrar conversaciones"
-    ></div>
+      tabindex="-1"
+      aria-label="Cerrar panel de conversaciones"
+    ></button>
 
     <!-- Sidebar panel -->
     <div
       class="absolute top-0 left-0 bottom-0 z-[var(--z-drawer)]
-             w-full md:w-[min(280px,70%)] bg-[var(--portal-bg-deep)]
+             w-full md:w-[min(340px,78%)] bg-[var(--portal-bg-elevated)]
              border-r border-[var(--portal-border)]
-             flex flex-col shadow-xl"
+             flex flex-col shadow-xl overscroll-contain"
     >
       <!-- Header -->
       <div class="flex items-center justify-between px-3 py-2.5 border-b border-[var(--portal-border)]">
-        <span class="text-sm font-semibold text-[var(--portal-text)]">Conversaciones</span>
+        <div>
+          <h2 class="text-base font-bold text-[var(--portal-text)]">Conversaciones</h2>
+          <p class="text-xs text-[var(--portal-text-muted)]">Recupera y organiza tus chats</p>
+        </div>
         <div class="flex items-center gap-1">
           <button
             (click)="onNewConversation()"
-            class="p-1.5 rounded-lg text-[var(--portal-text-muted)] hover:text-[var(--accent-live)] hover:bg-[var(--accent-live-soft)] transition-colors"
-            title="Nueva conversación"
+            class="flex h-11 w-11 items-center justify-center rounded-xl text-[var(--portal-text-muted)] hover:text-[var(--accent-live)] hover:bg-[var(--accent-live-soft)] transition-colors"
+            aria-label="Nueva conversación"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -48,8 +50,8 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
           </button>
           <button
             (click)="close.emit()"
-            class="p-1.5 rounded-lg text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] hover:bg-[var(--portal-surface-strong)] transition-colors"
-            title="Cerrar"
+            class="flex h-11 w-11 items-center justify-center rounded-xl text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] hover:bg-[var(--portal-surface-strong)] transition-colors"
+            aria-label="Cerrar conversaciones"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -59,7 +61,7 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
       </div>
 
       <!-- Search -->
-      <div class="px-3 py-2 border-b border-[var(--portal-border)]/60">
+      <div class="px-3 py-3 border-b border-[var(--portal-border)]/60">
         <div class="relative">
           <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--portal-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -68,8 +70,9 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
             type="text"
             [(ngModel)]="searchQuery"
             (ngModelChange)="onSearchChange($event)"
-            placeholder="Buscar conversaciones..."
-            class="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[var(--portal-border)]
+            placeholder="Buscar conversaciones…"
+            aria-label="Buscar conversaciones"
+            class="h-11 w-full pl-9 pr-3 text-sm rounded-xl border border-[var(--portal-border)]
                    bg-[var(--portal-bg)] text-[var(--portal-text)]
                    placeholder:text-[var(--portal-text-faint)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-live)]/50 focus:border-[var(--accent-live)]/50"
           />
@@ -148,88 +151,73 @@ import { ConversationSummary } from '../../../interfaces/chatbot.interface';
 
     <!-- Conversation item template -->
     <ng-template #conversationItem let-conv>
-      <button
-        (click)="onSelect(conv)"
-        (contextmenu)="onContextMenu($event, conv)"
-        class="w-full text-left px-3 py-2 hover:bg-[var(--portal-surface-strong)] transition-colors group relative"
-        [ngClass]="{
-          'bg-[var(--accent-live-soft)] border-l-2 border-transparent': conv.conversationId === activeConversationId
-        }"
+      <article
+        class="mx-2 mb-1 overflow-hidden rounded-xl border border-transparent transition-colors"
+        [ngClass]="conv.conversationId === activeConversationId
+          ? 'border-[var(--assistant-list-active-border)] bg-[var(--assistant-list-active-bg)]'
+          : 'hover:bg-[var(--portal-surface-strong)]'"
       >
-        <div class="flex items-start justify-between gap-2">
-          <!-- Title + editing -->
-          @if (editingId() === conv.conversationId) {
-            <input
-              #renameInput
-              type="text"
-              [value]="conv.sessionTitle"
-              (keydown.enter)="onRenameConfirm($event, conv)"
-              (keydown.escape)="editingId.set(null)"
-              (blur)="onRenameConfirm($event, conv)"
-              class="flex-1 text-xs px-1 py-0.5 rounded border border-[var(--accent-live)] bg-[var(--portal-bg)]
-                     text-[var(--portal-text)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-live)]"
-              (click)="$event.stopPropagation()"
-            />
-          } @else {
-            <span class="flex-1 text-xs font-medium text-[var(--portal-text)] line-clamp-2 leading-snug">
-              {{ conv.sessionTitle }}
+        <div class="flex min-h-[68px] items-stretch">
+          <button
+            type="button"
+            (click)="onSelect(conv)"
+            class="min-w-0 flex-1 px-3 py-2.5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--guide-accent)]"
+            [attr.aria-current]="conv.conversationId === activeConversationId ? 'true' : null"
+          >
+            <span class="block truncate text-sm font-semibold text-[var(--portal-text)]">{{ conv.sessionTitle }}</span>
+            <span class="mt-1 flex items-center gap-2 text-xs text-[var(--portal-text-muted)]">
+              <span>{{ formatRelativeTime(conv.lastUsedAt) }}</span>
+              @if (conv.messageCount > 0) { <span>· {{ conv.messageCount }} mensajes</span> }
             </span>
-          }
+            @if (conv.lastMessage) {
+              <span class="mt-1 block truncate text-xs text-[var(--portal-text-soft)]">{{ conv.lastMessage }}</span>
+            }
+          </button>
+          <button
+            type="button"
+            (click)="toggleActions(conv.conversationId)"
+            class="m-2 flex h-11 w-11 shrink-0 items-center justify-center self-center rounded-xl text-[var(--portal-text-muted)] hover:bg-[var(--portal-bg-elevated)] hover:text-[var(--portal-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
+            [attr.aria-label]="'Acciones de ' + conv.sessionTitle"
+            [attr.aria-expanded]="actionsId() === conv.conversationId"
+          >
+            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg>
+          </button>
+        </div>
 
-          <!-- Actions (appear on hover) -->
-          <div class="hidden group-hover:flex items-center gap-0.5 shrink-0" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1">
-            <button
-              (click)="onTogglePin(conv)"
-              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-[var(--status-warning)] transition-colors"
-              [title]="conv.pinned ? 'Desfijar' : 'Fijar'"
-            >
-              <svg class="w-3 h-3" [ngClass]="conv.pinned ? 'text-[var(--status-warning)]' : ''" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-              </svg>
-            </button>
-            <button
-              (click)="editingId.set(conv.conversationId)"
-              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-[var(--accent-discover)] transition-colors"
-              title="Renombrar"
-            >
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-              </svg>
-            </button>
-            <button
-              (click)="onToggleArchive(conv)"
-              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-[var(--accent-editorial)] transition-colors"
-              [title]="conv.archived ? 'Desarchivar' : 'Archivar'"
-            >
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/>
-              </svg>
-            </button>
-            <button
-              (click)="onDelete(conv)"
-              class="p-1 rounded text-[var(--portal-text-muted)] hover:text-[var(--accent-live)] transition-colors"
-              title="Eliminar"
-            >
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-            </button>
+        @if (actionsId() === conv.conversationId) {
+          <div class="border-t border-[var(--portal-border)] bg-[var(--assistant-action-bg)] p-2" [attr.aria-label]="'Opciones de ' + conv.sessionTitle">
+            @if (editingId() === conv.conversationId) {
+              <label class="block text-xs font-semibold text-[var(--portal-text)]" [for]="'rename-' + conv.conversationId">Nuevo nombre</label>
+              <input
+                [id]="'rename-' + conv.conversationId"
+                type="text"
+                [value]="conv.sessionTitle"
+                (keydown.enter)="onRenameConfirm($event, conv)"
+                (keydown.escape)="cancelActions()"
+                class="mt-1 h-11 w-full rounded-xl border border-[var(--portal-border-strong)] bg-[var(--portal-bg-elevated)] px-3 text-sm text-[var(--portal-text)] focus:outline-none focus:ring-2 focus:ring-[var(--guide-accent)]"
+              />
+              <div class="mt-2 grid grid-cols-2 gap-2">
+                <button type="button" (click)="cancelActions()" class="min-h-11 rounded-xl border border-[var(--portal-border)] text-sm font-semibold text-[var(--portal-text)]">Cancelar</button>
+                <button type="button" (click)="onRenameFromButton(conv)" class="min-h-11 rounded-xl bg-[var(--guide-accent)] text-sm font-semibold text-white">Guardar</button>
+              </div>
+            } @else if (deleteConfirmId() === conv.conversationId) {
+              <p class="px-1 text-sm font-semibold text-[var(--portal-text)]">¿Eliminar esta conversación?</p>
+              <p class="px-1 pt-1 text-xs text-[var(--portal-text-muted)]">Esta acción no se puede deshacer.</p>
+              <div class="mt-2 grid grid-cols-2 gap-2">
+                <button type="button" (click)="deleteConfirmId.set(null)" class="min-h-11 rounded-xl border border-[var(--portal-border)] text-sm font-semibold text-[var(--portal-text)]">Cancelar</button>
+                <button type="button" (click)="confirmDelete(conv)" class="min-h-11 rounded-xl bg-[var(--assistant-danger)] text-sm font-semibold text-white">Eliminar</button>
+              </div>
+            } @else {
+              <div class="grid grid-cols-2 gap-1.5">
+                <button type="button" (click)="onTogglePin(conv)" class="min-h-11 rounded-xl px-3 text-left text-sm font-semibold text-[var(--portal-text)] hover:bg-[var(--portal-surface-strong)]">{{ conv.pinned ? 'Desfijar' : 'Fijar' }}</button>
+                <button type="button" (click)="editingId.set(conv.conversationId)" class="min-h-11 rounded-xl px-3 text-left text-sm font-semibold text-[var(--portal-text)] hover:bg-[var(--portal-surface-strong)]">Renombrar</button>
+                <button type="button" (click)="onToggleArchive(conv)" class="min-h-11 rounded-xl px-3 text-left text-sm font-semibold text-[var(--portal-text)] hover:bg-[var(--portal-surface-strong)]">{{ conv.archived ? 'Desarchivar' : 'Archivar' }}</button>
+                <button type="button" (click)="deleteConfirmId.set(conv.conversationId)" class="min-h-11 rounded-xl px-3 text-left text-sm font-semibold text-[var(--assistant-danger)] hover:bg-[var(--assistant-danger-soft)]">Eliminar…</button>
+              </div>
+            }
           </div>
-        </div>
-
-        <!-- Meta line -->
-        <div class="flex items-center gap-2 mt-0.5">
-          <span class="text-[10px] text-[var(--portal-text-muted)]">{{ formatRelativeTime(conv.lastUsedAt) }}</span>
-          @if (conv.messageCount > 0) {
-            <span class="text-[10px] text-[var(--portal-text-muted)]">· {{ conv.messageCount }} msgs</span>
-          }
-        </div>
-
-        <!-- Preview -->
-        @if (conv.lastMessage) {
-          <p class="text-[10px] text-[var(--portal-text-muted)] line-clamp-1 mt-0.5">{{ conv.lastMessage }}</p>
         }
-      </button>
+      </article>
     </ng-template>
   `,
 })
@@ -249,6 +237,8 @@ export class ChatConversationSidebarComponent {
 
   searchQuery = '';
   editingId = signal<string | null>(null);
+  actionsId = signal<string | null>(null);
+  deleteConfirmId = signal<string | null>(null);
   pinnedCollapsed = signal(false);
   archivedCollapsed = signal(true);
 
@@ -273,7 +263,7 @@ export class ChatConversationSidebarComponent {
   }
 
   onSelect(conv: ConversationSummary): void {
-    if (this.editingId()) return;
+    if (this.editingId() || this.deleteConfirmId()) return;
     this.selectConversation.emit(conv.conversationId);
   }
 
@@ -287,6 +277,7 @@ export class ChatConversationSidebarComponent {
       conversationId: conv.conversationId,
       updates: { pinned: !conv.pinned },
     });
+    this.actionsId.set(null);
   }
 
   onToggleArchive(conv: ConversationSummary): void {
@@ -294,6 +285,7 @@ export class ChatConversationSidebarComponent {
       conversationId: conv.conversationId,
       updates: { archived: !conv.archived },
     });
+    this.actionsId.set(null);
   }
 
   onRenameConfirm(event: Event, conv: ConversationSummary): void {
@@ -312,9 +304,33 @@ export class ChatConversationSidebarComponent {
     this.deleteConversationEvent.emit(conv.conversationId);
   }
 
+  toggleActions(conversationId: string): void {
+    const isOpen = this.actionsId() === conversationId;
+    this.actionsId.set(isOpen ? null : conversationId);
+    this.editingId.set(null);
+    this.deleteConfirmId.set(null);
+  }
+
+  cancelActions(): void {
+    this.editingId.set(null);
+    this.deleteConfirmId.set(null);
+    this.actionsId.set(null);
+  }
+
+  onRenameFromButton(conv: ConversationSummary): void {
+    const input = document.getElementById(`rename-${conv.conversationId}`) as HTMLInputElement | null;
+    if (input) this.onRenameConfirm({ target: input } as unknown as Event, conv);
+    this.actionsId.set(null);
+  }
+
+  confirmDelete(conv: ConversationSummary): void {
+    this.onDelete(conv);
+    this.cancelActions();
+  }
+
   onContextMenu(event: MouseEvent, conv: ConversationSummary): void {
     event.preventDefault();
-    // Context menu actions are handled by hover buttons
+    this.toggleActions(conv.conversationId);
   }
 
   formatRelativeTime(isoDate: string): string {
