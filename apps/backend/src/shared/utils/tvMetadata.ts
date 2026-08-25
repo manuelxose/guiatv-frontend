@@ -146,6 +146,46 @@ const GUIDE_GROUP_SORT_ORDER: Record<CanonicalChannelGroup, number> = {
 };
 
 const CANONICAL_CHANNEL_ALIASES: Record<string, string[]> = {
+  // Pay-TV and operator services. These aliases are identity data, not a
+  // chatbot catalogue: every ingestion path resolves them to one channel id.
+  tcm: ['tcm', 'tcm españa', 'tcm hd'],
+  axn: ['axn', 'axn hd'],
+  axn_movies: ['axn movies', 'axn white', 'axn movies hd'],
+  amc: ['amc', 'amc hd'],
+  amc_crime: ['amc crime'],
+  amc_break: ['amc break'],
+  amc_living: ['amc living'],
+  canal_hollywood: ['canal hollywood', 'hollywood'],
+  sundance_tv: ['sundance tv', 'sundance'],
+  dark: ['dark', 'dark hd'],
+  xtrm: ['xtrm'],
+  somos: ['somos'],
+  historia: ['historia', 'canal historia'],
+  odisea: ['odisea'],
+  canal_cocina: ['canal cocina'],
+  national_geographic: ['national geographic', 'nat geo'],
+  nat_geo_wild: ['nat geo wild', 'national geographic wild'],
+  warner_tv: ['warner tv', 'warner channel'],
+  star_channel: ['star channel', 'fox'],
+  calle_13: ['calle 13', 'calle13'],
+  syfy: ['syfy'],
+  comedy_central: ['comedy central'],
+  cosmo: ['cosmo'],
+  mtv: ['mtv'],
+  movistar_hits: ['m+ hits', 'm hits', 'movistar hits', 'm.hits'],
+  movistar_estrenos: ['m+ estrenos', 'movistar estrenos', 'm.estrenos'],
+  movistar_comedia: ['m+ comedia', 'movistar comedia'],
+  movistar_accion: ['m+ accion', 'm+ acción', 'movistar accion', 'movistar acción'],
+  movistar_drama: ['m+ drama', 'movistar drama'],
+  movistar_indie: ['m+ indie', 'movistar indie'],
+  movistar_clasicos: ['m+ clasicos', 'm+ clásicos', 'movistar clasicos', 'movistar clásicos'],
+  movistar_cine_espanol: ['m+ cine español', 'm+ cine espanol', 'movistar cine español'],
+  movistar_documentales: ['m+ documentales', 'movistar documentales'],
+  movistar_vamos: ['m+ vamos', 'movistar vamos'],
+  movistar_deportes: ['m+ deportes', 'movistar deportes'],
+  movistar_laliga: ['m+ laliga', 'movistar laliga', 'm+ la liga'],
+  movistar_liga_campeones: ['m+ liga de campeones', 'movistar liga de campeones'],
+  movistar_golf: ['m+ golf', 'movistar golf'],
   la_1: ['la1', 'la_1', 'la primera', 'tve1', 'la 1', 'la1 tv', 'la1_tv', 'la1 can', 'la1_can', 'la1 can tv', 'la1_can_tv'],
   la_2: ['la2', 'la_2', 'la dos', 'tve2', 'la 2', 'la2 tv', 'la2_tv', 'la2 can', 'la2_can', 'la2 can tv', 'la2_can_tv'],
   antena_3: ['antena3', 'antena_3', 'antena 3', 'a3', 'antena3 tv', 'antena3_tv'],
@@ -661,7 +701,10 @@ export function inferChannelType(input: ChannelIdentityInput): CanonicalChannelT
     return 'Autonomico';
   }
 
-  if (MOVISTAR_PATTERNS.some((pattern) => pattern.test(normalizedName))) {
+  if (
+    MOVISTAR_PATTERNS.some((pattern) => pattern.test(normalizedName)) ||
+    aliases.some((alias) => alias.startsWith('movistar_'))
+  ) {
     return 'Movistar';
   }
 
@@ -686,6 +729,7 @@ export function inferChannelGroup(
   const normalizedName = normalizeTvToken(input.name, ' ');
   const normalizedType = normalizeTvToken(input.type, ' ');
   const isNationalTdt = NATIONAL_TDT_ORDER.some((canonicalId) => aliases.includes(canonicalId));
+  const isCanonicalMovistar = aliases.some((alias) => alias.startsWith('movistar_'));
   const hasRegionalSignal = Boolean(inferChannelRegion(input));
   const inferredType =
     !isNationalTdt &&
@@ -705,6 +749,10 @@ export function inferChannelGroup(
   }
 
   if (isNationalTdt) return 'tdt';
+  // Canonical registry identity wins over stale persisted provider type. Some
+  // older EPG snapshots stored M+ services as OTT even though they are
+  // Movistar channels.
+  if (isCanonicalMovistar) return 'movistar';
   if (inferredType === 'TDT') return 'tdt';
   if (inferredType === 'Cable') return 'cable';
   if (inferredType === 'Autonomico') return 'autonomico';

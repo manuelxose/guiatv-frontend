@@ -36,7 +36,10 @@ const TV_READ_LIMITS: Record<TvReadView, { default: number; max: number }> = {
   now: { default: 120, max: 500 },
   next: { default: 120, max: 500 },
   night: { default: 240, max: 1500 },
-  day: { default: 240, max: 1000 },
+  // The day view is also the canonical channel-directory/read-model feed.
+  // Keeping this at 1,000 silently dropped later guide groups (usually pay TV)
+  // because the query is sorted by channel order. Hot views remain bounded.
+  day: { default: 240, max: 5000 },
   search: { default: 60, max: 200 },
 };
 

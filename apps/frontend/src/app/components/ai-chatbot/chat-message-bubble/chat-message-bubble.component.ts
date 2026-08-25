@@ -132,7 +132,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
               <button
                 type="button"
                 (click)="feedbackPositive.emit(message)"
-                class="p-1 rounded-md transition-colors"
+                class="flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
                 [ngClass]="message.feedback?.rating === 'positive'
                   ? 'text-green-400 bg-green-500/15'
                   : 'text-[var(--portal-text-muted)] hover:text-green-400 hover:bg-green-500/10'"
@@ -147,7 +147,7 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
               <button
                 type="button"
                 (click)="feedbackNegative.emit(message)"
-                class="p-1 rounded-md transition-colors"
+                class="flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
                 [ngClass]="message.feedback?.rating === 'negative'
                   ? 'text-red-400 bg-red-500/15'
                   : 'text-[var(--portal-text-muted)] hover:text-red-400 hover:bg-[var(--accent-live-soft)]'"
@@ -178,6 +178,12 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
     :host {
       display: block;
       min-width: 0;
+    }
+
+    .assistant-bubble {
+      border-color: var(--assistant-card-border);
+      background: var(--assistant-bubble-bg);
+      color: var(--portal-text);
     }
 
     /* Typewriter cursor blink */
@@ -299,10 +305,10 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
   get bubbleClasses(): string {
     const role = this.message.role === 'user'
       ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md'
-      : 'border border-[var(--portal-border)]/90 bg-[var(--portal-surface)] text-[var(--portal-text)] shadow-sm';
+      : 'assistant-bubble border shadow-sm';
     // Recommendation cards/list already re-pad their own content internally,
     // so the bubble's own padding can shrink to avoid stacking two paddings.
-    const padding = this.message.recommendations?.length ? 'px-2.5 py-3 md:px-3' : 'px-4 py-3';
+    const padding = this.message.recommendations?.length ? 'px-3 py-3' : 'px-4 py-3';
     return `${role} ${padding}`;
   }
 

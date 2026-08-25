@@ -98,6 +98,11 @@ export class SyncEPGData {
     return value === '1' || value === 'true' || value === 'yes';
   }
 
+  private hasStoredChannelIcon(icon: string | null | undefined): boolean {
+    const value = String(icon || '').trim();
+    return value.startsWith('/storage/') || value.startsWith('storage/');
+  }
+
   private cloneProgram(program: Program, overrides: Partial<ProgramProps> = {}): Program {
     return Program.create({
       id: program.id,
@@ -440,7 +445,11 @@ export class SyncEPGData {
 
           await this.channelRepository.save(channel);
           this.syncLogger.info('New channel created', { name: channel.name });
-        } else if (parsed.icon && parsed.icon !== channel.icon) {
+        } else if (
+          parsed.icon &&
+          parsed.icon !== channel.icon &&
+          !this.hasStoredChannelIcon(channel.icon)
+        ) {
           const iconForChannel = this.shouldSkipChannelIconCache()
             ? channel.icon || parsed.icon
             : await this.cacheChannelIcon(parsed.icon, this.generateChannelId(parsed.displayName));

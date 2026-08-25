@@ -42,12 +42,15 @@ export type ChatDestination = 'assistant' | 'social';
           </div>
           <button
             type="button"
-            class="unified-chat__icon-button"
+            class="unified-chat__icon-button unified-chat__dismiss"
             (click)="close.emit()"
-            aria-label="Cerrar chat"
+            aria-label="Cerrar o minimizar chat"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+            <svg class="unified-chat__dismiss-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+            </svg>
+            <svg class="unified-chat__dismiss-minimize" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m5 9 7 7 7-7"></path>
             </svg>
           </button>
         </header>
@@ -74,7 +77,9 @@ export type ChatDestination = 'assistant' | 'social';
     .unified-chat__icon-button:hover { background: var(--portal-bg-elevated); color: var(--portal-text); }
     .unified-chat__icon-button:focus-visible { outline: 3px solid color-mix(in srgb, var(--guide-accent) 45%, transparent); outline-offset: 2px; }
     .unified-chat__icon-button svg { width: 1.15rem; height: 1.15rem; }
+    .unified-chat__dismiss-minimize { display: none; }
     .unified-chat__social-body { min-height: 0; flex: 1; overflow: hidden; }
+    @media (max-width: 767px) { .unified-chat__social-header { padding-top: .35rem; } .unified-chat__dismiss-close { display: none; } .unified-chat__dismiss-minimize { display: block; } }
   `],
 })
 export class UnifiedChatShellComponent {

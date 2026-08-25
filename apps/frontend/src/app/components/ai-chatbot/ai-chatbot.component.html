@@ -2,27 +2,12 @@
   <!-- Header -->
   <app-chat-header
     [isAuthenticated]="sessionState === 'authenticated'"
-    [memoryHighlights]="getMemoryHighlights()"
-    [memory]="assistantMemory"
-    [memoryEditorOpen]="memoryEditorOpen"
-    [profileExpanded]="profileExpanded"
-    (profileExpandedChange)="profileExpanded = $event"
+    [profileIncomplete]="needsOnboarding"
     (newConversation)="startNewConversation()"
     (closePanel)="close.emit()"
-    (toggleMemoryEditor)="toggleMemoryEditor()"
+    (openProfile)="openProfilePanel()"
     (toggleSidebar)="toggleSidebar()"
-    (removeTag)="onRemoveMemoryTag($event)"
     (openSocial)="openSocial.emit()"
-  />
-
-  <!-- Memory editor panel (inside header area) -->
-  <app-chat-memory-editor
-    *ngIf="memoryEditorOpen && sessionState === 'authenticated'"
-    #memoryEditor
-    [memory]="assistantMemory"
-    [fields]="memoryEditorFields"
-    (saved)="onMemorySaved($event)"
-    (cancelled)="memoryEditorOpen = false"
   />
 
   <!-- Unauthenticated: welcome screen -->
@@ -51,14 +36,6 @@
         Reintentar
       </button>
     </div>
-
-    <!-- Onboarding wizard -->
-    <app-chat-onboarding-wizard
-      *ngIf="needsOnboarding"
-      [currentMemory]="assistantMemory"
-      (completed)="onWizardCompleted($event)"
-      (skipped)="onWizardSkipped()"
-    />
 
     <!-- Messages area -->
     <div
@@ -106,15 +83,6 @@
 
     <!-- Input area -->
     <div class="chatbot-shell__input-area">
-      <!-- Preference prompt -->
-      <app-chat-preference-prompt
-        *ngIf="getPreferencePrompt() as preferencePrompt"
-        [promptText]="preferencePrompt"
-        [options]="getPreferenceOptions()"
-        (optionSelected)="sendQuickMessage($event)"
-        (dismissed)="dismissPreferencePrompt()"
-      />
-
       <app-chat-input-bar
         #inputBar
         [sessionState]="sessionState"
@@ -140,4 +108,16 @@
       (close)="sidebarOpen = false"
     />
   </ng-template>
+
+  <app-chat-profile-panel
+    *ngIf="profileExpanded && sessionState === 'authenticated'"
+    #profilePanel
+    [memory]="assistantMemory"
+    [profilePlatforms]="profilePlatforms"
+    [profileGenres]="profileGenres"
+    [saving]="profileSaving"
+    [saveError]="profileSaveError"
+    (answerSaved)="onPreferenceAnswer($event)"
+    (closed)="closeProfilePanel()"
+  />
 </div>

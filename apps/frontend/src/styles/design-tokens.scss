@@ -54,6 +54,29 @@
   --portal-text-muted: #5d616d;
   --portal-text-faint: #9ca3af;
 
+  // Assistant chips use a neutral, measured contrast pair instead of category
+  // accent tints. This keeps compact labels legible in both themes.
+  --assistant-chip-bg: #e3e6ec;
+  --assistant-chip-text: #2d313a;
+  --assistant-chip-border: #b8bfca;
+  --assistant-chip-hover-bg: #d8dce4;
+  --assistant-chip-hover-border: #9199a7;
+  --assistant-chip-selected-bg: #dc2626;
+  --assistant-chip-selected-text: #ffffff;
+  --assistant-chip-selected-border: #b91c1c;
+  --assistant-bubble-bg: #f8f9fb;
+  --assistant-card-bg: #ffffff;
+  --assistant-card-border: #c7ccd6;
+  --assistant-card-shadow: 0 8px 24px rgba(26, 29, 36, 0.09);
+  --assistant-action-bg: #f2f4f7;
+  --assistant-list-active-bg: #fff1f1;
+  --assistant-list-active-border: #dc8b8b;
+  --assistant-danger: #b4232f;
+  --assistant-danger-soft: #fde8ea;
+  --assistant-badge-bg: #e4e9f2;
+  --assistant-badge-border: #aeb8c8;
+  --assistant-badge-text: #263247;
+
   // Five accents authored in OKLCH at matched lightness/chroma (L=58%,
   // C=0.19), varying only hue, so none visually dominates the others — the
   // structural fix for all five previously resolving to the same #dc2626.
@@ -195,6 +218,27 @@ html[data-theme='dark'] {
   --portal-text-muted: #9aa3b0;
   --portal-text-faint: #67707d;
 
+  --assistant-chip-bg: #242c38;
+  --assistant-chip-text: #e8ebf1;
+  --assistant-chip-border: #465160;
+  --assistant-chip-hover-bg: #303a48;
+  --assistant-chip-hover-border: #667284;
+  --assistant-chip-selected-bg: #dc2626;
+  --assistant-chip-selected-text: #ffffff;
+  --assistant-chip-selected-border: #f87171;
+  --assistant-bubble-bg: #151a22;
+  --assistant-card-bg: #1e2530;
+  --assistant-card-border: #465160;
+  --assistant-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
+  --assistant-action-bg: #171d26;
+  --assistant-list-active-bg: #2a181d;
+  --assistant-list-active-border: #9d4b55;
+  --assistant-danger: #ff858e;
+  --assistant-danger-soft: #3c1b21;
+  --assistant-badge-bg: #263344;
+  --assistant-badge-border: #52627a;
+  --assistant-badge-text: #eef2f8;
+
   // Same hues, raised lightness for AA contrast against the dark surfaces.
   // `-soft` variants auto-adapt via color-mix over the dark --portal-card.
   // `--accent-live-strong` is a constant fill for white-text buttons (white on
@@ -238,6 +282,18 @@ html[data-theme='dark'] {
     --portal-text-soft: #c5cbd6;
     --portal-text-muted: #9aa3b0;
     --portal-text-faint: #67707d;
+    --assistant-bubble-bg: #151a22;
+    --assistant-card-bg: #1e2530;
+    --assistant-card-border: #465160;
+    --assistant-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
+    --assistant-action-bg: #171d26;
+    --assistant-list-active-bg: #2a181d;
+    --assistant-list-active-border: #9d4b55;
+    --assistant-danger: #ff858e;
+    --assistant-danger-soft: #3c1b21;
+    --assistant-badge-bg: #263344;
+    --assistant-badge-border: #52627a;
+    --assistant-badge-text: #eef2f8;
     --accent-live: #e05555;
     --accent-live-strong: #dc2626;
     --status-live: #ee7171;

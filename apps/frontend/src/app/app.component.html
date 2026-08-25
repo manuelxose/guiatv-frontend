@@ -104,7 +104,6 @@
       class="app-shell__chat-overlay"
       [class.invisible]="isChatMinimized"
       [class.pointer-events-none]="isChatMinimized"
-      (keydown.escape)="closeChatbot()"
       tabindex="-1"
     >
       <button
@@ -121,10 +120,22 @@
         aria-modal="true"
         aria-label="Asistente GuíaTV"
         tabindex="-1"
+        [class.app-shell__chat-panel--dragging]="chatDragging"
+        [style.transform]="chatDragOffset ? 'translate3d(0, ' + chatDragOffset + 'px, 0)' : null"
       >
-        @defer (on immediate) {
-          <app-unified-chat-shell (close)="minimizeChatbot()"></app-unified-chat-shell>
-        }
+        <div
+          class="app-shell__chat-drag-rail"
+          aria-hidden="true"
+          (pointerdown)="onChatDragStart($event)"
+          (pointermove)="onChatDragMove($event)"
+          (pointerup)="onChatDragEnd($event)"
+          (pointercancel)="onChatDragCancel($event)"
+        ><span></span></div>
+        <div class="app-shell__chat-panel-content">
+          @defer (on immediate) {
+            <app-unified-chat-shell (close)="minimizeChatbot()"></app-unified-chat-shell>
+          }
+        </div>
       </div>
 
       <div

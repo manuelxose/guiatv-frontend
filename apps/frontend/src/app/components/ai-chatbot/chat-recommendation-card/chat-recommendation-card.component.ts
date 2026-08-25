@@ -15,6 +15,11 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
   imports: [CommonModule, PlatformBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
+    .recommendation-card {
+      background: var(--assistant-card-bg);
+      border-color: var(--assistant-card-border);
+      box-shadow: var(--assistant-card-shadow);
+    }
     /* app-platform-badge is sized for looser layouts (unified-program-card);
        compact it here to fit this card's dense info column. */
     .rec-platform-badge ::ng-deep .platform-badge {
@@ -31,10 +36,10 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
   `],
   template: `
     <div
-      class="group relative overflow-hidden rounded-2xl border bg-[var(--portal-card)] transition-all duration-200 hover:shadow-lg hover:shadow-black/40"
-      [class]="isLiveNow
+      class="recommendation-card group relative overflow-hidden rounded-2xl border transition-colors duration-200"
+      [ngClass]="isLiveNow
         ? 'border-[color-mix(in_oklch,var(--accent-live)_50%,transparent)] hover:border-[var(--accent-live)]'
-        : 'border-[var(--portal-border)]/60 hover:border-[var(--portal-border-strong)]/80'"
+        : 'border-[var(--assistant-card-border)] hover:border-[var(--portal-border-strong)]'"
     >
       <!-- Live accent stripe -->
       <div
@@ -51,6 +56,8 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
             *ngIf="recommendation.image; else fallback"
             [src]="recommendation.image"
             [alt]="recommendation.title"
+            width="80"
+            height="120"
             class="h-full w-full object-cover"
             loading="lazy"
           />
@@ -95,7 +102,7 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
             class="absolute bottom-0 left-0 right-0 h-1 bg-black/50"
           >
             <div
-              class="h-full rounded-full bg-[var(--accent-live)] transition-all"
+              class="h-full rounded-full bg-[var(--accent-live)] transition-[width]"
               [style.width.%]="liveProgress"
             ></div>
           </div>
@@ -111,8 +118,10 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
             <button
               type="button"
               (click)="menuOpen = !menuOpen"
-              class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-border)]/60 hover:text-[var(--portal-text)]"
+              class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
               aria-label="Más opciones"
+              aria-haspopup="menu"
+              [attr.aria-expanded]="menuOpen"
             >
               <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                 <circle cx="10" cy="4" r="1.5" />
@@ -156,7 +165,8 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
           <div *ngIf="displayBadges.length" class="mt-1.5 flex flex-wrap gap-1">
             <span
               *ngFor="let badge of displayBadges; trackBy: trackByText"
-              class="rounded-full border border-[var(--portal-border)]/80 bg-[var(--portal-bg-deep)]/80 px-1.5 py-px text-[9px] font-medium text-[var(--portal-text-muted)]"
+              class="max-w-full truncate rounded-full border border-[var(--assistant-badge-border)] bg-[var(--assistant-badge-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--assistant-badge-text)]"
+              [title]="badge"
             >
               {{ badge }}
             </span>
@@ -191,13 +201,13 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
       </div>
 
       <!-- Action bar -->
-      <div class="flex items-center justify-between border-t border-[var(--portal-border)]/40 px-2 py-1.5">
+      <div class="flex flex-wrap items-center justify-between gap-1 border-t border-[var(--portal-border)] px-2 py-2">
         <!-- Left: thumbs -->
         <div class="flex items-center gap-0.5">
           <button
             type="button"
             (click)="ratePositive.emit(recommendation)"
-            class="flex h-7 w-7 items-center justify-center rounded-full text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--accent-streaming-soft)] hover:text-[var(--accent-streaming)]"
+            class="flex h-11 w-11 items-center justify-center rounded-xl text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--accent-streaming-soft)] hover:text-[var(--accent-streaming)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
             [attr.aria-label]="'Me gusta ' + recommendation.title"
           >
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -207,7 +217,7 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
           <button
             type="button"
             (click)="rateNegative.emit(recommendation)"
-            class="flex h-7 w-7 items-center justify-center rounded-full text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--accent-live-soft)] hover:text-[var(--accent-live)]"
+            class="flex h-11 w-11 items-center justify-center rounded-xl text-[var(--portal-text-muted)] transition-colors hover:bg-[var(--accent-live-soft)] hover:text-[var(--accent-live)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
             [attr.aria-label]="'No me gusta ' + recommendation.title"
           >
             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -223,7 +233,7 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
             *ngIf="recommendation.reason"
             type="button"
             (click)="reasonOpen = !reasonOpen; synopsisOpen = false"
-            class="flex h-7 items-center gap-0.5 rounded-full px-2 text-[10px] font-medium transition-colors"
+            class="flex min-h-11 items-center gap-1 rounded-xl px-2 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
             [class]="reasonOpen ? 'bg-[var(--accent-editorial-soft)] text-[var(--accent-editorial)]' : 'text-[var(--portal-text-muted)] hover:bg-[var(--portal-border)]/50 hover:text-[var(--portal-text)]'"
           >
             <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -236,7 +246,7 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
           <button
             type="button"
             (click)="openDetail.emit(recommendation)"
-            class="flex h-7 min-w-[80px] items-center justify-center gap-1 rounded-full border border-[color-mix(in_srgb,var(--guide-accent)_35%,var(--portal-border))] bg-[color-mix(in_srgb,var(--guide-accent)_14%,var(--portal-surface))] px-3 text-[10px] font-semibold text-[var(--portal-text)] transition-all hover:bg-[color-mix(in_srgb,var(--guide-accent)_22%,var(--portal-surface))] active:scale-95"
+            class="flex min-h-11 min-w-[88px] items-center justify-center gap-1 rounded-xl border border-[var(--assistant-chip-selected-border)] bg-[var(--assistant-chip-selected-bg)] px-3 text-xs font-bold text-[var(--assistant-chip-selected-text)] transition-colors hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--guide-accent)]"
           >
             Ver ficha
             <svg class="h-3 w-3 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -249,12 +259,15 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
       <!-- Overflow menu -->
       <div
         *ngIf="menuOpen"
-        class="absolute right-2 top-10 z-20 min-w-[160px] rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg)] py-1 shadow-xl"
+        class="absolute right-2 top-14 z-20 min-w-[210px] rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg-elevated)] py-1 shadow-xl"
+        role="menu"
+        aria-label="Acciones de la recomendación"
       >
         <button
           type="button"
+          role="menuitem"
           (click)="menuOpen = false; save.emit(recommendation)"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
+          class="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
           <svg class="h-3.5 w-3.5 text-[var(--accent-live)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -263,8 +276,9 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
         </button>
         <button
           type="button"
+          role="menuitem"
           (click)="menuOpen = false; followUp.emit(recommendation)"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
+          class="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
           <svg class="h-3.5 w-3.5 text-[var(--accent-discover)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -273,8 +287,9 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
         </button>
         <button
           type="button"
+          role="menuitem"
           (click)="menuOpen = false; ignore.emit(recommendation)"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
+          class="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
           <svg class="h-3.5 w-3.5 text-[var(--portal-text-muted)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
@@ -284,8 +299,9 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
         <button
           *ngIf="recommendation.synopsis"
           type="button"
+          role="menuitem"
           (click)="menuOpen = false; synopsisOpen = !synopsisOpen"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
+          class="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
           <svg class="h-3.5 w-3.5 text-[var(--portal-text-muted)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -295,8 +311,9 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
         <button
           *ngIf="recommendation.startTime && !recommendation.liveNow"
           type="button"
+          role="menuitem"
           (click)="menuOpen = false; remind.emit(recommendation)"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-xs text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
+          class="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm text-[var(--portal-text)] transition-colors hover:bg-[var(--portal-surface-strong)]"
         >
           <svg class="h-3.5 w-3.5 text-[var(--status-warning)]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />

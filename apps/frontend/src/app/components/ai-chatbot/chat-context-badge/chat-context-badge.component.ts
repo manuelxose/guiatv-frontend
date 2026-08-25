@@ -8,7 +8,7 @@ import { ChatbotQueryContext } from '../../../interfaces/chatbot.interface';
   imports: [CommonModule],
   template: `
     <span
-      class="rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em]"
+      class="inline-flex min-h-7 max-w-full items-center truncate rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]"
       [ngClass]="badgeClasses"
     >
       {{ label }}
@@ -25,11 +25,11 @@ export class ChatContextBadgeComponent {
   get badgeClasses(): string {
     switch (this.mode) {
       case 'tv_now':
-        return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200';
+        return 'border-[var(--assistant-badge-border)] bg-[var(--assistant-badge-bg)] text-[var(--assistant-badge-text)]';
       case 'tv_tonight':
-        return 'border-amber-500/30 bg-amber-500/10 text-amber-100';
+        return 'border-[var(--assistant-badge-border)] bg-[var(--assistant-badge-bg)] text-[var(--assistant-badge-text)]';
       default:
-        return 'border-sky-500/30 bg-sky-500/10 text-sky-100';
+        return 'border-[var(--assistant-badge-border)] bg-[var(--assistant-badge-bg)] text-[var(--assistant-badge-text)]';
     }
   }
 
