@@ -25,7 +25,9 @@
     "test:e2e": "playwright test",
     "lint": "npm run lint -w apps/backend && npm run lint -w apps/frontend",
     "lint:backend": "npm run lint -w apps/backend",
-    "lint:frontend": "npm run lint -w apps/frontend"
+    "lint:frontend": "npm run lint -w apps/frontend",
+    "agent:setup": "node scripts/setup-agent-environment.mjs",
+    "agent:verify": "node scripts/verify-agent-environment.mjs"
     ,"perf:api": "node scripts/perf-http.mjs api"
     ,"perf:frontend": "node scripts/perf-http.mjs frontend"
     ,"perf:critical": "node scripts/perf-http.mjs critical"
