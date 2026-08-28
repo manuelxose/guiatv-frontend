@@ -7,6 +7,7 @@ export const createTvRoutes = (controller: TvController): Router => {
 
   router.get('/read', asyncHandler(controller.read.bind(controller)));
   router.get('/read/channels', asyncHandler(controller.readChannels.bind(controller)));
+  router.get('/read/schedule', asyncHandler(controller.readSchedule.bind(controller)));
   router.get('/surface/guide', asyncHandler(controller.guideSurface.bind(controller)));
   router.get(
     '/surface/channels/:channelId',

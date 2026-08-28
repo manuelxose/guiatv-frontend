@@ -105,6 +105,15 @@ export const routes: Routes = [
     data: { tab: 'live', layout: 'portal-page' },
   },
   {
+    path: 'canales',
+    loadComponent: () =>
+      import('./pages/channel-catalog/channel-catalog.component').then(
+        (m) => m.ChannelCatalogComponent
+      ),
+    title: 'Canales de televisión - Guía TV',
+    data: { layout: 'public-shell' },
+  },
+  {
     path: 'canales/:id',
     loadComponent: () =>
       import('./pages/canal-completo/canal-completo.component').then(

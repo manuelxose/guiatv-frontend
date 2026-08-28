@@ -217,6 +217,7 @@ export class Container {
     const { AuthService } = await import('../domain/services/AuthService');
     const { BlogService } = await import('../infrastructure/external/BlogService');
     const { AnalyticsService } = await import('../application/services/AnalyticsService');
+    const { MonetizationService } = await import('../application/services/MonetizationService');
     const { AssistantMemoryService } = await import(
       '../application/services/AssistantMemoryService'
     );
@@ -260,6 +261,9 @@ export class Container {
     const analyticsRepository = this.get<IAnalyticsRepository>('analyticsRepository');
     const analyticsService = new AnalyticsService(analyticsRepository);
     this.dependencies.set('analyticsService', analyticsService);
+
+    const monetizationService = new MonetizationService(analyticsService);
+    this.dependencies.set('monetizationService', monetizationService);
 
     const assistantMemoryService = new AssistantMemoryService();
     this.dependencies.set('assistantMemoryService', assistantMemoryService);
@@ -504,6 +508,7 @@ export class Container {
     const { TvController } = await import('../presentation/controllers/TvController');
     const { BlogController } = await import('../presentation/controllers/BlogController');
     const { AnalyticsController } = await import('../presentation/controllers/AnalyticsController');
+    const { MonetizationController } = await import('../presentation/controllers/MonetizationController');
     const { AdminUsersController } = await import('../presentation/controllers/AdminUsersController');
     const { UserController } = await import('../presentation/controllers/UserController');
     const { SocialController } = await import('../presentation/controllers/SocialController');
@@ -560,6 +565,9 @@ export class Container {
 
     const analyticsController = new AnalyticsController(this.get('analyticsService'));
     this.dependencies.set('analyticsController', analyticsController);
+
+    const monetizationController = new MonetizationController(this.get('monetizationService'));
+    this.dependencies.set('monetizationController', monetizationController);
 
     const adminUsersController = new AdminUsersController();
     this.dependencies.set('adminUsersController', adminUsersController);

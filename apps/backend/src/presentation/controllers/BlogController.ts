@@ -111,6 +111,7 @@ const BLOG_LIST_PROJECTION = {
   contentType: 1,
   featured: 1,
   featuredImage: 1,
+  author: 1,
   publishedAt: 1,
   createdAt: 1,
   updatedAt: 1,
@@ -435,6 +436,7 @@ export class BlogController {
       seo: post.seo,
       contentType: post.contentType || 'guide',
       featured: Boolean(post.featured),
+      author: post.author || null,
       primaryIntent: post.primaryIntent || '',
       targetQuery: post.targetQuery || '',
       relatedPlatformKeys: Array.isArray(post.relatedPlatformKeys)
@@ -471,6 +473,7 @@ export class BlogController {
       seo: post.seo,
       contentType: post.contentType || 'guide',
       featured: Boolean(post.featured),
+      author: post.author || null,
     };
   }
 

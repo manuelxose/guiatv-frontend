@@ -50,11 +50,11 @@ test.describe('Editorial -> categoría -> artículo -> artículo relacionado', (
     // read and click as editors publish — so target the card by its concrete
     // href (position-independent) and prove navigation by URL, not by a title
     // equality that live data can invalidate mid-flight.
-    const articleLink = page.locator('a.editorial-post-card').first();
+    const articleLink = page.locator('a.category-lead__story, a.editorial-post-card').first();
     await expect(articleLink).toBeVisible({ timeout: 15_000 });
     const articleHref = (await articleLink.getAttribute('href'))?.trim() || '';
     expect(articleHref).toMatch(/^\/editorial\/.+/);
-    await page.locator(`a.editorial-post-card[href="${articleHref}"]`).click();
+    await page.locator(`a[href="${articleHref}"]`).first().click();
 
     await page.waitForURL(/\/editorial\/(?!categoria\/)[^/]+$/, { timeout: 15_000 });
     expect(new URL(page.url()).pathname).toBe(articleHref);

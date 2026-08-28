@@ -21,6 +21,17 @@ export interface EditorialFaqItem {
   answer: string;
 }
 
+export interface EditorialAuthor {
+  name: string;
+  id: string | null;
+}
+
+export interface EditorialTocItem {
+  id: string;
+  label: string;
+  level: 2 | 3;
+}
+
 export interface EditorialPost {
   id: string;
   slug: string;
@@ -32,6 +43,8 @@ export interface EditorialPost {
   publishedAt: string;
   modifiedAt: string;
   readingMinutes: number;
+  tocItems: EditorialTocItem[];
+  author: EditorialAuthor | null;
   canonicalPath: string;
   categories: EditorialCategory[];
   primaryCategory: EditorialCategory | null;
@@ -57,6 +70,7 @@ export interface EditorialCategorySection {
 
 export interface EditorialHubState {
   hero: EditorialPost | null;
+  latestPosts: EditorialPost[];
   guidePosts: EditorialPost[];
   rankingPosts: EditorialPost[];
   trendPosts: EditorialPost[];

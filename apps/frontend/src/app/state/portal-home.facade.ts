@@ -1,12 +1,14 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID, TransferState, makeStateKey } from '@angular/core';
 import { catchError, combineLatest, map, Observable, of, tap, timeout } from 'rxjs';
-import { TvReadItemDTO } from '../api/models';
+import { TvReadChannelSummaryDTO, TvReadItemDTO } from '../api/models';
 import { EditorialHubState, EditorialPost } from '../blog/models/editorial.models';
 import { EditorialService } from '../blog/services/editorial.service';
 import { DiscoveryHomeResponse, DiscoveryService } from '../services/discovery.service';
-import { CatalogPlatform } from '../services/catalog.service';
+import { CatalogItem, CatalogPlatform } from '../services/catalog.service';
 import { TvDataFacade } from './tv-data.facade';
+import { FootballFacade } from '../features/football/football.facade';
+import { FootballMatchDTO } from '../features/football/football.models';
 
 export interface PortalHomeState {
   liveNow: TvReadItemDTO[];
@@ -17,9 +19,13 @@ export interface PortalHomeState {
   featuredPlatforms: CatalogPlatform[];
   trendingItems: DiscoveryHomeResponse['trendingItems'];
   freeItems: DiscoveryHomeResponse['freeItems'];
+  featuredChannels: TvReadChannelSummaryDTO[];
+  movieHighlights: CatalogItem[];
+  seriesHighlights: CatalogItem[];
+  footballHighlights: FootballMatchDTO[];
 }
 
-const PORTAL_HOME_STATE = makeStateKey<PortalHomeState>('portal-home-state-v2');
+const PORTAL_HOME_STATE = makeStateKey<PortalHomeState>('portal-home-state-v3');
 
 @Injectable({ providedIn: 'root' })
 export class PortalHomeFacade {
@@ -30,6 +36,7 @@ export class PortalHomeFacade {
     private readonly discoveryService: DiscoveryService,
     private readonly tvDataFacade: TvDataFacade,
     private readonly editorialService: EditorialService,
+    private readonly footballFacade: FootballFacade,
     private readonly transferState: TransferState,
     @Inject(PLATFORM_ID) platformId: object
   ) {
@@ -61,7 +68,7 @@ export class PortalHomeFacade {
           })
         )
       ),
-      // These four TvDataFacade sources previously had no catchError, unlike
+      // These TvDataFacade sources previously had no catchError, unlike
       // every other source in this combineLatest: a single one erroring
       // (e.g. a genuine backend outage) meant combineLatest itself would
       // error and never emit again, leaving the home page's loading state
@@ -78,6 +85,25 @@ export class PortalHomeFacade {
       platforms: this.tvDataFacade
         .getPlatforms()
         .pipe(catchError(() => of([] as CatalogPlatform[]))),
+      featuredChannels: combineLatest([
+        this.tvDataFacade.getChannelDirectory('tdt', 'today', 4),
+        this.tvDataFacade.getChannelDirectory('cable', 'today', 4),
+      ]).pipe(
+        map(([freeChannels, payChannels]) => [...freeChannels, ...payChannels]),
+        catchError(() => of([] as TvReadChannelSummaryDTO[]))
+      ),
+      movieHighlights: this.discoveryService.browse({ type: 'movie', page: 1, limit: 8 }).pipe(
+        map((response) => response.items || []),
+        catchError(() => of([] as CatalogItem[]))
+      ),
+      seriesHighlights: this.discoveryService.browse({ type: 'series', page: 1, limit: 8 }).pipe(
+        map((response) => response.items || []),
+        catchError(() => of([] as CatalogItem[]))
+      ),
+      footballHighlights: this.footballFacade.getHome().pipe(
+        map((home) => selectFootballHighlights(home)),
+        catchError(() => of([] as FootballMatchDTO[]))
+      ),
       editorialHub: this.editorialService.getHubState().pipe(
         // BlogService deliberately retries transient client failures for up
         // to 14 seconds. That policy is useful on editorial pages, but the
@@ -88,6 +114,7 @@ export class PortalHomeFacade {
         catchError(() =>
           of({
             hero: null,
+            latestPosts: [],
             guidePosts: [],
             rankingPosts: [],
             trendPosts: [],
@@ -108,7 +135,18 @@ export class PortalHomeFacade {
         )
       ),
     }).pipe(
-      map(({ discovery, liveNow, tonight, platforms, editorialHub, rankings }) => ({
+      map(({
+        discovery,
+        liveNow,
+        tonight,
+        platforms,
+        featuredChannels,
+        movieHighlights,
+        seriesHighlights,
+        footballHighlights,
+        editorialHub,
+        rankings,
+      }) => ({
         liveNow,
         tonight,
         streamingHighlights: discovery.platformItems || [],
@@ -117,10 +155,26 @@ export class PortalHomeFacade {
         featuredPlatforms: (discovery.platforms?.length ? discovery.platforms : platforms).slice(0, 8),
         trendingItems: discovery.trendingItems || [],
         freeItems: discovery.freeItems || [],
+        featuredChannels,
+        movieHighlights,
+        seriesHighlights,
+        footballHighlights,
       })),
       tap((state) => {
         if (!this.isBrowser) this.transferState.set(PORTAL_HOME_STATE, state);
       })
     );
   }
+}
+
+function selectFootballHighlights(home: {
+  liveMatches: FootballMatchDTO[];
+  todayMatches: FootballMatchDTO[];
+  featuredMatches: FootballMatchDTO[];
+}): FootballMatchDTO[] {
+  const matches = new Map<string, FootballMatchDTO>();
+  [...home.liveMatches, ...home.todayMatches, ...home.featuredMatches].forEach((match) => {
+    if (!matches.has(match.id)) matches.set(match.id, match);
+  });
+  return Array.from(matches.values()).slice(0, 4);
 }

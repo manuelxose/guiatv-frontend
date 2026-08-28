@@ -4,30 +4,19 @@ import { defineConfig, devices } from '@playwright/test';
  * E2E config for GuiaTV.
  *
  * Target: a scratch-port Angular dev server (CSR, `ng serve --configuration
- * development`) that this config boots itself on PORT (default 4210 — chosen
- * to avoid the already-running live dev instances on 3000/4200/4000).
+ * development`) that this config boots itself on PORT (default 4210), plus
+ * the backend compiled from the same worktree on isolated port 4310.
  *
- * Data source: apps/frontend's `environment.ts` (dev build) points
- * API_BASE_URL at the already-running real backend on http://localhost:4000.
- * That backend is healthy and only ever receives GET requests from the
- * browsing journeys below — safe, read-only, real data. The register/login
- * journey never talks to that shared backend; it mocks /v2/auth/* via
+ * Data source: the frontend uses same-origin `/v2` requests and its dev proxy
+ * forwards them to the isolated backend. Both sides therefore exercise the
+ * current checkout instead of whichever release happens to own port 4000.
+ * The journeys are read-only; register/login mocks /v2/auth/* via
  * Playwright route interception so no throwaway account is ever written to
  * the real database (see e2e/specs/auth.spec.ts for the rationale).
- *
- * CORS note: the real backend's `ALLOWED_ORIGINS` allowlist only covers the
- * pre-existing dev origins (3000/4200), not this scratch port — confirmed by
- * reproducing it directly (browser console: "blocked by CORS policy... no
- * Access-Control-Allow-Origin header"), which was silently starving every
- * data-dependent journey (stuck skeletons, empty results) despite the
- * backend itself responding fine to curl. Rather than touch the shared
- * backend's env config or the app's `environment.ts` (used by the real
- * dev workflows on 3000/4200 too), Chromium is launched with web security
- * disabled below — the standard, self-contained fix for cross-origin local
- * E2E targets that doesn't touch app or server config.
  */
 const PORT = process.env.E2E_PORT || '4210';
 const BASE_URL = `http://localhost:${PORT}`;
+process.env.E2E_BACKEND_URL ||= 'http://127.0.0.1:4310';
 
 export default defineConfig({
   testDir: './e2e/specs',
@@ -45,8 +34,8 @@ export default defineConfig({
   // on pure latency. CI uses 2 as well; override with PWTEST_WORKERS.
   workers: process.env.CI ? 2 : Number(process.env.PWTEST_WORKERS || 2),
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
-  // Generous timeouts: this suite hits a real, shared backend (see the CORS
-  // note above) whose first-touch response for a given query can take
+  // Generous timeouts: the suite uses real persisted data whose first-touch
+  // response for a given query can take
   // several seconds even after global-setup's cache warm-up, and the home
   // page's combineLatest() waits on ~6 parallel calls to resolve together.
   timeout: 45_000,
@@ -60,21 +49,27 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        launchOptions: {
-          args: ['--disable-web-security', '--disable-site-isolation-trials'],
-        },
-      },
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: `npx ng serve --configuration development --port ${PORT} --host 0.0.0.0`,
-    cwd: './apps/frontend',
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  },
+  webServer: [
+    {
+      command: 'npm run build:backend && DISABLE_SCHEDULED_JOBS=true ALLOWED_ORIGINS=http://localhost:4210 PORT=4310 node apps/backend/dist/server/index.js',
+      cwd: '.',
+      url: 'http://127.0.0.1:4310/health',
+      reuseExistingServer: false,
+      timeout: 180_000,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
+    {
+      command: `GUIATV_PROXY_TARGET=http://127.0.0.1:4310 npx ng serve --configuration development --proxy-config proxy.conf.js --port ${PORT} --host 0.0.0.0`,
+      cwd: './apps/frontend',
+      url: BASE_URL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 180_000,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    },
+  ],
 });

@@ -4,6 +4,15 @@ import {
   CatalogSourceProvenanceDTO,
   CatalogTimingContextDTO,
 } from './CatalogDTO';
+import type {
+  CanonicalChannelCapabilities,
+  CanonicalChannelAccess,
+  CanonicalChannelContentFacet,
+  CanonicalChannelDistribution,
+  CanonicalChannelMarket,
+  CanonicalChannelProvenance,
+  CanonicalChannelQuality,
+} from '@/shared/utils/tvMetadata';
 
 export type TvReadView = 'now' | 'next' | 'night' | 'day' | 'search';
 
@@ -22,6 +31,15 @@ export interface TvReadChannelDTO {
   countryCode?: string;
   region?: string;
   description?: string;
+  distribution?: CanonicalChannelDistribution;
+  access?: CanonicalChannelAccess;
+  operator?: string;
+  providers?: string[];
+  contentFacets?: CanonicalChannelContentFacet[];
+  market?: CanonicalChannelMarket;
+  quality?: CanonicalChannelQuality;
+  capabilities?: CanonicalChannelCapabilities;
+  provenance?: CanonicalChannelProvenance;
 }
 
 export interface TvReadProgramDTO {
@@ -128,6 +146,30 @@ export interface TvReadChannelsResponseDTO {
   channels: TvReadChannelSummaryDTO[];
   meta: {
     total: number;
+    cached?: boolean;
+    generatedAt: string;
+  };
+}
+
+export interface TvReadChannelScheduleDTO {
+  channel: TvReadChannelDTO;
+  items: TvReadItemDTO[];
+  counts: {
+    total: number;
+    returned: number;
+    complete: boolean;
+  };
+}
+
+export interface TvReadScheduleResponseDTO {
+  date: string;
+  group?: string;
+  channels: TvReadChannelScheduleDTO[];
+  meta: {
+    totalChannels: number;
+    totalItems: number;
+    itemsPerChannel: number;
+    truncatedChannels: number;
     cached?: boolean;
     generatedAt: string;
   };

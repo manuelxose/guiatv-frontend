@@ -9,6 +9,17 @@
 .editorial-post__content {
   color: var(--portal-text-soft);
   line-height: 1.8;
+  max-width: 48rem;
+  overflow-wrap: anywhere;
+}
+
+.editorial-post__content :where(table, iframe, video, pre) {
+  max-width: 100%;
+}
+
+.editorial-post__content :where(table, pre) {
+  display: block;
+  overflow-x: auto;
 }
 
 .editorial-post__content :where(h2, h3, h4) {
@@ -16,6 +27,7 @@
   font-weight: 700;
   line-height: 1.3;
   margin: 2rem 0 1rem;
+  scroll-margin-top: calc(var(--shell-sticky-offset) + 1rem);
 }
 
 .editorial-post__content :where(p, ul, ol, blockquote) {
@@ -31,13 +43,94 @@
 }
 
 .editorial-post__content :where(img) {
+  height: auto;
   border-radius: 1rem;
   margin: 1.5rem 0;
+  max-width: 100%;
+}
+
+.editorial-post__content :where(figure) {
+  margin: 2rem 0;
+}
+
+.editorial-post__content :where(figcaption) {
+  margin-top: var(--space-2);
+  color: var(--portal-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.editorial-post__content :where(iframe, video) {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+
+.editorial-post__content :where(table) {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.editorial-post__content :where(th, td) {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--portal-divider);
+  text-align: left;
+}
+
+.editorial-post__content :where(th) {
+  color: var(--portal-text);
+  font-weight: 750;
 }
 
 .editorial-post__content :where(blockquote) {
-  border-left: 3px solid var(--accent-editorial);
+  border: 1px solid var(--portal-border-strong);
+  border-radius: 1rem;
   background: var(--accent-editorial-soft);
   color: var(--portal-text-soft);
   padding: 0.75rem 1rem;
+}
+
+.article-toc {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border-block: 1px solid var(--portal-border);
+}
+
+.article-toc h2 {
+  margin: 0 0 var(--space-2);
+  color: var(--portal-text);
+  font-size: var(--text-lg);
+}
+
+.article-toc a {
+  min-height: 40px;
+  color: var(--portal-text-soft);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  text-underline-offset: 0.25em;
+}
+
+.article-toc a:hover {
+  color: var(--accent-editorial);
+}
+
+.article-toc__subitem {
+  padding-left: var(--space-4);
+}
+
+.article-toc--aside {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .article-toc--inline {
+    display: none;
+  }
+
+  .article-toc--aside {
+    display: grid;
+  }
 }

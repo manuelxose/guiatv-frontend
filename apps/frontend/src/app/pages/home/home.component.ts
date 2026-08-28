@@ -13,17 +13,18 @@ import { PlatformBadgeComponent } from '../../components/platform-badge/platform
 import { UnifiedEditorialModuleComponent } from '../../components/unified-editorial-module/unified-editorial-module.component';
 import { UnifiedSectionHeaderComponent } from '../../components/unified-section-header/unified-section-header.component';
 import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
+import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
+import { ChannelCardComponent } from '../../components/channel-card/channel-card.component';
 import {
   PORTAL_ICON_PATHS,
 } from '../../config/portal-navigation.config';
 import { APP_PATHS } from '../../config/route-map';
-import { UnifiedTopNavTab } from '../../components/unified-top-nav/unified-top-nav.component';
 import { PortalHomeFacade } from '../../state/portal-home.facade';
 import { MetaService } from '../../services/meta.service';
-import { UserService } from '../../services/user.service';
 import { normalizeToCard } from '../../utils/tv-normalizers';
 import { generateOrganizationSchema, generateWebApplicationSchema } from '../../utils/utils';
 import { UnifiedPortalRailSection } from '../../models/portal-shell.models';
+import { FootballMatchCardComponent } from '../../features/football/components/football-match-card/football-match-card.component';
 
 @Component({
   selector: 'app-home',
@@ -38,6 +39,9 @@ import { UnifiedPortalRailSection } from '../../models/portal-shell.models';
     UnifiedEditorialModuleComponent,
     UnifiedSectionHeaderComponent,
     UnifiedSkeletonBlockComponent,
+    UnifiedAsyncStateComponent,
+    ChannelCardComponent,
+    FootballMatchCardComponent,
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
@@ -62,8 +66,12 @@ export class HomeComponent {
   public readonly liveNow = computed(() => this.homeState()?.liveNow || []);
   public readonly tonight = computed(() => this.homeState()?.tonight || []);
   public readonly featuredPlatforms = computed(() => this.homeState()?.featuredPlatforms || []);
+  public readonly featuredChannels = computed(() => this.homeState()?.featuredChannels || []);
   public readonly streamingHighlights = computed(() => this.homeState()?.streamingHighlights.slice(0, 8) || []);
   public readonly trendingItems = computed(() => this.homeState()?.trendingItems.slice(0, 8) || []);
+  public readonly movieHighlights = computed(() => this.homeState()?.movieHighlights || []);
+  public readonly seriesHighlights = computed(() => this.homeState()?.seriesHighlights || []);
+  public readonly footballHighlights = computed(() => this.homeState()?.footballHighlights || []);
   public readonly editorialGuides = computed(() => this.homeState()?.editorialHub.guidePosts.slice(0, 3) || []);
   public readonly rankingHighlights = computed(() => this.homeState()?.rankingHighlights.slice(0, 4) || []);
   public readonly heroLead = computed(() =>
@@ -158,8 +166,7 @@ export class HomeComponent {
           label: 'Canales',
           description: 'Abrir TV por señales',
           iconPath: this.iconPaths.channels,
-          path: APP_PATHS.guide,
-          queryParams: { liveView: 'day' },
+          path: APP_PATHS.channels,
         },
         {
           id: 'home-platforms',
@@ -185,6 +192,7 @@ export class HomeComponent {
       ],
     },
   ]);
+
   public readonly rightRailSections = computed<UnifiedPortalRailSection[]>(() => [
     {
       id: 'home-live',

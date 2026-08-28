@@ -268,7 +268,11 @@ export function resolvePortalPrimaryDestination(path: string): PortalPrimaryDest
   }
   if (normalized.startsWith(APP_PATHS.sports)) return 'sports';
   if (normalized.startsWith(APP_PATHS.platforms) || normalized.startsWith(APP_PATHS.streamingComparison)) return 'streaming';
-  if (normalized.startsWith(APP_PATHS.guide) || normalized.startsWith('/canales/')) return 'live';
+  if (
+    normalized.startsWith(APP_PATHS.guide) ||
+    normalized === APP_PATHS.channels ||
+    normalized.startsWith(`${APP_PATHS.channels}/`)
+  ) return 'live';
   if (
     normalized.startsWith(APP_PATHS.explore) ||
     normalized.startsWith(APP_PATHS.movies) ||

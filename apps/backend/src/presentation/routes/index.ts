@@ -40,6 +40,8 @@ import { createAIRoutes } from './ai.routes';
 import { AIAnalyticsController } from '../controllers/AIAnalyticsController';
 import { createAdminAIAnalyticsRoutes } from './admin-ai-analytics.routes';
 import { createListsPublicRoutes } from './lists-public.routes';
+import { MonetizationController } from '../controllers/MonetizationController';
+import { createMonetizationRoutes } from './monetization.routes';
 
 /**
  * Dependencies required by every route factory.
@@ -57,6 +59,7 @@ export interface RoutesDependencies {
   footballController: FootballController;
   blogController: BlogController;
   analyticsController: AnalyticsController;
+  monetizationController: MonetizationController;
   userController: UserController;
   interactionController: InteractionController;
   socialController: SocialController;
@@ -122,6 +125,7 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   router.use('/admin/ai-analytics', createAdminAIAnalyticsRoutes(dependencies.aiAnalyticsController, dependencies.authService));
   router.use('/auth', createAuthRoutes(dependencies.authController));
   router.use('/blog', createBlogRoutes(dependencies.blogController));
+  router.use('/monetization', createMonetizationRoutes(dependencies.monetizationController));
   router.use('/lists/public', createListsPublicRoutes());
   router.use('/analytics', createAnalyticsRoutes(dependencies.analyticsController, dependencies.authService));
   router.use('/telemetry', createAnalyticsRoutes(dependencies.analyticsController, dependencies.authService));

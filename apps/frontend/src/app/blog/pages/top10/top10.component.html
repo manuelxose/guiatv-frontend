@@ -1,114 +1,89 @@
 <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
 
-<app-unified-portal-shell
-  tone="rankings"
-  [breadcrumbItems]="[]"
-  [showHero]="false"
->
+<app-unified-portal-shell tone="rankings" [breadcrumbItems]="[]" [showHero]="false">
   <app-portal-context-nav kind="blog" [breadcrumbItems]="breadcrumbItems"></app-portal-context-nav>
-  <header class="blog-page-header"><p>Blog</p><h1>Rankings</h1><span>Listas y selecciones para encontrar tu próxima película, serie o programa.</span></header>
-  <section *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
-    <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-[var(--portal-surface-strong)]"></div>
+
+  <header class="rankings-header">
+    <h1>Rankings para decidir qué ver</h1>
+    <p>Listas editoriales de películas, series y plataformas, ordenadas con criterio y sin depender de comisiones comerciales.</p>
+  </header>
+
+  <section *ngIf="loading" class="rankings-loading" aria-busy="true" aria-label="Cargando rankings">
+    <app-unified-skeleton-block [count]="1" [columns]="1" cardHeight="22rem"></app-unified-skeleton-block>
+    <app-unified-skeleton-block [count]="4" [columns]="1" cardHeight="10rem"></app-unified-skeleton-block>
   </section>
 
-  <div
-    *ngIf="error"
-    class="rounded-[1.75rem] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-6 text-sm text-[var(--accent-live)]"
-  >
-    {{ error }}
-  </div>
+  <app-unified-async-state
+    *ngIf="!loading && error"
+    kind="error"
+    title="Los rankings no están disponibles ahora mismo"
+    [message]="error"
+    actionLabel="Reintentar"
+    (action)="retry()"
+  ></app-unified-async-state>
 
   <ng-container *ngIf="!loading && !error">
-    <a
-      *ngIf="featured"
-      [routerLink]="featured.canonicalPath"
-      class="group block overflow-hidden rounded-[1.6rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] transition-colors hover:border-[var(--portal-border-strong)]"
-    >
-      <div class="relative aspect-[16/8] overflow-hidden">
-        <img
-          [src]="featured.coverImage"
-          [alt]="featured.title"
-          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="eager"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-      </div>
-      <div class="p-5">
-        <div class="space-y-3">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Ranking destacado</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ featured.title }}</h2>
-          <p class="line-clamp-3 text-sm text-[var(--portal-text-soft)]">{{ featured.excerptText }}</p>
-        </div>
-      </div>
-    </a>
+    <app-unified-async-state
+      *ngIf="!posts.length"
+      kind="empty"
+      title="Todavía no hay rankings publicados"
+      message="Estamos preparando nuevas selecciones editoriales. Mientras tanto, puedes explorar las guías y recomendaciones del Blog."
+    ></app-unified-async-state>
 
-    <section *ngIf="categories.length" class="space-y-4">
-      <div>
-        <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Filtros editoriales</p>
-        <h2 class="mt-2 text-2xl font-semibold text-[var(--portal-text)]">Explora por familia de rankings</h2>
+    <nav *ngIf="categories.length" class="ranking-filters" aria-label="Filtrar rankings por tema">
+      <button
+        type="button"
+        (click)="selectCategory('all')"
+        [attr.aria-pressed]="selectedCategory === 'all'"
+      >
+        Todos <span>{{ posts.length }}</span>
+      </button>
+      <button
+        *ngFor="let category of categories"
+        type="button"
+        (click)="selectCategory(category.slug)"
+        [attr.aria-pressed]="selectedCategory === category.slug"
+      >
+        {{ category.name }} <span>{{ category.count }}</span>
+      </button>
+    </nav>
+
+    <section *ngIf="filteredPosts.length" class="ranking-collection" aria-labelledby="ranking-collection-title">
+      <div class="ranking-collection__header">
+        <h2 id="ranking-collection-title">{{ selectedCategoryName }}</h2>
+        <span>{{ filteredPosts.length }} {{ filteredPosts.length === 1 ? 'lista' : 'listas' }}</span>
       </div>
-      <div class="flex flex-wrap gap-3">
-        <button
-          type="button"
-          (click)="selectCategory('all')"
-          [attr.aria-pressed]="selectedCategory === 'all'"
-          class="rounded-full border px-4 py-2 text-sm font-semibold transition-colors"
-          [ngClass]="selectedCategory === 'all'
-            ? 'border-[var(--accent-editorial)] bg-[var(--accent-editorial-soft)] text-[var(--accent-editorial)]'
-            : 'border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
+
+      <ol class="ranking-list">
+        <li
+          *ngFor="let post of filteredPosts; let index = index; trackBy: trackPost"
+          [class.ranking-entry--lead]="index === 0 && selectedCategory === 'all'"
         >
-          Todos
-        </button>
-        <button
-          *ngFor="let category of categories"
-          type="button"
-          (click)="selectCategory(category.slug)"
-          [attr.aria-pressed]="selectedCategory === category.slug"
-          class="rounded-full border px-4 py-2 text-sm font-semibold transition-colors"
-          [ngClass]="selectedCategory === category.slug
-            ? 'border-[var(--accent-editorial)] bg-[var(--accent-editorial-soft)] text-[var(--accent-editorial)]'
-            : 'border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'"
-        >
-          {{ category.name }}
-        </button>
-      </div>
+          <a [routerLink]="post.canonicalPath" class="ranking-entry group">
+            <strong class="ranking-entry__position" [attr.aria-label]="'Posición ' + (index + 1)">
+              {{ (index + 1).toString().padStart(2, '0') }}
+            </strong>
+            <div class="ranking-entry__media">
+              <img [src]="post.coverImage" [alt]="post.title" width="640" height="400" loading="lazy" />
+            </div>
+            <div class="ranking-entry__copy">
+              <span>{{ post.primaryCategory?.isRankingCategory ? 'Selección editorial' : (post.primaryCategory?.name || 'Ranking') }}</span>
+              <h3>{{ post.title }}</h3>
+              <p>{{ post.excerptText }}</p>
+              <small>{{ post.publishedAt | date : 'dd MMM yyyy' }} · {{ post.readingMinutes }} min de lectura</small>
+            </div>
+          </a>
+        </li>
+      </ol>
     </section>
 
-    <section class="space-y-5">
-      <div class="flex items-end justify-between gap-4">
-        <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Colección</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Rankings disponibles</h2>
-        </div>
-        <span class="text-sm text-[var(--portal-text-soft)]">{{ filteredPosts.length }} artículos</span>
-      </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <app-editorial-post-card
-          *ngFor="let post of filteredPosts"
-          [post]="post"
-        ></app-editorial-post-card>
-      </div>
-    </section>
-
-    <section *ngFor="let section of sections" class="space-y-5">
-      <div class="flex items-end justify-between gap-4">
-        <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Bloque temático</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ section.category.name }}</h2>
-        </div>
-        <a
-          [routerLink]="section.category.canonicalPath"
-          class="min-h-[40px] rounded-full border border-[var(--portal-border-strong)] px-4 py-2 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
-        >
-          Ver categoría
-        </a>
-      </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <app-editorial-post-card
-          *ngFor="let post of section.posts"
-          [post]="post"
-        ></app-editorial-post-card>
-      </div>
-    </section>
+    <app-unified-async-state
+      *ngIf="posts.length && !filteredPosts.length"
+      kind="empty"
+      title="No hay rankings en este tema"
+      message="Prueba otro filtro para descubrir más selecciones editoriales."
+      actionLabel="Ver todos"
+      (action)="selectCategory('all')"
+    ></app-unified-async-state>
   </ng-container>
 </app-unified-portal-shell>

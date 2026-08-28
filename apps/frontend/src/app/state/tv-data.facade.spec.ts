@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
-import { firstValueFrom, of } from 'rxjs';
+import { firstValueFrom, of, throwError } from 'rxjs';
 import { TvApiService } from '../api/tv-api.service';
 import { TvReadItemDTO } from '../api/models';
 import { CatalogItem, CatalogService } from '../services/catalog.service';
@@ -18,6 +18,7 @@ describe('TvDataFacade', () => {
     tvApiSpy = jasmine.createSpyObj<TvApiService>('TvApiService', [
       'getTvRead',
       'getTvReadChannels',
+      'getTvReadSchedule',
       'getTvGuideSurface',
     ]);
     discoverySpy = jasmine.createSpyObj<DiscoveryService>('DiscoveryService', ['browse', 'search']);
@@ -85,6 +86,71 @@ describe('TvDataFacade', () => {
       })
     );
     expect(result).toEqual([tvItem]);
+  });
+
+  it('loads the day guide from channel-bounded schedules', async () => {
+    const tvItem = makeTvItem();
+    tvApiSpy.getTvReadSchedule.and.returnValue(of({
+      success: true,
+      data: {
+        date: '20260326',
+        group: 'movistar',
+        channels: [{
+          channel: tvItem.channel,
+          items: [tvItem],
+          counts: { total: 34, returned: 1, complete: false },
+        }],
+        meta: {
+          totalChannels: 1,
+          totalItems: 34,
+          itemsPerChannel: 32,
+          truncatedChannels: 1,
+          generatedAt: '2026-03-26T00:00:00.000Z',
+        },
+      },
+    }));
+
+    const result = await firstValueFrom(service.getDaySchedule({
+      date: 'today',
+      group: 'movistar',
+      channelType: 'TDT',
+    }));
+
+    expect(tvApiSpy.getTvReadSchedule).toHaveBeenCalledWith(jasmine.objectContaining({
+      date: 'today',
+      group: 'movistar',
+      itemsPerChannel: 32,
+    }));
+    expect(result).toEqual([tvItem]);
+  });
+
+  it('loads a bounded channel directory for compact discovery surfaces', async () => {
+    const tvItem = makeTvItem();
+    const summary = {
+      channel: tvItem.channel,
+      current: tvItem,
+      counts: { total: 10, live: 1, tonight: 2 },
+    };
+    tvApiSpy.getTvReadChannels.and.returnValue(of({
+      success: true,
+      data: {
+        date: '20260326',
+        group: 'tdt',
+        channels: [summary],
+        meta: { total: 1, generatedAt: '2026-03-26T00:00:00.000Z' },
+      },
+    }));
+
+    const result = await firstValueFrom(service.getChannelDirectory('tdt', 'today', 6));
+
+    expect(tvApiSpy.getTvReadChannels).toHaveBeenCalledWith('today', 'tdt', 6);
+    expect(result).toEqual([summary]);
+  });
+
+  it('propagates a day-schedule outage so the guide can offer retry', async () => {
+    tvApiSpy.getTvReadSchedule.and.returnValue(throwError(() => new Error('offline')));
+
+    await expectAsync(firstValueFrom(service.getDaySchedule())).toBeRejectedWithError('offline');
   });
 
   it('merges TV and catalog sources in discover mode', async () => {

@@ -7,51 +7,65 @@
 >
   <app-portal-context-nav kind="blog" [breadcrumbItems]="breadcrumbItems"></app-portal-context-nav>
   <header class="blog-page-header">
-    <p>Blog</p>
     <h1>Historias y guías para elegir qué ver</h1>
     <span>Actualidad, recomendaciones y análisis de televisión y streaming.</span>
   </header>
-  <section *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
-    <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-[var(--portal-surface-strong)]"></div>
+  <section *ngIf="loading" class="editorial-loading" aria-busy="true" aria-label="Cargando publicaciones">
+    <app-unified-skeleton-block [count]="1" [columns]="1" cardHeight="26rem"></app-unified-skeleton-block>
+    <app-unified-skeleton-block [count]="4" [columns]="2" cardHeight="8rem"></app-unified-skeleton-block>
   </section>
 
-  <div
-    *ngIf="error"
-    class="rounded-[1.75rem] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-6 text-sm text-[var(--accent-live)]"
-  >
-    {{ error }}
-  </div>
+  <app-unified-async-state
+    *ngIf="!loading && error"
+    kind="error"
+    title="El Blog no está disponible ahora mismo"
+    [message]="error"
+    actionLabel="Reintentar"
+    (action)="retry()"
+  ></app-unified-async-state>
 
   <ng-container *ngIf="!loading && !error">
-    <a
-      *ngIf="hero"
-      [routerLink]="hero.canonicalPath"
-      class="group block overflow-hidden rounded-[1.6rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] transition-colors hover:border-[var(--portal-border-strong)]"
-    >
-      <div class="relative aspect-[16/8] overflow-hidden bg-[var(--portal-surface-strong)]">
-        <img
-          [src]="hero.coverImage"
-          [alt]="hero.title"
-          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="eager"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-      </div>
+    <app-unified-async-state
+      *ngIf="!hero"
+      kind="empty"
+      title="Todavía no hay publicaciones"
+      message="Estamos preparando nuevas guías, análisis y recomendaciones. Vuelve pronto para descubrirlas."
+    ></app-unified-async-state>
 
-      <div class="p-5">
-        <div class="space-y-3">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Reportaje destacado</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ hero.title }}</h2>
-          <p class="line-clamp-3 text-sm text-[var(--portal-text-soft)]">{{ hero.excerptText }}</p>
+    <nav *ngIf="categories.length" class="editorial-topics" aria-label="Temas editoriales">
+      <a *ngFor="let category of categories" [routerLink]="category.canonicalPath">
+        {{ category.name }} <span>{{ category.count }}</span>
+      </a>
+    </nav>
+
+    <section *ngIf="hero" class="editorial-lead" aria-label="Portada editorial">
+      <a [routerLink]="hero.canonicalPath" class="editorial-lead__story group">
+        <div class="editorial-lead__image">
+          <img [src]="hero.coverImage" [alt]="hero.title" width="960" height="640" loading="eager" />
         </div>
-      </div>
-    </a>
+        <div class="editorial-lead__copy">
+          <span>{{ hero.primaryCategory?.name || 'Selección editorial' }}</span>
+          <h2>{{ hero.title }}</h2>
+          <p>{{ hero.excerptText }}</p>
+          <small>{{ hero.publishedAt | date : 'dd MMM yyyy' }} · {{ hero.readingMinutes }} min de lectura</small>
+        </div>
+      </a>
 
-    <section id="guias" *ngIf="guidePosts.length" class="space-y-5 scroll-mt-32">
-      <div class="flex items-end justify-between gap-4">
+      <aside *ngIf="latestPosts.length" class="editorial-latest" aria-labelledby="latest-heading">
+        <h2 id="latest-heading">Últimas publicaciones</h2>
+        <a *ngFor="let post of latestPosts; trackBy: trackPost" [routerLink]="post.canonicalPath">
+          <span>{{ post.primaryCategory?.name || 'Blog' }}</span>
+          <h3>{{ post.title }}</h3>
+          <small>{{ post.publishedAt | date : 'dd MMM' }} · {{ post.readingMinutes }} min</small>
+        </a>
+      </aside>
+    </section>
+
+    <section id="guias" *ngIf="guidePosts.length" class="editorial-section scroll-mt-32">
+      <div class="editorial-section__header">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Guías</p>
           <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Ideas para decidir qué ver</h2>
+          <p>Guías prácticas conectadas con el catálogo, la programación y las plataformas.</p>
         </div>
         <a
           [routerLink]="appPaths.explore"
@@ -60,7 +74,7 @@
           Abrir qué ver hoy
         </a>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div class="editorial-card-grid editorial-card-grid--guides">
         <app-editorial-post-card
           *ngFor="let post of guidePosts"
           [post]="post"
@@ -68,11 +82,11 @@
       </div>
     </section>
 
-    <section *ngIf="rankingPosts.length" class="space-y-5">
-      <div class="flex items-end justify-between gap-4">
+    <section *ngIf="rankingPosts.length" class="editorial-section editorial-rankings">
+      <div class="editorial-section__header">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Rankings</p>
           <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Listas y selecciones editoriales</h2>
+          <p>Criterio editorial explícito, sin ordenar por comisión comercial.</p>
         </div>
         <a
           [routerLink]="appPaths.top10"
@@ -81,19 +95,21 @@
           Abrir rankings
         </a>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <app-editorial-post-card
-          *ngFor="let post of rankingPosts.slice(0, 4)"
-          [post]="post"
-        ></app-editorial-post-card>
-      </div>
+      <ol class="editorial-ranking-list">
+        <li *ngFor="let post of rankingPosts.slice(0, 4); let index = index; trackBy: trackPost">
+          <a [routerLink]="post.canonicalPath">
+            <strong>{{ index + 1 }}</strong>
+            <span><small>{{ post.primaryCategory?.name || 'Ranking' }} · {{ post.readingMinutes }} min</small><b>{{ post.title }}</b></span>
+          </a>
+        </li>
+      </ol>
     </section>
 
-    <section *ngIf="trendPosts.length" class="space-y-5">
-      <div class="flex items-end justify-between gap-4">
+    <section *ngIf="trendPosts.length" class="editorial-section">
+      <div class="editorial-section__header">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Tendencias útiles</p>
           <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Lecturas ligadas a lo que más se mueve</h2>
+          <p>Contexto para interpretar estrenos y cambios de catálogo.</p>
         </div>
         <a
           [routerLink]="appPaths.stats"
@@ -102,7 +118,7 @@
           Ver tendencias
         </a>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div class="editorial-card-grid editorial-card-grid--trends">
         <app-editorial-post-card
           *ngFor="let post of trendPosts"
           [post]="post"
@@ -110,11 +126,11 @@
       </div>
     </section>
 
-    <section *ngFor="let section of categorySections" class="space-y-5">
-      <div class="flex items-end justify-between gap-4">
+    <section *ngFor="let section of categorySections" class="editorial-section editorial-category-section">
+      <div class="editorial-section__header">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Categoría</p>
           <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ section.category.name }}</h2>
+          <p *ngIf="section.category.description">{{ section.category.description }}</p>
         </div>
         <a
           [routerLink]="section.category.canonicalPath"
@@ -123,7 +139,7 @@
           Ver categoría
         </a>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div class="editorial-card-grid editorial-card-grid--category">
         <app-editorial-post-card
           *ngFor="let post of section.posts"
           [post]="post"

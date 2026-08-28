@@ -34,6 +34,7 @@ async function startServer() {
       footballController: container.get('footballController'),
       blogController: container.get('blogController'),
       analyticsController: container.get('analyticsController'),
+      monetizationController: container.get('monetizationController'),
       userController: container.get('userController'),
       interactionController: container.get('interactionController'),
       socialController: container.get('socialController'),
@@ -43,10 +44,12 @@ async function startServer() {
       sitemapController: container.get('sitemapController'),
     });
 
-    const { initializeJobs } = await import('../jobs');
-    initializeJobs({
-      refreshFootballHome: () => container.get<any>('footballQueryService').getHome(),
-    });
+    if (process.env.DISABLE_SCHEDULED_JOBS !== 'true') {
+      const { initializeJobs } = await import('../jobs');
+      initializeJobs({
+        refreshFootballHome: () => container.get<any>('footballQueryService').getHome(),
+      });
+    }
 
     const httpServer = createServer(app);
     ChatSocketHub.getInstance().initialize(httpServer, container.get('authService'));

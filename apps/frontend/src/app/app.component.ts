@@ -218,7 +218,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     if (tab.id === 'home') return path === '/';
     if (tab.id === 'live') {
-      return path.startsWith('/programacion-tv/guia-canales') || path.startsWith('/canales/');
+      return path.startsWith('/programacion-tv/guia-canales') || path === '/canales' || path.startsWith('/canales/');
     }
     if (tab.id === 'discover') {
       return path.startsWith('/programacion-tv/que-ver-hoy') || path.startsWith('/programas/') || path.startsWith('/peliculas/') || path.startsWith('/series/');
