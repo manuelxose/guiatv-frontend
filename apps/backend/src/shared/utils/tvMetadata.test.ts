@@ -76,6 +76,38 @@ test('buildChannelIdentityMetadata resolves representative pay-TV aliases canoni
   );
 });
 
+test('channel operational metadata keeps pay/operator identity orthogonal to sports facets', () => {
+  const fixtures = [
+    ['AXN', 'cable', 'pay', 'unknown'],
+    ['Cosmo', 'cable', 'pay', 'unknown'],
+    ['MTV', 'cable', 'pay', 'Paramount'],
+  ] as const;
+
+  fixtures.forEach(([name, distribution, access, operator]) => {
+    const result = buildChannelIdentityMetadata({ name, sourceId: `${name}.es` });
+    assert.equal(result.distribution, distribution);
+    assert.equal(result.access, access);
+    assert.equal(result.operator, operator);
+  });
+
+  const movistarSport = buildChannelIdentityMetadata({
+    name: 'M+ Liga de Campeones',
+    sourceId: 'M+LigadeCampeones.es',
+  });
+  assert.equal(movistarSport.inferredGroup, 'deporte');
+  assert.equal(movistarSport.distribution, 'operator');
+  assert.equal(movistarSport.access, 'pay');
+  assert.equal(movistarSport.operator, 'Movistar Plus+');
+  assert.ok(movistarSport.contentFacets.includes('sports'));
+
+  const dazn = buildChannelIdentityMetadata({ name: 'DAZN F1', sourceId: 'DAZNF1.es' });
+  assert.equal(dazn.inferredGroup, 'deporte');
+  assert.equal(dazn.distribution, 'ott');
+  assert.equal(dazn.access, 'pay');
+  assert.equal(dazn.operator, 'DAZN');
+  assert.ok(dazn.contentFacets.includes('sports'));
+});
+
 test('buildChannelIdentityMetadata collapses Discovery Max and Discovery into DMAX TDT', () => {
   const discoveryMax = buildChannelIdentityMetadata({
     name: 'Discovery Max',

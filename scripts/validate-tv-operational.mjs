@@ -8,6 +8,7 @@ const mongoUrl = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017';
 const mongoDbName = process.env.MONGODB_DB_NAME || 'guiatv';
 const redisUrl = process.env.VALKEY_URL || process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const apiBase = (process.env.GUIATV_API_BASE || 'http://127.0.0.1:4000').replace(/\/$/, '');
+const maxEpgAgeHours = Math.max(1, Number(process.env.TV_EPG_MAX_AGE_HOURS || 36));
 const failures = [];
 
 function madridDate() {
@@ -59,8 +60,32 @@ async function main() {
     report.mongo.channelCounts = Object.fromEntries((await channels.aggregate([{ $match: { active: true } }, { $group: { _id: '$type', count: { $sum: 1 } } }]).toArray()).map((row) => [row._id || 'unknown', row.count]));
     const groupRows = await airings.aggregate([{ $match: { date } }, { $group: { _id: '$channel.group', channels: { $addToSet: '$channel.id' }, airings: { $sum: 1 } } }, { $project: { _id: 1, airings: 1, channels: { $size: '$channels' } } }]).toArray();
     report.mongo.today = { totalAirings: await airings.countDocuments({ date }), uniqueChannels: (await airings.distinct('channel.id', { date })).length, groups: Object.fromEntries(groupRows.map((row) => [row._id || 'unknown', { airings: row.airings, channels: row.channels }])) };
-    if (!report.mongo.today.groups.cable?.channels) failures.push('No cable/pay-TV airings for today');
-    if (!report.mongo.today.groups.movistar?.channels) failures.push('No Movistar airings for today');
+    const operationalRows = await airings.aggregate([
+      { $match: { date } },
+      {
+        $group: {
+          _id: null,
+          payChannels: { $addToSet: { $cond: [{ $eq: ['$channel.access', 'pay'] }, '$channel.id', null] } },
+          cableChannels: { $addToSet: { $cond: [{ $eq: ['$channel.distribution', 'cable'] }, '$channel.id', null] } },
+          movistarChannels: { $addToSet: { $cond: [{ $eq: ['$channel.operator', 'Movistar Plus+'] }, '$channel.id', null] } },
+          sportsChannels: { $addToSet: { $cond: [{ $in: ['sports', { $ifNull: ['$channel.contentFacets', []] }] }, '$channel.id', null] } },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          payChannels: { $size: { $setDifference: ['$payChannels', [null]] } },
+          cableChannels: { $size: { $setDifference: ['$cableChannels', [null]] } },
+          movistarChannels: { $size: { $setDifference: ['$movistarChannels', [null]] } },
+          sportsChannels: { $size: { $setDifference: ['$sportsChannels', [null]] } },
+        },
+      },
+    ]).toArray();
+    report.mongo.today.operationalCoverage = operationalRows[0] || { payChannels: 0, cableChannels: 0, movistarChannels: 0, sportsChannels: 0 };
+    if (!report.mongo.today.operationalCoverage.payChannels) failures.push('No channels classified with pay access for today');
+    if (!report.mongo.today.operationalCoverage.cableChannels) failures.push('No channels classified with cable distribution for today');
+    if (!report.mongo.today.operationalCoverage.movistarChannels) failures.push('No channels classified with Movistar Plus+ operator identity for today');
+    if (!report.mongo.today.operationalCoverage.sportsChannels) failures.push('No channels classified with sports content facets for today');
 
     const representatives = ['tcm', 'axn', 'calle_13', 'syfy', 'amc', 'm_hits', 'm_estrenos', 'm_vamos', 'eurosport'];
     report.mongo.representativeChannels = {};
@@ -86,6 +111,14 @@ async function main() {
       }),
     };
     if (!sourceRows.length) failures.push(`No EPG snapshot for ${date}`);
+    const freshestSourceMs = Math.max(...sourceRows.map((row) => new Date(row.updatedAt || 0).getTime()).filter(Number.isFinite), 0);
+    report.epg.freshestAgeHours = freshestSourceMs
+      ? Math.round(((Date.now() - freshestSourceMs) / 3_600_000) * 100) / 100
+      : null;
+    report.epg.maxAcceptedAgeHours = maxEpgAgeHours;
+    if (!freshestSourceMs || report.epg.freshestAgeHours > maxEpgAgeHours) {
+      failures.push(`EPG sources are stale or undated (maximum accepted age: ${maxEpgAgeHours}h)`);
+    }
 
     const base = { date, 'trustDecision.consumerSuppressed': { $ne: true }, 'program.titleResolutionState': { $nin: ['generic_unresolved', 'generic_suppressed'] } };
     const now = new Date().toISOString();
@@ -128,15 +161,29 @@ async function main() {
     const tcmRepeat = await request(`/v2/tv/read?view=search&q=TCM&limit=2`);
     const axn = await request('/v2/tv/read?view=search&q=AXN&limit=2');
     const movistar = await request('/v2/tv/read?view=night&group=movistar&limit=5');
+    const channelDirectory = await request('/v2/tv/read/channels?date=today');
+    const payDirectory = await request('/v2/tv/read/channels?date=today&group=cable');
+    const schedule = await request('/v2/tv/read/schedule?date=today&group=tdt&itemsPerChannel=48');
     report.api = {
       health: { status: health.status, ms: health.ms },
       tcm: { status: tcm.status, ms: tcm.ms, items: tcm.body?.data?.items?.length || 0 },
       tcmRepeat: { status: tcmRepeat.status, ms: tcmRepeat.ms, cached: tcmRepeat.body?.data?.meta?.cached === true },
       axn: { status: axn.status, ms: axn.ms, items: axn.body?.data?.items?.length || 0 },
       movistarTonight: { status: movistar.status, ms: movistar.ms, items: movistar.body?.data?.items?.length || 0 },
+      channelDirectory: { status: channelDirectory.status, ms: channelDirectory.ms, channels: channelDirectory.body?.data?.channels?.length || 0 },
+      payDirectory: { status: payDirectory.status, ms: payDirectory.ms, channels: payDirectory.body?.data?.channels?.length || 0 },
+      schedule: {
+        status: schedule.status,
+        ms: schedule.ms,
+        channels: schedule.body?.data?.meta?.totalChannels || 0,
+        items: schedule.body?.data?.meta?.totalItems || 0,
+        truncatedChannels: schedule.body?.data?.meta?.truncatedChannels ?? null,
+      },
     };
-    if ([health, tcm, axn, movistar].some((result) => result.status !== 200)) failures.push('One or more TV API checks returned a non-200 status');
+    if ([health, tcm, axn, movistar, channelDirectory, payDirectory, schedule].some((result) => result.status !== 200)) failures.push('One or more TV API checks returned a non-200 status');
     if (!report.api.tcm.items || !report.api.axn.items || !report.api.movistarTonight.items) failures.push('Representative API response has no TV items');
+    if (!report.api.channelDirectory.channels || !report.api.payDirectory.channels) failures.push('Channel directory completeness check returned no channels');
+    if (!report.api.schedule.channels || !report.api.schedule.items) failures.push('Channel-grouped schedule returned no guide coverage');
     report.chatbot = { canonicalReadModelAvailable: true, deterministicGroundingTests: 'covered by backend test suite', note: 'Authenticated answer comparison requires a user session; this validator never generates credentials.' };
   } catch (error) {
     failures.push(`API validation failed: ${error.message}`);

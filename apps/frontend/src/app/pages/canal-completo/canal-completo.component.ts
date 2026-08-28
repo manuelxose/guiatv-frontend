@@ -3,11 +3,24 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, first, takeUntil } from 'rxjs';
 import { ApiConfigService } from 'src/app/api/api-config.service';
-import { TvChannelSurfaceDTO, TvReadItemDTO } from 'src/app/api/models';
+import {
+  ChannelMetaDTO,
+  TvChannelSurfaceDTO,
+  TvReadChannelSummaryDTO,
+  TvReadItemDTO,
+} from 'src/app/api/models';
+import { ChannelCardComponent } from 'src/app/components/channel-card/channel-card.component';
 import { InteractionButtonsComponent } from 'src/app/components/interaction-buttons/interaction-buttons.component';
+import { UnifiedAsyncStateComponent } from 'src/app/components/unified-async-state/unified-async-state.component';
+import { UnifiedSkeletonBlockComponent } from 'src/app/components/unified-skeleton-block/unified-skeleton-block.component';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvDataService } from 'src/app/state/tv-data.service';
-import { buildDetailPath, CatalogContentType, slugifyTitle } from 'src/app/utils/catalog';
+import {
+  buildDetailPath,
+  buildProgramCatalogId,
+  CatalogContentType,
+  slugifyTitle,
+} from 'src/app/utils/catalog';
 import { normalizePublicImageUrl } from 'src/app/utils/media-url';
 import { slugify } from 'src/app/utils/utils';
 
@@ -34,14 +47,6 @@ interface ChannelProgram {
   durationMinutes?: number;
 }
 
-interface RelatedChannel {
-  id: string;
-  name: string;
-  description?: string;
-  logo: string;
-  link: any[];
-}
-
 const PRIMARY_GUIDE_CATEGORIES: Array<{ key: GuideQuickCategory; label: string }> = [
   { key: 'all', label: 'Todos' },
   { key: 'Cine', label: 'Cine' },
@@ -54,7 +59,14 @@ const PRIMARY_GUIDE_CATEGORIES: Array<{ key: GuideQuickCategory; label: string }
   standalone: true,
   templateUrl: './canal-completo.component.html',
   styleUrls: ['./canal-completo.component.scss'],
-  imports: [CommonModule, RouterModule, InteractionButtonsComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ChannelCardComponent,
+    InteractionButtonsComponent,
+    UnifiedAsyncStateComponent,
+    UnifiedSkeletonBlockComponent,
+  ],
 })
 export class CanalCompletoComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
@@ -74,22 +86,23 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   public query = '';
   public canal = '';
   public logo = '';
+  public channel: ChannelMetaDTO | null = null;
   public channelDescription: string | null = null;
   public isLoading = true;
   public error: string | null = null;
+  public channelNotFound = false;
   public diaSeleccionado = 'Hoy';
   public activeDayAlias: DayAlias = 'today';
   public selectedCategory: string = 'all';
   public isMoreCategoriesOpen = false;
   public readonly posterFallback = '/assets/images/default-movie-poster.svg';
-  public readonly channelFallback = '/assets/images/channels/antena3.svg';
 
   public programs: ChannelProgram[] = [];
   public currentProgram: ChannelProgram | null = null;
   public nextPrograms: ChannelProgram[] = [];
   public tonightPrograms: ChannelProgram[] = [];
   public featuredPrograms: ChannelProgram[] = [];
-  public relatedChannels: RelatedChannel[] = [];
+  public relatedChannels: TvReadChannelSummaryDTO[] = [];
 
   ngOnInit(): void {
     this.route.paramMap
@@ -144,8 +157,8 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     return program.id || `${program.title}-${index}`;
   }
 
-  public trackChannel(index: number, channel: RelatedChannel): string {
-    return channel.id || `${channel.name}-${index}`;
+  public trackChannel(index: number, entry: TvReadChannelSummaryDTO): string {
+    return entry.channel.id || `${entry.channel.name}-${index}`;
   }
 
   public onPosterError(event: Event): void {
@@ -158,8 +171,68 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   public onChannelLogoError(event: Event): void {
     const img = event.target as HTMLImageElement | null;
     if (img) {
-      img.src = this.channelFallback;
+      img.hidden = true;
     }
+    this.logo = '';
+  }
+
+  public retry(): void {
+    this.loadProgramData();
+  }
+
+  public accessLabel(): string {
+    if (this.channel?.access === 'free') return 'En abierto';
+    if (this.channel?.access === 'pay') return 'De pago';
+    return 'Acceso sin confirmar';
+  }
+
+  public distributionLabel(): string {
+    const labels: Record<string, string> = {
+      terrestrial: 'TDT',
+      cable: 'Cable',
+      operator: 'Operador',
+      ott: 'Online',
+    };
+    return labels[this.channel?.distribution || ''] || 'Distribución sin confirmar';
+  }
+
+  public resolutionLabel(): string | null {
+    const resolution = this.channel?.quality?.resolution;
+    return resolution && resolution !== 'unknown' ? resolution.toUpperCase() : null;
+  }
+
+  public get providerLabels(): string[] {
+    return Array.from(new Set([
+      ...(this.channel?.providers || []),
+      ...(this.channel?.operator && this.channel.operator !== 'unknown'
+        ? [this.channel.operator]
+        : []),
+    ])).filter(Boolean);
+  }
+
+  public get contentFacetLabels(): string[] {
+    const labels: Record<string, string> = {
+      general: 'Generalista',
+      movies: 'Cine',
+      series: 'Series',
+      documentary: 'Documentales',
+      kids: 'Infantil',
+      news: 'Noticias',
+      sports: 'Deportes',
+      music: 'Música',
+      lifestyle: 'Estilo de vida',
+    };
+    return (this.channel?.contentFacets || [])
+      .filter((facet) => facet !== 'unknown')
+      .map((facet) => labels[facet] || facet);
+  }
+
+  public progressPercentage(program: ChannelProgram): number {
+    if (!program.liveNow) return 0;
+    const start = new Date(program.start).getTime();
+    const end = new Date(program.end).getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return 0;
+    return Math.max(0, Math.min(100, Math.round(((Date.now() - start) / (end - start)) * 100)));
   }
 
   public get extraCategories(): string[] {
@@ -209,6 +282,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   private loadProgramData(): void {
     this.isLoading = true;
     this.error = null;
+    this.channelNotFound = false;
 
     this.tvDataService
       .loadChannelSurface(this.normalizeChannelToken(this.query || this.canal), this.activeDayAlias)
@@ -225,18 +299,20 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
 
   private managePrograms(surface: TvChannelSurfaceDTO): void {
     if (!surface.channel) {
+      this.channelNotFound = true;
       this.error = 'No hemos encontrado este canal en la guía actual.';
       this.isLoading = false;
       return;
     }
 
-    const channelName = String(surface.channel?.name || this.canal || '').trim();
+    this.channel = surface.channel;
+    const channelName = String(surface.channel.name || this.canal || '').trim();
     this.canal = channelName || this.canal;
     this.channelDescription = surface.channel?.description || null;
     this.logo =
-      this.resolveImageUrl(surface.channel?.icon) ||
+      this.resolveImageUrl(surface.channel.icon) ||
       this.buildLocalChannelIcon(
-        surface.channel?.id || surface.channel?.normalizedName || this.query
+        surface.channel.id || surface.channel.normalizedName || this.query
       );
 
     const normalizedPrograms = (surface.scheduleItems || [])
@@ -252,7 +328,6 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     this.currentProgram =
       this.normalizeProgram(surface.current) ||
       normalizedPrograms.find((program) => program.liveNow) ||
-      normalizedPrograms[0] ||
       null;
     this.nextPrograms = (surface.next ? [surface.next] : [])
       .map((program) => this.normalizeProgram(program))
@@ -294,9 +369,10 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())
         ? Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 60000))
         : undefined;
+    const itemId = String(program?.id || `${slugify(title)}-${start}`);
 
     return {
-      id: String(program?.id || `${slugify(title)}-${start}`),
+      id: itemId,
       title,
       description: String(program?.program?.description || '').trim() || undefined,
       category: String(program?.program?.editorialCategory || '').trim() || undefined,
@@ -306,11 +382,9 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       start,
       end,
       liveNow: Boolean(program?.airing?.liveNow),
-      detailPath: buildDetailPath(
-        contentType,
-        title,
-        contentType === 'program' ? slugify : slugifyTitle
-      ),
+      detailPath: contentType === 'program'
+        ? `/contenido/${buildProgramCatalogId(itemId)}`
+        : buildDetailPath(contentType, title, slugifyTitle),
       durationMinutes: program?.airing?.durationMinutes || durationMinutes,
     };
   }
@@ -328,21 +402,8 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     return (upcoming.length ? upcoming : programs).slice(0, 8);
   }
 
-  private buildRelatedChannels(surface: TvChannelSurfaceDTO): RelatedChannel[] {
-    return (surface.relatedChannels || [])
-      .slice(0, 8)
-      .map((entry) => {
-        const slug = slugify(entry?.channel?.normalizedName || entry?.channel?.name || entry?.channel?.id || '');
-        return {
-          id: String(entry?.channel?.id || slug),
-          name: String(entry?.channel?.name || slug),
-          description: String(entry?.channel?.description || '').trim() || undefined,
-          logo: this.buildLocalChannelIcon(
-            entry?.channel?.id || entry?.channel?.normalizedName || entry?.channel?.name || slug
-          ),
-          link: ['/canales', slug],
-        };
-      });
+  private buildRelatedChannels(surface: TvChannelSurfaceDTO): TvReadChannelSummaryDTO[] {
+    return (surface.relatedChannels || []).slice(0, 4);
   }
 
   private setupMetaTags(): void {

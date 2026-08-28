@@ -2,6 +2,7 @@ export const APP_PATHS = {
   home: '/',
   forYou: '/para-ti',
   guide: '/programacion-tv/guia-canales',
+  channels: '/canales',
   explore: '/programacion-tv/que-ver-hoy',
   platforms: '/plataformas',
   sports: '/deportes/futbol',
@@ -30,6 +31,7 @@ export type AppRouteKey =
   | 'home'
   | 'para-ti'
   | 'guia-canales'
+  | 'canales'
   | 'que-ver-hoy'
   | 'plataformas'
   | 'deportes'
@@ -68,6 +70,7 @@ export const PRIMARY_NAV_ROUTES: AppRouteEntry[] = [
 
 export const SECONDARY_NAV_ROUTES: AppRouteEntry[] = [
   { key: 'en-directo', label: 'En directo', path: APP_PATHS.live },
+  { key: 'canales', label: 'Canales', path: APP_PATHS.channels },
   { key: 'peliculas', label: 'Películas', path: APP_PATHS.movies },
   { key: 'series', label: 'Series', path: APP_PATHS.series },
   { key: 'editorial', label: 'Blog', path: APP_PATHS.blog },

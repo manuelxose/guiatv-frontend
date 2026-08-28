@@ -13,6 +13,50 @@ export type CanonicalChannelGroup =
   | 'online'
   | 'deporte';
 
+export type CanonicalChannelDistribution =
+  | 'terrestrial'
+  | 'cable'
+  | 'operator'
+  | 'ott'
+  | 'unknown';
+
+export type CanonicalChannelAccess = 'free' | 'pay' | 'unknown';
+
+export type CanonicalChannelContentFacet =
+  | 'general'
+  | 'movies'
+  | 'series'
+  | 'documentary'
+  | 'kids'
+  | 'news'
+  | 'sports'
+  | 'music'
+  | 'lifestyle'
+  | 'unknown';
+
+export interface CanonicalChannelMarket {
+  country: string;
+  countryCode: string;
+  region: string;
+  scope: 'national' | 'regional' | 'international' | 'unknown';
+}
+
+export interface CanonicalChannelQuality {
+  resolution: 'sd' | 'hd' | 'uhd' | '4k' | 'unknown';
+  timeshift: boolean | 'unknown';
+}
+
+export interface CanonicalChannelCapabilities {
+  linear: boolean | 'unknown';
+  catchup: boolean | 'unknown';
+  streaming: boolean | 'unknown';
+}
+
+export interface CanonicalChannelProvenance {
+  classification: 'registry' | 'heuristic' | 'unknown';
+  sourceIds: string[];
+}
+
 export type TvPartOfDay =
   | 'madrugada'
   | 'manana'
@@ -67,6 +111,15 @@ export interface ChannelIdentityMetadata {
   inferredGroup: CanonicalChannelGroup;
   inferredRegion?: string;
   sortOrder: number;
+  distribution: CanonicalChannelDistribution;
+  access: CanonicalChannelAccess;
+  operator: string;
+  providers: string[];
+  contentFacets: CanonicalChannelContentFacet[];
+  market: CanonicalChannelMarket;
+  quality: CanonicalChannelQuality;
+  capabilities: CanonicalChannelCapabilities;
+  provenance: CanonicalChannelProvenance;
 }
 
 export interface CatalogAssetCandidate {
@@ -240,6 +293,33 @@ const CABLE_PATTERNS = [
   /^calle 13/i,
   /^hollywood/i,
 ];
+
+const CABLE_CANONICAL_IDS = new Set([
+  'tcm',
+  'axn',
+  'axn_movies',
+  'amc',
+  'amc_crime',
+  'amc_break',
+  'amc_living',
+  'canal_hollywood',
+  'sundance_tv',
+  'dark',
+  'xtrm',
+  'somos',
+  'historia',
+  'odisea',
+  'canal_cocina',
+  'national_geographic',
+  'nat_geo_wild',
+  'warner_tv',
+  'star_channel',
+  'calle_13',
+  'syfy',
+  'comedy_central',
+  'cosmo',
+  'mtv',
+]);
 
 const TITLE_ALIAS_SUFFIXES = [
   /\b360\b/gi,
@@ -716,7 +796,133 @@ export function inferChannelType(input: ChannelIdentityInput): CanonicalChannelT
     return 'Cable';
   }
 
+  if (aliases.some((alias) => CABLE_CANONICAL_IDS.has(alias))) {
+    return 'Cable';
+  }
+
   return 'OTT';
+}
+
+function inferChannelOperationalMetadata(
+  input: ChannelIdentityInput,
+  aliases: string[],
+  canonicalId: string,
+  inferredType: CanonicalChannelType
+): Pick<
+  ChannelIdentityMetadata,
+  | 'distribution'
+  | 'access'
+  | 'operator'
+  | 'providers'
+  | 'contentFacets'
+  | 'market'
+  | 'quality'
+  | 'capabilities'
+  | 'provenance'
+> {
+  const normalizedName = normalizeTvToken(input.name, ' ');
+  const rawIdentity = `${input.name || ''} ${input.sourceId || ''}`;
+  const isMovistar =
+    inferredType === 'Movistar' || aliases.some((alias) => alias.startsWith('movistar_'));
+  const isDazn = /^dazn(?:\b|_)/i.test(normalizedName) || canonicalId.startsWith('dazn_');
+  const isCable = inferredType === 'Cable' || CABLE_CANONICAL_IDS.has(canonicalId);
+  const distribution: CanonicalChannelDistribution =
+    inferredType === 'TDT' || inferredType === 'Autonomico'
+      ? 'terrestrial'
+      : isMovistar
+        ? 'operator'
+        : isCable
+          ? 'cable'
+          : inferredType === 'OTT'
+            ? 'ott'
+            : 'unknown';
+  const access: CanonicalChannelAccess =
+    distribution === 'terrestrial'
+      ? 'free'
+      : distribution === 'cable' || distribution === 'operator' || isDazn
+        ? 'pay'
+        : 'unknown';
+  const operator = isMovistar
+    ? 'Movistar Plus+'
+    : isDazn
+      ? 'DAZN'
+      : canonicalId.startsWith('amc') ||
+          ['canal_hollywood', 'sundance_tv', 'dark', 'xtrm', 'somos', 'odisea', 'canal_cocina'].includes(canonicalId)
+        ? 'AMC Networks'
+        : ['warner_tv', 'tcm'].includes(canonicalId)
+          ? 'Warner Bros. Discovery'
+          : canonicalId === 'mtv' || canonicalId === 'comedy_central'
+            ? 'Paramount'
+            : 'unknown';
+  const providers = operator === 'unknown' ? [] : [operator];
+  const contentFacets = new Set<CanonicalChannelContentFacet>();
+  if (SPORTS_KEYWORDS.some((keyword) => normalizedName.includes(keyword))) {
+    contentFacets.add('sports');
+  }
+  if (/\b(cine|movie|movies|estrenos|accion|drama|comedia|tcm|hollywood|sundance|somos)\b/.test(normalizedName)) {
+    contentFacets.add('movies');
+  }
+  if (/\b(axn|syfy|calle 13|cosmo|warner)\b/.test(normalizedName)) {
+    contentFacets.add('series');
+  }
+  if (/\b(national geographic|historia|odisea|discovery|documental)\b/.test(normalizedName)) {
+    contentFacets.add('documentary');
+  }
+  if (/\b(mtv|music|musica)\b/.test(normalizedName)) contentFacets.add('music');
+  if (/\b(cocina|living|lifestyle)\b/.test(normalizedName)) contentFacets.add('lifestyle');
+  if (/\b(clan|boing|kids|infantil)\b/.test(normalizedName)) contentFacets.add('kids');
+  if (/\b(news|noticias|24 horas)\b/.test(normalizedName)) contentFacets.add('news');
+  if (!contentFacets.size && (inferredType === 'TDT' || inferredType === 'Autonomico')) {
+    contentFacets.add('general');
+  }
+  if (!contentFacets.size) contentFacets.add('unknown');
+
+  const region = input.region || inferChannelRegion(input) || 'unknown';
+  const country = input.country || 'unknown';
+  const countryCode = input.countryCode || 'unknown';
+  const scope: CanonicalChannelMarket['scope'] =
+    region !== 'unknown'
+      ? 'regional'
+      : country !== 'unknown' || countryCode !== 'unknown'
+        ? 'national'
+        : 'unknown';
+  const resolution: CanonicalChannelQuality['resolution'] = /\b4k\b/i.test(rawIdentity)
+    ? '4k'
+    : /\buhd\b/i.test(rawIdentity)
+      ? 'uhd'
+      : /\bhd\b/i.test(rawIdentity)
+        ? 'hd'
+        : 'unknown';
+  const registryMatched = Object.prototype.hasOwnProperty.call(
+    CANONICAL_CHANNEL_ALIASES,
+    canonicalId
+  );
+
+  return {
+    distribution,
+    access,
+    operator,
+    providers,
+    contentFacets: Array.from(contentFacets),
+    market: { country, countryCode, region, scope },
+    quality: {
+      resolution,
+      timeshift: /(?:\+1|\bplus 1\b)/i.test(rawIdentity) ? true : 'unknown',
+    },
+    capabilities: {
+      linear: true,
+      catchup: 'unknown',
+      streaming: 'unknown',
+    },
+    provenance: {
+      classification: registryMatched
+        ? 'registry'
+        : input.name || input.sourceId
+          ? 'heuristic'
+          : 'unknown',
+      sourceIds: unique([String(input.sourceId || '').trim()]),
+    },
+  };
 }
 
 export function inferChannelGroup(
@@ -788,15 +994,20 @@ export function buildChannelIdentityMetadata(
     Object.prototype.hasOwnProperty.call(CANONICAL_CHANNEL_ALIASES, alias)
   );
 
+  const canonicalId =
+    canonicalAlias || normalizedName || normalizeTvToken(input.sourceId) || 'unknown_channel';
+  const inferredType = inferChannelType(input);
+
   return {
     normalizedName,
     aliases,
     sourceIds: unique([normalizeTvToken(input.sourceId), String(input.sourceId || '').trim()]),
-    canonicalId: canonicalAlias || normalizedName || normalizeTvToken(input.sourceId) || 'unknown_channel',
-    inferredType: inferChannelType(input),
+    canonicalId,
+    inferredType,
     inferredGroup: inferChannelGroup(input),
     inferredRegion: inferChannelRegion(input),
     sortOrder: inferChannelSortOrder(input),
+    ...inferChannelOperationalMetadata(input, aliases, canonicalId, inferredType),
   };
 }
 

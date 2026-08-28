@@ -2,7 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Subject, forkJoin, map, of, switchMap, takeUntil } from 'rxjs';
+import { Subject, combineLatest, forkJoin, map, of, startWith, switchMap, takeUntil } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CatalogRailComponent } from '../../../components/catalog-rail/catalog-rail.component';
 import { FaqSectionComponent } from '../../../components/faq-section/faq-section.component';
@@ -20,6 +20,8 @@ import { EditorialPostPageState } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
 import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
 import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
+import { UnifiedAsyncStateComponent } from '../../../components/unified-async-state/unified-async-state.component';
+import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skeleton-block/unified-skeleton-block.component';
 
 interface TrendingItem {
   title: string;
@@ -41,6 +43,8 @@ interface TrendingItem {
     CatalogRailComponent,
     FaqSectionComponent,
     PortalContextNavComponent,
+    UnifiedAsyncStateComponent,
+    UnifiedSkeletonBlockComponent,
   ],
   templateUrl: './post-detail.component.html',
   styleUrls: ['./post-detail.component.scss'],
@@ -60,6 +64,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   public trendingItems: TrendingItem[] = [];
 
   private readonly destroy$ = new Subject<void>();
+  private readonly retryTrigger$ = new Subject<void>();
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -75,14 +80,32 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.route.paramMap
+    combineLatest([
+      this.route.paramMap,
+      this.retryTrigger$.pipe(startWith(undefined)),
+    ])
       .pipe(
-        map((params) => params.get('slug') || ''),
-        switchMap((slug) => this.editorialService.getPostPageState(slug)),
+        map(([params]) => params.get('slug') || ''),
+        switchMap((slug) => {
+          this.loading = true;
+          this.error = null;
+          this.state = null;
+          this.changeDetector.markForCheck();
+          return this.editorialService.getPostPageState(slug).pipe(
+            map((state) => ({ state, failed: false })),
+            catchError(() => of({ state: null, failed: true }))
+          );
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe({
-        next: (state) => {
+        next: ({ state, failed }) => {
+          if (failed) {
+            this.error = 'No se ha podido cargar este artículo. Comprueba tu conexión e inténtalo de nuevo.';
+            this.loading = false;
+            this.changeDetector.markForCheck();
+            return;
+          }
           if (!state) {
             void this.router.navigateByUrl(APP_PATHS.blog);
             return;
@@ -115,17 +138,16 @@ export class PostDetailComponent implements OnInit, OnDestroy {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         },
-        error: () => {
-          this.error = 'No se ha podido cargar este artículo.';
-          this.loading = false;
-          this.changeDetector.markForCheck();
-        },
       });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  public retry(): void {
+    this.retryTrigger$.next();
   }
 
   public hasRouteRelation(key: string): boolean {
@@ -155,6 +177,12 @@ export class PostDetailComponent implements OnInit, OnDestroy {
         : []),
       ...(this.state ? [{ name: this.state.post.title, url: this.state.post.canonicalPath }] : []),
     ];
+  }
+
+  public get showUpdatedDate(): boolean {
+    const published = new Date(this.state?.post.publishedAt || 0).getTime();
+    const modified = new Date(this.state?.post.modifiedAt || 0).getTime();
+    return Number.isFinite(published) && Number.isFinite(modified) && modified - published >= 86_400_000;
   }
 
   private loadLinkedModules(post: EditorialPostPageState['post']): void {
@@ -266,6 +294,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
           canonicalPath: state.post.canonicalPath,
           contentType: state.post.contentType,
           targetQuery: state.post.targetQuery,
+          author: state.post.author,
         },
         baseUrl
       ),

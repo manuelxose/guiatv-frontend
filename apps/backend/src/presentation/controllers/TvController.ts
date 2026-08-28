@@ -32,7 +32,22 @@ export class TvController {
   async readChannels(req: Request, res: Response): Promise<void> {
     const date = req.query.date ? String(req.query.date) : 'today';
     const group = req.query.group ? String(req.query.group) : undefined;
-    const result = await this.tvReadQueryService.getChannels(date, group);
+    const limit = req.query.limit ? Number(req.query.limit) : undefined;
+    const result = await this.tvReadQueryService.getChannels(date, group, limit);
+    res.status(200).json(successResponse(result, result.meta));
+  }
+
+  async readSchedule(req: Request, res: Response): Promise<void> {
+    const result = await this.tvReadQueryService.getSchedule({
+      date: req.query.date ? String(req.query.date) : 'today',
+      group: req.query.group ? String(req.query.group) : undefined,
+      category: req.query.category ? String(req.query.category) : undefined,
+      channelId: req.query.channelId ? String(req.query.channelId) : undefined,
+      q: req.query.q ? String(req.query.q) : undefined,
+      itemsPerChannel: req.query.itemsPerChannel
+        ? Number(req.query.itemsPerChannel)
+        : undefined,
+    });
     res.status(200).json(successResponse(result, result.meta));
   }
 

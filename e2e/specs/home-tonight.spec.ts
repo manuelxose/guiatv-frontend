@@ -32,6 +32,14 @@ test.describe('Home -> Esta noche -> filtrar -> abrir contenido', () => {
       await railsToggle.click();
     }
 
+    // The production-backed fixture can legitimately have no prime-time
+    // entries for the current date. Exercise the documented recovery action
+    // and continue the same filter/detail journey with live programmes.
+    const emptyRecovery = page.getByRole('button', { name: 'Ver emisiones' });
+    if (await emptyRecovery.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await emptyRecovery.click();
+    }
+
     // Filtrar: pick a real channel chip (not "Todos").
     const channelChips = page.locator(
       '.live-view__channel-chip:not(:has-text("Todos"))'

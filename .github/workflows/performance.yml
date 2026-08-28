@@ -17,6 +17,8 @@ jobs:
           cache: npm
       - run: npm ci --legacy-peer-deps
       - run: npm run lint:backend
+      - run: npm run lint:frontend
       - run: npm run test:backend
+      - run: npm run test:frontend
       - name: Production build with Angular bundle budgets
         run: npm run build

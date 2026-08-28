@@ -1,9 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { TvReadModelBuilder } from './TvReadModelBuilder';
-import { PRIMARY_EPG_SOURCE_URL, TDTCHANNELS_EPG_SOURCE_URL } from '@/shared/config/epgSources';
+import { scopeResolvedProgramsToCoreSources, TvReadModelBuilder } from './TvReadModelBuilder';
+import { PRIMARY_EPG_SOURCE_URL, SECONDARY_EPG_SOURCE_URL, TDTCHANNELS_EPG_SOURCE_URL } from '@/shared/config/epgSources';
 
 const builder = new TvReadModelBuilder({} as any, {} as any);
+
+test('fallback EPG programmes cannot introduce secondary-only channels', () => {
+  const entries = [
+    { program: { id: 'primary', sourceFeed: PRIMARY_EPG_SOURCE_URL }, resolvedChannelId: 'la_1' },
+    { program: { id: 'tdt', sourceFeed: TDTCHANNELS_EPG_SOURCE_URL }, resolvedChannelId: 'tv3' },
+    { program: { id: 'secondary-merge', sourceFeed: SECONDARY_EPG_SOURCE_URL }, resolvedChannelId: 'la_1' },
+    { program: { id: 'secondary-only', sourceFeed: SECONDARY_EPG_SOURCE_URL }, resolvedChannelId: 'foreign_only' },
+  ];
+
+  assert.deepEqual(
+    scopeResolvedProgramsToCoreSources(entries, PRIMARY_EPG_SOURCE_URL).map((entry) => entry.program.id),
+    ['primary', 'tdt', 'secondary-merge']
+  );
+});
 
 test('TvReadModelBuilder resolves Discovery Max aliases to canonical DMAX channel', () => {
   const channels = [

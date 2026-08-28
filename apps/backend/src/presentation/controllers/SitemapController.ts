@@ -376,6 +376,7 @@ export class SitemapController {
       { loc: '/programacion-tv/que-ver-hoy', lastmod: today, changefreq: 'daily', priority: 0.9 },
       // NOTE: /programacion-tv/en-directo is excluded — it redirects to /guia-canales (301)
       { loc: '/programacion-tv/guia-canales', lastmod: today, changefreq: 'hourly', priority: 0.9 },
+      { loc: '/canales', lastmod: today, changefreq: 'hourly', priority: 0.8 },
       { loc: '/programacion-tv/peliculas', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/programacion-tv/series', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/plataformas', lastmod: today, changefreq: 'daily', priority: 0.9 },

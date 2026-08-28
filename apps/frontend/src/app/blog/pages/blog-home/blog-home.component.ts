@@ -7,10 +7,16 @@ import { UnifiedPortalShellComponent } from '../../../components/unified-portal-
 import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
 import { APP_PATHS } from '../../../config/route-map';
 import { MetaService } from '../../../services/meta.service';
-import { EditorialCategorySection, EditorialPost } from '../../models/editorial.models';
+import {
+  EditorialCategorySection,
+  EditorialHubState,
+  EditorialPost,
+} from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
 import { generateCollectionPageSchema } from '../../../utils/utils';
 import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
+import { UnifiedAsyncStateComponent } from '../../../components/unified-async-state/unified-async-state.component';
+import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skeleton-block/unified-skeleton-block.component';
 
 @Component({
   selector: 'app-blog-home',
@@ -21,6 +27,8 @@ import { PortalContextNavComponent } from '../../../components/portal-context-na
     UnifiedPortalShellComponent,
     EditorialPostCardComponent,
     PortalContextNavComponent,
+    UnifiedAsyncStateComponent,
+    UnifiedSkeletonBlockComponent,
   ],
   templateUrl: './blog-home.component.html',
   styleUrls: ['./blog-home.component.scss'],
@@ -36,10 +44,12 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
   public loading = true;
   public error: string | null = null;
   public hero: EditorialPost | null = null;
+  public latestPosts: EditorialPost[] = [];
   public guidePosts: EditorialPost[] = [];
   public rankingPosts: EditorialPost[] = [];
   public trendPosts: EditorialPost[] = [];
   public categorySections: EditorialCategorySection[] = [];
+  public categories: EditorialHubState['categories'] = [];
   public safeLdHtml: SafeHtml | null = null;
 
   private readonly destroy$ = new Subject<void>();
@@ -62,26 +72,41 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
     });
     this.buildStructuredData();
 
+    this.loadHub();
+  }
+
+  public retry(): void {
+    this.loadHub();
+  }
+
+  public trackPost(index: number, post: EditorialPost): string {
+    return post.id || `${post.slug}-${index}`;
+  }
+
+  private loadHub(): void {
+    this.loading = true;
+    this.error = null;
     this.editorialService
       .getHubState()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (state) => {
           this.hero = state.hero;
+          this.latestPosts = state.latestPosts;
           this.guidePosts = state.guidePosts;
           this.rankingPosts = state.rankingPosts;
           this.trendPosts = state.trendPosts;
           this.categorySections = state.categorySections;
+          this.categories = state.categories;
           this.loading = false;
           this.changeDetector.markForCheck();
         },
         error: () => {
-          this.error = 'No se ha podido cargar el Blog.';
+          this.error = 'No se han podido cargar las publicaciones. Comprueba tu conexión e inténtalo de nuevo.';
           this.loading = false;
           this.changeDetector.markForCheck();
         },
-      });
-
+    });
   }
 
   ngOnDestroy(): void {

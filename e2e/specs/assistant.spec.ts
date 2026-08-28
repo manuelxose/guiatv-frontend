@@ -1,12 +1,13 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { mockAuthBackend } from '../fixtures/auth-mock';
+import { reviewArtifactPath } from '../fixtures/review-artifact';
 
 test.describe('GuíaTV assistant', () => {
   test('mobile composer exposes progress, cancellation, retry, and secondary social navigation', async ({
     page,
     context,
-  }) => {
+    }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await mockAuthBackend(context);
     await page.addInitScript(() => {
@@ -67,7 +68,7 @@ test.describe('GuíaTV assistant', () => {
 
     await dialog.getByRole('button', { name: 'Completar Perfil IA' }).click();
     await expect(dialog.getByRole('heading', { name: 'Perfil IA' })).toBeVisible();
-    await page.screenshot({ path: '.impeccable/review/assistant-profile-mobile-light.png' });
+    await page.screenshot({ path: reviewArtifactPath(testInfo, 'assistant-profile-mobile-light.png') });
     await dialog.getByRole('button', { name: 'Netflix' }).click();
     await dialog.getByRole('button', { name: 'Guardar y continuar' }).click();
     await expect(dialog.getByRole('heading', { name: '¿Qué géneros te interesan?' })).toBeVisible();
@@ -118,7 +119,7 @@ test.describe('GuíaTV assistant', () => {
       .withTags(['wcag2a', 'wcag2aa'])
       .analyze();
     expect(accessibility.violations.filter((violation) => violation.impact === 'critical')).toEqual([]);
-    await page.screenshot({ path: '.impeccable/review/assistant-mobile-light.png' });
+    await page.screenshot({ path: reviewArtifactPath(testInfo, 'assistant-mobile-light.png') });
 
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
     const darkAccessibility = await new AxeBuilder({ page })
@@ -126,7 +127,7 @@ test.describe('GuíaTV assistant', () => {
       .withTags(['wcag2a', 'wcag2aa'])
       .analyze();
     expect(darkAccessibility.violations.filter((violation) => ['critical', 'serious'].includes(violation.impact || ''))).toEqual([]);
-    await page.screenshot({ path: '.impeccable/review/assistant-mobile-dark.png' });
+    await page.screenshot({ path: reviewArtifactPath(testInfo, 'assistant-mobile-dark.png') });
 
     await input.fill('¿Qué ponen ahora en La 1?');
     await dialog.getByRole('button', { name: 'Enviar mensaje' }).click();
@@ -165,7 +166,7 @@ test.describe('GuíaTV assistant', () => {
     }
   });
 
-  test('platform recommendations are visible as an expandable list in both themes', async ({ page, context }) => {
+  test('platform recommendations are visible as an expandable list in both themes', async ({ page, context }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await mockAuthBackend(context);
     await page.addInitScript(() => {
@@ -213,7 +214,7 @@ test.describe('GuíaTV assistant', () => {
     await expect(dialog.getByRole('button', { name: 'Vista carrusel' })).toHaveCount(0);
     await dialog.getByRole('button', { name: 'Ver 3 resultados más' }).click();
     await expect(dialog.locator('app-chat-recommendation-card')).toHaveCount(8);
-    await page.screenshot({ path: '.impeccable/review/assistant-platform-results-light.png' });
+    await page.screenshot({ path: reviewArtifactPath(testInfo, 'assistant-platform-results-light.png') });
 
     const accessibility = await new AxeBuilder({ page })
       .include('.app-shell__chat-panel--mobile')
@@ -227,6 +228,6 @@ test.describe('GuíaTV assistant', () => {
       .withTags(['wcag2a', 'wcag2aa'])
       .analyze();
     expect(darkAccessibility.violations.filter((violation) => ['critical', 'serious'].includes(violation.impact || ''))).toEqual([]);
-    await page.screenshot({ path: '.impeccable/review/assistant-platform-results-dark.png' });
+    await page.screenshot({ path: reviewArtifactPath(testInfo, 'assistant-platform-results-dark.png') });
   });
 });

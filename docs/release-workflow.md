@@ -30,9 +30,15 @@ Commands:
 ```bash
 cd /var/www/guiatv
 npm run build
+npm run check:release
 npm run publish:release
 systemctl restart guiatv-api guiatv-ssr
 ```
+
+`npm run check:release` is non-destructive. It validates the built runtime
+artifacts, release identifier and retention configuration, then prints the Git
+SHA plus backend/frontend SHA-256 fingerprints. It does not create a release,
+change `current`, prune history or restart services.
 
 Or use the production wrapper:
 
@@ -79,3 +85,14 @@ Expected result:
 - canonical API routes return `200`
 - SSR routes return `200`
 - API logs do not show legacy frontend traffic such as `/v2/channels` or `/v2/programs`
+
+## Rollback
+
+Before publishing, record `readlink -f /var/www/guiatv/current`. To roll back,
+atomically repoint `current` to that recorded release, restart both services,
+and repeat the validation checklist. Releases are immutable and the publisher
+retains five by default; no database migration is part of this rebuild release.
+
+Rollback immediately if the error rate exceeds twice its baseline, p95 latency
+increases by more than 50%, a new client error affects more than 0.1% of
+sessions, or any security/data-integrity regression appears.

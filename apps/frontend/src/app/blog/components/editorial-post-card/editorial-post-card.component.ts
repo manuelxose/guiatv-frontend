@@ -14,13 +14,13 @@ import { EditorialPost } from '../../models/editorial.models';
       class="editorial-post-card group relative block overflow-hidden rounded-[1.6rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] transition-colors hover:border-[var(--portal-border-strong)]"
       data-vertical="editorial"
     >
-      <div class="relative aspect-[16/10] overflow-hidden bg-[var(--portal-surface-strong)]">
+      <div class="editorial-post-card__media relative overflow-hidden bg-[var(--portal-surface-strong)]">
         <img
           [src]="post?.coverImage"
           [alt]="post?.title || 'Artículo editorial'"
           width="640"
           height="400"
-          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          class="editorial-post-card__image object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/25 to-transparent"></div>
@@ -66,6 +66,17 @@ import { EditorialPost } from '../../models/editorial.models';
 
       .editorial-post-card {
         @include cards.card-vertical-accent();
+      }
+
+      .editorial-post-card__media {
+        aspect-ratio: 16 / 10;
+      }
+
+      .editorial-post-card__image {
+        height: 100%;
+        inset: 0;
+        position: absolute;
+        width: 100%;
       }
     `,
   ],

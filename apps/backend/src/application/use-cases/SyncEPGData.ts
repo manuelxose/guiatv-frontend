@@ -440,6 +440,15 @@ export class SyncEPGData {
               inferredType === 'Autonomico'
                 ? inferredRegion || 'Spain'
                 : this.inferRegionWithGeo(parsed.displayName, parsed.country),
+            distribution: identity.distribution,
+            access: identity.access,
+            operator: identity.operator,
+            providers: identity.providers,
+            contentFacets: identity.contentFacets,
+            market: identity.market,
+            quality: identity.quality,
+            capabilities: identity.capabilities,
+            provenance: identity.provenance,
             isActive: true,
           });
 

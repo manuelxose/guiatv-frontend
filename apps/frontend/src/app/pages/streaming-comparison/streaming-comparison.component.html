@@ -1,171 +1,216 @@
-<main class="platform-comparison">
-  <section class="platform-comparison__masthead">
-    <div class="platform-comparison__masthead-copy">
-      <p class="platform-comparison__eyebrow">Plataformas</p>
-      <h1>Comparador de plataformas</h1>
-      <p>
-        Consulta precios de entrada, pantallas, resolución y funciones clave antes de
-        explorar el catálogo de cada servicio.
-      </p>
+<main class="comparison">
+  <header class="comparison__header">
+    <div>
+      <h1>Compara plataformas con datos útiles</h1>
+      <p>Elige hasta tres ofertas y revisa precio, pantallas, calidad y condiciones antes de salir al proveedor.</p>
     </div>
-    <div class="platform-comparison__masthead-actions">
-      <span>Revisado: {{ lastReviewedAt }}</span>
-      <a [routerLink]="appPaths.platforms">Ver todas las plataformas</a>
-    </div>
-  </section>
+    <a [routerLink]="appPaths.platforms">Explorar catálogos</a>
+  </header>
 
-  <section class="platform-comparison__summary" aria-label="Resumen de la comparativa">
-    <article *ngFor="let card of summaryCards">
-      <span>{{ card.label }}</span>
-      <strong>{{ card.value }}</strong>
-      <p>{{ card.description }}</p>
-    </article>
-  </section>
-
-  <section class="platform-comparison__section">
-    <header class="platform-comparison__section-head">
+  <section class="comparison__controls" aria-labelledby="comparison-filters-title">
+    <div class="comparison__controls-head">
       <div>
-        <p class="platform-comparison__eyebrow">Comparativa</p>
-        <h2>Precios y prestaciones</h2>
+        <h2 id="comparison-filters-title">Qué necesitas</h2>
+        <p>Las recomendaciones se basan en prestaciones y precio, no en comisiones.</p>
       </div>
-      <p>Desliza la tabla horizontalmente en móvil para ver todos los datos.</p>
-    </header>
-
-    <div class="comparison-table-wrap">
-      <table class="comparison-table">
-        <thead>
-          <tr>
-            <th class="comparison-table__sticky comparison-table__sticky--header">Plataforma</th>
-            <th>Mensual desde</th>
-            <th>Anual desde</th>
-            <th>Prueba</th>
-            <th>Pantallas</th>
-            <th>Resolución</th>
-            <th>Descargas</th>
-            <th>Anuncios</th>
-            <th>Directo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let comparison of platformComparisons; trackBy: trackByPlatformKey">
-            <th scope="row" class="comparison-table__sticky">
-              <a
-                [routerLink]="appPaths.platforms"
-                [queryParams]="comparison.queryParams"
-                [attr.aria-label]="'Abrir catálogo de ' + comparison.platform.name"
-                class="platform-comparison__platform-link"
-              >
-                <span class="platform-avatar" [ngClass]="comparison.accentClass">
-                  <img
-                    *ngIf="comparison.platform.logoUrl"
-                    [src]="comparison.platform.logoUrl"
-                    [alt]="comparison.platform.name"
-                    loading="lazy"
-                  />
-                  <span *ngIf="!comparison.platform.logoUrl">{{ comparison.initials }}</span>
-                </span>
-                <span>
-                  <strong>{{ comparison.platform.name }}</strong>
-                  <small>{{ comparison.profile }}</small>
-                </span>
-              </a>
-            </th>
-            <td>{{ comparison.startingMonthlyPrice }}</td>
-            <td>{{ comparison.startingAnnualPrice }}</td>
-            <td>{{ comparison.freeTrial }}</td>
-            <td>{{ comparison.simultaneousStreams }}</td>
-            <td>{{ comparison.maxResolution }}</td>
-            <td><span class="comparison-status" [ngClass]="statusClasses(comparison.downloads.tone)">{{ comparison.downloads.label }}</span></td>
-            <td><span class="comparison-status" [ngClass]="statusClasses(comparison.ads.tone)">{{ comparison.ads.label }}</span></td>
-            <td><span class="comparison-status" [ngClass]="statusClasses(comparison.liveContent.tone)">{{ comparison.liveContent.label }}</span></td>
-          </tr>
-        </tbody>
-      </table>
+      <button *ngIf="hasActiveFilters" type="button" class="text-action" (click)="clearFilters()">Limpiar filtros</button>
     </div>
 
-    <div class="platform-comparison__legend" aria-label="Leyenda">
-      <span
-        *ngFor="let legendItem of legendItems"
-        class="comparison-status"
-        [ngClass]="statusClasses(legendItem.tone)"
-      >
-        {{ legendItem.label }}
-      </span>
+    <div class="comparison__control-row">
+      <label>
+        Prioridad
+        <select [value]="selectedIntent || ''" (change)="changeIntent($any($event.target).value)">
+          <option value="">Todas las ofertas</option>
+          <option *ngFor="let option of intentOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
+      <label>
+        Orden
+        <select [value]="selectedSort" (change)="changeSort($any($event.target).value)">
+          <option *ngFor="let option of sortOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </label>
     </div>
-    <p class="platform-comparison__note">
-      Los precios son referencias públicas para España y pueden variar por promociones,
-      modalidad o fecha. Comprueba siempre las condiciones del proveedor.
-    </p>
+
+    <fieldset class="comparison__feature-filters">
+      <legend>Prestaciones imprescindibles</legend>
+      <button
+        *ngFor="let option of featureOptions"
+        type="button"
+        [class.is-active]="selectedFeatures.has(option.value)"
+        [attr.aria-pressed]="selectedFeatures.has(option.value)"
+        (click)="toggleFeature(option.value)"
+      >{{ option.label }}</button>
+    </fieldset>
   </section>
 
-  <section class="platform-comparison__section">
-    <header class="platform-comparison__section-head">
-      <div>
-        <p class="platform-comparison__eyebrow">Según tus hábitos</p>
-        <h2>Encuentra el servicio que mejor encaja</h2>
-      </div>
-    </header>
-    <div class="platform-comparison__profiles">
-      <article *ngFor="let profile of profileCards">
-        <h3>{{ profile.title }}</h3>
-        <p>{{ profile.description }}</p>
+  <app-unified-skeleton-block
+    *ngIf="loading"
+    [count]="3"
+    [columns]="3"
+    cardHeight="18rem"
+    aria-label="Cargando ofertas"
+  ></app-unified-skeleton-block>
+
+  <app-unified-async-state
+    *ngIf="!loading && errorMessage"
+    kind="error"
+    title="El comparador no está disponible"
+    [message]="errorMessage"
+    actionLabel="Reintentar"
+    (action)="loadOffers()"
+  ></app-unified-async-state>
+
+  <app-unified-async-state
+    *ngIf="!loading && !errorMessage && !offers.length"
+    kind="empty"
+    title="No hay ofertas con estos filtros"
+    message="Prueba a quitar alguna prestación o cambia tu prioridad."
+    actionLabel="Limpiar filtros"
+    (action)="clearFilters()"
+  ></app-unified-async-state>
+
+  <ng-container *ngIf="!loading && !errorMessage && offers.length">
+    <section class="comparison__results" aria-labelledby="offers-title">
+      <header class="comparison__section-head">
         <div>
-          <span *ngFor="let platformName of profile.platformNames">{{ platformName }}</span>
+          <h2 id="offers-title">{{ offers.length }} ofertas</h2>
+          <p>Selecciona las que quieres ver juntas. El máximo es tres.</p>
         </div>
-      </article>
-    </div>
-  </section>
+        <span aria-live="polite">{{ selectedOffers.length }}/3 seleccionadas</span>
+      </header>
 
-  <section class="platform-comparison__section">
-    <header class="platform-comparison__section-head">
-      <div>
-        <p class="platform-comparison__eyebrow">Plataformas</p>
-        <h2>Resumen por servicio</h2>
-      </div>
-    </header>
-    <div class="platform-comparison__cards">
-      <article *ngFor="let comparison of platformComparisons; trackBy: trackByPlatformKey">
-        <header>
-          <span class="platform-avatar platform-avatar--small" [ngClass]="comparison.accentClass">
-            <img
-              *ngIf="comparison.platform.logoUrl"
-              [src]="comparison.platform.logoUrl"
-              [alt]="comparison.platform.name"
-              loading="lazy"
-            />
-            <span *ngIf="!comparison.platform.logoUrl">{{ comparison.initials }}</span>
-          </span>
-          <div>
-            <h3>{{ comparison.platform.name }}</h3>
-            <span>{{ comparison.bestFor }}</span>
+      <p class="comparison__selection-message" aria-live="polite">{{ selectionMessage }}</p>
+
+      <div class="offer-list">
+        <article
+          *ngFor="let offer of offers; trackBy: trackOffer"
+          class="offer"
+          [class.offer--selected]="isSelected(offer.id)"
+        >
+          <div class="offer__identity">
+            <span class="offer__logo">
+              <img *ngIf="platformLogo(offer)" [src]="platformLogo(offer)" [alt]="offer.provider.name" loading="lazy" />
+              <span *ngIf="!platformLogo(offer)">{{ initials(offer.provider.name) }}</span>
+            </span>
+            <div>
+              <h3>{{ offer.provider.name }}</h3>
+              <p>{{ offer.plan.name }}</p>
+            </div>
           </div>
-        </header>
-        <p>{{ comparison.highlight }}</p>
-        <dl>
-          <div><dt>Mensual</dt><dd>{{ comparison.startingMonthlyPrice }}</dd></div>
-          <div><dt>Anual</dt><dd>{{ comparison.startingAnnualPrice }}</dd></div>
-          <div><dt>Pantallas</dt><dd>{{ comparison.simultaneousStreams }}</dd></div>
-          <div><dt>Calidad</dt><dd>{{ comparison.maxResolution }}</dd></div>
-        </dl>
-        <a [routerLink]="appPaths.platforms" [queryParams]="comparison.queryParams">
-          Ver catálogo de {{ comparison.platform.name }}
-        </a>
-      </article>
-    </div>
-  </section>
 
-  <section class="platform-comparison__section">
-    <header class="platform-comparison__section-head">
-      <div>
-        <p class="platform-comparison__eyebrow">Ayuda</p>
-        <h2>Preguntas frecuentes</h2>
+          <div class="offer__price">
+            <strong>{{ offer.pricing.monthlyLabel }}</strong>
+            <span>{{ offer.pricing.annualLabel }}</span>
+          </div>
+
+          <div class="offer__summary">
+            <p>{{ offer.bestFor }}</p>
+            <ul aria-label="Prestaciones principales">
+              <li>{{ offer.features.simultaneousStreams }} pantallas</li>
+              <li>{{ offer.features.maxResolution }}</li>
+              <li>{{ featureLabel(offer.features.liveContent, 'Con directo', 'Sin directo') }}</li>
+            </ul>
+          </div>
+
+          <div class="offer__trust">
+            <span [class.offer__verification--pending]="offer.verification.status !== 'current'">
+              {{ verificationLabel(offer) }} · {{ offer.verification.lastVerifiedAt | date:'dd/MM/yyyy' }}
+            </span>
+            <small>{{ offer.disclosure }}</small>
+          </div>
+
+          <div class="offer__actions">
+            <button
+              type="button"
+              [class.is-selected]="isSelected(offer.id)"
+              [attr.aria-pressed]="isSelected(offer.id)"
+              (click)="toggleOffer(offer.id)"
+            >{{ isSelected(offer.id) ? 'Quitar' : 'Comparar' }}</button>
+            <a
+              [href]="outboundUrl(offer, 'comparison-card')"
+              target="_blank"
+              [attr.rel]="outboundRel(offer)"
+              (click)="trackOutbound(offer, 'comparison-card')"
+            >{{ offer.outbound.label }}<span class="sr-only"> de {{ offer.provider.name }}; abre una pestaña nueva</span></a>
+          </div>
+        </article>
       </div>
-    </header>
-    <div class="platform-comparison__faq">
-      <article *ngFor="let faq of faqItems">
-        <h3>{{ faq.question }}</h3>
-        <p>{{ faq.answer }}</p>
-      </article>
-    </div>
-  </section>
+    </section>
+
+    <section class="comparison__selected" aria-labelledby="selected-title">
+      <header class="comparison__section-head">
+        <div>
+          <h2 id="selected-title">Comparación seleccionada</h2>
+          <p>Las filas resaltadas cambian entre las ofertas elegidas.</p>
+        </div>
+      </header>
+
+      <div class="selected-table-wrap" *ngIf="selectedOffers.length; else noSelection">
+        <table class="selected-table">
+          <thead>
+            <tr>
+              <th scope="col">Característica</th>
+              <th *ngFor="let offer of selectedOffers; trackBy: trackOffer" scope="col">
+                <strong>{{ offer.provider.name }}</strong>
+                <span>{{ offer.plan.name }}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr [class.is-different]="hasDifference('price')">
+              <th scope="row">Precio mensual</th>
+              <td *ngFor="let offer of selectedOffers; trackBy: trackOffer">{{ offer.pricing.monthlyLabel }}</td>
+            </tr>
+            <tr [class.is-different]="hasDifference('streams')">
+              <th scope="row">Pantallas</th>
+              <td *ngFor="let offer of selectedOffers; trackBy: trackOffer">{{ offer.features.simultaneousStreams }}</td>
+            </tr>
+            <tr [class.is-different]="hasDifference('resolution')">
+              <th scope="row">Calidad máxima</th>
+              <td *ngFor="let offer of selectedOffers; trackBy: trackOffer">{{ offer.features.maxResolution }}</td>
+            </tr>
+            <tr [class.is-different]="hasDifference('downloads')">
+              <th scope="row">Descargas</th>
+              <td *ngFor="let offer of selectedOffers; trackBy: trackOffer">{{ featureLabel(offer.features.downloads) }}</td>
+            </tr>
+            <tr [class.is-different]="hasDifference('ads')">
+              <th scope="row">Anuncios</th>
+              <td *ngFor="let offer of selectedOffers; trackBy: trackOffer">{{ featureLabel(offer.features.ads) }}</td>
+            </tr>
+            <tr [class.is-different]="hasDifference('live')">
+              <th scope="row">Contenido en directo</th>
+              <td *ngFor="let offer of selectedOffers; trackBy: trackOffer">{{ featureLabel(offer.features.liveContent) }}</td>
+            </tr>
+            <tr [class.is-different]="hasDifference('commitment')">
+              <th scope="row">Permanencia</th>
+              <td *ngFor="let offer of selectedOffers; trackBy: trackOffer">
+                {{ offer.requirements.commitmentMonths ? offer.requirements.commitmentMonths + ' meses' : 'Sin permanencia' }}
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Salida</th>
+              <td *ngFor="let offer of selectedOffers; trackBy: trackOffer">
+                <a
+                  [href]="outboundUrl(offer, 'comparison-selection')"
+                  target="_blank"
+                  [attr.rel]="outboundRel(offer)"
+                  (click)="trackOutbound(offer, 'comparison-selection')"
+                >{{ offer.outbound.label }}<span class="sr-only"> de {{ offer.provider.name }}; abre una pestaña nueva</span></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noSelection>
+        <p class="comparison__empty-selection">Selecciona al menos una oferta para empezar a comparar.</p>
+      </ng-template>
+    </section>
+
+    <aside class="comparison__disclosure" aria-label="Transparencia comercial">
+      <h2>Cómo gana dinero GuíaTV</h2>
+      <p>{{ disclosure }}</p>
+      <p>Un botón “Ver oferta” puede ser afiliado y queda marcado como patrocinado. “Consultar proveedor” es un enlace comercial directo sin comisión configurada.</p>
+    </aside>
+  </ng-container>
 </main>

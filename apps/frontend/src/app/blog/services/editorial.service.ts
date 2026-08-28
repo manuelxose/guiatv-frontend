@@ -1,6 +1,5 @@
-import { isPlatformBrowser } from '@angular/common';
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { Observable, catchError, combineLatest, map, of, shareReplay } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, combineLatest, map, shareReplay } from 'rxjs';
 import { BlogService } from '../../services/blog.service';
 import {
   EditorialCategory,
@@ -35,6 +34,14 @@ const RANKING_KEYWORDS = [
 ];
 
 const TREND_KEYWORDS = ['tendencia', 'tendencias', 'estrenos', 'esta semana', 'fin de semana'];
+const EDITORIAL_CATEGORY_PRIORITY = [
+  ['cine', 'pelicula'],
+  ['series'],
+  ['futbol', 'deporte'],
+  ['television', 'tv'],
+  ['streaming', 'plataforma'],
+  ['comparador', 'comparativa'],
+] as const;
 const VALID_ROUTE_RELATIONS: readonly EditorialRouteRelationKey[] = [
   'platforms',
   'guide',
@@ -45,17 +52,11 @@ const VALID_ROUTE_RELATIONS: readonly EditorialRouteRelationKey[] = [
 
 @Injectable({ providedIn: 'root' })
 export class EditorialService {
-  private readonly isBrowser: boolean;
   private readonly posts$: Observable<EditorialPost[]>;
 
-  constructor(
-    private readonly blogService: BlogService,
-    @Inject(PLATFORM_ID) platformId: object
-  ) {
-    this.isBrowser = isPlatformBrowser(platformId);
+  constructor(private readonly blogService: BlogService) {
     this.posts$ = this.blogService.getAllPosts().pipe(
       map((posts) => this.adaptPosts(posts || [])),
-      catchError(() => of([])),
       shareReplay(1)
     );
   }
@@ -71,14 +72,16 @@ export class EditorialService {
         const rankingPosts = this.getRankingPosts(posts);
         const guidePosts = posts.filter((post) => post.contentType === 'guide');
         const trendPosts = posts.filter((post) => post.contentType === 'trend');
+        const hero = posts.find((post) => post.featured) ?? posts[0] ?? null;
         const categorySections = this.buildCategorySections(
           posts.filter((post) => post.contentType !== 'ranking'),
           categories
         );
 
         return {
-          hero: posts.find((post) => post.featured) ?? posts[0] ?? null,
-          guidePosts: guidePosts.slice(0, 6),
+          hero,
+          latestPosts: posts.filter((post) => post.slug !== hero?.slug).slice(0, 4),
+          guidePosts: guidePosts.slice(0, 3),
           rankingPosts: rankingPosts.slice(0, 8),
           trendPosts: trendPosts.slice(0, 4),
           categorySections,
@@ -97,9 +100,9 @@ export class EditorialService {
     return this.getPosts().pipe(
       map((posts) => {
         const rankingPosts = this.getRankingPosts(posts);
-        const rankingCategories = this.extractCategories(rankingPosts).filter(
-          (category) => category.isRankingCategory
-        );
+        const rankingCategories = this.extractCategories(rankingPosts)
+          .filter((category) => !category.isRankingCategory)
+          .slice(0, 8);
 
         return {
           featured: rankingPosts.find((post) => post.featured) ?? rankingPosts[0] ?? null,
@@ -130,14 +133,20 @@ export class EditorialService {
         const categoryPosts = posts.filter((post) =>
           post.categories.some((item) => item.slug === slug)
         );
+        const featuredPost =
+          categoryPosts.find((post) => post.featured) ?? categoryPosts[0] ?? null;
         const relatedRankings = categoryPosts
-          .filter((post) => post.isRanking)
+          .filter((post) => post.isRanking && post.slug !== featuredPost?.slug)
           .slice(0, 3);
+        const promotedSlugs = new Set([
+          ...(featuredPost ? [featuredPost.slug] : []),
+          ...relatedRankings.map((post) => post.slug),
+        ]);
 
         return {
           category,
-          featuredPost: categoryPosts.find((post) => post.featured) ?? categoryPosts[0] ?? null,
-          posts: categoryPosts.filter((post) => post.slug !== categoryPosts[0]?.slug),
+          featuredPost,
+          posts: categoryPosts.filter((post) => !promotedSlugs.has(post.slug)),
           relatedRankings,
           siblingCategories: categories
             .filter((item) => item.slug !== slug)
@@ -209,9 +218,12 @@ export class EditorialService {
     const contentType = this.resolveContentType(rawPost, categories);
     const rankingReason = this.getRankingReason(rawPost, categories, contentType);
     const excerptHtml = this.ensureString(rawPost?.excerpt?.rendered || rawPost?.excerpt);
-    const contentHtml = this.optimizeContentHtml(
+    const optimizedContentHtml = this.optimizeContentHtml(
       this.ensureString(rawPost?.content?.rendered || rawPost?.content)
     );
+    const readingMinutes = this.calculateReadingTime(optimizedContentHtml);
+    const contentWithHeadings = this.addHeadingAnchors(optimizedContentHtml);
+    const contentHtml = contentWithHeadings.contentHtml;
     const title = this.ensureString(rawPost?.title?.rendered || rawPost?.title);
 
     return {
@@ -228,7 +240,9 @@ export class EditorialService {
       modifiedAt: String(
         rawPost?.modified || rawPost?.updatedAt || rawPost?.date || new Date().toISOString()
       ),
-      readingMinutes: this.calculateReadingTime(contentHtml),
+      readingMinutes,
+      tocItems: readingMinutes >= 5 ? contentWithHeadings.tocItems : [],
+      author: this.normalizeAuthor(rawPost?.author),
       canonicalPath: `/editorial/${rawPost?.slug}`,
       categories,
       primaryCategory: categories[0] ?? null,
@@ -260,11 +274,62 @@ export class EditorialService {
     return image;
   }
 
+  private normalizeAuthor(value: unknown): EditorialPost['author'] {
+    if (!value || typeof value !== 'object') {
+      return null;
+    }
+    const author = value as { name?: unknown; id?: unknown };
+    const name = this.ensureString(author.name);
+    if (!name) {
+      return null;
+    }
+    return {
+      name,
+      id: this.ensureString(author.id) || null,
+    };
+  }
+
   private optimizeContentHtml(contentHtml: string): string {
     return contentHtml
       .replace(/https:\/\/image\.tmdb\.org\/t\/p\/original\//g, 'https://image.tmdb.org/t/p/w780/')
       .replace(/<img\b(?![^>]*\bloading=)([^>]*)>/gi, '<img loading="lazy"$1>')
       .replace(/<img\b(?![^>]*\bdecoding=)([^>]*)>/gi, '<img decoding="async"$1>');
+  }
+
+  private addHeadingAnchors(contentHtml: string): {
+    contentHtml: string;
+    tocItems: EditorialPost['tocItems'];
+  } {
+    const usedIds = new Set<string>();
+    const tocItems: EditorialPost['tocItems'] = [];
+    const html = contentHtml.replace(
+      /<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi,
+      (_match, rawLevel: string, rawAttributes: string, rawLabel: string) => {
+        const level = Number(rawLevel) as 2 | 3;
+        const label = this.stripHtml(rawLabel);
+        if (!label) {
+          return _match;
+        }
+
+        const existingId = rawAttributes.match(/\sid=["']([^"']+)["']/i)?.[1];
+        const baseId = this.normalizeSlug(existingId || label) || `seccion-${tocItems.length + 1}`;
+        let id = baseId;
+        let suffix = 2;
+        while (usedIds.has(id)) {
+          id = `${baseId}-${suffix}`;
+          suffix += 1;
+        }
+        usedIds.add(id);
+        tocItems.push({ id, label, level });
+
+        const attributes = existingId
+          ? rawAttributes.replace(/\sid=["'][^"']+["']/i, ` id="${id}"`)
+          : `${rawAttributes} id="${id}"`;
+        return `<h${level}${attributes}>${rawLabel}</h${level}>`;
+      }
+    );
+
+    return { contentHtml: html, tocItems };
   }
 
   private adaptCategory(rawCategory: any): EditorialCategory {
@@ -299,8 +364,26 @@ export class EditorialService {
       if (left.isRankingCategory !== right.isRankingCategory) {
         return left.isRankingCategory ? 1 : -1;
       }
+      const leftPriority = this.getCategoryPriority(left.slug);
+      const rightPriority = this.getCategoryPriority(right.slug);
+      if (leftPriority !== rightPriority) {
+        return leftPriority - rightPriority;
+      }
       return right.count - left.count;
     });
+  }
+
+  private getCategoryPriority(slug: string): number {
+    if (slug === 'cine') {
+      return 0;
+    }
+    if (slug.includes('pelicula')) {
+      return 1;
+    }
+    const priority = EDITORIAL_CATEGORY_PRIORITY.findIndex((keywords) =>
+      keywords.some((keyword) => slug.includes(keyword))
+    );
+    return priority === -1 ? EDITORIAL_CATEGORY_PRIORITY.length + 2 : priority + 2;
   }
 
   private buildCategorySections(
@@ -309,16 +392,69 @@ export class EditorialService {
     maxSections = 3,
     postsPerSection = 3
   ): EditorialCategorySection[] {
-    return categories
-      .filter((category) => !category.isRankingCategory)
-      .map((category) => ({
-        category,
-        posts: posts
-          .filter((post) => post.categories.some((item) => item.slug === category.slug))
-          .slice(0, postsPerSection),
-      }))
-      .filter((section) => section.posts.length > 0)
-      .slice(0, maxSections);
+    const usedClusters = new Set<string>();
+    const usedPostSlugs = new Set<string>();
+    const sections: EditorialCategorySection[] = [];
+
+    for (const category of categories) {
+      if (category.isRankingCategory) {
+        continue;
+      }
+
+      const cluster = this.getCategoryCluster(category.slug);
+      if (usedClusters.has(cluster)) {
+        continue;
+      }
+
+      const sectionPosts = posts
+        .filter(
+          (post) =>
+            !usedPostSlugs.has(post.slug) &&
+            post.categories.some((item) => item.slug === category.slug)
+        )
+        .slice(0, postsPerSection);
+
+      if (sectionPosts.length === 0) {
+        continue;
+      }
+
+      sections.push({ category, posts: sectionPosts });
+      usedClusters.add(cluster);
+      sectionPosts.forEach((post) => usedPostSlugs.add(post.slug));
+
+      if (sections.length >= maxSections) {
+        break;
+      }
+    }
+
+    return sections;
+  }
+
+  private getCategoryCluster(slug: string): string {
+    if (slug === 'cine' || slug.includes('pelicula')) {
+      return 'movies';
+    }
+    if (slug.includes('serie')) {
+      return 'series';
+    }
+    if (slug.includes('futbol') || slug.includes('deporte')) {
+      return 'football';
+    }
+    if (slug.includes('streaming') || slug.includes('plataforma')) {
+      return 'streaming';
+    }
+    if (slug.includes('compar')) {
+      return 'comparison';
+    }
+    if (
+      slug.includes('television') ||
+      slug === 'tv' ||
+      slug === 'tdt' ||
+      slug.includes('canal')
+    ) {
+      return 'television';
+    }
+    return slug;
   }
 
   private getRankingPosts(posts: EditorialPost[]): EditorialPost[] {

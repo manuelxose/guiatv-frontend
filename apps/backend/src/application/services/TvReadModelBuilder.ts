@@ -26,11 +26,30 @@ import {
 import { ProgramDeduplicator } from './ProgramDeduplicator';
 import { getPrimaryEpgSourceUrl, isTdtChannelsSourceUrl } from '@/shared/config/epgSources';
 
-interface ResolvedProgramEntry {
+export interface ResolvedProgramEntry {
   program: any;
   channelDoc: any | null;
   resolvedChannelId: string;
   channelGroup: string;
+}
+
+export function scopeResolvedProgramsToCoreSources<T extends Pick<ResolvedProgramEntry, 'program' | 'resolvedChannelId'>>(
+  entries: T[],
+  primarySourceUrl: string
+): T[] {
+  const isCoreSource = (sourceFeed: unknown) => {
+    const source = String(sourceFeed || '').trim();
+    return !source || source === primarySourceUrl || isTdtChannelsSourceUrl(source);
+  };
+  const coreChannelIds = new Set(
+    entries
+      .filter((entry) => isCoreSource(entry.program?.sourceFeed))
+      .map((entry) => entry.resolvedChannelId)
+      .filter(Boolean)
+  );
+  return entries.filter(
+    (entry) => isCoreSource(entry.program?.sourceFeed) || coreChannelIds.has(entry.resolvedChannelId)
+  );
 }
 
 interface ProgramTitleResolution {
@@ -111,10 +130,14 @@ export class TvReadModelBuilder {
       } satisfies ResolvedProgramEntry;
     });
 
-    const titleResolutions = this.buildTitleResolutionMap(resolvedEntries);
+    const scopedResolvedEntries = scopeResolvedProgramsToCoreSources(
+      resolvedEntries,
+      primarySourceUrl
+    );
+    const titleResolutions = this.buildTitleResolutionMap(scopedResolvedEntries);
     const brands = new Map<string, any>();
     const airingsById = new Map<string, any>();
-    resolvedEntries.forEach(({ program, channelDoc, resolvedChannelId, channelGroup }) => {
+    scopedResolvedEntries.forEach(({ program, channelDoc, resolvedChannelId, channelGroup }) => {
       const anomalyKey = this.buildProgrammeGroupKey(program.startTime, program.title);
       const confirmedChannels =
         inGroupConfirmationMap.get(anomalyKey) || confirmationMap.get(anomalyKey);
@@ -210,6 +233,23 @@ export class TvReadModelBuilder {
           countryCode: channelDoc?.countryCode || undefined,
           region: channelDoc?.region || undefined,
           description: channelDoc?.description || undefined,
+          distribution: channelIdentity.distribution,
+          access: channelIdentity.access,
+          operator: channelIdentity.operator,
+          providers: channelIdentity.providers,
+          contentFacets: channelIdentity.contentFacets,
+          market: channelIdentity.market,
+          quality: channelIdentity.quality,
+          capabilities: channelIdentity.capabilities,
+          provenance: {
+            ...channelIdentity.provenance,
+            sourceIds: Array.from(
+              new Set([
+                ...channelIdentity.provenance.sourceIds,
+                ...(Array.isArray(channelDoc?.sourceIds) ? channelDoc.sourceIds : []),
+              ])
+            ),
+          },
         },
         program: {
           brandKey,

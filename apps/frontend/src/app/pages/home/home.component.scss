@@ -15,8 +15,7 @@
 }
 
 .home-page__loading,
-.home-page__module,
-.home-page__error {
+.home-page__module {
   display: grid;
   gap: 1rem;
 }
@@ -26,23 +25,6 @@
 .home-page__module:nth-child(n + 3) {
   content-visibility: auto;
   contain-intrinsic-block-size: auto 28rem;
-}
-
-.home-page__error {
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 1.3rem;
-  background: rgba(127, 29, 29, 0.2);
-  padding: 1rem;
-}
-
-.home-page__error h2,
-.home-page__error p {
-  margin: 0;
-  color: var(--portal-text);
-}
-
-.home-page__error p {
-  color: #dc2626;
 }
 
 .home-page__rail {
@@ -63,6 +45,11 @@
 .home-page__grid {
   display: grid;
   gap: 1rem;
+}
+
+.home-page__channel-grid {
+  display: grid;
+  gap: 0.9rem;
 }
 
 .home-page__football-cta {
@@ -151,6 +138,10 @@
   .home-page__platform-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .home-page__channel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 767px) {
@@ -167,6 +158,20 @@
   .home-page__platform-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.65rem;
+  }
+
+  .home-page__channel-grid {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(17rem, 82vw);
+    grid-template-columns: none;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-inline: contain;
+  }
+
+  .home-page__channel-grid app-channel-card {
+    scroll-snap-align: start;
   }
 
   .home-page__platform-card {
@@ -191,6 +196,10 @@
   }
 
   .home-page__platform-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .home-page__channel-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

@@ -18,6 +18,8 @@ import {
 import { MetaService } from '../../services/meta.service';
 import { buildProgramCatalogId, buildTmdbCatalogId } from '../../utils/catalog';
 import { generateTVSeriesSchema, generateMovieSchema, generateBreadcrumbSchema } from '../../utils/utils';
+import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
+import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
 
 type LegacyCatalogMode = 'program' | 'movie' | 'series';
 
@@ -32,12 +34,14 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
     WhereToWatchComponent,
     BreadcrumbComponent,
     ShareButtonsComponent,
+    UnifiedSkeletonBlockComponent,
+    UnifiedAsyncStateComponent,
   ],
   template: `
     <div class="min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]">
       <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
-      <div *ngIf="loading" class="flex min-h-[60vh] items-center justify-center">
-        <div class="h-12 w-12 animate-spin rounded-full border-2 border-[var(--accent-live)] border-t-transparent"></div>
+      <div *ngIf="loading" class="mx-auto min-h-[60vh] max-w-7xl px-4 py-10 sm:px-6 lg:px-8" aria-busy="true" aria-label="Cargando ficha">
+        <app-unified-skeleton-block [count]="6" [columns]="3" cardHeight="13rem"></app-unified-skeleton-block>
       </div>
 
       <ng-container *ngIf="!loading && item as content; else emptyState">
@@ -60,6 +64,9 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
             <div class="grid w-full gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
               <div class="space-y-6">
                 <div class="flex flex-wrap gap-2">
+                  <span class="rounded-full border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--hero-text-muted)] backdrop-blur-sm">
+                    {{ contentTypeLabel(content.contentType) }}
+                  </span>
                   <span
                     *ngIf="content.liveNow"
                     class="rounded-full border border-transparent bg-[var(--accent-live-strong)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-white"
@@ -122,6 +129,7 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
               <aside class="space-y-6">
                 <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 shadow-xl">
                   <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--portal-text-muted)]">Dónde ver</p>
+                  <p class="mb-4 text-xs leading-5 text-[var(--portal-text-muted)]">Opciones de streaming, alquiler o compra. No sustituyen las emisiones de TV indicadas abajo.</p>
                   <app-where-to-watch
                     [providersData]="content.whereToWatch"
                     [primaryPlatforms]="content.primaryPlatforms"
@@ -158,17 +166,20 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
           class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8"
         >
           <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
-            <p class="mb-4 text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Próximas emisiones</p>
+            <p class="mb-1 text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">TV lineal</p>
+            <h2 class="mb-4 text-2xl font-semibold text-[var(--portal-text)]">Próximas emisiones</h2>
             <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <div
+              <a
                 *ngFor="let airing of content.airings"
+                [routerLink]="['/canales', airing.channelId]"
                 class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
               >
                 <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.channelName }}</p>
                 <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
                   {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
                 </p>
-              </div>
+                <span class="mt-3 inline-block text-xs font-semibold text-[var(--accent-live)]">Ver programación del canal →</span>
+              </a>
             </div>
           </div>
         </section>
@@ -209,18 +220,14 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
       </ng-container>
 
       <ng-template #emptyState>
-        <div *ngIf="!loading" class="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-6 text-center">
-          <p class="text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Contenido no disponible</p>
-          <h1 class="mt-3 text-3xl font-black tracking-tight text-[var(--portal-text)]">No hemos podido cargar esta ficha</h1>
-          <p class="mt-3 text-sm leading-7 text-[var(--portal-text-muted)]">
-            Puede que el contenido ya no esté disponible o que la URL antigua no tenga una correspondencia válida.
-          </p>
-          <a
-            routerLink="/programacion-tv/que-ver-hoy"
-            class="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-5 text-sm font-semibold text-[var(--portal-text)]"
-          >
-            Volver a explorar
-          </a>
+        <div *ngIf="!loading" class="mx-auto min-h-[60vh] max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          <app-unified-async-state
+            kind="empty"
+            title="No hemos podido cargar esta ficha"
+            message="Puede que el contenido ya no esté disponible o que la URL antigua no tenga una correspondencia válida."
+            actionLabel="Volver a explorar"
+            (action)="goExplore()"
+          ></app-unified-async-state>
         </div>
       </ng-template>
     </div>
@@ -278,8 +285,8 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
 
         if (item) {
           this.applyMeta(item);
-          this.buildStructuredData(item);
           this.buildBreadcrumbs(item);
+          this.buildStructuredData(item);
           this.shareUrl = `https://guiaprogramaciontv.com${item.detailPath || this.router.url}`;
           return;
         }
@@ -318,6 +325,16 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     if (status === 'pending') return 'Pendiente';
     if (status === 'dropped') return 'Abandonado';
     return status;
+  }
+
+  contentTypeLabel(type: CatalogContentType): string {
+    if (type === 'movie') return 'Película';
+    if (type === 'series') return 'Serie';
+    return 'Programa de TV';
+  }
+
+  goExplore(): void {
+    void this.router.navigate(['/programacion-tv/que-ver-hoy']);
   }
 
   providerContentType(item: CatalogItem): 'movie' | 'tv' | null {
@@ -467,20 +484,17 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
 
   private buildStructuredData(item: CatalogItem): void {
     const baseUrl = 'https://guiaprogramaciontv.com';
-    let schema: object;
+    const schemas: object[] = [generateBreadcrumbSchema(this.breadcrumbItems, baseUrl)];
 
     if (item.contentType === 'series') {
-      schema = generateTVSeriesSchema(item, baseUrl);
+      schemas.unshift(generateTVSeriesSchema(item, baseUrl));
     } else if (item.contentType === 'movie') {
-      schema = generateMovieSchema(item, baseUrl);
-    } else {
-      this.safeLdHtml = null;
-      return;
+      schemas.unshift(generateMovieSchema(item, baseUrl));
     }
 
     try {
       this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-        `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+        `<script type="application/ld+json">${JSON.stringify(schemas)}</script>`
       );
     } catch {
       this.safeLdHtml = null;

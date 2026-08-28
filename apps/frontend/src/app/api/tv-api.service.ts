@@ -10,6 +10,7 @@ import {
   TvReadChannelsResponseDTO,
   TvReadItemResponseDTO,
   TvReadResponseDTO,
+  TvReadScheduleResponseDTO,
 } from './models';
 import { ApiCacheService } from './cache.service';
 
@@ -76,17 +77,43 @@ export class TvApiService {
 
   getTvReadChannels(
     date: DateAlias = 'today',
-    group?: string
+    group?: string,
+    limit?: number
   ): Observable<ApiResponse<TvReadChannelsResponseDTO>> {
     const params: Record<string, any> = {
       date,
       group,
+      limit,
     };
     return this.cachedGet<ApiResponse<TvReadChannelsResponseDTO>>(
       `/tv/read/channels:${JSON.stringify(params)}`,
       '/tv/read/channels',
       params,
       60_000
+    );
+  }
+
+  getTvReadSchedule(query: {
+    date?: DateAlias;
+    group?: string;
+    category?: string;
+    channelId?: string;
+    q?: string;
+    itemsPerChannel?: number;
+  }): Observable<ApiResponse<TvReadScheduleResponseDTO>> {
+    const params: Record<string, any> = {
+      date: query.date ?? 'today',
+      group: query.group,
+      category: query.category,
+      channelId: query.channelId,
+      q: query.q,
+      itemsPerChannel: query.itemsPerChannel,
+    };
+    return this.cachedGet<ApiResponse<TvReadScheduleResponseDTO>>(
+      `/tv/read/schedule:${JSON.stringify(params)}`,
+      '/tv/read/schedule',
+      params,
+      15 * 60_000
     );
   }
 
