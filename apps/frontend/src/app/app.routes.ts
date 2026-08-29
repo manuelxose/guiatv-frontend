@@ -37,7 +37,10 @@ export const routes: Routes = [
         (m) => m.UserAreaComponent
       ),
     title: 'Perfil - Guía TV',
-    data: { defaultTab: 'feed', robots: 'noindex, nofollow', layout: 'private-shell' },
+    // 'overview' — Mi GuíaTV's content-first home (completion meter, "para
+    // ti" rail). /comunidad keeps its own 'feed' default below; these are
+    // two distinct entry URLs sharing one component, not meant to converge.
+    data: { defaultTab: 'overview', robots: 'noindex, nofollow', layout: 'private-shell' },
   },
   {
     path: 'mi-cuenta',
