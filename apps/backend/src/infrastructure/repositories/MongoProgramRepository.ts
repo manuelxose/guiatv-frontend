@@ -79,7 +79,12 @@ export class MongoProgramRepository implements IProgramRepository {
       }
 
       if (filters?.genre) {
-        query.category = filters.genre;
+        // Case-insensitive substring match (mirrors the historical in-process
+        // `genre.includes(...)` filter callers used to apply after fetching
+        // full days of data) so pushing this filter into Mongo doesn't change
+        // matching behavior for callers migrating off unbounded JS filtering.
+        const escaped = filters.genre.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        query.category = new RegExp(escaped, 'i');
       }
 
       let queryBuilder = ProgramModel.find(query).sort({ startTime: 1 });
@@ -466,7 +471,7 @@ export class MongoProgramRepository implements IProgramRepository {
             },
           ],
         },
-        { title: 1, normalizedTitle: 1, titleAliases: 1, tmdbId: 1, image: 1, description: 1, year: 1, rating: 1, _id: 0 }
+        { title: 1, normalizedTitle: 1, titleAliases: 1, tmdbId: 1, image: 1, description: 1, year: 1, rating: 1, genreTags: 1, _id: 0 }
       )
         .lean()
         .exec() as ProgramDoc[];
@@ -480,6 +485,7 @@ export class MongoProgramRepository implements IProgramRepository {
           description: d.description as string | undefined,
           year: (d as any).year as string | undefined,
           rating: (d as any).rating as string | undefined,
+          genreTags: Array.isArray((d as any).genreTags) ? (d as any).genreTags as string[] : undefined,
         }));
     } catch (error) {
       logger.error('Error in findEnrichedByTitles', { error });
@@ -544,9 +550,11 @@ export class MongoProgramRepository implements IProgramRepository {
       image: doc.image as string | undefined,
       genre: doc.category as string | undefined,
       subgenre: (doc as any).subgenre as string | undefined,
+      genreTags: Array.isArray((doc as any).genreTags) ? (doc as any).genreTags as string[] : undefined,
       year: (doc as any).year as string | undefined,
       rating: (doc as any).rating !== undefined && (doc as any).rating !== null ? String((doc as any).rating) : undefined,
       tmdbId: typeof (doc as any).tmdbId === 'number' ? (doc as any).tmdbId : undefined,
+      mediaId: (doc as any).mediaId as string | undefined,
       sourceFeed: (doc as any).sourceFeed as string | undefined,
       sourceProgrammeId: (doc as any).sourceProgrammeId as string | undefined,
       sourceAssetCandidates: Array.isArray((doc as any).sourceAssetCandidates)
@@ -597,7 +605,9 @@ export class MongoProgramRepository implements IProgramRepository {
     // so we never accidentally clear TMDB data with a failed enrichment run.
     if (program.image) doc.image = program.image;
     if (program.tmdbId) doc.tmdbId = program.tmdbId;
+    if (program.mediaId) doc.mediaId = program.mediaId;
     if (program.rating) doc.rating = program.rating;
+    if (program.genreTags.length) doc.genreTags = program.genreTags;
     return doc;
   }
 }

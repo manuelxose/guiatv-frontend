@@ -8,6 +8,7 @@ import { UserService } from '../../services/user.service';
 import { normalizeCatalogInteractionId } from '../../utils/catalog';
 import { normalizeToCard } from '../../utils/tv-normalizers';
 import { PlatformBadgeComponent } from '../platform-badge/platform-badge.component';
+import { PrefetchDetailDirective } from '../../directives/prefetch-detail.directive';
 
 export type UnifiedProgramCardVariant =
   | 'live'
@@ -21,7 +22,7 @@ export type UnifiedProgramCardVariant =
 @Component({
   selector: 'app-unified-program-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, PlatformBadgeComponent],
+  imports: [CommonModule, RouterModule, PlatformBadgeComponent, PrefetchDetailDirective],
   templateUrl: './unified-program-card.component.html',
   styleUrl: './unified-program-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

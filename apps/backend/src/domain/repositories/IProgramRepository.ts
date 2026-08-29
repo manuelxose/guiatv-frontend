@@ -102,5 +102,6 @@ export interface IProgramRepository {
     description?: string;
     year?: string;
     rating?: string;
+    genreTags?: string[];
   }>>;
 }

@@ -288,6 +288,13 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
           this.buildBreadcrumbs(item);
           this.buildStructuredData(item);
           this.shareUrl = `https://guiaprogramaciontv.com${item.detailPath || this.router.url}`;
+          // The critical response intentionally left providers/social/user
+          // interaction (and possibly related) out to stay fast — fetch them
+          // now, in the background, and patch them in when they arrive. This
+          // never re-enters the loading state: the page is already rendered.
+          if (item.enrichmentPending) {
+            this.loadEnrichment(item);
+          }
           return;
         }
 
@@ -380,6 +387,43 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     return this.catalogService.getDetail(
       buildTmdbCatalogId(legacyMode === 'series' ? 'tv' : 'movie', tmdbId)
     );
+  }
+
+  /**
+   * Fetches the secondary detail data (related, providers, social summary,
+   * user interaction) that the critical response deliberately omitted, and
+   * patches it into the already-rendered page. Runs entirely in the
+   * background: never touches `this.loading`, and a failure here degrades to
+   * "section stays absent" rather than affecting the primary content.
+   */
+  private loadEnrichment(item: CatalogItem): void {
+    this.catalogService
+      .getDetailEnrichment(item.catalogId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((enrichment) => {
+        if (this.item?.catalogId !== item.catalogId) {
+          return; // the user has already navigated away from this item
+        }
+
+        this.item = {
+          ...this.item,
+          whereToWatch: enrichment.whereToWatch ?? this.item.whereToWatch,
+          socialSummary: enrichment.socialSummary ?? this.item.socialSummary,
+          userInteraction: enrichment.userInteraction ?? this.item.userInteraction,
+        };
+
+        if (enrichment.related.length && !this.relatedItems.length) {
+          this.relatedItems = this.normalizeRelatedItems(enrichment.related, item.catalogId);
+        } else if (!enrichment.related.length && !this.relatedItems.length) {
+          this.loadFallbackRelated(item)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((related) => {
+              if (this.item?.catalogId === item.catalogId) {
+                this.relatedItems = related;
+              }
+            });
+        }
+      });
   }
 
   private loadFallbackRelated(item: CatalogItem) {

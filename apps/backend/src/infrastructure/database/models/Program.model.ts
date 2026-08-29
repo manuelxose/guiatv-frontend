@@ -27,10 +27,12 @@ export interface IProgramDocument {
   timeSlotIndex?: number;
   category?: string;
   subgenre?: string;
+  genreTags?: string[];
   image?: string;
   year?: string;
   rating?: string;
   tmdbId?: number;
+  mediaId?: string;
   sourceFeed?: string;
   sourceProgrammeId?: string;
   sourceAssetCandidates?: Array<Record<string, any>>;
@@ -129,6 +131,10 @@ const ProgramSchema = new Schema<IProgramDocument>(
       type: String,
       trim: true,
     },
+    genreTags: {
+      type: [String],
+      default: [],
+    },
     image: {
       type: String,
       trim: true,
@@ -143,6 +149,11 @@ const ProgramSchema = new Schema<IProgramDocument>(
     },
     tmdbId: {
       type: Number,
+    },
+    mediaId: {
+      type: String,
+      index: true,
+      sparse: true,
     },
     sourceFeed: {
       type: String,

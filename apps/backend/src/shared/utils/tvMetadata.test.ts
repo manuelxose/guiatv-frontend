@@ -12,6 +12,8 @@ import {
   inferSportFacet,
   isGenericMovieTitle,
   resolveProgramDisplayTitle,
+  findCanonicalChannelInText,
+  resolveCanonicalChannelId,
 } from './tvMetadata';
 
 test('buildChannelIdentityMetadata classifies La 2 as TDT and canonical la_2', () => {
@@ -74,6 +76,19 @@ test('buildChannelIdentityMetadata resolves representative pay-TV aliases canoni
     inferChannelGroup({ name: 'M+ Estrenos', type: 'OTT' }),
     'movistar'
   );
+});
+
+test('canonical channel resolver keeps paid-channel identities exact and handles Movistar user aliases', () => {
+  assert.equal(resolveCanonicalChannelId('TCM HD'), 'tcm');
+  assert.equal(resolveCanonicalChannelId('AXN'), 'axn');
+  assert.equal(resolveCanonicalChannelId('AXN Movies'), 'axn_movies');
+  assert.equal(resolveCanonicalChannelId('Movistar Plus Hits'), 'movistar_hits');
+  assert.equal(resolveCanonicalChannelId('Movistar+ Hits'), 'movistar_hits');
+  assert.equal(resolveCanonicalChannelId('M+ Acción'), 'movistar_accion');
+  assert.equal(findCanonicalChannelInText('qué ver hoy en AXN'), 'axn');
+  assert.equal(findCanonicalChannelInText('qué hay esta noche en AXN Movies'), 'axn_movies');
+  assert.equal(findCanonicalChannelInText('qué ponen en AMC Crime'), 'amc_crime');
+  assert.equal(findCanonicalChannelInText('qué ponen en AMC'), 'amc');
 });
 
 test('channel operational metadata keeps pay/operator identity orthogonal to sports facets', () => {

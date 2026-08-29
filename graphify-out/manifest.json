@@ -12,9 +12,9 @@
     "semantic_hash": "686a3cbbf2cd23f58841c9c3b07699d1"
   },
   "apps/backend/package.json": {
-    "mtime": 1787827434.123854,
-    "seen": 1787828541.3974917,
-    "ast_hash": "aeb6a0b75c46c883dea4644723d869b9",
+    "mtime": 1787958637.538285,
+    "seen": 1787959017.4765563,
+    "ast_hash": "094775451fde70619a7ed90e9e2da315",
     "semantic_hash": ""
   },
   "apps/backend/scripts/init-api.ts": {
@@ -42,10 +42,10 @@
     "semantic_hash": "8ce13f2b0bc0902180e244b5212ac67c"
   },
   "apps/backend/src/application/dto/CatalogDTO.ts": {
-    "mtime": 1774535282.0819068,
-    "seen": 1787599616.7521584,
-    "ast_hash": "369e3f181c5c659b6eca8d6265ae96c1",
-    "semantic_hash": "369e3f181c5c659b6eca8d6265ae96c1"
+    "mtime": 1787959619.0664759,
+    "seen": 1787961019.4670022,
+    "ast_hash": "cbed374fca64964992c3fc7d0a701e64",
+    "semantic_hash": ""
   },
   "apps/backend/src/application/dto/ChannelDTO.ts": {
     "mtime": 1787734502.4121397,
@@ -66,9 +66,9 @@
     "semantic_hash": "d941e2d6a56de6fad1396860b9216164"
   },
   "apps/backend/src/application/dto/TvReadDTO.ts": {
-    "mtime": 1787734925.6860166,
-    "seen": 1787743722.0405953,
-    "ast_hash": "ab88b0eee69ff6c3f478983d06cb3a86",
+    "mtime": 1787958584.0429516,
+    "seen": 1787959017.4765992,
+    "ast_hash": "20a9d961d96cf349de0ddb3fdfe8c125",
     "semantic_hash": ""
   },
   "apps/backend/src/application/mappers/ChannelMapper.ts": {
@@ -102,10 +102,10 @@
     "semantic_hash": "98b2cb45dd9a647e5469d90d5d8418f0"
   },
   "apps/backend/src/application/services/AssistantMemoryService.ts": {
-    "mtime": 1773850792.4051018,
-    "seen": 1787599616.7521799,
-    "ast_hash": "bc6fc26ff9edee61c704e2697a099ad9",
-    "semantic_hash": "bc6fc26ff9edee61c704e2697a099ad9"
+    "mtime": 1787957145.2641346,
+    "seen": 1787959017.4766133,
+    "ast_hash": "53fdca83b2c205480a16d17d3a4ffb55",
+    "semantic_hash": ""
   },
   "apps/backend/src/application/services/CatalogIdentity.ts": {
     "mtime": 1772799263.6361375,
@@ -120,10 +120,10 @@
     "semantic_hash": "a30a344d9b58990cefe6ba5668123e78"
   },
   "apps/backend/src/application/services/CatalogService.ts": {
-    "mtime": 1787611588.9822378,
-    "seen": 1787647355.9882636,
-    "ast_hash": "6f76beac099eaacd954d39b2377a7084",
-    "semantic_hash": "6f76beac099eaacd954d39b2377a7084"
+    "mtime": 1787959806.824675,
+    "seen": 1787961019.4670355,
+    "ast_hash": "5af7990436022fa8d09363a001ef0573",
+    "semantic_hash": ""
   },
   "apps/backend/src/application/services/EditorialSeedService.ts": {
     "mtime": 1773223098.3979568,
@@ -150,9 +150,9 @@
     "semantic_hash": ""
   },
   "apps/backend/src/application/services/TvReadModelBuilder.ts": {
-    "mtime": 1787736377.7389722,
-    "seen": 1787743722.040629,
-    "ast_hash": "abd21ea2914bbbccf7660ceeacd65a59",
+    "mtime": 1787958594.1268272,
+    "seen": 1787959017.4766462,
+    "ast_hash": "c3511e155629f8848b0bdbc82b281483",
     "semantic_hash": ""
   },
   "apps/backend/src/application/services/TvReadQueryService.test.ts": {
@@ -234,9 +234,9 @@
     "semantic_hash": "075f34adf895d7e332ba8eb40f85ceec"
   },
   "apps/backend/src/application/use-cases/ChatbotRecommend.ts": {
-    "mtime": 1787657919.670629,
-    "seen": 1787660388.1331947,
-    "ast_hash": "3b68d5f45c8d0974e76e59d6c32d202d",
+    "mtime": 1787957183.0684128,
+    "seen": 1787959017.4767,
+    "ast_hash": "f1b80ac78dfaf7a61b5a6974f28e62a3",
     "semantic_hash": ""
   },
   "apps/backend/src/application/use-cases/CleanOldPrograms.ts": {
@@ -264,10 +264,10 @@
     "semantic_hash": "54e8fa7655ee57a90cd8635e9c547fe7"
   },
   "apps/backend/src/application/use-cases/GetContentDetail.ts": {
-    "mtime": 1772796596.0574286,
-    "seen": 1787599616.7522411,
-    "ast_hash": "49c82b3204e45428e02a64a0f7d5aae1",
-    "semantic_hash": "49c82b3204e45428e02a64a0f7d5aae1"
+    "mtime": 1787958310.1371238,
+    "seen": 1787959017.4767122,
+    "ast_hash": "7526fca5aa2615daf0001aa09ff8e897",
+    "semantic_hash": ""
   },
   "apps/backend/src/application/use-cases/GetDiscoveryBrowse.ts": {
     "mtime": 1774023071.3952534,
@@ -330,15 +330,15 @@
     "semantic_hash": "3adce46f518ae8b697b4bd3c242014fd"
   },
   "apps/backend/src/application/use-cases/SearchDiscoveryContent.ts": {
-    "mtime": 1774022582.4302287,
-    "seen": 1787599616.7522595,
-    "ast_hash": "e1c9715d9ea5c1acb65be8993f696ef2",
-    "semantic_hash": "e1c9715d9ea5c1acb65be8993f696ef2"
+    "mtime": 1787957081.4713745,
+    "seen": 1787959017.4767432,
+    "ast_hash": "6ae930603266cc05772f390a9d8b6800",
+    "semantic_hash": ""
   },
   "apps/backend/src/application/use-cases/SyncEPGData.ts": {
-    "mtime": 1787689168.4938648,
-    "seen": 1787743722.0406983,
-    "ast_hash": "c06801cf6099a2772f92aa613e7dff6d",
+    "mtime": 1787958519.1237385,
+    "seen": 1787959017.4767451,
+    "ast_hash": "1426fbdd9763d1e245886025bfa212c9",
     "semantic_hash": ""
   },
   "apps/backend/src/application/use-cases/SyncProgramData.ts": {
@@ -366,9 +366,9 @@
     "semantic_hash": "7003ba3ff7e5b8853883b03e4d951b2f"
   },
   "apps/backend/src/config/container.ts": {
-    "mtime": 1787775579.2439358,
-    "seen": 1787818950.532492,
-    "ast_hash": "e22cee7ec18f0343e82be9f3227a7413",
+    "mtime": 1787958383.2172925,
+    "seen": 1787959017.476757,
+    "ast_hash": "12e713981000aafc3fb9db56d3cdc7f5",
     "semantic_hash": ""
   },
   "apps/backend/src/config/env.ts": {
@@ -390,10 +390,10 @@
     "semantic_hash": ""
   },
   "apps/backend/src/domain/entities/Program.ts": {
-    "mtime": 1774520822.549687,
-    "seen": 1787599616.7522779,
-    "ast_hash": "b6d728606ecf0584f8cf4f8f47f58180",
-    "semantic_hash": "b6d728606ecf0584f8cf4f8f47f58180"
+    "mtime": 1787958441.5746422,
+    "seen": 1787959017.4767692,
+    "ast_hash": "382c9a00a48464369d2e0b3261932096",
+    "semantic_hash": ""
   },
   "apps/backend/src/domain/entities/Schedule.ts": {
     "mtime": 1766096979.0111089,
@@ -426,10 +426,10 @@
     "semantic_hash": "2ceba9965ad426e5fadde97679a0d75e"
   },
   "apps/backend/src/domain/repositories/IProgramRepository.ts": {
-    "mtime": 1774520822.5556867,
-    "seen": 1787599616.7522886,
-    "ast_hash": "7c87e6050802ec2cfb9f4144761ca4cf",
-    "semantic_hash": "7c87e6050802ec2cfb9f4144761ca4cf"
+    "mtime": 1787950642.9803731,
+    "seen": 1787951095.4192507,
+    "ast_hash": "cd45646c3728de76af1727717a58eac2",
+    "semantic_hash": ""
   },
   "apps/backend/src/domain/repositories/IStorageRepository.ts": {
     "mtime": 1766096979.0111089,
@@ -540,10 +540,10 @@
     "semantic_hash": "bcdf33ac7a84bbd743f970016dd58087"
   },
   "apps/backend/src/infrastructure/database/initializeMongoCollections.ts": {
-    "mtime": 1786714178.165748,
-    "seen": 1787599616.7523265,
-    "ast_hash": "d08ce40822de3543e0774f12526548b8",
-    "semantic_hash": "d08ce40822de3543e0774f12526548b8"
+    "mtime": 1787958400.2491055,
+    "seen": 1787959017.4768488,
+    "ast_hash": "2ed6a43efd72be77d6ef37f38a0a311b",
+    "semantic_hash": ""
   },
   "apps/backend/src/infrastructure/database/models/ActivityComment.model.ts": {
     "mtime": 1773223098.4039567,
@@ -612,10 +612,10 @@
     "semantic_hash": "8f1c02f43407b45f4a862cc0e2477bc9"
   },
   "apps/backend/src/infrastructure/database/models/Program.model.ts": {
-    "mtime": 1774521968.8015473,
-    "seen": 1787599616.7523494,
-    "ast_hash": "a0d20051079ccc065d4eb8e7c63e9024",
-    "semantic_hash": "a0d20051079ccc065d4eb8e7c63e9024"
+    "mtime": 1787958451.649527,
+    "seen": 1787959017.4768794,
+    "ast_hash": "aca43493eb77be276e3118cf3d401177",
+    "semantic_hash": ""
   },
   "apps/backend/src/infrastructure/database/models/Schedule.model.ts": {
     "mtime": 1772722379.624319,
@@ -630,10 +630,10 @@
     "semantic_hash": "0b7300b1ba64b8e910991b3d27a4c286"
   },
   "apps/backend/src/infrastructure/database/models/TVReadAiring.model.ts": {
-    "mtime": 1787347718.6358244,
-    "seen": 1787599616.7523553,
-    "ast_hash": "237cb46dacc1d2d51d486149a3e7c2b9",
-    "semantic_hash": "237cb46dacc1d2d51d486149a3e7c2b9"
+    "mtime": 1787959537.83968,
+    "seen": 1787961019.467541,
+    "ast_hash": "309e9b1d03eaad1e94dee2a439f62c80",
+    "semantic_hash": ""
   },
   "apps/backend/src/infrastructure/database/models/User.model.ts": {
     "mtime": 1773223098.4039567,
@@ -648,9 +648,9 @@
     "semantic_hash": "cfd43b8c451e6d9c21891587c3d95088"
   },
   "apps/backend/src/infrastructure/database/models/UserAssistantConversation.model.ts": {
-    "mtime": 1787657257.3721967,
-    "seen": 1787660388.133339,
-    "ast_hash": "987a68762445274aec3ce5dac3fd5872",
+    "mtime": 1787949008.6044815,
+    "seen": 1787949198.7633727,
+    "ast_hash": "987bec94171d7c0d64a8115174301f23",
     "semantic_hash": ""
   },
   "apps/backend/src/infrastructure/database/models/UserAssistantMemory.model.ts": {
@@ -714,9 +714,9 @@
     "semantic_hash": "c529c4adc313fa2c9164f30c9794cacf"
   },
   "apps/backend/src/infrastructure/external/AIRecommendationService.ts": {
-    "mtime": 1787657211.4938138,
-    "seen": 1787660388.133356,
-    "ast_hash": "93ebbdbfaea0e8f0c9e49ace47c22da1",
+    "mtime": 1787948971.9630694,
+    "seen": 1787949198.7634008,
+    "ast_hash": "c68a19b06348d08649c70a3fdc10782d",
     "semantic_hash": ""
   },
   "apps/backend/src/infrastructure/external/BlogService.ts": {
@@ -774,10 +774,10 @@
     "semantic_hash": ""
   },
   "apps/backend/src/infrastructure/repositories/MongoProgramRepository.ts": {
-    "mtime": 1786580981.2715814,
-    "seen": 1787599616.7524,
-    "ast_hash": "38a4de82465d1ae9edf85cdbcb9babad",
-    "semantic_hash": "38a4de82465d1ae9edf85cdbcb9babad"
+    "mtime": 1787958462.3164046,
+    "seen": 1787959017.4769592,
+    "ast_hash": "327a58ccfcbc0688aa913bbe4a7b8f62",
+    "semantic_hash": ""
   },
   "apps/backend/src/infrastructure/repositories/MongoUserContentInteractionRepository.ts": {
     "mtime": 1773794942.0446446,
@@ -936,10 +936,10 @@
     "semantic_hash": ""
   },
   "apps/backend/src/presentation/controllers/CatalogController.ts": {
-    "mtime": 1773080306.5843298,
-    "seen": 1787599616.752449,
-    "ast_hash": "6d4aa1653fa858abdd11fe6ef28c8747",
-    "semantic_hash": "6d4aa1653fa858abdd11fe6ef28c8747"
+    "mtime": 1787959855.9979382,
+    "seen": 1787961019.4676678,
+    "ast_hash": "f291f57dd78b38ff595f61993fca3dc6",
+    "semantic_hash": ""
   },
   "apps/backend/src/presentation/controllers/ChatController.ts": {
     "mtime": 1772742519.3214514,
@@ -1152,10 +1152,10 @@
     "semantic_hash": "ef8ad6086e802ca13618029a9e19939e"
   },
   "apps/backend/src/presentation/routes/catalog.routes.ts": {
-    "mtime": 1773084798.8876295,
-    "seen": 1787599616.7525477,
-    "ast_hash": "4b5b7112ff614f7dacf93b384f6d190c",
-    "semantic_hash": "4b5b7112ff614f7dacf93b384f6d190c"
+    "mtime": 1787959863.2348294,
+    "seen": 1787961019.467903,
+    "ast_hash": "f43d3245d7bf83afa9472e17bb270bd8",
+    "semantic_hash": ""
   },
   "apps/backend/src/presentation/routes/chat.routes.ts": {
     "mtime": 1772737684.8619237,
@@ -1404,15 +1404,15 @@
     "semantic_hash": "0bfba8ed96b8175a30fbda288595db57"
   },
   "apps/backend/src/shared/utils/tvMetadata.test.ts": {
-    "mtime": 1787689282.0830436,
-    "seen": 1787743722.0410764,
-    "ast_hash": "32a00c131603d2bd4eb91f0c75e22f82",
+    "mtime": 1787948924.1368356,
+    "seen": 1787949198.7638001,
+    "ast_hash": "14e18a70be501ce2cc550b4c98423734",
     "semantic_hash": ""
   },
   "apps/backend/src/shared/utils/tvMetadata.ts": {
-    "mtime": 1787689118.1156723,
-    "seen": 1787743722.041078,
-    "ast_hash": "ebfcb8c7bed0ebb5b49d68715cb169fd",
+    "mtime": 1787948924.112836,
+    "seen": 1787949198.7638035,
+    "ast_hash": "498f1f32cb6509993047adbd5f3a8265",
     "semantic_hash": ""
   },
   "apps/backend/src/ssr/handler.ts": {
@@ -1878,10 +1878,10 @@
     "semantic_hash": "30f31682dd615b3bbd1e2b6ba3a9dca8"
   },
   "apps/frontend/src/app/components/unified-program-card/unified-program-card.component.ts": {
-    "mtime": 1786695238.7923927,
-    "seen": 1787599616.752757,
-    "ast_hash": "f77d0511515bdd80e6d55098d1d11ade",
-    "semantic_hash": "f77d0511515bdd80e6d55098d1d11ade"
+    "mtime": 1787960007.5796597,
+    "seen": 1787961019.468278,
+    "ast_hash": "f3b1515f2c9beea088b0ae6f1739e645",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/components/unified-rail-section/unified-rail-section.component.ts": {
     "mtime": 1787347718.7798223,
@@ -2454,9 +2454,9 @@
     "semantic_hash": ""
   },
   "apps/frontend/src/app/pages/catalog-detail/catalog-detail.component.ts": {
-    "mtime": 1787743482.684187,
-    "seen": 1787743722.0414963,
-    "ast_hash": "8cdf63b5546d80fa6aff6738d07bbfba",
+    "mtime": 1787960087.8414497,
+    "seen": 1787961019.4685104,
+    "ast_hash": "92d56cea9383c58129f98423550ce3af",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/pages/content-page/content-page.component.ts": {
@@ -2766,10 +2766,10 @@
     "semantic_hash": "03153cc9ace54f6f409d68a8fdbdcd1d"
   },
   "apps/frontend/src/app/services/catalog.service.ts": {
-    "mtime": 1774022238.0638163,
-    "seen": 1787599616.7529576,
-    "ast_hash": "f745e4917dac5649c11da55f3742628d",
-    "semantic_hash": "f745e4917dac5649c11da55f3742628d"
+    "mtime": 1787959919.7129815,
+    "seen": 1787961019.468679,
+    "ast_hash": "dca8eea593a33cbe4021537f950219e1",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/services/chat.service.ts": {
     "mtime": 1787350303.4289668,
@@ -3528,9 +3528,9 @@
     "semantic_hash": ""
   },
   "apps/frontend/src/app/components/unified-program-card/unified-program-card.component.html": {
-    "mtime": 1787347718.7788224,
-    "seen": 1787647355.9900196,
-    "ast_hash": "36e6e7566619d3f164b74a2ec8d2239e",
+    "mtime": 1787959996.2678301,
+    "seen": 1787961019.469098,
+    "ast_hash": "d18a06eb5e467cc78b7986e47350adc0",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/components/unified-rail-section/unified-rail-section.component.html": {
@@ -4500,9 +4500,9 @@
     "semantic_hash": ""
   },
   "docs/rebuild/guiatv-enterprise-rebuild.md": {
-    "mtime": 1787827995.0266776,
-    "seen": 1787828541.3999035,
-    "ast_hash": "6e78968f35cb336a6101349a477d6f0a",
+    "mtime": 1787828550.7604291,
+    "seen": 1787949198.7652774,
+    "ast_hash": "64f144bedca063501c182791ea650690",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/blog/services/editorial.service.spec.ts": {
@@ -4653,6 +4653,108 @@
     "mtime": 1787827339.5668283,
     "seen": 1787828541.3980885,
     "ast_hash": "77a8109db0b19fc460a01cfde2735e2c",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/application/use-cases/ChatbotRecommend.channel-schedule.test.ts": {
+    "mtime": 1787949195.2214742,
+    "seen": 1787949256.6284928,
+    "ast_hash": "1cc1e8330634bca24a35d183d851b8dc",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/application/services/CatalogService.genre-tags.test.ts": {
+    "mtime": 1787950537.7840214,
+    "seen": 1787951095.4190702,
+    "ast_hash": "295b895e5de04fbd7b7754c3fe34114b",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/application/use-cases/ChatbotRecommend.genre-tags.test.ts": {
+    "mtime": 1787957216.8197758,
+    "seen": 1787959017.4766943,
+    "ast_hash": "5ef69362ed4ff663e419dce8379440a1",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/shared/utils/tmdbGenres.test.ts": {
+    "mtime": 1787950713.8702562,
+    "seen": 1787951095.4197943,
+    "ast_hash": "a84d79ab7aeaaea3d6a326ddc1cb64c0",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/shared/utils/tmdbGenres.ts": {
+    "mtime": 1787957013.6987247,
+    "seen": 1787959017.47724,
+    "ast_hash": "6fe86efbb26a68dfeb7eba163b1fa5a8",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/application/services/MediaCatalogService.test.ts": {
+    "mtime": 1787960698.8804755,
+    "seen": 1787961019.4670398,
+    "ast_hash": "a638bf33c2a4c13c72c49402086e9413",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/application/services/MediaCatalogService.ts": {
+    "mtime": 1787960807.2346663,
+    "seen": 1787961019.4670417,
+    "ast_hash": "c4b8de0badb2be122dc9fe84a17fdf44",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/domain/entities/MediaCatalogEntry.ts": {
+    "mtime": 1787958142.3978517,
+    "seen": 1787959017.4767668,
+    "ast_hash": "7a4d81c5e9108a4285763b1b48822c8c",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/domain/repositories/IMediaCatalogRepository.ts": {
+    "mtime": 1787958169.6554067,
+    "seen": 1787959017.4767883,
+    "ast_hash": "a109e89fc580a55380c026eb925c2a7f",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/infrastructure/database/models/MediaCatalogEntry.model.ts": {
+    "mtime": 1787958157.6426027,
+    "seen": 1787959017.4768748,
+    "ast_hash": "06ea4d86373d9e077f986d784f7fd307",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/infrastructure/repositories/MongoMediaCatalogRepository.ts": {
+    "mtime": 1787958783.1683996,
+    "seen": 1787959017.4769561,
+    "ast_hash": "e0a1c44263df6c1211595c9fe34807d0",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/scripts/backfill-media-catalog.ts": {
+    "mtime": 1787958626.337426,
+    "seen": 1787959017.4771683,
+    "ast_hash": "9822d9151b3a1269d6f7cb47061d59bc",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/shared/taxonomy/genreTaxonomy.test.ts": {
+    "mtime": 1787956980.8863924,
+    "seen": 1787959017.477204,
+    "ast_hash": "93a27f144288294e22f5db9cada3898a",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/shared/taxonomy/genreTaxonomy.ts": {
+    "mtime": 1787957288.1334507,
+    "seen": 1787959017.4772055,
+    "ast_hash": "f01b01de1f760847a593d309f8f8fdd9",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/shared/utils/mediaFreshness.ts": {
+    "mtime": 1787958208.0727808,
+    "seen": 1787959017.4772234,
+    "ast_hash": "9be9193dd1d3163cfb0848f7da9cce9a",
+    "semantic_hash": ""
+  },
+  "apps/backend/src/application/services/CatalogService.detail-fast-path.test.ts": {
+    "mtime": 1787960563.4017797,
+    "seen": 1787961019.4670286,
+    "ast_hash": "1aa0867f18818683c3019d597e913402",
+    "semantic_hash": ""
+  },
+  "apps/frontend/src/app/directives/prefetch-detail.directive.ts": {
+    "mtime": 1787959972.8431826,
+    "seen": 1787961019.4683242,
+    "ast_hash": "b4e761fae88638c76e3143938dabee00",
     "semantic_hash": ""
   }
 }

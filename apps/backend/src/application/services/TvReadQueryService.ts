@@ -774,10 +774,15 @@ export class TvReadQueryService {
       itemQuery.skip(offset).limit(limit + 1);
     }
 
-    const [rawItems, databaseTotal] = await measureTiming('db', () => Promise.all([
+    // Dual-tagged: 'db' keeps this in the generic Mongo latency bucket used
+    // across all use cases, 'epg' isolates it as its own metric — this is the
+    // canonical read-model query behind live-now/tonight/day-grid/channel
+    // lookups, so its latency shouldn't be diluted into an aggregate that
+    // also includes unrelated user/catalog/social queries.
+    const [rawItems, databaseTotal] = await measureTiming('epg', () => measureTiming('db', () => Promise.all([
       itemQuery.lean().exec() as unknown as Promise<TvReadItemDTO[]>,
       databasePaged ? TVReadAiringModel.countDocuments(baseQuery).exec() : Promise.resolve(0),
-    ]));
+    ])));
 
     const hasMoreDatabaseRows = databasePaged && rawItems.length > limit;
     const boundedRawItems = databasePaged ? rawItems.slice(0, limit) : rawItems;

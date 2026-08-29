@@ -129,6 +129,23 @@ export interface CatalogDetailDTO extends CatalogItemDTO {
     friendsWhoWatched: number;
     avgFriendRating?: number;
   };
+  /** true when `related`/`socialSummary`/`whereToWatch`/`userInteraction` were
+   * intentionally left out of this response to keep it on the fast path —
+   * fetch them via `GET /catalog/:catalogId/enrichment`. Absent (not `false`)
+   * on a response that already carries the full payload. */
+  enrichmentPending?: boolean;
+}
+
+/** Secondary, deferrable detail data: never required to render the main
+ * page, always safe to fetch after the critical response and merge in. */
+export interface CatalogDetailEnrichmentDTO {
+  related: CatalogItemDTO[];
+  socialSummary?: {
+    friendsWhoWatched: number;
+    avgFriendRating?: number;
+  };
+  whereToWatch?: CatalogWhereToWatchDTO;
+  userInteraction?: CatalogUserInteractionDTO;
 }
 
 export interface CatalogQueryResultDTO {

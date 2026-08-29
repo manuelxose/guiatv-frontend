@@ -2,6 +2,7 @@ import { DateUtils } from '@/shared/utils/dateUtils';
 import { CatalogQueryResultDTO } from '../dto/CatalogDTO';
 import { CatalogService } from '../services/CatalogService';
 import { TvReadQueryService } from '../services/TvReadQueryService';
+import { genreLabelsMatch } from '@/shared/taxonomy/genreTaxonomy';
 
 export interface DiscoverySearchRequest {
   q?: string;
@@ -69,7 +70,9 @@ export class SearchDiscoveryContent {
     const tvItems = (tvResult.items || [])
       .map((item: any) => this.catalogService.mapTvReadItemToCatalogItem(item))
       .filter(() => !platform)
-      .filter((item: any) => (genre ? item.genres.includes(genre) : true));
+      .filter((item: any) =>
+        genre ? item.genres.some((itemGenre: string) => genreLabelsMatch(itemGenre, genre)) : true
+      );
 
     const merged = [...tvItems, ...(streamingResult.items || [])]
       .sort((left, right) => this.score(right, q) - this.score(left, q))

@@ -33,9 +33,15 @@ export const requestLogger = (
       durationMs = Number(process.hrtime.bigint() - start) / 1_000_000;
     }
     const responseBytes = Number(res.getHeader('content-length') || 0) || undefined;
-    const route = req.route?.path
+    // Only a matched Express route gives a templated path (e.g.
+    // "/catalog/:catalogId"); an unmatched request (404s, static assets)
+    // falls back to req.path for logging but must never key the per-route
+    // metrics map — that path is the raw, user-supplied URL and would give
+    // metrics an unbounded, attacker-controlled cardinality.
+    const matchedRoute = req.route?.path
       ? `${req.baseUrl || ''}${String(req.route.path)}`
-      : req.path;
+      : undefined;
+    const route = matchedRoute || req.path;
     const timings = Object.fromEntries(
       Array.from(timingContext.phases.entries()).map(([phase, duration]) => [phase, Number(duration.toFixed(1))])
     );
@@ -44,6 +50,7 @@ export const requestLogger = (
       durationMs,
       statusCode: res.statusCode,
       responseBytes,
+      route: matchedRoute ? `${req.method} ${matchedRoute}` : undefined,
       timings,
     });
 

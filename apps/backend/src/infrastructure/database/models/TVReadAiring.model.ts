@@ -81,6 +81,14 @@ TVReadAiringSchema.index(
   { 'program.editorialCategory': 1, date: 1, 'airing.start': 1 },
   { name: 'idx_tvread_category_date_start' }
 );
+// Detail pages resolve "current/next airing" for a known TMDB id (movie/series
+// detail view). Without this index that lookup fell back to loading every
+// airing for the day and filtering in process — a 20k+ document scan on the
+// critical path of every single TMDB-identity detail page.
+TVReadAiringSchema.index(
+  { 'program.tmdbId': 1, date: 1 },
+  { name: 'idx_tvread_tmdbid_date', sparse: true }
+);
 
 export const TVReadAiringModel = mongoose.model<ITVReadAiringDocument>(
   'TVReadAiring',
