@@ -23,7 +23,7 @@ import { UserContentInteraction } from '../../../../interfaces/user.interface';
           type="button"
           (click)="setFilter(option.id)"
           class="min-h-[40px] rounded-full px-4 text-sm font-semibold transition-colors"
-          [ngClass]="activeFilter === option.id ? 'bg-red-600 text-white' : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
+          [ngClass]="activeFilter === option.id ? 'bg-[var(--accent-live-strong)] text-white' : 'border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] text-[var(--portal-text-soft)]'"
         >
           {{ option.label }}
         </button>
@@ -37,9 +37,15 @@ import { UserContentInteraction } from '../../../../interfaces/user.interface';
       <div class="space-y-3">
         <div
           *ngFor="let item of filteredItems"
-          class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
+          class="history-row overflow-hidden rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
+          [attr.data-vertical]="verticalFor(item.contentType)"
         >
           <div class="flex items-start gap-3">
+            <!-- No poster/image field exists on UserContentInteraction yet
+                 (only tmdbId, no resolved image URL) — see follow-up backlog
+                 to add a server-resolved poster. This badge stays a real,
+                 type-derived label with the shared accent treatment, not a
+                 fabricated image. -->
             <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--portal-surface-strong)] text-xs font-semibold text-[var(--portal-text-soft)]">
               {{ item.contentType === 'program' ? 'TV' : item.contentType === 'movie' ? 'MOV' : 'SER' }}
             </div>
@@ -105,6 +111,17 @@ import { UserContentInteraction } from '../../../../interfaces/user.interface';
       </div>
     </div>
   `,
+  styles: [
+    `
+      // Shared wayfinding mixin (styles/_card-accent.scss) — see
+      // PersonalizationPreferencesComponent for the same pattern.
+      @use '../../../../../styles/card-accent' as cards;
+
+      .history-row {
+        @include cards.card-vertical-accent();
+      }
+    `,
+  ],
 })
 export class UserInteractionHistoryComponent {
   @Input() items: UserContentInteraction[] = [];
@@ -161,6 +178,13 @@ export class UserInteractionHistoryComponent {
   normalizeRating(value: number | string): number | undefined {
     const numeric = Number(value || 0);
     return numeric > 0 ? numeric : undefined;
+  }
+
+  /** Real, type-derived accent bucket (not a fabricated field) — program/movie/series map onto the existing live/discover/streaming accents from styles/_card-accent.scss. */
+  verticalFor(contentType: UserContentInteraction['contentType']): 'live' | 'discover' | 'streaming' {
+    if (contentType === 'movie') return 'discover';
+    if (contentType === 'series') return 'streaming';
+    return 'live';
   }
 
   humanStatus(status: string): string {
