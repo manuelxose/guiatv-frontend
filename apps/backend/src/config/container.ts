@@ -515,6 +515,9 @@ export class Container {
 
   private async registerControllers(): Promise<void> {
     const { AdminController } = await import('../presentation/controllers/AdminController');
+    const { AdminEpgDiagnosticsService } = await import('../application/services/AdminEpgDiagnosticsService');
+    const { AdminProviderRegistryService } = await import('../application/services/AdminProviderRegistryService');
+    const { AdminOperationsService } = await import('../application/services/AdminOperationsService');
     const { AuthController } = await import('../presentation/controllers/AuthController');
     const { DiscoveryController } = await import('../presentation/controllers/DiscoveryController');
     const { ContentController } = await import('../presentation/controllers/ContentController');
@@ -535,7 +538,10 @@ export class Container {
       this.get('precomputeSchedule'),
       this.get('cleanOldPrograms'),
       this.get('cacheRepository'),
-      this.get('resetSystem')
+      this.get('resetSystem'),
+      new AdminEpgDiagnosticsService(),
+      new AdminProviderRegistryService(),
+      new AdminOperationsService(this.get('cacheRepository'), this.has('footballProvider') ? this.get('footballProvider') : undefined, this.has('footballQueryService') ? () => this.get<any>('footballQueryService').getHome() : undefined)
     );
     this.dependencies.set('adminController', adminController);
 
