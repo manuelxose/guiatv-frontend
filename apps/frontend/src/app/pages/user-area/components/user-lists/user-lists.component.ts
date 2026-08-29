@@ -114,9 +114,10 @@ const COVER_GRADIENTS = [
           *ngFor="let list of lists"
           role="button"
           tabindex="0"
+          data-vertical="discover"
           (click)="onSelect(list)"
           (keydown.enter)="onSelect(list)"
-          class="group rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
+          class="list-card group rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
         >
           <div class="relative aspect-video">
             <img
@@ -166,7 +167,15 @@ const COVER_GRADIENTS = [
       </div>
     </div>
   `,
-  styles: [],
+  styles: [
+    `
+      @use '../../../../../styles/card-accent' as cards;
+
+      .list-card {
+        @include cards.card-vertical-accent();
+      }
+    `,
+  ],
 })
 export class UserListsComponent {
   @Input() lists: UserList[] = [];

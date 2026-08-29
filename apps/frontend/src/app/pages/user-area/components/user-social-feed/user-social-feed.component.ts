@@ -96,7 +96,8 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
 
           <article
             *ngFor="let activity of activities"
-            class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-5"
+            data-vertical="editorial"
+            class="activity-card overflow-hidden rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-5"
           >
             <div class="flex items-start gap-4">
               <div class="h-10 w-10 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] overflow-hidden flex items-center justify-center text-xs text-[var(--portal-text-soft)]">
@@ -265,7 +266,19 @@ import { UserActivity, UserFriend, UserRecommendation, Visibility } from '../../
       </aside>
     </div>
   `,
-  styles: [],
+  styles: [
+    `
+      // Same shared wayfinding mixin CatalogCardComponent/UnifiedProgramCardComponent
+      // use (top accent bar + tinted background, keyed by [data-vertical]) — see
+      // styles/_card-accent.scss. Community activity cards get the 'editorial'
+      // accent; no per-component visual language invented here.
+      @use '../../../../../styles/card-accent' as cards;
+
+      .activity-card {
+        @include cards.card-vertical-accent();
+      }
+    `,
+  ],
 })
 export class UserSocialFeedComponent {
   @Input() activities: UserActivity[] = [];
