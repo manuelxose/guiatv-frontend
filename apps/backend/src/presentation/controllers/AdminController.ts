@@ -10,7 +10,10 @@ import { logger } from '../../shared/utils/logger';
 import { ValidationError } from '../../shared/errors';
 import { successResponse } from '../../shared/types/ApiResponse';
 import { ResetSystem } from '../../application/use-cases/ResetSystem';
+import { AdminEpgDiagnosticsService } from '../../application/services/AdminEpgDiagnosticsService';
+import { AdminProviderRegistryService } from '../../application/services/AdminProviderRegistryService';
 import { SECONDARY_EPG_SOURCE_URL } from '../../shared/config/epgSources';
+import { AdminOperationsService } from '../../application/services/AdminOperationsService';
 
 /**
  * Administrative controller that orchestrates maintenance and data workflows.
@@ -23,8 +26,39 @@ export class AdminController {
     private readonly precomputeSchedule: PrecomputeSchedule,
     private readonly cleanOldPrograms: CleanOldPrograms,
     private readonly cacheRepository: ICacheRepository,
-    private readonly resetSystem: ResetSystem
+    private readonly resetSystem: ResetSystem,
+    private readonly epgDiagnostics: AdminEpgDiagnosticsService,
+    private readonly providerRegistry: AdminProviderRegistryService,
+    private readonly operations: AdminOperationsService
   ) {}
+
+  async getEpgOverview(_req: Request, res: Response): Promise<void> {
+    res.status(200).json(successResponse(await this.epgDiagnostics.getOverview()));
+  }
+
+  async listEpgChannels(req: Request, res: Response): Promise<void> {
+    const query = req.query;
+    res.status(200).json(successResponse(await this.epgDiagnostics.listChannels({
+      page: Number(query.page) || 1, limit: Number(query.limit) || 25,
+      search: typeof query.search === 'string' ? query.search : undefined,
+      access: typeof query.access === 'string' ? query.access : undefined,
+      status: typeof query.status === 'string' ? query.status : undefined,
+    })));
+  }
+
+  async listProviders(_req: Request, res: Response): Promise<void> {
+    res.status(200).json(successResponse(this.providerRegistry.list()));
+  }
+  async getFootballOverview(_req: Request, res: Response): Promise<void> { res.json(successResponse(await this.operations.footballOverview())); }
+  async listFootballCompetitions(req: Request, res: Response): Promise<void> { res.json(successResponse(await this.operations.listCompetitions({ page: Number(req.query.page), limit: Number(req.query.limit), search: typeof req.query.search === 'string' ? req.query.search : undefined, stale: req.query.stale === 'true' }))); }
+  async listFootballTeams(req: Request, res: Response): Promise<void> { res.json(successResponse(await this.operations.listTeams({ page: Number(req.query.page), limit: Number(req.query.limit), search: typeof req.query.search === 'string' ? req.query.search : undefined, stale: req.query.stale === 'true' }))); }
+  async listFootballFixtures(req: Request, res: Response): Promise<void> { res.json(successResponse(await this.operations.listFixtures({ dateFrom: typeof req.query.dateFrom === 'string' ? req.query.dateFrom : undefined, dateTo: typeof req.query.dateTo === 'string' ? req.query.dateTo : undefined, competitionSlug: typeof req.query.competition === 'string' ? req.query.competition : undefined, teamSlug: typeof req.query.team === 'string' ? req.query.team : undefined, status: typeof req.query.status === 'string' ? req.query.status as any : undefined, limit: Number(req.query.limit) || 50 }))); }
+  async listJobs(req: Request, res: Response): Promise<void> { res.json(successResponse(await this.operations.listJobs({ page: Number(req.query.page), limit: Number(req.query.limit), status: typeof req.query.status === 'string' ? req.query.status : undefined, type: typeof req.query.type === 'string' ? req.query.type : undefined }))); }
+  async getCacheDiagnostics(_req: Request, res: Response): Promise<void> { res.json(successResponse(await this.operations.cacheDiagnostics())); }
+  async listOperationalEvents(req: Request, res: Response): Promise<void> { res.json(successResponse(await this.operations.listEvents({ page: Number(req.query.page), limit: Number(req.query.limit), severity: typeof req.query.severity === 'string' ? req.query.severity : undefined, subsystem: typeof req.query.subsystem === 'string' ? req.query.subsystem : undefined, correlationId: typeof req.query.correlationId === 'string' ? req.query.correlationId : undefined }))); }
+  async listAlerts(_req: Request, res: Response): Promise<void> { res.json(successResponse(await this.operations.listAlerts())); }
+  async refreshFootball(req: Request, res: Response): Promise<void> { res.status(202).json(successResponse(await this.operations.refreshFootballData(this.actor(req)))); }
+  async invalidateCacheNamespace(req: Request, res: Response): Promise<void> { const namespace = String(req.body?.namespace || ''); res.json(successResponse(await this.operations.invalidateCache(namespace, this.actor(req)))); }
 
   /**
    * @openapi
@@ -70,22 +104,15 @@ export class AdminController {
     const dateToSync = DateUtils.parseDateAlias(date || 'today');
 
     if (async) {
-      void this.syncEPGData
-        .execute({
+      const job = await this.operations.enqueue('epg.sync', this.actor(req), () => this.syncEPGData.execute({
           sourceUrl:
             sourceUrl || SECONDARY_EPG_SOURCE_URL,
           date: dateToSync,
           forceRefresh: forceRefresh === true,
-        })
-        .then((result) => {
-          this.adminLogger.info('Async sync completed', { result });
-        })
-        .catch((error) => {
-          this.adminLogger.error('Async sync failed', error as Error);
-        });
+        }));
 
       res.status(202).json(
-        successResponse({ message: 'Sync started asynchronously' })
+        successResponse({ message: 'Sync started asynchronously', job })
       );
       return;
     }
@@ -146,20 +173,13 @@ export class AdminController {
     const dateToPrecompute = DateUtils.parseDateAlias(date || 'today');
 
     if (async) {
-      void this.precomputeSchedule
-        .execute({
+      const job = await this.operations.enqueue('schedule.precompute', this.actor(req), () => this.precomputeSchedule.execute({
           date: dateToPrecompute,
           fields: (fields as any) || 'full',
-        })
-        .then((result) => {
-          this.adminLogger.info('Async precompute completed', { result });
-        })
-        .catch((error) => {
-          this.adminLogger.error('Async precompute failed', error as Error);
-        });
+        }));
 
       res.status(202).json(
-        successResponse({ message: 'Precompute started asynchronously' })
+        successResponse({ message: 'Precompute started asynchronously', job })
       );
       return;
     }
@@ -284,19 +304,12 @@ export class AdminController {
     }
 
     if (async) {
-      void this.cleanOldPrograms
-        .execute({
+      const job = await this.operations.enqueue('epg.cleanup', this.actor(req), () => this.cleanOldPrograms.execute({
           daysToKeep: daysToKeep || 7,
-        })
-        .then((result) => {
-          this.adminLogger.info('Async cleanup completed', { result });
-        })
-        .catch((error) => {
-          this.adminLogger.error('Async cleanup failed', error as Error);
-        });
+        }));
 
       res.status(202).json(
-        successResponse({ message: 'Cleanup started asynchronously' })
+        successResponse({ message: 'Cleanup started asynchronously', job })
       );
       return;
     }
@@ -345,21 +358,10 @@ export class AdminController {
    * Clears cache entries optionally filtered by pattern.
    */
   async clearCache(req: Request, res: Response): Promise<void> {
-    const { pattern } = req.body;
-
-    this.adminLogger.info('Cache clear triggered', { pattern });
-
-    await this.cacheRepository.clear(pattern);
-
-    res.status(200).json(
-      successResponse(
-        {
-          message: 'Cache cleared successfully',
-          pattern: pattern || 'all',
-        },
-        { cached: false }
-      )
-    );
+    // Legacy endpoint remains deliberately constrained; arbitrary patterns and FLUSHDB are not admin UI capabilities.
+    const namespace = String(req.body?.namespace || '');
+    if (!namespace) throw new ValidationError('A supported cache namespace is required', []);
+    res.status(200).json(successResponse(await this.operations.invalidateCache(namespace, this.actor(req)), { cached: false }));
   }
 
   /**
@@ -503,5 +505,10 @@ export class AdminController {
         details: (error as Error).message,
       };
     }
+  }
+
+  private actor(req: Request): string {
+    const user = (req as any).user;
+    return user?.id || user?.email || 'admin-key';
   }
 }

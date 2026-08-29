@@ -103,70 +103,16 @@ export class AdminComponent {
       label: 'Users',
       icon: 'U',
       items: [
-        { id: 'accounts', label: 'Accounts' },
-        { id: 'segments', label: 'Segments' },
-        { id: 'moderation', label: 'Moderation' },
-        { id: 'roles', label: 'Roles & Access' },
-      ],
-    },
-    {
-      id: 'community',
-      label: 'Community',
-      icon: 'M',
-      items: [
-        { id: 'chat', label: 'Chat' },
-        { id: 'favorites', label: 'Favorites' },
-        { id: 'reports', label: 'Reports' },
-      ],
-    },
-    {
-      id: 'growth',
-      label: 'Growth',
-      icon: 'G',
-      items: [
-        { id: 'seo', label: 'SEO' },
-        { id: 'campaigns', label: 'Campaigns' },
-        { id: 'referrals', label: 'Referrals' },
-      ],
-    },
-    {
-      id: 'monetization',
-      label: 'Monetization',
-      icon: 'M$',
-      items: [
-        { id: 'ads', label: 'Ads' },
-        { id: 'partners', label: 'Partners' },
-        { id: 'subscriptions', label: 'Subscriptions' },
+        { id: 'accounts', label: 'Accounts & roles', description: 'Account state and access' },
+        { id: 'moderation', label: 'Reports', description: 'Moderation queue' },
       ],
     },
     {
       id: 'system',
       label: 'System',
-      icon: 'S',
+      icon: 'SY',
       items: [
-        { id: 'health', label: 'Health' },
-        { id: 'status', label: 'Status' },
-        { id: 'flags', label: 'Feature Flags' },
-      ],
-    },
-    {
-      id: 'settings',
-      label: 'Settings',
-      icon: 'Z',
-      items: [
-        { id: 'integrations', label: 'Integrations' },
-        { id: 'api', label: 'API Keys' },
-        { id: 'webhooks', label: 'Webhooks' },
-      ],
-    },
-    {
-      id: 'support',
-      label: 'Support',
-      icon: 'H',
-      items: [
-        { id: 'tickets', label: 'Tickets' },
-        { id: 'feedback', label: 'Feedback' },
-        { id: 'faq', label: 'FAQ' },
+        { id: 'health', label: 'System health', description: 'Service and build status' },
       ],
     },
   ];

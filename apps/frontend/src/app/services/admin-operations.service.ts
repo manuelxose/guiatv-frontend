@@ -18,12 +18,25 @@ export class AdminOperationsService {
 
   constructor(private http: HttpClient) {}
 
-  clearCache(pattern?: string): Observable<any> {
+  invalidateCache(namespace: 'epg' | 'football' | 'catalog' | 'schedules'): Observable<any> {
     return this.http.post(
-      `${this.baseUrl}/admin/cache/clear`,
-      pattern ? { pattern } : {},
+      `${this.baseUrl}/admin/cache/invalidate`, { namespace },
       { headers: this.buildHeaders() }
     );
+  }
+
+  getFootballOverview(): Observable<any> { return this.get('/admin/football/overview'); }
+  getFootballCompetitions(params: Record<string, string | number> = {}): Observable<any> { return this.get('/admin/football/competitions', params); }
+  getFootballTeams(params: Record<string, string | number> = {}): Observable<any> { return this.get('/admin/football/teams', params); }
+  getFootballFixtures(params: Record<string, string | number> = {}): Observable<any> { return this.get('/admin/football/fixtures', params); }
+  getJobs(params: Record<string, string | number> = {}): Observable<any> { return this.get('/admin/jobs', params); }
+  getEvents(params: Record<string, string | number> = {}): Observable<any> { return this.get('/admin/events', params); }
+  getAlerts(): Observable<any> { return this.get('/admin/alerts'); }
+  refreshFootball(): Observable<any> { return this.http.post(`${this.baseUrl}/admin/football/refresh`, {}, { headers: this.buildHeaders() }); }
+  getCacheDiagnostics(): Observable<any> { return this.get('/admin/cache/diagnostics'); }
+
+  private get(path: string, params: Record<string, string | number> = {}): Observable<any> {
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}${path}`, { headers: this.buildHeaders(), params: params as any }).pipe(map((response) => response.data));
   }
 
   getHealth(): Observable<HealthResponse> {

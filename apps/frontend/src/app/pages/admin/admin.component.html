@@ -59,6 +59,7 @@
           ></app-admin-schedules-section>
           <app-admin-operations-section
             *ngIf="activeGroup === 'operations'"
+            [activeItem]="activeItem"
             (lastUpdatedChange)="onLastUpdated($event)"
           ></app-admin-operations-section>
           <app-admin-users-section

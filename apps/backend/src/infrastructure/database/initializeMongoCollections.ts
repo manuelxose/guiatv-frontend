@@ -108,3 +108,7 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
 
   logger.info('Mongo collections/indexes ensured', { elapsedMs: Date.now() - start });
 }
+import { AdminOperationModel } from './models/AdminOperation.model';
+import { AdminOperationalEventModel } from './models/AdminOperationalEvent.model';
+    { name: 'admin_operations', model: AdminOperationModel },
+    { name: 'admin_operational_events', model: AdminOperationalEventModel },
