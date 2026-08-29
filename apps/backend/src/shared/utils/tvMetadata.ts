@@ -225,10 +225,11 @@ const CANONICAL_CHANNEL_ALIASES: Record<string, string[]> = {
   comedy_central: ['comedy central'],
   cosmo: ['cosmo'],
   mtv: ['mtv'],
-  movistar_hits: ['m+ hits', 'm hits', 'movistar hits', 'm.hits'],
-  movistar_estrenos: ['m+ estrenos', 'movistar estrenos', 'm.estrenos'],
-  movistar_comedia: ['m+ comedia', 'movistar comedia'],
-  movistar_accion: ['m+ accion', 'm+ acción', 'movistar accion', 'movistar acción'],
+  movistar_plus: ['m+', 'm plus', 'movistar plus', 'movistar+', 'movistar plus+'],
+  movistar_hits: ['m+ hits', 'm hits', 'm plus hits', 'movistar hits', 'movistar+ hits', 'movistar plus hits', 'm.hits'],
+  movistar_estrenos: ['m+ estrenos', 'm estrenos', 'm plus estrenos', 'movistar estrenos', 'movistar+ estrenos', 'movistar plus estrenos', 'm.estrenos'],
+  movistar_comedia: ['m+ comedia', 'm comedia', 'm plus comedia', 'movistar comedia', 'movistar+ comedia', 'movistar plus comedia'],
+  movistar_accion: ['m+ accion', 'm+ acción', 'm accion', 'm acción', 'm plus accion', 'm plus acción', 'movistar accion', 'movistar acción', 'movistar+ accion', 'movistar+ acción', 'movistar plus accion', 'movistar plus acción'],
   movistar_drama: ['m+ drama', 'movistar drama'],
   movistar_indie: ['m+ indie', 'movistar indie'],
   movistar_clasicos: ['m+ clasicos', 'm+ clásicos', 'movistar clasicos', 'movistar clásicos'],
@@ -765,6 +766,42 @@ export function buildChannelAliases(input: ChannelIdentityInput): string[] {
     ...aliases.map((alias) => normalizeTvToken(alias)),
     ...directAliases,
   ]);
+}
+
+/**
+ * Resolves a user/provider channel label through the same registry used by
+ * ingestion. This deliberately performs only exact normalized alias matches;
+ * callers that need text extraction should use findCanonicalChannelInText.
+ */
+export function resolveCanonicalChannelId(value: string | null | undefined): string | undefined {
+  const normalized = normalizeTvToken(value, ' ');
+  if (!normalized) return undefined;
+
+  for (const [canonicalId, aliases] of Object.entries(CANONICAL_CHANNEL_ALIASES)) {
+    if (canonicalId === normalized || aliases.some((alias) => normalizeTvToken(alias, ' ') === normalized)) {
+      return canonicalId;
+    }
+  }
+  return undefined;
+}
+
+/** Returns the longest explicit registry alias contained as whole words. */
+export function findCanonicalChannelInText(value: string | null | undefined): string | undefined {
+  const normalized = normalizeTvToken(value, ' ');
+  if (!normalized) return undefined;
+
+  const candidates = Object.entries(CANONICAL_CHANNEL_ALIASES)
+    .flatMap(([canonicalId, aliases]) => [canonicalId, ...aliases].map((alias) => ({
+      canonicalId,
+      alias: normalizeTvToken(alias, ' '),
+    })))
+    .filter(({ alias }) => alias)
+    .sort((left, right) => right.alias.length - left.alias.length);
+
+  return candidates.find(({ alias }) =>
+    normalized === alias || normalized.startsWith(`${alias} `) ||
+    normalized.endsWith(` ${alias}`) || normalized.includes(` ${alias} `)
+  )?.canonicalId;
 }
 
 export function inferChannelType(input: ChannelIdentityInput): CanonicalChannelType {

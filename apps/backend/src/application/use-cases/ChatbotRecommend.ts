@@ -27,6 +27,8 @@ import { AssistantLaunchContext } from '../dto/AssistantDTO';
 import { resolveGroundedRecommendations } from './AssistantGrounding';
 import { FootballQueryService } from '../sports/services/FootballQueryService';
 import { FootballMatch } from '@/domain/sports/football/types';
+import { findCanonicalChannelInText } from '@/shared/utils/tvMetadata';
+import { findGenresInText, genreLabelsMatch } from '@/shared/taxonomy/genreTaxonomy';
 
 export interface ChatbotRecommendRequest {
   userId: string;
@@ -36,7 +38,9 @@ export interface ChatbotRecommendRequest {
 }
 
 interface ChatQueryIntent {
-  mode: 'tv_now' | 'tv_tonight' | 'streaming' | 'football_today' | 'general';
+  mode: 'tv_now' | 'tv_tonight' | 'tv_channel_schedule' | 'streaming' | 'football_today' | 'general';
+  channelId?: string;
+  channelPeriod?: 'now' | 'tonight' | 'today';
   requestedTypes: Array<'movie' | 'series' | 'program'>;
   explicitGenres: string[];
   explicitPlatforms: string[];
@@ -46,22 +50,7 @@ interface ChatQueryIntent {
   negativeSignals: string[];
 }
 
-const KNOWN_GENRES = [
-  'Cine',
-  'Series',
-  'Acción',
-  'Drama',
-  'Comedia',
-  'Terror',
-  'Ciencia ficción',
-  'Documental',
-  'Deportes',
-  'Infantil',
-  'Suspense',
-  'Romance',
-  'Noticias',
-  'Cultura',
-];
+const FAMILY_FRIENDLY_GENRES = ['Familia', 'Infantil', 'Comedia', 'Animación'];
 
 // ─── Explicit channel priority order (user-defined) ──────────────────────────
 
@@ -435,7 +424,7 @@ export class ChatbotRecommend {
       communityReply.kind === 'set'
         ? communityReply.community
         : history.memory?.preferredAutonomousCommunity;
-    const isLiveIntent = intent.mode === 'tv_now' || intent.mode === 'tv_tonight';
+    const isLiveIntent = intent.mode === 'tv_now' || intent.mode === 'tv_tonight' || intent.mode === 'tv_channel_schedule';
     const isStreamingIntent = intent.mode === 'streaming' || intent.mode === 'general';
     const emptyResult = { items: [], total: 0 };
 
@@ -445,7 +434,7 @@ export class ChatbotRecommend {
       tonightLateCatalog,
       streamingCatalog,
     ] = await Promise.all([
-      isLiveIntent
+      isLiveIntent && intent.mode !== 'tv_channel_schedule'
         ? this.loadTvCatalog({ view: 'now', limit: 1000, requestedTypes: liveTypesForExecute })
         : emptyResult,
       isLiveIntent && intent.mode === 'tv_tonight'
@@ -609,6 +598,11 @@ export class ChatbotRecommend {
   ): Promise<StreamableChatResponse> {
     const t0 = Date.now();
     const latestUserMessage = this.getLatestUserMessage(request.messages);
+    // Keep streaming and JSON clients on the same deterministic EPG path for
+    // explicit channel requests; never let this fall through to AI streaming.
+    if (this.analyzeIntent(latestUserMessage).mode === 'tv_channel_schedule') {
+      return { kind: 'direct', response: await this.execute(request) };
+    }
     logger.info('[ChatbotRecommend] executeStream start', { userId: request.userId, conversationId: request.conversationId });
 
     // --- Cache check: skip all DB + catalog + AI work if we have a recent answer ---
@@ -942,6 +936,37 @@ export class ChatbotRecommend {
   ): Promise<ChatbotResponse | null> {
     // Title-specific schedule query ("a qué hora emiten X", "en qué canal dan Y")
     if (latestUserMessage) {
+      if (intent.mode === 'tv_channel_schedule' && intent.channelId) {
+        const schedule = await this.loadTvCatalog({
+          view: 'day', channelId: intent.channelId, limit: 120, requestedTypes: this.resolveLiveTypes(intent),
+        });
+        const items = this.filterCatalogItems(this.dedupeCatalogItems(schedule.items), intent);
+        const channelName = items[0]?.channel?.name || intent.channelId;
+        const periodItems = intent.channelPeriod === 'now'
+          ? items.filter((item) => item.liveNow)
+          : intent.channelPeriod === 'tonight'
+            ? this.extractTonightItems(items)
+            : items;
+        if (!periodItems.length) {
+          logger.warn('[ChatbotRecommend] explicit_channel_schedule_empty', {
+            requestedChannel: intent.channelId, scheduleCount: items.length, period: intent.channelPeriod,
+          });
+          return {
+            text: `No he encontrado programación actual de ${channelName} para este periodo.`,
+            recommendations: [], moreRecommendations: [], followUpSuggestions: ['¿Qué hay ahora mismo en TV?', '¿Qué hay esta noche?'],
+          };
+        }
+        const ranked = intent.requestedTypes.includes('movie')
+          ? this.rankMovieItems(periodItems, intent.channelPeriod === 'now' ? 'tv_now' : 'tv_tonight', context.rankingCtx, intent.wantsPrimeTime)
+          : this.rankScheduleItems(periodItems, intent.channelPeriod === 'now' ? 'tv_now' : 'tv_tonight', context.rankingCtx);
+        const picks = ranked.slice(0, 6);
+        return {
+          text: `${intent.channelPeriod === 'now' ? 'Ahora mismo' : intent.channelPeriod === 'tonight' ? 'Esta noche' : 'Hoy'} en ${channelName}:`,
+          recommendations: picks.map((entry) => this.mapRankedItemToRecommendation(entry, entry.item.liveNow ? `En emisión ahora en ${channelName}.` : `Empieza a las ${entry.item.start ? this.formatTime(entry.item.start) : 'próximamente'} en ${channelName}.`)),
+          moreRecommendations: ranked.slice(6).map((entry) => this.mapRankedItemToRecommendation(entry, `En ${channelName}.`)),
+          followUpSuggestions: ['¿Qué están echando ahora?', '¿Qué hay esta noche?'],
+        };
+      }
       const titleQuery = this.detectTitleScheduleQuery(latestUserMessage);
       if (titleQuery) {
         const titleResponse = this.buildTitleScheduleResponse(titleQuery, liveNowItems, tonightItems);
@@ -1058,7 +1083,7 @@ export class ChatbotRecommend {
         ),
         followUpSuggestions: this.buildFollowUpSuggestions(intent, latestUserMessage),
         queryContext: this.buildQueryContext(
-          intent.mode,
+          intent.mode === 'tv_channel_schedule' ? 'tv_tonight' : intent.mode,
           intent.requestedTypes,
           rankedPrimaryItems.length,
           picks.length,
@@ -1090,7 +1115,7 @@ export class ChatbotRecommend {
           latestUserMessage
         ),
         queryContext: this.buildQueryContext(
-          intent.mode,
+          intent.mode === 'tv_channel_schedule' ? 'tv_tonight' : intent.mode,
           intent.requestedTypes,
           0,
           0,
@@ -1196,7 +1221,7 @@ export class ChatbotRecommend {
         latestUserMessage
       ),
       queryContext: this.buildQueryContext(
-        intent.mode,
+        intent.mode === 'tv_channel_schedule' ? 'tv_tonight' : intent.mode,
         intent.requestedTypes,
         0,
         0,
@@ -1279,9 +1304,7 @@ export class ChatbotRecommend {
         if (
           intent.explicitGenres.length &&
           !intent.explicitGenres.some((genre) =>
-            item.genres.some(
-              (itemGenre) => this.normalize(itemGenre) === this.normalize(genre)
-            )
+            item.genres.some((itemGenre) => genreLabelsMatch(itemGenre, genre))
           )
         ) {
           return false;
@@ -1302,9 +1325,7 @@ export class ChatbotRecommend {
         if (
           intent.wantsFamily &&
           !item.genres.some((genre) =>
-            ['familia', 'infantil', 'comedia', 'animacion'].includes(
-              this.normalize(genre)
-            )
+            FAMILY_FRIENDLY_GENRES.some((familyGenre) => genreLabelsMatch(genre, familyGenre))
           )
         ) {
           return false;
@@ -1373,10 +1394,9 @@ export class ChatbotRecommend {
     const explicitPlatforms = CATALOG_PLATFORM_REGISTRY
       .map((platform) => platform.name)
       .filter((platform) => normalized.includes(this.normalize(platform)));
-    const explicitGenres = KNOWN_GENRES.filter((genre) =>
-      normalized.includes(this.normalize(genre))
-    );
+    const explicitGenres = findGenresInText(message);
 
+    const channelId = findCanonicalChannelInText(message);
     const wantsTv =
       /television|televisión|tv|parrilla|canal|canales|emision|emisión|directo/.test(
         normalized
@@ -1409,7 +1429,9 @@ export class ChatbotRecommend {
     ].filter(Boolean);
 
     let mode: ChatQueryIntent['mode'] = 'general';
-    if (/futbol|fútbol|partidos?|champions|laliga|liga de campeones/.test(normalized)) {
+    if (channelId) {
+      mode = 'tv_channel_schedule';
+    } else if (/futbol|fútbol|partidos?|champions|laliga|liga de campeones/.test(normalized)) {
       mode = 'football_today';
     } else if ((wantsTv && wantsNow) || /en parrilla ahora/.test(normalized) || (wantsNow && !wantsStreaming)) {
       mode = 'tv_now';
@@ -1421,6 +1443,8 @@ export class ChatbotRecommend {
 
     return {
       mode,
+      channelId,
+      channelPeriod: wantsNow ? 'now' : wantsTonight ? 'tonight' : 'today',
       requestedTypes,
       explicitGenres,
       explicitPlatforms,
@@ -1646,12 +1670,13 @@ export class ChatbotRecommend {
   }
 
   private async loadTvCatalog(input: {
-    view: 'now' | 'night' | 'search';
+    view: 'now' | 'night' | 'day' | 'search';
     date?: string;
     q?: string;
     limit: number;
     slot?: '6' | '7';
     category?: string;
+    channelId?: string;
     requestedTypes?: Array<'movie' | 'series' | 'program'>;
   }): Promise<{ items: CatalogItemDTO[]; total: number }> {
     if (!this.tvReadQueryService) {
@@ -1675,6 +1700,7 @@ export class ChatbotRecommend {
       view: input.view,
       date: input.date,
       q: input.q,
+      channelId: input.channelId,
       category: input.category,
       limit: input.limit,
     });

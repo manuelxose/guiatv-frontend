@@ -51,8 +51,12 @@ export interface TvReadProgramDTO {
   editorialCategory: string;
   genre?: string;
   subgenre?: string;
+  genreTags?: string[];
   sportFacet?: 'Fútbol' | 'Baloncesto' | 'F1' | 'Tenis' | 'MotoGP' | 'Más';
   tmdbId?: number;
+  /** Reference to the shared entry in the local media catalog, when the
+   * airing's identity has been resolved. See MediaCatalogEntry. */
+  mediaId?: string;
   description?: string;
   titleResolutionState?:
     | 'specific_source_title'

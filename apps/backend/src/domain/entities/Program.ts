@@ -18,9 +18,16 @@ export interface ProgramProps {
   image?: string;
   genre?: string;
   subgenre?: string;
+  genreTags?: string[];
   year?: string;
   rating?: string;
   tmdbId?: number;
+  /** Reference to the reusable entry in the local media catalog (see
+   * MediaCatalogEntry) that this airing's identity resolved to, when known.
+   * Airings duplicate only the lightweight display fields above (image,
+   * description, year, rating, genreTags); the full metadata — cast, runtime,
+   * canonical genres, provenance — lives once in that shared entry. */
+  mediaId?: string;
   sourceFeed?: string;
   sourceProgrammeId?: string;
   sourceAssetCandidates?: Array<Record<string, unknown>>;
@@ -139,6 +146,10 @@ export class Program {
     return this.props.subgenre;
   }
 
+  get genreTags(): string[] {
+    return Array.isArray(this.props.genreTags) ? [...this.props.genreTags] : [];
+  }
+
   get year(): string | undefined {
     return this.props.year;
   }
@@ -149,6 +160,10 @@ export class Program {
 
   get tmdbId(): number | undefined {
     return this.props.tmdbId;
+  }
+
+  get mediaId(): string | undefined {
+    return this.props.mediaId;
   }
 
   get sourceFeed(): string | undefined {

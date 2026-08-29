@@ -260,8 +260,10 @@ export class TvReadModelBuilder {
           editorialCategory,
           genre: program.genre,
           subgenre: program.subgenre,
+          genreTags: program.genreTags,
           sportFacet,
           tmdbId: program.tmdbId,
+          mediaId: program.mediaId,
           description: program.description,
           titleResolutionState: titleResolution.state,
           isResolvedTitle: titleResolution.isResolvedTitle,
@@ -353,6 +355,7 @@ export class TvReadModelBuilder {
             titleAliases,
             editorialCategory,
             genre: program.genre,
+            genreTags: program.genreTags,
             tmdbId: program.tmdbId,
             assets,
             sourceProvenance: item.sourceProvenance,
@@ -455,6 +458,7 @@ export class TvReadModelBuilder {
         ...preferred.program,
         subtitle: preferred.program.subtitle || fallback.program.subtitle,
         tmdbId: preferred.program.tmdbId || fallback.program.tmdbId,
+        mediaId: preferred.program.mediaId || fallback.program.mediaId,
         description: preferred.program.description || fallback.program.description,
         titleAliases: Array.from(
           new Set([...(preferred.program.titleAliases || []), ...(fallback.program.titleAliases || [])])

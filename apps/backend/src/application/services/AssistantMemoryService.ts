@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { logger } from '../../shared/utils/logger';
 import { CATALOG_PLATFORM_REGISTRY, CatalogContentType } from '../dto/CatalogDTO';
+import { findGenreMatchesInText } from '../../shared/taxonomy/genreTaxonomy';
 import {
   ChatbotQueryContext,
   ChatbotMessage,
@@ -73,22 +74,6 @@ export interface TrackAssistantActionInput {
   };
 }
 
-const KNOWN_GENRES = [
-  'Cine',
-  'Series',
-  'Acción',
-  'Drama',
-  'Comedia',
-  'Terror',
-  'Ciencia ficción',
-  'Documental',
-  'Deportes',
-  'Infantil',
-  'Suspense',
-  'Romance',
-  'Noticias',
-  'Cultura',
-];
 
 const KNOWN_PLATFORMS = CATALOG_PLATFORM_REGISTRY.map((platform) => platform.name);
 const NEGATIVE_TOKENS = [
@@ -683,13 +668,8 @@ export class AssistantMemoryService {
       this.extractAutonomousCommunity(normalized);
     const autonomicOptIn = this.extractAutonomicPreference(normalized);
 
-    KNOWN_GENRES.forEach((genre) => {
-      const token = this.normalize(genre);
-      if (!normalized.includes(token)) {
-        return;
-      }
-
-      if (this.isNegativeMention(normalized, token)) {
+    findGenreMatchesInText(text).forEach(({ label: genre, matchedAlias }) => {
+      if (this.isNegativeMention(normalized, matchedAlias)) {
         dislikedGenres.push(genre);
         negativeSignals.push(`sin ${genre}`);
       } else {

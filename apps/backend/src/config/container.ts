@@ -143,6 +143,10 @@ export class Container {
     const interactionRepository = new MongoUserContentInteractionRepository();
     this.dependencies.set('userContentInteractionRepository', interactionRepository);
 
+    const { MongoMediaCatalogRepository } = await import('../infrastructure/repositories/MongoMediaCatalogRepository');
+    const mediaCatalogRepository = new MongoMediaCatalogRepository();
+    this.dependencies.set('mediaCatalogRepository', mediaCatalogRepository);
+
     const analyticsStore = (process.env.ANALYTICS_STORE || 'mongo').toLowerCase();
     let analyticsRepository: IAnalyticsRepository;
 
@@ -248,6 +252,14 @@ export class Container {
     );
     tmdbService.attachStreamingProvidersService(streamingProvidersService);
     this.dependencies.set('streamingProvidersService', streamingProvidersService);
+
+    const { MediaCatalogService } = await import('../application/services/MediaCatalogService');
+    const mediaCatalogService = new MediaCatalogService(
+      this.get('mediaCatalogRepository'),
+      tmdbService,
+      cacheRepositoryForTmdb
+    );
+    this.dependencies.set('mediaCatalogService', mediaCatalogService);
 
     const googleClientId = process.env.GOOGLE_CLIENT_ID;
     const jwtSecret = process.env.JWT_SECRET || 'dev-secret-change-me';
@@ -401,7 +413,7 @@ export class Container {
     const programParser = new ProgramDataParser();
     this.dependencies.set('programParser', programParser);
 
-    const syncEPGData = new SyncEPGData(channelRepository, programRepository, cacheRepository, storageRepository, xmlParser, programParser, tmdbService);
+    const syncEPGData = new SyncEPGData(channelRepository, programRepository, cacheRepository, storageRepository, xmlParser, programParser, tmdbService, this.get('mediaCatalogService'));
     this.dependencies.set('syncEPGData', syncEPGData);
 
     const tvReadModelBuilder = new TvReadModelBuilder(programRepository, cacheRepository);
@@ -430,7 +442,8 @@ export class Container {
       tmdbService,
       streamingProvidersService,
       interactionRepository,
-      this.get('tvReadQueryService')
+      this.get('tvReadQueryService'),
+      this.get('mediaCatalogService')
     );
     this.dependencies.set('catalogService', catalogService);
 
@@ -472,7 +485,8 @@ export class Container {
       cacheRepository,
       tmdbService,
       streamingProvidersService,
-      interactionRepository
+      interactionRepository,
+      this.get('mediaCatalogService')
     );
     this.dependencies.set('getContentDetail', getContentDetail);
 

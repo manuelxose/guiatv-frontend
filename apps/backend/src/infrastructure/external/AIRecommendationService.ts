@@ -37,7 +37,7 @@ export interface ChatbotRecommendationPayload {
 }
 
 export interface ChatbotQueryContext {
-  mode: 'tv_now' | 'tv_tonight' | 'streaming' | 'football_today' | 'general';
+  mode: 'tv_now' | 'tv_tonight' | 'tv_channel_schedule' | 'streaming' | 'football_today' | 'general';
   requestedTypes: Array<'movie' | 'series' | 'program'>;
   totalMatches: number;
   primaryMatches?: number;
@@ -116,7 +116,7 @@ export interface ChatbotContext {
     tmdbRating?: number;
   }>;
   queryIntent?: {
-    mode: 'tv_now' | 'tv_tonight' | 'streaming' | 'football_today' | 'general';
+    mode: 'tv_now' | 'tv_tonight' | 'tv_channel_schedule' | 'streaming' | 'football_today' | 'general';
     requestedTypes: Array<'movie' | 'series' | 'program'>;
     explicitGenres: string[];
     explicitPlatforms: string[];
