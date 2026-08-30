@@ -10,6 +10,7 @@ import { FootballNewsCardComponent } from '@app/features/football/components/foo
 import { FootballStandingsTableComponent } from '@app/features/football/components/football-standings-table/football-standings-table.component';
 import { FootballSectionHeaderComponent } from '@app/features/football/components/football-section-header/football-section-header.component';
 import { FootballMatchRowComponent } from '@app/features/football/components/football-match-row/football-match-row.component';
+import { FootballBroadcastListComponent } from '@app/features/football/components/football-broadcast-list/football-broadcast-list.component';
 import {
   applyFootballMatchFilter,
   FootballFilterBarComponent,
@@ -54,6 +55,7 @@ export function groupByRound(matches: FootballMatchDTO[]): RoundGroup[] {
     FootballStandingsTableComponent,
     FootballSectionHeaderComponent,
     FootballMatchRowComponent,
+    FootballBroadcastListComponent,
     FootballFilterBarComponent,
     PortalLocalToolbarComponent,
   ],
@@ -106,6 +108,8 @@ export class FootballCompetitionDetailComponent {
       .filter((m) => m.status === 'scheduled')
       .slice(0, 5)
   );
+  /** The single next scheduled match — the "where to watch" CTA is always scoped to it, never to the whole competition. */
+  readonly nextMatch = computed(() => this.upcomingPreview()[0] ?? null);
   readonly resultsPreview = computed(() =>
     this.matches()
       .filter((m) => m.status === 'finished')

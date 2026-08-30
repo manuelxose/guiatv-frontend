@@ -160,4 +160,42 @@ describe('EditorialService', () => {
     ]);
     expect(post.contentHtml).toContain('<h2 id="como-elegir-plataforma">');
   });
+
+  it('adapts the editorial monetization fields, defaulting affiliatePlacementMode to auto and arrays to empty', async () => {
+    const article = rawPost(1, 'Mejores Smart TV para el fútbol', 'Guías');
+    article.affiliatePlacementMode = 'MANUAL';
+    article.relatedOfferCategories = ['Smart-TV', ' device '];
+    article.relatedMerchantKeys = ['pccomponentes'];
+    article.manualAffiliateOfferIds = ['offer-1'];
+    const service = new EditorialService({ getAllPosts: () => of([article]) } as any);
+
+    const [post] = await firstValueFrom(service.getPosts());
+
+    expect(post.affiliatePlacementMode).toBe('manual');
+    expect(post.relatedOfferCategories).toEqual(['Smart-TV', 'device']);
+    expect(post.relatedMerchantKeys).toEqual(['pccomponentes']);
+    expect(post.manualAffiliateOfferIds).toEqual(['offer-1']);
+  });
+
+  it('defaults a post written before Phase 8 (no monetization fields at all) to auto mode with empty arrays', async () => {
+    const article = rawPost(1, 'Artículo antiguo', 'Guías');
+    const service = new EditorialService({ getAllPosts: () => of([article]) } as any);
+
+    const [post] = await firstValueFrom(service.getPosts());
+
+    expect(post.affiliatePlacementMode).toBe('auto');
+    expect(post.relatedOfferCategories).toEqual([]);
+    expect(post.relatedMerchantKeys).toEqual([]);
+    expect(post.manualAffiliateOfferIds).toEqual([]);
+  });
+
+  it('falls back to auto for an unrecognized affiliatePlacementMode value', async () => {
+    const article = rawPost(1, 'Artículo corrupto', 'Guías');
+    article.affiliatePlacementMode = 'sometimes';
+    const service = new EditorialService({ getAllPosts: () => of([article]) } as any);
+
+    const [post] = await firstValueFrom(service.getPosts());
+
+    expect(post.affiliatePlacementMode).toBe('auto');
+  });
 });

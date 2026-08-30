@@ -62,6 +62,8 @@
             *ngFor="let match of home()?.featuredMatches"
             [match]="match"
             variant="featured"
+            [enableAffiliateCta]="true"
+            affiliatePlacement="football-home"
           ></app-football-match-card>
         </div>
       </section>

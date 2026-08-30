@@ -91,6 +91,18 @@
                   <span *ngFor="let facet of contentFacetLabels" class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 py-1 text-[11px] font-semibold text-[var(--portal-text-soft)]">{{ facet }}</span>
                 </div>
 
+                <div *ngIf="channelAffiliateOffers.length" class="mt-4 flex flex-wrap items-center gap-3">
+                  <app-affiliate-cta
+                    *ngFor="let offer of channelAffiliateOffers"
+                    [offer]="offer"
+                    variant="primary"
+                    [appAffiliateImpression]="offer"
+                    [appAffiliateImpressionContext]="channelAffiliateImpressionContext()"
+                    [appAffiliateImpressionPage]="channelPagePath"
+                  ></app-affiliate-cta>
+                  <app-affiliate-disclosure [sponsored]="showChannelSponsoredDisclosure" [compact]="true"></app-affiliate-disclosure>
+                </div>
+
                 <div class="mt-4 flex flex-wrap gap-2">
                   <button
                     *ngFor="let day of days"

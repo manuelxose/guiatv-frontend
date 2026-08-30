@@ -11,6 +11,12 @@ export interface UserProfile {
   role?: 'admin' | 'editor' | 'user';
   favoriteGenres: string[];
   preferredPlatforms: string[];
+  /**
+   * Product preferences are stored as canonical catalogue identifiers, never
+   * display names.  The profile UI does not edit these yet; this contract is
+   * the compatibility boundary for the forthcoming My TV and Sports areas.
+   */
+  tvPreferences: UserTvPreferences;
   discoveryDefaults?: {
     types: Array<'movie' | 'series' | 'program'>;
     availability: Array<'live' | 'streaming' | 'free' | 'flatrate' | 'rent' | 'buy'>;
@@ -22,6 +28,13 @@ export interface UserProfile {
   notifications: UserNotifications;
   stats: UserStats;
   backgroundImage?: string; // For profile cover
+}
+
+export interface UserTvPreferences {
+  favoriteChannelIds: string[];
+  favoriteFootballTeamIds: string[];
+  favoriteFootballCompetitionIds: string[];
+  preferredContentLanguages: string[];
 }
 
 export interface WatchingNow {

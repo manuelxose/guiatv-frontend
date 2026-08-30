@@ -161,7 +161,11 @@ export class UserController {
     try {
       const userId = this.getUserId(req);
       const profile = await this.ensureProfileById(userId);
-      profile.privacy = { ...DEFAULT_PRIVACY, ...(profile.privacy || {}), ...(req.body || {}) };
+      profile.privacy = {
+        ...DEFAULT_PRIVACY,
+        ...(profile.privacy || {}),
+        ...this.sanitizePrivacy(req.body),
+      };
       await profile.save();
 
       res.json(successResponse({ privacy: profile.privacy }));
@@ -177,11 +181,28 @@ export class UserController {
       profile.notifications = {
         ...DEFAULT_NOTIFICATIONS,
         ...(profile.notifications || {}),
-        ...(req.body || {}),
+        ...this.sanitizeNotifications(req.body),
       };
       await profile.save();
 
       res.json(successResponse({ notifications: profile.notifications }));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Saves references to canonical TV and football entities.  This deliberately
+   * does not accept provider names or arbitrary integration metadata.
+   */
+  async updateTvPreferences(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = this.getUserId(req);
+      const profile = await this.ensureProfileById(userId);
+      profile.tvPreferences = this.sanitizeTvPreferences(req.body);
+      await profile.save();
+
+      res.json(successResponse({ tvPreferences: profile.tvPreferences }));
     } catch (error) {
       next(error);
     }
@@ -890,6 +911,7 @@ export class UserController {
       location: profile.location || '-',
       favoriteGenres: profile.favoriteGenres || [],
       preferredPlatforms: profile.preferredPlatforms || [],
+      tvPreferences: profile.tvPreferences || this.emptyTvPreferences(),
       discoveryDefaults: profile.discoveryDefaults || {
         types: [],
         availability: [],
@@ -924,6 +946,50 @@ export class UserController {
       sort: allowedSort.includes(String(payload.sort || '').trim().toLowerCase())
         ? String(payload.sort).trim().toLowerCase()
         : 'popular',
+    };
+  }
+
+  private sanitizePrivacy(value: unknown) {
+    const payload = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+    const allowMessages = ['all', 'followers', 'none'];
+    return {
+      ...(typeof payload.profilePublic === 'boolean' ? { profilePublic: payload.profilePublic } : {}),
+      ...(typeof payload.shareActivity === 'boolean' ? { shareActivity: payload.shareActivity } : {}),
+      ...(typeof payload.shareWatchlist === 'boolean' ? { shareWatchlist: payload.shareWatchlist } : {}),
+      ...(typeof payload.showOnline === 'boolean' ? { showOnline: payload.showOnline } : {}),
+      ...(typeof payload.publicLists === 'boolean' ? { publicLists: payload.publicLists } : {}),
+      ...(allowMessages.includes(String(payload.allowMessages))
+        ? { allowMessages: String(payload.allowMessages) as 'all' | 'followers' | 'none' }
+        : {}),
+    };
+  }
+
+  private sanitizeNotifications(value: unknown) {
+    const payload = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+    const allowed = ['recommendations', 'followers', 'weeklySummary', 'chatMessages', 'groupActivity'] as const;
+    return Object.fromEntries(
+      allowed
+        .filter((key) => typeof payload[key] === 'boolean')
+        .map((key) => [key, payload[key]])
+    );
+  }
+
+  private emptyTvPreferences() {
+    return {
+      favoriteChannelIds: [],
+      favoriteFootballTeamIds: [],
+      favoriteFootballCompetitionIds: [],
+      preferredContentLanguages: [],
+    };
+  }
+
+  private sanitizeTvPreferences(value: unknown) {
+    const payload = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+    return {
+      favoriteChannelIds: this.sanitizeStringArray(payload.favoriteChannelIds).slice(0, 100),
+      favoriteFootballTeamIds: this.sanitizeStringArray(payload.favoriteFootballTeamIds).slice(0, 50),
+      favoriteFootballCompetitionIds: this.sanitizeStringArray(payload.favoriteFootballCompetitionIds).slice(0, 50),
+      preferredContentLanguages: this.sanitizeStringArray(payload.preferredContentLanguages).slice(0, 12),
     };
   }
 

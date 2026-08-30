@@ -1,0 +1,279 @@
+<div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-6">
+  <form
+    class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-5 h-fit"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+  >
+    <div class="flex items-center justify-between gap-4">
+      <h4 class="text-lg font-semibold text-[var(--portal-text)]">{{ isEditing ? 'Editar oferta' : 'Nueva oferta' }}</h4>
+      <span *ngIf="saving" class="text-xs text-[var(--portal-text-soft)]">Guardando...</span>
+    </div>
+
+    <div *ngIf="saveError" class="bg-red-500/10 border border-red-500/30 text-red-200 px-4 py-3 rounded-xl text-sm">{{ saveError }}</div>
+    <div *ngIf="saveSuccess" class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-200 px-4 py-3 rounded-xl text-sm">{{ saveSuccess }}</div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-merchant">Merchant</label>
+        <select id="offer-merchant" formControlName="merchantId"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+          <option value="" disabled>Selecciona un merchant</option>
+          <option *ngFor="let m of merchants" [value]="m.id">{{ m.name }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-program">Programa</label>
+        <select id="offer-program" formControlName="affiliateProgramId"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+          <option value="" disabled>Selecciona un programa</option>
+          <option *ngFor="let p of programs" [value]="p.id">{{ merchantName(p.merchantId) }} · {{ p.market }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-market">Mercado</label>
+        <input id="offer-market" formControlName="market" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+        <p class="text-xs text-[var(--portal-text-muted)] mt-1">Debe coincidir con el mercado del programa.</p>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-category">Categoría</label>
+        <select id="offer-category" formControlName="category"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+          <option *ngFor="let option of categoryOptions" [value]="option.id">{{ option.label }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-plan-id">ID del plan</label>
+        <input id="offer-plan-id" formControlName="planId" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          placeholder="basico" />
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-plan-name">Nombre del plan</label>
+        <input id="offer-plan-name" formControlName="planName" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          placeholder="Plan Básico" />
+      </div>
+    </div>
+
+    <fieldset class="border border-[var(--portal-border)] rounded-2xl p-4 space-y-4">
+      <legend class="text-xs uppercase tracking-wider text-[var(--portal-text-soft)] px-2">Precio</legend>
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-currency">Moneda</label>
+          <input id="offer-currency" formControlName="currency" type="text"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+        </div>
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-monthly">Mensual</label>
+          <input id="offer-monthly" formControlName="monthlyAmount" type="number" step="0.01"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+        </div>
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-annual">Anual</label>
+          <input id="offer-annual" formControlName="annualAmount" type="number" step="0.01"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-monthly-label">Etiqueta mensual</label>
+          <input id="offer-monthly-label" formControlName="monthlyLabel" type="text"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="9,99€/mes" />
+        </div>
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-annual-label">Etiqueta anual</label>
+          <input id="offer-annual-label" formControlName="annualLabel" type="text"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-intents">Intents (separados por coma)</label>
+        <input id="offer-intents" formControlName="recommendationIntents" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          placeholder="cheapest, movies" />
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-placements">Placements (vacío = todos)</label>
+        <input id="offer-placements" formControlName="placements" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          placeholder="home, channel-page" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-[minmax(0,0.6fr)_minmax(0,1.4fr)] gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-strategy">Estrategia</label>
+        <select id="offer-strategy" formControlName="strategy"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+          <option *ngFor="let option of strategyOptions" [value]="option.id">{{ option.label }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-destination">URL de destino</label>
+        <input id="offer-destination" formControlName="destinationUrl" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          placeholder="https://tienda.movistarplus.es/basico" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-valid-from">Válida desde</label>
+        <input id="offer-valid-from" formControlName="validFrom" type="date"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-valid-until">Válida hasta</label>
+        <input id="offer-valid-until" formControlName="validUntil" type="date"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+      </div>
+    </div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-status">Estado</label>
+      <select id="offer-status" formControlName="status"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+        <option value="active">Activa</option>
+        <option value="inactive">Inactiva</option>
+        <option value="draft">Borrador</option>
+        <option value="expired">Expirada</option>
+      </select>
+    </div>
+
+    <fieldset class="border border-[var(--portal-border)] rounded-2xl p-4 space-y-4">
+      <legend class="text-xs uppercase tracking-wider text-[var(--portal-text-soft)] px-2">Verificación</legend>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-verif-source">Fuente</label>
+          <input id="offer-verif-source" formControlName="verificationSource" type="text"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="URL de verificación" />
+        </div>
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-verif-date">Verificado el</label>
+          <input id="offer-verif-date" formControlName="verifiedAt" type="date"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+        </div>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-verif-status">Estado de verificación</label>
+        <select id="offer-verif-status" formControlName="verificationStatus"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+          <option *ngFor="let option of verificationStatusOptions" [value]="option.id">{{ option.label }}</option>
+        </select>
+      </div>
+    </fieldset>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-bestfor">Mejor para</label>
+        <input id="offer-bestfor" formControlName="bestFor" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-highlight">Destacado</label>
+        <input id="offer-highlight" formControlName="highlight" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+      </div>
+    </div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="offer-disclosure">Disclosure</label>
+      <textarea id="offer-disclosure" formControlName="disclosure" rows="2"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"></textarea>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-end gap-3 pt-2">
+      <button type="button"
+        class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] text-sm hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        (click)="resetForm()">
+        Limpiar
+      </button>
+      <button type="submit"
+        class="px-5 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-100 text-sm hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        [disabled]="saving || form.invalid">
+        {{ isEditing ? 'Actualizar oferta' : 'Crear oferta' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div>
+        <h4 class="text-lg font-semibold text-[var(--portal-text)]">Ofertas</h4>
+        <p class="text-xs text-[var(--portal-text-muted)]">{{ total }} resultados</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <select aria-label="Filtrar ofertas por estado" class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          [value]="statusFilter" (change)="setStatusFilter($any($event.target).value)">
+          <option *ngFor="let option of statusFilterOptions" [value]="option.id">{{ option.label }}</option>
+        </select>
+        <button type="button"
+          class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
+          (click)="refresh()">
+          Refrescar
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">Cargando ofertas...</div>
+    <div *ngIf="error" class="text-sm text-red-300 py-3">{{ error }}</div>
+    <div *ngIf="!loading && !error && offers.length === 0" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">
+      No hay ofertas para este filtro.
+    </div>
+
+    <div *ngIf="offers.length" class="space-y-3 max-h-[720px] overflow-auto pr-1">
+      <article *ngFor="let offer of offers; trackBy: trackById"
+        class="p-4 rounded-2xl bg-[var(--portal-surface)] border space-y-3"
+        [ngClass]="selectedId === offer.id ? 'border-red-500/40' : 'border-[var(--portal-border)]'">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h5 class="text-[var(--portal-text)] text-sm font-semibold truncate">
+              {{ merchantName(offer.merchantId) }} · {{ offer.plan.name }}
+            </h5>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-1">
+              {{ offer.market }} · {{ offer.pricing.monthlyLabel || (offer.pricing.monthlyAmount ?? '—') }}
+            </p>
+          </div>
+          <div class="flex flex-col items-end gap-1 flex-shrink-0">
+            <span class="text-[10px] px-2 py-1 rounded-full border"
+              [ngClass]="offer.status === 'active' ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40' : 'bg-amber-500/20 text-amber-200 border-amber-500/40'">
+              {{ offer.status }}
+            </span>
+            <span *ngIf="offer.expired" class="text-[10px] px-2 py-1 rounded-full border bg-red-500/20 text-red-200 border-red-500/40">
+              Expirada
+            </span>
+            <span class="text-[10px] px-2 py-1 rounded-full border" [ngClass]="verificationBadgeClass(offer.verificationDisplay)">
+              {{ offer.verificationDisplay === 'current' ? 'Vigente' : offer.verificationDisplay === 'stale' ? 'Desactualizada' : 'Requiere revisión' }}
+              <ng-container *ngIf="offer.daysSinceVerified !== null"> · {{ offer.daysSinceVerified }}d</ng-container>
+            </span>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <button type="button"
+            class="px-3 py-1.5 rounded-lg border border-[var(--portal-border-strong)] text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
+            (click)="edit(offer)">
+            Editar
+          </button>
+          <button type="button"
+            class="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-200 hover:border-red-400/40 disabled:opacity-50"
+            [disabled]="offer.status === 'inactive' || deactivatingId === offer.id"
+            (click)="deactivate(offer)">
+            {{ deactivatingId === offer.id ? 'Desactivando...' : 'Desactivar' }}
+          </button>
+        </div>
+      </article>
+    </div>
+  </div>
+</div>

@@ -35,6 +35,8 @@ async function startServer() {
       blogController: container.get('blogController'),
       analyticsController: container.get('analyticsController'),
       monetizationController: container.get('monetizationController'),
+      affiliateController: container.get('affiliateController'),
+      affiliateAdminController: container.get('affiliateAdminController'),
       userController: container.get('userController'),
       interactionController: container.get('interactionController'),
       socialController: container.get('socialController'),

@@ -1,6 +1,6 @@
 import { SimpleChange, SimpleChanges } from '@angular/core';
 import { ChatProfilePanelComponent } from './chat-profile-panel.component';
-import { PreferenceAnswer } from './chat-profile.types';
+import { PreferenceAnswer } from '../../../interfaces/chat-profile.types';
 
 describe('ChatProfilePanelComponent', () => {
   it('merges profile and memory values before emitting an internal profile answer', () => {

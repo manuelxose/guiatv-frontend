@@ -258,6 +258,112 @@
       </fieldset>
 
       <fieldset class="border border-[var(--portal-border)] rounded-2xl p-4 space-y-4">
+        <legend class="px-2 text-xs text-[var(--portal-text-soft)] uppercase tracking-wider">Monetizacion editorial</legend>
+        <p class="text-xs text-[var(--portal-text-muted)]">
+          Controla si y como este articulo resuelve ofertas de afiliacion en los bloques
+          <code>blog-inline</code> y <code>blog-footer</code>. Nunca se pegan URLs de afiliado aqui: el
+          motor resuelve ofertas a partir de estas señales en el momento de mostrar la pagina.
+        </p>
+
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-affiliate-mode">Modo</label>
+          <select
+            id="blog-affiliate-mode"
+            formControlName="affiliatePlacementMode"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          >
+            <option *ngFor="let mode of affiliatePlacementModeOptions" [value]="mode.id">{{ mode.label }}</option>
+          </select>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">{{ affiliatePlacementModeDescription }}</p>
+        </div>
+
+        <div>
+          <p class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider">Categorias de oferta relacionadas</p>
+          <div class="mt-3 grid gap-3 sm:grid-cols-2">
+            <label
+              *ngFor="let option of affiliateCategoryOptions"
+              class="flex items-start gap-3 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 py-3 text-sm text-[var(--portal-text)]"
+            >
+              <input
+                type="checkbox"
+                class="mt-0.5 h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-red-500 focus:ring-red-500"
+                [checked]="isArraySelectionActive('relatedOfferCategories', option.key)"
+                (change)="toggleArraySelection('relatedOfferCategories', option.key, $any($event.target).checked)"
+              />
+              <span>{{ option.label }}</span>
+            </label>
+          </div>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">
+            Opcional. Deja todo sin marcar si el articulo no debe restringirse a una categoria de oferta.
+          </p>
+        </div>
+
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-affiliate-merchants">Merchants relacionados</label>
+          <input
+            id="blog-affiliate-merchants"
+            formControlName="relatedMerchantKeys"
+            type="text"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="pccomponentes, samsung, fnac"
+          />
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">
+            Nombres o alias de merchant separados por coma, ademas de las plataformas ya marcadas arriba. Util para
+            categorias no streaming (Smart TVs, dispositivos, entradas).
+          </p>
+        </div>
+
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-affiliate-pinned">Ofertas fijadas manualmente</label>
+          <input
+            id="blog-affiliate-pinned"
+            formControlName="manualAffiliateOfferIds"
+            type="text"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            placeholder="id-de-oferta-1, id-de-oferta-2"
+          />
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">
+            IDs de AffiliateOffer separados por coma. En modo automatico se muestran primero; en modo manual son las
+            unicas ofertas que se resuelven.
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider">Vista previa de CTA y disclosure</p>
+            <button
+              type="button"
+              class="px-3 py-1.5 rounded-lg border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] disabled:opacity-50"
+              [disabled]="affiliatePreviewLoading"
+              (click)="previewAffiliateOffers()"
+            >
+              {{ affiliatePreviewLoading ? 'Cargando…' : 'Vista previa' }}
+            </button>
+          </div>
+
+          <p *ngIf="affiliatePreviewError" class="text-xs text-red-300">{{ affiliatePreviewError }}</p>
+
+          <ng-container *ngIf="affiliatePreviewRequested && !affiliatePreviewLoading && !affiliatePreviewError">
+            <div *ngIf="affiliatePreviewOffers.length; else noAffiliatePreview" class="space-y-3">
+              <div class="flex flex-wrap gap-3">
+                <app-affiliate-cta
+                  *ngFor="let offer of affiliatePreviewOffers"
+                  [offer]="offer"
+                  variant="secondary"
+                ></app-affiliate-cta>
+              </div>
+              <app-affiliate-disclosure [compact]="true"></app-affiliate-disclosure>
+            </div>
+            <ng-template #noAffiliatePreview>
+              <p class="text-xs text-[var(--portal-text-muted)]">
+                Sin ofertas para estas señales todavia. El bloque no se mostrara en el articulo publicado.
+              </p>
+            </ng-template>
+          </ng-container>
+        </div>
+      </fieldset>
+
+      <fieldset class="border border-[var(--portal-border)] rounded-2xl p-4 space-y-4">
         <legend class="px-2 text-xs text-[var(--portal-text-soft)] uppercase tracking-wider">FAQs y snippet SEO</legend>
 
         <div>

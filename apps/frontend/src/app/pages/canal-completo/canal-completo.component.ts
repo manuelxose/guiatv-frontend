@@ -15,6 +15,11 @@ import { UnifiedAsyncStateComponent } from 'src/app/components/unified-async-sta
 import { UnifiedSkeletonBlockComponent } from 'src/app/components/unified-skeleton-block/unified-skeleton-block.component';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvDataService } from 'src/app/state/tv-data.service';
+import { AffiliateService } from 'src/app/services/affiliate.service';
+import { AffiliateCTAComponent } from 'src/app/components/affiliate-cta/affiliate-cta.component';
+import { AffiliateDisclosureComponent } from 'src/app/components/affiliate-disclosure/affiliate-disclosure.component';
+import { AffiliateImpressionDirective } from 'src/app/directives/affiliate-impression.directive';
+import { AffiliateContext, AffiliateResolvedOffer } from 'src/app/interfaces/affiliate.interface';
 import {
   buildDetailPath,
   buildProgramCatalogId,
@@ -66,6 +71,9 @@ const PRIMARY_GUIDE_CATEGORIES: Array<{ key: GuideQuickCategory; label: string }
     InteractionButtonsComponent,
     UnifiedAsyncStateComponent,
     UnifiedSkeletonBlockComponent,
+    AffiliateCTAComponent,
+    AffiliateDisclosureComponent,
+    AffiliateImpressionDirective,
   ],
 })
 export class CanalCompletoComponent implements OnInit, OnDestroy {
@@ -74,6 +82,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   private readonly tvDataService = inject(TvDataService);
   private readonly metaService = inject(MetaService);
   private readonly apiConfig = inject(ApiConfigService);
+  private readonly affiliateService = inject(AffiliateService);
   private readonly destroy$ = new Subject<void>();
 
   public readonly days: DayOption[] = [
@@ -103,6 +112,10 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   public tonightPrograms: ChannelProgram[] = [];
   public featuredPrograms: ChannelProgram[] = [];
   public relatedChannels: TvReadChannelSummaryDTO[] = [];
+
+  /** Verified provider offer(s) for this channel — empty when no merchant alias matches, which is the common case and renders nothing. */
+  public channelAffiliateOffers: AffiliateResolvedOffer[] = [];
+  public showChannelSponsoredDisclosure = false;
 
   ngOnInit(): void {
     this.route.paramMap
@@ -338,7 +351,49 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     this.featuredPrograms = this.buildFeaturedPrograms(normalizedPrograms);
     this.relatedChannels = this.buildRelatedChannels(surface);
     this.setupMetaTags();
+    this.resolveChannelAffiliateOffers();
     this.isLoading = false;
+  }
+
+  /**
+   * One batched resolve for the whole channel, using the channel's own
+   * canonical provider labels (never the channel name alone) as the
+   * affiliate provider hints — the resolver's alias mapping decides whether
+   * any of them is actually a commercial merchant. Renders nothing when it
+   * isn't: a channel with no affiliate relationship stays silent rather than
+   * showing a dead or misleading CTA.
+   */
+  private resolveChannelAffiliateOffers(): void {
+    this.channelAffiliateOffers = [];
+    this.showChannelSponsoredDisclosure = false;
+
+    const providerKeys = Array.from(new Set(this.providerLabels)).filter(Boolean);
+    if (!providerKeys.length || !this.channel) {
+      return;
+    }
+
+    const context: AffiliateContext = {
+      market: 'ES',
+      placement: 'channel-page',
+      channelId: this.channel.id,
+      providerKey: providerKeys[0],
+    };
+
+    this.affiliateService
+      .resolveMany(context, { providerKeys, maxResults: 2 })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((offers) => {
+        this.channelAffiliateOffers = offers;
+        this.showChannelSponsoredDisclosure = offers.some((offer) => offer.cta.sponsored);
+      });
+  }
+
+  channelAffiliateImpressionContext(): Pick<AffiliateContext, 'market' | 'placement' | 'contentType' | 'contentId'> {
+    return { market: 'ES', placement: 'channel-page', contentId: this.channel?.id };
+  }
+
+  get channelPagePath(): string {
+    return this.router.url;
   }
 
   private normalizeProgram(program: TvReadItemDTO | undefined): ChannelProgram | null {

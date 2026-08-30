@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FootballMatchDTO } from '@app/features/football/football.models';
 import { FootballTeamBadgeComponent } from '@app/features/football/components/football-team-badge/football-team-badge.component';
@@ -10,6 +10,11 @@ import {
   isLiveStatus,
   primaryBroadcast,
 } from '@app/features/football/football-status.util';
+import { AffiliateService } from '@app/services/affiliate.service';
+import { AffiliateCTAComponent } from '@app/components/affiliate-cta/affiliate-cta.component';
+import { AffiliateDisclosureComponent } from '@app/components/affiliate-disclosure/affiliate-disclosure.component';
+import { AffiliateImpressionDirective } from '@app/directives/affiliate-impression.directive';
+import { AffiliateContext, AffiliatePlacementKey, AffiliateResolvedOffer } from '@app/interfaces/affiliate.interface';
 
 export type FootballMatchCardVariant = 'default' | 'live' | 'compact' | 'featured';
 
@@ -21,7 +26,14 @@ export type FootballMatchCardVariant = 'default' | 'live' | 'compact' | 'feature
 @Component({
   selector: 'app-football-match-card',
   standalone: true,
-  imports: [CommonModule, RouterModule, FootballTeamBadgeComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FootballTeamBadgeComponent,
+    AffiliateCTAComponent,
+    AffiliateDisclosureComponent,
+    AffiliateImpressionDirective,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a
@@ -69,6 +81,20 @@ export type FootballMatchCardVariant = 'default' | 'live' | 'compact' | 'feature
         </span>
       </span>
     </a>
+
+    <!-- Sibling, not nested — the card above is already one big <a>, and an
+         affiliate CTA is its own <a>; nesting anchors is invalid HTML. -->
+    <div *ngIf="affiliateOffers().length" class="card__affiliate">
+      <app-affiliate-cta
+        *ngFor="let offer of affiliateOffers()"
+        [offer]="offer"
+        variant="secondary"
+        [appAffiliateImpression]="offer"
+        [appAffiliateImpressionContext]="impressionContext()"
+        appAffiliateImpressionPage="football-home"
+      ></app-affiliate-cta>
+      <app-affiliate-disclosure [sponsored]="hasSponsoredOffer()" [compact]="true"></app-affiliate-disclosure>
+    </div>
   `,
   styles: `
     :host { display: block; }
@@ -159,13 +185,83 @@ export type FootballMatchCardVariant = 'default' | 'live' | 'compact' | 'feature
       0%, 100% { opacity: 1; }
       50% { opacity: 0.35; }
     }
+
+    .card__affiliate {
+      margin-top: 0.5rem;
+      padding: 0.625rem 0.75rem;
+      border: 1px solid var(--portal-border);
+      border-radius: 0.75rem;
+      background: var(--portal-card);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
   `,
 })
-export class FootballMatchCardComponent {
+export class FootballMatchCardComponent implements OnChanges {
   @Input({ required: true }) match!: FootballMatchDTO;
   @Input() variant: FootballMatchCardVariant = 'default';
 
+  /**
+   * Opt-in only, default off. The caller (see `football-home.component.html`)
+   * sets this only on the bounded "featured matches" rail, never on every
+   * card in a long list — matches the same convention used by
+   * `UnifiedProgramCardComponent`/`FootballBroadcastListComponent`.
+   */
+  @Input() enableAffiliateCta = false;
+  @Input() affiliatePlacement: AffiliatePlacementKey = 'football-home';
+
   @Output() selected = new EventEmitter<FootballMatchDTO>();
+
+  readonly affiliateOffers = signal<AffiliateResolvedOffer[]>([]);
+  private readonly affiliateService = inject(AffiliateService);
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['match'] || changes['enableAffiliateCta'] || changes['affiliatePlacement']) {
+      this.resolveAffiliateOffers();
+    }
+  }
+
+  hasSponsoredOffer(): boolean {
+    return this.affiliateOffers().some((offer) => offer.cta.sponsored);
+  }
+
+  impressionContext(): Pick<AffiliateContext, 'market' | 'placement' | 'contentType' | 'contentId' | 'footballMatchId' | 'competitionId'> {
+    return {
+      market: 'ES',
+      placement: this.affiliatePlacement,
+      footballMatchId: this.match?.id,
+      competitionId: this.match?.competition?.id,
+    };
+  }
+
+  private resolveAffiliateOffers(): void {
+    this.affiliateOffers.set([]);
+    if (!this.enableAffiliateCta || !this.match) return;
+
+    const providerKeys = Array.from(
+      new Set(
+        (this.match.broadcasts || [])
+          .filter((broadcast) => broadcast.confidence !== 'low')
+          .map((broadcast) => broadcast.channelName)
+          .filter(Boolean)
+      )
+    );
+    if (!providerKeys.length) return;
+
+    const context: AffiliateContext = {
+      market: 'ES',
+      placement: this.affiliatePlacement,
+      providerKey: providerKeys[0],
+      footballMatchId: this.match.id,
+      competitionId: this.match.competition.id,
+    };
+
+    this.affiliateService
+      .resolveMany(context, { providerKeys, maxResults: providerKeys.length })
+      .subscribe((offers) => this.affiliateOffers.set(offers));
+  }
 
   get link(): string {
     return `/deportes/futbol/partido/${this.match.slug || this.match.id}`;

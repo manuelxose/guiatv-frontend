@@ -10,6 +10,7 @@ import {
   UserRecommendation,
   UserNotifications,
   UserPrivacy,
+  UserTvPreferences,
   WatchingNow,
   UserList,
   Top10Category,
@@ -47,6 +48,12 @@ const EMPTY_PROFILE: UserProfile = {
   role: 'user',
   favoriteGenres: [],
   preferredPlatforms: [],
+  tvPreferences: {
+    favoriteChannelIds: [],
+    favoriteFootballTeamIds: [],
+    favoriteFootballCompetitionIds: [],
+    preferredContentLanguages: [],
+  },
   discoveryDefaults: {
     types: ['program', 'movie', 'series'],
     availability: [],
@@ -251,6 +258,23 @@ export class UserService {
       );
   }
 
+  /** Updates only normalized TV/sports preferences, independently of profile copy. */
+  updateTvPreferences(preferences: UserTvPreferences): Observable<UserTvPreferences> {
+    return this.http
+      .patch<ApiResponse<{ tvPreferences: UserTvPreferences }>>(
+        `${this.baseUrl}/user/preferences`,
+        preferences,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((response) => response?.data?.tvPreferences || EMPTY_PROFILE.tvPreferences),
+        tap((tvPreferences) => {
+          this.profileSubject.next({ ...this.profileSubject.value, tvPreferences });
+        }),
+        catchError(this.handleError(EMPTY_PROFILE.tvPreferences, 'No se pudieron guardar las preferencias.'))
+      );
+  }
+
   applySession(user: Partial<UserProfile>, token: string): void {
     const current = this.profileSubject.value;
     const merged: UserProfile = {
@@ -261,6 +285,7 @@ export class UserService {
       watchingNow: { ...current.watchingNow, ...(user.watchingNow || {}) },
       favoriteGenres: user.favoriteGenres || current.favoriteGenres,
       preferredPlatforms: user.preferredPlatforms || current.preferredPlatforms,
+      tvPreferences: { ...current.tvPreferences, ...(user.tvPreferences || {}) },
       discoveryDefaults:
         user.discoveryDefaults || current.discoveryDefaults,
       stats: { ...current.stats, ...(user.stats || {}) },
@@ -282,10 +307,8 @@ export class UserService {
       }
     }
 
-    this.loadingSubject.next(true);
-    this.hydrateUserAreaData()
-      .pipe(finalize(() => this.loadingSubject.next(false)))
-      .subscribe();
+    // Profile context is sufficient at sign-in. Private areas request their own
+    // data when opened instead of eagerly loading the community surface.
   }
 
   logout(nextState: UserAuthState = 'unauthenticated'): void {
@@ -1037,6 +1060,7 @@ export class UserService {
       watchingNow: { ...current.watchingNow, ...(profile.watchingNow || {}) },
       favoriteGenres: profile.favoriteGenres || current.favoriteGenres,
       preferredPlatforms: profile.preferredPlatforms || current.preferredPlatforms,
+      tvPreferences: { ...current.tvPreferences, ...(profile.tvPreferences || {}) },
       discoveryDefaults:
         profile.discoveryDefaults || current.discoveryDefaults,
       stats: { ...current.stats, ...(profile.stats || {}) },
@@ -1141,25 +1165,9 @@ export class UserService {
 
         this.authenticatedSubject.next(true);
         this.authStateSubject.next('authenticated');
-        return this.hydrateUserAreaData();
+        return of(true);
       }),
       finalize(() => this.loadingSubject.next(false))
-    );
-  }
-
-  private hydrateUserAreaData(): Observable<boolean> {
-    return forkJoin({
-      lists: this.fetchLists(),
-      favorites: this.fetchFavorites(),
-      interactions: this.fetchInteractionHistory(),
-      notifications: this.fetchNotifications(),
-      friends: this.fetchFriends(),
-      activities: this.fetchActivities('all'),
-      recommendations: this.fetchRecommendations('friends'),
-    }).pipe(
-      switchMap(() => this.fetchWatchlist()),
-      map(() => true),
-      catchError(this.handleError(false, 'No se pudo cargar la informacion.'))
     );
   }
 

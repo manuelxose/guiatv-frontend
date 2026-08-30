@@ -1,0 +1,30 @@
+<section class="space-y-6">
+  <div>
+    <p class="text-[10px] uppercase tracking-[0.3em] text-[var(--portal-text-muted)]">Comercial</p>
+    <h3 class="text-2xl font-semibold text-[var(--portal-text)]">Afiliación y Monetización</h3>
+    <p class="text-sm text-[var(--portal-text-soft)]">
+      Mantén merchants, programas, ofertas y ubicaciones sin tocar código.
+    </p>
+  </div>
+
+  <nav class="flex flex-wrap items-center gap-2" aria-label="Monetization views">
+    <button
+      *ngFor="let tab of tabs"
+      type="button"
+      class="px-3 py-2 rounded-xl text-xs border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+      [ngClass]="activeItem === tab.id ? 'bg-[var(--portal-surface)] border-red-500/40 text-[var(--portal-text)]' : 'border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]'"
+      (click)="selectTab(tab.id)"
+      [attr.aria-pressed]="activeItem === tab.id"
+    >
+      {{ tab.label }}
+    </button>
+  </nav>
+
+  <app-admin-affiliate-merchants *ngIf="activeItem === 'merchants'" (lastUpdatedChange)="onLastUpdated($event)"></app-admin-affiliate-merchants>
+  <app-admin-affiliate-programs *ngIf="activeItem === 'programs'" (lastUpdatedChange)="onLastUpdated($event)"></app-admin-affiliate-programs>
+  <app-admin-affiliate-offers *ngIf="activeItem === 'offers'" (lastUpdatedChange)="onLastUpdated($event)"></app-admin-affiliate-offers>
+  <app-admin-affiliate-networks *ngIf="activeItem === 'networks'" (lastUpdatedChange)="onLastUpdated($event)"></app-admin-affiliate-networks>
+  <app-admin-affiliate-placements *ngIf="activeItem === 'placements'" (lastUpdatedChange)="onLastUpdated($event)"></app-admin-affiliate-placements>
+  <app-admin-affiliate-verification *ngIf="activeItem === 'verification'" (lastUpdatedChange)="onLastUpdated($event)"></app-admin-affiliate-verification>
+  <app-admin-affiliate-analytics *ngIf="activeItem === 'analytics'" (lastUpdatedChange)="onLastUpdated($event)"></app-admin-affiliate-analytics>
+</section>

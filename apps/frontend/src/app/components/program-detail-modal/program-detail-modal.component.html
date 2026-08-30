@@ -157,6 +157,10 @@
           [contentId]="program.id"
           [tmdbId]="program.tmdbId"
           contentType="movie"
+          placement="epg-program-detail"
+          [catalogId]="program.id"
+          [providerHint]="channelName"
+          [page]="appPaths.guide"
         ></app-where-to-watch>
       </div>
 
@@ -169,6 +173,10 @@
           [contentId]="program.id"
           [tmdbId]="program.tmdbId"
           contentType="tv"
+          placement="epg-program-detail"
+          [catalogId]="program.id"
+          [providerHint]="channelName"
+          [page]="appPaths.guide"
         ></app-where-to-watch>
       </div>
     </div>

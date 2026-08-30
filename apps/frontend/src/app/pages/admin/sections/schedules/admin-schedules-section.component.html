@@ -21,24 +21,22 @@
     {{ error }}
   </div>
 
-  <!-- Stats from health endpoint -->
+  <!-- Server-side EPG diagnostics -->
   <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
     <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
-      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Channels tracked</p>
-      <p class="text-2xl font-semibold text-[var(--portal-text)] mt-2">{{ channels.length }}</p>
-      <p class="text-xs text-[var(--portal-text-muted)] mt-1">{{ activeChannels }} active &middot; {{ channelTypes.length }} types</p>
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Current EPG coverage</p>
+      <p class="text-2xl font-semibold text-[var(--portal-text)] mt-2">{{ epgOverview?.currentCoveragePercent ?? '…' }}%</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">{{ epgOverview?.channelsWithCurrentEpg ?? '…' }} of {{ epgOverview?.activeChannels ?? '…' }} active channels</p>
     </div>
     <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
-      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">System status</p>
-      <p class="text-2xl font-semibold mt-2" [ngClass]="health?.status === 'healthy' ? 'text-emerald-200' : 'text-amber-200'">
-        {{ health?.status || '…' }}
-      </p>
-      <p class="text-xs text-[var(--portal-text-muted)] mt-1">Cache: {{ health?.services?.cache?.status || '…' }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Needs attention</p>
+      <p class="text-2xl font-semibold mt-2 text-amber-200">{{ (epgOverview?.channelsMissingEpg || 0) + (epgOverview?.staleChannels || 0) }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">{{ epgOverview?.channelsMissingEpg ?? '…' }} missing · {{ epgOverview?.staleChannels ?? '…' }} stale</p>
     </div>
     <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
-      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Uptime</p>
-      <p class="text-2xl font-semibold text-[var(--portal-text)] mt-2">{{ health?.uptime || '…' }}</p>
-      <p class="text-xs text-[var(--portal-text-muted)] mt-1">v{{ health?.version || '…' }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Channel access</p>
+      <p class="text-2xl font-semibold text-[var(--portal-text)] mt-2">{{ epgOverview?.freeChannels ?? '…' }} / {{ epgOverview?.payChannels ?? '…' }}</p>
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">Free-to-air / pay TV</p>
     </div>
     <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
       <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Memory</p>
@@ -187,6 +185,24 @@
         <div class="mt-2 text-xs text-[var(--portal-text-muted)]">{{ ch.type }} &middot; {{ ch.region || ch.country || '—' }}</div>
       </div>
     </div>
+  </div>
+
+  <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5 space-y-4">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div><h4 class="text-lg font-semibold text-[var(--portal-text)]">Channel diagnostics</h4><p class="text-xs text-[var(--portal-text-muted)]">Canonical mappings and current schedule state.</p></div>
+      <div class="flex flex-wrap gap-2">
+        <input [(ngModel)]="diagnosticSearch" (keyup.enter)="applyDiagnosticFilters()" aria-label="Search channel diagnostics" placeholder="Search channel or ID" class="rounded-lg border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 py-2 text-xs" />
+        <select [(ngModel)]="diagnosticAccess" (change)="applyDiagnosticFilters()" aria-label="Filter channel access" class="rounded-lg border border-[var(--portal-border)] bg-[var(--portal-bg)] px-2 py-2 text-xs"><option value="">All access</option><option value="free">Free</option><option value="pay">Pay TV</option></select>
+        <select [(ngModel)]="diagnosticStatus" (change)="applyDiagnosticFilters()" aria-label="Filter EPG status" class="rounded-lg border border-[var(--portal-border)] bg-[var(--portal-bg)] px-2 py-2 text-xs"><option value="">All status</option><option value="current">Current</option><option value="stale">Stale</option><option value="missing">Missing</option></select>
+      </div>
+    </div>
+    <div class="overflow-x-auto"><table class="w-full min-w-[760px] text-xs"><thead class="text-left text-[var(--portal-text-muted)]"><tr><th class="py-2">Channel</th><th>Access</th><th>Source</th><th>Aliases</th><th>EPG</th><th>Next schedule</th></tr></thead><tbody class="divide-y divide-[var(--portal-border)]"><tr *ngFor="let channel of diagnostics"><td class="py-3"><p class="font-medium text-[var(--portal-text)]">{{ channel.name }}</p><p class="text-[var(--portal-text-muted)]">{{ channel.id }}</p></td><td>{{ channel.access }}</td><td>{{ channel.sources.join(', ') || '—' }}</td><td>{{ channel.aliasesCount }}</td><td><span [ngClass]="channel.epgStatus === 'current' ? 'text-emerald-300' : channel.epgStatus === 'stale' ? 'text-amber-300' : 'text-red-300'">{{ channel.epgStatus }}</span></td><td>{{ channel.nextScheduleAt ? (channel.nextScheduleAt | date:'short') : '—' }}</td></tr></tbody></table></div>
+    <div class="flex items-center justify-between text-xs text-[var(--portal-text-muted)]"><span>{{ diagnosticTotal }} channels</span><span class="flex gap-2"><button type="button" (click)="previousDiagnosticPage()" [disabled]="diagnosticPage === 1">Previous</button><button type="button" (click)="nextDiagnosticPage()" [disabled]="diagnosticPage * 25 >= diagnosticTotal">Next</button></span></div>
+  </div>
+
+  <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5" *ngIf="providers.length">
+    <h4 class="text-lg font-semibold text-[var(--portal-text)]">Data providers</h4>
+    <div class="mt-3 grid md:grid-cols-2 gap-3"><div *ngFor="let provider of providers" class="border border-[var(--portal-border)] rounded-xl p-3"><div class="flex justify-between gap-2"><span class="font-medium text-sm">{{ provider.displayName }}</span><span [ngClass]="provider.health === 'healthy' ? 'text-emerald-300' : 'text-amber-300'">{{ provider.health }}</span></div><p class="mt-1 text-xs text-[var(--portal-text-muted)]">{{ provider.domain }} · {{ provider.configured ? 'Configured' : 'Not configured' }}</p><p class="mt-2 text-xs text-[var(--portal-text-soft)]">{{ provider.capabilities.join(' · ') }}</p></div></div>
   </div>
 
   <!-- Action results log -->

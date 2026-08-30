@@ -1,4 +1,11 @@
 export type EditorialContentType = 'guide' | 'ranking' | 'trend';
+/**
+ * Editorial monetization controls (Affiliate Engine Phase 8). 'auto' resolves
+ * offers contextually from relatedPlatformKeys/relatedMerchantKeys/relatedOfferCategories
+ * (plus any manualAffiliateOfferIds pinned ahead of ranking); 'manual' shows
+ * only manualAffiliateOfferIds; 'off' disables monetization on this post.
+ */
+export type EditorialAffiliatePlacementMode = 'auto' | 'manual' | 'off';
 export type EditorialRouteRelationKey =
   | 'platforms'
   | 'guide'
@@ -56,6 +63,10 @@ export interface EditorialPost {
   relatedRouteKeys: EditorialRouteRelationKey[];
   faqItems: EditorialFaqItem[];
   evergreen: boolean;
+  affiliatePlacementMode: EditorialAffiliatePlacementMode;
+  relatedOfferCategories: string[];
+  relatedMerchantKeys: string[];
+  manualAffiliateOfferIds: string[];
   isRanking: boolean;
   rankingReason: 'type' | 'category' | 'keyword' | 'none';
   metaTitle: string | null;

@@ -5,6 +5,8 @@ import { groupByRound, FootballCompetitionDetailComponent } from './football-com
 import { FootballFacade } from '@app/features/football/football.facade';
 import { FootballCompetitionDetailDTO, FootballMatchDTO } from '@app/features/football/football.models';
 import { MetaService } from '@app/services/meta.service';
+import { AffiliateService } from '@app/services/affiliate.service';
+import { FootballBroadcastListComponent } from '@app/features/football/components/football-broadcast-list/football-broadcast-list.component';
 
 function match(id: string, round?: string): FootballMatchDTO {
   return {
@@ -82,5 +84,68 @@ describe('FootballCompetitionDetailComponent (SEO/meta regression)', () => {
     const { setMetaTags } = setup(null);
     const lastCall = setMetaTags.calls.mostRecent().args[0];
     expect(lastCall.robots).toBe('noindex, follow');
+  });
+});
+
+describe('FootballCompetitionDetailComponent — "where to watch" is scoped to the single next match', () => {
+  function nextMatch(): FootballMatchDTO {
+    return {
+      id: 'next-1',
+      slug: 'next-1',
+      providerIds: {},
+      competition: { id: 'c1', slug: 'laliga', name: 'LaLiga' },
+      kickoffAt: '2026-08-21T19:00:00.000Z',
+      status: 'scheduled',
+      homeTeam: { id: 'h', slug: 'h', name: 'Home', aliases: [], providerIds: {}, lastUpdatedAt: '' },
+      awayTeam: { id: 'a', slug: 'a', name: 'Away', aliases: [], providerIds: {}, lastUpdatedAt: '' },
+      score: { home: null, away: null },
+      broadcasts: [{ channelId: 'c', channelName: 'DAZN', availability: 'streaming', provenance: 'airing', confidence: 'high' }],
+      sourceProvenance: { source: 'test', confidence: 'high' },
+      lastUpdatedAt: '',
+    };
+  }
+
+  it('renders the broadcast list, enabled for affiliate CTAs, only for upcomingPreview()[0]', () => {
+    TestBed.configureTestingModule({
+      imports: [FootballCompetitionDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ slug: 'laliga' })) } },
+        {
+          provide: FootballFacade,
+          useValue: { getCompetition: () => of({ ...detail(), matches: [nextMatch()] }) },
+        },
+        { provide: MetaService, useValue: { setMetaTags: () => {} } },
+        { provide: AffiliateService, useValue: { resolveMany: () => of([]), buildOutboundUrl: () => null } },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(FootballCompetitionDetailComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.nextMatch()?.id).toBe('next-1');
+
+    const broadcastList = fixture.debugElement.query(
+      (de) => de.componentInstance instanceof FootballBroadcastListComponent
+    );
+    expect(broadcastList).toBeTruthy();
+    expect((broadcastList!.componentInstance as FootballBroadcastListComponent).enableAffiliateCta).toBe(true);
+  });
+
+  it('renders no broadcast list when the competition has no upcoming match', () => {
+    TestBed.configureTestingModule({
+      imports: [FootballCompetitionDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ slug: 'laliga' })) } },
+        { provide: FootballFacade, useValue: { getCompetition: () => of(detail()) } },
+        { provide: MetaService, useValue: { setMetaTags: () => {} } },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(FootballCompetitionDetailComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.nextMatch()).toBeNull();
   });
 });

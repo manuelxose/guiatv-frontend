@@ -21,6 +21,7 @@ export interface AIAnalyticsTimeSeries {
   conversations: number;
   messages: number;
 }
+export interface AIFailureDiagnostic { requestId: string; outcome: 'partial' | 'fallback' | 'failed'; grounding: string[]; failureReason?: string; latencyMs: number; createdAt: string; }
 
 interface ApiResponse<T> {
   success: boolean;
@@ -55,6 +56,10 @@ export class AdminAIAnalyticsService {
         map((r) => r?.data || []),
         catchError(() => of([]))
       );
+  }
+
+  getFailures(limit = 50): Observable<AIFailureDiagnostic[]> {
+    return this.http.get<ApiResponse<AIFailureDiagnostic[]>>(`${this.baseUrl}/admin/ai-analytics/failures`, { headers: this.headers(), params: { limit: String(limit) } }).pipe(map((r) => r?.data || []), catchError(() => of([])));
   }
 
   private headers(): HttpHeaders {

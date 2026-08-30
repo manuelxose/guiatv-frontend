@@ -92,6 +92,15 @@
       >
         {{ isSaved ? 'Guardado' : 'Guardar' }}
       </button>
+
+      <app-affiliate-cta
+        *ngIf="affiliateOffer() as offer"
+        class="program-card__affiliate-cta"
+        [offer]="offer"
+        variant="secondary"
+        [appAffiliateImpression]="offer"
+        [appAffiliateImpressionContext]="affiliateImpressionContext()"
+      ></app-affiliate-cta>
     </div>
   </div>
 </article>

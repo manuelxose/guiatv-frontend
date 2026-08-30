@@ -19,7 +19,7 @@ export class MonetizationController {
       maxMonthlyPrice: this.parsePrice(req.query.maxMonthlyPrice),
       sort: this.parseEnum(req.query.sort, SORTS, 'sort'),
     };
-    res.status(200).json(successResponse(this.monetizationService.listOffers(query)));
+    res.status(200).json(successResponse(await this.monetizationService.listOffers(query)));
   }
 
   async go(req: Request, res: Response): Promise<void> {

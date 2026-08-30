@@ -27,7 +27,13 @@
     <div class="grid">
       <main class="grid__main">
         <section *ngIf="data.match.broadcasts?.length" class="block">
-          <app-football-broadcast-list [broadcasts]="data.match.broadcasts"></app-football-broadcast-list>
+          <app-football-broadcast-list
+            [broadcasts]="data.match.broadcasts"
+            [enableAffiliateCta]="true"
+            affiliatePlacement="football-match"
+            [footballMatchId]="data.match.id"
+            [competitionId]="data.match.competition.id"
+          ></app-football-broadcast-list>
         </section>
 
         <section *ngIf="data.match.venue" class="block">

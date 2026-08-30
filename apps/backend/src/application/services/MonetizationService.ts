@@ -4,6 +4,12 @@ import { MonetizationOfferDTO, MonetizationOffersResponseDTO, OfferIntent } from
 import { AnalyticsService } from './AnalyticsService';
 import { NotFoundError, ValidationError } from '../../shared/errors';
 import { logger } from '../../shared/utils/logger';
+import { AffiliateOffer } from '@/domain/entities/AffiliateOffer';
+import { AffiliateMerchant } from '@/domain/entities/AffiliateMerchant';
+import { AffiliateProgram } from '@/domain/entities/AffiliateProgram';
+import { IAffiliateOfferRepository } from '@/domain/repositories/IAffiliateOfferRepository';
+import { IAffiliateMerchantRepository } from '@/domain/repositories/IAffiliateMerchantRepository';
+import { IAffiliateProgramRepository } from '@/domain/repositories/IAffiliateProgramRepository';
 
 const PLACEMENTS = new Set(['comparison-card', 'comparison-table', 'comparison-selection', 'content-detail', 'provider-summary']);
 
@@ -18,13 +24,33 @@ export interface MonetizationQuery {
 interface MonetizationServiceOptions {
   env?: NodeJS.ProcessEnv;
   now?: () => Date;
+  /** Static fallback list — only source when no Mongo repositories are wired, or when the
+   * Affiliate Engine store is unreachable/empty (see loadOfferConfigs). */
   offers?: MonetizationOfferConfig[];
+  offerRepository?: IAffiliateOfferRepository;
+  merchantRepository?: IAffiliateMerchantRepository;
+  programRepository?: IAffiliateProgramRepository;
 }
 
+/**
+ * Phase 10 final migration: this is now a facade over the Mongo-backed
+ * Affiliate Engine (see docs/affiliate-engine-architecture.md §19 M1). When
+ * `offerRepository`/`merchantRepository`/`programRepository` are wired
+ * (container.ts passes the same repositories `AffiliateResolverService`
+ * uses), `listOffers`/`resolveOutbound` read live `AffiliateOffer` documents
+ * reshaped into the exact same `MonetizationOfferConfig` shape — the static
+ * `MONETIZATION_OFFERS` array is no longer the runtime source, only the
+ * seed/migration/test fixture and the last-resort fallback used if the
+ * Mongo store is unreachable or (not yet seeded) empty, so a redirect can
+ * never 500 out.
+ */
 export class MonetizationService {
   private readonly env: NodeJS.ProcessEnv;
   private readonly now: () => Date;
-  private readonly offers: MonetizationOfferConfig[];
+  private readonly staticOffers: MonetizationOfferConfig[];
+  private readonly offerRepository?: IAffiliateOfferRepository;
+  private readonly merchantRepository?: IAffiliateMerchantRepository;
+  private readonly programRepository?: IAffiliateProgramRepository;
 
   constructor(
     private readonly analyticsService?: AnalyticsService,
@@ -32,15 +58,19 @@ export class MonetizationService {
   ) {
     this.env = options.env ?? process.env;
     this.now = options.now ?? (() => new Date());
-    this.offers = options.offers ?? MONETIZATION_OFFERS;
+    this.staticOffers = options.offers ?? MONETIZATION_OFFERS;
+    this.offerRepository = options.offerRepository;
+    this.merchantRepository = options.merchantRepository;
+    this.programRepository = options.programRepository;
   }
 
-  listOffers(query: MonetizationQuery = {}): MonetizationOffersResponseDTO {
+  async listOffers(query: MonetizationQuery = {}): Promise<MonetizationOffersResponseDTO> {
     if (query.market && query.market !== 'ES') {
       throw new ValidationError('Unsupported offer market', [{ field: 'market', message: 'Only ES is supported', value: query.market }]);
     }
 
-    let items = this.offers.map((config) => this.toPublicOffer(config));
+    const offers = await this.loadOfferConfigs();
+    let items = offers.map((config) => this.toPublicOffer(config));
     if (query.intent === 'no-contract') {
       items = items.filter((item) => item.requirements.commitmentMonths === 0);
     } else if (query.intent) {
@@ -70,11 +100,12 @@ export class MonetizationService {
     };
   }
 
-  resolveOutbound(providerId: string, offerId: string, placement: string) {
+  async resolveOutbound(providerId: string, offerId: string, placement: string) {
     if (!PLACEMENTS.has(placement)) {
       throw new ValidationError('Invalid affiliate placement', [{ field: 'placement', message: 'Placement is not allowed', value: placement }]);
     }
-    const config = this.offers.find((item) => item.provider.id === providerId && item.id === offerId);
+    const offers = await this.loadOfferConfigs();
+    const config = offers.find((item) => item.provider.id === providerId && item.id === offerId);
     if (!config) throw new NotFoundError('Offer', `${providerId}/${offerId}`);
 
     const affiliateUrl = this.env[config.affiliateEnvKey];
@@ -98,7 +129,7 @@ export class MonetizationService {
   }
 
   async trackAndResolveOutbound(providerId: string, offerId: string, placement: string) {
-    const resolved = this.resolveOutbound(providerId, offerId, placement);
+    const resolved = await this.resolveOutbound(providerId, offerId, placement);
     if (this.analyticsService) {
       const clickId = randomUUID();
       try {
@@ -128,6 +159,78 @@ export class MonetizationService {
       }
     }
     return resolved;
+  }
+
+  /**
+   * Resolves the current offer list: Mongo-backed Affiliate Engine when
+   * repositories are wired, static array otherwise (unit tests / no DI) —
+   * and as a safe degrade if the store errors or (not yet seeded) is empty,
+   * so a comparison-page load or a redirect can never hard-fail on this.
+   */
+  private async loadOfferConfigs(): Promise<MonetizationOfferConfig[]> {
+    if (!this.offerRepository || !this.merchantRepository || !this.programRepository) {
+      return this.staticOffers;
+    }
+    try {
+      const offers = await this.offerRepository.findValidOffers('ES');
+      const configs = await this.toOfferConfigs(offers);
+      if (configs.length === 0) {
+        logger.warn('Affiliate Engine store returned zero active streaming offers; falling back to static monetizationOffers.ts');
+        return this.staticOffers;
+      }
+      return configs;
+    } catch (error) {
+      logger.error('Affiliate Engine store read failed; falling back to static monetizationOffers.ts', error as Error);
+      return this.staticOffers;
+    }
+  }
+
+  /** Reshapes `streaming`-category `AffiliateOffer` documents into the legacy `MonetizationOfferConfig`
+   * shape the rest of this service (and the untouched `streaming-comparison` frontend/DTO) already expect. */
+  private async toOfferConfigs(offers: AffiliateOffer[]): Promise<MonetizationOfferConfig[]> {
+    const merchantCache = new Map<string, AffiliateMerchant | null>();
+    const programCache = new Map<string, AffiliateProgram | null>();
+    const configs: MonetizationOfferConfig[] = [];
+
+    for (const offer of offers) {
+      if (offer.category !== 'streaming') continue;
+
+      if (!merchantCache.has(offer.merchantId)) {
+        merchantCache.set(offer.merchantId, await this.merchantRepository!.findById(offer.merchantId));
+      }
+      const merchant = merchantCache.get(offer.merchantId) ?? null;
+      if (!merchant || merchant.status !== 'active') continue;
+
+      if (!programCache.has(offer.affiliateProgramId)) {
+        programCache.set(offer.affiliateProgramId, await this.programRepository!.findById(offer.affiliateProgramId));
+      }
+      const program = programCache.get(offer.affiliateProgramId) ?? null;
+      if (!program || program.status !== 'active') continue;
+
+      configs.push({
+        id: `${merchant.slug}-${offer.plan.id}`,
+        market: 'ES',
+        provider: { id: merchant.slug, name: merchant.name },
+        plan: offer.plan,
+        pricing: { ...offer.pricing, currency: 'EUR' },
+        features: offer.features as MonetizationOfferDTO['features'],
+        requirements: offer.requirements,
+        trialDays: offer.trial.days,
+        bestFor: offer.display.bestFor ?? '',
+        highlight: offer.display.highlight ?? '',
+        disclosure: offer.display.disclosure,
+        recommendation: { intents: offer.recommendationIntents as OfferIntent[] },
+        destinationUrl: offer.destination.url,
+        allowedHosts: program.allowedHosts,
+        affiliateEnvKey: program.attribution?.secretRef ?? '',
+        defaultRelationship: program.relationship,
+        verifiedAt: (offer.verification.verifiedAt ?? offer.updatedAt).toISOString().slice(0, 10),
+        sourceUrl: offer.verification.source ?? '',
+        verificationStatus: offer.verification.status,
+      });
+    }
+
+    return configs;
   }
 
   private toPublicOffer(config: MonetizationOfferConfig): MonetizationOfferDTO {
