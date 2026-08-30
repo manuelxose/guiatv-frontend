@@ -1,16 +1,13 @@
 export type AdminGroupId =
+  | 'overview'
   | 'analytics'
   | 'ai'
   | 'content'
+  | 'monetization'
   | 'schedules'
   | 'users'
-  | 'community'
-  | 'growth'
-  | 'monetization'
   | 'operations'
-  | 'system'
-  | 'settings'
-  | 'support';
+  | 'system';
 
 export interface AdminNavItem {
   id: string;
@@ -22,6 +19,7 @@ export interface AdminNavItem {
 export interface AdminNavGroup {
   id: AdminGroupId;
   label: string;
+  /** SVG <path d="..."> data (viewBox 0 0 24 24, stroke-based) — never a text monogram. */
   icon: string;
   items: AdminNavItem[];
 }

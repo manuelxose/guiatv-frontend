@@ -13,6 +13,10 @@
       <router-outlet></router-outlet>
     </app-public-layout-shell>
 
+    <!-- Admin owns its own shell (AdminComponent renders sidebar/header/content
+         itself) — it must never mount inside the consumer public layout shell. -->
+    <router-outlet *ngSwitchCase="'admin-shell'"></router-outlet>
+
     <router-outlet *ngSwitchDefault></router-outlet>
   </ng-container>
   </div>

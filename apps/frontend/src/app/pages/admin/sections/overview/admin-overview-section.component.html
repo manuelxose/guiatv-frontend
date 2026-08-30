@@ -1,0 +1,108 @@
+<div class="space-y-8">
+  <div *ngIf="loading" class="admin-overview__skeleton grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" aria-hidden="true">
+    <div *ngFor="let n of [1,2,3,4,5,6]" class="h-20 rounded-xl bg-[var(--portal-surface-strong)] animate-pulse"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <section aria-labelledby="admin-overview-health-heading">
+      <h3 id="admin-overview-health-heading" class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--portal-text-muted)] mb-3">
+        System health
+      </h3>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <button
+          *ngFor="let tile of healthTiles"
+          type="button"
+          class="admin-overview__tile text-left rounded-xl border p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          [ngClass]="{
+            'border-emerald-500/40 bg-emerald-500/10': tile.status === 'healthy',
+            'border-amber-500/40 bg-amber-500/10': tile.status === 'warning',
+            'border-red-500/40 bg-red-500/10': tile.status === 'unavailable',
+            'border-[var(--portal-border)] bg-[var(--portal-surface)]': tile.status === 'unknown'
+          }"
+          [disabled]="!tile.group"
+          (click)="tile.group && goTo(tile.group, tile.item || '')"
+        >
+          <p class="text-[10px] uppercase tracking-[0.2em] text-[var(--portal-text-muted)]">{{ tile.label }}</p>
+          <div class="mt-1"><app-admin-status-badge [status]="tile.status"></app-admin-status-badge></div>
+          <p class="text-[11px] text-[var(--portal-text-soft)] mt-1.5 truncate">{{ tile.detail }}</p>
+        </button>
+      </div>
+    </section>
+
+    <section aria-labelledby="admin-overview-attention-heading">
+      <h3 id="admin-overview-attention-heading" class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--portal-text-muted)] mb-3">
+        Attention required
+      </h3>
+      <div *ngIf="!attentionItems.length" class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+        Nothing needs attention right now.
+      </div>
+      <ul *ngIf="attentionItems.length" class="space-y-2">
+        <li *ngFor="let alert of attentionItems">
+          <button
+            type="button"
+            class="w-full flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            [ngClass]="{
+              'border-red-500/40 bg-red-500/10': alert.severity === 'critical',
+              'border-amber-500/40 bg-amber-500/10': alert.severity === 'warning',
+              'border-[var(--portal-border)] bg-[var(--portal-surface)]': alert.severity === 'info'
+            }"
+            (click)="goTo(alert.group, alert.item)"
+          >
+            <span class="text-sm text-[var(--portal-text)]">{{ alert.message }}</span>
+            <span class="text-[10px] uppercase tracking-[0.2em] text-[var(--portal-text-muted)] shrink-0">{{ alert.subsystem }} →</span>
+          </button>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="admin-overview-domains-heading">
+      <h3 id="admin-overview-domains-heading" class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--portal-text-muted)] mb-3">
+        Domain summaries
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <button
+          type="button"
+          class="text-left rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          (click)="goTo('schedules', 'epg')"
+        >
+          <p class="text-sm font-semibold text-[var(--portal-text)]">TV / EPG</p>
+          <dl *ngIf="epg" class="mt-2 space-y-1 text-xs text-[var(--portal-text-soft)]">
+            <div class="flex justify-between"><dt>Coverage</dt><dd>{{ epg.currentCoveragePercent }}%</dd></div>
+            <div class="flex justify-between"><dt>Active channels</dt><dd>{{ epg.activeChannels }}</dd></div>
+            <div class="flex justify-between"><dt>Missing EPG</dt><dd>{{ epg.channelsMissingEpg }}</dd></div>
+            <div class="flex justify-between"><dt>Stale</dt><dd>{{ epg.staleChannels }}</dd></div>
+          </dl>
+          <p *ngIf="!epg" class="mt-2 text-xs text-[var(--portal-text-muted)]">Overview unavailable</p>
+        </button>
+
+        <button
+          type="button"
+          class="text-left rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          (click)="goTo('operations', 'football')"
+        >
+          <p class="text-sm font-semibold text-[var(--portal-text)]">Football</p>
+          <dl *ngIf="football" class="mt-2 space-y-1 text-xs text-[var(--portal-text-soft)]">
+            <div class="flex justify-between"><dt>Provider</dt><dd class="capitalize">{{ football.provider?.state }}</dd></div>
+            <div class="flex justify-between"><dt>Upcoming fixtures</dt><dd>{{ football.upcomingFixtures }}</dd></div>
+            <div class="flex justify-between"><dt>Missing broadcast</dt><dd>{{ football.fixturesMissingBroadcast }}</dd></div>
+            <div class="flex justify-between"><dt>Stale entities</dt><dd>{{ football.staleCompetitions + football.staleTeams }}</dd></div>
+          </dl>
+          <p *ngIf="!football" class="mt-2 text-xs text-[var(--portal-text-muted)]">Overview unavailable</p>
+        </button>
+
+        <button
+          type="button"
+          class="text-left rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          (click)="goTo('operations', 'jobs')"
+        >
+          <p class="text-sm font-semibold text-[var(--portal-text)]">Operations</p>
+          <dl class="mt-2 space-y-1 text-xs text-[var(--portal-text-soft)]">
+            <div class="flex justify-between"><dt>Running jobs</dt><dd>{{ jobsRunning }}</dd></div>
+            <div class="flex justify-between"><dt>Failed jobs</dt><dd>{{ jobsFailed }}</dd></div>
+            <div class="flex justify-between"><dt>Open alerts</dt><dd>{{ attentionItems.length }}</dd></div>
+          </dl>
+        </button>
+      </div>
+    </section>
+  </ng-container>
+</div>

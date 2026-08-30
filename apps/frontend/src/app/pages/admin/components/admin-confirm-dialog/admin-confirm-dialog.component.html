@@ -1,0 +1,48 @@
+<div
+  *ngIf="open"
+  class="admin-confirm-dialog__backdrop"
+  role="presentation"
+>
+  <button
+    type="button"
+    class="admin-confirm-dialog__backdrop-close"
+    aria-label="Close dialog"
+    (click)="onCancel()"
+  ></button>
+
+  <div
+    #panel
+    class="admin-confirm-dialog__panel"
+    role="alertdialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="'admin-confirm-title'"
+    [attr.aria-describedby]="description ? 'admin-confirm-desc' : null"
+    tabindex="-1"
+  >
+    <h2 id="admin-confirm-title" class="text-base font-semibold text-[var(--portal-text)]">{{ title }}</h2>
+    <p *ngIf="description" id="admin-confirm-desc" class="mt-2 text-sm text-[var(--portal-text-soft)]">
+      {{ description }}
+    </p>
+    <div class="mt-5 flex items-center justify-end gap-3">
+      <button
+        type="button"
+        class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        [disabled]="busy"
+        (click)="onCancel()"
+      >
+        {{ cancelLabel }}
+      </button>
+      <button
+        type="button"
+        class="px-3 py-2 rounded-xl text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        [ngClass]="danger
+          ? 'bg-red-500/20 border border-red-500/40 text-red-100 hover:bg-red-500/30'
+          : 'bg-[var(--portal-surface-strong)] border border-[var(--portal-border-strong)] text-[var(--portal-text)]'"
+        [disabled]="busy"
+        (click)="onConfirm()"
+      >
+        {{ busy ? 'Working…' : confirmLabel }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -28,7 +28,7 @@ import {
 } from './config/portal-navigation.config';
 import { ThemeMode, ThemeService } from './services/theme.service';
 
-type AppLayoutMode = 'portal-page' | 'public-shell' | 'minimal-shell' | 'private-shell';
+type AppLayoutMode = 'portal-page' | 'public-shell' | 'minimal-shell' | 'private-shell' | 'admin-shell';
 
 export function shouldMinimizeChatDrag(distance: number, elapsedMs: number): boolean {
   const safeDistance = Math.max(0, distance);
@@ -208,7 +208,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   public shouldShowMobileNavigation(): boolean {
-    return this.currentLayout !== 'minimal-shell';
+    // Admin owns its own mobile navigation (drawer sidebar) — the consumer
+    // bottom tab bar must never render underneath/alongside it.
+    return this.currentLayout !== 'minimal-shell' && this.currentLayout !== 'admin-shell';
   }
 
   public isMobileTabActive(tab: PortalMobileDestination): boolean {
@@ -451,9 +453,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private canRenderChatbot(): boolean {
+    // Admin is an operations console, not a consumer surface — the
+    // recommendations assistant FAB/launcher never appears over it.
     return (
       this.aiChatbotEnabled &&
-      this.currentLayout !== 'minimal-shell'
+      this.currentLayout !== 'minimal-shell' &&
+      this.currentLayout !== 'admin-shell'
     );
   }
 }
