@@ -33,15 +33,15 @@
   </ng-container>
 
   <ng-container *ngIf="activeItem === 'jobs'">
-    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-[var(--portal-text-muted)]"><tr><th class="p-4">Type</th><th>Status</th><th>Queued</th><th>Step / error</th></tr></thead><tbody><tr *ngFor="let job of jobs" class="border-t border-[var(--portal-border)]"><td class="p-4">{{ job.type }}</td><td>{{ job.status }}</td><td>{{ job.queuedAt | date:'short' }}</td><td>{{ job.errorSummary || job.currentStep || '—' }}</td></tr><tr *ngIf="!jobs.length"><td colspan="4" class="p-4 text-[var(--portal-text-muted)]">No persisted background jobs yet.</td></tr></tbody></table></div>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-[var(--portal-text-muted)]"><tr><th class="p-4">Type</th><th>Status</th><th>Queued</th><th>Step / error</th></tr></thead><tbody><tr *ngFor="let job of jobs" class="border-t border-[var(--portal-border)]"><td class="p-4">{{ job.type }}</td><td><app-admin-status-badge [status]="job.status"></app-admin-status-badge></td><td>{{ job.queuedAt | date:'short' }}</td><td>{{ job.errorSummary || job.currentStep || '—' }}</td></tr><tr *ngIf="!jobs.length"><td colspan="4" class="p-4 text-[var(--portal-text-muted)]">No persisted background jobs yet.</td></tr></tbody></table></div>
   </ng-container>
 
   <ng-container *ngIf="activeItem === 'alerts'">
-    <div class="space-y-3"><div *ngFor="let alert of alerts" class="rounded-xl border p-4" [ngClass]="alert.severity === 'critical' ? 'border-red-500/40 bg-red-500/10' : 'border-amber-500/40 bg-amber-500/10'"><p class="text-xs uppercase tracking-wider">{{ alert.severity }} · {{ alert.subsystem }}</p><p class="mt-1 text-sm">{{ alert.message }}</p></div><p *ngIf="!alerts.length" class="text-sm text-[var(--portal-text-muted)]">No active operational alerts.</p></div>
+    <div class="space-y-3"><div *ngFor="let alert of alerts" class="rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4"><div class="flex items-center gap-2"><app-admin-status-badge [status]="alert.severity"></app-admin-status-badge><span class="text-[10px] uppercase tracking-wider text-[var(--portal-text-muted)]">{{ alert.subsystem }}</span></div><p class="mt-2 text-sm text-[var(--portal-text)]">{{ alert.message }}</p></div><p *ngIf="!alerts.length" class="text-sm text-[var(--portal-text-muted)]">No active operational alerts.</p></div>
   </ng-container>
 
   <ng-container *ngIf="activeItem === 'events'">
-    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-[var(--portal-text-muted)]"><tr><th class="p-4">Time</th><th>Severity</th><th>Subsystem</th><th>Message</th><th>Correlation</th></tr></thead><tbody><tr *ngFor="let event of events" class="border-t border-[var(--portal-border)]"><td class="p-4">{{ event.timestamp | date:'short' }}</td><td>{{ event.severity }}</td><td>{{ event.subsystem }}</td><td>{{ event.message }}</td><td class="font-mono text-xs">{{ event.correlationId || '—' }}</td></tr><tr *ngIf="!events.length"><td colspan="5" class="p-4 text-[var(--portal-text-muted)]">No structured events yet.</td></tr></tbody></table></div>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-[var(--portal-text-muted)]"><tr><th class="p-4">Time</th><th>Severity</th><th>Subsystem</th><th>Message</th><th>Correlation</th></tr></thead><tbody><tr *ngFor="let event of events" class="border-t border-[var(--portal-border)]"><td class="p-4">{{ event.timestamp | date:'short' }}</td><td><app-admin-status-badge [status]="event.severity"></app-admin-status-badge></td><td>{{ event.subsystem }}</td><td>{{ event.message }}</td><td class="font-mono text-xs">{{ event.correlationId || '—' }}</td></tr><tr *ngIf="!events.length"><td colspan="5" class="p-4 text-[var(--portal-text-muted)]">No structured events yet.</td></tr></tbody></table></div>
   </ng-container>
 
   <!-- Health stats -->
@@ -79,7 +79,7 @@
   <div class="grid xl:grid-cols-2 gap-6">
     <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-4">
       <h4 class="text-lg font-semibold text-[var(--portal-text)]">Cache Management</h4>
-      <p class="text-xs text-[var(--portal-text-soft)]">Clear all or targeted cache entries by pattern (e.g. <code class="text-[var(--portal-text-soft)]">program:*</code>, <code class="text-[var(--portal-text-soft)]">schedule:*</code>).</p>
+      <p class="text-xs text-[var(--portal-text-soft)]">Invalidate one of the supported cache namespaces below. Fresh data is rebuilt from canonical sources on the next request — arbitrary cache keys are not supported.</p>
       <div class="flex flex-wrap items-end gap-3">
         <div class="flex-1 min-w-[200px]">
           <label class="block text-xs text-[var(--portal-text-soft)] mb-1" for="cache-namespace">Namespace</label>
@@ -87,7 +87,7 @@
         </div>
         <button type="button" [disabled]="clearLoading"
           class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-xs text-red-100 hover:bg-red-500/30 disabled:opacity-40"
-          (click)="clearCache()">
+          (click)="requestClearCache()">
           {{ clearLoading ? 'Invalidating…' : 'Invalidate namespace' }}
         </button>
       </div>
@@ -135,4 +135,14 @@
       </div>
     </div>
   </div>
+
+  <app-admin-confirm-dialog
+    [open]="confirmCacheInvalidateOpen"
+    [busy]="clearLoading"
+    [title]="'Invalidate ' + (cacheNamespaceLabels[cacheNamespace] || cacheNamespace) + ' cache?'"
+    [description]="'This clears cached ' + (cacheNamespaceLabels[cacheNamespace] || cacheNamespace) + ' responses. Fresh data will be rebuilt from canonical sources on the next request.'"
+    confirmLabel="Invalidate"
+    (confirmed)="clearCache()"
+    (cancelled)="cancelClearCache()"
+  ></app-admin-confirm-dialog>
 </section>

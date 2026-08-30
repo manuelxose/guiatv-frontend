@@ -13,7 +13,6 @@ interface ApiResponse<T> {
 @Injectable({ providedIn: 'root' })
 export class AdminOperationsService {
   private readonly baseUrl = environment.API_BASE_URL;
-  private readonly adminKey = environment.ANALYTICS_ADMIN_KEY || '';
   private readonly isBrowser = typeof window !== 'undefined';
 
   constructor(private http: HttpClient) {}
@@ -51,7 +50,6 @@ export class AdminOperationsService {
     const headers: Record<string, string> = {};
     const token = this.getToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    if (this.adminKey) headers['x-admin-key'] = this.adminKey;
     return new HttpHeaders(headers);
   }
 

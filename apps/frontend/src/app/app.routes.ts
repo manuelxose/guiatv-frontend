@@ -80,7 +80,10 @@ export const routes: Routes = [
       import('./pages/admin/admin.component').then((m) => m.AdminComponent),
     title: 'Admin - Guia TV',
     canActivate: [adminGuard],
-    data: { robots: 'noindex, nofollow', layout: 'private-shell' },
+    // Admin is a separate operations-console surface from the consumer app —
+    // it must not inherit the consumer public layout shell (header/footer/
+    // rail/mobile nav/chatbot). See AppComponent's 'admin-shell' switch case.
+    data: { robots: 'noindex, nofollow', layout: 'admin-shell' },
   },
   {
     path: 'programacion-tv/series',

@@ -47,6 +47,22 @@ export interface AdminChannel {
   isActive: boolean;
 }
 
+export interface EpgOverview {
+  generatedAt: string;
+  totalChannels: number;
+  activeChannels: number;
+  freeChannels: number;
+  payChannels: number;
+  channelsWithCurrentEpg: number;
+  channelsMissingEpg: number;
+  staleChannels: number;
+  currentCoveragePercent: number;
+  lastScheduleUpdate?: string;
+}
+export interface EpgChannelDiagnostic { id: string; name: string; access: string; active: boolean; sources: string[]; externalIds: string[]; aliasesCount: number; epgStatus: 'current' | 'stale' | 'missing'; lastScheduleUpdate?: string; nextScheduleAt?: string; }
+export interface EpgChannelPage { page: number; limit: number; total: number; items: EpgChannelDiagnostic[]; }
+export interface AdminProviderStatus { id: string; displayName: string; domain: string; configured: boolean; enabled: boolean; health: string; capabilities: string[]; }
+
 interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -55,7 +71,6 @@ interface ApiResponse<T> {
 @Injectable({ providedIn: 'root' })
 export class AdminSchedulesService {
   private readonly baseUrl = environment.API_BASE_URL;
-  private readonly adminKey = environment.ANALYTICS_ADMIN_KEY || '';
   private readonly isBrowser = typeof window !== 'undefined';
 
   constructor(private http: HttpClient) {}
@@ -112,11 +127,25 @@ export class AdminSchedulesService {
       );
   }
 
+  getEpgOverview(): Observable<EpgOverview> {
+    return this.http.get<ApiResponse<EpgOverview>>(`${this.baseUrl}/admin/epg/overview`, { headers: this.buildHeaders() })
+      .pipe(map((response) => response.data));
+  }
+
+  getEpgChannels(params: { page?: number; limit?: number; search?: string; access?: string; status?: string } = {}): Observable<EpgChannelPage> {
+    const query: Record<string, string> = {};
+    Object.entries(params).forEach(([key, value]) => { if (value !== undefined && value !== '') query[key] = String(value); });
+    return this.http.get<ApiResponse<EpgChannelPage>>(`${this.baseUrl}/admin/epg/channels`, { headers: this.buildHeaders(), params: query }).pipe(map((response) => response.data));
+  }
+
+  getProviders(): Observable<AdminProviderStatus[]> {
+    return this.http.get<ApiResponse<AdminProviderStatus[]>>(`${this.baseUrl}/admin/providers`, { headers: this.buildHeaders() }).pipe(map((response) => response.data));
+  }
+
   private buildHeaders(): HttpHeaders {
     const headers: Record<string, string> = {};
     const token = this.getToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    if (this.adminKey) headers['x-admin-key'] = this.adminKey;
     return new HttpHeaders(headers);
   }
 

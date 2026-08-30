@@ -4,13 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { AdminOperationsService } from '../../../../services/admin-operations.service';
 import { HealthResponse } from '../../../../services/admin-schedules.service';
+import { AdminConfirmDialogComponent } from '../../components/admin-confirm-dialog/admin-confirm-dialog.component';
+import { AdminStatusBadgeComponent } from '../../components/admin-status-badge/admin-status-badge.component';
 
 type ActionResult = { success: boolean; message: string; time: Date };
 
 @Component({
   selector: 'app-admin-operations-section',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminConfirmDialogComponent, AdminStatusBadgeComponent],
   templateUrl: './admin-operations-section.component.html',
   styleUrls: ['./admin-operations-section.component.scss'],
 })
@@ -32,6 +34,14 @@ export class AdminOperationsSectionComponent implements OnInit, OnDestroy, OnCha
   rows: any[] = [];
   footballView: 'competitions' | 'teams' | 'fixtures' = 'competitions';
   footballLoading = false;
+  confirmCacheInvalidateOpen = false;
+
+  readonly cacheNamespaceLabels: Record<string, string> = {
+    epg: 'EPG',
+    football: 'Football',
+    catalog: 'Catalog',
+    schedules: 'Schedules',
+  };
 
   private subs = new Subscription();
 
@@ -76,6 +86,14 @@ export class AdminOperationsSectionComponent implements OnInit, OnDestroy, OnCha
   loadFootballRows(): void { if (this.activeItem !== 'football') return; this.footballLoading = true; const request = this.footballView === 'competitions' ? this.opsService.getFootballCompetitions() : this.footballView === 'teams' ? this.opsService.getFootballTeams() : this.opsService.getFootballFixtures(); this.subs.add(request.subscribe({ next: data => { this.rows = data.items || []; this.footballLoading = false; }, error: () => { this.footballLoading = false; this.error = 'Failed to load football diagnostics'; } })); }
   refreshFootball(): void { this.clearLoading = true; this.subs.add(this.opsService.refreshFootball().subscribe({ next: () => { this.addResult(true, 'Football refresh queued'); this.clearLoading = false; this.load(); }, error: () => { this.addResult(false, 'Football refresh could not be queued'); this.clearLoading = false; } })); }
 
+  requestClearCache(): void {
+    this.confirmCacheInvalidateOpen = true;
+  }
+
+  cancelClearCache(): void {
+    this.confirmCacheInvalidateOpen = false;
+  }
+
   clearCache(): void {
     this.clearLoading = true;
     this.subs.add(
@@ -83,11 +101,13 @@ export class AdminOperationsSectionComponent implements OnInit, OnDestroy, OnCha
         next: () => {
           this.addResult(true, `${this.cacheNamespace} cache invalidated`);
           this.clearLoading = false;
+          this.confirmCacheInvalidateOpen = false;
           this.load();
         },
         error: (e) => {
           this.addResult(false, e?.error?.message || 'Cache clear failed');
           this.clearLoading = false;
+          this.confirmCacheInvalidateOpen = false;
         },
       })
     );
