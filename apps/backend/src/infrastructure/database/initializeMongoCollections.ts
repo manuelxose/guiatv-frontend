@@ -29,6 +29,13 @@ import { MediaCatalogModel } from './models/MediaCatalogEntry.model';
 import { FootballTeamModel } from '../sports/models/FootballTeam.model';
 import { FootballCompetitionModel } from '../sports/models/FootballCompetition.model';
 import { FootballBroadcastMappingModel } from '../sports/models/FootballBroadcastMapping.model';
+import { AffiliateNetworkModel } from './models/AffiliateNetwork.model';
+import { AffiliateMerchantModel } from './models/AffiliateMerchant.model';
+import { AffiliateProgramModel } from './models/AffiliateProgram.model';
+import { AffiliateOfferModel } from './models/AffiliateOffer.model';
+import { AffiliatePlacementModel } from './models/AffiliatePlacement.model';
+import { AdminOperationModel } from './models/AdminOperation.model';
+import { AdminOperationalEventModel } from './models/AdminOperationalEvent.model';
 
 /**
  * Ensure required Mongo collections exist and indexes are in place.
@@ -68,6 +75,13 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     { name: 'analytics_sessions', model: AnalyticsSessionModel },
     { name: 'analytics_events', model: AnalyticsEventModel },
     { name: 'blog_posts', model: BlogPostModel },
+    { name: 'affiliate_networks', model: AffiliateNetworkModel },
+    { name: 'affiliate_merchants', model: AffiliateMerchantModel },
+    { name: 'affiliate_programs', model: AffiliateProgramModel },
+    { name: 'affiliate_offers', model: AffiliateOfferModel },
+    { name: 'affiliate_placements', model: AffiliatePlacementModel },
+    { name: 'admin_operations', model: AdminOperationModel },
+    { name: 'admin_operational_events', model: AdminOperationalEventModel },
   ] as const;
 
   for (const { name, model } of resources) {
@@ -108,7 +122,3 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
 
   logger.info('Mongo collections/indexes ensured', { elapsedMs: Date.now() - start });
 }
-import { AdminOperationModel } from './models/AdminOperation.model';
-import { AdminOperationalEventModel } from './models/AdminOperationalEvent.model';
-    { name: 'admin_operations', model: AdminOperationModel },
-    { name: 'admin_operational_events', model: AdminOperationalEventModel },

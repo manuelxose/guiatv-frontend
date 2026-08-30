@@ -14,7 +14,7 @@ import {
   PreferenceAnswer,
   PreferenceQuestion,
   PreferenceQuestionKey,
-} from './chat-profile.types';
+} from '../../../interfaces/chat-profile.types';
 
 @Component({
   selector: 'app-chat-profile-panel',
@@ -24,7 +24,7 @@ import {
   template: `
     <section class="profile-panel" aria-labelledby="profile-panel-title">
       <header class="profile-panel__header">
-        <button type="button" class="profile-panel__back" (click)="closed.emit()" aria-label="Volver al chat">
+        <button type="button" class="profile-panel__back" (click)="closed.emit()" [attr.aria-label]="backLabel">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"></path>
           </svg>
@@ -186,6 +186,8 @@ export class ChatProfilePanelComponent implements OnChanges {
   @Input() profileGenres: string[] = [];
   @Input() saving = false;
   @Input() saveError = '';
+  /** Overridable so hosts other than the chat widget (e.g. Mi GuíaTV) can use an accurate label for the "closed" action. */
+  @Input() backLabel = 'Volver al chat';
   @Output() answerSaved = new EventEmitter<PreferenceAnswer>();
   @Output() closed = new EventEmitter<void>();
 

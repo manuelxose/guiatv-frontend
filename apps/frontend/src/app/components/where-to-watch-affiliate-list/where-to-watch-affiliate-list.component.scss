@@ -1,0 +1,30 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.wta-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.wta-list__heading {
+  margin: 0;
+  color: var(--portal-text-muted);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.wta-list__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.wta-list__skeleton {
+  width: 7rem;
+  height: 2.75rem;
+  border-radius: var(--radius-pill);
+}

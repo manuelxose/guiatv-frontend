@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { environment } from '../../../../../environments/environment';
 import { FALLBACK_CATALOG_PLATFORMS } from '../../../../data/catalog-platforms.data';
 import {
+  AdminBlogAffiliatePlacementMode,
   AdminBlogCategory,
   AdminBlogContentType,
   AdminBlogCreatePayload,
@@ -11,6 +12,10 @@ import {
   AdminBlogPost,
   AdminBlogService,
 } from '../../../../services/admin-blog.service';
+import { AffiliateService } from '../../../../services/affiliate.service';
+import { AffiliateResolvedOffer } from '../../../../interfaces/affiliate.interface';
+import { AffiliateCTAComponent } from '../../../../components/affiliate-cta/affiliate-cta.component';
+import { AffiliateDisclosureComponent } from '../../../../components/affiliate-disclosure/affiliate-disclosure.component';
 import {
   calculateReadingTime,
   generateExcerpt,
@@ -31,7 +36,7 @@ interface BlogRouteOption {
 @Component({
   selector: 'app-admin-blog-section',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AffiliateCTAComponent, AffiliateDisclosureComponent],
   templateUrl: './admin-blog-section.component.html',
   styleUrls: ['./admin-blog-section.component.scss'],
 })
@@ -76,12 +81,37 @@ export class AdminBlogSectionComponent implements OnInit {
     label: platform.name,
   }));
 
+  /** AffiliateOffer.category is intentionally open-ended (see AffiliateOffer.ts) — this is a
+   * curated shortlist for the checkbox UI, not an allowlist the backend enforces. */
+  public readonly affiliateCategoryOptions = [
+    { key: 'streaming', label: 'Streaming' },
+    { key: 'smart-tv', label: 'Smart TV' },
+    { key: 'device', label: 'Dispositivos / sticks' },
+    { key: 'ticketing', label: 'Entradas' },
+    { key: 'event', label: 'Eventos' },
+    { key: 'retail', label: 'Retail' },
+  ];
+  public readonly affiliatePlacementModeOptions: Array<{ id: AdminBlogAffiliatePlacementMode; label: string; description: string }> = [
+    { id: 'auto', label: 'Automático', description: 'Resuelve ofertas segun plataformas, categorias y merchants relacionados.' },
+    { id: 'manual', label: 'Manual', description: 'Solo muestra las ofertas fijadas abajo; nunca resuelve automaticamente.' },
+    { id: 'off', label: 'Desactivado', description: 'Sin bloque de monetizacion en este articulo.' },
+  ];
+
   public readonly seoTitleMax = 60;
   public readonly seoDescriptionMax = 160;
   public blogForm: FormGroup;
   public readonly siteUrl = environment.SITE_URL;
 
-  constructor(private readonly blogService: AdminBlogService, private readonly fb: FormBuilder) {
+  public affiliatePreviewOffers: AffiliateResolvedOffer[] = [];
+  public affiliatePreviewLoading = false;
+  public affiliatePreviewError: string | null = null;
+  public affiliatePreviewRequested = false;
+
+  constructor(
+    private readonly blogService: AdminBlogService,
+    private readonly affiliateService: AffiliateService,
+    private readonly fb: FormBuilder
+  ) {
     this.blogForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(6)]],
       slug: [''],
@@ -97,6 +127,10 @@ export class AdminBlogSectionComponent implements OnInit {
       relatedPlatformKeys: [[] as string[]],
       relatedRouteKeys: [[] as string[]],
       faqItems: [''],
+      affiliatePlacementMode: ['auto' as AdminBlogAffiliatePlacementMode],
+      relatedOfferCategories: [[] as string[]],
+      relatedMerchantKeys: [''],
+      manualAffiliateOfferIds: [''],
       coverImage: [''],
       metaTitle: [''],
       metaDescription: [''],
@@ -158,6 +192,11 @@ export class AdminBlogSectionComponent implements OnInit {
 
   get blogReadingTime(): number {
     return calculateReadingTime(this.getRawTextValue('content'));
+  }
+
+  get affiliatePlacementModeDescription(): string {
+    const current = this.getTrimmedValue('affiliatePlacementMode');
+    return this.affiliatePlacementModeOptions.find((mode) => mode.id === current)?.description || '';
   }
 
   onBlogSearchInput(event: Event): void {
@@ -227,6 +266,7 @@ export class AdminBlogSectionComponent implements OnInit {
     this.selectedBlogPostId = post.id ? String(post.id) : null;
     this.blogSaveError = null;
     this.blogSaveSuccess = null;
+    this.resetAffiliatePreview();
     this.blogForm.reset({
       title: this.getPostTitle(post),
       slug: post.slug || '',
@@ -242,6 +282,10 @@ export class AdminBlogSectionComponent implements OnInit {
       relatedPlatformKeys: [...(post.relatedPlatformKeys || [])],
       relatedRouteKeys: [...(post.relatedRouteKeys || [])],
       faqItems: this.serializeFaqItems(post.faqItems || []),
+      affiliatePlacementMode: post.affiliatePlacementMode || 'auto',
+      relatedOfferCategories: [...(post.relatedOfferCategories || [])],
+      relatedMerchantKeys: (post.relatedMerchantKeys || []).join(', '),
+      manualAffiliateOfferIds: (post.manualAffiliateOfferIds || []).join(', '),
       coverImage: post.featured_image?.source_url || '',
       metaTitle: post.seo?.metaTitle || '',
       metaDescription: post.seo?.metaDescription || '',
@@ -310,6 +354,7 @@ export class AdminBlogSectionComponent implements OnInit {
 
   resetBlogForm(clearMessages = false): void {
     this.selectedBlogPostId = null;
+    this.resetAffiliatePreview();
     this.blogForm.reset({
       title: '',
       slug: '',
@@ -325,6 +370,10 @@ export class AdminBlogSectionComponent implements OnInit {
       relatedPlatformKeys: [] as string[],
       relatedRouteKeys: [] as string[],
       faqItems: '',
+      affiliatePlacementMode: 'auto' as AdminBlogAffiliatePlacementMode,
+      relatedOfferCategories: [] as string[],
+      relatedMerchantKeys: '',
+      manualAffiliateOfferIds: '',
       coverImage: '',
       metaTitle: '',
       metaDescription: '',
@@ -341,7 +390,7 @@ export class AdminBlogSectionComponent implements OnInit {
   }
 
   toggleArraySelection(
-    controlName: 'relatedPlatformKeys' | 'relatedRouteKeys',
+    controlName: 'relatedPlatformKeys' | 'relatedRouteKeys' | 'relatedOfferCategories',
     value: string,
     checked: boolean
   ): void {
@@ -354,10 +403,80 @@ export class AdminBlogSectionComponent implements OnInit {
   }
 
   isArraySelectionActive(
-    controlName: 'relatedPlatformKeys' | 'relatedRouteKeys',
+    controlName: 'relatedPlatformKeys' | 'relatedRouteKeys' | 'relatedOfferCategories',
     value: string
   ): boolean {
     return this.getArrayValue(controlName).includes(value);
+  }
+
+  /**
+   * Explicit, on-demand preview (not live-on-keystroke) of what the
+   * `blog-inline` affiliate block would show for the article's current draft
+   * fields — lets an editor verify the CTA/disclosure before publishing
+   * without leaving the admin form. Reuses the same `AffiliateService` call
+   * the public `BlogAffiliateBlockComponent` makes, so what's previewed here
+   * is exactly what a reader would see.
+   */
+  previewAffiliateOffers(): void {
+    this.affiliatePreviewRequested = true;
+    this.affiliatePreviewLoading = true;
+    this.affiliatePreviewError = null;
+
+    const mode = this.getTrimmedValue('affiliatePlacementMode') as AdminBlogAffiliatePlacementMode;
+    const pinnedOfferIds = this.parseCommaSeparated(this.getRawTextValue('manualAffiliateOfferIds'));
+
+    if (mode === 'off') {
+      this.affiliatePreviewOffers = [];
+      this.affiliatePreviewLoading = false;
+      return;
+    }
+    if (mode === 'manual' && pinnedOfferIds.length === 0) {
+      this.affiliatePreviewOffers = [];
+      this.affiliatePreviewLoading = false;
+      return;
+    }
+
+    const providerKeys = Array.from(
+      new Set([...this.getArrayValue('relatedPlatformKeys'), ...this.parseCommaSeparated(this.getRawTextValue('relatedMerchantKeys'))])
+    );
+    const category = this.getArrayValue('relatedOfferCategories')[0];
+
+    this.affiliateService
+      .resolveMany(
+        { market: 'ES', placement: 'blog-inline', contentId: this.selectedBlogPostId ?? undefined, blogPostId: this.selectedBlogPostId ?? undefined },
+        {
+          providerKeys: providerKeys.length ? providerKeys : undefined,
+          category,
+          pinnedOfferIds: pinnedOfferIds.length ? pinnedOfferIds : undefined,
+          autoResolve: mode !== 'manual',
+          maxResults: 4,
+        }
+      )
+      .subscribe({
+        next: (offers) => {
+          this.affiliatePreviewOffers = offers;
+          this.affiliatePreviewLoading = false;
+        },
+        error: () => {
+          this.affiliatePreviewOffers = [];
+          this.affiliatePreviewLoading = false;
+          this.affiliatePreviewError = 'No se pudo cargar la vista previa de monetizacion.';
+        },
+      });
+  }
+
+  private resetAffiliatePreview(): void {
+    this.affiliatePreviewOffers = [];
+    this.affiliatePreviewLoading = false;
+    this.affiliatePreviewError = null;
+    this.affiliatePreviewRequested = false;
+  }
+
+  private parseCommaSeparated(value: string): string[] {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
   }
 
   openBlogPreview(): void {
@@ -517,6 +636,10 @@ export class AdminBlogSectionComponent implements OnInit {
       relatedPlatformKeys: this.getArrayValue('relatedPlatformKeys'),
       relatedRouteKeys: this.getArrayValue('relatedRouteKeys'),
       faqItems: this.parseFaqItems(this.getRawTextValue('faqItems')),
+      affiliatePlacementMode: this.getTrimmedValue('affiliatePlacementMode') as AdminBlogAffiliatePlacementMode,
+      relatedOfferCategories: this.getArrayValue('relatedOfferCategories'),
+      relatedMerchantKeys: this.getTrimmedValue('relatedMerchantKeys'),
+      manualAffiliateOfferIds: this.getTrimmedValue('manualAffiliateOfferIds'),
       coverImage: this.getTrimmedValue('coverImage'),
       metaTitle,
       metaDescription,
@@ -543,6 +666,10 @@ export class AdminBlogSectionComponent implements OnInit {
       relatedPlatformKeys: [...(post.relatedPlatformKeys || [])],
       relatedRouteKeys: [...(post.relatedRouteKeys || [])],
       faqItems: [...(post.faqItems || [])],
+      affiliatePlacementMode: post.affiliatePlacementMode || 'auto',
+      relatedOfferCategories: [...(post.relatedOfferCategories || [])],
+      relatedMerchantKeys: [...(post.relatedMerchantKeys || [])],
+      manualAffiliateOfferIds: [...(post.manualAffiliateOfferIds || [])],
       coverImage: post.featured_image?.source_url || '',
       metaTitle: post.seo?.metaTitle || '',
       metaDescription: post.seo?.metaDescription || '',
@@ -622,7 +749,7 @@ export class AdminBlogSectionComponent implements OnInit {
     return value ? String(value) : '';
   }
 
-  private getArrayValue(controlName: 'relatedPlatformKeys' | 'relatedRouteKeys'): string[] {
+  private getArrayValue(controlName: 'relatedPlatformKeys' | 'relatedRouteKeys' | 'relatedOfferCategories'): string[] {
     const value = this.blogForm.get(controlName)?.value;
     return Array.isArray(value) ? value.map((item) => String(item)) : [];
   }

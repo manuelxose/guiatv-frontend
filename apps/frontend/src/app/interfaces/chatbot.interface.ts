@@ -3,6 +3,21 @@
  *  Shared across all AI-chatbot components and services.
  * ────────────────────────────────────────────────────────── */
 
+/**
+ * A deterministically-resolved affiliate CTA, attached server-side after
+ * content+provider identification (never produced by the LLM). Render only
+ * through `AffiliateCTAComponent`/`AffiliateDisclosureComponent` — never as
+ * raw HTML in chat prose. See `ChatbotAffiliateActionDTO` on the backend.
+ */
+export interface ChatbotAffiliateAction {
+  offerId: string;
+  label: string;
+  provider: string;
+  outboundPath: string;
+  disclosure: string;
+  sponsored: boolean;
+}
+
 export interface ChatbotRecommendation {
   catalogId?: string;
   detailPath?: string;
@@ -30,6 +45,7 @@ export interface ChatbotRecommendation {
   durationMinutes?: number;
   synopsis?: string;
   platformLogo?: string;
+  affiliateActions?: ChatbotAffiliateAction[];
 }
 
 export interface ChatbotQueryContext {
@@ -77,7 +93,7 @@ export interface AssistantMatchCard {
   awayTeam: string;
   homeScore?: number | null;
   awayScore?: number | null;
-  broadcasters: Array<{ name: string; path?: string }>;
+  broadcasters: Array<{ name: string; path?: string; affiliateActions?: ChatbotAffiliateAction[] }>;
   detailPath: string;
 }
 

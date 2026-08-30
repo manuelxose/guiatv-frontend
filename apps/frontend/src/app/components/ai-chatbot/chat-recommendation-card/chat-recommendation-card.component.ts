@@ -8,11 +8,21 @@ import {
 import { CommonModule } from '@angular/common';
 import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
 import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.component';
+import { AffiliateCTAComponent } from '../../affiliate-cta/affiliate-cta.component';
+import { AffiliateDisclosureComponent } from '../../affiliate-disclosure/affiliate-disclosure.component';
+import { AffiliateImpressionDirective } from '../../../directives/affiliate-impression.directive';
+import { AffiliateResolvedOffer } from '../../../interfaces/affiliate.interface';
 
 @Component({
   selector: 'app-chat-recommendation-card',
   standalone: true,
-  imports: [CommonModule, PlatformBadgeComponent],
+  imports: [
+    CommonModule,
+    PlatformBadgeComponent,
+    AffiliateCTAComponent,
+    AffiliateDisclosureComponent,
+    AffiliateImpressionDirective,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     .recommendation-card {
@@ -242,6 +252,20 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
             ¿Por qué?
           </button>
 
+          <!-- Affiliate CTA — resolved server-side, never invented by the LLM -->
+          <div
+            *ngIf="primaryAffiliateAction as offer"
+            [appAffiliateImpression]="impressionOffer"
+            [appAffiliateImpressionContext]="impressionContext"
+            appAffiliateImpressionPage="chatbot"
+          >
+            <app-affiliate-cta
+              [cta]="{ label: offer.label, sponsored: offer.sponsored }"
+              [href]="offer.outboundPath"
+              variant="secondary"
+            ></app-affiliate-cta>
+          </div>
+
           <!-- Ver ficha CTA -->
           <button
             type="button"
@@ -254,6 +278,14 @@ import { PlatformBadgeComponent } from '../../platform-badge/platform-badge.comp
             </svg>
           </button>
         </div>
+      </div>
+
+      <!-- Affiliate disclosure — one line per card, only when the CTA is sponsored -->
+      <div
+        *ngIf="primaryAffiliateAction as offer"
+        class="border-t border-[var(--portal-border)]/50 px-3 py-1.5"
+      >
+        <app-affiliate-disclosure [text]="offer.disclosure" [sponsored]="offer.sponsored" [compact]="true"></app-affiliate-disclosure>
       </div>
 
       <!-- Overflow menu -->
@@ -400,6 +432,25 @@ export class ChatRecommendationCardComponent {
     const elapsed = now.getTime() - s.getTime();
     if (total <= 0) return 0;
     return Math.max(0, Math.min(100, (elapsed / total) * 100));
+  }
+
+  get primaryAffiliateAction() {
+    return this.recommendation.affiliateActions?.[0] ?? null;
+  }
+
+  /** Minimal `AffiliateResolvedOffer`-shaped value — the impression directive only reads `offerId`. */
+  get impressionOffer(): AffiliateResolvedOffer | null {
+    const action = this.primaryAffiliateAction;
+    return action ? ({ offerId: action.offerId } as AffiliateResolvedOffer) : null;
+  }
+
+  get impressionContext() {
+    return {
+      market: 'ES' as const,
+      placement: 'chatbot-answer',
+      contentType: this.recommendation.type,
+      contentId: this.recommendation.catalogId,
+    };
   }
 
   get platformName(): string {

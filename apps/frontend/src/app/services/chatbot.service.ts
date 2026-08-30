@@ -18,6 +18,7 @@ import {
   ConversationSummary,
   isChatbotBusyState,
 } from '../interfaces/chatbot.interface';
+import { PreferenceAnswer } from '../interfaces/chat-profile.types';
 
 // Re-export so existing consumers keep working via `chatbot.service`
 export {
@@ -879,6 +880,12 @@ export class ChatbotService {
     this.chatStateSubject.next('idle');
   }
 
+  /**
+   * `preferredAutonomousCommunity` is tri-state: `undefined` means "leave it
+   * unchanged", while `null`/`''` is a deliberate request to clear it (the
+   * backend distinguishes an absent key from an empty one). Passing a
+   * non-empty string sets it.
+   */
   updateAssistantMemory(
     prefs: Record<string, string[]>,
     preferredAutonomousCommunity?: string | null
@@ -886,8 +893,8 @@ export class ChatbotService {
     if (!this.hasValidSessionToken()) return of(null);
 
     const body: Record<string, any> = { ...prefs };
-    if (preferredAutonomousCommunity) {
-      body['preferredAutonomousCommunity'] = preferredAutonomousCommunity;
+    if (typeof preferredAutonomousCommunity !== 'undefined') {
+      body['preferredAutonomousCommunity'] = preferredAutonomousCommunity || '';
     }
 
     return this.http
@@ -901,6 +908,91 @@ export class ChatbotService {
         }),
         catchError(() => of(null))
       );
+  }
+
+  /**
+   * Fetches the assistant-memory snapshot without touching chat history —
+   * used by Mi GuíaTV's personalization surface, which must be able to show
+   * "what the assistant knows about me" even if the user never opened the
+   * chatbot in this session.
+   */
+  fetchAssistantMemory(): Observable<AssistantMemorySnapshot | null> {
+    if (!this.hasValidSessionToken()) return of(null);
+
+    return this.http
+      .get<ApiResponse<{ memory: AssistantMemorySnapshot | null }>>(
+        `${this.baseUrl}/ai/memory`,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => resp?.data?.memory || null),
+        tap((memory) => this.memorySubject.next(memory)),
+        catchError(() => of(null))
+      );
+  }
+
+  /**
+   * Resets only the assistant-owned preference fields (viewing context,
+   * duration, reference titles, negative signals, regional community).
+   * Profile-owned preferences (platforms/genres) are untouched — reset them
+   * via UserService if that is what the user asked for.
+   */
+  resetAssistantMemory(): Observable<AssistantMemorySnapshot | null> {
+    if (!this.hasValidSessionToken()) return of(null);
+
+    return this.http
+      .delete<ApiResponse<{ memory: AssistantMemorySnapshot | null }>>(
+        `${this.baseUrl}/ai/memory`,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => resp?.data?.memory || null),
+        tap((memory) => {
+          if (memory) this.memorySubject.next(memory);
+        }),
+        catchError(() => of(null))
+      );
+  }
+
+  /**
+   * Single save-routing rule for every PreferenceAnswer, shared by the
+   * chatbot's ChatProfilePanel and Mi GuíaTV's assistant-preferences surface
+   * so the two UIs can never diverge on where an answer is persisted:
+   * profile-target answers go through UserService (UserProfile),
+   * memory-target answers go through this service's assistant memory.
+   */
+  applyPreferenceAnswer(
+    answer: PreferenceAnswer,
+    profilePlatforms: string[],
+    profileGenres: string[]
+  ): Observable<boolean> {
+    if (answer.target === 'profile') {
+      const merge = (...groups: string[][]): string[] =>
+        [...new Set(groups.flat().filter(Boolean))].slice(0, 10);
+      const memory = this.memorySubject.value;
+      const genres = answer.key === 'likedGenres'
+        ? answer.values
+        : merge(profileGenres, memory?.likedGenres || []);
+      const platforms = answer.key === 'preferredPlatforms'
+        ? answer.values
+        : merge(profilePlatforms, memory?.preferredPlatforms || []);
+
+      return this.userService.saveGenrePreferences(genres, platforms);
+    }
+
+    if (answer.key === 'preferredAutonomousCommunity') {
+      // Explicitly set or clear — never silently skip the request, or a
+      // deselected community would appear "saved" in the UI without ever
+      // reaching the backend.
+      return this.updateAssistantMemory({}, answer.community ?? '').pipe(
+        map((memory) => Boolean(memory))
+      );
+    }
+
+    const updates = answer.field ? { [answer.field]: answer.values } : {};
+    return this.updateAssistantMemory(updates, undefined).pipe(
+      map((memory) => Boolean(memory))
+    );
   }
 
   private applyAuthState(authState: UserAuthState): void {

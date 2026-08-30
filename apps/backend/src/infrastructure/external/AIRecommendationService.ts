@@ -7,6 +7,22 @@ export interface ChatbotMessage {
   content: string;
 }
 
+/**
+ * A structured, deterministically-resolved affiliate CTA attached to a
+ * recommendation/broadcaster after content+provider identification. Never
+ * produced or seen by the LLM — see `ChatbotRecommend.attachAffiliateActions`.
+ * The client renders it only through `AffiliateCTAComponent`, never as raw
+ * HTML/text.
+ */
+export interface ChatbotAffiliateActionDTO {
+  offerId: string;
+  label: string;
+  provider: string;
+  outboundPath: string;
+  disclosure: string;
+  sponsored: boolean;
+}
+
 export interface ChatbotRecommendationPayload {
   catalogId?: string;
   detailPath?: string;
@@ -34,6 +50,8 @@ export interface ChatbotRecommendationPayload {
   durationMinutes?: number;
   synopsis?: string;
   platformLogo?: string;
+  /** Present only when the Affiliate Engine found an eligible offer for this recommendation's provider. */
+  affiliateActions?: ChatbotAffiliateActionDTO[];
 }
 
 export interface ChatbotQueryContext {
@@ -152,7 +170,7 @@ export interface AssistantMatchCard {
   awayTeam: string;
   homeScore?: number | null;
   awayScore?: number | null;
-  broadcasters: Array<{ name: string; path?: string }>;
+  broadcasters: Array<{ name: string; path?: string; affiliateActions?: ChatbotAffiliateActionDTO[] }>;
   detailPath: string;
 }
 

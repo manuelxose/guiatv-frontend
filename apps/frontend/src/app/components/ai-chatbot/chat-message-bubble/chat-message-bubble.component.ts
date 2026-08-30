@@ -14,6 +14,8 @@ import { ChatRecommendationListComponent } from '../chat-recommendation-list/cha
 import { ChatSuggestionChipsComponent } from '../chat-suggestion-chips/chat-suggestion-chips.component';
 import { ChatCommunityChooserComponent } from '../chat-community-chooser/chat-community-chooser.component';
 import { MarkdownPipe } from '../../../pipes/markdown.pipe';
+import { AffiliateCTAComponent } from '../../affiliate-cta/affiliate-cta.component';
+import { AffiliateDisclosureComponent } from '../../affiliate-disclosure/affiliate-disclosure.component';
 
 @Component({
   selector: 'app-chat-message-bubble',
@@ -25,6 +27,8 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
     ChatSuggestionChipsComponent,
     ChatCommunityChooserComponent,
     MarkdownPipe,
+    AffiliateCTAComponent,
+    AffiliateDisclosureComponent,
   ],
   template: `
     <div
@@ -86,23 +90,42 @@ import { MarkdownPipe } from '../../../pipes/markdown.pipe';
             />
 
             <div *ngIf="!message.isStreaming && message.matches?.length" class="mt-3 grid gap-2" aria-label="Partidos de fútbol">
-              <a
+              <div
                 *ngFor="let match of message.matches"
-                [href]="match.detailPath"
-                class="block rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] p-3 text-inherit no-underline transition-colors hover:border-[var(--accent-live)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-live)]"
+                class="overflow-hidden rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] transition-colors hover:border-[var(--accent-live)]"
               >
-                <div class="flex items-center justify-between gap-3 text-[11px] text-[var(--portal-text-muted)]">
-                  <span>{{ match.competition }}</span>
-                  <time [attr.datetime]="match.kickoffAt">{{ match.kickoffAt | date:'HH:mm' }}</time>
+                <a
+                  [href]="match.detailPath"
+                  class="block p-3 text-inherit no-underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-live)]"
+                >
+                  <div class="flex items-center justify-between gap-3 text-[11px] text-[var(--portal-text-muted)]">
+                    <span>{{ match.competition }}</span>
+                    <time [attr.datetime]="match.kickoffAt">{{ match.kickoffAt | date:'HH:mm' }}</time>
+                  </div>
+                  <div class="mt-2 grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 text-sm font-semibold">
+                    <span>{{ match.homeTeam }}</span><span>{{ match.homeScore ?? '–' }}</span>
+                    <span>{{ match.awayTeam }}</span><span>{{ match.awayScore ?? '–' }}</span>
+                  </div>
+                  <p class="mt-2 text-xs text-[var(--portal-text-muted)]">
+                    {{ match.broadcasters.length ? 'Dónde ver: ' + match.broadcasters[0].name : 'Emisión por confirmar' }}
+                  </p>
+                </a>
+                <!-- Affiliate CTA — resolved server-side, outside the detail link (no nested anchors) -->
+                <div
+                  *ngIf="match.broadcasters[0]?.affiliateActions?.[0] as offer"
+                  class="flex items-center justify-end border-t border-[var(--portal-border)]/50 px-3 py-2"
+                >
+                  <app-affiliate-cta
+                    [cta]="{ label: offer.label, sponsored: offer.sponsored }"
+                    [href]="offer.outboundPath"
+                    variant="secondary"
+                  ></app-affiliate-cta>
                 </div>
-                <div class="mt-2 grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 text-sm font-semibold">
-                  <span>{{ match.homeTeam }}</span><span>{{ match.homeScore ?? '–' }}</span>
-                  <span>{{ match.awayTeam }}</span><span>{{ match.awayScore ?? '–' }}</span>
-                </div>
-                <p class="mt-2 text-xs text-[var(--portal-text-muted)]">
-                  {{ match.broadcasters.length ? 'Dónde ver: ' + match.broadcasters[0].name : 'Emisión por confirmar' }}
-                </p>
-              </a>
+              </div>
+              <app-affiliate-disclosure
+                *ngIf="hasFootballAffiliateOffer"
+                [compact]="true"
+              ></app-affiliate-disclosure>
             </div>
 
             <!-- Autonomic community chooser -->
@@ -292,6 +315,10 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
 
   displayContent = '';
   relativeTime = '';
+
+  get hasFootballAffiliateOffer(): boolean {
+    return (this.message.matches || []).some((match) => match.broadcasters[0]?.affiliateActions?.[0]?.sponsored);
+  }
 
   // Recommendation-bearing messages get the full available panel width (cards
   // need the room, see chat-recommendation-list); plain-text messages keep

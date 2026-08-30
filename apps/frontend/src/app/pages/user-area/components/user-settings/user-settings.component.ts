@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { UserNotifications, UserPrivacy, UserProfile } from '../../../../interfaces/user.interface';
 import { UserService } from '../../../../services/user.service';
 import { AuthService, AuthSessionView } from '../../../../services/auth.service';
+import { CatalogPlatform, CatalogService } from '../../../../services/catalog.service';
 
 const GENRE_OPTIONS = [
   'Cine',
@@ -20,22 +21,6 @@ const GENRE_OPTIONS = [
   'Romance',
 ];
 
-const PLATFORM_OPTIONS = [
-  'Netflix',
-  'Prime Video',
-  'Disney+',
-  'Max',
-  'Movistar+',
-  'SkyShowtime',
-  'Apple TV+',
-  'Filmin',
-  'RTVE Play',
-  'ATRESplayer',
-  'Mitele',
-  'Pluto TV',
-  'Rakuten TV',
-];
-
 const TYPE_OPTIONS = [
   { id: 'program', label: 'TV' },
   { id: 'movie', label: 'Películas' },
@@ -49,6 +34,12 @@ const AVAILABILITY_OPTIONS = [
   { id: 'flatrate', label: 'Suscripción' },
   { id: 'rent', label: 'Alquiler' },
   { id: 'buy', label: 'Compra' },
+] as const;
+
+const ALLOW_MESSAGES_OPTIONS = [
+  { id: 'all', label: 'Todos' },
+  { id: 'followers', label: 'Solo seguidores' },
+  { id: 'none', label: 'Nadie' },
 ] as const;
 
 const SORT_OPTIONS = [
@@ -132,6 +123,48 @@ const SORT_OPTIONS = [
                   <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[var(--accent-live)] peer-checked:after:translate-x-full"></div>
                 </div>
               </label>
+
+              <label class="flex items-center justify-between rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
+                <div>
+                  <span class="block text-sm font-medium text-[var(--portal-text)]">Compartir mi lista de guardados</span>
+                  <span class="text-xs text-[var(--portal-text-muted)]">Tus amigos pueden ver lo que tienes pendiente de ver.</span>
+                </div>
+                <div class="relative inline-flex items-center">
+                  <input type="checkbox" formControlName="shareWatchlist" class="peer sr-only" />
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[var(--accent-live)] peer-checked:after:translate-x-full"></div>
+                </div>
+              </label>
+
+              <label class="flex items-center justify-between rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
+                <div>
+                  <span class="block text-sm font-medium text-[var(--portal-text)]">Listas públicas por defecto</span>
+                  <span class="text-xs text-[var(--portal-text-muted)]">Las listas nuevas serán visibles para otros, salvo que elijas lo contrario al crearlas.</span>
+                </div>
+                <div class="relative inline-flex items-center">
+                  <input type="checkbox" formControlName="publicLists" class="peer sr-only" />
+                  <div class="h-6 w-11 rounded-full bg-[var(--portal-surface-strong)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-[var(--accent-live)] peer-checked:after:translate-x-full"></div>
+                </div>
+              </label>
+
+              <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-4">
+                <span class="block text-sm font-medium text-[var(--portal-text)]">Quién puede escribirme</span>
+                <span class="text-xs text-[var(--portal-text-muted)]">Controla quién puede iniciarte una conversación.</span>
+                <div class="mt-3 flex flex-wrap gap-2" role="radiogroup" aria-label="Quién puede escribirme">
+                  <button
+                    *ngFor="let option of allowMessagesOptions"
+                    type="button"
+                    role="radio"
+                    [attr.aria-checked]="settingsForm.value.allowMessages === option.id"
+                    (click)="settingsForm.patchValue({ allowMessages: option.id })"
+                    class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
+                    [ngClass]="settingsForm.value.allowMessages === option.id
+                      ? 'border-[var(--accent-live)] bg-[var(--accent-live-strong)] text-white'
+                      : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
+                  >
+                    {{ option.label }}
+                  </button>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -199,13 +232,13 @@ const SORT_OPTIONS = [
                 <button
                   *ngFor="let platform of platformOptions"
                   type="button"
-                  (click)="togglePlatform(platform)"
+                  (click)="togglePlatform(platform.key)"
                   class="min-h-[38px] rounded-full border px-3 text-xs font-semibold transition-colors"
-                  [ngClass]="selectedPlatforms.includes(platform)
+                  [ngClass]="selectedPlatforms.includes(platform.key)
                     ? 'border-transparent bg-[var(--accent-discover-soft)] text-[var(--portal-text)]'
                     : 'border-[var(--portal-border)] bg-[var(--portal-bg-deep)] text-[var(--portal-text-soft)]'"
                 >
-                  {{ platform }}
+                  {{ platform.name }}
                 </button>
               </div>
             </div>
@@ -339,7 +372,7 @@ const SORT_OPTIONS = [
             (click)="logoutAllDevices()"
             class="mt-2 min-h-[36px] rounded-xl border border-transparent bg-[var(--accent-live-soft)] px-4 py-2 text-xs font-semibold text-[var(--accent-live)]"
           >
-            Cerrar todas las sesiones excepto esta
+            Cerrar todas las sesiones
           </button>
         </div>
       </div>
@@ -484,7 +517,8 @@ export class UserSettingsComponent implements OnChanges, OnInit {
   @Output() logout = new EventEmitter<void>();
 
   public readonly genreOptions = GENRE_OPTIONS;
-  public readonly platformOptions = PLATFORM_OPTIONS;
+  public readonly allowMessagesOptions = ALLOW_MESSAGES_OPTIONS;
+  public platformOptions: CatalogPlatform[] = [];
   public readonly typeOptions = TYPE_OPTIONS;
   public readonly availabilityOptions = AVAILABILITY_OPTIONS;
   public readonly sortOptions = SORT_OPTIONS;
@@ -519,6 +553,8 @@ export class UserSettingsComponent implements OnChanges, OnInit {
     shareActivity: [true],
     shareWatchlist: [true],
     showOnline: [true],
+    publicLists: [true],
+    allowMessages: ['all' as UserPrivacy['allowMessages']],
     recommendations: [true],
     followers: [true],
     weeklySummary: [false],
@@ -528,10 +564,15 @@ export class UserSettingsComponent implements OnChanges, OnInit {
     private readonly fb: FormBuilder,
     private readonly userService: UserService,
     private readonly authService: AuthService,
+    private readonly catalogService: CatalogService,
   ) {}
 
   ngOnInit(): void {
     this.loadSessions();
+    // Providers are catalogue data; their keys are stable across discovery and profile settings.
+    this.catalogService.getPlatforms().subscribe((platforms) => {
+      this.platformOptions = platforms;
+    });
   }
 
   ngOnChanges(): void {
@@ -558,8 +599,8 @@ export class UserSettingsComponent implements OnChanges, OnInit {
         shareActivity: !!value.shareActivity,
         shareWatchlist: !!value.shareWatchlist,
         showOnline: !!value.showOnline,
-        allowMessages: this.profile?.privacy?.allowMessages || 'all',
-        publicLists: this.profile?.privacy?.publicLists ?? true,
+        allowMessages: value.allowMessages || 'all',
+        publicLists: !!value.publicLists,
       },
       notifications: {
         recommendations: !!value.recommendations,
@@ -612,6 +653,8 @@ export class UserSettingsComponent implements OnChanges, OnInit {
       shareActivity: this.privacy.shareActivity,
       shareWatchlist: this.privacy.shareWatchlist,
       showOnline: this.privacy.showOnline,
+      publicLists: this.privacy.publicLists,
+      allowMessages: this.privacy.allowMessages || 'all',
       recommendations: this.notifications.recommendations,
       followers: this.notifications.followers,
       weeklySummary: this.notifications.weeklySummary,
@@ -660,7 +703,8 @@ export class UserSettingsComponent implements OnChanges, OnInit {
   logoutAllDevices(): void {
     this.authService.logoutAllDevices().subscribe({
       next: () => {
-        this.sessions = this.sessions.filter((s) => s.current);
+        this.sessions = [];
+        this.logout.emit();
       },
     });
   }

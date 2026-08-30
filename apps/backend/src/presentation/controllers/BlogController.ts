@@ -1,11 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import {
+  BlogAffiliatePlacementMode,
   BlogContentType,
   BlogPostModel,
   IBlogFaqItem,
   IBlogPostCategory,
   IBlogPostDocument,
 } from '../../infrastructure/database/models/BlogPost.model';
+import {
+  normalizeAffiliatePlacementMode,
+  normalizeLowercaseKeys,
+  normalizeOfferIds,
+} from '../../shared/utils/blogAffiliateFields';
 import { CATALOG_PLATFORM_REGISTRY } from '../../application/dto/CatalogDTO';
 import { successResponse } from '../../shared/types/ApiResponse';
 import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
@@ -38,6 +44,10 @@ interface BlogWritePayload {
   };
   faqItems?: Array<{ question?: string; answer?: string }> | string;
   evergreen?: boolean | string;
+  affiliatePlacementMode?: string;
+  relatedOfferCategories?: string[] | string;
+  relatedMerchantKeys?: string[] | string;
+  manualAffiliateOfferIds?: string[] | string;
   coverImage?: string;
   featuredImage?: string;
   metaTitle?: string;
@@ -88,6 +98,10 @@ interface NormalizedBlogPayload {
   };
   faqItems: IBlogFaqItem[];
   evergreen: boolean;
+  affiliatePlacementMode: BlogAffiliatePlacementMode;
+  relatedOfferCategories: string[];
+  relatedMerchantKeys: string[];
+  manualAffiliateOfferIds: string[];
   featuredImage?: {
     sourceUrl?: string;
     caption?: string;
@@ -313,6 +327,10 @@ export class BlogController {
       existing.sportsRelations = normalized.sportsRelations;
       existing.faqItems = normalized.faqItems;
       existing.evergreen = normalized.evergreen;
+      existing.affiliatePlacementMode = normalized.affiliatePlacementMode;
+      existing.relatedOfferCategories = normalized.relatedOfferCategories;
+      existing.relatedMerchantKeys = normalized.relatedMerchantKeys;
+      existing.manualAffiliateOfferIds = normalized.manualAffiliateOfferIds;
       existing.featuredImage = normalized.featuredImage;
       existing.seo = normalized.seo;
       existing.publishedAt = normalized.publishedAt;
@@ -448,6 +466,21 @@ export class BlogController {
       sportsRelations: post.sportsRelations || { teamIds: [], competitionIds: [], matchIds: [] },
       faqItems: Array.isArray(post.faqItems) ? post.faqItems : [],
       evergreen: post.evergreen !== false,
+      ...this.mapAffiliateFields(post),
+    };
+  }
+
+  private mapAffiliateFields(post: any): {
+    affiliatePlacementMode: BlogAffiliatePlacementMode;
+    relatedOfferCategories: string[];
+    relatedMerchantKeys: string[];
+    manualAffiliateOfferIds: string[];
+  } {
+    return {
+      affiliatePlacementMode: normalizeAffiliatePlacementMode(post.affiliatePlacementMode),
+      relatedOfferCategories: Array.isArray(post.relatedOfferCategories) ? post.relatedOfferCategories : [],
+      relatedMerchantKeys: Array.isArray(post.relatedMerchantKeys) ? post.relatedMerchantKeys : [],
+      manualAffiliateOfferIds: Array.isArray(post.manualAffiliateOfferIds) ? post.manualAffiliateOfferIds : [],
     };
   }
 
@@ -474,6 +507,7 @@ export class BlogController {
       contentType: post.contentType || 'guide',
       featured: Boolean(post.featured),
       author: post.author || null,
+      ...this.mapAffiliateFields(post),
     };
   }
 
@@ -523,6 +557,19 @@ export class BlogController {
     const sportsRelations = this.normalizeSportsRelations(payload.sportsRelations, existing?.sportsRelations);
     const faqItems = this.normalizeFaqItems(payload.faqItems, existing?.faqItems);
     const evergreen = this.normalizeBoolean(payload.evergreen, existing?.evergreen, true);
+    const affiliatePlacementMode = normalizeAffiliatePlacementMode(
+      payload.affiliatePlacementMode,
+      existing?.affiliatePlacementMode
+    );
+    const relatedOfferCategories = normalizeLowercaseKeys(
+      payload.relatedOfferCategories,
+      existing?.relatedOfferCategories
+    );
+    const relatedMerchantKeys = normalizeLowercaseKeys(payload.relatedMerchantKeys, existing?.relatedMerchantKeys);
+    const manualAffiliateOfferIds = normalizeOfferIds(
+      payload.manualAffiliateOfferIds,
+      existing?.manualAffiliateOfferIds
+    );
     const featuredImageSource = this.resolveFeaturedImage(payload, existing);
     const metaTitle = this.resolveOptionalString(payload.metaTitle, existing?.seo?.metaTitle);
     const metaDescription = this.resolveOptionalString(
@@ -553,6 +600,10 @@ export class BlogController {
       sportsRelations,
       faqItems,
       evergreen,
+      affiliatePlacementMode,
+      relatedOfferCategories,
+      relatedMerchantKeys,
+      manualAffiliateOfferIds,
       featuredImage: featuredImageSource
         ? { sourceUrl: featuredImageSource }
         : undefined,
@@ -879,7 +930,7 @@ export class BlogController {
   private isAdminRequest(req: Request): boolean {
     const requiredKey = process.env.ANALYTICS_ADMIN_KEY;
     if (!requiredKey) {
-      return true;
+      return false;
     }
     const headerKey = req.header('x-admin-key');
     const authHeader = req.header('authorization') || '';

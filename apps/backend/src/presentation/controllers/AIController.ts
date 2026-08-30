@@ -12,6 +12,7 @@ import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import { DateUtils } from '@/shared/utils/dateUtils';
 import { logger } from '@/shared/utils/logger';
 import { randomUUID } from 'node:crypto';
+import { AssistantOperationalTelemetryService } from '@/application/services/AssistantOperationalTelemetryService';
 import {
   AssistantRequestValidationError,
   parseAssistantRequestPayload,
@@ -21,7 +22,8 @@ export class AIController {
   constructor(
     private readonly chatbotRecommend: ChatbotRecommend | null,
     private readonly cacheRepository: ICacheRepository,
-    private readonly assistantMemoryService: AssistantMemoryService
+    private readonly assistantMemoryService: AssistantMemoryService,
+    private readonly telemetry: AssistantOperationalTelemetryService
   ) {}
 
   private getDailyLimit(subscription?: string): number {
@@ -53,12 +55,11 @@ export class AIController {
       }
     }
 
-    const data = await this.chatbotRecommend.execute({
-      userId,
-      messages: payload.messages,
-      conversationId: payload.conversationId,
-      context: payload.context,
-    });
+    const startedAt = Date.now(); const requestId = randomUUID();
+    let data;
+    try { data = await this.chatbotRecommend.execute({ userId, messages: payload.messages, conversationId: payload.conversationId, context: payload.context });
+      this.telemetry.record({ requestId, outcome: 'success', queryCategory: data.queryContext?.mode, latencyMs: Date.now() - startedAt });
+    } catch (error) { this.telemetry.record({ requestId, outcome: 'failed', failureReason: 'internal_error', latencyMs: Date.now() - startedAt }); throw error; }
 
     res.status(200).json(successResponse(data));
   }
@@ -123,6 +124,7 @@ export class AIController {
       if (clientDisconnected) return;
 
       if (result.kind === 'direct') {
+        this.telemetry.record({ requestId, outcome: 'success', queryCategory: result.response.queryContext?.mode, latencyMs: Date.now() - t0 });
         res.write(`event: full\ndata: ${JSON.stringify(result.response)}\n\n`);
         res.write('event: done\ndata: {}\n\n');
         res.end();
@@ -162,6 +164,7 @@ export class AIController {
       try {
         finalResponse = await result.finalize(fullText);
       } catch (finalizeErr) {
+        this.telemetry.record({ requestId, outcome: 'fallback', failureReason: 'internal_error', latencyMs: Date.now() - t0 });
         logger.error('[AIController] finalize error', {
           requestId, userId,
           elapsedMs: Date.now() - t0,
@@ -186,7 +189,9 @@ export class AIController {
           : 0,
         elapsedMs: Date.now() - t0,
       });
+      this.telemetry.record({ requestId, outcome: fullText.trim() ? 'success' : 'partial', queryCategory: finalResponse?.queryContext?.mode, latencyMs: Date.now() - t0 });
     } catch (err) {
+      this.telemetry.record({ requestId, outcome: 'failed', failureReason: 'internal_error', latencyMs: Date.now() - t0 });
       const message = err instanceof Error ? err.message : 'Stream error';
       logger.error('[AIController] chatStream error', { requestId, userId, elapsedMs: Date.now() - t0, message });
       if (!clientDisconnected && !res.writableEnded) {
@@ -292,12 +297,19 @@ export class AIController {
       }
     }
 
-    // Handle community preference (scalar string, not array)
+    // Handle community preference (scalar string, not array). A key that is
+    // present but empty/null is a deliberate request to clear the regional
+    // preference, distinct from the key being absent (no change).
+    const hasCommunityField = Object.prototype.hasOwnProperty.call(
+      req.body || {},
+      'preferredAutonomousCommunity'
+    );
     const community = typeof req.body?.preferredAutonomousCommunity === 'string'
       ? req.body.preferredAutonomousCommunity.trim()
-      : undefined;
+      : '';
+    const clearingCommunity = hasCommunityField && !community;
 
-    if (Object.keys(updates).length === 0 && !community) {
+    if (Object.keys(updates).length === 0 && !community && !clearingCommunity) {
       throw new ValidationError('At least one field must be provided', []);
     }
 
@@ -307,11 +319,37 @@ export class AIController {
         preferredAutonomousCommunity: community,
         autonomicOptIn: true,
       });
+    } else if (clearingCommunity) {
+      await this.assistantMemoryService.saveCommunityPreference({
+        userId,
+        preferredAutonomousCommunity: '',
+        autonomicOptIn: 'unknown',
+      });
     }
 
     const memory = Object.keys(updates).length > 0
       ? await this.assistantMemoryService.updateMemory(userId, updates)
       : await this.assistantMemoryService.getMemorySnapshot(userId);
+    res.status(200).json(successResponse({ memory }));
+  }
+
+  async getMemory(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new ValidationError('Authentication required', []);
+    }
+
+    const memory = await this.assistantMemoryService.getMemorySnapshot(userId);
+    res.status(200).json(successResponse({ memory }));
+  }
+
+  async resetMemory(req: AuthenticatedRequest, res: Response): Promise<void> {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new ValidationError('Authentication required', []);
+    }
+
+    const memory = await this.assistantMemoryService.resetMemory(userId);
     res.status(200).json(successResponse({ memory }));
   }
 

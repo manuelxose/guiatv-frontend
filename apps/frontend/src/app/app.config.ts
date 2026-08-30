@@ -12,7 +12,7 @@ import {
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 // Preserve interactions made before the client bundle finishes hydrating.
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideClientHydration, withEventReplay, withHttpTransferCacheOptions } from '@angular/platform-browser';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 
 // Rutas de la aplicación
@@ -36,8 +36,13 @@ export const appConfig: ApplicationConfig = {
     // Fetch API es requerida para SSR moderno
     provideHttpClient(withFetch(), withInterceptors([authRefreshInterceptor])),
     // Must be present in both browser and server application configs so SSR
-    // emits a hydratable tree and HTTP transfer-cache records.
-    provideClientHydration(withEventReplay()),
+    // emits a hydratable tree and HTTP transfer-cache records. POST requests
+    // are included so a read-shaped POST (e.g. `/v2/affiliate/resolve`, which
+    // takes a context body) also transfers its SSR response instead of the
+    // client silently refetching and flashing a loading state right after
+    // hydration — the same "prevent hydration refetches" goal as the
+    // HTTP_TRANSFER_CACHE_ORIGIN_MAP mapping in app.config.server.ts.
+    provideClientHydration(withEventReplay(), withHttpTransferCacheOptions({ includePostRequests: true })),
 
     {
       provide: ErrorHandler,

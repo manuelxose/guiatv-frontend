@@ -118,9 +118,11 @@
 
       <div class="home-page__grid">
         <app-unified-program-card
-          *ngFor="let item of movieHighlights()"
+          *ngFor="let item of movieHighlights(); let i = index"
           [item]="item"
           variant="streaming"
+          [enableAffiliateCta]="i < 4"
+          affiliatePlacement="home"
         ></app-unified-program-card>
       </div>
     </section>
@@ -136,9 +138,11 @@
 
       <div class="home-page__grid">
         <app-unified-program-card
-          *ngFor="let item of seriesHighlights()"
+          *ngFor="let item of seriesHighlights(); let i = index"
           [item]="item"
           variant="streaming"
+          [enableAffiliateCta]="i < 4"
+          affiliatePlacement="home"
         ></app-unified-program-card>
       </div>
     </section>

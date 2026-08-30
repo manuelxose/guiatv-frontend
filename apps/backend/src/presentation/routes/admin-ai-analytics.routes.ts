@@ -13,6 +13,7 @@ export const createAdminAIAnalyticsRoutes = (
 
   router.get('/overview', adminGuard, asyncHandler(controller.getOverview.bind(controller)));
   router.get('/timeseries', adminGuard, asyncHandler(controller.getTimeSeries.bind(controller)));
+  router.get('/failures', adminGuard, asyncHandler(controller.getFailures.bind(controller)));
 
   return router;
 };

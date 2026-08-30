@@ -135,6 +135,10 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                     [primaryPlatforms]="content.primaryPlatforms"
                     [tmdbId]="content.tmdbId"
                     [contentType]="providerContentType(content)"
+                    placement="catalog-detail"
+                    [catalogId]="content.catalogId"
+                    [providerHint]="content.channel?.name"
+                    [page]="content.detailPath"
                   ></app-where-to-watch>
                 </div>
 

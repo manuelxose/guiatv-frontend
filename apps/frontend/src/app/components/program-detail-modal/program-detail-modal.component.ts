@@ -18,6 +18,7 @@ import { trigger, style, transition, animate } from '@angular/animations';
 import { IProgramItem } from 'src/app/interfaces';
 import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
 import { WhereToWatchComponent } from '../where-to-watch/where-to-watch.component';
+import { APP_PATHS } from '../../config/route-map';
 
 @Component({
   selector: 'app-program-detail-modal',
@@ -52,6 +53,8 @@ import { WhereToWatchComponent } from '../where-to-watch/where-to-watch.componen
   ],
 })
 export class ProgramDetailModalComponent {
+  public readonly appPaths = APP_PATHS;
+
   @Input() program: IProgramItem | null = null;
   @Input() channelName: string = '';
   @Input() channelLogo: string = '';

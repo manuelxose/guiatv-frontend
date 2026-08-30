@@ -545,6 +545,27 @@ export class AssistantMemoryService {
     return this.mapMemory(memory);
   }
 
+  /**
+   * Resets only the assistant-owned preference memory (viewing context,
+   * duration, reference titles, negative signals and regional-channel
+   * community). Profile-owned preferences (favoriteGenres, preferredPlatforms)
+   * live in UserProfile and are untouched here; auto-learned signals
+   * (dislikedGenres/avoidedPlatforms/recentTopics) are conversational
+   * inference, not user-configurable, and are also left in place.
+   */
+  async resetMemory(userId: string): Promise<AssistantMemorySnapshot> {
+    const memory = await this.ensureMemory(userId);
+    memory.preferredViewingContexts = [];
+    memory.preferredDurations = [];
+    memory.favoriteFranchisesOrTitles = [];
+    memory.negativeSignals = [];
+    memory.preferredAutonomousCommunity = undefined;
+    memory.autonomicOptIn = 'unknown';
+    memory.lastCommunityConfirmationAt = undefined;
+    await memory.save();
+    return this.mapMemory(memory);
+  }
+
   async syncFromProfile(
     userId: string,
     genres: string[],

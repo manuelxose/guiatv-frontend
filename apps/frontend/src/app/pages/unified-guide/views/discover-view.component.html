@@ -105,9 +105,11 @@
 
     <div class="discover-view__results-grid">
       <app-unified-program-card
-        *ngFor="let item of resultsItems(); trackBy: trackByItem"
+        *ngFor="let item of resultsItems(); let i = index; trackBy: trackByItem"
         [item]="item"
         variant="discover"
+        [enableAffiliateCta]="i < 8"
+        affiliatePlacement="search-result"
       ></app-unified-program-card>
     </div>
 

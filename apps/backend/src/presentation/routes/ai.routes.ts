@@ -29,10 +29,20 @@ export const createAIRoutes = (
     authGuard,
     asyncHandler(controller.clearHistory.bind(controller))
   );
+  router.get(
+    '/memory',
+    authGuard,
+    asyncHandler(controller.getMemory.bind(controller))
+  );
   router.patch(
     '/memory',
     authGuard,
     asyncHandler(controller.updateMemory.bind(controller))
+  );
+  router.delete(
+    '/memory',
+    authGuard,
+    asyncHandler(controller.resetMemory.bind(controller))
   );
 
   // Conversation management

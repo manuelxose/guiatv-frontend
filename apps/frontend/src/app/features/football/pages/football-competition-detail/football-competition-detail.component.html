@@ -42,6 +42,17 @@
         </div>
       </section>
 
+      <!-- Scoped to the single next match only — never a blanket "this competition = provider X" claim. -->
+      <section *ngIf="nextMatch() as match" class="block">
+        <app-football-broadcast-list
+          [broadcasts]="match.broadcasts"
+          [enableAffiliateCta]="true"
+          affiliatePlacement="football-competition"
+          [footballMatchId]="match.id"
+          [competitionId]="detail()?.competition?.id"
+        ></app-football-broadcast-list>
+      </section>
+
       <section *ngIf="resultsPreview().length" class="block">
         <app-football-section-header eyebrow="Resultados" title="Últimos resultados"></app-football-section-header>
         <div class="rows">

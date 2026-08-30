@@ -33,7 +33,7 @@ import { ChatInputBarComponent } from './chat-input-bar/chat-input-bar.component
 import { ChatSkeletonComponent } from './chat-skeleton/chat-skeleton.component';
 import { ChatConversationSidebarComponent } from './chat-conversation-sidebar/chat-conversation-sidebar.component';
 import { ChatProfilePanelComponent } from './chat-profile-panel/chat-profile-panel.component';
-import { PreferenceAnswer } from './chat-profile-panel/chat-profile.types';
+import { PreferenceAnswer } from '../../interfaces/chat-profile.types';
 
 @Component({
   selector: 'app-ai-chatbot',
@@ -543,32 +543,15 @@ export class AIChatbotComponent implements AfterViewInit {
     this.profileSaving = true;
     this.profileSaveError = '';
 
-    if (answer.target === 'profile') {
-      const merge = (...groups: string[][]): string[] => [...new Set(groups.flat().filter(Boolean))].slice(0, 10);
-      const genres = answer.key === 'likedGenres'
-        ? answer.values
-        : merge(this.profileGenres, this.assistantMemory?.likedGenres || []);
-      const platforms = answer.key === 'preferredPlatforms'
-        ? answer.values
-        : merge(this.profilePlatforms, this.assistantMemory?.preferredPlatforms || []);
-
-      this.userService.saveGenrePreferences(genres, platforms).subscribe({
-        next: (saved) => saved ? this.completeProfileSave() : this.failProfileSave(),
+    // Shared with Mi GuíaTV's assistant-preferences surface so both UIs
+    // route an answer to the same store (profile vs. assistant memory) the
+    // same way — see ChatbotService.applyPreferenceAnswer.
+    this.chatbotService
+      .applyPreferenceAnswer(answer, this.profilePlatforms, this.profileGenres)
+      .subscribe({
+        next: (saved) => (saved ? this.completeProfileSave() : this.failProfileSave()),
         error: () => this.failProfileSave(),
       });
-      return;
-    }
-
-    if (answer.key === 'preferredAutonomousCommunity' && !answer.community) {
-      this.completeProfileSave();
-      return;
-    }
-
-    const updates = answer.field ? { [answer.field]: answer.values } : {};
-    this.chatbotService.updateAssistantMemory(updates, answer.community).subscribe({
-      next: (memory) => memory ? this.completeProfileSave() : this.failProfileSave(),
-      error: () => this.failProfileSave(),
-    });
   }
 
   private completeProfileSave(): void {

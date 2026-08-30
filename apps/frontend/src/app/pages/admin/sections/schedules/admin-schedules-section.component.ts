@@ -5,6 +5,9 @@ import { Subscription } from 'rxjs';
 import {
   AdminSchedulesService,
   AdminChannel,
+  EpgOverview,
+  EpgChannelDiagnostic,
+  AdminProviderStatus,
   HealthResponse,
 } from '../../../../services/admin-schedules.service';
 
@@ -23,6 +26,14 @@ export class AdminSchedulesSectionComponent implements OnInit, OnDestroy {
 
   channels: AdminChannel[] = [];
   health: HealthResponse | null = null;
+  epgOverview: EpgOverview | null = null;
+  diagnostics: EpgChannelDiagnostic[] = [];
+  providers: AdminProviderStatus[] = [];
+  diagnosticSearch = '';
+  diagnosticAccess = '';
+  diagnosticStatus = '';
+  diagnosticPage = 1;
+  diagnosticTotal = 0;
   loading = false;
   error: string | null = null;
   actionResults: ActionResult[] = [];
@@ -60,6 +71,22 @@ export class AdminSchedulesSectionComponent implements OnInit, OnDestroy {
     this.error = null;
 
     this.subs.add(
+      this.schedulesService.getEpgChannels({ page: this.diagnosticPage, search: this.diagnosticSearch || undefined, access: this.diagnosticAccess || undefined, status: this.diagnosticStatus || undefined }).subscribe({
+        next: (result) => { this.diagnostics = result.items; this.diagnosticTotal = result.total; },
+        error: (e) => this.error = e?.error?.message || 'Failed to load channel diagnostics',
+      })
+    );
+    this.subs.add(
+      this.schedulesService.getProviders().subscribe({ next: (providers) => this.providers = providers })
+    );
+    this.subs.add(
+      this.schedulesService.getEpgOverview().subscribe({
+        next: (overview) => { this.epgOverview = overview; this.emitUpdated(); },
+        error: (e) => this.error = e?.error?.message || 'Failed to load EPG diagnostics',
+      })
+    );
+
+    this.subs.add(
       this.schedulesService.getHealth().subscribe({
         next: (h) => {
           this.health = h;
@@ -79,6 +106,10 @@ export class AdminSchedulesSectionComponent implements OnInit, OnDestroy {
       })
     );
   }
+
+  applyDiagnosticFilters(): void { this.diagnosticPage = 1; this.loadData(); }
+  nextDiagnosticPage(): void { if (this.diagnosticPage * 25 < this.diagnosticTotal) { this.diagnosticPage++; this.loadData(); } }
+  previousDiagnosticPage(): void { if (this.diagnosticPage > 1) { this.diagnosticPage--; this.loadData(); } }
 
   runSync(): void {
     this.syncLoading = true;

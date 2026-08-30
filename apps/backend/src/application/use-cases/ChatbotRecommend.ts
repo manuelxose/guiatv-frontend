@@ -1,11 +1,14 @@
 import {
   AIRecommendationService,
+  ChatbotAffiliateActionDTO,
   ChatbotContext,
   ChatbotMessage,
   ChatbotQueryContext,
   ChatbotRecommendationPayload,
   ChatbotResponse,
 } from '@/infrastructure/external/AIRecommendationService';
+import { AffiliateResolverService } from '../services/AffiliateResolverService';
+import { buildAffiliateContext } from '../dto/AffiliateContext';
 import { IUserContentInteractionRepository } from '@/domain/repositories/IUserContentInteractionRepository';
 import { MongoUserRepository } from '@/infrastructure/repositories/MongoUserRepository';
 import { CatalogService } from '../services/CatalogService';
@@ -346,7 +349,8 @@ export class ChatbotRecommend {
     private readonly assistantMemoryService: AssistantMemoryService,
     private readonly cacheRepository?: ICacheRepository,
     private readonly tvReadQueryService?: TvReadQueryService,
-    private readonly footballQueryService?: FootballQueryService
+    private readonly footballQueryService?: FootballQueryService,
+    private readonly affiliateResolverService?: AffiliateResolverService
   ) {}
 
   async execute(
@@ -410,7 +414,11 @@ export class ChatbotRecommend {
 
     const intent = this.analyzeIntent(latestUserMessage);
     if (intent.mode === 'football_today' && this.footballQueryService && latestUserMessage) {
-      const response = await this.buildFootballTodayResponse();
+      const rawResponse = await this.buildFootballTodayResponse();
+      const response = await this.attachAffiliateActions(
+        rawResponse,
+        request.conversationId || history.conversationId
+      );
       const persisted = await this.assistantMemoryService.saveChatTurn({
         userId: request.userId,
         conversationId: request.conversationId || history.conversationId || undefined,
@@ -504,9 +512,9 @@ export class ChatbotRecommend {
       }
     );
     if (directResponse && latestUserMessage) {
-      const normalizedDirectResponse = this.finalizeResponse(
-        directResponse,
-        latestUserMessage
+      const normalizedDirectResponse = await this.attachAffiliateActions(
+        this.finalizeResponse(directResponse, latestUserMessage),
+        request.conversationId || history.conversationId
       );
       const persisted = await this.assistantMemoryService.saveChatTurn({
         userId: request.userId,
@@ -566,9 +574,9 @@ export class ChatbotRecommend {
       };
     }
 
-    const normalizedFinalResponse = this.finalizeResponse(
-      finalResponse,
-      latestUserMessage
+    const normalizedFinalResponse = await this.attachAffiliateActions(
+      this.finalizeResponse(finalResponse, latestUserMessage),
+      request.conversationId || history.conversationId
     );
     const persisted = await this.assistantMemoryService.saveChatTurn({
       userId: request.userId,
@@ -667,7 +675,11 @@ export class ChatbotRecommend {
 
     const intent = this.analyzeIntent(latestUserMessage);
     if (intent.mode === 'football_today' && this.footballQueryService && latestUserMessage) {
-      const response = await this.buildFootballTodayResponse();
+      const rawResponse = await this.buildFootballTodayResponse();
+      const response = await this.attachAffiliateActions(
+        rawResponse,
+        request.conversationId || history.conversationId
+      );
       const persisted = await this.assistantMemoryService.saveChatTurn({
         userId: request.userId,
         conversationId: request.conversationId || history.conversationId || undefined,
@@ -714,7 +726,10 @@ export class ChatbotRecommend {
       recentTitles: recentInteractions.map((i: any) => i.title || '').filter(Boolean),
     } });
     if (directResponse && latestUserMessage) {
-      const normalizedDirectResponse = this.finalizeResponse(directResponse, latestUserMessage);
+      const normalizedDirectResponse = await this.attachAffiliateActions(
+        this.finalizeResponse(directResponse, latestUserMessage),
+        request.conversationId || history.conversationId
+      );
       const persisted = await this.assistantMemoryService.saveChatTurn({
         userId: request.userId,
         conversationId: request.conversationId || history.conversationId || undefined,
@@ -769,7 +784,10 @@ export class ChatbotRecommend {
         return { ...finalResponse, assistantMemorySnapshot: history.memory || undefined };
       }
 
-      const normalizedFinalResponse = this.finalizeResponse(finalResponse, latestUserMessage);
+      const normalizedFinalResponse = await this.attachAffiliateActions(
+        this.finalizeResponse(finalResponse, latestUserMessage),
+        request.conversationId || history.conversationId
+      );
       const persisted = await this.assistantMemoryService.saveChatTurn({
         userId: request.userId,
         conversationId: request.conversationId || history.conversationId || undefined,
@@ -1857,6 +1875,19 @@ export class ChatbotRecommend {
     return this.dedupeRecommendations(resolved);
   }
 
+  /**
+   * Deterministic, post-hoc affiliate CTA resolution — see the exported
+   * `attachChatbotAffiliateActions` for the implementation (kept as a free
+   * function, not an instance method, so it's unit-testable with a minimal
+   * resolver mock instead of the full `ChatbotRecommend` dependency graph).
+   */
+  private async attachAffiliateActions(
+    response: ChatbotResponse,
+    conversationId?: string | null
+  ): Promise<ChatbotResponse> {
+    return attachChatbotAffiliateActions(response, this.affiliateResolverService, conversationId);
+  }
+
   private finalizeResponse(
     response: ChatbotResponse,
     latestUserMessage: string
@@ -2706,4 +2737,124 @@ export function buildFootballTodayPayload(matches: FootballMatch[]): ChatbotResp
     }],
     followUpSuggestions: ['¿Qué hay ahora en TV?', 'Películas para esta noche'],
   };
+}
+
+const AFFILIATE_RESOLVE_TIMEOUT_MS = 350;
+const AFFILIATE_PLACEMENT = 'chatbot-answer';
+
+/** Minimal shape `attachChatbotAffiliateActions` needs — lets tests pass a lightweight mock instead of a full `AffiliateResolverService`. */
+export interface ChatbotAffiliateResolver {
+  resolveOffers: AffiliateResolverService['resolveOffers'];
+}
+
+async function resolveAffiliateActionForProvider(
+  resolver: ChatbotAffiliateResolver,
+  providerKey: string,
+  conversationId?: string | null
+): Promise<ChatbotAffiliateActionDTO | undefined> {
+  try {
+    const timeout = new Promise<undefined>((resolve) =>
+      setTimeout(() => resolve(undefined), AFFILIATE_RESOLVE_TIMEOUT_MS)
+    );
+    const result = await Promise.race([
+      resolver.resolveOffers({
+        context: buildAffiliateContext({
+          market: 'ES',
+          placement: AFFILIATE_PLACEMENT,
+          providerKey,
+          chatbotConversationId: conversationId ?? undefined,
+        }),
+        providerKeys: [providerKey],
+        maxResults: 1,
+      }),
+      timeout,
+    ]);
+    const top = result?.items?.[0];
+    if (!top) return undefined;
+    return {
+      offerId: top.offerId,
+      label: top.cta.label,
+      provider: top.merchant.name,
+      outboundPath: top.outbound.path,
+      disclosure: top.display.disclosure,
+      sponsored: top.cta.sponsored,
+    };
+  } catch (error) {
+    logger.warn('[ChatbotRecommend] affiliate resolve failed for provider', {
+      providerKey,
+      error: error instanceof Error ? error.message : 'unknown',
+    });
+    return undefined;
+  }
+}
+
+/**
+ * Deterministic, post-hoc affiliate CTA resolution — never seen by the LLM,
+ * never blocks or degrades the chat answer. Called once per response, after
+ * the recommendation list (and, for football, the match/broadcaster list) is
+ * already final. Dedupes by provider key so N recommendations sharing one
+ * channel/platform only resolve once (`Promise.all` over unique keys, not
+ * over items). Any resolver failure or slow response is caught/time-boxed
+ * and simply leaves `affiliateActions` unset — the chat text and
+ * recommendations themselves are already fully built by this point, so a
+ * broken/unavailable affiliate backend never turns into a broken/degraded
+ * chat answer. Exported as a free function (not a method) so it's directly
+ * unit-testable with a minimal `{ resolveOffers }` mock.
+ */
+export async function attachChatbotAffiliateActions(
+  response: ChatbotResponse,
+  resolver: ChatbotAffiliateResolver | undefined,
+  conversationId?: string | null
+): Promise<ChatbotResponse> {
+  if (!resolver) return response;
+
+  try {
+    const recommendations = response.recommendations || [];
+    const moreRecommendations = response.moreRecommendations || [];
+    const broadcasters = (response.matches || []).flatMap((match) => match.broadcasters || []);
+
+    const providerKeys = new Set<string>();
+    for (const rec of [...recommendations, ...moreRecommendations]) {
+      const key = rec.channelOrPlatform || rec.channel || rec.platform;
+      if (key) providerKeys.add(key);
+    }
+    for (const broadcaster of broadcasters) {
+      if (broadcaster.name) providerKeys.add(broadcaster.name);
+    }
+    if (!providerKeys.size) return response;
+
+    const resolvedByProvider = new Map<string, ChatbotAffiliateActionDTO | undefined>();
+    await Promise.all(
+      Array.from(providerKeys).map(async (providerKey) => {
+        const action = await resolveAffiliateActionForProvider(resolver, providerKey, conversationId);
+        resolvedByProvider.set(providerKey, action);
+      })
+    );
+
+    const applyTo = (rec: ChatbotRecommendationPayload): ChatbotRecommendationPayload => {
+      const key = rec.channelOrPlatform || rec.channel || rec.platform;
+      const action = key ? resolvedByProvider.get(key) : undefined;
+      return action ? { ...rec, affiliateActions: [action] } : rec;
+    };
+
+    return {
+      ...response,
+      recommendations: recommendations.length ? recommendations.map(applyTo) : response.recommendations,
+      moreRecommendations: moreRecommendations.length
+        ? moreRecommendations.map(applyTo)
+        : response.moreRecommendations,
+      matches: response.matches?.map((match) => ({
+        ...match,
+        broadcasters: (match.broadcasters || []).map((broadcaster) => {
+          const action = broadcaster.name ? resolvedByProvider.get(broadcaster.name) : undefined;
+          return action ? { ...broadcaster, affiliateActions: [action] } : broadcaster;
+        }),
+      })),
+    };
+  } catch (error) {
+    logger.warn('[ChatbotRecommend] attachAffiliateActions failed; returning response without CTAs', {
+      error: error instanceof Error ? error.message : 'unknown',
+    });
+    return response;
+  }
 }

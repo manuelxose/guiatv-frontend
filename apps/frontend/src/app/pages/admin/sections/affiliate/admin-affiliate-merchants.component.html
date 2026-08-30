@@ -1,0 +1,156 @@
+<div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-6">
+  <form
+    class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-5 h-fit"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+  >
+    <div class="flex items-center justify-between gap-4">
+      <h4 class="text-lg font-semibold text-[var(--portal-text)]">
+        {{ isEditing ? 'Editar merchant' : 'Nuevo merchant' }}
+      </h4>
+      <span *ngIf="saving" class="text-xs text-[var(--portal-text-soft)]">Guardando...</span>
+    </div>
+
+    <div *ngIf="saveError" class="bg-red-500/10 border border-red-500/30 text-red-200 px-4 py-3 rounded-xl text-sm">{{ saveError }}</div>
+    <div *ngIf="saveSuccess" class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-200 px-4 py-3 rounded-xl text-sm">{{ saveSuccess }}</div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="merchant-name">Nombre</label>
+      <input id="merchant-name" formControlName="name" type="text"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        placeholder="Movistar Plus+" />
+    </div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="merchant-key">Clave canónica</label>
+      <input id="merchant-key" formControlName="canonicalProviderKey" type="text"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        placeholder="movistar-plus" />
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">Identificador estable usado por catálogo y resolver.</p>
+    </div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="merchant-aliases">Alias (separados por coma)</label>
+      <input id="merchant-aliases" formControlName="aliases" type="text"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        placeholder="Movistar+, M+, Movistar Plus" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="merchant-category">Categoría</label>
+        <select id="merchant-category" formControlName="category"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+          <option *ngFor="let option of categoryOptions" [value]="option.id">{{ option.label }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="merchant-status">Estado</label>
+        <select id="merchant-status" formControlName="status"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500">
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+          <option value="pending">Pendiente</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="merchant-logo">Logo (URL)</label>
+      <input id="merchant-logo" formControlName="logo" type="text"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        placeholder="/assets/logos/movistar.svg" />
+    </div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="merchant-url">URL oficial</label>
+      <input id="merchant-url" formControlName="officialUrl" type="text"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        placeholder="https://www.movistarplus.es" />
+    </div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="merchant-markets">Mercados (separados por coma)</label>
+      <input id="merchant-markets" formControlName="markets" type="text"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        placeholder="ES, PT" />
+    </div>
+
+    <div class="flex flex-wrap items-center justify-end gap-3 pt-2">
+      <button type="button"
+        class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] text-sm hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        (click)="resetForm()">
+        Limpiar
+      </button>
+      <button type="submit"
+        class="px-5 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-100 text-sm hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        [disabled]="saving || form.invalid">
+        {{ isEditing ? 'Actualizar merchant' : 'Crear merchant' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div>
+        <h4 class="text-lg font-semibold text-[var(--portal-text)]">Merchants</h4>
+        <p class="text-xs text-[var(--portal-text-muted)]">{{ merchants.length }} resultados</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <select aria-label="Filtrar merchants por estado" class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          [value]="statusFilter" (change)="setStatusFilter($any($event.target).value)">
+          <option *ngFor="let option of statusOptions" [value]="option.id">{{ option.label }}</option>
+        </select>
+        <input type="text" aria-label="Buscar merchants por nombre o alias"
+          class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          placeholder="Buscar por nombre o alias" [value]="searchTerm" (input)="onSearchInput($event)" (keydown.enter)="applyFilters()" />
+        <button type="button"
+          class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
+          (click)="refresh()">
+          Refrescar
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">Cargando merchants...</div>
+    <div *ngIf="error" class="text-sm text-red-300 py-3">{{ error }}</div>
+    <div *ngIf="!loading && !error && merchants.length === 0" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">
+      No hay merchants para estos filtros.
+    </div>
+
+    <div *ngIf="merchants.length" class="space-y-3 max-h-[720px] overflow-auto pr-1">
+      <article *ngFor="let merchant of merchants; trackBy: trackById"
+        class="p-4 rounded-2xl bg-[var(--portal-surface)] border space-y-3"
+        [ngClass]="selectedId === merchant.id ? 'border-red-500/40' : 'border-[var(--portal-border)]'">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h5 class="text-[var(--portal-text)] text-sm font-semibold truncate">{{ merchant.name }}</h5>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-1 break-all">{{ merchant.canonicalProviderKey }}</p>
+          </div>
+          <span class="text-[10px] px-2 py-1 rounded-full border flex-shrink-0"
+            [ngClass]="merchant.status === 'active' ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40' : 'bg-amber-500/20 text-amber-200 border-amber-500/40'">
+            {{ merchant.status }}
+          </span>
+        </div>
+        <p class="text-xs text-[var(--portal-text-soft)]" *ngIf="merchant.aliases.length">
+          Alias: {{ merchant.aliases.join(', ') }}
+        </p>
+        <div class="flex flex-wrap items-center gap-2 text-xs text-[var(--portal-text-muted)]">
+          <span class="px-2 py-1 rounded-full border border-[var(--portal-border-strong)]">{{ merchant.category }}</span>
+          <span *ngFor="let market of merchant.markets" class="px-2 py-1 rounded-full border border-[var(--portal-border-strong)]">{{ market }}</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <button type="button"
+            class="px-3 py-1.5 rounded-lg border border-[var(--portal-border-strong)] text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
+            (click)="edit(merchant)">
+            Editar
+          </button>
+          <a [href]="merchant.officialUrl" target="_blank" rel="noopener"
+            class="px-3 py-1.5 rounded-lg border border-[var(--portal-border-strong)] text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]">
+            Sitio oficial
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+</div>

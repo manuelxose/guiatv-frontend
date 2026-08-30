@@ -8,8 +8,7 @@ export const analyticsAdminGuard = (
 ): void => {
   const requiredKey = process.env.ANALYTICS_ADMIN_KEY;
   if (!requiredKey) {
-    next();
-    return;
+    throw new ForbiddenError('Admin key is not configured');
   }
 
   const headerKey = req.header('x-admin-key');

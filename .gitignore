@@ -74,3 +74,6 @@ releases/
 .claude-flow/data/
 .claude-flow/logs/
 .claude-flow/sessions/
+.agentic-backup/
+!.claude/
+!.claude/settings.json

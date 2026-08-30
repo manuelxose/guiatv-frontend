@@ -21,6 +21,18 @@ export interface IBlogFaqItem {
   answer: string;
 }
 
+/**
+ * Editorial monetization controls (Affiliate Engine Phase 8, see
+ * docs/affiliate-engine-architecture.md §15). Deliberately store no raw
+ * affiliate URLs or offer content here — only context signals the resolver
+ * (`AffiliateResolverService`, via `POST /v2/affiliate/resolve`) uses to pick
+ * offers at render time: 'auto' resolves contextually from
+ * relatedPlatformKeys/relatedMerchantKeys/relatedOfferCategories, 'manual'
+ * shows only manualAffiliateOfferIds, 'off' disables monetization on this
+ * post entirely. See shared/utils/blogAffiliateFields.ts for normalization.
+ */
+export type BlogAffiliatePlacementMode = 'auto' | 'manual' | 'off';
+
 export interface IBlogPostDocument {
   title: string;
   slug: string;
@@ -41,6 +53,14 @@ export interface IBlogPostDocument {
   };
   faqItems: IBlogFaqItem[];
   evergreen?: boolean;
+  /** Defaults to 'auto' — see BlogAffiliatePlacementMode. */
+  affiliatePlacementMode?: BlogAffiliatePlacementMode;
+  /** AffiliateOffer.category values (e.g. 'smart-tv') this post is relevant to — narrows automatic resolution. */
+  relatedOfferCategories?: string[];
+  /** Additional AffiliateMerchant hints beyond relatedPlatformKeys (e.g. a non-streaming retailer) — resolved via the same alias matching as any other providerKey. */
+  relatedMerchantKeys?: string[];
+  /** Editor-pinned AffiliateOffer ids — shown first in 'auto' mode, exclusively in 'manual' mode. */
+  manualAffiliateOfferIds?: string[];
   seo?: {
     metaTitle?: string;
     metaDescription?: string;
@@ -109,6 +129,14 @@ const BlogPostSchema = new Schema<IBlogPostDocument>(
     },
     faqItems: { type: [BlogFaqItemSchema], default: [] },
     evergreen: { type: Boolean, default: true, index: true },
+    affiliatePlacementMode: {
+      type: String,
+      enum: ['auto', 'manual', 'off'],
+      default: 'auto',
+    },
+    relatedOfferCategories: { type: [String], default: [] },
+    relatedMerchantKeys: { type: [String], default: [] },
+    manualAffiliateOfferIds: { type: [String], default: [] },
     seo: {
       metaTitle: { type: String, trim: true },
       metaDescription: { type: String, trim: true },

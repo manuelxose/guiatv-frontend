@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, combineLatest, map, shareReplay } from 'rxjs';
 import { BlogService } from '../../services/blog.service';
 import {
+  EditorialAffiliatePlacementMode,
   EditorialCategory,
   EditorialCategoryPageState,
   EditorialCategorySection,
@@ -12,6 +13,8 @@ import {
   EditorialPostPageState,
   EditorialRouteRelationKey,
 } from '../models/editorial.models';
+
+const VALID_AFFILIATE_PLACEMENT_MODES = new Set<EditorialAffiliatePlacementMode>(['auto', 'manual', 'off']);
 
 const RANKING_CATEGORY_SLUGS = new Set([
   'ranking',
@@ -254,6 +257,10 @@ export class EditorialService {
       relatedRouteKeys: this.normalizeRouteKeys(rawPost?.relatedRouteKeys),
       faqItems: this.normalizeFaqItems(rawPost?.faqItems),
       evergreen: rawPost?.evergreen !== false,
+      affiliatePlacementMode: this.resolveAffiliatePlacementMode(rawPost?.affiliatePlacementMode),
+      relatedOfferCategories: this.normalizeStringArray(rawPost?.relatedOfferCategories),
+      relatedMerchantKeys: this.normalizeStringArray(rawPost?.relatedMerchantKeys),
+      manualAffiliateOfferIds: this.normalizeStringArray(rawPost?.manualAffiliateOfferIds),
       isRanking: contentType === 'ranking' || rankingReason !== 'none',
       rankingReason,
       metaTitle: this.ensureString(rawPost?.seo?.metaTitle) || null,
@@ -533,6 +540,13 @@ export class EditorialService {
     return this.normalizeStringArray(value).filter(
       (item): item is EditorialRouteRelationKey => valid.has(item as EditorialRouteRelationKey)
     );
+  }
+
+  private resolveAffiliatePlacementMode(value: unknown): EditorialAffiliatePlacementMode {
+    const normalized = this.ensureString(value).trim().toLowerCase();
+    return VALID_AFFILIATE_PLACEMENT_MODES.has(normalized as EditorialAffiliatePlacementMode)
+      ? (normalized as EditorialAffiliatePlacementMode)
+      : 'auto';
   }
 
   private normalizeStringArray(value: any): string[] {

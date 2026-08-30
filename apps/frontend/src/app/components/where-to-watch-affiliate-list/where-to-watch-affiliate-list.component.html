@@ -1,0 +1,28 @@
+@if (loading()) {
+  <section class="wta-list" aria-busy="true">
+    <p class="wta-list__heading">{{ heading() }}</p>
+    <div class="wta-list__row">
+      @for (slot of skeletonSlots; track slot) {
+        <div class="wta-list__skeleton skeleton"></div>
+      }
+    </div>
+  </section>
+} @else if (hasOffers()) {
+  <section class="wta-list" aria-label="{{ heading() }}">
+    <p class="wta-list__heading">{{ heading() }}</p>
+    <div class="wta-list__row">
+      @for (offer of offers(); track trackByOfferId($index, offer)) {
+        <app-affiliate-cta
+          [offer]="offer"
+          variant="secondary"
+          [appAffiliateImpression]="offer"
+          [appAffiliateImpressionContext]="impressionContext()"
+          [appAffiliateImpressionPage]="page()"
+        />
+      }
+    </div>
+    @if (showSponsoredDisclosure()) {
+      <app-affiliate-disclosure [compact]="true" />
+    }
+  </section>
+}
