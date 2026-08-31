@@ -11,6 +11,7 @@ import { EditorialCategoryPageState } from '../../models/editorial.models';
 import { EditorialPost } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
 import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
+import { EditorialMastheadComponent } from '../../components/editorial-masthead/editorial-masthead.component';
 import { generateCollectionPageSchema, generateItemListSchema } from '../../../utils/utils';
 import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
 import { UnifiedAsyncStateComponent } from '../../../components/unified-async-state/unified-async-state.component';
@@ -19,7 +20,7 @@ import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skele
 @Component({
   selector: 'app-category',
   standalone: true,
-  imports: [CommonModule, RouterModule, UnifiedPortalShellComponent, EditorialPostCardComponent, PortalContextNavComponent, UnifiedAsyncStateComponent, UnifiedSkeletonBlockComponent],
+  imports: [CommonModule, RouterModule, UnifiedPortalShellComponent, EditorialPostCardComponent, EditorialMastheadComponent, PortalContextNavComponent, UnifiedAsyncStateComponent, UnifiedSkeletonBlockComponent],
   templateUrl: './category.component.html',
   styleUrls: ['./category.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

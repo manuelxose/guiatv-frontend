@@ -2,14 +2,18 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, combineLatest, forkJoin, map, of, takeUntil } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { UnifiedPortalShellComponent } from '../../../components/unified-portal-shell/unified-portal-shell.component';
 import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
+import { EditorialMastheadComponent } from '../../components/editorial-masthead/editorial-masthead.component';
+import { CatalogRailComponent } from '../../../components/catalog-rail/catalog-rail.component';
 import { APP_PATHS } from '../../../config/route-map';
 import { MetaService } from '../../../services/meta.service';
+import { CatalogItem, CatalogService } from '../../../services/catalog.service';
+import { getCatalogPlatformByKey } from '../../../data/catalog-platforms.data';
 import {
   EditorialCategorySection,
-  EditorialHubState,
   EditorialPost,
 } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
@@ -26,6 +30,8 @@ import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skele
     RouterModule,
     UnifiedPortalShellComponent,
     EditorialPostCardComponent,
+    EditorialMastheadComponent,
+    CatalogRailComponent,
     PortalContextNavComponent,
     UnifiedAsyncStateComponent,
     UnifiedSkeletonBlockComponent,
@@ -45,17 +51,28 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
   public error: string | null = null;
   public hero: EditorialPost | null = null;
   public latestPosts: EditorialPost[] = [];
-  public guidePosts: EditorialPost[] = [];
-  public rankingPosts: EditorialPost[] = [];
+  public latestStories: EditorialPost[] = [];
   public trendPosts: EditorialPost[] = [];
-  public categorySections: EditorialCategorySection[] = [];
-  public categories: EditorialHubState['categories'] = [];
+  public rankingPosts: EditorialPost[] = [];
+  public cineSection: EditorialCategorySection | null = null;
+  public seriesSection: EditorialCategorySection | null = null;
+  public streamingSection: EditorialCategorySection | null = null;
+  public streamingPlatforms: Record<string, string[]> = {};
+  public collections: EditorialCategorySection[] = [];
   public safeLdHtml: SafeHtml | null = null;
+
+  // "Qué ver hoy" — real catalog data, same CatalogService.queryState pattern
+  // already used by the article page's linked modules. No fabricated content.
+  public moviesToday: CatalogItem[] = [];
+  public seriesTonight: CatalogItem[] = [];
+  public tvTonight: CatalogItem[] = [];
+  public watchTodayLoaded = false;
 
   private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly editorialService: EditorialService,
+    private readonly catalogService: CatalogService,
     private readonly metaService: MetaService,
     private readonly sanitizer: DomSanitizer,
     private readonly changeDetector: ChangeDetectorRef
@@ -63,9 +80,9 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.metaService.setMetaTags({
-      title: 'Blog de cine, series y streaming | Guía TV',
+      title: 'Editorial | Cine, series y streaming — Guía TV',
       description:
-        'Reportajes, guías y rankings conectados con la app para descubrir qué ver, dónde verlo y por qué merece la pena.',
+        'Reportajes, guías y rankings de cine, series, television y streaming, conectados con la programación y el catálogo reales de Guía TV.',
       canonicalUrl: '/editorial',
       image: '/assets/images/blog-og-image.webp',
       type: 'website',
@@ -73,6 +90,7 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
     this.buildStructuredData();
 
     this.loadHub();
+    this.loadWatchToday();
   }
 
   public retry(): void {
@@ -83,21 +101,43 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
     return post.id || `${post.slug}-${index}`;
   }
 
+  public platformsFor(post: EditorialPost): string[] {
+    return this.streamingPlatforms[post.slug] || [];
+  }
+
   private loadHub(): void {
     this.loading = true;
     this.error = null;
-    this.editorialService
-      .getHubState()
+    combineLatest([
+      this.editorialService.getHubState(),
+      this.editorialService.getEditorialSections(),
+      this.editorialService.getPosts(),
+    ])
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (state) => {
-          this.hero = state.hero;
-          this.latestPosts = state.latestPosts;
-          this.guidePosts = state.guidePosts;
-          this.rankingPosts = state.rankingPosts;
-          this.trendPosts = state.trendPosts;
-          this.categorySections = state.categorySections;
-          this.categories = state.categories;
+        next: ([hub, sections, posts]) => {
+          this.hero = hub.hero;
+          this.latestPosts = hub.latestPosts;
+          this.trendPosts = hub.trendPosts;
+          this.rankingPosts = hub.rankingPosts;
+
+          this.cineSection = sections.cine;
+          this.seriesSection = sections.series;
+          this.streamingSection = sections.streaming;
+          this.collections = sections.collections;
+          this.streamingPlatforms = {};
+          sections.streaming?.posts.forEach((post) => {
+            this.streamingPlatforms[post.slug] = post.relatedPlatformKeys
+              .map((key) => getCatalogPlatformByKey(key)?.name)
+              .filter((name): name is string => Boolean(name));
+          });
+
+          const featuredSlugs = new Set([
+            hub.hero?.slug,
+            ...hub.latestPosts.map((post) => post.slug),
+          ].filter(Boolean) as string[]);
+          this.latestStories = posts.filter((post) => !featuredSlugs.has(post.slug)).slice(0, 6);
+
           this.loading = false;
           this.changeDetector.markForCheck();
         },
@@ -106,7 +146,38 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.changeDetector.markForCheck();
         },
-    });
+      });
+  }
+
+  private loadWatchToday(): void {
+    const moviesToday$ = this.catalogService
+      .queryState({ types: ['movie'], sort: 'popular', limit: 10 })
+      .pipe(
+        map((result) => result.data?.items || []),
+        catchError(() => of([] as CatalogItem[]))
+      );
+    const seriesTonight$ = this.catalogService
+      .queryState({ types: ['series'], sort: 'rating', limit: 10 })
+      .pipe(
+        map((result) => result.data?.items || []),
+        catchError(() => of([] as CatalogItem[]))
+      );
+    const tvTonight$ = this.catalogService
+      .queryState({ types: ['program'], availability: ['live'], sort: 'airtime', limit: 10 })
+      .pipe(
+        map((result) => result.data?.items || []),
+        catchError(() => of([] as CatalogItem[]))
+      );
+
+    forkJoin({ moviesToday: moviesToday$, seriesTonight: seriesTonight$, tvTonight: tvTonight$ })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data) => {
+        this.moviesToday = data.moviesToday;
+        this.seriesTonight = data.seriesTonight;
+        this.tvTonight = data.tvTonight;
+        this.watchTodayLoaded = true;
+        this.changeDetector.markForCheck();
+      });
   }
 
   ngOnDestroy(): void {
@@ -118,9 +189,9 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
     const baseUrl = 'https://guiaprogramaciontv.com';
     const schema = generateCollectionPageSchema(
       {
-        name: 'Blog Guía TV',
+        name: 'Editorial Guía TV',
         description:
-          'Guias, rankings y tendencias conectadas con la programacion TV, las plataformas y el descubrimiento de la app.',
+          'Guías, rankings y tendencias de cine, series y streaming conectadas con la programación TV, las plataformas y el descubrimiento de la app.',
         path: '/editorial',
       },
       baseUrl

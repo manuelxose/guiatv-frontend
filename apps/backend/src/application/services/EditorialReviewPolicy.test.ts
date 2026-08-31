@@ -7,15 +7,30 @@ import {
 } from './EditorialReviewPolicy';
 
 const validPost = {
-  title: 'Guía útil y revisada',
-  excerpt: 'Una introducción concreta que explica qué encontrará el lector en la guía.',
-  content: `<p>${'contenido editorial verificado '.repeat(90)}</p>`,
+  title: 'Guía de series de streaming que merece la pena ver',
+  excerpt: 'Una introducción concreta que explica qué serie de streaming encontrará el lector en la guía.',
+  content: `<p>${'contenido editorial verificado sobre esta serie de streaming '.repeat(90)}</p>`,
   author: { name: 'Equipo editorial Guía TV', id: 'guiatv-editorial' },
   seo: {
     metaTitle: 'Guía útil y revisada | Guía TV',
     metaDescription: 'Información verificada y útil para elegir qué ver en televisión y streaming.',
   },
+  categories: [{ name: 'Series', slug: 'series' }],
 };
+
+test('approval rejects content with no cine/series/TV/streaming signal', () => {
+  assert.throws(
+    () =>
+      assertEditorialPostCanBeApproved({
+        ...validPost,
+        categories: [{ name: 'Economía', slug: 'economia' }],
+        title: 'Informe trimestral de resultados económicos',
+        excerpt: 'Un resumen de indicadores macroeconómicos del último trimestre publicado hoy.',
+        content: `<p>${'datos macroeconómicos y resultados financieros trimestrales '.repeat(90)}</p>`,
+      }),
+    /relevancia editorial/i
+  );
+});
 
 test('public editorial filter requires both publish status and explicit approval', () => {
   assert.deepEqual(PUBLIC_EDITORIAL_FILTER, {
