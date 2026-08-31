@@ -39956,6 +39956,97 @@
       "_origin": "ast"
     },
     {
+      "id": "apps_backend_src_application_data_editorialdraftcorpus",
+      "label": "editorialDraftCorpus.ts",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_data_editorialdraftcorpus_draftspec",
+      "label": "DraftSpec",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L4",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_data_editorialdraftcorpus_draft",
+      "label": "draft()",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L9",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_data_editorialdraftcorpus_article_appendix",
+      "label": "ARTICLE_APPENDIX",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L47",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_data_editorialdraftcorpus_article_appendix_2",
+      "label": "ARTICLE_APPENDIX_2",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L62",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_data_editorialdraftcorpus_article_appendix_3",
+      "label": "ARTICLE_APPENDIX_3",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L73",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_data_editorialdraftcorpus_article_specific",
+      "label": "ARTICLE_SPECIFIC",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L82",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_data_editorialdraftcorpus_draft_specs",
+      "label": "DRAFT_SPECS",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L97",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_data_editorialdraftcorpus_editorial_draft_posts",
+      "label": "EDITORIAL_DRAFT_POSTS",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L122",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_data_editorialqualityaddenda",
+      "label": "editorialQualityAddenda.ts",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialQualityAddenda.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_data_editorialqualityaddenda_editorial_quality_addenda",
+      "label": "EDITORIAL_QUALITY_ADDENDA",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/data/editorialQualityAddenda.ts",
+      "source_location": "L8",
+      "_origin": "ast"
+    },
+    {
       "id": "apps_backend_src_application_data_editorialseeddata",
       "label": "editorialSeedData.ts",
       "file_type": "code",
@@ -44425,7 +44516,33 @@
       "label": "visibleWordCount()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
-      "source_location": "L18",
+      "source_location": "L19",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_services_editorialreviewpolicy_visibletext",
+      "label": "visibleText()",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
+      "source_location": "L28",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_services_editorialreviewpolicy_entertainment_signal_keywords",
+      "label": "ENTERTAINMENT_SIGNAL_KEYWORDS",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
+      "source_location": "L43",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_backend_src_application_services_editorialreviewpolicy_hasentertainmentsignal",
+      "label": "hasEntertainmentSignal()",
+      "file_type": "code",
+      "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
+      "source_location": "L54",
       "_callable": true,
       "_origin": "ast"
     },
@@ -44434,7 +44551,7 @@
       "label": "assertEditorialPostCanBeApproved()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
-      "source_location": "L27",
+      "source_location": "L67",
       "_callable": true,
       "_origin": "ast"
     },
@@ -44443,7 +44560,7 @@
       "label": "buildEditorialApproval()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
-      "source_location": "L43",
+      "source_location": "L86",
       "_callable": true,
       "_origin": "ast"
     },
@@ -44460,7 +44577,7 @@
       "label": "slugify()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L10",
+      "source_location": "L12",
       "_callable": true,
       "_origin": "ast"
     },
@@ -44469,7 +44586,7 @@
       "label": "hashCategoryId()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L20",
+      "source_location": "L22",
       "_callable": true,
       "_origin": "ast"
     },
@@ -44478,7 +44595,7 @@
       "label": "normalizeCategories()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L29",
+      "source_location": "L31",
       "_callable": true,
       "_origin": "ast"
     },
@@ -44487,7 +44604,7 @@
       "label": "normalizeFaqItems()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L43",
+      "source_location": "L45",
       "_callable": true,
       "_origin": "ast"
     },
@@ -44496,7 +44613,7 @@
       "label": "mapSeedPostToDocument()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L52",
+      "source_location": "L54",
       "_callable": true,
       "_origin": "ast"
     },
@@ -44505,7 +44622,7 @@
       "label": "seedEditorialContent()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L88",
+      "source_location": "L96",
       "_callable": true,
       "_origin": "ast"
     },
@@ -44514,7 +44631,7 @@
       "label": "ensureEditorialSeedData()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L119",
+      "source_location": "L131",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71438,6 +71555,40 @@
       "_origin": "ast"
     },
     {
+      "id": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component",
+      "label": "editorial-masthead.component.ts",
+      "file_type": "code",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-masthead/editorial-masthead.component.ts",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_editorialmastheadcomponent",
+      "label": "EditorialMastheadComponent",
+      "file_type": "code",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-masthead/editorial-masthead.component.ts",
+      "source_location": "L77",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_ts_component",
+      "label": "Component",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_ts_input",
+      "label": "Input",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast"
+    },
+    {
       "id": "apps_frontend_src_app_blog_components_editorial_post_card_editorial_post_card_component",
       "label": "editorial-post-card.component.ts",
       "file_type": "code",
@@ -71446,11 +71597,21 @@
       "_origin": "ast"
     },
     {
+      "id": "apps_frontend_src_app_blog_components_editorial_post_card_editorial_post_card_component_editorialpostcardvariant",
+      "label": "EditorialPostCardVariant",
+      "file_type": "code",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-post-card/editorial-post-card.component.ts",
+      "source_location": "L6",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast"
+    },
+    {
       "id": "apps_frontend_src_app_blog_components_editorial_post_card_editorial_post_card_component_editorialpostcardcomponent",
       "label": "EditorialPostCardComponent",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/components/editorial-post-card/editorial-post-card.component.ts",
-      "source_location": "L84",
+      "source_location": "L141",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -71612,7 +71773,7 @@
       "label": "BlogHomeComponent",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L37",
+      "source_location": "L43",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -71630,7 +71791,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L57",
+      "source_location": "L73",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71639,7 +71800,7 @@
       "label": ".ngOnInit()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L64",
+      "source_location": "L81",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71648,7 +71809,7 @@
       "label": ".retry()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L78",
+      "source_location": "L96",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71657,7 +71818,16 @@
       "label": ".trackPost()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L82",
+      "source_location": "L100",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_platformsfor",
+      "label": ".platformsFor()",
+      "file_type": "code",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L104",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71666,7 +71836,16 @@
       "label": ".loadHub()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L86",
+      "source_location": "L108",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_loadwatchtoday",
+      "label": ".loadWatchToday()",
+      "file_type": "code",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L152",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71675,7 +71854,7 @@
       "label": ".ngOnDestroy()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L112",
+      "source_location": "L183",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71684,7 +71863,7 @@
       "label": ".buildStructuredData()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L117",
+      "source_location": "L188",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71701,7 +71880,7 @@
       "label": "CategoryComponent",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L27",
+      "source_location": "L28",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -71719,7 +71898,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L37",
+      "source_location": "L38",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71728,7 +71907,7 @@
       "label": ".ngOnInit()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L46",
+      "source_location": "L47",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71737,7 +71916,7 @@
       "label": ".ngOnDestroy()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L99",
+      "source_location": "L100",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71746,7 +71925,7 @@
       "label": ".retry()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L104",
+      "source_location": "L105",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71755,7 +71934,7 @@
       "label": ".trackPost()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L108",
+      "source_location": "L109",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71764,7 +71943,7 @@
       "label": ".breadcrumbItems()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L112",
+      "source_location": "L113",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71773,7 +71952,7 @@
       "label": ".buildStructuredData()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L120",
+      "source_location": "L121",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71924,7 +72103,7 @@
       "label": "Top10Component",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L31",
+      "source_location": "L33",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -71942,7 +72121,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L49",
+      "source_location": "L51",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71951,7 +72130,7 @@
       "label": ".ngOnInit()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L56",
+      "source_location": "L58",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71960,7 +72139,7 @@
       "label": ".loadRankings()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L69",
+      "source_location": "L71",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71969,7 +72148,7 @@
       "label": ".ngOnDestroy()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L94",
+      "source_location": "L96",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71978,7 +72157,7 @@
       "label": ".selectCategory()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L99",
+      "source_location": "L101",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71987,7 +72166,7 @@
       "label": ".retry()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L105",
+      "source_location": "L107",
       "_callable": true,
       "_origin": "ast"
     },
@@ -71996,7 +72175,7 @@
       "label": ".trackPost()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L109",
+      "source_location": "L111",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72005,7 +72184,7 @@
       "label": ".filteredPosts()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L113",
+      "source_location": "L115",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72014,7 +72193,7 @@
       "label": ".selectedCategoryName()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L122",
+      "source_location": "L124",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72023,7 +72202,7 @@
       "label": ".buildStructuredData()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L130",
+      "source_location": "L132",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72155,11 +72334,20 @@
       "_origin": "ast"
     },
     {
+      "id": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_geteditorialsections",
+      "label": ".getEditorialSections()",
+      "file_type": "code",
+      "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
+      "source_location": "L132",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
       "id": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_getcategorypagestate",
       "label": ".getCategoryPageState()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L125",
+      "source_location": "L201",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72168,7 +72356,7 @@
       "label": ".getPostPageState()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L162",
+      "source_location": "L238",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72177,7 +72365,7 @@
       "label": ".getPostBySlug()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L194",
+      "source_location": "L270",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72186,7 +72374,7 @@
       "label": ".searchCategoryBySlug()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L198",
+      "source_location": "L274",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72195,7 +72383,7 @@
       "label": ".adaptPosts()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L204",
+      "source_location": "L280",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72204,7 +72392,7 @@
       "label": ".adaptPost()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L217",
+      "source_location": "L293",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72213,7 +72401,7 @@
       "label": ".normalizeCoverImage()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L272",
+      "source_location": "L348",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72222,7 +72410,7 @@
       "label": ".normalizeAuthor()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L284",
+      "source_location": "L360",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72231,7 +72419,7 @@
       "label": ".optimizeContentHtml()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L299",
+      "source_location": "L375",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72240,7 +72428,7 @@
       "label": ".addHeadingAnchors()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L306",
+      "source_location": "L382",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72249,7 +72437,7 @@
       "label": ".adaptCategory()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L342",
+      "source_location": "L418",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72258,7 +72446,7 @@
       "label": ".extractCategories()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L355",
+      "source_location": "L431",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72267,7 +72455,7 @@
       "label": ".getCategoryPriority()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L383",
+      "source_location": "L459",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72276,7 +72464,7 @@
       "label": ".buildCategorySections()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L396",
+      "source_location": "L472",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72285,7 +72473,7 @@
       "label": ".getCategoryCluster()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L440",
+      "source_location": "L516",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72294,7 +72482,7 @@
       "label": ".getRankingPosts()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L467",
+      "source_location": "L543",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72303,7 +72491,7 @@
       "label": ".resolveContentType()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L471",
+      "source_location": "L547",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72312,7 +72500,7 @@
       "label": ".getRankingReason()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L496",
+      "source_location": "L572",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72321,7 +72509,7 @@
       "label": ".isRankingCategory()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L517",
+      "source_location": "L593",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72330,7 +72518,7 @@
       "label": ".normalizeFaqItems()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L526",
+      "source_location": "L602",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72339,7 +72527,7 @@
       "label": ".normalizeRouteKeys()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L538",
+      "source_location": "L614",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72348,7 +72536,7 @@
       "label": ".resolveAffiliatePlacementMode()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L545",
+      "source_location": "L621",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72357,7 +72545,7 @@
       "label": ".normalizeStringArray()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L552",
+      "source_location": "L628",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72366,7 +72554,7 @@
       "label": ".normalizeSlug()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L561",
+      "source_location": "L637",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72375,7 +72563,7 @@
       "label": ".stripHtml()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L571",
+      "source_location": "L647",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72384,7 +72572,7 @@
       "label": ".ensureString()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L578",
+      "source_location": "L654",
       "_callable": true,
       "_origin": "ast"
     },
@@ -72393,7 +72581,7 @@
       "label": ".calculateReadingTime()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L596",
+      "source_location": "L672",
       "_callable": true,
       "_origin": "ast"
     },
@@ -131410,6 +131598,132 @@
       "node_kind": "heading",
       "source_file": "docs/UXUI_RECOVERY_STATUS.md",
       "source_location": "L107",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_corpus_strengthening_2026_08_31",
+      "label": "editorial-corpus-strengthening-2026-08-31.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_corpus_strengthening_2026_08_31_revisión_del_corpus_editorial_31_de_agosto_de_2026",
+      "label": "Revisión del corpus editorial — 31 de agosto de 2026",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_corpus_strengthening_2026_08_31_resultado",
+      "label": "Resultado",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L3",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_corpus_strengthening_2026_08_31_artículos_mejorados",
+      "label": "Artículos mejorados",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L9",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_corpus_strengthening_2026_08_31_fuentes_y_verificación",
+      "label": "Fuentes y verificación",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L24",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_corpus_strengthening_2026_08_31_reconciliación_de_los_22_candidatos",
+      "label": "Reconciliación de los 22 candidatos",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L36",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_corpus_strengthening_2026_08_31_gaps_restantes",
+      "label": "Gaps restantes",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L40",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_corpus_strengthening_2026_08_31_próximos_artículos_recomendados",
+      "label": "Próximos artículos recomendados",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L47",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_matrix_2026_08_31",
+      "label": "editorial-matrix-2026-08-31.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_matrix_2026_08_31_matriz_editorial_guíatv_31_08_2026",
+      "label": "Matriz editorial GuíaTV — 31/08/2026",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_matrix_2026_08_31_estado_de_reconciliación_de_producción_31_08_2026",
+      "label": "Estado de reconciliación de producción — 31/08/2026",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L36",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_matrix_2026_08_31_qa_y_próximos_artículos",
+      "label": "QA y próximos artículos",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L42",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_matrix_2026_08_31_publicación_verificada_batches_1_y_2",
+      "label": "Publicación verificada — batches 1 y 2",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L48",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_adsense_editorial_matrix_2026_08_31_estado_final_del_corpus_de_22_candidatos",
+      "label": "Estado final del corpus de 22 candidatos",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L81",
       "_origin": "ast"
     },
     {
@@ -247162,6 +247476,130 @@
       "_origin": "ast"
     },
     {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialseeddata",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialseeddata_editorialseedentry",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus_draftspec",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus_draft",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus_article_appendix",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus_article_appendix_2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L62",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus_article_appendix_3",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus_article_specific",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus_draft_specs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L97",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus_editorial_draft_posts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L122",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialdraftcorpus",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus_draft",
+      "relation": "indirect_call",
+      "context": "argument",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "apps/backend/src/application/data/editorialDraftCorpus.ts",
+      "source_location": "L122",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_data_editorialqualityaddenda",
+      "target": "apps_backend_src_application_data_editorialqualityaddenda_editorial_quality_addenda",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/data/editorialQualityAddenda.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "apps_backend_src_application_data_editorialseeddata",
       "target": "apps_backend_src_infrastructure_database_models_blogpost_model",
       "relation": "imports_from",
@@ -260111,7 +260549,37 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
-      "source_location": "L18",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_services_editorialreviewpolicy",
+      "target": "apps_backend_src_application_services_editorialreviewpolicy_visibletext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_services_editorialreviewpolicy",
+      "target": "apps_backend_src_application_services_editorialreviewpolicy_entertainment_signal_keywords",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_services_editorialreviewpolicy",
+      "target": "apps_backend_src_application_services_editorialreviewpolicy_hasentertainmentsignal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
+      "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260121,7 +260589,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
-      "source_location": "L27",
+      "source_location": "L67",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260131,7 +260599,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
-      "source_location": "L43",
+      "source_location": "L86",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_services_editorialreviewpolicy_hasentertainmentsignal",
+      "target": "apps_backend_src_application_services_editorialreviewpolicy_visibletext",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
+      "source_location": "L63",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260142,7 +260621,18 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
-      "source_location": "L31",
+      "source_location": "L71",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_services_editorialreviewpolicy_asserteditorialpostcanbeapproved",
+      "target": "apps_backend_src_application_services_editorialreviewpolicy_hasentertainmentsignal",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260153,7 +260643,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialReviewPolicy.ts",
-      "source_location": "L56",
+      "source_location": "L99",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260181,12 +260671,34 @@
     },
     {
       "source": "apps_backend_src_application_services_editorialseedservice",
-      "target": "apps_backend_src_infrastructure_database_models_blogpost_model",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
       "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_services_editorialseedservice",
+      "target": "apps_backend_src_application_data_editorialdraftcorpus_editorial_draft_posts",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_services_editorialseedservice",
+      "target": "apps_backend_src_infrastructure_database_models_blogpost_model",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260197,7 +260709,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L2",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260208,7 +260720,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L2",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260219,7 +260731,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L2",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260230,7 +260742,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L2",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260241,7 +260753,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L8",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260252,7 +260764,29 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L8",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_services_editorialseedservice",
+      "target": "apps_backend_src_application_data_editorialqualityaddenda",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_services_editorialseedservice",
+      "target": "apps_backend_src_application_data_editorialqualityaddenda_editorial_quality_addenda",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260262,7 +260796,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L10",
+      "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260272,7 +260806,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L20",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260282,7 +260816,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L29",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260292,7 +260826,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L43",
+      "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260302,7 +260836,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L52",
+      "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260312,7 +260846,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L88",
+      "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260322,7 +260856,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L119",
+      "source_location": "L131",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260333,7 +260867,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L34",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260344,7 +260878,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L36",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260355,7 +260889,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L63",
+      "source_location": "L71",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260366,7 +260900,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L70",
+      "source_location": "L78",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260377,7 +260911,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L93",
+      "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -260388,7 +260922,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/services/EditorialSeedService.ts",
-      "source_location": "L130",
+      "source_location": "L142",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -330701,6 +331235,93 @@
       "_origin": "ast"
     },
     {
+      "source": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component",
+      "target": "ref_angular_common",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-masthead/editorial-masthead.component.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component",
+      "target": "ref_angular_core",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-masthead/editorial-masthead.component.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component",
+      "target": "ref_angular_router",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-masthead/editorial-masthead.component.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component",
+      "target": "apps_frontend_src_app_config_route_map",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-masthead/editorial-masthead.component.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component",
+      "target": "apps_frontend_src_app_config_route_map_app_paths",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-masthead/editorial-masthead.component.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component",
+      "target": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_editorialmastheadcomponent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-masthead/editorial-masthead.component.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_editorialmastheadcomponent",
+      "target": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_ts_component",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-masthead/editorial-masthead.component.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_editorialmastheadcomponent",
+      "target": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_ts_input",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-masthead/editorial-masthead.component.ts",
+      "source_location": "L78",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
       "source": "apps_frontend_src_app_blog_components_editorial_post_card_editorial_post_card_component",
       "target": "ref_angular_common",
       "relation": "imports_from",
@@ -330757,11 +331378,21 @@
     },
     {
       "source": "apps_frontend_src_app_blog_components_editorial_post_card_editorial_post_card_component",
+      "target": "apps_frontend_src_app_blog_components_editorial_post_card_editorial_post_card_component_editorialpostcardvariant",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/components/editorial-post-card/editorial-post-card.component.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_components_editorial_post_card_editorial_post_card_component",
       "target": "apps_frontend_src_app_blog_components_editorial_post_card_editorial_post_card_component_editorialpostcardcomponent",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/components/editorial-post-card/editorial-post-card.component.ts",
-      "source_location": "L84",
+      "source_location": "L141",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -330771,7 +331402,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/components/editorial-post-card/editorial-post-card.component.ts",
-      "source_location": "L6",
+      "source_location": "L15",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -330782,7 +331413,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/components/editorial-post-card/editorial-post-card.component.ts",
-      "source_location": "L85",
+      "source_location": "L142",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -330964,12 +331595,23 @@
     },
     {
       "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
-      "target": "apps_frontend_src_app_components_unified_portal_shell_unified_portal_shell_component",
+      "target": "ref_rxjs_operators",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
       "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
+      "target": "apps_frontend_src_app_components_unified_portal_shell_unified_portal_shell_component",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L7",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -330980,7 +331622,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L6",
+      "source_location": "L7",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -330991,7 +331633,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331002,7 +331644,51 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L7",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
+      "target": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
+      "target": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_editorialmastheadcomponent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
+      "target": "apps_frontend_src_app_components_catalog_rail_catalog_rail_component",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
+      "target": "apps_frontend_src_app_components_catalog_rail_catalog_rail_component_catalograilcomponent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331013,7 +331699,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L8",
+      "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331024,7 +331710,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L8",
+      "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331035,7 +331721,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L9",
+      "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331046,7 +331732,62 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L9",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
+      "target": "apps_frontend_src_app_services_catalog_service",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
+      "target": "apps_frontend_src_app_services_catalog_service_catalogitem",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
+      "target": "apps_frontend_src_app_services_catalog_service_catalogservice",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
+      "target": "apps_frontend_src_app_data_catalog_platforms_data",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
+      "target": "apps_frontend_src_app_data_catalog_platforms_data_getcatalogplatformbykey",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331057,7 +331798,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L10",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331068,18 +331809,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component",
-      "target": "apps_frontend_src_app_blog_models_editorial_models_editorialhubstate",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L10",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331090,7 +331820,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L10",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331101,7 +331831,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L15",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331112,7 +331842,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L15",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331123,7 +331853,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L16",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331134,7 +331864,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L16",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331145,7 +331875,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L17",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331156,7 +331886,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L17",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331167,7 +331897,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L18",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331178,7 +331908,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L18",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331189,7 +331919,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L19",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331200,7 +331930,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L19",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331210,7 +331940,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L37",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331220,7 +331950,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L21",
+      "source_location": "L25",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -331231,7 +331961,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L57",
+      "source_location": "L73",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331241,7 +331971,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L64",
+      "source_location": "L81",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331251,7 +331981,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L78",
+      "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331261,7 +331991,17 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L82",
+      "source_location": "L100",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent",
+      "target": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_platformsfor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L104",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331271,7 +332011,17 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L86",
+      "source_location": "L108",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent",
+      "target": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_loadwatchtoday",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L152",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331281,7 +332031,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L112",
+      "source_location": "L183",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331291,7 +332041,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L117",
+      "source_location": "L188",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331302,7 +332052,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L73",
+      "source_location": "L90",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331313,7 +332063,18 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L75",
+      "source_location": "L92",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_ngoninit",
+      "target": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_loadwatchtoday",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331324,7 +332085,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L79",
+      "source_location": "L97",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331539,12 +332300,34 @@
     },
     {
       "source": "apps_frontend_src_app_blog_pages_category_category_component",
-      "target": "apps_frontend_src_app_utils_utils",
+      "target": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
       "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_category_category_component",
+      "target": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_editorialmastheadcomponent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_category_category_component",
+      "target": "apps_frontend_src_app_utils_utils",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331555,7 +332338,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331566,7 +332349,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331577,7 +332360,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331588,7 +332371,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331599,7 +332382,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331610,7 +332393,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331621,7 +332404,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L17",
+      "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331632,7 +332415,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L17",
+      "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331642,7 +332425,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L27",
+      "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331652,7 +332435,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -331663,7 +332446,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L37",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331673,7 +332456,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L46",
+      "source_location": "L47",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331683,7 +332466,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L99",
+      "source_location": "L100",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331693,7 +332476,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L104",
+      "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331703,7 +332486,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L108",
+      "source_location": "L109",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331713,7 +332496,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L112",
+      "source_location": "L113",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331723,7 +332506,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L120",
+      "source_location": "L121",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -331734,7 +332517,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L93",
+      "source_location": "L94",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332553,12 +333336,34 @@
     },
     {
       "source": "apps_frontend_src_app_blog_pages_top10_top10_component",
-      "target": "apps_frontend_src_app_components_portal_context_nav_portal_context_nav_component",
+      "target": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
       "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_top10_top10_component",
+      "target": "apps_frontend_src_app_blog_components_editorial_masthead_editorial_masthead_component_editorialmastheadcomponent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_top10_top10_component",
+      "target": "apps_frontend_src_app_components_portal_context_nav_portal_context_nav_component",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332569,7 +333374,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L12",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332580,7 +333385,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L13",
+      "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332591,7 +333396,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L13",
+      "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332602,7 +333407,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332613,7 +333418,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L14",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332623,7 +333428,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L31",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332633,7 +333438,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -332644,7 +333449,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L49",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332654,7 +333459,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L56",
+      "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332664,7 +333469,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L69",
+      "source_location": "L71",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332674,7 +333479,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L94",
+      "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332684,7 +333489,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L99",
+      "source_location": "L101",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332694,7 +333499,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L105",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332704,7 +333509,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L109",
+      "source_location": "L111",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332714,7 +333519,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L113",
+      "source_location": "L115",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332724,7 +333529,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L122",
+      "source_location": "L124",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332734,7 +333539,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L130",
+      "source_location": "L132",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332745,7 +333550,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L66",
+      "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332756,7 +333561,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L82",
+      "source_location": "L84",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332767,7 +333572,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L101",
+      "source_location": "L103",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -332778,7 +333583,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L106",
+      "source_location": "L108",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333113,11 +333918,21 @@
     },
     {
       "source": "apps_frontend_src_app_blog_services_editorial_service_editorialservice",
+      "target": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_geteditorialsections",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
+      "source_location": "L132",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_services_editorial_service_editorialservice",
       "target": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_getcategorypagestate",
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L125",
+      "source_location": "L201",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333127,7 +333942,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L162",
+      "source_location": "L238",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333137,7 +333952,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L194",
+      "source_location": "L270",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333147,7 +333962,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L198",
+      "source_location": "L274",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333157,7 +333972,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L204",
+      "source_location": "L280",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333167,7 +333982,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L217",
+      "source_location": "L293",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333177,7 +333992,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L272",
+      "source_location": "L348",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333187,7 +334002,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L284",
+      "source_location": "L360",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333197,7 +334012,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L299",
+      "source_location": "L375",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333207,7 +334022,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L306",
+      "source_location": "L382",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333217,7 +334032,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L342",
+      "source_location": "L418",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333227,7 +334042,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L355",
+      "source_location": "L431",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333237,7 +334052,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L383",
+      "source_location": "L459",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333247,7 +334062,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L396",
+      "source_location": "L472",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333257,7 +334072,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L440",
+      "source_location": "L516",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333267,7 +334082,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L467",
+      "source_location": "L543",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333277,7 +334092,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L471",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333287,7 +334102,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L496",
+      "source_location": "L572",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333297,7 +334112,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L517",
+      "source_location": "L593",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333307,7 +334122,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L526",
+      "source_location": "L602",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333317,7 +334132,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L538",
+      "source_location": "L614",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333327,7 +334142,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L545",
+      "source_location": "L621",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333337,7 +334152,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L552",
+      "source_location": "L628",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333347,7 +334162,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L561",
+      "source_location": "L637",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333357,7 +334172,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L571",
+      "source_location": "L647",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333367,7 +334182,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L578",
+      "source_location": "L654",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333377,7 +334192,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L596",
+      "source_location": "L672",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333481,13 +334296,46 @@
       "_origin": "ast"
     },
     {
+      "source": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_geteditorialsections",
+      "target": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_getposts",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
+      "source_location": "L138",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_geteditorialsections",
+      "target": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_extractcategories",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
+      "source_location": "L141",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_geteditorialsections",
+      "target": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_getcategorycluster",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
+      "source_location": "L146",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_getcategorypagestate",
       "target": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_getposts",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L128",
+      "source_location": "L204",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333498,7 +334346,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L130",
+      "source_location": "L206",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333509,7 +334357,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L164",
+      "source_location": "L240",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333520,7 +334368,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L166",
+      "source_location": "L242",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333531,7 +334379,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L195",
+      "source_location": "L271",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333542,7 +334390,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L199",
+      "source_location": "L275",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333553,7 +334401,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L200",
+      "source_location": "L276",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333564,7 +334412,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L206",
+      "source_location": "L282",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333575,7 +334423,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L219",
+      "source_location": "L295",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333586,7 +334434,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L221",
+      "source_location": "L297",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333597,7 +334445,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L222",
+      "source_location": "L298",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333608,7 +334456,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L223",
+      "source_location": "L299",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333619,7 +334467,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L224",
+      "source_location": "L300",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333630,7 +334478,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L227",
+      "source_location": "L303",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333641,7 +334489,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L228",
+      "source_location": "L304",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333652,7 +334500,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L237",
+      "source_location": "L313",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333663,7 +334511,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L239",
+      "source_location": "L315",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333674,7 +334522,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L248",
+      "source_location": "L324",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333685,7 +334533,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L256",
+      "source_location": "L332",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333696,7 +334544,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L257",
+      "source_location": "L333",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333707,7 +334555,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L258",
+      "source_location": "L334",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333718,7 +334566,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L260",
+      "source_location": "L336",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333729,7 +334577,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L289",
+      "source_location": "L365",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333740,7 +334588,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L316",
+      "source_location": "L392",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333751,7 +334599,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L322",
+      "source_location": "L398",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333762,7 +334610,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L343",
+      "source_location": "L419",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333773,7 +334621,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L346",
+      "source_location": "L422",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333784,7 +334632,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L351",
+      "source_location": "L427",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333795,7 +334643,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L374",
+      "source_location": "L450",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333806,7 +334654,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L411",
+      "source_location": "L487",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333817,7 +334665,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L475",
+      "source_location": "L551",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333828,7 +334676,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L501",
+      "source_location": "L577",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333839,7 +334687,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L518",
+      "source_location": "L594",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333850,7 +334698,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L532",
+      "source_location": "L608",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333861,7 +334709,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L540",
+      "source_location": "L616",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333872,7 +334720,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L546",
+      "source_location": "L622",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -333883,7 +334731,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L597",
+      "source_location": "L673",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -441489,6 +442337,136 @@
       "_origin": "ast"
     },
     {
+      "source": "docs_adsense_editorial_corpus_strengthening_2026_08_31",
+      "target": "docs_adsense_editorial_corpus_strengthening_2026_08_31_revisión_del_corpus_editorial_31_de_agosto_de_2026",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_corpus_strengthening_2026_08_31_revisión_del_corpus_editorial_31_de_agosto_de_2026",
+      "target": "docs_adsense_editorial_corpus_strengthening_2026_08_31_resultado",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_corpus_strengthening_2026_08_31_revisión_del_corpus_editorial_31_de_agosto_de_2026",
+      "target": "docs_adsense_editorial_corpus_strengthening_2026_08_31_artículos_mejorados",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_corpus_strengthening_2026_08_31_revisión_del_corpus_editorial_31_de_agosto_de_2026",
+      "target": "docs_adsense_editorial_corpus_strengthening_2026_08_31_fuentes_y_verificación",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_corpus_strengthening_2026_08_31_revisión_del_corpus_editorial_31_de_agosto_de_2026",
+      "target": "docs_adsense_editorial_corpus_strengthening_2026_08_31_reconciliación_de_los_22_candidatos",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_corpus_strengthening_2026_08_31",
+      "target": "docs_adsense_editorial_matrix_2026_08_31",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_corpus_strengthening_2026_08_31_revisión_del_corpus_editorial_31_de_agosto_de_2026",
+      "target": "docs_adsense_editorial_corpus_strengthening_2026_08_31_gaps_restantes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_corpus_strengthening_2026_08_31_revisión_del_corpus_editorial_31_de_agosto_de_2026",
+      "target": "docs_adsense_editorial_corpus_strengthening_2026_08_31_próximos_artículos_recomendados",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-corpus-strengthening-2026-08-31.md",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_matrix_2026_08_31",
+      "target": "docs_adsense_editorial_matrix_2026_08_31_matriz_editorial_guíatv_31_08_2026",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_matrix_2026_08_31_matriz_editorial_guíatv_31_08_2026",
+      "target": "docs_adsense_editorial_matrix_2026_08_31_estado_de_reconciliación_de_producción_31_08_2026",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_matrix_2026_08_31_matriz_editorial_guíatv_31_08_2026",
+      "target": "docs_adsense_editorial_matrix_2026_08_31_qa_y_próximos_artículos",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_matrix_2026_08_31_matriz_editorial_guíatv_31_08_2026",
+      "target": "docs_adsense_editorial_matrix_2026_08_31_publicación_verificada_batches_1_y_2",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_adsense_editorial_matrix_2026_08_31_matriz_editorial_guíatv_31_08_2026",
+      "target": "docs_adsense_editorial_matrix_2026_08_31_estado_final_del_corpus_de_22_candidatos",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/adsense/editorial-matrix-2026-08-31.md",
+      "source_location": "L81",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "docs_adsense_final_readiness_review",
       "target": "docs_adsense_final_readiness_review_google_adsense_final_readiness_review",
       "relation": "contains",
@@ -464298,7 +465276,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/components/editorial-post-card/editorial-post-card.component.ts",
-      "source_location": "L85",
+      "source_location": "L142",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464309,7 +465287,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L46",
+      "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464320,18 +465298,18 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L51",
+      "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent",
-      "target": "apps_frontend_src_app_blog_models_editorial_models_editorialhubstate",
+      "target": "apps_frontend_src_app_services_catalog_service_catalogitem",
       "relation": "references",
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L52",
+      "source_location": "L66",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464342,7 +465320,18 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L57",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_constructor",
+      "target": "apps_frontend_src_app_services_catalog_service_catalogservice",
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L73",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464353,7 +465342,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L57",
+      "source_location": "L73",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464364,7 +465353,18 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L82",
+      "source_location": "L100",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_platformsfor",
+      "target": "apps_frontend_src_app_blog_models_editorial_models_editorialpost",
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L104",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464375,7 +465375,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L31",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464386,7 +465386,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L37",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464397,7 +465397,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L37",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464408,7 +465408,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L108",
+      "source_location": "L109",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464419,7 +465419,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L120",
+      "source_location": "L121",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464507,7 +465507,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L41",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464518,7 +465518,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L43",
+      "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464529,7 +465529,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L49",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464540,7 +465540,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L49",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464551,7 +465551,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L109",
+      "source_location": "L111",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464562,7 +465562,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L113",
+      "source_location": "L115",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464644,13 +465644,24 @@
       "_origin": "ast"
     },
     {
+      "source": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_geteditorialsections",
+      "target": "apps_frontend_src_app_blog_models_editorial_models_editorialcategorysection",
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
+      "source_location": "L132",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_getcategorypagestate",
       "target": "apps_frontend_src_app_blog_models_editorial_models_editorialcategorypagestate",
       "relation": "references",
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L125",
+      "source_location": "L201",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464661,7 +465672,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L162",
+      "source_location": "L238",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464672,7 +465683,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L194",
+      "source_location": "L270",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464683,7 +465694,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L198",
+      "source_location": "L274",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464694,7 +465705,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L204",
+      "source_location": "L280",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464705,7 +465716,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L217",
+      "source_location": "L293",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464716,7 +465727,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L284",
+      "source_location": "L360",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464727,7 +465738,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L306",
+      "source_location": "L382",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464738,7 +465749,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L342",
+      "source_location": "L418",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464749,7 +465760,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L355",
+      "source_location": "L431",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464760,7 +465771,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L355",
+      "source_location": "L431",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464771,7 +465782,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L396",
+      "source_location": "L472",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464782,7 +465793,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L396",
+      "source_location": "L472",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464793,7 +465804,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L396",
+      "source_location": "L472",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464804,7 +465815,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L467",
+      "source_location": "L543",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464815,7 +465826,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L471",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464826,7 +465837,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L471",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464837,7 +465848,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L496",
+      "source_location": "L572",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464848,7 +465859,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L496",
+      "source_location": "L572",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464859,7 +465870,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L526",
+      "source_location": "L602",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464870,7 +465881,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L538",
+      "source_location": "L614",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -464881,7 +465892,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/blog/services/editorial.service.ts",
-      "source_location": "L545",
+      "source_location": "L621",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -483666,6 +484677,18 @@
       "_origin": "ast"
     },
     {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_loadhub",
+      "target": "apps_frontend_src_app_data_catalog_platforms_data_getcatalogplatformbykey",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L131",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_buildstructureddata",
       "target": "apps_frontend_src_app_utils_utils_generatecollectionpageschema",
       "relation": "calls",
@@ -483673,7 +484696,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L119",
+      "source_location": "L190",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -483685,7 +484708,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L123",
+      "source_location": "L124",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -483697,7 +484720,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L133",
+      "source_location": "L134",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -483745,7 +484768,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L133",
+      "source_location": "L135",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -483757,7 +484780,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L142",
+      "source_location": "L144",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -489241,7 +490264,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L65",
+      "source_location": "L82",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -489253,7 +490276,31 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
-      "source_location": "L89",
+      "source_location": "L112",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_loadhub",
+      "target": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_geteditorialsections",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L113",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_blog_pages_blog_home_blog_home_component_bloghomecomponent_loadhub",
+      "target": "apps_frontend_src_app_blog_services_editorial_service_editorialservice_getposts",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "apps/frontend/src/app/blog/pages/blog-home/blog-home.component.ts",
+      "source_location": "L114",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -489265,7 +490312,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L58",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -489277,7 +490324,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/frontend/src/app/blog/pages/category/category.component.ts",
-      "source_location": "L80",
+      "source_location": "L81",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -489313,7 +490360,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L57",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -489325,7 +490372,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/frontend/src/app/blog/pages/top10/top10.component.ts",
-      "source_location": "L74",
+      "source_location": "L76",
       "weight": 1.0,
       "_origin": "ast"
     },

@@ -122,6 +122,82 @@ export class EditorialService {
     );
   }
 
+  /**
+   * Distinct homepage compositions for Cine / Series / Streaming plus any
+   * remaining category clusters as "Especiales" collections. Reuses the same
+   * category-cluster classification as buildCategorySections (no parallel
+   * taxonomy) but gives each vertical its own post count/shape instead of
+   * repeating one grid three times (Phase 7/8 IA).
+   */
+  public getEditorialSections(): Observable<{
+    cine: EditorialCategorySection | null;
+    series: EditorialCategorySection | null;
+    streaming: EditorialCategorySection | null;
+    collections: EditorialCategorySection[];
+  }> {
+    return this.getPosts().pipe(
+      map((posts) => {
+        const nonRanking = posts.filter((post) => post.contentType !== 'ranking');
+        const categories = this.extractCategories(posts).filter(
+          (category) => !category.isRankingCategory
+        );
+        const byCluster = new Map<string, EditorialCategory[]>();
+        categories.forEach((category) => {
+          const cluster = this.getCategoryCluster(category.slug);
+          const list = byCluster.get(cluster) ?? [];
+          list.push(category);
+          byCluster.set(cluster, list);
+        });
+
+        const sectionFor = (
+          cluster: string,
+          postsPerSection: number,
+          excludeSlugs: Set<string>
+        ): EditorialCategorySection | null => {
+          const category = byCluster.get(cluster)?.[0];
+          if (!category) return null;
+          const sectionPosts = nonRanking
+            .filter(
+              (post) =>
+                !excludeSlugs.has(post.slug) &&
+                post.categories.some((item) => item.slug === category.slug)
+            )
+            .slice(0, postsPerSection);
+          return sectionPosts.length ? { category, posts: sectionPosts } : null;
+        };
+
+        const usedSlugs = new Set<string>();
+        const cine = sectionFor('movies', 5, usedSlugs);
+        cine?.posts.forEach((post) => usedSlugs.add(post.slug));
+        const series = sectionFor('series', 4, usedSlugs);
+        series?.posts.forEach((post) => usedSlugs.add(post.slug));
+        const streaming = sectionFor('streaming', 4, usedSlugs);
+        streaming?.posts.forEach((post) => usedSlugs.add(post.slug));
+
+        const usedClusters = new Set(['movies', 'series', 'streaming']);
+        const collections: EditorialCategorySection[] = [];
+        for (const category of categories) {
+          const cluster = this.getCategoryCluster(category.slug);
+          if (usedClusters.has(cluster)) continue;
+          const sectionPosts = nonRanking
+            .filter(
+              (post) =>
+                !usedSlugs.has(post.slug) &&
+                post.categories.some((item) => item.slug === category.slug)
+            )
+            .slice(0, 3);
+          if (!sectionPosts.length) continue;
+          collections.push({ category, posts: sectionPosts });
+          usedClusters.add(cluster);
+          sectionPosts.forEach((post) => usedSlugs.add(post.slug));
+          if (collections.length >= 3) break;
+        }
+
+        return { cine, series, streaming, collections };
+      })
+    );
+  }
+
   public getCategoryPageState(
     slug: string
   ): Observable<EditorialCategoryPageState | null> {

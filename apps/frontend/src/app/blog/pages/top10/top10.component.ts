@@ -9,6 +9,7 @@ import { EditorialCategory, EditorialPost } from '../../models/editorial.models'
 import { EditorialService } from '../../services/editorial.service';
 import { generateCollectionPageSchema, generateItemListSchema } from '../../../utils/utils';
 import { UnifiedPortalShellComponent } from '../../../components/unified-portal-shell/unified-portal-shell.component';
+import { EditorialMastheadComponent } from '../../components/editorial-masthead/editorial-masthead.component';
 import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
 import { UnifiedAsyncStateComponent } from '../../../components/unified-async-state/unified-async-state.component';
 import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skeleton-block/unified-skeleton-block.component';
@@ -20,6 +21,7 @@ import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skele
     CommonModule,
     RouterModule,
     UnifiedPortalShellComponent,
+    EditorialMastheadComponent,
     PortalContextNavComponent,
     UnifiedAsyncStateComponent,
     UnifiedSkeletonBlockComponent,
