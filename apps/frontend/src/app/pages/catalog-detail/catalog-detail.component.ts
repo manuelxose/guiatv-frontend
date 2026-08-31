@@ -17,6 +17,7 @@ import {
 } from '../../services/catalog.service';
 import { MetaService } from '../../services/meta.service';
 import { buildProgramCatalogId, buildTmdbCatalogId } from '../../utils/catalog';
+import { catalogRobotsPolicy } from '../../utils/catalog-indexability';
 import { generateTVSeriesSchema, generateMovieSchema, generateBreadcrumbSchema } from '../../utils/utils';
 import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
 import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
@@ -175,14 +176,16 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
             <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <a
                 *ngFor="let airing of content.airings"
-                [routerLink]="['/canales', airing.channelId]"
+                [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
                 class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
               >
-                <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.channelName }}</p>
+                <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.title || airing.channelName }}</p>
                 <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
-                  {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
+                  {{ airing.channelName }} · {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
                 </p>
-                <span class="mt-3 inline-block text-xs font-semibold text-[var(--accent-live)]">Ver programación del canal →</span>
+                <span class="mt-3 inline-block text-xs font-semibold text-[var(--accent-live)]">
+                  {{ airing.detailPath ? 'Ver qué se emite →' : 'Ver programación del canal →' }}
+                </span>
               </a>
             </div>
           </div>
@@ -515,7 +518,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
       image: item.backdrop || item.image,
       canonicalUrl,
       type: 'article',
-      robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+      robots: catalogRobotsPolicy(item),
     });
   }
 

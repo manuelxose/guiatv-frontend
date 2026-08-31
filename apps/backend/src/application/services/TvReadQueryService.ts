@@ -5,6 +5,7 @@ import { l1Cache } from '@/infrastructure/cache/L1Cache';
 import { addTiming, measureTiming, setCacheTiming } from '@/shared/utils/performanceTiming';
 import {
   buildChannelIdentityMetadata,
+  buildLegacyProgramSlug,
   buildSearchTokens,
   getGuideGroupSortOrder,
   inferTimeWindow,
@@ -56,6 +57,11 @@ export interface TvReadScheduleParams {
   channelId?: string;
   q?: string;
   itemsPerChannel?: number;
+}
+
+export interface TvReadProgramSitemapRow {
+  title: string;
+  start: string | Date;
 }
 
 export function buildTvReadChannelGroupClause(group: string): Record<string, any> {
@@ -925,6 +931,40 @@ export class TvReadQueryService {
     };
     await this.cacheRepository.set(cacheKey, response, 60);
     return response;
+  }
+
+  async getIndexableProgramSitemapRows(
+    dates: string[]
+  ): Promise<TvReadProgramSitemapRow[]> {
+    const normalizedDates = Array.from(new Set(dates.map((date) => String(date).trim()).filter(Boolean)));
+    if (!normalizedDates.length) return [];
+
+    const rows = await this.readAiringModel.find({
+      date: { $in: normalizedDates },
+      'program.tmdbId': { $type: 'number' },
+      'program.title': { $type: 'string', $ne: '' },
+      'program.titleResolutionState': { $nin: ['generic_unresolved', 'generic_suppressed'] },
+      'trustDecision.consumerSuppressed': { $ne: true },
+    })
+      .select({ _id: 0, 'program.title': 1, 'airing.start': 1, searchTokens: 1 })
+      .sort({ date: 1, 'airing.start': 1 })
+      .lean()
+      .exec() as Array<{
+        program?: { title?: string };
+        airing?: { start?: string | Date };
+        searchTokens?: string[];
+      }>;
+
+    return rows.flatMap((row) => {
+      const title = String(row.program?.title || '').trim();
+      const start = row.airing?.start;
+      const slug = buildLegacyProgramSlug(title);
+      const lookupTokens = buildSearchTokens([slug.replace(/-/g, ' ')])
+        .filter((token) => !token.includes(' ') && !token.includes('_') && token.length >= 3);
+      const indexedTokens = new Set(row.searchTokens || []);
+      const searchable = lookupTokens.some((token) => indexedTokens.has(token));
+      return title && start && searchable ? [{ title, start }] : [];
+    });
   }
 
   async getSchedule(params: TvReadScheduleParams): Promise<TvReadScheduleResponseDTO> {

@@ -40,7 +40,7 @@ import { MetaService } from '../../services/meta.service';
               </div>
               <div class="flex justify-between border-b border-[var(--portal-border)] pb-3">
                 <dt class="text-[var(--portal-text-muted)]">Empresa</dt>
-                <dd class="text-[var(--portal-text)] font-medium">TecnoRia S.L.</dd>
+                <dd class="text-[var(--portal-text)] font-medium">TecnoRia</dd>
               </div>
               <div class="flex justify-between border-b border-[var(--portal-border)] pb-3">
                 <dt class="text-[var(--portal-text-muted)]">Sector</dt>
@@ -86,7 +86,7 @@ import { MetaService } from '../../services/meta.service';
                 con el catálogo completo de Netflix, HBO Max, Disney+, Amazon Prime Video, Movistar+ y más de 15 plataformas de streaming.
                 Con un sistema de recomendaciones personalizadas, blog editorial con análisis de contenido, y una comunidad activa de
                 amantes del cine y la televisión, Guía Programación TV se posiciona como el punto de referencia para decidir qué ver
-                cada día. El proyecto es desarrollado por TecnoRia S.L., empresa tecnológica española."
+                cada día. El proyecto es desarrollado por el equipo tecnológico de TecnoRia."
               </p>
             </div>
           </div>

@@ -1,0 +1,1846 @@
+{
+  "schemaVersion": 1,
+  "decision": "NO-GO — REMAINING BLOCKERS",
+  "auditedAt": "2026-08-30T22:52:55.825Z",
+  "target": "https://guiaprogramaciontv.com",
+  "methodology": {
+    "sampleSize": 51,
+    "selection": "23 route families; deterministic PRNG seed 0xA5E53E for random channel, programme, editorial, streaming, and football selections",
+    "productionSitemapPopulation": {
+      "total": 2759,
+      "static": 25,
+      "channels": 133,
+      "programs": 1516,
+      "blog": 46,
+      "streaming": 936,
+      "football": 103
+    }
+  },
+  "summary": {
+    "http200": 41,
+    "http404": 10,
+    "sampledSitemapUrls": 42,
+    "sitemapUrlsNot200": 5,
+    "thinIndexableUnder300MainWords": 6,
+    "privateIndexabilityFailures": 2,
+    "publishedEditorialPosts": 25,
+    "publishedPostsWithoutAuthor": 11,
+    "publishedPostsWithoutAuthorPercent": 44
+  },
+  "ownership": {
+    "canonicalHost": "https://guiaprogramaciontv.com",
+    "httpApex": "301 to HTTPS apex",
+    "httpsWww": "301 to HTTPS apex",
+    "publisherId": "ca-pub-9653385567378817",
+    "conflictingPublisherIdsFound": [],
+    "productionAdsTxt": {
+      "status": 404,
+      "mime": "text/html; charset=utf-8",
+      "result": "fail"
+    }
+  },
+  "sitemaps": {
+    "indexCount": 6,
+    "urlCount": 2759,
+    "sampledFailures": [
+      {
+        "url": "https://guiaprogramaciontv.com/canales",
+        "status": 404
+      },
+      {
+        "url": "https://guiaprogramaciontv.com/programas/guillaume-y-los-chicos-a-la-mesa",
+        "status": 404
+      },
+      {
+        "url": "https://guiaprogramaciontv.com/programas/el-amante",
+        "status": 404
+      },
+      {
+        "url": "https://guiaprogramaciontv.com/programas/caso-cerrado-t3-e4",
+        "status": 404
+      },
+      {
+        "url": "https://guiaprogramaciontv.com/programas/sonata-de-otono",
+        "status": 404
+      }
+    ],
+    "result": "fail"
+  },
+  "publishingPipeline": {
+    "result": "fail",
+    "reason": "BlogPost status is only draft|publish; admin-key create/update accepts publish directly; sitemap includes every published record; no explicit editorial review state or reviewer gate."
+  },
+  "blockers": [
+    {
+      "priority": "P0",
+      "id": "legal-placeholders",
+      "url": "https://guiaprogramaciontv.com/avisolegal"
+    },
+    {
+      "priority": "P0",
+      "id": "uncontrolled-publishing",
+      "component": "BlogPost.model.ts / BlogController / SitemapController"
+    },
+    {
+      "priority": "P0",
+      "id": "published-low-trust-editorial",
+      "component": "production /v2/blog corpus"
+    },
+    {
+      "priority": "P1",
+      "id": "sitemap-integrity",
+      "component": "production sitemap-static.xml and sitemap-programs.xml"
+    },
+    {
+      "priority": "P1",
+      "id": "thin-indexable-inventory",
+      "component": "channel, trends, football route families"
+    },
+    {
+      "priority": "P1",
+      "id": "external-metadata-dominance",
+      "component": "movie and series route families"
+    },
+    {
+      "priority": "P1",
+      "id": "ads-txt-production-404",
+      "url": "https://guiaprogramaciontv.com/ads.txt"
+    },
+    {
+      "priority": "P2",
+      "id": "accessibility-and-icons",
+      "component": "production UI; axe contrast/landmark findings and channel icon 503s"
+    }
+  ],
+  "remediationImplemented": [
+    "Build and publish root ads.txt asset for the one observed publisher ID",
+    "Align programme sitemap window with today/tomorrow slug resolution",
+    "Exclude channels without a current resolvable schedule from sitemap",
+    "Return 404/noindex for unresolved channel surfaces",
+    "Recognize /canales as a valid SSR route",
+    "Noindex and no-store private/auth/account routes in production SSR server",
+    "Redirect resolvable legacy detail URLs to canonical catalog paths",
+    "Noindex/error-handle unresolved legacy and internal routes"
+  ],
+  "validation": [
+    "backend TypeScript build passed",
+    "SitemapController tests: 6/6 passed",
+    "canal-completo Karma tests: 5/5 passed",
+    "frontend SSR production build passed with pre-existing budget/CommonJS warnings",
+    "built SSR smoke: ads.txt 200; /canales 200; private routes noindex/no-store; legacy movie redirect 301",
+    "production Playwright mobile/desktop: no horizontal overflow in sampled mobile pages; axe found contrast and landmark defects; repeated channel-icon 503 responses"
+  ],
+  "samples": [
+    {
+      "family": "home",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 1069199,
+      "title": "Inicio | Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 2120,
+      "visibleWordCount": 2131,
+      "jsonLdCount": 3,
+      "jsonLdTypes": [
+        "WebSite",
+        "Organization",
+        "WebApplication"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo",
+        "No Data",
+        "No Data"
+      ],
+      "bodySha256": "4f2498f9105c9c65cd1e90fe1bfd10f02ae8a0ada4957be752aae27595791b0b",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "static-guide",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/programacion-tv/que-ver-hoy",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/programacion-tv/que-ver-hoy?types=program,movie,series",
+      "redirects": 1,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 876813,
+      "title": "Qué Ver | Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/programacion-tv/que-ver-hoy",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 5639,
+      "visibleWordCount": 5651,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "Todo",
+        "Todo",
+        "todo",
+        "todo",
+        "No Data",
+        "todo"
+      ],
+      "bodySha256": "702b187f26b691be9f8504034d6546a733e028c336f5be377b8aaa5b67604f9a",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "static-guide",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/programacion-tv/guia-canales",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/programacion-tv/guia-canales",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 470777,
+      "title": "TV Directo | Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/programacion-tv/guia-canales",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 2634,
+      "visibleWordCount": 2646,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "Todo",
+        "todo"
+      ],
+      "bodySha256": "cc9906bb8ca4d41c632ec545915c957a6e01e53adab5286ddd771183b7a6c104",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "directory",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/canales",
+      "sitemapActual": true,
+      "status": 404,
+      "finalUrl": "https://guiaprogramaciontv.com/canales",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 5661800,
+      "title": "Canales de televisión - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/canales",
+      "metaRobots": null,
+      "xRobotsTag": null,
+      "mainPresent": true,
+      "mainWordCount": 11262,
+      "visibleWordCount": 11352,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "No Data",
+        "todo",
+        "todo",
+        "todo",
+        "todo",
+        "No Data",
+        "No Data",
+        "No Data"
+      ],
+      "bodySha256": "96a1b8d4e6cbf0cd8c79f71483bc4c33ded9e1c51af04ad481eda651af5c039e",
+      "error": null,
+      "actualIndexability": "noindex/error",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "tdt-channel",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/canales/la_sexta",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/canales/la_sexta",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 516757,
+      "title": "Programación de La Sexta hoy — Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/canales/la_sexta",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 1434,
+      "visibleWordCount": 1526,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "ad0aaa06d5e79c40b040a0a516eea8f524ded478093468beeb17dee3919089e2",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "paid-channel",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/canales/m_laligatv_3",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/canales/m_laligatv_3",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 394607,
+      "title": "Programación de M+ LaLigaTV 3 hoy — Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/canales/m_laligatv_3",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 330,
+      "visibleWordCount": 423,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "No Data",
+        "No Data"
+      ],
+      "bodySha256": "a12b16927974105e3f4f5e0fb3b4d1981c89b2008f06a080dee4416165a30c82",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "random-channel",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/canales/sx3_catalunya",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/canales/sx3_catalunya",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 307741,
+      "title": "Programación de Sx3_catalunya hoy — Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/canales/sx3_catalunya",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 39,
+      "visibleWordCount": 130,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "70d5da7def793ce5dcbbd6cbc357219659683c54c674cb20c38f8a5550b5ba4c",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "random-channel",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/canales/cmm_tv",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/canales/cmm_tv",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 522930,
+      "title": "Programación de CMM TV hoy — Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/canales/cmm_tv",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 1908,
+      "visibleWordCount": 2000,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "24c4920a00119165ddbcf77c21dcaed7a4008d476e185c3b93f222d21f0b0773",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "random-channel",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/canales/etb1_tv",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/canales/etb1_tv",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 528101,
+      "title": "Programación de ETB1.TV hoy — Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/canales/etb1_tv",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 1373,
+      "visibleWordCount": 1464,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "0fa3ea385ef397e98d873cc727d190067db047e735b28d05846bd949b4df2b1e",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "random-channel",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/canales/aragontv_tv",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/canales/aragontv_tv",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 498458,
+      "title": "Programación de AragonTV.TV hoy — Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/canales/aragontv_tv",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 1639,
+      "visibleWordCount": 1730,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo",
+        "Todo",
+        "todo",
+        "todo",
+        "Todo",
+        "todo",
+        "todo",
+        "todo",
+        "todo",
+        "todo",
+        "todo",
+        "Todo",
+        "todo",
+        "todo",
+        "todo",
+        "todo",
+        "todo"
+      ],
+      "bodySha256": "8386cc530f1567241058fb8a7c29ac6630bf2aabb54f951191c0ac60c2abefe1",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "random-program",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/programas/guillaume-y-los-chicos-a-la-mesa",
+      "sitemapActual": true,
+      "status": 404,
+      "finalUrl": "https://guiaprogramaciontv.com/programas/guillaume-y-los-chicos-a-la-mesa",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 96171,
+      "title": "Contenido no disponible - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/programas/guillaume-y-los-chicos-a-la-mesa",
+      "metaRobots": "noindex, follow",
+      "xRobotsTag": "noindex, follow",
+      "mainPresent": true,
+      "mainWordCount": 126,
+      "visibleWordCount": 139,
+      "jsonLdCount": 0,
+      "jsonLdTypes": [],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "dea5b3f3bdcfd3f372d226940e422550dfba258a4a33bb2955ab7eec6afb4f76",
+      "error": null,
+      "actualIndexability": "noindex/error",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "random-program",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/programas/los-thunderman-infiltrados",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/programas/los-thunderman-infiltrados",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 202169,
+      "title": "Los Thunderman: Infiltrados - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/programas/los-thunderman-infiltrados",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 908,
+      "visibleWordCount": 921,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "TVSeries",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "589fc60baa6be6a9500d281667c68b145b4127d73cd8238513912be5229d0d92",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-program",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/programas/el-amante",
+      "sitemapActual": true,
+      "status": 404,
+      "finalUrl": "https://guiaprogramaciontv.com/programas/el-amante",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 96102,
+      "title": "Contenido no disponible - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/programas/el-amante",
+      "metaRobots": "noindex, follow",
+      "xRobotsTag": "noindex, follow",
+      "mainPresent": true,
+      "mainWordCount": 126,
+      "visibleWordCount": 139,
+      "jsonLdCount": 0,
+      "jsonLdTypes": [],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "76b9c7a3c589faaf1455e9033f6f1429d5b15b5198a33fc892fa0b7417ef9faf",
+      "error": null,
+      "actualIndexability": "noindex/error",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "random-program",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/programas/california-split",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/programas/california-split",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 203384,
+      "title": "California Split - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/programas/california-split",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 979,
+      "visibleWordCount": 991,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "Movie",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo",
+        "todo"
+      ],
+      "bodySha256": "cf5d5934f7b79e3c9a795f0de9f8f79caf889b7cc32018a667453cdf66ffafd2",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-program",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/programas/caso-cerrado-t3-e4",
+      "sitemapActual": true,
+      "status": 404,
+      "finalUrl": "https://guiaprogramaciontv.com/programas/caso-cerrado-t3-e4",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 96129,
+      "title": "Contenido no disponible - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/programas/caso-cerrado-t3-e4",
+      "metaRobots": "noindex, follow",
+      "xRobotsTag": "noindex, follow",
+      "mainPresent": true,
+      "mainWordCount": 126,
+      "visibleWordCount": 139,
+      "jsonLdCount": 0,
+      "jsonLdTypes": [],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "2286393e22e1a94f1b5cf8546e3d5cead7dec71b8748fe459096b4b3d8512448",
+      "error": null,
+      "actualIndexability": "noindex/error",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "random-program",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/programas/bosch",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/programas/bosch",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 199442,
+      "title": "Bosch - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/programas/bosch",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 896,
+      "visibleWordCount": 907,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "TVSeries",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "0edcf110adcc29c6e0fc217bdcf5f02e84992453d66ecb2978611166c2108bd8",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-program",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/programas/sonata-de-otono",
+      "sitemapActual": true,
+      "status": 404,
+      "finalUrl": "https://guiaprogramaciontv.com/programas/sonata-de-otono",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 96120,
+      "title": "Contenido no disponible - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/programas/sonata-de-otono",
+      "metaRobots": "noindex, follow",
+      "xRobotsTag": "noindex, follow",
+      "mainPresent": true,
+      "mainWordCount": 126,
+      "visibleWordCount": 139,
+      "jsonLdCount": 0,
+      "jsonLdTypes": [],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "fd254d1b52937d6b5bd322e3b2b7c76d5fece9832f4df47c057f6c9a6229f2d5",
+      "error": null,
+      "actualIndexability": "noindex/error",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "random-program",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/programas/equipo-danger",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/programas/equipo-danger",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 201179,
+      "title": "Equipo Danger - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/programas/equipo-danger",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 890,
+      "visibleWordCount": 902,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "TVSeries",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "18d328ddfdf7074c73933915138c7d583ef1044866bddc25acc7507ae641e4a0",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "popular-movie",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/peliculas/el-caballero-oscuro",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/peliculas/el-caballero-oscuro",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 205365,
+      "title": "El caballero oscuro - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/peliculas/el-caballero-oscuro",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 690,
+      "visibleWordCount": 703,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "Movie",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "c0f5a73e5caf0b72730b350482d6a6d3104adbd27f8e36463287d6addbbc6a2c",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-movie",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/peliculas/quien-es-carlitos",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/peliculas/quien-es-carlitos",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 192472,
+      "title": "¿Quién es Carlitos? - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/peliculas/quien-es-carlitos",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 426,
+      "visibleWordCount": 439,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "Movie",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "1cb191a5cb8af95a32a8c7de8dcea329a5dc5c284bdf1d7259f6baa44a7ec51d",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-movie",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/peliculas/los-mercenarios",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/peliculas/los-mercenarios",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 205705,
+      "title": "Los mercenarios - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/peliculas/los-mercenarios",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 866,
+      "visibleWordCount": 878,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "Movie",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo"
+      ],
+      "bodySha256": "a31522ae4014a1de07a6ab8b9924a3c8ecf883e351f9262e4c1ace3439547fea",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-movie",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/peliculas/una-bonita-manana",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/peliculas/una-bonita-manana",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 199779,
+      "title": "Una bonita mañana - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/peliculas/una-bonita-manana",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 640,
+      "visibleWordCount": 653,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "Movie",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo",
+        "Todo"
+      ],
+      "bodySha256": "b2ac3900033c11fb275f589c7bf4586b5b69bda62743072108b4a8a602ec7ccb",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-movie",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/peliculas/contigo-todo",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/peliculas/contigo-todo",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 197845,
+      "title": "Contigo, todo - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/peliculas/contigo-todo",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 615,
+      "visibleWordCount": 627,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "Movie",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo",
+        "todo",
+        "todo",
+        "todo",
+        "todo",
+        "Todo"
+      ],
+      "bodySha256": "62bb428f08853cfb4b143764ed5f4bfc016c9bf8202f0bd195a3d43a85a12b98",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "popular-series",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/series/the-walking-dead",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/series/the-walking-dead",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 211105,
+      "title": "The Walking Dead - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/series/the-walking-dead",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 1072,
+      "visibleWordCount": 1085,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "TVSeries",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "4403a70635809676c4c79d6785cbd70658149d1abe74a34130c8f3b28bc1ad2d",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-series",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/series/expediente-x",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/series/expediente-x",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 199322,
+      "title": "Expediente X - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/series/expediente-x",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 752,
+      "visibleWordCount": 764,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "TVSeries",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo"
+      ],
+      "bodySha256": "4f5b9ee538be18ce61804b3eab01392d06462b041b325b5a986d9f8a489f7197",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-series",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/series/el-mentalista",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/series/el-mentalista",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 206838,
+      "title": "El mentalista - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/series/el-mentalista",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 857,
+      "visibleWordCount": 869,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "TVSeries",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "27c3936dc4e5ffa420fe0beb738c2e3dccd33bd1887cc8d7aaa7a6c6e075f60c",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-series",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/series/la-costa-de-los-mosquitos",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/series/la-costa-de-los-mosquitos",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 200046,
+      "title": "La costa de los mosquitos - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/series/la-costa-de-los-mosquitos",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 882,
+      "visibleWordCount": 897,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "TVSeries",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "90260cf2a75f30a06c47cdd8397a6ea8e2a3b15e805d7f0df7f6eaeeb042ec71",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "editorial-guide",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/editorial/que-ver-hoy-en-tv-y-streaming",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/editorial/que-ver-hoy-en-tv-y-streaming",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 427186,
+      "title": "Que ver hoy en TV y streaming | Guia TV",
+      "canonical": "https://guiaprogramaciontv.com/editorial/que-ver-hoy-en-tv-y-streaming",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 2094,
+      "visibleWordCount": 2111,
+      "jsonLdCount": 4,
+      "jsonLdTypes": [
+        "BreadcrumbList",
+        "Article",
+        "FAQPage"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo",
+        "todo"
+      ],
+      "bodySha256": "a090c91ceeb2e7c17e2ed294f5d1236202fa28a5f34e176c326342b3516ade1f",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "editorial-comparison",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/editorial/plataformas-streaming-mas-baratas",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/editorial/plataformas-streaming-mas-baratas",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 301707,
+      "title": "Plataformas de streaming mas baratas | Guia TV",
+      "canonical": "https://guiaprogramaciontv.com/editorial/plataformas-streaming-mas-baratas",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 1103,
+      "visibleWordCount": 1118,
+      "jsonLdCount": 4,
+      "jsonLdTypes": [
+        "BreadcrumbList",
+        "Article",
+        "FAQPage"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo"
+      ],
+      "bodySha256": "af496ede9cd0f9096d43b53580ff0df6453c56ca580ec8c79d61121249155f3c",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "editorial-ranking",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/editorial/mejores-series-netflix",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/editorial/mejores-series-netflix",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 362896,
+      "title": "Mejores series de Netflix para ver hoy | Guia TV",
+      "canonical": "https://guiaprogramaciontv.com/editorial/mejores-series-netflix",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 1517,
+      "visibleWordCount": 1534,
+      "jsonLdCount": 4,
+      "jsonLdTypes": [
+        "BreadcrumbList",
+        "Article",
+        "FAQPage"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "93142467a67aa3e245b006258b4ce5f2bc2b598c6a351bbf4459975443269fb6",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "random-editorial",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/editorial/marruecos-pide-a-espana-que-devuelva-a-los-migrantes-supervivientes-y",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/editorial/marruecos-pide-a-espana-que-devuelva-a-los-migrantes-supervivientes-y",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 224557,
+      "title": "Marruecos pide a España que devuelva a los migrantes superv…",
+      "canonical": "https://guiaprogramaciontv.com/editorial/marruecos-pide-a-espana-que-devuelva-a-los-migrantes-supervivientes-y",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 870,
+      "visibleWordCount": 887,
+      "jsonLdCount": 3,
+      "jsonLdTypes": [
+        "BreadcrumbList",
+        "Article"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "1f7a9af2564186a6b5d9b8858b4b8140353ea4ac14b3715c610a6e5f7fc693df",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "random-editorial",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/editorial/el-psoe-se-enzarza-con-el-pp-por-sus-bulos-y-feijoo-reta-a-sanchez",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/editorial/el-psoe-se-enzarza-con-el-pp-por-sus-bulos-y-feijoo-reta-a-sanchez",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 224630,
+      "title": "El PSOE se enzarza con el PP por sus \"bulos\" y Feijóo reta…",
+      "canonical": "https://guiaprogramaciontv.com/editorial/el-psoe-se-enzarza-con-el-pp-por-sus-bulos-y-feijoo-reta-a-sanchez",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 877,
+      "visibleWordCount": 897,
+      "jsonLdCount": 3,
+      "jsonLdTypes": [
+        "BreadcrumbList",
+        "Article"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "de4ded752d6e05d6eddb645ce0d1b40f0c50b1ee4caee01fc704f4ba0b883dd9",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "editorial-category",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/editorial/categoria/streaming",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/editorial/categoria/streaming",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 192029,
+      "title": "Streaming | Blog Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/editorial/categoria/streaming",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 244,
+      "visibleWordCount": 256,
+      "jsonLdCount": 3,
+      "jsonLdTypes": [
+        "BreadcrumbList",
+        "CollectionPage",
+        "ItemList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "746932bdf7a45509597929c00569702c2249752012f9fa7b6dd05c1108bff46f",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "conditional"
+    },
+    {
+      "family": "editorial-hub",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/editorial",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/editorial",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 219275,
+      "title": "Blog de cine, series y streaming | Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/editorial",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 755,
+      "visibleWordCount": 771,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "CollectionPage",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "49cb5e81419bba722d1ab768cf6bf43c084f246d6835cb19a25e32d0bce545b0",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "ranking-hub",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/editorial/rankings",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/editorial/rankings",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 191453,
+      "title": "Rankings editoriales de cine, series y streaming | Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/editorial/rankings",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 473,
+      "visibleWordCount": 490,
+      "jsonLdCount": 3,
+      "jsonLdTypes": [
+        "CollectionPage",
+        "ItemList",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "c5699cda61a158b6d53093785ff65f8112707e9547929eb7502bd2f98c8bd4c9",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "trends",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/tendencias",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/tendencias",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 105675,
+      "title": "Tendencias de TV y streaming | Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/tendencias",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 118,
+      "visibleWordCount": 133,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "4e503b85eb539db72684b9a9a8b3e44b2515b6d8c7c0e5d25082dfb48c2a0c30",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "streaming-hub",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/plataformas",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/plataformas",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 309542,
+      "title": "Plataformas | Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/plataformas",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 2228,
+      "visibleWordCount": 2239,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo"
+      ],
+      "bodySha256": "379dce9cbe76fd6dd05d50cea4cf8b16a5a88a65c58c62e837d0452435fe3082",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "streaming-comparator",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/comparador-streaming",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/comparador-streaming",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 142798,
+      "title": "Comparador de plataformas | Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/comparador-streaming",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 667,
+      "visibleWordCount": 757,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "24044d46c0ec5be87c9582af842bd087bd08b3a57930fbf40604d30f7a8b3950",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "football-hub",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/deportes/futbol",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/deportes/futbol",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 518778,
+      "title": "Fútbol hoy: partidos en directo, horarios y dónde verlos - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/deportes/futbol",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 571,
+      "visibleWordCount": 667,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo",
+        "todo",
+        "todo",
+        "todo"
+      ],
+      "bodySha256": "d479280f8154d49222ac7fa009693d23b72175587d15490e4400ddc83d255d8e",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "football-competition",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/deportes/futbol/competiciones/premier-league",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/deportes/futbol/competiciones/premier-league",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 262013,
+      "title": "Premier League - partidos, clasificación y dónde verlos - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/deportes/futbol/competiciones/premier-league",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 224,
+      "visibleWordCount": 242,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "6de993707cdf1094735fe9ebc342c8f022510dd88b914279015182927eaef7b2",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "football-match",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/deportes/futbol/partido/real-madrid-cf-malaga-cf-2026-08-30",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/deportes/futbol/partido/real-madrid-cf-malaga-cf-2026-08-30",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 241519,
+      "title": "Real Madrid CF - Málaga CF · Primera Division - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/deportes/futbol/partido/real-madrid-cf-malaga-cf-2026-08-30",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 82,
+      "visibleWordCount": 187,
+      "jsonLdCount": 3,
+      "jsonLdTypes": [
+        "BreadcrumbList",
+        "SportsEvent"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "b191b8f9a0e387d81abc6b9dda541a2407e95b0b460aaaf485583d3f99b8eea6",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "random-football-team",
+      "sitemapExpectation": "in-sitemap",
+      "indexExpectation": "index",
+      "url": "https://guiaprogramaciontv.com/deportes/futbol/equipos/le-mans-fc",
+      "sitemapActual": true,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/deportes/futbol/equipos/le-mans-fc",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 125091,
+      "title": "Le Mans FC - partidos, resultados y noticias - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/deportes/futbol/equipos/le-mans-fc",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 121,
+      "visibleWordCount": 139,
+      "jsonLdCount": 3,
+      "jsonLdTypes": [
+        "BreadcrumbList",
+        "SportsTeam"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "071d24275b1881ab4cb99b2ea51adbc8503cf5aeabc409312145e1e8e018bdc2",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "private-admin",
+      "sitemapExpectation": "not-in-sitemap",
+      "indexExpectation": "noindex",
+      "url": "https://guiaprogramaciontv.com/admin",
+      "sitemapActual": false,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/admin",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 11595,
+      "title": "Guía de Programación TV — Qué ver hoy en televisión y streaming",
+      "canonical": "https://guiaprogramaciontv.com/admin",
+      "metaRobots": null,
+      "xRobotsTag": null,
+      "mainPresent": false,
+      "mainWordCount": 0,
+      "visibleWordCount": 12,
+      "jsonLdCount": 0,
+      "jsonLdTypes": [],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "79ddd1a16aaf2ba4512b905ce179d8806720b02c60d0893bb04ebf229f290b75",
+      "error": null,
+      "actualIndexability": "indexable-by-default",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "private-account",
+      "sitemapExpectation": "not-in-sitemap",
+      "indexExpectation": "noindex",
+      "url": "https://guiaprogramaciontv.com/mi-cuenta",
+      "sitemapActual": false,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/perfil",
+      "redirects": 1,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 11596,
+      "title": "Guía de Programación TV — Qué ver hoy en televisión y streaming",
+      "canonical": "https://guiaprogramaciontv.com/perfil",
+      "metaRobots": null,
+      "xRobotsTag": null,
+      "mainPresent": false,
+      "mainWordCount": 0,
+      "visibleWordCount": 12,
+      "jsonLdCount": 0,
+      "jsonLdTypes": [],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "fb88500929fa3b6ae535cd20ed7acae56feb2b745713782c8a203712842f859e",
+      "error": null,
+      "actualIndexability": "indexable-by-default",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "private-login",
+      "sitemapExpectation": "not-in-sitemap",
+      "indexExpectation": "noindex",
+      "url": "https://guiaprogramaciontv.com/iniciar-sesion",
+      "sitemapActual": false,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/iniciar-sesion",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 45003,
+      "title": "Iniciar sesión - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/iniciar-sesion",
+      "metaRobots": "noindex, follow",
+      "xRobotsTag": "noindex, follow",
+      "mainPresent": false,
+      "mainWordCount": 0,
+      "visibleWordCount": 170,
+      "jsonLdCount": 0,
+      "jsonLdTypes": [],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "a03905be5dd55e07e2edcb30af366c22224bae7f31911493b97c4bfae760439e",
+      "error": null,
+      "actualIndexability": "noindex",
+      "qualityTier": "pass"
+    },
+    {
+      "family": "legacy",
+      "sitemapExpectation": "not-in-sitemap",
+      "indexExpectation": "redirect-or-noindex",
+      "url": "https://guiaprogramaciontv.com/detalles/123",
+      "sitemapActual": false,
+      "status": 404,
+      "finalUrl": "https://guiaprogramaciontv.com/detalles/123",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 96031,
+      "title": "Contenido no disponible - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/detalles/123",
+      "metaRobots": "noindex, follow",
+      "xRobotsTag": "noindex, follow",
+      "mainPresent": true,
+      "mainWordCount": 126,
+      "visibleWordCount": 139,
+      "jsonLdCount": 0,
+      "jsonLdTypes": [],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "9c0e178ad396a0da6fbf08d2c06fbda887827765784a8c1ad32eb49c95e72add",
+      "error": null,
+      "actualIndexability": "noindex/error",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "legacy",
+      "sitemapExpectation": "not-in-sitemap",
+      "indexExpectation": "redirect-or-noindex",
+      "url": "https://guiaprogramaciontv.com/pelicula-details/123",
+      "sitemapActual": false,
+      "status": 200,
+      "finalUrl": "https://guiaprogramaciontv.com/pelicula-details/123",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 200901,
+      "title": "El Señor de los Anillos - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/pelicula-details/123",
+      "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xRobotsTag": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "mainPresent": true,
+      "mainWordCount": 775,
+      "visibleWordCount": 790,
+      "jsonLdCount": 2,
+      "jsonLdTypes": [
+        "Movie",
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [
+        "todo"
+      ],
+      "bodySha256": "d67b48f390a2d97a9ba3175acdbbc386ae0f08469d79bcb9e8d7657269ecd8f6",
+      "error": null,
+      "actualIndexability": "index",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "legacy",
+      "sitemapExpectation": "not-in-sitemap",
+      "indexExpectation": "redirect-or-noindex",
+      "url": "https://guiaprogramaciontv.com/program-full-details/123",
+      "sitemapActual": false,
+      "status": 404,
+      "finalUrl": "https://guiaprogramaciontv.com/program-full-details/123",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 98864,
+      "title": "Contenido no disponible - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/program-full-details/123",
+      "metaRobots": "noindex, follow",
+      "xRobotsTag": "noindex, follow",
+      "mainPresent": true,
+      "mainWordCount": 127,
+      "visibleWordCount": 140,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "d481a0a464592a6fc4bfcd07f3112412617aedec62d6b640095298cea876a259",
+      "error": null,
+      "actualIndexability": "noindex/error",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "internal-id",
+      "sitemapExpectation": "not-in-sitemap",
+      "indexExpectation": "noindex",
+      "url": "https://guiaprogramaciontv.com/contenido/123",
+      "sitemapActual": false,
+      "status": 404,
+      "finalUrl": "https://guiaprogramaciontv.com/contenido/123",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 9,
+      "title": null,
+      "canonical": null,
+      "metaRobots": null,
+      "xRobotsTag": null,
+      "mainPresent": false,
+      "mainWordCount": 0,
+      "visibleWordCount": 2,
+      "jsonLdCount": 0,
+      "jsonLdTypes": [],
+      "publisherIds": [],
+      "placeholderMatches": [],
+      "bodySha256": "e3ebaa16dd9d9b9fc107c42183fb6cf9d22927e1af03dbbdfa0ccc38e4e4ac31",
+      "error": null,
+      "actualIndexability": "noindex/error",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "malformed",
+      "sitemapExpectation": "not-in-sitemap",
+      "indexExpectation": "noindex",
+      "url": "https://guiaprogramaciontv.com/peliculas/slug-que-no-existe-adsense-audit",
+      "sitemapActual": false,
+      "status": 404,
+      "finalUrl": "https://guiaprogramaciontv.com/peliculas/slug-que-no-existe-adsense-audit",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 96171,
+      "title": "Contenido no disponible - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/peliculas/slug-que-no-existe-adsense-audit",
+      "metaRobots": "noindex, follow",
+      "xRobotsTag": "noindex, follow",
+      "mainPresent": true,
+      "mainWordCount": 126,
+      "visibleWordCount": 139,
+      "jsonLdCount": 0,
+      "jsonLdTypes": [],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "3dc3fd48eeddc14c75bfe6d65f04bd3a3f6e33f4869bd4fe0b9288d916093ada",
+      "error": null,
+      "actualIndexability": "noindex/error",
+      "qualityTier": "fail"
+    },
+    {
+      "family": "malformed",
+      "sitemapExpectation": "not-in-sitemap",
+      "indexExpectation": "noindex",
+      "url": "https://guiaprogramaciontv.com/ruta-que-no-existe-adsense-audit",
+      "sitemapActual": false,
+      "status": 404,
+      "finalUrl": "https://guiaprogramaciontv.com/ruta-que-no-existe-adsense-audit",
+      "redirects": 0,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 98025,
+      "title": "Página no encontrada - Guía TV",
+      "canonical": "https://guiaprogramaciontv.com/ruta-que-no-existe-adsense-audit",
+      "metaRobots": "noindex, nofollow",
+      "xRobotsTag": "noindex, nofollow",
+      "mainPresent": true,
+      "mainWordCount": 43,
+      "visibleWordCount": 133,
+      "jsonLdCount": 1,
+      "jsonLdTypes": [
+        "BreadcrumbList"
+      ],
+      "publisherIds": [
+        "ca-pub-9653385567378817"
+      ],
+      "placeholderMatches": [],
+      "bodySha256": "1a3ebe7e6d801ce324b3dc6bfdd466c1df47ca27244ed5d75b5a450c3836b597",
+      "error": null,
+      "actualIndexability": "noindex/error",
+      "qualityTier": "fail"
+    }
+  ]
+}

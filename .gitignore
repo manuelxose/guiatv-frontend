@@ -69,6 +69,7 @@ releases/
 /apps/frontend/coverage/
 
 # Tool local secrets and runtime data
+.firecrawl/
 .env.local
 .env.*.local
 .claude-flow/data/

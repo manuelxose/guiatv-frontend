@@ -38,19 +38,21 @@ function buildSurface(overrides: Partial<TvChannelSurfaceDTO['channel']> = {}): 
 
 describe('CanalCompletoComponent — channel-page affiliate CTA', () => {
   let resolveManySpy: jasmine.Spy;
+  let setMetaTagsSpy: jasmine.Spy;
 
   function configure(surface: TvChannelSurfaceDTO) {
     resolveManySpy = jasmine.createSpy('resolveMany').and.returnValue(of([]));
+    setMetaTagsSpy = jasmine.createSpy('setMetaTags');
     TestBed.configureTestingModule({
       imports: [CanalCompletoComponent],
       providers: [
         provideRouter([]),
         {
           provide: ActivatedRoute,
-          useValue: { paramMap: of(convertToParamMap({ id: surface.channel!.id })) },
+          useValue: { paramMap: of(convertToParamMap({ id: surface.channel?.id || 'missing-channel' })) },
         },
         { provide: TvDataService, useValue: { loadChannelSurface: () => of(surface) } },
-        { provide: MetaService, useValue: { setMetaTags: () => undefined } },
+        { provide: MetaService, useValue: { setMetaTags: setMetaTagsSpy } },
         { provide: ApiConfigService, useValue: { getAssetBaseUrl: () => '' } },
         { provide: AffiliateService, useValue: { resolveMany: resolveManySpy, buildOutboundUrl: (o: AffiliateResolvedOffer) => o.outbound.path } },
       ],
@@ -95,5 +97,16 @@ describe('CanalCompletoComponent — channel-page affiliate CTA', () => {
     fixture.detectChanges();
 
     expect(resolveManySpy).not.toHaveBeenCalled();
+  });
+
+  it('marks an unavailable channel as a noindex 404 instead of an indexable empty page', () => {
+    configure({ channel: null, scheduleItems: [] } as unknown as TvChannelSurfaceDTO);
+    const fixture = TestBed.createComponent(CanalCompletoComponent);
+    fixture.detectChanges();
+
+    expect(setMetaTagsSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      robots: 'noindex, follow',
+      httpStatus: 404,
+    }));
   });
 });

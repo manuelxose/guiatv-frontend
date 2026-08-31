@@ -17,6 +17,7 @@
     "migrate:tv-read-model": "node dist/scripts/backfill-tv-read-model.js",
     "migrate:media-catalog": "node dist/scripts/backfill-media-catalog.js",
     "seed:editorial": "node dist/scripts/seed-editorial-content.js",
+    "migrate:editorial-review": "node dist/scripts/migrate-editorial-review.js",
     "seed:affiliate": "node dist/scripts/seed-affiliate-offers.js",
     "migrate:social-data": "node dist/scripts/migrate-social-data.js",
     "migrate:user-privacy-defaults": "node dist/scripts/migrate-user-privacy-defaults.js",

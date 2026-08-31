@@ -99,7 +99,7 @@ import { FaqSectionComponent, FaqItem } from '../../components/faq-section/faq-s
         <section class="mb-16">
           <h2 class="text-2xl font-bold text-[var(--portal-text)] mb-4">Equipo</h2>
           <p class="text-[var(--portal-text-soft)] leading-8 mb-6">
-            Guía Programación TV es un proyecto de <a href="https://tecnoriasl.com/" target="_blank" rel="noopener" class="text-[var(--accent-live)] hover:opacity-75 transition-opacity">TecnoRia S.L.</a>,
+            Guía Programación TV es un proyecto de <a href="https://tecnoriasl.com/" target="_blank" rel="noopener" class="text-[var(--accent-live)] hover:opacity-75 transition-opacity">TecnoRia</a>,
             empresa tecnológica española especializada en desarrollo de productos digitales.
           </p>
         </section>

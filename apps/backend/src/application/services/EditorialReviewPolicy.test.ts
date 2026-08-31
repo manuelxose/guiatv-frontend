@@ -1,0 +1,47 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  assertEditorialPostCanBeApproved,
+  buildEditorialApproval,
+  PUBLIC_EDITORIAL_FILTER,
+} from './EditorialReviewPolicy';
+
+const validPost = {
+  title: 'Guía útil y revisada',
+  excerpt: 'Una introducción concreta que explica qué encontrará el lector en la guía.',
+  content: `<p>${'contenido editorial verificado '.repeat(90)}</p>`,
+  author: { name: 'Equipo editorial Guía TV', id: 'guiatv-editorial' },
+  seo: {
+    metaTitle: 'Guía útil y revisada | Guía TV',
+    metaDescription: 'Información verificada y útil para elegir qué ver en televisión y streaming.',
+  },
+};
+
+test('public editorial filter requires both publish status and explicit approval', () => {
+  assert.deepEqual(PUBLIC_EDITORIAL_FILTER, {
+    status: 'publish',
+    reviewState: 'approved',
+  });
+});
+
+test('approval rejects missing authorship and low-value content', () => {
+  assert.throws(
+    () => assertEditorialPostCanBeApproved({ ...validPost, author: undefined, content: '<p>Breve.</p>' }),
+    /author|contenido/i
+  );
+});
+
+test('approval records reviewer and publishes in one auditable transition', () => {
+  const now = new Date('2026-08-31T12:00:00.000Z');
+  assert.deepEqual(buildEditorialApproval(validPost, 'editora@guia.test', now), {
+    status: 'publish',
+    reviewState: 'approved',
+    reviewedBy: 'editora@guia.test',
+    reviewedAt: now,
+    publishedAt: now,
+  });
+});
+
+test('approval requires a named reviewer distinct from content generation', () => {
+  assert.throws(() => buildEditorialApproval(validPost, '', new Date()), /reviewer/i);
+});

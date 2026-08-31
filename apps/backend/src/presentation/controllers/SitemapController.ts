@@ -3,9 +3,11 @@ import { IChannelRepository } from '../../domain/repositories/IChannelRepository
 import { IProgramRepository } from '../../domain/repositories/IProgramRepository';
 import { BlogPostModel } from '../../infrastructure/database/models/BlogPost.model';
 import { TMDBService } from '../../infrastructure/external/TMDBService';
-import { CATALOG_PLATFORM_REGISTRY } from '../../application/dto/CatalogDTO';
 import { ChannelType } from '../../domain/entities/Channel';
 import { FootballQueryService } from '../../application/sports/services/FootballQueryService';
+import { buildLegacyProgramSlug, normalizeTvToken } from '../../shared/utils/tvMetadata';
+import { TvReadQueryService } from '../../application/services/TvReadQueryService';
+import { PUBLIC_EDITORIAL_FILTER } from '../../application/services/EditorialReviewPolicy';
 
 type Changefreq =
   | 'always'
@@ -56,8 +58,12 @@ export class SitemapController {
   constructor(
     private readonly channelRepository: IChannelRepository,
     private readonly programRepository: IProgramRepository,
-    private readonly tmdbService?: TMDBService,
-    private readonly footballQueryService?: FootballQueryService
+    _tmdbService?: TMDBService,
+    _footballQueryService?: FootballQueryService,
+    private readonly tvReadQueryService?: Pick<
+      TvReadQueryService,
+      'getChannels' | 'getIndexableProgramSitemapRows'
+    >
   ) {}
 
   /* ------------------------------------------------------------------ */
@@ -174,8 +180,6 @@ export class SitemapController {
       'sitemap-programs.xml',
       'sitemap-blog.xml',
     ];
-    if (this.tmdbService) subs.push('sitemap-streaming.xml');
-    if (this.footballQueryService) subs.push('sitemap-football.xml');
 
     const lines: string[] = [
       '<?xml version="1.0" encoding="UTF-8"?>',
@@ -204,11 +208,45 @@ export class SitemapController {
     const todayIso = this.formatDate(new Date());
     const urls: SitemapUrlEntry[] = [];
 
-    const channels = await this.channelRepository.findAll({ isActive: true });
+    if (this.tvReadQueryService) {
+      const directory = await this.tvReadQueryService.getChannels('today');
+      for (const entry of directory.channels) {
+        const channel = entry.channel;
+        if (channel.group !== 'tdt' && channel.group !== 'autonomico') continue;
+        const slug = channel.normalizedName || normalizeTvToken(channel.name);
+        if (!slug) continue;
+        urls.push({
+          loc: `/canales/${slug}`,
+          lastmod: todayIso,
+          changefreq: 'weekly',
+          priority: 0.7,
+        });
+      }
+      return this.renderUrlset(urls);
+    }
+
+    // Compatibility fallback for installations without the public TV read
+    // model. Production injects tvReadQueryService above so sitemap eligibility
+    // uses the same consumer-visible rows as the channel detail surface.
+    const todayYmd = this.formatYmd(new Date());
+    const [channels, programsToday] = await Promise.all([
+      this.channelRepository.findAll({ isActive: true }),
+      this.programRepository.findByDate(todayYmd, 'minimal'),
+    ]);
+    const scheduledChannelIds = new Set(
+      programsToday.flatMap((program) => [
+        normalizeTvToken(program.channelId),
+        normalizeTvToken(program.canonicalChannelId),
+      ])
+    );
+
     for (const channel of channels) {
       if (!INDEXABLE_CHANNEL_TYPES.has(channel.type)) continue;
       const slug = channel.normalizedName;
       if (!slug) continue;
+      const channelIdentifiers = [channel.id, slug, ...channel.aliases, ...channel.sourceIds]
+        .map((value) => normalizeTvToken(value));
+      if (!channelIdentifiers.some((identifier) => scheduledChannelIds.has(identifier))) continue;
       urls.push({
         loc: `/canales/${slug}`,
         lastmod: todayIso,
@@ -223,28 +261,45 @@ export class SitemapController {
     const today = new Date();
     const todayYmd = this.formatYmd(today);
 
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    const yesterdayYmd = this.formatYmd(yesterday);
-
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
     const tomorrowYmd = this.formatYmd(tomorrow);
 
-    const [programsYesterday, programsToday, programsTomorrow] = await Promise.all([
-      this.programRepository.findByDate(yesterdayYmd, 'minimal'),
+    const urls: SitemapUrlEntry[] = [];
+    const seenSlugs = new Set<string>();
+
+    if (this.tvReadQueryService) {
+      const rows = await this.tvReadQueryService.getIndexableProgramSitemapRows([
+        todayYmd,
+        tomorrowYmd,
+      ]);
+      for (const row of rows) {
+        const slug = buildLegacyProgramSlug(row.title);
+        if (!slug || seenSlugs.has(slug)) continue;
+        seenSlugs.add(slug);
+        urls.push({
+          loc: `/programas/${slug}`,
+          lastmod: this.formatDate(row.start),
+          changefreq: 'daily',
+          priority: 0.6,
+        });
+      }
+      return this.renderUrlset(urls);
+    }
+
+    // Compatibility fallback for installations that have not enabled the TV
+    // read model. Production uses the branch above, matching the collection
+    // queried by the public slug resolver.
+    const [programsToday, programsTomorrow] = await Promise.all([
       this.programRepository.findByDate(todayYmd, 'minimal'),
       this.programRepository.findByDate(tomorrowYmd, 'minimal'),
     ]);
-
-    const urls: SitemapUrlEntry[] = [];
-    const seenSlugs = new Set<string>();
-    const allPrograms = [...programsYesterday, ...programsToday, ...programsTomorrow];
+    const allPrograms = [...programsToday, ...programsTomorrow];
 
     for (const program of allPrograms) {
       // Only include TMDB-enriched programs (not ephemeral EPG-only)
       if (!program.tmdbId) continue;
-      const slug = this.slugify(program.title);
+      const slug = buildLegacyProgramSlug(program.title);
       if (!slug || seenSlugs.has(slug)) continue;
       seenSlugs.add(slug);
       urls.push({
@@ -261,12 +316,12 @@ export class SitemapController {
     const todayIso = this.formatDate(new Date());
     const urls: SitemapUrlEntry[] = [];
 
-    const posts = await BlogPostModel.find({ status: 'publish' })
+    const posts = await BlogPostModel.find(PUBLIC_EDITORIAL_FILTER)
       .select({ slug: 1, publishedAt: 1, updatedAt: 1, categories: 1 })
       .lean()
       .exec();
 
-    const categorySlugs = new Set<string>();
+    const categoryCounts = new Map<string, number>();
     for (const post of posts) {
       if (post.slug) {
         const lastmod = post.updatedAt || post.publishedAt || new Date();
@@ -277,12 +332,17 @@ export class SitemapController {
           priority: 0.7,
         });
       }
+      const postCategorySlugs = new Set<string>();
       for (const category of (post.categories || []) as any[]) {
-        if (category?.slug) categorySlugs.add(category.slug);
+        if (category?.slug) postCategorySlugs.add(category.slug);
+      }
+      for (const slug of postCategorySlugs) {
+        categoryCounts.set(slug, (categoryCounts.get(slug) || 0) + 1);
       }
     }
 
-    for (const slug of categorySlugs) {
+    for (const [slug, count] of categoryCounts) {
+      if (count < 3) continue;
       urls.push({
         loc: `/editorial/categoria/${slug}`,
         lastmod: todayIso,
@@ -293,77 +353,13 @@ export class SitemapController {
     return this.renderUrlset(urls);
   }
 
-  /**
-   * Competition, match and team detail pages were entirely absent from
-   * every sitemap — only the 5 static football hub routes were ever
-   * listed (sitemap-static.xml). Those pages are indexable and reachable
-   * via internal links regardless, but a sitemap materially speeds up
-   * discovery for content this time-sensitive. Each section is isolated
-   * (try/catch) so one provider hiccup doesn't blank the whole sitemap —
-   * same resilience principle as the rest of the football domain.
-   */
+  /** Provider-only detail pages stay discoverable to users but are not SEO inventory. */
   private async buildFootballSitemap(): Promise<string> {
-    const todayIso = this.formatDate(new Date());
-    const urls: SitemapUrlEntry[] = [];
-    if (!this.footballQueryService) return this.renderUrlset(urls);
-
-    try {
-      const { competitions } = await this.footballQueryService.getCompetitions();
-      for (const competition of competitions) {
-        if (!competition.slug) continue;
-        urls.push({
-          loc: `/deportes/futbol/competiciones/${competition.slug}`,
-          lastmod: todayIso,
-          changefreq: 'daily',
-          priority: 0.6,
-        });
-      }
-    } catch (err) {
-      console.error('[Sitemap] Error fetching football competitions:', err);
-    }
-
-    try {
-      const { matches } = await this.footballQueryService.getMatches({});
-      const seenTeamSlugs = new Set<string>();
-      for (const match of matches) {
-        if (match.slug) {
-          urls.push({
-            loc: `/deportes/futbol/partido/${match.slug}`,
-            lastmod: this.formatDate(match.lastUpdatedAt || match.kickoffAt),
-            changefreq: match.status === 'live' ? 'hourly' : 'daily',
-            priority: 0.6,
-          });
-        }
-        for (const team of [match.homeTeam, match.awayTeam]) {
-          if (!team.slug || seenTeamSlugs.has(team.slug)) continue;
-          seenTeamSlugs.add(team.slug);
-          urls.push({
-            loc: `/deportes/futbol/equipos/${team.slug}`,
-            lastmod: todayIso,
-            changefreq: 'weekly',
-            priority: 0.5,
-          });
-        }
-      }
-    } catch (err) {
-      console.error('[Sitemap] Error fetching football matches/teams:', err);
-    }
-
-    return this.renderUrlset(urls);
+    return this.renderUrlset([]);
   }
 
   private async buildStreamingSitemap(): Promise<string> {
-    const todayIso = this.formatDate(new Date());
-    const urls: SitemapUrlEntry[] = [];
-
-    if (this.tmdbService) {
-      try {
-        await this.appendStreamingContent(urls, todayIso);
-      } catch (err) {
-        console.error('[Sitemap] Error fetching streaming content:', err);
-      }
-    }
-    return this.renderUrlset(urls);
+    return this.renderUrlset([]);
   }
 
   /* ------------------------------------------------------------------ */
@@ -385,7 +381,6 @@ export class SitemapController {
       { loc: '/deportes/futbol/en-directo', lastmod: today, changefreq: 'hourly', priority: 0.8 },
       { loc: '/deportes/futbol/competiciones', lastmod: today, changefreq: 'daily', priority: 0.8 },
       { loc: '/deportes/futbol/noticias', lastmod: today, changefreq: 'daily', priority: 0.7 },
-      { loc: '/tendencias', lastmod: today, changefreq: 'daily', priority: 0.8 },
       { loc: '/comparador-streaming', lastmod: today, changefreq: 'weekly', priority: 0.8 },
       { loc: '/editorial', lastmod: today, changefreq: 'daily', priority: 0.8 },
       { loc: '/editorial/rankings', lastmod: today, changefreq: 'weekly', priority: 0.7 },
@@ -427,68 +422,6 @@ export class SitemapController {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  Streaming content (TMDB)                                           */
-  /* ------------------------------------------------------------------ */
-
-  private async appendStreamingContent(urls: SitemapUrlEntry[], todayIso: string): Promise<void> {
-    const seenIds = new Set<string>();
-    const MAX_PAGES = 3;
-
-    for (const platform of CATALOG_PLATFORM_REGISTRY) {
-      const discoverOpts = {
-        withWatchProviders: [platform.tmdbProviderId],
-        sortBy: 'popularity.desc' as const,
-        region: 'ES',
-        watchMonetizationTypes: ['flatrate' as const],
-      };
-
-      for (let page = 1; page <= MAX_PAGES; page++) {
-        try {
-          const moviePage = await this.tmdbService!.discoverMovies({ ...discoverOpts, page });
-          for (const movie of moviePage.results) {
-            const catalogId = `tmdb:movie:${movie.id}`;
-            if (seenIds.has(catalogId)) continue;
-            seenIds.add(catalogId);
-
-            const slug = this.slugify(movie.title || movie.name || `movie-${movie.id}`);
-            if (slug) {
-              urls.push({
-                loc: `/peliculas/${slug}`,
-                lastmod: todayIso,
-                changefreq: 'weekly',
-                priority: 0.6,
-              });
-            }
-          }
-          if (page >= moviePage.total_pages) break;
-        } catch { break; }
-      }
-
-      for (let page = 1; page <= MAX_PAGES; page++) {
-        try {
-          const tvPage = await this.tmdbService!.discoverTV({ ...discoverOpts, page });
-          for (const show of tvPage.results) {
-            const catalogId = `tmdb:tv:${show.id}`;
-            if (seenIds.has(catalogId)) continue;
-            seenIds.add(catalogId);
-
-            const slug = this.slugify(show.name || show.title || `serie-${show.id}`);
-            if (slug) {
-              urls.push({
-                loc: `/series/${slug}`,
-                lastmod: todayIso,
-                changefreq: 'weekly',
-                priority: 0.6,
-              });
-            }
-          }
-          if (page >= tvPage.total_pages) break;
-        } catch { break; }
-      }
-    }
-  }
-
-  /* ------------------------------------------------------------------ */
   /*  Utilities                                                          */
   /* ------------------------------------------------------------------ */
 
@@ -523,16 +456,6 @@ export class SitemapController {
   }
 
   /** Matches Channel.normalizedName: NFD-normalize to strip diacritics */
-  private slugify(value: string): string {
-    return String(value || '')
-      .toLowerCase()
-      .trim()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
-
   private escapeXml(value: string): string {
     return value
       .replace(/&/g, '&amp;')

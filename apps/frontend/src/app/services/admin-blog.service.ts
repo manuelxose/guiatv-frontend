@@ -33,6 +33,9 @@ export interface AdminBlogPost {
   modified?: string;
   slug: string;
   status?: string;
+  reviewState?: 'unreviewed' | 'in-review' | 'approved' | 'rejected';
+  origin?: 'human' | 'ai-assisted' | 'automated-import' | 'legacy';
+  author?: { name?: string; id?: string };
   contentType?: AdminBlogContentType;
   featured?: boolean;
   primaryIntent?: string;
@@ -61,6 +64,9 @@ export interface AdminBlogCreatePayload {
   title: string;
   slug?: string;
   status?: 'draft' | 'publish';
+  origin?: 'human' | 'ai-assisted' | 'automated-import' | 'legacy';
+  authorName?: string;
+  authorId?: string;
   excerpt?: string;
   content?: string;
   categories?: string[] | string;

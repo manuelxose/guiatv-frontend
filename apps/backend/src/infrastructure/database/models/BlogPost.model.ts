@@ -1,5 +1,9 @@
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
+import type {
+  EditorialOrigin,
+  EditorialReviewState,
+} from '../../../application/services/EditorialReviewPolicy';
 
 export type BlogContentType =
   | 'guide'
@@ -37,6 +41,11 @@ export interface IBlogPostDocument {
   title: string;
   slug: string;
   status: 'draft' | 'publish';
+  origin: EditorialOrigin;
+  reviewState: EditorialReviewState;
+  reviewedBy?: string;
+  reviewedAt?: Date;
+  reviewNotes?: string;
   excerpt?: string;
   content?: string;
   categories: IBlogPostCategory[];
@@ -108,6 +117,21 @@ const BlogPostSchema = new Schema<IBlogPostDocument>(
       default: 'draft',
       index: true,
     },
+    origin: {
+      type: String,
+      enum: ['human', 'ai-assisted', 'automated-import', 'legacy'],
+      default: 'legacy',
+      index: true,
+    },
+    reviewState: {
+      type: String,
+      enum: ['unreviewed', 'in-review', 'approved', 'rejected'],
+      default: 'unreviewed',
+      index: true,
+    },
+    reviewedBy: { type: String, trim: true },
+    reviewedAt: { type: Date },
+    reviewNotes: { type: String, trim: true },
     excerpt: { type: String, trim: true },
     content: { type: String },
     categories: { type: [BlogPostCategorySchema], default: [] },
@@ -161,6 +185,7 @@ const BlogPostSchema = new Schema<IBlogPostDocument>(
 );
 
 BlogPostSchema.index({ status: 1, publishedAt: -1 });
+BlogPostSchema.index({ status: 1, reviewState: 1, publishedAt: -1 });
 BlogPostSchema.index({ contentType: 1, status: 1, publishedAt: -1 });
 BlogPostSchema.index({ 'categories.slug': 1, publishedAt: -1 });
 BlogPostSchema.index(

@@ -314,6 +314,13 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     if (!surface.channel) {
       this.channelNotFound = true;
       this.error = 'No hemos encontrado este canal en la guía actual.';
+      this.metaService.setMetaTags({
+        title: 'Canal no disponible - Guía TV',
+        description: 'No hemos encontrado este canal en la guía actual.',
+        canonicalUrl: this.router.url,
+        robots: 'noindex, follow',
+        httpStatus: 404,
+      });
       this.isLoading = false;
       return;
     }

@@ -116,6 +116,9 @@ export class AdminBlogSectionComponent implements OnInit {
       title: ['', [Validators.required, Validators.minLength(6)]],
       slug: [''],
       status: ['draft'],
+      origin: ['human'],
+      authorName: ['', Validators.required],
+      authorId: ['', Validators.required],
       contentType: ['guide'],
       featured: [false],
       evergreen: [true],
@@ -270,7 +273,10 @@ export class AdminBlogSectionComponent implements OnInit {
     this.blogForm.reset({
       title: this.getPostTitle(post),
       slug: post.slug || '',
-      status: this.normalizePostStatus(post),
+      status: 'draft',
+      origin: post.origin || 'legacy',
+      authorName: post.author?.name || '',
+      authorId: post.author?.id || '',
       contentType: this.getPostContentType(post),
       featured: Boolean(post.featured),
       evergreen: post.evergreen !== false,
@@ -328,21 +334,19 @@ export class AdminBlogSectionComponent implements OnInit {
   }
 
   togglePublishState(post: AdminBlogPost): void {
-    if (!post.id || this.blogSaving) {
+    if (!post.id || this.blogSaving || this.normalizePostStatus(post) !== 'publish') {
       return;
     }
-    const nextStatus = this.normalizePostStatus(post) === 'publish' ? 'draft' : 'publish';
     this.blogSaving = true;
     this.blogSaveError = null;
     this.blogSaveSuccess = null;
 
     this.blogService
-      .updatePost(String(post.id), { ...this.mapPostToPayload(post), status: nextStatus })
+      .updatePost(String(post.id), { ...this.mapPostToPayload(post), status: 'draft' })
       .subscribe({
         next: () => {
           this.blogSaving = false;
-          this.blogSaveSuccess =
-            nextStatus === 'publish' ? 'Articulo publicado.' : 'Articulo devuelto a borrador.';
+          this.blogSaveSuccess = 'Articulo retirado y devuelto a borrador.';
           this.loadBlogPosts(true);
         },
         error: () => {
@@ -359,6 +363,9 @@ export class AdminBlogSectionComponent implements OnInit {
       title: '',
       slug: '',
       status: 'draft',
+      origin: 'human',
+      authorName: '',
+      authorId: '',
       contentType: 'guide',
       featured: false,
       evergreen: true,
@@ -611,7 +618,6 @@ export class AdminBlogSectionComponent implements OnInit {
   private buildBlogPayload(): AdminBlogCreatePayload {
     const title = this.getTrimmedValue('title');
     const slug = slugify(this.getTrimmedValue('slug') || title);
-    const status = this.normalizePostStatusValue(this.getTrimmedValue('status'));
     const content = this.getRawTextValue('content');
     const excerpt =
       this.getRawTextValue('excerpt') ||
@@ -624,7 +630,10 @@ export class AdminBlogSectionComponent implements OnInit {
     return {
       title,
       slug,
-      status,
+      status: 'draft',
+      origin: this.getTrimmedValue('origin') as AdminBlogCreatePayload['origin'],
+      authorName: this.getTrimmedValue('authorName'),
+      authorId: this.getTrimmedValue('authorId'),
       contentType: this.getPostContentTypeValue(),
       featured: this.getBooleanValue('featured'),
       evergreen: this.getBooleanValue('evergreen'),
@@ -655,6 +664,9 @@ export class AdminBlogSectionComponent implements OnInit {
       title: this.getPostTitle(post),
       slug: post.slug,
       status: this.normalizePostStatus(post),
+      origin: post.origin || 'legacy',
+      authorName: post.author?.name || '',
+      authorId: post.author?.id || '',
       contentType: this.getPostContentType(post),
       featured: Boolean(post.featured),
       evergreen: post.evergreen !== false,

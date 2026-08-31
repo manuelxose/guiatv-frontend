@@ -1,0 +1,231 @@
+{
+  "migration": "editorial-review-v1",
+  "createdAt": "2026-08-31T08:48:17.572Z",
+  "rows": [
+    {
+      "id": "69b00f0d3c292ef88f39f580",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f581",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f582",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f583",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f584",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f585",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f586",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f587",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f588",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f589",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f58a",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f58b",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f58c",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "69b00f0d3c292ef88f39f58d",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a88f26cefadcc39e6b9baf5",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a89798695a963dc7a4bbc5c",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a8979fd95a963dc7a4bbca2",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a897a7595a963dc7a4bbcd6",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a89c79395a963dc7a4bda6c",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a8a704a95a963dc7a4c2874",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a8ac4ac95a963dc7a4d73f6",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a8b190695a963dc7a4d9f9c",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a8bc1cbcccfadd26e0d939d",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a8c162d6f83d1ea303a3279",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    },
+    {
+      "id": "6a8c6a8ebe6755696c86598e",
+      "values": {
+        "status": "publish"
+      },
+      "present": [
+        "status"
+      ]
+    }
+  ]
+}

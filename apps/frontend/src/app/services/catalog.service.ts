@@ -88,6 +88,11 @@ export interface CatalogItem {
     channelIcon?: string;
     start: string;
     end: string;
+    /** Title of the program airing in this slot — show this, not the channel name. */
+    title: string;
+    catalogId: string;
+    detailPath: string;
+    liveNow?: boolean;
   }>;
   userInteraction?: CatalogUserInteraction;
   cast?: Array<{ name: string; character?: string; profile?: string }>;

@@ -66,6 +66,7 @@ test('getBySlug: first lookup of a missing slug hits TMDB, second identical look
   stubTvReadFind();
 
   try {
+    await cache.set('catalog:slug:notfound:program:programa-inexistente-distinto', true, 300);
     await assert.rejects(
       () => service.getBySlug('movie', 'this-movie-does-not-exist', undefined),
       NotFoundError
@@ -177,13 +178,47 @@ test('getBySlug: missing program slugs use a bounded indexed candidate query ins
       NotFoundError
     );
 
-    assert.equal(observed.queries.length, 2, 'today and tomorrow should each use one bounded query');
-    assert.deepEqual(observed.limits, [500, 500]);
-    observed.queries.forEach((query) => {
-      assert.deepEqual(query.searchTokens, { $in: ['inexistente', 'programa', 'distinto'] });
+    assert.equal(observed.queries.length, 6, 'each indexed token is checked for today and tomorrow');
+    assert.deepEqual(observed.limits, [500, 500, 500, 500, 500, 500]);
+    observed.queries.forEach((query, index) => {
+      assert.equal(query.searchTokens, ['inexistente', 'programa', 'distinto'][index % 3]);
       assert.match(String(query.date), /^\d{8}$/);
     });
     assert.equal(tmdbCallCounter.count, 0, 'program lookup must not call TMDB');
+  } finally {
+    (TVReadAiringModel as any).find = originalFind;
+    cache.destroy();
+  }
+});
+
+test('program slug lookup is not crowded out by common search tokens', async () => {
+  const cache = new InMemoryCache();
+  const service = buildService({ count: 0 }, cache);
+  const originalFind = TVReadAiringModel.find;
+  const title = 'The Gentlemen: Los señores de la mafia';
+
+  (TVReadAiringModel as any).find = (query: { searchTokens?: string }) => ({
+    sort: () => ({
+      limit: () => ({
+        lean: () => ({
+          exec: async () => query.searchTokens === 'gentlemen'
+            ? [{ id: 'airing-1', program: { title } }]
+            : Array.from({ length: 500 }, (_, index) => ({
+                id: `common-${index}`,
+                program: { title: `Common result ${index}` },
+              })),
+        }),
+      }),
+    }),
+  });
+
+  try {
+    const found = await (service as any).findTvReadItemBySlug(
+      'the gentlemen los seores de la mafia',
+      'the-gentlemen-los-seores-de-la-mafia',
+      '20260831'
+    );
+    assert.equal(found?.id, 'airing-1');
   } finally {
     (TVReadAiringModel as any).find = originalFind;
     cache.destroy();
