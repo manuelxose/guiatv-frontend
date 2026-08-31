@@ -28,38 +28,57 @@
   gap: var(--space-5);
 }
 
+/* Same pill/chip language as app-portal-context-nav's tabs (border-radius
+   999px, transparent border, surface-strong hover, tinted active state) —
+   the rankings category filter was its own underlined-link style before,
+   the only tab-like control in the app that didn't match. */
 .ranking-filters {
   display: flex;
-  gap: var(--space-2);
+  align-items: center;
+  gap: 0.35rem;
   overflow-x: auto;
   padding: var(--space-2) 0 var(--space-5);
-  scrollbar-width: thin;
+  scrollbar-width: none;
+}
+
+.ranking-filters::-webkit-scrollbar {
+  display: none;
 }
 
 .ranking-filters button {
   display: inline-flex;
-  min-height: 44px;
+  min-height: 2.75rem;
   flex: none;
   align-items: center;
   gap: var(--space-2);
-  border: 0;
-  border-bottom: 1px solid var(--portal-border-strong);
+  border: 1px solid transparent;
+  border-radius: 999px;
   background: transparent;
   color: var(--portal-text-soft);
   cursor: pointer;
   font: inherit;
   font-size: var(--text-sm);
   font-weight: 750;
+  line-height: 1;
+  padding: 0.45rem 0.85rem;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
 }
 
-.ranking-filters button:hover,
-.ranking-filters button[aria-pressed='true'] {
-  border-color: var(--accent-editorial);
+.ranking-filters button:hover {
+  border-color: var(--portal-border);
+  background: var(--portal-surface-strong);
   color: var(--portal-text);
 }
 
+.ranking-filters button:focus-visible {
+  outline: 2px solid var(--accent-editorial);
+  outline-offset: 2px;
+}
+
 .ranking-filters button[aria-pressed='true'] {
-  border-bottom-width: 2px;
+  border-color: color-mix(in srgb, var(--accent-editorial) 45%, var(--portal-border));
+  background: var(--accent-editorial-soft);
+  color: var(--portal-text);
 }
 
 .ranking-filters span,
@@ -67,6 +86,10 @@
   color: var(--portal-text-muted);
   font-size: var(--text-xs);
   font-variant-numeric: tabular-nums;
+}
+
+.ranking-filters button[aria-pressed='true'] span {
+  color: var(--accent-editorial);
 }
 
 .ranking-collection {
