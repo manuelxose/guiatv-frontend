@@ -197,6 +197,12 @@
 .portal-shell__layout {
   display: grid;
   gap: var(--space-5);
+  /* Cap to the same --portal-content-max the global header centers on
+     (unified-top-nav__frame) — without this the header stays boxed while
+     routed content stretches edge-to-edge on wide/ultra-wide screens. */
+  max-width: var(--portal-content-max);
+  width: 100%;
+  margin-inline: auto;
   padding: var(--space-4) 1rem var(--space-10);
   align-items: start;
 }

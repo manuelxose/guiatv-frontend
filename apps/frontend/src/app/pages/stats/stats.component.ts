@@ -34,7 +34,7 @@ interface PopularItem { title: string; path: string; platform?: string; category
     </div>
   `,
   styles: [`
-    :host{display:block}.popular-page{width:min(100%,72rem);margin:0 auto;padding:0 1rem 5rem;color:var(--portal-text)}
+    :host{display:block}.popular-page{max-width:var(--portal-content-max);width:100%;margin-inline:auto;padding:0 1rem 5rem;color:var(--portal-text)}
     .popular-page__header{padding:clamp(2rem,6vw,4.5rem) 0 2.5rem;border-bottom:1px solid var(--portal-divider)}
     .popular-page__header p{margin:0 0 .55rem;color:var(--guide-accent);font-size:var(--text-xs);font-weight:800}.popular-page__header h1{margin:0;font-size:clamp(2.25rem,6vw,4.25rem);line-height:1;letter-spacing:-.04em}.popular-page__header span{display:block;margin-top:1rem;color:var(--portal-text-soft);font-size:var(--text-lg)}
     .popular-page__status{padding:3rem 0;color:var(--portal-text-soft)}.popular-page section{padding-top:2.5rem}.popular-page__section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-bottom:1rem}.popular-page__section-heading h2{margin:0;font-size:var(--text-2xl)}.popular-page__section-heading a{color:var(--guide-accent);font-weight:700}
