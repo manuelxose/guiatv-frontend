@@ -3,9 +3,11 @@
 }
 
 .editorial-category-page {
-  max-width: 80rem;
-  margin-inline: auto;
-  padding: 0 var(--guide-spacing-inline) 5rem;
+  /* No own max-width/centering — app-unified-portal-shell's
+     .portal-shell__layout already caps to --portal-content-max and
+     centers; a second, narrower cap here made this page (and post-detail)
+     visibly narrower than blog-home/rankings on desktop. */
+  padding: 0 0 5rem;
   color: var(--portal-text);
 }
 
