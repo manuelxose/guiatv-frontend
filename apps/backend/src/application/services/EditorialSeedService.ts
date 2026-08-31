@@ -1,4 +1,5 @@
 import { EDITORIAL_SEED_POSTS } from '../data/editorialSeedData';
+import { EDITORIAL_DRAFT_POSTS } from '../data/editorialDraftCorpus';
 import {
   BlogPostModel,
   IBlogFaqItem,
@@ -6,6 +7,7 @@ import {
   IBlogPostDocument,
 } from '../../infrastructure/database/models/BlogPost.model';
 import { logger } from '../../shared/utils/logger';
+import { EDITORIAL_QUALITY_ADDENDA } from '../data/editorialQualityAddenda';
 
 function slugify(value: string): string {
   return String(value || '')
@@ -49,17 +51,23 @@ function normalizeFaqItems(items: Array<{ question?: string; answer?: string }>)
     .filter((item) => item.question && item.answer);
 }
 
-function mapSeedPostToDocument(post: (typeof EDITORIAL_SEED_POSTS)[number]): Partial<IBlogPostDocument> {
+function mapSeedPostToDocument(
+  post: (typeof EDITORIAL_SEED_POSTS)[number],
+  draft = false
+): Partial<IBlogPostDocument> {
+  const addendum = EDITORIAL_QUALITY_ADDENDA[post.slug] || '';
   return {
     title: post.title,
     slug: post.slug,
-    status: 'publish',
-    origin: 'human',
-    reviewState: 'approved',
-    reviewedBy: 'seed:guiatv-editorial',
-    reviewedAt: new Date(post.publishedAt),
+    status: draft ? 'draft' : 'publish',
+    origin: draft ? 'ai-assisted' : 'human',
+    reviewState: draft ? 'unreviewed' : 'approved',
+    ...(draft ? {} : {
+      reviewedBy: 'seed:guiatv-editorial',
+      reviewedAt: new Date(post.publishedAt),
+    }),
     excerpt: post.excerpt,
-    content: post.content,
+    content: `${post.content}${addendum}`,
     categories: normalizeCategories(post.categories),
     contentType: post.contentType,
     featured: Boolean(post.featured),
@@ -89,8 +97,12 @@ export async function seedEditorialContent(options?: {
   overwriteExisting?: boolean;
 }): Promise<{ inserted: number; updated: number; total: number }> {
   const overwriteExisting = options?.overwriteExisting === true;
-  const ops = EDITORIAL_SEED_POSTS.map((post) => {
-    const document = mapSeedPostToDocument(post);
+  const seedEntries = [
+    ...EDITORIAL_SEED_POSTS.map((post) => ({ post, draft: false })),
+    ...EDITORIAL_DRAFT_POSTS.map((post) => ({ post, draft: true })),
+  ];
+  const ops = seedEntries.map(({ post, draft }) => {
+    const document = mapSeedPostToDocument(post, draft);
     return overwriteExisting
       ? {
           updateOne: {
@@ -112,7 +124,7 @@ export async function seedEditorialContent(options?: {
   return {
     inserted: result.upsertedCount || 0,
     updated: overwriteExisting ? result.modifiedCount || 0 : 0,
-    total: EDITORIAL_SEED_POSTS.length,
+    total: seedEntries.length,
   };
 }
 
