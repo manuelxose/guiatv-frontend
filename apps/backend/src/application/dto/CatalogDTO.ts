@@ -73,6 +73,15 @@ export interface CatalogAiringDTO {
   channelIcon?: string;
   start: string;
   end: string;
+  /** Title of the program actually airing in this slot — required so the
+   * frontend can show "what's on" instead of repeating the channel name. */
+  title: string;
+  /** Catalog id + friendly detail path for this specific airing's own
+   * program page, so links resolve to `/programas/<slug>` instead of a
+   * raw `program:<id>` fallback URL. */
+  catalogId: string;
+  detailPath: string;
+  liveNow?: boolean;
 }
 
 export interface CatalogUserInteractionDTO {

@@ -154,6 +154,7 @@ export class FootballMatchDetailComponent implements AfterViewInit, OnDestroy {
       title: `${match.homeTeam.name} - ${match.awayTeam.name} · ${match.competition.name} - Guía TV`,
       description: `Partido ${match.competition.name}: ${match.homeTeam.name} contra ${match.awayTeam.name}. Consulta horario y dónde verlo por TV y streaming.`,
       canonicalUrl: `/deportes/futbol/partido/${match.slug}`,
+      robots: 'noindex, follow',
     });
 
     const schemas = [

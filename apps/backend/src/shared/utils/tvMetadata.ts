@@ -1229,6 +1229,18 @@ export function buildSearchTokens(values: Array<string | null | undefined>): str
   );
 }
 
+/** Preserves the historical public `/programas/:slug` format. Accented
+ * characters are dropped (not transliterated), matching CatalogService. */
+export function buildLegacyProgramSlug(value: string): string {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export function buildCatalogAssetCandidates(input: {
   poster?: string;
   backdrop?: string;

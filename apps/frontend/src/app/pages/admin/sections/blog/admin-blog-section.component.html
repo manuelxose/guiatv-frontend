@@ -83,14 +83,8 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-status">Estado</label>
-            <select
-              id="blog-status"
-              formControlName="status"
-              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            >
-              <option value="draft">Borrador</option>
-              <option value="publish">Publicado</option>
-            </select>
+            <input id="blog-status" formControlName="status" type="hidden" />
+            <p class="mt-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">Borrador · requiere aprobación editorial separada</p>
           </div>
           <div>
             <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-type">Tipo</label>
@@ -105,6 +99,17 @@
             </select>
           </div>
         </div>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-origin">Origen</label>
+          <select id="blog-origin" formControlName="origin" class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)]">
+            <option value="human">Humano</option><option value="ai-assisted">Asistido por IA</option><option value="automated-import">Importación automatizada</option><option value="legacy">Legado</option>
+          </select>
+        </div>
+        <div><label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-author-name">Autor</label><input id="blog-author-name" formControlName="authorName" class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)]" /></div>
+        <div><label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-author-id">ID del autor</label><input id="blog-author-id" formControlName="authorId" class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)]" /></div>
       </div>
 
       <div class="grid gap-4 md:grid-cols-2">
@@ -449,7 +454,7 @@
           class="px-5 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-100 text-sm hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           [disabled]="blogSaving || blogForm.invalid"
         >
-          {{ blogForm.get('status')?.value === 'publish' ? (isEditingBlogPost ? 'Actualizar y publicar' : 'Publicar') : (isEditingBlogPost ? 'Actualizar borrador' : 'Guardar borrador') }}
+          {{ isEditingBlogPost ? 'Actualizar borrador' : 'Guardar borrador' }}
         </button>
       </div>
     </form>
@@ -596,12 +601,12 @@
                   >
                     Editar
                   </button>
-                  <button
+                  <button *ngIf="post.status === 'publish'"
                     type="button"
                     class="px-3 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-200 hover:border-emerald-400/40"
                     (click)="togglePublishState(post)"
                   >
-                    {{ post.status === 'publish' ? 'Pasar a borrador' : 'Publicar' }}
+                    Retirar publicación
                   </button>
                   <a
                     [href]="getPostUrl(post)"

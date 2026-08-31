@@ -86,6 +86,9 @@ export class CategoryComponent implements OnInit, OnDestroy {
             image:
               state.featuredPost?.coverImage || '/assets/images/blog-og-image.webp',
             type: 'website',
+            robots: [state.featuredPost, ...state.posts, ...state.relatedRankings].filter(Boolean).length >= 3
+              ? 'index, follow'
+              : 'noindex, follow',
           });
           this.buildStructuredData(state);
           this.changeDetector.markForCheck();

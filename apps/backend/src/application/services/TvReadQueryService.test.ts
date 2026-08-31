@@ -281,6 +281,40 @@ test('isConsumerVisibleTvReadItem hides generic unresolved movie slots from cons
   assert.equal(isConsumerVisibleTvReadItem(visible), true);
 });
 
+test('program sitemap rows exclude slugs that the indexed resolver cannot search', async () => {
+  const rows = [
+    {
+      program: { title: 'The Gentlemen: Los señores de la mafia' },
+      airing: { start: '2026-08-31T22:00:00.000Z' },
+      searchTokens: ['gentlemen', 'senores', 'mafia'],
+    },
+    {
+      program: { title: 'Tándem T4 E6' },
+      airing: { start: '2026-09-01T18:20:00.000Z' },
+      searchTokens: ['tandem', 't4', 'e6'],
+    },
+    {
+      program: { title: '55' },
+      airing: { start: '2026-08-31T06:22:00.000Z' },
+      searchTokens: ['55'],
+    },
+  ];
+  const fakeModel = {
+    find: () => ({
+      select: () => ({
+        sort: () => ({ lean: () => ({ exec: async () => rows }) }),
+      }),
+    }),
+  };
+  const service = new TvReadQueryService({} as any, fakeModel as any);
+
+  const result = await service.getIndexableProgramSitemapRows(['20260831', '20260901']);
+
+  assert.deepEqual(result.map((row) => row.title), [
+    'The Gentlemen: Los señores de la mafia',
+  ]);
+});
+
 test('query now collapses overlapping live rows into one featured item per channel', async () => {
   const tvReadQueryService = new TvReadQueryService({
     get: async () => null,

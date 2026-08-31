@@ -716,7 +716,8 @@ export class Container {
       this.get('channelRepository'),
       this.get('programRepository'),
       this.has('tmdbService') ? this.get('tmdbService') : undefined,
-      this.has('footballQueryService') ? this.get('footballQueryService') : undefined
+      this.has('footballQueryService') ? this.get('footballQueryService') : undefined,
+      this.get('tvReadQueryService')
     );
     this.dependencies.set('sitemapController', sitemapController);
 

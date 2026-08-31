@@ -302,7 +302,12 @@ export class CatalogService {
     }
 
     const negativeCacheKey = this.buildSlugNotFoundCacheKey(contentType, slug);
-    const cachedNotFound = await this.cacheRepository.get<boolean>(negativeCacheKey);
+    // Programme availability changes with every schedule refresh. A persisted
+    // negative from yesterday must not hide a programme that is resolvable
+    // today; movie/series identities remain stable and keep the cache benefit.
+    const cachedNotFound = contentType === 'program'
+      ? false
+      : await this.cacheRepository.get<boolean>(negativeCacheKey);
     if (cachedNotFound) {
       throw new NotFoundError('Catalog item', slug);
     }
@@ -1803,16 +1808,23 @@ export class CatalogService {
       return null;
     }
 
-    const candidates = (await TVReadAiringModel.find({
-      date,
-      searchTokens: { $in: tokens },
-    })
-      .sort({ 'airing.start': 1 })
-      .limit(500)
-      .lean()
-      .exec()) as unknown as TvReadItemDTO[];
-
-    return candidates.find((item) => this.slugify(item.program.title) === slug) || null;
+    // Query tokens from most distinctive to least distinctive. A single `$in`
+    // query was dominated by common words such as "the", "los" and "de";
+    // its 500-row cap could omit the exact title even when a rare token such
+    // as "gentlemen" had an indexed match.
+    for (const token of tokens) {
+      const candidates = (await TVReadAiringModel.find({
+        date,
+        searchTokens: token,
+      })
+        .sort({ 'airing.start': 1 })
+        .limit(500)
+        .lean()
+        .exec()) as unknown as TvReadItemDTO[];
+      const match = candidates.find((item) => this.slugify(item.program.title) === slug);
+      if (match) return match;
+    }
+    return null;
   }
 
   private async loadTvReadItems(
@@ -1906,12 +1918,18 @@ export class CatalogService {
   }
 
   private mapTvReadItemToAiring(item: TvReadItemDTO): CatalogAiringDTO {
+    const contentType = this.inferTvReadContentType(item);
+    const slug = this.slugify(item.program.title);
     return {
       channelId: item.channel.id,
       channelName: item.channel.name,
       channelIcon: item.channel.icon,
       start: item.airing.start,
       end: item.airing.end,
+      title: item.program.title,
+      catalogId: buildProgramCatalogId(item.id),
+      detailPath: this.buildDetailPath(contentType, slug),
+      liveNow: item.airing.liveNow,
     };
   }
 

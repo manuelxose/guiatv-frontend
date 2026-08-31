@@ -143,6 +143,7 @@ export class FootballTeamDetailComponent {
       title: `${detail.team.name} - partidos, resultados y noticias - Guía TV`,
       description: `${detail.team.name}: próximos partidos, últimos resultados, calendario y noticias.`,
       canonicalUrl: `/deportes/futbol/equipos/${detail.team.slug}`,
+      robots: 'noindex, follow',
     });
 
     const schemas = [
