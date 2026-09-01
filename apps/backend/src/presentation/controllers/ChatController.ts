@@ -9,7 +9,6 @@ import { UserModel } from '../../infrastructure/database/models/User.model';
 import { UserProfileModel } from '../../infrastructure/database/models/UserProfile.model';
 import { UserFollowModel } from '../../infrastructure/database/models/UserFollow.model';
 import { UserBlockModel } from '../../infrastructure/database/models/UserBlock.model';
-import { AuthSessionModel } from '../../infrastructure/database/models/AuthSession.model';
 import { UserNotificationService } from '../../application/services/UserNotificationService';
 import { ChatSocketHub } from '../realtime/ChatSocketHub';
 import { GENERAL_CHAT_PAIR_KEY } from '../realtime/chat.constants';
@@ -68,6 +67,8 @@ export class ChatController {
       );
 
       const userMap = await this.buildUserSummaryMap(participantIds);
+      const onlineUserIds = new Set(await this.socketHub.getOnlineUserIds());
+      const onlineCount = onlineUserIds.size;
 
       const [lastMessagesAgg, unreadCountsAgg] = await Promise.all([
         ChatMessageModel.aggregate([
@@ -101,7 +102,7 @@ export class ChatController {
         const convId = String(conv._id);
         const isGeneral = this.isGeneralConversation(conv);
         const participants = isGeneral
-          ? [this.buildGeneralParticipant()]
+          ? [this.buildGeneralParticipant(onlineCount)]
           : conv.participants
               .map((participant: mongoose.Types.ObjectId) => userMap.get(String(participant)))
               .filter((participant: any) => Boolean(participant))
@@ -109,7 +110,7 @@ export class ChatController {
                 this.mapParticipant(
                   participant,
                   followSet.has(participant.id),
-                  this.socketHub.isUserOnline(participant.id)
+                  onlineUserIds
                 )
               );
 
@@ -131,6 +132,11 @@ export class ChatController {
     }
   }
 
+  /**
+   * Online users derive exclusively from live socket presence.
+   * AuthSession data is intentionally NOT used here: an unexpired session
+   * does not mean the user is online.
+   */
   async getOnlineUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = this.getUserId(req);
@@ -138,49 +144,25 @@ export class ChatController {
       const blockedIds = await this.getBlockedUserIds(userId);
       const followSet = await this.getFollowingSet(userId);
 
-      const activeSessionRows = await AuthSessionModel.aggregate([
-        {
-          $match: {
-            $or: [{ revokedAt: { $exists: false } }, { revokedAt: null }],
-            expiresAt: { $gt: new Date() },
-          },
-        },
-        {
-          $group: {
-            _id: '$userId',
-            lastUsedAt: { $max: '$lastUsedAt' },
-          },
-        },
-        { $sort: { lastUsedAt: -1 } },
-      ]);
-
-      const activeUserIds = activeSessionRows
-        .map((row) => String(row._id))
-        .filter(Boolean);
-      const visibleUserIds = activeUserIds.filter((id) => !blockedIds.has(id));
-      const candidateIds = visibleUserIds
-        .filter((id) => id !== userId)
+      const onlineUserIds = (await this.socketHub.getOnlineUserIds())
+        .filter((id) => id !== userId && !blockedIds.has(id))
         .slice(0, limit);
+      const onlineIdSet = new Set(onlineUserIds);
 
-      const userMap = await this.buildUserSummaryMap(candidateIds);
-      const users = candidateIds
+      const userMap = await this.buildUserSummaryMap(onlineUserIds);
+      const users = onlineUserIds
         .map((id) => userMap.get(id))
         .filter((entry: any) => Boolean(entry))
         .map((entry: any) =>
-          this.mapParticipant(
-            entry,
-            followSet.has(entry.id),
-            this.socketHub.isUserOnline(entry.id)
-          )
+          this.mapParticipant(entry, followSet.has(entry.id), onlineIdSet)
         )
         .sort((a: any, b: any) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
 
       res.json(
         successResponse({
           users,
-          totalLoggedUsers: activeUserIds.length,
-          totalVisibleUsers: visibleUserIds.length,
-          connectedUsersNow: this.socketHub.getOnlineCount(),
+          onlineUserIds,
+          connectedUsersNow: await this.socketHub.getOnlineCount(),
         })
       );
     } catch (error) {
@@ -243,12 +225,13 @@ export class ChatController {
 
       const participants = await this.buildUserSummaryMap([userId, participantId]);
       const followSet = await this.getFollowingSet(userId);
+      const onlineUserIds = new Set(await this.socketHub.getOnlineUserIds());
       res.json(
         successResponse({
           conversation: {
             id: String(conversation._id),
             participants: Array.from(participants.values()).map((entry) =>
-              this.mapParticipant(entry, followSet.has(entry.id), this.socketHub.isUserOnline(entry.id))
+              this.mapParticipant(entry, followSet.has(entry.id), onlineUserIds)
             ),
             unreadCount: 0,
             updatedAt: conversation.updatedAt,
@@ -597,13 +580,13 @@ export class ChatController {
     return String(conversation?.pairKey || '').trim() === GENERAL_CHAT_PAIR_KEY;
   }
 
-  private buildGeneralParticipant() {
+  private buildGeneralParticipant(onlineCount: number) {
     return {
       id: 'general',
       name: 'Chat general',
       username: 'chat-general',
       avatar: '/assets/logo.svg',
-      isOnline: true,
+      isOnline: onlineCount > 0,
       lastActivity: 'Usuarios conectados en tiempo real',
       favoriteGenres: [],
       following: false,
@@ -699,9 +682,16 @@ export class ChatController {
     return userMap;
   }
 
-  private mapParticipant(user: any, following: boolean, isOnline?: boolean) {
+  private mapParticipant(
+    user: any,
+    following: boolean,
+    onlineUserIds: Set<string> | boolean
+  ) {
     const watchingTitle = user.watchingNow?.title;
-    const resolvedOnline = typeof isOnline === 'boolean' ? isOnline : this.socketHub.isUserOnline(user.id);
+    const resolvedOnline =
+      typeof onlineUserIds === 'boolean'
+        ? onlineUserIds
+        : onlineUserIds.has(user.id);
     const lastActivity = resolvedOnline
       ? 'En linea ahora'
       : watchingTitle
