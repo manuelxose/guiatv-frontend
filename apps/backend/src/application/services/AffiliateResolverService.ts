@@ -122,7 +122,7 @@ export class AffiliateResolverService {
           highlight: offer.display.highlight,
           disclosure: sponsored ? program.disclosure : offer.display.disclosure,
         },
-        cta: { label: sponsored ? 'Ver oferta' : 'Ir al proveedor', sponsored },
+        cta: { label: sponsored ? `Ver oferta en ${merchant.name}` : `Ir a ${merchant.name}`, sponsored },
         outbound: { path: `/v2/affiliate/go/${offer.id}?${outboundParams.toString()}` },
         relevance: {
           matchedIntent: Boolean(request.intent && offer.recommendationIntents.includes(request.intent)),
