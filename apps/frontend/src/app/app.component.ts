@@ -24,6 +24,7 @@ import {
   PORTAL_ACCOUNT_DESTINATIONS,
   PORTAL_MOBILE_MORE_DESTINATIONS,
   PORTAL_MOBILE_PRIMARY_DESTINATIONS,
+  PORTAL_SPORTS_DESTINATIONS,
   PortalMobileDestination,
 } from './config/portal-navigation.config';
 import { ThemeMode, ThemeService } from './services/theme.service';
@@ -60,7 +61,9 @@ export class AppComponent implements OnInit, OnDestroy {
   public readonly mobileTabs = PORTAL_MOBILE_PRIMARY_DESTINATIONS;
   public readonly moreDestinations = PORTAL_MOBILE_MORE_DESTINATIONS;
   public readonly accountDestinations = PORTAL_ACCOUNT_DESTINATIONS;
+  public readonly footballDestinations = PORTAL_SPORTS_DESTINATIONS;
   public mobileMoreOpen = false;
+  public chatSocialTargetUser: { userId: string; nonce: number } | null = null;
   public readonly theme = inject(ThemeService);
   @ViewChild('mobileMoreTrigger') private readonly mobileMoreTrigger?: ElementRef<HTMLButtonElement>;
   @ViewChild('mobileMoreSheet') private readonly mobileMoreSheet?: ElementRef<HTMLElement>;
@@ -102,6 +105,18 @@ export class AppComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         if (this.canRenderChatbot()) {
+          this.chatReturnFocus = this.document.activeElement as HTMLElement | null;
+          this.isChatbotOpen = true;
+          this.isChatMinimized = false;
+          this.focusChatDialog();
+        }
+      });
+
+    this.chatService.requestOpenSocialChat$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((target) => {
+        if (this.canRenderChatbot()) {
+          this.chatSocialTargetUser = target;
           this.chatReturnFocus = this.document.activeElement as HTMLElement | null;
           this.isChatbotOpen = true;
           this.isChatMinimized = false;

@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { AIChatbotComponent } from '../ai-chatbot/ai-chatbot.component';
 import { SocialChatPanelComponent } from './social-chat-panel/social-chat-panel.component';
 import { ChatService } from '../../services/chat.service';
@@ -55,7 +62,7 @@ export type ChatDestination = 'assistant' | 'social';
           </button>
         </header>
         <div class="unified-chat__social-body">
-          <app-social-chat-panel />
+          <app-social-chat-panel [targetUser]="socialTargetUser" />
         </div>
       </section>
     </div>
@@ -82,13 +89,21 @@ export type ChatDestination = 'assistant' | 'social';
     @media (max-width: 767px) { .unified-chat__social-header { padding-top: .35rem; } .unified-chat__dismiss-close { display: none; } .unified-chat__dismiss-minimize { display: block; } }
   `],
 })
-export class UnifiedChatShellComponent {
+export class UnifiedChatShellComponent implements OnChanges {
   @Output() close = new EventEmitter<void>();
   @Input() unreadSocialCount = 0;
+  /** When set, the shell switches to social chat and opens a conversation. */
+  @Input() socialTargetUser: { userId: string; nonce: number } | null = null;
 
   activeDestination: ChatDestination = 'assistant';
 
   constructor(private readonly chatService: ChatService) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['socialTargetUser']?.currentValue) {
+      this.activeDestination = 'social';
+    }
+  }
 
   openSocialChat(): void {
     this.chatService.activateChat();

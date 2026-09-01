@@ -106,6 +106,7 @@ export class UserService {
   private interactionHistorySubject = new BehaviorSubject<UserContentInteraction[]>([]);
   private notificationsSubject = new BehaviorSubject<UserNotification[]>([]);
   private unreadNotificationsSubject = new BehaviorSubject<number>(0);
+  private notificationsHydrated = false;
   private top10Subject = new BehaviorSubject<Top10Category[]>([]);
   private newsSubject = new BehaviorSubject<NewsItem[]>([]);
   private authenticatedSubject = new BehaviorSubject<boolean>(false);
@@ -337,6 +338,7 @@ export class UserService {
     this.loadingSubject.next(false);
     this.errorSubject.next(null);
     this.defaultListId = null;
+    this.notificationsHydrated = false;
   }
 
   updateProfile(data: Partial<UserProfile>): Observable<UserProfile | null> {
@@ -1165,6 +1167,12 @@ export class UserService {
 
         this.authenticatedSubject.next(true);
         this.authStateSubject.next('authenticated');
+        if (!this.notificationsHydrated) {
+          this.notificationsHydrated = true;
+          // Load the persisted unread badge + list so the bell reflects state
+          // without requiring a visit to the user area.
+          this.fetchNotifications().subscribe();
+        }
         return of(true);
       }),
       finalize(() => this.loadingSubject.next(false))
