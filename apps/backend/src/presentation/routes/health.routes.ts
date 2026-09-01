@@ -4,6 +4,7 @@ import { Router, Request, Response } from 'express';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { successResponse } from '../../shared/types/ApiResponse';
 import { runtimeMetricsSnapshot } from '../../shared/utils/runtimeMetrics';
+import { ChatSocketHub } from '../realtime/ChatSocketHub';
 
 /**
  * Simple health-check routes used by uptime monitors and load balancers.
@@ -47,6 +48,16 @@ export const createHealthRoutes = (): Router => {
       const uptime = process.uptime();
       const memoryUsage = process.memoryUsage();
 
+      let realtime: Record<string, unknown> | null = null;
+      try {
+        realtime = (await ChatSocketHub.getInstance().getDiagnostics()) as unknown as Record<
+          string,
+          unknown
+        >;
+      } catch {
+        realtime = null;
+      }
+
       res.status(200).json(
         successResponse(
           {
@@ -54,6 +65,7 @@ export const createHealthRoutes = (): Router => {
             timestamp: new Date().toISOString(),
             uptime: `${Math.floor(uptime)}s`,
             version: process.env.API_VERSION || '2.0.0',
+            realtime,
             memory: {
               rss: `${Math.round(memoryUsage.rss / 1024 / 1024)}MB`,
               heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,

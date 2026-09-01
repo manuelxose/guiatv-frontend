@@ -54,7 +54,47 @@ async function startServer() {
     }
 
     const httpServer = createServer(app);
-    ChatSocketHub.getInstance().initialize(httpServer, container.get('authService'));
+
+    // Realtime wiring. Single-instance defaults keep in-memory presence and
+    // the local adapter. Set REALTIME_PRESENCE=redis and/or
+    // REALTIME_ADAPTER=redis (with VALKEY_URL/REDIS_URL) when running more
+    // than one backend instance.
+    const realtimePresence = process.env.REALTIME_PRESENCE;
+    const realtimeAdapter = process.env.REALTIME_ADAPTER;
+    const redisUrl =
+      process.env.VALKEY_URL || process.env.REDIS_URL || '';
+
+    const hubDeps: {
+      presenceStore?: import('../presentation/realtime/PresenceStore').PresenceStore;
+      useRedisAdapter?: boolean;
+      redisUrl?: string;
+    } = {
+      useRedisAdapter: realtimeAdapter === 'redis',
+      redisUrl,
+    };
+
+    if (realtimePresence === 'redis' && redisUrl) {
+      try {
+        const { RedisPresenceStore } = await import(
+          '../presentation/realtime/RedisPresenceStore'
+        );
+        const store = new RedisPresenceStore(redisUrl);
+        await store.connect();
+        hubDeps.presenceStore = store;
+        logger.info('Realtime presence store: redis');
+      } catch (error) {
+        logger.error(
+          'Failed to initialize Redis presence store, falling back to in-memory',
+          { error }
+        );
+      }
+    }
+
+    await ChatSocketHub.getInstance().initialize(
+      httpServer,
+      container.get('authService'),
+      hubDeps
+    );
 
     const server = httpServer.listen(config.port, () => {
       logger.info(`Server listening on http://localhost:${config.port}`);
@@ -65,6 +105,11 @@ async function startServer() {
 
       server.close(async () => {
         logger.info('HTTP server closed');
+        try {
+          await ChatSocketHub.getInstance().close();
+        } catch (error) {
+          logger.warn('Error while closing chat socket hub', { error });
+        }
         try {
           await container.cleanup();
         } catch (error) {

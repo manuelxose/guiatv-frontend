@@ -7,20 +7,23 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
   ChatConversation,
-  ChatMessage as SocialChatMessage,
   UserFriend,
 } from '../../../interfaces/user.interface';
 import { ChatService } from '../../../services/chat.service';
+import {
+  ChatMessageWithState,
+  ChatRealtimeMode,
+  ChatTypingUser,
+} from '../../../services/chat-state.store';
 import { UserService } from '../../../services/user.service';
 
 interface ChatWindowState {
   conversationId: string;
   draft: string;
-  messages: SocialChatMessage[];
+  messages: ChatMessageWithState[];
 }
 
 @Component({
@@ -47,6 +50,20 @@ interface ChatWindowState {
             <p class="truncate text-sm font-semibold text-[var(--portal-text)]">{{ getWindowTitle(activeWindow.conversationId) }}</p>
             <p class="text-[10px] text-[var(--portal-text-muted)]">{{ getConversationStatus(activeWindow.conversationId) }}</p>
           </div>
+          <span *ngIf="connectionLabel" class="shrink-0 text-[10px]" [ngClass]="connectionLabelClass">{{ connectionLabel }}</span>
+        </div>
+
+        <!-- Typing indicator -->
+        <div
+          *ngIf="typingText"
+          class="flex items-center gap-2 border-b border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-4 py-1.5"
+        >
+          <span class="flex gap-0.5">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+          </span>
+          <p class="text-[10px] text-[var(--portal-text-muted)]">{{ typingText }} está escribiendo…</p>
         </div>
 
         <!-- Messages -->
@@ -58,14 +75,20 @@ interface ChatWindowState {
           >
             <div
               class="max-w-[85%] rounded-2xl px-3 py-2 text-xs"
-              [ngClass]="msg.senderId === currentUserId
-                ? 'bg-[var(--accent-live-strong)] text-white'
-                : 'border border-[var(--portal-border)] bg-[var(--portal-surface)] text-[var(--portal-text)]'"
+              [ngClass]="bubbleClasses(msg)"
             >
               <p *ngIf="msg.senderId !== currentUserId && isGroupConversation(activeWindow.conversationId)"
                  class="mb-0.5 text-[10px] font-semibold text-[var(--accent-live)]">{{ getSenderName(msg.senderId) }}</p>
               <p class="break-words leading-relaxed">{{ msg.text || 'Adjunto' }}</p>
               <p class="mt-1 text-[10px] opacity-60">{{ msg.createdAt | date: 'shortTime' }}</p>
+              <div *ngIf="msg.failed" class="mt-1 flex items-center gap-2">
+                <p class="text-[10px] text-red-400">No enviado</p>
+                <button
+                  type="button"
+                  (click)="retryMessage(msg)"
+                  class="rounded-md border border-red-400/50 px-2 py-0.5 text-[10px] text-red-300 hover:bg-red-400/10"
+                >Reintentar</button>
+              </div>
             </div>
           </div>
         </div>
@@ -76,6 +99,7 @@ interface ChatWindowState {
             <input
               type="text"
               [(ngModel)]="activeWindow.draft"
+              (ngModelChange)="onDraftChange()"
               (keydown.enter)="sendMessage()"
               placeholder="Escribe un mensaje..."
               class="flex-1 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] px-3 py-2 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:border-[var(--accent-live)]/50 focus:outline-none focus:ring-1 focus:ring-[var(--accent-live)]/30"
@@ -98,6 +122,14 @@ interface ChatWindowState {
     <!-- Conversations/users list view -->
     <ng-template #listView>
       <div class="flex h-full flex-col overflow-y-auto">
+        <!-- Connection status -->
+        <div *ngIf="connectionLabel" class="px-4 pt-3">
+          <div
+            class="rounded-xl border px-3 py-1.5 text-center text-[10px]"
+            [ngClass]="connectionLabelClass"
+          >{{ connectionLabel }}</div>
+        </div>
+
         <!-- General chat button -->
         <div class="px-4 pt-4 pb-2">
           <button
@@ -149,10 +181,10 @@ interface ChatWindowState {
           No hay conversaciones.
         </p>
 
-        <!-- Online users -->
+        <!-- Online users (live socket presence only) -->
         <div class="px-4 pt-4 pb-1 flex items-center justify-between">
-          <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--portal-text-muted)]">Conectados</p>
-          <span class="text-[10px] text-[var(--portal-text-faint)]">{{ getOnlineCount() }}</span>
+          <p class="text-[10px] font-semibold uppercase tracking-widest text-[var(--portal-text-muted)]">Conectados ahora</p>
+          <span class="text-[10px] text-[var(--portal-text-faint)]">{{ connectedUsersCount }} en línea</span>
         </div>
 
         <div *ngIf="isLoadingOnlineUsers" class="space-y-2 px-4">
@@ -197,6 +229,20 @@ interface ChatWindowState {
       min-width: 0;
       height: 100%;
     }
+    .typing-dot {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--portal-text-muted);
+      animation: typing-bounce 1.2s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes typing-bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30% { transform: translateY(-3px); opacity: 1; }
+    }
   `],
 })
 export class SocialChatPanelComponent implements OnInit, OnDestroy {
@@ -207,14 +253,17 @@ export class SocialChatPanelComponent implements OnInit, OnDestroy {
   isLoadingConversations = false;
   isLoadingOnlineUsers = false;
   activeWindow: ChatWindowState | null = null;
+  typingUsers: ChatTypingUser[] = [];
+  connectionMode: ChatRealtimeMode = 'idle';
 
   private readonly sub = new Subscription();
   private readonly messageSubs = new Map<string, Subscription>();
+  private typingSub: Subscription | null = null;
+  private typingStopTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly chatService: ChatService,
     private readonly userService: UserService,
-    private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -251,11 +300,86 @@ export class SocialChatPanelComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       })
     );
+
+    this.sub.add(
+      this.chatService.getRealtimeMode().subscribe((mode) => {
+        this.connectionMode = mode;
+        this.cdr.markForCheck();
+      })
+    );
+
+    // Post-reconnect reconciliation: refetch the open conversation's history.
+    this.sub.add(
+      this.chatService.reconnected$.subscribe(() => {
+        if (this.activeWindow) {
+          this.refetchActiveMessages();
+        }
+      })
+    );
   }
 
   ngOnDestroy(): void {
+    this.clearTypingStopTimer();
+    if (this.activeWindow) {
+      this.chatService.sendTyping(this.activeWindow.conversationId, false);
+      this.chatService.setActiveConversation(null);
+    }
+    this.typingSub?.unsubscribe();
     this.messageSubs.forEach((s) => s.unsubscribe());
     this.sub.unsubscribe();
+  }
+
+  get connectionLabel(): string | null {
+    switch (this.connectionMode) {
+      case 'connecting':
+        return 'Conectando…';
+      case 'reconnecting':
+        return 'Reconectando…';
+      case 'degraded':
+        return 'Sin conexión en tiempo real';
+      default:
+        return null;
+    }
+  }
+
+  get connectionLabelClass(): string {
+    switch (this.connectionMode) {
+      case 'connecting':
+      case 'reconnecting':
+        return 'border-amber-500/40 bg-amber-500/10 text-amber-400';
+      case 'degraded':
+        return 'border-red-500/40 bg-red-500/10 text-red-400';
+      default:
+        return '';
+    }
+  }
+
+  get typingText(): string | null {
+    if (!this.activeWindow || !this.typingUsers.length) return null;
+    const other = this.typingUsers.find(
+      (entry) => entry.userId !== this.currentUserId
+    );
+    if (!other) return null;
+    return this.getSenderName(other.userId);
+  }
+
+  bubbleClasses(msg: ChatMessageWithState): Record<string, boolean> {
+    const classes: Record<string, boolean> = {};
+    if (msg.senderId === this.currentUserId) {
+      classes['bg-[var(--accent-live-strong)]'] = true;
+      classes['text-white'] = true;
+      classes['opacity-60'] = Boolean(msg.pending);
+    } else {
+      classes['border'] = true;
+      classes['border-[var(--portal-border)]'] = true;
+      classes['bg-[var(--portal-surface)]'] = true;
+      classes['text-[var(--portal-text)]'] = true;
+      classes['opacity-60'] = Boolean(msg.pending);
+    }
+    if (msg.failed) {
+      classes['border-red-400/40'] = true;
+    }
+    return classes;
   }
 
   openGeneralChat(): void {
@@ -273,12 +397,15 @@ export class SocialChatPanelComponent implements OnInit, OnDestroy {
   }
 
   openConversation(conv: ChatConversation): void {
+    this.closeActiveWindow(false);
     this.activeWindow = {
       conversationId: conv.id,
       draft: '',
       messages: [],
     };
+    this.chatService.setActiveConversation(conv.id);
     this.subscribeToMessages(conv.id);
+    this.subscribeToTyping(conv.id);
     this.cdr.markForCheck();
   }
 
@@ -297,7 +424,9 @@ export class SocialChatPanelComponent implements OnInit, OnDestroy {
           draft: '',
           messages: [],
         };
+        this.chatService.setActiveConversation(result.conversation.id);
         this.subscribeToMessages(result.conversation.id);
+        this.subscribeToTyping(result.conversation.id);
         this.chatService.refreshConversations().subscribe((convs) => {
           this.conversations = convs;
           this.cdr.markForCheck();
@@ -306,24 +435,52 @@ export class SocialChatPanelComponent implements OnInit, OnDestroy {
     });
   }
 
-  closeActiveWindow(): void {
+  closeActiveWindow(notify = true): void {
     if (this.activeWindow) {
       const sub = this.messageSubs.get(this.activeWindow.conversationId);
       if (sub) {
         sub.unsubscribe();
         this.messageSubs.delete(this.activeWindow.conversationId);
       }
+      if (notify) {
+        this.chatService.sendTyping(this.activeWindow.conversationId, false);
+      }
+    }
+    this.typingSub?.unsubscribe();
+    this.typingSub = null;
+    this.typingUsers = [];
+    if (this.activeWindow) {
+      this.chatService.setActiveConversation(null);
     }
     this.activeWindow = null;
     this.cdr.markForCheck();
   }
 
+  onDraftChange(): void {
+    if (!this.activeWindow) return;
+    const conversationId = this.activeWindow.conversationId;
+    this.chatService.sendTyping(conversationId, true);
+    this.clearTypingStopTimer();
+    this.typingStopTimer = setTimeout(() => {
+      this.chatService.sendTyping(conversationId, false);
+      this.typingStopTimer = null;
+    }, 3_000);
+  }
+
   sendMessage(): void {
     if (!this.activeWindow?.draft?.trim()) return;
     const text = this.activeWindow.draft.trim();
+    const conversationId = this.activeWindow.conversationId;
     this.activeWindow.draft = '';
+    this.clearTypingStopTimer();
+    this.chatService.sendTyping(conversationId, false);
+    this.chatService.sendMessage(conversationId, text).subscribe();
+  }
+
+  retryMessage(message: ChatMessageWithState): void {
+    if (!this.activeWindow) return;
     this.chatService
-      .sendMessage(this.activeWindow.conversationId, text)
+      .retryMessage(this.activeWindow.conversationId, message)
       .subscribe();
   }
 
@@ -362,8 +519,8 @@ export class SocialChatPanelComponent implements OnInit, OnDestroy {
     return 'Usuario';
   }
 
-  trackByMessage(_: number, msg: SocialChatMessage): string {
-    return msg.id || msg.createdAt?.toString() || String(_);
+  trackByMessage(_: number, msg: ChatMessageWithState): string {
+    return msg.id || msg.clientMessageId || msg.createdAt?.toString() || String(_);
   }
 
   trackByConversation(_: number, conv: ChatConversation): string {
@@ -372,11 +529,6 @@ export class SocialChatPanelComponent implements OnInit, OnDestroy {
 
   trackByUser(_: number, user: UserFriend): string {
     return user.id;
-  }
-
-  getOnlineCount(): string {
-    const online = this.onlineUsers.filter(u => u.isOnline).length;
-    return `${online} / ${this.onlineUsers.length}`;
   }
 
   private isGeneralConversation(conv: ChatConversation | null): boolean {
@@ -400,5 +552,29 @@ export class SocialChatPanelComponent implements OnInit, OnDestroy {
       }
     });
     this.messageSubs.set(conversationId, sub);
+  }
+
+  private subscribeToTyping(conversationId: string): void {
+    this.typingSub?.unsubscribe();
+    this.typingUsers = [];
+    this.typingSub = this.chatService
+      .getTyping(conversationId)
+      .subscribe((users) => {
+        this.typingUsers = users;
+        this.cdr.markForCheck();
+      });
+  }
+
+  private refetchActiveMessages(): void {
+    if (!this.activeWindow) return;
+    this.chatService.getMessages(this.activeWindow.conversationId).subscribe();
+    this.chatService.setActiveConversation(this.activeWindow.conversationId);
+  }
+
+  private clearTypingStopTimer(): void {
+    if (this.typingStopTimer) {
+      clearTimeout(this.typingStopTimer);
+      this.typingStopTimer = null;
+    }
   }
 }
