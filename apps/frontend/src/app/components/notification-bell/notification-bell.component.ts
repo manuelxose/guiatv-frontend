@@ -17,17 +17,17 @@ import { UserNotification } from '../../interfaces/user.interface';
         (click)="toggleDropdown()"
         [attr.aria-expanded]="isOpen"
         class="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface)] text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
-        [attr.aria-label]="unreadCount > 0 ? 'Notificaciones (' + unreadCount + ' sin leer)' : 'Notificaciones'"
+        [attr.aria-label]="unreadCount() > 0 ? 'Notificaciones (' + unreadCount() + ' sin leer)' : 'Notificaciones'"
       >
         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
         </svg>
         <span
-          *ngIf="unreadCount > 0"
+          *ngIf="unreadCount() > 0"
           class="absolute -top-1 -right-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-[var(--accent-live-strong)] px-1 py-0.5 text-[10px] font-bold text-white"
         >
-          {{ unreadCount > 99 ? '99+' : unreadCount }}
+          {{ unreadCount() > 99 ? '99+' : unreadCount() }}
         </span>
       </button>
 
@@ -38,7 +38,7 @@ import { UserNotification } from '../../interfaces/user.interface';
         <div class="flex items-center justify-between border-b border-[var(--portal-divider)] px-4 py-3">
           <h3 class="text-sm font-semibold text-[var(--portal-text)]">Notificaciones</h3>
           <button
-            *ngIf="unreadCount > 0"
+            *ngIf="unreadCount() > 0"
             type="button"
             (click)="markAllRead()"
             class="text-xs text-[var(--accent-live)] hover:text-[var(--accent-live)] font-medium min-h-[32px] px-2"
@@ -84,7 +84,6 @@ import { UserNotification } from '../../interfaces/user.interface';
 })
 export class NotificationBellComponent implements OnInit, OnDestroy {
   notifications: UserNotification[] = [];
-  unreadCount = 0;
   isOpen = false;
 
   private readonly destroy$ = new Subject<void>();
@@ -95,19 +94,17 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     private readonly chatService: ChatService
   ) {}
 
+  /** Zoneless-proof unread count: reads a signal updated by every fetch. */
+  unreadCount(): number {
+    return this.userService.unreadNotificationsSignal();
+  }
+
   ngOnInit(): void {
     this.userService
       .getNotifications()
       .pipe(takeUntil(this.destroy$))
       .subscribe((notifications) => {
         this.notifications = notifications;
-      });
-
-    this.userService
-      .getUnreadNotificationsCount()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((count) => {
-        this.unreadCount = count;
       });
   }
 
