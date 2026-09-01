@@ -222,16 +222,16 @@
     "semantic_hash": "7e491ba373c1930b5bd793193c5a7f38"
   },
   "apps/backend/src/application/sports/services/FootballQueryService.test.ts": {
-    "mtime": 1787347718.6288247,
-    "seen": 1787599616.7522159,
-    "ast_hash": "76dce450dae660a841e5e71f062c29a3",
-    "semantic_hash": "76dce450dae660a841e5e71f062c29a3"
+    "mtime": 1788218394.567483,
+    "seen": 1788219334.3893056,
+    "ast_hash": "b9a9d6548f5a4eb3af99578e1889e778",
+    "semantic_hash": ""
   },
   "apps/backend/src/application/sports/services/FootballQueryService.ts": {
-    "mtime": 1787347718.6298246,
-    "seen": 1787599616.7522175,
-    "ast_hash": "075f34adf895d7e332ba8eb40f85ceec",
-    "semantic_hash": "075f34adf895d7e332ba8eb40f85ceec"
+    "mtime": 1788218504.9860036,
+    "seen": 1788219334.3893108,
+    "ast_hash": "919440cc55410b0709ff2550c748adba",
+    "semantic_hash": ""
   },
   "apps/backend/src/application/use-cases/ChatbotRecommend.ts": {
     "mtime": 1788047354.226648,
@@ -474,10 +474,10 @@
     "semantic_hash": "172a33303adade63a952a22dca7210b3"
   },
   "apps/backend/src/domain/sports/football/types.ts": {
-    "mtime": 1787347718.6328247,
-    "seen": 1787599616.7523038,
-    "ast_hash": "7df4f163044f311a1ef5c5225b50a7c9",
-    "semantic_hash": "7df4f163044f311a1ef5c5225b50a7c9"
+    "mtime": 1788218504.965004,
+    "seen": 1788219334.3895028,
+    "ast_hash": "51ab0e9e263b9ff2ca54e4f9d1529c8d",
+    "semantic_hash": ""
   },
   "apps/backend/src/domain/value-objects/ChannelId.ts": {
     "mtime": 1766096979.0121088,
@@ -834,10 +834,10 @@
     "semantic_hash": "834330995d846730a96a637c4b73d395"
   },
   "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts": {
-    "mtime": 1787347718.6368246,
-    "seen": 1787599616.752417,
-    "ast_hash": "430e4adb3ecbce1da0bfb4cc21bd4fce",
-    "semantic_hash": "430e4adb3ecbce1da0bfb4cc21bd4fce"
+    "mtime": 1788218504.9710038,
+    "seen": 1788219334.389752,
+    "ast_hash": "3bb03a8fdb099e52552b9eb175e7bac1",
+    "semantic_hash": ""
   },
   "apps/backend/src/infrastructure/storage/LocalStorageRepository.ts": {
     "mtime": 1766096979.013109,
@@ -1806,22 +1806,16 @@
     "semantic_hash": "068e467f596fddb2d70b5081843c72c6"
   },
   "apps/frontend/src/app/components/portal-context-nav/portal-context-nav.component.spec.ts": {
-    "mtime": 1787347718.7628226,
-    "seen": 1787599616.7527423,
-    "ast_hash": "f33c6704a6f1f9cb299247a62047263f",
-    "semantic_hash": "f33c6704a6f1f9cb299247a62047263f"
+    "mtime": 1788218557.555293,
+    "seen": 1788219334.3903315,
+    "ast_hash": "bdd114efb823216644744da945c65d8e",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/components/portal-context-nav/portal-context-nav.component.ts": {
-    "mtime": 1787347718.7648227,
-    "seen": 1787599616.7527435,
-    "ast_hash": "ab22199c9eba6145deb05149c70f069f",
-    "semantic_hash": "ab22199c9eba6145deb05149c70f069f"
-  },
-  "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.ts": {
-    "mtime": 1787347718.7758224,
-    "seen": 1787599616.7527447,
-    "ast_hash": "44a832ebde685cfe094598c262768509",
-    "semantic_hash": "44a832ebde685cfe094598c262768509"
+    "mtime": 1788218589.2298634,
+    "seen": 1788219334.3903344,
+    "ast_hash": "29dc69a490bde26674a8c047b1504d61",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/components/program-detail-modal/program-detail-modal.component.ts": {
     "mtime": 1788047354.2406478,
@@ -1938,10 +1932,10 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "apps/frontend/src/app/config/portal-navigation.config.ts": {
-    "mtime": 1787735797.3963308,
-    "seen": 1788021692.537169,
-    "ast_hash": "1b3f7902ad402438cc3e9326421f59e1",
-    "semantic_hash": "1b3f7902ad402438cc3e9326421f59e1"
+    "mtime": 1788218589.2188635,
+    "seen": 1788219334.390409,
+    "ast_hash": "42c847413fe18d33ef286dda45122d16",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/config/program-list-providers.config.ts": {
     "mtime": 1786611878.3566785,
@@ -1962,10 +1956,10 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "apps/frontend/src/app/config/route-map.spec.ts": {
-    "mtime": 1787408081.758423,
-    "seen": 1787599616.7527735,
-    "ast_hash": "d3d30accab612f725e0e5833d99b15a6",
-    "semantic_hash": "d3d30accab612f725e0e5833d99b15a6"
+    "mtime": 1788218557.558293,
+    "seen": 1788219334.3904219,
+    "ast_hash": "c4ed12bf9d5f6a34c1d73cad40697dc4",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/config/route-map.ts": {
     "mtime": 1787735740.67624,
@@ -2046,10 +2040,10 @@
     "semantic_hash": "f2a9789d696ab2904e43bc1adf2c8734"
   },
   "apps/frontend/src/app/features/football/components/football-filter-bar/football-filter-bar.component.ts": {
-    "mtime": 1787347718.8608212,
-    "seen": 1787599616.752794,
-    "ast_hash": "0d768a8b1732edfaead2c88d6f027b53",
-    "semantic_hash": "0d768a8b1732edfaead2c88d6f027b53"
+    "mtime": 1788218589.2458632,
+    "seen": 1788219334.39048,
+    "ast_hash": "cdffc2040be6e8f34910016f12d053fc",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/components/football-match-card/football-match-card.component.ts": {
     "mtime": 1788047354.2466478,
@@ -2166,9 +2160,9 @@
     "semantic_hash": "e04db12c6dd9bc3e66805985034d8e28"
   },
   "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts": {
-    "mtime": 1788133282.2611232,
-    "seen": 1788185152.370184,
-    "ast_hash": "3f05801a593f3323831eac5ae65e0c43",
+    "mtime": 1788218613.4505339,
+    "seen": 1788219334.3905597,
+    "ast_hash": "1c9231efc621def4157ce1c41653cd25",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-competitions/football-competitions.component.spec.ts": {
@@ -2196,16 +2190,16 @@
     "semantic_hash": "b44d7cd1fd7ce41962dd25474f56df89"
   },
   "apps/frontend/src/app/features/football/pages/football-match-detail/football-match-detail.component.ts": {
-    "mtime": 1788133282.2591233,
-    "seen": 1788185152.3701963,
-    "ast_hash": "fb6c7bea764fa0dcd61f8c43aea5eab7",
+    "mtime": 1788218722.982036,
+    "seen": 1788219334.3905787,
+    "ast_hash": "0de855f449a5db71da8243d93376cf38",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts": {
-    "mtime": 1787350516.2746444,
-    "seen": 1787599616.7528262,
-    "ast_hash": "c34c582625147be33f055d245de47046",
-    "semantic_hash": "c34c582625147be33f055d245de47046"
+    "mtime": 1788218589.2348633,
+    "seen": 1788219334.3905818,
+    "ast_hash": "f86bcc8555f4962283f70125c9ee4f9c",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-news-detail/football-news-detail.component.spec.ts": {
     "mtime": 1787347718.9678195,
@@ -2226,10 +2220,10 @@
     "semantic_hash": "8223632d2e36d387a3c0bede3bd4ea40"
   },
   "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts": {
-    "mtime": 1787347718.9718194,
-    "seen": 1787599616.752831,
-    "ast_hash": "28ed2fb094b4c6eeeadf24eca7dcc2f0",
-    "semantic_hash": "28ed2fb094b4c6eeeadf24eca7dcc2f0"
+    "mtime": 1788218613.4485338,
+    "seen": 1788219334.3905928,
+    "ast_hash": "1f7d711fa7af9e51b29418ec0b10923b",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-search/football-search.component.spec.ts": {
     "mtime": 1787347718.9768195,
@@ -2250,9 +2244,9 @@
     "semantic_hash": "d52a0353c616fff2ded4b12202c76697"
   },
   "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts": {
-    "mtime": 1788133282.2641232,
-    "seen": 1788185152.370212,
-    "ast_hash": "5eb6577b98c651d937d2d27f196ae2af",
+    "mtime": 1788218613.4835334,
+    "seen": 1788219334.3906052,
+    "ast_hash": "e28008bd946abd63bf3fae09af21c078",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/guards/admin.guard.ts": {
@@ -2544,9 +2538,9 @@
     "semantic_hash": "75225ccb64d515dc34139784092e1927"
   },
   "apps/frontend/src/app/pages/stats/stats.component.ts": {
-    "mtime": 1788133282.2541234,
-    "seen": 1788185152.3704758,
-    "ast_hash": "def1a3cfe730315bec5fb1716003306c",
+    "mtime": 1788217540.1026568,
+    "seen": 1788219334.3911479,
+    "ast_hash": "b15964441a98d60cb0596175ebae1d6e",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/pages/streaming-comparison/streaming-comparison.component.spec.ts": {
@@ -2580,16 +2574,16 @@
     "semantic_hash": "146c3ee98e6e6bd446d1df49e0182a48"
   },
   "apps/frontend/src/app/pages/unified-guide/views/live-guide-view.component.ts": {
-    "mtime": 1787743145.1624928,
-    "seen": 1788021692.5475407,
-    "ast_hash": "20ce9921989d5b046915bb9c451a3d37",
-    "semantic_hash": "20ce9921989d5b046915bb9c451a3d37"
+    "mtime": 1788218624.375385,
+    "seen": 1788219334.3911707,
+    "ast_hash": "84c8e963768900ef67f76816c0065aeb",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/pages/unified-guide/views/streaming-view.component.ts": {
-    "mtime": 1787408081.7574232,
-    "seen": 1787599616.7529242,
-    "ast_hash": "521f2fbf636f643a6a9bdb0432afc62f",
-    "semantic_hash": "521f2fbf636f643a6a9bdb0432afc62f"
+    "mtime": 1788218624.4003847,
+    "seen": 1788219334.3911731,
+    "ast_hash": "e51abf4d2a26cefd3fb7f4ea8dc70abd",
+    "semantic_hash": ""
   },
   "apps/frontend/src/app/pages/user-area/components/add-to-list-modal/add-to-list-modal.component.ts": {
     "mtime": 1786656753.8729074,
@@ -3162,10 +3156,10 @@
     "semantic_hash": "de0b4de43c5184ba6d73f6105a3d9044"
   },
   "e2e/specs/football.spec.ts": {
-    "mtime": 1787611588.9822378,
-    "seen": 1787647355.9898896,
-    "ast_hash": "2272ac05c70851c852870e003835014c",
-    "semantic_hash": "2272ac05c70851c852870e003835014c"
+    "mtime": 1788218722.980036,
+    "seen": 1788219334.3915508,
+    "ast_hash": "17f64e340267b32735eee2aa34c4f094",
+    "semantic_hash": ""
   },
   "e2e/specs/home-live.spec.ts": {
     "mtime": 1786661220.2182145,
@@ -3180,10 +3174,10 @@
     "semantic_hash": "4a1a8ea9903352a4d463885cf68a80c1"
   },
   "e2e/specs/navigation-unification.spec.ts": {
-    "mtime": 1787825027.3585708,
-    "seen": 1788021692.5568233,
-    "ast_hash": "49c9b25399c43fa94553d3b534489aaf",
-    "semantic_hash": "49c9b25399c43fa94553d3b534489aaf"
+    "mtime": 1788218722.9810362,
+    "seen": 1788219334.3915591,
+    "ast_hash": "59e90e7afab378d3794518a4b6da6342",
+    "semantic_hash": ""
   },
   "e2e/specs/search.spec.ts": {
     "mtime": 1787303850.7993307,
@@ -3408,9 +3402,9 @@
     "semantic_hash": ""
   },
   "apps/frontend/src/app/blog/pages/post-detail/post-detail.component.html": {
-    "mtime": 1788047354.235648,
-    "seen": 1788132263.0245955,
-    "ast_hash": "4bae490589e3ff693d9e58924a3389aa",
+    "mtime": 1788218542.4574976,
+    "seen": 1788219334.3929985,
+    "ast_hash": "8d1116fa0f71cee73b867afc608199fe",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/blog/pages/top10/top10.component.html": {
@@ -3485,12 +3479,6 @@
     "ast_hash": "f8dcbc73be094006b3d237a6b0f5773a",
     "semantic_hash": ""
   },
-  "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.html": {
-    "mtime": 1787347718.7698226,
-    "seen": 1787647355.9900079,
-    "ast_hash": "d376c92904280602b0bbc4cec6243ae1",
-    "semantic_hash": ""
-  },
   "apps/frontend/src/app/components/program-detail-modal/program-detail-modal.component.html": {
     "mtime": 1788047354.2406478,
     "seen": 1788132263.0246367,
@@ -3558,9 +3546,9 @@
     "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.html": {
-    "mtime": 1788047354.2466478,
-    "seen": 1788132263.0246685,
-    "ast_hash": "34f2f15422c58e69380051d5f60570c7",
+    "mtime": 1788218613.4785335,
+    "seen": 1788219334.3930836,
+    "ast_hash": "210007ce402c17feb0637131901cabd3",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-competitions/football-competitions.component.html": {
@@ -3582,9 +3570,9 @@
     "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.html": {
-    "mtime": 1787350523.3375044,
-    "seen": 1787647355.9900403,
-    "ast_hash": "e414e6840dbb7502fecd762e72386d07",
+    "mtime": 1788218589.2348633,
+    "seen": 1788219334.3930957,
+    "ast_hash": "46ca38a34aff96bacf9d924078c50d07",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-news-detail/football-news-detail.component.html": {
@@ -3594,9 +3582,9 @@
     "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-news/football-news.component.html": {
-    "mtime": 1787347718.9698195,
-    "seen": 1787647355.9900444,
-    "ast_hash": "3d82d11307a7a2b50800fe1259436b08",
+    "mtime": 1788218613.449534,
+    "seen": 1788219334.393102,
+    "ast_hash": "d0e15ddfb4d2ee7a22541bf95e382c47",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-search/football-search.component.html": {
@@ -3606,9 +3594,9 @@
     "semantic_hash": ""
   },
   "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.html": {
-    "mtime": 1787350387.5442321,
-    "seen": 1787647355.9900484,
-    "ast_hash": "6fc4e42fd4d4b50ee8a10a8903cd76e1",
+    "mtime": 1788218613.4885333,
+    "seen": 1788219334.393107,
+    "ast_hash": "65f119782f2fa06e91c7e98b9d0d26db",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/pages/admin/admin.component.html": {
@@ -3774,15 +3762,15 @@
     "semantic_hash": ""
   },
   "apps/frontend/src/app/pages/unified-guide/views/live-guide-view.component.html": {
-    "mtime": 1787743139.7065783,
-    "seen": 1787743722.0421221,
-    "ast_hash": "a70cf3d89d42a9ced60bf7e5bee1878c",
+    "mtime": 1788218624.382385,
+    "seen": 1788219334.3932452,
+    "ast_hash": "23d262630204a941e432796105c74bf5",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/pages/unified-guide/views/streaming-view.component.html": {
-    "mtime": 1787408081.7574232,
-    "seen": 1787647355.9901116,
-    "ast_hash": "269daa1d049770e91a4e6bff490ab868",
+    "mtime": 1788218624.4023848,
+    "seen": 1788219334.393252,
+    "ast_hash": "25f3cd353383977659c0c844efde2aed",
     "semantic_hash": ""
   },
   "apps/frontend/src/app/pages/user-area/user-area.component.html": {
@@ -8115,6 +8103,12 @@
     "mtime": 1788210367.0290189,
     "seen": 1788211576.096731,
     "ast_hash": "65dc9dceb2680e247e49ef6d61a4a652",
+    "semantic_hash": ""
+  },
+  "e2e/specs/_visual-qa-width2.spec.ts": {
+    "mtime": 1788218618.3184676,
+    "seen": 1788219334.3915045,
+    "ast_hash": "3ed6e08598d3de64ef1d61478d3ddc24",
     "semantic_hash": ""
   }
 }

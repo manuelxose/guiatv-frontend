@@ -25,8 +25,6 @@ import {
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
-import { PortalLocalToolbarComponent } from '@app/components/portal-local-toolbar/portal-local-toolbar.component';
-import { PortalContextDestination } from '@app/config/portal-navigation.config';
 
 type MatchesView = 'live' | 'today' | 'calendar';
 
@@ -43,7 +41,6 @@ function todayKey(): string {
     FootballCompetitionGroupComponent,
     FootballDateStripComponent,
     FootballFilterBarComponent,
-    PortalLocalToolbarComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './football-matches.component.html',
@@ -56,12 +53,6 @@ export class FootballMatchesComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly meta = inject(MetaService);
   private readonly sanitizer = inject(DomSanitizer);
-
-  readonly tabs: readonly PortalContextDestination[] = [
-    { id: 'live', label: 'En directo', kind: 'route', path: '/deportes/futbol/en-directo' },
-    { id: 'today', label: 'Hoy', kind: 'route', path: '/deportes/futbol/partidos-hoy' },
-    { id: 'calendar', label: 'Calendario', kind: 'route', path: '/deportes/futbol/calendario' },
-  ];
 
   readonly view = signal<MatchesView>('today');
   readonly filter = signal<FootballMatchFilter>('all');

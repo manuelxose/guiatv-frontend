@@ -163,7 +163,7 @@ export class FootballMatchDetailComponent implements AfterViewInit, OnDestroy {
         [
           { name: 'Inicio', path: '/' },
           { name: 'Fútbol', path: '/deportes/futbol' },
-          { name: 'Partidos', path: '/deportes/futbol/partidos-hoy' },
+          { name: 'Hoy', path: '/deportes/futbol/partidos-hoy' },
           { name: `${match.homeTeam.name} - ${match.awayTeam.name}`, path: `/deportes/futbol/partido/${match.slug}` },
         ],
         baseUrl

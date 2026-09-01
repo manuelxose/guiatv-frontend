@@ -19,12 +19,12 @@
     </div>
   </header>
 
-  <app-portal-local-toolbar
-    [items]="categoryChips"
+  <app-filter-chip-bar
+    [chips]="categoryChips"
     [active]="guideState.liveFilters().category"
     ariaLabel="Filtrar TV por categoría"
-    (itemSelect)="selectCategory($event)"
-  ></app-portal-local-toolbar>
+    (chipSelect)="selectCategory($event)"
+  ></app-filter-chip-bar>
 
   <section class="live-view__channels" *ngIf="topChannels().length">
     <header class="live-view__section-head">

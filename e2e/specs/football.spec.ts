@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import { assertNoRenderedUndefined, assertNotBlankScreen } from '../fixtures/helpers';
 
 /**
@@ -26,22 +27,24 @@ test.describe('Football Home', () => {
     await assertNoRenderedUndefined(page);
   });
 
-  test('sub-navigation reaches Partidos, Competiciones and Noticias', async ({ page }) => {
+  test('the unified football navigation reaches every route-level destination', async ({ page }) => {
     await page.goto('/deportes/futbol');
     await assertNotBlankScreen(page);
-    await page.getByRole('navigation', { name: 'Secciones de Fútbol' }).getByRole('link', { name: 'Partidos', exact: true }).click();
-    await page.waitForURL(/\/deportes\/futbol\/partidos-hoy/, { timeout: 20_000 });
-    await assertNotBlankScreen(page);
+    const nav = page.getByRole('navigation', { name: 'Secciones de Fútbol' });
+    const destinations = [
+      { label: 'En directo', url: /\/deportes\/futbol\/en-directo/ },
+      { label: 'Hoy', url: /\/deportes\/futbol\/partidos-hoy/ },
+      { label: 'Calendario', url: /\/deportes\/futbol\/calendario/ },
+      { label: 'Competiciones', url: /\/deportes\/futbol\/competiciones/ },
+      { label: 'Noticias', url: /\/deportes\/futbol\/noticias/ },
+    ] as const;
 
-    await page.goto('/deportes/futbol');
-    await page.getByRole('navigation', { name: 'Secciones de Fútbol' }).getByRole('link', { name: 'Competiciones', exact: true }).click();
-    await page.waitForURL(/\/deportes\/futbol\/competiciones/, { timeout: 20_000 });
-    await assertNotBlankScreen(page);
-
-    await page.goto('/deportes/futbol');
-    await page.getByRole('navigation', { name: 'Secciones de Fútbol' }).getByRole('link', { name: 'Noticias', exact: true }).click();
-    await page.waitForURL(/\/deportes\/futbol\/noticias/, { timeout: 20_000 });
-    await assertNotBlankScreen(page);
+    for (const destination of destinations) {
+      await page.goto('/deportes/futbol');
+      await nav.getByRole('link', { name: destination.label, exact: true }).click();
+      await page.waitForURL(destination.url, { timeout: 20_000 });
+      await assertNotBlankScreen(page);
+    }
   });
 
   test('the search entry point is clearly football-scoped, not the global search', async ({ page }) => {
@@ -67,6 +70,24 @@ test.describe('Football Matches -> Match Centre', () => {
     await page.waitForURL(/\/deportes\/futbol\/partido\//, { timeout: 20_000 });
     await expect(page.locator('.scoreboard')).toBeVisible({ timeout: 20_000 });
     await assertNoRenderedUndefined(page);
+  });
+
+  test('uses one route navigation and filter chips across supported widths', async ({ page }) => {
+    for (const width of [320, 768, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/deportes/futbol/partidos-hoy');
+      await assertNotBlankScreen(page);
+
+      const nav = page.getByRole('navigation', { name: 'Secciones de Fútbol' });
+      await expect(nav.getByRole('link')).toHaveCount(6);
+      await expect(nav.getByRole('link', { name: 'Hoy', exact: true })).toHaveAttribute('aria-current', 'page');
+      await expect(page.locator('app-portal-local-toolbar')).toHaveCount(0);
+      await expect(page.getByRole('group', { name: 'Filtrar partidos' })).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    }
+
+    const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+    expect(accessibility.violations).toEqual([]);
   });
 
   test('the Live filter narrows the list to live/halftime matches only', async ({ page }) => {
@@ -103,7 +124,7 @@ test.describe('Football Matches -> Match Centre', () => {
   test('the filter bar is present and All/Live/Upcoming/Finished are all reachable', async ({ page }) => {
     await page.goto('/deportes/futbol/partidos-hoy');
     await assertNotBlankScreen(page);
-    const bar = page.getByRole('navigation', { name: 'Filtrar partidos' });
+    const bar = page.getByRole('group', { name: 'Filtrar partidos' });
     await expect(bar).toBeVisible({ timeout: 20_000 });
     for (const label of ['Todos', 'En directo', 'Próximos', 'Finalizados']) {
       await expect(bar.getByText(label, { exact: true })).toBeVisible();
@@ -131,7 +152,7 @@ test.describe('Competitions', () => {
     await page.waitForURL(/\/deportes\/futbol\/competiciones\//, { timeout: 30_000 });
 
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 30_000 });
-    const tabs = page.getByRole('navigation', { name: 'Secciones de la competición' });
+    const tabs = page.getByRole('group', { name: 'Secciones de la competición' });
     await expect(tabs.getByRole('button')).toHaveCount(3);
 
     await tabs.getByRole('button', { name: 'Clasificación', exact: true }).click();
@@ -153,7 +174,7 @@ test.describe('Team detail', () => {
     await firstCompetition.click();
     await page.waitForURL(/\/deportes\/futbol\/competiciones\//, { timeout: 30_000 });
 
-    const tabs = page.getByRole('navigation', { name: 'Secciones de la competición' });
+    const tabs = page.getByRole('group', { name: 'Secciones de la competición' });
     await tabs.getByRole('button', { name: 'Clasificación', exact: true }).click();
     // The team name itself is the link (spec §100 "no dead-end pages") —
     // the row is a table row, not a single clickable target.

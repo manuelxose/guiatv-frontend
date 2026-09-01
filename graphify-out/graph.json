@@ -47453,7 +47453,7 @@
       "label": "FOOTBALL_CATEGORY_SLUGS",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L39",
+      "source_location": "L40",
       "_origin": "ast"
     },
     {
@@ -47461,7 +47461,7 @@
       "label": "CACHE_POLICIES",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L42",
+      "source_location": "L43",
       "_origin": "ast"
     },
     {
@@ -47469,7 +47469,7 @@
       "label": "FootballQueryService",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L61",
+      "source_location": "L62",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -47479,7 +47479,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L64",
+      "source_location": "L65",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47488,7 +47488,7 @@
       "label": ".invalidatePublicReads()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L73",
+      "source_location": "L74",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47497,7 +47497,7 @@
       "label": ".getHome()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L77",
+      "source_location": "L78",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47506,7 +47506,7 @@
       "label": ".getMatches()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L119",
+      "source_location": "L122",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47515,7 +47515,7 @@
       "label": ".getLiveMatches()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L139",
+      "source_location": "L142",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47524,7 +47524,7 @@
       "label": ".getMatch()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L150",
+      "source_location": "L154",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47533,7 +47533,7 @@
       "label": ".getCompetitions()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L173",
+      "source_location": "L177",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47542,7 +47542,7 @@
       "label": ".getCompetition()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L198",
+      "source_location": "L202",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47551,7 +47551,7 @@
       "label": ".getTeam()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L223",
+      "source_location": "L227",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47560,7 +47560,7 @@
       "label": ".search()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L255",
+      "source_location": "L259",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47569,7 +47569,7 @@
       "label": ".getNews()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L292",
+      "source_location": "L296",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47578,7 +47578,7 @@
       "label": ".mapNewsItem()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L315",
+      "source_location": "L319",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47587,7 +47587,7 @@
       "label": ".pickFeatured()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L332",
+      "source_location": "L336",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47596,7 +47596,7 @@
       "label": "stableKey()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L342",
+      "source_location": "L346",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47605,7 +47605,7 @@
       "label": "resolveMatchesPolicy()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L350",
+      "source_location": "L354",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47614,7 +47614,7 @@
       "label": "normalizeQuery()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L357",
+      "source_location": "L361",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47623,7 +47623,7 @@
       "label": "teamMatches()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L365",
+      "source_location": "L369",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47632,7 +47632,7 @@
       "label": "competitionMatches()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L377",
+      "source_location": "L381",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47641,7 +47641,7 @@
       "label": "escapeRegex()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L389",
+      "source_location": "L393",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47650,7 +47650,7 @@
       "label": "NewsFilters",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L393",
+      "source_location": "L397",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -47660,7 +47660,7 @@
       "label": "buildNewsQuery()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L418",
+      "source_location": "L422",
       "_callable": true,
       "_origin": "ast"
     },
@@ -47669,7 +47669,7 @@
       "label": "settle()",
       "file_type": "code",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L461",
+      "source_location": "L465",
       "_callable": true,
       "_origin": "ast"
     },
@@ -54194,6 +54194,15 @@
       "_origin": "ast"
     },
     {
+      "id": "apps_backend_src_domain_sports_football_types_islivematchstatus",
+      "label": "isLiveMatchStatus()",
+      "file_type": "code",
+      "source_file": "apps/backend/src/domain/sports/football/types.ts",
+      "source_location": "L217",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
       "id": "apps_backend_src_domain_value_objects_channelid",
       "label": "ChannelId.ts",
       "file_type": "code",
@@ -60086,7 +60095,7 @@
       "label": "mapFootballDataOrgTeam()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L30",
+      "source_location": "L31",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60095,7 +60104,7 @@
       "label": "mapCompetitionType()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L45",
+      "source_location": "L46",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60104,7 +60113,7 @@
       "label": "mapFootballDataOrgCompetition()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L52",
+      "source_location": "L53",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60113,7 +60122,7 @@
       "label": "mapFootballDataOrgMatch()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L68",
+      "source_location": "L69",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60122,7 +60131,7 @@
       "label": "mapFootballDataOrgStandingRow()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L114",
+      "source_location": "L115",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60131,7 +60140,7 @@
       "label": "extractSlugDate()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L132",
+      "source_location": "L133",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60140,7 +60149,7 @@
       "label": "findTeamBySlugInMatches()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L138",
+      "source_location": "L139",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60149,7 +60158,7 @@
       "label": "dedupeTeamsFromMatches()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L147",
+      "source_location": "L148",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60158,7 +60167,7 @@
       "label": "PROVIDER_TIMEOUT_MS",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L176",
+      "source_location": "L177",
       "_origin": "ast"
     },
     {
@@ -60166,7 +60175,7 @@
       "label": "FootballDataOrgAdapter",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L180",
+      "source_location": "L181",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -60176,7 +60185,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L191",
+      "source_location": "L192",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60185,7 +60194,7 @@
       "label": ".headers()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L193",
+      "source_location": "L194",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60194,7 +60203,7 @@
       "label": ".fetch()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L197",
+      "source_location": "L198",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60203,7 +60212,7 @@
       "label": ".fetchGeneralMatches()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L216",
+      "source_location": "L217",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60212,7 +60221,7 @@
       "label": ".getMatches()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L227",
+      "source_location": "L228",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60221,7 +60230,7 @@
       "label": ".getCompetitionMatches()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L274",
+      "source_location": "L278",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60230,7 +60239,7 @@
       "label": ".getLiveMatches()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L312",
+      "source_location": "L316",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60239,7 +60248,7 @@
       "label": ".getMatch()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L316",
+      "source_location": "L320",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60248,7 +60257,7 @@
       "label": ".getMatchBySlug()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L333",
+      "source_location": "L337",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60257,7 +60266,7 @@
       "label": ".getCompetitions()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L346",
+      "source_location": "L350",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60266,7 +60275,7 @@
       "label": ".getCompetition()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L357",
+      "source_location": "L361",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60275,7 +60284,7 @@
       "label": ".getStandings()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L362",
+      "source_location": "L366",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60284,7 +60293,7 @@
       "label": ".getTeams()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L390",
+      "source_location": "L394",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60293,7 +60302,7 @@
       "label": ".getTeam()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L400",
+      "source_location": "L404",
       "_callable": true,
       "_origin": "ast"
     },
@@ -60302,7 +60311,7 @@
       "label": ".supportsLiveScores()",
       "file_type": "code",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L439",
+      "source_location": "L443",
       "_callable": true,
       "_origin": "ast"
     },
@@ -76777,42 +76786,8 @@
       "label": ".scrollActiveIntoView()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/components/portal-context-nav/portal-context-nav.component.ts",
-      "source_location": "L119",
+      "source_location": "L121",
       "_callable": true,
-      "_origin": "ast"
-    },
-    {
-      "id": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
-      "label": "portal-local-toolbar.component.ts",
-      "file_type": "code",
-      "source_file": "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.ts",
-      "source_location": "L1",
-      "_origin": "ast"
-    },
-    {
-      "id": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
-      "label": "PortalLocalToolbarComponent",
-      "file_type": "code",
-      "source_file": "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.ts",
-      "source_location": "L13",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast"
-    },
-    {
-      "id": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_ts_component",
-      "label": "Component",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast"
-    },
-    {
-      "id": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_ts_output",
-      "label": "Output",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
       "_origin": "ast"
     },
     {
@@ -79959,7 +79934,7 @@
       "label": "PORTAL_SECTION_NAVIGATION",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L228",
+      "source_location": "L230",
       "_origin": "ast"
     },
     {
@@ -79967,7 +79942,7 @@
       "label": "PortalPrimaryDestinationId",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L261",
+      "source_location": "L263",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -79977,7 +79952,7 @@
       "label": "resolvePortalPrimaryDestination()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L263",
+      "source_location": "L265",
       "_callable": true,
       "_origin": "ast"
     },
@@ -79986,7 +79961,7 @@
       "label": "PORTAL_MOBILE_PRIMARY_DESTINATIONS",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L286",
+      "source_location": "L288",
       "_origin": "ast"
     },
     {
@@ -79994,7 +79969,7 @@
       "label": "PORTAL_ACCOUNT_DESTINATIONS",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L299",
+      "source_location": "L301",
       "_origin": "ast"
     },
     {
@@ -80002,7 +79977,7 @@
       "label": "PORTAL_HOME_TOP_PILLS",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L305",
+      "source_location": "L307",
       "_origin": "ast"
     },
     {
@@ -80010,7 +79985,7 @@
       "label": "PORTAL_GUIDE_SHELL_CONFIG",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L319",
+      "source_location": "L321",
       "_origin": "ast"
     },
     {
@@ -80018,7 +79993,7 @@
       "label": "getPortalPublicTopPills()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L362",
+      "source_location": "L364",
       "_callable": true,
       "_origin": "ast"
     },
@@ -80027,7 +80002,7 @@
       "label": "getPortalPublicTopPillLabel()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L390",
+      "source_location": "L392",
       "_callable": true,
       "_origin": "ast"
     },
@@ -80036,7 +80011,7 @@
       "label": "getPortalPublicRightRailLabel()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L403",
+      "source_location": "L405",
       "_callable": true,
       "_origin": "ast"
     },
@@ -80045,7 +80020,7 @@
       "label": "getPortalPublicContextualLeftRailSection()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L420",
+      "source_location": "L422",
       "_callable": true,
       "_origin": "ast"
     },
@@ -80054,7 +80029,7 @@
       "label": "getPortalPublicRightRailSections()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L488",
+      "source_location": "L490",
       "_callable": true,
       "_origin": "ast"
     },
@@ -80063,7 +80038,7 @@
       "label": "resolvePortalPublicTopPillTarget()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L569",
+      "source_location": "L571",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82464,7 +82439,7 @@
       "label": "CompetitionTab",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L25",
+      "source_location": "L24",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -82474,7 +82449,7 @@
       "label": "CompetitionState",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L27",
+      "source_location": "L26",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -82484,7 +82459,7 @@
       "label": "RoundGroup",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L32",
+      "source_location": "L31",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -82494,7 +82469,7 @@
       "label": "groupByRound()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L37",
+      "source_location": "L36",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82503,7 +82478,7 @@
       "label": "FootballCompetitionDetailComponent",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L66",
+      "source_location": "L65",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -82521,7 +82496,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L123",
+      "source_location": "L122",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82530,7 +82505,7 @@
       "label": ".selectTab()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L134",
+      "source_location": "L133",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82539,7 +82514,7 @@
       "label": ".onFilterChange()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L138",
+      "source_location": "L137",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82548,7 +82523,7 @@
       "label": ".trackByRound()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L142",
+      "source_location": "L141",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82557,7 +82532,7 @@
       "label": ".trackByMatch()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L146",
+      "source_location": "L145",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82566,7 +82541,7 @@
       "label": ".trackByNewsSlug()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L150",
+      "source_location": "L149",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82575,7 +82550,7 @@
       "label": ".applyDetailMeta()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L154",
+      "source_location": "L153",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82584,7 +82559,7 @@
       "label": ".applyNotFoundMeta()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L177",
+      "source_location": "L176",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82919,7 +82894,7 @@
       "label": "MatchesView",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L31",
+      "source_location": "L29",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -82929,7 +82904,7 @@
       "label": "todayKey()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L33",
+      "source_location": "L31",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82938,7 +82913,7 @@
       "label": "FootballMatchesComponent",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L52",
+      "source_location": "L49",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -82956,7 +82931,7 @@
       "label": ".selectedDateKey()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L114",
+      "source_location": "L105",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82965,7 +82940,7 @@
       "label": ".title()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L118",
+      "source_location": "L109",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82974,7 +82949,7 @@
       "label": ".subtitle()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L124",
+      "source_location": "L115",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82983,7 +82958,7 @@
       "label": ".emptyTitle()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L130",
+      "source_location": "L121",
       "_callable": true,
       "_origin": "ast"
     },
@@ -82992,7 +82967,7 @@
       "label": ".emptySubtitle()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L136",
+      "source_location": "L127",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83001,7 +82976,7 @@
       "label": ".ngOnInit()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L142",
+      "source_location": "L133",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83010,7 +82985,7 @@
       "label": ".onDateChange()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L164",
+      "source_location": "L155",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83019,7 +82994,7 @@
       "label": ".onFilterChange()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L171",
+      "source_location": "L162",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83028,7 +83003,7 @@
       "label": ".trackByGroup()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L179",
+      "source_location": "L170",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83037,7 +83012,7 @@
       "label": ".pathForTab()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L183",
+      "source_location": "L174",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83046,7 +83021,7 @@
       "label": ".loadFor()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L189",
+      "source_location": "L180",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83204,7 +83179,7 @@
       "label": "CONTENT_TYPE_LABELS",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L17",
+      "source_location": "L16",
       "_origin": "ast"
     },
     {
@@ -83212,7 +83187,7 @@
       "label": "FootballNewsComponent",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L35",
+      "source_location": "L34",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -83230,7 +83205,7 @@
       "label": ".ngOnInit()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L81",
+      "source_location": "L80",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83239,7 +83214,7 @@
       "label": ".typeLabel()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L103",
+      "source_location": "L102",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83248,7 +83223,7 @@
       "label": ".selectType()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L107",
+      "source_location": "L106",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83257,7 +83232,7 @@
       "label": ".loadMore()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L111",
+      "source_location": "L110",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83266,7 +83241,7 @@
       "label": ".trackByArticle()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L115",
+      "source_location": "L114",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83423,7 +83398,7 @@
       "label": "TeamTab",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L24",
+      "source_location": "L23",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -83433,7 +83408,7 @@
       "label": "TeamState",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L26",
+      "source_location": "L25",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -83443,7 +83418,7 @@
       "label": "FootballTeamDetailComponent",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L48",
+      "source_location": "L47",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast"
@@ -83461,7 +83436,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L104",
+      "source_location": "L103",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83470,7 +83445,7 @@
       "label": ".selectTab()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L115",
+      "source_location": "L114",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83479,7 +83454,7 @@
       "label": ".onFilterChange()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L119",
+      "source_location": "L118",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83488,7 +83463,7 @@
       "label": ".initials()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L123",
+      "source_location": "L122",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83497,7 +83472,7 @@
       "label": ".trackByMatch()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L132",
+      "source_location": "L131",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83506,7 +83481,7 @@
       "label": ".trackByNewsSlug()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L136",
+      "source_location": "L135",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83515,7 +83490,7 @@
       "label": ".applyDetailMeta()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L140",
+      "source_location": "L139",
       "_callable": true,
       "_origin": "ast"
     },
@@ -83524,7 +83499,7 @@
       "label": ".applyNotFoundMeta()",
       "file_type": "code",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L168",
+      "source_location": "L167",
       "_callable": true,
       "_origin": "ast"
     },
@@ -106264,6 +106239,14 @@
       "source_file": "e2e/global-setup.ts",
       "source_location": "L35",
       "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "e2e_specs_visual_qa_width2_spec",
+      "label": "_visual-qa-width2.spec.ts",
+      "file_type": "code",
+      "source_file": "e2e/specs/_visual-qa-width2.spec.ts",
+      "source_location": "L1",
       "_origin": "ast"
     },
     {
@@ -269649,12 +269632,23 @@
     },
     {
       "source": "apps_backend_src_application_sports_services_footballqueryservice",
+      "target": "apps_backend_src_domain_sports_football_types_islivematchstatus",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_sports_services_footballqueryservice",
       "target": "apps_backend_src_application_sports_services_broadcastreconciliationservice",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269665,7 +269659,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269676,7 +269670,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269687,7 +269681,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269698,7 +269692,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269709,7 +269703,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269720,7 +269714,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269731,7 +269725,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269742,7 +269736,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269753,7 +269747,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269763,7 +269757,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L39",
+      "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269773,7 +269767,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L42",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269783,7 +269777,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L61",
+      "source_location": "L62",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269793,7 +269787,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L64",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269803,7 +269797,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L73",
+      "source_location": "L74",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269813,7 +269807,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L77",
+      "source_location": "L78",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269823,7 +269817,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L119",
+      "source_location": "L122",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269833,7 +269827,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L139",
+      "source_location": "L142",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269843,7 +269837,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L150",
+      "source_location": "L154",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269853,7 +269847,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L173",
+      "source_location": "L177",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269863,7 +269857,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L198",
+      "source_location": "L202",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269873,7 +269867,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L223",
+      "source_location": "L227",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269883,7 +269877,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L255",
+      "source_location": "L259",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269893,7 +269887,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L292",
+      "source_location": "L296",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269903,7 +269897,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L315",
+      "source_location": "L319",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269913,7 +269907,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L332",
+      "source_location": "L336",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269923,7 +269917,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L342",
+      "source_location": "L346",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269933,7 +269927,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L350",
+      "source_location": "L354",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269943,7 +269937,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L357",
+      "source_location": "L361",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269953,7 +269947,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L365",
+      "source_location": "L369",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269963,7 +269957,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L377",
+      "source_location": "L381",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269973,7 +269967,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L389",
+      "source_location": "L393",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269983,7 +269977,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L393",
+      "source_location": "L397",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -269993,7 +269987,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L418",
+      "source_location": "L422",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270003,7 +269997,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L461",
+      "source_location": "L465",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270014,7 +270008,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L101",
+      "source_location": "L104",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270025,7 +270019,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L102",
+      "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270036,7 +270030,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L108",
+      "source_location": "L111",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270047,7 +270041,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L120",
+      "source_location": "L123",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270058,7 +270052,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L121",
+      "source_location": "L124",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270069,7 +270063,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L161",
+      "source_location": "L165",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270080,7 +270074,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L162",
+      "source_location": "L166",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270091,7 +270085,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L188",
+      "source_location": "L192",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270102,7 +270096,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L208",
+      "source_location": "L212",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270113,7 +270107,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L210",
+      "source_location": "L214",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270124,7 +270118,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L232",
+      "source_location": "L236",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270135,7 +270129,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L233",
+      "source_location": "L237",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270146,7 +270140,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L261",
+      "source_location": "L265",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270157,7 +270151,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L267",
+      "source_location": "L271",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270168,7 +270162,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L270",
+      "source_location": "L274",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270179,7 +270173,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L275",
+      "source_location": "L279",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270190,7 +270184,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L278",
+      "source_location": "L282",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270201,7 +270195,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L294",
+      "source_location": "L298",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270212,7 +270206,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L295",
+      "source_location": "L299",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270223,7 +270217,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L311",
+      "source_location": "L315",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -270234,7 +270228,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L429",
+      "source_location": "L433",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -286927,6 +286921,16 @@
       "_origin": "ast"
     },
     {
+      "source": "apps_backend_src_domain_sports_football_types",
+      "target": "apps_backend_src_domain_sports_football_types_islivematchstatus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/domain/sports/football/types.ts",
+      "source_location": "L217",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "apps_backend_src_domain_value_objects_channelid",
       "target": "apps_backend_src_domain_value_objects_channelid_channelid",
       "relation": "contains",
@@ -300399,6 +300403,17 @@
     },
     {
       "source": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter",
+      "target": "apps_backend_src_domain_sports_football_types_islivematchstatus",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter",
       "target": "apps_backend_src_domain_sports_football_types_normalizematchstatus",
       "relation": "imports",
       "context": "import",
@@ -300415,7 +300430,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L26",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300426,7 +300441,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L26",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300437,7 +300452,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L26",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300447,7 +300462,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L30",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300457,7 +300472,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L45",
+      "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300467,7 +300482,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L52",
+      "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300477,7 +300492,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L68",
+      "source_location": "L69",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300487,7 +300502,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L114",
+      "source_location": "L115",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300497,7 +300512,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L132",
+      "source_location": "L133",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300507,7 +300522,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L138",
+      "source_location": "L139",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300517,7 +300532,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L147",
+      "source_location": "L148",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300527,7 +300542,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L176",
+      "source_location": "L177",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300537,7 +300552,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L180",
+      "source_location": "L181",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300547,7 +300562,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L191",
+      "source_location": "L192",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300557,7 +300572,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L193",
+      "source_location": "L194",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300567,7 +300582,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L197",
+      "source_location": "L198",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300577,7 +300592,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L216",
+      "source_location": "L217",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300587,7 +300602,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L227",
+      "source_location": "L228",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300597,7 +300612,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L274",
+      "source_location": "L278",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300607,7 +300622,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L312",
+      "source_location": "L316",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300617,7 +300632,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L316",
+      "source_location": "L320",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300627,7 +300642,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L333",
+      "source_location": "L337",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300637,7 +300652,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L346",
+      "source_location": "L350",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300647,7 +300662,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L357",
+      "source_location": "L361",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300657,7 +300672,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L362",
+      "source_location": "L366",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300667,7 +300682,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L390",
+      "source_location": "L394",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300677,7 +300692,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L400",
+      "source_location": "L404",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300687,7 +300702,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L439",
+      "source_location": "L443",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300698,7 +300713,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L61",
+      "source_location": "L62",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300709,7 +300724,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L71",
+      "source_location": "L72",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300720,7 +300735,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L75",
+      "source_location": "L76",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300731,7 +300746,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L115",
+      "source_location": "L116",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300742,7 +300757,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L221",
+      "source_location": "L222",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300753,7 +300768,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L222",
+      "source_location": "L223",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300764,24 +300779,13 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L235",
+      "source_location": "L236",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter_footballdataorgadapter_getmatches",
       "target": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter_footballdataorgadapter_headers",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L246",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter_footballdataorgadapter_getmatches",
-      "target": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter_mapfootballdataorgmatch",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -300792,12 +300796,23 @@
     },
     {
       "source": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter_footballdataorgadapter_getmatches",
+      "target": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter_mapfootballdataorgmatch",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
+      "source_location": "L248",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter_footballdataorgadapter_getmatches",
       "target": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter_footballdataorgadapter_fetchgeneralmatches",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L253",
+      "source_location": "L254",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300808,7 +300823,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L275",
+      "source_location": "L279",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300819,7 +300834,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L298",
+      "source_location": "L302",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300830,7 +300845,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L301",
+      "source_location": "L305",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300841,7 +300856,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L313",
+      "source_location": "L317",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300852,7 +300867,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L324",
+      "source_location": "L328",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300863,7 +300878,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L325",
+      "source_location": "L329",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300874,7 +300889,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L330",
+      "source_location": "L334",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300885,7 +300900,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L334",
+      "source_location": "L338",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300896,7 +300911,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L342",
+      "source_location": "L346",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300907,7 +300922,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L351",
+      "source_location": "L355",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300918,7 +300933,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L352",
+      "source_location": "L356",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300929,7 +300944,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L358",
+      "source_location": "L362",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300940,7 +300955,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L368",
+      "source_location": "L372",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300951,7 +300966,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L380",
+      "source_location": "L384",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300962,7 +300977,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L385",
+      "source_location": "L389",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300973,7 +300988,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L396",
+      "source_location": "L400",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300984,7 +300999,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L397",
+      "source_location": "L401",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300995,7 +301010,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L410",
+      "source_location": "L414",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -301006,7 +301021,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L411",
+      "source_location": "L415",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -301017,7 +301032,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L417",
+      "source_location": "L421",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -301028,7 +301043,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L418",
+      "source_location": "L422",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -343908,7 +343923,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/components/portal-context-nav/portal-context-nav.component.ts",
-      "source_location": "L119",
+      "source_location": "L121",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -343932,82 +343947,6 @@
       "source_file": "apps/frontend/src/app/components/portal-context-nav/portal-context-nav.component.ts",
       "source_location": "L85",
       "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
-      "target": "ref_angular_core",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.ts",
-      "source_location": "L1",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
-      "target": "ref_angular_router",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.ts",
-      "source_location": "L2",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
-      "target": "apps_frontend_src_app_config_portal_navigation_config",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
-      "target": "apps_frontend_src_app_config_portal_navigation_config_portalcontextdestination",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.ts",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_ts_component",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.ts",
-      "source_location": "L5",
-      "weight": 1.0,
-      "context": "decorator",
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_ts_output",
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/components/portal-local-toolbar/portal-local-toolbar.component.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "context": "decorator",
       "_origin": "ast"
     },
     {
@@ -351595,7 +351534,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L228",
+      "source_location": "L230",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351605,7 +351544,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L261",
+      "source_location": "L263",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351615,7 +351554,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L263",
+      "source_location": "L265",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351625,7 +351564,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L286",
+      "source_location": "L288",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351635,7 +351574,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L299",
+      "source_location": "L301",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351645,7 +351584,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L305",
+      "source_location": "L307",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351655,7 +351594,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L319",
+      "source_location": "L321",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351665,7 +351604,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L362",
+      "source_location": "L364",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351675,7 +351614,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L390",
+      "source_location": "L392",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351685,7 +351624,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L403",
+      "source_location": "L405",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351695,7 +351634,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L420",
+      "source_location": "L422",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351705,7 +351644,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L488",
+      "source_location": "L490",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -351715,7 +351654,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/config/portal-navigation.config.ts",
-      "source_location": "L569",
+      "source_location": "L571",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -354167,7 +354106,7 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_components_football_filter_bar_football_filter_bar_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -354178,7 +354117,18 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_components_football_filter_bar_football_filter_bar_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipbarcomponent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps/frontend/src/app/features/football/components/football-filter-bar/football-filter-bar.component.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_frontend_src_app_features_football_components_football_filter_bar_football_filter_bar_component",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipitem",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -358181,7 +358131,7 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_competition_detail_football_competition_detail_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -358192,7 +358142,7 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_competition_detail_football_competition_detail_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipbarcomponent",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -358203,23 +358153,12 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_competition_detail_football_competition_detail_component",
-      "target": "apps_frontend_src_app_config_portal_navigation_config",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L23",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_features_football_pages_football_competition_detail_football_competition_detail_component",
-      "target": "apps_frontend_src_app_config_portal_navigation_config_portalcontextdestination",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipitem",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L23",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358229,7 +358168,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L25",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358239,7 +358178,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L27",
+      "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358249,7 +358188,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L32",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358259,7 +358198,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L37",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358269,7 +358208,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L66",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358279,7 +358218,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L48",
+      "source_location": "L47",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -358290,7 +358229,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L123",
+      "source_location": "L122",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358300,7 +358239,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L134",
+      "source_location": "L133",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358310,7 +358249,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L138",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358320,7 +358259,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L142",
+      "source_location": "L141",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358330,7 +358269,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L146",
+      "source_location": "L145",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358340,7 +358279,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L150",
+      "source_location": "L149",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358350,7 +358289,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L154",
+      "source_location": "L153",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358360,7 +358299,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L177",
+      "source_location": "L176",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358371,7 +358310,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L127",
+      "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -358382,7 +358321,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L129",
+      "source_location": "L128",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360375,55 +360314,11 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_matches_football_matches_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_features_football_pages_football_matches_football_matches_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L28",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_features_football_pages_football_matches_football_matches_component",
-      "target": "apps_frontend_src_app_config_portal_navigation_config",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L29",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_features_football_pages_football_matches_football_matches_component",
-      "target": "apps_frontend_src_app_config_portal_navigation_config_portalcontextdestination",
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L29",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_features_football_pages_football_matches_football_matches_component",
       "target": "apps_frontend_src_app_features_football_pages_football_matches_football_matches_component_matchesview",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L31",
+      "source_location": "L29",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360433,7 +360328,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L33",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360443,7 +360338,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L52",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360453,7 +360348,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L38",
+      "source_location": "L36",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -360464,7 +360359,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L114",
+      "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360474,7 +360369,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L118",
+      "source_location": "L109",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360484,7 +360379,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L124",
+      "source_location": "L115",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360494,7 +360389,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L130",
+      "source_location": "L121",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360504,7 +360399,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L136",
+      "source_location": "L127",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360514,7 +360409,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L142",
+      "source_location": "L133",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360524,7 +360419,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L164",
+      "source_location": "L155",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360534,7 +360429,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L171",
+      "source_location": "L162",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360544,7 +360439,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L179",
+      "source_location": "L170",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360554,7 +360449,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L183",
+      "source_location": "L174",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360564,7 +360459,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L189",
+      "source_location": "L180",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360575,7 +360470,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L115",
+      "source_location": "L106",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -360586,7 +360481,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L146",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -361372,7 +361267,7 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_news_football_news_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -361383,7 +361278,7 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_news_football_news_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipbarcomponent",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -361394,23 +361289,12 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_news_football_news_component",
-      "target": "apps_frontend_src_app_config_portal_navigation_config",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L13",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_features_football_pages_football_news_football_news_component",
-      "target": "apps_frontend_src_app_config_portal_navigation_config_portalcontextdestination",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipitem",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L13",
+      "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -361420,7 +361304,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L17",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -361430,7 +361314,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L35",
+      "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -361440,7 +361324,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L27",
+      "source_location": "L26",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -361451,7 +361335,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L81",
+      "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -361461,7 +361345,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L103",
+      "source_location": "L102",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -361471,7 +361355,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L107",
+      "source_location": "L106",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -361481,7 +361365,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L111",
+      "source_location": "L110",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -361491,7 +361375,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L115",
+      "source_location": "L114",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362497,7 +362381,7 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_team_detail_football_team_detail_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -362508,7 +362392,7 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_team_detail_football_team_detail_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipbarcomponent",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -362519,23 +362403,12 @@
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_team_detail_football_team_detail_component",
-      "target": "apps_frontend_src_app_config_portal_navigation_config",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L22",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_features_football_pages_football_team_detail_football_team_detail_component",
-      "target": "apps_frontend_src_app_config_portal_navigation_config_portalcontextdestination",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipitem",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L22",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362545,7 +362418,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L24",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362555,7 +362428,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L26",
+      "source_location": "L25",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362565,7 +362438,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L48",
+      "source_location": "L47",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362575,7 +362448,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L31",
+      "source_location": "L30",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -362586,7 +362459,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L104",
+      "source_location": "L103",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362596,7 +362469,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L115",
+      "source_location": "L114",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362606,7 +362479,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L119",
+      "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362616,7 +362489,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L123",
+      "source_location": "L122",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362626,7 +362499,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L132",
+      "source_location": "L131",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362636,7 +362509,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L136",
+      "source_location": "L135",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362646,7 +362519,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L140",
+      "source_location": "L139",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362656,7 +362529,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L168",
+      "source_location": "L167",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362667,7 +362540,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L108",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -362678,7 +362551,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L110",
+      "source_location": "L109",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -381858,18 +381731,7 @@
     },
     {
       "source": "apps_frontend_src_app_pages_unified_guide_views_live_guide_view_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/pages/unified-guide/views/live-guide-view.component.ts",
-      "source_location": "L8",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_pages_unified_guide_views_live_guide_view_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipbarcomponent",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -382510,18 +382372,7 @@
     },
     {
       "source": "apps_frontend_src_app_pages_unified_guide_views_streaming_view_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/pages/unified-guide/views/streaming-view.component.ts",
-      "source_location": "L7",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "apps_frontend_src_app_pages_unified_guide_views_streaming_view_component",
-      "target": "apps_frontend_src_app_components_portal_local_toolbar_portal_local_toolbar_component_portallocaltoolbarcomponent",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipbarcomponent",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -415209,6 +415060,17 @@
       "_origin": "ast"
     },
     {
+      "source": "e2e_specs_visual_qa_width2_spec",
+      "target": "ref_playwright_test",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "e2e/specs/_visual-qa-width2.spec.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "e2e_specs_admin_affiliate_spec",
       "target": "ref_playwright_test",
       "relation": "imports_from",
@@ -415792,7 +415654,7 @@
     },
     {
       "source": "e2e_specs_football_spec",
-      "target": "e2e_fixtures_helpers",
+      "target": "ref_axe_core_playwright",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -415803,12 +415665,23 @@
     },
     {
       "source": "e2e_specs_football_spec",
+      "target": "e2e_fixtures_helpers",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "e2e/specs/football.spec.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "e2e_specs_football_spec",
       "target": "e2e_fixtures_helpers_assertnorenderedundefined",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "e2e/specs/football.spec.ts",
-      "source_location": "L2",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -415819,7 +415692,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "e2e/specs/football.spec.ts",
-      "source_location": "L2",
+      "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457741,7 +457614,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L62",
+      "source_location": "L63",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457752,7 +457625,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L64",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457763,7 +457636,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L64",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457774,7 +457647,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L64",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457785,7 +457658,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L77",
+      "source_location": "L78",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457796,7 +457669,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L119",
+      "source_location": "L122",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457807,7 +457680,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L119",
+      "source_location": "L122",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457818,7 +457691,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L139",
+      "source_location": "L142",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457829,7 +457702,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L150",
+      "source_location": "L154",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457840,7 +457713,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L173",
+      "source_location": "L177",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457851,7 +457724,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L198",
+      "source_location": "L202",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457862,7 +457735,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L223",
+      "source_location": "L227",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457873,7 +457746,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L255",
+      "source_location": "L259",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457884,7 +457757,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L292",
+      "source_location": "L296",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457895,7 +457768,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L315",
+      "source_location": "L319",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -457906,7 +457779,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L332",
+      "source_location": "L336",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463373,7 +463246,7 @@
       "context": "type",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L180",
+      "source_location": "L181",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463384,7 +463257,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L184",
+      "source_location": "L185",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463395,7 +463268,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L185",
+      "source_location": "L186",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463406,7 +463279,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L216",
+      "source_location": "L217",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463417,7 +463290,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L227",
+      "source_location": "L228",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463428,7 +463301,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L227",
+      "source_location": "L228",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463439,7 +463312,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L274",
+      "source_location": "L278",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463450,7 +463323,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L274",
+      "source_location": "L278",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463461,7 +463334,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L312",
+      "source_location": "L316",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463472,7 +463345,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L316",
+      "source_location": "L320",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463483,7 +463356,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L333",
+      "source_location": "L337",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463494,7 +463367,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L346",
+      "source_location": "L350",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463505,7 +463378,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L357",
+      "source_location": "L361",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463516,7 +463389,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L362",
+      "source_location": "L366",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463527,7 +463400,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L390",
+      "source_location": "L394",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -463538,7 +463411,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L400",
+      "source_location": "L404",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -468521,18 +468394,18 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L34",
+      "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_competition_detail_football_competition_detail_component_footballcompetitiondetailcomponent",
-      "target": "apps_frontend_src_app_config_portal_navigation_config_portalcontextdestination",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipitem",
       "relation": "references",
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L72",
+      "source_location": "L71",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -468543,7 +468416,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L138",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -468554,7 +468427,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L146",
+      "source_location": "L145",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -468565,7 +468438,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L154",
+      "source_location": "L153",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -468636,24 +468509,13 @@
       "_origin": "ast"
     },
     {
-      "source": "apps_frontend_src_app_features_football_pages_football_matches_football_matches_component_footballmatchescomponent",
-      "target": "apps_frontend_src_app_config_portal_navigation_config_portalcontextdestination",
-      "relation": "references",
-      "context": "field",
-      "confidence": "EXTRACTED",
-      "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L60",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
       "source": "apps_frontend_src_app_features_football_pages_football_matches_football_matches_component_footballmatchescomponent_onfilterchange",
       "target": "apps_frontend_src_app_features_football_components_football_filter_bar_football_filter_bar_component_footballmatchfilter",
       "relation": "references",
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L171",
+      "source_location": "L162",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -468675,7 +468537,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L103",
+      "source_location": "L102",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -468686,18 +468548,18 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L115",
+      "source_location": "L114",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "apps_frontend_src_app_features_football_pages_football_team_detail_football_team_detail_component_footballteamdetailcomponent",
-      "target": "apps_frontend_src_app_config_portal_navigation_config_portalcontextdestination",
+      "target": "apps_frontend_src_app_components_filter_chip_bar_filter_chip_bar_component_filterchipitem",
       "relation": "references",
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L54",
+      "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -468708,7 +468570,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L119",
+      "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -468719,7 +468581,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L140",
+      "source_location": "L139",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -480616,7 +480478,19 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L83",
+      "source_location": "L84",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_sports_services_footballqueryservice_footballqueryservice_gethome",
+      "target": "apps_backend_src_domain_sports_football_types_islivematchstatus",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
+      "source_location": "L99",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -480628,7 +480502,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L123",
+      "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -480640,7 +480514,19 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L141",
+      "source_location": "L144",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_application_sports_services_footballqueryservice_footballqueryservice_getlivematches",
+      "target": "apps_backend_src_domain_sports_football_types_islivematchstatus",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
+      "source_location": "L146",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -480652,7 +480538,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L188",
+      "source_location": "L192",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -480664,7 +480550,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L310",
+      "source_location": "L314",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -481516,7 +481402,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -481528,7 +481414,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L56",
+      "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -481540,7 +481426,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L85",
+      "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -481552,7 +481438,19 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
-      "source_location": "L95",
+      "source_location": "L96",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "apps_backend_src_infrastructure_sports_providers_footballdataorgadapter_footballdataorgadapter_getmatches",
+      "target": "apps_backend_src_domain_sports_football_types_islivematchstatus",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "apps/backend/src/infrastructure/sports/providers/FootballDataOrgAdapter.ts",
+      "source_location": "L270",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -485164,7 +485062,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/frontend/src/app/features/football/pages/football-competition-detail/football-competition-detail.component.ts",
-      "source_location": "L164",
+      "source_location": "L163",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -485260,7 +485158,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/frontend/src/app/features/football/pages/football-matches/football-matches.component.ts",
-      "source_location": "L152",
+      "source_location": "L143",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -485296,7 +485194,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/frontend/src/app/features/football/pages/football-news/football-news.component.ts",
-      "source_location": "L91",
+      "source_location": "L90",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -485320,7 +485218,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L150",
+      "source_location": "L149",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -485332,7 +485230,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/frontend/src/app/features/football/pages/football-team-detail/football-team-detail.component.ts",
-      "source_location": "L151",
+      "source_location": "L150",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488056,7 +487954,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L84",
+      "source_location": "L85",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488068,7 +487966,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L85",
+      "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488080,7 +487978,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L89",
+      "source_location": "L90",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488092,7 +487990,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L101",
+      "source_location": "L104",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488104,7 +488002,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L123",
+      "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488116,7 +488014,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L124",
+      "source_location": "L127",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488128,7 +488026,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L141",
+      "source_location": "L144",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488140,7 +488038,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L142",
+      "source_location": "L145",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488152,7 +488050,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L152",
+      "source_location": "L156",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488164,7 +488062,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L161",
+      "source_location": "L165",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488176,7 +488074,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L188",
+      "source_location": "L192",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488188,7 +488086,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L200",
+      "source_location": "L204",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488200,7 +488098,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L208",
+      "source_location": "L212",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488212,7 +488110,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L209",
+      "source_location": "L213",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488224,7 +488122,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L212",
+      "source_location": "L216",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488236,7 +488134,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L225",
+      "source_location": "L229",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488248,7 +488146,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L232",
+      "source_location": "L236",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488260,7 +488158,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L235",
+      "source_location": "L239",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488272,7 +488170,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L267",
+      "source_location": "L271",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488284,7 +488182,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L268",
+      "source_location": "L272",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488296,7 +488194,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L269",
+      "source_location": "L273",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -488308,7 +488206,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "apps/backend/src/application/sports/services/FootballQueryService.ts",
-      "source_location": "L283",
+      "source_location": "L287",
       "weight": 1.0,
       "_origin": "ast"
     },

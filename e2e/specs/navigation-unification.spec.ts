@@ -96,7 +96,7 @@ test.describe('Canonical section navigation', () => {
     const sections = [
       { path: '/programacion-tv/guia-canales', label: 'Secciones de TV', items: ['En emisión', 'A continuación', 'Esta noche', 'Parrilla'] },
       { path: '/programacion-tv/que-ver-hoy', label: 'Secciones de Qué ver', items: ['Todo', 'En TV', 'Películas', 'Series', 'Gratis'] },
-      { path: '/deportes/futbol', label: 'Secciones de Fútbol', items: ['Inicio', 'Partidos', 'Competiciones', 'Noticias'] },
+      { path: '/deportes/futbol', label: 'Secciones de Fútbol', items: ['Inicio', 'En directo', 'Hoy', 'Calendario', 'Competiciones', 'Noticias'] },
     ] as const;
 
     for (const section of sections) {

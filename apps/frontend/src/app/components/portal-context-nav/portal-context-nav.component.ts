@@ -107,7 +107,9 @@ export class PortalContextNavComponent implements AfterViewInit {
     if (this.kind() === 'sports') {
       if (path.includes('/noticias')) return 'news';
       if (path.includes('/competiciones')) return 'competitions';
-      if (/\/(partidos-hoy|en-directo|calendario|partido\/)/.test(path)) return 'matches';
+      if (path.includes('/en-directo')) return 'live';
+      if (path.includes('/calendario')) return 'calendar';
+      if (/\/(partidos-hoy|partido\/)/.test(path)) return 'today';
       return 'home';
     }
     if (path.startsWith(APP_PATHS.top10)) return 'rankings';

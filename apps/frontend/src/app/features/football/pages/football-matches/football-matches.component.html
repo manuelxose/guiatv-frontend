@@ -6,12 +6,6 @@
     <p class="head__sub">{{ subtitle }}</p>
   </header>
 
-  <app-portal-local-toolbar
-    [items]="tabs"
-    [active]="view()"
-    ariaLabel="Vista de partidos"
-  ></app-portal-local-toolbar>
-
   <app-football-date-strip
     *ngIf="view() === 'calendar'"
     [selected]="selectedDateKey"
