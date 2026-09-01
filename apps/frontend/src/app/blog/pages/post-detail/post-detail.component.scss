@@ -6,10 +6,14 @@
   color: var(--portal-text);
 }
 
+/* The card (border/background/padding) spans the full 1fr column — matching
+   every sibling section (hero image, header, affiliate rails) — while the
+   actual reading measure is capped per text element below. Capping the card
+   itself here left a large dead gap between a ~48rem-wide box and the
+   sidebar on wide screens, the only section on the page that did that. */
 .editorial-post__content {
   color: var(--portal-text-soft);
   line-height: 1.8;
-  max-width: 48rem;
   overflow-wrap: anywhere;
 }
 
@@ -23,15 +27,17 @@
 }
 
 .editorial-post__content :where(h2, h3, h4) {
+  max-width: 48rem;
   color: var(--portal-text);
   font-weight: 700;
   line-height: 1.3;
-  margin: 2rem 0 1rem;
+  margin: 2rem auto 1rem;
   scroll-margin-top: calc(var(--shell-sticky-offset) + 1rem);
 }
 
 .editorial-post__content :where(p, ul, ol, blockquote) {
-  margin: 0 0 1rem;
+  max-width: 48rem;
+  margin: 0 auto 1rem;
 }
 
 .editorial-post__content :where(ul, ol) {

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Output, computed, inject, input } from '@angular/core';
 import { AffiliateService } from '../../services/affiliate.service';
 import { AffiliateCTA, AffiliateResolvedOffer } from '../../interfaces/affiliate.interface';
+import { resolvePlatformLogoUrl } from '../../utils/platform-logos';
 
 /**
  * The one reusable affiliate call-to-action for every surface (cards,
@@ -56,6 +57,15 @@ export class AffiliateCTAComponent {
   });
 
   readonly resolvedLabel = computed(() => this.label() ?? this.resolvedCta()?.label ?? this.fallbackLabel());
+
+  /** merchant.logo (when the catalog record has one) with a keyword-matched
+   * fallback so the button still shows a real provider icon even when the
+   * merchant record itself has no logo populated. */
+  readonly resolvedLogoUrl = computed(() => {
+    const merchant = this.offer()?.merchant;
+    if (!merchant) return '';
+    return resolvePlatformLogoUrl(merchant.name, merchant.logo);
+  });
 
   readonly sponsored = computed(() => this.resolvedCta()?.sponsored ?? false);
 

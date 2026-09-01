@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { resolvePlatformLogoUrl } from '../../utils/platform-logos';
 
 @Component({
   selector: 'app-platform-badge',
@@ -19,36 +20,7 @@ export class PlatformBadgeComponent {
   }
 
   get resolvedLogoUrl(): string {
-    const provided = String(this.logoUrl || '').trim();
-    if (provided) return provided.replace('/t/p/original/', '/t/p/w92/');
-
-    // Known platform logos from TMDB image CDN — fuzzy match by keyword
-    const knownLogos: Array<[string, string]> = [
-      ['netflix', 'https://image.tmdb.org/t/p/w92/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg'],
-      ['prime video', 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg'],
-      ['amazon', 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg'],
-      ['disney', 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg'],
-      ['hbo', 'https://image.tmdb.org/t/p/original/6Q3KKEFIL3dIFqx51poNXseNoSk.jpg'],
-      ['max', 'https://image.tmdb.org/t/p/original/6Q3KKEFIL3dIFqx51poNXseNoSk.jpg'],
-      ['movistar', 'https://image.tmdb.org/t/p/original/cDQbECpn23odNRHUVR5JcAKbhDs.jpg'],
-      ['skyshowtime', 'https://image.tmdb.org/t/p/original/hR9vWd8hWEVQKD6eOnBneKRFEW3.jpg'],
-      ['apple tv', 'https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg'],
-      ['filmin', 'https://image.tmdb.org/t/p/original/bFb9IJXZ0IVnYuKbWAJbjYRPccY.jpg'],
-      ['rtve', 'https://image.tmdb.org/t/p/original/oy4e1BSJhiUHTNwwbHqcJ5X4Gzf.jpg'],
-      ['atresplayer', 'https://image.tmdb.org/t/p/original/k9UiVfG9ArLdaxWdvfS2nSIxEYj.jpg'],
-      ['mitele', 'https://image.tmdb.org/t/p/original/6Cxs2ffW2XKGIJLE7CW0qtchd4K.jpg'],
-      ['pluto', 'https://image.tmdb.org/t/p/original/t6N57S17sdXRXmZDAkaGP0NHNG0.jpg'],
-      ['rakuten', 'https://image.tmdb.org/t/p/original/5GEbAhFW2S5T8QwqOuaFpgZFzPi.jpg'],
-      ['mubi', 'https://image.tmdb.org/t/p/original/bVR4Z1LCHY7gidXAJF5pMa4QrDS.jpg'],
-      ['starz', 'https://image.tmdb.org/t/p/original/xbhHHa1YejSO5943BmzXRDmZqa1.jpg'],
-    ];
-
-    const normalized = this.label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    for (const [keyword, url] of knownLogos) {
-      if (normalized.includes(keyword)) return url.replace('/t/p/original/', '/t/p/w92/');
-    }
-
-    return '';
+    return resolvePlatformLogoUrl(this.label, this.logoUrl);
   }
 
   get hasLogo(): boolean {

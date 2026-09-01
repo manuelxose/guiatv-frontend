@@ -26,9 +26,9 @@
     [attr.rel]="rel() || null"
     (click)="onActivate()"
   >
-    @if (offer()?.merchant?.logo) {
+    @if (resolvedLogoUrl()) {
       <img
-        [src]="offer()!.merchant.logo"
+        [src]="resolvedLogoUrl()"
         alt=""
         class="affiliate-cta__logo"
         loading="lazy"
