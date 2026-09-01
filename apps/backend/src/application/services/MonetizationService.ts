@@ -257,7 +257,10 @@ export class MonetizationService {
       outbound: {
         path: `/v2/monetization/go/${config.provider.id}/${config.id}`,
         relationship,
-        label: relationship === 'affiliate_configured' ? 'Ver oferta' : 'Consultar proveedor',
+        label:
+          relationship === 'affiliate_configured'
+            ? `Ver oferta en ${config.provider.name}`
+            : `Consultar ${config.provider.name}`,
         isSponsored: relationship === 'affiliate_configured',
       },
       recommendation: config.recommendation,
