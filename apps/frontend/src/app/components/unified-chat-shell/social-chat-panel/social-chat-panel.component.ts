@@ -1,8 +1,11 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  Input,
+  OnChanges,
   OnInit,
   OnDestroy,
+  SimpleChanges,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
 } from '@angular/core';
@@ -245,7 +248,10 @@ interface ChatWindowState {
     }
   `],
 })
-export class SocialChatPanelComponent implements OnInit, OnDestroy {
+export class SocialChatPanelComponent implements OnInit, OnChanges, OnDestroy {
+  /** Set by the shell when a notification asks to open a conversation. */
+  @Input() targetUser: { userId: string; nonce: number } | null = null;
+
   conversations: ChatConversation[] = [];
   onlineUsers: UserFriend[] = [];
   connectedUsersCount = 0;
@@ -327,6 +333,63 @@ export class SocialChatPanelComponent implements OnInit, OnDestroy {
     this.typingSub?.unsubscribe();
     this.messageSubs.forEach((s) => s.unsubscribe());
     this.sub.unsubscribe();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const target = changes['targetUser']?.currentValue as
+      | { userId: string; nonce: number }
+      | null
+      | undefined;
+    if (target?.userId) {
+      this.openChatWithUserById(target.userId);
+    }
+  }
+
+  /** Opens (or creates) the conversation with a user id from a notification. */
+  private openChatWithUserById(userId: string): void {
+    if (!userId || userId === this.currentUserId) return;
+    const existing = this.conversations.find(
+      (c) => !c.isGroup && c.participants?.some((p) => p.id === userId)
+    );
+    if (existing) {
+      this.openConversation(existing);
+      return;
+    }
+    // Conversations may not be hydrated yet: refresh once, then fall back to
+    // creating the conversation.
+    this.chatService.refreshConversations().subscribe((convs) => {
+      const found = convs.find(
+        (c) => !c.isGroup && c.participants?.some((p) => p.id === userId)
+      );
+      if (found) {
+        this.openConversation(found);
+        return;
+      }
+      this.openNewConversationWithUser(userId);
+    });
+  }
+
+  private openNewConversationWithUser(userId: string): void {
+    this.chatService.createConversation(userId).subscribe((result) => {
+      if (result?.ok && result.conversation) {
+        this.openConversationResult(result.conversation);
+      }
+    });
+  }
+
+  private openConversationResult(conversation: ChatConversation): void {
+    this.activeWindow = {
+      conversationId: conversation.id,
+      draft: '',
+      messages: [],
+    };
+    this.chatService.setActiveConversation(conversation.id);
+    this.subscribeToMessages(conversation.id);
+    this.subscribeToTyping(conversation.id);
+    this.chatService.refreshConversations().subscribe((convs) => {
+      this.conversations = convs;
+      this.cdr.markForCheck();
+    });
   }
 
   get connectionLabel(): string | null {
@@ -419,18 +482,7 @@ export class SocialChatPanelComponent implements OnInit, OnDestroy {
     }
     this.chatService.createConversation(user.id).subscribe((result) => {
       if (result?.ok && result.conversation) {
-        this.activeWindow = {
-          conversationId: result.conversation.id,
-          draft: '',
-          messages: [],
-        };
-        this.chatService.setActiveConversation(result.conversation.id);
-        this.subscribeToMessages(result.conversation.id);
-        this.subscribeToTyping(result.conversation.id);
-        this.chatService.refreshConversations().subscribe((convs) => {
-          this.conversations = convs;
-          this.cdr.markForCheck();
-        });
+        this.openConversationResult(result.conversation);
       }
     });
   }

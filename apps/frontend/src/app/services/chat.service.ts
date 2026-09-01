@@ -1,4 +1,4 @@
-import { Inject, Injectable, InjectionToken, PLATFORM_ID } from '@angular/core';
+import { Inject, Injectable, InjectionToken, NgZone, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject, of } from 'rxjs';
@@ -91,6 +91,13 @@ export class ChatService {
   private readonly requestOpenChatSubject = new Subject<string>();
   public readonly requestOpenChat$ = this.requestOpenChatSubject.asObservable();
 
+  /** Emits when a notification asks to open the social chat with a user. */
+  private readonly requestOpenSocialChatSubject = new Subject<{
+    userId: string;
+    nonce: number;
+  }>();
+  public readonly requestOpenSocialChat$ = this.requestOpenSocialChatSubject.asObservable();
+
   /** Emits after the socket re-established and reconciliation completed. */
   private readonly reconnectedSubject = new Subject<void>();
   public readonly reconnected$ = this.reconnectedSubject.asObservable();
@@ -99,6 +106,7 @@ export class ChatService {
     private http: HttpClient,
     private userService: UserService,
     private store: ChatStateStore,
+    private ngZone: NgZone,
     @Inject(CHAT_SOCKET_FACTORY) private socketFactory: ChatSocketFactory,
     @Inject(PLATFORM_ID) platformId: object
   ) {
@@ -145,6 +153,12 @@ export class ChatService {
   activateChat(): void {
     if (!this.isBrowser) return;
     void this.connectSocket();
+  }
+
+  /** Opens the chat shell landing on the social chat with the given user. */
+  requestOpenSocialChat(userId: string): void {
+    this.activateChat();
+    this.requestOpenSocialChatSubject.next({ userId, nonce: Date.now() });
   }
 
   requestOpenChat(userId: string): void {
@@ -410,113 +424,137 @@ export class ChatService {
     });
 
     this.socket.on('connect', () => {
-      this.consecutiveConnectErrors = 0;
-      this.store.setRealtimeMode('connected');
-      this.clearFallbackPolling();
-      this.reconcileAfterReconnect();
+      this.ngZone.run(() => {
+        this.consecutiveConnectErrors = 0;
+        this.store.setRealtimeMode('connected');
+        this.clearFallbackPolling();
+        this.reconcileAfterReconnect();
+      });
     });
 
     this.socket.on('disconnect', (reason: string) => {
-      this.lastTypingSent.clear();
-      if (reason === 'io client disconnect' || this.manuallyDisconnected) {
-        this.store.setRealtimeMode('idle');
-        return;
-      }
-      // Server restart / network drop: socket.io reconnects automatically.
-      this.store.setRealtimeMode('reconnecting');
-      this.ensureFallbackPolling();
+      this.ngZone.run(() => {
+        this.lastTypingSent.clear();
+        if (reason === 'io client disconnect' || this.manuallyDisconnected) {
+          this.store.setRealtimeMode('idle');
+          return;
+        }
+        // Server restart / network drop: socket.io reconnects automatically.
+        this.store.setRealtimeMode('reconnecting');
+        this.ensureFallbackPolling();
+      });
     });
 
     this.socket.on('connect_error', () => {
-      this.consecutiveConnectErrors += 1;
-      this.store.setRealtimeMode(
-        this.consecutiveConnectErrors >= DEGRADED_ERROR_THRESHOLD
-          ? 'degraded'
-          : 'reconnecting'
-      );
-      this.ensureFallbackPolling();
+      this.ngZone.run(() => {
+        this.consecutiveConnectErrors += 1;
+        this.store.setRealtimeMode(
+          this.consecutiveConnectErrors >= DEGRADED_ERROR_THRESHOLD
+            ? 'degraded'
+            : 'reconnecting'
+        );
+        this.ensureFallbackPolling();
+      });
     });
 
     this.socket.on('reconnect_attempt', () => {
-      this.store.setRealtimeMode('reconnecting');
+      this.ngZone.run(() => {
+        this.store.setRealtimeMode('reconnecting');
+      });
     });
 
     this.socket.on('reconnect_failed', () => {
-      this.store.setRealtimeMode('degraded');
-      this.ensureFallbackPolling();
+      this.ngZone.run(() => {
+        this.store.setRealtimeMode('degraded');
+        this.ensureFallbackPolling();
+      });
     });
 
     this.socket.on('chat:conversation:update', (payload: { conversationId?: string; updatedAt?: string } = {}) => {
-      const conversationId = String(payload?.conversationId || '').trim();
-      if (!conversationId) return;
-      this.store.applyConversationUpdate(conversationId, payload?.updatedAt || '');
+      this.ngZone.run(() => {
+        const conversationId = String(payload?.conversationId || '').trim();
+        if (!conversationId) return;
+        this.store.applyConversationUpdate(conversationId, payload?.updatedAt || '');
+      });
     });
 
     this.socket.on(
       'chat:presence',
       (payload: { userId?: string; isOnline?: boolean; onlineCount?: number } = {}) => {
-        const userId = String(payload?.userId || '').trim();
-        if (!userId) return;
-        const unknownIds = this.store.applyPresenceDelta(
-          userId,
-          Boolean(payload?.isOnline),
-          payload?.onlineCount
-        );
-        if (unknownIds.length) {
-          this.scheduleMetadataHydration();
-        }
+        this.ngZone.run(() => {
+          const userId = String(payload?.userId || '').trim();
+          if (!userId) return;
+          const unknownIds = this.store.applyPresenceDelta(
+            userId,
+            Boolean(payload?.isOnline),
+            payload?.onlineCount
+          );
+          if (unknownIds.length) {
+            this.scheduleMetadataHydration();
+          }
+        });
       }
     );
 
     this.socket.on(
       'chat:presence:snapshot',
       (payload: { onlineUserIds?: string[]; onlineCount?: number } = {}) => {
-        this.store.applyPresenceSnapshot(
-          Array.isArray(payload?.onlineUserIds) ? payload.onlineUserIds : [],
-          payload?.onlineCount
-        );
-        this.scheduleMetadataHydration(true);
+        this.ngZone.run(() => {
+          this.store.applyPresenceSnapshot(
+            Array.isArray(payload?.onlineUserIds) ? payload.onlineUserIds : [],
+            payload?.onlineCount
+          );
+          this.scheduleMetadataHydration(true);
+        });
       }
     );
 
     this.socket.on(
       'chat:message:new',
       (payload: { conversationId?: string; message?: ChatMessage }) => {
-        const conversationId = String(payload?.conversationId || '').trim();
-        const message = payload?.message;
-        if (!conversationId || !message) return;
+        this.ngZone.run(() => {
+          const conversationId = String(payload?.conversationId || '').trim();
+          const message = payload?.message;
+          if (!conversationId || !message) return;
 
-        const duplicated = this.store.upsertMessage(conversationId, message);
-        if (conversationId === this.store.getActiveConversationId() && !duplicated) {
-          // Message for the open conversation: mark read immediately.
-          this.socket?.emit('chat:read', { conversationId });
-        }
+          const duplicated = this.store.upsertMessage(conversationId, message);
+          if (conversationId === this.store.getActiveConversationId() && !duplicated) {
+            // Message for the open conversation: mark read immediately.
+            this.socket?.emit('chat:read', { conversationId });
+          }
+        });
       }
     );
 
     this.socket.on(
       'chat:read:updated',
       (payload: { conversationId?: string; userId?: string; readAt?: string } = {}) => {
-        const conversationId = String(payload?.conversationId || '').trim();
-        const readerId = String(payload?.userId || '').trim();
-        if (!conversationId || !readerId) return;
-        this.store.applyReadUpdated(conversationId, readerId, payload?.readAt);
+        this.ngZone.run(() => {
+          const conversationId = String(payload?.conversationId || '').trim();
+          const readerId = String(payload?.userId || '').trim();
+          if (!conversationId || !readerId) return;
+          this.store.applyReadUpdated(conversationId, readerId, payload?.readAt);
+        });
       }
     );
 
     this.socket.on(
       'chat:typing',
       (payload: { conversationId?: string; userId?: string; isTyping?: boolean } = {}) => {
-        const conversationId = String(payload?.conversationId || '').trim();
-        const userId = String(payload?.userId || '').trim();
-        if (!conversationId || !userId || userId === this.currentUserId) return;
-        this.store.setTyping(conversationId, userId, Boolean(payload?.isTyping));
+        this.ngZone.run(() => {
+          const conversationId = String(payload?.conversationId || '').trim();
+          const userId = String(payload?.userId || '').trim();
+          if (!conversationId || !userId || userId === this.currentUserId) return;
+          this.store.setTyping(conversationId, userId, Boolean(payload?.isTyping));
+        });
       }
     );
 
     this.socket.on('notification:new', () => {
-      this.userService.fetchUnreadNotificationsCount().subscribe();
-      this.userService.fetchNotifications().subscribe();
+      this.ngZone.run(() => {
+        this.userService.fetchUnreadNotificationsCount().subscribe();
+        this.userService.fetchNotifications().subscribe();
+      });
     });
   }
 

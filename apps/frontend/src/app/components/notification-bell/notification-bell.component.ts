@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { UserService } from '../../services/user.service';
+import { ChatService } from '../../services/chat.service';
 import { UserNotification } from '../../interfaces/user.interface';
 
 @Component({
@@ -90,7 +91,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly userService: UserService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly chatService: ChatService
   ) {}
 
   ngOnInit(): void {
@@ -130,6 +132,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       this.userService.markNotificationsRead([notification.id]).subscribe();
     }
     this.isOpen = false;
+
+    if (notification.type === 'message' && notification.actorId) {
+      // Message notifications open the social chat with the sender.
+      this.chatService.requestOpenSocialChat(notification.actorId);
+      return;
+    }
 
     if (notification.entityType === 'user' && notification.entityId) {
       this.router.navigateByUrl(`/mi-cuenta`);
