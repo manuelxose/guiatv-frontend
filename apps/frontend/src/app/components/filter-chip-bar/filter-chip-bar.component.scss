@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
 .chip-bar {
   display: flex;
   gap: 0.625rem;
@@ -20,12 +25,19 @@
   white-space: nowrap;
   font-size: 0.8125rem;
   font-weight: 600;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
 }
 
 .chip-bar__item:hover {
   border-color: var(--portal-border-strong);
   color: var(--portal-text);
+}
+
+.chip-bar__item:focus-visible {
+  outline: 2px solid var(--guide-accent, var(--accent-sports));
+  outline-offset: 2px;
 }
 
 .chip-bar__icon {

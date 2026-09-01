@@ -18,8 +18,7 @@ import {
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballBreadcrumbSchema, generateFootballTeamSchema } from '@app/features/football/football-seo';
-import { PortalLocalToolbarComponent } from '@app/components/portal-local-toolbar/portal-local-toolbar.component';
-import { PortalContextDestination } from '@app/config/portal-navigation.config';
+import { FilterChipBarComponent, FilterChipItem } from '@app/components/filter-chip-bar/filter-chip-bar.component';
 
 type TeamTab = 'resumen' | 'partidos';
 
@@ -39,7 +38,7 @@ type TeamState =
     FootballMatchRowComponent,
     FootballStandingsTableComponent,
     FootballFilterBarComponent,
-    PortalLocalToolbarComponent,
+    FilterChipBarComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './football-team-detail.component.html',
@@ -51,9 +50,9 @@ export class FootballTeamDetailComponent {
   private readonly meta = inject(MetaService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  readonly tabs: readonly PortalContextDestination[] = [
-    { id: 'resumen', label: 'Resumen', kind: 'action' },
-    { id: 'partidos', label: 'Partidos', kind: 'action' },
+  readonly tabs: readonly FilterChipItem[] = [
+    { id: 'resumen', label: 'Resumen' },
+    { id: 'partidos', label: 'Partidos' },
   ];
   readonly activeTab = signal<TeamTab>('resumen');
   readonly filter = signal<FootballMatchFilter>('all');

@@ -21,6 +21,7 @@ import {
   FootballMatchQuery,
   FootballStandingRow,
   FootballTeam,
+  isLiveMatchStatus,
   normalizeMatchStatus,
 } from '../../../domain/sports/football/types';
 import { buildMatchSlug, slugify } from '../../../application/sports/services/FootballNormalizer';
@@ -264,6 +265,9 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
           m.awayTeam.name.toLowerCase().includes(q) ||
           m.competition.name.toLowerCase().includes(q)
       );
+    }
+    if (query.status === 'live') {
+      matches = matches.filter((match) => isLiveMatchStatus(match.status));
     }
     if (query.limit) {
       matches = matches.slice(0, query.limit);

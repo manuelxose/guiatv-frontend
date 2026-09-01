@@ -219,7 +219,9 @@ export const PORTAL_DISCOVER_DESTINATIONS: readonly PortalContextDestination[] =
 
 export const PORTAL_SPORTS_DESTINATIONS: readonly PortalContextDestination[] = [
   { id: 'home', label: 'Inicio', kind: 'route', path: APP_PATHS.football },
-  { id: 'matches', label: 'Partidos', kind: 'route', path: `${APP_PATHS.football}/partidos-hoy` },
+  { id: 'live', label: 'En directo', kind: 'route', path: `${APP_PATHS.football}/en-directo` },
+  { id: 'today', label: 'Hoy', kind: 'route', path: `${APP_PATHS.football}/partidos-hoy` },
+  { id: 'calendar', label: 'Calendario', kind: 'route', path: `${APP_PATHS.football}/calendario` },
   { id: 'competitions', label: 'Competiciones', kind: 'route', path: `${APP_PATHS.football}/competiciones` },
   { id: 'news', label: 'Noticias', kind: 'route', path: `${APP_PATHS.football}/noticias` },
 ] as const;

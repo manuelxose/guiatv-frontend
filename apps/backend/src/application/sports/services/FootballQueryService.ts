@@ -18,6 +18,7 @@ import {
   FootballMatchQuery,
   FootballNewsItem,
   FootballTeam,
+  isLiveMatchStatus,
 } from '@/domain/sports/football/types';
 import { BroadcastReconciliationService } from './BroadcastReconciliationService';
 import {
@@ -93,7 +94,9 @@ export class FootballQueryService {
     ]));
 
     const byId = new Map(reconciled.map((match) => [match.id, match]));
-    const reconciledLive = liveMatches.map((match) => byId.get(match.id) ?? match);
+    const reconciledLive = liveMatches
+      .map((match) => byId.get(match.id) ?? match)
+      .filter((match) => isLiveMatchStatus(match.status));
     const reconciledToday = todayMatches.map((match) => byId.get(match.id) ?? match);
     const reconciledUpcoming = upcomingMatches.map((match) => byId.get(match.id) ?? match);
 
@@ -140,9 +143,10 @@ export class FootballQueryService {
     return this.swrCache.getOrLoad(`${CACHE_PREFIX}:matches:live`, CACHE_POLICIES.live, async () => {
       const matches = await measureTiming('provider', () => this.provider.getLiveMatches());
       const reconciled = await measureTiming('reconcile', () => this.reconciliation.reconcile(matches));
+      const liveMatches = reconciled.filter((match) => isLiveMatchStatus(match.status));
       return {
-        matches: reconciled,
-        meta: { total: reconciled.length, status: 'live', generatedAt: new Date().toISOString() },
+        matches: liveMatches,
+        meta: { total: liveMatches.length, status: 'live', generatedAt: new Date().toISOString() },
       };
     });
   }

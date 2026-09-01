@@ -212,3 +212,8 @@ export function normalizeMatchStatus(raw: unknown): FootballMatchStatus {
   const key = String(raw ?? '').trim().toLowerCase();
   return FOOTBALL_STATUS_MAP[key] ?? 'scheduled';
 }
+
+/** States that represent a match currently being played. */
+export function isLiveMatchStatus(status: FootballMatchStatus): boolean {
+  return status === 'live' || status === 'halftime';
+}

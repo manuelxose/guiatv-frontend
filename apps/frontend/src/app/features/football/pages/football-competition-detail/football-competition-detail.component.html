@@ -23,12 +23,12 @@
       </div>
     </header>
 
-    <app-portal-local-toolbar
-      [items]="tabs"
+    <app-filter-chip-bar
+      [chips]="tabs"
       [active]="activeTab()"
       ariaLabel="Secciones de la competición"
-      (itemSelect)="selectTab($event)"
-    ></app-portal-local-toolbar>
+      (chipSelect)="selectTab($event)"
+    ></app-filter-chip-bar>
 
     <!-- RESUMEN -->
     <div *ngIf="activeTab() === 'resumen'" class="panel">

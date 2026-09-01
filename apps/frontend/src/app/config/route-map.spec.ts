@@ -51,6 +51,14 @@ describe('route map', () => {
     ]);
     expect(PORTAL_SECTION_NAVIGATION.live.items.every((item) => item.kind === 'action')).toBeTrue();
     expect(PORTAL_SECTION_NAVIGATION.sports.items.every((item) => item.kind === 'route')).toBeTrue();
+    expect(PORTAL_SECTION_NAVIGATION.sports.items.map((item) => item.label)).toEqual([
+      'Inicio',
+      'En directo',
+      'Hoy',
+      'Calendario',
+      'Competiciones',
+      'Noticias',
+    ]);
   });
 
   it('resolves active primary destinations from canonical and detail routes', () => {

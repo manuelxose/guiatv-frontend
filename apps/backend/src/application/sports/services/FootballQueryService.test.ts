@@ -178,3 +178,20 @@ test('getCompetitions() never caches an empty/failed result — a transient 429 
   assert.equal(second.competitions.length, 1, 'a real result on the next call should not have been blocked by a cached empty list');
   assert.equal(callCount, 2);
 });
+
+test('getLiveMatches() only exposes live or halftime matches after reconciliation', async () => {
+  const provider = fakeProvider({
+    getLiveMatches: async () => [
+      { id: 'in-play', status: 'live' },
+      { id: 'half-time', status: 'halftime' },
+      { id: 'final', status: 'finished' },
+      { id: 'scheduled', status: 'scheduled' },
+    ] as any,
+  });
+  const service = new FootballQueryService(provider, fakeReconciliation);
+
+  const result = await service.getLiveMatches();
+
+  assert.deepEqual(result.matches.map((match) => match.id), ['in-play', 'half-time']);
+  assert.equal(result.meta.total, 2);
+});
