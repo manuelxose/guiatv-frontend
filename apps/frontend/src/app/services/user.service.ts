@@ -1,4 +1,4 @@
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
 import { catchError, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
@@ -106,6 +106,13 @@ export class UserService {
   private interactionHistorySubject = new BehaviorSubject<UserContentInteraction[]>([]);
   private notificationsSubject = new BehaviorSubject<UserNotification[]>([]);
   private unreadNotificationsSubject = new BehaviorSubject<number>(0);
+  /**
+   * Signal twin of the unread counter. Socket.io-driven fetches complete
+   * outside Angular's zone, and global change detection does not reliably run
+   * for them in production; signals notify their template readers directly
+   * and are immune to zone timing.
+   */
+  public readonly unreadNotificationsSignal = signal<number>(0);
   private notificationsHydrated = false;
   private top10Subject = new BehaviorSubject<Top10Category[]>([]);
   private newsSubject = new BehaviorSubject<NewsItem[]>([]);
@@ -331,6 +338,7 @@ export class UserService {
     this.interactionHistorySubject.next([]);
     this.notificationsSubject.next([]);
     this.unreadNotificationsSubject.next(0);
+    this.unreadNotificationsSignal.set(0);
     this.interactionCache.clear();
     this.interactionInFlight.clear();
     this.authenticatedSubject.next(false);
@@ -702,7 +710,10 @@ export class UserService {
       .get<ApiResponse<{ unreadCount: number }>>(url, { headers: this.getAuthHeaders() })
       .pipe(
         map((resp) => Number(resp?.data?.unreadCount || 0)),
-        tap((count) => this.unreadNotificationsSubject.next(count)),
+        tap((count) => {
+          this.unreadNotificationsSubject.next(count);
+          this.unreadNotificationsSignal.set(count);
+        }),
         catchError(this.handleError(0, 'No se pudo cargar el contador de notificaciones.'))
       );
   }
