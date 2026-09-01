@@ -1,8 +1,15 @@
-import { Inject, Injectable, InjectionToken, NgZone, PLATFORM_ID } from '@angular/core';
+import {
+  ApplicationRef,
+  Inject,
+  Injectable,
+  InjectionToken,
+  NgZone,
+  PLATFORM_ID,
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, finalize, map, tap } from 'rxjs/operators';
 import { ChatConversation, ChatMessage, UserFriend } from '../interfaces/user.interface';
 import { environment } from '../../environments/environment';
 import { UserService } from './user.service';
@@ -107,6 +114,7 @@ export class ChatService {
     private userService: UserService,
     private store: ChatStateStore,
     private ngZone: NgZone,
+    private applicationRef: ApplicationRef,
     @Inject(CHAT_SOCKET_FACTORY) private socketFactory: ChatSocketFactory,
     @Inject(PLATFORM_ID) platformId: object
   ) {
@@ -211,6 +219,7 @@ export class ChatService {
         map((resp) => resp?.data?.conversations || []),
         map((conversations) => conversations.map((conv) => this.reorderParticipants(conv))),
         tap((conversations) => this.store.applyConversations(conversations)),
+        finalize(() => this.safeTick()),
         catchError(() => of([]))
       );
   }
@@ -245,6 +254,7 @@ export class ChatService {
           this.store.applyPresenceSnapshot(onlineIds, count);
         }),
         map((payload) => payload.users || []),
+        finalize(() => this.safeTick()),
         catchError(() => of([]))
       );
   }
@@ -261,9 +271,11 @@ export class ChatService {
       })
       .pipe(
         map((resp) => resp?.data?.messages || []),
+        tap((messages) => this.store.applyServerMessages(conversationId, messages)),
+        finalize(() => this.safeTick()),
         catchError(() => of([]))
       )
-      .subscribe((messages) => this.store.applyServerMessages(conversationId, messages));
+      .subscribe();
 
     return this.store.getMessages(conversationId);
   }
@@ -341,6 +353,7 @@ export class ChatService {
           if (!result.ok) return;
           this.refreshConversations().subscribe();
         }),
+        finalize(() => this.safeTick()),
         catchError((error: HttpErrorResponse) =>
           of(this.mapCreateConversationError(error))
         )
@@ -364,6 +377,7 @@ export class ChatService {
       .post<ApiResponse<{ updated: number }>>(url, {}, { headers: this.getAuthHeaders() })
       .pipe(
         map(() => true),
+        finalize(() => this.safeTick()),
         catchError(() => of(false))
       );
   }
@@ -429,6 +443,7 @@ export class ChatService {
         this.store.setRealtimeMode('connected');
         this.clearFallbackPolling();
         this.reconcileAfterReconnect();
+        this.safeTick();
       });
     });
 
@@ -437,11 +452,13 @@ export class ChatService {
         this.lastTypingSent.clear();
         if (reason === 'io client disconnect' || this.manuallyDisconnected) {
           this.store.setRealtimeMode('idle');
+          this.safeTick();
           return;
         }
         // Server restart / network drop: socket.io reconnects automatically.
         this.store.setRealtimeMode('reconnecting');
         this.ensureFallbackPolling();
+        this.safeTick();
       });
     });
 
@@ -454,12 +471,14 @@ export class ChatService {
             : 'reconnecting'
         );
         this.ensureFallbackPolling();
+        this.safeTick();
       });
     });
 
     this.socket.on('reconnect_attempt', () => {
       this.ngZone.run(() => {
         this.store.setRealtimeMode('reconnecting');
+        this.safeTick();
       });
     });
 
@@ -467,6 +486,7 @@ export class ChatService {
       this.ngZone.run(() => {
         this.store.setRealtimeMode('degraded');
         this.ensureFallbackPolling();
+        this.safeTick();
       });
     });
 
@@ -475,6 +495,7 @@ export class ChatService {
         const conversationId = String(payload?.conversationId || '').trim();
         if (!conversationId) return;
         this.store.applyConversationUpdate(conversationId, payload?.updatedAt || '');
+        this.safeTick();
       });
     });
 
@@ -492,6 +513,7 @@ export class ChatService {
           if (unknownIds.length) {
             this.scheduleMetadataHydration();
           }
+          this.safeTick();
         });
       }
     );
@@ -505,6 +527,7 @@ export class ChatService {
             payload?.onlineCount
           );
           this.scheduleMetadataHydration(true);
+          this.safeTick();
         });
       }
     );
@@ -522,6 +545,7 @@ export class ChatService {
             // Message for the open conversation: mark read immediately.
             this.socket?.emit('chat:read', { conversationId });
           }
+          this.safeTick();
         });
       }
     );
@@ -534,6 +558,7 @@ export class ChatService {
           const readerId = String(payload?.userId || '').trim();
           if (!conversationId || !readerId) return;
           this.store.applyReadUpdated(conversationId, readerId, payload?.readAt);
+          this.safeTick();
         });
       }
     );
@@ -546,16 +571,39 @@ export class ChatService {
           const userId = String(payload?.userId || '').trim();
           if (!conversationId || !userId || userId === this.currentUserId) return;
           this.store.setTyping(conversationId, userId, Boolean(payload?.isTyping));
+          this.safeTick();
         });
       }
     );
 
     this.socket.on('notification:new', () => {
+      // Socket.IO callbacks arrive outside Angular's zone. Re-enter the zone
+      // and force a change-detection pass when the fetches complete so the
+      // notification bell reflects the new state without user interaction.
       this.ngZone.run(() => {
-        this.userService.fetchUnreadNotificationsCount().subscribe();
-        this.userService.fetchNotifications().subscribe();
+        this.userService
+          .fetchUnreadNotificationsCount()
+          .pipe(finalize(() => this.safeTick()))
+          .subscribe();
+        this.userService
+          .fetchNotifications()
+          .pipe(finalize(() => this.safeTick()))
+          .subscribe();
       });
     });
+  }
+
+  /**
+   * Runs a change-detection pass deterministically. Zone-driven CD is not
+   * enough for socket.io events: their callbacks (and sometimes the XHR
+   * completions they schedule) run outside the Angular zone.
+   */
+  private safeTick(): void {
+    try {
+      this.ngZone.run(() => this.applicationRef.tick());
+    } catch {
+      // Application may be tearing down; ignore.
+    }
   }
 
   /** Best-effort reconnect trigger (tab visible again, network restored). */
@@ -664,6 +712,7 @@ export class ChatService {
           }
           this.store.upsertMessage(conversationId, message, { bumpUnread: false });
         }),
+        finalize(() => this.safeTick()),
         catchError(() => {
           this.store.markMessageFailed(conversationId, payload.clientMessageId);
           return of(null);
