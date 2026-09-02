@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FilterChipBarComponent, FilterChipItem } from '@app/components/filter-chip-bar/filter-chip-bar.component';
 
-export type FootballMatchFilter = 'all' | 'live' | 'upcoming' | 'finished';
+export type FootballMatchFilter = 'all' | 'live' | 'tv' | 'upcoming' | 'finished';
 
 const FILTERS: FilterChipItem[] = [
   { id: 'all', label: 'Todos' },
   { id: 'live', label: 'En directo' },
+  { id: 'tv', label: 'TV' },
   { id: 'upcoming', label: 'Próximos' },
   { id: 'finished', label: 'Finalizados' },
 ];
@@ -40,12 +41,13 @@ export class FootballFilterBarComponent {
   }
 }
 
-export function applyFootballMatchFilter<T extends { status: string }>(
+export function applyFootballMatchFilter<T extends { status: string; broadcasts?: Array<{ confidence?: string }> }>(
   matches: T[],
   filter: FootballMatchFilter
 ): T[] {
   if (filter === 'all') return matches;
   if (filter === 'live') return matches.filter((m) => m.status === 'live' || m.status === 'halftime');
+  if (filter === 'tv') return matches.filter((m) => m.broadcasts?.some((broadcast) => broadcast.confidence !== 'low'));
   if (filter === 'finished') return matches.filter((m) => m.status === 'finished');
   if (filter === 'upcoming') return matches.filter((m) => m.status === 'scheduled');
   return matches;

@@ -156,7 +156,6 @@ export class FootballCompetitionDetailComponent {
       title: `${detail.competition.name} - partidos, clasificación y dónde verlos - Guía TV`,
       description: `${detail.competition.name}: partidos, resultados, clasificación y noticias.`,
       canonicalUrl: `/deportes/futbol/competiciones/${detail.competition.slug}`,
-      robots: 'noindex, follow',
     });
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
       `<script type="application/ld+json">${JSON.stringify(

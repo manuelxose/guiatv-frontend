@@ -37,6 +37,7 @@ import { FootballTeamDTO } from '@app/features/football/football.models';
       align-items: center;
       gap: 0.5rem;
       min-width: 0;
+      max-width: 100%;
     }
     .badge--vertical {
       flex-direction: column;
@@ -75,7 +76,7 @@ import { FootballTeamDTO } from '@app/features/football/football.models';
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      max-width: 12ch;
+      max-width: 100%;
     }
     .badge--vertical .badge__name {
       max-width: 9ch;

@@ -13,11 +13,21 @@ export const editorialReviewGuard = (
   _res: Response,
   next: NextFunction
 ): void => {
-  const requiredKey = String(process.env.EDITORIAL_REVIEW_KEY || '').trim();
-  if (!requiredKey) throw new ForbiddenError('Editorial review is not configured');
+  const humanReviewKey = String(process.env.EDITORIAL_REVIEW_KEY || '').trim();
+  const automationReviewKey = String(process.env.AUCTORIO_EDITORIAL_REVIEW_KEY || '').trim();
+  if (!humanReviewKey && !automationReviewKey) {
+    throw new ForbiddenError('Editorial review is not configured');
+  }
 
   const provided = String(req.header('x-editorial-review-key') || '').trim();
-  if (!provided || !equalSecret(provided, requiredKey)) {
+  const automationReviewer = String(process.env.AUCTORIO_EDITORIAL_REVIEWER || '').trim();
+  const isHumanReview = Boolean(humanReviewKey) && equalSecret(provided, humanReviewKey);
+  const isAutomationReview = Boolean(automationReviewKey)
+    && equalSecret(provided, automationReviewKey)
+    && Boolean(automationReviewer)
+    && String(req.header('x-editorial-reviewer') || '').trim() === automationReviewer;
+
+  if (!provided || (!isHumanReview && !isAutomationReview)) {
     throw new ForbiddenError('Invalid editorial review key');
   }
   next();

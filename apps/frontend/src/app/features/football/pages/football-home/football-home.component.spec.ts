@@ -33,6 +33,7 @@ function home(): FootballHomeDTO {
     featuredMatches: [match('featured-1')],
     upcomingMatches: [match('upcoming-1')],
     featuredCompetitions: [],
+    standingsSnapshot: null,
     latestNews: [],
     generatedAt: new Date().toISOString(),
   };

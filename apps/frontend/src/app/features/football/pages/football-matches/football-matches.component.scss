@@ -48,6 +48,7 @@ app-football-filter-bar { display: block; margin-bottom: 1rem; }
 }
 .empty__title { margin: 0 0 0.25rem; font-weight: 750; color: var(--portal-text); }
 .empty__sub { margin: 0; font-size: 0.875rem; color: var(--portal-text-muted); }
+.empty button { min-height: 44px; margin-top: .75rem; border: 1px solid var(--football-border); border-radius: var(--radius-pill); background: var(--football-surface); padding: 0 .9rem; color: var(--accent-sports); font-weight: 750; cursor: pointer; }
 
 .matches__skeleton { display: flex; flex-direction: column; gap: 0.75rem; }
 .matches__skeleton-group { display: flex; flex-direction: column; gap: 0.5rem; }

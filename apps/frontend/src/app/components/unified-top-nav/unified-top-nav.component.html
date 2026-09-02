@@ -51,20 +51,19 @@
       </div>
 
       <nav class="unified-top-nav__tabs" aria-label="Secciones principales">
-        <a
-          *ngFor="let tab of tabs; trackBy: trackByTab"
-          [routerLink]="tab.path"
-          class="unified-top-nav__tab"
-          [class.unified-top-nav__tab--active]="activeTab() === tab.id"
-          [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
-        >
-          <span class="unified-top-nav__tab-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path [attr.d]="tab.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-            </svg>
-          </span>
-          <span class="unified-top-nav__tab-copy"><strong>{{ tab.label }}</strong></span>
-        </a>
+        @for (tab of tabs; track tab.id) {
+          <a
+            [routerLink]="tab.path"
+            class="unified-top-nav__tab"
+            [class.unified-top-nav__tab--active]="activeTab() === tab.id"
+            [attr.aria-current]="activeTab() === tab.id ? 'page' : null"
+          >
+            <span class="unified-top-nav__tab-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path [attr.d]="tab.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+            </span>
+            <span class="unified-top-nav__tab-copy"><strong>{{ tab.label }}</strong></span>
+          </a>
+        }
 
       </nav>
 

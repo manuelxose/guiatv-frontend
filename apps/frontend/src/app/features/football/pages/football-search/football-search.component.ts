@@ -19,12 +19,9 @@ import { generateFootballBreadcrumbSchema } from '@app/features/football/footbal
 const EMPTY_RESULT: FootballSearchDTO = { query: '', matches: [], teams: [], competitions: [], news: [], meta: {} };
 
 /**
- * Football-scoped search — grouped by entity type (spec §46-47), reached
- * only from within the football vertical (its own route, its own labeled
- * input). Deliberately NOT the global GuiaTV search: no shared icon, no
- * shared results UI — this only ever answers "which team/match/competition/
- * football-news matches this query", per spec §94's "must not duplicate
- * global search" while still giving football-specific discovery.
+ * Legacy deep-link fallback for old `/deportes/futbol/buscar` URLs.
+ * New discovery starts in the app-wide search, which now includes these
+ * football entities alongside TV and catalogue results.
  */
 @Component({
   selector: 'app-football-search',
@@ -54,11 +51,13 @@ export class FootballSearchComponent implements OnInit {
   // component state.
   readonly query = signal('');
   readonly inputValue = signal('');
+  readonly teamsOnly = signal(false);
 
   private readonly result = toSignal(
     this.route.queryParamMap.pipe(
-      map((params) => (params.get('q') || '').trim()),
-      switchMap((q) => {
+      map((params) => ({ q: (params.get('q') || '').trim(), teamsOnly: params.get('tipo') === 'equipos' })),
+      switchMap(({ q, teamsOnly }) => {
+        this.teamsOnly.set(teamsOnly);
         this.query.set(q);
         this.inputValue.set(q);
         return q ? this.facade.search(q) : of(EMPTY_RESULT);
@@ -70,13 +69,15 @@ export class FootballSearchComponent implements OnInit {
   readonly loading = computed(() => this.result() === null && this.query().length > 0);
   readonly hasResults = computed(() => {
     const r = this.result();
-    return !!r && (r.matches.length > 0 || r.teams.length > 0 || r.competitions.length > 0 || r.news.length > 0);
+    if (!r) return false;
+    if (this.teamsOnly()) return r.teams.length > 0;
+    return r.matches.length > 0 || r.teams.length > 0 || r.competitions.length > 0 || r.news.length > 0;
   });
 
   readonly teams = computed(() => this.result()?.teams ?? []);
-  readonly matches = computed(() => this.result()?.matches ?? []);
-  readonly competitions = computed(() => this.result()?.competitions ?? []);
-  readonly news = computed(() => this.result()?.news ?? []);
+  readonly matches = computed(() => this.teamsOnly() ? [] : this.result()?.matches ?? []);
+  readonly competitions = computed(() => this.teamsOnly() ? [] : this.result()?.competitions ?? []);
+  readonly news = computed(() => this.teamsOnly() ? [] : this.result()?.news ?? []);
 
   safeLdHtml: SafeHtml | null = null;
 
@@ -105,7 +106,9 @@ export class FootballSearchComponent implements OnInit {
 
   onSubmit(): void {
     const q = this.inputValue().trim();
-    void this.router.navigate(['/deportes/futbol/buscar'], { queryParams: q ? { q } : {} });
+    void this.router.navigate(['/deportes/futbol/buscar'], {
+      queryParams: { ...(q ? { q } : {}), ...(this.teamsOnly() ? { tipo: 'equipos' } : {}) },
+    });
   }
 
   trackByTeam(_index: number, team: { slug: string }): string {

@@ -104,6 +104,19 @@
   --status-warning: var(--accent-sports);
   --status-warning-soft: var(--accent-sports-soft);
 
+  // Football product semantics. These aliases let the vertical express
+  // hierarchy without coupling components to a palette or theme.
+  --football-live: var(--status-live);
+  --football-score: var(--portal-text);
+  --football-surface: var(--portal-card);
+  --football-surface-subtle: var(--portal-surface-strong);
+  --football-border: var(--portal-border);
+  --football-muted: var(--portal-text-muted);
+  --football-provider: var(--accent-streaming);
+  --football-win: #16734f;
+  --football-draw: var(--portal-text-muted);
+  --football-loss: var(--status-live);
+
   --guide-bg: var(--portal-bg);
   --guide-bg-elevated: var(--portal-bg-elevated);
   --guide-surface: var(--portal-surface);
@@ -256,6 +269,8 @@ html[data-theme='dark'] {
   --accent-sports-soft: color-mix(in oklch, var(--accent-sports) 9%, var(--portal-card));
   --accent-editorial: #e181d9;
   --accent-editorial-soft: color-mix(in oklch, var(--accent-editorial) 9%, var(--portal-card));
+
+  --football-win: #55d5a6;
 
   --guide-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);

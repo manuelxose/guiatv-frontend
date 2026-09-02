@@ -92,11 +92,11 @@ test.describe('Canonical section navigation', () => {
     }
   });
 
-  test('TV, Qué ver and Deportes share the same contextual structure', async ({ page }) => {
+  test('TV, Qué ver and Fútbol share the same contextual navigation structure', async ({ page }) => {
     const sections = [
       { path: '/programacion-tv/guia-canales', label: 'Secciones de TV', items: ['En emisión', 'A continuación', 'Esta noche', 'Parrilla'] },
       { path: '/programacion-tv/que-ver-hoy', label: 'Secciones de Qué ver', items: ['Todo', 'En TV', 'Películas', 'Series', 'Gratis'] },
-      { path: '/deportes/futbol', label: 'Secciones de Fútbol', items: ['Inicio', 'En directo', 'Hoy', 'Calendario', 'Competiciones', 'Noticias'] },
+      { path: '/deportes/futbol', label: 'Secciones de Fútbol', items: ['Portada', 'En directo', 'Partidos de hoy', 'Calendario', 'Competiciones', 'Dónde ver', 'Noticias'] },
     ] as const;
 
     for (const section of sections) {

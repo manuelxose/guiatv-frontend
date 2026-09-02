@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildNewsQuery, FootballQueryService, settle } from './FootballQueryService';
+import { buildNewsQuery, FootballQueryService, prioritizeSpanishLeague, settle } from './FootballQueryService';
 import { FootballDataProvider } from '../../../domain/sports/football/types';
 
 // Regression coverage for a real production bug: getCompetition()/getTeam()/
@@ -40,6 +40,45 @@ test('settle() supports non-array fallbacks (e.g. a single match object)', async
   const original = { id: 'm1' };
   const result = await settle(Promise.reject(new Error('reconciliation down')), original);
   assert.equal(result, original);
+});
+
+test('prioritizeSpanishLeague puts the Spanish league first without reordering the other competitions', () => {
+  const competitions = [
+    { slug: 'premier-league', name: 'Premier League', country: 'England' },
+    { slug: 'champions', name: 'Champions League', country: 'Europe' },
+    { slug: 'primera-division', name: 'Primera Division', country: 'Spain', type: 'league' },
+    { slug: 'serie-a', name: 'Serie A', country: 'Italy' },
+  ];
+
+  assert.deepEqual(prioritizeSpanishLeague(competitions).map((competition) => competition.slug), [
+    'primera-division',
+    'premier-league',
+    'champions',
+    'serie-a',
+  ]);
+  assert.equal(competitions[0].slug, 'premier-league');
+});
+
+test('getHome uses the Spanish league for the first competition and standings snapshot', async () => {
+  let standingsSlug = '';
+  const provider = fakeProvider({
+    getCompetitions: async () => [
+      { id: 'br', slug: 'brasileirao', name: 'Brasileirão', country: 'Brazil', type: 'league', providerIds: {}, lastUpdatedAt: '' },
+      { id: 'es', slug: 'primera-division', name: 'Primera Division', country: 'Spain', type: 'league', providerIds: {}, lastUpdatedAt: '' },
+    ],
+    getStandings: async (slug) => {
+      standingsSlug = slug;
+      return [{ position: 1 }] as any;
+    },
+  });
+  const service = new FootballQueryService(provider, fakeReconciliation);
+  service.getNews = async () => [];
+
+  const result = await service.getHome();
+
+  assert.equal(result.featuredCompetitions[0].slug, 'primera-division');
+  assert.equal(result.standingsSnapshot?.competition.slug, 'primera-division');
+  assert.equal(standingsSlug, 'primera-division');
 });
 
 // Regression coverage for a real, verified-live production bug: getNews()
