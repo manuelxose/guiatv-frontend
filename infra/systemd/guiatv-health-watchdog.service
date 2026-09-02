@@ -1,0 +1,8 @@
+[Unit]
+Description=GuiaTV production health watchdog (services active, no OOM/core-dump, EPG data fresh)
+After=guiatv-api.service guiatv-ssr.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/var/www/guiatv
+ExecStart=/usr/bin/node /var/www/guiatv/scripts/health-watchdog.mjs
