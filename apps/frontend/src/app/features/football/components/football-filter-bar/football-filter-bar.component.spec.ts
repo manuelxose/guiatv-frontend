@@ -26,4 +26,14 @@ describe('applyFootballMatchFilter', () => {
     const result = applyFootballMatchFilter(matches, 'finished');
     expect(result.map((m) => m.status)).toEqual(['finished']);
   });
+
+  it('"tv" only includes confirmed broadcasts', () => {
+    const result = applyFootballMatchFilter([
+      { status: 'scheduled', broadcasts: [{ confidence: 'low' }] },
+      { status: 'scheduled', broadcasts: [{ confidence: 'medium' }] },
+      { status: 'scheduled', broadcasts: [] },
+    ], 'tv');
+    expect(result).toHaveSize(1);
+    expect(result[0].broadcasts?.[0].confidence).toBe('medium');
+  });
 });

@@ -13,6 +13,7 @@
       #searchInput
       id="unified-search-input"
       type="text"
+      name="q"
       inputmode="search"
       enterkeyhint="search"
       [formControl]="control"
@@ -34,19 +35,20 @@
 
   </div>
 
-  <div *ngIf="showMenu" id="unified-search-results" class="search-shell__menu" role="listbox">
+  <div *ngIf="showMenu" class="search-shell__menu">
     <div class="search-shell__menu-head">
       <p>{{ control.value ? 'Sugerencias' : 'Búsqueda rápida' }}</p>
       <span *ngIf="control.value && !isLoading" aria-live="polite">{{ suggestions.length }} resultados</span>
-      <span *ngIf="isLoading" class="search-shell__loading-text">Buscando...</span>
+      <span *ngIf="isLoading" class="search-shell__loading-text">Buscando…</span>
     </div>
 
-    <div
-      *ngFor="let group of suggestionGroups"
-      class="search-shell__group"
-      role="group"
-      [attr.aria-label]="group.label"
-    >
+    <div id="unified-search-results" role="listbox">
+      <div
+        *ngFor="let group of suggestionGroups"
+        class="search-shell__group"
+        role="group"
+        [attr.aria-label]="group.label"
+      >
       <p class="search-shell__group-heading" [attr.data-accent]="group.accent">
         <span class="search-shell__group-dot" aria-hidden="true"></span>
         {{ group.label }}
@@ -70,32 +72,33 @@
         <span class="search-shell__option-copy">
           <span class="search-shell__option-title">{{ entry.item.title }}</span>
           <span class="search-shell__option-meta">
-            {{ entry.item.channel?.name || entry.item.primaryPlatforms?.slice(0, 2).join(' · ') || entry.item.contentType }}
+            {{ entry.item.meta }}
           </span>
         </span>
       </button>
-    </div>
+      </div>
 
-    <button
-      *ngFor="let entry of !suggestions.length ? history : []; let i = index"
-      type="button"
-      role="option"
-      [id]="'unified-search-option-' + i"
-      [attr.aria-selected]="focusedIndex === i"
-      class="search-shell__option search-shell__option--history"
-      [class.search-shell__option--focused]="focusedIndex === i"
-      (click)="useHistory(entry)"
-    >
-      <span class="search-shell__option-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M12 6v6l4.5 2.25M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-        </svg>
-      </span>
-      <span class="search-shell__option-copy">
-        <span class="search-shell__option-title">{{ entry }}</span>
-        <span class="search-shell__option-meta">Historial</span>
-      </span>
-    </button>
+      <button
+        *ngFor="let entry of !suggestions.length ? history : []; let i = index"
+        type="button"
+        role="option"
+        [id]="'unified-search-option-' + i"
+        [attr.aria-selected]="focusedIndex === i"
+        class="search-shell__option search-shell__option--history"
+        [class.search-shell__option--focused]="focusedIndex === i"
+        (click)="useHistory(entry)"
+      >
+        <span class="search-shell__option-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M12 6v6l4.5 2.25M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+          </svg>
+        </span>
+        <span class="search-shell__option-copy">
+          <span class="search-shell__option-title">{{ entry }}</span>
+          <span class="search-shell__option-meta">Historial</span>
+        </span>
+      </button>
+    </div>
 
     <button *ngIf="control.value" type="button" class="search-shell__submit" (click)="submit()">
       Ver resultados completos

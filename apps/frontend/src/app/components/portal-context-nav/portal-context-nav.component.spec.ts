@@ -19,8 +19,8 @@ describe('PortalContextNavComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('app-breadcrumb').length).toBe(1);
-    expect(fixture.nativeElement.querySelectorAll('.portal-context-nav__track a').length).toBe(6);
-    expect(fixture.nativeElement.querySelector('[aria-current="page"]')?.textContent).toContain('Hoy');
+    expect(fixture.nativeElement.querySelectorAll('.portal-context-nav__track a').length).toBe(7);
+    expect(fixture.nativeElement.querySelector('[aria-current="page"]')?.textContent).toContain('Partidos de hoy');
   });
 
   it('renders local state destinations as pressed buttons and emits selection', () => {

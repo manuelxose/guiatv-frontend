@@ -56,6 +56,7 @@ describe('PortalHomeFacade', () => {
       featuredMatches: [],
       upcomingMatches: [],
       featuredCompetitions: [],
+      standingsSnapshot: null,
       latestNews: [],
       generatedAt: '2026-08-13T00:00:00.000Z',
     }));

@@ -17,6 +17,10 @@ export interface FootballHomeDTO {
   featuredMatches: FootballMatch[];
   upcomingMatches: FootballMatch[];
   featuredCompetitions: FootballCompetition[];
+  standingsSnapshot: {
+    competition: FootballCompetition;
+    rows: FootballStandingRow[];
+  } | null;
   latestNews: FootballNewsItem[];
   generatedAt: string;
 }

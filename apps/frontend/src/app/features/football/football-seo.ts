@@ -16,6 +16,14 @@ function stripUndefined(value: Record<string, any>): Record<string, any> {
   return value;
 }
 
+function schemaEventStatus(status: FootballMatchDTO['status']): string {
+  if (status === 'live' || status === 'halftime') return 'https://schema.org/EventInProgress';
+  if (status === 'finished') return 'https://schema.org/EventCompleted';
+  if (status === 'cancelled') return 'https://schema.org/EventCancelled';
+  if (status === 'postponed' || status === 'suspended') return 'https://schema.org/EventPostponed';
+  return 'https://schema.org/EventScheduled';
+}
+
 export function generateFootballMatchSchema(match: FootballMatchDTO, baseUrl: string): object {
   const broadcast = match.broadcasts?.find((b) => b.confidence !== 'low');
   const event = stripUndefined({
@@ -23,14 +31,14 @@ export function generateFootballMatchSchema(match: FootballMatchDTO, baseUrl: st
     name: `${match.homeTeam.name} - ${match.awayTeam.name}`,
     description: `Partido de ${match.competition.name}: ${match.homeTeam.name} contra ${match.awayTeam.name}.`,
     startDate: match.kickoffAt,
-    eventStatus: 'https://schema.org/EventScheduled',
+    eventStatus: schemaEventStatus(match.status),
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     sport: 'Fútbol',
     competitor: [
       { '@type': 'SportsTeam', name: match.homeTeam.name },
       { '@type': 'SportsTeam', name: match.awayTeam.name },
     ],
-    organizer: { '@type': 'Organization', name: match.competition.name },
+    organizer: { '@type': 'SportsOrganization', name: match.competition.name },
     url: `${baseUrl}/deportes/futbol/partido/${match.slug}`,
   });
 
@@ -40,8 +48,8 @@ export function generateFootballMatchSchema(match: FootballMatchDTO, baseUrl: st
     '@type': 'BroadcastEvent',
     name: `${match.homeTeam.name} - ${match.awayTeam.name}`,
     startDate: match.kickoffAt,
-    eventStatus: 'https://schema.org/EventScheduled',
-    isLiveBroadcast: match.status === 'live',
+    eventStatus: schemaEventStatus(match.status),
+    isLiveBroadcast: match.status === 'live' || match.status === 'halftime',
     broadcastOfEvent: event,
     publishedOn: { '@type': 'BroadcastService', name: broadcast.channelName },
     url: `${baseUrl}/deportes/futbol/partido/${match.slug}`,

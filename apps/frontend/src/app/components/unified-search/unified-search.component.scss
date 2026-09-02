@@ -148,6 +148,10 @@
   background: var(--accent-streaming);
 }
 
+.search-shell__group-heading[data-accent='sports'] .search-shell__group-dot {
+  background: var(--accent-sports);
+}
+
 .search-shell__option,
 .search-shell__submit {
   width: 100%;

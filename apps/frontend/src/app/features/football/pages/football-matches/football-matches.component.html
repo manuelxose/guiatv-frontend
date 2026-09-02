@@ -32,8 +32,12 @@
 
       <ng-template #empty>
         <div class="empty">
-          <p class="empty__title">{{ emptyTitle }}</p>
-          <p class="empty__sub">{{ emptySubtitle }}</p>
+          <ng-container *ngIf="loadFailed(); else honestEmpty">
+            <p class="empty__title">No hemos podido cargar los partidos</p>
+            <p class="empty__sub">Comprueba tu conexión y vuelve a intentarlo.</p>
+            <button type="button" (click)="retryLoad()">Reintentar</button>
+          </ng-container>
+          <ng-template #honestEmpty><p class="empty__title">{{ emptyTitle }}</p><p class="empty__sub">{{ emptySubtitle }}</p></ng-template>
         </div>
       </ng-template>
     </ng-container>

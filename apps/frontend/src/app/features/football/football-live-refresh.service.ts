@@ -1,6 +1,6 @@
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { EMPTY, Observable, catchError, interval, map, of, startWith, switchMap } from 'rxjs';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { EMPTY, Observable, catchError, combineLatest, fromEvent, interval, map, merge, of, startWith, switchMap } from 'rxjs';
 import { FootballApiService } from './football-api.service';
 import { FootballMatchDTO } from './football.models';
 
@@ -22,6 +22,7 @@ export class FootballLiveRefreshService {
 
   constructor(
     private readonly api: FootballApiService,
+    @Inject(DOCUMENT) private readonly document: Document,
     @Inject(PLATFORM_ID) platformId: object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -35,12 +36,19 @@ export class FootballLiveRefreshService {
   liveMatches(active$: Observable<boolean>, intervalMs = DEFAULT_INTERVAL_MS): Observable<FootballMatchDTO[]> {
     if (!this.isBrowser) return EMPTY;
 
-    return active$.pipe(
-      switchMap((active) => (active ? interval(intervalMs).pipe(startWith(0)) : EMPTY)),
+    const visible$ = merge(
+      of(!this.document.hidden),
+      fromEvent(this.document, 'visibilitychange').pipe(map(() => !this.document.hidden))
+    );
+
+    return combineLatest([active$, visible$]).pipe(
+      switchMap(([active, visible]) => (active && visible ? interval(intervalMs).pipe(startWith(0)) : EMPTY)),
       switchMap(() =>
         this.api.getLiveMatches().pipe(
           map((res) => res.data?.matches ?? []),
-          catchError(() => of<FootballMatchDTO[]>([]))
+          // Do not turn a transport failure into an authoritative empty
+          // snapshot: EMPTY preserves the last rendered state for this tick.
+          catchError(() => EMPTY)
         )
       )
     );
@@ -52,8 +60,30 @@ export class FootballLiveRefreshService {
  * score/minute/status in place, keeps list order and any non-live matches
  * untouched (spec §51: no reordering, no scroll jump on a poll tick).
  */
-export function mergeLiveUpdates(matches: FootballMatchDTO[], liveUpdates: FootballMatchDTO[]): FootballMatchDTO[] {
-  if (!liveUpdates.length) return matches;
+export function mergeLiveUpdates(matches: FootballMatchDTO[], liveUpdates: FootballMatchDTO[] | null): FootballMatchDTO[] {
+  if (!liveUpdates?.length) return matches;
   const byId = new Map(liveUpdates.map((match) => [match.id, match]));
   return matches.map((match) => byId.get(match.id) ?? match);
+}
+
+/** A dedicated live route mirrors membership from the latest successful
+ * provider snapshot. `null` means no poll has completed yet; an empty array
+ * is authoritative and removes matches that have finished. */
+export function resolveLiveSnapshot(
+  initialMatches: FootballMatchDTO[],
+  liveSnapshot: FootballMatchDTO[] | null
+): FootballMatchDTO[] {
+  return liveSnapshot === null ? initialMatches : liveSnapshot;
+}
+
+/** Poll shortly before kickoff as well as during play so an open page can
+ * observe scheduled → live without waiting for a navigation or reload. */
+export function shouldPollLiveTransitions(matches: FootballMatchDTO[], nowMs = Date.now()): boolean {
+  const transitionWindowMs = 20 * 60 * 1000;
+  return matches.some((match) => {
+    if (match.status === 'live' || match.status === 'halftime') return true;
+    if (match.status !== 'scheduled') return false;
+    const kickoffMs = new Date(match.kickoffAt).getTime();
+    return Number.isFinite(kickoffMs) && kickoffMs >= nowMs - transitionWindowMs && kickoffMs <= nowMs + transitionWindowMs;
+  });
 }

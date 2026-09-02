@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { CatalogItem, CatalogResponse } from '../../services/catalog.service';
 import { DiscoveryService } from '../../services/discovery.service';
 import { StorageService } from '../../services/storage.service';
 import { UnifiedSearchComponent } from './unified-search.component';
+import { FootballFacade } from '../../features/football/football.facade';
+import { FootballSearchDTO } from '../../features/football/football.models';
 
 const item = (
   catalogId: string,
@@ -25,6 +27,7 @@ describe('UnifiedSearchComponent', () => {
   let fixture: ComponentFixture<UnifiedSearchComponent>;
   let component: UnifiedSearchComponent;
   let discovery: jasmine.SpyObj<DiscoveryService>;
+  let football: jasmine.SpyObj<FootballFacade>;
   let router: Router;
 
   beforeEach(async () => {
@@ -40,12 +43,15 @@ describe('UnifiedSearchComponent', () => {
     };
     discovery = jasmine.createSpyObj('DiscoveryService', ['search']);
     discovery.search.and.returnValue(of(response));
+    football = jasmine.createSpyObj('FootballFacade', ['search']);
+    football.search.and.returnValue(of({ query: '', matches: [], teams: [], competitions: [], news: [], meta: {} }));
 
     await TestBed.configureTestingModule({
       imports: [UnifiedSearchComponent],
       providers: [
         provideRouter([]),
         { provide: DiscoveryService, useValue: discovery },
+        { provide: FootballFacade, useValue: football },
         {
           provide: StorageService,
           useValue: {
@@ -81,9 +87,57 @@ describe('UnifiedSearchComponent', () => {
     ]);
   }));
 
+  it('includes football entities in the same grouped search menu', fakeAsync(() => {
+    const footballResult: FootballSearchDTO = {
+      query: 'real',
+      matches: [],
+      teams: [{ id: 't1', slug: 'real-madrid', name: 'Real Madrid', aliases: [], providerIds: {}, lastUpdatedAt: '' }],
+      competitions: [{ id: 'c1', slug: 'laliga', name: 'LaLiga', country: 'Spain', type: 'league', providerIds: {}, lastUpdatedAt: '' }],
+      news: [],
+      meta: {},
+    };
+    football.search.and.returnValue(of(footballResult));
+    component.query = 'real';
+    component.onFocus();
+    fixture.detectChanges();
+    tick(300);
+    fixture.detectChanges();
+
+    const headings = Array.from(
+      fixture.nativeElement.querySelectorAll('.search-shell__group-heading') as NodeListOf<HTMLElement>
+    ).map((element) => element.textContent?.trim());
+    expect(headings).toContain('Fútbol');
+    expect(component.suggestions.map((entry) => entry.title)).toContain('Real Madrid');
+    expect(component.suggestions.map((entry) => entry.title)).toContain('LaLiga');
+  }));
+
+  it('keeps football results available when catalogue search fails', fakeAsync(() => {
+    discovery.search.and.returnValue(throwError(() => new Error('catalog unavailable')));
+    football.search.and.returnValue(of({
+      query: 'laliga',
+      matches: [],
+      teams: [],
+      competitions: [{ id: 'c1', slug: 'laliga', name: 'LaLiga', country: 'Spain', type: 'league', providerIds: {}, lastUpdatedAt: '' }],
+      news: [],
+      meta: {},
+    }));
+    component.query = 'laliga';
+    component.onFocus();
+    fixture.detectChanges();
+    tick(300);
+
+    expect(component.suggestions.map((entry) => entry.title)).toEqual(['LaLiga']);
+  }));
+
   it('opens the canonical detail path for the selected result', async () => {
     const navigate = spyOn(router, 'navigateByUrl').and.resolveTo(true);
-    const result = item('program:1', 'program', 'Noticias', '/contenido/program:1');
+    const result = {
+      id: 'program:1',
+      title: 'Noticias',
+      meta: 'Programa',
+      detailPath: '/contenido/program:1',
+      group: 'program' as const,
+    };
 
     component.openSuggestion(result);
 

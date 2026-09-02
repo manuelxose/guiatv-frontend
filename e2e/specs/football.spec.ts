@@ -27,13 +27,16 @@ test.describe('Football Home', () => {
     await assertNoRenderedUndefined(page);
   });
 
-  test('the unified football navigation reaches every route-level destination', async ({ page }) => {
+  test('the standard contextual football menu reaches every route-level destination', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/deportes/futbol');
     await assertNotBlankScreen(page);
-    const nav = page.getByRole('navigation', { name: 'Secciones de Fútbol' });
+    const menu = page.getByRole('navigation', { name: 'Secciones de Fútbol' });
+    await expect(page.locator('app-portal-context-nav app-breadcrumb')).toBeVisible();
+    await expect(menu.getByRole('link')).toHaveCount(7);
     const destinations = [
       { label: 'En directo', url: /\/deportes\/futbol\/en-directo/ },
-      { label: 'Hoy', url: /\/deportes\/futbol\/partidos-hoy/ },
+      { label: 'Partidos de hoy', url: /\/deportes\/futbol\/partidos-hoy/ },
       { label: 'Calendario', url: /\/deportes\/futbol\/calendario/ },
       { label: 'Competiciones', url: /\/deportes\/futbol\/competiciones/ },
       { label: 'Noticias', url: /\/deportes\/futbol\/noticias/ },
@@ -41,19 +44,58 @@ test.describe('Football Home', () => {
 
     for (const destination of destinations) {
       await page.goto('/deportes/futbol');
-      await nav.getByRole('link', { name: destination.label, exact: true }).click();
+      await menu.getByRole('link', { name: destination.label, exact: true }).click();
       await page.waitForURL(destination.url, { timeout: 20_000 });
       await assertNotBlankScreen(page);
     }
   });
 
-  test('the search entry point is clearly football-scoped, not the global search', async ({ page }) => {
+  test('the redesigned home remains contained at every required handoff width in both themes', async ({ page }, testInfo) => {
+    test.setTimeout(180_000);
+    const widths = [1440, 1280, 1024, 768, 430, 390, 375, 360, 320];
+
+    await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/deportes/futbol');
+      await expect(page.locator('h1', { hasText: 'Fútbol' })).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByRole('navigation', { name: 'Secciones de Fútbol' })).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      const widthsOnPage = await page.evaluate(() => ({
+        football: document.querySelector<HTMLElement>('.football-home')?.getBoundingClientRect().width || 0,
+        content: document.querySelector<HTMLElement>('.app-public-layout-shell__content')?.getBoundingClientRect().width || 0,
+      }));
+      expect(Math.abs(widthsOnPage.football - widthsOnPage.content)).toBeLessThan(1);
+      await page.screenshot({
+        path: testInfo.outputPath(`football-home-light-${width}.png`),
+        fullPage: true,
+      });
+    }
+
+    await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/deportes/futbol');
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await page.screenshot({
+        path: testInfo.outputPath(`football-home-dark-${width}.png`),
+        fullPage: true,
+      });
+    }
+  });
+
+  test('football uses the app-wide search instead of mounting a separate search control', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/deportes/futbol');
-    const searchLink = page.locator('.home__search');
-    await expect(searchLink).toBeVisible();
-    await expect(searchLink).toHaveAttribute('aria-label', /equipos, partidos o competiciones/i);
-    await searchLink.click();
-    await page.waitForURL(/\/deportes\/futbol\/buscar/, { timeout: 20_000 });
+    await expect(page.locator('.football-home__search')).toHaveCount(0);
+    const globalSearch = page.locator('#unified-search-input');
+    await expect(globalSearch).toBeVisible();
+    await expect(globalSearch).toHaveAttribute('placeholder', /fútbol/);
+    await globalSearch.fill('LaLiga');
+    await expect(page.getByRole('group', { name: 'Fútbol' })).toBeVisible({ timeout: 20_000 });
+    const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+    expect(accessibility.violations.filter((violation) => ['serious', 'critical'].includes(violation.impact || ''))).toEqual([]);
   });
 });
 
@@ -78,9 +120,7 @@ test.describe('Football Matches -> Match Centre', () => {
       await page.goto('/deportes/futbol/partidos-hoy');
       await assertNotBlankScreen(page);
 
-      const nav = page.getByRole('navigation', { name: 'Secciones de Fútbol' });
-      await expect(nav.getByRole('link')).toHaveCount(6);
-      await expect(nav.getByRole('link', { name: 'Hoy', exact: true })).toHaveAttribute('aria-current', 'page');
+      await expect(page.getByRole('navigation', { name: 'Secciones de Fútbol' })).toBeVisible();
       await expect(page.locator('app-portal-local-toolbar')).toHaveCount(0);
       await expect(page.getByRole('group', { name: 'Filtrar partidos' })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
@@ -126,7 +166,7 @@ test.describe('Football Matches -> Match Centre', () => {
     await assertNotBlankScreen(page);
     const bar = page.getByRole('group', { name: 'Filtrar partidos' });
     await expect(bar).toBeVisible({ timeout: 20_000 });
-    for (const label of ['Todos', 'En directo', 'Próximos', 'Finalizados']) {
+    for (const label of ['Todos', 'En directo', 'TV', 'Próximos', 'Finalizados']) {
       await expect(bar.getByText(label, { exact: true })).toBeVisible();
     }
   });

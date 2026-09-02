@@ -116,8 +116,14 @@ export interface FootballHomeDTO {
   featuredMatches: FootballMatchDTO[];
   upcomingMatches: FootballMatchDTO[];
   featuredCompetitions: FootballCompetitionDTO[];
+  standingsSnapshot: {
+    competition: FootballCompetitionDTO;
+    rows: FootballStandingRowDTO[];
+  } | null;
   latestNews: FootballNewsDTO[];
   generatedAt: string;
+  /** Client-only degraded-state marker; never fabricated by the API. */
+  loadError?: boolean;
 }
 
 export interface FootballMatchesResponseDTO {

@@ -24,7 +24,6 @@ import {
   PORTAL_ACCOUNT_DESTINATIONS,
   PORTAL_MOBILE_MORE_DESTINATIONS,
   PORTAL_MOBILE_PRIMARY_DESTINATIONS,
-  PORTAL_SPORTS_DESTINATIONS,
   PortalMobileDestination,
 } from './config/portal-navigation.config';
 import { ThemeMode, ThemeService } from './services/theme.service';
@@ -61,7 +60,6 @@ export class AppComponent implements OnInit, OnDestroy {
   public readonly mobileTabs = PORTAL_MOBILE_PRIMARY_DESTINATIONS;
   public readonly moreDestinations = PORTAL_MOBILE_MORE_DESTINATIONS;
   public readonly accountDestinations = PORTAL_ACCOUNT_DESTINATIONS;
-  public readonly footballDestinations = PORTAL_SPORTS_DESTINATIONS;
   public mobileMoreOpen = false;
   public chatSocialTargetUser: { userId: string; nonce: number } | null = null;
   public readonly theme = inject(ThemeService);

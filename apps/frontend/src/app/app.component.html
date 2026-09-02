@@ -67,19 +67,6 @@
         <a [routerLink]="destination.path" (click)="closeMobileMore()"><span class="app-shell__more-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path [attr.d]="destination.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg></span><span><strong>{{ destination.label }}</strong><small>{{ destination.hint }}</small></span></a>
         }
       </nav>
-      <details class="app-shell__more-football">
-        <summary>Explorar fútbol</summary>
-        <nav aria-label="Secciones de fútbol">
-          @for (destination of footballDestinations; track destination.id) {
-          <a
-            [routerLink]="destination.path"
-            [fragment]="destination.fragment || null"
-            [queryParams]="destination.queryParams || null"
-            (click)="closeMobileMore()"
-          >{{ destination.label }}</a>
-          }
-        </nav>
-      </details>
       <section class="app-shell__more-account" aria-label="Tu cuenta"><p>Tu cuenta</p><div>@for (destination of accountDestinations; track destination.id) {<a [routerLink]="destination.path" (click)="closeMobileMore()">{{ destination.label }}</a>}</div></section>
       <section class="app-shell__more-theme" aria-label="Preferencia de tema"><p>Tema</p><div>@for (mode of ['system', 'light', 'dark']; track mode) {<button type="button" (click)="setTheme(mode)" [class.is-selected]="theme.mode() === mode" [attr.aria-pressed]="theme.mode() === mode">{{ mode === 'system' ? 'Sistema' : mode === 'light' ? 'Claro' : 'Oscuro' }}</button>}</div></section>
     </section>

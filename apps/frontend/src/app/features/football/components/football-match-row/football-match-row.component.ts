@@ -57,6 +57,7 @@ import {
     .row {
       display: grid;
       grid-template-columns: 3.25rem 1fr auto 1fr auto;
+      grid-template-areas: 'status home score away broadcast';
       align-items: center;
       gap: 0.625rem;
       min-height: 44px;
@@ -73,6 +74,7 @@ import {
     .row--live:hover, .row--live:focus-visible { filter: brightness(1.05); }
 
     .row__status {
+      grid-area: status;
       font-size: 0.75rem;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
@@ -99,10 +101,11 @@ import {
       50% { opacity: 0.35; }
     }
 
-    .row__team { min-width: 0; }
-    .row__team--away { justify-self: end; }
+    .row__team { grid-area: home; min-width: 0; overflow: hidden; }
+    .row__team--away { grid-area: away; justify-self: end; }
 
     .row__score {
+      grid-area: score;
       display: flex;
       align-items: center;
       gap: 0.3rem;
@@ -115,11 +118,21 @@ import {
     .row__score-sep { color: var(--portal-text-muted); }
     .row__vs { font-size: 0.75rem; font-weight: 650; color: var(--portal-text-muted); }
 
-    .row__broadcast { justify-self: end; }
+    .row__broadcast { grid-area: broadcast; justify-self: end; min-width: 0; max-width: 13rem; }
 
     @media (max-width: 480px) {
-      .row { grid-template-columns: 2.5rem 1fr auto 1fr; gap: 0.4rem; }
-      .row__broadcast { display: none; }
+      .row {
+        grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+        grid-template-areas:
+          'status home score'
+          '. away score'
+          '. broadcast broadcast';
+        gap: 0.25rem 0.5rem;
+        min-height: 72px;
+        padding-block: 0.55rem;
+      }
+      .row__team--away { justify-self: stretch; }
+      .row__broadcast { justify-self: start; max-width: 100%; overflow: hidden; }
     }
   `,
 })
