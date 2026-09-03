@@ -16,6 +16,7 @@ import { AffiliateService } from '../../../../services/affiliate.service';
 import { AffiliateResolvedOffer } from '../../../../interfaces/affiliate.interface';
 import { AffiliateCTAComponent } from '../../../../components/affiliate-cta/affiliate-cta.component';
 import { AffiliateDisclosureComponent } from '../../../../components/affiliate-disclosure/affiliate-disclosure.component';
+import { AdminConfirmDialogComponent } from '../../components/admin-confirm-dialog/admin-confirm-dialog.component';
 import {
   calculateReadingTime,
   generateExcerpt,
@@ -36,7 +37,7 @@ interface BlogRouteOption {
 @Component({
   selector: 'app-admin-blog-section',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AffiliateCTAComponent, AffiliateDisclosureComponent],
+  imports: [CommonModule, ReactiveFormsModule, AffiliateCTAComponent, AffiliateDisclosureComponent, AdminConfirmDialogComponent],
   templateUrl: './admin-blog-section.component.html',
   styleUrls: ['./admin-blog-section.component.scss'],
 })
@@ -53,6 +54,8 @@ export class AdminBlogSectionComponent implements OnInit {
   public blogSaveError: string | null = null;
   public blogSaveSuccess: string | null = null;
   public selectedBlogPostId: string | null = null;
+  public confirmDeletePostOpen = false;
+  public pendingDeletePost: AdminBlogPost | null = null;
 
   public blogStatusFilter: BlogStatusFilter = 'all';
   public blogTypeFilter: BlogTypeFilter = 'all';
@@ -302,14 +305,22 @@ export class AdminBlogSectionComponent implements OnInit {
     });
   }
 
-  deleteBlogPost(post: AdminBlogPost): void {
+  requestDeleteBlogPost(post: AdminBlogPost): void {
     if (!post.id || this.blogDeletingId) {
       return;
     }
-    const confirmed = typeof window === 'undefined'
-      ? true
-      : window.confirm(`Eliminar "${this.getPostTitle(post)}"? Esta accion no se puede deshacer.`);
-    if (!confirmed) {
+    this.pendingDeletePost = post;
+    this.confirmDeletePostOpen = true;
+  }
+
+  cancelDeleteBlogPost(): void {
+    this.pendingDeletePost = null;
+    this.confirmDeletePostOpen = false;
+  }
+
+  confirmDeleteBlogPost(): void {
+    const post = this.pendingDeletePost;
+    if (!post?.id || this.blogDeletingId) {
       return;
     }
 
@@ -324,11 +335,15 @@ export class AdminBlogSectionComponent implements OnInit {
         }
         this.blogDeletingId = null;
         this.blogSaveSuccess = 'Articulo editorial eliminado.';
+        this.confirmDeletePostOpen = false;
+        this.pendingDeletePost = null;
         this.loadBlogPosts(true);
       },
       error: () => {
         this.blogDeletingId = null;
         this.blogSaveError = 'No se pudo eliminar el articulo editorial.';
+        this.confirmDeletePostOpen = false;
+        this.pendingDeletePost = null;
       },
     });
   }
