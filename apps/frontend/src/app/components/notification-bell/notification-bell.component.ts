@@ -33,7 +33,7 @@ import { UserNotification } from '../../interfaces/user.interface';
 
       <div
         *ngIf="isOpen"
-        class="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] backdrop-blur-xl shadow-[var(--shadow-lg)] z-[80]"
+        class="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] backdrop-blur-xl shadow-[var(--shadow-lg)] z-[var(--z-dropdown)]"
       >
         <div class="flex items-center justify-between border-b border-[var(--portal-divider)] px-4 py-3">
           <h3 class="text-sm font-semibold text-[var(--portal-text)]">Notificaciones</h3>
@@ -78,7 +78,7 @@ import { UserNotification } from '../../interfaces/user.interface';
       </div>
     </div>
 
-    <div *ngIf="isOpen" class="fixed inset-0 z-[75]" (click)="isOpen = false" (keydown.escape)="isOpen = false" tabindex="-1"></div>
+    <div *ngIf="isOpen" class="fixed inset-0 z-[var(--z-sticky)]" (click)="isOpen = false" (keydown.escape)="isOpen = false" tabindex="-1"></div>
   `,
   styles: [],
 })
@@ -155,10 +155,10 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   getTypeIconClass(type: string): string {
     switch (type) {
-      case 'follow': return 'bg-blue-500/20';
-      case 'message': return 'bg-green-500/20';
-      case 'recommendation': return 'bg-yellow-500/20';
-      case 'report_status': return 'bg-purple-500/20';
+      case 'follow': return 'bg-[var(--accent-discover-soft)]';
+      case 'message': return 'bg-[var(--accent-streaming-soft)]';
+      case 'recommendation': return 'bg-[var(--accent-sports-soft)]';
+      case 'report_status': return 'bg-[var(--accent-editorial-soft)]';
       default: return 'bg-[var(--portal-surface-strong)]';
     }
   }

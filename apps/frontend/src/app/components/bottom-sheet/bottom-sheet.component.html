@@ -4,7 +4,9 @@
     class="sheet-shell__panel"
     role="dialog"
     aria-modal="true"
+    [attr.aria-label]="title || null"
     cdkTrapFocus
+    cdkTrapFocusAutoCapture
   >
     <div class="sheet-shell__handle" aria-hidden="true"></div>
     <header class="sheet-shell__header">

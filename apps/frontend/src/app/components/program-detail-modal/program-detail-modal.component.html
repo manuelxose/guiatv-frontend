@@ -2,7 +2,7 @@
 <div
   *ngIf="program"
   class="program-detail-modal-container"
-  @backdropAnimation
+  [@backdropAnimation]="{ value: true, params: backdropMotionParams }"
   (click)="onClose()"
   (keydown)="onEscapeKey($event)"
   tabindex="0"
@@ -14,7 +14,7 @@
   <div class="modal-backdrop"></div>
 
   <!-- Modal Content -->
-  <div class="modal-content" @modalAnimation (click)="onContentClick($event)" (keydown)="$event.stopPropagation()" tabindex="-1">
+  <div #modalContent class="modal-content" [@modalAnimation]="{ value: true, params: modalMotionParams }" (click)="onContentClick($event)" (keydown)="onContentKeydown($event)" tabindex="-1">
     <!-- Hero Background with Gradient -->
     <div
       class="modal-hero"

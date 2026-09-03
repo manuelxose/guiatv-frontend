@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/app/components/unified-chat-shell/social-chat-panel/social-chat-panel.component.ts"
+        ],
+        "createdAt": "2026-09-03T21:45:26.724Z",
+        "reason": "false positive: [src]=\"user.avatar\" is a dynamic binding guarded by *ngIf=\"user.avatar\", not an empty/placeholder src; unrelated to this edit (border-slate-950 -> token fix)"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/app/components/modal/modal.component.html"
+        ],
+        "createdAt": "2026-09-03T21:46:54.107Z",
+        "reason": "false positive: [src]=\"program_modal?.image || getFallbackImage()\" is a dynamic binding with an always-present base64 SVG fallback, not an empty/placeholder src; pre-existing, unrelated to this edit"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/app/components/program-detail-modal/program-detail-modal.component.html"
+        ],
+        "createdAt": "2026-09-03T21:50:29.767Z",
+        "reason": "false positive: [src] bindings (channelLogo, detail poster) are dynamic and guarded by *ngIf, not empty/placeholder src; pre-existing, unrelated to this edit (removed stray stopPropagation blocking Escape)"
+      }
+    ]
+  }
+}

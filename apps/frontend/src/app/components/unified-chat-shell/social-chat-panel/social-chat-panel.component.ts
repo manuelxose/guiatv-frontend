@@ -207,7 +207,7 @@ interface ChatWindowState {
                 {{ user.name?.slice(0, 2)?.toUpperCase() }}
               </div>
               <span
-                class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-950"
+                class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--portal-card)]"
                 [ngClass]="user.isOnline ? 'bg-[var(--accent-streaming)]' : 'bg-[var(--portal-border-strong)]'"
               ></span>
             </div>
@@ -238,13 +238,16 @@ interface ChatWindowState {
       height: 4px;
       border-radius: 999px;
       background: var(--portal-text-muted);
-      animation: typing-bounce 1.2s infinite ease-in-out;
+      animation: typing-bounce 1.2s infinite cubic-bezier(0.16, 1, 0.3, 1);
     }
     .typing-dot:nth-child(2) { animation-delay: 0.15s; }
     .typing-dot:nth-child(3) { animation-delay: 0.3s; }
     @keyframes typing-bounce {
       0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
       30% { transform: translateY(-3px); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .typing-dot { animation: none; opacity: 0.8; }
     }
   `],
 })
