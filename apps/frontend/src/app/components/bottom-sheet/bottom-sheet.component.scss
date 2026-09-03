@@ -1,7 +1,7 @@
 .sheet-shell {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: var(--z-drawer);
 }
 
 .sheet-shell__backdrop {
@@ -71,5 +71,11 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-shell__panel {
+    animation-duration: 0.001ms;
   }
 }

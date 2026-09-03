@@ -70,7 +70,7 @@ import { AffiliateDisclosureComponent } from '../../affiliate-disclosure/affilia
             <!-- Blinking cursor only while genuine server streaming is active. -->
             <span
               *ngIf="message.isStreaming"
-              class="inline-block h-4 w-[2px] translate-y-[2px] animate-[blink_0.8s_step-end_infinite] bg-slate-300"
+              class="inline-block h-4 w-[2px] translate-y-[2px] animate-[blink_0.8s_step-end_infinite] bg-[var(--portal-text-muted)]"
             ></span>
 
             <!-- Recommendations -->
@@ -331,7 +331,7 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
 
   get bubbleClasses(): string {
     const role = this.message.role === 'user'
-      ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md'
+      ? 'bg-[var(--accent-live-strong)] text-white shadow-md'
       : 'assistant-bubble border shadow-sm';
     // Recommendation cards/list already re-pad their own content internally,
     // so the bubble's own padding can shrink to avoid stacking two paddings.

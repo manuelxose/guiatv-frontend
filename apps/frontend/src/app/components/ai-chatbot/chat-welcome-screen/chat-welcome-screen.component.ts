@@ -33,7 +33,7 @@ import { CommonModule } from '@angular/common';
         <button
           type="button"
           (click)="register.emit()"
-          class="min-h-[44px] rounded-xl bg-red-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+          class="min-h-[44px] rounded-xl bg-[var(--accent-live-strong)] px-5 text-sm font-semibold text-white transition-colors hover:opacity-90"
         >
           Crear cuenta
         </button>

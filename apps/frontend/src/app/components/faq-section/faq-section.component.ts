@@ -22,7 +22,7 @@ export interface FaqItem {
           itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"
         >
           <summary
-            class="flex items-center justify-between gap-4 cursor-pointer select-none px-4 py-3 text-sm font-medium text-gray-200 hover:text-[var(--portal-text)] transition-colors"
+            class="flex items-center justify-between gap-4 cursor-pointer select-none px-4 py-3 text-sm font-medium text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] transition-colors min-h-[44px]"
           >
             <span itemprop="name">{{ item.question }}</span>
             <svg
