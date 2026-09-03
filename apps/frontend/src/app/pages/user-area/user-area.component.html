@@ -1,6 +1,6 @@
 <div class="relative min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]">
   <div
-    class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06)_0,_rgba(11,15,20,0)_55%)] opacity-70"
+    class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_color-mix(in_oklch,var(--portal-text)_6%,transparent)_0,_transparent_55%)] opacity-70"
   ></div>
 
   <ng-container *ngIf="isAuthenticated$ | async; else loginCTA">
