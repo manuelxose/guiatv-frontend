@@ -359,7 +359,18 @@ export class SitemapController {
   }
 
   private async buildStreamingSitemap(): Promise<string> {
-    return this.renderUrlset([]);
+    const todayIso = this.formatDate(new Date());
+
+    // Keep this child sitemap non-empty: Search Console rejects an empty
+    // urlset even though it is well-formed XML. These are stable, public
+    // streaming surfaces; provider-only catalogue detail pages stay out
+    // until they have a guaranteed indexable resolver.
+    return this.renderUrlset([
+      { loc: '/plataformas', lastmod: todayIso, changefreq: 'daily', priority: 0.9 },
+      { loc: '/comparador-streaming', lastmod: todayIso, changefreq: 'weekly', priority: 0.8 },
+      { loc: '/programacion-tv/peliculas', lastmod: todayIso, changefreq: 'daily', priority: 0.9 },
+      { loc: '/programacion-tv/series', lastmod: todayIso, changefreq: 'daily', priority: 0.9 },
+    ]);
   }
 
   /* ------------------------------------------------------------------ */

@@ -153,6 +153,21 @@ test('sitemap index excludes quarantined provider-only child sitemaps', async ()
   assert.doesNotMatch(getSentXml(), /sitemap-football\.xml/);
 });
 
+test('sitemap-streaming.xml is a non-empty valid urlset', async () => {
+  invalidateSitemapCache();
+  const controller = new SitemapController({} as any, {} as any);
+  const { req, res, getSentXml, getStatusCode } = fakeReqRes();
+
+  await controller.getStreamingSitemap(req, res, (() => {}) as any);
+
+  const xml = getSentXml();
+  assert.equal(getStatusCode(), 200);
+  assert.match(xml, /^<\?xml version="1\.0" encoding="UTF-8"\?>/);
+  assert.match(xml, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
+  assert.equal((xml.match(/<url>/g) || []).length, 4);
+  assert.match(xml, /<loc>https:\/\/guiaprogramaciontv\.com\/plataformas<\/loc>/);
+});
+
 test('static sitemap excludes volatile trends until the page has an indexable quality signal', async () => {
   invalidateSitemapCache();
   const controller = new SitemapController({} as any, {} as any);
