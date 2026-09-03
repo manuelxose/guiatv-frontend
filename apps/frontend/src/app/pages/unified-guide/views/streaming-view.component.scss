@@ -1,5 +1,5 @@
 .streaming-view {
-  --streaming-accent: #036b9e;
+  --streaming-accent: var(--accent-streaming);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
@@ -100,7 +100,7 @@
   justify-content: center;
   min-height: 2.25rem;
   border-radius: 999px;
-  border: 1px solid rgba(14, 165, 233, 0.26);
+  border: 1px solid color-mix(in oklch, var(--accent-streaming) 26%, transparent);
   background: var(--portal-surface-strong);
   color: var(--portal-text);
   padding: 0 0.82rem;
@@ -130,7 +130,7 @@
 
 .streaming-view__platform-button,
 .streaming-view__directory-chip {
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid var(--portal-border);
   background: var(--portal-surface-strong);
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
