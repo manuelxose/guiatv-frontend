@@ -65,7 +65,7 @@
             <th class="px-4 py-3">Status</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-800/70">
+        <tbody class="divide-y divide-[var(--portal-border)]">
           <tr *ngFor="let ch of filteredChannels" class="hover:bg-[var(--portal-surface)]">
             <td class="px-4 py-3">
               <img *ngIf="ch.icon" [src]="ch.icon" [alt]="ch.name" class="h-6 w-6 rounded object-contain bg-[var(--portal-surface-strong)]" />
@@ -146,7 +146,7 @@
             <th class="px-4 py-3">End</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-800/70">
+        <tbody class="divide-y divide-[var(--portal-border)]">
           <tr *ngFor="let p of filteredPrograms" class="hover:bg-[var(--portal-surface)]">
             <td class="px-4 py-3">
               <div class="text-[var(--portal-text)] font-medium">{{ p.title }}</div>
