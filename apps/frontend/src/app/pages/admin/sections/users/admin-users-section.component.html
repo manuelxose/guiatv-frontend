@@ -109,7 +109,7 @@
             <th class="px-4 py-3 text-right">Action</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-800/70">
+        <tbody class="divide-y divide-[var(--portal-border)]">
           <tr *ngIf="loading">
             <td colspan="7" class="px-4 py-6 text-center text-[var(--portal-text-soft)]">Loading users...</td>
           </tr>
@@ -159,7 +159,7 @@
             <td class="px-4 py-4 text-right">
               <button
                 type="button"
-                class="px-3 py-1.5 rounded-xl text-xs border"
+                class="px-3 py-1.5 rounded-xl text-xs border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                 [disabled]="!canSave(user.id)"
                 [ngClass]="user.status === 'suspended' ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-amber-500/40 text-amber-200 bg-amber-500/10'"
                 (click)="toggleStatus(user)"
@@ -195,7 +195,8 @@
         </div>
         <button
           type="button"
-          class="mt-3 w-full px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
+          class="mt-3 w-full px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          [disabled]="!canSave(user.id)"
           (click)="toggleStatus(user)"
         >
           {{ user.status === 'suspended' ? 'Activate' : 'Suspend' }}
@@ -225,4 +226,16 @@
       </div>
     </div>
   </div>
+
+  <app-admin-confirm-dialog
+    [open]="confirmSuspendOpen"
+    [busy]="pendingSuspendUser ? !canSave(pendingSuspendUser.id) : false"
+    title="Suspend user?"
+    [description]="'This immediately revokes access for ' + (pendingSuspendUser?.name || pendingSuspendUser?.email || 'this user') + '. They can be reactivated later.'"
+    confirmLabel="Suspend"
+    cancelLabel="Cancel"
+    [danger]="true"
+    (confirmed)="confirmSuspend()"
+    (cancelled)="cancelSuspend()"
+  ></app-admin-confirm-dialog>
 </section>

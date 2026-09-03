@@ -618,9 +618,9 @@
                   </a>
                   <button
                     type="button"
-                    class="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-200 hover:border-red-400/40 disabled:opacity-50"
+                    class="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-200 hover:border-red-400/40 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     [disabled]="blogDeletingId === post.id"
-                    (click)="deleteBlogPost(post)"
+                    (click)="requestDeleteBlogPost(post)"
                   >
                     {{ blogDeletingId === post.id ? 'Eliminando...' : 'Eliminar' }}
                   </button>
@@ -632,4 +632,16 @@
       </div>
     </div>
   </div>
+
+  <app-admin-confirm-dialog
+    [open]="confirmDeletePostOpen"
+    [busy]="!!blogDeletingId"
+    title="Eliminar artículo editorial"
+    [description]="'¿Eliminar &quot;' + (pendingDeletePost ? getPostTitle(pendingDeletePost) : '') + '&quot;? Esta acción no se puede deshacer.'"
+    confirmLabel="Eliminar"
+    cancelLabel="Cancelar"
+    [danger]="true"
+    (confirmed)="confirmDeleteBlogPost()"
+    (cancelled)="cancelDeleteBlogPost()"
+  ></app-admin-confirm-dialog>
 </section>
