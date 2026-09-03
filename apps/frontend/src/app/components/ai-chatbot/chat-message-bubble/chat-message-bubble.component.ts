@@ -157,8 +157,8 @@ import { AffiliateDisclosureComponent } from '../../affiliate-disclosure/affilia
                 (click)="feedbackPositive.emit(message)"
                 class="flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
                 [ngClass]="message.feedback?.rating === 'positive'
-                  ? 'text-green-400 bg-green-500/15'
-                  : 'text-[var(--portal-text-muted)] hover:text-green-400 hover:bg-green-500/10'"
+                  ? 'text-[var(--accent-streaming)] bg-[var(--accent-streaming-soft)]'
+                  : 'text-[var(--portal-text-muted)] hover:text-[var(--accent-streaming)] hover:bg-[var(--accent-streaming-soft)]'"
                 [disabled]="!!message.feedback"
                 aria-label="Útil"
               >
@@ -172,8 +172,8 @@ import { AffiliateDisclosureComponent } from '../../affiliate-disclosure/affilia
                 (click)="feedbackNegative.emit(message)"
                 class="flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
                 [ngClass]="message.feedback?.rating === 'negative'
-                  ? 'text-red-400 bg-red-500/15'
-                  : 'text-[var(--portal-text-muted)] hover:text-red-400 hover:bg-[var(--accent-live-soft)]'"
+                  ? 'text-[var(--status-live)] bg-[var(--status-live-soft)]'
+                  : 'text-[var(--portal-text-muted)] hover:text-[var(--status-live)] hover:bg-[var(--status-live-soft)]'"
                 [disabled]="!!message.feedback"
                 aria-label="No útil"
               >
@@ -213,6 +213,14 @@ import { AffiliateDisclosureComponent } from '../../affiliate-disclosure/affilia
     @keyframes blink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :host ::ng-deep [class*="animate-[blink"],
+      :host ::ng-deep [class*="animate-[pulse_1.2s"] {
+        animation: none;
+        opacity: 0.6;
+      }
     }
 
     /* Markdown prose styles for assistant messages */
