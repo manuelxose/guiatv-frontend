@@ -8,7 +8,7 @@
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
 }
 
@@ -19,8 +19,8 @@
   gap: 1rem;
   max-height: min(82dvh, 48rem);
   overflow-y: auto;
-  border-top-left-radius: 1.7rem;
-  border-top-right-radius: 1.7rem;
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
   border: 1px solid var(--portal-border);
   background: var(--portal-bg);
   padding: 1rem 1rem calc(env(safe-area-inset-bottom, 0px) + 1rem);
@@ -69,7 +69,7 @@
   justify-content: center;
   width: 2.75rem;
   height: 2.75rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: var(--portal-surface-strong);
   color: var(--portal-text);
@@ -112,7 +112,7 @@
 
 .filter-dock__summary em {
   font-style: normal;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface-strong);
   color: var(--portal-text);
   padding: 0.35rem 0.7rem;
@@ -136,7 +136,7 @@
   align-items: center;
   gap: 0.6rem;
   min-height: 44px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: var(--portal-surface);
   color: var(--portal-text);
@@ -144,9 +144,9 @@
 }
 
 .filter-dock__option--active {
-  border-color: var(--guide-accent, #dc2626);
-  background: color-mix(in srgb, var(--guide-accent, #dc2626) 8%, var(--portal-surface));
-  color: var(--guide-accent, #dc2626);
+  border-color: var(--guide-accent, var(--accent-live));
+  background: color-mix(in srgb, var(--guide-accent, var(--accent-live)) 8%, var(--portal-surface));
+  color: var(--guide-accent, var(--accent-live));
 }
 
 .filter-dock__option-icon {
@@ -194,10 +194,10 @@
   align-items: center;
   justify-content: center;
   min-height: 46px;
-  border-radius: 999px;
-  border: 1px solid var(--guide-accent, #dc2626);
-  background: color-mix(in srgb, var(--guide-accent, #dc2626) 8%, var(--portal-surface));
-  color: var(--guide-accent, #dc2626);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--guide-accent, var(--accent-live));
+  background: color-mix(in srgb, var(--guide-accent, var(--accent-live)) 8%, var(--portal-surface));
+  color: var(--guide-accent, var(--accent-live));
   font-weight: 800;
 }
 
@@ -212,7 +212,7 @@
     inset: 0 1rem 0 auto;
     width: min(24rem, 32vw);
     max-height: none;
-    border-radius: 1.5rem;
+    border-radius: var(--radius-xl);
     padding-top: 1.25rem;
     margin: 1rem 0;
   }
