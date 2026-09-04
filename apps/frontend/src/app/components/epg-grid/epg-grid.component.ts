@@ -340,7 +340,12 @@ function buildRows(items: TvReadItemDTO[], window: TimeWindow): EpgGridRow[] {
     row.cells.forEach((cell, index) => {
       const next = row.cells[index + 1];
       if (next) {
-        cell.widthPx = Math.min(cell.widthPx, Math.max(next.leftPx - cell.leftPx, MIN_CELL_WIDTH_PX));
+        // Clamp strictly to the real gap — never re-inflate back up to
+        // MIN_CELL_WIDTH_PX when the gap is smaller than that minimum, or
+        // the cell overlaps the next one again (the bug this clamp exists
+        // to prevent). A tiny floor keeps a back-to-back slot visible
+        // rather than collapsing to 0px on a data glitch.
+        cell.widthPx = Math.min(cell.widthPx, Math.max(next.leftPx - cell.leftPx, 4));
       }
     });
   });
