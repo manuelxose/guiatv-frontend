@@ -283,7 +283,7 @@
   min-height: 38px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
-  background: var(--portal-surface);
+  background: transparent;
   color: var(--portal-text);
   text-decoration: none;
   padding: 0 0.9rem;
@@ -295,9 +295,15 @@
   color: var(--portal-text-soft);
 }
 
+// The card's one primary action ("Ver ficha", "Abrir emisión"...) gets the
+// same filled-green pill as the app's other primary buttons (.btn-primary
+// in styles.scss) — it was previously a faint tint of --guide-accent (the
+// "live" red alias), which read as a secondary/muted action, not the
+// card's main CTA.
 .program-card__cta--primary {
-  border-color: color-mix(in srgb, var(--guide-accent) 30%, var(--portal-border));
-  background: color-mix(in srgb, var(--guide-accent) 8%, var(--portal-surface));
+  border-color: transparent;
+  background: var(--spotify-green);
+  color: #000000;
 }
 
 .program-card__cta--active {
@@ -377,7 +383,10 @@
   transform: scale(1.04);
 }
 
-.program-card:hover .program-card__cta--primary,
+.program-card:hover .program-card__cta--primary {
+  background: color-mix(in oklch, var(--spotify-green) 90%, white);
+}
+
 .program-card:hover .program-card__quick-link {
   border-color: var(--portal-border-strong);
 }
