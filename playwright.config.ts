@@ -4,8 +4,10 @@ import { defineConfig, devices } from '@playwright/test';
  * E2E config for GuiaTV.
  *
  * Target: a scratch-port Angular dev server (CSR, `ng serve --configuration
- * development`) that this config boots itself on PORT (default 4210), plus
- * the backend compiled from the same worktree on isolated port 4310.
+ * development`) that this config boots itself on PORT (default 4210, override
+ * with E2E_PORT), plus the backend compiled from the same worktree on an
+ * isolated port (default 4310, override with E2E_BACKEND_PORT — useful to
+ * avoid colliding with another checkout/worktree running this same suite).
  *
  * Data source: the frontend uses same-origin `/v2` requests and its dev proxy
  * forwards them to the isolated backend. Both sides therefore exercise the
@@ -15,8 +17,9 @@ import { defineConfig, devices } from '@playwright/test';
  * the real database (see e2e/specs/auth.spec.ts for the rationale).
  */
 const PORT = process.env.E2E_PORT || '4210';
+const BACKEND_PORT = process.env.E2E_BACKEND_PORT || '4310';
 const BASE_URL = `http://localhost:${PORT}`;
-process.env.E2E_BACKEND_URL ||= 'http://127.0.0.1:4310';
+process.env.E2E_BACKEND_URL ||= `http://127.0.0.1:${BACKEND_PORT}`;
 
 export default defineConfig({
   testDir: './e2e/specs',
@@ -54,22 +57,33 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'npm run build:backend && DISABLE_SCHEDULED_JOBS=true ALLOWED_ORIGINS=http://localhost:4210 PORT=4310 node apps/backend/dist/server/index.js',
+      command: 'npm run build:backend && node apps/backend/dist/server/index.js',
       cwd: '.',
-      url: 'http://127.0.0.1:4310/health',
+      url: `http://127.0.0.1:${BACKEND_PORT}/health`,
       reuseExistingServer: false,
       timeout: 180_000,
       stdout: 'pipe',
       stderr: 'pipe',
+      // Set via the config's own `env` (spawned directly, not through a shell)
+      // instead of `VAR=val cmd` inline syntax — that syntax is bash-only and
+      // fails under Windows' default cmd.exe script shell.
+      env: {
+        DISABLE_SCHEDULED_JOBS: 'true',
+        ALLOWED_ORIGINS: `http://localhost:${PORT}`,
+        PORT: BACKEND_PORT,
+      },
     },
     {
-      command: `GUIATV_PROXY_TARGET=http://127.0.0.1:4310 npx ng serve --configuration development --proxy-config proxy.conf.js --port ${PORT} --host 0.0.0.0`,
+      command: `npx ng serve --configuration development --proxy-config proxy.conf.js --port ${PORT} --host 0.0.0.0`,
       cwd: './apps/frontend',
       url: BASE_URL,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
       stdout: 'pipe',
       stderr: 'pipe',
+      env: {
+        GUIATV_PROXY_TARGET: `http://127.0.0.1:${BACKEND_PORT}`,
+      },
     },
   ],
 });
