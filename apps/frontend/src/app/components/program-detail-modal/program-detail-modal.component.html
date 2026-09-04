@@ -2,7 +2,7 @@
 <div
   *ngIf="program"
   class="program-detail-modal-container"
-  @backdropAnimation
+  [@backdropAnimation]="{ value: true, params: backdropMotionParams }"
   (click)="onClose()"
   (keydown)="onEscapeKey($event)"
   tabindex="0"
@@ -14,11 +14,11 @@
   <div class="modal-backdrop"></div>
 
   <!-- Modal Content -->
-  <div class="modal-content" @modalAnimation (click)="onContentClick($event)" (keydown)="$event.stopPropagation()" tabindex="-1">
+  <div #modalContent class="modal-content" [@modalAnimation]="{ value: true, params: modalMotionParams }" (click)="onContentClick($event)" (keydown)="onContentKeydown($event)" tabindex="-1">
     <!-- Hero Background with Gradient -->
     <div
       class="modal-hero"
-      [style.backgroundImage]="bannerData()?.poster ? 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(26,26,46,0.95) 100%), url(' + bannerData()?.poster + ')' : 'linear-gradient(180deg, rgb(26,26,46) 0%, rgb(22,33,62) 100%)'"
+      [style.backgroundImage]="bannerData()?.poster ? 'linear-gradient(180deg, color-mix(in oklch, black 40%, transparent) 0%, var(--portal-bg-deep) 100%), url(' + bannerData()?.poster + ')' : 'linear-gradient(180deg, var(--portal-bg-deep) 0%, var(--portal-bg-elevated) 100%)'"
     >
       <!-- Close Button -->
       <button

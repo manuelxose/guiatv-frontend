@@ -128,7 +128,7 @@ import {
     </section>
   `,
   styles: [`
-    :host { position: absolute; inset: 0; z-index: 30; display: block; min-width: 0; min-height: 0; }
+    :host { position: absolute; inset: 0; z-index: var(--z-drawer); display: block; min-width: 0; min-height: 0; }
     .profile-panel { display: flex; width: 100%; height: 100%; min-height: 0; flex-direction: column; overflow: hidden; background: var(--portal-bg); color: var(--portal-text); }
     .profile-panel__header { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; flex: 0 0 auto; align-items: center; gap: .6rem; border-bottom: 1px solid var(--portal-border); background: var(--portal-surface-strong); padding: .5rem .75rem; }
     .profile-panel__back { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; border: 0; border-radius: .85rem; background: transparent; color: var(--portal-text); cursor: pointer; touch-action: manipulation; }

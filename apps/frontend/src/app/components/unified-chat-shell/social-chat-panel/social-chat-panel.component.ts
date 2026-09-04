@@ -85,11 +85,11 @@ interface ChatWindowState {
               <p class="break-words leading-relaxed">{{ msg.text || 'Adjunto' }}</p>
               <p class="mt-1 text-[10px] opacity-60">{{ msg.createdAt | date: 'shortTime' }}</p>
               <div *ngIf="msg.failed" class="mt-1 flex items-center gap-2">
-                <p class="text-[10px] text-red-400">No enviado</p>
+                <p class="text-[10px] text-[var(--assistant-danger)]">No enviado</p>
                 <button
                   type="button"
                   (click)="retryMessage(msg)"
-                  class="rounded-md border border-red-400/50 px-2 py-0.5 text-[10px] text-red-300 hover:bg-red-400/10"
+                  class="rounded-md border border-[var(--assistant-danger)]/50 px-2 py-0.5 text-[10px] text-[var(--assistant-danger)] hover:bg-[var(--assistant-danger-soft)]"
                 >Reintentar</button>
               </div>
             </div>
@@ -207,7 +207,7 @@ interface ChatWindowState {
                 {{ user.name?.slice(0, 2)?.toUpperCase() }}
               </div>
               <span
-                class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-950"
+                class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--portal-card)]"
                 [ngClass]="user.isOnline ? 'bg-[var(--accent-streaming)]' : 'bg-[var(--portal-border-strong)]'"
               ></span>
             </div>
@@ -238,13 +238,16 @@ interface ChatWindowState {
       height: 4px;
       border-radius: 999px;
       background: var(--portal-text-muted);
-      animation: typing-bounce 1.2s infinite ease-in-out;
+      animation: typing-bounce 1.2s infinite cubic-bezier(0.16, 1, 0.3, 1);
     }
     .typing-dot:nth-child(2) { animation-delay: 0.15s; }
     .typing-dot:nth-child(3) { animation-delay: 0.3s; }
     @keyframes typing-bounce {
       0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
       30% { transform: translateY(-3px); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .typing-dot { animation: none; opacity: 0.8; }
     }
   `],
 })
@@ -409,9 +412,9 @@ export class SocialChatPanelComponent implements OnInit, OnChanges, OnDestroy {
     switch (this.connectionMode) {
       case 'connecting':
       case 'reconnecting':
-        return 'border-amber-500/40 bg-amber-500/10 text-amber-400';
+        return 'border-[color-mix(in_oklch,var(--accent-sports)_40%,transparent)] bg-[var(--accent-sports-soft)] text-[var(--accent-sports)]';
       case 'degraded':
-        return 'border-red-500/40 bg-red-500/10 text-red-400';
+        return 'border-[color-mix(in_oklch,var(--status-live)_40%,transparent)] bg-[var(--status-live-soft)] text-[var(--status-live)]';
       default:
         return '';
     }
@@ -440,7 +443,7 @@ export class SocialChatPanelComponent implements OnInit, OnChanges, OnDestroy {
       classes['opacity-60'] = Boolean(msg.pending);
     }
     if (msg.failed) {
-      classes['border-red-400/40'] = true;
+      classes['border-[color-mix(in_oklch,var(--status-live)_40%,transparent)]'] = true;
     }
     return classes;
   }

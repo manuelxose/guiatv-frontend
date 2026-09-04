@@ -35,5 +35,10 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
+  styles: [`
+    @media (prefers-reduced-motion: reduce) {
+      :host ::ng-deep .animate-pulse { animation: none; opacity: 0.75; }
+    }
+  `],
 })
 export class ChatSkeletonComponent {}

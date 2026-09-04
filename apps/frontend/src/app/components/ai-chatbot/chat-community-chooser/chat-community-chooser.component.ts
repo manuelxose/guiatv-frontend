@@ -14,14 +14,14 @@ import { CommonModule } from '@angular/common';
           <button
             type="button"
             (click)="useSaved.emit()"
-            class="min-h-[34px] rounded-full border border-transparent bg-[var(--accent-discover-soft)] px-3 text-xs font-semibold text-[var(--accent-discover)] transition-colors hover:opacity-90"
+            class="min-h-11 rounded-full border border-transparent bg-[var(--accent-discover-soft)] px-3 text-xs font-semibold text-[var(--accent-discover)] transition-colors hover:opacity-90"
           >
             Usar {{ savedCommunity }}
           </button>
           <button
             type="button"
             (click)="toggleChooser()"
-            class="min-h-[34px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
+            class="min-h-11 rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
           >
             Cambiar
           </button>
@@ -30,7 +30,7 @@ import { CommonModule } from '@angular/common';
           <button
             type="button"
             (click)="toggleChooser()"
-            class="min-h-[34px] rounded-full border border-transparent bg-[var(--accent-discover-soft)] px-3 text-xs font-semibold text-[var(--accent-discover)] transition-colors hover:opacity-90"
+            class="min-h-11 rounded-full border border-transparent bg-[var(--accent-discover-soft)] px-3 text-xs font-semibold text-[var(--accent-discover)] transition-colors hover:opacity-90"
           >
             Elegir comunidad
           </button>
@@ -39,7 +39,7 @@ import { CommonModule } from '@angular/common';
           *ngIf="!isChooserOpen"
           type="button"
           (click)="declined.emit()"
-          class="min-h-[34px] rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
+          class="min-h-11 rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg)] px-3 text-xs font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)]"
         >
           No incluir autonómicas
         </button>
@@ -52,7 +52,7 @@ import { CommonModule } from '@angular/common';
             *ngFor="let community of communities"
             type="button"
             (click)="communitySelected.emit(community)"
-            class="rounded-lg border px-2 py-2 text-[11px] font-medium transition-all text-center leading-tight"
+            class="min-h-11 rounded-lg border px-2 py-2 text-[11px] font-medium transition-colors text-center leading-tight"
             [ngClass]="community === savedCommunity
               ? 'border-transparent bg-[var(--accent-discover-soft)] text-[var(--accent-discover)]'
               : 'border-[var(--portal-border)]/60 bg-[var(--portal-bg)] text-[var(--portal-text)] hover:border-[var(--accent-discover)]/30 hover:bg-[var(--accent-discover-soft)] hover:text-[var(--accent-discover)]'"

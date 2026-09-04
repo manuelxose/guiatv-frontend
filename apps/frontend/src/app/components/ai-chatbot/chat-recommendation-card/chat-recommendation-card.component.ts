@@ -1,9 +1,12 @@
 import {
   Component,
+  ElementRef,
   EventEmitter,
+  HostListener,
   Input,
   Output,
   ChangeDetectionStrategy,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChatbotRecommendation } from '../../../interfaces/chatbot.interface';
@@ -291,7 +294,7 @@ import { AffiliateResolvedOffer } from '../../../interfaces/affiliate.interface'
       <!-- Overflow menu -->
       <div
         *ngIf="menuOpen"
-        class="absolute right-2 top-14 z-20 min-w-[210px] rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg-elevated)] py-1 shadow-xl"
+        class="absolute right-2 top-14 z-[var(--z-dropdown)] min-w-[210px] rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg-elevated)] py-1 shadow-xl"
         role="menu"
         aria-label="Acciones de la recomendación"
       >
@@ -369,6 +372,21 @@ export class ChatRecommendationCardComponent {
   menuOpen = false;
   synopsisOpen = false;
   reasonOpen = false;
+
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.menuOpen) return;
+    if (!this.elementRef.nativeElement.contains(event.target as Node)) {
+      this.menuOpen = false;
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.menuOpen = false;
+  }
 
   get isLiveNow(): boolean {
     if (this.recommendation.liveNow) return true;

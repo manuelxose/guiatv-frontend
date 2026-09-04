@@ -63,7 +63,7 @@ import {
     </header>
   `,
   styles: [`
-    :host { display: block; position: relative; z-index: 20; flex: 0 0 auto; }
+    :host { display: block; position: relative; z-index: var(--z-header); flex: 0 0 auto; }
     .chat-header { border-bottom: 1px solid var(--portal-border); background: var(--portal-surface-strong); padding: max(.5rem, var(--safe-top)) 1rem .5rem; }
     .chat-header__row { display: grid; min-height: 44px; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .5rem; }
     h2 { min-width: 0; margin: 0; overflow: hidden; color: var(--portal-text); font-size: var(--text-base); font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
