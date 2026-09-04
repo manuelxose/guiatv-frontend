@@ -223,17 +223,12 @@ export class StreamingViewComponent {
       this.guideState.searchQuery()
     );
   });
+  // Platform selection lives only in the inline `.streaming-view__platform-row`
+  // (prominent, branded) — the dock used to duplicate it as a "Plataforma"
+  // section, which is exactly the doubled-filter-hierarchy problem the
+  // football nav rework fixed for navigation. Sort moves here instead: it
+  // previously existed only as the inline chip bar with no dock coverage.
   readonly filterDockSections = computed<UnifiedFilterDockSection[]>(() => [
-    {
-      id: 'platform',
-      title: 'Plataforma',
-      description: 'Selector de servicios con catálogo real',
-      options: this.platforms().map((platform) => ({
-        id: platform.name,
-        label: platform.name,
-        selected: this.guideState.streamingFilters().platform === platform.name,
-      })),
-    },
     {
       id: 'availability',
       title: 'Disponibilidad',
@@ -253,6 +248,15 @@ export class StreamingViewComponent {
         id: genre,
         label: genre,
         selected: this.guideState.streamingFilters().genres.includes(genre),
+      })),
+    },
+    {
+      id: 'sort',
+      title: 'Orden',
+      options: this.sortChips.map((chip) => ({
+        id: chip.id,
+        label: chip.label,
+        selected: this.guideState.streamingFilters().sort === chip.id,
       })),
     },
   ]);
@@ -353,16 +357,16 @@ export class StreamingViewComponent {
   }
 
   handleDockSelect(event: { sectionId: string; optionId: string }): void {
-    if (event.sectionId === 'platform') {
-      this.selectPlatform(event.optionId);
-      return;
-    }
     if (event.sectionId === 'availability') {
       this.toggleAvailability(event.optionId);
       return;
     }
     if (event.sectionId === 'genres') {
       this.toggleGenre(event.optionId);
+      return;
+    }
+    if (event.sectionId === 'sort') {
+      this.selectSort(event.optionId);
     }
   }
 

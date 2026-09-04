@@ -49,7 +49,9 @@ interface EpgGridTick {
 
 /**
  * True channel×time grid for the EPG (Direction 3 "Hybrid Signal" — grid is
- * the ≥1024px default view on `programacion-tv/guia-canales`). Channels are
+ * the ≥768px (tablet+, MASTER.md's breakpoint scale) default view on
+ * `programacion-tv/guia-canales`; the mobile channel-list view takes over
+ * below that). Channels are
  * rows, a horizontal time axis runs left→right, program blocks are
  * positioned/sized from their real `airing.start`/`airing.end`.
  *
@@ -71,6 +73,19 @@ interface EpgGridTick {
 })
 export class EpgGridComponent {
   @ViewChild('gridBody', { read: ElementRef }) private readonly gridBody?: ElementRef<HTMLElement>;
+
+  // The CDK viewport (`.epg-grid__body`) is now the real horizontal scroll
+  // container (see epg-grid.component.scss) so `.epg-grid__channel-cell`'s
+  // `position: sticky` resolves against it correctly. The header row sits
+  // outside that viewport, so it's kept in sync manually via this offset.
+  readonly headerOffsetPx = signal(0);
+
+  onBodyScroll(): void {
+    const el = this.gridBody?.nativeElement;
+    if (el) {
+      this.headerOffsetPx.set(el.scrollLeft);
+    }
+  }
 
   private readonly itemsSignal = signal<TvReadItemDTO[]>([]);
   @Input({ required: true })
@@ -318,7 +333,17 @@ function buildRows(items: TvReadItemDTO[], window: TimeWindow): EpgGridRow[] {
     rowsById.set(channelId, row);
   });
 
-  rowsById.forEach((row) => row.cells.sort((left, right) => left.leftPx - right.leftPx));
+  rowsById.forEach((row) => {
+    row.cells.sort((left, right) => left.leftPx - right.leftPx);
+    // MIN_CELL_WIDTH_PX can push a very short slot's rendered width past the
+    // next program's start — clamp so adjacent cells never overlap.
+    row.cells.forEach((cell, index) => {
+      const next = row.cells[index + 1];
+      if (next) {
+        cell.widthPx = Math.min(cell.widthPx, Math.max(next.leftPx - cell.leftPx, MIN_CELL_WIDTH_PX));
+      }
+    });
+  });
 
   return Array.from(rowsById.values());
 }

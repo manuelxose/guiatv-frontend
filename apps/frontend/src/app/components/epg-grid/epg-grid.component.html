@@ -8,7 +8,11 @@
     <div class="epg-grid__scroll">
       <div class="epg-grid__header" role="row">
         <div class="epg-grid__header-channel" role="columnheader">Canal</div>
-        <div class="epg-grid__header-timeline" [style.width.px]="timelineWidthPx()">
+        <div
+          class="epg-grid__header-timeline"
+          [style.width.px]="timelineWidthPx()"
+          [style.transform]="'translateX(-' + headerOffsetPx() + 'px)'"
+        >
           <span
             *ngFor="let tick of ticks(); trackBy: trackTick"
             class="epg-grid__tick"
@@ -23,9 +27,10 @@
         </div>
       </div>
 
-      <cdk-virtual-scroll-viewport class="epg-grid__body" role="rowgroup" #gridBody itemSize="48" minBufferPx="240" maxBufferPx="480">
+      <cdk-virtual-scroll-viewport class="epg-grid__body" role="rowgroup" #gridBody itemSize="48" minBufferPx="240" maxBufferPx="480" (scroll)="onBodyScroll()">
         <div class="epg-grid__row" role="row" *cdkVirtualFor="let row of rows(); let ri = index; trackBy: trackRow">
           <div class="epg-grid__channel-cell" role="rowheader">
+            <!-- impeccable-disable-next-line broken-image: Angular only renders the dynamic icon when row.channelIcon exists. -->
             <img *ngIf="row.channelIcon" [src]="row.channelIcon" alt="" width="48" height="48" loading="lazy" />
             <span class="epg-grid__channel-name">{{ row.channelName }}</span>
           </div>
