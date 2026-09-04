@@ -1,9 +1,9 @@
 <article class="channel-card">
   <header class="channel-card__header">
     <span class="channel-card__logo">
-      <strong aria-hidden="true">{{ entry().channel.name.slice(0, 2) }}</strong>
+      <strong *ngIf="!entry().channel.icon || logoFailed" aria-hidden="true">{{ entry().channel.name.slice(0, 2) }}</strong>
       <img
-        *ngIf="entry().channel.icon"
+        *ngIf="entry().channel.icon && !logoFailed"
         [src]="entry().channel.icon"
         [alt]="'Logotipo de ' + entry().channel.name"
         width="72"
@@ -21,9 +21,15 @@
   </header>
 
   <div class="channel-card__schedule">
-    <div *ngIf="entry().current; else noCurrent" class="channel-card__programme channel-card__programme--live">
-      <span>En directo · {{ formatTime(entry().current?.airing?.start) }}</span>
-      <strong>{{ entry().current?.program?.title }}</strong>
+    <div *ngIf="entry().current as current; else noCurrent" class="channel-card__programme channel-card__programme--live">
+      <span class="channel-card__programme-meta">
+        <i class="channel-card__live-dot" aria-hidden="true"></i>
+        En directo · {{ formatTimeRange(current.airing.start, current.airing.end) }}
+      </span>
+      <strong>{{ current.program?.title }}</strong>
+      <span class="channel-card__progress" role="progressbar" [attr.aria-valuenow]="currentProgress()" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Progreso de ' + current.program?.title">
+        <span class="channel-card__progress-fill" [style.width.%]="currentProgress()"></span>
+      </span>
     </div>
     <ng-template #noCurrent>
       <div class="channel-card__programme">
@@ -31,9 +37,9 @@
         <strong>Emisión sin identificar</strong>
       </div>
     </ng-template>
-    <div *ngIf="entry().next" class="channel-card__programme">
-      <span>Después · {{ formatTime(entry().next?.airing?.start) }}</span>
-      <strong>{{ entry().next?.program?.title }}</strong>
+    <div *ngIf="entry().next as next" class="channel-card__programme channel-card__programme--next">
+      <span>Después · {{ formatTimeRange(next.airing.start, next.airing.end) }}</span>
+      <strong>{{ next.program?.title }}</strong>
     </div>
   </div>
 

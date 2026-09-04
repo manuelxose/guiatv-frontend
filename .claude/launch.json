@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "guiatv-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "-w", "apps/frontend", "--", "--port", "4211"],
+      "port": 4211
+    }
+  ]
+}

@@ -1,5 +1,18 @@
 @use '../../../styles/card-accent' as cards;
 
+// Angular custom elements default to `display: inline` with no intrinsic
+// height, so in a CSS Grid (results grids on discover/streaming views) the
+// host never stretched to the row's track height — each card sized to its
+// own content instead, producing the ragged/misaligned row heights this
+// fixes. `height: 100%` only resolves against a grid/flex parent that
+// actually gives the row a height (grid stretch, or a rail with a fixed
+// row height); against a plain auto-height parent it resolves as auto, so
+// this is safe for the horizontal-rail usages too.
+:host {
+  display: block;
+  height: 100%;
+}
+
 .program-card {
   border: none;
   background: transparent;
@@ -12,6 +25,9 @@
 // except epg-row (the EPG grid/list work owns that variant's box model and
 // is being built in parallel; this stays out of it entirely).
 .program-card--boxed {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   border: 1px solid var(--portal-border);
   border-radius: var(--radius-md);
   background: var(--portal-card);
@@ -157,10 +173,17 @@
   padding: 0.75rem 0 0;
 }
 
+// One quick action (watchlist toggle) + an optional opt-in affiliate CTA —
+// the card itself (the whole `.program-card__tap` link) is the primary,
+// content-entry-point action. No duplicate/secondary navigation buttons.
 .program-card__interactive {
-  display: grid;
-  gap: 0.8rem;
-  padding: 0 0 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.4rem 0 0;
+  // Pins the action row to the card's bottom edge regardless of how many
+  // lines the title/description/meta above it take — keeps it aligned
+  // across a grid row even when content length varies card to card.
+  margin-top: auto;
 }
 
 .program-card__eyebrow {
@@ -248,42 +271,52 @@
   font-weight: 700;
 }
 
-.program-card__quick-links,
 .program-card__actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.program-card__quick-link,
-.program-card__cta {
+// Icon-only quick action (watchlist). Content-neutral by default; the
+// active/saved state borrows --football-win rather than the primary
+// discover green, so "saved" never reads as the same signal as a CTA.
+.program-card__quick-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 38px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: var(--portal-surface);
-  color: var(--portal-text);
-  text-decoration: none;
-  padding: 0 0.9rem;
-  font-size: 0.74rem;
-  font-weight: 800;
-}
-
-.program-card__quick-link {
   color: var(--portal-text-soft);
+  transition: background-color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease);
 }
 
-.program-card__cta--primary {
-  border-color: color-mix(in srgb, var(--guide-accent) 30%, var(--portal-border));
-  background: color-mix(in srgb, var(--guide-accent) 8%, var(--portal-surface));
+.program-card__quick-action svg {
+  width: 1.1rem;
+  height: 1.1rem;
 }
 
-.program-card__cta--active {
+.program-card__quick-action:hover {
+  border-color: var(--portal-border-strong);
+  color: var(--portal-text);
+}
+
+.program-card__quick-action--active {
   border-color: color-mix(in srgb, var(--football-win) 40%, transparent);
   background: color-mix(in srgb, var(--football-win) 14%, transparent);
   color: var(--football-win);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .program-card__quick-action {
+    transition: background-color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
+  }
+
+  .program-card__quick-action:active {
+    transform: scale(0.97);
+  }
 }
 
 .program-card__affiliate-cta {
@@ -349,17 +382,18 @@
 
 /* Sport variant is active when class is applied, color relies entirely on badges. */
 
-.program-card:hover .program-card__title {
-  color: var(--guide-accent);
-}
+// Hover title tint follows the card's own vertical accent (set via
+// data-vertical, see _card-accent.scss) rather than a single hardcoded
+// hue — accent-live must stay reserved for live/TV cards, not bleed into
+// discover/streaming/sport/editorial hover states.
+.program-card[data-vertical='live']:hover .program-card__title { color: var(--accent-live); }
+.program-card[data-vertical='discover']:hover .program-card__title { color: var(--accent-discover); }
+.program-card[data-vertical='streaming']:hover .program-card__title { color: var(--accent-streaming); }
+.program-card[data-vertical='sports']:hover .program-card__title { color: var(--accent-sports); }
+.program-card[data-vertical='editorial']:hover .program-card__title { color: var(--accent-editorial); }
 
 .program-card:hover .program-card__media img {
   transform: scale(1.04);
-}
-
-.program-card:hover .program-card__cta--primary,
-.program-card:hover .program-card__quick-link {
-  border-color: var(--portal-border-strong);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -406,10 +440,5 @@
 
   .program-card--compact .program-card__description {
     display: none;
-  }
-
-  .program-card__quick-link,
-  .program-card__cta {
-    min-height: 44px;
   }
 }

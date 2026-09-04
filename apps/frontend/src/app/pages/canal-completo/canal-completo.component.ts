@@ -10,9 +10,11 @@ import {
   TvReadItemDTO,
 } from 'src/app/api/models';
 import { ChannelCardComponent } from 'src/app/components/channel-card/channel-card.component';
+import { BreadcrumbComponent, BreadcrumbItem } from 'src/app/components/breadcrumb/breadcrumb.component';
 import { InteractionButtonsComponent } from 'src/app/components/interaction-buttons/interaction-buttons.component';
 import { UnifiedAsyncStateComponent } from 'src/app/components/unified-async-state/unified-async-state.component';
 import { UnifiedSkeletonBlockComponent } from 'src/app/components/unified-skeleton-block/unified-skeleton-block.component';
+import { UnifiedProgramCardComponent } from 'src/app/components/unified-program-card/unified-program-card.component';
 import { MetaService } from 'src/app/services/meta.service';
 import { TvDataService } from 'src/app/state/tv-data.service';
 import { AffiliateService } from 'src/app/services/affiliate.service';
@@ -50,6 +52,8 @@ interface ChannelProgram {
   liveNow: boolean;
   detailPath: string;
   durationMinutes?: number;
+  /** Original DTO, kept so shared card components (UnifiedProgramCard) can be fed directly. */
+  raw: TvReadItemDTO;
 }
 
 const PRIMARY_GUIDE_CATEGORIES: Array<{ key: GuideQuickCategory; label: string }> = [
@@ -68,9 +72,11 @@ const PRIMARY_GUIDE_CATEGORIES: Array<{ key: GuideQuickCategory; label: string }
     CommonModule,
     RouterModule,
     ChannelCardComponent,
+    BreadcrumbComponent,
     InteractionButtonsComponent,
     UnifiedAsyncStateComponent,
     UnifiedSkeletonBlockComponent,
+    UnifiedProgramCardComponent,
     AffiliateCTAComponent,
     AffiliateDisclosureComponent,
     AffiliateImpressionDirective,
@@ -94,6 +100,14 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
 
   public query = '';
   public canal = '';
+
+  get breadcrumbItems(): BreadcrumbItem[] {
+    return [
+      { name: 'Inicio', url: '/' },
+      { name: 'Guía TV', url: '/programacion-tv/guia-canales' },
+      { name: this.canal, url: `/canales/${this.query}` },
+    ];
+  }
   public logo = '';
   public channel: ChannelMetaDTO | null = null;
   public channelDescription: string | null = null;
@@ -109,8 +123,6 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   public programs: ChannelProgram[] = [];
   public currentProgram: ChannelProgram | null = null;
   public nextPrograms: ChannelProgram[] = [];
-  public tonightPrograms: ChannelProgram[] = [];
-  public featuredPrograms: ChannelProgram[] = [];
   public relatedChannels: TvReadChannelSummaryDTO[] = [];
 
   /** Verified provider offer(s) for this channel — empty when no merchant alias matches, which is the common case and renders nothing. */
@@ -281,15 +293,16 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   }
 
   public get filteredNextPrograms(): ChannelProgram[] {
-    return this.filterPrograms(this.nextPrograms).slice(0, 6);
+    return this.filterPrograms(this.nextPrograms).slice(0, 8);
   }
 
-  public get filteredTonightPrograms(): ChannelProgram[] {
-    return this.filterPrograms(this.tonightPrograms).slice(0, 6);
+  public isPastProgram(program: ChannelProgram): boolean {
+    return !program.liveNow && new Date(program.end).getTime() < Date.now();
   }
 
-  public get filteredFeaturedPrograms(): ChannelProgram[] {
-    return this.filterPrograms(this.featuredPrograms).slice(0, 8);
+  /** Ambient backdrop for the hero — the current programme's artwork when available, otherwise none (falls back to the CSS gradient). */
+  public get heroBackdrop(): string | undefined {
+    return this.filteredCurrentProgram?.image;
   }
 
   private loadProgramData(): void {
@@ -349,13 +362,16 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       this.normalizeProgram(surface.current) ||
       normalizedPrograms.find((program) => program.liveNow) ||
       null;
-    this.nextPrograms = (surface.next ? [surface.next] : [])
-      .map((program) => this.normalizeProgram(program))
-      .filter(Boolean) as ChannelProgram[];
-    this.tonightPrograms = (surface.tonightItems || [])
-      .map((program) => this.normalizeProgram(program))
-      .filter(Boolean) as ChannelProgram[];
-    this.featuredPrograms = this.buildFeaturedPrograms(normalizedPrograms);
+    // The API's own `surface.next` is a single item; the full schedule usually
+    // carries several more upcoming items for the same day, so the rail is
+    // built from both (deduplicated) rather than truncating to one card.
+    const apiNext = this.normalizeProgram(surface.next);
+    const scheduleNext = this.buildNextPrograms(normalizedPrograms);
+    const nextById = new Map<string, ChannelProgram>();
+    [...(apiNext ? [apiNext] : []), ...scheduleNext].forEach((program) => {
+      nextById.set(program.id, program);
+    });
+    this.nextPrograms = Array.from(nextById.values());
     this.relatedChannels = this.buildRelatedChannels(surface);
     this.setupMetaTags();
     this.resolveChannelAffiliateOffers();
@@ -434,6 +450,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     const itemId = String(program?.id || `${slugify(title)}-${start}`);
 
     return {
+      raw: program as TvReadItemDTO,
       id: itemId,
       title,
       description: String(program?.program?.description || '').trim() || undefined,
@@ -456,12 +473,6 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     return programs
       .filter((program) => new Date(program.start).getTime() > now)
       .slice(0, 6);
-  }
-
-  private buildFeaturedPrograms(programs: ChannelProgram[]): ChannelProgram[] {
-    const now = Date.now();
-    const upcoming = programs.filter((program) => new Date(program.end).getTime() >= now);
-    return (upcoming.length ? upcoming : programs).slice(0, 8);
   }
 
   private buildRelatedChannels(surface: TvChannelSurfaceDTO): TvReadChannelSummaryDTO[] {
