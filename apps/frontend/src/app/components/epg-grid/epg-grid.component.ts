@@ -234,7 +234,12 @@ interface TimeWindow {
 function floorToMadridHour(date: Date): Date {
   const minutes = madridMinutesSinceMidnight(date);
   const deltaMinutes = minutes - Math.floor(minutes / 60) * 60;
-  return new Date(date.getTime() - deltaMinutes * 60_000);
+  const floored = new Date(date.getTime() - deltaMinutes * 60_000);
+  // madridMinutesSinceMidnight resolves whole seconds only (Intl.DateTimeFormat
+  // parts carry no ms field), so deltaMinutes zeroes minutes/seconds but leaves
+  // the original milliseconds untouched. Zero them explicitly.
+  floored.setMilliseconds(0);
+  return floored;
 }
 
 function ceilToMadridHour(date: Date): Date {
