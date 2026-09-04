@@ -60,10 +60,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
       </div>
 
       <ng-container *ngIf="!loading && item as content; else emptyState">
-        <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-          <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
-        </div>
-        <!-- Cinematic banner: image-backed, hero-* tokens only (constant-dark by design). -->
+        <!-- Cinematic banner: image-backed, hero-* tokens only (constant-dark by design). Breadcrumb lives inside it (canal-completo pattern) instead of a separate strip above. -->
         <section class="relative overflow-hidden bg-[var(--hero-bg)]">
           <div class="absolute inset-0">
             <img
@@ -72,11 +69,20 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
               [alt]="''"
               class="h-full w-full object-cover opacity-55"
             />
+            <!-- No backdrop/poster at all (common for plain EPG programs without TMDB enrichment) — a flat hero-bg reads as broken, so fall back to the same accent-tinted radial wash canal-completo uses for channels with no artwork. -->
+            <div
+              *ngIf="!(content.backdrop || content.image)"
+              class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--accent-live)_14%,transparent),transparent_38%),radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--accent-discover)_10%,transparent),transparent_32%)]"
+            ></div>
             <div class="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_oklch,var(--hero-bg)_98%,transparent)_0%,color-mix(in_oklch,var(--hero-bg)_78%,transparent)_55%,color-mix(in_oklch,var(--hero-bg)_45%,transparent)_100%)]"></div>
             <div class="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_oklch,var(--hero-bg)_10%,transparent),var(--hero-bg)_100%)]"></div>
           </div>
 
-          <div class="relative mx-auto flex min-h-[22rem] max-w-7xl flex-col gap-6 px-4 pb-10 pt-10 sm:px-6 md:flex-row md:items-end lg:px-8 lg:pt-14">
+          <div class="relative mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8 lg:pt-8">
+            <app-breadcrumb [items]="breadcrumbItems" [embedded]="true"></app-breadcrumb>
+          </div>
+
+          <div class="relative mx-auto flex min-h-[20rem] max-w-7xl flex-col gap-6 px-4 pb-10 pt-6 sm:px-6 md:flex-row md:items-end lg:px-8 lg:pt-8">
             <!-- Poster / artwork -->
             <div
               *ngIf="content.image"
@@ -140,9 +146,14 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
           </div>
         </section>
 
-        <!-- Main composition: theme-aware surface, CTA + streaming availability integrated (not a boxed dashboard card). -->
-        <section class="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-          <div class="flex flex-wrap items-center gap-3">
+        <!--
+          Body rhythm follows canal-completo.component.html: generous
+          eyebrow+h2 sections separated by whitespace (mb-10/lg:mb-14),
+          no hairline dividers between them — reads as one editorial page
+          instead of a stacked settings form.
+        -->
+        <section class="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8 lg:pt-10">
+          <div class="mb-10 flex flex-wrap items-center gap-3 lg:mb-14">
             <app-interaction-buttons
               [itemId]="content.catalogId"
               [title]="content.title"
@@ -158,24 +169,27 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
 
           <div
             *ngIf="content.whereToWatch || content.primaryPlatforms?.length || content.tmdbId"
-            class="border-t border-[var(--portal-divider)] pt-6"
+            class="mb-10 lg:mb-14"
           >
-            <h2 class="eyebrow mb-3 text-[var(--portal-text-muted)]">Dónde ver</h2>
-            <app-where-to-watch
-              [providersData]="content.whereToWatch"
-              [primaryPlatforms]="content.primaryPlatforms"
-              [tmdbId]="content.tmdbId"
-              [contentType]="providerContentType(content)"
-              placement="catalog-detail"
-              [catalogId]="content.catalogId"
-              [providerHint]="content.channel?.name"
-              [page]="content.detailPath"
-            ></app-where-to-watch>
+            <p class="eyebrow text-[var(--portal-text-muted)]">Disponibilidad</p>
+            <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Dónde ver</h2>
+            <div class="mt-4">
+              <app-where-to-watch
+                [providersData]="content.whereToWatch"
+                [primaryPlatforms]="content.primaryPlatforms"
+                [tmdbId]="content.tmdbId"
+                [contentType]="providerContentType(content)"
+                placement="catalog-detail"
+                [catalogId]="content.catalogId"
+                [providerHint]="content.channel?.name"
+                [page]="content.detailPath"
+              ></app-where-to-watch>
+            </div>
           </div>
 
           <div
             *ngIf="content.director || content.socialSummary?.friendsWhoWatched || content.userInteraction?.status || content.userInteraction?.rating"
-            class="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-[var(--portal-divider)] pt-6 text-sm text-[var(--portal-text-soft)]"
+            class="mb-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[var(--portal-text-soft)] lg:mb-14"
           >
             <span *ngIf="content.director"><span class="text-[var(--portal-text-muted)]">Dirección:</span> {{ content.director }}</span>
             <span *ngIf="content.socialSummary?.friendsWhoWatched">
@@ -201,14 +215,14 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
             'program' so the canal-style day-tabs/full-timeline themselves
             are intentionally NOT ported here — this is copy/grouping only.
           -->
-          <div *ngIf="content.airings?.length" class="border-t border-[var(--portal-divider)] pt-6">
+          <div *ngIf="content.airings?.length" class="mb-10 lg:mb-14">
             <ng-container *ngIf="content.contentType === 'program'; else genericAirings">
               <ng-container *ngIf="nowAiring(content) as live">
-                <p class="eyebrow mb-1 text-[var(--accent-live)]">En directo</p>
-                <h2 class="mb-4 text-xl font-bold text-[var(--portal-text)]">Ahora en emisión</h2>
+                <p class="eyebrow text-[var(--accent-live)]">En directo</p>
+                <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Ahora en emisión</h2>
                 <a
                   [routerLink]="live.detailPath || ['/canales', live.channelId]"
-                  class="tnum mb-6 flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-4 transition-colors"
+                  class="tnum mt-4 flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-4 transition-colors"
                 >
                   <span>
                     <span class="block text-sm font-semibold text-[var(--portal-text)]">{{ live.title || live.channelName }}</span>
@@ -222,9 +236,9 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
 
               <ng-container *ngIf="nextAirings(content) as next">
                 <ng-container *ngIf="next.length">
-                  <p class="eyebrow mb-1 text-[var(--portal-text-muted)]">TV lineal</p>
-                  <h2 class="mb-4 text-xl font-bold text-[var(--portal-text)]">A continuación</h2>
-                  <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  <p class="eyebrow text-[var(--portal-text-muted)]" [class.mt-6]="nowAiring(content)">TV lineal</p>
+                  <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">A continuación</h2>
+                  <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                     <a
                       *ngFor="let airing of next"
                       [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
@@ -244,9 +258,9 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
             </ng-container>
 
             <ng-template #genericAirings>
-              <p class="eyebrow mb-1 text-[var(--portal-text-muted)]">TV lineal</p>
-              <h2 class="mb-4 text-xl font-bold text-[var(--portal-text)]">Próximas emisiones</h2>
-              <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <p class="eyebrow text-[var(--portal-text-muted)]">TV lineal</p>
+              <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Próximas emisiones</h2>
+              <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <a
                   *ngFor="let airing of content.airings"
                   [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
@@ -265,9 +279,10 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
           </div>
 
           <!-- Cast: compact rail, photo when available, text-only fallback otherwise. -->
-          <div *ngIf="content.cast?.length" class="border-t border-[var(--portal-divider)] pt-6">
-            <h2 class="eyebrow mb-4 text-[var(--portal-text-muted)]">Reparto</h2>
-            <div class="scrollbar-hide flex gap-4 overflow-x-auto pb-2">
+          <div *ngIf="content.cast?.length" class="mb-2">
+            <p class="eyebrow text-[var(--portal-text-muted)]">Equipo</p>
+            <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Reparto</h2>
+            <div class="scrollbar-hide mt-4 flex gap-4 overflow-x-auto pb-2">
               <div
                 *ngFor="let member of content.cast"
                 class="w-24 flex-shrink-0 text-center sm:w-28"
