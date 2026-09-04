@@ -9,32 +9,6 @@
 .head__title { margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--portal-text); }
 .head__sub { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--portal-text-muted); }
 
-.tabs {
-  display: flex;
-  gap: 0.25rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  position: sticky;
-  top: 0;
-  background: var(--portal-bg);
-  z-index: var(--z-sticky, 10);
-  padding: 0.25rem 0 0.75rem;
-}
-.tabs::-webkit-scrollbar { display: none; }
-.tabs__item {
-  flex: 0 0 auto;
-  min-height: 44px;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--portal-border);
-  background: transparent;
-  color: var(--portal-text-muted);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-.tabs__item--active { color: var(--portal-bg-elevated); background: var(--accent-sports); border-color: transparent; }
-
 app-football-date-strip { display: block; margin-bottom: 0.5rem; }
 app-football-filter-bar { display: block; margin-bottom: 1rem; }
 

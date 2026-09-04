@@ -38,10 +38,11 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
 
           <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent"></div>
 
-          <!-- Action overlay — compact mode: buttons over image, always reachable on touch, never blocks navigation -->
+          <!-- Action overlay — compact mode: one quick action + overflow, never a control panel -->
           <div
             *ngIf="showActions && compact"
-            class="absolute bottom-0 inset-x-0 flex items-center gap-1.5 px-3 pb-3 pt-10 bg-gradient-to-t from-black/90 via-black/50 to-transparent"
+            class="card-actions absolute bottom-0 inset-x-0 flex items-center gap-1.5 px-3 pb-3 pt-10 bg-gradient-to-t from-black/90 via-black/50 to-transparent"
+            [class.overflow-open]="overflowOpen"
             (click)="$event.stopPropagation(); $event.preventDefault()"
             (keydown)="$event.stopPropagation()"
             tabindex="-1"
@@ -56,6 +57,15 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
               [platform]="item.primaryPlatforms?.[0]"
               [compact]="true"
             ></app-interaction-buttons>
+            <button
+              type="button"
+              class="card-actions__more"
+              (click)="toggleOverflow($event)"
+              [attr.aria-expanded]="overflowOpen"
+              aria-label="Más acciones"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M4 10a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0z"/></svg>
+            </button>
           </div>
 
           <div class="absolute left-3 top-3 flex flex-wrap gap-2">
@@ -139,7 +149,11 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
           </span>
         </div>
 
-        <div *ngIf="showActions && !compact" class="border-t border-[var(--portal-border)] pt-3">
+        <div
+          *ngIf="showActions && !compact"
+          class="card-actions flex items-center border-t border-[var(--portal-border)] pt-3"
+          [class.overflow-open]="overflowOpen"
+        >
           <app-interaction-buttons
             [itemId]="item.catalogId"
             [title]="item.title"
@@ -150,6 +164,15 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
             [platform]="item.primaryPlatforms?.[0]"
             [compact]="compact"
           ></app-interaction-buttons>
+          <button
+            type="button"
+            class="card-actions__more"
+            (click)="toggleOverflow($event)"
+            [attr.aria-expanded]="overflowOpen"
+            aria-label="Más acciones"
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M4 10a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0z"/></svg>
+          </button>
         </div>
       </div>
     </article>
@@ -186,6 +209,71 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
           transform: translateY(-4px);
         }
       }
+
+      // The shared InteractionButtonsComponent renders 5 equal-weight actions
+      // in document order: 1 Mi lista, 2 Recomendar, 3 Viendo, 4 Valorar,
+      // 5 Enviar. A recommendation card is a content entry point, not a
+      // control panel — collapse it to one quick action (Mi lista) + an
+      // overflow toggle, per the design system's card-cleanup rule. The
+      // shared component's own file stays untouched; only its usage here is
+      // restyled.
+      .card-actions {
+        position: relative;
+        gap: var(--space-2);
+
+        ::ng-deep app-interaction-buttons {
+          display: contents;
+
+          > div {
+            display: contents;
+          }
+
+          button {
+            min-width: 44px;
+            min-height: 44px;
+          }
+
+          > div > button:nth-child(2),
+          > div > button:nth-child(3),
+          > div > button:nth-child(4),
+          > div > button:nth-child(5) {
+            display: none;
+          }
+        }
+
+        &.overflow-open ::ng-deep app-interaction-buttons > div > button:nth-child(2),
+        &.overflow-open ::ng-deep app-interaction-buttons > div > button:nth-child(3),
+        &.overflow-open ::ng-deep app-interaction-buttons > div > button:nth-child(4),
+        &.overflow-open ::ng-deep app-interaction-buttons > div > button:nth-child(5) {
+          display: flex;
+        }
+      }
+
+      .card-actions__more {
+        display: flex;
+        flex: none;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        min-width: 44px;
+        min-height: 44px;
+        margin: -6px;
+        border-radius: 50%;
+        color: var(--portal-text-soft);
+        background: transparent;
+
+        svg {
+          width: 18px;
+          height: 18px;
+        }
+
+        &:hover,
+        &:focus-visible {
+          background: var(--portal-surface-strong);
+          color: var(--portal-text);
+        }
+      }
     `,
   ],
 })
@@ -193,6 +281,14 @@ export class CatalogCardComponent {
   @Input({ required: true }) item!: CatalogItem;
   @Input() compact = false;
   @Input() showActions = true;
+
+  overflowOpen = false;
+
+  toggleOverflow(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.overflowOpen = !this.overflowOpen;
+  }
 
   optimizedImageUrl(value: string | undefined): string {
     return value?.replace('https://image.tmdb.org/t/p/original/', 'https://image.tmdb.org/t/p/w780/') || '';

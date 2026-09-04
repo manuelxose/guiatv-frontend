@@ -7,7 +7,6 @@
   </header>
 
   <app-football-date-strip
-    *ngIf="view() === 'calendar'"
     [selected]="selectedDateKey"
     (dateChange)="onDateChange($event)"
   ></app-football-date-strip>

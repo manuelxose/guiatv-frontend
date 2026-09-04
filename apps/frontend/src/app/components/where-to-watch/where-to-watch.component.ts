@@ -25,16 +25,14 @@ import { AffiliateImpressionDirective } from '../../directives/affiliate-impress
   standalone: true,
   imports: [CommonModule, AffiliateDisclosureComponent, AffiliateImpressionDirective],
   template: `
-    <section *ngIf="providers || isLoading" class="space-y-4">
-      <div *ngIf="isLoading" class="flex gap-2">
-        <div *ngFor="let item of [1, 2, 3]" class="w-24 h-10 rounded-xl skeleton"></div>
+    <section *ngIf="providers || isLoading" class="space-y-5">
+      <div *ngIf="isLoading" class="flex gap-2" aria-busy="true" aria-label="Cargando plataformas">
+        <div *ngFor="let item of [1, 2, 3]" class="h-11 w-28 flex-shrink-0 animate-pulse rounded-[var(--radius-pill)] bg-[var(--portal-surface-strong)]"></div>
       </div>
 
       <ng-container *ngIf="!isLoading && providers as data">
         <div *ngIf="data.flatrate?.length">
-          <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--portal-text-muted)]">
-            Incluido en suscripcion
-          </p>
+          <p class="eyebrow mb-2 text-[var(--accent-streaming)]">Incluido en tu suscripción</p>
           <div class="flex flex-wrap gap-2">
             <a
               *ngFor="let provider of data.flatrate"
@@ -44,15 +42,15 @@ import { AffiliateImpressionDirective } from '../../directives/affiliate-impress
               [appAffiliateImpression]="affiliateOfferFor(provider) || null"
               [appAffiliateImpressionContext]="impressionContext()"
               [appAffiliateImpressionPage]="page"
-              class="flex items-center gap-2 rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-3 py-2 no-underline transition-all hover:border-[var(--portal-border-strong)] active:scale-95"
+              class="flex min-h-[44px] items-center gap-2 rounded-[var(--radius-pill)] border border-[var(--accent-streaming)]/45 bg-[var(--accent-streaming-soft)] px-3.5 py-2 no-underline transition-colors hover:border-[var(--accent-streaming)] active:scale-95"
             >
               <img
                 [src]="resolveLogo(provider)"
                 [alt]="provider.name"
-                class="h-6 w-6 rounded object-contain"
+                class="h-6 w-6 flex-shrink-0 rounded object-contain"
                 loading="lazy"
               />
-              <span class="text-xs font-medium text-[var(--portal-text)]">{{ provider.name }}</span>
+              <span class="text-sm font-semibold text-[var(--portal-text)]">{{ provider.name }}</span>
               <span
                 *ngIf="affiliateOfferFor(provider)?.cta?.sponsored"
                 class="text-[9px] uppercase tracking-wide text-[var(--portal-text-muted)]"
@@ -62,7 +60,7 @@ import { AffiliateImpressionDirective } from '../../directives/affiliate-impress
         </div>
 
         <div *ngIf="data.free?.length">
-          <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--portal-text-muted)]">Gratis</p>
+          <p class="eyebrow mb-2 text-[var(--accent-discover)]">Gratis</p>
           <div class="flex flex-wrap gap-2">
             <a
               *ngFor="let provider of data.free"
@@ -72,23 +70,21 @@ import { AffiliateImpressionDirective } from '../../directives/affiliate-impress
               [appAffiliateImpression]="affiliateOfferFor(provider) || null"
               [appAffiliateImpressionContext]="impressionContext()"
               [appAffiliateImpressionPage]="page"
-              class="flex items-center gap-2 rounded-xl border border-[var(--accent-discover)]/40 bg-[var(--accent-discover)]/10 px-3 py-2 no-underline transition-all active:scale-95"
+              class="flex min-h-[44px] items-center gap-2 rounded-[var(--radius-pill)] border border-[var(--accent-discover)]/40 bg-[var(--accent-discover-soft)] px-3.5 py-2 no-underline transition-colors active:scale-95"
             >
               <img
                 [src]="resolveLogo(provider)"
                 [alt]="provider.name"
-                class="h-6 w-6 rounded object-contain"
+                class="h-6 w-6 flex-shrink-0 rounded object-contain"
                 loading="lazy"
               />
-              <span class="text-xs font-medium text-[var(--portal-text)]">{{ provider.name }}</span>
+              <span class="text-sm font-semibold text-[var(--portal-text)]">{{ provider.name }}</span>
             </a>
           </div>
         </div>
 
         <div *ngIf="data.rent?.length || data.buy?.length">
-          <p class="mb-2 text-[10px] uppercase tracking-widest text-[var(--portal-text-muted)]">
-            Alquilar / Comprar
-          </p>
+          <p class="eyebrow mb-2 text-[var(--portal-text-muted)]">Alquilar o comprar</p>
           <div class="flex flex-wrap gap-2">
             <a
               *ngFor="let provider of paidProviders(data)"
@@ -98,16 +94,16 @@ import { AffiliateImpressionDirective } from '../../directives/affiliate-impress
               [appAffiliateImpression]="affiliateOfferFor(provider) || null"
               [appAffiliateImpressionContext]="impressionContext()"
               [appAffiliateImpressionPage]="page"
-              class="flex items-center gap-2 rounded-xl border border-[var(--spotify-warning)]/40 bg-[var(--spotify-warning)]/10 px-3 py-2 no-underline transition-all active:scale-95"
+              class="flex min-h-[44px] items-center gap-2 rounded-[var(--radius-pill)] border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] px-3.5 py-2 no-underline transition-colors hover:border-[var(--portal-border-strong)] active:scale-95"
             >
               <img
                 [src]="resolveLogo(provider)"
                 [alt]="provider.name"
-                class="h-6 w-6 rounded object-contain"
+                class="h-6 w-6 flex-shrink-0 rounded object-contain"
                 loading="lazy"
               />
-              <span class="text-xs font-medium text-[var(--portal-text)]">{{ provider.name }}</span>
-              <span *ngIf="provider.price" class="text-[10px] text-[var(--portal-text-muted)]">
+              <span class="text-sm font-semibold text-[var(--portal-text)]">{{ provider.name }}</span>
+              <span *ngIf="provider.price" class="tnum text-xs text-[var(--portal-text-muted)]">
                 {{ provider.price }}
               </span>
               <span
@@ -118,9 +114,9 @@ import { AffiliateImpressionDirective } from '../../directives/affiliate-impress
           </div>
         </div>
 
-        <div *ngIf="!hasAnyProvider(data)" class="text-xs italic text-[var(--portal-text-muted)]">
-          No disponible en plataformas de streaming en Espana actualmente
-        </div>
+        <p *ngIf="!hasAnyProvider(data)" class="text-sm italic text-[var(--portal-text-muted)]">
+          No disponible en plataformas de streaming en España actualmente.
+        </p>
 
         <app-affiliate-disclosure [sponsored]="showSponsoredDisclosure" [compact]="true"></app-affiliate-disclosure>
 
@@ -129,9 +125,9 @@ import { AffiliateImpressionDirective } from '../../directives/affiliate-impress
           [href]="data.tmdbLink"
           target="_blank"
           rel="noopener"
-          class="block text-[10px] text-[var(--portal-text-muted)] hover:text-[var(--portal-text-soft)]"
+          class="inline-block text-xs font-medium text-[var(--portal-text-muted)] transition-colors hover:text-[var(--accent-streaming)]"
         >
-          Ver todas las opciones en JustWatch ->
+          Ver todas las opciones en JustWatch →
         </a>
       </ng-container>
     </section>

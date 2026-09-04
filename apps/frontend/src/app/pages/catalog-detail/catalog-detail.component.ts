@@ -4,7 +4,7 @@ import { ActivatedRoute, Data, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { combineLatest, of, Subject } from 'rxjs';
 import { catchError, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
-import { CatalogCardComponent } from '../../components/catalog-card/catalog-card.component';
+import { CatalogRailComponent } from '../../components/catalog-rail/catalog-rail.component';
 import { InteractionButtonsComponent } from '../../components/interaction-buttons/interaction-buttons.component';
 import { WhereToWatchComponent } from '../../components/where-to-watch/where-to-watch.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
@@ -30,13 +30,26 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
   imports: [
     CommonModule,
     RouterModule,
-    CatalogCardComponent,
+    CatalogRailComponent,
     InteractionButtonsComponent,
     WhereToWatchComponent,
     BreadcrumbComponent,
     ShareButtonsComponent,
     UnifiedSkeletonBlockComponent,
     UnifiedAsyncStateComponent,
+  ],
+  // Custom elements default to `display: inline`, and the shell routes pages
+  // into a CSS grid track whose default `min-width: auto` sizes to the
+  // widest unbreakable content run instead of the viewport — ballooning the
+  // page to desktop width and clipping it under any `overflow-hidden`
+  // ancestor on narrow screens. Block + min-width:0 lets it shrink to track.
+  styles: [
+    `
+      :host {
+        display: block;
+        min-width: 0;
+      }
+    `,
   ],
   template: `
     <div class="min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]">
@@ -49,135 +62,143 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
         <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
           <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
         </div>
-        <section class="relative overflow-hidden border-b border-[var(--portal-border)] bg-[var(--hero-bg)]">
+        <!-- Cinematic banner: image-backed, hero-* tokens only (constant-dark by design). -->
+        <section class="relative overflow-hidden bg-[var(--hero-bg)]">
           <div class="absolute inset-0">
             <img
               *ngIf="content.backdrop || content.image"
               [src]="content.backdrop || content.image"
-              [alt]="content.title"
+              [alt]="''"
               class="h-full w-full object-cover opacity-55"
             />
-            <div class="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_oklch,var(--hero-bg)_98%,transparent)_0%,color-mix(in_oklch,var(--hero-bg)_88%,transparent)_48%,color-mix(in_oklch,var(--hero-bg)_58%,transparent)_100%)]"></div>
-            <div class="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_oklch,var(--hero-bg)_18%,transparent),color-mix(in_oklch,var(--hero-bg)_92%,transparent))]"></div>
+            <div class="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_oklch,var(--hero-bg)_98%,transparent)_0%,color-mix(in_oklch,var(--hero-bg)_78%,transparent)_55%,color-mix(in_oklch,var(--hero-bg)_45%,transparent)_100%)]"></div>
+            <div class="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_oklch,var(--hero-bg)_10%,transparent),var(--hero-bg)_100%)]"></div>
           </div>
 
-          <div class="relative mx-auto flex min-h-[30rem] max-w-7xl items-end px-4 pb-10 pt-12 sm:px-6 lg:px-8 lg:pt-16">
-            <div class="grid w-full gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
-              <div class="space-y-6">
-                <div class="flex flex-wrap gap-2">
-                  <span class="rounded-full border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--hero-text-muted)] backdrop-blur-sm">
-                    {{ contentTypeLabel(content.contentType) }}
-                  </span>
-                  <span
-                    *ngIf="content.liveNow"
-                    class="rounded-full border border-transparent bg-[var(--accent-live-strong)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-white"
-                  >
-                    En directo
-                  </span>
-                  <span
-                    *ngFor="let platform of content.primaryPlatforms.slice(0, 3)"
-                    class="rounded-full border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-3 py-1 text-[11px] font-semibold text-[var(--hero-text-muted)] backdrop-blur-sm"
-                  >
-                    {{ platform }}
-                  </span>
-                </div>
+          <div class="relative mx-auto flex min-h-[22rem] max-w-7xl flex-col gap-6 px-4 pb-10 pt-10 sm:px-6 md:flex-row md:items-end lg:px-8 lg:pt-14">
+            <!-- Poster / artwork -->
+            <div
+              *ngIf="content.image"
+              class="mx-auto w-36 flex-shrink-0 overflow-hidden rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] sm:w-44 md:mx-0 md:w-48 lg:w-56"
+            >
+              <img
+                [src]="posterUrl(content.image)"
+                [alt]="content.title"
+                width="380"
+                height="570"
+                class="aspect-[2/3] w-full object-cover"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+              />
+            </div>
 
-                <div>
-                  <h1 class="max-w-4xl text-4xl font-black tracking-tight text-[var(--hero-text)] md:text-6xl">
-                    {{ content.title }}
-                  </h1>
-                  <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-[var(--hero-text-muted)]">
-                    <span *ngIf="content.releaseYear">{{ content.releaseYear }}</span>
-                    <span *ngIf="content.durationMinutes">{{ content.durationMinutes }} min</span>
-                    <span *ngIf="content.channel?.name">{{ content.channel?.name }}</span>
-                    <span *ngIf="content.start">{{ formatTime(content.start) }}</span>
-                    <span *ngIf="content.rating" class="text-[var(--status-warning)]">
-                      {{ content.rating | number:'1.0-1' }}/10
-                    </span>
-                  </div>
-                </div>
-
-                <p class="max-w-3xl text-base leading-8 text-[var(--hero-text-muted)]">
-                  {{ content.synopsis || 'Sinopsis no disponible.' }}
-                </p>
-
-                <div class="flex flex-wrap gap-2">
-                  <span
-                    *ngFor="let genre of content.genres"
-                    class="rounded-full border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-3 py-1 text-xs font-semibold text-[var(--hero-text-muted)] backdrop-blur-sm"
-                  >
-                    {{ genre }}
-                  </span>
-                </div>
-
-                <div class="space-y-4 rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 shadow-xl">
-                  <app-interaction-buttons
-                    [itemId]="content.catalogId"
-                    [title]="content.title"
-                    [type]="content.contentType"
-                    [tmdbId]="content.tmdbId"
-                    [genres]="content.genres"
-                    [image]="content.image || content.backdrop"
-                    [platform]="content.primaryPlatforms?.[0]"
-                    [preloadInteraction]="true"
-                  ></app-interaction-buttons>
-                  <div class="border-t border-[var(--portal-border)] pt-3">
-                    <app-share-buttons variant="branded" [url]="shareUrl" [title]="content.title"></app-share-buttons>
-                  </div>
-                </div>
+            <div class="min-w-0 flex-1 space-y-4">
+              <div class="flex flex-wrap gap-2">
+                <span class="rounded-[var(--radius-pill)] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--hero-text-muted)] backdrop-blur-sm">
+                  {{ contentTypeLabel(content.contentType) }}
+                </span>
+                <span
+                  *ngIf="content.liveNow"
+                  class="rounded-[var(--radius-pill)] border border-transparent bg-[var(--accent-live-strong)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-white"
+                >
+                  En directo
+                </span>
               </div>
 
-              <aside class="space-y-6">
-                <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 shadow-xl">
-                  <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--portal-text-muted)]">Dónde ver</p>
-                  <p class="mb-4 text-xs leading-5 text-[var(--portal-text-muted)]">Opciones de streaming, alquiler o compra. No sustituyen las emisiones de TV indicadas abajo.</p>
-                  <app-where-to-watch
-                    [providersData]="content.whereToWatch"
-                    [primaryPlatforms]="content.primaryPlatforms"
-                    [tmdbId]="content.tmdbId"
-                    [contentType]="providerContentType(content)"
-                    placement="catalog-detail"
-                    [catalogId]="content.catalogId"
-                    [providerHint]="content.channel?.name"
-                    [page]="content.detailPath"
-                  ></app-where-to-watch>
-                </div>
+              <h1 class="max-w-4xl text-3xl font-black tracking-tight text-[var(--hero-text)] md:text-5xl">
+                {{ content.title }}
+              </h1>
 
-                <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 shadow-xl">
-                  <p class="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--portal-text-muted)]">Detalles</p>
-                  <div class="space-y-3 text-sm text-[var(--portal-text-soft)]">
-                    <p *ngIf="content.director"><span class="text-[var(--portal-text-muted)]">Dirección:</span> {{ content.director }}</p>
-                    <p *ngIf="content.socialSummary?.friendsWhoWatched">
-                      <span class="text-[var(--portal-text-muted)]">Tus amigos:</span>
-                      {{ content.socialSummary?.friendsWhoWatched }} lo han visto
-                    </p>
-                    <p *ngIf="content.userInteraction?.status">
-                      <span class="text-[var(--portal-text-muted)]">Tu estado:</span>
-                      {{ humanStatus(content.userInteraction?.status || '') }}
-                    </p>
-                    <p *ngIf="content.userInteraction?.rating">
-                      <span class="text-[var(--portal-text-muted)]">Tu nota:</span>
-                      {{ content.userInteraction?.rating }}/10
-                    </p>
-                  </div>
-                </div>
-              </aside>
+              <div class="tnum flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--hero-text-muted)]">
+                <span *ngIf="content.releaseYear">{{ content.releaseYear }}</span>
+                <span *ngIf="content.durationMinutes">{{ content.durationMinutes }} min</span>
+                <span *ngIf="content.channel?.name">{{ content.channel?.name }}</span>
+                <span *ngIf="content.start">{{ formatTime(content.start) }}</span>
+                <span *ngIf="content.rating" class="inline-flex items-center gap-1 text-[var(--status-warning)]">
+                  <svg class="h-3.5 w-3.5 fill-current" viewBox="0 0 20 20" aria-hidden="true">
+                    <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.07 3.29a1 1 0 0 0 .95.69h3.46c.97 0 1.37 1.24.59 1.81l-2.8 2.03a1 1 0 0 0-.37 1.12l1.07 3.29c.3.92-.75 1.69-1.54 1.12l-2.8-2.04a1 1 0 0 0-1.17 0l-2.8 2.04c-.78.57-1.84-.2-1.54-1.12l1.07-3.29a1 1 0 0 0-.36-1.12L2.98 8.72c-.78-.57-.38-1.81.59-1.81h3.46a1 1 0 0 0 .95-.69l1.07-3.29Z"></path>
+                  </svg>
+                  {{ content.rating | number:'1.0-1' }}/10
+                </span>
+              </div>
+
+              <p class="line-clamp-4 max-w-3xl text-base leading-7 text-[var(--hero-text-muted)]">
+                {{ content.synopsis || 'Sinopsis no disponible.' }}
+              </p>
+
+              <div *ngIf="content.genres?.length" class="flex flex-wrap gap-2">
+                <span
+                  *ngFor="let genre of content.genres"
+                  class="rounded-[var(--radius-pill)] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-3 py-1 text-xs font-semibold text-[var(--hero-text-muted)] backdrop-blur-sm"
+                >
+                  {{ genre }}
+                </span>
+              </div>
             </div>
           </div>
         </section>
 
-        <section
-          *ngIf="content.airings?.length"
-          class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8"
-        >
-          <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
-            <p class="mb-1 text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">TV lineal</p>
-            <h2 class="mb-4 text-2xl font-semibold text-[var(--portal-text)]">Próximas emisiones</h2>
+        <!-- Main composition: theme-aware surface, CTA + streaming availability integrated (not a boxed dashboard card). -->
+        <section class="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+          <div class="flex flex-wrap items-center gap-3">
+            <app-interaction-buttons
+              [itemId]="content.catalogId"
+              [title]="content.title"
+              [type]="content.contentType"
+              [tmdbId]="content.tmdbId"
+              [genres]="content.genres"
+              [image]="content.image || content.backdrop"
+              [platform]="content.primaryPlatforms?.[0]"
+              [preloadInteraction]="true"
+            ></app-interaction-buttons>
+            <app-share-buttons variant="branded" [url]="shareUrl" [title]="content.title"></app-share-buttons>
+          </div>
+
+          <div
+            *ngIf="content.whereToWatch || content.primaryPlatforms?.length || content.tmdbId"
+            class="border-t border-[var(--portal-divider)] pt-6"
+          >
+            <h2 class="eyebrow mb-3 text-[var(--portal-text-muted)]">Dónde ver</h2>
+            <app-where-to-watch
+              [providersData]="content.whereToWatch"
+              [primaryPlatforms]="content.primaryPlatforms"
+              [tmdbId]="content.tmdbId"
+              [contentType]="providerContentType(content)"
+              placement="catalog-detail"
+              [catalogId]="content.catalogId"
+              [providerHint]="content.channel?.name"
+              [page]="content.detailPath"
+            ></app-where-to-watch>
+          </div>
+
+          <div
+            *ngIf="content.director || content.socialSummary?.friendsWhoWatched || content.userInteraction?.status || content.userInteraction?.rating"
+            class="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-[var(--portal-divider)] pt-6 text-sm text-[var(--portal-text-soft)]"
+          >
+            <span *ngIf="content.director"><span class="text-[var(--portal-text-muted)]">Dirección:</span> {{ content.director }}</span>
+            <span *ngIf="content.socialSummary?.friendsWhoWatched">
+              <span class="text-[var(--portal-text-muted)]">Tus amigos:</span>
+              {{ content.socialSummary?.friendsWhoWatched }} lo han visto
+            </span>
+            <span *ngIf="content.userInteraction?.status">
+              <span class="text-[var(--portal-text-muted)]">Tu estado:</span>
+              {{ humanStatus(content.userInteraction?.status || '') }}
+            </span>
+            <span *ngIf="content.userInteraction?.rating" class="tnum">
+              <span class="text-[var(--portal-text-muted)]">Tu nota:</span>
+              {{ content.userInteraction?.rating }}/10
+            </span>
+          </div>
+
+          <div *ngIf="content.airings?.length" class="border-t border-[var(--portal-divider)] pt-6">
+            <p class="eyebrow mb-1 text-[var(--portal-text-muted)]">TV lineal</p>
+            <h2 class="mb-4 text-xl font-bold text-[var(--portal-text)]">Próximas emisiones</h2>
             <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <a
                 *ngFor="let airing of content.airings"
                 [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
-                class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
+                class="tnum rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 transition-colors hover:border-[var(--portal-border-strong)]"
               >
                 <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.title || airing.channelName }}</p>
                 <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
@@ -189,40 +210,47 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
               </a>
             </div>
           </div>
-        </section>
 
-        <section
-          *ngIf="content.cast?.length"
-          class="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8"
-        >
-          <div class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
-            <p class="mb-4 text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Reparto</p>
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+          <!-- Cast: compact rail, photo when available, text-only fallback otherwise. -->
+          <div *ngIf="content.cast?.length" class="border-t border-[var(--portal-divider)] pt-6">
+            <h2 class="eyebrow mb-4 text-[var(--portal-text-muted)]">Reparto</h2>
+            <div class="scrollbar-hide flex gap-4 overflow-x-auto pb-2">
               <div
-                *ngFor="let cast of content.cast"
-                class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4"
+                *ngFor="let member of content.cast"
+                class="w-24 flex-shrink-0 text-center sm:w-28"
               >
-                <p class="font-semibold text-[var(--portal-text)]">{{ cast.name }}</p>
-                <p class="mt-1 text-xs text-[var(--portal-text-muted)]">{{ cast.character || 'Reparto' }}</p>
+                <img
+                  *ngIf="member.profile; else castInitials"
+                  [src]="castImageUrl(member.profile)"
+                  [alt]="member.name"
+                  width="112"
+                  height="112"
+                  loading="lazy"
+                  decoding="async"
+                  class="mx-auto h-20 w-20 rounded-full object-cover sm:h-24 sm:w-24"
+                />
+                <ng-template #castInitials>
+                  <div
+                    aria-hidden="true"
+                    class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[var(--portal-surface-strong)] text-lg font-bold text-[var(--portal-text-soft)] sm:h-24 sm:w-24"
+                  >
+                    {{ castInitialsFor(member.name) }}
+                  </div>
+                </ng-template>
+                <p class="mt-2 line-clamp-1 text-xs font-semibold text-[var(--portal-text)]">{{ member.name }}</p>
+                <p class="line-clamp-1 text-[11px] text-[var(--portal-text-muted)]">{{ member.character || 'Reparto' }}</p>
               </div>
             </div>
           </div>
         </section>
 
-        <section
-          *ngIf="relatedItems.length"
-          class="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8"
-        >
-          <div class="mb-5">
-            <p class="text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Relacionados</p>
-            <h2 class="mt-1 text-2xl font-semibold text-[var(--portal-text)]">Sigue explorando</h2>
-          </div>
-          <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <app-catalog-card
-              *ngFor="let related of relatedItems"
-              [item]="related"
-            ></app-catalog-card>
-          </div>
+        <!-- Related content: horizontal rail, same card pattern as catalog listings. -->
+        <section *ngIf="relatedItems.length" class="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+          <app-catalog-rail
+            eyebrow="Relacionados"
+            title="Sigue explorando"
+            [items]="relatedItems"
+          ></app-catalog-rail>
         </section>
       </ng-container>
 
@@ -345,6 +373,25 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     if (type === 'movie') return 'Película';
     if (type === 'series') return 'Serie';
     return 'Programa de TV';
+  }
+
+  /** Poster art at a size appropriate for the detail hero (narrower than the full backdrop). */
+  posterUrl(value: string): string {
+    return value.replace('https://image.tmdb.org/t/p/original/', 'https://image.tmdb.org/t/p/w500/');
+  }
+
+  /** Cast headshots are small in the rail — request TMDb's smallest useful profile size. */
+  castImageUrl(value: string): string {
+    return value.replace('https://image.tmdb.org/t/p/original/', 'https://image.tmdb.org/t/p/w185/');
+  }
+
+  /** Text fallback for cast members without a profile photo — avoids a big bordered placeholder box. */
+  castInitialsFor(name: string): string {
+    const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    const first = parts[0]?.[0] || '';
+    const last = parts.length > 1 ? parts[parts.length - 1]?.[0] || '' : '';
+    return (first + last).toUpperCase();
   }
 
   goExplore(): void {

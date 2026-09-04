@@ -15,12 +15,15 @@ describe('PortalContextNavComponent', () => {
 
   it('renders all football route destinations with the active view and one breadcrumb', () => {
     fixture.componentRef.setInput('kind', 'sports');
-    fixture.componentRef.setInput('active', 'today');
+    fixture.componentRef.setInput('active', 'matches');
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('app-breadcrumb').length).toBe(1);
-    expect(fixture.nativeElement.querySelectorAll('.portal-context-nav__track a').length).toBe(7);
-    expect(fixture.nativeElement.querySelector('[aria-current="page"]')?.textContent).toContain('Partidos de hoy');
+    // Consolidated structural nav (§4): Portada, Partidos, Competiciones,
+    // Dónde ver, Noticias — en-directo/partidos-hoy/calendario no longer
+    // compete as separate top-level items.
+    expect(fixture.nativeElement.querySelectorAll('.portal-context-nav__track a').length).toBe(5);
+    expect(fixture.nativeElement.querySelector('[aria-current="page"]')?.textContent).toContain('Partidos');
   });
 
   it('renders local state destinations as pressed buttons and emits selection', () => {

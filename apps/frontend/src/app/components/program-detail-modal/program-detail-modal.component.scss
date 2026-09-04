@@ -1,12 +1,12 @@
 /* ============================================
-   PROGRAM DETAIL MODAL - MOBILE
-   Tokenized: hero stays on the constant-dark --hero-* surface (cinematic
-   image background, by design — see design-tokens.scss), body/footer use
-   --portal-* so they get a real light/dark elevation hierarchy.
+   PROGRAM DETAIL MODAL — media page
+   Hero stays on the constant-dark --hero-* cinematic surface (image
+   background, by design — see design-tokens.scss); body uses --portal-*
+   so it gets a real light/dark elevation hierarchy. Semantic tokens only.
    ============================================ */
 
 /* Container */
-.program-detail-modal-container {
+.pdm-container {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
@@ -16,18 +16,18 @@
 }
 
 /* Backdrop */
-.modal-backdrop {
+.pdm-backdrop {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
 }
 
-/* Modal Content */
-.modal-content {
+/* Panel */
+.pdm-panel {
   position: relative;
   width: 100%;
-  max-height: 90vh;
+  max-height: 92vh;
   background: var(--portal-card-elevated);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   overflow: hidden;
@@ -36,25 +36,26 @@
   box-shadow: var(--shadow-lg);
 }
 
-/* Hero Section — constant-dark cinematic surface (--hero-*), independent of theme */
-.modal-hero {
+/* ============================================
+   HERO — artwork + title + channel + live state + progress
+   ============================================ */
+.pdm-hero {
   position: relative;
   width: 100%;
-  height: 280px;
+  min-height: 280px;
   background-size: cover;
   background-position: center;
   background-color: var(--hero-bg);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 1.5rem;
+  justify-content: flex-end;
+  padding: var(--space-4);
 }
 
-/* Close Button */
-.close-button {
+.pdm-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: var(--space-4);
+  right: var(--space-4);
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -65,14 +66,13 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 180ms ease, transform 150ms ease;
+  transition: background-color var(--motion-base) var(--motion-ease);
   z-index: 10;
 
-  .close-icon {
+  .pdm-close-icon {
     width: 20px;
     height: 20px;
     color: var(--hero-text);
-    transition: transform 180ms ease;
   }
 
   &:focus-visible {
@@ -81,208 +81,187 @@
   }
 
   &:active {
-    transform: scale(0.9);
     background: color-mix(in oklch, var(--accent-live) 80%, transparent);
-
-    .close-icon {
-      transform: rotate(90deg);
-    }
-  }
-}
-
-/* Channel Info Header */
-.channel-info-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: rgba(5, 10, 18, 0.45);
-  backdrop-filter: blur(10px);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--hero-border);
-  align-self: flex-start;
-  max-width: 80%;
-
-  .channel-logo {
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
-    border-radius: var(--radius-md);
-    background: var(--portal-surface-strong);
-    padding: 0.25rem;
   }
 
-  .channel-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
+  @media (prefers-reduced-motion: no-preference) {
+    transition: background-color var(--motion-base) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
 
-  .channel-name {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--hero-text);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  }
-
-  .program-time {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--hero-text-muted);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  }
-}
-
-/* Modal Body */
-.modal-body {
-  padding: 1.5rem;
-  overflow-y: auto;
-  flex: 1;
-  color: var(--portal-text);
-}
-
-/* Program Header */
-.program-header {
-  margin-bottom: 1.5rem;
-
-  .program-title {
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: var(--portal-text);
-    margin: 0 0 1rem 0;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-  }
-
-  .program-meta {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .meta-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.5rem 0.875rem;
-    background: var(--portal-surface-strong);
-    border: 1px solid var(--portal-border);
-    border-radius: 10px;
-    color: var(--portal-text);
-    font-size: 0.8125rem;
-    font-weight: 600;
-
-    svg {
-      width: 14px;
-      height: 14px;
-      opacity: 0.9;
-    }
-  }
-}
-
-/* Social Actions */
-.social-actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-
-  .social-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    min-height: 44px;
-    padding: 0.875rem 1rem;
-    background: var(--portal-surface-strong);
-    border: 1px solid var(--portal-border);
-    border-radius: var(--radius-lg);
-    color: var(--portal-text);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: border-color 180ms ease, transform 150ms ease;
-    position: relative;
-    overflow: hidden;
-
-    &:focus-visible {
-      outline: 2px solid var(--accent-live);
-      outline-offset: 2px;
+    .pdm-close-icon {
+      transition: transform var(--motion-base) var(--motion-ease);
     }
 
-    svg {
-      width: 18px;
-      &:active {
-        transform: scale(0.95);
+    &:active {
+      transform: scale(0.92);
+
+      .pdm-close-icon {
+        transform: rotate(90deg);
       }
     }
   }
 }
 
-/* Details Section */
-.details-section {
-  margin-bottom: 1.5rem;
+.pdm-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 92%;
+}
 
-  .section-title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--portal-text);
-    margin: 0 0 1rem 0;
-    padding-bottom: 0.625rem;
-    border-bottom: 2px solid var(--portal-divider);
-  }
+.pdm-hero-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
 
-  .details-grid {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 1rem;
-  }
+.pdm-channel-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: var(--portal-surface-strong);
+  padding: 2px;
+  flex-shrink: 0;
+}
 
-  .detail-card {
-    .detail-poster {
-      width: 100%;
-      aspect-ratio: 2/3;
-      object-fit: cover;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-    }
-  }
+.pdm-channel-name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--hero-text);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
 
-  .detail-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
+.pdm-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-eyebrow);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 
-  .info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-    padding: 0.75rem;
-    background: var(--portal-surface-strong);
-    border: 1px solid var(--portal-border);
-    border-radius: 10px;
+.pdm-status-live {
+  background: var(--accent-live);
+  color: #000;
+}
 
-    .info-label {
-      font-size: 0.6875rem;
-      font-weight: 600;
-      color: var(--portal-text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
+.pdm-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #000;
 
-    .info-value {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--portal-text);
-    }
+  @media (prefers-reduced-motion: no-preference) {
+    animation: pdm-pulse 1.6s var(--motion-ease) infinite;
   }
 }
 
-/* Rating Stars */
-.rating-stars {
+@keyframes pdm-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.pdm-status-upcoming {
+  background: rgba(5, 10, 18, 0.55);
+  color: var(--hero-text);
+  border: 1px solid var(--hero-border);
+}
+
+.pdm-status-ended {
+  background: rgba(5, 10, 18, 0.4);
+  color: var(--hero-text-muted);
+  border: 1px solid var(--hero-border);
+}
+
+.pdm-title {
+  font-family: var(--font-sans);
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--hero-text);
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.pdm-meta-row {
   display: flex;
-  gap: 0.25rem;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  color: var(--hero-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.pdm-meta-item {
+  &.tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.pdm-meta-dot {
+  opacity: 0.7;
+}
+
+.pdm-progress {
+  width: 100%;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.pdm-progress-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--accent-live);
+  border-radius: var(--radius-pill);
+  transform-origin: left center;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform var(--motion-slow) var(--motion-ease);
+  }
+}
+
+/* ============================================
+   BODY
+   ============================================ */
+.pdm-body {
+  padding: var(--space-4);
+  overflow-y: auto;
+  flex: 1;
+  color: var(--portal-text);
+}
+
+.pdm-description {
+  font-size: var(--text-md);
+  line-height: 1.6;
+  color: var(--portal-text-soft);
+  margin: 0 0 var(--space-4) 0;
+}
+
+.pdm-description-empty {
+  color: var(--portal-text-muted);
+  font-style: italic;
+}
+
+.pdm-rating {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.pdm-rating-stars {
+  display: flex;
+  gap: 2px;
 
   svg {
     width: 16px;
@@ -295,139 +274,198 @@
   }
 }
 
-/* Description Section */
-.description-section {
-  margin-bottom: 1.5rem;
+.pdm-rating-value {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--portal-text-muted);
+}
 
-  .section-title {
-    font-size: 1.125rem;
+/* ============================================
+   ACTIONS — real hierarchy: one full-weight primary CTA,
+   a compact secondary row (Mi lista / Valorar), overflow menu for the rest.
+   ============================================ */
+.pdm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.pdm-primary-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0.875rem var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-md);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--accent-discover);
+  color: #000; // documented exception: solid accent-fill CTA, not a themed surface
+  touch-action: manipulation;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  &.is-live {
+    background: var(--accent-live);
+    color: #000;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--portal-text);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform var(--motion-fast) var(--motion-ease), opacity var(--motion-base) var(--motion-ease);
+  }
+
+  &:active {
+    opacity: 0.9;
+
+    @media (prefers-reduced-motion: no-preference) {
+      transform: scale(0.97);
+    }
+  }
+}
+
+.pdm-secondary-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+
+  // The shared InteractionButtonsComponent renders 5 equal-weight actions in
+  // document order: 1 Mi lista, 2 Recomendar, 3 Viendo, 4 Valorar, 5 Enviar.
+  // Its own file is shared across ~6 other surfaces and stays untouched;
+  // here we only restyle its *usage* — collapsing the low-frequency actions
+  // (Recomendar / Viendo / Enviar) behind the overflow toggle, and enforcing
+  // the 44px minimum touch target this modal requires.
+  ::ng-deep app-interaction-buttons {
+    display: contents;
+
+    > div {
+      display: contents;
+    }
+
+    button {
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    // Recomendar (2nd), Viendo (3rd), Enviar (5th) — overflow tier.
+    > div > button:nth-child(2),
+    > div > button:nth-child(3),
+    > div > button:nth-child(5) {
+      display: none;
+    }
+  }
+
+  &.overflow-open ::ng-deep app-interaction-buttons > div > button:nth-child(2),
+  &.overflow-open ::ng-deep app-interaction-buttons > div > button:nth-child(3),
+  &.overflow-open ::ng-deep app-interaction-buttons > div > button:nth-child(5) {
+    display: flex;
+  }
+}
+
+.pdm-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--portal-surface-strong);
+  border: 1px solid var(--portal-border);
+  color: var(--portal-text-soft);
+  cursor: pointer;
+  touch-action: manipulation;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-live);
+    outline-offset: 2px;
+  }
+
+  &[aria-expanded='true'] {
+    background: var(--portal-text);
+    color: var(--portal-bg);
+    border-color: transparent;
+  }
+}
+
+/* ============================================
+   Where to watch section wrapper
+   ============================================ */
+.pdm-section {
+  margin-bottom: var(--space-4);
+
+  .pdm-section-title {
+    font-size: var(--text-lg);
     font-weight: 700;
     color: var(--portal-text);
-    margin: 0 0 1rem 0;
-    padding-bottom: 0.625rem;
-    border-bottom: 2px solid var(--portal-divider);
-  }
-
-  .description-text {
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--portal-text-soft);
-    margin: 0;
-    padding: 1rem;
-    background: var(--portal-surface-strong);
-    border: 1px solid var(--portal-border);
-    border-radius: var(--radius-md);
+    margin: 0 0 var(--space-3) 0;
+    letter-spacing: -0.01em;
   }
 }
 
-/* Modal Footer */
-.modal-footer {
-  padding: 1rem 1.5rem;
-  background: var(--portal-surface);
-  border-top: 1px solid var(--portal-divider);
-  display: flex;
-  gap: 0.75rem;
-
-  .action-button {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    min-height: 44px;
-    padding: 0.875rem 1rem;
-    border-radius: var(--radius-lg);
-    font-size: 0.9375rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 150ms ease, box-shadow 180ms ease;
-
-    &:focus-visible {
-      outline: 2px solid var(--accent-live);
-      outline-offset: 2px;
-    }
-
-    svg {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-    }
-
-    &-primary {
-      background: var(--accent-live-strong);
-      border: none;
-      color: var(--spotify-white);
-
-      &:active {
-        transform: scale(0.95);
-      }
-    }
-
-    &-secondary {
-      background: var(--portal-surface-strong);
-      border: 1px solid var(--portal-border);
-      color: var(--portal-text);
-
-      &:active {
-        transform: scale(0.95);
-        background: var(--portal-surface-strong);
-      }
-    }
-  }
-}
-
-/* Scrollbar Styling */
-.modal-body::-webkit-scrollbar {
+/* Scrollbar */
+.pdm-body::-webkit-scrollbar {
   width: 6px;
 }
 
-.modal-body::-webkit-scrollbar-track {
+.pdm-body::-webkit-scrollbar-track {
   background: var(--portal-surface-strong);
   border-radius: 3px;
 }
 
-.modal-body::-webkit-scrollbar-thumb {
+.pdm-body::-webkit-scrollbar-thumb {
   background: var(--portal-border-strong);
   border-radius: 3px;
-
-  &:hover {
-    background: var(--accent-live);
-  }
 }
 
-/* Responsive Adjustments */
+/* ============================================
+   Responsive — tablet/desktop: centered dialog, not a bottom sheet
+   ============================================ */
 @media (min-width: 640px) {
-  .modal-content {
+  .pdm-panel {
     max-width: 600px;
     margin: 0 auto;
     border-radius: var(--radius-lg);
     max-height: 85vh;
   }
 
-  .program-detail-modal-container {
+  .pdm-container {
     align-items: center;
-    padding: 2rem;
+    padding: var(--space-8);
   }
 
-  .modal-hero {
-    height: 320px;
+  .pdm-hero {
+    min-height: 320px;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  }
-
-  .social-actions {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .details-section .details-grid {
-    grid-template-columns: 150px 1fr;
+    padding: var(--space-6);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .close-button,
-  .close-button .close-icon,
-  .social-actions .social-btn,
-  .modal-footer .action-button {
+  .pdm-close,
+  .pdm-close-icon,
+  .pdm-progress-fill,
+  .pdm-primary-action,
+  .pdm-live-dot {
     transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
   }
 }
