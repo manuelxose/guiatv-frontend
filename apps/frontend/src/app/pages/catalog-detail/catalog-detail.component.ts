@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, Data, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { combineLatest, of, Subject } from 'rxjs';
@@ -222,15 +222,18 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                 <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Ahora en emisión</h2>
                 <a
                   [routerLink]="live.detailPath || ['/canales', live.channelId]"
-                  class="tnum mt-4 flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-4 transition-colors"
+                  class="tnum mt-4 flex items-center gap-4 rounded-[var(--radius-md)] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-4 transition-colors"
                 >
-                  <span>
-                    <span class="block text-sm font-semibold text-[var(--portal-text)]">{{ live.title || live.channelName }}</span>
+                  <span class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--portal-surface-strong)] sm:h-20 sm:w-20">
+                    <ng-container *ngTemplateOutlet="airingThumb; context: { $implicit: live }"></ng-container>
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-sm font-semibold text-[var(--portal-text)]">{{ live.title || live.channelName }}</span>
                     <span class="mt-1 block text-xs text-[var(--portal-text-muted)]">
                       {{ live.channelName }} · {{ formatTime(live.start) }} - {{ formatTime(live.end) }}
                     </span>
                   </span>
-                  <span class="text-xs font-semibold text-[var(--accent-live)]">Ver canal →</span>
+                  <span class="flex-shrink-0 text-xs font-semibold text-[var(--accent-live)]">Ver canal →</span>
                 </a>
               </ng-container>
 
@@ -239,19 +242,9 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                   <p class="eyebrow text-[var(--portal-text-muted)]" [class.mt-6]="nowAiring(content)">TV lineal</p>
                   <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">A continuación</h2>
                   <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    <a
-                      *ngFor="let airing of next"
-                      [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
-                      class="tnum rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 transition-colors hover:border-[var(--portal-border-strong)]"
-                    >
-                      <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.title || airing.channelName }}</p>
-                      <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
-                        {{ airing.channelName }} · {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
-                      </p>
-                      <span class="mt-3 inline-block text-xs font-semibold text-[var(--accent-live)]">
-                        {{ airing.detailPath ? 'Ver qué se emite →' : 'Ver programación del canal →' }}
-                      </span>
-                    </a>
+                    <ng-container *ngFor="let airing of next">
+                      <ng-container *ngTemplateOutlet="airingCard; context: { $implicit: airing }"></ng-container>
+                    </ng-container>
                   </div>
                 </ng-container>
               </ng-container>
@@ -261,28 +254,89 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
               <p class="eyebrow text-[var(--portal-text-muted)]">TV lineal</p>
               <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Próximas emisiones</h2>
               <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <a
-                  *ngFor="let airing of content.airings"
-                  [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
-                  class="tnum rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 transition-colors hover:border-[var(--portal-border-strong)]"
-                >
-                  <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.title || airing.channelName }}</p>
-                  <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
-                    {{ airing.channelName }} · {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
-                  </p>
-                  <span class="mt-3 inline-block text-xs font-semibold text-[var(--accent-live)]">
-                    {{ airing.detailPath ? 'Ver qué se emite →' : 'Ver programación del canal →' }}
-                  </span>
-                </a>
+                <ng-container *ngFor="let airing of content.airings">
+                  <ng-container *ngTemplateOutlet="airingCard; context: { $implicit: airing }"></ng-container>
+                </ng-container>
               </div>
             </ng-template>
           </div>
 
+          <!-- Shared airing-card row (thumbnail + title/time/CTA), used by both the
+               program "A continuación" grid and the generic "Próximas emisiones" grid
+               above — kept as one template so the "no aparecen imágenes" fix only
+               needed to land once. -->
+          <ng-template #airingCard let-airing>
+            <a
+              [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
+              class="tnum flex gap-3 rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-3 transition-colors hover:border-[var(--portal-border-strong)]"
+            >
+              <span class="h-16 w-12 flex-shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--portal-surface-strong)]">
+                <ng-container *ngTemplateOutlet="airingThumb; context: { $implicit: airing }"></ng-container>
+              </span>
+              <span class="min-w-0 flex-1">
+                <p class="truncate text-sm font-semibold text-[var(--portal-text)]">{{ airing.title || airing.channelName }}</p>
+                <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
+                  {{ airing.channelName }} · {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
+                </p>
+                <span class="mt-2 inline-block text-xs font-semibold text-[var(--accent-live)]">
+                  {{ airing.detailPath ? 'Ver qué se emite →' : 'Ver programación del canal →' }}
+                </span>
+              </span>
+            </a>
+          </ng-template>
+
+          <!-- Program poster/still when the EPG source has one; the channel logo
+               (already always available) as a legible fallback instead of a blank box. -->
+          <ng-template #airingThumb let-airing>
+            <img
+              *ngIf="airing.image; else airingChannelIcon"
+              [src]="airingThumbUrl(airing.image)"
+              [alt]="''"
+              loading="lazy"
+              decoding="async"
+              class="h-full w-full object-cover"
+            />
+            <ng-template #airingChannelIcon>
+              <img
+                *ngIf="airing.channelIcon"
+                [src]="airing.channelIcon"
+                [alt]="''"
+                loading="lazy"
+                class="h-full w-full object-contain p-2"
+              />
+            </ng-template>
+          </ng-template>
+
           <!-- Cast: compact rail, photo when available, text-only fallback otherwise. -->
-          <div *ngIf="content.cast?.length" class="mb-2">
+          <div *ngIf="content.cast?.length" class="group/rail relative mb-2">
             <p class="eyebrow text-[var(--portal-text-muted)]">Equipo</p>
             <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Reparto</h2>
-            <div class="scrollbar-hide mt-4 flex gap-4 overflow-x-auto pb-2">
+
+            <!-- Click arrows for desktop — dragging a rail with a mouse is fiddly; touch swipe already covers mobile, so these stay md+ only. -->
+            <button
+              *ngIf="content.cast!.length > 4"
+              type="button"
+              aria-label="Desplazar reparto hacia la izquierda"
+              class="absolute left-0 top-1/2 z-10 hidden -translate-x-1/2 translate-y-2 items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] p-2 text-[var(--portal-text)] opacity-0 shadow-[var(--shadow-sm)] transition-opacity group-hover/rail:opacity-100 focus-visible:opacity-100 md:flex"
+              (click)="scrollCastBy(-1)"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="m12.5 4.5-5 5.5 5 5.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
+            <button
+              *ngIf="content.cast!.length > 4"
+              type="button"
+              aria-label="Desplazar reparto hacia la derecha"
+              class="absolute right-0 top-1/2 z-10 hidden translate-x-1/2 translate-y-2 items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] p-2 text-[var(--portal-text)] opacity-0 shadow-[var(--shadow-sm)] transition-opacity group-hover/rail:opacity-100 focus-visible:opacity-100 md:flex"
+              (click)="scrollCastBy(1)"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="m7.5 4.5 5 5.5-5 5.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
+
+            <div #castScrollEl class="scrollbar-hide mt-4 flex gap-4 overflow-x-auto scroll-smooth pb-2">
               <div
                 *ngFor="let member of content.cast"
                 class="w-24 flex-shrink-0 text-center sm:w-28"
@@ -350,6 +404,16 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
   public safeLdHtml: SafeHtml | null = null;
   public breadcrumbItems: BreadcrumbItem[] = [];
   public shareUrl = '';
+
+  @ViewChild('castScrollEl') private readonly castScrollEl?: ElementRef<HTMLElement>;
+
+  scrollCastBy(direction: 1 | -1): void {
+    const el = this.castScrollEl?.nativeElement;
+    if (!el) {
+      return;
+    }
+    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: 'smooth' });
+  }
 
   ngOnInit(): void {
     combineLatest([this.route.paramMap, this.route.data])
@@ -463,6 +527,11 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
 
   /** Cast headshots are small in the rail — request TMDb's smallest useful profile size. */
   castImageUrl(value: string): string {
+    return value.replace('https://image.tmdb.org/t/p/original/', 'https://image.tmdb.org/t/p/w185/');
+  }
+
+  /** Airing-card thumbnails are small (3-5rem) — no need for a full-size TMDb image. */
+  airingThumbUrl(value: string): string {
     return value.replace('https://image.tmdb.org/t/p/original/', 'https://image.tmdb.org/t/p/w185/');
   }
 

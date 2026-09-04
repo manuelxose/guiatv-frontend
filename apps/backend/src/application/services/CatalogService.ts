@@ -1964,6 +1964,14 @@ export class CatalogService {
       catalogId: buildProgramCatalogId(item.id),
       detailPath: this.buildDetailPath(contentType, slug),
       liveNow: item.airing.liveNow,
+      // Same fallback chain mapTvReadItemToCatalogItem uses for `image` —
+      // without this, "Próximas emisiones"/"A continuación" cards on the
+      // detail page had no artwork at all, just text.
+      image:
+        item.assets.poster?.url ||
+        (item.assets.primary?.kind === 'poster' || item.assets.primary?.kind === 'backdrop'
+          ? item.assets.primary?.url
+          : undefined),
     };
   }
 
