@@ -120,17 +120,23 @@
       <header class="streaming-view__section-head">
         <div>
           <p class="streaming-view__eyebrow">Catálogo filtrado</p>
-          <h3>{{ gridData().meta.total || gridData().items.length }} títulos en foco</h3>
+          <h3>{{ gridData().meta.total || combinedItems().length }} títulos en foco</h3>
         </div>
         <button type="button" class="streaming-view__action" (click)="clearFilters()">Limpiar</button>
       </header>
 
-      <div class="streaming-view__results-grid" *ngIf="gridData().items.length; else streamingGridPending">
+      <div class="streaming-view__results-grid" *ngIf="combinedItems().length; else streamingGridPending">
         <app-unified-program-card
-          *ngFor="let item of gridData().items; trackBy: trackByItem"
+          *ngFor="let item of combinedItems(); trackBy: trackByItem"
           [item]="item"
           variant="streaming"
         ></app-unified-program-card>
+      </div>
+
+      <div class="streaming-view__more" *ngIf="hasMoreItems()">
+        <button type="button" class="streaming-view__action" [disabled]="loadMoreLoading()" (click)="loadMore()">
+          {{ loadMoreLoading() ? 'Cargando…' : 'Cargar más' }}
+        </button>
       </div>
     </section>
   </ng-template>
