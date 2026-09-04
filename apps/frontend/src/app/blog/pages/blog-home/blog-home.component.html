@@ -5,8 +5,8 @@
   [breadcrumbItems]="[]"
   [showHero]="false"
 >
-  <app-editorial-masthead></app-editorial-masthead>
   <app-portal-context-nav kind="blog" [breadcrumbItems]="breadcrumbItems"></app-portal-context-nav>
+  <app-editorial-masthead></app-editorial-masthead>
 
   <section *ngIf="loading" class="editorial-loading" aria-busy="true" aria-label="Cargando publicaciones">
     <app-unified-skeleton-block [count]="1" [columns]="1" cardHeight="26rem"></app-unified-skeleton-block>

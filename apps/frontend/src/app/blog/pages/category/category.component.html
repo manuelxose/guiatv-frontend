@@ -1,6 +1,6 @@
 <app-unified-portal-shell tone="editorial" [breadcrumbItems]="[]" [showHero]="false">
-  <app-editorial-masthead [compact]="true"></app-editorial-masthead>
   <app-portal-context-nav kind="blog" [breadcrumbItems]="breadcrumbItems"></app-portal-context-nav>
+  <app-editorial-masthead [compact]="true"></app-editorial-masthead>
   <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
 
   <div class="editorial-category-page">

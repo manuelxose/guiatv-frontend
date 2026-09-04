@@ -1,6 +1,8 @@
 :host { display: block; min-width: 0; }
 
 .channel-card {
+  container-type: inline-size;
+  container-name: channel-card;
   display: grid;
   min-width: 0;
   gap: var(--space-4);
@@ -82,28 +84,75 @@
 .channel-card__programme + .channel-card__programme { border-top: 1px solid var(--portal-divider); }
 .channel-card__programme span { color: var(--portal-text-muted); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
 .channel-card__programme strong { overflow: hidden; font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }
-.channel-card__programme--live span { color: var(--accent-live); font-weight: 800; }
-.channel-card__footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.channel-card__footer > span { color: var(--portal-text-muted); font-size: var(--text-xs); }
-.channel-card__footer a {
+
+// Current programme dominates: live-red label + larger title + progress bar.
+.channel-card__programme--live {
+  background: var(--accent-live-soft);
+  border-radius: var(--radius-sm);
+  margin-inline: calc(var(--space-1) * -1);
+  padding: var(--space-3) var(--space-1);
+}
+.channel-card__programme--live .channel-card__programme-meta {
   display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--accent-live);
+  font-weight: 800;
+}
+.channel-card__live-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-live);
+  box-shadow: 0 0 0 0.16rem color-mix(in oklch, var(--accent-live) 20%, transparent);
+}
+.channel-card__programme--live strong { font-size: var(--text-md); font-weight: 800; }
+.channel-card__progress {
+  display: block;
+  height: 0.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--portal-surface-strong);
+  overflow: hidden;
+}
+.channel-card__progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent-live);
+}
+.channel-card__programme--next strong { color: var(--portal-text-soft); font-weight: 600; }
+.channel-card__footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); }
+.channel-card__footer > span { flex: 1 1 auto; min-width: 0; color: var(--portal-text-muted); font-size: var(--text-xs); }
+.channel-card__footer a {
+  // Neutral pill, not accent-live: the card already carries the live-red
+  // badge + progress bar for "this is live TV" — filling this plain
+  // navigation CTA the same red too makes every card read as an alert and
+  // is not "the primary discovery action" (that's --accent-discover's job).
+  display: inline-flex;
+  flex: none;
   min-height: 44px;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--accent-live);
+  border: 1px solid var(--portal-border-strong);
   border-radius: var(--radius-pill);
-  background: var(--accent-live);
-  color: var(--hero-text);
-  padding: 0.5rem 0.8rem;
+  background: transparent;
+  color: var(--portal-text);
+  padding: 0.5rem 0.9rem;
   font-size: var(--text-sm);
   font-weight: 750;
+  text-align: center;
+  white-space: nowrap;
   text-decoration: none;
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms ease;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), background-color var(--motion-base) var(--motion-ease), box-shadow 180ms ease;
 }
-.channel-card__footer a:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
-.channel-card__footer a:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent-live) 76%, transparent); outline-offset: 3px; }
+.channel-card__footer a:hover { background: var(--portal-surface-strong); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.channel-card__footer a:focus-visible { outline: 3px solid color-mix(in srgb, var(--spotify-green) 76%, transparent); outline-offset: 3px; }
 
-@media (min-width: 720px) {
+// Container query, not a viewport media query: this card renders both in
+// wide catalog grids and narrow rails at any viewport width, so the
+// two-/three-column header switch must respond to the card's own box, not
+// the page — otherwise a narrow rail on a wide screen squeezes the name +
+// access badge onto one row and truncates short names ("Antena 3" → "Ante…").
+@container channel-card (min-width: 300px) {
   .channel-card__header { grid-template-columns: 72px minmax(0, 1fr) auto; }
   .channel-card__logo { width: 72px; height: 72px; }
   .channel-card__access { grid-column: auto; justify-self: end; }

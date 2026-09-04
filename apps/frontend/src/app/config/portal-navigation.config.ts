@@ -217,11 +217,15 @@ export const PORTAL_DISCOVER_DESTINATIONS: readonly PortalContextDestination[] =
   { id: 'free', label: 'Gratis', kind: 'action', iconPath: PORTAL_ICON_PATHS.sparkles },
 ] as const;
 
+// Consolidated structural destinations (§4 nav rework): "En directo",
+// "Partidos de hoy" and "Calendario" collapse into one `matches` destination.
+// Those states are filters/date selection *inside* Partidos, not competing
+// top-level routes — the underlying URLs (/en-directo, /partidos-hoy,
+// /calendario) are preserved for SEO and still resolve to this same id via
+// `resolveActive()` in portal-context-nav.component.ts.
 export const PORTAL_SPORTS_DESTINATIONS: readonly PortalContextDestination[] = [
   { id: 'home', label: 'Portada', kind: 'route', path: APP_PATHS.football },
-  { id: 'live', label: 'En directo', kind: 'route', path: `${APP_PATHS.football}/en-directo` },
-  { id: 'today', label: 'Partidos de hoy', kind: 'route', path: `${APP_PATHS.football}/partidos-hoy` },
-  { id: 'calendar', label: 'Calendario', kind: 'route', path: `${APP_PATHS.football}/calendario` },
+  { id: 'matches', label: 'Partidos', kind: 'route', path: `${APP_PATHS.football}/partidos-hoy` },
   { id: 'competitions', label: 'Competiciones', kind: 'route', path: `${APP_PATHS.football}/competiciones` },
   { id: 'watch', label: 'Dónde ver', kind: 'route', path: APP_PATHS.football, fragment: 'donde-ver' },
   { id: 'news', label: 'Noticias', kind: 'route', path: `${APP_PATHS.football}/noticias` },

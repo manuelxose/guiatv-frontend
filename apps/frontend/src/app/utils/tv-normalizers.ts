@@ -136,7 +136,7 @@ export function normalizeCategory(value: unknown): string {
   if (!safe) {
     return 'Contenido';
   }
-  if (/cine|pel[ií]cula/i.test(safe)) return 'Cine';
+  if (/cine|pel[ií]cula|^movie$/i.test(safe)) return 'Cine';
   if (/serie/i.test(safe)) return 'Series';
   if (/deporte|f[úu]tbol|baloncesto|tenis|motogp|f1/i.test(safe)) return 'Deportes';
   if (/infantil|kids/i.test(safe)) return 'Infantil';
@@ -182,13 +182,13 @@ function buildTvSubtitle(item: TvReadItemDTO): string {
   return parts.join(' · ');
 }
 
+// Platform names are deliberately left out here — the card already renders
+// them as their own colored badges (see `card.platforms` / `<app-platform-
+// badge>` in unified-program-card.component.html), and printing the same
+// two names again as plain text right above those badges was a duplicate,
+// unstyled restatement of the same information.
 function buildCatalogSubtitle(item: CatalogItem): string {
-  const parts = [
-    item.channel?.name,
-    formatTimeRange(item.start, item.end),
-    item.primaryPlatforms?.slice(0, 2).join(' · '),
-    item.releaseYear,
-  ]
+  const parts = [item.channel?.name, formatTimeRange(item.start, item.end), item.releaseYear]
     .map((entry) => String(entry || '').trim())
     .filter(Boolean);
   return parts.join(' · ');
@@ -203,12 +203,16 @@ function buildTvBadges(item: TvReadItemDTO, category: string): string[] {
   return Array.from(badges);
 }
 
+// These render as the small overlay chips on the poster image itself
+// (`.program-card__badge`, top-left over the artwork) — kept intentionally
+// minimal (just LIVE + channel, when relevant) because everything else this
+// used to add here already has its own, better-styled place on the card:
+// content type ("Serie"/"Película") is in the eyebrow row right under the
+// title, and the platform is a full logo badge in the meta row — repeating
+// either as a second, plainer chip on the poster was pure duplication.
 function buildCatalogBadges(item: CatalogItem): string[] {
   const badges = new Set<string>();
   if (item.liveNow) badges.add('LIVE');
-  if (item.primaryPlatforms?.[0]) badges.add(item.primaryPlatforms[0]);
-  if (item.contentType === 'movie') badges.add('Película');
-  if (item.contentType === 'series') badges.add('Serie');
   if (item.channel?.name) badges.add(item.channel.name);
   return Array.from(badges);
 }

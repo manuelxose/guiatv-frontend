@@ -77,7 +77,12 @@ export class FootballMatchesComponent implements OnInit {
       const requestedView = (data?.['footballView'] as MatchesView) ?? 'today';
       this.view.set(requestedView);
       const date = queryParams.get('date') || todayKey();
-      const filter = (queryParams.get('filter') as FootballMatchFilter) || 'all';
+      // The legacy /en-directo route is now a "Partidos" state, not a
+      // separate destination — its filter chip defaults to "En directo" so
+      // the page still opens filtered to live matches without a redundant
+      // top-level nav item (§4).
+      const defaultFilter: FootballMatchFilter = requestedView === 'live' ? 'live' : 'all';
+      const filter = (queryParams.get('filter') as FootballMatchFilter) || defaultFilter;
       this.filter.set(filter);
       return this.loadFor(requestedView, date);
     }),
@@ -158,6 +163,18 @@ export class FootballMatchesComponent implements OnInit {
   }
 
   onDateChange(dateKey: string): void {
+    // The date strip is now always visible (§4: date navigation lives inside
+    // the unified Partidos experience). "Hoy"/"En directo" pin to today and
+    // "now", so picking a different date there hands off to the calendar
+    // route with that date; the calendar route itself just updates in place.
+    if (this.view() === 'calendar') {
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { date: dateKey },
+        queryParamsHandling: 'merge',
+      });
+      return;
+    }
     void this.router.navigate(['/deportes/futbol/calendario'], {
       queryParams: { date: dateKey },
       queryParamsHandling: 'merge',

@@ -18,6 +18,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OnChanges, SimpleChanges } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { trigger, style, transition, animate } from '@angular/animations';
 import { IProgramItem } from 'src/app/interfaces';
 import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
@@ -27,7 +28,7 @@ import { APP_PATHS } from '../../config/route-map';
 @Component({
   selector: 'app-program-detail-modal',
   standalone: true,
-  imports: [CommonModule, InteractionButtonsComponent, WhereToWatchComponent],
+  imports: [CommonModule, RouterLink, InteractionButtonsComponent, WhereToWatchComponent],
   templateUrl: './program-detail-modal.component.html',
   styleUrls: ['./program-detail-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -69,6 +70,9 @@ export class ProgramDetailModalComponent implements OnChanges {
   @Output() close = new EventEmitter<void>();
 
   public readonly isVisible = signal(false);
+
+  /** Overflow ("more actions") menu — collapsed by default on every surface. */
+  public readonly overflowOpen = signal(false);
 
   @ViewChild('modalContent') private modalContent?: ElementRef<HTMLElement>;
   private previouslyFocused: HTMLElement | null = null;
@@ -181,19 +185,71 @@ export class ProgramDetailModalComponent implements OnChanges {
   }
 
   /**
+   * Estado en directo: computado en el momento de apertura a partir de
+   * start/stop reales del programa (nunca inventado). No se refresca en
+   * vivo mientras el modal permanece abierto.
+   */
+  public isLive(): boolean {
+    const start = this.toMs(this.program?.start);
+    const stop = this.toMs(this.program?.stop);
+    if (start === null || stop === null) return false;
+    const now = Date.now();
+    return now >= start && now <= stop;
+  }
+
+  public isUpcoming(): boolean {
+    const start = this.toMs(this.program?.start);
+    if (start === null) return false;
+    return Date.now() < start;
+  }
+
+  public isEnded(): boolean {
+    const stop = this.toMs(this.program?.stop);
+    if (stop === null) return false;
+    return Date.now() > stop;
+  }
+
+  /** Porcentaje transcurrido (0-100) para la barra de progreso "en directo". */
+  public getProgressPercent(): number {
+    const start = this.toMs(this.program?.start);
+    const stop = this.toMs(this.program?.stop);
+    if (start === null || stop === null || stop <= start) return 0;
+    const pct = ((Date.now() - start) / (stop - start)) * 100;
+    return Math.min(100, Math.max(0, Math.round(pct)));
+  }
+
+  public getPrimaryActionLabel(): string {
+    if (this.isLive()) return 'Ver en directo';
+    if (this.isUpcoming()) return 'Ir a la guía';
+    return 'Ver guía';
+  }
+
+  public toggleOverflow(): void {
+    this.overflowOpen.update((open) => !open);
+  }
+
+  private toMs(value: string | undefined | null): number | null {
+    if (!value) return null;
+    const ms = new Date(value).getTime();
+    return isNaN(ms) ? null : ms;
+  }
+
+  /**
    * Cierra el modal
    */
   public onClose(): void {
     this.close.emit();
+    this.overflowOpen.set(false);
     this.previouslyFocused?.focus?.();
     this.previouslyFocused = null;
   }
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (changes['program'] && this.program && !changes['program'].previousValue) {
+      this.overflowOpen.set(false);
       this.previouslyFocused = (typeof document !== 'undefined' ? (document.activeElement as HTMLElement) : null) ?? null;
       setTimeout(() => {
-        const closeBtn = this.modalContent?.nativeElement.querySelector<HTMLElement>('.close-button');
+        const closeBtn = this.modalContent?.nativeElement.querySelector<HTMLElement>('.pdm-close');
         closeBtn?.focus();
       }, 0);
     }
