@@ -3,15 +3,14 @@
   -moz-osx-font-smoothing: grayscale;
   color-scheme: light;
 
-  // Direction 3 "Hybrid Signal": Montserrat was never actually loaded (no
-  // @font-face/<link> anywhere), so the app already ran on this fallback
-  // stack in practice. Made explicit + the editorial serif idea from the
-  // visual-directions spec was dropped too, to keep font-loading cost at
-  // zero rather than trade it for a "distinct" editorial identity that a
-  // weight/tracking variant can achieve for free (see docs/visual-directions.md).
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  // Spotify-inspired reskin (design/spotify-design-system-*). Inter is
+  // self-hosted (see styles.scss @font-face) — the prior zero-cost
+  // system-font decision is superseded here because the brand identity
+  // depends on Inter's tight, bold headline character.
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
   --text-2xs: clamp(0.68rem, 0.64rem + 0.08vw, 0.72rem);
+  --text-eyebrow: var(--text-2xs);
   --text-xs: clamp(0.76rem, 0.72rem + 0.12vw, 0.82rem);
   --text-sm: clamp(0.88rem, 0.84rem + 0.16vw, 0.96rem);
   --text-md: clamp(1rem, 0.96rem + 0.22vw, 1.08rem);
@@ -28,48 +27,86 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
   --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-24: 6rem;
 
-  --radius-sm: 0.9rem;
-  --radius-md: 1.2rem;
-  --radius-lg: 1.6rem;
-  --radius-xl: 1.9rem;
-  --radius-pill: 999px;
+  // Radius scale redesigned for the Spotify reskin — the source extraction's
+  // radius tokens were non-monotonic/broken (md > lg, pill < xl) and are not
+  // used. Cards stay tight (4-12px); pill is reserved for buttons/chips/tags.
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
 
-  // Direction 3 "Hybrid Signal" (docs/visual-directions.md) — cool-neutral
-  // base, replaces the prior plain-white/gray-500 palette.
-  --portal-bg: #f5f6f8;
-  --portal-bg-deep: #eceef2;
+  // Motion tokens (new — none existed before beyond ad-hoc inline durations).
+  // Wrap usage in `@media (prefers-reduced-motion: no-preference)`.
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --motion-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Spotify primitives (design/spotify-design-system-variables.css), kept as
+  // named primitives so semantic tokens below can reference them and so
+  // `-hover`/`-press` states derived for this app (not in the source, needed
+  // for real interaction states) are documented in one place.
+  --spotify-bg-base: #121212;
+  --spotify-bg-highlight: #181818;
+  --spotify-bg-elevated: #1f1f1f;
+  --spotify-bg-press: #0a0a0a;
+  --spotify-card: #181818;
+  --spotify-card-hover: #242424;
+  --spotify-card-dark: #252525;
+  --spotify-card-mid: #272727;
+  --spotify-green: #1ed760;
+  --spotify-green-border: #1db954;
+  --spotify-green-press: #169c46;
+  --spotify-white: #ffffff;
+  --spotify-silver: #b3b3b3;
+  --spotify-near-white: #cbcbcb;
+  --spotify-light: #fdfdfd;
+  --spotify-border-gray: #4d4d4d;
+  --spotify-light-border: #7c7c7c;
+  --spotify-light-surface: #eeeeee;
+  --spotify-negative: #f3727f;
+  --spotify-warning: #ffa42b;
+  --spotify-announce: #539df5;
+
+  // LIGHT theme semantics — derived (the source extraction only ever
+  // documented the dark palette despite mislabeling itself "theme: light").
+  --portal-bg: var(--spotify-light);
+  --portal-bg-deep: var(--spotify-light-surface);
   --portal-bg-elevated: #ffffff;
   --portal-surface: #ffffff;
-  --portal-surface-strong: #eceef2;
-  --portal-surface-soft: rgba(255, 255, 255, 0.72);
+  --portal-surface-strong: var(--spotify-light-surface);
+  --portal-surface-soft: rgba(255, 255, 255, 0.78);
   --portal-card: #ffffff;
-  --portal-card-elevated: #ffffff;
-  --portal-border: #dfe2e8;
-  --portal-border-strong: #c7ccd6;
-  --portal-divider: #eceef2;
+  --portal-card-elevated: var(--spotify-light-surface);
+  --portal-border: #e3e3e3;
+  --portal-border-strong: var(--spotify-light-border);
+  --portal-divider: #ececec;
 
-  --portal-text: #1a1d24;
-  --portal-text-soft: #454a54;
-  --portal-text-muted: #5d616d;
-  --portal-text-faint: #9ca3af;
+  --portal-text: #121212;
+  --portal-text-soft: #3a3a3a;
+  --portal-text-muted: #6a6a6a;
+  --portal-text-faint: #8f8f8f;
 
   // Assistant chips use a neutral, measured contrast pair instead of category
   // accent tints. This keeps compact labels legible in both themes.
-  --assistant-chip-bg: #e3e6ec;
+  --assistant-chip-bg: var(--spotify-light-surface);
   --assistant-chip-text: #2d313a;
-  --assistant-chip-border: #b8bfca;
-  --assistant-chip-hover-bg: #d8dce4;
+  --assistant-chip-border: var(--spotify-light-border);
+  --assistant-chip-hover-bg: #e2e2e2;
   --assistant-chip-hover-border: #9199a7;
-  --assistant-chip-selected-bg: #dc2626;
-  --assistant-chip-selected-text: #ffffff;
-  --assistant-chip-selected-border: #b91c1c;
+  --assistant-chip-selected-bg: var(--spotify-green);
+  --assistant-chip-selected-text: #000000;
+  --assistant-chip-selected-border: var(--spotify-green-border);
   --assistant-bubble-bg: #f8f9fb;
   --assistant-card-bg: #ffffff;
-  --assistant-card-border: #c7ccd6;
-  --assistant-card-shadow: 0 8px 24px rgba(26, 29, 36, 0.09);
-  --assistant-action-bg: #f2f4f7;
-  --assistant-list-active-bg: #fff1f1;
+  --assistant-card-border: var(--spotify-light-border);
+  --assistant-card-shadow: 0 8px 24px rgba(18, 18, 18, 0.09);
+  --assistant-action-bg: var(--spotify-light-surface);
+  --assistant-list-active-bg: #fdeced;
   --assistant-list-active-border: #dc8b8b;
   --assistant-danger: #b4232f;
   --assistant-danger-soft: #fde8ea;
@@ -77,22 +114,24 @@
   --assistant-badge-border: #aeb8c8;
   --assistant-badge-text: #263247;
 
-  // Five accents authored in OKLCH at matched lightness/chroma (L=58%,
-  // C=0.19), varying only hue, so none visually dominates the others — the
-  // structural fix for all five previously resolving to the same #dc2626.
-  // `-soft` uses color-mix() for a true 6% tint over --portal-card (the
-  // card-wayfinding mechanism), falling back to rgba() for browsers
-  // without color-mix() support.
-  --accent-live: #bc3131;
-  --accent-live-strong: #dc2626;
-  --accent-live-soft: color-mix(in oklch, var(--accent-live) 6%, var(--portal-card));
-  --accent-discover: #435dd0;
-  --accent-discover-soft: color-mix(in oklch, var(--accent-discover) 6%, var(--portal-card));
-  --accent-streaming: #08734d;
-  --accent-streaming-soft: color-mix(in oklch, var(--accent-streaming) 6%, var(--portal-card));
-  --accent-sports: #8a520d;
-  --accent-sports-soft: color-mix(in oklch, var(--accent-sports) 6%, var(--portal-card));
-  --accent-editorial: #c34fc0;
+  // Accent system collapsed from 5 arbitrary OKLCH hues to Spotify's own
+  // 4-color semantic set (green/red/blue/orange) + one neutral, per the
+  // reskin decision. Variable NAMES kept unchanged so `_card-accent.scss`
+  // and the ~49 consuming files need zero edits — only values moved.
+  // Green is reserved for "primary/interactive" (discover), NOT "live", so
+  // live keeps the negative-red semantic instead (see design-tokens rationale
+  // in design-system/guiatv/MASTER.md). Every vertical badge/card must pair
+  // its tone with a label/icon — colour alone no longer disambiguates 5 ways.
+  --accent-live: var(--spotify-negative);
+  --accent-live-strong: #e0323f;
+  --accent-live-soft: color-mix(in oklch, var(--accent-live) 8%, var(--portal-card));
+  --accent-discover: var(--spotify-green);
+  --accent-discover-soft: color-mix(in oklch, var(--accent-discover) 8%, var(--portal-card));
+  --accent-streaming: var(--spotify-announce);
+  --accent-streaming-soft: color-mix(in oklch, var(--accent-streaming) 8%, var(--portal-card));
+  --accent-sports: var(--spotify-warning);
+  --accent-sports-soft: color-mix(in oklch, var(--accent-sports) 8%, var(--portal-card));
+  --accent-editorial: #3a3a3a;
   --accent-editorial-soft: color-mix(in oklch, var(--accent-editorial) 6%, var(--portal-card));
 
   // Match-status semantics (live/postponed) for the football vertical.
@@ -113,7 +152,9 @@
   --football-border: var(--portal-border);
   --football-muted: var(--portal-text-muted);
   --football-provider: var(--accent-streaming);
-  --football-win: #16734f;
+  // Desaturated relative to --spotify-green so "match won" never reads as
+  // the same signal as a primary CTA/button.
+  --football-win: #1a8f52;
   --football-draw: var(--portal-text-muted);
   --football-loss: var(--status-live);
 
@@ -123,7 +164,7 @@
   --guide-surface-strong: var(--portal-surface-strong);
   --guide-border: var(--portal-border);
   --guide-border-strong: var(--portal-border-strong);
-  --guide-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --guide-shadow: 0 4px 12px rgba(18, 18, 18, 0.08);
   --guide-accent: var(--accent-live);
   --guide-accent-live: var(--accent-live);
   --guide-accent-discover: var(--accent-discover);
@@ -147,9 +188,12 @@
   --portal-pill-shelf-h: 4.75rem;
   --shell-sticky-offset: calc(var(--unified-top-nav-h) + var(--portal-pill-shelf-h));
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.12);
+  // Elevation stays shadow-based (visible) in light mode; dark mode instead
+  // communicates elevation via surface-lightness steps (see the dark block
+  // below), matching Spotify's own dark-first UI.
+  --shadow-sm: 0 1px 2px rgba(18, 18, 18, 0.06);
+  --shadow-md: 0 4px 16px rgba(18, 18, 18, 0.1);
+  --shadow-lg: 0 12px 32px rgba(18, 18, 18, 0.16);
 
   // Cinematic hero surfaces — constant across themes: image-backed heroes
   // (content detail, channel detail) stay dark in light and dark modes.
@@ -210,40 +254,43 @@
 // DARK THEME — driven by `data-theme="dark"` on <html>, set by ThemeService
 // (and, pre-hydration, by the inline no-flash script in index.html).
 // `--guide-*` aliases above reference `--portal-*`, so they adapt automatically.
+// This is the Spotify-native palette: near-black surfaces stepping up in
+// lightness (#121212 → #181818 → #1f1f1f → #242424 hover), flat (no shadow)
+// elevation, single green (#1ed760) interactive accent.
 // ─────────────────────────────────────────────────────────────────────────────
 html[data-theme='dark'] {
   color-scheme: dark;
 
-  --portal-bg: #0e1116;
-  --portal-bg-deep: #0a0c10;
-  --portal-bg-elevated: #14181f;
-  --portal-surface: #151a22;
-  --portal-surface-strong: #1d242f;
-  --portal-surface-soft: rgba(21, 26, 34, 0.78);
-  --portal-card: #171d26;
-  --portal-card-elevated: #1e2530;
-  --portal-border: #2a323e;
-  --portal-border-strong: #3c4654;
-  --portal-divider: #232a35;
+  --portal-bg: var(--spotify-bg-base);
+  --portal-bg-deep: var(--spotify-bg-press);
+  --portal-bg-elevated: var(--spotify-bg-highlight);
+  --portal-surface: var(--spotify-bg-highlight);
+  --portal-surface-strong: var(--spotify-bg-elevated);
+  --portal-surface-soft: rgba(24, 24, 24, 0.78);
+  --portal-card: var(--spotify-card);
+  --portal-card-elevated: var(--spotify-card-dark);
+  --portal-border: rgba(255, 255, 255, 0.1);
+  --portal-border-strong: var(--spotify-border-gray);
+  --portal-divider: rgba(255, 255, 255, 0.08);
 
-  --portal-text: #e8ebf1;
-  --portal-text-soft: #c5cbd6;
-  --portal-text-muted: #9aa3b0;
-  --portal-text-faint: #67707d;
+  --portal-text: var(--spotify-white);
+  --portal-text-soft: var(--spotify-near-white);
+  --portal-text-muted: var(--spotify-silver);
+  --portal-text-faint: #727272;
 
-  --assistant-chip-bg: #242c38;
-  --assistant-chip-text: #e8ebf1;
-  --assistant-chip-border: #465160;
-  --assistant-chip-hover-bg: #303a48;
-  --assistant-chip-hover-border: #667284;
-  --assistant-chip-selected-bg: #dc2626;
-  --assistant-chip-selected-text: #ffffff;
-  --assistant-chip-selected-border: #f87171;
-  --assistant-bubble-bg: #151a22;
-  --assistant-card-bg: #1e2530;
-  --assistant-card-border: #465160;
-  --assistant-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
-  --assistant-action-bg: #171d26;
+  --assistant-chip-bg: var(--spotify-bg-elevated);
+  --assistant-chip-text: var(--spotify-white);
+  --assistant-chip-border: var(--spotify-border-gray);
+  --assistant-chip-hover-bg: var(--spotify-card-hover);
+  --assistant-chip-hover-border: var(--spotify-light-border);
+  --assistant-chip-selected-bg: var(--spotify-green);
+  --assistant-chip-selected-text: #000000;
+  --assistant-chip-selected-border: var(--spotify-green-border);
+  --assistant-bubble-bg: var(--spotify-bg-highlight);
+  --assistant-card-bg: var(--spotify-card-dark);
+  --assistant-card-border: var(--spotify-border-gray);
+  --assistant-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --assistant-action-bg: var(--spotify-bg-base);
   --assistant-list-active-bg: #2a181d;
   --assistant-list-active-border: #9d4b55;
   --assistant-danger: #ff858e;
@@ -252,56 +299,56 @@ html[data-theme='dark'] {
   --assistant-badge-border: #52627a;
   --assistant-badge-text: #eef2f8;
 
-  // Same hues, raised lightness for AA contrast against the dark surfaces.
-  // `-soft` variants auto-adapt via color-mix over the dark --portal-card.
-  // `--accent-live-strong` is a constant fill for white-text buttons (white on
-  // the lifted accent fails AA; white on red-600 passes in both themes).
-  --accent-live: #e05555;
-  --accent-live-strong: #dc2626;
-  // Live status text sits on the soft tint, where the lifted accent wins.
-  --status-live: #ee7171;
-  --accent-live-soft: color-mix(in oklch, var(--accent-live) 9%, var(--portal-card));
-  --accent-discover: #8398f6;
-  --accent-discover-soft: color-mix(in oklch, var(--accent-discover) 9%, var(--portal-card));
-  --accent-streaming: #43d09b;
-  --accent-streaming-soft: color-mix(in oklch, var(--accent-streaming) 9%, var(--portal-card));
-  --accent-sports: #eba448;
-  --accent-sports-soft: color-mix(in oklch, var(--accent-sports) 9%, var(--portal-card));
-  --accent-editorial: #e181d9;
-  --accent-editorial-soft: color-mix(in oklch, var(--accent-editorial) 9%, var(--portal-card));
+  // Same collapsed 4-color set as light, unchanged — Spotify's brand accents
+  // do not invert with theme, only surfaces/text do.
+  --accent-live: var(--spotify-negative);
+  --accent-live-strong: #e0323f;
+  --status-live: var(--spotify-negative);
+  --accent-live-soft: color-mix(in oklch, var(--accent-live) 10%, var(--portal-card));
+  --accent-discover: var(--spotify-green);
+  --accent-discover-soft: color-mix(in oklch, var(--accent-discover) 10%, var(--portal-card));
+  --accent-streaming: var(--spotify-announce);
+  --accent-streaming-soft: color-mix(in oklch, var(--accent-streaming) 10%, var(--portal-card));
+  --accent-sports: var(--spotify-warning);
+  --accent-sports-soft: color-mix(in oklch, var(--accent-sports) 10%, var(--portal-card));
+  --accent-editorial: var(--spotify-silver);
+  --accent-editorial-soft: color-mix(in oklch, var(--accent-editorial) 8%, var(--portal-card));
 
-  --football-win: #55d5a6;
+  --football-win: #3fcf8e;
 
-  --guide-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --guide-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  // Elevation via lightness step, not shadow — dark cards are already flat
+  // against the near-black background, so shadows stay reserved for
+  // floating layers (dropdowns/modals) that need to visually separate.
+  --shadow-sm: none;
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
 }
 
 // Fallback when JS has not yet run (e.g. SSR HTML before hydration, or
 // JavaScript disabled): honor the OS preference for `system` users.
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']):not([data-theme='dark']) {
-    --portal-bg: #0e1116;
-    --portal-bg-deep: #0a0c10;
-    --portal-bg-elevated: #14181f;
-    --portal-surface: #151a22;
-    --portal-surface-strong: #1d242f;
-    --portal-surface-soft: rgba(21, 26, 34, 0.78);
-    --portal-card: #171d26;
-    --portal-card-elevated: #1e2530;
-    --portal-border: #2a323e;
-    --portal-border-strong: #3c4654;
-    --portal-divider: #232a35;
-    --portal-text: #e8ebf1;
-    --portal-text-soft: #c5cbd6;
-    --portal-text-muted: #9aa3b0;
-    --portal-text-faint: #67707d;
-    --assistant-bubble-bg: #151a22;
-    --assistant-card-bg: #1e2530;
-    --assistant-card-border: #465160;
-    --assistant-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.38);
-    --assistant-action-bg: #171d26;
+    --portal-bg: #121212;
+    --portal-bg-deep: #0a0a0a;
+    --portal-bg-elevated: #181818;
+    --portal-surface: #181818;
+    --portal-surface-strong: #1f1f1f;
+    --portal-surface-soft: rgba(24, 24, 24, 0.78);
+    --portal-card: #181818;
+    --portal-card-elevated: #252525;
+    --portal-border: rgba(255, 255, 255, 0.1);
+    --portal-border-strong: #4d4d4d;
+    --portal-divider: rgba(255, 255, 255, 0.08);
+    --portal-text: #ffffff;
+    --portal-text-soft: #cbcbcb;
+    --portal-text-muted: #b3b3b3;
+    --portal-text-faint: #727272;
+    --assistant-bubble-bg: #181818;
+    --assistant-card-bg: #252525;
+    --assistant-card-border: #4d4d4d;
+    --assistant-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --assistant-action-bg: #121212;
     --assistant-list-active-bg: #2a181d;
     --assistant-list-active-border: #9d4b55;
     --assistant-danger: #ff858e;
@@ -309,17 +356,17 @@ html[data-theme='dark'] {
     --assistant-badge-bg: #263344;
     --assistant-badge-border: #52627a;
     --assistant-badge-text: #eef2f8;
-    --accent-live: #e05555;
-    --accent-live-strong: #dc2626;
-    --status-live: #ee7171;
-    --accent-discover: #8398f6;
-    --accent-streaming: #43d09b;
-    --accent-sports: #eba448;
-    --accent-editorial: #e181d9;
-    --guide-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+    --accent-live: #f3727f;
+    --accent-live-strong: #e0323f;
+    --status-live: #f3727f;
+    --accent-discover: #1ed760;
+    --accent-streaming: #539df5;
+    --accent-sports: #ffa42b;
+    --accent-editorial: #b3b3b3;
+    --guide-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    --shadow-sm: none;
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
     color-scheme: dark;
   }
 }
