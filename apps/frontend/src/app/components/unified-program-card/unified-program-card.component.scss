@@ -1,5 +1,18 @@
 @use '../../../styles/card-accent' as cards;
 
+// Angular custom elements default to `display: inline` with no intrinsic
+// height, so in a CSS Grid (results grids on discover/streaming views) the
+// host never stretched to the row's track height — each card sized to its
+// own content instead, producing the ragged/misaligned row heights this
+// fixes. `height: 100%` only resolves against a grid/flex parent that
+// actually gives the row a height (grid stretch, or a rail with a fixed
+// row height); against a plain auto-height parent it resolves as auto, so
+// this is safe for the horizontal-rail usages too.
+:host {
+  display: block;
+  height: 100%;
+}
+
 .program-card {
   border: none;
   background: transparent;
@@ -12,6 +25,9 @@
 // except epg-row (the EPG grid/list work owns that variant's box model and
 // is being built in parallel; this stays out of it entirely).
 .program-card--boxed {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   border: 1px solid var(--portal-border);
   border-radius: var(--radius-md);
   background: var(--portal-card);
@@ -161,6 +177,10 @@
   display: grid;
   gap: 0.8rem;
   padding: 0 0 0.5rem;
+  // Pins the CTA row to the card's bottom edge regardless of how many lines
+  // the title/description/meta above it take — keeps action rows aligned
+  // across a grid row even when content length varies card to card.
+  margin-top: auto;
 }
 
 .program-card__eyebrow {
