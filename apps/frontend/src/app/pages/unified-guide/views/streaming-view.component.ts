@@ -316,14 +316,27 @@ export class StreamingViewComponent {
 
   toggleAvailability(value: string): void {
     // Was single-select (cleared the set before adding), unlike toggleGenre()
-    // right below it — the API/facade already accepts multiple availability
-    // values (resolveStreamingAvailability), so this only needed to stop
-    // forcing exclusivity in the UI.
-    const next = new Set(this.guideState.streamingFilters().availability);
-    if (next.has(value as any)) {
-      next.delete(value as any);
+    // right below it — the API/facade already accepts multiple SPECIFIC
+    // availability values (resolveStreamingAvailability), so specific values
+    // can multi-select freely. But 'streaming' is the generic/default bucket,
+    // not a specific one — TvDataFacade.resolveStreamingAvailability already
+    // drops it from the outgoing request whenever any specific value is also
+    // selected, so leaving it checked in the UI alongside a specific value
+    // was misleading (looked active, was silently ignored). Keep the two
+    // kinds mutually exclusive here so the chip state matches what's
+    // actually sent: picking a specific value clears 'streaming', and
+    // picking 'streaming' clears every specific value.
+    const current = this.guideState.streamingFilters().availability;
+    let next: Set<string>;
+    if (value === 'streaming') {
+      next = current.includes('streaming' as any) ? new Set() : new Set(['streaming']);
     } else {
-      next.add(value as any);
+      next = new Set(current.filter((entry) => entry !== 'streaming'));
+      if (next.has(value)) {
+        next.delete(value);
+      } else {
+        next.add(value);
+      }
     }
     this.guideState.updateStreamingFilters({
       availability: Array.from(next) as any,
