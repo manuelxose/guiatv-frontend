@@ -67,7 +67,7 @@ function fromKey(key: string): Date | null {
       overflow: hidden;
       padding: 0.4rem;
       border: 1px solid var(--guide-border, var(--portal-border));
-      border-radius: 1rem;
+      border-radius: var(--radius-xl);
       background: var(--guide-surface-strong, var(--portal-surface-strong));
       box-shadow: var(--shadow-sm);
     }
@@ -81,7 +81,7 @@ function fromKey(key: string): Date | null {
       align-items: center;
       justify-content: center;
       border: 1px solid var(--portal-border);
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       background: var(--portal-card);
       color: var(--portal-text-muted);
       font-size: 1rem;
@@ -103,7 +103,7 @@ function fromKey(key: string): Date | null {
       min-width: 44px;
       min-height: 44px;
       padding: 0.4rem 0.75rem;
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       border: 1px solid transparent;
       background: transparent;
       color: var(--portal-text-muted);
@@ -130,7 +130,7 @@ function fromKey(key: string): Date | null {
       min-height: 44px;
       padding: 0.25rem 0.4rem;
       border: 1px solid var(--portal-border);
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       background: var(--portal-card);
       color: var(--portal-text);
       font-size: 0.8125rem;

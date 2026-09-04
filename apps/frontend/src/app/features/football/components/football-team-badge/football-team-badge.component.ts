@@ -53,7 +53,7 @@ import { FootballTeamDTO } from '@app/features/football/football.models';
       width: 2rem;
       height: 2rem;
       flex: 0 0 auto;
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       overflow: hidden;
       background: var(--portal-surface-strong);
       border: 1px solid var(--portal-border);

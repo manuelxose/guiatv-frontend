@@ -76,7 +76,7 @@
   align-items: center;
   justify-content: center;
   min-height: 2.25rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--guide-border);
   background: var(--guide-surface);
   color: var(--guide-text);
@@ -122,7 +122,7 @@
   min-height: 44px;
   flex: 0 0 auto;
   border: 1px solid var(--portal-border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface);
   color: var(--portal-text);
   padding: 0 1rem;
@@ -340,8 +340,16 @@
 .live-view__directory-chip:hover,
 .live-view__section-action:hover,
 .live-view__channel-link:hover {
-  transform: translateY(-2px);
   background: color-mix(in srgb, var(--guide-surface-strong) 92%, var(--guide-text) 8%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .live-view__channel-chip:hover,
+  .live-view__directory-chip:hover,
+  .live-view__section-action:hover,
+  .live-view__channel-link:hover {
+    transform: translateY(-4px);
+  }
 }
 
 // SSR emits both day representations. CSS is the viewport source of truth:

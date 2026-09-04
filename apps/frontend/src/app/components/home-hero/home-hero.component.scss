@@ -9,8 +9,8 @@
   height: 100%;
   overflow: hidden;
   border-radius: 1.35rem;
-  background: #090d16;
-  color: #fff;
+  background: var(--hero-bg);
+  color: var(--hero-text);
 }
 
 .home-hero__backdrop,
@@ -70,7 +70,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  color: #fecaca;
+  color: color-mix(in oklch, var(--hero-accent-live) 55%, white);
   font-size: 0.72rem;
   font-weight: 850;
   letter-spacing: 0.14em;
@@ -80,9 +80,9 @@
 .home-hero__eyebrow span {
   width: 0.55rem;
   height: 0.55rem;
-  border-radius: 999px;
-  background: #ef4444;
-  box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-pill);
+  background: var(--hero-accent-live);
+  box-shadow: 0 0 0 0.25rem color-mix(in oklch, var(--hero-accent-live) 20%, transparent);
 }
 
 .home-hero h1 {
@@ -107,7 +107,7 @@
 
 .home-hero__meta {
   margin-top: 0.85rem;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--hero-text-muted);
   font-size: 0.86rem;
   font-weight: 700;
 }
@@ -117,7 +117,7 @@
   max-width: 58ch;
   margin-top: 0.85rem;
   overflow: hidden;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--hero-text-muted);
   font-size: 0.95rem;
   line-height: 1.55;
   -webkit-box-orient: vertical;
@@ -138,25 +138,39 @@
   min-height: 44px;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   text-decoration: none;
   font-size: 0.84rem;
   font-weight: 800;
+  transition: transform var(--motion-fast) var(--motion-ease), background-color var(--motion-fast) var(--motion-ease);
 }
 
 .home-hero__primary {
-  // red-600: white on red-500 is 3.76:1 (fails AA); red-600 gives 4.83:1.
-  background: #dc2626;
-  color: #fff;
+  background: var(--spotify-green);
+  color: #000;
   padding: 0 1.15rem;
 }
 
+.home-hero__primary:hover {
+  background: var(--spotify-green);
+  transform: scale(1.02);
+}
+
+.home-hero__primary:active {
+  background: var(--spotify-green-press);
+  transform: scale(0.97);
+}
+
 .home-hero__secondary {
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid var(--hero-border);
   background: rgba(0, 0, 0, 0.3);
-  color: #fff;
+  color: var(--hero-text);
   padding: 0 1.15rem;
   backdrop-filter: blur(10px);
+}
+
+.home-hero__secondary:hover {
+  transform: scale(1.02);
 }
 
 .home-hero__progress {
@@ -172,7 +186,7 @@
 .home-hero__progress span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #ef4444, #f97316);
+  background: linear-gradient(90deg, var(--hero-accent-live), var(--accent-sports));
 }
 
 .home-hero__controls {
@@ -187,9 +201,9 @@
 
 .home-hero__controls button {
   min-width: 44px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid var(--hero-border);
   background: rgba(0, 0, 0, 0.42);
-  color: #fff;
+  color: var(--hero-text);
 }
 
 .home-hero__controls .home-hero__dot {
@@ -206,17 +220,17 @@
   content: '';
   width: 0.55rem;
   height: 0.55rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.5);
 }
 
 .home-hero__controls .home-hero__dot--active::after {
   width: 1.5rem;
-  background: #fff;
+  background: var(--hero-text);
 }
 
 .home-hero :focus-visible {
-  outline: 3px solid #fff;
+  outline: 3px solid var(--spotify-green);
   outline-offset: 3px;
 }
 

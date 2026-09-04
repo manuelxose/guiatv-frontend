@@ -2,14 +2,18 @@
 
 > **Source of truth for every UI change in this repository.**
 > When building a page, first check `pages/<page>.md`; if it exists its rules
-> override this file. This document is the coherent GuiaTV identity,
-> interpreting UI UX Pro Max research (2026-08-22) over the app's existing
-> token architecture. It intentionally replaces the raw tool-generated
-> template (rose/pink palette) which does not match this product.
+> override this file. This document is the coherent GuiaTV identity: a
+> Spotify-inspired dark-first reskin (2026-09-04), interpreting the raw
+> token extraction in `design/spotify-design-system-*` over the app's
+> existing token architecture. It replaces the prior red/OKLCH 5-accent
+> system (2026-08-22 revision), which is retained only in git history.
 
 **Product:** Guía de Programación TV — TV en directo, streaming, deportes/fútbol y contenido editorial en español.
 **Stack:** Angular 20 standalone + SSR, Tailwind 3 utilities, semantic CSS tokens.
-**Themes:** Light + Dark are both first-class. The system is *not* a simple inversion.
+**Themes:** Light + Dark are both first-class. Dark is the primary/native mode
+(near-black surfaces, flat elevation) — light is a coherent derived
+counterpart, not an afterthought; the source reference only ever documented
+the dark palette.
 
 ---
 
@@ -24,44 +28,54 @@
 
 ## 2. Color system (semantic tokens — `src/styles/design-tokens.scss`)
 
-Base palette lives in `design-tokens.scss` (`--portal-*`, `--guide-*`). Rules:
+Base palette lives in `design-tokens.scss` (`--portal-*`, `--spotify-*`, `--accent-*`). Rules:
 
 - **NEVER hardcode** `slate-*`, `gray-*`, `text-white`, `bg-white`, `bg-black`,
-  `#081018`, or raw hex for surfaces/text. Use `bg-[var(--portal-*)]`,
+  raw hex, or raw rgba for surfaces/text. Use `bg-[var(--portal-*)]`,
   `text-[var(--portal-*)]`, `border-[var(--portal-border)]`.
-- Exceptions: `text-white` on solid red accent buttons; `bg-black/<opacity>` modal backdrops.
+- Exceptions: `text-white`/`#000` on solid accent buttons (contrast against a
+  fixed fill, not a themed surface); `bg-black/<opacity>` modal backdrops;
+  genuine per-brand colors (platform/streaming-service badges, social share
+  buttons) — those never adapt to the token system, they're identity marks.
+- **Dark surfaces step up in lightness, not shadow:** `--portal-bg` #121212 →
+  `--portal-surface`/`--portal-bg-elevated` #181818 → `--portal-surface-strong`
+  #1f1f1f → hover #242424. Cards are flat in dark mode; `--shadow-sm` is
+  literally `none` there. Light mode keeps real drop shadows.
 
-**Five vertical accents (OKLCH, matched L/C, hue-only separation):**
+**Accent system — one primary (Spotify green) + Spotify's own 4-color semantic set, collapsed from the prior 5 arbitrary OKLCH hues:**
 
-| Accent | Token | Use |
-|---|---|---|
-| Live / TV | `--accent-live` (#bc3131 / dark #e05555) | TV guide, live status, now line |
-| Discovery | `--accent-discover` | Qué ver, recommendations |
-| Streaming | `--accent-streaming` | Platforms, providers |
-| Sports | `--accent-sports` | Football vertical, warning status |
-| Editorial | `--accent-editorial` | Blog, rankings |
+| Accent | Token | Value (both themes) | Use |
+|---|---|---|---|
+| Discovery / primary | `--accent-discover` | `#1ed760` (Spotify green) | Primary CTA, recommendations, "go" affordance — **never** used for "live" |
+| Live / TV | `--accent-live` | `#f3727f` (spotify-negative) | TV guide, live status, now line, errors |
+| Streaming | `--accent-streaming` | `#539df5` (spotify-announce) | Platforms, providers |
+| Sports | `--accent-sports` | `#ffa42b` (spotify-warning) | Football vertical, warning status |
+| Editorial | `--accent-editorial` | neutral (silver dark / `#3a3a3a` light) | Blog, rankings — deliberately colorless, "premium/neutral" read |
 
-- `-soft` variants (`color-mix` 6% light / 9% dark over `--portal-card`) are the card wayfinding tint — accent on the card edge, not full saturated backgrounds.
+- `-soft` variants (`color-mix` 8-10% over `--portal-card`) are the card wayfinding tint — accent on the card edge, not full saturated backgrounds.
 - **Status aliases:** `--status-live: var(--accent-live)`; `--status-warning: var(--accent-sports)`.
-  Live/warning must **never** be communicated by color alone — always pair with a text label ("En directo", "Finalizado", "Aplazado") or icon.
+  With only 4 colors covering 5 verticals + statuses, color is now **never sufficient alone** for any of them — always pair with a text label ("En directo", "Finalizado", "Aplazado") or icon, not just for live/warning.
 - Functional text must use `--portal-text` or `--portal-text-soft`; `--portal-text-muted` for secondary; `--portal-text-faint` only for decoration.
 - Active/selected pills: inverted surface `bg-[var(--portal-text)] text-[var(--portal-bg)]`.
+- **Contrast rule for the green accent:** `#1ed760` on `#121212`/`#181818`/`#1f1f1f` sits near the AA boundary (~3.5-4.5:1) for small text. Reserve green for large text, icons, and buttons filled solid with black text (`#000` on green passes ~9:1) — never as small text color sitting directly on a dark surface.
+- `--football-win` (#1a8f52 light / #3fcf8e dark) is intentionally a *different* green from `--spotify-green` — "match won" must never read as the same signal as a primary CTA.
 
 ## 3. Typography
 
-- `--font-sans` system stack (zero font-download cost — keep it).
+- `--font-sans`: **Inter** (self-hosted via `@fontsource/inter`, weights 400/700, `font-display: swap`), falling back to the system stack. This supersedes the prior zero-font-cost decision — the Spotify identity depends on Inter's tight, bold headline character.
 - Modular scale tokens: `--text-2xs` → `--text-hero`. Body defaults `--text-md`; never below `--text-xs` for readable data; `--text-2xs` only for dense EPG/table metadata.
+- **Eyebrow/section-label pattern** (`.eyebrow` utility, `--text-eyebrow`): uppercase, `letter-spacing: 0.04em`, weight 700 — Spotify's "RECENTLY PLAYED" treatment for section headers and filter-chip labels.
+- Headings: tighter tracking (`-0.01em` to `-0.02em`), weight 700. Body 400.
 - **Times, scores, standings, rankings: `font-variant-numeric: tabular-nums`** (utility `.tnum`) so cells never jitter.
-- Line-height 1.5 body; 1.25–1.3 headings. Headings 600–700 weight, body 400.
+- Line-height 1.5 body; 1.25–1.3 headings.
 - Labels under 12px only allowed with 44px+ hit areas and decorative purpose.
 
 ## 4. Spacing, radius, elevation, motion
 
-- Spacing: `--space-1`(0.25rem) → `--space-10`(2.5rem). Section rhythm 1.5–2.5rem.
-- Radii: `--radius-sm`(0.9rem) cards/chips, `--radius-md`(1.2rem) modals, `--radius-pill` pills.
-  No giant uniform rounding — EPG cells and dense rows use small radii (0.25–0.5rem).
-- Elevation: `--shadow-sm/md/lg` only; subtle. EPG uses borders + `--guide-shadow`, not per-cell shadows.
-- Motion: 150–200ms hovers/color shifts; 250–300ms drawers/modals; honor `prefers-reduced-motion` everywhere.
+- Spacing: `--space-1`(0.25rem) → `--space-10`(2.5rem), plus `--space-12`(3rem)/`--space-24`(6rem) for Spotify-scale section gaps. Section rhythm 1.5–2.5rem, up to 6rem between major sections.
+- Radii — redesigned tight scale, replacing the old oversized 0.9-1.9rem set: `--radius-sm`(4px) inputs/small badges, `--radius-md`(8px) cards/dropdowns, `--radius-lg`(12px) large cards/feature tiles, `--radius-xl`(16px) large modals/sheets, `--radius-pill`(9999px) — reserved for **buttons, chips, tags only**, Spotify's signature pill shape. Cards stay tight (4-12px), never pill-shaped.
+- Elevation is dark-first: dark mode communicates hierarchy via surface-lightness steps (§2), not shadow — `--shadow-sm: none` there, `--shadow-md`/`--shadow-lg` reserved for floating layers (dropdowns, modals) that must visually separate. Light mode keeps real shadows (`--shadow-sm/md/lg`, subtle).
+- Motion tokens: `--motion-fast`(120ms) micro-interactions (button press), `--motion-base`(200ms) hovers/card elevation, `--motion-slow`(320ms) drawers/modals, `--motion-ease` (`cubic-bezier(0.4,0,0.2,1)`). Card hover = elevate to `--portal-card-elevated` + `translateY(-4px)`; button press = `scale(0.97)`. Always gate transform/motion inside `@media (prefers-reduced-motion: no-preference)`.
 - Z scale tokens only: `--z-content…--z-toast` (`--z-sticky:10`, `--z-header:20`, `--z-bottom-nav:30`). No ad-hoc z-index.
 
 ## 5. Layout & responsive
@@ -114,4 +128,16 @@ All cards share tokens; no new ad-hoc variants without updating this file.
 
 ## Research provenance
 
-Compiled from UI UX Pro Max searches (EPG timeline, football live scores, streaming discovery, mobile bottom nav, dark mode, skeleton/empty/error, nav overflow) executed 2026-08-22. Zero-result searches (football palettes, editorial landing) treated as fallback: general rules above apply.
+Color/typography/radius/motion system (§2-4) reskinned 2026-09-04 from a raw
+token extraction of spotify.com (`design/spotify-design-system-*`), with
+shadows/motion/breakpoints/component-state specs designed fresh where the
+source was silent or broken (its radius scale and `--text-button` value were
+discarded as non-monotonic/corrupt extraction artifacts — see
+`C:\Users\Admin\.claude\plans\debes-pillar-la-carpeta-inherited-zebra.md` for
+the full rationale and file-by-file rollout).
+
+Layout/nav/component-inventory/states/images/a11y (§1, §5-10) remain from the
+UI UX Pro Max research (EPG timeline, football live scores, streaming
+discovery, mobile bottom nav, dark mode, skeleton/empty/error, nav overflow)
+executed 2026-08-22 — those are structural, not color-driven, and were not
+part of this reskin.

@@ -16,7 +16,7 @@
   flex: 0 0 auto;
   min-height: 44px;
   padding: 0.5rem 1rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: transparent;
   color: var(--portal-text-muted);
@@ -36,7 +36,7 @@
   min-height: 44px;
   padding: 0.5rem 1.5rem;
   border: 1px solid var(--portal-border);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-card);
   color: var(--portal-text);
   font-weight: 700;
@@ -47,7 +47,7 @@
 
 .empty {
   border: 1px dashed var(--portal-border-strong);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   padding: 2rem;
   text-align: center;
 }
@@ -59,7 +59,7 @@
 @media (min-width: 1024px) { .skeleton { grid-template-columns: repeat(3, 1fr); } }
 .skeleton__card {
   height: 6.5rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   background: linear-gradient(90deg, var(--portal-surface-strong) 25%, var(--portal-card) 37%, var(--portal-surface-strong) 63%);
   background-size: 400% 100%;
   animation: football-news-skeleton 1.4s ease infinite;

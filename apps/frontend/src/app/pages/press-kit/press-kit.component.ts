@@ -115,8 +115,8 @@ import { MetaService } from '../../services/meta.service';
             <h3 class="text-sm font-semibold text-[var(--portal-text)] mb-3">Colores de marca</h3>
             <div class="flex gap-4 flex-wrap">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-red-500"></div>
-                <span class="text-sm text-[var(--portal-text-soft)]">#EF4444 (Rojo principal)</span>
+                <div class="w-8 h-8 rounded-lg bg-[var(--accent-live)]"></div>
+                <span class="text-sm text-[var(--portal-text-soft)]">#F3727F (Rojo principal)</span>
               </div>
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-lg bg-[var(--portal-bg)]"></div>

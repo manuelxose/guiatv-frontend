@@ -1,7 +1,7 @@
 .shell { max-width: 72rem; margin: 0 auto; padding: 1rem; min-width: 0; }
 
 .head { display: flex; align-items: center; gap: 0.875rem; margin-bottom: 0.75rem; }
-.head__logo { width: 3rem; height: 3rem; object-fit: contain; border-radius: 0.5rem; flex: 0 0 auto; }
+.head__logo { width: 3rem; height: 3rem; object-fit: contain; border-radius: var(--radius-md); flex: 0 0 auto; }
 .head__logo--fallback {
   display: inline-flex;
   align-items: center;
@@ -33,7 +33,7 @@
   flex: 0 0 auto;
   min-height: 44px;
   padding: 0.5rem 1rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: transparent;
   color: var(--portal-text-muted);
@@ -48,7 +48,7 @@
 
 .rows {
   border: 1px solid var(--portal-border);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   background: var(--portal-card);
   overflow: hidden;
 }
@@ -72,7 +72,7 @@ app-football-filter-bar { display: block; margin-bottom: 0.75rem; }
 
 .empty {
   border: 1px dashed var(--portal-border-strong);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   padding: 2rem;
   text-align: center;
 }
@@ -81,7 +81,7 @@ app-football-filter-bar { display: block; margin-bottom: 0.75rem; }
 .empty__link { color: var(--accent-sports); font-weight: 700; }
 .empty__skeleton {
   height: 12rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   background: linear-gradient(90deg, var(--portal-surface-strong) 25%, var(--portal-card) 37%, var(--portal-surface-strong) 63%);
   background-size: 400% 100%;
   animation: football-competition-skeleton 1.4s ease infinite;

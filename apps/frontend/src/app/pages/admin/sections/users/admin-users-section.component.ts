@@ -142,9 +142,9 @@ export class AdminUsersSectionComponent implements OnInit {
 
   getStatusBadge(status?: AdminUserStatus): string {
     if (status === 'suspended') {
-      return 'bg-amber-500/20 text-amber-200 border-amber-500/40';
+      return 'bg-[var(--spotify-warning)]/20 text-[var(--spotify-warning)] border-[var(--spotify-warning)]/40';
     }
-    return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40';
+    return 'bg-[var(--accent-discover)]/20 text-[var(--accent-discover)] border-[var(--accent-discover)]/40';
   }
 
   formatDate(value?: string): string {

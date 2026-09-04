@@ -236,7 +236,7 @@ interface ChatWindowState {
       display: inline-block;
       width: 4px;
       height: 4px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       background: var(--portal-text-muted);
       animation: typing-bounce 1.2s infinite cubic-bezier(0.16, 1, 0.3, 1);
     }

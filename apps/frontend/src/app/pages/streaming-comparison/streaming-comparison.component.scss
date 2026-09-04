@@ -154,7 +154,7 @@
 .offer__actions button {
   min-height: 2.75rem;
   border: 1px solid var(--guide-border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface-strong);
   color: var(--portal-text);
   padding: 0.55rem 0.85rem;

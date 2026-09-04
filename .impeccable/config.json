@@ -56,6 +56,30 @@
         ],
         "createdAt": "2026-09-03T22:10:05.694Z",
         "reason": "pre-existing [src]=\"ch.icon\" Angular binding for channel icon, guarded by *ngIf=ch.icon; not a literal empty/missing src"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-09-04T11:32:42.364Z",
+        "reason": "user confirmed: chose Inter self-hosted over system-font stack for Spotify-reskin brand fidelity (AskUserQuestion decision)"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/styles.scss"
+        ],
+        "createdAt": "2026-09-04T11:32:47.842Z",
+        "reason": "false positive: blockquote left-border is a standard editorial typographic convention, not a card accent tab; line predates this session's edits"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/app/components/epg-grid/epg-grid.component.scss"
+        ],
+        "createdAt": "2026-09-04T11:35:27.818Z",
+        "reason": "false positive: 2px neutral --portal-border-strong left-edge on EPG grid cells is a functional TV-guide time-slot separator, not a colored decorative accent tab"
       }
     ]
   }

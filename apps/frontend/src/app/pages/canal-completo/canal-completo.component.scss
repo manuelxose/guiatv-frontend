@@ -42,12 +42,12 @@ $transition-speed: 0.2s;
 .live-dot {
   height: 10px;
   width: 10px;
-  background-color: #ef4444;
+  background-color: var(--accent-live);
   border-radius: 50%;
   display: inline-block;
   position: relative;
   animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  box-shadow: 0 0 0 0 rgba(243, 114, 127, 0.7);
 
   &::before {
     content: "";
@@ -58,7 +58,7 @@ $transition-speed: 0.2s;
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background-color: #ef4444;
+    background-color: var(--accent-live);
     animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
@@ -75,11 +75,11 @@ $transition-speed: 0.2s;
 @keyframes pulse-dot {
   0%, 100% {
     opacity: 1;
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    box-shadow: 0 0 0 0 rgba(243, 114, 127, 0.7);
   }
   50% {
     opacity: 0.7;
-    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 8px rgba(243, 114, 127, 0);
   }
 }
 
@@ -339,7 +339,7 @@ main {
   background: var(--portal-surface-strong); // bg-[var(--portal-surface-strong)]/80
   border: 1px solid var(--portal-border);
   border-radius: 9999px; // rounded-full
-  color: #d1d5db; // text-[var(--portal-text-soft)]
+  color: var(--portal-text-soft);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -354,9 +354,9 @@ main {
   }
 
   &--active {
-    background: rgba(220, 38, 38, 0.15); // red-600 with opacity
-    border-color: rgba(220, 38, 38, 0.5);
-    color: #f87171; // red-400
+    background: rgba(30, 215, 96, 0.15); // spotify-green with opacity
+    border-color: rgba(30, 215, 96, 0.5);
+    color: var(--accent-discover);
   }
 
   &:active {
@@ -396,17 +396,19 @@ main {
 // VARIABLES
 // ============================================
 
-// Colores (coherentes con el diseño existente)
-$color-primary: #ef4444;
-$color-primary-dark: #dc2626;
-$color-primary-light: #f87171;
-$color-bg-base: #0a0a0f;
-$color-bg-elevated: #111118;
-$color-bg-card: #1a1a24;
-$color-bg-hover: #252530;
-$color-text-primary: #f8fafc;
-$color-text-secondary: #94a3b8;
-$color-text-muted: #64748b;
+// Colores (Spotify reskin — this block feeds a constant-dark sub-section
+// (TV-sheet time picker), so values stay literal hex rather than var()
+// (SCSS rgba($color, N) needs a real color, not a custom property).
+$color-primary: #1ed760;
+$color-primary-dark: #169c46;
+$color-primary-light: #5eeb92;
+$color-bg-base: #121212;
+$color-bg-elevated: #181818;
+$color-bg-card: #1f1f1f;
+$color-bg-hover: #242424;
+$color-text-primary: #ffffff;
+$color-text-secondary: #b3b3b3;
+$color-text-muted: #727272;
 $color-border: rgba(255, 255, 255, 0.08);
 $color-border-light: rgba(255, 255, 255, 0.12);
 
@@ -1191,11 +1193,11 @@ $bp-xl: 1280px;
   min-height: 44px;
   background: transparent;
   border: none;
-  color: #9ca3af;
+  color: var(--portal-text-muted);
   cursor: pointer;
   border-radius: 8px;
   transition: background 0.15s ease;
-  
+
   &:hover {
     background: var(--portal-surface-strong);
   }
@@ -1257,11 +1259,11 @@ $bp-xl: 1280px;
   }
   
   &--selected {
-    background: rgba(220, 38, 38, 0.15) !important;
-    color: #fca5a5 !important;
-    
+    background: rgba(30, 215, 96, 0.15) !important;
+    color: #5eeb92 !important;
+
     svg {
-      color: #dc2626;
+      color: #1db954;
     }
   }
   
@@ -1300,31 +1302,31 @@ $bp-xl: 1280px;
   
   // Selected state
   &--selected {
-    background: #dc2626 !important;
-    border-color: #dc2626 !important;
-    color: white !important;
+    background: #1db954 !important;
+    border-color: #1db954 !important;
+    color: #000000 !important;
   }
-  
-  // AHORA button - special styling with red accent
+
+  // AHORA button - special styling with the primary accent
   &--ahora {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.15), rgba(220, 38, 38, 0.05)) !important;
-    border: 1px solid rgba(220, 38, 38, 0.4) !important;
-    color: #fca5a5 !important;
+    background: linear-gradient(135deg, rgba(30, 215, 96, 0.15), rgba(30, 215, 96, 0.05)) !important;
+    border: 1px solid rgba(30, 215, 96, 0.4) !important;
+    color: #5eeb92 !important;
     font-weight: 600;
     padding: 12px 16px;
-    
+
     &:hover {
-      background: linear-gradient(135deg, rgba(220, 38, 38, 0.25), rgba(220, 38, 38, 0.1)) !important;
-      border-color: rgba(220, 38, 38, 0.6) !important;
+      background: linear-gradient(135deg, rgba(30, 215, 96, 0.25), rgba(30, 215, 96, 0.1)) !important;
+      border-color: rgba(30, 215, 96, 0.6) !important;
     }
   }
-  
+
   // Active (current) hour - subtle glow
   &--active {
-    border-color: rgba(220, 38, 38, 0.5) !important;
-    color: #fca5a5 !important;
-    box-shadow: 0 0 12px rgba(220, 38, 38, 0.2);
-    
+    border-color: rgba(30, 215, 96, 0.5) !important;
+    color: #5eeb92 !important;
+    box-shadow: 0 0 12px rgba(30, 215, 96, 0.2);
+
     &::before {
       content: '';
       position: absolute;
@@ -1332,7 +1334,7 @@ $bp-xl: 1280px;
       right: 4px;
       width: 6px;
       height: 6px;
-      background: #dc2626;
+      background: #1db954;
       border-radius: 50%;
       animation: pulse 2s infinite;
     }

@@ -5,7 +5,7 @@
   width: 3.5rem;
   height: 3.5rem;
   object-fit: contain;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface-strong);
   flex: 0 0 auto;
 }
@@ -38,7 +38,7 @@
   flex: 0 0 auto;
   min-height: 44px;
   padding: 0.5rem 1rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: transparent;
   color: var(--portal-text-muted);
@@ -53,7 +53,7 @@
 
 .rows {
   border: 1px solid var(--portal-border);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   background: var(--portal-card);
   overflow: hidden;
 }
@@ -65,7 +65,7 @@ app-football-filter-bar { display: block; margin-bottom: 0.75rem; }
 
 .empty {
   border: 1px dashed var(--portal-border-strong);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   padding: 2rem;
   text-align: center;
 }
@@ -74,7 +74,7 @@ app-football-filter-bar { display: block; margin-bottom: 0.75rem; }
 .empty__link { color: var(--accent-sports); font-weight: 700; }
 .empty__skeleton {
   height: 12rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   background: linear-gradient(90deg, var(--portal-surface-strong) 25%, var(--portal-card) 37%, var(--portal-surface-strong) 63%);
   background-size: 400% 100%;
   animation: football-team-skeleton 1.4s ease infinite;
