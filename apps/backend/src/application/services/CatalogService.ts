@@ -664,14 +664,21 @@ export class CatalogService {
     typeCount: number
   ): number {
     const normalizedTypeCount = Math.max(typeCount, 1);
-    const requestedLimit = Math.min(Math.max(query.limit || 24, 1), 48);
+    // Was clamped to 48/[12,24] — with 2 content types requested (the
+    // default movie+series grid), that left only 12 of a TMDB page's ~20
+    // results actually hydrated (the rest silently dropped by the
+    // `.slice(providerHydrationLimit)` in loadTmdbTypeItems), which is the
+    // root cause of "plataformas" pages showing very little content per
+    // page. Raised modestly, not unbounded — this still drives one
+    // provider-lookup TMDB call per hydrated item.
+    const requestedLimit = Math.min(Math.max(query.limit || 24, 1), 96);
     const multiplier =
       query.availability.includes('free') || query.platforms.length ? 2 : 1;
     const perTypeTarget = Math.ceil(
       (requestedLimit * multiplier) / normalizedTypeCount
     );
 
-    return Math.min(Math.max(perTypeTarget, 12), 24);
+    return Math.min(Math.max(perTypeTarget, 16), 40);
   }
 
   /**
@@ -689,10 +696,11 @@ export class CatalogService {
     const tvReadDetail = await measureTiming('media', () =>
       this.tvReadQueryService.getItem(programId)
     );
-    const tmdbType = this.inferTmdbTypeFromContentType(
-      this.inferTvReadContentType(tvReadDetail.item)
-    );
     const item = this.mapTvReadItemToCatalogItem(tvReadDetail.item);
+    const tmdbType = this.resolveProgramTmdbType(
+      this.inferTvReadContentType(tvReadDetail.item),
+      item.tmdbId
+    );
     const tmdbDetail =
       tmdbType && item.tmdbId
         ? await measureTiming('tmdb', () => this.fetchLocalTmdbDetail(item.tmdbId as number, tmdbType))
@@ -841,10 +849,11 @@ export class CatalogService {
     userId?: string
   ): Promise<CatalogDetailEnrichmentDTO> {
     const tvReadDetail = await this.tvReadQueryService.getItem(programId);
-    const tmdbType = this.inferTmdbTypeFromContentType(
-      this.inferTvReadContentType(tvReadDetail.item)
-    );
     const item = this.mapTvReadItemToCatalogItem(tvReadDetail.item);
+    const tmdbType = this.resolveProgramTmdbType(
+      this.inferTvReadContentType(tvReadDetail.item),
+      item.tmdbId
+    );
 
     const [whereToWatch, related, socialSummary, userInteraction] = await Promise.allSettled([
       measureTiming('providers', () => this.resolveTvReadProviders(tvReadDetail.item, tmdbType)),
@@ -1666,6 +1675,31 @@ export class CatalogService {
     if (type === 'movie') return 'movie';
     if (type === 'series') return 'tv';
     return null;
+  }
+
+  /**
+   * Same as inferTmdbTypeFromContentType, but for the generic 'program'
+   * bucket (an EPG item whose genre/category text matched neither the
+   * "movie" nor "series" tokens — see inferTvReadContentType) it no longer
+   * hard-blocks enrichment: when the item carries a linked tmdbId, default
+   * to 'tv' rather than null. Most EPG entertainment programs that get a
+   * tmdbId at all are episodic TV formats in TMDB's catalog. This was the
+   * actual root cause of "programas" detail pages rendering with no
+   * cast/director/backdrop even when a tmdbId was present — getProgramDetail
+   * and getProgramDetailEnrichment never attempted the TMDB lookup for
+   * plain 'program' content. If the id turns out to be a movie in TMDB,
+   * fetchLocalTmdbDetail's existing not-found handling degrades gracefully
+   * to "no enrichment", same as before this fix.
+   */
+  private resolveProgramTmdbType(
+    type: CatalogContentType,
+    tmdbId: number | undefined
+  ): 'movie' | 'tv' | null {
+    const inferred = this.inferTmdbTypeFromContentType(type);
+    if (inferred) {
+      return inferred;
+    }
+    return tmdbId ? 'tv' : null;
   }
 
   private extractTvReadGenres(item: TvReadItemDTO): string[] {
