@@ -2,7 +2,7 @@
   <header class="discover-view__masthead">
     <div class="discover-view__masthead-copy">
       <p class="discover-view__eyebrow">Qué Ver</p>
-      <h2>{{ guideState.searchQuery() ? 'Resultados para tu búsqueda' : 'Encuentra qué ver hoy' }}</h2>
+      <h1>{{ guideState.searchQuery() ? 'Resultados para tu búsqueda' : 'Encuentra qué ver hoy' }}</h1>
       <p>
         {{
           guideState.searchQuery()
@@ -13,7 +13,15 @@
     </div>
 
     <div class="discover-view__summary" *ngIf="activeFilterSummary().length">
-      <span *ngFor="let item of activeFilterSummary(); trackBy: trackByText">{{ item }}</span>
+      <button
+        *ngFor="let filter of activeFilterSummary(); trackBy: trackByFilter"
+        type="button"
+        (click)="removeFilter(filter.key)"
+        [attr.aria-label]="'Quitar filtro ' + filter.label"
+      >
+        {{ filter.label }} <span aria-hidden="true">×</span>
+      </button>
+      <button type="button" class="discover-view__clear" (click)="clearFilters()">Limpiar</button>
     </div>
   </header>
 

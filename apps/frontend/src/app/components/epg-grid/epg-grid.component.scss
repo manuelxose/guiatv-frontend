@@ -5,7 +5,11 @@
 
 :host {
   display: block;
-  --epg-row-h: 3rem;
+  // px, not rem: cdk-virtual-scroll-viewport's itemSize="48" (epg-grid.
+  // component.html) is always resolved in px by CDK's virtualization math —
+  // keeping this in rem only coincided at the default 16px root font-size
+  // and desynced at any other zoom/user font-size setting.
+  --epg-row-h: 48px;
   --epg-channel-col-w: 10.5rem;
 }
 
@@ -28,7 +32,15 @@
 }
 
 .epg-grid__scroll {
-  overflow: auto;
+  // No longer the scroll container: `.epg-grid__body` below (the CDK
+  // viewport) now owns horizontal AND vertical scroll, because
+  // `position: sticky` on `.epg-grid__channel-cell` resolves against its
+  // nearest *scrolling* ancestor — which was silently this element's child
+  // viewport (CDK's `.cdk-virtual-scrollable { overflow: auto }`) once the
+  // viewport itself had any width to overflow, never this wrapper, so the
+  // channel column never actually stuck. Making the viewport the real
+  // scroll container fixes that at the source.
+  overflow: visible;
   max-height: 46rem;
 }
 
@@ -36,7 +48,9 @@
   display: flex;
   position: sticky;
   top: 0;
-  z-index: 3;
+  z-index: var(--z-sticky);
+  overflow: hidden; // clips the manually-translated timeline (see below);
+                    // previously provided by .epg-grid__scroll's overflow.
   background: var(--portal-surface-strong);
   border-bottom: 1px solid var(--portal-border);
 }
@@ -45,7 +59,7 @@
   flex: 0 0 var(--epg-channel-col-w);
   position: sticky;
   left: 0;
-  z-index: 4;
+  z-index: calc(var(--z-sticky) + 2);
   display: flex;
   align-items: center;
   padding: 0 0.85rem;
@@ -84,8 +98,11 @@
   display: block;
   height: min(43rem, calc(100vh - 15rem));
   min-height: 18rem;
-  width: max-content;
-  min-width: 100%;
+  // Bounded to the container instead of `width: max-content`, so its own
+  // (wider) row content overflows *this* element — making it the real
+  // horizontal scroll container, which is what `.epg-grid__channel-cell`'s
+  // `position: sticky; left: 0` needs to resolve against.
+  width: 100%;
 }
 
 .epg-grid__row {
@@ -102,7 +119,7 @@
   flex: 0 0 var(--epg-channel-col-w);
   position: sticky;
   left: 0;
-  z-index: 2;
+  z-index: var(--z-sticky);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -140,7 +157,7 @@
   bottom: 0;
   width: 2px;
   background: var(--accent-live);
-  z-index: 2;
+  z-index: var(--z-sticky);
   pointer-events: none;
 }
 
