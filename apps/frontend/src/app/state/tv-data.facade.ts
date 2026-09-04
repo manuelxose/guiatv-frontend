@@ -704,8 +704,14 @@ export class TvDataFacade {
   }
 
   private resolveStreamingAvailability(availability: string[]): string {
-    const specific = availability.find((value) => value && value !== 'streaming');
-    return specific || 'streaming';
+    // Was `.find(...)` — collapsed every selection down to just the first
+    // non-'streaming' value, so toggling multiple availability chips in the
+    // UI (streaming-view.component.ts toggleAvailability) never actually
+    // reached the backend as more than one filter. DiscoveryController.browse
+    // already CSV-splits this param and applies it as OR, so joining all
+    // selected values here is enough to make multi-select real end-to-end.
+    const specific = availability.filter((value) => value && value !== 'streaming');
+    return specific.length ? specific.join(',') : 'streaming';
   }
 }
 

@@ -82,6 +82,9 @@ export interface CatalogAiringDTO {
   catalogId: string;
   detailPath: string;
   liveNow?: boolean;
+  /** Program poster/still, when the EPG source has one — without it, airing
+   * cards on the detail page rendered as plain text-only boxes. */
+  image?: string;
 }
 
 export interface CatalogUserInteractionDTO {

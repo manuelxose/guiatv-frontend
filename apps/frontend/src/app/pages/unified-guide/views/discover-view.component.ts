@@ -60,18 +60,6 @@ interface DiscoverModule {
 export class DiscoverViewComponent {
   private readonly isBrowser: boolean;
   readonly selectedItem = signal<UnifiedDiscoveryItem | null>(null);
-  readonly typeChips: FilterChipItem[] = [
-    { id: 'program,movie,series', label: 'Todo' },
-    { id: 'program', label: 'TV' },
-    { id: 'movie', label: 'Películas' },
-    { id: 'series', label: 'Series' },
-  ];
-  readonly availabilityChips: FilterChipItem[] = [
-    { id: 'all', label: 'Todo' },
-    { id: 'free', label: 'Gratis' },
-    { id: 'streaming', label: 'Streaming' },
-    { id: 'live', label: 'En directo' },
-  ];
   readonly sortChips: FilterChipItem[] = [
     { id: 'popular', label: 'Popular' },
     { id: 'rating', label: 'Mejor valorado' },
@@ -254,25 +242,38 @@ export class DiscoverViewComponent {
       sections: [],
     },
   });
-  readonly activeFilterSummary = computed(() => {
+  // {key, label} instead of a plain string list — key is stable & parseable
+  // by removeFilter() below, so each chip is individually removable (mirrors
+  // live-guide-view's clickable summary instead of discover's previous
+  // static-text-only chips).
+  readonly activeFilterSummary = computed<Array<{ key: string; label: string }>>(() => {
     const filters = this.guideState.discoverFilters();
-    const summary = [
-      ...filters.types.filter((type) => type !== 'program').map((type) => type === 'movie' ? 'Películas' : 'Series'),
-      ...filters.availability.map((value) => value === 'free' ? 'Gratis' : value === 'live' ? 'En directo' : value),
-      ...filters.platforms,
-      ...filters.genres,
-    ];
+    const summary: Array<{ key: string; label: string }> = [];
+    filters.types
+      .filter((type) => type !== 'program')
+      .forEach((type) => summary.push({ key: `type:${type}`, label: type === 'movie' ? 'Películas' : 'Series' }));
+    filters.availability.forEach((value) =>
+      summary.push({ key: `availability:${value}`, label: value === 'free' ? 'Gratis' : value === 'live' ? 'En directo' : value })
+    );
+    filters.platforms.forEach((platform) => summary.push({ key: `platform:${platform}`, label: platform }));
+    filters.genres.forEach((genre) => summary.push({ key: `genre:${genre}`, label: genre }));
     if (filters.sort !== 'popular') {
-      summary.push(filters.sort === 'rating' ? 'Top' : filters.sort === 'recent' ? 'Novedades' : 'Emisión');
+      summary.push({
+        key: 'sort',
+        label: filters.sort === 'rating' ? 'Top' : filters.sort === 'recent' ? 'Novedades' : 'Emisión',
+      });
     }
     if (filters.intent) {
-      summary.push(filters.intent === 'featured' ? 'Destacado' : filters.intent);
+      summary.push({ key: 'intent', label: filters.intent === 'featured' ? 'Destacado' : filters.intent });
     }
     if (filters.date !== 'today') {
-      summary.push(filters.date === 'tomorrow' ? 'Mañana' : filters.date === 'weekend' ? 'Fin de semana' : filters.date);
+      summary.push({
+        key: 'date',
+        label: filters.date === 'tomorrow' ? 'Mañana' : filters.date === 'weekend' ? 'Fin de semana' : filters.date,
+      });
     }
     if (this.guideState.searchQuery()) {
-      summary.push(`"${this.guideState.searchQuery()}"`);
+      summary.push({ key: 'search', label: `"${this.guideState.searchQuery()}"` });
     }
     return summary;
   });
@@ -344,20 +345,6 @@ export class DiscoverViewComponent {
     this.isBrowser = isPlatformBrowser(platformId);
   }
 
-  selectTypes(value: string): void {
-    this.guideState.updateDiscoverFilters({
-      types: value.split(',').filter(Boolean) as ('program' | 'movie' | 'series')[],
-      page: 1,
-    });
-  }
-
-  selectAvailability(value: string): void {
-    this.guideState.updateDiscoverFilters({
-      availability: value === 'all' ? [] : [value as any],
-      page: 1,
-    });
-  }
-
   selectSort(value: string): void {
     this.guideState.updateDiscoverFilters({
       sort: (value || 'popular') as any,
@@ -421,6 +408,53 @@ export class DiscoverViewComponent {
       date: 'today',
       page: 1,
     });
+  }
+
+  // Per-chip removal for the interactive filter summary — mirrors
+  // live-guide-view's removeFilter(). No cross-tab helper exists on
+  // UnifiedGuideStateService, so this stays local like the TV page's.
+  removeFilter(key: string): void {
+    const filters = this.guideState.discoverFilters();
+    // Every other filter-mutation method here (selectSort/selectIntent/
+    // selectDate/togglePlatform/toggleGenre/clearFilters) resets to page 1 —
+    // removing a chip must too, or the results grid can land on a page that
+    // no longer exists once the (now smaller) filter set is applied.
+    if (key === 'search') {
+      this.guideState.setSearch('');
+      this.guideState.updateDiscoverFilters({ page: 1 });
+      return;
+    }
+    if (key === 'sort') {
+      this.guideState.updateDiscoverFilters({ sort: 'popular', page: 1 });
+      return;
+    }
+    if (key === 'intent') {
+      this.guideState.updateDiscoverFilters({ intent: '', page: 1 });
+      return;
+    }
+    if (key === 'date') {
+      this.guideState.updateDiscoverFilters({ date: 'today', page: 1 });
+      return;
+    }
+    if (key.startsWith('type:')) {
+      const value = key.slice('type:'.length);
+      this.guideState.updateDiscoverFilters({ types: filters.types.filter((type) => type !== value), page: 1 });
+      return;
+    }
+    if (key.startsWith('availability:')) {
+      const value = key.slice('availability:'.length);
+      this.guideState.updateDiscoverFilters({ availability: filters.availability.filter((entry) => entry !== value), page: 1 });
+      return;
+    }
+    if (key.startsWith('platform:')) {
+      const value = key.slice('platform:'.length);
+      this.guideState.updateDiscoverFilters({ platforms: filters.platforms.filter((entry) => entry !== value), page: 1 });
+      return;
+    }
+    if (key.startsWith('genre:')) {
+      const value = key.slice('genre:'.length);
+      this.guideState.updateDiscoverFilters({ genres: filters.genres.filter((entry) => entry !== value), page: 1 });
+    }
   }
 
   loadMore(): void {
@@ -495,6 +529,10 @@ export class DiscoverViewComponent {
 
   trackByText(_index: number, value: string): string {
     return value;
+  }
+
+  trackByFilter(_index: number, filter: { key: string }): string {
+    return filter.key;
   }
 
   readonly appPaths = APP_PATHS;

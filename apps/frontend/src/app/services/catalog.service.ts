@@ -93,6 +93,8 @@ export interface CatalogItem {
     catalogId: string;
     detailPath: string;
     liveNow?: boolean;
+    /** Program poster/still, when the EPG source has one. */
+    image?: string;
   }>;
   userInteraction?: CatalogUserInteraction;
   cast?: Array<{ name: string; character?: string; profile?: string }>;

@@ -90,19 +90,6 @@ export interface PortalSectionNavigation {
   items: readonly PortalContextDestination[];
 }
 
-export interface PortalPillDefinition {
-  id: string;
-  label: string;
-  iconPath?: string;
-  tone?: 'neutral' | 'live' | 'discover' | 'streaming' | 'sports';
-}
-
-export interface PortalGuideShellConfig {
-  topPillLabel: string;
-  rightRailLabel: string;
-  topPills: readonly PortalPillDefinition[];
-}
-
 export type PortalPublicShellSection =
   | 'generic'
   | 'live'
@@ -308,104 +295,6 @@ export const PORTAL_ACCOUNT_DESTINATIONS = [
   { id: 'for-you', label: 'Para ti', path: APP_PATHS.forYou, iconPath: PORTAL_ICON_PATHS.sparkles },
   { id: 'community', label: 'Comunidad', path: APP_PATHS.community, iconPath: PORTAL_ICON_PATHS.history },
 ] as const;
-
-export const PORTAL_HOME_TOP_PILLS: readonly PortalPillDefinition[] = [
-  { id: 'live-now', label: 'Ahora en TV', iconPath: PORTAL_ICON_PATHS.liveDot, tone: 'live' },
-  { id: 'tonight', label: 'Esta noche', iconPath: PORTAL_ICON_PATHS.clock, tone: 'live' },
-  { id: 'platforms', label: 'Plataformas', iconPath: PORTAL_ICON_PATHS.platforms, tone: 'streaming' },
-  { id: 'sports-live', label: 'Fútbol en vivo', iconPath: PORTAL_ICON_PATHS.sports, tone: 'sports' },
-  { id: 'trending', label: 'Tendencias', iconPath: PORTAL_ICON_PATHS.trends, tone: 'discover' },
-  {
-    id: 'free',
-    label: 'Gratis',
-    iconPath: 'M12 6v12m4.5-8.25c0-1.65-2.01-3-4.5-3s-4.5 1.35-4.5 3 2.01 3 4.5 3 4.5 1.35 4.5 3-2.01 3-4.5 3-4.5-1.35-4.5-3',
-    tone: 'discover',
-  },
-] as const;
-
-export const PORTAL_GUIDE_SHELL_CONFIG: Record<'live' | 'discover' | 'streaming' | 'sports', PortalGuideShellConfig> = {
-  live: {
-    topPillLabel: 'TV Directo',
-    rightRailLabel: 'Panel de TV',
-    topPills: [
-      { id: 'now', label: 'En emisión', iconPath: PORTAL_ICON_PATHS.liveDot, tone: 'live' },
-      { id: 'next', label: 'A continuación', iconPath: PORTAL_ICON_PATHS.clock, tone: 'live' },
-      { id: 'night', label: 'Esta noche', iconPath: 'M18 15.75A6.75 6.75 0 1 1 8.25 6a6 6 0 1 0 9.75 9.75Z', tone: 'live' },
-      { id: 'day', label: 'Parrilla', iconPath: PORTAL_ICON_PATHS.channels, tone: 'live' },
-    ],
-  },
-  discover: {
-    topPillLabel: 'Qué Ver',
-    rightRailLabel: 'Panel editorial',
-    topPills: [
-      { id: 'all', label: 'Todo', iconPath: PORTAL_ICON_PATHS.discover, tone: 'discover' },
-      { id: 'live', label: 'En TV', iconPath: PORTAL_ICON_PATHS.liveDot, tone: 'discover' },
-      { id: 'movie', label: 'Películas', iconPath: PORTAL_ICON_PATHS.play, tone: 'discover' },
-      { id: 'series', label: 'Series', iconPath: PORTAL_ICON_PATHS.editorial, tone: 'discover' },
-      { id: 'free', label: 'Gratis', iconPath: 'M12 6v12m4.5-8.25c0-1.65-2.01-3-4.5-3s-4.5 1.35-4.5 3 2.01 3 4.5 3 4.5 1.35 4.5 3-2.01 3-4.5 3-4.5-1.35-4.5-3', tone: 'discover' },
-    ],
-  },
-  streaming: {
-    topPillLabel: 'Streaming',
-    rightRailLabel: 'Panel streaming',
-    topPills: [
-      { id: 'popular', label: 'Popular', iconPath: PORTAL_ICON_PATHS.trends, tone: 'streaming' },
-      { id: 'recent', label: 'Novedades', iconPath: PORTAL_ICON_PATHS.clock, tone: 'streaming' },
-      { id: 'rating', label: 'Mejor valoradas', iconPath: PORTAL_ICON_PATHS.rankings, tone: 'streaming' },
-      { id: 'free', label: 'Gratis', iconPath: 'M12 6v12m4.5-8.25c0-1.65-2.01-3-4.5-3s-4.5 1.35-4.5 3 2.01 3 4.5 3 4.5 1.35 4.5 3-2.01 3-4.5 3-4.5-1.35-4.5-3', tone: 'streaming' },
-    ],
-  },
-  sports: {
-    topPillLabel: 'Fútbol',
-    rightRailLabel: 'Panel de fútbol',
-    // Football-first: the vertical leads with its own temporal sections
-    // (live → today → upcoming) and a discipline selector. The top shelf
-    // keeps only the "Más filtros" entry so there is no duplicated temporal
-    // navigation competing with the in-view agenda.
-    topPills: [],
-  },
-} as const;
-
-export function getPortalPublicTopPills(
-  section: PortalPublicShellSection
-): readonly PortalPillDefinition[] {
-  if (section === 'live' || section === 'discover' || section === 'streaming' || section === 'sports') {
-    return PORTAL_GUIDE_SHELL_CONFIG[section].topPills;
-  }
-
-  if (section === 'editorial') {
-    return [
-      { id: 'editorial-home', label: 'Guías', iconPath: PORTAL_ICON_PATHS.editorial, tone: 'discover' },
-      { id: 'editorial-rankings', label: 'Rankings', iconPath: PORTAL_ICON_PATHS.rankings, tone: 'discover' },
-      { id: 'editorial-trends', label: 'Tendencias', iconPath: PORTAL_ICON_PATHS.trends, tone: 'discover' },
-      { id: 'editorial-platforms', label: 'Plataformas', iconPath: PORTAL_ICON_PATHS.platforms, tone: 'streaming' },
-    ];
-  }
-
-  if (section === 'rankings') {
-    return [
-      { id: 'rankings-all', label: 'Todos', iconPath: PORTAL_ICON_PATHS.rankings, tone: 'discover' },
-      { id: 'rankings-streaming', label: 'Streaming', iconPath: PORTAL_ICON_PATHS.platforms, tone: 'streaming' },
-      { id: 'rankings-tv', label: 'TV', iconPath: PORTAL_ICON_PATHS.live, tone: 'live' },
-      { id: 'rankings-sports', label: 'Deportes', iconPath: PORTAL_ICON_PATHS.sports, tone: 'sports' },
-    ];
-  }
-
-  return PORTAL_HOME_TOP_PILLS;
-}
-
-export function getPortalPublicTopPillLabel(section: PortalPublicShellSection): string {
-  switch (section) {
-    case 'editorial':
-      return 'Editorial';
-    case 'rankings':
-      return 'Rankings';
-    case 'generic':
-      return 'Explora el portal';
-    default:
-      return PORTAL_GUIDE_SHELL_CONFIG[section].topPillLabel;
-  }
-}
 
 export function getPortalPublicRightRailLabel(section: PortalPublicShellSection): string {
   switch (section) {
