@@ -224,7 +224,12 @@
 }
 
 .epg-grid__cell--accent-discover {
-  border-left-color: var(--accent-discover);
+  // 'discover' is resolveVertical()'s fallback for nearly every plain EPG
+  // program (tv-normalizers.ts), so --accent-discover (Spotify green) here
+  // would paint almost every cell in the grid, reading as unstyled/broken
+  // rather than intentional. Keep the neutral base border instead — real
+  // accent colors stay reserved for live/sports/streaming below.
+  border-left-color: var(--portal-border-strong);
 }
 
 .epg-grid__cell--accent-streaming {
