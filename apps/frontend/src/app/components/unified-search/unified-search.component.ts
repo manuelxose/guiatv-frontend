@@ -19,25 +19,33 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { debounceTime, distinctUntilChanged, map, of, startWith, switchMap } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, startWith, switchMap } from 'rxjs';
 import { DiscoveryService } from '../../services/discovery.service';
 import { CatalogItem } from '../../services/catalog.service';
 import { StorageService } from '../../services/storage.service';
+import { FootballFacade } from '../../features/football/football.facade';
+import { FootballSearchDTO } from '../../features/football/football.models';
 
 const SEARCH_HISTORY_KEY = 'gtv.unified-search.history';
 
 /**
- * Suggestion grouping is bucketed from `CatalogItem.contentType`, the only
- * type taxonomy the `/v2/discovery/search` (and canonical `/v2/catalog/suggest`)
- * response shape actually supports: 'program' | 'movie' | 'series'. There is
- * no standalone "channel" entity in the response (programs carry a `channel`
- * object, but channels are never returned as their own result) — see
- * docs/ux-ia-recommendations.md §6, verified live against the backend.
+ * App-wide suggestion grouping normalizes the catalogue and football APIs
+ * into one keyboard-navigation model. Catalogue results retain their native
+ * program/movie/series taxonomy; football contributes teams, competitions,
+ * matches, and verified news.
  */
-type SuggestionGroupKey = 'program' | 'catalog';
+type SuggestionGroupKey = 'program' | 'catalog' | 'football';
+
+interface UnifiedSearchSuggestion {
+  id: string;
+  title: string;
+  meta: string;
+  detailPath: string;
+  group: SuggestionGroupKey;
+}
 
 interface SuggestionGroupItem {
-  item: CatalogItem;
+  item: UnifiedSearchSuggestion;
   /** Index into the grouped/flattened `suggestions` array — keyboard nav's source of truth. */
   index: number;
 }
@@ -46,7 +54,7 @@ interface SuggestionGroup {
   key: SuggestionGroupKey;
   label: string;
   /** Matches the shared card-accent tokens (--accent-live / --accent-streaming) — no new colors. */
-  accent: 'live' | 'streaming';
+  accent: 'live' | 'streaming' | 'sports';
   items: SuggestionGroupItem[];
 }
 
@@ -69,7 +77,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
   @Output() suggestionOpen = new EventEmitter<void>();
 
   readonly control = new FormControl('', { nonNullable: true });
-  suggestions: CatalogItem[] = [];
+  suggestions: UnifiedSearchSuggestion[] = [];
   suggestionGroups: SuggestionGroup[] = [];
   history: string[] = [];
   showMenu = false;
@@ -82,6 +90,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
 
   constructor(
     private readonly discoveryService: DiscoveryService,
+    private readonly footballFacade: FootballFacade,
     private readonly router: Router,
     private readonly storage: StorageService,
     private readonly changeDetector: ChangeDetectorRef,
@@ -107,9 +116,16 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
             return of([]);
           }
           this.isLoading = true;
-          return this.discoveryService.search({ q, limit: 5 }).pipe(
-            map((response) => response.items || [])
-          );
+          return forkJoin({
+            catalog: this.discoveryService.search({ q, limit: 5 }).pipe(
+              map((response) => response.items || []),
+              catchError(() => of([] as CatalogItem[]))
+            ),
+            football: this.footballFacade.search(q),
+          }).pipe(map(({ catalog, football }) => [
+            ...catalog.map((item) => this.catalogSuggestion(item)),
+            ...this.footballSuggestions(football),
+          ]));
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -137,7 +153,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
   }
 
   get placeholder(): string {
-    return 'Buscar programas, películas y series';
+    return 'Buscar programas, películas, series y fútbol…';
   }
 
   get activeDescendantId(): string | null {
@@ -210,11 +226,11 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
     this.showMenu = false;
   }
 
-  openSuggestion(item: CatalogItem): void {
+  openSuggestion(item: UnifiedSearchSuggestion): void {
     this.persistHistory(item.title);
     this.showMenu = false;
     this.suggestionOpen.emit();
-    void this.router.navigateByUrl(item.detailPath || `/contenido/${item.catalogId}`);
+    void this.router.navigateByUrl(item.detailPath);
   }
 
   useHistory(entry: string): void {
@@ -230,26 +246,73 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
    * tab, which only ever returns programs) still renders as one group,
    * not an empty heading.
    */
-  private groupSuggestions(items: CatalogItem[]): SuggestionGroup[] {
-    const programItems: CatalogItem[] = [];
-    const catalogItems: CatalogItem[] = [];
+  private groupSuggestions(items: UnifiedSearchSuggestion[]): SuggestionGroup[] {
+    const programItems: UnifiedSearchSuggestion[] = [];
+    const catalogItems: UnifiedSearchSuggestion[] = [];
+    const footballItems: UnifiedSearchSuggestion[] = [];
     for (const item of items) {
-      (item.contentType === 'program' ? programItems : catalogItems).push(item);
+      if (item.group === 'program') programItems.push(item);
+      else if (item.group === 'football') footballItems.push(item);
+      else catalogItems.push(item);
     }
 
     // Index is assigned over the grouped/flattened order (programs, then
     // catalog titles) — not the original API order — so it lines up with
     // `this.suggestions` (built via the same group order) for keyboard nav.
     let index = 0;
-    const toEntries = (list: CatalogItem[]): SuggestionGroupItem[] =>
+    const toEntries = (list: UnifiedSearchSuggestion[]): SuggestionGroupItem[] =>
       list.map((item) => ({ item, index: index++ }));
 
     const groups: SuggestionGroup[] = [
       { key: 'program', label: 'Programas', accent: 'live', items: toEntries(programItems) },
       { key: 'catalog', label: 'Películas y series', accent: 'streaming', items: toEntries(catalogItems) },
+      { key: 'football', label: 'Fútbol', accent: 'sports', items: toEntries(footballItems) },
     ];
 
     return groups.filter((group) => group.items.length > 0);
+  }
+
+  private catalogSuggestion(item: CatalogItem): UnifiedSearchSuggestion {
+    return {
+      id: item.catalogId,
+      title: item.title,
+      meta: item.channel?.name || item.primaryPlatforms?.slice(0, 2).join(' · ') || item.contentType,
+      detailPath: item.detailPath || `/contenido/${item.catalogId}`,
+      group: item.contentType === 'program' ? 'program' : 'catalog',
+    };
+  }
+
+  private footballSuggestions(result: FootballSearchDTO): UnifiedSearchSuggestion[] {
+    return [
+      ...result.teams.slice(0, 2).map((team) => ({
+        id: `football-team:${team.id}`,
+        title: team.name,
+        meta: 'Equipo',
+        detailPath: `/deportes/futbol/equipos/${team.slug}`,
+        group: 'football' as const,
+      })),
+      ...result.competitions.slice(0, 2).map((competition) => ({
+        id: `football-competition:${competition.id}`,
+        title: competition.name,
+        meta: competition.country ? `Competición · ${competition.country}` : 'Competición',
+        detailPath: `/deportes/futbol/competiciones/${competition.slug}`,
+        group: 'football' as const,
+      })),
+      ...result.matches.slice(0, 2).map((match) => ({
+        id: `football-match:${match.id}`,
+        title: `${match.homeTeam.name} – ${match.awayTeam.name}`,
+        meta: match.competition.name,
+        detailPath: `/deportes/futbol/partido/${match.slug}`,
+        group: 'football' as const,
+      })),
+      ...result.news.slice(0, 1).map((article) => ({
+        id: `football-news:${article.id}`,
+        title: article.title,
+        meta: 'Noticia de fútbol',
+        detailPath: `/deportes/futbol/noticias/${article.slug}`,
+        group: 'football' as const,
+      })),
+    ];
   }
 
   private persistHistory(value: string): void {

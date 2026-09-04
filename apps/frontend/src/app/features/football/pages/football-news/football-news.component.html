@@ -6,13 +6,13 @@
     <p class="head__sub">Última hora, previas, crónicas y análisis.</p>
   </header>
 
-  <app-portal-local-toolbar
+  <app-filter-chip-bar
     *ngIf="showTypeFilter()"
-    [items]="typeItems()"
+    [chips]="typeItems()"
     [active]="activeType()"
     ariaLabel="Filtrar noticias por tipo"
-    (itemSelect)="selectType($event)"
-  ></app-portal-local-toolbar>
+    (chipSelect)="selectType($event)"
+  ></app-filter-chip-bar>
 
   <div *ngIf="loading()" class="skeleton" aria-hidden="true">
     <div class="skeleton__card" *ngFor="let i of [1, 2, 3, 4, 5, 6]"></div>

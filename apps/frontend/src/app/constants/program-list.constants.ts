@@ -46,20 +46,24 @@ export const PROGRAM_LIST_CONFIG = {
   }
 } as const;
 
+// Fixed Spotify-palette hex values (not var(--accent-*) tokens) — this
+// widget is mounted stand-alone at /embed/programacion for third-party
+// iframe embedding and stays theme-invariant, matching the same
+// self-contained palette convention as program-list.component.scss.
 export const CATEGORY_COLORS = {
   'cine': 'bg-purple-500/20 text-purple-300 border-purple-500/50',
   'movie': 'bg-purple-500/20 text-purple-300 border-purple-500/50',
-  'series': 'bg-blue-500/20 text-blue-300 border-blue-500/50',
-  'noticias': 'bg-red-500/20 text-red-300 border-red-500/50',
-  'news': 'bg-red-500/20 text-red-300 border-red-500/50',
-  'deportes': 'bg-green-500/20 text-green-300 border-green-500/50',
-  'sports': 'bg-green-500/20 text-green-300 border-green-500/50',
-  'documental': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50',
-  'documentary': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50',
+  'series': 'bg-[#539df5]/20 text-[#539df5] border-[#539df5]/50',
+  'noticias': 'bg-[#f3727f]/20 text-[#f3727f] border-[#f3727f]/50',
+  'news': 'bg-[#f3727f]/20 text-[#f3727f] border-[#f3727f]/50',
+  'deportes': 'bg-[#1ed760]/20 text-[#5eeb92] border-[#1ed760]/50',
+  'sports': 'bg-[#1ed760]/20 text-[#5eeb92] border-[#1ed760]/50',
+  'documental': 'bg-[#ffa42b]/20 text-[#ffa42b] border-[#ffa42b]/50',
+  'documentary': 'bg-[#ffa42b]/20 text-[#ffa42b] border-[#ffa42b]/50',
   'entretenimiento': 'bg-pink-500/20 text-pink-300 border-pink-500/50',
   'entertainment': 'bg-pink-500/20 text-pink-300 border-pink-500/50',
-  'infantil': 'bg-orange-500/20 text-orange-300 border-orange-500/50',
-  'kids': 'bg-orange-500/20 text-orange-300 border-orange-500/50',
+  'infantil': 'bg-[#ffa42b]/20 text-[#ffa42b] border-[#ffa42b]/50',
+  'kids': 'bg-[#ffa42b]/20 text-[#ffa42b] border-[#ffa42b]/50',
   'música': 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50',
   'music': 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50',
   'estilo de vida': 'bg-teal-500/20 text-teal-300 border-teal-500/50',

@@ -1,39 +1,47 @@
-<div class="relative min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]">
-  <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_#1b2230_0,_#0b0f14_55%,_#06070a_100%)] opacity-90"></div>
+<div
+  class="admin-shell min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]"
+  [class.admin-shell--collapsed]="desktopSidebarCollapsed"
+>
+  <app-admin-sidebar
+    [navGroups]="navGroups"
+    [activeGroup]="activeGroup"
+    [activeItem]="activeItem"
+    [mobileOpen]="mobileSidebarOpen"
+    [desktopCollapsed]="desktopSidebarCollapsed"
+    [environmentLabel]="environmentLabel"
+    (sectionSelected)="selectSection($event.group, $event.item)"
+    (closeMobile)="closeMobileSidebar()"
+    (toggleDesktopCollapsed)="toggleDesktopSidebarCollapsed()"
+  ></app-admin-sidebar>
 
-  <div class="relative flex min-h-screen">
-    <button
-      *ngIf="sidebarOpen"
-      class="fixed inset-0 z-30 bg-black/60 lg:hidden"
-      type="button"
-      aria-label="Close navigation"
-      (click)="toggleSidebar()"
-    ></button>
+  <button
+    *ngIf="mobileSidebarOpen"
+    type="button"
+    class="admin-shell__backdrop"
+    aria-label="Close navigation"
+    (click)="closeMobileSidebar()"
+  ></button>
 
-    <app-admin-sidebar
-      [navGroups]="navGroups"
-      [activeGroup]="activeGroup"
-      [activeItem]="activeItem"
-      [sidebarOpen]="sidebarOpen"
+  <div class="admin-shell__content flex flex-col min-h-screen min-w-0">
+    <app-admin-header
+      [activeGroupLabel]="activeGroupLabel"
+      [activeItemLabel]="activeItemLabel"
+      [activeItemDescription]="activeItemDescription"
+      [lastUpdated]="lastUpdated"
+      [mobileSidebarOpen]="mobileSidebarOpen"
+      [adminProfile]="adminProfile | async"
       [environmentLabel]="environmentLabel"
-      (sectionSelected)="selectSection($event.group, $event.item)"
-    ></app-admin-sidebar>
-      <div
-        [class.lg:ml-72]="sidebarOpen"
-        [class.lg:ml-0]="!sidebarOpen"
-        class="flex-1 flex flex-col min-h-screen transition-all duration-300"
-      >
+      (toggleSidebar)="toggleMobileSidebar()"
+    ></app-admin-header>
 
-      <app-admin-header
-        [activeGroupLabel]="activeGroupLabel"
-        [activeItemLabel]="activeItemLabel"
-        [activeItemDescription]="activeItemDescription"
-        [lastUpdated]="lastUpdated"
-        (toggleSidebar)="toggleSidebar()"
-      ></app-admin-header>
+    <main class="flex-1 px-5 sm:px-6 lg:px-10 py-6 lg:py-8 min-w-0">
+      <div class="mx-auto w-full max-w-[1600px] space-y-10">
+          <app-admin-overview-section
+            *ngIf="activeGroup === 'overview'"
+            (navigate)="selectSection($event.group, $event.item)"
+            (lastUpdatedChange)="onLastUpdated($event)"
+          ></app-admin-overview-section>
 
-      <main class="flex-1 px-5 sm:px-6 lg:px-10 py-6 lg:py-8">
-        <div class="mx-auto w-full max-w-[1600px] space-y-10">
           <app-admin-analytics-section
             *ngIf="activeGroup === 'analytics'"
             [activeItem]="activeItem"
@@ -53,40 +61,42 @@
             ></app-admin-content-section>
           </ng-container>
 
+          <app-admin-affiliate-section
+            *ngIf="activeGroup === 'monetization'"
+            [activeItem]="activeItem"
+            (activeItemChange)="selectSection('monetization', $event)"
+            (lastUpdatedChange)="onLastUpdated($event)"
+          ></app-admin-affiliate-section>
           <app-admin-schedules-section
             *ngIf="activeGroup === 'schedules'"
             (lastUpdatedChange)="onLastUpdated($event)"
           ></app-admin-schedules-section>
           <app-admin-operations-section
             *ngIf="activeGroup === 'operations'"
-            (lastUpdatedChange)="onLastUpdated($event)"
-          ></app-admin-operations-section>
-          <app-admin-users-section
-            *ngIf="activeGroup === 'users'"
             [activeItem]="activeItem"
             (lastUpdatedChange)="onLastUpdated($event)"
-          ></app-admin-users-section>
+          ></app-admin-operations-section>
+          <ng-container *ngIf="activeGroup === 'users'">
+            <app-admin-users-section
+              *ngIf="activeItem !== 'moderation'"
+              [activeItem]="activeItem"
+              (lastUpdatedChange)="onLastUpdated($event)"
+            ></app-admin-users-section>
+            <app-admin-community-section
+              *ngIf="activeItem === 'moderation'"
+              (lastUpdatedChange)="onLastUpdated($event)"
+            ></app-admin-community-section>
+          </ng-container>
           <app-admin-system-section
             *ngIf="activeGroup === 'system'"
             (lastUpdatedChange)="onLastUpdated($event)"
           ></app-admin-system-section>
-          <app-admin-community-section
-            *ngIf="activeGroup === 'community'"
-            [activeItem]="activeItem"
-            (lastUpdatedChange)="onLastUpdated($event)"
-          ></app-admin-community-section>
-
           <app-admin-ai-section
             *ngIf="activeGroup === 'ai'"
             (lastUpdatedChange)="onLastUpdated($event)"
           ></app-admin-ai-section>
 
-          <app-admin-placeholder-section
-            *ngIf="activeGroup !== 'analytics' && activeGroup !== 'content' && activeGroup !== 'schedules' && activeGroup !== 'operations' && activeGroup !== 'users' && activeGroup !== 'system' && activeGroup !== 'community' && activeGroup !== 'ai'"
-            [title]="activeGroupLabel"
-          ></app-admin-placeholder-section>
         </div>
       </main>
     </div>
   </div>
-</div>

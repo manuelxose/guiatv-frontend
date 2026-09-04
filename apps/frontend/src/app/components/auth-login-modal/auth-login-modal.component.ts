@@ -17,7 +17,7 @@ import { LoginModalService } from '../../services/login-modal.service';
       tabindex="-1"
     >
       <section
-        class="w-full max-w-md rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
+        class="w-full max-w-md rounded-[var(--radius-lg)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 shadow-[var(--shadow-lg)]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="login-modal-title"
@@ -76,7 +76,7 @@ import { LoginModalService } from '../../services/login-modal.service';
           <button
             type="submit"
             [disabled]="loading"
-            class="w-full min-h-[44px] rounded-lg bg-[var(--accent-live-strong)] hover:opacity-90 text-white font-semibold disabled:opacity-60"
+            class="w-full min-h-[44px] rounded-lg bg-[var(--accent-live-strong)] hover:opacity-90 text-[var(--spotify-white)] font-semibold disabled:opacity-60"
           >
             {{ loading ? 'Validando...' : 'Entrar con email' }}
           </button>

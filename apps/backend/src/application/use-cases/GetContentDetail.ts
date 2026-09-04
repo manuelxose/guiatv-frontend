@@ -9,11 +9,12 @@ import {
   WatchProvidersResult,
 } from '@/infrastructure/external/StreamingProvidersService';
 import { IUserContentInteractionRepository } from '@/domain/repositories/IUserContentInteractionRepository';
-import { UserFollowModel } from '@/infrastructure/database/models/UserFollow.model';
-import { UserContentInteractionModel } from '@/infrastructure/database/models/UserContentInteraction.model';
+import { aggregateFriendActivity, findFolloweeIds } from '@/application/services/SocialSummaryQuery';
 import { UserListItemModel } from '@/infrastructure/database/models/UserListItem.model';
 import { UserListModel } from '@/infrastructure/database/models/UserList.model';
 import { DateUtils } from '@/shared/utils/dateUtils';
+import { DateRange } from '@/domain/value-objects/DateRange';
+import { MediaCatalogService } from '@/application/services/MediaCatalogService';
 
 export interface GetContentDetailRequest {
   programId: string;
@@ -83,7 +84,11 @@ export class GetContentDetail {
     private readonly cacheRepository: ICacheRepository,
     private readonly tmdbService: TMDBService,
     private readonly streamingProvidersService: StreamingProvidersService,
-    private readonly interactionRepository: IUserContentInteractionRepository
+    private readonly interactionRepository: IUserContentInteractionRepository,
+    // Optional: routes TMDB detail lookups through the local persistent media
+    // catalog instead of hitting TMDB directly. See CatalogService for the
+    // same pattern; kept optional to avoid breaking existing call sites.
+    private readonly mediaCatalogService?: MediaCatalogService
   ) {}
 
   async execute(
@@ -212,9 +217,11 @@ export class GetContentDetail {
     }
 
     const [detail, providers] = await Promise.all([
-      type === 'movie'
-        ? this.tmdbService.getMovieById(tmdbId)
-        : this.tmdbService.getTVById(tmdbId),
+      this.mediaCatalogService
+        ? this.mediaCatalogService.getDetail(tmdbId, type)
+        : type === 'movie'
+          ? this.tmdbService.getMovieById(tmdbId)
+          : this.tmdbService.getTVById(tmdbId),
       type === 'movie'
         ? this.streamingProvidersService.getMovieProviders(tmdbId)
         : this.streamingProvidersService.getTVProviders(tmdbId),
@@ -252,16 +259,17 @@ export class GetContentDetail {
     date: string,
     genre?: string
   ): Promise<ProgramLayoutDTO[]> {
-    const programs = await this.programRepository.findByDate(date, 'full');
-    const related = programs
+    // Pushes the genre filter and a bounded limit into Mongo instead of
+    // pulling every program for the day (full fields, unbounded) just to
+    // filter/sort/slice(0, 8) in process — that pattern was scanning
+    // thousands of documents per detail-page render for an 8-item rail.
+    const { start, end } = DateUtils.getDayRangeYYYYMMDD(date);
+    const candidates = await this.programRepository.findByDateRange(
+      DateRange.create(start, end),
+      { genre, limit: 30 }
+    );
+    const related = candidates
       .filter((program) => program.id !== programId)
-      .filter((program) =>
-        genre
-          ? String(program.genre || '')
-              .toLowerCase()
-              .includes(String(genre).toLowerCase())
-          : true
-      )
       .sort((a, b) => {
         const imageDiff = Number(Boolean(b.image)) - Number(Boolean(a.image));
         if (imageDiff !== 0) return imageDiff;
@@ -278,17 +286,21 @@ export class GetContentDetail {
     );
   }
 
-  private async loadUpcomingAirings(title: string, date: string) {
-    const dates = [date, DateUtils.getTomorrowYYYYMMDD()];
-    const [channels, programsByDate] = await Promise.all([
+  private async loadUpcomingAirings(title: string, _date: string) {
+    // Was fetching every channel's full program list for two whole days
+    // ('minimal' fields, still unbounded) and filtering by exact normalized
+    // title in process. `findByTitleApprox` pushes the title match and the
+    // rolling time window into Mongo via the title/normalizedTitle indexes
+    // and returns at most 10 lean documents — the same result, without the
+    // two full-day collection scans.
+    const [channels, matches] = await Promise.all([
       this.channelRepository.findAll(),
-      Promise.all(dates.map((day) => this.programRepository.findByDate(day, 'minimal'))),
+      this.programRepository.findByTitleApprox(title, 48),
     ]);
     const channelMap = new Map(channels.map((channel) => [channel.id, channel]));
     const normalizedTitle = this.normalizeTitle(title);
 
-    return programsByDate
-      .flat()
+    return matches
       .filter((program) => this.normalizeTitle(program.title) === normalizedTitle)
       .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
       .slice(0, 6)
@@ -309,9 +321,7 @@ export class GetContentDetail {
     tmdbId: number | undefined,
     title: string
   ) {
-    const follows = await UserFollowModel.find({ followerId: userId }).lean().exec();
-    const friendIds = follows.map((item) => String(item.followeeId));
-
+    const friendIds = await findFolloweeIds(userId);
     if (!friendIds.length) {
       return {
         friendsWhoWatched: 0,
@@ -326,29 +336,10 @@ export class GetContentDetail {
       orConditions.push({ tmdbId });
     }
 
-    const stats = await UserContentInteractionModel.aggregate([
-      {
-        $match: {
-          userId: { $in: friendIds },
-          $or: orConditions,
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          users: { $addToSet: '$userId' },
-          avgFriendRating: { $avg: '$rating' },
-        },
-      },
-    ]).exec();
-
-    const item = stats[0];
+    const stats = await aggregateFriendActivity(friendIds, orConditions);
     return {
-      friendsWhoWatched: Array.isArray(item?.users) ? item.users.length : 0,
-      avgFriendRating:
-        typeof item?.avgFriendRating === 'number'
-          ? Number(item.avgFriendRating.toFixed(1))
-          : undefined,
+      friendsWhoWatched: stats?.friendsWhoWatched || 0,
+      avgFriendRating: stats?.avgFriendRating,
     };
   }
 

@@ -2,6 +2,7 @@ import { logger } from '../shared/utils/logger';
 import { connectMongoDB, mongoose as mongooseInstance } from './mongodb';
 import { ensureMongoCollectionsAndIndexes } from '../infrastructure/database/initializeMongoCollections';
 import { ensureEditorialSeedData } from '../application/services/EditorialSeedService';
+import { ensureAffiliateSeedData } from '../application/services/AffiliateMigrationService';
 
 // Lightweight local type aliases to avoid compile-time coupling while
 // preserving clearer intent in the container implementation.
@@ -60,6 +61,7 @@ export class Container {
 
       await ensureMongoCollectionsAndIndexes();
       await ensureEditorialSeedData();
+      await ensureAffiliateSeedData();
 
       logger.info('MongoDB (mongoose) initialized and registered in container');
     } catch (e) {
@@ -130,6 +132,11 @@ export class Container {
     const { MongoUserContentInteractionRepository } = await import(
       '../infrastructure/repositories/MongoUserContentInteractionRepository'
     );
+    const { MongoAffiliateNetworkRepository } = await import('../infrastructure/repositories/MongoAffiliateNetworkRepository');
+    const { MongoAffiliateMerchantRepository } = await import('../infrastructure/repositories/MongoAffiliateMerchantRepository');
+    const { MongoAffiliateProgramRepository } = await import('../infrastructure/repositories/MongoAffiliateProgramRepository');
+    const { MongoAffiliateOfferRepository } = await import('../infrastructure/repositories/MongoAffiliateOfferRepository');
+    const { MongoAffiliatePlacementRepository } = await import('../infrastructure/repositories/MongoAffiliatePlacementRepository');
 
     const channelRepository = new MongoChannelRepository();
     this.dependencies.set('channelRepository', channelRepository);
@@ -142,6 +149,18 @@ export class Container {
 
     const interactionRepository = new MongoUserContentInteractionRepository();
     this.dependencies.set('userContentInteractionRepository', interactionRepository);
+
+    const { MongoMediaCatalogRepository } = await import('../infrastructure/repositories/MongoMediaCatalogRepository');
+    const mediaCatalogRepository = new MongoMediaCatalogRepository();
+    this.dependencies.set('mediaCatalogRepository', mediaCatalogRepository);
+
+    // Affiliate Engine domain repositories — backing store for both MonetizationService
+    // (legacy DTO facade, /v2/monetization/*) and AffiliateResolverService (/v2/affiliate/*).
+    this.dependencies.set('affiliateNetworkRepository', new MongoAffiliateNetworkRepository());
+    this.dependencies.set('affiliateMerchantRepository', new MongoAffiliateMerchantRepository());
+    this.dependencies.set('affiliateProgramRepository', new MongoAffiliateProgramRepository());
+    this.dependencies.set('affiliateOfferRepository', new MongoAffiliateOfferRepository());
+    this.dependencies.set('affiliatePlacementRepository', new MongoAffiliatePlacementRepository());
 
     const analyticsStore = (process.env.ANALYTICS_STORE || 'mongo').toLowerCase();
     let analyticsRepository: IAnalyticsRepository;
@@ -217,6 +236,7 @@ export class Container {
     const { AuthService } = await import('../domain/services/AuthService');
     const { BlogService } = await import('../infrastructure/external/BlogService');
     const { AnalyticsService } = await import('../application/services/AnalyticsService');
+    const { MonetizationService } = await import('../application/services/MonetizationService');
     const { AssistantMemoryService } = await import(
       '../application/services/AssistantMemoryService'
     );
@@ -247,6 +267,14 @@ export class Container {
     tmdbService.attachStreamingProvidersService(streamingProvidersService);
     this.dependencies.set('streamingProvidersService', streamingProvidersService);
 
+    const { MediaCatalogService } = await import('../application/services/MediaCatalogService');
+    const mediaCatalogService = new MediaCatalogService(
+      this.get('mediaCatalogRepository'),
+      tmdbService,
+      cacheRepositoryForTmdb
+    );
+    this.dependencies.set('mediaCatalogService', mediaCatalogService);
+
     const googleClientId = process.env.GOOGLE_CLIENT_ID;
     const jwtSecret = process.env.JWT_SECRET || 'dev-secret-change-me';
     const authService = new AuthService(
@@ -259,6 +287,48 @@ export class Container {
     const analyticsRepository = this.get<IAnalyticsRepository>('analyticsRepository');
     const analyticsService = new AnalyticsService(analyticsRepository);
     this.dependencies.set('analyticsService', analyticsService);
+
+    // Phase 10 final migration: MonetizationService is now a facade reading the same
+    // Mongo-backed Affiliate Engine repositories AffiliateResolverService uses below —
+    // see docs/affiliate-engine-architecture.md §19 (M1). The static monetizationOffers.ts
+    // array is no longer its runtime source, only its seed/test fixture and safety fallback.
+    const monetizationService = new MonetizationService(analyticsService, {
+      offerRepository: this.get('affiliateOfferRepository'),
+      merchantRepository: this.get('affiliateMerchantRepository'),
+      programRepository: this.get('affiliateProgramRepository'),
+    });
+    this.dependencies.set('monetizationService', monetizationService);
+
+    // Affiliate Engine — Phase 3+: generic resolution pipeline. Powers every surface except
+    // /v2/monetization/*, which now reads the same store through the facade above.
+    const { AffiliateAnalyticsService } = await import('../application/services/AffiliateAnalyticsService');
+    const { AffiliateCatalogService } = await import('../application/services/AffiliateCatalogService');
+    const { AffiliateResolverService } = await import('../application/services/AffiliateResolverService');
+    const { DeepLinkStrategyRegistry } = await import('../infrastructure/affiliate/deeplink/DeepLinkStrategyRegistry');
+
+    const affiliateAnalyticsService = new AffiliateAnalyticsService(analyticsService);
+    this.dependencies.set('affiliateAnalyticsService', affiliateAnalyticsService);
+
+    const affiliateCatalogService = new AffiliateCatalogService(
+      this.get('affiliateOfferRepository'),
+      this.get('affiliateMerchantRepository'),
+      this.get('affiliateProgramRepository'),
+      this.get('affiliatePlacementRepository'),
+      this.get('cacheRepository')
+    );
+    this.dependencies.set('affiliateCatalogService', affiliateCatalogService);
+
+    const affiliateResolverService = new AffiliateResolverService(
+      affiliateCatalogService,
+      this.get('affiliateOfferRepository'),
+      this.get('affiliateMerchantRepository'),
+      this.get('affiliateProgramRepository'),
+      this.get('affiliatePlacementRepository'),
+      this.get('affiliateNetworkRepository'),
+      new DeepLinkStrategyRegistry(),
+      affiliateAnalyticsService
+    );
+    this.dependencies.set('affiliateResolverService', affiliateResolverService);
 
     const assistantMemoryService = new AssistantMemoryService();
     this.dependencies.set('assistantMemoryService', assistantMemoryService);
@@ -403,7 +473,7 @@ export class Container {
     const programParser = new ProgramDataParser();
     this.dependencies.set('programParser', programParser);
 
-    const syncEPGData = new SyncEPGData(channelRepository, programRepository, cacheRepository, storageRepository, xmlParser, programParser, tmdbService);
+    const syncEPGData = new SyncEPGData(channelRepository, programRepository, cacheRepository, storageRepository, xmlParser, programParser, tmdbService, this.get('mediaCatalogService'));
     this.dependencies.set('syncEPGData', syncEPGData);
 
     const tvReadModelBuilder = new TvReadModelBuilder(programRepository, cacheRepository);
@@ -432,7 +502,8 @@ export class Container {
       tmdbService,
       streamingProvidersService,
       interactionRepository,
-      this.get('tvReadQueryService')
+      this.get('tvReadQueryService'),
+      this.get('mediaCatalogService')
     );
     this.dependencies.set('catalogService', catalogService);
 
@@ -474,7 +545,8 @@ export class Container {
       cacheRepository,
       tmdbService,
       streamingProvidersService,
-      interactionRepository
+      interactionRepository,
+      this.get('mediaCatalogService')
     );
     this.dependencies.set('getContentDetail', getContentDetail);
 
@@ -492,7 +564,9 @@ export class Container {
         catalogService,
         this.get('assistantMemoryService'),
         this.has('cacheRepository') ? this.get('cacheRepository') : undefined,
-        this.get('tvReadQueryService')
+        this.get('tvReadQueryService'),
+        this.has('footballQueryService') ? this.get('footballQueryService') : undefined,
+        this.has('affiliateResolverService') ? this.get('affiliateResolverService') : undefined
       );
       this.dependencies.set('chatbotRecommend', chatbotRecommend);
     }
@@ -502,6 +576,9 @@ export class Container {
 
   private async registerControllers(): Promise<void> {
     const { AdminController } = await import('../presentation/controllers/AdminController');
+    const { AdminEpgDiagnosticsService } = await import('../application/services/AdminEpgDiagnosticsService');
+    const { AdminProviderRegistryService } = await import('../application/services/AdminProviderRegistryService');
+    const { AdminOperationsService } = await import('../application/services/AdminOperationsService');
     const { AuthController } = await import('../presentation/controllers/AuthController');
     const { DiscoveryController } = await import('../presentation/controllers/DiscoveryController');
     const { ContentController } = await import('../presentation/controllers/ContentController');
@@ -509,19 +586,24 @@ export class Container {
     const { TvController } = await import('../presentation/controllers/TvController');
     const { BlogController } = await import('../presentation/controllers/BlogController');
     const { AnalyticsController } = await import('../presentation/controllers/AnalyticsController');
+    const { MonetizationController } = await import('../presentation/controllers/MonetizationController');
     const { AdminUsersController } = await import('../presentation/controllers/AdminUsersController');
     const { UserController } = await import('../presentation/controllers/UserController');
     const { SocialController } = await import('../presentation/controllers/SocialController');
     const { ChatController } = await import('../presentation/controllers/ChatController');
     const { InteractionController } = await import('../presentation/controllers/InteractionController');
     const { AIController } = await import('../presentation/controllers/AIController');
+    const { AssistantOperationalTelemetryService } = await import('../application/services/AssistantOperationalTelemetryService');
 
     const adminController = new AdminController(
       this.get('syncEPGData'),
       this.get('precomputeSchedule'),
       this.get('cleanOldPrograms'),
       this.get('cacheRepository'),
-      this.get('resetSystem')
+      this.get('resetSystem'),
+      new AdminEpgDiagnosticsService(),
+      new AdminProviderRegistryService(),
+      new AdminOperationsService(this.get('cacheRepository'), this.has('footballProvider') ? this.get('footballProvider') : undefined, this.has('footballQueryService') ? () => this.get<any>('footballQueryService').getHome() : undefined)
     );
     this.dependencies.set('adminController', adminController);
 
@@ -566,6 +648,43 @@ export class Container {
     const analyticsController = new AnalyticsController(this.get('analyticsService'));
     this.dependencies.set('analyticsController', analyticsController);
 
+    const monetizationController = new MonetizationController(this.get('monetizationService'));
+    this.dependencies.set('monetizationController', monetizationController);
+
+    const { AffiliateController } = await import('../presentation/controllers/AffiliateController');
+    const affiliateController = new AffiliateController(
+      this.get('affiliateResolverService'),
+      this.get('affiliateCatalogService'),
+      this.get('affiliateOfferRepository'),
+      this.get('affiliateAnalyticsService')
+    );
+    this.dependencies.set('affiliateController', affiliateController);
+
+    // Phase 9 — Affiliate / Monetization admin surface (`/v2/admin/affiliate/*`).
+    // Additive alongside the read-only public resolver above; owns every write path
+    // (merchants/networks/programs/offers/placements) so commercial configuration
+    // no longer needs a source-code change.
+    const { AffiliateAdminService } = await import('../application/services/AffiliateAdminService');
+    const { AffiliateAdminAnalyticsService } = await import('../application/services/AffiliateAdminAnalyticsService');
+    const { AffiliateAdminController } = await import('../presentation/controllers/AffiliateAdminController');
+
+    const affiliateAdminService = new AffiliateAdminService(
+      this.get('affiliateMerchantRepository'),
+      this.get('affiliateNetworkRepository'),
+      this.get('affiliateProgramRepository'),
+      this.get('affiliateOfferRepository'),
+      this.get('affiliatePlacementRepository'),
+      this.get('affiliateAnalyticsService'),
+      this.get('cacheRepository')
+    );
+    const affiliateAdminAnalyticsService = new AffiliateAdminAnalyticsService(
+      this.get('analyticsService'),
+      this.get('affiliateMerchantRepository'),
+      this.get('affiliateOfferRepository')
+    );
+    const affiliateAdminController = new AffiliateAdminController(affiliateAdminService, affiliateAdminAnalyticsService);
+    this.dependencies.set('affiliateAdminController', affiliateAdminController);
+
     const adminUsersController = new AdminUsersController();
     this.dependencies.set('adminUsersController', adminUsersController);
 
@@ -583,10 +702,11 @@ export class Container {
     const chatController = new ChatController();
     this.dependencies.set('chatController', chatController);
 
+    const assistantTelemetry = new AssistantOperationalTelemetryService();
     const aiController = new AIController(
       this.has('chatbotRecommend') ? this.get('chatbotRecommend') : null,
       this.get('cacheRepository'),
-      this.get('assistantMemoryService')
+      this.get('assistantMemoryService'), assistantTelemetry
     );
     this.dependencies.set('aiController', aiController);
 
@@ -594,7 +714,7 @@ export class Container {
     const { AIAnalyticsController } = await import('../presentation/controllers/AIAnalyticsController');
     const aiAnalyticsService = new AIAnalyticsService(this.get('cacheRepository'));
     this.dependencies.set('aiAnalyticsService', aiAnalyticsService);
-    const aiAnalyticsController = new AIAnalyticsController(aiAnalyticsService);
+    const aiAnalyticsController = new AIAnalyticsController(aiAnalyticsService, assistantTelemetry);
     this.dependencies.set('aiAnalyticsController', aiAnalyticsController);
 
     const { SitemapController } = await import('../presentation/controllers/SitemapController');
@@ -602,7 +722,8 @@ export class Container {
       this.get('channelRepository'),
       this.get('programRepository'),
       this.has('tmdbService') ? this.get('tmdbService') : undefined,
-      this.has('footballQueryService') ? this.get('footballQueryService') : undefined
+      this.has('footballQueryService') ? this.get('footballQueryService') : undefined,
+      this.get('tvReadQueryService')
     );
     this.dependencies.set('sitemapController', sitemapController);
 

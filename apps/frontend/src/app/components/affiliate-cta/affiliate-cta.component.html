@@ -1,0 +1,47 @@
+@if (loading()) {
+  <button
+    type="button"
+    class="affiliate-cta affiliate-cta--{{ variant() }} is-loading"
+    disabled
+    aria-busy="true"
+  >
+    <span class="affiliate-cta__spinner" aria-hidden="true"></span>
+    <span>Cargando…</span>
+  </button>
+} @else if (isBlocked()) {
+  <button
+    type="button"
+    class="affiliate-cta affiliate-cta--{{ variant() }}"
+    disabled
+    aria-disabled="true"
+  >
+    {{ resolvedLabel() }}
+  </button>
+} @else {
+  <a
+    class="affiliate-cta affiliate-cta--{{ variant() }}"
+    [class.is-sponsored]="sponsored()"
+    [href]="resolvedHref()"
+    [attr.target]="external() ? '_blank' : null"
+    [attr.rel]="rel() || null"
+    (click)="onActivate()"
+  >
+    @if (resolvedLogoUrl()) {
+      <img
+        [src]="resolvedLogoUrl()"
+        alt=""
+        class="affiliate-cta__logo"
+        loading="lazy"
+        width="20"
+        height="20"
+      />
+    }
+    <span class="affiliate-cta__label">{{ resolvedLabel() }}</span>
+    @if (sponsored()) {
+      <span class="affiliate-cta__badge">Patrocinado</span>
+    }
+    @if (screenReaderSuffix()) {
+      <span class="sr-only"> {{ screenReaderSuffix() }}</span>
+    }
+  </a>
+}

@@ -12,6 +12,8 @@ import {
   inferSportFacet,
   isGenericMovieTitle,
   resolveProgramDisplayTitle,
+  findCanonicalChannelInText,
+  resolveCanonicalChannelId,
 } from './tvMetadata';
 
 test('buildChannelIdentityMetadata classifies La 2 as TDT and canonical la_2', () => {
@@ -57,6 +59,68 @@ test('buildChannelIdentityMetadata maps TDTChannels aliases to canonical TDT cha
 
   assert.equal(la2.canonicalId, 'la_2');
   assert.equal(cuatro.canonicalId, 'cuatro');
+});
+
+test('buildChannelIdentityMetadata resolves representative pay-TV aliases canonically', () => {
+  const tcm = buildChannelIdentityMetadata({ name: 'TCM HD', sourceId: 'tcm.es' });
+  const axn = buildChannelIdentityMetadata({ name: 'AXN', sourceId: 'axn.es' });
+  const hits = buildChannelIdentityMetadata({ name: 'M+ Hits', sourceId: 'movistar-hits' });
+
+  assert.equal(tcm.canonicalId, 'tcm');
+  assert.equal(tcm.inferredGroup, 'cable');
+  assert.equal(axn.canonicalId, 'axn');
+  assert.equal(axn.inferredGroup, 'cable');
+  assert.equal(hits.canonicalId, 'movistar_hits');
+  assert.equal(hits.inferredGroup, 'movistar');
+  assert.equal(
+    inferChannelGroup({ name: 'M+ Estrenos', type: 'OTT' }),
+    'movistar'
+  );
+});
+
+test('canonical channel resolver keeps paid-channel identities exact and handles Movistar user aliases', () => {
+  assert.equal(resolveCanonicalChannelId('TCM HD'), 'tcm');
+  assert.equal(resolveCanonicalChannelId('AXN'), 'axn');
+  assert.equal(resolveCanonicalChannelId('AXN Movies'), 'axn_movies');
+  assert.equal(resolveCanonicalChannelId('Movistar Plus Hits'), 'movistar_hits');
+  assert.equal(resolveCanonicalChannelId('Movistar+ Hits'), 'movistar_hits');
+  assert.equal(resolveCanonicalChannelId('M+ Acción'), 'movistar_accion');
+  assert.equal(findCanonicalChannelInText('qué ver hoy en AXN'), 'axn');
+  assert.equal(findCanonicalChannelInText('qué hay esta noche en AXN Movies'), 'axn_movies');
+  assert.equal(findCanonicalChannelInText('qué ponen en AMC Crime'), 'amc_crime');
+  assert.equal(findCanonicalChannelInText('qué ponen en AMC'), 'amc');
+});
+
+test('channel operational metadata keeps pay/operator identity orthogonal to sports facets', () => {
+  const fixtures = [
+    ['AXN', 'cable', 'pay', 'unknown'],
+    ['Cosmo', 'cable', 'pay', 'unknown'],
+    ['MTV', 'cable', 'pay', 'Paramount'],
+  ] as const;
+
+  fixtures.forEach(([name, distribution, access, operator]) => {
+    const result = buildChannelIdentityMetadata({ name, sourceId: `${name}.es` });
+    assert.equal(result.distribution, distribution);
+    assert.equal(result.access, access);
+    assert.equal(result.operator, operator);
+  });
+
+  const movistarSport = buildChannelIdentityMetadata({
+    name: 'M+ Liga de Campeones',
+    sourceId: 'M+LigadeCampeones.es',
+  });
+  assert.equal(movistarSport.inferredGroup, 'deporte');
+  assert.equal(movistarSport.distribution, 'operator');
+  assert.equal(movistarSport.access, 'pay');
+  assert.equal(movistarSport.operator, 'Movistar Plus+');
+  assert.ok(movistarSport.contentFacets.includes('sports'));
+
+  const dazn = buildChannelIdentityMetadata({ name: 'DAZN F1', sourceId: 'DAZNF1.es' });
+  assert.equal(dazn.inferredGroup, 'deporte');
+  assert.equal(dazn.distribution, 'ott');
+  assert.equal(dazn.access, 'pay');
+  assert.equal(dazn.operator, 'DAZN');
+  assert.ok(dazn.contentFacets.includes('sports'));
 });
 
 test('buildChannelIdentityMetadata collapses Discovery Max and Discovery into DMAX TDT', () => {

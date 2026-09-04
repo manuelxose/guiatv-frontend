@@ -24,6 +24,7 @@ export const openApiSpec = {
     { name: 'Discovery', description: 'Home, browse, and unified search surfaces.' },
     { name: 'Catalog', description: 'Streaming catalog and platform metadata.' },
     { name: 'Content', description: 'Unified content detail and provider lookups.' },
+    { name: 'Monetization', description: 'Normalized offers and safe attributed outbound links.' },
   ],
   paths: {
     '/health': {
@@ -50,6 +51,7 @@ export const openApiSpec = {
           { $ref: '#/components/parameters/TvViewQuery' },
           { $ref: '#/components/parameters/DateQuery' },
           { $ref: '#/components/parameters/GroupQuery' },
+          { $ref: '#/components/parameters/LimitQuery' },
           { $ref: '#/components/parameters/CategoryQuery' },
           { $ref: '#/components/parameters/ChannelIdQuery' },
           { $ref: '#/components/parameters/SearchQuery' },
@@ -82,6 +84,30 @@ export const openApiSpec = {
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/TvReadChannelsEnvelope' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/tv/read/schedule': {
+      get: {
+        tags: ['TV'],
+        summary: 'Read a complete channel-grouped schedule without a global row cutoff.',
+        parameters: [
+          { $ref: '#/components/parameters/DateQuery' },
+          { $ref: '#/components/parameters/GroupQuery' },
+          { $ref: '#/components/parameters/CategoryQuery' },
+          { $ref: '#/components/parameters/ChannelIdQuery' },
+          { $ref: '#/components/parameters/SearchQuery' },
+          { $ref: '#/components/parameters/ItemsPerChannelQuery' },
+        ],
+        responses: {
+          '200': {
+            description: 'Channel-grouped TV schedule.',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/TvReadScheduleEnvelope' },
               },
             },
           },
@@ -434,6 +460,42 @@ export const openApiSpec = {
         },
       },
     },
+    '/monetization/offers': {
+      get: {
+        tags: ['Monetization'],
+        summary: 'List normalized streaming offers for Spain.',
+        parameters: [
+          { name: 'market', in: 'query', schema: { type: 'string', enum: ['ES'], default: 'ES' } },
+          { name: 'intent', in: 'query', schema: { type: 'string', enum: ['cheapest', 'football', 'movies', 'family', 'no-contract', 'premium'] } },
+          { name: 'features', in: 'query', schema: { type: 'string', example: 'downloads,4k' } },
+          { name: 'maxMonthlyPrice', in: 'query', schema: { type: 'number', minimum: 0, maximum: 1000 } },
+          { name: 'sort', in: 'query', schema: { type: 'string', enum: ['recommended', 'price-asc', 'price-desc', 'provider'] } },
+        ],
+        responses: {
+          '200': {
+            description: 'Offer list with commercial classification and verification metadata.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/MonetizationOffersEnvelope' } } },
+          },
+          '400': { $ref: '#/components/responses/BadRequest' },
+        },
+      },
+    },
+    '/monetization/go/{providerId}/{offerId}': {
+      get: {
+        tags: ['Monetization'],
+        summary: 'Track attribution and redirect to an allowlisted provider destination.',
+        parameters: [
+          { name: 'providerId', in: 'path', required: true, schema: { type: 'string' } },
+          { name: 'offerId', in: 'path', required: true, schema: { type: 'string' } },
+          { name: 'placement', in: 'query', schema: { type: 'string', enum: ['comparison-card', 'comparison-table', 'comparison-selection', 'content-detail', 'provider-summary'] } },
+        ],
+        responses: {
+          '302': { description: 'Redirect to a centrally configured HTTPS provider URL.' },
+          '400': { $ref: '#/components/responses/BadRequest' },
+          '404': { $ref: '#/components/responses/NotFound' },
+        },
+      },
+    },
   },
   components: {
     parameters: {
@@ -454,7 +516,7 @@ export const openApiSpec = {
         name: 'group',
         in: 'query',
         required: false,
-        schema: { type: 'string', enum: ['tdt', 'autonomico', 'movistar', 'online', 'deporte'] },
+        schema: { type: 'string', enum: ['tdt', 'cable', 'autonomico', 'movistar', 'online', 'deporte'] },
       },
       CategoryQuery: {
         name: 'category',
@@ -485,6 +547,13 @@ export const openApiSpec = {
         in: 'query',
         required: false,
         schema: { type: 'integer', minimum: 1, maximum: 5000, default: 24 },
+      },
+      ItemsPerChannelQuery: {
+        name: 'itemsPerChannel',
+        in: 'query',
+        required: false,
+        schema: { type: 'integer', minimum: 1, maximum: 48, default: 32 },
+        description: 'Maximum schedule entries returned for each channel.',
       },
       CursorQuery: {
         name: 'cursor',
@@ -718,6 +787,18 @@ export const openApiSpec = {
           countryCode: { type: 'string', nullable: true },
           region: { type: 'string', nullable: true },
           description: { type: 'string', nullable: true },
+          distribution: {
+            type: 'string',
+            enum: ['terrestrial', 'cable', 'operator', 'ott', 'unknown'],
+          },
+          access: { type: 'string', enum: ['free', 'pay', 'unknown'] },
+          operator: { type: 'string', example: 'Movistar Plus+' },
+          providers: { type: 'array', items: { type: 'string' } },
+          contentFacets: { type: 'array', items: { type: 'string' } },
+          market: { type: 'object', additionalProperties: true },
+          quality: { type: 'object', additionalProperties: true },
+          capabilities: { type: 'object', additionalProperties: true },
+          provenance: { type: 'object', additionalProperties: true },
         },
       },
       TvReadProgram: {
@@ -864,6 +945,53 @@ export const openApiSpec = {
                 type: 'object',
                 properties: {
                   total: { type: 'integer' },
+                  cached: { type: 'boolean', nullable: true },
+                  generatedAt: { type: 'string', format: 'date-time' },
+                },
+              },
+            },
+          },
+          meta: { $ref: '#/components/schemas/ApiMeta' },
+        },
+      },
+      TvReadChannelSchedule: {
+        type: 'object',
+        properties: {
+          channel: { $ref: '#/components/schemas/TvReadChannel' },
+          items: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/TvReadItem' },
+          },
+          counts: {
+            type: 'object',
+            properties: {
+              total: { type: 'integer' },
+              returned: { type: 'integer' },
+              complete: { type: 'boolean' },
+            },
+          },
+        },
+      },
+      TvReadScheduleEnvelope: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', example: true },
+          data: {
+            type: 'object',
+            properties: {
+              date: { type: 'string' },
+              group: { type: 'string', nullable: true },
+              channels: {
+                type: 'array',
+                items: { $ref: '#/components/schemas/TvReadChannelSchedule' },
+              },
+              meta: {
+                type: 'object',
+                properties: {
+                  totalChannels: { type: 'integer' },
+                  totalItems: { type: 'integer' },
+                  itemsPerChannel: { type: 'integer' },
+                  truncatedChannels: { type: 'integer' },
                   cached: { type: 'boolean', nullable: true },
                   generatedAt: { type: 'string', format: 'date-time' },
                 },
@@ -1231,6 +1359,51 @@ export const openApiSpec = {
                 type: 'array',
                 items: { $ref: '#/components/schemas/CatalogItem' },
               },
+            },
+          },
+          meta: { $ref: '#/components/schemas/ApiMeta' },
+        },
+      },
+      MonetizationOffer: {
+        type: 'object',
+        required: ['id', 'market', 'provider', 'plan', 'pricing', 'features', 'requirements', 'verification', 'outbound'],
+        properties: {
+          id: { type: 'string' },
+          market: { type: 'string', enum: ['ES'] },
+          provider: { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' } } },
+          plan: { type: 'object', properties: { id: { type: 'string' }, name: { type: 'string' } } },
+          pricing: { type: 'object', properties: {
+            currency: { type: 'string', enum: ['EUR'] },
+            monthlyAmount: { type: 'number', nullable: true },
+            annualAmount: { type: 'number', nullable: true },
+            monthlyLabel: { type: 'string' },
+            annualLabel: { type: 'string' },
+          } },
+          features: { type: 'object', additionalProperties: true },
+          requirements: { type: 'object', additionalProperties: true },
+          verification: { type: 'object', properties: {
+            lastVerifiedAt: { type: 'string', format: 'date' },
+            sourceUrl: { type: 'string', format: 'uri' },
+            status: { type: 'string', enum: ['current', 'stale', 'needs_review'] },
+          } },
+          outbound: { type: 'object', properties: {
+            path: { type: 'string' },
+            relationship: { type: 'string', enum: ['affiliate_configured', 'direct_commercial_link', 'no_affiliate_available', 'unknown', 'manual_agreement_required'] },
+            label: { type: 'string' },
+            isSponsored: { type: 'boolean' },
+          } },
+        },
+      },
+      MonetizationOffersEnvelope: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean', example: true },
+          data: {
+            type: 'object',
+            properties: {
+              items: { type: 'array', items: { $ref: '#/components/schemas/MonetizationOffer' } },
+              meta: { type: 'object', additionalProperties: true },
+              filters: { type: 'object', additionalProperties: true },
             },
           },
           meta: { $ref: '#/components/schemas/ApiMeta' },

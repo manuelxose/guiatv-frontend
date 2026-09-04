@@ -10,6 +10,7 @@
     "build:frontend": "npm run build:ssr -w apps/frontend",
     "build:backend": "npm run build -w apps/backend",
     "publish:release": "node scripts/publish-release.mjs",
+    "check:release": "node scripts/publish-release.mjs --check",
     "start:api": "npm run start -w apps/backend",
     "start:ssr": "npm run serve:ssr -w apps/frontend",
     "job:syncEPG": "npm run job:syncEPG -w apps/backend",
@@ -25,14 +26,18 @@
     "test:e2e": "playwright test",
     "lint": "npm run lint -w apps/backend && npm run lint -w apps/frontend",
     "lint:backend": "npm run lint -w apps/backend",
-    "lint:frontend": "npm run lint -w apps/frontend"
-    ,"perf:api": "node scripts/perf-http.mjs api"
-    ,"perf:frontend": "node scripts/perf-http.mjs frontend"
-    ,"perf:critical": "node scripts/perf-http.mjs critical"
-    ,"cache:prewarm": "node scripts/prewarm-public-reads.mjs"
-    ,"perf:load": "node scripts/load-http.mjs"
+    "lint:frontend": "npm run lint -w apps/frontend",
+    "agent:setup": "node scripts/setup-agent-environment.mjs",
+    "agent:verify": "node scripts/verify-agent-environment.mjs",
+    "perf:api": "node scripts/perf-http.mjs api",
+    "perf:frontend": "node scripts/perf-http.mjs frontend",
+    "perf:critical": "node scripts/perf-http.mjs critical",
+    "cache:prewarm": "node scripts/prewarm-public-reads.mjs",
+    "perf:load": "node scripts/load-http.mjs",
+    "validate:tv:operational": "node scripts/validate-tv-operational.mjs"
   },
   "devDependencies": {
+    "@angular/animations": "20.3.29",
     "@axe-core/playwright": "^4.13.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@playwright/test": "^1.62.1",

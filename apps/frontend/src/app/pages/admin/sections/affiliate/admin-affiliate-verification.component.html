@@ -1,0 +1,52 @@
+<div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-4">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h4 class="text-lg font-semibold text-[var(--portal-text)]">Cola de verificación</h4>
+      <p class="text-xs text-[var(--portal-text-muted)]">{{ filteredItems.length }} de {{ items.length }} elementos</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <button *ngFor="let option of filterOptions" type="button"
+        class="px-3 py-1.5 rounded-full text-xs border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+        [ngClass]="filter === option.id ? 'bg-[var(--portal-surface)] border-[var(--spotify-negative)]/40 text-[var(--portal-text)]' : 'border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)]'"
+        (click)="setFilter(option.id)">
+        {{ option.label }}
+      </button>
+      <button type="button"
+        class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
+        (click)="refresh()">
+        Refrescar
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">Cargando cola de verificación...</div>
+  <div *ngIf="error" class="text-sm text-[var(--spotify-negative)] py-3">{{ error }}</div>
+  <div *ngIf="!loading && !error && filteredItems.length === 0" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">
+    Nada que revisar con este filtro.
+  </div>
+
+  <div *ngIf="filteredItems.length" class="space-y-3 max-h-[760px] overflow-auto pr-1">
+    <article *ngFor="let item of filteredItems; trackBy: trackById"
+      class="p-4 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)] space-y-2">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h5 class="text-[var(--portal-text)] text-sm font-semibold truncate">{{ item.label }}</h5>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1">
+            {{ item.entityType === 'program' ? 'Programa' : 'Oferta' }} · {{ item.market }}
+          </p>
+        </div>
+        <span class="text-[10px] px-2 py-1 rounded-full border flex-shrink-0" [ngClass]="badgeClass(item.displayStatus)">
+          {{ badgeLabel(item.displayStatus) }}
+        </span>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 text-xs text-[var(--portal-text-soft)]">
+        <span *ngIf="item.verifiedAt">Verificado: {{ item.verifiedAt | date: 'mediumDate' }}</span>
+        <span *ngIf="!item.verifiedAt">Nunca verificado</span>
+        <span *ngIf="item.daysSinceVerified !== null">{{ item.daysSinceVerified }} días desde la última verificación</span>
+        <a *ngIf="item.sourceUrl" [href]="item.sourceUrl" target="_blank" rel="noopener" class="underline hover:text-[var(--portal-text)]">
+          Fuente
+        </a>
+      </div>
+    </article>
+  </div>
+</div>

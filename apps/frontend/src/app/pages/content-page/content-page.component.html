@@ -4,7 +4,7 @@
     <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
 
     <section
-      class="overflow-hidden rounded-[2rem] border border-[var(--portal-border)] bg-[linear-gradient(135deg,rgba(124,45,18,0.28),rgba(8,16,24,0.92)_45%,rgba(15,23,42,0.95))] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.24)] md:p-8"
+      class="overflow-hidden rounded-[2rem] border border-[var(--portal-border)] bg-[linear-gradient(135deg,color-mix(in_oklch,var(--accent-discover)_28%,transparent),var(--portal-bg-deep)_45%,var(--portal-bg-elevated))] p-6 shadow-[var(--shadow-lg)] md:p-8"
     >
       <p class="text-[11px] uppercase tracking-[0.34em] text-[var(--portal-text-muted)]">
         {{ contentType === 'series' ? 'Series' : 'Películas' }}
@@ -44,7 +44,7 @@
 
     <div
       *ngIf="error"
-      class="mt-8 rounded-[1.75rem] border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200"
+      class="mt-8 rounded-[1.75rem] border border-[var(--spotify-negative)]/30 bg-[var(--spotify-negative)]/10 p-6 text-sm text-[var(--spotify-negative)]"
     >
       {{ error }}
     </div>
@@ -72,16 +72,16 @@
 
       <section
         *ngIf="catalogUnavailable"
-        class="mt-8 rounded-[1.75rem] border border-amber-500/30 bg-amber-500/10 p-10 text-center"
+        class="mt-8 rounded-[1.75rem] border border-[var(--spotify-warning)]/30 bg-[var(--spotify-warning)]/10 p-10 text-center"
       >
         <p class="text-xl font-semibold text-[var(--portal-text)]">No se pudo refrescar esta colección ahora mismo.</p>
-        <p class="mt-2 text-sm text-amber-100">
+        <p class="mt-2 text-sm text-[var(--spotify-warning)]">
           Mantuvimos los filtros para que puedas reintentar sin perder la vista actual.
         </p>
         <button
           type="button"
           (click)="retryCurrentView()"
-          class="mt-5 min-h-[44px] rounded-full border border-amber-300/30 px-5 text-sm font-semibold text-amber-50"
+          class="mt-5 min-h-[44px] rounded-full border border-[var(--spotify-warning)]/30 px-5 text-sm font-semibold text-[var(--spotify-warning)]"
         >
           Reintentar
         </button>

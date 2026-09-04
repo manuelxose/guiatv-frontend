@@ -3,6 +3,7 @@ import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, combineLatest, forkJoin, map, take, takeUntil } from 'rxjs';
 import {
+  CommunityList,
   UserActivity,
   UserFriend,
   UserList,
@@ -24,16 +25,20 @@ import { EditProfileModalComponent } from './components/edit-profile-modal/edit-
 import { AddToListModalComponent } from './components/add-to-list-modal/add-to-list-modal.component';
 import { UserFavoritesComponent } from './components/user-favorites/user-favorites.component';
 import { UserInteractionHistoryComponent } from './components/user-interaction-history/user-interaction-history.component';
+import { PersonalizationPreferencesComponent } from './components/personalization-preferences/personalization-preferences.component';
+import { AssistantPreferencesComponent } from './components/assistant-preferences/assistant-preferences.component';
+import { CommunityListCardComponent } from './components/community-list-card/community-list-card.component';
+import { CompletionMeterComponent } from '../../components/completion-meter/completion-meter.component';
+import { CatalogRailComponent } from '../../components/catalog-rail/catalog-rail.component';
 import { AuthActionService } from '../../services/auth-action.service';
 import { ChatService } from '../../services/chat.service';
+import { ChatbotService } from '../../services/chatbot.service';
+import { CatalogItem, CatalogService } from '../../services/catalog.service';
+import { computePersonalizationCompletion, PersonalizationCompletion } from '../../utils/personalization-completion';
 
 type TabType =
-  | 'feed'
-  | 'friends'
-  | 'lists'
-  | 'favorites'
-  | 'history'
-  | 'settings'
+  | 'overview' | 'tv' | 'streaming' | 'sports' | 'library' | 'community' | 'assistant' | 'notifications' | 'account'
+  | 'feed' | 'friends' | 'lists' | 'favorites' | 'history' | 'settings'
   | 'admin';
 
 @Component({
@@ -52,18 +57,33 @@ type TabType =
     AddToListModalComponent,
     UserFavoritesComponent,
     UserInteractionHistoryComponent,
+    PersonalizationPreferencesComponent,
+    AssistantPreferencesComponent,
+    CompletionMeterComponent,
+    CatalogRailComponent,
+    CommunityListCardComponent,
   ],
   templateUrl: './user-area.component.html',
   styleUrls: ['./user-area.component.scss'],
 })
 export class UserAreaComponent implements OnInit, OnDestroy {
+  /**
+   * The one source of truth for both the mobile tab grid and the desktop
+   * sidebar nav (see `visibleTabs` below) — previously the desktop sidebar
+   * had its own hardcoded 4-shortcut list that covered only 4 of these 9
+   * destinations. 'streaming' and 'notifications' used to be separate rows
+   * here even though both rendered the exact same <app-user-settings> as
+   * 'account' — collapsed into one 'account' entry; `mapLegacyTab` still
+   * resolves old `?tab=streaming`/`?tab=notifications` links to it.
+   */
   public readonly sectionTabs: { key: TabType; label: string }[] = [
-    { key: 'feed', label: 'Feed' },
-    { key: 'friends', label: 'Amigos' },
-    { key: 'lists', label: 'Listas' },
-    { key: 'favorites', label: 'Favoritos' },
-    { key: 'history', label: 'Historial' },
-    { key: 'settings', label: 'Ajustes' },
+    { key: 'overview', label: 'Resumen' },
+    { key: 'tv', label: 'Mi TV' },
+    { key: 'sports', label: 'Deportes' },
+    { key: 'library', label: 'Biblioteca' },
+    { key: 'community', label: 'Comunidad' },
+    { key: 'assistant', label: 'Asistente' },
+    { key: 'account', label: 'Cuenta' },
   ];
 
   public profile$ = this.userService.getProfile();
@@ -84,7 +104,39 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     )
   );
 
-  public activeTab: TabType = 'feed';
+  /**
+   * Onboarding-completion meter for Overview — same computation the
+   * Asistente tab uses for its own counter (utils/personalization-completion.ts),
+   * so the two never disagree. Memory is fetched once when Overview loads
+   * (see loadSectionData) since it otherwise only populates as a side effect
+   * of opening the chatbot or the Asistente tab.
+   */
+  public readonly personalizationCompletion$ = combineLatest([
+    this.profile$,
+    this.chatbotService.memory$,
+  ]).pipe(map(([profile, memory]) => computePersonalizationCompletion(profile, memory) as PersonalizationCompletion));
+
+  /**
+   * Real "for you" recommendations for the Overview rail, reusing the same
+   * /discovery/for-you endpoint and CatalogRailComponent that the standalone
+   * /para-ti page already uses — see loadSectionData. Left empty (rail
+   * hidden) rather than showing placeholder items when there is nothing to
+   * recommend yet.
+   */
+  public forYouItems: CatalogItem[] = [];
+  private forYouLoaded = false;
+
+  /**
+   * Real public/shared lists for the Community tab, from an endpoint
+   * (UserService.fetchCommunityLists -> GET /v2/lists/public) that already
+   * existed but was never called from Mi GuíaTV — CommunityListCardComponent
+   * was built for this and sat unused. No fabricated placeholder items;
+   * hidden entirely when empty (see loadCommunityLists).
+   */
+  public communityLists: CommunityList[] = [];
+  private communityListsLoaded = false;
+
+  public activeTab: TabType = 'overview';
   public isMobileView = false;
   public isCreateListModalOpen = false;
   public isEditProfileModalOpen = false;
@@ -100,6 +152,8 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     private menuState: MenuStateService,
     private authActionService: AuthActionService,
     private chatService: ChatService,
+    private chatbotService: ChatbotService,
+    private catalogService: CatalogService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -128,6 +182,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
         const mapped = this.mapLegacyTab(queryTab);
         if (this.isTabType(mapped)) {
           this.activeTab = mapped;
+          this.loadSectionData(mapped);
           return;
         }
 
@@ -135,6 +190,7 @@ export class UserAreaComponent implements OnInit, OnDestroy {
         const mappedDefault = this.mapLegacyTab(defaultTab);
         if (this.isTabType(mappedDefault)) {
           this.activeTab = mappedDefault;
+          this.loadSectionData(mappedDefault);
           return;
         }
       });
@@ -147,9 +203,10 @@ export class UserAreaComponent implements OnInit, OnDestroy {
 
   setActiveTab(tab: TabType): void {
     this.activeTab = tab;
+    this.loadSectionData(tab);
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { tab: tab === 'feed' ? null : tab },
+      queryParams: { tab: tab === 'overview' ? null : tab },
       queryParamsHandling: 'merge',
     });
   }
@@ -233,6 +290,10 @@ export class UserAreaComponent implements OnInit, OnDestroy {
       this.userService.saveGenrePreferences(event.favoriteGenres, event.preferredPlatforms),
       this.userService.saveDiscoveryDefaults(event.discoveryDefaults),
     ]).subscribe();
+  }
+
+  onTvPreferencesChange(preferences: UserProfile['tvPreferences']): void {
+    this.userService.updateTvPreferences(preferences).subscribe();
   }
 
   openCreateListModal(): void {
@@ -339,14 +400,89 @@ export class UserAreaComponent implements OnInit, OnDestroy {
     this.isMobileView = width < 768;
   }
 
+  private loadSectionData(tab: TabType): void {
+    if (tab === 'overview' || tab === 'library') {
+      this.userService.fetchLists().subscribe();
+      this.userService.fetchFavorites().subscribe();
+      this.userService.fetchInteractionHistory().subscribe();
+    }
+    if (tab === 'overview') {
+      // Assistant memory otherwise only loads as a side effect of opening
+      // the chatbot or the Asistente tab; Overview's completion meter needs
+      // it too. This is a single small document lookup, cheap enough to
+      // refetch on every Overview visit without its own cache.
+      this.chatbotService.fetchAssistantMemory().subscribe();
+      this.loadForYouRail();
+      // Overview's "Comunidad" quick-link card shows a real friend count —
+      // without this, friends$ stays empty until the user actually opens
+      // the Community tab, which would show a misleading "0 amigos".
+      this.userService.fetchFriends().subscribe();
+    }
+
+    if (tab === 'community' || tab === 'feed' || tab === 'friends') {
+      this.userService.fetchFriends().subscribe();
+      this.userService.fetchActivities('all').subscribe();
+      this.userService.fetchRecommendations('friends').subscribe();
+    }
+    if (tab === 'community' || tab === 'feed') {
+      this.loadCommunityLists();
+    }
+    if (tab === 'notifications') this.userService.fetchNotifications().subscribe();
+  }
+
+  /**
+   * Backs the Overview "Esta noche para ti" rail with the same
+   * /discovery/for-you data and CatalogRailComponent the standalone /para-ti
+   * page already uses (see CatalogService.getForYou and ForYouComponent) —
+   * no separate recommendation logic, no fabricated items. The raw response
+   * nests the real catalog fields under `.item`; only entries with a usable
+   * catalogId/title are kept, and the rail stays hidden entirely if that
+   * comes back empty (no login yet, no genres/platforms set, etc.).
+   */
+  private loadForYouRail(): void {
+    if (this.forYouLoaded) return;
+    this.forYouLoaded = true;
+    this.catalogService.getForYou(6).subscribe({
+      next: (recommendations) => {
+        this.forYouItems = (recommendations || [])
+          .map((recommendation) => recommendation?.item)
+          .filter((item): item is CatalogItem => Boolean(item?.catalogId && item?.title));
+      },
+      error: () => {
+        this.forYouItems = [];
+      },
+    });
+  }
+
+  private loadCommunityLists(): void {
+    if (this.communityListsLoaded) return;
+    this.communityListsLoaded = true;
+    this.userService.fetchCommunityLists(6).subscribe({
+      next: (lists) => {
+        this.communityLists = lists || [];
+      },
+      error: () => {
+        this.communityLists = [];
+      },
+    });
+  }
+
   private mapLegacyTab(value: string): string {
-    if (value === 'social' || value === 'overview') return 'feed';
-    if (value === 'chat' || value === 'recommendations') return 'feed';
+    if (value === 'social' || value === 'feed' || value === 'community') return 'community';
+    if (value === 'overview') return 'overview';
+    if (value === 'chat' || value === 'recommendations') return 'assistant';
+    // 'streaming'/'notifications' used to be their own nav entries; both
+    // rendered the identical <app-user-settings> as 'settings'/'account'.
+    // Old bookmarks/links with those query values still land on the single
+    // surviving 'account' tab instead of a dead/blank state.
+    if (value === 'settings' || value === 'streaming' || value === 'notifications') return 'account';
+    if (value === 'lists' || value === 'favorites' || value === 'history') return 'library';
     return value;
   }
 
   private isTabType(value: string): value is TabType {
     return (
+      value === 'overview' || value === 'tv' || value === 'streaming' || value === 'sports' || value === 'library' || value === 'community' || value === 'assistant' || value === 'notifications' || value === 'account' ||
       value === 'feed' ||
       value === 'friends' ||
       value === 'lists' ||

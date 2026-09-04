@@ -1,5 +1,15 @@
 // src/v2/application/dto/ChannelDTO.ts
 
+import type {
+  CanonicalChannelCapabilities,
+  CanonicalChannelAccess,
+  CanonicalChannelContentFacet,
+  CanonicalChannelDistribution,
+  CanonicalChannelMarket,
+  CanonicalChannelProvenance,
+  CanonicalChannelQuality,
+} from '@/shared/utils/tvMetadata';
+
 /**
  * Serializable representation of a channel for API responses.
  */
@@ -15,6 +25,15 @@ export interface ChannelDTO {
   countryCode?: string;
   region?: string;
   description?: string;
+  distribution?: CanonicalChannelDistribution;
+  access?: CanonicalChannelAccess;
+  operator?: string;
+  providers?: string[];
+  contentFacets?: CanonicalChannelContentFacet[];
+  market?: CanonicalChannelMarket;
+  quality?: CanonicalChannelQuality;
+  capabilities?: CanonicalChannelCapabilities;
+  provenance?: CanonicalChannelProvenance;
   isActive: boolean;
 }
 

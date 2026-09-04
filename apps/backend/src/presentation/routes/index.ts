@@ -40,6 +40,12 @@ import { createAIRoutes } from './ai.routes';
 import { AIAnalyticsController } from '../controllers/AIAnalyticsController';
 import { createAdminAIAnalyticsRoutes } from './admin-ai-analytics.routes';
 import { createListsPublicRoutes } from './lists-public.routes';
+import { MonetizationController } from '../controllers/MonetizationController';
+import { createMonetizationRoutes } from './monetization.routes';
+import { AffiliateController } from '../controllers/AffiliateController';
+import { createAffiliateRoutes } from './affiliate.routes';
+import { AffiliateAdminController } from '../controllers/AffiliateAdminController';
+import { createAdminAffiliateRoutes } from './admin-affiliate.routes';
 
 /**
  * Dependencies required by every route factory.
@@ -57,6 +63,9 @@ export interface RoutesDependencies {
   footballController: FootballController;
   blogController: BlogController;
   analyticsController: AnalyticsController;
+  monetizationController: MonetizationController;
+  affiliateController: AffiliateController;
+  affiliateAdminController: AffiliateAdminController;
   userController: UserController;
   interactionController: InteractionController;
   socialController: SocialController;
@@ -119,9 +128,15 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
     createAdminUsersRoutes(dependencies.adminUsersController, dependencies.authService)
   );
   router.use('/admin', createAdminRoutes(dependencies.adminController, dependencies.authService));
+  router.use(
+    '/admin/affiliate',
+    createAdminAffiliateRoutes(dependencies.affiliateAdminController, dependencies.authService)
+  );
   router.use('/admin/ai-analytics', createAdminAIAnalyticsRoutes(dependencies.aiAnalyticsController, dependencies.authService));
   router.use('/auth', createAuthRoutes(dependencies.authController));
   router.use('/blog', createBlogRoutes(dependencies.blogController));
+  router.use('/monetization', createMonetizationRoutes(dependencies.monetizationController));
+  router.use('/affiliate', createAffiliateRoutes(dependencies.affiliateController));
   router.use('/lists/public', createListsPublicRoutes());
   router.use('/analytics', createAnalyticsRoutes(dependencies.analyticsController, dependencies.authService));
   router.use('/telemetry', createAnalyticsRoutes(dependencies.analyticsController, dependencies.authService));

@@ -1,11 +1,14 @@
 import {
   AIRecommendationService,
+  ChatbotAffiliateActionDTO,
   ChatbotContext,
   ChatbotMessage,
   ChatbotQueryContext,
   ChatbotRecommendationPayload,
   ChatbotResponse,
 } from '@/infrastructure/external/AIRecommendationService';
+import { AffiliateResolverService } from '../services/AffiliateResolverService';
+import { buildAffiliateContext } from '../dto/AffiliateContext';
 import { IUserContentInteractionRepository } from '@/domain/repositories/IUserContentInteractionRepository';
 import { MongoUserRepository } from '@/infrastructure/repositories/MongoUserRepository';
 import { CatalogService } from '../services/CatalogService';
@@ -23,15 +26,24 @@ import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import * as crypto from 'crypto';
 import { logger } from '../../shared/utils/logger';
 import { TvReadQueryService } from '../services/TvReadQueryService';
+import { AssistantLaunchContext } from '../dto/AssistantDTO';
+import { resolveGroundedRecommendations } from './AssistantGrounding';
+import { FootballQueryService } from '../sports/services/FootballQueryService';
+import { FootballMatch } from '@/domain/sports/football/types';
+import { findCanonicalChannelInText } from '@/shared/utils/tvMetadata';
+import { findGenresInText, genreLabelsMatch } from '@/shared/taxonomy/genreTaxonomy';
 
 export interface ChatbotRecommendRequest {
   userId: string;
   messages: ChatbotMessage[];
   conversationId?: string;
+  context?: AssistantLaunchContext;
 }
 
 interface ChatQueryIntent {
-  mode: 'tv_now' | 'tv_tonight' | 'streaming' | 'general';
+  mode: 'tv_now' | 'tv_tonight' | 'tv_channel_schedule' | 'streaming' | 'football_today' | 'general';
+  channelId?: string;
+  channelPeriod?: 'now' | 'tonight' | 'today';
   requestedTypes: Array<'movie' | 'series' | 'program'>;
   explicitGenres: string[];
   explicitPlatforms: string[];
@@ -41,22 +53,7 @@ interface ChatQueryIntent {
   negativeSignals: string[];
 }
 
-const KNOWN_GENRES = [
-  'Cine',
-  'Series',
-  'Acción',
-  'Drama',
-  'Comedia',
-  'Terror',
-  'Ciencia ficción',
-  'Documental',
-  'Deportes',
-  'Infantil',
-  'Suspense',
-  'Romance',
-  'Noticias',
-  'Cultura',
-];
+const FAMILY_FRIENDLY_GENRES = ['Familia', 'Infantil', 'Comedia', 'Animación'];
 
 // ─── Explicit channel priority order (user-defined) ──────────────────────────
 
@@ -351,7 +348,9 @@ export class ChatbotRecommend {
     private readonly catalogService: CatalogService,
     private readonly assistantMemoryService: AssistantMemoryService,
     private readonly cacheRepository?: ICacheRepository,
-    private readonly tvReadQueryService?: TvReadQueryService
+    private readonly tvReadQueryService?: TvReadQueryService,
+    private readonly footballQueryService?: FootballQueryService,
+    private readonly affiliateResolverService?: AffiliateResolverService
   ) {}
 
   async execute(
@@ -414,12 +413,26 @@ export class ChatbotRecommend {
     }
 
     const intent = this.analyzeIntent(latestUserMessage);
+    if (intent.mode === 'football_today' && this.footballQueryService && latestUserMessage) {
+      const rawResponse = await this.buildFootballTodayResponse();
+      const response = await this.attachAffiliateActions(
+        rawResponse,
+        request.conversationId || history.conversationId
+      );
+      const persisted = await this.assistantMemoryService.saveChatTurn({
+        userId: request.userId,
+        conversationId: request.conversationId || history.conversationId || undefined,
+        userMessage: latestUserMessage,
+        assistantResponse: response,
+      });
+      return { ...response, conversationId: persisted.conversationId, assistantMemorySnapshot: persisted.memory };
+    }
     const liveTypesForExecute = this.resolveLiveTypes(intent);
     const effectiveCommunity =
       communityReply.kind === 'set'
         ? communityReply.community
         : history.memory?.preferredAutonomousCommunity;
-    const isLiveIntent = intent.mode === 'tv_now' || intent.mode === 'tv_tonight';
+    const isLiveIntent = intent.mode === 'tv_now' || intent.mode === 'tv_tonight' || intent.mode === 'tv_channel_schedule';
     const isStreamingIntent = intent.mode === 'streaming' || intent.mode === 'general';
     const emptyResult = { items: [], total: 0 };
 
@@ -429,7 +442,7 @@ export class ChatbotRecommend {
       tonightLateCatalog,
       streamingCatalog,
     ] = await Promise.all([
-      isLiveIntent
+      isLiveIntent && intent.mode !== 'tv_channel_schedule'
         ? this.loadTvCatalog({ view: 'now', limit: 1000, requestedTypes: liveTypesForExecute })
         : emptyResult,
       isLiveIntent && intent.mode === 'tv_tonight'
@@ -499,9 +512,9 @@ export class ChatbotRecommend {
       }
     );
     if (directResponse && latestUserMessage) {
-      const normalizedDirectResponse = this.finalizeResponse(
-        directResponse,
-        latestUserMessage
+      const normalizedDirectResponse = await this.attachAffiliateActions(
+        this.finalizeResponse(directResponse, latestUserMessage),
+        request.conversationId || history.conversationId
       );
       const persisted = await this.assistantMemoryService.saveChatTurn({
         userId: request.userId,
@@ -561,9 +574,9 @@ export class ChatbotRecommend {
       };
     }
 
-    const normalizedFinalResponse = this.finalizeResponse(
-      finalResponse,
-      latestUserMessage
+    const normalizedFinalResponse = await this.attachAffiliateActions(
+      this.finalizeResponse(finalResponse, latestUserMessage),
+      request.conversationId || history.conversationId
     );
     const persisted = await this.assistantMemoryService.saveChatTurn({
       userId: request.userId,
@@ -593,6 +606,11 @@ export class ChatbotRecommend {
   ): Promise<StreamableChatResponse> {
     const t0 = Date.now();
     const latestUserMessage = this.getLatestUserMessage(request.messages);
+    // Keep streaming and JSON clients on the same deterministic EPG path for
+    // explicit channel requests; never let this fall through to AI streaming.
+    if (this.analyzeIntent(latestUserMessage).mode === 'tv_channel_schedule') {
+      return { kind: 'direct', response: await this.execute(request) };
+    }
     logger.info('[ChatbotRecommend] executeStream start', { userId: request.userId, conversationId: request.conversationId });
 
     // --- Cache check: skip all DB + catalog + AI work if we have a recent answer ---
@@ -656,6 +674,20 @@ export class ChatbotRecommend {
     }
 
     const intent = this.analyzeIntent(latestUserMessage);
+    if (intent.mode === 'football_today' && this.footballQueryService && latestUserMessage) {
+      const rawResponse = await this.buildFootballTodayResponse();
+      const response = await this.attachAffiliateActions(
+        rawResponse,
+        request.conversationId || history.conversationId
+      );
+      const persisted = await this.assistantMemoryService.saveChatTurn({
+        userId: request.userId,
+        conversationId: request.conversationId || history.conversationId || undefined,
+        userMessage: latestUserMessage,
+        assistantResponse: response,
+      });
+      return { kind: 'direct', response: { ...response, conversationId: persisted.conversationId, assistantMemorySnapshot: persisted.memory } };
+    }
     const liveTypesForStream = this.resolveLiveTypes(intent);
     const effectiveCommunity =
       communityReply.kind === 'set'
@@ -694,7 +726,10 @@ export class ChatbotRecommend {
       recentTitles: recentInteractions.map((i: any) => i.title || '').filter(Boolean),
     } });
     if (directResponse && latestUserMessage) {
-      const normalizedDirectResponse = this.finalizeResponse(directResponse, latestUserMessage);
+      const normalizedDirectResponse = await this.attachAffiliateActions(
+        this.finalizeResponse(directResponse, latestUserMessage),
+        request.conversationId || history.conversationId
+      );
       const persisted = await this.assistantMemoryService.saveChatTurn({
         userId: request.userId,
         conversationId: request.conversationId || history.conversationId || undefined,
@@ -749,7 +784,10 @@ export class ChatbotRecommend {
         return { ...finalResponse, assistantMemorySnapshot: history.memory || undefined };
       }
 
-      const normalizedFinalResponse = this.finalizeResponse(finalResponse, latestUserMessage);
+      const normalizedFinalResponse = await this.attachAffiliateActions(
+        this.finalizeResponse(finalResponse, latestUserMessage),
+        request.conversationId || history.conversationId
+      );
       const persisted = await this.assistantMemoryService.saveChatTurn({
         userId: request.userId,
         conversationId: request.conversationId || history.conversationId || undefined,
@@ -916,6 +954,37 @@ export class ChatbotRecommend {
   ): Promise<ChatbotResponse | null> {
     // Title-specific schedule query ("a qué hora emiten X", "en qué canal dan Y")
     if (latestUserMessage) {
+      if (intent.mode === 'tv_channel_schedule' && intent.channelId) {
+        const schedule = await this.loadTvCatalog({
+          view: 'day', channelId: intent.channelId, limit: 120, requestedTypes: this.resolveLiveTypes(intent),
+        });
+        const items = this.filterCatalogItems(this.dedupeCatalogItems(schedule.items), intent);
+        const channelName = items[0]?.channel?.name || intent.channelId;
+        const periodItems = intent.channelPeriod === 'now'
+          ? items.filter((item) => item.liveNow)
+          : intent.channelPeriod === 'tonight'
+            ? this.extractTonightItems(items)
+            : items;
+        if (!periodItems.length) {
+          logger.warn('[ChatbotRecommend] explicit_channel_schedule_empty', {
+            requestedChannel: intent.channelId, scheduleCount: items.length, period: intent.channelPeriod,
+          });
+          return {
+            text: `No he encontrado programación actual de ${channelName} para este periodo.`,
+            recommendations: [], moreRecommendations: [], followUpSuggestions: ['¿Qué hay ahora mismo en TV?', '¿Qué hay esta noche?'],
+          };
+        }
+        const ranked = intent.requestedTypes.includes('movie')
+          ? this.rankMovieItems(periodItems, intent.channelPeriod === 'now' ? 'tv_now' : 'tv_tonight', context.rankingCtx, intent.wantsPrimeTime)
+          : this.rankScheduleItems(periodItems, intent.channelPeriod === 'now' ? 'tv_now' : 'tv_tonight', context.rankingCtx);
+        const picks = ranked.slice(0, 6);
+        return {
+          text: `${intent.channelPeriod === 'now' ? 'Ahora mismo' : intent.channelPeriod === 'tonight' ? 'Esta noche' : 'Hoy'} en ${channelName}:`,
+          recommendations: picks.map((entry) => this.mapRankedItemToRecommendation(entry, entry.item.liveNow ? `En emisión ahora en ${channelName}.` : `Empieza a las ${entry.item.start ? this.formatTime(entry.item.start) : 'próximamente'} en ${channelName}.`)),
+          moreRecommendations: ranked.slice(6).map((entry) => this.mapRankedItemToRecommendation(entry, `En ${channelName}.`)),
+          followUpSuggestions: ['¿Qué están echando ahora?', '¿Qué hay esta noche?'],
+        };
+      }
       const titleQuery = this.detectTitleScheduleQuery(latestUserMessage);
       if (titleQuery) {
         const titleResponse = this.buildTitleScheduleResponse(titleQuery, liveNowItems, tonightItems);
@@ -1032,7 +1101,7 @@ export class ChatbotRecommend {
         ),
         followUpSuggestions: this.buildFollowUpSuggestions(intent, latestUserMessage),
         queryContext: this.buildQueryContext(
-          intent.mode,
+          intent.mode === 'tv_channel_schedule' ? 'tv_tonight' : intent.mode,
           intent.requestedTypes,
           rankedPrimaryItems.length,
           picks.length,
@@ -1064,7 +1133,7 @@ export class ChatbotRecommend {
           latestUserMessage
         ),
         queryContext: this.buildQueryContext(
-          intent.mode,
+          intent.mode === 'tv_channel_schedule' ? 'tv_tonight' : intent.mode,
           intent.requestedTypes,
           0,
           0,
@@ -1170,7 +1239,7 @@ export class ChatbotRecommend {
         latestUserMessage
       ),
       queryContext: this.buildQueryContext(
-        intent.mode,
+        intent.mode === 'tv_channel_schedule' ? 'tv_tonight' : intent.mode,
         intent.requestedTypes,
         0,
         0,
@@ -1253,9 +1322,7 @@ export class ChatbotRecommend {
         if (
           intent.explicitGenres.length &&
           !intent.explicitGenres.some((genre) =>
-            item.genres.some(
-              (itemGenre) => this.normalize(itemGenre) === this.normalize(genre)
-            )
+            item.genres.some((itemGenre) => genreLabelsMatch(itemGenre, genre))
           )
         ) {
           return false;
@@ -1276,9 +1343,7 @@ export class ChatbotRecommend {
         if (
           intent.wantsFamily &&
           !item.genres.some((genre) =>
-            ['familia', 'infantil', 'comedia', 'animacion'].includes(
-              this.normalize(genre)
-            )
+            FAMILY_FRIENDLY_GENRES.some((familyGenre) => genreLabelsMatch(genre, familyGenre))
           )
         ) {
           return false;
@@ -1347,10 +1412,9 @@ export class ChatbotRecommend {
     const explicitPlatforms = CATALOG_PLATFORM_REGISTRY
       .map((platform) => platform.name)
       .filter((platform) => normalized.includes(this.normalize(platform)));
-    const explicitGenres = KNOWN_GENRES.filter((genre) =>
-      normalized.includes(this.normalize(genre))
-    );
+    const explicitGenres = findGenresInText(message);
 
+    const channelId = findCanonicalChannelInText(message);
     const wantsTv =
       /television|televisión|tv|parrilla|canal|canales|emision|emisión|directo/.test(
         normalized
@@ -1383,7 +1447,11 @@ export class ChatbotRecommend {
     ].filter(Boolean);
 
     let mode: ChatQueryIntent['mode'] = 'general';
-    if ((wantsTv && wantsNow) || /en parrilla ahora/.test(normalized) || (wantsNow && !wantsStreaming)) {
+    if (channelId) {
+      mode = 'tv_channel_schedule';
+    } else if (/futbol|fútbol|partidos?|champions|laliga|liga de campeones/.test(normalized)) {
+      mode = 'football_today';
+    } else if ((wantsTv && wantsNow) || /en parrilla ahora/.test(normalized) || (wantsNow && !wantsStreaming)) {
       mode = 'tv_now';
     } else if ((wantsTv && wantsTonight) || (wantsTonight && !wantsStreaming)) {
       mode = 'tv_tonight';
@@ -1393,6 +1461,8 @@ export class ChatbotRecommend {
 
     return {
       mode,
+      channelId,
+      channelPeriod: wantsNow ? 'now' : wantsTonight ? 'tonight' : 'today',
       requestedTypes,
       explicitGenres,
       explicitPlatforms,
@@ -1401,6 +1471,11 @@ export class ChatbotRecommend {
       wantsPrimeTime: /prime\s*time/.test(normalized),
       negativeSignals,
     };
+  }
+
+  private async buildFootballTodayResponse(): Promise<ChatbotResponse> {
+    const { matches } = await this.footballQueryService!.getMatches({ date: 'today', limit: 12 });
+    return buildFootballTodayPayload(matches);
   }
 
   private resolveStreamingTypes(
@@ -1613,12 +1688,13 @@ export class ChatbotRecommend {
   }
 
   private async loadTvCatalog(input: {
-    view: 'now' | 'night' | 'search';
+    view: 'now' | 'night' | 'day' | 'search';
     date?: string;
     q?: string;
     limit: number;
     slot?: '6' | '7';
     category?: string;
+    channelId?: string;
     requestedTypes?: Array<'movie' | 'series' | 'program'>;
   }): Promise<{ items: CatalogItemDTO[]; total: number }> {
     if (!this.tvReadQueryService) {
@@ -1642,6 +1718,7 @@ export class ChatbotRecommend {
       view: input.view,
       date: input.date,
       q: input.q,
+      channelId: input.channelId,
       category: input.category,
       limit: input.limit,
     });
@@ -1746,27 +1823,17 @@ export class ChatbotRecommend {
   private async resolveRecommendations(
     recommendations: ChatbotRecommendationPayload[]
   ): Promise<ChatbotRecommendationPayload[]> {
-    const resolved = await Promise.all(
-      recommendations.map(async (recommendation) => {
-        if (recommendation.catalogId && recommendation.title) {
-          return {
-            ...recommendation,
-            title: this.cleanDisplayTitle(
-              recommendation.title,
-              recommendation.type
-            ),
-          };
-        }
-
-        const match = await this.catalogService.resolveRecommendation({
+    const resolved = await resolveGroundedRecommendations(
+      recommendations,
+      (recommendation) => this.catalogService.resolveRecommendation({
           title: recommendation.title,
           type: recommendation.type,
           platform: recommendation.platform,
           channel: recommendation.channel,
-        });
-
+        }),
+      (recommendation, match) => {
         // Validate EPG timing: don't surface stale airtime data from the catalog match
-        const matchStartMs = match?.start ? new Date(match.start).getTime() : null;
+        const matchStartMs = match.start ? new Date(match.start).getTime() : null;
         const now = Date.now();
         const epgIsStale = matchStartMs !== null && matchStartMs < now - 3 * 3_600_000;
         const epgIsFutureTooFar = matchStartMs !== null && matchStartMs > now + 48 * 3_600_000;
@@ -1774,21 +1841,21 @@ export class ChatbotRecommend {
 
         return {
           ...recommendation,
-          catalogId: recommendation.catalogId || match?.catalogId,
-          detailPath: recommendation.detailPath || match?.detailPath,
-          source: recommendation.source || match?.source,
-          tmdbId: match?.tmdbId || recommendation.tmdbId,
-          image: match?.image || recommendation.image,
+          catalogId: match.catalogId,
+          detailPath: match.detailPath,
+          source: match.source,
+          tmdbId: match.tmdbId,
+          image: match.image,
           title: this.cleanDisplayTitle(recommendation.title, recommendation.type),
           platform:
             recommendation.platform ||
-            match?.primaryPlatforms[0] ||
+            match.primaryPlatforms[0] ||
             recommendation.channel,
-          channel: recommendation.channel || match?.channel?.name,
-          liveNow: useEpgTimes ? Boolean(match?.liveNow) : false,
+          channel: recommendation.channel || match.channel?.name,
+          liveNow: useEpgTimes ? Boolean(match.liveNow) : false,
           time:
             recommendation.time ||
-            (useEpgTimes && match?.start
+            (useEpgTimes && match.start
               ? new Date(match.start).toLocaleTimeString('es-ES', {
                   hour: '2-digit',
                   minute: '2-digit',
@@ -1796,16 +1863,29 @@ export class ChatbotRecommend {
               : undefined),
           platformLogo:
             recommendation.platformLogo ||
-            match?.assets?.channelLogo?.url ||
-            match?.assets?.platformLogo?.url ||
-            match?.channel?.icon,
-          startTime: useEpgTimes ? (recommendation.startTime || (match?.start ? this.formatTime(match.start) : undefined)) : recommendation.startTime,
-          endTime: useEpgTimes ? (recommendation.endTime || (match?.end ? this.formatTime(match.end) : undefined)) : recommendation.endTime,
+            match.assets?.channelLogo?.url ||
+            match.assets?.platformLogo?.url ||
+            match.channel?.icon,
+          startTime: useEpgTimes ? (match.start ? this.formatTime(match.start) : undefined) : undefined,
+          endTime: useEpgTimes ? (match.end ? this.formatTime(match.end) : undefined) : undefined,
         };
-      })
+      }
     );
 
     return this.dedupeRecommendations(resolved);
+  }
+
+  /**
+   * Deterministic, post-hoc affiliate CTA resolution — see the exported
+   * `attachChatbotAffiliateActions` for the implementation (kept as a free
+   * function, not an instance method, so it's unit-testable with a minimal
+   * resolver mock instead of the full `ChatbotRecommend` dependency graph).
+   */
+  private async attachAffiliateActions(
+    response: ChatbotResponse,
+    conversationId?: string | null
+  ): Promise<ChatbotResponse> {
+    return attachChatbotAffiliateActions(response, this.affiliateResolverService, conversationId);
   }
 
   private finalizeResponse(
@@ -2620,5 +2700,161 @@ export class ChatbotRecommend {
     }
 
     return badges.slice(0, 3);
+  }
+}
+
+/** Pure presenter kept outside the use case so grounding invariants remain regression-testable. */
+export function buildFootballTodayPayload(matches: FootballMatch[]): ChatbotResponse {
+  const visible = matches.slice(0, 8);
+  return {
+    text: visible.length
+      ? `He encontrado ${visible.length} ${visible.length === 1 ? 'partido' : 'partidos'} para hoy con datos verificados de GuíaTV.`
+      : 'No encuentro partidos confirmados para hoy en las fuentes de GuíaTV.',
+    intent: 'football_today',
+    confidence: 1,
+    sections: [{ id: 'football-today', kind: 'matches', title: 'Fútbol hoy' }],
+    matches: visible.map((match) => ({
+      id: match.id,
+      slug: match.slug,
+      competition: match.competition.shortName || match.competition.name,
+      kickoffAt: match.kickoffAt,
+      status: match.status,
+      homeTeam: match.homeTeam.name,
+      awayTeam: match.awayTeam.name,
+      homeScore: match.score.home,
+      awayScore: match.score.away,
+      broadcasters: match.broadcasts.map((broadcast) => ({
+        name: broadcast.channelName,
+        path: broadcast.channelPath,
+      })),
+      detailPath: `/futbol/partido/${match.slug}`,
+    })),
+    sources: [{
+      id: 'football-provider-today',
+      kind: 'football_provider',
+      label: 'Datos de fútbol de GuíaTV',
+      retrievedAt: new Date().toISOString(),
+    }],
+    followUpSuggestions: ['¿Qué hay ahora en TV?', 'Películas para esta noche'],
+  };
+}
+
+const AFFILIATE_RESOLVE_TIMEOUT_MS = 350;
+const AFFILIATE_PLACEMENT = 'chatbot-answer';
+
+/** Minimal shape `attachChatbotAffiliateActions` needs — lets tests pass a lightweight mock instead of a full `AffiliateResolverService`. */
+export interface ChatbotAffiliateResolver {
+  resolveOffers: AffiliateResolverService['resolveOffers'];
+}
+
+async function resolveAffiliateActionForProvider(
+  resolver: ChatbotAffiliateResolver,
+  providerKey: string,
+  conversationId?: string | null
+): Promise<ChatbotAffiliateActionDTO | undefined> {
+  try {
+    const timeout = new Promise<undefined>((resolve) =>
+      setTimeout(() => resolve(undefined), AFFILIATE_RESOLVE_TIMEOUT_MS)
+    );
+    const result = await Promise.race([
+      resolver.resolveOffers({
+        context: buildAffiliateContext({
+          market: 'ES',
+          placement: AFFILIATE_PLACEMENT,
+          providerKey,
+          chatbotConversationId: conversationId ?? undefined,
+        }),
+        providerKeys: [providerKey],
+        maxResults: 1,
+      }),
+      timeout,
+    ]);
+    const top = result?.items?.[0];
+    if (!top) return undefined;
+    return {
+      offerId: top.offerId,
+      label: top.cta.label,
+      provider: top.merchant.name,
+      outboundPath: top.outbound.path,
+      disclosure: top.display.disclosure,
+      sponsored: top.cta.sponsored,
+    };
+  } catch (error) {
+    logger.warn('[ChatbotRecommend] affiliate resolve failed for provider', {
+      providerKey,
+      error: error instanceof Error ? error.message : 'unknown',
+    });
+    return undefined;
+  }
+}
+
+/**
+ * Deterministic, post-hoc affiliate CTA resolution — never seen by the LLM,
+ * never blocks or degrades the chat answer. Called once per response, after
+ * the recommendation list (and, for football, the match/broadcaster list) is
+ * already final. Dedupes by provider key so N recommendations sharing one
+ * channel/platform only resolve once (`Promise.all` over unique keys, not
+ * over items). Any resolver failure or slow response is caught/time-boxed
+ * and simply leaves `affiliateActions` unset — the chat text and
+ * recommendations themselves are already fully built by this point, so a
+ * broken/unavailable affiliate backend never turns into a broken/degraded
+ * chat answer. Exported as a free function (not a method) so it's directly
+ * unit-testable with a minimal `{ resolveOffers }` mock.
+ */
+export async function attachChatbotAffiliateActions(
+  response: ChatbotResponse,
+  resolver: ChatbotAffiliateResolver | undefined,
+  conversationId?: string | null
+): Promise<ChatbotResponse> {
+  if (!resolver) return response;
+
+  try {
+    const recommendations = response.recommendations || [];
+    const moreRecommendations = response.moreRecommendations || [];
+    const broadcasters = (response.matches || []).flatMap((match) => match.broadcasters || []);
+
+    const providerKeys = new Set<string>();
+    for (const rec of [...recommendations, ...moreRecommendations]) {
+      const key = rec.channelOrPlatform || rec.channel || rec.platform;
+      if (key) providerKeys.add(key);
+    }
+    for (const broadcaster of broadcasters) {
+      if (broadcaster.name) providerKeys.add(broadcaster.name);
+    }
+    if (!providerKeys.size) return response;
+
+    const resolvedByProvider = new Map<string, ChatbotAffiliateActionDTO | undefined>();
+    await Promise.all(
+      Array.from(providerKeys).map(async (providerKey) => {
+        const action = await resolveAffiliateActionForProvider(resolver, providerKey, conversationId);
+        resolvedByProvider.set(providerKey, action);
+      })
+    );
+
+    const applyTo = (rec: ChatbotRecommendationPayload): ChatbotRecommendationPayload => {
+      const key = rec.channelOrPlatform || rec.channel || rec.platform;
+      const action = key ? resolvedByProvider.get(key) : undefined;
+      return action ? { ...rec, affiliateActions: [action] } : rec;
+    };
+
+    return {
+      ...response,
+      recommendations: recommendations.length ? recommendations.map(applyTo) : response.recommendations,
+      moreRecommendations: moreRecommendations.length
+        ? moreRecommendations.map(applyTo)
+        : response.moreRecommendations,
+      matches: response.matches?.map((match) => ({
+        ...match,
+        broadcasters: (match.broadcasters || []).map((broadcaster) => {
+          const action = broadcaster.name ? resolvedByProvider.get(broadcaster.name) : undefined;
+          return action ? { ...broadcaster, affiliateActions: [action] } : broadcaster;
+        }),
+      })),
+    };
+  } catch (error) {
+    logger.warn('[ChatbotRecommend] attachAffiliateActions failed; returning response without CTAs', {
+      error: error instanceof Error ? error.message : 'unknown',
+    });
+    return response;
   }
 }

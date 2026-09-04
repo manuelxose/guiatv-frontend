@@ -5,128 +5,248 @@
   [breadcrumbItems]="[]"
   [showHero]="false"
 >
+  <app-editorial-masthead></app-editorial-masthead>
   <app-portal-context-nav kind="blog" [breadcrumbItems]="breadcrumbItems"></app-portal-context-nav>
-  <header class="blog-page-header">
-    <p>Blog</p>
-    <h1>Historias y guías para elegir qué ver</h1>
-    <span>Actualidad, recomendaciones y análisis de televisión y streaming.</span>
-  </header>
-  <section *ngIf="loading" class="mt-8 grid gap-6 lg:grid-cols-3">
-    <div *ngFor="let index of [1, 2, 3, 4, 5, 6]" class="h-64 animate-pulse rounded-[1.75rem] bg-[var(--portal-surface-strong)]"></div>
+
+  <section *ngIf="loading" class="editorial-loading" aria-busy="true" aria-label="Cargando publicaciones">
+    <app-unified-skeleton-block [count]="1" [columns]="1" cardHeight="26rem"></app-unified-skeleton-block>
+    <app-unified-skeleton-block [count]="4" [columns]="2" cardHeight="8rem"></app-unified-skeleton-block>
   </section>
 
-  <div
-    *ngIf="error"
-    class="rounded-[1.75rem] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-6 text-sm text-[var(--accent-live)]"
-  >
-    {{ error }}
-  </div>
+  <app-unified-async-state
+    *ngIf="!loading && error"
+    kind="error"
+    title="El Blog no está disponible ahora mismo"
+    [message]="error"
+    actionLabel="Reintentar"
+    (action)="retry()"
+  ></app-unified-async-state>
 
   <ng-container *ngIf="!loading && !error">
-    <a
-      *ngIf="hero"
-      [routerLink]="hero.canonicalPath"
-      class="group block overflow-hidden rounded-[1.6rem] border border-[var(--portal-border)] bg-[var(--portal-surface)] transition-colors hover:border-[var(--portal-border-strong)]"
+    <app-unified-async-state
+      *ngIf="!hero"
+      kind="empty"
+      title="Todavía no hay publicaciones"
+      message="Estamos preparando nuevas guías, análisis y recomendaciones. Vuelve pronto para descubrirlas."
+    ></app-unified-async-state>
+
+    <!-- FEATURE STORY -->
+    <section *ngIf="hero" class="editorial-lead" aria-label="Portada editorial">
+      <a [routerLink]="hero.canonicalPath" class="editorial-lead__story group">
+        <div class="editorial-lead__image">
+          <img [src]="hero.coverImage" [alt]="hero.title" width="1200" height="800" loading="eager" fetchpriority="high" />
+        </div>
+        <div class="editorial-lead__copy">
+          <span>{{ hero.primaryCategory?.name || 'Selección editorial' }}</span>
+          <h1>{{ hero.title }}</h1>
+          <p>{{ hero.excerptText }}</p>
+          <small>{{ hero.publishedAt | date : 'dd MMM yyyy' }} · {{ hero.readingMinutes }} min de lectura</small>
+        </div>
+      </a>
+
+      <aside *ngIf="latestPosts.length" class="editorial-latest" aria-labelledby="latest-heading">
+        <h2 id="latest-heading">Sigue leyendo</h2>
+        <a *ngFor="let post of latestPosts; trackBy: trackPost" [routerLink]="post.canonicalPath">
+          <span>{{ post.primaryCategory?.name || 'Blog' }}</span>
+          <h3>{{ post.title }}</h3>
+          <small>{{ post.publishedAt | date : 'dd MMM' }} · {{ post.readingMinutes }} min</small>
+        </a>
+      </aside>
+    </section>
+
+    <!-- QUÉ VER HOY — real TV/streaming data, not editorial posts -->
+    <section
+      *ngIf="watchTodayLoaded && (moviesToday.length || seriesTonight.length || tvTonight.length)"
+      class="editorial-section editorial-watch-today"
+      aria-label="Qué ver hoy"
     >
-      <div class="relative aspect-[16/8] overflow-hidden bg-[var(--portal-surface-strong)]">
-        <img
-          [src]="hero.coverImage"
-          [alt]="hero.title"
-          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="eager"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-      </div>
-
-      <div class="p-5">
-        <div class="space-y-3">
-          <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--portal-text-muted)]">Reportaje destacado</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ hero.title }}</h2>
-          <p class="line-clamp-3 text-sm text-[var(--portal-text-soft)]">{{ hero.excerptText }}</p>
-        </div>
-      </div>
-    </a>
-
-    <section id="guias" *ngIf="guidePosts.length" class="space-y-5 scroll-mt-32">
-      <div class="flex items-end justify-between gap-4">
+      <div class="editorial-section__header">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Guías</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Ideas para decidir qué ver</h2>
+          <p class="editorial-section__eyebrow">Qué ver hoy</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Datos reales de programación y catálogo</h2>
+          <p>La ventaja de Guía TV frente a una revista: recomendaciones conectadas con lo que hay disponible ahora mismo.</p>
         </div>
-        <a
-          [routerLink]="appPaths.explore"
-          class="min-h-[40px] rounded-full border border-[var(--portal-border-strong)] px-4 py-2 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
-        >
-          Abrir qué ver hoy
-        </a>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+
+      <div class="editorial-watch-today__rails">
+        <app-catalog-rail
+          *ngIf="moviesToday.length"
+          eyebrow="Cine"
+          title="Películas recomendadas hoy"
+          [linkLabel]="'Ver todas'"
+          [linkPath]="appPaths.explore"
+          [linkQueryParams]="{ types: 'movie' }"
+          [items]="moviesToday"
+        ></app-catalog-rail>
+
+        <app-catalog-rail
+          *ngIf="seriesTonight.length"
+          eyebrow="Series"
+          title="Series mejor valoradas para maratonear"
+          [linkLabel]="'Ver todas'"
+          [linkPath]="appPaths.explore"
+          [linkQueryParams]="{ types: 'series' }"
+          [items]="seriesTonight"
+        ></app-catalog-rail>
+
+        <app-catalog-rail
+          *ngIf="tvTonight.length"
+          eyebrow="Televisión"
+          title="Lo mejor de la TV esta noche"
+          [linkLabel]="'Ver parrilla'"
+          [linkPath]="appPaths.live"
+          [items]="tvTonight"
+        ></app-catalog-rail>
+      </div>
+    </section>
+
+    <!-- ÚLTIMAS HISTORIAS -->
+    <section id="guias" *ngIf="latestStories.length" class="editorial-section scroll-mt-32">
+      <div class="editorial-section__header">
+        <div>
+          <p class="editorial-section__eyebrow">Últimas historias</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Guías, análisis y actualidad</h2>
+          <p>Guías prácticas conectadas con el catálogo, la programación y las plataformas.</p>
+        </div>
+      </div>
+      <div class="editorial-card-grid editorial-card-grid--stories">
         <app-editorial-post-card
-          *ngFor="let post of guidePosts"
+          *ngFor="let post of latestStories; trackBy: trackPost"
           [post]="post"
         ></app-editorial-post-card>
       </div>
     </section>
 
-    <section *ngIf="rankingPosts.length" class="space-y-5">
-      <div class="flex items-end justify-between gap-4">
+    <!-- AHORA MISMO — trend-classified posts, numbered editorial list, no fabricated metrics -->
+    <section *ngIf="trendPosts.length" class="editorial-section editorial-numbered">
+      <div class="editorial-section__header">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Rankings</p>
+          <p class="editorial-section__eyebrow">Ahora mismo</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Selección editorial de lo que se mueve</h2>
+        </div>
+      </div>
+      <ol class="editorial-numbered-list">
+        <li *ngFor="let post of trendPosts; let index = index; trackBy: trackPost">
+          <a [routerLink]="post.canonicalPath">
+            <strong>{{ index + 1 < 10 ? '0' + (index + 1) : index + 1 }}</strong>
+            <span>
+              <small>{{ post.primaryCategory?.name || 'Tendencia' }} · {{ post.readingMinutes }} min</small>
+              <b>{{ post.title }}</b>
+            </span>
+          </a>
+        </li>
+      </ol>
+    </section>
+
+    <!-- CINE -->
+    <section *ngIf="cineSection" class="editorial-section editorial-vertical editorial-vertical--cine">
+      <div class="editorial-section__header">
+        <div>
+          <p class="editorial-section__eyebrow">Cine</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ cineSection.category.name }}</h2>
+          <p *ngIf="cineSection.category.description">{{ cineSection.category.description }}</p>
+        </div>
+        <a [routerLink]="cineSection.category.canonicalPath" class="editorial-section__link">Ver películas en TV hoy →</a>
+      </div>
+      <div class="editorial-vertical__layout">
+        <app-editorial-post-card [post]="cineSection.posts[0]"></app-editorial-post-card>
+        <div class="editorial-vertical__support">
+          <app-editorial-post-card
+            *ngFor="let post of cineSection.posts.slice(1); trackBy: trackPost"
+            [post]="post"
+            variant="compact"
+          ></app-editorial-post-card>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERIES — alternate composition: horizontal feature + text-first list -->
+    <section *ngIf="seriesSection" class="editorial-section editorial-series">
+      <div class="editorial-section__header">
+        <div>
+          <p class="editorial-section__eyebrow">Series</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ seriesSection.category.name }}</h2>
+        </div>
+        <a [routerLink]="seriesSection.category.canonicalPath" class="editorial-section__link">Series por plataforma →</a>
+      </div>
+      <div class="editorial-series__layout">
+        <a [routerLink]="seriesSection.posts[0].canonicalPath" class="editorial-series__feature group">
+          <div class="editorial-series__feature-image">
+            <img [src]="seriesSection.posts[0].coverImage" [alt]="seriesSection.posts[0].title" width="640" height="400" loading="lazy" />
+          </div>
+          <div>
+            <span>{{ seriesSection.posts[0].primaryCategory?.name || 'Series' }}</span>
+            <h3>{{ seriesSection.posts[0].title }}</h3>
+            <p>{{ seriesSection.posts[0].excerptText }}</p>
+          </div>
+        </a>
+        <ul class="editorial-series__list">
+          <li *ngFor="let post of seriesSection.posts.slice(1); trackBy: trackPost">
+            <a [routerLink]="post.canonicalPath">
+              <span>{{ post.primaryCategory?.name || 'Series' }} · {{ post.readingMinutes }} min</span>
+              <b>{{ post.title }}</b>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- STREAMING — platform-oriented -->
+    <section *ngIf="streamingSection" class="editorial-section">
+      <div class="editorial-section__header">
+        <div>
+          <p class="editorial-section__eyebrow">Streaming</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ streamingSection.category.name }}</h2>
+        </div>
+        <a [routerLink]="appPaths.platforms" class="editorial-section__link">Comparar plataformas →</a>
+      </div>
+      <div class="editorial-card-grid editorial-card-grid--streaming">
+        <app-editorial-post-card
+          *ngFor="let post of streamingSection.posts; trackBy: trackPost"
+          [post]="post"
+          [platforms]="platformsFor(post)"
+        ></app-editorial-post-card>
+      </div>
+    </section>
+
+    <!-- RANKINGS / GUÍA TV SELECTS -->
+    <section *ngIf="rankingPosts.length" class="editorial-section editorial-numbered editorial-numbered--selects">
+      <div class="editorial-section__header">
+        <div>
+          <p class="editorial-section__eyebrow">Guía TV Selects</p>
           <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Listas y selecciones editoriales</h2>
+          <p>Criterio editorial explícito, sin ordenar por comisión comercial.</p>
         </div>
-        <a
-          [routerLink]="appPaths.top10"
-          class="min-h-[40px] rounded-full border border-[var(--accent-sports)] bg-[var(--accent-sports-soft)] px-4 py-2 text-sm font-semibold text-[var(--accent-sports)] transition-colors"
-        >
-          Abrir rankings
-        </a>
+        <a [routerLink]="appPaths.top10" class="editorial-section__link editorial-section__link--accent">Abrir rankings</a>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <app-editorial-post-card
-          *ngFor="let post of rankingPosts.slice(0, 4)"
-          [post]="post"
-        ></app-editorial-post-card>
-      </div>
+      <ol class="editorial-numbered-list editorial-numbered-list--selects">
+        <li *ngFor="let post of rankingPosts.slice(0, 6); let index = index; trackBy: trackPost">
+          <a [routerLink]="post.canonicalPath">
+            <strong>{{ index + 1 < 10 ? '0' + (index + 1) : index + 1 }}</strong>
+            <span>
+              <small>{{ post.primaryCategory?.name || 'Ranking' }} · {{ post.readingMinutes }} min</small>
+              <b>{{ post.title }}</b>
+            </span>
+          </a>
+        </li>
+      </ol>
     </section>
 
-    <section *ngIf="trendPosts.length" class="space-y-5">
-      <div class="flex items-end justify-between gap-4">
+    <!-- ESPECIALES / COLLECTIONS -->
+    <section *ngFor="let collection of collections" class="editorial-section editorial-collection">
+      <div class="editorial-section__header">
         <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Tendencias útiles</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">Lecturas ligadas a lo que más se mueve</h2>
+          <p class="editorial-section__eyebrow">Especiales</p>
+          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ collection.category.name }}</h2>
+          <p *ngIf="collection.category.description">{{ collection.category.description }}</p>
         </div>
-        <a
-          [routerLink]="appPaths.stats"
-          class="min-h-[40px] rounded-full border border-[var(--accent-discover)] bg-[var(--accent-discover-soft)] px-4 py-2 text-sm font-semibold text-[var(--accent-discover)] transition-colors"
-        >
-          Ver tendencias
-        </a>
+        <a [routerLink]="collection.category.canonicalPath" class="editorial-section__link">Ver colección</a>
       </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div class="editorial-collection__rail">
         <app-editorial-post-card
-          *ngFor="let post of trendPosts"
+          *ngFor="let post of collection.posts; trackBy: trackPost"
           [post]="post"
-        ></app-editorial-post-card>
-      </div>
-    </section>
-
-    <section *ngFor="let section of categorySections" class="space-y-5">
-      <div class="flex items-end justify-between gap-4">
-        <div>
-          <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--portal-text-muted)]">Categoría</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ section.category.name }}</h2>
-        </div>
-        <a
-          [routerLink]="section.category.canonicalPath"
-          class="min-h-[40px] rounded-full border border-[var(--portal-border-strong)] px-4 py-2 text-sm font-semibold text-[var(--portal-text)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
-        >
-          Ver categoría
-        </a>
-      </div>
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <app-editorial-post-card
-          *ngFor="let post of section.posts"
-          [post]="post"
+          variant="compact"
         ></app-editorial-post-card>
       </div>
     </section>

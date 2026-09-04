@@ -18,3 +18,7 @@ Default behavior:
 - Real light/dark/system theme is owned by `apps/frontend/src/app/services/theme.service.ts`, mirrored on `<html data-theme>` + `color-scheme`, with an inline no-flash script in `apps/frontend/src/index.html`.
 - NEVER hardcode semantic surfaces in components: `slate-*`, `gray-*`, `text-white`, `bg-white`, `bg-black`, `#081018`. Use `bg-[var(--portal-*)]` / `text-[var(--portal-*)]` / `border-[var(--portal-border)]`. Exceptions: `text-white` on red accent buttons; `bg-black/<opacity>` modal backdrops only.
 - Verify both light and dark themes on any UI change.
+
+<!-- BEGIN AGENTIC-ENGINEERING-PLATFORM -->
+Use repository evidence before assumptions. When `graphify-out/graph.json` exists, query Graphify before broad exploration; read only the impacted source files. For non-trivial work: understand → graph discovery → plan → implement narrowly → test → review → verify. Preserve unrelated behavior, never hardcode secrets, and report only executed validation. For UI work verify responsive behavior, accessibility, and interaction states.
+<!-- END AGENTIC-ENGINEERING-PLATFORM -->

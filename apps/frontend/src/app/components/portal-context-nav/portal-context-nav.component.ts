@@ -98,7 +98,8 @@ export class PortalContextNavComponent implements AfterViewInit {
   }
 
   private resolveActive(url: string): string {
-    const [path, fragment = ''] = url.split('?')[0].split('#');
+    const [beforeFragment, fragment = ''] = url.split('#');
+    const [path, query = ''] = beforeFragment.split('?');
     if (this.kind() === 'live') return 'now';
     if (this.kind() === 'discover') return 'all';
     if (this.kind() === 'platforms') {
@@ -107,7 +108,11 @@ export class PortalContextNavComponent implements AfterViewInit {
     if (this.kind() === 'sports') {
       if (path.includes('/noticias')) return 'news';
       if (path.includes('/competiciones')) return 'competitions';
-      if (/\/(partidos-hoy|en-directo|calendario|partido\/)/.test(path)) return 'matches';
+      if (path.includes('/equipos/') || (path.includes('/buscar') && new URLSearchParams(query).get('tipo') === 'equipos')) return 'teams';
+      if (path.includes('/en-directo')) return 'live';
+      if (path.includes('/calendario')) return 'calendar';
+      if (/\/(partidos-hoy|partido\/)/.test(path)) return 'today';
+      if (fragment === 'donde-ver') return 'watch';
       return 'home';
     }
     if (path.startsWith(APP_PATHS.top10)) return 'rankings';

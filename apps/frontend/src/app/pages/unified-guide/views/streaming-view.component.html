@@ -20,12 +20,12 @@
     </div>
   </header>
 
-  <app-portal-local-toolbar
-    [items]="sortChips"
+  <app-filter-chip-bar
+    [chips]="sortChips"
     [active]="guideState.streamingFilters().sort"
     ariaLabel="Ordenar catálogo de plataformas"
-    (itemSelect)="selectSort($event)"
-  ></app-portal-local-toolbar>
+    (chipSelect)="selectSort($event)"
+  ></app-filter-chip-bar>
 
   <section
     *ngIf="gridLoading() && !featuredItem()"

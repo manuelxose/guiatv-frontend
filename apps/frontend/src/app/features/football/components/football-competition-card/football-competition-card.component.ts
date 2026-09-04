@@ -38,16 +38,34 @@ export type FootballCompetitionCardVariant = 'row' | 'chip';
       min-height: 44px;
       padding: 0.875rem 1rem;
       border: 1px solid var(--portal-border);
-      border-radius: 0.75rem;
+      border-radius: var(--radius-lg);
       background: var(--portal-card);
       color: inherit;
       text-decoration: none;
+      transition: border-color var(--motion-fast) var(--motion-ease),
+        background var(--motion-fast) var(--motion-ease);
     }
-    .competition:hover, .competition:focus-visible { border-color: var(--accent-sports); }
+    .competition:hover, .competition:focus-visible {
+      border-color: var(--accent-sports);
+      background: var(--portal-card-elevated);
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .competition:not(.competition--chip) {
+        transition: border-color var(--motion-fast) var(--motion-ease),
+          background var(--motion-fast) var(--motion-ease),
+          transform var(--motion-fast) var(--motion-ease),
+          box-shadow var(--motion-fast) var(--motion-ease);
+      }
+      .competition:not(.competition--chip):hover,
+      .competition:not(.competition--chip):focus-visible {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+      }
+    }
     .competition--chip {
       display: inline-flex;
       padding: 0.5rem 0.875rem;
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       gap: 0.5rem;
     }
     .competition__logo {
@@ -55,7 +73,7 @@ export type FootballCompetitionCardVariant = 'row' | 'chip';
       height: 2.5rem;
       flex: 0 0 auto;
       object-fit: contain;
-      border-radius: 0.5rem;
+      border-radius: var(--radius-md);
     }
     .competition--chip .competition__logo { width: 1.25rem; height: 1.25rem; }
     .competition__logo--fallback {

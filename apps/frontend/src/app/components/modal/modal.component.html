@@ -5,10 +5,20 @@
   (click)="closeModal()"
   (keydown.escape)="closeModal()"
   tabindex="-1"
-  [@fadeIn]
+  [@fadeIn]="{ value: true, params: fadeParams }"
 >
   <!-- Modal Container -->
-  <div class="modal-container" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()" tabindex="-1" [@slideIn]>
+  <div
+    #modalContainer
+    class="modal-container"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="program_modal?.title?.value || 'Detalle del programa'"
+    (click)="$event.stopPropagation()"
+    (keydown)="onContainerKeydown($event)"
+    tabindex="-1"
+    [@slideIn]="{ value: true, params: slideParams }"
+  >
     
     <!-- Hero Image Section -->
     <div class="modal-hero">

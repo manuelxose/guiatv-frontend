@@ -1,0 +1,67 @@
+{
+  "version": "1.0.0",
+  "type": "fullstack-web",
+  "languages": [
+    "javascript",
+    "python",
+    "typescript"
+  ],
+  "frameworks": [
+    "angular",
+    "node"
+  ],
+  "databases": [
+    "mongodb"
+  ],
+  "packageManager": "npm",
+  "monorepo": true,
+  "tests": [
+    "AffiliateAdminService.test.js",
+    "AffiliateAdminService.test.js.map",
+    "AffiliateAdminService.test.ts",
+    "AffiliateCatalogService.test.js",
+    "AffiliateCatalogService.test.js.map",
+    "AffiliateCatalogService.test.ts",
+    "AffiliateController.test.js",
+    "AffiliateController.test.js.map",
+    "AffiliateController.test.ts",
+    "AffiliateDestinationValidator.test.js"
+  ],
+  "ui": true,
+  "seo": false,
+  "docker": false,
+  "graphify": true,
+  "approximateFiles": 13561,
+  "skills": [
+    "accessibility",
+    "angular",
+    "api-design",
+    "cicd",
+    "code-review",
+    "e2e-testing",
+    "frontend-architecture",
+    "graphify-first-analysis",
+    "javascript",
+    "mongodb",
+    "nodejs",
+    "observability",
+    "performance-engineering",
+    "repository-discovery",
+    "security-review",
+    "testing",
+    "typescript",
+    "ux-ui-engineering"
+  ],
+  "agents": [
+    "architect",
+    "backend",
+    "database",
+    "devops",
+    "frontend",
+    "performance",
+    "qa",
+    "reviewer",
+    "security",
+    "ux-ui"
+  ]
+}

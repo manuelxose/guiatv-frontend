@@ -5,10 +5,10 @@ import { CommunityList } from '../../../../interfaces/user.interface';
 import { APP_PATHS } from '../../../../config/route-map';
 
 const COVER_GRADIENTS = [
-  'from-red-600/40 to-red-900/60',
-  'from-amber-600/40 to-amber-900/60',
-  'from-blue-600/40 to-blue-900/60',
-  'from-emerald-600/40 to-emerald-900/60',
+  'from-[var(--accent-live)]/40 to-[var(--accent-live-strong)]/60',
+  'from-[var(--spotify-warning)]/40 to-[var(--spotify-warning)]/60',
+  'from-[var(--accent-streaming)]/40 to-[var(--accent-streaming)]/60',
+  'from-[var(--accent-discover)]/40 to-[var(--accent-discover)]/60',
   'from-violet-600/40 to-violet-900/60',
   'from-sky-600/40 to-sky-900/60',
   'from-rose-600/40 to-rose-900/60',
@@ -61,13 +61,13 @@ const COVER_GRADIENTS = [
           </div>
         </div>
         <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/25 to-transparent"></div>
-        <div class="absolute left-4 top-4 inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-200">
+        <div class="absolute left-4 top-4 inline-flex items-center rounded-full border border-[var(--accent-discover)]/30 bg-[var(--accent-discover)]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--accent-discover)]">
           {{ list?.itemsCount || 0 }} items
         </div>
       </div>
 
       <div class="space-y-3 p-5">
-        <h3 class="text-lg font-semibold leading-tight text-[var(--portal-text)] group-hover:text-red-200 line-clamp-1">
+        <h3 class="text-lg font-semibold leading-tight text-[var(--portal-text)] group-hover:text-[var(--accent-live)] line-clamp-1">
           {{ list?.title }}
         </h3>
         <p *ngIf="list?.description" class="line-clamp-2 text-sm text-[var(--portal-text-muted)]">

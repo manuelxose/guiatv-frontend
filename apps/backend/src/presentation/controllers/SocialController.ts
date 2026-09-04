@@ -437,7 +437,7 @@ export class SocialController {
         UserFollowModel.countDocuments({ followeeId: targetUserId }).exec(),
         UserFollowModel.countDocuments({ followerId: targetUserId }).exec(),
         UserContentInteractionModel.countDocuments({ userId: targetUserId, rating: { $exists: true, $ne: null } }).exec(),
-        UserListModel.countDocuments({ userId: targetUserId, visibility: { $ne: 'private' } }).exec(),
+        UserListModel.countDocuments({ userId: targetUserId, visibility: 'public' }).exec(),
         UserActivityModel.countDocuments({ userId: targetUserId, type: 'recommendation' }).exec(),
       ]);
 
@@ -450,7 +450,10 @@ export class SocialController {
         stats: { followers: followersCount, following: followingCount, ratings: ratingsCount, lists: listsCount, recommendations: recommendationsCount },
       };
 
-      if (isPublic || isFollower) {
+      // A follower is the viewer who follows the profile owner.  The inverse
+      // relationship (the owner follows the viewer) must not reveal private
+      // profile fields.
+      if (isPublic || isFollowing) {
         result.bio = (profile as any)?.bio || '';
         result.location = (profile as any)?.location || '';
         result.favoriteGenres = (profile as any)?.favoriteGenres || [];

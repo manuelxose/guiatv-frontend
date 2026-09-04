@@ -1,6 +1,15 @@
 // src/v2/domain/entities/Channel.ts
 
-import { normalizeTvToken } from '@/shared/utils/tvMetadata';
+import {
+  CanonicalChannelAccess,
+  CanonicalChannelCapabilities,
+  CanonicalChannelContentFacet,
+  CanonicalChannelDistribution,
+  CanonicalChannelMarket,
+  CanonicalChannelProvenance,
+  CanonicalChannelQuality,
+  normalizeTvToken,
+} from '@/shared/utils/tvMetadata';
 
 /**
  * Allowed distribution types for a channel.
@@ -26,6 +35,15 @@ export interface ChannelProps {
   countryCode?: string;
   region?: string;
   description?: string;
+  distribution?: CanonicalChannelDistribution;
+  access?: CanonicalChannelAccess;
+  operator?: string;
+  providers?: string[];
+  contentFacets?: CanonicalChannelContentFacet[];
+  market?: CanonicalChannelMarket;
+  quality?: CanonicalChannelQuality;
+  capabilities?: CanonicalChannelCapabilities;
+  provenance?: CanonicalChannelProvenance;
   isActive: boolean;
 }
 
@@ -107,6 +125,53 @@ export class Channel {
 
   get description(): string | undefined {
     return this.props.description;
+  }
+
+  get distribution(): CanonicalChannelDistribution {
+    return this.props.distribution || 'unknown';
+  }
+
+  get access(): CanonicalChannelAccess {
+    return this.props.access || 'unknown';
+  }
+
+  get operator(): string {
+    return this.props.operator || 'unknown';
+  }
+
+  get providers(): string[] {
+    return Array.isArray(this.props.providers) ? [...this.props.providers] : [];
+  }
+
+  get contentFacets(): CanonicalChannelContentFacet[] {
+    return Array.isArray(this.props.contentFacets) && this.props.contentFacets.length
+      ? [...this.props.contentFacets]
+      : ['unknown'];
+  }
+
+  get market(): CanonicalChannelMarket {
+    return this.props.market || {
+      country: 'unknown',
+      countryCode: 'unknown',
+      region: 'unknown',
+      scope: 'unknown',
+    };
+  }
+
+  get quality(): CanonicalChannelQuality {
+    return this.props.quality || { resolution: 'unknown', timeshift: 'unknown' };
+  }
+
+  get capabilities(): CanonicalChannelCapabilities {
+    return this.props.capabilities || {
+      linear: 'unknown',
+      catchup: 'unknown',
+      streaming: 'unknown',
+    };
+  }
+
+  get provenance(): CanonicalChannelProvenance {
+    return this.props.provenance || { classification: 'unknown', sourceIds: [] };
   }
 
   get isActive(): boolean {

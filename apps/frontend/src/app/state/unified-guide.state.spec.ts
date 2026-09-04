@@ -26,7 +26,7 @@ describe('UnifiedGuideStateService', () => {
     expect(service.activeTab()).toBe('live');
     expect(service.searchQuery()).toBe('');
     expect(service.liveFilters()).toEqual({
-      group: 'tdt',
+      group: 'all',
       category: 'all',
       liveView: 'now',
       date: 'today',
@@ -51,7 +51,7 @@ describe('UnifiedGuideStateService', () => {
     service.syncFromQueryParams({}, 'live');
 
     expect(service.liveFilters()).toEqual({
-      group: 'tdt',
+      group: 'all',
       category: 'all',
       liveView: 'now',
       date: 'today',

@@ -153,11 +153,37 @@ const backendDistRoot = resolve(projectRoot, 'apps/backend/dist');
 const frontendDistRoot = resolve(projectRoot, 'apps/frontend/dist/guiatv');
 const frontendServerScript = resolve(projectRoot, 'apps/frontend/scripts/ssr-server.mjs');
 const legacyFrontendReleasesRoot = resolve(projectRoot, 'apps/frontend/releases');
-const releaseId = process.argv[2] || buildReleaseId();
-const keepCount = Number.parseInt(process.env.GUIATV_RELEASE_KEEP ?? '5', 10);
+const cliArgs = process.argv.slice(2);
+const checkOnly = cliArgs.includes('--check');
+const unsupportedOption = cliArgs.find((arg) => arg.startsWith('--') && arg !== '--check');
+const positionalArgs = cliArgs.filter((arg) => !arg.startsWith('--'));
+const explicitReleaseId = positionalArgs[0];
+const releaseId = explicitReleaseId || buildReleaseId();
+const keepCountInput = process.env.GUIATV_RELEASE_KEEP ?? '5';
+const keepCount = Number.parseInt(keepCountInput, 10);
 const releaseDir = join(releasesRoot, releaseId);
 const releaseBackendRoot = join(releaseDir, 'apps/backend');
 const releaseFrontendRoot = join(releaseDir, 'apps/frontend');
+
+if (unsupportedOption) {
+  console.error(`[publish-release] Unsupported option: ${unsupportedOption}`);
+  process.exit(1);
+}
+
+if (positionalArgs.length > 1) {
+  console.error('[publish-release] Provide at most one release ID.');
+  process.exit(1);
+}
+
+if (!/^\d{14}$/.test(releaseId)) {
+  console.error('[publish-release] Release ID must contain exactly 14 digits (YYYYMMDDhhmmss).');
+  process.exit(1);
+}
+
+if (!/^\d+$/.test(keepCountInput) || keepCount < 1) {
+  console.error('[publish-release] GUIATV_RELEASE_KEEP must be a positive integer.');
+  process.exit(1);
+}
 
 if (!existsSync(backendDistRoot)) {
   console.error(`[publish-release] Backend build output not found at ${backendDistRoot}`);
@@ -176,6 +202,19 @@ if (!existsSync(frontendServerScript)) {
   process.exit(1);
 }
 
+if (checkOnly) {
+  console.log(JSON.stringify({
+    status: 'ready',
+    mode: 'check',
+    releaseId,
+    gitSha: getGitSha(projectRoot),
+    backendFingerprint: fingerprintDirectory(backendDistRoot),
+    frontendFingerprint: fingerprintDirectory(frontendDistRoot),
+    keepCount,
+  }, null, 2));
+  process.exit(0);
+}
+
 mkdirSync(releasesRoot, { recursive: true });
 
 if (existsSync(releaseDir)) {
@@ -192,7 +231,7 @@ cpSync(frontendServerScript, join(releaseFrontendRoot, 'scripts/ssr-server.mjs')
 const carriedBrowserAssetCount = carryForwardBrowserAssets(
   releasesRoot,
   join(releaseFrontendRoot, 'dist/guiatv/browser'),
-  Number.isFinite(keepCount) && keepCount > 0 ? keepCount : 5
+  keepCount
 );
 
 const metadata = {
@@ -218,7 +257,7 @@ removePathIfExists(join(legacyFrontendReleasesRoot, 'current'));
 pruneLegacyUnifiedReleases(releasesRoot, new Set([releaseId]));
 removePathIfExists(legacyFrontendReleasesRoot);
 
-pruneReleases(releasesRoot, Number.isFinite(keepCount) && keepCount > 0 ? keepCount : 5, new Set([releaseId]));
+pruneReleases(releasesRoot, keepCount, new Set([releaseId]));
 
 console.log(`[publish-release] Published unified release ${releaseId}`);
 console.log(`[publish-release] Current -> ${releaseDir}`);

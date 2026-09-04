@@ -38,7 +38,7 @@ describe('route map', () => {
       'Todo', 'En TV', 'Películas', 'Series', 'Gratis',
     ]);
     expect(PORTAL_SPORTS_DESTINATIONS.map((tab) => tab.label)).toEqual([
-      'Inicio', 'Partidos', 'Competiciones', 'Noticias',
+      'Portada', 'En directo', 'Partidos de hoy', 'Calendario', 'Competiciones', 'Dónde ver', 'Noticias',
     ]);
     expect(PORTAL_MOBILE_MORE_DESTINATIONS.map((tab) => tab.label)).toEqual([
       'Plataformas', 'Blog', 'Rankings', 'Tendencias',
@@ -51,6 +51,15 @@ describe('route map', () => {
     ]);
     expect(PORTAL_SECTION_NAVIGATION.live.items.every((item) => item.kind === 'action')).toBeTrue();
     expect(PORTAL_SECTION_NAVIGATION.sports.items.every((item) => item.kind === 'route')).toBeTrue();
+    expect(PORTAL_SECTION_NAVIGATION.sports.items.map((item) => item.label)).toEqual([
+      'Portada',
+      'En directo',
+      'Partidos de hoy',
+      'Calendario',
+      'Competiciones',
+      'Dónde ver',
+      'Noticias',
+    ]);
   });
 
   it('resolves active primary destinations from canonical and detail routes', () => {

@@ -1,6 +1,6 @@
 <div class="relative min-h-screen bg-[var(--portal-bg)] text-[var(--portal-text)]">
   <div
-    class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06)_0,_rgba(11,15,20,0)_55%)] opacity-70"
+    class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_color-mix(in_oklch,var(--portal-text)_6%,transparent)_0,_transparent_55%)] opacity-70"
   ></div>
 
   <ng-container *ngIf="isAuthenticated$ | async; else loginCTA">
@@ -64,53 +64,56 @@
             </div>
           </ng-container>
 
-          <!-- Quick shortcuts -->
-          <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4 space-y-1">
-            <button type="button" (click)="setActiveTab('lists')"
-              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--portal-text-soft)] hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)] transition-colors"
-              [ngClass]="activeTab === 'lists' ? 'bg-[var(--portal-surface-strong)] text-[var(--portal-text)]' : ''">
-              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <!-- Full destination nav — same `visibleTabs` source the mobile grid uses below, so desktop and mobile can never drift again (previously desktop only exposed 4 of 9 destinations here). -->
+          <nav class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4 space-y-1" aria-label="Navegación de Mi GuíaTV">
+            <button
+              *ngFor="let section of visibleTabs"
+              type="button"
+              (click)="setActiveTab(section.key)"
+              [attr.aria-current]="activeTab === section.key ? 'page' : null"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--portal-text-soft)] hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
+              [ngClass]="activeTab === section.key ? 'bg-[var(--portal-surface-strong)] text-[var(--portal-text)]' : ''"
+            >
+              <svg *ngIf="section.key === 'overview'" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.5 11 12 4l8.5 7M5.5 9.5V19a1 1 0 0 0 1 1h4v-6h3v6h4a1 1 0 0 0 1-1V9.5" />
+              </svg>
+              <svg *ngIf="section.key === 'tv'" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <rect x="4" y="5.5" width="16" height="11" rx="1.5" />
+                <path stroke-linecap="round" d="M9 20h6M12 16.5V20" />
+              </svg>
+              <svg *ngIf="section.key === 'sports'" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <circle cx="12" cy="12" r="8" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="m12 8 3.2 2.3-1.2 3.7h-4l-1.2-3.7L12 8Z" />
+              </svg>
+              <svg *ngIf="section.key === 'library'" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 5.5h8l4 4V18.5A1.5 1.5 0 0 1 16.5 20h-10A1.5 1.5 0 0 1 5 18.5v-11A2 2 0 0 1 7 5.5Z" />
               </svg>
-              <span>Mis listas</span>
-              <span class="ml-auto text-xs text-[var(--portal-text-muted)]">{{ ((lists$ | async) || []).length }}</span>
-            </button>
-            <button type="button" (click)="setActiveTab('favorites')"
-              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--portal-text-soft)] hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)] transition-colors"
-              [ngClass]="activeTab === 'favorites' ? 'bg-[var(--portal-surface-strong)] text-[var(--portal-text)]' : ''">
-              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.5 4.8 13.3a4.5 4.5 0 1 1 6.36-6.36L12 7.78l.84-.84a4.5 4.5 0 1 1 6.36 6.36L12 20.5Z" />
+              <svg *ngIf="section.key === 'community'" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <circle cx="8.5" cy="8" r="2.6" />
+                <circle cx="16" cy="8.5" r="2.2" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5M14 19c0-1.8 1.3-3.4 3.5-3.9 1.5.4 3.5 1.6 3.5 3.9" />
               </svg>
-              <span>Favoritos</span>
-              <span class="ml-auto text-xs text-[var(--portal-text-muted)]">{{ ((favorites$ | async) || []).length }}</span>
-            </button>
-            <button type="button" (click)="setActiveTab('history')"
-              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--portal-text-soft)] hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)] transition-colors"
-              [ngClass]="activeTab === 'history' ? 'bg-[var(--portal-surface-strong)] text-[var(--portal-text)]' : ''">
-              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z" />
+              <svg *ngIf="section.key === 'assistant'" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3.5 13.4 9l5.6 1.4L13.4 12l-1.4 5.5L11 12l-5.6-1.6L11 9 12 3.5Z" />
               </svg>
-              <span>Historial</span>
-              <span class="ml-auto text-xs text-[var(--portal-text-muted)]">{{ ((interactionHistory$ | async) || []).length }}</span>
-            </button>
-            <button type="button" (click)="setActiveTab('settings')"
-              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--portal-text-soft)] hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)] transition-colors"
-              [ngClass]="activeTab === 'settings' ? 'bg-[var(--portal-surface-strong)] text-[var(--portal-text)]' : ''">
-              <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <svg *ngIf="section.key === 'account'" class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.3 4.9 10 3h4l-.3 1.9a7.5 7.5 0 0 1 2 1.1l1.8-.7 2 3.4-1.5 1.2a7.5 7.5 0 0 1 0 2.2l1.5 1.2-2 3.4-1.8-.7a7.5 7.5 0 0 1-2 1.1L14 21h-4l.3-1.9a7.5 7.5 0 0 1-2-1.1l-1.8.7-2-3.4 1.5-1.2a7.5 7.5 0 0 1 0-2.2L4.5 11.7l2-3.4 1.8.7a7.5 7.5 0 0 1 2-1.1Z" />
                 <circle cx="12" cy="12" r="3" />
               </svg>
-              <span>Ajustes</span>
+              <span>{{ section.label }}</span>
+              <span *ngIf="section.key === 'library'" class="ml-auto text-xs text-[var(--portal-text-muted)]">
+                {{ ((lists$ | async) || []).length + ((favorites$ | async) || []).length + ((interactionHistory$ | async) || []).length }}
+              </span>
             </button>
             <button *ngIf="isAdmin$ | async" type="button" (click)="setActiveTab('admin')"
-              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--portal-text-soft)] hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)] transition-colors"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[var(--portal-text-soft)] hover:bg-[var(--portal-surface-strong)] hover:text-[var(--portal-text)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               [ngClass]="activeTab === 'admin' ? 'bg-[var(--portal-surface-strong)] text-[var(--portal-text)]' : ''">
               <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Zm10-10V7a4 4 0 0 0-8 0v4h8Z" />
               </svg>
               <span>Admin</span>
             </button>
-          </div>
+          </nav>
 
           <!-- Online friends preview -->
           <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-4">
@@ -181,20 +184,18 @@
             </ng-container>
           </div>
 
-          <!-- Chip tabs -->
-          <div class="mb-5 md:mb-6 -mx-4 px-4">
+          <!-- Compact mobile destination grid; desktop navigation remains in the rail. -->
+          <nav class="mb-5 md:hidden" aria-label="Navegación privada">
             <div
-              class="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory"
-              role="tablist"
-              aria-label="Secciones del perfil"
+              class="grid grid-cols-3 gap-2"
+              role="navigation"
             >
               <button
                 *ngFor="let section of visibleTabs"
                 type="button"
                 (click)="setActiveTab(section.key)"
-                role="tab"
-                [attr.aria-selected]="activeTab === section.key"
-                class="snap-start flex-shrink-0 min-h-[40px] px-5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)] active:scale-95"
+                [attr.aria-current]="activeTab === section.key ? 'page' : null"
+                class="min-h-[44px] rounded-xl px-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 [ngClass]="activeTab === section.key
                   ? 'bg-[var(--accent-live-strong)] text-white shadow-lg shadow-black/10'
                   : 'bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] border border-[var(--portal-border)]'"
@@ -205,9 +206,8 @@
                 *ngIf="isAdmin$ | async"
                 type="button"
                 (click)="setActiveTab('admin')"
-                role="tab"
-                [attr.aria-selected]="activeTab === 'admin'"
-                class="snap-start flex-shrink-0 min-h-[40px] px-5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)] active:scale-95"
+                [attr.aria-current]="activeTab === 'admin' ? 'page' : null"
+                class="min-h-[44px] rounded-xl px-2 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 [ngClass]="activeTab === 'admin'
                   ? 'bg-[var(--accent-live-strong)] text-white shadow-lg shadow-black/10'
                   : 'bg-[var(--portal-surface-strong)] text-[var(--portal-text-muted)] hover:text-[var(--portal-text)] border border-[var(--portal-border)]'"
@@ -215,7 +215,7 @@
                 Admin
               </button>
             </div>
-          </div>
+          </nav>
 
           <!-- ═══ TAB PANELS ═══ -->
 
@@ -246,8 +246,72 @@
 
           <div *ngIf="(loading$ | async) !== true" [ngSwitch]="activeTab">
 
+            <ng-container *ngSwitchCase="'overview'">
+              <section class="section-enter space-y-5" aria-labelledby="profile-overview-heading">
+                <header>
+                  <h2 id="profile-overview-heading" class="text-2xl font-semibold text-[var(--portal-text)]">Tu Guía TV</h2>
+                  <p class="mt-1 text-sm text-[var(--portal-text-muted)]">Lo que has guardado y tus próximos pasos.</p>
+                </header>
+
+                <ng-container *ngIf="personalizationCompletion$ | async as completion">
+                  <app-completion-meter
+                    label="Mejora tus recomendaciones"
+                    [done]="completion.done"
+                    [total]="completion.total"
+                  ></app-completion-meter>
+                </ng-container>
+
+                <app-catalog-rail
+                  *ngIf="forYouItems.length"
+                  eyebrow="Para ti"
+                  title="Esta noche para ti"
+                  subtitle="Basado en tus plataformas y géneros favoritos."
+                  linkLabel="Ver más"
+                  linkPath="/para-ti"
+                  [items]="forYouItems"
+                ></app-catalog-rail>
+
+                <!-- Quick-link cards: same card-vertical-accent visual language as CatalogCard/UnifiedProgramCard (top accent bar + tinted background), replicated with utility classes since this template has no styleUrls to @use the shared Sass mixin from. -->
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <button type="button" (click)="setActiveTab('library')" class="relative overflow-hidden min-h-28 rounded-2xl bg-[var(--accent-discover-soft)] p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]">
+                    <span class="absolute inset-x-0 top-0 h-[3px] bg-[var(--accent-discover)]" aria-hidden="true"></span>
+                    <span class="block text-sm font-semibold text-[var(--portal-text)]">Guardado</span><span class="mt-2 block text-xs text-[var(--portal-text-muted)]">{{ ((favorites$ | async) || []).length }} favoritos y {{ ((lists$ | async) || []).length }} listas</span>
+                  </button>
+                  <button type="button" (click)="setActiveTab('tv')" class="relative overflow-hidden min-h-28 rounded-2xl bg-[var(--accent-live-soft)] p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]">
+                    <span class="absolute inset-x-0 top-0 h-[3px] bg-[var(--accent-live)]" aria-hidden="true"></span>
+                    <span class="block text-sm font-semibold text-[var(--portal-text)]">Tu televisión</span><span class="mt-2 block text-xs text-[var(--portal-text-muted)]">{{ ((profile$ | async)?.tvPreferences?.favoriteChannelIds || []).length }} canales favoritos</span>
+                  </button>
+                  <button type="button" (click)="setActiveTab('community')" class="relative overflow-hidden min-h-28 rounded-2xl bg-[var(--accent-streaming-soft)] p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]">
+                    <span class="absolute inset-x-0 top-0 h-[3px] bg-[var(--accent-streaming)]" aria-hidden="true"></span>
+                    <span class="block text-sm font-semibold text-[var(--portal-text)]">Comunidad</span><span class="mt-2 block text-xs text-[var(--portal-text-muted)]">{{ ((friends$ | async) || []).length }} amigos</span>
+                  </button>
+                  <button type="button" (click)="setActiveTab('assistant')" class="relative overflow-hidden min-h-28 rounded-2xl bg-[var(--accent-editorial-soft)] p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]">
+                    <span class="absolute inset-x-0 top-0 h-[3px] bg-[var(--accent-editorial)]" aria-hidden="true"></span>
+                    <span class="block text-sm font-semibold text-[var(--portal-text)]">Asistente</span><span class="mt-2 block text-xs text-[var(--portal-text-muted)]">Ajusta qué preferencias puede utilizar.</span>
+                  </button>
+                  <button type="button" (click)="setActiveTab('sports')" class="relative overflow-hidden min-h-28 rounded-2xl bg-[var(--accent-sports-soft)] p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]">
+                    <span class="absolute inset-x-0 top-0 h-[3px] bg-[var(--accent-sports)]" aria-hidden="true"></span>
+                    <span class="block text-sm font-semibold text-[var(--portal-text)]">Deportes</span><span class="mt-2 block text-xs text-[var(--portal-text-muted)]">Equipos y competiciones que sigues.</span>
+                  </button>
+                </div>
+                <app-user-interaction-history *ngIf="((interactionHistory$ | async) || []).length" [items]="((interactionHistory$ | async) || []).slice(0, 6)" (updateInteraction)="onUpdateHistory($event)"></app-user-interaction-history>
+              </section>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'tv'"><app-personalization-preferences *ngIf="profile$ | async as profile" area="tv" [profile]="profile" (preferencesChange)="onTvPreferencesChange($event)"></app-personalization-preferences></ng-container>
+            <ng-container *ngSwitchCase="'sports'"><app-personalization-preferences *ngIf="profile$ | async as profile" area="sports" [profile]="profile" (preferencesChange)="onTvPreferencesChange($event)"></app-personalization-preferences></ng-container>
+            <ng-container *ngSwitchCase="'assistant'"><app-assistant-preferences *ngIf="profile$ | async as profile" [profile]="profile"></app-assistant-preferences></ng-container>
+
+            <ng-container *ngSwitchCase="'library'">
+              <div class="section-enter space-y-6"><app-user-lists [lists]="(lists$ | async) || []" (create)="openCreateListModal()" (quickCreate)="onCreateList($event)" (select)="onSelectList($event)"></app-user-lists><app-user-favorites [favorites]="(favorites$ | async) || []" (removeFavorite)="onRemoveFavorite($event)"></app-user-favorites><app-user-interaction-history [items]="(interactionHistory$ | async) || []" (updateInteraction)="onUpdateHistory($event)"></app-user-interaction-history></div>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'account'">
+              <div class="section-enter"><app-user-settings *ngIf="profile$ | async as profile" [profile]="profile" [privacy]="profile.privacy" [notifications]="profile.notifications" (saveSettings)="onSaveSettings($event)" (editProfile)="openEditProfileModal()" (logout)="onLogout()"></app-user-settings></div>
+            </ng-container>
+
             <!-- ── FEED ── -->
-            <ng-container *ngSwitchCase="'feed'">
+            <ng-container *ngSwitchCase="'community'">
               <div class="section-enter">
                 <!-- "Viendo ahora" banner -->
                 <ng-container *ngIf="(profile$ | async)?.watchingNow?.title as watching">
@@ -270,6 +334,21 @@
                   (likeActivity)="onLikeActivity($event)"
                   (commentActivity)="onCommentActivity($event)"
                 ></app-user-social-feed>
+
+                <!-- Listas de la comunidad: real data from UserService.fetchCommunityLists
+                     (GET /v2/lists/public, already existed, was never called from Mi GuíaTV)
+                     rendered with CommunityListCardComponent, which already existed fully
+                     built (cover/poster-mosaic/gradient fallback, author) but was orphaned —
+                     no new data or component invented here, just wired together. Hidden
+                     entirely when there are no public lists, no placeholder shown. -->
+                <ng-container *ngIf="communityLists.length > 0">
+                  <div class="mt-6">
+                    <p class="text-[10px] uppercase tracking-widest text-[var(--portal-text-muted)] mb-3">Listas de la comunidad</p>
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <app-community-list-card *ngFor="let list of communityLists" [list]="list"></app-community-list-card>
+                    </div>
+                  </div>
+                </ng-container>
 
                 <!-- Inline recommendations section -->
                 <ng-container *ngIf="((recommendations$ | async) || []).length > 0">
@@ -333,7 +412,7 @@
                         </div>
                       </div>
                       <span
-                        class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#0b0f14]"
+                        class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[var(--portal-bg)]"
                         [ngClass]="friend.isOnline ? 'bg-[var(--accent-streaming)]' : 'bg-[var(--portal-border-strong)]'"
                       ></span>
                     </div>

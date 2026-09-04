@@ -5,17 +5,27 @@ import { RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { APP_PATHS } from '../../../config/route-map';
 import { MetaService } from '../../../services/meta.service';
-import { EditorialCategory, EditorialCategorySection, EditorialPost } from '../../models/editorial.models';
+import { EditorialCategory, EditorialPost } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
-import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
 import { generateCollectionPageSchema, generateItemListSchema } from '../../../utils/utils';
 import { UnifiedPortalShellComponent } from '../../../components/unified-portal-shell/unified-portal-shell.component';
+import { EditorialMastheadComponent } from '../../components/editorial-masthead/editorial-masthead.component';
 import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
+import { UnifiedAsyncStateComponent } from '../../../components/unified-async-state/unified-async-state.component';
+import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skeleton-block/unified-skeleton-block.component';
 
 @Component({
   selector: 'app-top10',
   standalone: true,
-  imports: [CommonModule, RouterModule, UnifiedPortalShellComponent, EditorialPostCardComponent, PortalContextNavComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    UnifiedPortalShellComponent,
+    EditorialMastheadComponent,
+    PortalContextNavComponent,
+    UnifiedAsyncStateComponent,
+    UnifiedSkeletonBlockComponent,
+  ],
   templateUrl: './top10.component.html',
   styleUrls: ['./top10.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,7 +43,6 @@ export class Top10Component implements OnInit, OnDestroy {
   public featured: EditorialPost | null = null;
   public posts: EditorialPost[] = [];
   public categories: EditorialCategory[] = [];
-  public sections: EditorialCategorySection[] = [];
   public selectedCategory = 'all';
   public safeLdHtml: SafeHtml | null = null;
 
@@ -56,6 +65,14 @@ export class Top10Component implements OnInit, OnDestroy {
       type: 'website',
     });
 
+    this.loadRankings();
+  }
+
+  private loadRankings(): void {
+    this.loading = true;
+    this.error = null;
+    this.changeDetector.markForCheck();
+
     this.editorialService
       .getRankingsPageState()
       .pipe(takeUntil(this.destroy$))
@@ -64,13 +81,12 @@ export class Top10Component implements OnInit, OnDestroy {
           this.featured = state.featured;
           this.posts = state.posts;
           this.categories = state.categories;
-          this.sections = state.sections;
           this.buildStructuredData();
           this.loading = false;
           this.changeDetector.markForCheck();
         },
         error: () => {
-          this.error = 'No se han podido cargar los rankings editoriales.';
+          this.error = 'No se han podido cargar los rankings. Comprueba tu conexión e inténtalo de nuevo.';
           this.loading = false;
           this.changeDetector.markForCheck();
         },
@@ -88,6 +104,14 @@ export class Top10Component implements OnInit, OnDestroy {
     this.changeDetector.markForCheck();
   }
 
+  public retry(): void {
+    this.loadRankings();
+  }
+
+  public trackPost(_index: number, post: EditorialPost): string {
+    return post.slug;
+  }
+
   public get filteredPosts(): EditorialPost[] {
     if (this.selectedCategory === 'all') {
       return this.posts;
@@ -95,6 +119,14 @@ export class Top10Component implements OnInit, OnDestroy {
     return this.posts.filter((post) =>
       post.categories.some((category) => category.slug === this.selectedCategory)
     );
+  }
+
+  public get selectedCategoryName(): string {
+    if (this.selectedCategory === 'all') {
+      return 'Selecciones editoriales';
+    }
+    const category = this.categories.find((item) => item.slug === this.selectedCategory);
+    return category ? `Rankings de ${category.name}` : 'Selecciones editoriales';
   }
 
   private buildStructuredData(): void {

@@ -41,6 +41,14 @@ const backendClient = backendUrl.protocol === 'https:' ? https : http;
 const SSR_TIMEOUT_MS = 20000;
 const SSR_CACHE_TTL_MS = 5 * 60 * 1000;
 const SSR_CACHE_MAX_ENTRIES = 200;
+const SSR_ALLOWED_HOSTS = [
+  'guiaprogramaciontv.com',
+  'www.guiaprogramaciontv.com',
+  '127.0.0.1',
+  'localhost',
+];
+const SSR_ALLOWED_HOST_SET = new Set(SSR_ALLOWED_HOSTS);
+const SSR_TRUST_PROXY_HEADERS = ['x-forwarded-for', 'x-forwarded-proto'];
 const proxyPaths = ['/v2', '/storage', '/sitemap.xml'];
 const ssrCache = new Map();
 
@@ -55,6 +63,7 @@ const KNOWN_ROUTES = [
   /^\/admin$/,
   /^\/programacion-tv\/(series|peliculas|guia-canales|en-directo|que-ver-hoy)$/,
   /^\/programacion-tv\/ver-canal\/[^/]+$/,
+  /^\/canales$/,
   /^\/canales\/[^/]+$/,
   /^\/plataformas$/,
   /^\/deportes$/,
@@ -84,9 +93,19 @@ const KNOWN_ROUTES = [
   /^\/pelicula-details\/[^/]+$/,
 ];
 
+const NOINDEX_ROUTES = [
+  /^\/(?:iniciar-sesion|registro|perfil|mi-cuenta|comunidad|para-ti|admin)(?:\/.*)?$/,
+  /^\/contenido\/[^/]+$/,
+];
+
 function isKnownRoute(url) {
   const path = url.split('?')[0].split('#')[0];
   return KNOWN_ROUTES.some((re) => re.test(path));
+}
+
+function isNoindexRoute(url) {
+  const path = url.split('?')[0].split('#')[0];
+  return NOINDEX_ROUTES.some((re) => re.test(path));
 }
 
 function canonicalHref(pathname) {
@@ -99,6 +118,21 @@ function injectCanonical(html, pathname) {
     return html.replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${href}">`);
   }
   return html.replace('</head>', `<link rel="canonical" href="${href}"></head>`);
+}
+
+function injectRobots(html, value) {
+  if (/<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/i.test(html)) {
+    return html.replace(
+      /<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/i,
+      `<meta name="robots" content="${value}">`
+    );
+  }
+  return html.replace('</head>', `<meta name="robots" content="${value}"></head>`);
+}
+
+function applyRobotsHeader(html, res) {
+  const robotsMatch = html.match(/<meta\s+name="robots"\s+content="([^"]+)"/i);
+  if (robotsMatch) res.setHeader('X-Robots-Tag', robotsMatch[1]);
 }
 
 function stripStatusMarker(html) {
@@ -137,7 +171,11 @@ function sendCsrFallback(req, res, statusCode, cacheable = false) {
     return;
   }
 
-  const html = injectCanonical(readFileSync(fallbackPath, 'utf-8'), req.path);
+  let html = injectCanonical(readFileSync(fallbackPath, 'utf-8'), req.path);
+  if (statusCode >= 400 || isNoindexRoute(req.originalUrl)) {
+    html = injectRobots(html, statusCode >= 400 ? 'noindex, nofollow' : 'noindex, follow');
+  }
+  applyRobotsHeader(html, res);
   if (cacheable) {
     setCachedResponse(req.path, statusCode, html);
     res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120');
@@ -199,7 +237,10 @@ async function createAngularEngine() {
   ɵsetAngularAppManifest(appManifestModule.default ?? appManifestModule);
   ɵsetAngularAppEngineManifest(appEngineManifestModule.default ?? appEngineManifestModule);
 
-  return new AngularNodeAppEngine();
+  return new AngularNodeAppEngine({
+    allowedHosts: SSR_ALLOWED_HOSTS,
+    trustProxyHeaders: SSR_TRUST_PROXY_HEADERS,
+  });
 }
 
 const angularAppEngine = await createAngularEngine();
@@ -208,6 +249,20 @@ const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', true);
 app.set('etag', 'strong');
+
+app.use((req, res, next) => {
+  const hostHeader = Array.isArray(req.headers.host) ? req.headers.host[0] : req.headers.host;
+  let hostname = '';
+  try {
+    hostname = new URL(`http://${hostHeader || ''}`).hostname.toLowerCase();
+  } catch {
+    // Invalid or missing Host headers are rejected below.
+  }
+  if (!SSR_ALLOWED_HOST_SET.has(hostname)) {
+    return res.status(400).send('Bad Request');
+  }
+  return next();
+});
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -242,6 +297,30 @@ app.get('/blog/:slug', (req, res) => res.redirect(301, `/editorial/${req.params.
 app.get('/blog', (_req, res) => res.redirect(301, '/editorial'));
 app.get('/mi-cuenta', (_req, res) => res.redirect(301, '/perfil'));
 app.get('/comunidad', (_req, res) => res.redirect(301, '/perfil'));
+
+async function redirectLegacyCatalog(req, res, catalogId) {
+  if (!catalogId) return res.status(404).send('Not found');
+  try {
+    const apiResponse = await fetch(`${backendOrigin}/v2/catalog/${encodeURIComponent(catalogId)}`);
+    if (apiResponse.ok) {
+      const payload = await apiResponse.json();
+      const detailPath = payload?.data?.detailPath;
+      if (detailPath && detailPath !== req.path) return res.redirect(301, detailPath);
+    }
+  } catch {
+    // An unresolved legacy identifier is genuinely gone.
+  }
+  return res.status(404).send('Not found');
+}
+
+app.get('/pelicula-details/:id', (req, res) => {
+  const id = Number(req.params.id);
+  return redirectLegacyCatalog(req, res, Number.isInteger(id) && id > 0 ? `tmdb:movie:${id}` : '');
+});
+app.get(['/detalles/:id', '/program-full-details/:id'], (req, res) => {
+  const id = String(req.params.id || '').trim();
+  return redirectLegacyCatalog(req, res, id ? `program:${id}` : '');
+});
 
 app.get('/contenido/:catalogId', async (req, res) => {
   const catalogId = decodeURIComponent(req.params.catalogId || '');
@@ -278,12 +357,15 @@ app.get('/healthz', (_req, res) => {
 app.get('*', async (req, res) => {
   const hasAuthCookie = (req.headers.cookie || '').includes('session');
   const cachePath = req.originalUrl.split('?')[0];
+  const noindexRoute = isNoindexRoute(req.originalUrl);
+  const publicCacheable = !hasAuthCookie && !noindexRoute;
 
-  if (!hasAuthCookie) {
+  if (publicCacheable) {
     const cached = getCachedResponse(cachePath);
     if (cached) {
       res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
       res.setHeader('X-SSR-Cache', 'HIT');
+      applyRobotsHeader(cached.html, res);
       return res.status(cached.statusCode).send(cached.html);
     }
   }
@@ -297,7 +379,7 @@ app.get('*', async (req, res) => {
     ]);
 
     if (!response) {
-      return sendCsrFallback(req, res, isKnownRoute(req.originalUrl) ? 200 : 404, !hasAuthCookie);
+      return sendCsrFallback(req, res, isKnownRoute(req.originalUrl) ? 200 : 404, publicCacheable);
     }
 
     if (response.status >= 300 && response.status < 400) {
@@ -323,18 +405,18 @@ app.get('*', async (req, res) => {
     }
 
     if (!html.trim() || html.includes('<app-root></app-root>')) {
-      return sendCsrFallback(req, res, statusCode, !hasAuthCookie);
+      return sendCsrFallback(req, res, statusCode, publicCacheable);
     }
 
     html = injectCanonical(stripStatusMarker(html), req.path);
-
-    const robotsMatch = html.match(/<meta\s+name="robots"\s+content="([^"]+)"/);
-    if (robotsMatch) {
-      res.setHeader('X-Robots-Tag', robotsMatch[1]);
+    if (statusCode >= 400 || noindexRoute) {
+      html = injectRobots(html, statusCode >= 400 ? 'noindex, nofollow' : 'noindex, follow');
     }
 
-    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
-    if (!hasAuthCookie && statusCode < 500) {
+    applyRobotsHeader(html, res);
+
+    res.setHeader('Cache-Control', publicCacheable ? 'public, max-age=60, s-maxage=300' : 'no-store');
+    if (publicCacheable && statusCode < 500) {
       setCachedResponse(cachePath, statusCode, html);
     }
 

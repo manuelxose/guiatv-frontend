@@ -40,10 +40,8 @@ tmp/
 .DS_Store
 Thumbs.db
 
-# AI tooling
-.agents/
+# AI tooling runtime (canonical instructions remain trackable)
 .claude-flow/
-.claude/
 .swarm/
 tmp-storage/
 current
@@ -57,6 +55,10 @@ releases/
 # Local MCP tools
 /tools/mcp/
 
+# Graphify regenerated caches and dated snapshots (keep intentional tracked reports)
+/graphify-out/cache/
+/graphify-out/20*/
+
 # Playwright E2E artifacts
 /playwright-report/
 /test-results/
@@ -66,9 +68,13 @@ releases/
 # Frontend unit-test coverage
 /apps/frontend/coverage/
 
-# Ruflo local secrets and runtime data
+# Tool local secrets and runtime data
+.firecrawl/
 .env.local
 .env.*.local
 .claude-flow/data/
 .claude-flow/logs/
 .claude-flow/sessions/
+.agentic-backup/
+!.claude/
+!.claude/settings.json

@@ -1,5 +1,5 @@
 .discover-view {
-  --discover-accent: #38bdf8;
+  --discover-accent: var(--accent-discover);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
@@ -91,7 +91,7 @@
   align-items: center;
   justify-content: center;
   min-height: 2.25rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--guide-border);
   background: var(--guide-surface);
   color: var(--guide-text);
@@ -236,8 +236,15 @@
 .discover-view__platform-button:hover,
 .discover-view__directory-chip:hover,
 .discover-view__action:hover {
-  transform: translateY(-2px);
   background: color-mix(in srgb, var(--guide-surface-strong) 92%, var(--guide-text) 8%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .discover-view__platform-button:hover,
+  .discover-view__directory-chip:hover,
+  .discover-view__action:hover {
+    transform: translateY(-4px);
+  }
 }
 
 @media (min-width: 1024px) {

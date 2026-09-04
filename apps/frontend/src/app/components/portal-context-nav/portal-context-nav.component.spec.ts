@@ -13,14 +13,14 @@ describe('PortalContextNavComponent', () => {
     fixture = TestBed.createComponent(PortalContextNavComponent);
   });
 
-  it('renders route destinations with aria-current and one breadcrumb', () => {
+  it('renders all football route destinations with the active view and one breadcrumb', () => {
     fixture.componentRef.setInput('kind', 'sports');
-    fixture.componentRef.setInput('active', 'matches');
+    fixture.componentRef.setInput('active', 'today');
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('app-breadcrumb').length).toBe(1);
-    expect(fixture.nativeElement.querySelectorAll('.portal-context-nav__track a').length).toBe(4);
-    expect(fixture.nativeElement.querySelector('[aria-current="page"]')?.textContent).toContain('Partidos');
+    expect(fixture.nativeElement.querySelectorAll('.portal-context-nav__track a').length).toBe(7);
+    expect(fixture.nativeElement.querySelector('[aria-current="page"]')?.textContent).toContain('Partidos de hoy');
   });
 
   it('renders local state destinations as pressed buttons and emits selection', () => {

@@ -2,20 +2,25 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Subject, map, switchMap, takeUntil } from 'rxjs';
+import { Subject, combineLatest, map, of, startWith, switchMap, takeUntil } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { APP_PATHS } from '../../../config/route-map';
 import { UnifiedPortalShellComponent } from '../../../components/unified-portal-shell/unified-portal-shell.component';
 import { MetaService } from '../../../services/meta.service';
 import { EditorialCategoryPageState } from '../../models/editorial.models';
+import { EditorialPost } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
 import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
+import { EditorialMastheadComponent } from '../../components/editorial-masthead/editorial-masthead.component';
 import { generateCollectionPageSchema, generateItemListSchema } from '../../../utils/utils';
 import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
+import { UnifiedAsyncStateComponent } from '../../../components/unified-async-state/unified-async-state.component';
+import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skeleton-block/unified-skeleton-block.component';
 
 @Component({
   selector: 'app-category',
   standalone: true,
-  imports: [CommonModule, RouterModule, UnifiedPortalShellComponent, EditorialPostCardComponent, PortalContextNavComponent],
+  imports: [CommonModule, RouterModule, UnifiedPortalShellComponent, EditorialPostCardComponent, EditorialMastheadComponent, PortalContextNavComponent, UnifiedAsyncStateComponent, UnifiedSkeletonBlockComponent],
   templateUrl: './category.component.html',
   styleUrls: ['./category.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +33,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
   public safeLdHtml: SafeHtml | null = null;
 
   private readonly destroy$ = new Subject<void>();
+  private readonly retryTrigger$ = new Subject<void>();
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -39,14 +45,32 @@ export class CategoryComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap
+    combineLatest([
+      this.route.paramMap,
+      this.retryTrigger$.pipe(startWith(undefined)),
+    ])
       .pipe(
-        map((params) => params.get('slug') || ''),
-        switchMap((slug) => this.editorialService.getCategoryPageState(slug)),
+        map(([params]) => params.get('slug') || ''),
+        switchMap((slug) => {
+          this.loading = true;
+          this.error = null;
+          this.state = null;
+          this.changeDetector.markForCheck();
+          return this.editorialService.getCategoryPageState(slug).pipe(
+            map((state) => ({ state, failed: false })),
+            catchError(() => of({ state: null, failed: true }))
+          );
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe({
-        next: (state) => {
+        next: ({ state, failed }) => {
+          if (failed) {
+            this.error = 'No se ha podido cargar esta categoría. Comprueba tu conexión e inténtalo de nuevo.';
+            this.loading = false;
+            this.changeDetector.markForCheck();
+            return;
+          }
           if (!state) {
             void this.router.navigateByUrl(APP_PATHS.blog);
             return;
@@ -63,13 +87,11 @@ export class CategoryComponent implements OnInit, OnDestroy {
             image:
               state.featuredPost?.coverImage || '/assets/images/blog-og-image.webp',
             type: 'website',
+            robots: [state.featuredPost, ...state.posts, ...state.relatedRankings].filter(Boolean).length >= 3
+              ? 'index, follow'
+              : 'noindex, follow',
           });
           this.buildStructuredData(state);
-          this.changeDetector.markForCheck();
-        },
-        error: () => {
-          this.error = 'No se ha podido cargar esta categoría editorial.';
-          this.loading = false;
           this.changeDetector.markForCheck();
         },
       });
@@ -78,6 +100,14 @@ export class CategoryComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  public retry(): void {
+    this.retryTrigger$.next();
+  }
+
+  public trackPost(_index: number, post: EditorialPost): string {
+    return post.slug;
   }
 
   public get breadcrumbItems(): Array<{ name: string; url: string }> {

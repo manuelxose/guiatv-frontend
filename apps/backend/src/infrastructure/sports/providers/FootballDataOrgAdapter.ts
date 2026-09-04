@@ -21,9 +21,11 @@ import {
   FootballMatchQuery,
   FootballStandingRow,
   FootballTeam,
+  isLiveMatchStatus,
   normalizeMatchStatus,
 } from '../../../domain/sports/football/types';
 import { buildMatchSlug, slugify } from '../../../application/sports/services/FootballNormalizer';
+import { DateUtils } from '../../../shared/utils/dateUtils';
 
 const BASE_URL = 'https://api.football-data.org/v4';
 
@@ -281,15 +283,28 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
     }
 
     let matches: FootballMatch[];
-    if (query.dateFrom || query.dateTo || (query.status && query.status !== 'live')) {
+    const requestedDay = query.date ? DateUtils.parseDateAlias(query.date) : null;
+    if (requestedDay || query.dateFrom || query.dateTo || (query.status && query.status !== 'live')) {
       // A precise, time/status-scoped request — these should stay live, not
       // reuse the cached general snapshot.
       const params: Record<string, string> = {};
-      if (query.dateFrom) params.dateFrom = query.dateFrom;
-      if (query.dateTo) params.dateTo = query.dateTo;
+      if (requestedDay) {
+        const isoDay = `${requestedDay.slice(0, 4)}-${requestedDay.slice(4, 6)}-${requestedDay.slice(6, 8)}`;
+        params.dateFrom = isoDay;
+        params.dateTo = isoDay;
+      } else {
+        if (query.dateFrom) params.dateFrom = query.dateFrom;
+        if (query.dateTo) params.dateTo = query.dateTo;
+      }
       if (query.status && query.status !== 'live') params.status = query.status.toUpperCase();
       const { data } = await this.fetch<any>(`${BASE_URL}/matches`, { headers: this.headers(), params });
       matches = (data.matches || []).map((raw: any) => mapFootballDataOrgMatch(raw)).filter(Boolean) as FootballMatch[];
+      // Some football-data.org plans have returned an empty response for a
+      // valid single-day filter. Preserve precise day semantics with a
+      // tested client-side fallback over the canonical general snapshot.
+      if (requestedDay && matches.length === 0) {
+        matches = filterMatchesByIsoDay(await this.fetchGeneralMatches(), requestedDay);
+      }
     } else {
       // `date`/`status: 'live'` are both effectively no-ops on this
       // endpoint already (date was never wired in; live is handled by the
@@ -309,6 +324,9 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
           m.awayTeam.name.toLowerCase().includes(q) ||
           m.competition.name.toLowerCase().includes(q)
       );
+    }
+    if (query.status === 'live') {
+      matches = matches.filter((match) => isLiveMatchStatus(match.status));
     }
     if (query.limit) {
       matches = matches.slice(0, query.limit);
@@ -377,13 +395,9 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
 
   private async getMatchBySlug(slug: string): Promise<FootballMatch | null> {
     if (!extractSlugDate(slug)) return null;
-    // Deliberately unfiltered: an empirical check showed `dateFrom`/`dateTo`
-    // on this tier returns zero matches for a date that unquestionably has
-    // one (confirmed both via the raw single-match id lookup and via the
-    // unfiltered list this call reuses — the same shape `getHome()` already
-    // depends on for `todayMatches`/`liveMatches`). Filtering client-side by
-    // slug is safe here: a slug collision would require two different real
-    // matches sharing home+away+kickoff-date, which can't happen.
+    // Use the canonical general snapshot for slug resolution; the provider
+    // path accepts numeric ids only. Filtering client-side by slug is safe:
+    // a collision would require identical teams and kickoff date.
     const matches = await this.getMatches({});
     return matches.find((match) => match.slug === slug) ?? null;
   }
@@ -484,4 +498,9 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
   supportsLiveScores(): boolean {
     return true;
   }
+}
+
+export function filterMatchesByIsoDay(matches: FootballMatch[], day: string): FootballMatch[] {
+  const isoDay = `${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6, 8)}`;
+  return matches.filter((match) => match.kickoffAt.slice(0, 10) === isoDay);
 }

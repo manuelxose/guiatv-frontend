@@ -6,11 +6,12 @@ import {
   AdminUserStatus,
   AdminUsersService,
 } from '../../../../services/admin-users.service';
+import { AdminConfirmDialogComponent } from '../../components/admin-confirm-dialog/admin-confirm-dialog.component';
 
 @Component({
   selector: 'app-admin-users-section',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AdminConfirmDialogComponent],
   templateUrl: './admin-users-section.component.html',
   styleUrls: ['./admin-users-section.component.scss'],
 })
@@ -42,6 +43,9 @@ export class AdminUsersSectionComponent implements OnInit {
     { id: 'active', label: 'Active' },
     { id: 'suspended', label: 'Suspended' },
   ];
+
+  public confirmSuspendOpen = false;
+  public pendingSuspendUser: AdminUser | null = null;
 
   private savingIds = new Set<string>();
 
@@ -105,10 +109,30 @@ export class AdminUsersSectionComponent implements OnInit {
 
   toggleStatus(user: AdminUser): void {
     if (!user.id) return;
-    const nextStatus: AdminUserStatus =
-      user.status === 'suspended' ? 'active' : 'suspended';
-    this.saveUser(user.id, { status: nextStatus }, () => {
-      user.status = nextStatus;
+    if (user.status === 'suspended') {
+      // Reactivating access is restorative, not destructive: apply directly.
+      this.saveUser(user.id, { status: 'active' }, () => {
+        user.status = 'active';
+      });
+      return;
+    }
+    // Suspending access is a destructive, user-impacting action: confirm first.
+    this.pendingSuspendUser = user;
+    this.confirmSuspendOpen = true;
+  }
+
+  cancelSuspend(): void {
+    this.pendingSuspendUser = null;
+    this.confirmSuspendOpen = false;
+  }
+
+  confirmSuspend(): void {
+    const user = this.pendingSuspendUser;
+    if (!user?.id) return;
+    this.saveUser(user.id, { status: 'suspended' }, () => {
+      user.status = 'suspended';
+      this.confirmSuspendOpen = false;
+      this.pendingSuspendUser = null;
     });
   }
 
@@ -118,9 +142,9 @@ export class AdminUsersSectionComponent implements OnInit {
 
   getStatusBadge(status?: AdminUserStatus): string {
     if (status === 'suspended') {
-      return 'bg-amber-500/20 text-amber-200 border-amber-500/40';
+      return 'bg-[var(--spotify-warning)]/20 text-[var(--spotify-warning)] border-[var(--spotify-warning)]/40';
     }
-    return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40';
+    return 'bg-[var(--accent-discover)]/20 text-[var(--accent-discover)] border-[var(--accent-discover)]/40';
   }
 
   formatDate(value?: string): string {

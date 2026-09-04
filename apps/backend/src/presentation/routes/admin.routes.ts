@@ -19,6 +19,20 @@ export const createAdminRoutes = (
 
   router.use(adminAccessGuard);
 
+  router.get('/epg/overview', asyncHandler(controller.getEpgOverview.bind(controller)));
+  router.get('/epg/channels', asyncHandler(controller.listEpgChannels.bind(controller)));
+  router.get('/providers', asyncHandler(controller.listProviders.bind(controller)));
+  router.get('/football/overview', asyncHandler(controller.getFootballOverview.bind(controller)));
+  router.get('/football/competitions', asyncHandler(controller.listFootballCompetitions.bind(controller)));
+  router.get('/football/teams', asyncHandler(controller.listFootballTeams.bind(controller)));
+  router.get('/football/fixtures', asyncHandler(controller.listFootballFixtures.bind(controller)));
+  router.get('/jobs', asyncHandler(controller.listJobs.bind(controller)));
+  router.get('/cache/diagnostics', asyncHandler(controller.getCacheDiagnostics.bind(controller)));
+  router.get('/events', asyncHandler(controller.listOperationalEvents.bind(controller)));
+  router.get('/alerts', asyncHandler(controller.listAlerts.bind(controller)));
+  router.post('/football/refresh', strictRateLimit, asyncHandler(controller.refreshFootball.bind(controller)));
+  router.post('/cache/invalidate', strictRateLimit, asyncHandler(controller.invalidateCacheNamespace.bind(controller)));
+
   // TODO: Agregar middleware de autenticación para producción
   // router.use(authMiddleware);
 

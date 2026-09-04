@@ -3,9 +3,14 @@ import { AuthenticatedRequest } from '../middlewares/authGuard';
 import { AIAnalyticsService } from '@/application/services/AIAnalyticsService';
 import { successResponse } from '@/shared/types/ApiResponse';
 import { ValidationError } from '@/shared/errors';
+import { AssistantOperationalTelemetryService } from '@/application/services/AssistantOperationalTelemetryService';
 
 export class AIAnalyticsController {
-  constructor(private readonly analyticsService: AIAnalyticsService) {}
+  constructor(private readonly analyticsService: AIAnalyticsService, private readonly telemetry: AssistantOperationalTelemetryService) {}
+
+  async getFailures(req: AuthenticatedRequest, res: Response): Promise<void> {
+    res.status(200).json(successResponse(await this.telemetry.listFailures(Number(req.query.limit) || 50)));
+  }
 
   async getOverview(_req: AuthenticatedRequest, res: Response): Promise<void> {
     const data = await this.analyticsService.getOverview();

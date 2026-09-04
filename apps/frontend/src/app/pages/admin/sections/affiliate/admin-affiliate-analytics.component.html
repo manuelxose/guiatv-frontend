@@ -1,0 +1,80 @@
+<div class="space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <p class="text-xs text-[var(--portal-text-muted)]" *ngIf="report">
+      {{ report.range.from | date: 'mediumDate' }} — {{ report.range.to | date: 'mediumDate' }}
+    </p>
+    <button type="button"
+      class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
+      (click)="refresh()">
+      Refrescar
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">Cargando analytics...</div>
+  <div *ngIf="error" class="text-sm text-[var(--spotify-negative)] py-3">{{ error }}</div>
+
+  <ng-container *ngIf="report && !loading">
+    <div class="grid sm:grid-cols-3 gap-4">
+      <div class="p-4 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]">
+        <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Impresiones</p>
+        <p class="text-2xl font-semibold text-[var(--portal-text)] mt-1">{{ report.totals.impressions }}</p>
+      </div>
+      <div class="p-4 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]">
+        <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Clicks</p>
+        <p class="text-2xl font-semibold text-[var(--portal-text)] mt-1">{{ report.totals.clicks }}</p>
+      </div>
+      <div class="p-4 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)]">
+        <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">CTR</p>
+        <p class="text-2xl font-semibold text-[var(--portal-text)] mt-1">{{ report.totals.ctr }}%</p>
+      </div>
+    </div>
+
+    <p class="text-xs text-[var(--portal-text-muted)] italic">{{ report.note }}</p>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+        <h5 class="text-sm font-semibold text-[var(--portal-text)] mb-3">Clicks por merchant</h5>
+        <div class="space-y-2">
+          <div *ngFor="let row of report.byMerchant" class="flex items-center justify-between text-xs text-[var(--portal-text-soft)]">
+            <span class="truncate">{{ row.label }}</span>
+            <span class="text-[var(--portal-text)] flex-shrink-0">{{ row.clicks }} / {{ row.impressions }} ({{ row.ctr }}%)</span>
+          </div>
+          <p *ngIf="!report.byMerchant.length" class="text-xs text-[var(--portal-text-muted)]">Sin datos aún.</p>
+        </div>
+      </div>
+
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+        <h5 class="text-sm font-semibold text-[var(--portal-text)] mb-3">Clicks por placement</h5>
+        <div class="space-y-2">
+          <div *ngFor="let row of report.byPlacement" class="flex items-center justify-between text-xs text-[var(--portal-text-soft)]">
+            <span class="truncate">{{ row.label }}</span>
+            <span class="text-[var(--portal-text)] flex-shrink-0">{{ row.clicks }} / {{ row.impressions }} ({{ row.ctr }}%)</span>
+          </div>
+          <p *ngIf="!report.byPlacement.length" class="text-xs text-[var(--portal-text-muted)]">Sin datos aún.</p>
+        </div>
+      </div>
+
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+        <h5 class="text-sm font-semibold text-[var(--portal-text)] mb-3">Clicks por oferta</h5>
+        <div class="space-y-2">
+          <div *ngFor="let row of report.byOffer" class="flex items-center justify-between text-xs text-[var(--portal-text-soft)]">
+            <span class="truncate">{{ row.label }}</span>
+            <span class="text-[var(--portal-text)] flex-shrink-0">{{ row.clicks }} / {{ row.impressions }} ({{ row.ctr }}%)</span>
+          </div>
+          <p *ngIf="!report.byOffer.length" class="text-xs text-[var(--portal-text-muted)]">Sin datos aún.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
+      <h5 class="text-sm font-semibold text-[var(--portal-text)] mb-3">Contenido que más clicks genera</h5>
+      <div class="space-y-2">
+        <div *ngFor="let row of report.topContent" class="flex items-center justify-between text-xs text-[var(--portal-text-soft)]">
+          <span class="truncate">{{ row.contentType || 'desconocido' }}: {{ row.contentId }}</span>
+          <span class="text-[var(--portal-text)] flex-shrink-0">{{ row.clicks }} clicks / {{ row.impressions }} impresiones</span>
+        </div>
+        <p *ngIf="!report.topContent.length" class="text-xs text-[var(--portal-text-muted)]">Sin datos aún.</p>
+      </div>
+    </div>
+  </ng-container>
+</div>

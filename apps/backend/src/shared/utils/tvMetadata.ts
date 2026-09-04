@@ -13,6 +13,50 @@ export type CanonicalChannelGroup =
   | 'online'
   | 'deporte';
 
+export type CanonicalChannelDistribution =
+  | 'terrestrial'
+  | 'cable'
+  | 'operator'
+  | 'ott'
+  | 'unknown';
+
+export type CanonicalChannelAccess = 'free' | 'pay' | 'unknown';
+
+export type CanonicalChannelContentFacet =
+  | 'general'
+  | 'movies'
+  | 'series'
+  | 'documentary'
+  | 'kids'
+  | 'news'
+  | 'sports'
+  | 'music'
+  | 'lifestyle'
+  | 'unknown';
+
+export interface CanonicalChannelMarket {
+  country: string;
+  countryCode: string;
+  region: string;
+  scope: 'national' | 'regional' | 'international' | 'unknown';
+}
+
+export interface CanonicalChannelQuality {
+  resolution: 'sd' | 'hd' | 'uhd' | '4k' | 'unknown';
+  timeshift: boolean | 'unknown';
+}
+
+export interface CanonicalChannelCapabilities {
+  linear: boolean | 'unknown';
+  catchup: boolean | 'unknown';
+  streaming: boolean | 'unknown';
+}
+
+export interface CanonicalChannelProvenance {
+  classification: 'registry' | 'heuristic' | 'unknown';
+  sourceIds: string[];
+}
+
 export type TvPartOfDay =
   | 'madrugada'
   | 'manana'
@@ -67,6 +111,15 @@ export interface ChannelIdentityMetadata {
   inferredGroup: CanonicalChannelGroup;
   inferredRegion?: string;
   sortOrder: number;
+  distribution: CanonicalChannelDistribution;
+  access: CanonicalChannelAccess;
+  operator: string;
+  providers: string[];
+  contentFacets: CanonicalChannelContentFacet[];
+  market: CanonicalChannelMarket;
+  quality: CanonicalChannelQuality;
+  capabilities: CanonicalChannelCapabilities;
+  provenance: CanonicalChannelProvenance;
 }
 
 export interface CatalogAssetCandidate {
@@ -146,6 +199,47 @@ const GUIDE_GROUP_SORT_ORDER: Record<CanonicalChannelGroup, number> = {
 };
 
 const CANONICAL_CHANNEL_ALIASES: Record<string, string[]> = {
+  // Pay-TV and operator services. These aliases are identity data, not a
+  // chatbot catalogue: every ingestion path resolves them to one channel id.
+  tcm: ['tcm', 'tcm españa', 'tcm hd'],
+  axn: ['axn', 'axn hd'],
+  axn_movies: ['axn movies', 'axn white', 'axn movies hd'],
+  amc: ['amc', 'amc hd'],
+  amc_crime: ['amc crime'],
+  amc_break: ['amc break'],
+  amc_living: ['amc living'],
+  canal_hollywood: ['canal hollywood', 'hollywood'],
+  sundance_tv: ['sundance tv', 'sundance'],
+  dark: ['dark', 'dark hd'],
+  xtrm: ['xtrm'],
+  somos: ['somos'],
+  historia: ['historia', 'canal historia'],
+  odisea: ['odisea'],
+  canal_cocina: ['canal cocina'],
+  national_geographic: ['national geographic', 'nat geo'],
+  nat_geo_wild: ['nat geo wild', 'national geographic wild'],
+  warner_tv: ['warner tv', 'warner channel'],
+  star_channel: ['star channel', 'fox'],
+  calle_13: ['calle 13', 'calle13'],
+  syfy: ['syfy'],
+  comedy_central: ['comedy central'],
+  cosmo: ['cosmo'],
+  mtv: ['mtv'],
+  movistar_plus: ['m+', 'm plus', 'movistar plus', 'movistar+', 'movistar plus+'],
+  movistar_hits: ['m+ hits', 'm hits', 'm plus hits', 'movistar hits', 'movistar+ hits', 'movistar plus hits', 'm.hits'],
+  movistar_estrenos: ['m+ estrenos', 'm estrenos', 'm plus estrenos', 'movistar estrenos', 'movistar+ estrenos', 'movistar plus estrenos', 'm.estrenos'],
+  movistar_comedia: ['m+ comedia', 'm comedia', 'm plus comedia', 'movistar comedia', 'movistar+ comedia', 'movistar plus comedia'],
+  movistar_accion: ['m+ accion', 'm+ acción', 'm accion', 'm acción', 'm plus accion', 'm plus acción', 'movistar accion', 'movistar acción', 'movistar+ accion', 'movistar+ acción', 'movistar plus accion', 'movistar plus acción'],
+  movistar_drama: ['m+ drama', 'movistar drama'],
+  movistar_indie: ['m+ indie', 'movistar indie'],
+  movistar_clasicos: ['m+ clasicos', 'm+ clásicos', 'movistar clasicos', 'movistar clásicos'],
+  movistar_cine_espanol: ['m+ cine español', 'm+ cine espanol', 'movistar cine español'],
+  movistar_documentales: ['m+ documentales', 'movistar documentales'],
+  movistar_vamos: ['m+ vamos', 'movistar vamos'],
+  movistar_deportes: ['m+ deportes', 'movistar deportes'],
+  movistar_laliga: ['m+ laliga', 'movistar laliga', 'm+ la liga'],
+  movistar_liga_campeones: ['m+ liga de campeones', 'movistar liga de campeones'],
+  movistar_golf: ['m+ golf', 'movistar golf'],
   la_1: ['la1', 'la_1', 'la primera', 'tve1', 'la 1', 'la1 tv', 'la1_tv', 'la1 can', 'la1_can', 'la1 can tv', 'la1_can_tv'],
   la_2: ['la2', 'la_2', 'la dos', 'tve2', 'la 2', 'la2 tv', 'la2_tv', 'la2 can', 'la2_can', 'la2 can tv', 'la2_can_tv'],
   antena_3: ['antena3', 'antena_3', 'antena 3', 'a3', 'antena3 tv', 'antena3_tv'],
@@ -200,6 +294,33 @@ const CABLE_PATTERNS = [
   /^calle 13/i,
   /^hollywood/i,
 ];
+
+const CABLE_CANONICAL_IDS = new Set([
+  'tcm',
+  'axn',
+  'axn_movies',
+  'amc',
+  'amc_crime',
+  'amc_break',
+  'amc_living',
+  'canal_hollywood',
+  'sundance_tv',
+  'dark',
+  'xtrm',
+  'somos',
+  'historia',
+  'odisea',
+  'canal_cocina',
+  'national_geographic',
+  'nat_geo_wild',
+  'warner_tv',
+  'star_channel',
+  'calle_13',
+  'syfy',
+  'comedy_central',
+  'cosmo',
+  'mtv',
+]);
 
 const TITLE_ALIAS_SUFFIXES = [
   /\b360\b/gi,
@@ -647,6 +768,42 @@ export function buildChannelAliases(input: ChannelIdentityInput): string[] {
   ]);
 }
 
+/**
+ * Resolves a user/provider channel label through the same registry used by
+ * ingestion. This deliberately performs only exact normalized alias matches;
+ * callers that need text extraction should use findCanonicalChannelInText.
+ */
+export function resolveCanonicalChannelId(value: string | null | undefined): string | undefined {
+  const normalized = normalizeTvToken(value, ' ');
+  if (!normalized) return undefined;
+
+  for (const [canonicalId, aliases] of Object.entries(CANONICAL_CHANNEL_ALIASES)) {
+    if (canonicalId === normalized || aliases.some((alias) => normalizeTvToken(alias, ' ') === normalized)) {
+      return canonicalId;
+    }
+  }
+  return undefined;
+}
+
+/** Returns the longest explicit registry alias contained as whole words. */
+export function findCanonicalChannelInText(value: string | null | undefined): string | undefined {
+  const normalized = normalizeTvToken(value, ' ');
+  if (!normalized) return undefined;
+
+  const candidates = Object.entries(CANONICAL_CHANNEL_ALIASES)
+    .flatMap(([canonicalId, aliases]) => [canonicalId, ...aliases].map((alias) => ({
+      canonicalId,
+      alias: normalizeTvToken(alias, ' '),
+    })))
+    .filter(({ alias }) => alias)
+    .sort((left, right) => right.alias.length - left.alias.length);
+
+  return candidates.find(({ alias }) =>
+    normalized === alias || normalized.startsWith(`${alias} `) ||
+    normalized.endsWith(` ${alias}`) || normalized.includes(` ${alias} `)
+  )?.canonicalId;
+}
+
 export function inferChannelType(input: ChannelIdentityInput): CanonicalChannelType {
   const aliases = buildChannelAliases(input);
   const normalizedName = normalizeTvToken(input.name, ' ');
@@ -661,7 +818,10 @@ export function inferChannelType(input: ChannelIdentityInput): CanonicalChannelT
     return 'Autonomico';
   }
 
-  if (MOVISTAR_PATTERNS.some((pattern) => pattern.test(normalizedName))) {
+  if (
+    MOVISTAR_PATTERNS.some((pattern) => pattern.test(normalizedName)) ||
+    aliases.some((alias) => alias.startsWith('movistar_'))
+  ) {
     return 'Movistar';
   }
 
@@ -673,7 +833,133 @@ export function inferChannelType(input: ChannelIdentityInput): CanonicalChannelT
     return 'Cable';
   }
 
+  if (aliases.some((alias) => CABLE_CANONICAL_IDS.has(alias))) {
+    return 'Cable';
+  }
+
   return 'OTT';
+}
+
+function inferChannelOperationalMetadata(
+  input: ChannelIdentityInput,
+  aliases: string[],
+  canonicalId: string,
+  inferredType: CanonicalChannelType
+): Pick<
+  ChannelIdentityMetadata,
+  | 'distribution'
+  | 'access'
+  | 'operator'
+  | 'providers'
+  | 'contentFacets'
+  | 'market'
+  | 'quality'
+  | 'capabilities'
+  | 'provenance'
+> {
+  const normalizedName = normalizeTvToken(input.name, ' ');
+  const rawIdentity = `${input.name || ''} ${input.sourceId || ''}`;
+  const isMovistar =
+    inferredType === 'Movistar' || aliases.some((alias) => alias.startsWith('movistar_'));
+  const isDazn = /^dazn(?:\b|_)/i.test(normalizedName) || canonicalId.startsWith('dazn_');
+  const isCable = inferredType === 'Cable' || CABLE_CANONICAL_IDS.has(canonicalId);
+  const distribution: CanonicalChannelDistribution =
+    inferredType === 'TDT' || inferredType === 'Autonomico'
+      ? 'terrestrial'
+      : isMovistar
+        ? 'operator'
+        : isCable
+          ? 'cable'
+          : inferredType === 'OTT'
+            ? 'ott'
+            : 'unknown';
+  const access: CanonicalChannelAccess =
+    distribution === 'terrestrial'
+      ? 'free'
+      : distribution === 'cable' || distribution === 'operator' || isDazn
+        ? 'pay'
+        : 'unknown';
+  const operator = isMovistar
+    ? 'Movistar Plus+'
+    : isDazn
+      ? 'DAZN'
+      : canonicalId.startsWith('amc') ||
+          ['canal_hollywood', 'sundance_tv', 'dark', 'xtrm', 'somos', 'odisea', 'canal_cocina'].includes(canonicalId)
+        ? 'AMC Networks'
+        : ['warner_tv', 'tcm'].includes(canonicalId)
+          ? 'Warner Bros. Discovery'
+          : canonicalId === 'mtv' || canonicalId === 'comedy_central'
+            ? 'Paramount'
+            : 'unknown';
+  const providers = operator === 'unknown' ? [] : [operator];
+  const contentFacets = new Set<CanonicalChannelContentFacet>();
+  if (SPORTS_KEYWORDS.some((keyword) => normalizedName.includes(keyword))) {
+    contentFacets.add('sports');
+  }
+  if (/\b(cine|movie|movies|estrenos|accion|drama|comedia|tcm|hollywood|sundance|somos)\b/.test(normalizedName)) {
+    contentFacets.add('movies');
+  }
+  if (/\b(axn|syfy|calle 13|cosmo|warner)\b/.test(normalizedName)) {
+    contentFacets.add('series');
+  }
+  if (/\b(national geographic|historia|odisea|discovery|documental)\b/.test(normalizedName)) {
+    contentFacets.add('documentary');
+  }
+  if (/\b(mtv|music|musica)\b/.test(normalizedName)) contentFacets.add('music');
+  if (/\b(cocina|living|lifestyle)\b/.test(normalizedName)) contentFacets.add('lifestyle');
+  if (/\b(clan|boing|kids|infantil)\b/.test(normalizedName)) contentFacets.add('kids');
+  if (/\b(news|noticias|24 horas)\b/.test(normalizedName)) contentFacets.add('news');
+  if (!contentFacets.size && (inferredType === 'TDT' || inferredType === 'Autonomico')) {
+    contentFacets.add('general');
+  }
+  if (!contentFacets.size) contentFacets.add('unknown');
+
+  const region = input.region || inferChannelRegion(input) || 'unknown';
+  const country = input.country || 'unknown';
+  const countryCode = input.countryCode || 'unknown';
+  const scope: CanonicalChannelMarket['scope'] =
+    region !== 'unknown'
+      ? 'regional'
+      : country !== 'unknown' || countryCode !== 'unknown'
+        ? 'national'
+        : 'unknown';
+  const resolution: CanonicalChannelQuality['resolution'] = /\b4k\b/i.test(rawIdentity)
+    ? '4k'
+    : /\buhd\b/i.test(rawIdentity)
+      ? 'uhd'
+      : /\bhd\b/i.test(rawIdentity)
+        ? 'hd'
+        : 'unknown';
+  const registryMatched = Object.prototype.hasOwnProperty.call(
+    CANONICAL_CHANNEL_ALIASES,
+    canonicalId
+  );
+
+  return {
+    distribution,
+    access,
+    operator,
+    providers,
+    contentFacets: Array.from(contentFacets),
+    market: { country, countryCode, region, scope },
+    quality: {
+      resolution,
+      timeshift: /(?:\+1|\bplus 1\b)/i.test(rawIdentity) ? true : 'unknown',
+    },
+    capabilities: {
+      linear: true,
+      catchup: 'unknown',
+      streaming: 'unknown',
+    },
+    provenance: {
+      classification: registryMatched
+        ? 'registry'
+        : input.name || input.sourceId
+          ? 'heuristic'
+          : 'unknown',
+      sourceIds: unique([String(input.sourceId || '').trim()]),
+    },
+  };
 }
 
 export function inferChannelGroup(
@@ -686,6 +972,7 @@ export function inferChannelGroup(
   const normalizedName = normalizeTvToken(input.name, ' ');
   const normalizedType = normalizeTvToken(input.type, ' ');
   const isNationalTdt = NATIONAL_TDT_ORDER.some((canonicalId) => aliases.includes(canonicalId));
+  const isCanonicalMovistar = aliases.some((alias) => alias.startsWith('movistar_'));
   const hasRegionalSignal = Boolean(inferChannelRegion(input));
   const inferredType =
     !isNationalTdt &&
@@ -705,6 +992,10 @@ export function inferChannelGroup(
   }
 
   if (isNationalTdt) return 'tdt';
+  // Canonical registry identity wins over stale persisted provider type. Some
+  // older EPG snapshots stored M+ services as OTT even though they are
+  // Movistar channels.
+  if (isCanonicalMovistar) return 'movistar';
   if (inferredType === 'TDT') return 'tdt';
   if (inferredType === 'Cable') return 'cable';
   if (inferredType === 'Autonomico') return 'autonomico';
@@ -740,15 +1031,20 @@ export function buildChannelIdentityMetadata(
     Object.prototype.hasOwnProperty.call(CANONICAL_CHANNEL_ALIASES, alias)
   );
 
+  const canonicalId =
+    canonicalAlias || normalizedName || normalizeTvToken(input.sourceId) || 'unknown_channel';
+  const inferredType = inferChannelType(input);
+
   return {
     normalizedName,
     aliases,
     sourceIds: unique([normalizeTvToken(input.sourceId), String(input.sourceId || '').trim()]),
-    canonicalId: canonicalAlias || normalizedName || normalizeTvToken(input.sourceId) || 'unknown_channel',
-    inferredType: inferChannelType(input),
+    canonicalId,
+    inferredType,
     inferredGroup: inferChannelGroup(input),
     inferredRegion: inferChannelRegion(input),
     sortOrder: inferChannelSortOrder(input),
+    ...inferChannelOperationalMetadata(input, aliases, canonicalId, inferredType),
   };
 }
 
@@ -931,6 +1227,18 @@ export function buildSearchTokens(values: Array<string | null | undefined>): str
         .filter(Boolean)
     )
   );
+}
+
+/** Preserves the historical public `/programas/:slug` format. Accented
+ * characters are dropped (not transliterated), matching CatalogService. */
+export function buildLegacyProgramSlug(value: string): string {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 export function buildCatalogAssetCandidates(input: {

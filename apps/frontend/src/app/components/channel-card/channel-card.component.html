@@ -1,0 +1,44 @@
+<article class="channel-card">
+  <header class="channel-card__header">
+    <span class="channel-card__logo">
+      <strong aria-hidden="true">{{ entry().channel.name.slice(0, 2) }}</strong>
+      <img
+        *ngIf="entry().channel.icon"
+        [src]="entry().channel.icon"
+        [alt]="'Logotipo de ' + entry().channel.name"
+        width="72"
+        height="72"
+        loading="lazy"
+        (error)="handleLogoError($event)"
+      />
+    </span>
+    <span class="channel-card__identity">
+      <h2 *ngIf="headingLevel() === 2; else levelThreeTitle">{{ entry().channel.name }}</h2>
+      <ng-template #levelThreeTitle><h3>{{ entry().channel.name }}</h3></ng-template>
+      <span>{{ entry().channel.operator && entry().channel.operator !== 'unknown' ? entry().channel.operator : entry().channel.type }}</span>
+    </span>
+    <span class="channel-card__access">{{ accessLabel() }}</span>
+  </header>
+
+  <div class="channel-card__schedule">
+    <div *ngIf="entry().current; else noCurrent" class="channel-card__programme channel-card__programme--live">
+      <span>En directo · {{ formatTime(entry().current?.airing?.start) }}</span>
+      <strong>{{ entry().current?.program?.title }}</strong>
+    </div>
+    <ng-template #noCurrent>
+      <div class="channel-card__programme">
+        <span>Ahora</span>
+        <strong>Emisión sin identificar</strong>
+      </div>
+    </ng-template>
+    <div *ngIf="entry().next" class="channel-card__programme">
+      <span>Después · {{ formatTime(entry().next?.airing?.start) }}</span>
+      <strong>{{ entry().next?.program?.title }}</strong>
+    </div>
+  </div>
+
+  <footer class="channel-card__footer">
+    <span>{{ entry().counts.total }} emisiones hoy</span>
+    <a [routerLink]="['/canales', entry().channel.id]">Ver programación</a>
+  </footer>
+</article>

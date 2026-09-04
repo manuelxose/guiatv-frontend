@@ -4,6 +4,7 @@ import {
   CatalogAiringDTO,
   CatalogContentType,
   CatalogDetailDTO,
+  CatalogDetailEnrichmentDTO,
   CatalogItemDTO,
   CatalogPlatformDTO,
   CatalogProviderDTO,
@@ -28,19 +29,28 @@ import {
   StreamingProvidersService,
   WatchProvidersResult,
 } from '@/infrastructure/external/StreamingProvidersService';
+import {
+  genreLabelsMatch,
+  MOVIE_GENRE_NAME_TO_TMDB_ID,
+  normalizeGenreList,
+  TV_GENRE_NAME_TO_TMDB_ID,
+} from '@/shared/taxonomy/genreTaxonomy';
 import { IUserContentInteractionRepository } from '@/domain/repositories/IUserContentInteractionRepository';
 import { DateUtils } from '@/shared/utils/dateUtils';
 import { NotFoundError } from '@/shared/errors';
 import { UserListItemModel } from '@/infrastructure/database/models/UserListItem.model';
 import { UserListModel } from '@/infrastructure/database/models/UserList.model';
 import { UserContentInteractionModel } from '@/infrastructure/database/models/UserContentInteraction.model';
-import { UserFollowModel } from '@/infrastructure/database/models/UserFollow.model';
+import { aggregateFriendActivity, findFolloweeIds } from './SocialSummaryQuery';
 import { UserProfileModel } from '@/infrastructure/database/models/UserProfile.model';
 import { buildCatalogAssetSet, buildSearchTokens } from '@/shared/utils/tvMetadata';
 import { l1Cache } from '@/infrastructure/cache/L1Cache';
 import { TvReadItemDTO, TvReadView } from '../dto/TvReadDTO';
 import { TvReadQueryService } from './TvReadQueryService';
 import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring.model';
+import { MediaCatalogService } from './MediaCatalogService';
+import { measureTiming } from '@/shared/utils/performanceTiming';
+import { logger } from '@/shared/utils/logger';
 
 export interface CatalogQueryParams {
   userId?: string;
@@ -69,55 +79,10 @@ interface CatalogPreferences {
   excludeSeen: Set<string>;
 }
 
-const MOVIE_GENRE_IDS: Record<string, number> = {
-  accion: 28,
-  aventura: 12,
-  animacion: 16,
-  comedia: 35,
-  crimen: 80,
-  documental: 99,
-  drama: 18,
-  familia: 10751,
-  fantasia: 14,
-  historia: 36,
-  terror: 27,
-  musica: 10402,
-  misterio: 9648,
-  romance: 10749,
-  'ciencia ficcion': 878,
-  scifi: 878,
-  suspenso: 53,
-  suspense: 53,
-  tvmovie: 10770,
-  thriller: 53,
-  guerra: 10752,
-  western: 37,
-};
-
-const TV_GENRE_IDS: Record<string, number> = {
-  accion: 10759,
-  aventura: 10759,
-  animacion: 16,
-  comedia: 35,
-  crimen: 80,
-  documental: 99,
-  drama: 18,
-  familia: 10751,
-  infantil: 10762,
-  kids: 10762,
-  misterio: 9648,
-  noticias: 10763,
-  reality: 10764,
-  cienciaficcion: 10765,
-  'ciencia ficcion': 10765,
-  scifi: 10765,
-  soap: 10766,
-  talk: 10767,
-  guerra: 10768,
-  politica: 10768,
-  suspense: 9648,
-  thriller: 9648,
-};
+// Canonical alias -> TMDB discover genre id tables, sourced from the shared
+// genre taxonomy (single source of truth, see shared/taxonomy/genreTaxonomy).
+const MOVIE_GENRE_IDS = MOVIE_GENRE_NAME_TO_TMDB_ID;
+const TV_GENRE_IDS = TV_GENRE_NAME_TO_TMDB_ID;
 
 export class CatalogService {
   private readonly ttlSeconds = 600;
@@ -140,8 +105,44 @@ export class CatalogService {
     private readonly tmdbService: TMDBService,
     private readonly streamingProvidersService: StreamingProvidersService,
     private readonly interactionRepository: IUserContentInteractionRepository,
-    private readonly tvReadQueryService: TvReadQueryService
+    private readonly tvReadQueryService: TvReadQueryService,
+    // Optional: routes TMDB detail lookups through the local persistent media
+    // catalog (L1 -> Redis -> Mongo -> TMDB) instead of hitting TMDB directly
+    // on every request. Falls back to the old direct-TMDB behavior when absent
+    // so existing tests/call sites that don't pass it keep working unchanged.
+    private readonly mediaCatalogService?: MediaCatalogService
   ) {}
+
+  /** Single choke point for TMDB *detail* fetches (movie/tv by id) so the
+   * local-catalog-first strategy applies uniformly across the service. */
+  private async fetchTmdbDetail(
+    tmdbId: number,
+    type: 'movie' | 'tv'
+  ): Promise<TMDBDetailResult | null> {
+    if (this.mediaCatalogService) {
+      return this.mediaCatalogService.getDetail(tmdbId, type);
+    }
+    return type === 'movie'
+      ? this.tmdbService.getMovieById(tmdbId)
+      : this.tmdbService.getTVById(tmdbId);
+  }
+
+  /**
+   * TMDB-free variant for the critical path of a program/EPG detail page: the
+   * page already has real data to render from the airing itself, so TMDB
+   * detail (cast/synopsis/runtime) is a nice-to-have enhancement, never a
+   * blocker. Returns null immediately when nothing is cached locally yet —
+   * `getLocalOnly` schedules its own background refresh for next time.
+   */
+  private async fetchLocalTmdbDetail(
+    tmdbId: number,
+    type: 'movie' | 'tv'
+  ): Promise<TMDBDetailResult | null> {
+    if (!this.mediaCatalogService) {
+      return null;
+    }
+    return this.mediaCatalogService.getLocalOnly(tmdbId, type);
+  }
 
   getPlatforms(): CatalogPlatformDTO[] {
     return CATALOG_PLATFORM_REGISTRY;
@@ -301,7 +302,12 @@ export class CatalogService {
     }
 
     const negativeCacheKey = this.buildSlugNotFoundCacheKey(contentType, slug);
-    const cachedNotFound = await this.cacheRepository.get<boolean>(negativeCacheKey);
+    // Programme availability changes with every schedule refresh. A persisted
+    // negative from yesterday must not hide a programme that is resolvable
+    // today; movie/series identities remain stable and keep the cache benefit.
+    const cachedNotFound = contentType === 'program'
+      ? false
+      : await this.cacheRepository.get<boolean>(negativeCacheKey);
     if (cachedNotFound) {
       throw new NotFoundError('Catalog item', slug);
     }
@@ -342,9 +348,50 @@ export class CatalogService {
     userId: string | undefined,
     negativeCacheKey: string
   ): Promise<CatalogDetailDTO> {
-    // For TMDB content, search TMDB and pick first matching slug
+    return measureTiming('slug', () =>
+      this.resolveBySlugInternal(contentType, slug, searchText, userId, negativeCacheKey)
+    );
+  }
+
+  /** Resolves a slug against content already known to this system (local
+   * media catalog) without ever calling TMDB. Returns the matching tmdbId,
+   * or undefined when nothing local matches — the only case that should
+   * still fall through to a live TMDB search. */
+  private async findLocalSlugMatch(
+    searchText: string,
+    slug: string,
+    tmdbType: 'movie' | 'tv'
+  ): Promise<number | undefined> {
+    if (!this.mediaCatalogService) {
+      return undefined;
+    }
+    const candidates = await this.mediaCatalogService.findKnownMatchesForTitles([searchText]);
+    const match = candidates.find(
+      (entry) =>
+        entry.tmdbType === tmdbType &&
+        (this.slugify(entry.title) === slug || this.slugifyTitle(entry.title) === slug)
+    );
+    return match?.tmdbId;
+  }
+
+  private async resolveBySlugInternal(
+    contentType: CatalogContentType,
+    slug: string,
+    searchText: string,
+    userId: string | undefined,
+    negativeCacheKey: string
+  ): Promise<CatalogDetailDTO> {
+    // For TMDB content: check the local media catalog first (titles already
+    // seen through EPG, search or a prior detail view) — a slug for known
+    // content should never have to pay a live TMDB search. Only a genuinely
+    // new-to-this-system title falls through to TMDB.
     if (contentType === 'movie' || contentType === 'series') {
       const tmdbType = contentType === 'movie' ? 'movie' : 'tv';
+      const localMatch = await this.findLocalSlugMatch(searchText, slug, tmdbType);
+      if (localMatch) {
+        return this.getTmdbDetail(localMatch, tmdbType, userId);
+      }
+
       const results = tmdbType === 'movie'
         ? await this.tmdbService.searchMovies(searchText, { page: 1, limit: 10 })
         : await this.tmdbService.searchTV(searchText, { page: 1, limit: 10 });
@@ -627,32 +674,38 @@ export class CatalogService {
     return Math.min(Math.max(perTypeTarget, 12), 24);
   }
 
+  /**
+   * Critical detail path for an EPG/program-sourced catalogId. Returns only
+   * what's needed to render the page: the airing itself (already fetched,
+   * free), plus cast/director/synopsis *when already available locally* —
+   * never a live TMDB call. Providers, related titles, social summary and
+   * user interaction are deliberately left out; the frontend fetches them via
+   * `getDetailEnrichment` after the critical response has rendered.
+   */
   private async getProgramDetail(
     programId: string,
-    userId?: string
+    _userId?: string
   ): Promise<CatalogDetailDTO> {
-    const tvReadDetail = await this.tvReadQueryService.getItem(programId);
+    const tvReadDetail = await measureTiming('media', () =>
+      this.tvReadQueryService.getItem(programId)
+    );
     const tmdbType = this.inferTmdbTypeFromContentType(
       this.inferTvReadContentType(tvReadDetail.item)
     );
-    const whereToWatch = await this.resolveTvReadProviders(tvReadDetail.item, tmdbType);
-    const item = this.mapTvReadItemToCatalogItem(tvReadDetail.item, whereToWatch);
+    const item = this.mapTvReadItemToCatalogItem(tvReadDetail.item);
     const tmdbDetail =
       tmdbType && item.tmdbId
-        ? tmdbType === 'movie'
-          ? await this.tmdbService.getMovieById(item.tmdbId)
-          : await this.tmdbService.getTVById(item.tmdbId)
+        ? await measureTiming('tmdb', () => this.fetchLocalTmdbDetail(item.tmdbId as number, tmdbType))
         : null;
 
-    const [userInteraction, related, socialSummary] = await Promise.all([
-      this.loadSingleUserInteraction(userId, item.catalogId),
-      this.loadRelatedForTvReadItem(tvReadDetail.item),
-      this.loadSocialSummary(userId, item),
-    ]);
-    const airings = this.mergeAirings(
-      [this.mapTvReadItemToAiring(tvReadDetail.item)],
-      tvReadDetail.relatedChannelItems.map((relatedItem) =>
-        this.mapTvReadItemToAiring(relatedItem)
+    // Current/next airing for this program is already in tvReadDetail — no
+    // extra query needed to satisfy the "airings when locally available" bar.
+    const airings = await measureTiming('airings', async () =>
+      this.mergeAirings(
+        [this.mapTvReadItemToAiring(tvReadDetail.item)],
+        tvReadDetail.relatedChannelItems.map((relatedItem) =>
+          this.mapTvReadItemToAiring(relatedItem)
+        )
       )
     );
 
@@ -664,10 +717,8 @@ export class CatalogService {
         item.backdrop || this.tmdbService.getImageUrl(tmdbDetail?.backdrop_path || null, 'original'),
       cast: this.mapCast(tmdbDetail),
       director: this.extractDirector(tmdbDetail),
-      related,
-      socialSummary,
       airings,
-      userInteraction: userInteraction || item.userInteraction,
+      enrichmentPending: true,
     };
   }
 
@@ -725,40 +776,123 @@ export class CatalogService {
     };
   }
 
+  /**
+   * Critical detail path for a TMDB-sourced catalogId (movie/series). The
+   * only unavoidable network dependency here is the local-catalog-first
+   * `fetchTmdbDetail` — it resolves from L1/Redis/Mongo for any content seen
+   * before, and only reaches TMDB on a genuine first-ever view of that id.
+   * Providers, related titles, social summary and user interaction are left
+   * to `getDetailEnrichment` — none of them are required to render the page.
+   */
   private async getTmdbDetail(
     tmdbId: number,
     type: 'movie' | 'tv',
-    userId?: string
+    _userId?: string
   ): Promise<CatalogDetailDTO> {
-    const detail =
-      type === 'movie'
-        ? await this.tmdbService.getMovieById(tmdbId)
-        : await this.tmdbService.getTVById(tmdbId);
+    const detail = await measureTiming('tmdb', () => this.fetchTmdbDetail(tmdbId, type));
     if (!detail) {
       throw new NotFoundError('TMDB content', String(tmdbId));
     }
 
-    const providers =
-      type === 'movie'
-        ? await this.streamingProvidersService.getMovieProviders(tmdbId)
-        : await this.streamingProvidersService.getTVProviders(tmdbId);
-    const item = this.mapTmdbToCatalogItem(detail, type, providers || undefined);
-    const channelMap = await this.loadChannelMap();
-    const [airings, related, socialSummary, userInteraction] = await Promise.all([
-      this.loadAiringsForTmdb(detail, item.contentType, channelMap),
-      this.loadRelatedForTmdb(detail, type),
-      this.loadSocialSummary(userId, item),
-      this.loadSingleUserInteraction(userId, item.catalogId),
-    ]);
+    const item = this.mapTmdbToCatalogItem(detail, type);
+    const airings = await measureTiming('airings', () =>
+      this.loadAiringsForTmdb(detail, item.contentType)
+    );
 
     return {
       ...item,
       cast: this.mapCast(detail),
       director: this.extractDirector(detail),
       airings,
-      related,
-      socialSummary,
-      userInteraction,
+      enrichmentPending: true,
+    };
+  }
+
+  /**
+   * Secondary, deferrable data for a detail page: related titles (with their
+   * own provider lookups), social summary, where-to-watch providers for the
+   * primary item, and the caller's own interaction/watchlist state. Called
+   * by the frontend only after the critical response has rendered, and never
+   * allowed to fail the whole request — each section degrades to "absent" on
+   * its own error so one slow/broken dependency can't take out the others.
+   */
+  async getDetailEnrichment(
+    catalogId: string,
+    userId?: string
+  ): Promise<CatalogDetailEnrichmentDTO> {
+    const parsed = parseCatalogId(catalogId);
+    if (!parsed) {
+      throw new NotFoundError('Catalog item', catalogId);
+    }
+
+    if (parsed.source === 'program' && parsed.programId) {
+      return this.getProgramDetailEnrichment(parsed.programId, userId);
+    }
+
+    if (parsed.source === 'tmdb' && parsed.tmdbId && parsed.tmdbType) {
+      return this.getTmdbDetailEnrichment(parsed.tmdbId, parsed.tmdbType, userId);
+    }
+
+    throw new NotFoundError('Catalog item', catalogId);
+  }
+
+  private async getProgramDetailEnrichment(
+    programId: string,
+    userId?: string
+  ): Promise<CatalogDetailEnrichmentDTO> {
+    const tvReadDetail = await this.tvReadQueryService.getItem(programId);
+    const tmdbType = this.inferTmdbTypeFromContentType(
+      this.inferTvReadContentType(tvReadDetail.item)
+    );
+    const item = this.mapTvReadItemToCatalogItem(tvReadDetail.item);
+
+    const [whereToWatch, related, socialSummary, userInteraction] = await Promise.allSettled([
+      measureTiming('providers', () => this.resolveTvReadProviders(tvReadDetail.item, tmdbType)),
+      measureTiming('related', () => this.loadRelatedForTvReadItem(tvReadDetail.item)),
+      measureTiming('social', () => this.loadSocialSummary(userId, item)),
+      measureTiming('social', () => this.loadSingleUserInteraction(userId, item.catalogId)),
+    ]);
+
+    return {
+      related: settledOr(related, []),
+      socialSummary: settledOr(socialSummary, undefined),
+      whereToWatch: settledOr(whereToWatch, undefined),
+      userInteraction: settledOr(userInteraction, undefined),
+    };
+  }
+
+  private async getTmdbDetailEnrichment(
+    tmdbId: number,
+    type: 'movie' | 'tv',
+    userId?: string
+  ): Promise<CatalogDetailEnrichmentDTO> {
+    const detail = await this.fetchTmdbDetail(tmdbId, type);
+    if (!detail) {
+      return { related: [] };
+    }
+
+    // `item` here is only used to key the social/interaction lookups
+    // (catalogId/title/tmdbId) — none of those depend on providers, so it's
+    // built eagerly rather than waiting on the providers call below.
+    const item = this.mapTmdbToCatalogItem(detail, type);
+
+    const [providers, related, socialSummary, userInteraction] = await Promise.allSettled([
+      measureTiming('providers', () =>
+        type === 'movie'
+          ? this.streamingProvidersService.getMovieProviders(tmdbId)
+          : this.streamingProvidersService.getTVProviders(tmdbId)
+      ),
+      measureTiming('related', () => this.loadRelatedForTmdb(detail, type)),
+      measureTiming('social', () => this.loadSocialSummary(userId, item)),
+      measureTiming('social', () => this.loadSingleUserInteraction(userId, item.catalogId)),
+    ]);
+
+    const providersValue = settledOr(providers, null);
+    return {
+      related: settledOr(related, []),
+      socialSummary: settledOr(socialSummary, undefined),
+      whereToWatch: providersValue ? this.mapWatchProviders(providersValue) : undefined,
+      userInteraction: settledOr(userInteraction, undefined),
     };
   }
 
@@ -927,8 +1061,7 @@ export class CatalogService {
 
   private async loadAiringsForTmdb(
     detail: TMDBDetailResult,
-    contentType: CatalogContentType,
-    _channelMap: Map<string, any>
+    contentType: CatalogContentType
   ): Promise<CatalogAiringDTO[]> {
     const title = detail.title || detail.name || '';
     const matches = await this.findProgramMatches(
@@ -1073,47 +1206,19 @@ export class CatalogService {
       return undefined;
     }
 
-    const follows = await UserFollowModel.find({ followerId: userId }).lean().exec();
-    const followeeIds = follows.map((entry: any) => String(entry.followeeId)).filter(Boolean);
+    const followeeIds = await findFolloweeIds(userId);
     if (!followeeIds.length) {
       return undefined;
     }
 
     const acceptedIds = this.expandAcceptedContentIds(item.catalogId);
-    const stats = await UserContentInteractionModel.aggregate([
-      {
-        $match: {
-          userId: { $in: followeeIds },
-          $or: [
-            { contentId: { $in: acceptedIds } },
-            ...(item.tmdbId ? [{ tmdbId: item.tmdbId }] : []),
-            { contentTitle: new RegExp(`^${this.escapeRegex(item.title)}$`, 'i') },
-          ],
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          friendsWhoWatched: { $addToSet: '$userId' },
-          avgFriendRating: { $avg: '$rating' },
-        },
-      },
-    ]).exec();
+    const stats = await aggregateFriendActivity(followeeIds, [
+      { contentId: { $in: acceptedIds } },
+      ...(item.tmdbId ? [{ tmdbId: item.tmdbId }] : []),
+      { contentTitle: new RegExp(`^${this.escapeRegex(item.title)}$`, 'i') },
+    ]);
 
-    const first = stats[0];
-    if (!first) {
-      return undefined;
-    }
-
-    return {
-      friendsWhoWatched: Array.isArray(first.friendsWhoWatched)
-        ? first.friendsWhoWatched.length
-        : 0,
-      avgFriendRating:
-        typeof first.avgFriendRating === 'number'
-          ? Number(first.avgFriendRating.toFixed(1))
-          : undefined,
-    };
+    return stats || undefined;
   }
 
   private mapWatchProviders(providers: WatchProvidersResult): CatalogWhereToWatchDTO {
@@ -1347,8 +1452,11 @@ export class CatalogService {
       return true;
     }
 
-    const normalizedGenres = item.genres.map((genre) => this.normalizeToken(genre));
-    return genres.some((genre) => normalizedGenres.includes(this.normalizeToken(genre)));
+    // Alias-tolerant: a request for "action"/"accion" matches an item tagged
+    // with the canonical "Acción" label, not just an exact string match.
+    return genres.some((genre) =>
+      item.genres.some((itemGenre) => genreLabelsMatch(itemGenre, genre))
+    );
   }
 
   private matchesSeenFilter(
@@ -1561,18 +1669,15 @@ export class CatalogService {
   }
 
   private extractTvReadGenres(item: TvReadItemDTO): string[] {
-    return Array.from(
-      new Set(
-        [
-          item.program.editorialCategory,
-          item.program.genre,
-          item.program.subgenre,
-        ]
-          .flatMap((value) => String(value || '').split(/[\\/|,]/))
-          .map((value) => value.trim())
-          .filter(Boolean)
-      )
-    );
+    // Normalizes each raw source value (EPG editorial category, TMDB-derived
+    // genre/genreTags, composite strings like "Acción/Aventura") against the
+    // canonical genre taxonomy. Unrecognized values pass through unchanged.
+    return normalizeGenreList([
+      item.program.editorialCategory,
+      item.program.genre,
+      item.program.subgenre,
+      ...(item.program.genreTags || []),
+    ]);
   }
 
   private tvReadItemMatchesQuery(item: TvReadItemDTO, q: string): boolean {
@@ -1628,21 +1733,49 @@ export class CatalogService {
     contentType?: 'movie' | 'series'
   ): Promise<TvReadItemDTO[]> {
     const dates = [DateUtils.getTodayYYYYMMDD(), DateUtils.getTomorrowYYYYMMDD()];
+
+    // Identity is known (the common case: this is called from a resolved TMDB
+    // detail) — use the indexed program.tmdbId+date query instead of loading
+    // every airing for the day and filtering in process. This is the airings
+    // lookup on the *critical* detail-page path, so it must stay a bounded,
+    // indexed read.
+    if (tmdbId) {
+      const chunks = await Promise.all(
+        dates.map((date) =>
+          TVReadAiringModel.find({ date, 'program.tmdbId': tmdbId })
+            .sort({ 'airing.start': 1 })
+            .limit(12)
+            .lean()
+            .exec()
+        )
+      );
+      return (chunks.flatMap((chunk) => chunk as unknown as TvReadItemDTO[])).slice(0, 12);
+    }
+
+    // No tmdbId to key off of (defensive fallback, not exercised by the
+    // resolved-TMDB-detail call site): use the searchTokens index to get a
+    // bounded candidate set per day rather than scanning the full day.
+    const normalizedTitle = this.normalizeToken(title);
+    const tokens = buildSearchTokens([title])
+      .filter((token) => !token.includes(' ') && !token.includes('_') && token.length >= 3)
+      .sort((left, right) => right.length - left.length)
+      .slice(0, 6);
+    if (!tokens.length) {
+      return [];
+    }
+
     const chunks = await Promise.all(
       dates.map((date) =>
-        TVReadAiringModel.find({ date })
+        TVReadAiringModel.find({ date, searchTokens: { $in: tokens } })
           .sort({ 'airing.start': 1 })
+          .limit(200)
           .lean()
           .exec()
       )
     );
-    const normalizedTitle = this.normalizeToken(title);
     return chunks
       .flatMap((chunk) => chunk as unknown as TvReadItemDTO[])
       .filter((program) => {
-        if (tmdbId && program.program.tmdbId === tmdbId) {
-          return true;
-        }
         if (contentType) {
           const inferred = this.inferTvReadContentType(program);
           if (inferred !== contentType) {
@@ -1675,16 +1808,23 @@ export class CatalogService {
       return null;
     }
 
-    const candidates = (await TVReadAiringModel.find({
-      date,
-      searchTokens: { $in: tokens },
-    })
-      .sort({ 'airing.start': 1 })
-      .limit(500)
-      .lean()
-      .exec()) as unknown as TvReadItemDTO[];
-
-    return candidates.find((item) => this.slugify(item.program.title) === slug) || null;
+    // Query tokens from most distinctive to least distinctive. A single `$in`
+    // query was dominated by common words such as "the", "los" and "de";
+    // its 500-row cap could omit the exact title even when a rare token such
+    // as "gentlemen" had an indexed match.
+    for (const token of tokens) {
+      const candidates = (await TVReadAiringModel.find({
+        date,
+        searchTokens: token,
+      })
+        .sort({ 'airing.start': 1 })
+        .limit(500)
+        .lean()
+        .exec()) as unknown as TvReadItemDTO[];
+      const match = candidates.find((item) => this.slugify(item.program.title) === slug);
+      if (match) return match;
+    }
+    return null;
   }
 
   private async loadTvReadItems(
@@ -1778,12 +1918,18 @@ export class CatalogService {
   }
 
   private mapTvReadItemToAiring(item: TvReadItemDTO): CatalogAiringDTO {
+    const contentType = this.inferTvReadContentType(item);
+    const slug = this.slugify(item.program.title);
     return {
       channelId: item.channel.id,
       channelName: item.channel.name,
       channelIcon: item.channel.icon,
       start: item.airing.start,
       end: item.airing.end,
+      title: item.program.title,
+      catalogId: buildProgramCatalogId(item.id),
+      detailPath: this.buildDetailPath(contentType, slug),
+      liveNow: item.airing.liveNow,
     };
   }
 
@@ -1879,4 +2025,19 @@ export class CatalogService {
   private escapeRegex(value: string): string {
     return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
+}
+
+/**
+ * Unwraps one leg of a `Promise.allSettled` enrichment batch: a rejected leg
+ * degrades to `fallback` (and is logged) instead of taking down the other,
+ * unrelated secondary sections in the same response.
+ */
+function settledOr<T>(result: PromiseSettledResult<T>, fallback: T): T {
+  if (result.status === 'fulfilled') {
+    return result.value;
+  }
+  logger.child('CatalogService').warn('Secondary enrichment section failed', {
+    error: (result.reason as Error)?.message || String(result.reason),
+  });
+  return fallback;
 }

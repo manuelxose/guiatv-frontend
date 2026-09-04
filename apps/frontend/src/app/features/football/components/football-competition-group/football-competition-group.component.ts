@@ -42,7 +42,7 @@ export interface FootballCompetitionMatchGroup {
   styles: `
     .group {
       border: 1px solid var(--portal-border);
-      border-radius: 0.75rem;
+      border-radius: var(--radius-lg);
       background: var(--portal-card);
       overflow: hidden;
     }

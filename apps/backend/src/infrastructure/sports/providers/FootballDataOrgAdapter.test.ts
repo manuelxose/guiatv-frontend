@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   dedupeTeamsFromMatches,
   extractSlugDate,
+  filterMatchesByIsoDay,
   findTeamBySlugInMatches,
   mapFootballDataOrgCompetition,
   mapFootballDataOrgMatch,
@@ -113,6 +114,12 @@ test('extractSlugDate returns null for a malformed slug with no date suffix', ()
 test('mapFootballDataOrgMatch produces a slug extractSlugDate can round-trip', () => {
   const match = mapFootballDataOrgMatch(rawMatch({ utcDate: '2026-09-05T20:00:00Z' }));
   assert.equal(extractSlugDate(match!.slug), '2026-09-05');
+});
+
+test('filterMatchesByIsoDay provides an exact fallback when upstream day filters return empty', () => {
+  const target = mapFootballDataOrgMatch(rawMatch({ id: 1, utcDate: '2026-09-05T20:00:00Z' }))!;
+  const other = mapFootballDataOrgMatch(rawMatch({ id: 2, utcDate: '2026-09-06T18:00:00Z' }))!;
+  assert.deepEqual(filterMatchesByIsoDay([target, other], '20260905').map((match) => match.id), ['1']);
 });
 
 // Regression: getTeam() had the same id/slug bug as getMatch()/getStandings()

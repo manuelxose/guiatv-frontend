@@ -218,9 +218,12 @@ export const PORTAL_DISCOVER_DESTINATIONS: readonly PortalContextDestination[] =
 ] as const;
 
 export const PORTAL_SPORTS_DESTINATIONS: readonly PortalContextDestination[] = [
-  { id: 'home', label: 'Inicio', kind: 'route', path: APP_PATHS.football },
-  { id: 'matches', label: 'Partidos', kind: 'route', path: `${APP_PATHS.football}/partidos-hoy` },
+  { id: 'home', label: 'Portada', kind: 'route', path: APP_PATHS.football },
+  { id: 'live', label: 'En directo', kind: 'route', path: `${APP_PATHS.football}/en-directo` },
+  { id: 'today', label: 'Partidos de hoy', kind: 'route', path: `${APP_PATHS.football}/partidos-hoy` },
+  { id: 'calendar', label: 'Calendario', kind: 'route', path: `${APP_PATHS.football}/calendario` },
   { id: 'competitions', label: 'Competiciones', kind: 'route', path: `${APP_PATHS.football}/competiciones` },
+  { id: 'watch', label: 'Dónde ver', kind: 'route', path: APP_PATHS.football, fragment: 'donde-ver' },
   { id: 'news', label: 'Noticias', kind: 'route', path: `${APP_PATHS.football}/noticias` },
 ] as const;
 
@@ -268,7 +271,11 @@ export function resolvePortalPrimaryDestination(path: string): PortalPrimaryDest
   }
   if (normalized.startsWith(APP_PATHS.sports)) return 'sports';
   if (normalized.startsWith(APP_PATHS.platforms) || normalized.startsWith(APP_PATHS.streamingComparison)) return 'streaming';
-  if (normalized.startsWith(APP_PATHS.guide) || normalized.startsWith('/canales/')) return 'live';
+  if (
+    normalized.startsWith(APP_PATHS.guide) ||
+    normalized === APP_PATHS.channels ||
+    normalized.startsWith(`${APP_PATHS.channels}/`)
+  ) return 'live';
   if (
     normalized.startsWith(APP_PATHS.explore) ||
     normalized.startsWith(APP_PATHS.movies) ||

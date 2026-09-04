@@ -7,21 +7,50 @@
     </div>
     <button type="button"
       class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
-      (click)="loadHealth()">
+      (click)="load()">
       Refresh
     </button>
   </div>
 
-  <div *ngIf="error" class="rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-200">
+  <div *ngIf="error" class="rounded-xl border border-[var(--spotify-negative)]/40 bg-[var(--spotify-negative)]/10 p-4 text-sm text-[var(--spotify-negative)]">
     {{ error }}
   </div>
 
+  <ng-container *ngIf="activeItem === 'football'">
+    <div class="flex flex-wrap items-center gap-2"><button type="button" class="px-3 py-2 text-xs rounded-xl border border-[var(--portal-border)]" (click)="setFootballView('competitions')">Competitions</button><button type="button" class="px-3 py-2 text-xs rounded-xl border border-[var(--portal-border)]" (click)="setFootballView('teams')">Teams</button><button type="button" class="px-3 py-2 text-xs rounded-xl border border-[var(--portal-border)]" (click)="setFootballView('fixtures')">Fixtures</button><button type="button" [disabled]="clearLoading" class="ml-auto px-3 py-2 text-xs rounded-xl border border-[var(--spotify-warning)]/40 text-[var(--spotify-warning)] disabled:opacity-40" (click)="refreshFootball()">{{ clearLoading ? 'Queuing…' : 'Refresh football' }}</button></div>
+    <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4" *ngIf="football">
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4"><p class="text-xs text-[var(--portal-text-muted)] uppercase">Provider</p><p class="text-xl font-semibold mt-2">{{ football.provider.state }}</p><p class="text-xs text-[var(--portal-text-muted)]">{{ football.provider.configured ? 'Configured' : 'Not configured' }}</p></div>
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4"><p class="text-xs text-[var(--portal-text-muted)] uppercase">Upcoming fixtures</p><p class="text-xl font-semibold mt-2">{{ football.upcomingFixtures }}</p><p class="text-xs text-[var(--spotify-warning)]">{{ football.fixturesMissingBroadcast }} without broadcast</p></div>
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4"><p class="text-xs text-[var(--portal-text-muted)] uppercase">Competition / teams</p><p class="text-xl font-semibold mt-2">{{ football.activeCompetitions }} / {{ football.totalTeams }}</p><p class="text-xs text-[var(--spotify-warning)]">{{ (football.unmappedCompetitions ?? 0) + (football.unmappedTeams ?? 0) }} unmapped</p></div>
+      <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4"><p class="text-xs text-[var(--portal-text-muted)] uppercase">Freshness</p><p class="text-xl font-semibold mt-2">{{ (football.staleCompetitions ?? 0) + (football.staleTeams ?? 0) }} stale</p><p class="text-xs text-[var(--portal-text-muted)]">{{ football.broadcastMappings }} channel mappings</p></div>
+    </div>
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl overflow-x-auto">
+      <table class="w-full text-sm"><thead class="text-left text-[var(--portal-text-muted)]"><tr><th class="p-4">{{ footballView === 'fixtures' ? 'Fixture' : 'Name' }}</th><th>Provider mapping</th><th>Updated / kickoff</th><th>Status</th></tr></thead><tbody>
+        <tr *ngFor="let row of rows" class="border-t border-[var(--portal-border)]"><td class="p-4">{{ footballView === 'fixtures' ? (row.homeTeam?.name + ' — ' + row.awayTeam?.name) : row.name }}</td><td>{{ footballView === 'fixtures' ? (row.broadcasts?.length ? row.broadcasts[0].channelName : 'Unmapped broadcast') : (row.providerIds | json) }}</td><td>{{ footballView === 'fixtures' ? (row.kickoffAt | date:'short') : (row.lastUpdatedAt | date:'short') }}</td><td>{{ footballView === 'fixtures' ? row.status : (row.providerIds && (row.providerIds | json) !== '{}' ? 'Mapped' : 'Unmapped') }}</td></tr>
+        <tr *ngIf="!rows.length && !footballLoading"><td colspan="4" class="p-4 text-[var(--portal-text-muted)]">No supported diagnostics are available.</td></tr>
+      </tbody></table>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="activeItem === 'jobs'">
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-[var(--portal-text-muted)]"><tr><th class="p-4">Type</th><th>Status</th><th>Queued</th><th>Step / error</th></tr></thead><tbody><tr *ngFor="let job of jobs" class="border-t border-[var(--portal-border)]"><td class="p-4">{{ job.type }}</td><td><app-admin-status-badge [status]="job.status"></app-admin-status-badge></td><td>{{ job.queuedAt | date:'short' }}</td><td>{{ job.errorSummary || job.currentStep || '—' }}</td></tr><tr *ngIf="!jobs.length"><td colspan="4" class="p-4 text-[var(--portal-text-muted)]">No persisted background jobs yet.</td></tr></tbody></table></div>
+  </ng-container>
+
+  <ng-container *ngIf="activeItem === 'alerts'">
+    <div class="space-y-3"><div *ngFor="let alert of alerts" class="rounded-xl border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4"><div class="flex items-center gap-2"><app-admin-status-badge [status]="alert.severity"></app-admin-status-badge><span class="text-[10px] uppercase tracking-wider text-[var(--portal-text-muted)]">{{ alert.subsystem }}</span></div><p class="mt-2 text-sm text-[var(--portal-text)]">{{ alert.message }}</p></div><p *ngIf="!alerts.length" class="text-sm text-[var(--portal-text-muted)]">No active operational alerts.</p></div>
+  </ng-container>
+
+  <ng-container *ngIf="activeItem === 'events'">
+    <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-[var(--portal-text-muted)]"><tr><th class="p-4">Time</th><th>Severity</th><th>Subsystem</th><th>Message</th><th>Correlation</th></tr></thead><tbody><tr *ngFor="let event of events" class="border-t border-[var(--portal-border)]"><td class="p-4">{{ event.timestamp | date:'short' }}</td><td><app-admin-status-badge [status]="event.severity"></app-admin-status-badge></td><td>{{ event.subsystem }}</td><td>{{ event.message }}</td><td class="font-mono text-xs">{{ event.correlationId || '—' }}</td></tr><tr *ngIf="!events.length"><td colspan="5" class="p-4 text-[var(--portal-text-muted)]">No structured events yet.</td></tr></tbody></table></div>
+  </ng-container>
+
   <!-- Health stats -->
+  <ng-container *ngIf="activeItem === 'overview' || activeItem === 'cache'">
   <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
     <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
       <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">System status</p>
       <p class="text-2xl font-semibold mt-2"
-        [ngClass]="health?.status === 'healthy' ? 'text-emerald-200' : 'text-amber-200'">
+        [ngClass]="health?.status === 'healthy' ? 'text-[var(--accent-discover)]' : 'text-[var(--spotify-warning)]'">
         {{ health?.status || '…' }}
       </p>
       <p class="text-xs text-[var(--portal-text-muted)] mt-1">v{{ health?.version || '…' }}</p>
@@ -29,7 +58,7 @@
     <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
       <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Cache</p>
       <p class="text-2xl font-semibold mt-2"
-        [ngClass]="health?.services?.cache?.status === 'healthy' ? 'text-emerald-200' : 'text-amber-200'">
+        [ngClass]="health?.services?.cache?.status === 'healthy' ? 'text-[var(--accent-discover)]' : 'text-[var(--spotify-warning)]'">
         {{ health?.services?.cache?.status || '…' }}
       </p>
       <p class="text-xs text-[var(--portal-text-muted)] mt-1">Valkey/Redis</p>
@@ -50,17 +79,16 @@
   <div class="grid xl:grid-cols-2 gap-6">
     <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-4">
       <h4 class="text-lg font-semibold text-[var(--portal-text)]">Cache Management</h4>
-      <p class="text-xs text-[var(--portal-text-soft)]">Clear all or targeted cache entries by pattern (e.g. <code class="text-[var(--portal-text-soft)]">program:*</code>, <code class="text-[var(--portal-text-soft)]">schedule:*</code>).</p>
+      <p class="text-xs text-[var(--portal-text-soft)]">Invalidate one of the supported cache namespaces below. Fresh data is rebuilt from canonical sources on the next request — arbitrary cache keys are not supported.</p>
       <div class="flex flex-wrap items-end gap-3">
         <div class="flex-1 min-w-[200px]">
-          <label class="block text-xs text-[var(--portal-text-soft)] mb-1" for="cache-pattern">Pattern (optional)</label>
-          <input id="cache-pattern" type="text" [(ngModel)]="cachePattern" placeholder="e.g. program:*"
-            class="w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500" />
+          <label class="block text-xs text-[var(--portal-text-soft)] mb-1" for="cache-namespace">Namespace</label>
+          <select id="cache-namespace" [(ngModel)]="cacheNamespace" class="w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)]"><option value="epg">EPG</option><option value="football">Football</option><option value="catalog">Catalog</option><option value="schedules">Schedules</option></select>
         </div>
         <button type="button" [disabled]="clearLoading"
-          class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-xs text-red-100 hover:bg-red-500/30 disabled:opacity-40"
-          (click)="clearCache()">
-          {{ clearLoading ? 'Clearing…' : 'Clear cache' }}
+          class="px-4 py-2 rounded-xl bg-[var(--spotify-negative)]/20 border border-[var(--spotify-negative)]/40 text-xs text-[var(--spotify-negative)] hover:bg-[var(--spotify-negative)]/30 disabled:opacity-40"
+          (click)="requestClearCache()">
+          {{ clearLoading ? 'Invalidating…' : 'Invalidate namespace' }}
         </button>
       </div>
     </div>
@@ -92,6 +120,7 @@
       <p *ngIf="!health" class="text-sm text-[var(--portal-text-muted)] mt-4">Loading health data…</p>
     </div>
   </div>
+  </ng-container>
 
   <!-- Action results -->
   <div *ngIf="actionResults.length" class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
@@ -99,11 +128,21 @@
     <div class="space-y-2 text-xs">
       <div *ngFor="let r of actionResults" class="flex items-start gap-3">
         <span class="text-[var(--portal-text-muted)]">{{ r.time | date:'HH:mm:ss' }}</span>
-        <span [ngClass]="r.success ? 'text-emerald-300' : 'text-red-300'" class="text-[10px] uppercase tracking-[0.2em]">
+        <span [ngClass]="r.success ? 'text-[var(--accent-discover)]' : 'text-[var(--spotify-negative)]'" class="text-[10px] uppercase tracking-[0.2em]">
           {{ r.success ? 'ok' : 'fail' }}
         </span>
         <span class="text-[var(--portal-text-soft)]">{{ r.message }}</span>
       </div>
     </div>
   </div>
+
+  <app-admin-confirm-dialog
+    [open]="confirmCacheInvalidateOpen"
+    [busy]="clearLoading"
+    [title]="'Invalidate ' + (cacheNamespaceLabels[cacheNamespace] || cacheNamespace) + ' cache?'"
+    [description]="'This clears cached ' + (cacheNamespaceLabels[cacheNamespace] || cacheNamespace) + ' responses. Fresh data will be rebuilt from canonical sources on the next request.'"
+    confirmLabel="Invalidate"
+    (confirmed)="clearCache()"
+    (cancelled)="cancelClearCache()"
+  ></app-admin-confirm-dialog>
 </section>

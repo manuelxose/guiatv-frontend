@@ -1,0 +1,138 @@
+{
+  "source": "https://github.com/addyosmani/agent-skills",
+  "skills": {
+    "impeccable": {
+      "source": "https://github.com/pbakaus/impeccable",
+      "trigger": "interface implementation or polish"
+    },
+    "web-design-guidelines": {
+      "source": "https://github.com/vercel-labs/agent-skills",
+      "trigger": "web UX/accessibility audit"
+    },
+    "ui-ux-pro-max": {
+      "source": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "trigger": "design exploration only"
+    },
+    "browser-validation": {
+      "source": "repository workflow",
+      "trigger": "Playwright, axe, console/network, responsive checks"
+    },
+    "api-and-interface-design": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "browser-testing-with-devtools": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "ci-cd-and-automation": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "code-review-and-quality": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "code-simplification": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "context-engineering": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "debugging-and-error-recovery": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "deprecation-and-migration": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "documentation-and-adrs": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "doubt-driven-development": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "frontend-ui-engineering": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "git-workflow-and-versioning": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "idea-refine": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "incremental-implementation": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "interview-me": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "observability-and-instrumentation": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "performance-optimization": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "planning-and-task-breakdown": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "security-and-hardening": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "shipping-and-launch": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "source-driven-development": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "spec-driven-development": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    },
+    "test-driven-development": {
+      "source": "https://github.com/addyosmani/agent-skills",
+      "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+      "trigger": "on demand"
+    }
+  },
+  "commit": "5a5ea45e806f82273549fd85e60adb95d55f510d",
+  "installation": "audited skill directories only; repository hooks and scripts excluded"
+}

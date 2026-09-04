@@ -40,7 +40,7 @@ import { MetaService } from '../../services/meta.service';
               </div>
               <div class="flex justify-between border-b border-[var(--portal-border)] pb-3">
                 <dt class="text-[var(--portal-text-muted)]">Empresa</dt>
-                <dd class="text-[var(--portal-text)] font-medium">TecnoRia S.L.</dd>
+                <dd class="text-[var(--portal-text)] font-medium">TecnoRia</dd>
               </div>
               <div class="flex justify-between border-b border-[var(--portal-border)] pb-3">
                 <dt class="text-[var(--portal-text-muted)]">Sector</dt>
@@ -86,7 +86,7 @@ import { MetaService } from '../../services/meta.service';
                 con el catálogo completo de Netflix, HBO Max, Disney+, Amazon Prime Video, Movistar+ y más de 15 plataformas de streaming.
                 Con un sistema de recomendaciones personalizadas, blog editorial con análisis de contenido, y una comunidad activa de
                 amantes del cine y la televisión, Guía Programación TV se posiciona como el punto de referencia para decidir qué ver
-                cada día. El proyecto es desarrollado por TecnoRia S.L., empresa tecnológica española."
+                cada día. El proyecto es desarrollado por el equipo tecnológico de TecnoRia."
               </p>
             </div>
           </div>
@@ -115,8 +115,8 @@ import { MetaService } from '../../services/meta.service';
             <h3 class="text-sm font-semibold text-[var(--portal-text)] mb-3">Colores de marca</h3>
             <div class="flex gap-4 flex-wrap">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-red-500"></div>
-                <span class="text-sm text-[var(--portal-text-soft)]">#EF4444 (Rojo principal)</span>
+                <div class="w-8 h-8 rounded-lg bg-[var(--accent-live)]"></div>
+                <span class="text-sm text-[var(--portal-text-soft)]">#F3727F (Rojo principal)</span>
               </div>
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 rounded-lg bg-[var(--portal-bg)]"></div>

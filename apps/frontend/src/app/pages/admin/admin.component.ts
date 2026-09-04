@@ -1,6 +1,9 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { UserProfile } from '../../interfaces/user.interface';
+import { UserService } from '../../services/user.service';
 import { AdminGroupId, AdminNavGroup } from './admin.types';
 import { AdminHeaderComponent } from './components/admin-header/admin-header.component';
 import { AdminSidebarComponent } from './components/admin-sidebar/admin-sidebar.component';
@@ -8,12 +11,13 @@ import { AdminAnalyticsSectionComponent } from './sections/analytics/admin-analy
 import { AdminBlogSectionComponent } from './sections/blog/admin-blog-section.component';
 import { AdminContentSectionComponent } from './sections/content/admin-content-section.component';
 import { AdminOperationsSectionComponent } from './sections/operations/admin-operations-section.component';
-import { AdminPlaceholderSectionComponent } from './sections/placeholder/admin-placeholder-section.component';
 import { AdminSchedulesSectionComponent } from './sections/schedules/admin-schedules-section.component';
 import { AdminSystemSectionComponent } from './sections/system/admin-system-section.component';
 import { AdminUsersSectionComponent } from './sections/users/admin-users-section.component';
 import { AdminCommunitySectionComponent } from './sections/community/admin-community-section.component';
+import { AdminOverviewSectionComponent } from './sections/overview/admin-overview-section.component';
 import { AdminAISectionComponent } from './sections/ai/admin-ai-section.component';
+import { AdminAffiliateSectionComponent } from './sections/affiliate/admin-affiliate-section.component';
 
 @Component({
   selector: 'app-admin-panel',
@@ -22,47 +26,69 @@ import { AdminAISectionComponent } from './sections/ai/admin-ai-section.componen
     CommonModule,
     AdminSidebarComponent,
     AdminHeaderComponent,
+    AdminOverviewSectionComponent,
     AdminAnalyticsSectionComponent,
     AdminBlogSectionComponent,
     AdminContentSectionComponent,
     AdminSchedulesSectionComponent,
     AdminOperationsSectionComponent,
     AdminUsersSectionComponent,
-    AdminSystemSectionComponent,
     AdminCommunitySectionComponent,
+    AdminSystemSectionComponent,
     AdminAISectionComponent,
-    AdminPlaceholderSectionComponent,
+    AdminAffiliateSectionComponent,
   ],
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.scss'],
 })
-export class AdminComponent {
+export class AdminComponent implements OnInit {
+  private readonly isBrowser: boolean;
+  private static readonly DESKTOP_COLLAPSE_STORAGE_KEY = 'gtv_admin_sidebar_collapsed';
+
+  constructor(
+    @Inject(PLATFORM_ID) platformId: object,
+    private readonly userService: UserService
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+    if (this.isBrowser) {
+      this.desktopSidebarCollapsed =
+        window.localStorage.getItem(AdminComponent.DESKTOP_COLLAPSE_STORAGE_KEY) === '1';
+    }
+    this.adminProfile = this.userService.getProfile();
+  }
+
   public readonly navGroups: AdminNavGroup[] = [
+    {
+      id: 'overview',
+      label: 'Overview',
+      icon: 'M3 12h4l2-7 4 14 2-7h6',
+      items: [
+        { id: 'overview', label: 'Attention & health', description: 'What needs attention right now' },
+      ],
+    },
     {
       id: 'analytics',
       label: 'Analytics',
-      icon: 'A',
+      icon: 'M4 19h16 M8 19V9 M13 19V5 M18 19v-7',
       items: [
-        { id: 'overview', label: 'Overview', description: 'KPIs and trends' },
-        { id: 'pages', label: 'Pages', description: 'Top content performance' },
-        { id: 'live', label: 'Live', description: 'Realtime sessions' },
-        { id: 'events', label: 'Events', description: 'Behavior stream' },
-        { id: 'journeys', label: 'Journeys', description: 'Flows and funnels', badge: 'Soon' },
-        { id: 'retention', label: 'Retention', description: 'Cohorts', badge: 'Soon' },
+        { id: 'overview', label: 'Traffic overview', description: 'Traffic, behaviour and active sessions' },
+        { id: 'pages', label: 'Content performance', description: 'Top pages and engagement' },
+        { id: 'live', label: 'Live activity', description: 'Current sessions' },
+        { id: 'events', label: 'Event stream', description: 'Recent behaviour signals' },
       ],
     },
     {
       id: 'ai',
-      label: 'AI Chatbot',
-      icon: '🤖',
+      label: 'AI Assistant',
+      icon: 'M12 3 13.8 8.2 19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z',
       items: [
-        { id: 'dashboard', label: 'Dashboard', description: 'KPIs and usage' },
+        { id: 'dashboard', label: 'Usage & quality', description: 'Conversations, feedback and activity' },
       ],
     },
     {
       id: 'content',
       label: 'Content',
-      icon: 'C',
+      icon: 'M12 3 3 8l9 5 9-5-9-5Z M3 12l9 5 9-5 M3 16l9 5 9-5',
       items: [
         {
           id: 'blog',
@@ -71,128 +97,107 @@ export class AdminComponent {
         },
         { id: 'channels', label: 'Channels', description: 'Catalog control' },
         { id: 'programs', label: 'Programs', description: 'Metadata audit' },
-        { id: 'categories', label: 'Categories', description: 'Taxonomy' },
-        { id: 'assets', label: 'Assets', description: 'Media library' },
-        { id: 'layouts', label: 'Layouts', description: 'Home modules' },
+        { id: 'categories', label: 'Taxonomy', description: 'Genre and metadata coverage' },
+      ],
+    },
+    {
+      id: 'monetization',
+      label: 'Monetización',
+      icon: 'M3 12V4h8l9 9-8 8-9-9Z M7 7h.01',
+      items: [
+        { id: 'merchants', label: 'Merchants', description: 'Marcas comerciales y alias' },
+        { id: 'programs', label: 'Programs', description: 'Relaciones comerciales por red y mercado' },
+        { id: 'offers', label: 'Offers', description: 'Planes, precios y vigencia' },
+        { id: 'networks', label: 'Networks', description: 'Redes de afiliación' },
+        { id: 'placements', label: 'Placements', description: 'Ubicaciones habilitadas' },
+        { id: 'verification', label: 'Verification', description: 'Revisión de datos comerciales' },
+        { id: 'analytics', label: 'Analytics', description: 'Clicks, impresiones y CTR' },
       ],
     },
     {
       id: 'schedules',
-      label: 'Schedules',
-      icon: 'S',
+      label: 'TV / EPG',
+      icon: 'M3 4h18v12H3z M8 20h8 M12 16v4',
       items: [
-        { id: 'epg', label: 'EPG Sync' },
-        { id: 'precompute', label: 'Precompute' },
-        { id: 'calendar', label: 'Calendar' },
-        { id: 'window', label: 'Rolling Window' },
+        { id: 'epg', label: 'EPG operations', description: 'Coverage, sync and recovery' },
       ],
     },
     {
       id: 'operations',
       label: 'Operations',
-      icon: 'O',
+      icon: 'M4 6h10 M4 12h16 M4 18h7 M17 5v2 M9 11v2 M14 17v2',
       items: [
-        { id: 'cache', label: 'Cache' },
-        { id: 'jobs', label: 'Jobs' },
-        { id: 'alerts', label: 'Alerts' },
-        { id: 'logs', label: 'Logs' },
+        { id: 'overview', label: 'Attention overview', description: 'Operational health and active work' },
+        { id: 'football', label: 'Football operations', description: 'Provider, fixtures and mappings' },
+        { id: 'jobs', label: 'Background jobs', description: 'Queued, running and failed work' },
+        { id: 'alerts', label: 'Alerts', description: 'Actionable operational conditions' },
+        { id: 'events', label: 'Operational events', description: 'Structured, redacted activity' },
+        { id: 'cache', label: 'Cache & runtime', description: 'Health and safe cache controls' },
       ],
     },
     {
       id: 'users',
       label: 'Users',
-      icon: 'U',
+      icon: 'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6 M17 8a2.5 2.5 0 1 1 0 5 M17.5 13c2 .3 3.5 2 3.5 4',
       items: [
-        { id: 'accounts', label: 'Accounts' },
-        { id: 'segments', label: 'Segments' },
-        { id: 'moderation', label: 'Moderation' },
-        { id: 'roles', label: 'Roles & Access' },
-      ],
-    },
-    {
-      id: 'community',
-      label: 'Community',
-      icon: 'M',
-      items: [
-        { id: 'chat', label: 'Chat' },
-        { id: 'favorites', label: 'Favorites' },
-        { id: 'reports', label: 'Reports' },
-      ],
-    },
-    {
-      id: 'growth',
-      label: 'Growth',
-      icon: 'G',
-      items: [
-        { id: 'seo', label: 'SEO' },
-        { id: 'campaigns', label: 'Campaigns' },
-        { id: 'referrals', label: 'Referrals' },
-      ],
-    },
-    {
-      id: 'monetization',
-      label: 'Monetization',
-      icon: 'M$',
-      items: [
-        { id: 'ads', label: 'Ads' },
-        { id: 'partners', label: 'Partners' },
-        { id: 'subscriptions', label: 'Subscriptions' },
+        { id: 'accounts', label: 'Accounts & roles', description: 'Account state and access' },
+        { id: 'moderation', label: 'Reports', description: 'Moderation queue' },
       ],
     },
     {
       id: 'system',
       label: 'System',
-      icon: 'S',
+      icon: 'M4 4h16v6H4z M4 14h16v6H4z M7 7h.01 M7 17h.01',
       items: [
-        { id: 'health', label: 'Health' },
-        { id: 'status', label: 'Status' },
-        { id: 'flags', label: 'Feature Flags' },
-      ],
-    },
-    {
-      id: 'settings',
-      label: 'Settings',
-      icon: 'Z',
-      items: [
-        { id: 'integrations', label: 'Integrations' },
-        { id: 'api', label: 'API Keys' },
-        { id: 'webhooks', label: 'Webhooks' },
-      ],
-    },
-    {
-      id: 'support',
-      label: 'Support',
-      icon: 'H',
-      items: [
-        { id: 'tickets', label: 'Tickets' },
-        { id: 'feedback', label: 'Feedback' },
-        { id: 'faq', label: 'FAQ' },
+        { id: 'health', label: 'System health', description: 'Service and build status' },
       ],
     },
   ];
 
-  public activeGroup: AdminGroupId = 'analytics';
+  public activeGroup: AdminGroupId = 'overview';
   public activeItem = 'overview';
-  public sidebarOpen = false;
+  /** Persistent icon-rail collapse — desktop only, remembered per browser. */
+  public desktopSidebarCollapsed = false;
+  /** Transient overlay drawer state — mobile/tablet only, never persisted. */
+  public mobileSidebarOpen = false;
   public lastUpdated: Date | null = null;
+  public adminProfile!: Observable<UserProfile>;
 
   public readonly environmentLabel = environment.production
     ? 'Production'
     : 'Development';
 
-  toggleSidebar(): void {
-    this.sidebarOpen = !this.sidebarOpen;
+  ngOnInit(): void {
+    this.userService.fetchProfile().subscribe();
+  }
+
+  toggleMobileSidebar(): void {
+    this.mobileSidebarOpen = !this.mobileSidebarOpen;
+  }
+
+  closeMobileSidebar(): void {
+    this.mobileSidebarOpen = false;
+  }
+
+  toggleDesktopSidebarCollapsed(): void {
+    this.desktopSidebarCollapsed = !this.desktopSidebarCollapsed;
+    if (this.isBrowser) {
+      window.localStorage.setItem(
+        AdminComponent.DESKTOP_COLLAPSE_STORAGE_KEY,
+        this.desktopSidebarCollapsed ? '1' : '0'
+      );
+    }
   }
 
   selectSection(group: AdminGroupId, item: string): void {
     this.activeGroup = group;
     this.activeItem = item;
-    this.sidebarOpen = false;
+    this.mobileSidebarOpen = false;
 
     const keepsUpdated =
-      group === 'analytics' || group === 'users' || group === 'content'
+      group === 'overview' || group === 'analytics' || group === 'users' || group === 'content'
       || group === 'schedules' || group === 'operations' || group === 'system'
-      || group === 'community';
+      || group === 'monetization';
     if (!keepsUpdated) {
       this.lastUpdated = null;
     }

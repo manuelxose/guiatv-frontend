@@ -9,7 +9,7 @@
   min-height: 44px;
   padding: 0.5rem 1rem;
   border: 1px solid var(--portal-border);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-card);
   color: var(--portal-text);
   font-size: 0.9375rem;
@@ -21,7 +21,7 @@
   min-height: 44px;
   padding: 0.5rem 1.25rem;
   border: none;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background: var(--accent-sports);
   color: var(--portal-bg-elevated);
   font-weight: 700;
@@ -38,7 +38,7 @@
   align-items: center;
   padding: 0.5rem 0.875rem;
   border: 1px solid var(--portal-border);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   background: var(--portal-card);
   text-decoration: none;
 }
@@ -46,7 +46,7 @@
 
 .rows {
   border: 1px solid var(--portal-border);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   background: var(--portal-card);
   overflow: hidden;
 }
@@ -59,7 +59,7 @@
 
 .empty {
   border: 1px dashed var(--portal-border-strong);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   padding: 2rem;
   text-align: center;
 }
@@ -69,7 +69,7 @@
 .skeleton { display: flex; flex-direction: column; gap: 0.625rem; }
 .skeleton__row {
   height: 3.25rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   background: linear-gradient(90deg, var(--portal-surface-strong) 25%, var(--portal-card) 37%, var(--portal-surface-strong) 63%);
   background-size: 400% 100%;
   animation: football-search-skeleton 1.4s ease infinite;

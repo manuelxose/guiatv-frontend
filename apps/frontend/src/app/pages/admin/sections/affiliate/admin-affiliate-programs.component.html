@@ -1,0 +1,194 @@
+<div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-6">
+  <form
+    class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-5 h-fit"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+  >
+    <div class="flex items-center justify-between gap-4">
+      <h4 class="text-lg font-semibold text-[var(--portal-text)]">{{ isEditing ? 'Editar programa' : 'Nuevo programa' }}</h4>
+      <span *ngIf="saving" class="text-xs text-[var(--portal-text-soft)]">Guardando...</span>
+    </div>
+
+    <div *ngIf="saveError" class="bg-[var(--spotify-negative)]/10 border border-[var(--spotify-negative)]/30 text-[var(--spotify-negative)] px-4 py-3 rounded-xl text-sm">{{ saveError }}</div>
+    <div *ngIf="saveSuccess" class="bg-[var(--accent-discover)]/10 border border-[var(--accent-discover)]/30 text-[var(--accent-discover)] px-4 py-3 rounded-xl text-sm">{{ saveSuccess }}</div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-merchant">Merchant</label>
+        <select id="program-merchant" formControlName="merchantId"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]">
+          <option value="" disabled>Selecciona un merchant</option>
+          <option *ngFor="let m of merchants" [value]="m.id">{{ m.name }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-network">Red</label>
+        <select id="program-network" formControlName="networkId"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]">
+          <option value="" disabled>Selecciona una red</option>
+          <option *ngFor="let n of networks" [value]="n.id">{{ n.name }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-market">Mercado</label>
+        <input id="program-market" formControlName="market" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+          placeholder="ES" />
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-external-id">ID externo</label>
+        <input id="program-external-id" formControlName="externalProgramId" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+          placeholder="opcional" />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-relationship">Relación comercial</label>
+        <select id="program-relationship" formControlName="relationship"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]">
+          <option *ngFor="let option of relationshipOptions" [value]="option.id">{{ option.label }}</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-status">Estado</label>
+        <select id="program-status" formControlName="status"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]">
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+          <option value="pending">Pendiente</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-hosts">Hosts permitidos (separados por coma)</label>
+      <input id="program-hosts" formControlName="allowedHosts" type="text"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+        placeholder="tienda.movistarplus.es" />
+      <p class="text-xs text-[var(--portal-text-muted)] mt-1">Solo nombres de host (sin https://, sin comodines). Un host inseguro se rechaza al guardar.</p>
+    </div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-disclosure">Disclosure</label>
+      <textarea id="program-disclosure" formControlName="disclosure" rows="2"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"></textarea>
+    </div>
+
+    <fieldset class="border border-[var(--portal-border)] rounded-2xl p-4 space-y-4">
+      <legend class="text-xs uppercase tracking-wider text-[var(--portal-text-soft)] px-2">Atribución</legend>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-cookie">Días de cookie</label>
+          <input id="program-cookie" formControlName="cookieDays" type="number" min="0"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]" />
+        </div>
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-clickid">Parámetro click id</label>
+          <input id="program-clickid" formControlName="clickIdParam" type="text"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]" />
+        </div>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-secret">Variable de entorno del secreto</label>
+        <input id="program-secret" formControlName="secretRef" type="text"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+          placeholder="AWIN_MOVISTAR_TOKEN" />
+        <p class="text-xs text-[var(--portal-text-muted)] mt-1">
+          Solo el nombre de la variable — el valor nunca se muestra ni se guarda aquí, se configura en el entorno del servidor.
+        </p>
+      </div>
+    </fieldset>
+
+    <fieldset class="border border-[var(--portal-border)] rounded-2xl p-4 space-y-4">
+      <legend class="text-xs uppercase tracking-wider text-[var(--portal-text-soft)] px-2">Verificación</legend>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-verif-source">Fuente</label>
+          <input id="program-verif-source" formControlName="verificationSource" type="text"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+            placeholder="URL de verificación" />
+        </div>
+        <div>
+          <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-verif-date">Verificado el</label>
+          <input id="program-verif-date" formControlName="verifiedAt" type="date"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]" />
+        </div>
+      </div>
+      <div>
+        <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="program-verif-status">Estado de verificación</label>
+        <select id="program-verif-status" formControlName="verificationStatus"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]">
+          <option *ngFor="let option of verificationStatusOptions" [value]="option.id">{{ option.label }}</option>
+        </select>
+      </div>
+    </fieldset>
+
+    <div class="flex flex-wrap items-center justify-end gap-3 pt-2">
+      <button type="button"
+        class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] text-sm hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+        (click)="resetForm()">
+        Limpiar
+      </button>
+      <button type="submit"
+        class="px-5 py-2 rounded-xl bg-[var(--spotify-negative)]/20 border border-[var(--spotify-negative)]/40 text-[var(--spotify-negative)] text-sm hover:bg-[var(--spotify-negative)]/30 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+        [disabled]="saving || form.invalid">
+        {{ isEditing ? 'Actualizar programa' : 'Crear programa' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div>
+        <h4 class="text-lg font-semibold text-[var(--portal-text)]">Programas</h4>
+        <p class="text-xs text-[var(--portal-text-muted)]">{{ programs.length }} resultados</p>
+      </div>
+      <button type="button"
+        class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
+        (click)="refresh()">
+        Refrescar
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">Cargando programas...</div>
+    <div *ngIf="error" class="text-sm text-[var(--spotify-negative)] py-3">{{ error }}</div>
+    <div *ngIf="!loading && !error && programs.length === 0" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">
+      No hay programas configurados.
+    </div>
+
+    <div *ngIf="programs.length" class="space-y-3 max-h-[720px] overflow-auto pr-1">
+      <article *ngFor="let program of programs; trackBy: trackById"
+        class="p-4 rounded-2xl bg-[var(--portal-surface)] border space-y-3"
+        [ngClass]="selectedId === program.id ? 'border-[var(--spotify-negative)]/40' : 'border-[var(--portal-border)]'">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h5 class="text-[var(--portal-text)] text-sm font-semibold truncate">
+              {{ merchantName(program.merchantId) }} · {{ networkName(program.networkId) }}
+            </h5>
+            <p class="text-xs text-[var(--portal-text-muted)] mt-1">{{ program.market }} · {{ program.relationship }}</p>
+          </div>
+          <div class="flex flex-col items-end gap-1 flex-shrink-0">
+            <span class="text-[10px] px-2 py-1 rounded-full border"
+              [ngClass]="program.status === 'active' ? 'bg-[var(--accent-discover)]/20 text-[var(--accent-discover)] border-[var(--accent-discover)]/40' : 'bg-[var(--spotify-warning)]/20 text-[var(--spotify-warning)] border-[var(--spotify-warning)]/40'">
+              {{ program.status }}
+            </span>
+            <span *ngIf="program.secretRefName" class="text-[10px] px-2 py-1 rounded-full border" [ngClass]="secretBadgeClass(program.secretStatus)">
+              {{ secretBadgeLabel(program.secretStatus) }}
+            </span>
+          </div>
+        </div>
+        <p class="text-xs text-[var(--portal-text-soft)] break-all">Hosts: {{ program.allowedHosts.join(', ') }}</p>
+        <button type="button"
+          class="px-3 py-1.5 rounded-lg border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
+          (click)="edit(program)">
+          Editar
+        </button>
+      </article>
+    </div>
+  </div>
+</div>

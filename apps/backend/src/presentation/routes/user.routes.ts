@@ -23,6 +23,7 @@ export const createUserRoutes = (controller: UserController, authService: AuthSe
   router.patch('/profile', asyncHandler(controller.updateProfile.bind(controller)));
   router.patch('/privacy', asyncHandler(controller.updatePrivacy.bind(controller)));
   router.patch('/notifications', asyncHandler(controller.updateNotifications.bind(controller)));
+  router.patch('/preferences', asyncHandler(controller.updateTvPreferences.bind(controller)));
   router.post('/status', asyncHandler(controller.updateStatus.bind(controller)));
 
   router.get('/lists', asyncHandler(controller.getLists.bind(controller)));

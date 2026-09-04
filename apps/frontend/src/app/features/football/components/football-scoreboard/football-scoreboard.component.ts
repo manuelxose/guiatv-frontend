@@ -63,7 +63,7 @@ import {
   styles: `
     .scoreboard {
       border: 1px solid var(--portal-border);
-      border-radius: 1rem;
+      border-radius: var(--radius-xl);
       background: var(--portal-card);
       padding: 1.25rem 1rem;
     }
@@ -126,7 +126,7 @@ import {
     .scoreboard__dot {
       width: 0.5rem;
       height: 0.5rem;
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       background: var(--status-live);
       animation: football-pulse 1.4s ease-in-out infinite;
     }

@@ -11,19 +11,36 @@
 // VARIABLES
 // ============================================
 
-// Colores (coherentes con el diseño existente)
-$color-primary: #ef4444;
-$color-primary-dark: #dc2626;
-$color-primary-light: #f87171;
-$color-bg-base: #0a0a0f;
-$color-bg-elevated: #111118;
-$color-bg-card: #1a1a24;
-$color-bg-hover: #252530;
-$color-text-primary: #f8fafc;
-$color-text-secondary: #94a3b8;
-$color-text-muted: #64748b;
+// Colores — self-contained SCSS palette (intentionally NOT the --portal-*/
+// --spotify-* CSS custom properties from design-tokens.scss). This component
+// is mounted stand-alone at /embed/programacion for third-party iframe
+// embedding with its own explicit ?theme=light|dark query param, independent
+// of the host page's data-theme/OS dark-mode preference — so it needs fixed,
+// theme-invariant values rather than the app shell's reactive tokens. Reskinned
+// to the Spotify green/dark palette (was a red scheme) per the phase 3 pass.
+$color-primary: #1ed760; // spotify-green
+$color-primary-dark: #169c46; // spotify-green-press
+$color-primary-light: #5eeb92; // lighter tint for text-on-dark accents
+$color-error: #f3727f; // spotify-negative — reserved for genuine error states only
+$color-bg-base: #121212; // spotify-bg-base
+$color-bg-elevated: #181818; // spotify-bg-highlight
+$color-bg-card: #1f1f1f; // spotify-bg-elevated
+$color-bg-hover: #242424; // spotify-card-hover
+$color-text-primary: #ffffff;
+$color-text-secondary: #b3b3b3;
+$color-text-muted: #727272;
 $color-border: rgba(255, 255, 255, 0.08);
 $color-border-light: rgba(255, 255, 255, 0.12);
+
+// Fixed light-theme counterparts for the :host.program-list--theme-light
+// override block (widget's own explicit ?theme=light, same isolation
+// rationale as above).
+$color-light-bg: #f8fafc;
+$color-light-surface: #ffffff;
+$color-light-text: #0f172a;
+$color-light-text-muted: #475569;
+$color-light-border: rgba(15, 23, 42, 0.12);
+$color-light-border-soft: rgba(15, 23, 42, 0.1);
 
 // Espaciado
 $space-xs: 4px;
@@ -108,8 +125,8 @@ $bp-xl: 1280px;
 }
 
 :host.program-list--theme-light {
-  background: #f8fafc;
-  color: #0f172a;
+  background: $color-light-bg;
+  color: $color-light-text;
 }
 
 :host.program-list--theme-light .tv-loading,
@@ -117,8 +134,8 @@ $bp-xl: 1280px;
 :host.program-list--theme-light .tv-guide,
 :host.program-list--theme-light .tv-mobile,
 :host.program-list--theme-light .tv-desktop {
-  background: #f8fafc;
-  color: #0f172a;
+  background: $color-light-bg;
+  color: $color-light-text;
 }
 
 :host.program-list--theme-light .tv-mobile__header,
@@ -132,9 +149,9 @@ $bp-xl: 1280px;
 :host.program-list--theme-light .tv-grid__program,
 :host.program-list--theme-light .tv-desktop__banner,
 :host.program-list--theme-light .tv-btn--now {
-  background: #ffffff;
-  color: #0f172a;
-  border-color: rgba(15, 23, 42, 0.12);
+  background: $color-light-surface;
+  color: $color-light-text;
+  border-color: $color-light-border;
 }
 
 :host.program-list--theme-light .tv-program,
@@ -142,9 +159,9 @@ $bp-xl: 1280px;
 :host.program-list--theme-light .tv-sheet__option,
 :host.program-list--theme-light .tv-sheet__slot,
 :host.program-list--theme-light .tv-chip {
-  background: rgba(255, 255, 255, 0.92);
-  color: #0f172a;
-  border-color: rgba(15, 23, 42, 0.1);
+  background: color-mix(in oklch, $color-light-surface 92%, transparent);
+  color: $color-light-text;
+  border-color: $color-light-border-soft;
 }
 
 :host.program-list--theme-light .tv-row__name,
@@ -152,7 +169,7 @@ $bp-xl: 1280px;
 :host.program-list--theme-light .tv-program__title,
 :host.program-list--theme-light .tv-grid__title,
 :host.program-list--theme-light .tv-sheet__header h3 {
-  color: #0f172a;
+  color: $color-light-text;
 }
 
 :host.program-list--theme-light .tv-channel__preview,
@@ -160,7 +177,7 @@ $bp-xl: 1280px;
 :host.program-list--theme-light .tv-grid__time,
 :host.program-list--theme-light .tv-loading__text,
 :host.program-list--theme-light .tv-error__message {
-  color: #475569;
+  color: $color-light-text-muted;
 }
 
 :host.program-list--theme-light .tv-mobile__scroll,
@@ -169,7 +186,7 @@ $bp-xl: 1280px;
 }
 
 :host.program-list--theme-light .tv-overlay {
-  background: var(--portal-surface-strong);
+  background: $color-light-surface;
 }
 
 // ============================================
@@ -230,7 +247,7 @@ $bp-xl: 1280px;
   &__icon {
     width: 64px;
     height: 64px;
-    color: $color-primary;
+    color: $color-error;
     margin-bottom: $space-lg;
   }
 
@@ -642,7 +659,7 @@ $bp-xl: 1280px;
 
   &__progress-bar {
     height: 2px;
-    background: var(--portal-surface-strong);
+    background: $color-bg-hover;
     border-radius: 2px;
     overflow: hidden;
   }
@@ -1234,7 +1251,7 @@ $bp-xl: 1280px;
   &__progress {
     flex: 1;
     height: 2px;
-    background: var(--portal-surface-strong);
+    background: $color-bg-hover;
     border-radius: 1px;
     overflow: hidden;
 

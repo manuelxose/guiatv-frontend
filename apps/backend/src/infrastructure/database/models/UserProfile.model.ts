@@ -11,6 +11,12 @@ export interface IUserProfileDocument {
   avatar?: string;
   favoriteGenres?: string[];
   preferredPlatforms?: string[];
+  tvPreferences?: {
+    favoriteChannelIds: string[];
+    favoriteFootballTeamIds: string[];
+    favoriteFootballCompetitionIds: string[];
+    preferredContentLanguages: string[];
+  };
   discoveryDefaults?: {
     types?: string[];
     availability?: string[];
@@ -91,6 +97,18 @@ const DiscoveryDefaultsSchema = new Schema(
   { _id: false }
 );
 
+// These IDs belong to the canonical channels and football catalogues. Keeping
+// them as references avoids coupling user documents to provider display names.
+const TvPreferencesSchema = new Schema(
+  {
+    favoriteChannelIds: { type: [String], default: [] },
+    favoriteFootballTeamIds: { type: [String], default: [] },
+    favoriteFootballCompetitionIds: { type: [String], default: [] },
+    preferredContentLanguages: { type: [String], default: [] },
+  },
+  { _id: false }
+);
+
 const UserProfileSchema = new Schema<IUserProfileDocument>(
   {
     userId: { type: Schema.Types.ObjectId, required: true, index: true, unique: true },
@@ -100,6 +118,7 @@ const UserProfileSchema = new Schema<IUserProfileDocument>(
     avatar: { type: String, trim: true },
     favoriteGenres: { type: [String], default: [] },
     preferredPlatforms: { type: [String], default: [] },
+    tvPreferences: { type: TvPreferencesSchema, default: () => ({}) },
     discoveryDefaults: { type: DiscoveryDefaultsSchema, default: () => ({}) },
     watchingNow: { type: WatchingNowSchema, default: () => ({}) },
     privacy: { type: PrivacySchema, default: () => ({}) },

@@ -1,12 +1,14 @@
+const backendTarget = process.env.GUIATV_PROXY_TARGET || 'http://localhost:4000';
+
 const PROXY_CONFIG = {
-    "/v2/*": {
-        "target": "http://localhost:4000",
+    "/v2": {
+        "target": backendTarget,
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug"
     },
     "/storage": {
-        "target": "http://localhost:4000",
+        "target": backendTarget,
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug"

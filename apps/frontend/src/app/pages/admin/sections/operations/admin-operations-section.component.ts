@@ -1,36 +1,56 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { AdminOperationsService } from '../../../../services/admin-operations.service';
 import { HealthResponse } from '../../../../services/admin-schedules.service';
+import { AdminConfirmDialogComponent } from '../../components/admin-confirm-dialog/admin-confirm-dialog.component';
+import { AdminStatusBadgeComponent } from '../../components/admin-status-badge/admin-status-badge.component';
 
 type ActionResult = { success: boolean; message: string; time: Date };
 
 @Component({
   selector: 'app-admin-operations-section',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminConfirmDialogComponent, AdminStatusBadgeComponent],
   templateUrl: './admin-operations-section.component.html',
   styleUrls: ['./admin-operations-section.component.scss'],
 })
-export class AdminOperationsSectionComponent implements OnInit, OnDestroy {
+export class AdminOperationsSectionComponent implements OnInit, OnDestroy, OnChanges {
+  @Input() activeItem = 'overview';
   @Output() lastUpdatedChange = new EventEmitter<Date>();
 
   health: HealthResponse | null = null;
   loading = false;
   error: string | null = null;
-  cachePattern = '';
+  cacheNamespace: 'epg' | 'football' | 'catalog' | 'schedules' = 'epg';
   clearLoading = false;
   actionResults: ActionResult[] = [];
+  football: any = null;
+  jobs: any[] = [];
+  events: any[] = [];
+  alerts: any[] = [];
+  cache: any = null;
+  rows: any[] = [];
+  footballView: 'competitions' | 'teams' | 'fixtures' = 'competitions';
+  footballLoading = false;
+  confirmCacheInvalidateOpen = false;
+
+  readonly cacheNamespaceLabels: Record<string, string> = {
+    epg: 'EPG',
+    football: 'Football',
+    catalog: 'Catalog',
+    schedules: 'Schedules',
+  };
 
   private subs = new Subscription();
 
   constructor(private opsService: AdminOperationsService) {}
 
   ngOnInit(): void {
-    this.loadHealth();
+    this.load();
   }
+  ngOnChanges(changes: SimpleChanges): void { if (changes['activeItem'] && !changes['activeItem'].firstChange) this.load(); }
 
   ngOnDestroy(): void {
     this.subs.unsubscribe();
@@ -53,19 +73,41 @@ export class AdminOperationsSectionComponent implements OnInit, OnDestroy {
       })
     );
   }
+  load(): void {
+    this.loadHealth();
+    const request = this.activeItem === 'football' ? this.opsService.getFootballOverview()
+      : this.activeItem === 'jobs' ? this.opsService.getJobs()
+      : this.activeItem === 'events' ? this.opsService.getEvents()
+      : this.activeItem === 'alerts' ? this.opsService.getAlerts()
+      : this.activeItem === 'cache' ? this.opsService.getCacheDiagnostics() : null;
+    if (request) this.subs.add(request.subscribe({ next: (data) => { if (this.activeItem === 'football') { this.football = data; this.loadFootballRows(); } else if (this.activeItem === 'jobs') this.jobs = data.items || []; else if (this.activeItem === 'events') this.events = data.items || []; else if (this.activeItem === 'alerts') this.alerts = data.items || []; else this.cache = data; this.lastUpdatedChange.emit(new Date()); }, error: () => this.error = 'Failed to load operational data' }));
+  }
+  setFootballView(view: 'competitions' | 'teams' | 'fixtures'): void { this.footballView = view; this.loadFootballRows(); }
+  loadFootballRows(): void { if (this.activeItem !== 'football') return; this.footballLoading = true; const request = this.footballView === 'competitions' ? this.opsService.getFootballCompetitions() : this.footballView === 'teams' ? this.opsService.getFootballTeams() : this.opsService.getFootballFixtures(); this.subs.add(request.subscribe({ next: data => { this.rows = data.items || []; this.footballLoading = false; }, error: () => { this.footballLoading = false; this.error = 'Failed to load football diagnostics'; } })); }
+  refreshFootball(): void { this.clearLoading = true; this.subs.add(this.opsService.refreshFootball().subscribe({ next: () => { this.addResult(true, 'Football refresh queued'); this.clearLoading = false; this.load(); }, error: () => { this.addResult(false, 'Football refresh could not be queued'); this.clearLoading = false; } })); }
+
+  requestClearCache(): void {
+    this.confirmCacheInvalidateOpen = true;
+  }
+
+  cancelClearCache(): void {
+    this.confirmCacheInvalidateOpen = false;
+  }
 
   clearCache(): void {
     this.clearLoading = true;
     this.subs.add(
-      this.opsService.clearCache(this.cachePattern || undefined).subscribe({
+      this.opsService.invalidateCache(this.cacheNamespace).subscribe({
         next: () => {
-          this.addResult(true, this.cachePattern ? `Cache cleared (pattern: ${this.cachePattern})` : 'Full cache cleared');
+          this.addResult(true, `${this.cacheNamespace} cache invalidated`);
           this.clearLoading = false;
-          this.loadHealth();
+          this.confirmCacheInvalidateOpen = false;
+          this.load();
         },
         error: (e) => {
           this.addResult(false, e?.error?.message || 'Cache clear failed');
           this.clearLoading = false;
+          this.confirmCacheInvalidateOpen = false;
         },
       })
     );

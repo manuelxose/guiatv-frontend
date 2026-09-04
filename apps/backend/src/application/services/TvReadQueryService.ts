@@ -4,6 +4,8 @@ import { DateUtils } from '@/shared/utils/dateUtils';
 import { l1Cache } from '@/infrastructure/cache/L1Cache';
 import { addTiming, measureTiming, setCacheTiming } from '@/shared/utils/performanceTiming';
 import {
+  buildChannelIdentityMetadata,
+  buildLegacyProgramSlug,
   buildSearchTokens,
   getGuideGroupSortOrder,
   inferTimeWindow,
@@ -16,6 +18,7 @@ import {
   TvReadItemDTO,
   TvReadItemResponseDTO,
   TvReadResponseDTO,
+  TvReadScheduleResponseDTO,
   TvReadView,
 } from '../dto/TvReadDTO';
 
@@ -32,11 +35,275 @@ export interface TvReadQueryParams {
   includeChannels?: boolean;
 }
 
+interface TvReadChannelDirectoryRow {
+  channel: TvReadChannelSummaryDTO['channel'];
+  current?: TvReadItemDTO;
+  next?: TvReadItemDTO;
+  total: number;
+  live: number;
+  tonight: number;
+}
+
+interface TvReadScheduleRow {
+  channel: TvReadChannelSummaryDTO['channel'];
+  items: TvReadItemDTO[];
+  total: number;
+}
+
+export interface TvReadScheduleParams {
+  date?: string;
+  group?: string;
+  category?: string;
+  channelId?: string;
+  q?: string;
+  itemsPerChannel?: number;
+}
+
+export interface TvReadProgramSitemapRow {
+  title: string;
+  start: string | Date;
+}
+
+export function buildTvReadChannelGroupClause(group: string): Record<string, any> {
+  const normalized = normalizeTvToken(group, ' ');
+  if (normalized === 'movistar') {
+    return {
+      $or: [
+        { 'channel.group': 'movistar' },
+        { 'channel.operator': 'Movistar Plus+' },
+        { 'channel.providers': 'Movistar Plus+' },
+      ],
+    };
+  }
+  if (normalized === 'deporte') {
+    return {
+      $or: [
+        { 'channel.group': 'deporte' },
+        { 'channel.contentFacets': 'sports' },
+      ],
+    };
+  }
+  if (normalized === 'cable') {
+    return {
+      $or: [
+        { 'channel.group': 'cable' },
+        { 'channel.distribution': 'cable' },
+      ],
+    };
+  }
+  if (normalized === 'online') {
+    return {
+      $or: [
+        { 'channel.group': 'online' },
+        { 'channel.distribution': 'ott' },
+      ],
+    };
+  }
+  return { 'channel.group': normalized };
+}
+
+export function tvReadChannelMatchesGroup(
+  channel: TvReadChannelSummaryDTO['channel'],
+  group?: string
+): boolean {
+  const normalized = normalizeTvToken(group, ' ');
+  if (!normalized || normalized === 'all') return true;
+  if (normalizeTvToken(channel.group, ' ') === normalized) return true;
+  if (normalized === 'movistar') {
+    return channel.operator === 'Movistar Plus+' ||
+      Boolean(channel.providers?.includes('Movistar Plus+'));
+  }
+  if (normalized === 'deporte') return Boolean(channel.contentFacets?.includes('sports'));
+  if (normalized === 'cable') return channel.distribution === 'cable';
+  if (normalized === 'online') return channel.distribution === 'ott';
+  return false;
+}
+
+export function buildTvReadChannelDirectoryPipeline(
+  date: string,
+  group?: string,
+  reference: Date = new Date(),
+  limit?: number
+): any[] {
+  const match: Record<string, any> = {
+    date,
+    'channel.id': { $type: 'string', $ne: '' },
+    'trustDecision.consumerSuppressed': { $ne: true },
+    'program.titleResolutionState': {
+      $nin: ['generic_unresolved', 'generic_suppressed'],
+    },
+  };
+  if (group && normalizeTvToken(group, ' ') !== 'all') {
+    match.$and = [buildTvReadChannelGroupClause(group)];
+  }
+  const timestamp = reference.toISOString();
+
+  const pipeline: any[] = [
+    { $match: match },
+    { $sort: { 'channel.sortOrder': 1, 'airing.start': 1 } },
+    {
+      $group: {
+        _id: '$channel.id',
+        channel: { $first: '$channel' },
+        total: { $sum: 1 },
+        live: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $lte: ['$airing.start', timestamp] },
+                  { $gt: ['$airing.end', timestamp] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
+        tonight: {
+          $sum: { $cond: [{ $eq: ['$airing.partOfDay', 'noche'] }, 1, 0] },
+        },
+        currentItems: {
+          $push: {
+            $cond: [
+              {
+                $and: [
+                  { $lte: ['$airing.start', timestamp] },
+                  { $gt: ['$airing.end', timestamp] },
+                ],
+              },
+              '$$ROOT',
+              null,
+            ],
+          },
+        },
+        nextItems: {
+          $push: {
+            $cond: [{ $gt: ['$airing.start', timestamp] }, '$$ROOT', null],
+          },
+        },
+      },
+    },
+    { $sort: { 'channel.sortOrder': 1, 'channel.name': 1 } },
+    {
+      $project: {
+        _id: 0,
+        channel: 1,
+        total: 1,
+        live: 1,
+        tonight: 1,
+        current: {
+          $arrayElemAt: [
+            { $filter: { input: '$currentItems', as: 'item', cond: { $ne: ['$$item', null] } } },
+            0,
+          ],
+        },
+        next: {
+          $arrayElemAt: [
+            { $filter: { input: '$nextItems', as: 'item', cond: { $ne: ['$$item', null] } } },
+            0,
+          ],
+        },
+      },
+    },
+  ];
+  const boundedLimit = resolveTvReadChannelDirectoryLimit(limit);
+  if (boundedLimit) pipeline.push({ $limit: boundedLimit });
+  return pipeline;
+}
+
+function resolveTvReadChannelDirectoryLimit(value?: number): number | undefined {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
+  return Math.min(48, Math.floor(parsed));
+}
+
+export function resolveTvReadItemsPerChannel(value?: number): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 32;
+  return Math.max(1, Math.min(192, Math.floor(parsed)));
+}
+
+export function buildTvReadSchedulePipeline(params: {
+  date: string;
+  group?: string;
+  category?: string;
+  channelId?: string;
+  q?: string;
+  itemsPerChannel?: number;
+}): any[] {
+  const match: Record<string, any> = {
+    date: params.date,
+    'channel.id': { $type: 'string', $ne: '' },
+    'trustDecision.consumerSuppressed': { $ne: true },
+    'program.titleResolutionState': {
+      $nin: ['generic_unresolved', 'generic_suppressed'],
+    },
+  };
+  const andClauses: Record<string, any>[] = [];
+  if (params.category && normalizeTvToken(params.category, ' ') !== 'all') {
+    match['program.editorialCategory'] = params.category;
+  }
+  if (params.group && normalizeTvToken(params.group, ' ') !== 'all') {
+    andClauses.push(buildTvReadChannelGroupClause(params.group));
+  }
+  if (params.channelId) {
+    const raw = String(params.channelId).trim();
+    const normalized = normalizeTvToken(raw);
+    const values = Array.from(new Set([raw, normalized].filter(Boolean)));
+    andClauses.push({
+      $or: [
+        { 'channel.id': { $in: values } },
+        { 'channel.sourceIds': { $in: values } },
+        { 'channel.aliases': { $in: values } },
+      ],
+    });
+  }
+  if (String(params.q || '').trim()) {
+    const q = String(params.q).trim();
+    const tokens = buildSearchTokens([q]);
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    andClauses.push({
+      $or: [
+        { searchTokens: { $in: tokens } },
+        { 'program.title': new RegExp(escaped, 'i') },
+        { 'channel.name': new RegExp(escaped, 'i') },
+      ],
+    });
+  }
+  if (andClauses.length) match.$and = andClauses;
+
+  return [
+    { $match: match },
+    { $sort: { 'channel.sortOrder': 1, 'airing.start': 1 } },
+    {
+      $group: {
+        _id: '$channel.id',
+        channel: { $first: '$channel' },
+        total: { $sum: 1 },
+        items: { $push: '$$ROOT' },
+      },
+    },
+    { $sort: { 'channel.sortOrder': 1, 'channel.name': 1 } },
+    {
+      $project: {
+        _id: 0,
+        channel: 1,
+        total: 1,
+        items: { $slice: ['$items', resolveTvReadItemsPerChannel(params.itemsPerChannel)] },
+      },
+    },
+  ];
+}
+
 const TV_READ_LIMITS: Record<TvReadView, { default: number; max: number }> = {
   now: { default: 120, max: 500 },
   next: { default: 120, max: 500 },
   night: { default: 240, max: 1500 },
-  day: { default: 240, max: 1000 },
+  // The day view is also the canonical channel-directory/read-model feed.
+  // Keeping this at 1,000 silently dropped later guide groups (usually pay TV)
+  // because the query is sorted by channel order. Hot views remain bounded.
+  day: { default: 240, max: 5000 },
   search: { default: 60, max: 200 },
 };
 
@@ -152,6 +419,27 @@ export function compactTvReadItem(item: TvReadItemDTO): TvReadItemDTO {
       country: item.channel.country,
       countryCode: item.channel.countryCode,
       region: item.channel.region,
+      distribution: item.channel.distribution,
+      access: item.channel.access,
+      operator: item.channel.operator,
+      providers: item.channel.providers || [],
+      contentFacets: item.channel.contentFacets || [],
+      market: item.channel.market || {
+        country: 'unknown',
+        countryCode: 'unknown',
+        region: 'unknown',
+        scope: 'unknown',
+      },
+      quality: item.channel.quality || { resolution: 'unknown', timeshift: 'unknown' },
+      capabilities: item.channel.capabilities || {
+        linear: 'unknown',
+        catchup: 'unknown',
+        streaming: 'unknown',
+      },
+      provenance: item.channel.provenance || {
+        classification: 'unknown',
+        sourceIds: [],
+      },
     },
     program: {
       brandKey: item.program.brandKey,
@@ -385,7 +673,10 @@ export function selectPrimeTimeTvItems(
 }
 
 export class TvReadQueryService {
-  constructor(private readonly cacheRepository: ICacheRepository) {}
+  constructor(
+    private readonly cacheRepository: ICacheRepository,
+    private readonly readAiringModel: typeof TVReadAiringModel = TVReadAiringModel
+  ) {}
 
   async query(params: TvReadQueryParams): Promise<TvReadResponseDTO> {
     const date = DateUtils.parseDateAlias(params.date || 'today');
@@ -444,7 +735,7 @@ export class TvReadQueryService {
       $nin: ['generic_unresolved', 'generic_suppressed'],
     };
 
-    if (group) baseQuery['channel.group'] = group;
+    if (group) andClauses.push(buildTvReadChannelGroupClause(group));
     if (category) baseQuery['program.editorialCategory'] = category;
     if (params.channelId) {
       andClauses.push(this.buildChannelFilterClause(params.channelId));
@@ -489,10 +780,15 @@ export class TvReadQueryService {
       itemQuery.skip(offset).limit(limit + 1);
     }
 
-    const [rawItems, databaseTotal] = await measureTiming('db', () => Promise.all([
+    // Dual-tagged: 'db' keeps this in the generic Mongo latency bucket used
+    // across all use cases, 'epg' isolates it as its own metric — this is the
+    // canonical read-model query behind live-now/tonight/day-grid/channel
+    // lookups, so its latency shouldn't be diluted into an aggregate that
+    // also includes unrelated user/catalog/social queries.
+    const [rawItems, databaseTotal] = await measureTiming('epg', () => measureTiming('db', () => Promise.all([
       itemQuery.lean().exec() as unknown as Promise<TvReadItemDTO[]>,
       databasePaged ? TVReadAiringModel.countDocuments(baseQuery).exec() : Promise.resolve(0),
-    ]));
+    ])));
 
     const hasMoreDatabaseRows = databasePaged && rawItems.length > limit;
     const boundedRawItems = databasePaged ? rawItems.slice(0, limit) : rawItems;
@@ -545,24 +841,181 @@ export class TvReadQueryService {
     return response;
   }
 
-  async getChannels(dateAliasOrDate: string, group?: string): Promise<TvReadChannelsResponseDTO> {
-    const response = await this.query({
-      view: 'day',
-      date: dateAliasOrDate,
-      group,
-      limit: 5000,
+  async getChannels(
+    dateAliasOrDate: string,
+    group?: string,
+    limit?: number
+  ): Promise<TvReadChannelsResponseDTO> {
+    const date = DateUtils.parseDateAlias(dateAliasOrDate || 'today');
+    const normalizedGroup =
+      normalizeTvToken(group, ' ') === 'all' ? undefined : group;
+    const boundedLimit = resolveTvReadChannelDirectoryLimit(limit);
+    const cacheKey = `tv:channels:${date}:${normalizedGroup || 'all'}:${boundedLimit || 'complete'}`;
+    const cached = await this.cacheRepository.get<TvReadChannelsResponseDTO>(cacheKey);
+    if (cached) {
+      return { ...cached, meta: { ...cached.meta, cached: true } };
+    }
+    const rows = (await this.readAiringModel
+      .aggregate(buildTvReadChannelDirectoryPipeline(date, normalizedGroup, new Date(), boundedLimit))
+      .exec()) as TvReadChannelDirectoryRow[];
+    const channels = rows.map((row) => {
+      const channel = row.channel;
+      const needsLegacyFallback =
+        !channel.distribution ||
+        !channel.access ||
+        !channel.operator ||
+        !channel.providers ||
+        !channel.contentFacets ||
+        !channel.market ||
+        !channel.quality ||
+        !channel.capabilities ||
+        !channel.provenance;
+      const metadata = needsLegacyFallback
+        ? buildChannelIdentityMetadata({
+            name: channel.name,
+            sourceId: channel.sourceIds?.[0] || channel.id,
+            country: channel.country,
+            countryCode: channel.countryCode,
+            region: channel.region,
+          })
+        : undefined;
+      return {
+        channel: {
+          ...channel,
+          distribution:
+            channel.distribution && channel.distribution !== 'unknown'
+              ? channel.distribution
+              : metadata?.distribution || 'unknown',
+          access:
+            channel.access && channel.access !== 'unknown'
+              ? channel.access
+              : metadata?.access || 'unknown',
+          operator:
+            channel.operator && channel.operator !== 'unknown'
+              ? channel.operator
+              : metadata?.operator || 'unknown',
+          providers: channel.providers?.length
+            ? channel.providers
+            : metadata?.providers || [],
+          contentFacets: channel.contentFacets?.length
+            ? channel.contentFacets
+            : metadata?.contentFacets || ['unknown'],
+          market: channel.market || metadata?.market,
+          quality: channel.quality || metadata?.quality,
+          capabilities: channel.capabilities || metadata?.capabilities,
+          provenance: channel.provenance || metadata?.provenance,
+        },
+        current: row.current
+          ? compactTvReadItem(hydrateTvReadItemRuntime(row.current))
+          : undefined,
+        next: row.next
+          ? compactTvReadItem(hydrateTvReadItemRuntime(row.next))
+          : undefined,
+        tonight: [],
+        counts: {
+          total: Number(row.total || 0),
+          live: Number(row.live || 0),
+          tonight: Number(row.tonight || 0),
+        },
+      } satisfies TvReadChannelSummaryDTO;
     });
 
-    return {
-      date: response.date,
-      group,
-      channels: response.channels,
+    const response: TvReadChannelsResponseDTO = {
+      date,
+      group: normalizedGroup,
+      channels,
       meta: {
-        total: response.channels.length,
-        cached: response.meta.cached,
-        generatedAt: response.meta.generatedAt,
+        total: channels.length,
+        generatedAt: new Date().toISOString(),
       },
     };
+    await this.cacheRepository.set(cacheKey, response, 60);
+    return response;
+  }
+
+  async getIndexableProgramSitemapRows(
+    dates: string[]
+  ): Promise<TvReadProgramSitemapRow[]> {
+    const normalizedDates = Array.from(new Set(dates.map((date) => String(date).trim()).filter(Boolean)));
+    if (!normalizedDates.length) return [];
+
+    const rows = await this.readAiringModel.find({
+      date: { $in: normalizedDates },
+      'program.tmdbId': { $type: 'number' },
+      'program.title': { $type: 'string', $ne: '' },
+      'program.titleResolutionState': { $nin: ['generic_unresolved', 'generic_suppressed'] },
+      'trustDecision.consumerSuppressed': { $ne: true },
+    })
+      .select({ _id: 0, 'program.title': 1, 'airing.start': 1, searchTokens: 1 })
+      .sort({ date: 1, 'airing.start': 1 })
+      .lean()
+      .exec() as Array<{
+        program?: { title?: string };
+        airing?: { start?: string | Date };
+        searchTokens?: string[];
+      }>;
+
+    return rows.flatMap((row) => {
+      const title = String(row.program?.title || '').trim();
+      const start = row.airing?.start;
+      const slug = buildLegacyProgramSlug(title);
+      const lookupTokens = buildSearchTokens([slug.replace(/-/g, ' ')])
+        .filter((token) => !token.includes(' ') && !token.includes('_') && token.length >= 3);
+      const indexedTokens = new Set(row.searchTokens || []);
+      const searchable = lookupTokens.some((token) => indexedTokens.has(token));
+      return title && start && searchable ? [{ title, start }] : [];
+    });
+  }
+
+  async getSchedule(params: TvReadScheduleParams): Promise<TvReadScheduleResponseDTO> {
+    const date = DateUtils.parseDateAlias(params.date || 'today');
+    const group = normalizeTvToken(params.group, ' ') === 'all' ? undefined : params.group;
+    const category = normalizeTvToken(params.category, ' ') === 'all'
+      ? undefined
+      : params.category;
+    const itemsPerChannel = resolveTvReadItemsPerChannel(params.itemsPerChannel);
+    const q = String(params.q || '').trim() || undefined;
+    const cacheKey = `tv:schedule:${date}:${group || 'all'}:${category || 'all'}:${params.channelId || 'all'}:${q || ''}:${itemsPerChannel}`;
+    const cached = await this.cacheRepository.get<TvReadScheduleResponseDTO>(cacheKey);
+    if (cached) return { ...cached, meta: { ...cached.meta, cached: true } };
+
+    const rows = (await this.readAiringModel
+      .aggregate(buildTvReadSchedulePipeline({
+        date,
+        group,
+        category,
+        channelId: params.channelId,
+        q,
+        itemsPerChannel,
+      }))
+      .exec()) as TvReadScheduleRow[];
+    const reference = new Date();
+    const channels = rows.map((row) => ({
+      channel: row.channel,
+      items: row.items
+        .map((item) => hydrateTvReadItemRuntime(item, reference))
+        .filter(isConsumerVisibleTvReadItem)
+        .map(compactTvReadItem),
+      counts: {
+        total: Number(row.total || 0),
+        returned: row.items.length,
+        complete: Number(row.total || 0) <= row.items.length,
+      },
+    }));
+    const response: TvReadScheduleResponseDTO = {
+      date,
+      group,
+      channels,
+      meta: {
+        totalChannels: channels.length,
+        totalItems: channels.reduce((total, entry) => total + entry.counts.total, 0),
+        itemsPerChannel,
+        truncatedChannels: channels.filter((entry) => !entry.counts.complete).length,
+        generatedAt: new Date().toISOString(),
+      },
+    };
+    await this.cacheRepository.set(cacheKey, response, 15 * 60);
+    return response;
   }
 
   async getGroupChannelCounts(dateAliasOrDate: string): Promise<Record<string, number>> {
@@ -675,7 +1128,7 @@ export class TvReadQueryService {
     const sortedItems = [...items].sort(sortTvItems);
 
     sortedItems.forEach((item) => {
-      if (group && item.channel.group !== group) return;
+      if (!tvReadChannelMatchesGroup(item.channel, group)) return;
       if (channelId && !this.channelMatches(item.channel, channelId)) return;
 
       const current = map.get(item.channel.id) || {

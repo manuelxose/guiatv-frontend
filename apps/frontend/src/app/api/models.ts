@@ -27,6 +27,30 @@ export interface ChannelMetaDTO {
   countryCode?: string;
   region?: string;
   description?: string;
+  distribution?: 'terrestrial' | 'cable' | 'operator' | 'ott' | 'unknown';
+  access?: 'free' | 'pay' | 'unknown';
+  operator?: string;
+  providers?: string[];
+  contentFacets?: string[];
+  market?: {
+    country: string;
+    countryCode: string;
+    region: string;
+    scope: 'national' | 'regional' | 'international' | 'unknown';
+  };
+  quality?: {
+    resolution: 'sd' | 'hd' | 'uhd' | '4k' | 'unknown';
+    timeshift: boolean | 'unknown';
+  };
+  capabilities?: {
+    linear: boolean | 'unknown';
+    catchup: boolean | 'unknown';
+    streaming: boolean | 'unknown';
+  };
+  provenance?: {
+    classification: 'registry' | 'heuristic' | 'unknown';
+    sourceIds: string[];
+  };
 }
 
 export interface TvReadAssetRefDTO {
@@ -155,6 +179,24 @@ export interface TvReadChannelsResponseDTO {
   channels: TvReadChannelSummaryDTO[];
   meta: {
     total: number;
+    cached?: boolean;
+    generatedAt: string;
+  };
+}
+
+export interface TvReadScheduleResponseDTO {
+  date: string;
+  group?: string;
+  channels: Array<{
+    channel: ChannelMetaDTO;
+    items: TvReadItemDTO[];
+    counts: { total: number; returned: number; complete: boolean };
+  }>;
+  meta: {
+    totalChannels: number;
+    totalItems: number;
+    itemsPerChannel: number;
+    truncatedChannels: number;
     cached?: boolean;
     generatedAt: string;
   };

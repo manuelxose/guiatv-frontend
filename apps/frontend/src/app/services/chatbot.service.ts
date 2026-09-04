@@ -7,6 +7,8 @@ import { UserService } from './user.service';
 import { UserAuthState } from './user.service';
 import {
   AssistantHistoryMessage,
+  AssistantMatchCard,
+  AssistantLaunchContext,
   AssistantMemorySnapshot,
   ChatbotQueryContext,
   ChatbotRecommendation,
@@ -14,7 +16,9 @@ import {
   ChatbotSessionState,
   ChatMessage,
   ConversationSummary,
+  isChatbotBusyState,
 } from '../interfaces/chatbot.interface';
+import { PreferenceAnswer } from '../interfaces/chat-profile.types';
 
 // Re-export so existing consumers keep working via `chatbot.service`
 export {
@@ -44,6 +48,7 @@ interface ChatbotApiPayload {
   conversationId?: string;
   queryContext?: ChatbotQueryContext;
   assistantMemorySnapshot?: AssistantMemorySnapshot | null;
+  matches?: AssistantMatchCard[];
 }
 
 interface ApiResponse<T> {
@@ -72,6 +77,9 @@ export class ChatbotService {
 
   private historyLoaded = false;
   private historyRequestInFlight: Observable<ChatMessage[]> | null = null;
+  private activeAbortController: AbortController | null = null;
+  private lastUserPrompt = '';
+  private launchContext: AssistantLaunchContext | null = null;
 
   readonly messages$ = this.messagesSubject.asObservable();
   readonly memory$ = this.memorySubject.asObservable();
@@ -180,7 +188,7 @@ export class ChatbotService {
       return throwError(() => new Error('LOGIN_REQUIRED'));
     }
 
-    if (this.chatStateSubject.value === 'sending') {
+    if (isChatbotBusyState(this.chatStateSubject.value)) {
       return throwError(() => new Error('MESSAGE_IN_FLIGHT'));
     }
 
@@ -200,7 +208,7 @@ export class ChatbotService {
 
     this.messagesSubject.next([...this.messagesSubject.value, userMessage, loadingMessage]);
     this.isLoadingSubject.next(true);
-    this.chatStateSubject.next('sending');
+    this.chatStateSubject.next('connecting');
 
     const history = this.messagesSubject.value
       .filter((message) => !message.isLoading && message.id !== 'welcome')
@@ -215,6 +223,7 @@ export class ChatbotService {
         {
           messages: history,
           conversationId: this.readConversationId(),
+          context: this.launchContext || undefined,
         },
         {
           headers: this.getAuthHeaders(),
@@ -264,6 +273,7 @@ export class ChatbotService {
               this.collectRecentSuggestionTexts()
             ),
             queryContext: data.queryContext,
+            matches: data.matches || [],
             isNewMessage: true,
           };
 
@@ -320,7 +330,12 @@ export class ChatbotService {
       this.chatStateSubject.next('login_required');
       return throwError(() => new Error('LOGIN_REQUIRED'));
     }
-    if (this.chatStateSubject.value === 'sending') return throwError(() => new Error('MESSAGE_IN_FLIGHT'));
+    if (isChatbotBusyState(this.chatStateSubject.value)) return throwError(() => new Error('MESSAGE_IN_FLIGHT'));
+    this.lastUserPrompt = normalized;
+    if (this.isBrowser && !navigator.onLine) {
+      this.chatStateSubject.next('offline');
+      return throwError(() => new Error('OFFLINE'));
+    }
 
     const userMessage: ChatMessage = {
       id: this.createId(),
@@ -339,22 +354,23 @@ export class ChatbotService {
 
     this.messagesSubject.next([...this.messagesSubject.value, userMessage, streamingMessage]);
     this.isLoadingSubject.next(true);
-    this.chatStateSubject.next('sending');
+    this.chatStateSubject.next('connecting');
 
     const history = this.messagesSubject.value
-      .filter((m) => !m.isLoading && !m.isStreaming && !m.isThinking && m.id !== 'welcome' && String(m.content || '').trim() !== '')
+      .filter((m) => !m.isLoading && !m.isStreaming && !m.isThinking && !m.isCancelled && m.id !== 'welcome' && String(m.content || '').trim() !== '')
       .map((m) => ({ role: m.role, content: m.content }));
 
     return new Observable<ChatMessage>((subscriber) => {
       const token = this.readToken();
       const abortController = new AbortController();
+      this.activeAbortController = abortController;
 
       // Fix D: abort stream after 25s to prevent the "Analizando la parrilla…" freeze
       const streamTimeout = setTimeout(() => {
         if (!subscriber.closed) {
           abortController.abort();
           this.isLoadingSubject.next(false);
-          this.chatStateSubject.next('idle');
+          this.chatStateSubject.next('recovering');
           const messages = this.messagesSubject.value.filter((m) => !m.isStreaming && !m.isThinking);
           messages.push({
             id: this.createId(),
@@ -364,6 +380,7 @@ export class ChatbotService {
             followUpSuggestions: ['¿Qué hay ahora en TV?', '¿Qué puedo ver en streaming?'],
           });
           this.messagesSubject.next(messages);
+          this.chatStateSubject.next('unavailable');
           subscriber.complete();
         }
       }, 25000);
@@ -374,7 +391,11 @@ export class ChatbotService {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ messages: history, conversationId: this.readConversationId() }),
+        body: JSON.stringify({
+          messages: history,
+          conversationId: this.readConversationId(),
+          context: this.launchContext || undefined,
+        }),
         signal: abortController.signal,
       })
         .then(async (res) => {
@@ -418,7 +439,10 @@ export class ChatbotService {
         })
         .catch((err) => {
           clearTimeout(streamTimeout);
-          if (abortController.signal.aborted) return;
+          if (abortController.signal.aborted) {
+            if (!subscriber.closed) subscriber.complete();
+            return;
+          }
           const messages = this.messagesSubject.value.filter((m) => !m.isStreaming && !m.isThinking);
           messages.push({
             id: this.createId(),
@@ -429,14 +453,60 @@ export class ChatbotService {
           });
           this.runInZone(() => {
             this.isLoadingSubject.next(false);
-            this.chatStateSubject.next('unavailable');
+            this.chatStateSubject.next(
+              String(err?.message || '') === 'RATE_LIMITED' ? 'rate_limited' : 'unavailable'
+            );
             this.messagesSubject.next(messages);
           });
           subscriber.error(err);
+        })
+        .finally(() => {
+          if (this.activeAbortController === abortController) {
+            this.activeAbortController = null;
+          }
         });
 
-      return () => abortController.abort();
+      return () => {
+        abortController.abort();
+        if (this.activeAbortController === abortController) {
+          this.activeAbortController = null;
+        }
+      };
     });
+  }
+
+  stopGeneration(): void {
+    if (!this.activeAbortController || !isChatbotBusyState(this.chatStateSubject.value)) return;
+    this.activeAbortController.abort();
+    this.activeAbortController = null;
+    this.isLoadingSubject.next(false);
+    this.chatStateSubject.next('cancelled');
+    this.messagesSubject.next(
+      this.messagesSubject.value.map((message) =>
+        message.isThinking || message.isStreaming
+          ? {
+              ...message,
+              content: message.content.trim() || 'Respuesta detenida.',
+              isThinking: false,
+              isStreaming: false,
+              isCancelled: true,
+            }
+          : message
+      )
+    );
+  }
+
+  retryLastPrompt(): Observable<ChatMessage> {
+    if (!this.lastUserPrompt) return throwError(() => new Error('NO_RETRY_PROMPT'));
+    return this.sendMessageStream(this.lastUserPrompt);
+  }
+
+  hasRetryablePrompt(): boolean {
+    return Boolean(this.lastUserPrompt);
+  }
+
+  setLaunchContext(context: AssistantLaunchContext | null): void {
+    this.launchContext = context;
   }
 
   /** Run fn inside NgZone so fetch/ReadableStream callbacks trigger change detection. */
@@ -461,12 +531,23 @@ export class ChatbotService {
         const updated = { ...streamingMessage, content: newText, isThinking: false, isStreaming: true };
         Object.assign(streamingMessage, updated);
         this.runInZone(() =>
-          this.messagesSubject.next(
-            this.messagesSubject.value.map((m) =>
-              m.id === streamingMessage.id ? { ...streamingMessage } : m
-            )
-          )
+          {
+            this.chatStateSubject.next('streaming');
+            this.messagesSubject.next(
+              this.messagesSubject.value.map((m) =>
+                m.id === streamingMessage.id ? { ...streamingMessage } : m
+              )
+            );
+          }
         );
+      } else if (eventType === 'ping') {
+        this.runInZone(() => this.chatStateSubject.next('retrieving'));
+      } else if (eventType === 'progress') {
+        const progress = JSON.parse(rawData) as { phase?: string };
+        const nextState: ChatbotRequestState = progress.phase === 'composing'
+          ? 'composing'
+          : 'retrieving';
+        this.runInZone(() => this.chatStateSubject.next(nextState));
       } else if (eventType === 'full' || eventType === 'result') {
         const data = JSON.parse(rawData) as ChatbotApiPayload;
         this.applyFinalSSEPayload(data, streamingMessage, subscriber);
@@ -539,6 +620,7 @@ export class ChatbotService {
         this.collectRecentSuggestionTexts()
       ),
       queryContext: data.queryContext,
+      matches: data.matches || [],
     };
 
     const messages = this.messagesSubject.value.map((m) =>
@@ -798,6 +880,12 @@ export class ChatbotService {
     this.chatStateSubject.next('idle');
   }
 
+  /**
+   * `preferredAutonomousCommunity` is tri-state: `undefined` means "leave it
+   * unchanged", while `null`/`''` is a deliberate request to clear it (the
+   * backend distinguishes an absent key from an empty one). Passing a
+   * non-empty string sets it.
+   */
   updateAssistantMemory(
     prefs: Record<string, string[]>,
     preferredAutonomousCommunity?: string | null
@@ -805,8 +893,8 @@ export class ChatbotService {
     if (!this.hasValidSessionToken()) return of(null);
 
     const body: Record<string, any> = { ...prefs };
-    if (preferredAutonomousCommunity) {
-      body['preferredAutonomousCommunity'] = preferredAutonomousCommunity;
+    if (typeof preferredAutonomousCommunity !== 'undefined') {
+      body['preferredAutonomousCommunity'] = preferredAutonomousCommunity || '';
     }
 
     return this.http
@@ -820,6 +908,91 @@ export class ChatbotService {
         }),
         catchError(() => of(null))
       );
+  }
+
+  /**
+   * Fetches the assistant-memory snapshot without touching chat history —
+   * used by Mi GuíaTV's personalization surface, which must be able to show
+   * "what the assistant knows about me" even if the user never opened the
+   * chatbot in this session.
+   */
+  fetchAssistantMemory(): Observable<AssistantMemorySnapshot | null> {
+    if (!this.hasValidSessionToken()) return of(null);
+
+    return this.http
+      .get<ApiResponse<{ memory: AssistantMemorySnapshot | null }>>(
+        `${this.baseUrl}/ai/memory`,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => resp?.data?.memory || null),
+        tap((memory) => this.memorySubject.next(memory)),
+        catchError(() => of(null))
+      );
+  }
+
+  /**
+   * Resets only the assistant-owned preference fields (viewing context,
+   * duration, reference titles, negative signals, regional community).
+   * Profile-owned preferences (platforms/genres) are untouched — reset them
+   * via UserService if that is what the user asked for.
+   */
+  resetAssistantMemory(): Observable<AssistantMemorySnapshot | null> {
+    if (!this.hasValidSessionToken()) return of(null);
+
+    return this.http
+      .delete<ApiResponse<{ memory: AssistantMemorySnapshot | null }>>(
+        `${this.baseUrl}/ai/memory`,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((resp) => resp?.data?.memory || null),
+        tap((memory) => {
+          if (memory) this.memorySubject.next(memory);
+        }),
+        catchError(() => of(null))
+      );
+  }
+
+  /**
+   * Single save-routing rule for every PreferenceAnswer, shared by the
+   * chatbot's ChatProfilePanel and Mi GuíaTV's assistant-preferences surface
+   * so the two UIs can never diverge on where an answer is persisted:
+   * profile-target answers go through UserService (UserProfile),
+   * memory-target answers go through this service's assistant memory.
+   */
+  applyPreferenceAnswer(
+    answer: PreferenceAnswer,
+    profilePlatforms: string[],
+    profileGenres: string[]
+  ): Observable<boolean> {
+    if (answer.target === 'profile') {
+      const merge = (...groups: string[][]): string[] =>
+        [...new Set(groups.flat().filter(Boolean))].slice(0, 10);
+      const memory = this.memorySubject.value;
+      const genres = answer.key === 'likedGenres'
+        ? answer.values
+        : merge(profileGenres, memory?.likedGenres || []);
+      const platforms = answer.key === 'preferredPlatforms'
+        ? answer.values
+        : merge(profilePlatforms, memory?.preferredPlatforms || []);
+
+      return this.userService.saveGenrePreferences(genres, platforms);
+    }
+
+    if (answer.key === 'preferredAutonomousCommunity') {
+      // Explicitly set or clear — never silently skip the request, or a
+      // deselected community would appear "saved" in the UI without ever
+      // reaching the backend.
+      return this.updateAssistantMemory({}, answer.community ?? '').pipe(
+        map((memory) => Boolean(memory))
+      );
+    }
+
+    const updates = answer.field ? { [answer.field]: answer.values } : {};
+    return this.updateAssistantMemory(updates, undefined).pipe(
+      map((memory) => Boolean(memory))
+    );
   }
 
   private applyAuthState(authState: UserAuthState): void {
