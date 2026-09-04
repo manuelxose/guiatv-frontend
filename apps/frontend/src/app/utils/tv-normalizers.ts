@@ -182,13 +182,13 @@ function buildTvSubtitle(item: TvReadItemDTO): string {
   return parts.join(' · ');
 }
 
+// Platform names are deliberately left out here — the card already renders
+// them as their own colored badges (see `card.platforms` / `<app-platform-
+// badge>` in unified-program-card.component.html), and printing the same
+// two names again as plain text right above those badges was a duplicate,
+// unstyled restatement of the same information.
 function buildCatalogSubtitle(item: CatalogItem): string {
-  const parts = [
-    item.channel?.name,
-    formatTimeRange(item.start, item.end),
-    item.primaryPlatforms?.slice(0, 2).join(' · '),
-    item.releaseYear,
-  ]
+  const parts = [item.channel?.name, formatTimeRange(item.start, item.end), item.releaseYear]
     .map((entry) => String(entry || '').trim())
     .filter(Boolean);
   return parts.join(' · ');
