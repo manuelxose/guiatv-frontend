@@ -47,7 +47,7 @@ import { CatalogCardComponent } from '../catalog-card/catalog-card.component';
           </svg>
         </button>
 
-        <div #scrollEl class="scrollbar-hide flex gap-4 overflow-x-auto scroll-smooth pb-2">
+        <div #scrollEl class="scrollbar-hide flex gap-4 overflow-x-auto pb-2">
           <div *ngFor="let item of items" class="w-[280px] flex-shrink-0">
             <app-catalog-card [item]="item" [compact]="true"></app-catalog-card>
           </div>
@@ -86,7 +86,10 @@ export class CatalogRailComponent {
     }
     // ~85% of the visible width per click — one comfortable "page" of cards
     // rather than a fixed pixel amount that under/over-shoots on other
-    // viewport widths.
-    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: 'smooth' });
+    // viewport widths. Explicit `behavior: 'instant'` overrides any
+    // `scroll-behavior: smooth` CSS on the container regardless — some
+    // automated/headless browsers silently no-op a `behavior: 'smooth'`
+    // scrollBy, so this doesn't rely on that CSS being (or staying) absent.
+    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: 'instant' as ScrollBehavior });
   }
 }

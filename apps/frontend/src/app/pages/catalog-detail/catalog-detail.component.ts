@@ -412,7 +412,12 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     if (!el) {
       return;
     }
-    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: 'smooth' });
+    // Explicit `behavior: 'instant'` (not the legacy 2-arg scrollBy(x, y),
+    // which resolves to 'auto' and so still defers to CSS `scroll-behavior`)
+    // — some automated/headless browsers silently no-op a smooth scrollBy,
+    // and 'instant' is the one value guaranteed to actually move the
+    // container regardless of any `scroll-smooth` class on it.
+    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: 'instant' as ScrollBehavior });
   }
 
   ngOnInit(): void {
