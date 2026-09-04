@@ -7,8 +7,13 @@ import { appConfig } from './app.config';
 import { serverRoutes } from './app.routes.server';
 
 const appBaseHref = process.env['APP_BASE_HREF'] || '/';
+// GUIATV_PROXY_TARGET keeps the SSR dev server on the same backend the browser
+// proxy uses when the backend runs on a non-default port (e.g. 8081).
 const internalApiOrigin = new URL(
-  process.env['SSR_API_BASE_URL'] || process.env['API_ORIGIN'] || 'http://127.0.0.1:4000'
+  process.env['SSR_API_BASE_URL'] ||
+    process.env['API_ORIGIN'] ||
+    process.env['GUIATV_PROXY_TARGET'] ||
+    'http://127.0.0.1:4000'
 ).origin;
 const publicOrigin = process.env['PUBLIC_ORIGIN'] || 'https://guiaprogramaciontv.com';
 

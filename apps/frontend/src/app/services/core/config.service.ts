@@ -147,6 +147,15 @@ export class AppConfigurationService {
   }
 
   private resolveServerBaseUrl(): string {
-    return 'http://127.0.0.1:4000/v2';
+    // SSR only: keep aligned with the dev proxy (GUIATV_PROXY_TARGET) when the
+    // backend runs on a non-default port, e.g. 8081.
+    const env = typeof process !== 'undefined' ? process.env : undefined;
+    const base =
+      env?.SSR_API_BASE_URL ||
+      env?.API_ORIGIN ||
+      env?.GUIATV_PROXY_TARGET ||
+      'http://127.0.0.1:4000';
+    const normalized = base.replace(/\/$/, '');
+    return normalized.endsWith('/v2') ? normalized : `${normalized}/v2`;
   }
 }
