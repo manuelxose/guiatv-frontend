@@ -359,14 +359,24 @@ export class StreamingViewComponent {
     if (this.loadMoreLoading() || !this.hasMoreItems()) {
       return;
     }
+    // Snapshot the filters this request is for. If they change before the
+    // response arrives, gridData()'s own switchMap has already reset
+    // extraItems/currentPage for the new filter set — applying this now-
+    // stale response would append page-N results from the OLD filters onto
+    // the NEW filters' grid. baseFilters() is a computed signal, so it's
+    // reference-stable until the underlying filters actually change.
+    const requestFilters = this.baseFilters();
     const nextPage = this.currentPage + 1;
     this.loadMoreLoading.set(true);
-    this.facade.getStreamingContent({ ...this.baseFilters(), page: nextPage }).subscribe({
+    this.facade.getStreamingContent({ ...requestFilters, page: nextPage }).subscribe({
       next: (response) => {
+        this.loadMoreLoading.set(false);
+        if (this.baseFilters() !== requestFilters) {
+          return;
+        }
         this.extraItems.update((current) => uniqueCatalogItems([...current, ...response.items]));
         this.extraHasMore.set(response.meta.hasMore);
         this.currentPage = nextPage;
-        this.loadMoreLoading.set(false);
       },
       error: () => this.loadMoreLoading.set(false),
     });
