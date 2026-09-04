@@ -208,6 +208,12 @@
   line-height: 1.18;
 }
 
+.streaming-view__more {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
 .streaming-view__grid {
   display: grid;
   gap: 1rem;
