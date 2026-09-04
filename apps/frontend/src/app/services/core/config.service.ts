@@ -148,7 +148,7 @@ export class AppConfigurationService {
 
   private resolveServerBaseUrl(): string {
     // SSR only: keep aligned with the dev proxy (GUIATV_PROXY_TARGET) when the
-    // backend runs on a non-default port, e.g. 8081.
+    // backend runs on a non-default port.
     const env = typeof process !== 'undefined' ? process.env : undefined;
     const base =
       env?.SSR_API_BASE_URL ||
