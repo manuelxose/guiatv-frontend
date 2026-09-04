@@ -415,40 +415,45 @@ export class DiscoverViewComponent {
   // UnifiedGuideStateService, so this stays local like the TV page's.
   removeFilter(key: string): void {
     const filters = this.guideState.discoverFilters();
+    // Every other filter-mutation method here (selectSort/selectIntent/
+    // selectDate/togglePlatform/toggleGenre/clearFilters) resets to page 1 —
+    // removing a chip must too, or the results grid can land on a page that
+    // no longer exists once the (now smaller) filter set is applied.
     if (key === 'search') {
       this.guideState.setSearch('');
+      this.guideState.updateDiscoverFilters({ page: 1 });
       return;
     }
     if (key === 'sort') {
-      this.guideState.updateDiscoverFilters({ sort: 'popular' });
+      this.guideState.updateDiscoverFilters({ sort: 'popular', page: 1 });
       return;
     }
     if (key === 'intent') {
-      this.guideState.updateDiscoverFilters({ intent: '' });
+      this.guideState.updateDiscoverFilters({ intent: '', page: 1 });
       return;
     }
     if (key === 'date') {
-      this.guideState.updateDiscoverFilters({ date: 'today' });
+      this.guideState.updateDiscoverFilters({ date: 'today', page: 1 });
       return;
     }
     if (key.startsWith('type:')) {
       const value = key.slice('type:'.length);
-      this.guideState.updateDiscoverFilters({ types: filters.types.filter((type) => type !== value) });
+      this.guideState.updateDiscoverFilters({ types: filters.types.filter((type) => type !== value), page: 1 });
       return;
     }
     if (key.startsWith('availability:')) {
       const value = key.slice('availability:'.length);
-      this.guideState.updateDiscoverFilters({ availability: filters.availability.filter((entry) => entry !== value) });
+      this.guideState.updateDiscoverFilters({ availability: filters.availability.filter((entry) => entry !== value), page: 1 });
       return;
     }
     if (key.startsWith('platform:')) {
       const value = key.slice('platform:'.length);
-      this.guideState.updateDiscoverFilters({ platforms: filters.platforms.filter((entry) => entry !== value) });
+      this.guideState.updateDiscoverFilters({ platforms: filters.platforms.filter((entry) => entry !== value), page: 1 });
       return;
     }
     if (key.startsWith('genre:')) {
       const value = key.slice('genre:'.length);
-      this.guideState.updateDiscoverFilters({ genres: filters.genres.filter((entry) => entry !== value) });
+      this.guideState.updateDiscoverFilters({ genres: filters.genres.filter((entry) => entry !== value), page: 1 });
     }
   }
 
