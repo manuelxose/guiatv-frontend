@@ -23,6 +23,7 @@ import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton
 import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
 
 type LegacyCatalogMode = 'program' | 'movie' | 'series';
+type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
 
 @Component({
   selector: 'app-catalog-detail',
@@ -191,24 +192,76 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
             </span>
           </div>
 
+          <!--
+            A programa page is schedule-centric like a canal (see
+            canal-completo.component.html's "Ahora en emisión"/"A
+            continuación" split) — for content.contentType === 'program'
+            specifically, lead with that framing instead of the generic
+            "Próximas emisiones" list movies/series get. Scoped strictly to
+            'program' so the canal-style day-tabs/full-timeline themselves
+            are intentionally NOT ported here — this is copy/grouping only.
+          -->
           <div *ngIf="content.airings?.length" class="border-t border-[var(--portal-divider)] pt-6">
-            <p class="eyebrow mb-1 text-[var(--portal-text-muted)]">TV lineal</p>
-            <h2 class="mb-4 text-xl font-bold text-[var(--portal-text)]">Próximas emisiones</h2>
-            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <a
-                *ngFor="let airing of content.airings"
-                [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
-                class="tnum rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 transition-colors hover:border-[var(--portal-border-strong)]"
-              >
-                <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.title || airing.channelName }}</p>
-                <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
-                  {{ airing.channelName }} · {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
-                </p>
-                <span class="mt-3 inline-block text-xs font-semibold text-[var(--accent-live)]">
-                  {{ airing.detailPath ? 'Ver qué se emite →' : 'Ver programación del canal →' }}
-                </span>
-              </a>
-            </div>
+            <ng-container *ngIf="content.contentType === 'program'; else genericAirings">
+              <ng-container *ngIf="nowAiring(content) as live">
+                <p class="eyebrow mb-1 text-[var(--accent-live)]">En directo</p>
+                <h2 class="mb-4 text-xl font-bold text-[var(--portal-text)]">Ahora en emisión</h2>
+                <a
+                  [routerLink]="live.detailPath || ['/canales', live.channelId]"
+                  class="tnum mb-6 flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-4 transition-colors"
+                >
+                  <span>
+                    <span class="block text-sm font-semibold text-[var(--portal-text)]">{{ live.title || live.channelName }}</span>
+                    <span class="mt-1 block text-xs text-[var(--portal-text-muted)]">
+                      {{ live.channelName }} · {{ formatTime(live.start) }} - {{ formatTime(live.end) }}
+                    </span>
+                  </span>
+                  <span class="text-xs font-semibold text-[var(--accent-live)]">Ver canal →</span>
+                </a>
+              </ng-container>
+
+              <ng-container *ngIf="nextAirings(content) as next">
+                <ng-container *ngIf="next.length">
+                  <p class="eyebrow mb-1 text-[var(--portal-text-muted)]">TV lineal</p>
+                  <h2 class="mb-4 text-xl font-bold text-[var(--portal-text)]">A continuación</h2>
+                  <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <a
+                      *ngFor="let airing of next"
+                      [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
+                      class="tnum rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 transition-colors hover:border-[var(--portal-border-strong)]"
+                    >
+                      <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.title || airing.channelName }}</p>
+                      <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
+                        {{ airing.channelName }} · {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
+                      </p>
+                      <span class="mt-3 inline-block text-xs font-semibold text-[var(--accent-live)]">
+                        {{ airing.detailPath ? 'Ver qué se emite →' : 'Ver programación del canal →' }}
+                      </span>
+                    </a>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+
+            <ng-template #genericAirings>
+              <p class="eyebrow mb-1 text-[var(--portal-text-muted)]">TV lineal</p>
+              <h2 class="mb-4 text-xl font-bold text-[var(--portal-text)]">Próximas emisiones</h2>
+              <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <a
+                  *ngFor="let airing of content.airings"
+                  [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
+                  class="tnum rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 transition-colors hover:border-[var(--portal-border-strong)]"
+                >
+                  <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.title || airing.channelName }}</p>
+                  <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
+                    {{ airing.channelName }} · {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
+                  </p>
+                  <span class="mt-3 inline-block text-xs font-semibold text-[var(--accent-live)]">
+                    {{ airing.detailPath ? 'Ver qué se emite →' : 'Ver programación del canal →' }}
+                  </span>
+                </a>
+              </div>
+            </ng-template>
           </div>
 
           <!-- Cast: compact rail, photo when available, text-only fallback otherwise. -->
@@ -359,6 +412,19 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
       hour: '2-digit',
       minute: '2-digit',
     });
+  }
+
+  // For contentType 'program' only — splits content.airings (current airing +
+  // relatedChannelItems, per CatalogService.getProgramDetail) into the
+  // "ahora en emisión" / "a continuación" framing borrowed from
+  // canal-completo.component.html, instead of one flat "Próximas emisiones"
+  // list.
+  nowAiring(item: CatalogItem): CatalogAiring | null {
+    return item.airings?.find((airing) => airing.liveNow) ?? null;
+  }
+
+  nextAirings(item: CatalogItem): CatalogAiring[] {
+    return (item.airings || []).filter((airing) => !airing.liveNow);
   }
 
   humanStatus(status: string): string {
@@ -584,6 +650,14 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     const baseUrl = 'https://guiaprogramaciontv.com';
     const schemas: object[] = [generateBreadcrumbSchema(this.breadcrumbItems, baseUrl)];
 
+    // 'program' items now get real TMDB enrichment (cast/director/rating)
+    // when they carry a tmdbId (CatalogService.resolveProgramTmdbType,
+    // backend), but generateTVSeriesSchema hardcodes `${baseUrl}/series/...`
+    // as the canonical url — reusing it as-is for a program would emit a
+    // wrong (nonexistent) canonical URL, which is worse for SEO than the
+    // breadcrumb-only schema it gets today. Left as a follow-up: needs
+    // generateTVSeriesSchema to accept an explicit url instead of assuming
+    // /series/.
     if (item.contentType === 'series') {
       schemas.unshift(generateTVSeriesSchema(item, baseUrl));
     } else if (item.contentType === 'movie') {
