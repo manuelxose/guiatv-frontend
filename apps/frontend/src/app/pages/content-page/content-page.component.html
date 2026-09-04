@@ -4,7 +4,7 @@
     <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
 
     <section
-      class="overflow-hidden rounded-[2rem] border border-[var(--portal-border)] bg-[linear-gradient(135deg,rgba(124,45,18,0.28),rgba(8,16,24,0.92)_45%,rgba(15,23,42,0.95))] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.24)] md:p-8"
+      class="overflow-hidden rounded-[2rem] border border-[var(--portal-border)] bg-[linear-gradient(135deg,color-mix(in_oklch,var(--accent-discover)_28%,transparent),var(--portal-bg-deep)_45%,var(--portal-bg-elevated))] p-6 shadow-[var(--shadow-lg)] md:p-8"
     >
       <p class="text-[11px] uppercase tracking-[0.34em] text-[var(--portal-text-muted)]">
         {{ contentType === 'series' ? 'Series' : 'Películas' }}

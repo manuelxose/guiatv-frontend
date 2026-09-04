@@ -174,9 +174,10 @@ export class AdminOverviewSectionComponent implements OnInit, OnDestroy {
         id: 'epg',
         label: 'EPG',
         status: !result.epg.ok ? 'unavailable' : epgHasIssues ? 'warning' : 'healthy',
-        detail: result.epg.value
-          ? `${result.epg.value.currentCoveragePercent}% coverage`
-          : 'Overview unavailable',
+        detail:
+          result.epg.value && typeof result.epg.value.currentCoveragePercent === 'number'
+            ? `${result.epg.value.currentCoveragePercent}% coverage`
+            : 'Overview unavailable',
         group: 'schedules',
         item: 'epg',
       },

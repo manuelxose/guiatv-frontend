@@ -1,0 +1,62 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/app/components/unified-chat-shell/social-chat-panel/social-chat-panel.component.ts"
+        ],
+        "createdAt": "2026-09-03T21:45:26.724Z",
+        "reason": "false positive: [src]=\"user.avatar\" is a dynamic binding guarded by *ngIf=\"user.avatar\", not an empty/placeholder src; unrelated to this edit (border-slate-950 -> token fix)"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/app/pages/admin/sections/blog/admin-blog-section.component.html"
+        ],
+        "createdAt": "2026-09-03T22:09:26.466Z",
+        "reason": "pre-existing [src]=\"image\" Angular property binding, not a literal empty/missing src; static scan cannot evaluate the bound expression; unrelated to this session's admin destructive-action fix"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/app/components/modal/modal.component.html"
+        ],
+        "createdAt": "2026-09-03T21:46:54.107Z",
+        "reason": "false positive: [src]=\"program_modal?.image || getFallbackImage()\" is a dynamic binding with an always-present base64 SVG fallback, not an empty/placeholder src; pre-existing, unrelated to this edit"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/app/pages/admin/sections/users/admin-users-section.component.html"
+        ],
+        "createdAt": "2026-09-03T22:09:59.281Z",
+        "reason": "pre-existing [src]=\"user.picture\" Angular binding for user avatar, guarded by *ngIf=user.picture; not a literal empty/missing src"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/app/components/program-detail-modal/program-detail-modal.component.html"
+        ],
+        "createdAt": "2026-09-03T21:50:29.767Z",
+        "reason": "false positive: [src] bindings (channelLogo, detail poster) are dynamic and guarded by *ngIf, not empty/placeholder src; pre-existing, unrelated to this edit (removed stray stopPropagation blocking Escape)"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "apps/frontend/src/app/pages/admin/sections/content/admin-content-section.component.html"
+        ],
+        "createdAt": "2026-09-03T22:10:05.694Z",
+        "reason": "pre-existing [src]=\"ch.icon\" Angular binding for channel icon, guarded by *ngIf=ch.icon; not a literal empty/missing src"
+      }
+    ]
+  }
+}

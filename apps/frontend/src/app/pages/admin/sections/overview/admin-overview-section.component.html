@@ -67,7 +67,7 @@
         >
           <p class="text-sm font-semibold text-[var(--portal-text)]">TV / EPG</p>
           <dl *ngIf="epg" class="mt-2 space-y-1 text-xs text-[var(--portal-text-soft)]">
-            <div class="flex justify-between"><dt>Coverage</dt><dd>{{ epg.currentCoveragePercent }}%</dd></div>
+            <div class="flex justify-between"><dt>Coverage</dt><dd>{{ epg.currentCoveragePercent ?? '…' }}%</dd></div>
             <div class="flex justify-between"><dt>Active channels</dt><dd>{{ epg.activeChannels }}</dd></div>
             <div class="flex justify-between"><dt>Missing EPG</dt><dd>{{ epg.channelsMissingEpg }}</dd></div>
             <div class="flex justify-between"><dt>Stale</dt><dd>{{ epg.staleChannels }}</dd></div>
@@ -85,7 +85,7 @@
             <div class="flex justify-between"><dt>Provider</dt><dd class="capitalize">{{ football.provider?.state }}</dd></div>
             <div class="flex justify-between"><dt>Upcoming fixtures</dt><dd>{{ football.upcomingFixtures }}</dd></div>
             <div class="flex justify-between"><dt>Missing broadcast</dt><dd>{{ football.fixturesMissingBroadcast }}</dd></div>
-            <div class="flex justify-between"><dt>Stale entities</dt><dd>{{ football.staleCompetitions + football.staleTeams }}</dd></div>
+            <div class="flex justify-between"><dt>Stale entities</dt><dd>{{ (football.staleCompetitions ?? 0) + (football.staleTeams ?? 0) }}</dd></div>
           </dl>
           <p *ngIf="!football" class="mt-2 text-xs text-[var(--portal-text-muted)]">Overview unavailable</p>
         </button>

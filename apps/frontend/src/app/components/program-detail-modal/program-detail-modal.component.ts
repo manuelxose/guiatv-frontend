@@ -6,14 +6,18 @@
 
 import {
   Component,
+  ElementRef,
+  HostListener,
   Input,
   Output,
   EventEmitter,
   ChangeDetectionStrategy,
   signal,
   computed,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { OnChanges, SimpleChanges } from '@angular/core';
 import { trigger, style, transition, animate } from '@angular/animations';
 import { IProgramItem } from 'src/app/interfaces';
 import { InteractionButtonsComponent } from '../interaction-buttons/interaction-buttons.component';
@@ -28,31 +32,34 @@ import { APP_PATHS } from '../../config/route-map';
   styleUrls: ['./program-detail-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
+    // Durations bound via params so prefers-reduced-motion collapses them.
     trigger('modalAnimation', [
       transition(':enter', [
         style({ opacity: 0, transform: 'translateY(100%)' }),
         animate(
-          '300ms cubic-bezier(0.4, 0, 0.2, 1)',
+          '{{ enterMs }}ms cubic-bezier(0.4, 0, 0.2, 1)',
           style({ opacity: 1, transform: 'translateY(0)' })
         ),
-      ]),
+      ], { params: { enterMs: 300 } }),
       transition(':leave', [
         animate(
-          '200ms cubic-bezier(0.4, 0, 1, 1)',
+          '{{ leaveMs }}ms cubic-bezier(0.4, 0, 1, 1)',
           style({ opacity: 0, transform: 'translateY(100%)' })
         ),
-      ]),
+      ], { params: { leaveMs: 200 } }),
     ]),
     trigger('backdropAnimation', [
       transition(':enter', [
         style({ opacity: 0 }),
-        animate('200ms ease-out', style({ opacity: 1 })),
-      ]),
-      transition(':leave', [animate('150ms ease-in', style({ opacity: 0 }))]),
+        animate('{{ enterMs }}ms ease-out', style({ opacity: 1 })),
+      ], { params: { enterMs: 200 } }),
+      transition(':leave', [animate('{{ leaveMs }}ms ease-in', style({ opacity: 0 }))], {
+        params: { leaveMs: 150 },
+      }),
     ]),
   ],
 })
-export class ProgramDetailModalComponent {
+export class ProgramDetailModalComponent implements OnChanges {
   public readonly appPaths = APP_PATHS;
 
   @Input() program: IProgramItem | null = null;
@@ -62,6 +69,31 @@ export class ProgramDetailModalComponent {
   @Output() close = new EventEmitter<void>();
 
   public readonly isVisible = signal(false);
+
+  @ViewChild('modalContent') private modalContent?: ElementRef<HTMLElement>;
+  private previouslyFocused: HTMLElement | null = null;
+
+  public readonly modalMotionParams: { enterMs: number; leaveMs: number };
+  public readonly backdropMotionParams: { enterMs: number; leaveMs: number };
+
+  constructor() {
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.modalMotionParams = reducedMotion ? { enterMs: 1, leaveMs: 1 } : { enterMs: 300, leaveMs: 200 };
+    this.backdropMotionParams = reducedMotion ? { enterMs: 1, leaveMs: 1 } : { enterMs: 200, leaveMs: 150 };
+  }
+
+  // Document-level so it fires regardless of focus location inside the
+  // dialog (the content pane stops propagation on its own keydown to keep
+  // internal shortcuts from bubbling into page-level handlers).
+  @HostListener('document:keydown.escape')
+  public onDocumentEscape(): void {
+    if (this.program) {
+      this.onClose();
+    }
+  }
 
   // Computed para datos del banner
   public readonly bannerData = computed(() => {
@@ -153,6 +185,46 @@ export class ProgramDetailModalComponent {
    */
   public onClose(): void {
     this.close.emit();
+    this.previouslyFocused?.focus?.();
+    this.previouslyFocused = null;
+  }
+
+  public ngOnChanges(changes: SimpleChanges): void {
+    if (changes['program'] && this.program && !changes['program'].previousValue) {
+      this.previouslyFocused = (typeof document !== 'undefined' ? (document.activeElement as HTMLElement) : null) ?? null;
+      setTimeout(() => {
+        const closeBtn = this.modalContent?.nativeElement.querySelector<HTMLElement>('.close-button');
+        closeBtn?.focus();
+      }, 0);
+    }
+  }
+
+  private readonly focusableSelector =
+    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  @HostListener('document:keydown.tab', ['$event'])
+  public onDocumentTab(event: KeyboardEvent): void {
+    if (!this.program) return;
+    const root = this.modalContent?.nativeElement;
+    if (!root) return;
+    const focusable = Array.from(root.querySelectorAll<HTMLElement>(this.focusableSelector)).filter(
+      (el) => el.offsetParent !== null
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement as HTMLElement;
+
+    if (event.shiftKey && active === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    } else if (!root.contains(active)) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   /**
@@ -161,6 +233,14 @@ export class ProgramDetailModalComponent {
   public onContentClick(event: Event): void {
     event.stopPropagation();
   }
+
+  /**
+   * Deliberate no-op paired with (click) above so keyboard events keep
+   * bubbling to the document-level Escape/Tab handlers (needed for the
+   * focus trap); satisfies the click-events-have-key-events a11y lint rule
+   * without breaking that bubbling.
+   */
+  public onContentKeydown(_event: KeyboardEvent): void {}
 
   /**
    * Maneja el escape key

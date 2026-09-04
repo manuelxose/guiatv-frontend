@@ -70,7 +70,7 @@ import { AffiliateDisclosureComponent } from '../../affiliate-disclosure/affilia
             <!-- Blinking cursor only while genuine server streaming is active. -->
             <span
               *ngIf="message.isStreaming"
-              class="inline-block h-4 w-[2px] translate-y-[2px] animate-[blink_0.8s_step-end_infinite] bg-slate-300"
+              class="inline-block h-4 w-[2px] translate-y-[2px] animate-[blink_0.8s_step-end_infinite] bg-[var(--portal-text-muted)]"
             ></span>
 
             <!-- Recommendations -->
@@ -157,8 +157,8 @@ import { AffiliateDisclosureComponent } from '../../affiliate-disclosure/affilia
                 (click)="feedbackPositive.emit(message)"
                 class="flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
                 [ngClass]="message.feedback?.rating === 'positive'
-                  ? 'text-green-400 bg-green-500/15'
-                  : 'text-[var(--portal-text-muted)] hover:text-green-400 hover:bg-green-500/10'"
+                  ? 'text-[var(--accent-streaming)] bg-[var(--accent-streaming-soft)]'
+                  : 'text-[var(--portal-text-muted)] hover:text-[var(--accent-streaming)] hover:bg-[var(--accent-streaming-soft)]'"
                 [disabled]="!!message.feedback"
                 aria-label="Útil"
               >
@@ -172,8 +172,8 @@ import { AffiliateDisclosureComponent } from '../../affiliate-disclosure/affilia
                 (click)="feedbackNegative.emit(message)"
                 class="flex h-11 w-11 items-center justify-center rounded-xl transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--guide-accent)]"
                 [ngClass]="message.feedback?.rating === 'negative'
-                  ? 'text-red-400 bg-red-500/15'
-                  : 'text-[var(--portal-text-muted)] hover:text-red-400 hover:bg-[var(--accent-live-soft)]'"
+                  ? 'text-[var(--status-live)] bg-[var(--status-live-soft)]'
+                  : 'text-[var(--portal-text-muted)] hover:text-[var(--status-live)] hover:bg-[var(--status-live-soft)]'"
                 [disabled]="!!message.feedback"
                 aria-label="No útil"
               >
@@ -213,6 +213,14 @@ import { AffiliateDisclosureComponent } from '../../affiliate-disclosure/affilia
     @keyframes blink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :host ::ng-deep [class*="animate-[blink"],
+      :host ::ng-deep [class*="animate-[pulse_1.2s"] {
+        animation: none;
+        opacity: 0.6;
+      }
     }
 
     /* Markdown prose styles for assistant messages */
@@ -331,7 +339,7 @@ export class ChatMessageBubbleComponent implements OnChanges, OnDestroy {
 
   get bubbleClasses(): string {
     const role = this.message.role === 'user'
-      ? 'bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md'
+      ? 'bg-[var(--accent-live-strong)] text-white shadow-md'
       : 'assistant-bubble border shadow-sm';
     // Recommendation cards/list already re-pad their own content internally,
     // so the bubble's own padding can shrink to avoid stacking two paddings.
