@@ -10,7 +10,7 @@ import {
   Provider,
 } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
+import { provideRouter } from '@angular/router';
 // Preserve interactions made before the client bundle finishes hydrating.
 import { provideClientHydration, withEventReplay, withHttpTransferCacheOptions } from '@angular/platform-browser';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
@@ -31,8 +31,12 @@ import { environment } from '../environments/environment';
  */
 export const appConfig: ApplicationConfig = {
   providers: [
-    // Providers básicos de Angular para standalone
-    provideRouter(routes, withEnabledBlockingInitialNavigation()),
+    // Providers básicos de Angular para standalone.
+    // NOTE: do not combine with withEnabledBlockingInitialNavigation() — Angular
+    // rejects it together with provideClientHydration() (NG0501,
+    // HYDRATION_CONFLICTING_FEATURES) and hydration never completes, leaving the
+    // server-rendered page unrecoverable in the browser.
+    provideRouter(routes),
     // Fetch API es requerida para SSR moderno
     provideHttpClient(withFetch(), withInterceptors([authRefreshInterceptor])),
     // Must be present in both browser and server application configs so SSR

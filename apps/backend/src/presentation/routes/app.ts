@@ -29,10 +29,11 @@ export const createApp = (dependencies: RoutesDependencies): Application => {
 
   app.use(publicCachePolicy);
 
-  // Serve storage from configured local path when available.
+  // Serve storage from the same path LocalStorageRepository writes to:
+  // STORAGE_LOCAL_PATH when configured, otherwise <cwd>/tmp-storage.
   const storagePath = process.env.STORAGE_LOCAL_PATH
     ? path.resolve(process.env.STORAGE_LOCAL_PATH)
-    : path.join(__dirname, '../../../storage');
+    : path.join(process.cwd(), 'tmp-storage');
   app.use('/storage', express.static(storagePath));
 
   // Middlewares globales

@@ -25,7 +25,9 @@ export class MongoAnalyticsRepository implements IAnalyticsRepository {
       timezone: payload.timezone,
       screen: payload.screen,
       viewport: payload.viewport,
-      metadata: payload.metadata,
+      // `metadata` must not appear in $setOnInsert: when it is also present in
+      // the `$set` below, MongoDB rejects the upsert with
+      // "Updating the path 'metadata' would create a conflict at 'metadata'".
       endedAt: null,
       durationSec: 0,
     };
