@@ -56,9 +56,9 @@ import {
         <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
           <p class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Feedback</p>
           <p class="text-2xl font-semibold mt-2">
-            <span class="text-emerald-300">+{{ overview.feedbackSummary.positive }}</span>
+            <span class="text-[var(--accent-discover)]">+{{ overview.feedbackSummary.positive }}</span>
             <span class="text-[var(--portal-text-faint)] mx-1">/</span>
-            <span class="text-red-300">-{{ overview.feedbackSummary.negative }}</span>
+            <span class="text-[var(--spotify-negative)]">-{{ overview.feedbackSummary.negative }}</span>
           </p>
           <p class="text-xs text-[var(--portal-text-muted)] mt-1">Thumbs up / down</p>
         </div>
@@ -67,7 +67,7 @@ import {
           <p class="text-2xl font-semibold mt-2">
             <span class="text-[var(--portal-text)]">{{ overview.subscriptionBreakdown.free }}</span>
             <span class="text-[var(--portal-text-faint)] mx-1">/</span>
-            <span class="text-amber-300">{{ overview.subscriptionBreakdown.premium }}</span>
+            <span class="text-[var(--spotify-warning)]">{{ overview.subscriptionBreakdown.premium }}</span>
           </p>
           <p class="text-xs text-[var(--portal-text-muted)] mt-1">Free / Premium</p>
         </div>
@@ -106,7 +106,7 @@ import {
       <!-- Activity timeline (table) -->
       <div *ngIf="failures.length" class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">
         <h3 class="text-sm font-medium text-[var(--portal-text-soft)] mb-3">Recent assistant exceptions</h3>
-        <div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-left text-[var(--portal-text-muted)]"><th class="pb-2">Outcome</th><th>Reason</th><th>Grounding</th><th>Latency</th><th>Time</th></tr></thead><tbody><tr *ngFor="let event of failures" class="border-t border-[var(--portal-border)]"><td class="py-2 text-amber-300">{{ event.outcome }}</td><td>{{ event.failureReason || '—' }}</td><td>{{ event.grounding.join(', ') || '—' }}</td><td>{{ event.latencyMs }} ms</td><td>{{ event.createdAt | date:'short' }}</td></tr></tbody></table></div>
+        <div class="overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-left text-[var(--portal-text-muted)]"><th class="pb-2">Outcome</th><th>Reason</th><th>Grounding</th><th>Latency</th><th>Time</th></tr></thead><tbody><tr *ngFor="let event of failures" class="border-t border-[var(--portal-border)]"><td class="py-2 text-[var(--spotify-warning)]">{{ event.outcome }}</td><td>{{ event.failureReason || '—' }}</td><td>{{ event.grounding.join(', ') || '—' }}</td><td>{{ event.latencyMs }} ms</td><td>{{ event.createdAt | date:'short' }}</td></tr></tbody></table></div>
       </div>
 
       <div *ngIf="timeSeries.length" class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-5">

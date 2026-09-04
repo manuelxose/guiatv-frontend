@@ -52,9 +52,9 @@ export class AdminAffiliateVerificationComponent implements OnInit {
   }
 
   badgeClass(status: AdminVerificationQueueItem['displayStatus']): string {
-    if (status === 'current') return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40';
-    if (status === 'stale') return 'bg-amber-500/20 text-amber-200 border-amber-500/40';
-    return 'bg-red-500/20 text-red-200 border-red-500/40';
+    if (status === 'current') return 'bg-[var(--accent-discover)]/20 text-[var(--accent-discover)] border-[var(--accent-discover)]/40';
+    if (status === 'stale') return 'bg-[var(--spotify-warning)]/20 text-[var(--spotify-warning)] border-[var(--spotify-warning)]/40';
+    return 'bg-[var(--spotify-negative)]/20 text-[var(--spotify-negative)] border-[var(--spotify-negative)]/40';
   }
 
   badgeLabel(status: AdminVerificationQueueItem['displayStatus']): string {

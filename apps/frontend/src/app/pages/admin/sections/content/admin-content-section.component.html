@@ -9,7 +9,7 @@
     <button
       type="button"
       (click)="activeItem === 'channels' ? loadChannels() : loadPrograms()"
-      class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+      class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
     >
       Refresh
     </button>
@@ -17,10 +17,10 @@
 
   <!-- loading / error -->
   <div *ngIf="loading" class="text-center py-8">
-    <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
+    <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-[var(--spotify-negative)] border-t-transparent"></div>
     <p class="text-xs text-[var(--portal-text-soft)] mt-2">Loading…</p>
   </div>
-  <div *ngIf="error" class="bg-red-500/10 border border-red-500/40 rounded-2xl p-4 text-sm text-red-200">{{ error }}</div>
+  <div *ngIf="error" class="bg-[var(--spotify-negative)]/10 border border-[var(--spotify-negative)]/40 rounded-2xl p-4 text-sm text-[var(--spotify-negative)]">{{ error }}</div>
 
   <!-- ─── CHANNELS VIEW ─── -->
   <ng-container *ngIf="activeItem === 'channels' && !loading">
@@ -32,7 +32,7 @@
       </div>
       <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
         <p class="text-[11px] uppercase tracking-wider text-[var(--portal-text-muted)]">Active</p>
-        <p class="text-2xl font-semibold text-emerald-200 mt-2">{{ (channels | keyvalue).length ? (channels.length) : 0 }}</p>
+        <p class="text-2xl font-semibold text-[var(--accent-discover)] mt-2">{{ (channels | keyvalue).length ? (channels.length) : 0 }}</p>
       </div>
       <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-4">
         <p class="text-[11px] uppercase tracking-wider text-[var(--portal-text-muted)]">Types</p>
@@ -47,7 +47,7 @@
         id="ch-search"
         type="text"
         [(ngModel)]="searchTerm"
-        class="w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
         placeholder="Search by name or type…"
       />
     </div>
@@ -78,7 +78,7 @@
             <td class="px-4 py-3">
               <span
                 class="text-[11px] px-2 py-1 rounded-full border"
-                [ngClass]="ch.isActive ? 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10' : 'border-[var(--portal-border-strong)] text-[var(--portal-text-soft)] bg-[var(--portal-surface-strong)]'"
+                [ngClass]="ch.isActive ? 'border-[var(--accent-discover)]/40 text-[var(--accent-discover)] bg-[var(--accent-discover)]/10' : 'border-[var(--portal-border-strong)] text-[var(--portal-text-soft)] bg-[var(--portal-surface-strong)]'"
               >
                 {{ ch.isActive ? 'active' : 'inactive' }}
               </span>
@@ -115,20 +115,20 @@
         id="prog-date"
         type="date"
         [(ngModel)]="programDate"
-        class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
       />
       <label for="prog-search" class="sr-only">Search programs</label>
       <input
         id="prog-search"
         type="text"
         [(ngModel)]="searchTerm"
-        class="flex-1 min-w-[180px] bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="flex-1 min-w-[180px] bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
         placeholder="Search title or genre…"
       />
       <button
         type="button"
         (click)="programPage = 1; loadPrograms()"
-        class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-sm text-red-100 hover:bg-red-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="px-4 py-2 rounded-xl bg-[var(--spotify-negative)]/20 border border-[var(--spotify-negative)]/40 text-sm text-[var(--spotify-negative)] hover:bg-[var(--spotify-negative)]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
       >
         Apply
       </button>
@@ -154,7 +154,7 @@
             </td>
             <td class="px-4 py-3 text-[var(--portal-text-soft)]">{{ p.channelId }}</td>
             <td class="px-4 py-3">
-              <span *ngIf="p.genre" class="text-[11px] px-2 py-1 rounded-full border border-blue-500/40 text-blue-200 bg-blue-500/10">{{ p.genre }}</span>
+              <span *ngIf="p.genre" class="text-[11px] px-2 py-1 rounded-full border border-[var(--accent-streaming)]/40 text-[var(--accent-streaming)] bg-[var(--accent-streaming)]/10">{{ p.genre }}</span>
               <span *ngIf="!p.genre" class="text-[var(--portal-text-faint)] text-xs">—</span>
             </td>
             <td class="px-4 py-3 text-[var(--portal-text-soft)]">{{ p.startTime | date:'HH:mm' }}</td>
@@ -172,14 +172,14 @@
           type="button"
           [disabled]="programPage <= 1"
           (click)="prevPage()"
-          class="px-3 py-1.5 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="px-3 py-1.5 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
         >
           Prev
         </button>
         <button
           type="button"
           (click)="nextPage()"
-          class="px-3 py-1.5 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="px-3 py-1.5 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
         >
           Next
         </button>
@@ -204,7 +204,7 @@
     <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-8 text-center">
       <p class="text-lg text-[var(--portal-text-soft)]">{{ viewTitle }}</p>
       <p class="text-sm text-[var(--portal-text-muted)] mt-2">This section is planned. Asset and layout management will be available in a future release.</p>
-      <span class="mt-4 inline-block text-[11px] px-3 py-1 rounded-full border border-amber-500/40 text-amber-200 bg-amber-500/10">Planned</span>
+      <span class="mt-4 inline-block text-[11px] px-3 py-1 rounded-full border border-[var(--spotify-warning)]/40 text-[var(--spotify-warning)] bg-[var(--spotify-warning)]/10">Planned</span>
     </div>
   </ng-container>
 </section>

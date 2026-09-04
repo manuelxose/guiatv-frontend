@@ -49,7 +49,7 @@ import { FootballStandingRowDTO } from '@app/features/football/football.models';
   styles: `
     .standings {
       border: 1px solid var(--portal-border);
-      border-radius: 0.75rem;
+      border-radius: var(--radius-lg);
       overflow: hidden;
       background: var(--portal-card);
     }

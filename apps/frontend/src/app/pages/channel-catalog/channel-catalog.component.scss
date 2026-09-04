@@ -139,7 +139,7 @@
 .channel-card__logo-skeleton,
 .channel-card__line {
   display: block;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   background: linear-gradient(100deg, var(--portal-surface-strong) 30%, var(--portal-bg-elevated) 50%, var(--portal-surface-strong) 70%);
   background-size: 240% 100%;
   animation: channel-skeleton 1.5s ease-in-out infinite;

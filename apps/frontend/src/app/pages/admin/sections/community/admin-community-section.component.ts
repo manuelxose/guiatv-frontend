@@ -37,9 +37,9 @@ export class AdminCommunitySectionComponent implements OnInit, OnDestroy {
   private subs = new Subscription();
 
   readonly statusClasses: Record<string, string> = {
-    open: 'border-amber-500/40 text-amber-200 bg-amber-500/10',
-    reviewing: 'border-blue-500/40 text-blue-200 bg-blue-500/10',
-    resolved: 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10',
+    open: 'border-[var(--spotify-warning)]/40 text-[var(--spotify-warning)] bg-[var(--spotify-warning)]/10',
+    reviewing: 'border-[var(--accent-streaming)]/40 text-[var(--accent-streaming)] bg-[var(--accent-streaming)]/10',
+    resolved: 'border-[var(--accent-discover)]/40 text-[var(--accent-discover)] bg-[var(--accent-discover)]/10',
     dismissed: 'border-[var(--portal-border-strong)] text-[var(--portal-text-soft)] bg-[var(--portal-surface-strong)]',
   };
 

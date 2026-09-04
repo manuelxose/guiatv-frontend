@@ -29,7 +29,7 @@ import { FootballBroadcastDTO } from '@app/features/football/football.models';
       letter-spacing: 0.01em;
       color: var(--portal-text-muted);
       border: 1px solid var(--portal-border);
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       padding: 0.1rem 0.5rem;
       white-space: nowrap;
       max-width: 8rem;

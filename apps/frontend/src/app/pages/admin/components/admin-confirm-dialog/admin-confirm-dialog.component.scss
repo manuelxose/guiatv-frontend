@@ -27,7 +27,7 @@
   z-index: 1;
   width: 100%;
   max-width: 24rem;
-  border-radius: 1rem;
+  border-radius: var(--radius-xl); // 1rem
   border: 1px solid var(--portal-border);
   background: var(--portal-surface);
   padding: 1.25rem;

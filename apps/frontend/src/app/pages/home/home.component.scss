@@ -65,8 +65,13 @@
   transition: border-color 180ms ease, transform 180ms ease;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .home-page__football-cta:hover {
+    transform: translateY(-4px);
+  }
+}
+
 .home-page__football-cta:hover {
-  transform: translateY(-2px);
   border-color: var(--accent-sports);
 }
 
@@ -78,7 +83,7 @@
 
 .home-page__football-cta-sub {
   font-size: 0.85rem;
-  color: var(--guide-text-muted, #94a3b8);
+  color: var(--guide-text-muted);
 }
 
 .home-page__football-cta-action {
@@ -110,13 +115,13 @@
 }
 
 .home-page__platform-card span {
-  color: var(--guide-text-muted, #94a3b8);
+  color: var(--guide-text-muted);
   font-size: 0.82rem;
   font-weight: 600;
 }
 
 .home-page__platform-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   border-color: var(--portal-border-strong);
   background: var(--portal-card-elevated);
   box-shadow: var(--shadow-md);
