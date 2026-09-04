@@ -7,7 +7,9 @@ import * as path from 'path';
  */
 export const config = {
   // ===== SERVIDOR =====
-  port: parseInt(process.env.PORT || '8080', 10),
+  // 4000 matches the production port (/etc/guiatv/api.env). Local and remote
+  // must stay aligned; override via PORT env var only when strictly needed.
+  port: parseInt(process.env.PORT || '4000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
   isDevelopment: process.env.NODE_ENV !== 'production',
 

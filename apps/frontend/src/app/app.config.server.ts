@@ -8,7 +8,7 @@ import { serverRoutes } from './app.routes.server';
 
 const appBaseHref = process.env['APP_BASE_HREF'] || '/';
 // GUIATV_PROXY_TARGET keeps the SSR dev server on the same backend the browser
-// proxy uses when the backend runs on a non-default port (e.g. 8081).
+// proxy uses when the backend runs on a non-default port.
 const internalApiOrigin = new URL(
   process.env['SSR_API_BASE_URL'] ||
     process.env['API_ORIGIN'] ||
