@@ -168,8 +168,8 @@ export class AdminAffiliateProgramsComponent implements OnInit {
   }
 
   secretBadgeClass(status: AdminAffiliateProgram['secretStatus']): string {
-    if (status === 'configured') return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40';
-    if (status === 'missing') return 'bg-red-500/20 text-red-200 border-red-500/40';
+    if (status === 'configured') return 'bg-[var(--accent-discover)]/20 text-[var(--accent-discover)] border-[var(--accent-discover)]/40';
+    if (status === 'missing') return 'bg-[var(--spotify-negative)]/20 text-[var(--spotify-negative)] border-[var(--spotify-negative)]/40';
     return 'bg-[var(--portal-surface)] text-[var(--portal-text-muted)] border-[var(--portal-border-strong)]';
   }
 

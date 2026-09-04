@@ -64,8 +64,8 @@ import {
       padding: 0.5rem 0.75rem;
       color: inherit;
       text-decoration: none;
-      border-radius: 0.5rem;
-      transition: background 0.15s ease;
+      border-radius: var(--radius-md);
+      transition: background var(--motion-fast) var(--motion-ease);
     }
     .row:hover, .row:focus-visible { background: var(--portal-surface-strong); }
     .row:focus-visible { outline: 2px solid var(--accent-sports); outline-offset: -2px; }
@@ -88,7 +88,7 @@ import {
     .row__dot {
       width: 0.4rem;
       height: 0.4rem;
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       background: var(--status-live);
       animation: football-row-pulse 1.4s ease-in-out infinite;
       flex: 0 0 auto;

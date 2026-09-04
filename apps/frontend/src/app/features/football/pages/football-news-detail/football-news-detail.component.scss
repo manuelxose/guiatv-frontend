@@ -13,7 +13,7 @@
 .article__title { margin: 0; font-size: 1.75rem; font-weight: 900; line-height: 1.2; color: var(--portal-text); }
 .article__meta { display: flex; flex-wrap: wrap; gap: 0.5rem; font-size: 0.8125rem; color: var(--portal-text-muted); }
 .article__meta a { color: var(--accent-sports); }
-.article__cover { width: 100%; aspect-ratio: 16 / 9; border-radius: 0.75rem; object-fit: cover; }
+.article__cover { width: 100%; aspect-ratio: 16 / 9; border-radius: var(--radius-lg); object-fit: cover; }
 .article__body { color: var(--portal-text); line-height: 1.7; }
 .article__relations {
   display: flex;
@@ -28,7 +28,7 @@
   min-height: 44px;
   padding: 0.5rem 0.875rem;
   border: 1px solid var(--portal-border);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   color: var(--portal-text);
   text-decoration: none;
   font-size: 0.8125rem;
@@ -38,7 +38,7 @@
 
 .empty {
   border: 1px dashed var(--portal-border-strong);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   padding: 2rem;
   text-align: center;
 }
@@ -46,7 +46,7 @@
 .empty__link { color: var(--accent-sports); font-weight: 700; }
 .empty__skeleton {
   height: 20rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-lg);
   background: linear-gradient(90deg, var(--portal-surface-strong) 25%, var(--portal-card) 37%, var(--portal-surface-strong) 63%);
   background-size: 400% 100%;
   animation: football-news-detail-skeleton 1.4s ease infinite;

@@ -104,14 +104,30 @@ export type FootballMatchCardVariant = 'default' | 'live' | 'compact' | 'feature
       gap: 0.625rem;
       padding: 0.875rem 1rem;
       border: 1px solid var(--portal-border);
-      border-radius: 0.75rem;
+      border-radius: var(--radius-lg);
       background: var(--portal-card);
       color: inherit;
       text-decoration: none;
-      transition: border-color 0.15s ease, background 0.15s ease;
+      transition: border-color var(--motion-fast) var(--motion-ease),
+        background var(--motion-fast) var(--motion-ease);
     }
-    .card:hover, .card:focus-visible { border-color: var(--accent-sports); }
+    .card:hover, .card:focus-visible {
+      border-color: var(--accent-sports);
+      background: var(--portal-card-elevated);
+    }
     .card:focus-visible { outline: 2px solid var(--accent-sports); outline-offset: 2px; }
+    @media (prefers-reduced-motion: no-preference) {
+      .card {
+        transition: border-color var(--motion-fast) var(--motion-ease),
+          background var(--motion-fast) var(--motion-ease),
+          transform var(--motion-fast) var(--motion-ease),
+          box-shadow var(--motion-fast) var(--motion-ease);
+      }
+      .card:hover, .card:focus-visible {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+      }
+    }
     .card--live { border-left: 3px solid var(--status-live); }
     .card--featured { padding: 1.25rem; }
     .card--compact { padding: 0.625rem 0.75rem; gap: 0.375rem; }
@@ -170,7 +186,7 @@ export type FootballMatchCardVariant = 'default' | 'live' | 'compact' | 'feature
     .card__live-dot {
       width: 0.5rem;
       height: 0.5rem;
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       background: var(--status-live);
       animation: football-pulse 1.4s ease-in-out infinite;
     }
@@ -190,7 +206,7 @@ export type FootballMatchCardVariant = 'default' | 'live' | 'compact' | 'feature
       margin-top: 0.5rem;
       padding: 0.625rem 0.75rem;
       border: 1px solid var(--portal-border);
-      border-radius: 0.75rem;
+      border-radius: var(--radius-lg);
       background: var(--portal-card);
       display: flex;
       flex-wrap: wrap;
