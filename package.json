@@ -13,6 +13,8 @@
     "check:release": "node scripts/publish-release.mjs --check",
     "start:api": "npm run start -w apps/backend",
     "start:ssr": "npm run serve:ssr -w apps/frontend",
+    "dev:frontend": "npm run dev:ssr -w apps/frontend",
+    "dev:backend": "npm run dev -w apps/backend",
     "job:syncEPG": "npm run job:syncEPG -w apps/backend",
     "job:precompute": "npm run job:precompute -w apps/backend",
     "job:clean": "npm run job:clean -w apps/backend",

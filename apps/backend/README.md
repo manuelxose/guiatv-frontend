@@ -28,7 +28,7 @@ Key variables:
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| `PORT` | HTTP server port | `4000` |
+| `PORT` | HTTP server port | `8080` |
 | `MONGODB_URI` | Mongo connection string | `mongodb://127.0.0.1:27017/guiatv` |
 | `MONGODB_DB_NAME` | Mongo database name | `guiatv` |
 | `CACHE_TYPE` | `memory`, `redis`, or `valkey` | `memory` |

@@ -17,28 +17,22 @@
   max-width: 100%;
 }
 
-.streaming-view__masthead,
 .streaming-view__module,
 .streaming-view__section,
 .streaming-view__directory-card,
 .streaming-view__empty {
   border: 1px solid var(--guide-border);
-  border-radius: 1.5rem;
+  border-radius: var(--radius-lg);
   background: var(--guide-surface-strong);
   box-shadow: var(--shadow-sm);
-}
-
-.streaming-view__masthead,
-.streaming-view__module,
-.streaming-view__section,
-.streaming-view__directory-card,
-.streaming-view__empty {
   padding: 1rem 1.1rem;
 }
 
+// Page header, not content — flat, no card chrome (MASTER §1).
 .streaming-view__masthead {
   display: grid;
   gap: 0.9rem;
+  padding: var(--space-4) 0;
 }
 
 .streaming-view__masthead-copy,

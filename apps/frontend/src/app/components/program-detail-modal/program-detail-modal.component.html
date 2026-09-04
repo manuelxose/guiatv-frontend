@@ -1,37 +1,38 @@
-<!-- program-detail-modal.component.html - REDISEÑADO CON ELEMENTOS SOCIALES -->
+<!-- program-detail-modal.component.html — media-page detail sheet -->
 <div
   *ngIf="program"
-  class="program-detail-modal-container"
+  class="pdm-container"
   [@backdropAnimation]="{ value: true, params: backdropMotionParams }"
   (click)="onClose()"
   (keydown)="onEscapeKey($event)"
   tabindex="0"
   role="dialog"
   aria-modal="true"
-  [attr.aria-label]="'Detalles de ' + (program.title || 'programa')"
+  aria-labelledby="pdm-title"
 >
   <!-- Backdrop -->
-  <div class="modal-backdrop"></div>
+  <div class="pdm-backdrop"></div>
 
-  <!-- Modal Content -->
-  <div #modalContent class="modal-content" [@modalAnimation]="{ value: true, params: modalMotionParams }" (click)="onContentClick($event)" (keydown)="onContentKeydown($event)" tabindex="-1">
-    <!-- Hero Background with Gradient -->
-    <div
-      class="modal-hero"
-      [style.backgroundImage]="bannerData()?.poster ? 'linear-gradient(180deg, color-mix(in oklch, black 40%, transparent) 0%, var(--portal-bg-deep) 100%), url(' + bannerData()?.poster + ')' : 'linear-gradient(180deg, var(--portal-bg-deep) 0%, var(--portal-bg-elevated) 100%)'"
+  <!-- Panel -->
+  <div
+    #modalContent
+    class="pdm-panel"
+    [@modalAnimation]="{ value: true, params: modalMotionParams }"
+    (click)="onContentClick($event)"
+    (keydown)="onContentKeydown($event)"
+    tabindex="-1"
+  >
+    <!-- HERO: artwork + title + channel + live/upcoming state + progress -->
+    <header
+      class="pdm-hero"
+      [style.backgroundImage]="
+        bannerData()?.poster
+          ? 'linear-gradient(180deg, color-mix(in oklch, black 35%, transparent) 0%, var(--hero-bg) 100%), url(' + bannerData()?.poster + ')'
+          : 'linear-gradient(180deg, var(--hero-bg) 0%, var(--hero-bg) 100%)'
+      "
     >
-      <!-- Close Button -->
-      <button
-        (click)="onClose()"
-        class="close-button"
-        aria-label="Cerrar detalles"
-      >
-        <svg
-          class="close-icon"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+      <button (click)="onClose()" class="pdm-close" aria-label="Cerrar detalles">
+        <svg class="pdm-close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -41,118 +42,132 @@
         </svg>
       </button>
 
-      <!-- Channel Info -->
-      <div class="channel-info-header">
-        <img
-          *ngIf="channelLogo"
-          [src]="channelLogo"
-          [alt]="channelName"
-          class="channel-logo"
-          loading="lazy"
-        />
-        <div class="channel-text">
-          <span class="channel-name">{{ channelName }}</span>
-          <span class="program-time">
-            {{ formatTime(program.start) }} - {{ formatTime(program.stop) }}
+      <div class="pdm-hero-content">
+        <div class="pdm-hero-top">
+          <img
+            *ngIf="channelLogo"
+            [src]="channelLogo"
+            [alt]="channelName"
+            class="pdm-channel-logo"
+            loading="lazy"
+          />
+          <span class="pdm-channel-name">{{ channelName }}</span>
+
+          <span class="pdm-status-badge pdm-status-live" *ngIf="isLive()">
+            <span class="pdm-live-dot" aria-hidden="true"></span>
+            En directo
+          </span>
+          <span class="pdm-status-badge pdm-status-upcoming" *ngIf="!isLive() && isUpcoming()">
+            Próximamente
+          </span>
+          <span class="pdm-status-badge pdm-status-ended" *ngIf="!isLive() && isEnded()">
+            Finalizado
           </span>
         </div>
-      </div>
-    </div>
 
-      <!-- Body with Details -->
-    <div class="modal-body">
-      <!-- Program Title & Meta -->
-      <div class="program-header">
-        <h2 class="program-title">{{ getProgramTitle() }}</h2>
-        <div class="program-meta">
-          <span class="meta-badge" *ngIf="program.category?.value">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-              <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
-            </svg>
-            {{ program.category.value }}
+        <h2 id="pdm-title" class="pdm-title">{{ getProgramTitle() }}</h2>
+
+        <div class="pdm-meta-row">
+          <span class="pdm-meta-item tnum" *ngIf="program.start && program.stop">
+            {{ formatTime(program.start) }}–{{ formatTime(program.stop) }}
           </span>
-          <span class="meta-badge" *ngIf="getDuration()">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-            </svg>
-            {{ getDuration() }} min
-          </span>
+          <span class="pdm-meta-dot" *ngIf="program.category?.value" aria-hidden="true">·</span>
+          <span class="pdm-meta-item" *ngIf="program.category?.value">{{ program.category.value }}</span>
+          <span class="pdm-meta-dot" *ngIf="getDuration()" aria-hidden="true">·</span>
+          <span class="pdm-meta-item" *ngIf="getDuration()">{{ getDuration() }} min</span>
+          <span class="pdm-meta-dot" *ngIf="bannerData()?.year" aria-hidden="true">·</span>
+          <span class="pdm-meta-item" *ngIf="bannerData()?.year">{{ bannerData()?.year }}</span>
+        </div>
+
+        <div
+          class="pdm-progress"
+          *ngIf="isLive()"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="getProgressPercent()"
+          [attr.aria-label]="'Progreso del programa: ' + getProgressPercent() + ' por ciento'"
+        >
+          <div class="pdm-progress-fill" [style.transform]="'scaleX(' + (getProgressPercent() / 100) + ')'"></div>
         </div>
       </div>
+    </header>
 
-      <!-- Social Actions -->
-      <div class="social-wrapper" style="margin-bottom: 1.5rem;">
-        <app-interaction-buttons
-          [itemId]="program.id || ''"
-          [title]="getProgramTitle()"
-          type="program"
-          [tmdbId]="program.tmdbId"
-          [genres]="program.category?.value ? [program.category?.value] : []"
-          [preloadInteraction]="true">
-        </app-interaction-buttons>
-      </div>
-
-      <!-- Program Details Grid -->
-      <div class="details-section">
-        <h3 class="section-title">Detalles del programa</h3>
-        <div class="details-grid">
-          <div class="detail-card">
-            <img
-              *ngIf="bannerData()?.poster"
-              [src]="bannerData()?.poster"
-              [alt]="getProgramTitle()"
-              class="detail-poster"
-              loading="lazy"
-              (error)="onPosterError($event)"
-            />
-          </div>
-
-          <div class="detail-info">
-            <div class="info-item" *ngIf="program.start && program.stop">
-              <span class="info-label">Horario</span>
-              <span class="info-value">{{ formatTime(program.start) }} - {{ formatTime(program.stop) }}</span>
-            </div>
-
-            <div class="info-item" *ngIf="program.category?.value">
-              <span class="info-label">Categoría</span>
-              <span class="info-value">{{ program.category.value }}</span>
-            </div>
-
-            <div class="info-item" *ngIf="getDuration()">
-              <span class="info-label">Duración</span>
-              <span class="info-value">{{ getDuration() }} minutos</span>
-            </div>
-
-            <div class="info-item" *ngIf="bannerData()?.starRating">
-              <span class="info-label">Valoración</span>
-              <span class="info-value">
-                <span class="rating-stars">
-                  <svg *ngFor="let star of [1,2,3,4,5]" viewBox="0 0 20 20" [class.filled]="star <= +(bannerData()?.starRating || 0)">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                  </svg>
-                </span>
-              </span>
-            </div>
-
-            <div class="info-item" *ngIf="bannerData()?.year">
-              <span class="info-label">Año</span>
-              <span class="info-value">{{ bannerData()?.year }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <!-- BODY -->
+    <div class="pdm-body">
       <!-- Description -->
-      <div class="description-section" *ngIf="bannerData()?.description">
-        <h3 class="section-title">Descripción</h3>
-        <p class="description-text">{{ bannerData()?.description }}</p>
+      <p class="pdm-description" *ngIf="bannerData()?.description; else noDescription">
+        {{ bannerData()?.description }}
+      </p>
+      <ng-template #noDescription>
+        <p class="pdm-description pdm-description-empty">Sinopsis no disponible.</p>
+      </ng-template>
+
+      <!-- Rating, when present -->
+      <div class="pdm-rating" *ngIf="bannerData()?.starRating">
+        <span class="pdm-rating-stars">
+          <svg
+            *ngFor="let star of [1, 2, 3, 4, 5]"
+            viewBox="0 0 20 20"
+            [class.filled]="star <= +(bannerData()?.starRating || 0)"
+          >
+            <path
+              d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+            />
+          </svg>
+        </span>
+        <span class="pdm-rating-value">{{ bannerData()?.rating }}/5</span>
       </div>
 
+      <!-- ACTIONS: primary CTA + secondary (Mi lista / Valorar) + overflow menu -->
+      <div class="pdm-actions">
+        <a
+          class="pdm-primary-action"
+          [class.is-live]="isLive()"
+          [routerLink]="isLive() ? appPaths.live : appPaths.guide"
+          (click)="onClose()"
+        >
+          <svg *ngIf="isLive()" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-3a5 5 0 100-10 5 5 0 000 10z" />
+          </svg>
+          <svg *ngIf="!isLive()" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M6 4l10 6-10 6V4z" />
+          </svg>
+          {{ getPrimaryActionLabel() }}
+        </a>
+
+        <div class="pdm-secondary-actions" [class.overflow-open]="overflowOpen()">
+          <app-interaction-buttons
+            [itemId]="program.id || ''"
+            [title]="getProgramTitle()"
+            type="program"
+            [tmdbId]="program.tmdbId"
+            [genres]="program.category?.value ? [program.category?.value] : []"
+            [preloadInteraction]="true"
+          ></app-interaction-buttons>
+
+          <button
+            type="button"
+            class="pdm-more-btn"
+            (click)="toggleOverflow()"
+            [attr.aria-expanded]="overflowOpen()"
+            aria-label="Más acciones"
+          >
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path
+                d="M4 10a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0z"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Where to watch (movies) -->
       <div
-        class="description-section"
+        class="pdm-section"
         *ngIf="program.tmdbId && (program.category?.value || '').toLowerCase().includes('cine')"
       >
-        <h3 class="section-title">Dónde ver</h3>
+        <h3 class="pdm-section-title">Dónde ver</h3>
         <app-where-to-watch
           [contentId]="program.id"
           [tmdbId]="program.tmdbId"
@@ -164,11 +179,12 @@
         ></app-where-to-watch>
       </div>
 
+      <!-- Where to watch (series) -->
       <div
-        class="description-section"
+        class="pdm-section"
         *ngIf="program.tmdbId && (program.category?.value || '').toLowerCase().includes('serie')"
       >
-        <h3 class="section-title">Dónde ver</h3>
+        <h3 class="pdm-section-title">Dónde ver</h3>
         <app-where-to-watch
           [contentId]="program.id"
           [tmdbId]="program.tmdbId"
@@ -179,16 +195,6 @@
           [page]="appPaths.guide"
         ></app-where-to-watch>
       </div>
-    </div>
-
-    <!-- Footer with Actions -->
-    <div class="modal-footer">
-      <button (click)="onClose()" class="action-button action-button-secondary">
-        <svg viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-        </svg>
-        Entendido
-      </button>
     </div>
   </div>
 </div>

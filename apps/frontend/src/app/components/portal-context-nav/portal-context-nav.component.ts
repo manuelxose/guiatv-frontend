@@ -109,9 +109,10 @@ export class PortalContextNavComponent implements AfterViewInit {
       if (path.includes('/noticias')) return 'news';
       if (path.includes('/competiciones')) return 'competitions';
       if (path.includes('/equipos/') || (path.includes('/buscar') && new URLSearchParams(query).get('tipo') === 'equipos')) return 'teams';
-      if (path.includes('/en-directo')) return 'live';
-      if (path.includes('/calendario')) return 'calendar';
-      if (/\/(partidos-hoy|partido\/)/.test(path)) return 'today';
+      // en-directo / partidos-hoy / calendario / partido detail all collapse
+      // into the single "Partidos" destination — they're states of one page,
+      // not separate top-level sections (§4 football nav consolidation).
+      if (/\/(en-directo|partidos-hoy|calendario|partido\/)/.test(path)) return 'matches';
       if (fragment === 'donde-ver') return 'watch';
       return 'home';
     }

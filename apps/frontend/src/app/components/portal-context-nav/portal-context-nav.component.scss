@@ -3,21 +3,19 @@
   min-width: 0;
 }
 
+// Flat, borderless: this is page navigation, not a dashboard widget — no
+// enclosing card/box (MASTER §1). Breadcrumb + tabs are separated by a
+// hairline divider, not stacked inside a rounded, shadowed container.
 .portal-context-nav {
   overflow: hidden;
-  border: 1px solid var(--guide-border);
-  border-radius: 1.25rem;
-  background: var(--guide-surface-strong);
-  box-shadow: var(--shadow-sm);
 }
 
 .portal-context-nav__hierarchy {
   display: flex;
   align-items: center;
-  min-height: 2.75rem;
-  padding: 0.35rem 0.9rem;
+  min-height: 2.5rem;
+  padding: 0.35rem 0;
   border-bottom: 1px solid var(--portal-divider);
-  background: color-mix(in srgb, var(--guide-accent) 4%, var(--guide-surface-strong));
 }
 
 .portal-context-nav__tabs {
@@ -25,7 +23,7 @@
   align-items: center;
   gap: 0.5rem;
   overflow-x: auto;
-  padding: 0.45rem;
+  padding: 0.6rem 0;
   scrollbar-width: none;
 }
 
@@ -94,7 +92,7 @@
   right: 0;
   flex: 0 0 auto;
   border-color: color-mix(in srgb, var(--guide-accent) 40%, var(--portal-border));
-  background: var(--guide-surface-strong);
+  background: var(--portal-bg);
   color: var(--portal-text);
 }
 
@@ -117,17 +115,17 @@
   }
 
   .portal-context-nav {
-    border-radius: 1rem;
-    transition: border-radius 160ms ease, box-shadow 160ms ease;
+    background: var(--portal-bg);
+    transition: box-shadow 160ms ease;
   }
 
   .portal-context-nav__hierarchy {
-    min-height: 2.5rem;
-    padding-inline: 0.7rem;
+    min-height: 2.25rem;
+    padding-inline: var(--space-4);
   }
 
   .portal-context-nav__tabs {
-    padding: 0.35rem;
+    padding: 0.35rem var(--space-4);
   }
 
   .portal-context-nav__track a,
@@ -139,8 +137,8 @@
   }
 
   .portal-context-nav--compact {
-    border-radius: 0 0 1rem 1rem;
     box-shadow: var(--shadow-md, var(--shadow-sm));
+    border-bottom: 1px solid var(--portal-divider);
   }
 
   .portal-context-nav--compact .portal-context-nav__hierarchy {

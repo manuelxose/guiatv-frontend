@@ -9,21 +9,22 @@
   max-width: 100%;
 }
 
-.live-view__masthead,
 .live-view__module,
 .live-view__section,
 .live-view__directory-card,
 .live-view__channel-group {
   border: none;
-  border-radius: 1.25rem;
+  border-radius: var(--radius-lg);
   background: var(--guide-surface-strong);
   box-shadow: none;
 }
 
+// Page header, not content — flat, no card chrome (MASTER §1: sections
+// separated by spacing/typography, not boxes).
 .live-view__masthead {
   display: grid;
   gap: 0.9rem;
-  padding: 1.15rem 1.2rem;
+  padding: var(--space-4) 0;
 }
 
 .live-view__masthead-copy {
@@ -153,7 +154,58 @@
 
 .live-view__feature-stack {
   display: grid;
-  gap: 0.9rem;
+  gap: 0.5rem;
+  align-content: start;
+}
+
+// The stack sits beside one big feature card, so its "compact" cards must
+// read as a secondary list — not a second row of hero cards. Left to the
+// shared component's default, --compact only trims the media aspect-ratio
+// and stays a full vertical card, which produced 3-4 near-duplicate hero
+// tiles stacked here (taller than the feature card itself) with a slab of
+// dead space in the shorter column beside them. Scoped to this list only —
+// --compact still renders as a normal grid tile everywhere else (catalog
+// grids, rails).
+// unified-program-card is a separate component with its own emulated view
+// encapsulation, so these overrides need ::ng-deep to cross that boundary
+// (established pattern — see catalog-card.component.ts, program-detail-modal
+// .scss). Selector stays scoped to `.live-view__feature-stack`, so nothing
+// outside this list is affected.
+::ng-deep .live-view__feature-stack .program-card--compact {
+  padding: 0.5rem;
+}
+
+::ng-deep .live-view__feature-stack .program-card--compact .program-card__tap {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+}
+
+::ng-deep .live-view__feature-stack .program-card--compact .program-card__media {
+  aspect-ratio: 16 / 9;
+  min-height: 0;
+}
+
+::ng-deep .live-view__feature-stack .program-card--compact .program-card__badges,
+::ng-deep .live-view__feature-stack .program-card--compact .program-card__progress,
+::ng-deep .live-view__feature-stack .program-card--compact .program-card__description {
+  display: none;
+}
+
+::ng-deep .live-view__feature-stack .program-card--compact .program-card__body {
+  padding: 0;
+  gap: 0.3rem;
+}
+
+::ng-deep .live-view__feature-stack .program-card--compact .program-card__title {
+  font-size: 0.92rem;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .live-view__channel-row,
@@ -543,7 +595,7 @@
 
 @media (max-width: 767px) {
   .live-view__masthead {
-    padding: 0.8rem 0.9rem;
+    padding: var(--space-3) 0;
   }
 
   /* Mobile-first: no long editorial intro before the guide. */

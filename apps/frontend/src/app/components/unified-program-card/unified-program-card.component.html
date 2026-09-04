@@ -8,7 +8,12 @@
   [class.program-card--boxed]="variant !== 'epg-row'"
   [attr.data-vertical]="variant === 'epg-row' ? null : card.vertical"
 >
-  <a [routerLink]="card.detailPath" [appPrefetchDetail]="card" class="program-card__tap">
+  <a
+    [routerLink]="card.detailPath"
+    [appPrefetchDetail]="card"
+    class="program-card__tap"
+    [attr.aria-label]="actionLabel + ': ' + card.title"
+  >
     <div class="program-card__media" [class.program-card__media--empty]="!hasVisual">
       <img
         *ngIf="hasVisual"
@@ -64,33 +69,20 @@
     </div>
   </a>
 
-  <div class="program-card__interactive" *ngIf="showActions">
-    <div class="program-card__quick-links" *ngIf="card.channelPath">
-      <a
-        [routerLink]="card.channelPath"
-        class="program-card__quick-link"
-      >
-        Ver canal
-      </a>
-    </div>
-
+  <div class="program-card__interactive" *ngIf="showActions && (isAuthenticated() || affiliateOffer())">
     <div class="program-card__actions">
-      <a
-        [routerLink]="card.detailPath"
-        [appPrefetchDetail]="card"
-        class="program-card__cta program-card__cta--primary"
-      >
-        {{ actionLabel }}
-      </a>
-
       <button
         *ngIf="isAuthenticated()"
         type="button"
-        class="program-card__cta"
-        [class.program-card__cta--active]="isSaved"
+        class="program-card__quick-action"
+        [class.program-card__quick-action--active]="isSaved"
+        [attr.aria-label]="isSaved ? 'Quitar de guardados' : 'Guardar'"
+        [attr.aria-pressed]="isSaved"
         (click)="toggleWatchlist($event)"
       >
-        {{ isSaved ? 'Guardado' : 'Guardar' }}
+        <svg viewBox="0 0 20 20" aria-hidden="true" [attr.fill]="isSaved ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.6">
+          <path d="M5 3.5h10a1 1 0 011 1V17l-6-3.4-6 3.4V4.5a1 1 0 011-1z" stroke-linejoin="round" />
+        </svg>
       </button>
 
       <app-affiliate-cta

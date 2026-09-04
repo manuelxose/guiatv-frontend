@@ -60,16 +60,15 @@ function fromKey(key: string): Date | null {
     </div>
   `,
   styles: `
+    // Flat row, not a boxed pill container — matches the borderless filter
+    // rows on every other section (MASTER §1: spacing/typography separate
+    // sections, not cards).
     .strip {
       display: flex;
       align-items: center;
       gap: 0.375rem;
       overflow: hidden;
-      padding: 0.4rem;
-      border: 1px solid var(--guide-border, var(--portal-border));
-      border-radius: var(--radius-xl);
-      background: var(--guide-surface-strong, var(--portal-surface-strong));
-      box-shadow: var(--shadow-sm);
+      padding: 0.25rem 0;
     }
     .strip__nav {
       flex: 0 0 auto;
