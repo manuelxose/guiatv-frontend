@@ -21,7 +21,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
           <button
             type="button"
             (click)="onClose()"
-            class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
             aria-label="Cerrar"
           >
             Cerrar
@@ -38,7 +38,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
                   id="list-content-query"
                   formControlName="query"
                   placeholder="Buscar peliculas, series..."
-                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 pl-10 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 pl-10 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -60,7 +60,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
                 <select
                   id="list-content-type"
                   formControlName="type"
-                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 >
                   <option value="movie">Pelicula</option>
                   <option value="series">Serie</option>
@@ -71,7 +71,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
                 <select
                   id="list-content-state"
                   formControlName="state"
-                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 >
                   <option value="pending">Pendiente</option>
                   <option value="watching">Viendo</option>
@@ -86,7 +86,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
           <button
             type="button"
             (click)="onClose()"
-            class="min-h-[44px] px-4 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[44px] px-4 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
           >
             Cancelar
           </button>
@@ -94,7 +94,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
             type="button"
             (click)="onSubmit()"
             [disabled]="addForm.invalid"
-            class="min-h-[44px] px-6 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[44px] px-6 rounded-xl bg-[var(--accent-live)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
           >
             Anadir
           </button>
