@@ -34,6 +34,7 @@
     "@angular/platform-server": "20.3.29",
     "@angular/router": "20.3.29",
     "@angular/ssr": "20.3.34",
+    "@fontsource/inter": "^5.3.0",
     "bootstrap-icons": "^1.13.1",
     "compression": "^1.7.4",
     "domino": "^2.1.6",

@@ -25,14 +25,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
               type="text"
               formControlName="title"
               (keydown.enter)="onSubmit()"
-              class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] placeholder:text-[var(--portal-text-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               placeholder="Nombre de la lista"
             />
 
             <div class="flex rounded-xl border border-[var(--portal-border)] overflow-hidden">
               <label *ngFor="let opt of visibilityOptions" class="flex-1 cursor-pointer">
                 <input type="radio" formControlName="visibility" [value]="opt.value" class="sr-only peer" />
-                <div class="text-center py-2.5 text-xs font-semibold uppercase tracking-wider border-r border-[var(--portal-border)] last:border-r-0 peer-checked:bg-red-600/20 peer-checked:text-red-200 text-[var(--portal-text-muted)] transition-colors">
+                <div class="text-center py-2.5 text-xs font-semibold uppercase tracking-wider border-r border-[var(--portal-border)] last:border-r-0 peer-checked:bg-[var(--accent-live)]/20 peer-checked:text-[var(--accent-live)] text-[var(--portal-text-muted)] transition-colors">
                   {{ opt.label }}
                 </div>
               </label>
@@ -42,14 +42,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
               <button
                 type="button"
                 (click)="close()"
-                class="min-h-[44px] flex-1 px-4 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="min-h-[44px] flex-1 px-4 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 [disabled]="listForm.invalid"
-                class="min-h-[44px] flex-1 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="min-h-[44px] flex-1 px-4 rounded-xl bg-[var(--accent-live)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               >
                 Crear
               </button>

@@ -50,42 +50,44 @@ module.exports = {
        * Colores personalizados
        */
       colors: {
-        // Paleta principal
+        // Spotify-inspired reskin — legacy red primary/gray surface scales
+        // removed (confirmed unused: no bg-primary-*/surface-*/font-montserrat
+        // in any template). Component styling reads --portal-*/--accent-*
+        // custom properties directly rather than Tailwind color utilities;
+        // this block stays for any future ad-hoc Tailwind color usage.
         primary: {
-          50: '#fef2f2',
-          100: '#fee2e2',
-          200: '#fecaca',
-          300: '#fca5a5',
-          400: '#f87171',
-          500: '#ef4444',
-          600: '#dc2626',
-          700: '#b91c1c',
-          800: '#991b1b',
-          900: '#7f1d1d',
-          950: '#450a0a',
+          50: '#e9fcef',
+          100: '#c8f7d7',
+          200: '#93eeb0',
+          300: '#5fe589',
+          400: '#3ddb6c',
+          500: '#1ed760',
+          600: '#1db954',
+          700: '#169c46',
+          800: '#0f7534',
+          900: '#0a4f23',
+          950: '#052912',
         },
-        // Grises personalizados para mejor contraste
         surface: {
-          50: '#f9fafb',
-          100: '#f3f4f6',
-          200: '#e5e7eb',
-          300: '#d1d5db',
-          400: '#9ca3af',
-          500: '#6b7280',
-          600: '#4b5563',
-          700: '#374151',
-          800: '#1f2937',
-          900: '#111827',
-          950: '#030712',
+          50: '#fdfdfd',
+          100: '#eeeeee',
+          200: '#cbcbcb',
+          300: '#b3b3b3',
+          400: '#7c7c7c',
+          500: '#4d4d4d',
+          600: '#272727',
+          700: '#252525',
+          800: '#1f1f1f',
+          900: '#181818',
+          950: '#121212',
         },
       },
-      
+
       /**
        * Tipografía
        */
       fontFamily: {
-        montserrat: ['Montserrat', 'system-ui', '-apple-system', 'sans-serif'],
-        sans: ['Montserrat', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       
       /**
@@ -145,8 +147,8 @@ module.exports = {
        * Sombras personalizadas
        */
       boxShadow: {
-        'glow': '0 0 20px rgba(239, 68, 68, 0.3)',
-        'glow-lg': '0 0 40px rgba(239, 68, 68, 0.4)',
+        'glow': '0 0 20px rgba(30, 215, 96, 0.3)',
+        'glow-lg': '0 0 40px rgba(30, 215, 96, 0.4)',
       },
     },
   },

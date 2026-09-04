@@ -1,7 +1,26 @@
-/* Optimized Styles – Light Theme */
+/* Spotify-inspired reskin — see design-system/guiatv/MASTER.md */
 
 @use './styles/design-tokens';
 @use './styles/platform-badge';
+
+// Self-hosted Inter (400/700) via @fontsource/inter — replaces the prior
+// zero-cost system-font stack because the brand identity depends on Inter's
+// tight, bold headline character. font-display: swap avoids invisible text.
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('@fontsource/inter/files/inter-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('@fontsource/inter/files/inter-latin-700-normal.woff2') format('woff2');
+}
 
 html,
 body {
@@ -84,10 +103,120 @@ body {
 }
 
 .glass-effect {
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--portal-surface-soft);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--portal-border);
+}
+
+// Uppercase eyebrow/section-label treatment (e.g. "RECENTLY PLAYED"),
+// Spotify's own pattern for section headers and filter-chip labels.
+.eyebrow {
+  font-size: var(--text-eyebrow);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Buttons ── */
+.btn-primary,
+.btn-secondary,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-family: var(--font-sans);
+  padding: 0.75rem 2rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost {
+    transition: background var(--motion-fast) var(--motion-ease),
+      color var(--motion-fast) var(--motion-ease), border-color var(--motion-fast) var(--motion-ease),
+      transform var(--motion-fast) var(--motion-ease);
+  }
+}
+
+.btn-primary {
+  background: var(--spotify-green);
+  color: #000000;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in oklch, var(--spotify-green) 90%, white);
+    transform: scale(1.02);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--spotify-green-press);
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    background: var(--portal-border-strong);
+    color: var(--portal-text-faint);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--spotify-green);
+    outline-offset: 2px;
+  }
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: var(--portal-text);
+  color: var(--portal-text);
+
+  &:hover:not(:disabled) {
+    border-color: var(--spotify-green);
+    color: var(--spotify-green);
+    transform: scale(1.02);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    border-color: var(--portal-border-strong);
+    color: var(--portal-text-faint);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--spotify-green);
+    outline-offset: 2px;
+  }
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--portal-text-muted);
+
+  &:hover:not(:disabled) {
+    color: var(--portal-text);
+    background: var(--portal-surface-strong);
+  }
+
+  &:disabled {
+    color: var(--portal-text-faint);
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--spotify-green);
+    outline-offset: 2px;
+  }
 }
 
 .line-clamp-1 {
@@ -128,8 +257,8 @@ body {
 }
 
 // Named "-red" historically (back when every accent was #dc2626); kept as-is
-// to avoid a call-site rename, now sourced from the general-purpose
-// "interactive" accent (--accent-discover) per docs/visual-directions.md.
+// to avoid a call-site rename, now sourced from the Spotify-green primary
+// accent (--accent-discover) per the design-tokens reskin.
 .focus-ring-red {
   outline: 2px solid transparent;
   outline-offset: 2px;
@@ -292,7 +421,9 @@ img {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.3);
+  // Deeper scrim than before — needed for real contrast now that the dark
+  // theme's base surface itself is near-black (#121212).
+  background: rgba(0, 0, 0, 0.7);
   animation: fadeIn 0.15s ease-out;
 }
 

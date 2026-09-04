@@ -9,14 +9,14 @@
     </div>
     <div class="flex items-center gap-2">
       <button
-        class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] text-sm hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] text-sm hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
         type="button"
         (click)="refreshBlog()"
       >
         Refrescar
       </button>
       <button
-        class="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-100 text-sm hover:bg-red-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        class="px-4 py-2 rounded-xl bg-[var(--spotify-negative)]/20 border border-[var(--spotify-negative)]/40 text-[var(--spotify-negative)] text-sm hover:bg-[var(--spotify-negative)]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
         type="button"
         (click)="resetBlogForm(true)"
       >
@@ -41,15 +41,15 @@
           </p>
         </div>
         <span *ngIf="blogSaving" class="text-xs text-[var(--portal-text-soft)]">Guardando...</span>
-        <span *ngIf="!blogSaving" class="text-xs text-emerald-300">
+        <span *ngIf="!blogSaving" class="text-xs text-[var(--accent-discover)]">
           {{ isEditingBlogPost ? 'Modo edicion' : 'Modo alta' }}
         </span>
       </div>
 
-      <div *ngIf="blogSaveError" class="bg-red-500/10 border border-red-500/30 text-red-200 px-4 py-3 rounded-xl text-sm">
+      <div *ngIf="blogSaveError" class="bg-[var(--spotify-negative)]/10 border border-[var(--spotify-negative)]/30 text-[var(--spotify-negative)] px-4 py-3 rounded-xl text-sm">
         {{ blogSaveError }}
       </div>
-      <div *ngIf="blogSaveSuccess" class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-200 px-4 py-3 rounded-xl text-sm">
+      <div *ngIf="blogSaveSuccess" class="bg-[var(--accent-discover)]/10 border border-[var(--accent-discover)]/30 text-[var(--accent-discover)] px-4 py-3 rounded-xl text-sm">
         {{ blogSaveSuccess }}
       </div>
 
@@ -60,10 +60,10 @@
             id="blog-title"
             formControlName="title"
             type="text"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="Escribe un titular orientado a busqueda real"
           />
-          <p *ngIf="blogForm.get('title')?.invalid && blogForm.get('title')?.touched" class="text-xs text-red-300 mt-1">
+          <p *ngIf="blogForm.get('title')?.invalid && blogForm.get('title')?.touched" class="text-xs text-[var(--spotify-negative)] mt-1">
             El titulo es obligatorio.
           </p>
         </div>
@@ -74,7 +74,7 @@
             id="blog-slug"
             formControlName="slug"
             type="text"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             [placeholder]="blogPreviewSlug || 'slug-del-articulo'"
           />
           <p class="text-xs text-[var(--portal-text-muted)] mt-1">Se genera si lo dejas vacio.</p>
@@ -84,14 +84,14 @@
           <div>
             <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-status">Estado</label>
             <input id="blog-status" formControlName="status" type="hidden" />
-            <p class="mt-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">Borrador · requiere aprobación editorial separada</p>
+            <p class="mt-2 rounded-xl border border-[var(--spotify-warning)]/30 bg-[var(--spotify-warning)]/10 px-3 py-2 text-sm text-[var(--spotify-warning)]">Borrador · requiere aprobación editorial separada</p>
           </div>
           <div>
             <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-type">Tipo</label>
             <select
               id="blog-type"
               formControlName="contentType"
-              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             >
               <option value="guide">Guia</option>
               <option value="ranking">Ranking</option>
@@ -119,7 +119,7 @@
             id="blog-published"
             formControlName="publishedAt"
             type="datetime-local"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
           />
         </div>
         <div>
@@ -128,7 +128,7 @@
             id="blog-cover"
             formControlName="coverImage"
             type="text"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="/assets/images/blog-og-image.webp"
           />
         </div>
@@ -141,7 +141,7 @@
             id="blog-intent"
             formControlName="primaryIntent"
             type="text"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="discovery, comparison, family-weekend..."
           />
         </div>
@@ -151,7 +151,7 @@
             id="blog-target-query"
             formControlName="targetQuery"
             type="text"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="que ver hoy en tv y streaming"
           />
         </div>
@@ -159,11 +159,11 @@
 
       <div class="grid gap-4 md:grid-cols-2">
         <label class="flex items-center gap-3 rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 py-3 text-sm text-[var(--portal-text)]">
-          <input type="checkbox" formControlName="featured" class="h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-red-500 focus:ring-red-500" />
+          <input type="checkbox" formControlName="featured" class="h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-[var(--spotify-green)] focus:ring-[var(--spotify-green)]" />
           Destacar en hubs editoriales
         </label>
         <label class="flex items-center gap-3 rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 py-3 text-sm text-[var(--portal-text)]">
-          <input type="checkbox" formControlName="evergreen" class="h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-red-500 focus:ring-red-500" />
+          <input type="checkbox" formControlName="evergreen" class="h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-[var(--spotify-green)] focus:ring-[var(--spotify-green)]" />
           Contenido evergreen
         </label>
       </div>
@@ -174,7 +174,7 @@
           id="blog-excerpt"
           formControlName="excerpt"
           rows="3"
-          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
           placeholder="Resumen corto y util para cards y snippets"
         ></textarea>
       </div>
@@ -185,7 +185,7 @@
           id="blog-content"
           formControlName="content"
           rows="12"
-          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
           placeholder="HTML permitido. Usa enlaces internos a /plataformas, /comparador-streaming, /tendencias..."
         ></textarea>
         <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-[var(--portal-text-muted)]">
@@ -202,7 +202,7 @@
             id="blog-categories"
             formControlName="categories"
             type="text"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="Guias, Streaming, Netflix"
           />
           <p class="text-xs text-[var(--portal-text-muted)] mt-1">Separadas por coma.</p>
@@ -213,7 +213,7 @@
             id="blog-keywords"
             formControlName="keywords"
             type="text"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="que ver hoy, netflix, guia tv"
           />
         </div>
@@ -231,7 +231,7 @@
             >
               <input
                 type="checkbox"
-                class="mt-0.5 h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-red-500 focus:ring-red-500"
+                class="mt-0.5 h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-[var(--spotify-green)] focus:ring-[var(--spotify-green)]"
                 [checked]="isArraySelectionActive('relatedPlatformKeys', option.key)"
                 (change)="toggleArraySelection('relatedPlatformKeys', option.key, $any($event.target).checked)"
               />
@@ -249,7 +249,7 @@
             >
               <input
                 type="checkbox"
-                class="mt-0.5 h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-red-500 focus:ring-red-500"
+                class="mt-0.5 h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-[var(--spotify-green)] focus:ring-[var(--spotify-green)]"
                 [checked]="isArraySelectionActive('relatedRouteKeys', option.key)"
                 (change)="toggleArraySelection('relatedRouteKeys', option.key, $any($event.target).checked)"
               />
@@ -275,7 +275,7 @@
           <select
             id="blog-affiliate-mode"
             formControlName="affiliatePlacementMode"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
           >
             <option *ngFor="let mode of affiliatePlacementModeOptions" [value]="mode.id">{{ mode.label }}</option>
           </select>
@@ -291,7 +291,7 @@
             >
               <input
                 type="checkbox"
-                class="mt-0.5 h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-red-500 focus:ring-red-500"
+                class="mt-0.5 h-4 w-4 rounded border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-[var(--spotify-green)] focus:ring-[var(--spotify-green)]"
                 [checked]="isArraySelectionActive('relatedOfferCategories', option.key)"
                 (change)="toggleArraySelection('relatedOfferCategories', option.key, $any($event.target).checked)"
               />
@@ -309,7 +309,7 @@
             id="blog-affiliate-merchants"
             formControlName="relatedMerchantKeys"
             type="text"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="pccomponentes, samsung, fnac"
           />
           <p class="text-xs text-[var(--portal-text-muted)] mt-1">
@@ -324,7 +324,7 @@
             id="blog-affiliate-pinned"
             formControlName="manualAffiliateOfferIds"
             type="text"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="id-de-oferta-1, id-de-oferta-2"
           />
           <p class="text-xs text-[var(--portal-text-muted)] mt-1">
@@ -346,7 +346,7 @@
             </button>
           </div>
 
-          <p *ngIf="affiliatePreviewError" class="text-xs text-red-300">{{ affiliatePreviewError }}</p>
+          <p *ngIf="affiliatePreviewError" class="text-xs text-[var(--spotify-negative)]">{{ affiliatePreviewError }}</p>
 
           <ng-container *ngIf="affiliatePreviewRequested && !affiliatePreviewLoading && !affiliatePreviewError">
             <div *ngIf="affiliatePreviewOffers.length; else noAffiliatePreview" class="space-y-3">
@@ -377,7 +377,7 @@
             id="blog-faqs"
             formControlName="faqItems"
             rows="5"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="Pregunta::Respuesta&#10;Otra pregunta::Otra respuesta"
           ></textarea>
           <p class="text-xs text-[var(--portal-text-muted)] mt-1">Una FAQ por linea con el formato <code>Pregunta::Respuesta</code>.</p>
@@ -386,7 +386,7 @@
         <div>
           <div class="flex items-center justify-between">
             <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-meta-title">Meta title</label>
-            <span class="text-xs" [ngClass]="isSeoTitleOk() ? 'text-emerald-300' : 'text-amber-300'">
+            <span class="text-xs" [ngClass]="isSeoTitleOk() ? 'text-[var(--accent-discover)]' : 'text-[var(--spotify-warning)]'">
               {{ blogSeoTitleLength }}/{{ seoTitleMax }}
             </span>
           </div>
@@ -394,7 +394,7 @@
             id="blog-meta-title"
             formControlName="metaTitle"
             type="text"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="Por defecto usa el titulo"
           />
         </div>
@@ -402,7 +402,7 @@
         <div>
           <div class="flex items-center justify-between">
             <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="blog-meta-description">Meta description</label>
-            <span class="text-xs" [ngClass]="isSeoDescriptionOk() ? 'text-emerald-300' : 'text-amber-300'">
+            <span class="text-xs" [ngClass]="isSeoDescriptionOk() ? 'text-[var(--accent-discover)]' : 'text-[var(--spotify-warning)]'">
               {{ blogSeoDescriptionLength }}/{{ seoDescriptionMax }}
             </span>
           </div>
@@ -410,7 +410,7 @@
             id="blog-meta-description"
             formControlName="metaDescription"
             rows="3"
-            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
             placeholder="Por defecto usa el extracto"
           ></textarea>
         </div>
@@ -422,7 +422,7 @@
               id="blog-og"
               formControlName="ogImage"
               type="text"
-              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
               placeholder="https://..."
             />
           </div>
@@ -432,11 +432,11 @@
               id="blog-canonical"
               formControlName="canonicalUrl"
               type="text"
-              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-              [ngClass]="{ 'border-red-500/60': !isCanonicalValid() }"
+              class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+              [ngClass]="{ 'border-[var(--spotify-negative)]/60': !isCanonicalValid() }"
               placeholder="/editorial/slug o https://..."
             />
-            <p *ngIf="!isCanonicalValid()" class="text-xs text-red-300 mt-1">Canonical invalida.</p>
+            <p *ngIf="!isCanonicalValid()" class="text-xs text-[var(--spotify-negative)] mt-1">Canonical invalida.</p>
           </div>
         </div>
       </fieldset>
@@ -444,14 +444,14 @@
       <div class="flex flex-wrap items-center justify-end gap-3 pt-2">
         <button
           type="button"
-          class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] text-sm hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-[var(--portal-text)] text-sm hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
           (click)="resetBlogForm(true)"
         >
           Limpiar
         </button>
         <button
           type="submit"
-          class="px-5 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-100 text-sm hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="px-5 py-2 rounded-xl bg-[var(--spotify-negative)]/20 border border-[var(--spotify-negative)]/40 text-[var(--spotify-negative)] text-sm hover:bg-[var(--spotify-negative)]/30 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
           [disabled]="blogSaving || blogForm.invalid"
         >
           {{ isEditingBlogPost ? 'Actualizar borrador' : 'Guardar borrador' }}
@@ -467,7 +467,7 @@
         </div>
         <div class="mt-4 space-y-2">
           <div class="text-xs text-[var(--portal-text-muted)] break-all">{{ blogPreviewUrl }}</div>
-          <div class="text-xl font-semibold text-blue-200">{{ blogPreviewTitle }}</div>
+          <div class="text-xl font-semibold text-[var(--accent-streaming)]">{{ blogPreviewTitle }}</div>
           <p class="text-sm text-[var(--portal-text-soft)]">
             {{ blogPreviewDescription || 'Anade una descripcion util para mejorar el CTR.' }}
           </p>
@@ -488,7 +488,7 @@
         </div>
         <button
           type="button"
-          class="mt-4 w-full px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="mt-4 w-full px-4 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
           (click)="openBlogPreview()"
         >
           Abrir preview
@@ -506,21 +506,21 @@
           </div>
           <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             <select
-              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
               [value]="blogStatusFilter"
               (change)="setBlogStatus($any($event.target).value)"
             >
               <option *ngFor="let option of blogStatusOptions" [value]="option.id">{{ option.label }}</option>
             </select>
             <select
-              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
               [value]="blogTypeFilter"
               (change)="setBlogType($any($event.target).value)"
             >
               <option *ngFor="let option of blogTypeOptions" [value]="option.id">{{ option.label }}</option>
             </select>
             <select
-              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
               [value]="blogCategoryFilter"
               (change)="setBlogCategory($any($event.target).value)"
             >
@@ -529,7 +529,7 @@
             </select>
             <input
               type="text"
-              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-3 py-2 text-xs text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
               placeholder="Buscar articulos"
               [value]="blogSearchTerm"
               (input)="onBlogSearchInput($event)"
@@ -541,7 +541,7 @@
         <div *ngIf="blogLoading" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">
           Cargando articulos...
         </div>
-        <div *ngIf="blogError" class="text-sm text-red-300 py-3">
+        <div *ngIf="blogError" class="text-sm text-[var(--spotify-negative)] py-3">
           {{ blogError }}
         </div>
         <div *ngIf="!blogLoading && !blogError && blogPosts.length === 0" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">
@@ -552,7 +552,7 @@
           <article
             *ngFor="let post of blogPosts; trackBy: trackByBlogPost"
             class="p-4 rounded-2xl bg-[var(--portal-surface)] border space-y-3"
-            [ngClass]="selectedBlogPostId === post.id ? 'border-red-500/40' : 'border-[var(--portal-border)]'"
+            [ngClass]="selectedBlogPostId === post.id ? 'border-[var(--spotify-negative)]/40' : 'border-[var(--portal-border)]'"
           >
             <div class="flex items-start gap-3">
               <div class="h-20 w-28 rounded-xl bg-[var(--portal-surface)] border border-[var(--portal-border)] overflow-hidden flex-shrink-0">
@@ -579,7 +579,7 @@
                     <span class="text-[10px] px-2 py-1 rounded-full border border-[var(--portal-border-strong)] bg-[var(--portal-surface)] text-[var(--portal-text)]">
                       {{ getPostTypeLabel(post) }}
                     </span>
-                    <span *ngIf="post.featured" class="text-[10px] px-2 py-1 rounded-full border border-red-500/40 bg-red-500/10 text-red-100">
+                    <span *ngIf="post.featured" class="text-[10px] px-2 py-1 rounded-full border border-[var(--spotify-negative)]/40 bg-[var(--spotify-negative)]/10 text-[var(--spotify-negative)]">
                       Destacado
                     </span>
                   </div>
@@ -603,7 +603,7 @@
                   </button>
                   <button *ngIf="post.status === 'publish'"
                     type="button"
-                    class="px-3 py-1.5 rounded-lg border border-emerald-500/30 text-emerald-200 hover:border-emerald-400/40"
+                    class="px-3 py-1.5 rounded-lg border border-[var(--accent-discover)]/30 text-[var(--accent-discover)] hover:border-[var(--accent-discover)]/40"
                     (click)="togglePublishState(post)"
                   >
                     Retirar publicación
@@ -618,7 +618,7 @@
                   </a>
                   <button
                     type="button"
-                    class="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-200 hover:border-red-400/40 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    class="px-3 py-1.5 rounded-lg border border-[var(--spotify-negative)]/30 text-[var(--spotify-negative)] hover:border-[var(--spotify-negative)]/40 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
                     [disabled]="blogDeletingId === post.id"
                     (click)="requestDeleteBlogPost(post)"
                   >

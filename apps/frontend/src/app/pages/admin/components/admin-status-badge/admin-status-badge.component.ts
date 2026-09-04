@@ -33,11 +33,14 @@ const STATUS_TONE: Record<string, AdminStatusTone> = {
   unknown: 'unknown',
 };
 
+// Mapped to the Spotify accent tokens (design-tokens.scss) instead of raw
+// Tailwind palette hues, so status colors stay in lockstep with the rest of
+// the reskin across both themes.
 const TONE_CLASSES: Record<AdminStatusTone, string> = {
-  positive: 'border-emerald-500/40 text-emerald-200 bg-emerald-500/10',
-  warning: 'border-amber-500/40 text-amber-200 bg-amber-500/10',
-  critical: 'border-red-500/40 text-red-200 bg-red-500/10',
-  neutral: 'border-blue-500/40 text-blue-200 bg-blue-500/10',
+  positive: 'border-[var(--accent-discover)]/40 text-[var(--accent-discover)] bg-[var(--accent-discover)]/10',
+  warning: 'border-[var(--spotify-warning)]/40 text-[var(--spotify-warning)] bg-[var(--spotify-warning)]/10',
+  critical: 'border-[var(--spotify-negative)]/40 text-[var(--spotify-negative)] bg-[var(--spotify-negative)]/10',
+  neutral: 'border-[var(--accent-streaming)]/40 text-[var(--accent-streaming)] bg-[var(--accent-streaming)]/10',
   unknown: 'border-[var(--portal-border-strong)] text-[var(--portal-text-soft)] bg-[var(--portal-surface-strong)]',
 };
 

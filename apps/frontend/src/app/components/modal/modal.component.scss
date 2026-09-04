@@ -9,7 +9,7 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -25,7 +25,7 @@
   max-width: 900px;
   background: var(--portal-card-elevated);
   border: 1px solid var(--portal-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   max-height: 90vh;
@@ -223,7 +223,7 @@
   &--primary {
     background: var(--accent-live-strong);
     border-color: transparent;
-    color: #fff;
+    color: var(--spotify-white);
 
     &:hover {
       box-shadow: var(--shadow-md);
@@ -357,7 +357,7 @@
   &--primary {
     background: var(--accent-live-strong);
     border: none;
-    color: #fff;
+    color: var(--spotify-white);
     box-shadow: var(--shadow-sm);
 
     &:hover {
@@ -442,12 +442,12 @@
 
 .modal-body::-webkit-scrollbar-track {
   background: var(--portal-surface-strong);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .modal-body::-webkit-scrollbar-thumb {
   background: var(--portal-border-strong);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 
   &:hover {
     background: var(--accent-live);

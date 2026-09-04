@@ -72,7 +72,7 @@ import { AffiliateImpressionDirective } from '../../directives/affiliate-impress
               [appAffiliateImpression]="affiliateOfferFor(provider) || null"
               [appAffiliateImpressionContext]="impressionContext()"
               [appAffiliateImpressionPage]="page"
-              class="flex items-center gap-2 rounded-xl border border-emerald-700/40 bg-emerald-900/20 px-3 py-2 no-underline transition-all active:scale-95"
+              class="flex items-center gap-2 rounded-xl border border-[var(--accent-discover)]/40 bg-[var(--accent-discover)]/10 px-3 py-2 no-underline transition-all active:scale-95"
             >
               <img
                 [src]="resolveLogo(provider)"
@@ -98,7 +98,7 @@ import { AffiliateImpressionDirective } from '../../directives/affiliate-impress
               [appAffiliateImpression]="affiliateOfferFor(provider) || null"
               [appAffiliateImpressionContext]="impressionContext()"
               [appAffiliateImpressionPage]="page"
-              class="flex items-center gap-2 rounded-xl border border-amber-700/40 bg-amber-900/20 px-3 py-2 no-underline transition-all active:scale-95"
+              class="flex items-center gap-2 rounded-xl border border-[var(--spotify-warning)]/40 bg-[var(--spotify-warning)]/10 px-3 py-2 no-underline transition-all active:scale-95"
             >
               <img
                 [src]="resolveLogo(provider)"

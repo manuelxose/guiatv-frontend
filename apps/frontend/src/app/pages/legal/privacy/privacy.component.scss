@@ -3,11 +3,11 @@
   display: block;
 }
 main {
-  color: #e6eef6;
+  color: var(--portal-text-soft);
 }
 .prose h1 {
   color: var(--portal-text);
 }
 .prose p {
-  color: #cbd5e1;
+  color: var(--portal-text-muted);
 }

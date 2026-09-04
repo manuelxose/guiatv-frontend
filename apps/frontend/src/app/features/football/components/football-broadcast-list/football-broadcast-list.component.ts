@@ -68,7 +68,7 @@ import { AffiliateContext, AffiliatePlacementKey, AffiliateResolvedOffer } from 
   styles: `
     .broadcasts {
       border: 1px solid var(--portal-border);
-      border-radius: 0.75rem;
+      border-radius: var(--radius-lg);
       padding: 1rem;
       background: var(--portal-card);
     }
@@ -100,7 +100,7 @@ import { AffiliateContext, AffiliatePlacementKey, AffiliateResolvedOffer } from 
       letter-spacing: 0.04em;
       color: var(--portal-text-muted);
       border: 1px solid var(--portal-border);
-      border-radius: 9999px;
+      border-radius: var(--radius-pill);
       padding: 0.125rem 0.5rem;
     }
     .broadcasts__affiliate {

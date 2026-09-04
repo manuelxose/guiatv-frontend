@@ -11,7 +11,7 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
   imports: [CommonModule, RouterModule, InteractionButtonsComponent],
   template: `
     <article
-      class="catalog-card group relative overflow-hidden rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] shadow-[var(--shadow-md)]"
+      class="catalog-card group relative overflow-hidden rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] shadow-[var(--shadow-md)]"
       [ngClass]="compact ? 'min-w-[220px]' : 'h-full'"
       [attr.data-vertical]="vertical"
     >
@@ -160,6 +160,31 @@ import { InteractionButtonsComponent } from '../interaction-buttons/interaction-
 
       .catalog-card {
         @include cards.card-vertical-accent();
+        transition:
+          background-color var(--motion-base) var(--motion-ease),
+          box-shadow var(--motion-base) var(--motion-ease);
+      }
+
+      .catalog-card:hover {
+        background-color: var(--portal-card-elevated);
+      }
+
+      .catalog-card:focus-within {
+        outline: 2px solid var(--spotify-green);
+        outline-offset: 2px;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .catalog-card {
+          transition:
+            background-color var(--motion-base) var(--motion-ease),
+            box-shadow var(--motion-base) var(--motion-ease),
+            transform var(--motion-base) var(--motion-ease);
+        }
+
+        .catalog-card:hover {
+          transform: translateY(-4px);
+        }
       }
     `,
   ],
