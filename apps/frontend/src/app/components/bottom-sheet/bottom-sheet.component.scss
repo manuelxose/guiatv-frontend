@@ -8,14 +8,14 @@
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
 }
 
 .sheet-shell__panel {
   position: absolute;
   inset: auto 0 0;
-  border-radius: 1.5rem 1.5rem 0 0;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   border: 1px solid var(--portal-border);
   background: var(--portal-bg);
   max-height: min(78dvh, 44rem);
@@ -28,7 +28,7 @@
 .sheet-shell__handle {
   width: 3rem;
   height: 0.3125rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-border-strong);
   margin: 0.75rem auto 0;
 }
@@ -52,7 +52,7 @@
   min-width: 44px;
   min-height: 44px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface-strong);
   color: var(--portal-text);
   font-size: 1.5rem;

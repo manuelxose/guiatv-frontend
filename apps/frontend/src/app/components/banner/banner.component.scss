@@ -14,11 +14,11 @@
 // VARIABLES
 // ===============================================
 
-$primary-color: #dc2626;
-$primary-hover: #b91c1c;
-$text-primary: #f3f4f6;
-$text-secondary: #9ca3af;
-$text-muted: #6b7280;
+$primary-color: var(--spotify-green);
+$primary-hover: var(--spotify-green-press);
+$text-primary: var(--hero-text);
+$text-secondary: var(--hero-text-muted);
+$text-muted: var(--hero-text-muted);
 $surface-dark: rgba(0, 0, 0, 0.6);
 $transition-fast: 150ms ease-out;
 $transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -43,10 +43,10 @@ $transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   aspect-ratio: 1920 / 800;
   min-height: 280px;
   max-height: 500px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-  
+  background: linear-gradient(135deg, var(--hero-bg) 0%, var(--spotify-bg-press) 100%);
+
   // Fallback para navegadores sin aspect-ratio
   @supports not (aspect-ratio: 1920 / 800) {
     height: 0;
@@ -107,7 +107,7 @@ $transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   // Fallback mientras carga
-  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  background: linear-gradient(135deg, var(--spotify-bg-elevated) 0%, var(--hero-bg) 100%);
 }
 
 .banner-overlay {
@@ -178,7 +178,7 @@ $transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   height: 32px;
   object-fit: contain;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--portal-surface-strong);
   padding: 2px;
   
@@ -213,7 +213,7 @@ $transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0.375rem 0.75rem;
   background: $surface-dark;
   backdrop-filter: blur(8px);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   font-size: 0.75rem;
   font-weight: 500;
   color: $text-primary;
@@ -297,18 +297,18 @@ $transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .star-icon {
-  color: #fbbf24;
+  color: var(--accent-sports);
 }
 
 .rating {
-  color: #fbbf24;
+  color: var(--accent-sports);
   font-weight: 600;
 }
 
 .age-rating {
   padding: 0.125rem 0.375rem;
   background: var(--portal-surface-strong);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -366,24 +366,24 @@ $transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   gap: 0.375rem;
   padding: 0.5rem 1rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-pill);
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: transform $transition-fast, background-color $transition-fast;
-  
+
   // GPU acceleration
   will-change: transform;
   transform: translateZ(0);
-  
+
   &:hover {
-    transform: translateY(-1px) translateZ(0);
+    transform: translateY(-1px) scale(1.02) translateZ(0);
   }
-  
+
   &:active {
-    transform: scale(0.98) translateZ(0);
+    transform: scale(0.97) translateZ(0);
   }
-  
+
   @media (min-width: 640px) {
     padding: 0.625rem 1.25rem;
     font-size: 0.875rem;
@@ -392,8 +392,9 @@ $transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
 .btn-primary {
   background: $primary-color;
-  color: white;
-  
+  color: #000;
+  font-weight: 700;
+
   &:hover {
     background: $primary-hover;
   }
@@ -437,10 +438,10 @@ $transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   aspect-ratio: 1920 / 800;
   min-height: 280px;
   max-height: 500px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-  
+  background: linear-gradient(135deg, var(--hero-bg) 0%, var(--spotify-bg-press) 100%);
+
   @media (max-width: 639px) {
     aspect-ratio: 16 / 9;
     min-height: 200px;

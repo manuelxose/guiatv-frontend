@@ -13,12 +13,32 @@
 // is being built in parallel; this stays out of it entirely).
 .program-card--boxed {
   border: 1px solid var(--portal-border);
-  border-radius: var(--guide-radius-md, 1rem);
+  border-radius: var(--radius-md);
   background: var(--portal-card);
   overflow: hidden;
   padding: 0.7rem;
+  transition: background-color var(--motion-base) var(--motion-ease), box-shadow var(--motion-base) var(--motion-ease);
 
   @include cards.card-vertical-accent();
+}
+
+.program-card--boxed:hover {
+  background: var(--portal-card-elevated);
+}
+
+.program-card--boxed:focus-within {
+  outline: 2px solid var(--spotify-green);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .program-card--boxed {
+    transition: background-color var(--motion-base) var(--motion-ease), box-shadow var(--motion-base) var(--motion-ease), transform var(--motion-base) var(--motion-ease);
+  }
+
+  .program-card--boxed:hover {
+    transform: translateY(-4px);
+  }
 }
 
 .program-card__tap {
@@ -35,7 +55,7 @@
   position: relative;
   aspect-ratio: 16 / 9;
   background: var(--guide-surface-strong);
-  border-radius: var(--guide-radius-md, 1rem);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -63,10 +83,10 @@
 }
 
 .program-card__badge {
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--hero-border);
   background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+  color: var(--hero-text);
   font-size: 0.6875rem;
   font-weight: 700;
   padding: 0.28rem 0.55rem;
@@ -84,7 +104,7 @@
 .program-card__progress-fill {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, #ef4444, #f97316);
+  background: linear-gradient(90deg, var(--accent-live), var(--accent-sports));
 }
 
 .program-card__progress-fill--0 {
@@ -148,7 +168,7 @@
   align-items: center;
   gap: 0.4rem;
   flex-wrap: wrap;
-  color: var(--guide-text-muted, #94a3b8);
+  color: var(--guide-text-muted);
   font-size: 0.75rem;
   line-height: 1.45;
 }
@@ -175,7 +195,7 @@
 
 .program-card__description {
   margin: 0;
-  color: var(--guide-text-soft, #cbd5e1);
+  color: var(--guide-text-soft);
   font-size: 0.875rem;
   line-height: 1.55;
   display: -webkit-box;
@@ -201,7 +221,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface-strong);
   color: var(--portal-text);
   font-size: 0.72rem;
@@ -217,13 +237,13 @@
 .program-card__meta-pill--live i {
   width: 0.45rem;
   height: 0.45rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent-live);
   box-shadow: 0 0 0 0.18rem color-mix(in oklch, var(--accent-live) 18%, transparent);
 }
 
 .program-card__action {
-  color: var(--guide-accent, #f87171);
+  color: var(--guide-accent);
   font-size: 0.8125rem;
   font-weight: 700;
 }
@@ -241,7 +261,7 @@
   align-items: center;
   justify-content: center;
   min-height: 38px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: var(--portal-surface);
   color: var(--portal-text);
@@ -256,14 +276,14 @@
 }
 
 .program-card__cta--primary {
-  border-color: color-mix(in srgb, var(--guide-accent, #dc2626) 30%, var(--portal-border));
-  background: color-mix(in srgb, var(--guide-accent, #dc2626) 8%, var(--portal-surface));
+  border-color: color-mix(in srgb, var(--guide-accent) 30%, var(--portal-border));
+  background: color-mix(in srgb, var(--guide-accent) 8%, var(--portal-surface));
 }
 
 .program-card__cta--active {
-  border-color: rgba(34, 197, 94, 0.4);
-  background: rgba(34, 197, 94, 0.14);
-  color: var(--guide-sport-accent);
+  border-color: color-mix(in srgb, var(--football-win) 40%, transparent);
+  background: color-mix(in srgb, var(--football-win) 14%, transparent);
+  color: var(--football-win);
 }
 
 .program-card__affiliate-cta {

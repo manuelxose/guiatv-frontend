@@ -19,7 +19,7 @@
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
 }
 
@@ -29,7 +29,7 @@
   width: 100%;
   max-height: 90vh;
   background: var(--portal-card-elevated);
-  border-radius: 24px 24px 0 0;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -98,7 +98,7 @@
   padding: 1rem;
   background: rgba(5, 10, 18, 0.45);
   backdrop-filter: blur(10px);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--hero-border);
   align-self: flex-start;
   max-width: 80%;
@@ -107,7 +107,7 @@
     width: 48px;
     height: 48px;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--portal-surface-strong);
     padding: 0.25rem;
   }
@@ -196,7 +196,7 @@
     padding: 0.875rem 1rem;
     background: var(--portal-surface-strong);
     border: 1px solid var(--portal-border);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     color: var(--portal-text);
     font-size: 0.8125rem;
     font-weight: 600;
@@ -243,7 +243,7 @@
       width: 100%;
       aspect-ratio: 2/3;
       object-fit: cover;
-      border-radius: 12px;
+      border-radius: var(--radius-lg);
       box-shadow: var(--shadow-md);
     }
   }
@@ -316,7 +316,7 @@
     padding: 1rem;
     background: var(--portal-surface-strong);
     border: 1px solid var(--portal-border);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
   }
 }
 
@@ -336,7 +336,7 @@
     gap: 0.5rem;
     min-height: 44px;
     padding: 0.875rem 1rem;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     font-size: 0.9375rem;
     font-weight: 700;
     cursor: pointer;
@@ -356,7 +356,7 @@
     &-primary {
       background: var(--accent-live-strong);
       border: none;
-      color: #fff;
+      color: var(--spotify-white);
 
       &:active {
         transform: scale(0.95);
@@ -400,7 +400,7 @@
   .modal-content {
     max-width: 600px;
     margin: 0 auto;
-    border-radius: 24px;
+    border-radius: var(--radius-lg);
     max-height: 85vh;
   }
 
@@ -411,7 +411,7 @@
 
   .modal-hero {
     height: 320px;
-    border-radius: 24px 24px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
   .social-actions {

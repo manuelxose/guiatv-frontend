@@ -28,7 +28,7 @@
 .portal-footer__highlight,
 .portal-footer__column,
 .portal-footer__meta {
-  border-radius: 1.5rem;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--portal-border);
   background: var(--portal-bg);
   box-shadow: none;

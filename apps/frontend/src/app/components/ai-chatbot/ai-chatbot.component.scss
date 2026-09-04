@@ -80,7 +80,7 @@
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: var(--portal-surface);
   color: var(--portal-text-muted);
