@@ -22,7 +22,7 @@ import { UserProfile } from '../../../../interfaces/user.interface';
           <button
             type="button"
             (click)="onClose()"
-            class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
             aria-label="Cerrar"
           >
             Cerrar
@@ -43,7 +43,7 @@ import { UserProfile } from '../../../../interfaces/user.interface';
                   id="profile-avatar"
                   type="text"
                   formControlName="avatar"
-                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 />
               </div>
             </div>
@@ -55,7 +55,7 @@ import { UserProfile } from '../../../../interfaces/user.interface';
                   id="profile-name"
                   type="text"
                   formControlName="name"
-                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 />
               </div>
               <div class="space-y-2">
@@ -66,7 +66,7 @@ import { UserProfile } from '../../../../interfaces/user.interface';
                     type="text"
                     id="profile-username"
                     formControlName="username"
-                    class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl pl-8 pr-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl pl-8 pr-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                   />
                 </div>
               </div>
@@ -78,7 +78,7 @@ import { UserProfile } from '../../../../interfaces/user.interface';
                 id="profile-bio"
                 formControlName="bio"
                 rows="3"
-                class="w-full bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 py-3 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 resize-none"
+                class="w-full bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 py-3 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)] resize-none"
               ></textarea>
             </div>
 
@@ -88,14 +88,14 @@ import { UserProfile } from '../../../../interfaces/user.interface';
                 id="profile-location"
                 type="text"
                 formControlName="location"
-                class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               />
             </div>
 
             <div class="border-t border-[var(--portal-border)] pt-6 space-y-4">
               <h3 class="text-sm text-[var(--portal-text-soft)] font-semibold uppercase tracking-wider">Seguridad</h3>
-              <p *ngIf="passwordSuccess" class="text-sm text-green-400">{{ passwordSuccess }}</p>
-              <p *ngIf="passwordError" class="text-sm text-red-400">{{ passwordError }}</p>
+              <p *ngIf="passwordSuccess" class="text-sm text-[var(--accent-discover)]">{{ passwordSuccess }}</p>
+              <p *ngIf="passwordError" class="text-sm text-[var(--spotify-negative)]">{{ passwordError }}</p>
               <div class="space-y-4">
                 <div class="space-y-2">
                   <label for="profile-current-password" class="text-xs text-[var(--portal-text-muted)] uppercase tracking-wider">Contrasena actual</label>
@@ -103,7 +103,7 @@ import { UserProfile } from '../../../../interfaces/user.interface';
                     id="profile-current-password"
                     type="password"
                     formControlName="currentPassword"
-                    class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                   />
                 </div>
                 <div class="grid md:grid-cols-2 gap-4">
@@ -113,7 +113,7 @@ import { UserProfile } from '../../../../interfaces/user.interface';
                       id="profile-new-password"
                       type="password"
                       formControlName="password"
-                      class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                     />
                   </div>
                   <div class="space-y-2">
@@ -122,7 +122,7 @@ import { UserProfile } from '../../../../interfaces/user.interface';
                       id="profile-confirm-password"
                       type="password"
                       formControlName="confirmPassword"
-                      class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                      class="w-full min-h-[44px] bg-[var(--portal-bg-deep)] border border-[var(--portal-border)] rounded-xl px-4 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                     />
                   </div>
                 </div>
@@ -135,7 +135,7 @@ import { UserProfile } from '../../../../interfaces/user.interface';
           <button
             type="button"
             (click)="onClose()"
-            class="min-h-[44px] px-4 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[44px] px-4 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
           >
             Cancelar
           </button>
@@ -143,7 +143,7 @@ import { UserProfile } from '../../../../interfaces/user.interface';
             type="button"
             (click)="onSubmit()"
             [disabled]="profileForm.invalid"
-            class="min-h-[44px] px-6 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            class="min-h-[44px] px-6 rounded-xl bg-[var(--accent-live)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
           >
             Guardar cambios
           </button>

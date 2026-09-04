@@ -135,7 +135,7 @@ export class ProgramListFacadeService {
   }
 
   getCategoryBadgeClasses(_categoryValue: string): string {
-    return 'bg-red-600/20 text-red-200';
+    return 'bg-[#1ed760]/20 text-[#5eeb92]';
   }
 
   getCategoryDisplayName(categoryValue: string): string {
@@ -144,19 +144,19 @@ export class ProgramListFacadeService {
 
   getDayButtonClasses(dayIndex: number, activeIndex: number): string {
     return dayIndex === activeIndex
-      ? 'bg-red-600 text-white'
+      ? 'bg-[#1ed760] text-white'
       : 'bg-gray-800 text-gray-200';
   }
 
   getTimeSlotButtonClasses(timeSlot: string, activeSlot: string): string {
     return timeSlot === activeSlot
-      ? 'bg-red-600 text-white'
+      ? 'bg-[#1ed760] text-white'
       : 'bg-gray-800 text-gray-200';
   }
 
   getProgramContainerClasses(isSelected: boolean, isLive?: boolean): string {
-    const live = isLive ? 'border border-red-500/60' : '';
-    return `${isSelected ? 'ring-2 ring-red-500' : ''} ${live}`.trim();
+    const live = isLive ? 'border border-[#1ed760]/60' : '';
+    return `${isSelected ? 'ring-2 ring-[#1ed760]' : ''} ${live}`.trim();
   }
 
   getChannelLogoUrl(channelData: any): string {

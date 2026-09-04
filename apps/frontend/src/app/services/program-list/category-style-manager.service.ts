@@ -39,22 +39,22 @@ export class CategoryStyleManagerService implements ICategoryStyleManager {
   }
 
   getDayButtonClasses(dayIndex: number, activeIndex: number): string {
-    const baseClasses = 'px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 shadow-lg';
-    
+    const baseClasses = 'px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#1ed760] focus:ring-opacity-50 shadow-lg';
+
     if (dayIndex === activeIndex) {
-      return `${baseClasses} bg-gradient-to-r from-red-500 to-red-600 text-white shadow-red-500/50`;
+      return `${baseClasses} bg-gradient-to-r from-[#1ed760] to-[#169c46] text-white shadow-[#1ed760]/50`;
     }
-    
+
     return `${baseClasses} bg-gray-700 text-gray-300 hover:bg-gray-600`;
   }
 
   getTimeSlotButtonClasses(timeSlot: string, activeSlot: string): string {
-    const baseClasses = 'px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 shadow-lg';
-    
+    const baseClasses = 'px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#1ed760] focus:ring-opacity-50 shadow-lg';
+
     if (timeSlot === activeSlot) {
-      return `${baseClasses} bg-gradient-to-r from-red-500 to-red-600 text-white shadow-red-500/50`;
+      return `${baseClasses} bg-gradient-to-r from-[#1ed760] to-[#169c46] text-white shadow-[#1ed760]/50`;
     }
-    
+
     return `${baseClasses} bg-gray-700 text-gray-300 hover:bg-gray-600`;
   }
 
@@ -63,17 +63,17 @@ export class CategoryStyleManagerService implements ICategoryStyleManager {
    */
   getProgramContainerClasses(isSelected: boolean, isLive?: boolean): string {
     let classes = 'relative border-r border-gray-600/30 last:border-r-0 cursor-pointer transition-all duration-200 group overflow-hidden';
-    
+
     if (isSelected) {
-      classes += ' bg-red-600/30 border-red-500';
+      classes += ' bg-[#1ed760]/30 border-[#1ed760]';
     } else {
-      classes += ' hover:bg-red-600/20';
+      classes += ' hover:bg-[#1ed760]/20';
     }
-    
+
     if (isLive) {
-      classes += ' ring-2 ring-red-500 ring-opacity-50';
+      classes += ' ring-2 ring-[#1ed760] ring-opacity-50';
     }
-    
+
     return classes;
   }
 
@@ -81,7 +81,7 @@ export class CategoryStyleManagerService implements ICategoryStyleManager {
    * Genera clases para el indicador de tiempo actual
    */
   getCurrentTimeIndicatorClasses(): string {
-    return 'absolute w-0.5 bg-gradient-to-b from-red-400 via-red-500 to-red-600 z-50 shadow-2xl shadow-red-500/50';
+    return 'absolute w-0.5 bg-gradient-to-b from-[#5eeb92] via-[#1ed760] to-[#169c46] z-50 shadow-2xl shadow-[#1ed760]/50';
   }
 
   /**
