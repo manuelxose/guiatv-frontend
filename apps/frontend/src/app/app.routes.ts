@@ -37,7 +37,10 @@ export const routes: Routes = [
         (m) => m.UserAreaComponent
       ),
     title: 'Perfil - Guía TV',
-    data: { defaultTab: 'feed', robots: 'noindex, nofollow', layout: 'private-shell' },
+    // 'overview' — Mi GuíaTV's content-first home (completion meter, "para
+    // ti" rail). /comunidad keeps its own 'feed' default below; these are
+    // two distinct entry URLs sharing one component, not meant to converge.
+    data: { defaultTab: 'overview', robots: 'noindex, nofollow', layout: 'private-shell' },
   },
   {
     path: 'mi-cuenta',
@@ -77,7 +80,10 @@ export const routes: Routes = [
       import('./pages/admin/admin.component').then((m) => m.AdminComponent),
     title: 'Admin - Guia TV',
     canActivate: [adminGuard],
-    data: { robots: 'noindex, nofollow', layout: 'private-shell' },
+    // Admin is a separate operations-console surface from the consumer app —
+    // it must not inherit the consumer public layout shell (header/footer/
+    // rail/mobile nav/chatbot). See AppComponent's 'admin-shell' switch case.
+    data: { robots: 'noindex, nofollow', layout: 'admin-shell' },
   },
   {
     path: 'programacion-tv/series',
@@ -103,6 +109,15 @@ export const routes: Routes = [
       ),
     title: 'Guía de Canales - Guía TV',
     data: { tab: 'live', layout: 'portal-page' },
+  },
+  {
+    path: 'canales',
+    loadComponent: () =>
+      import('./pages/channel-catalog/channel-catalog.component').then(
+        (m) => m.ChannelCatalogComponent
+      ),
+    title: 'Canales de televisión - Guía TV',
+    data: { layout: 'public-shell' },
   },
   {
     path: 'canales/:id',

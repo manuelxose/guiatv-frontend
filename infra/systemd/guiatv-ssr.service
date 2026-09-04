@@ -1,0 +1,18 @@
+[Unit]
+OnFailure=guiatv-crash-alert@%n.service
+Description=Guiatv SSR
+After=network.target guiatv-api.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/guiatv/current/apps/frontend
+EnvironmentFile=/etc/guiatv/ssr.env
+Environment=FRONTEND_RELEASE_DIR=/var/www/guiatv/current/apps/frontend/dist/guiatv
+Environment=NODE_OPTIONS=--max-old-space-size=512
+ExecStart=/usr/bin/node /var/www/guiatv/current/apps/frontend/scripts/ssr-server.mjs
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

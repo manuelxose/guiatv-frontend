@@ -39,17 +39,33 @@ import { FootballNewsDTO } from '@app/features/football/football.models';
       gap: 0.75rem;
       padding: 0.75rem;
       border: 1px solid var(--portal-border);
-      border-radius: 0.75rem;
+      border-radius: var(--radius-lg);
       background: var(--portal-card);
       color: inherit;
       text-decoration: none;
-      transition: border-color 0.15s ease;
+      transition: border-color var(--motion-fast) var(--motion-ease),
+        background var(--motion-fast) var(--motion-ease);
     }
-    .news:hover { border-color: var(--accent-sports); }
+    .news:hover, .news:focus-visible {
+      border-color: var(--accent-sports);
+      background: var(--portal-card-elevated);
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .news {
+        transition: border-color var(--motion-fast) var(--motion-ease),
+          background var(--motion-fast) var(--motion-ease),
+          transform var(--motion-fast) var(--motion-ease),
+          box-shadow var(--motion-fast) var(--motion-ease);
+      }
+      .news:hover, .news:focus-visible {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+      }
+    }
     .news__image {
       flex: 0 0 4.5rem;
       height: 4.5rem;
-      border-radius: 0.5rem;
+      border-radius: var(--radius-md);
       overflow: hidden;
       background: var(--portal-surface-strong);
     }

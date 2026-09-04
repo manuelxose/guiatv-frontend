@@ -2,12 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   TvReadQueryService,
+  buildTvReadChannelDirectoryPipeline,
+  buildTvReadChannelGroupClause,
+  buildTvReadSchedulePipeline,
   applyTvReadTemporalBounds,
   hydrateTvReadItemRuntime,
   isConsumerVisibleTvReadItem,
   isFeaturedTvReadItem,
   normalizeTvReadView,
   resolveTvReadLimit,
+  resolveTvReadItemsPerChannel,
   scopeChannelSummariesToPage,
   selectPrimeTimeTvItems,
 } from './TvReadQueryService';
@@ -18,16 +22,146 @@ test('normalizeTvReadView falls back to day for invalid input', () => {
   assert.equal(normalizeTvReadView(undefined), 'day');
 });
 
-test('resolveTvReadLimit bounds day reads for progressive fetching', () => {
+test('channel schedule pipeline bounds each channel instead of truncating the global guide', () => {
+  const pipeline = buildTvReadSchedulePipeline({
+    date: '20260326',
+    group: 'movistar',
+    category: 'Deportes',
+    itemsPerChannel: 32,
+  });
+
+  assert.deepEqual(pipeline[0], {
+    $match: {
+      date: '20260326',
+      'channel.id': { $type: 'string', $ne: '' },
+      'trustDecision.consumerSuppressed': { $ne: true },
+      'program.titleResolutionState': {
+        $nin: ['generic_unresolved', 'generic_suppressed'],
+      },
+      'program.editorialCategory': 'Deportes',
+      $and: [buildTvReadChannelGroupClause('movistar')],
+    },
+  });
+  assert.equal(pipeline.some((stage) => '$limit' in stage), false);
+  assert.deepEqual(pipeline.at(-1), {
+    $project: {
+      _id: 0,
+      channel: 1,
+      total: 1,
+      items: { $slice: ['$items', 32] },
+    },
+  });
+});
+
+test('channel schedule supports complete high-frequency linear channels', () => {
+  assert.equal(resolveTvReadItemsPerChannel(144), 144);
+  assert.equal(resolveTvReadItemsPerChannel(999), 192);
+});
+
+test('resolveTvReadLimit keeps the canonical day feed complete enough for all groups', () => {
   assert.equal(resolveTvReadLimit('day', undefined), 240);
-  assert.equal(resolveTvReadLimit('day', 5000), 1000);
-  assert.equal(resolveTvReadLimit('day', 99999), 1000);
+  assert.equal(resolveTvReadLimit('day', 5000), 5000);
+  assert.equal(resolveTvReadLimit('day', 99999), 5000);
 });
 
 test('resolveTvReadLimit keeps hot paths bounded', () => {
   assert.equal(resolveTvReadLimit('now', 99999), 500);
   assert.equal(resolveTvReadLimit('search', undefined), 60);
   assert.equal(resolveTvReadLimit('night', 1200), 1200);
+});
+
+test('channel directory is independently aggregated and remains complete beyond 5000 mixed rows', async () => {
+  const rows = Array.from({ length: 5002 }, (_, index) => ({
+    channel: {
+      id: `channel_${index}`,
+      name: `Channel ${index}`,
+      normalizedName: `channel_${index}`,
+      aliases: [],
+      sourceIds: [`source_${index}`],
+      type: index % 2 ? 'Cable' : 'Movistar',
+      group: index % 2 ? 'cable' : 'movistar',
+      subgroups: [],
+      sortOrder: index,
+      distribution: index % 2 ? 'cable' : 'operator',
+      access: 'pay',
+      operator: index % 2 ? 'unknown' : 'Movistar Plus+',
+      providers: index % 2 ? [] : ['Movistar Plus+'],
+      contentFacets: ['general'],
+      market: {
+        country: 'España',
+        countryCode: 'ES',
+        region: 'España',
+        scope: 'national',
+      },
+      quality: { resolution: 'unknown', timeshift: 'unknown' },
+      capabilities: { linear: true, catchup: 'unknown', streaming: 'unknown' },
+      provenance: { classification: 'registry', sourceIds: [`source_${index}`] },
+    },
+    total: 12,
+    live: 1,
+    tonight: 2,
+  }));
+  let capturedPipeline: Record<string, any>[] = [];
+  const fakeModel = {
+    aggregate: (pipeline: Record<string, any>[]) => {
+      capturedPipeline = pipeline;
+      return { exec: async () => rows };
+    },
+  };
+  const service = new TvReadQueryService(
+    {
+      get: async () => null,
+      set: async () => undefined,
+      clear: async () => undefined,
+    } as any,
+    fakeModel as any
+  );
+
+  const result = await service.getChannels('20260326');
+
+  assert.equal(result.channels.length, 5002);
+  assert.equal(result.meta.total, 5002);
+  assert.equal(result.channels.some((entry) => entry.channel.group === 'cable'), true);
+  assert.equal(result.channels.some((entry) => entry.channel.group === 'movistar'), true);
+  assert.equal(capturedPipeline.some((stage) => '$limit' in stage), false);
+  assert.equal(JSON.stringify(capturedPipeline).includes('currentItems'), true);
+  assert.equal(JSON.stringify(capturedPipeline).includes('nextItems'), true);
+  assert.deepEqual(buildTvReadChannelDirectoryPipeline('20260326', 'movistar')[0], {
+    $match: {
+      date: '20260326',
+      'channel.id': { $type: 'string', $ne: '' },
+      'trustDecision.consumerSuppressed': { $ne: true },
+      'program.titleResolutionState': {
+        $nin: ['generic_unresolved', 'generic_suppressed'],
+      },
+      $and: [buildTvReadChannelGroupClause('movistar')],
+    },
+  });
+});
+
+test('channel directory can be bounded for compact discovery surfaces without changing the complete default', () => {
+  const reference = new Date('2026-03-26T11:00:00.000Z');
+  const bounded = buildTvReadChannelDirectoryPipeline('20260326', 'tdt', reference, 6);
+  const complete = buildTvReadChannelDirectoryPipeline('20260326', 'tdt', reference);
+
+  assert.deepEqual(bounded.at(-1), { $limit: 6 });
+  assert.equal(complete.some((stage) => '$limit' in stage), false);
+});
+
+test('Movistar and sports filters use orthogonal provider and content facets', () => {
+  assert.deepEqual(buildTvReadChannelGroupClause('movistar'), {
+    $or: [
+      { 'channel.group': 'movistar' },
+      { 'channel.operator': 'Movistar Plus+' },
+      { 'channel.providers': 'Movistar Plus+' },
+    ],
+  });
+  assert.deepEqual(buildTvReadChannelGroupClause('deporte'), {
+    $or: [
+      { 'channel.group': 'deporte' },
+      { 'channel.contentFacets': 'sports' },
+    ],
+  });
 });
 
 test('applyTvReadTemporalBounds restricts now reads to active airings in Mongo', () => {
@@ -145,6 +279,40 @@ test('isConsumerVisibleTvReadItem hides generic unresolved movie slots from cons
 
   assert.equal(isConsumerVisibleTvReadItem(suppressed), false);
   assert.equal(isConsumerVisibleTvReadItem(visible), true);
+});
+
+test('program sitemap rows exclude slugs that the indexed resolver cannot search', async () => {
+  const rows = [
+    {
+      program: { title: 'The Gentlemen: Los señores de la mafia' },
+      airing: { start: '2026-08-31T22:00:00.000Z' },
+      searchTokens: ['gentlemen', 'senores', 'mafia'],
+    },
+    {
+      program: { title: 'Tándem T4 E6' },
+      airing: { start: '2026-09-01T18:20:00.000Z' },
+      searchTokens: ['tandem', 't4', 'e6'],
+    },
+    {
+      program: { title: '55' },
+      airing: { start: '2026-08-31T06:22:00.000Z' },
+      searchTokens: ['55'],
+    },
+  ];
+  const fakeModel = {
+    find: () => ({
+      select: () => ({
+        sort: () => ({ lean: () => ({ exec: async () => rows }) }),
+      }),
+    }),
+  };
+  const service = new TvReadQueryService({} as any, fakeModel as any);
+
+  const result = await service.getIndexableProgramSitemapRows(['20260831', '20260901']);
+
+  assert.deepEqual(result.map((row) => row.title), [
+    'The Gentlemen: Los señores de la mafia',
+  ]);
 });
 
 test('query now collapses overlapping live rows into one featured item per channel', async () => {

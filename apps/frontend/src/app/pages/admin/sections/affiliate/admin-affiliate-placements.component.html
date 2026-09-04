@@ -1,0 +1,75 @@
+<div class="grid lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] gap-6">
+  <form
+    class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6 space-y-5 h-fit"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+  >
+    <h4 class="text-lg font-semibold text-[var(--portal-text)]">Nuevo placement</h4>
+
+    <div *ngIf="saveError" class="bg-[var(--spotify-negative)]/10 border border-[var(--spotify-negative)]/30 text-[var(--spotify-negative)] px-4 py-3 rounded-xl text-sm">{{ saveError }}</div>
+    <div *ngIf="saveSuccess" class="bg-[var(--accent-discover)]/10 border border-[var(--accent-discover)]/30 text-[var(--accent-discover)] px-4 py-3 rounded-xl text-sm">{{ saveSuccess }}</div>
+
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="placement-key">Clave</label>
+      <input id="placement-key" formControlName="key" type="text"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+        placeholder="new-page-slot" />
+    </div>
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="placement-page">Página</label>
+      <input id="placement-page" formControlName="page" type="text"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+        placeholder="/programacion-tv" />
+    </div>
+    <div>
+      <label class="text-xs text-[var(--portal-text-soft)] uppercase tracking-wider" for="placement-description">Descripción</label>
+      <input id="placement-description" formControlName="description" type="text"
+        class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]" />
+    </div>
+    <label class="flex items-center gap-2 text-sm text-[var(--portal-text)]">
+      <input type="checkbox" formControlName="enabled" class="h-4 w-4 rounded border-[var(--portal-border-strong)]" />
+      Habilitado
+    </label>
+
+    <div class="flex justify-end pt-2">
+      <button type="submit"
+        class="px-5 py-2 rounded-xl bg-[var(--spotify-negative)]/20 border border-[var(--spotify-negative)]/40 text-[var(--spotify-negative)] text-sm hover:bg-[var(--spotify-negative)]/30 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
+        [disabled]="saving || form.invalid">
+        Crear placement
+      </button>
+    </div>
+  </form>
+
+  <div class="bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-2xl p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div>
+        <h4 class="text-lg font-semibold text-[var(--portal-text)]">Placements</h4>
+        <p class="text-xs text-[var(--portal-text-muted)]">{{ placements.length }} resultados</p>
+      </div>
+      <button type="button"
+        class="px-3 py-2 rounded-xl border border-[var(--portal-border-strong)] text-xs text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]"
+        (click)="refresh()">
+        Refrescar
+      </button>
+    </div>
+
+    <div *ngIf="loading" class="text-sm text-[var(--portal-text-muted)] py-6 text-center">Cargando placements...</div>
+    <div *ngIf="error" class="text-sm text-[var(--spotify-negative)] py-3">{{ error }}</div>
+
+    <div *ngIf="placements.length" class="space-y-3 max-h-[720px] overflow-auto pr-1">
+      <article *ngFor="let placement of placements; trackBy: trackById"
+        class="p-4 rounded-2xl bg-[var(--portal-surface)] border border-[var(--portal-border)] flex items-center justify-between gap-3">
+        <div class="min-w-0">
+          <h5 class="text-[var(--portal-text)] text-sm font-semibold truncate">{{ placement.key }}</h5>
+          <p class="text-xs text-[var(--portal-text-muted)] mt-1 truncate">{{ placement.page }} — {{ placement.description || 'Sin descripción' }}</p>
+        </div>
+        <button type="button"
+          class="text-[10px] px-3 py-1.5 rounded-full border flex-shrink-0"
+          [ngClass]="placement.enabled ? 'bg-[var(--accent-discover)]/20 text-[var(--accent-discover)] border-[var(--accent-discover)]/40' : 'bg-[var(--portal-surface)] text-[var(--portal-text-muted)] border-[var(--portal-border-strong)]'"
+          (click)="toggleEnabled(placement)">
+          {{ placement.enabled ? 'Habilitado' : 'Deshabilitado' }}
+        </button>
+      </article>
+    </div>
+  </div>
+</div>

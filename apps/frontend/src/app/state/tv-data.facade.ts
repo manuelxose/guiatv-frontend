@@ -2,7 +2,12 @@ import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { EMPTY, catchError, combineLatest, expand, map, Observable, of, retry, scan, shareReplay, switchMap, timer } from 'rxjs';
 import { TvApiService } from '../api/tv-api.service';
-import { ChannelMetaDTO, TvGuideSurfaceDTO, TvReadItemDTO } from '../api/models';
+import {
+  ChannelMetaDTO,
+  TvGuideSurfaceDTO,
+  TvReadChannelSummaryDTO,
+  TvReadItemDTO,
+} from '../api/models';
 import { CatalogItem, CatalogPlatform, CatalogResponse, FALLBACK_CATALOG_GENRES, FALLBACK_CATALOG_PLATFORMS } from '../services/catalog.service';
 import { DiscoveryBrowseResponse, DiscoveryService } from '../services/discovery.service';
 import { CatalogService } from '../services/catalog.service';
@@ -11,7 +16,6 @@ import {
   UnifiedContentType,
   UnifiedDiscoverIntent,
   UnifiedLiveFlag,
-  UnifiedLiveView,
 } from './unified-guide.state';
 
 export type UnifiedDiscoveryItem = TvReadItemDTO | CatalogItem;
@@ -119,6 +123,25 @@ export class TvDataFacade {
     );
   }
 
+  getDaySchedule(filters: UnifiedLiveFilters = {}): Observable<TvReadItemDTO[]> {
+    return this.tvApi.getTvReadSchedule({
+      date: filters.date || 'today',
+      group: normalizeAll(filters.group),
+      category: normalizeCategory(filters.category),
+      channelId: filters.channel || undefined,
+      q: String(filters.q || '').trim() || undefined,
+      // A full linear-TV day rarely exceeds 32 programmes per channel. Keep
+      // this bounded so the guide does not download and parse tens of MB.
+      itemsPerChannel: 32,
+    }).pipe(
+      retry({ count: 2, delay: 350 }),
+      map((response) => this.applyLiveFilters(
+        (response.data?.channels || []).flatMap((entry) => entry.items),
+        filters
+      ))
+    );
+  }
+
   searchTvPrograms(filters: UnifiedLiveFilters = {}): Observable<TvReadItemDTO[]> {
     return this.readView('search', filters);
   }
@@ -128,6 +151,17 @@ export class TvDataFacade {
       map((response) =>
         (response.data?.channels || []).map((entry) => entry.channel).filter(Boolean)
       ),
+      catchError(() => of([]))
+    );
+  }
+
+  getChannelDirectory(
+    group?: string,
+    date = 'today',
+    limit?: number
+  ): Observable<TvReadChannelSummaryDTO[]> {
+    return this.tvApi.getTvReadChannels(date, normalizeAll(group), limit).pipe(
+      map((response) => response.data?.channels || []),
       catchError(() => of([]))
     );
   }

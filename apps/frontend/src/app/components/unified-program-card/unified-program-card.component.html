@@ -8,7 +8,7 @@
   [class.program-card--boxed]="variant !== 'epg-row'"
   [attr.data-vertical]="variant === 'epg-row' ? null : card.vertical"
 >
-  <a [routerLink]="card.detailPath" class="program-card__tap">
+  <a [routerLink]="card.detailPath" [appPrefetchDetail]="card" class="program-card__tap">
     <div class="program-card__media" [class.program-card__media--empty]="!hasVisual">
       <img
         *ngIf="hasVisual"
@@ -75,7 +75,11 @@
     </div>
 
     <div class="program-card__actions">
-      <a [routerLink]="card.detailPath" class="program-card__cta program-card__cta--primary">
+      <a
+        [routerLink]="card.detailPath"
+        [appPrefetchDetail]="card"
+        class="program-card__cta program-card__cta--primary"
+      >
         {{ actionLabel }}
       </a>
 
@@ -88,6 +92,15 @@
       >
         {{ isSaved ? 'Guardado' : 'Guardar' }}
       </button>
+
+      <app-affiliate-cta
+        *ngIf="affiliateOffer() as offer"
+        class="program-card__affiliate-cta"
+        [offer]="offer"
+        variant="secondary"
+        [appAffiliateImpression]="offer"
+        [appAffiliateImpressionContext]="affiliateImpressionContext()"
+      ></app-affiliate-cta>
     </div>
   </div>
 </article>

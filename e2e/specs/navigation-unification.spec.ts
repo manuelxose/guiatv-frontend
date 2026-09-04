@@ -4,7 +4,7 @@ const routes = [
   { path: '/editorial', heading: /Historias y guías/, active: 'Últimos' },
   { path: '/editorial/rankings', heading: 'Rankings', active: 'Rankings' },
   { path: '/tendencias', heading: 'Tendencias', active: 'Tendencias' },
-  { path: '/comparador-streaming', heading: 'Comparador de plataformas', active: 'Comparador' },
+  { path: '/comparador-streaming', heading: 'Compara plataformas con datos útiles', active: 'Comparador' },
 ] as const;
 
 const viewports = [
@@ -92,11 +92,11 @@ test.describe('Canonical section navigation', () => {
     }
   });
 
-  test('TV, Qué ver and Deportes share the same contextual structure', async ({ page }) => {
+  test('TV, Qué ver and Fútbol share the same contextual navigation structure', async ({ page }) => {
     const sections = [
       { path: '/programacion-tv/guia-canales', label: 'Secciones de TV', items: ['En emisión', 'A continuación', 'Esta noche', 'Parrilla'] },
       { path: '/programacion-tv/que-ver-hoy', label: 'Secciones de Qué ver', items: ['Todo', 'En TV', 'Películas', 'Series', 'Gratis'] },
-      { path: '/deportes/futbol', label: 'Secciones de Fútbol', items: ['Inicio', 'Partidos', 'Competiciones', 'Noticias'] },
+      { path: '/deportes/futbol', label: 'Secciones de Fútbol', items: ['Portada', 'En directo', 'Partidos de hoy', 'Calendario', 'Competiciones', 'Dónde ver', 'Noticias'] },
     ] as const;
 
     for (const section of sections) {
@@ -106,6 +106,17 @@ test.describe('Canonical section navigation', () => {
       const nav = page.getByRole('navigation', { name: section.label });
       for (const item of section.items) await expect(nav.getByText(item, { exact: true })).toBeVisible();
     }
+  });
+
+  test('channel catalogue is discoverable, responsive and linked to canonical details', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/canales');
+    await expect(page.getByRole('heading', { name: 'Canales de televisión' })).toBeVisible();
+    await expect(page.getByRole('searchbox', { name: 'Buscar canal u operador' })).toBeVisible();
+    await expect(page.locator('.channel-card').first()).toBeVisible();
+    await expect(page.locator('.app-shell__mobile-tab--active')).toContainText('TV');
+    await expect(page.locator('.channel-card__footer a').first()).toHaveAttribute('href', /^\/canales\//);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   });
 
   test('renders one search affordance for each responsive mode', async ({ page }) => {
@@ -125,7 +136,27 @@ test.describe('Canonical section navigation', () => {
     await expect(trigger).toBeFocused();
   });
 
-  test('keeps Platforms and Comparator in the same shell and uses working catalog filters', async ({ page }) => {
+  test('uses channel schedule rows on mobile and the EPG matrix on desktop', async ({ page }) => {
+    test.setTimeout(60_000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/programacion-tv/guia-canales?liveView=day');
+    await expect(page.locator('.live-view__mobile-day')).toBeVisible({ timeout: 40_000 });
+    await expect(page.locator('.live-view__grid-wrap')).toBeHidden();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+
+    const firstMobileRow = page.locator('.live-view__mobile-program').first();
+    if (await firstMobileRow.count()) {
+      const rowBox = await firstMobileRow.boundingBox();
+      expect(rowBox?.height).toBeGreaterThanOrEqual(44);
+    }
+
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await expect(page.locator('.live-view__mobile-day')).toBeHidden();
+    await expect(page.locator('.live-view__grid-wrap')).toBeVisible();
+    await expect(page.locator('app-epg-grid')).toBeVisible();
+  });
+
+  test('keeps Platforms and Comparator in the same shell with canonical exits', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 768 });
     await page.goto('/plataformas');
 
@@ -138,11 +169,13 @@ test.describe('Canonical section navigation', () => {
     await expect(page).toHaveURL(/\/comparador-streaming/);
     await expect(topNav).toHaveCount(1);
     await expect(page.getByRole('navigation', { name: 'Secciones de Plataformas' })).toHaveCount(1);
-    await expect(page.getByRole('heading', { name: 'Comparador de plataformas' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Compara plataformas con datos útiles' })).toBeVisible();
 
-    const catalogLink = page.getByRole('link', { name: /Ver catálogo de/ }).first();
-    await expect(catalogLink).toHaveAttribute('href', /platform=/);
-    await expect(catalogLink).not.toHaveAttribute('href', /platforms=/);
+    await expect(page.getByRole('link', { name: 'Explorar catálogos' })).toHaveAttribute('href', '/plataformas');
+    await expect(page.getByRole('link', { name: /Consultar proveedor de/ }).first()).toHaveAttribute(
+      'href',
+      /^\/v2\/monetization\/go\//
+    );
   });
 
   for (const theme of ['light', 'dark'] as const) {

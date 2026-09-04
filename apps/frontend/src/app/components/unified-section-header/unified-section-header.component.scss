@@ -41,7 +41,7 @@
   align-items: center;
   justify-content: center;
   min-height: 40px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: var(--portal-surface-strong);
   color: var(--portal-text);

@@ -20,6 +20,15 @@ export interface IChannelDocument {
   category?: string;
   url?: string;
   description?: string;
+  distribution?: string;
+  access?: string;
+  operator?: string;
+  providers?: string[];
+  contentFacets?: string[];
+  market?: Record<string, any>;
+  quality?: Record<string, any>;
+  capabilities?: Record<string, any>;
+  provenance?: Record<string, any>;
   active: boolean;
   order: number;
   createdAt: Date;
@@ -96,6 +105,27 @@ const ChannelSchema = new Schema<IChannelDocument>(
     description: {
       type: String,
       trim: true,
+    },
+    distribution: { type: String, default: 'unknown', index: true },
+    access: { type: String, default: 'unknown', index: true },
+    operator: { type: String, default: 'unknown', index: true },
+    providers: { type: [String], default: [], index: true },
+    contentFacets: { type: [String], default: [], index: true },
+    market: {
+      type: Schema.Types.Mixed,
+      default: { country: 'unknown', countryCode: 'unknown', region: 'unknown', scope: 'unknown' },
+    },
+    quality: {
+      type: Schema.Types.Mixed,
+      default: { resolution: 'unknown', timeshift: 'unknown' },
+    },
+    capabilities: {
+      type: Schema.Types.Mixed,
+      default: { linear: 'unknown', catchup: 'unknown', streaming: 'unknown' },
+    },
+    provenance: {
+      type: Schema.Types.Mixed,
+      default: { classification: 'unknown', sourceIds: [] },
     },
     active: {
       type: Boolean,

@@ -1,127 +1,107 @@
-<div class="shell">
+<div class="football-home">
   <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
 
-  <header class="home__header">
-    <div>
-      <p class="home__eyebrow">Deportes</p>
-      <h1 class="home__title">Fútbol</h1>
+  <header class="football-home__header">
+    <div class="football-home__intro">
+      <div class="football-home__title-line">
+        <h1>Fútbol</h1>
+        @if (liveMatches().length) {
+        <a routerLink="/deportes/futbol/en-directo" class="football-home__live-count">
+          <span aria-hidden="true"></span>{{ liveMatches().length }} {{ liveMatches().length === 1 ? 'partido' : 'partidos' }} en directo
+        </a>
+        }
+      </div>
+      <p>Partidos, resultados, horarios y dónde ver fútbol hoy</p>
     </div>
-    <a class="home__search" [routerLink]="['/deportes/futbol/buscar']" aria-label="Buscar equipos, partidos o competiciones de fútbol">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <circle cx="11" cy="11" r="7" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-      <span>Buscar</span>
-    </a>
   </header>
 
-  <main class="home__content">
-    <!-- LOADING SKELETON -->
-    <div *ngIf="loading()" class="home__skeleton" aria-hidden="true">
-      <div class="home__skeleton-row" *ngFor="let i of [1, 2, 3, 4, 5]"></div>
+  <app-football-date-strip [selected]="selectedDate()" (dateChange)="onDateChange($event)"></app-football-date-strip>
+  <app-football-filter-bar [active]="filter()" (filterChange)="onFilterChange($event)"></app-football-filter-bar>
+
+  <main class="football-home__layout" [attr.aria-busy]="loading()">
+    <div class="football-home__primary">
+      @if (loading()) {
+      <div class="football-home__skeleton" role="status"><span class="sr-only">Cargando partidos de fútbol</span>@for (row of [1,2,3,4,5,6]; track row) {<div></div>}</div>
+      } @else {
+        @if (liveMatches().length) {
+        <section class="football-home__section football-home__section--live">
+          <app-football-section-header title="En directo" link="/deportes/futbol/en-directo"></app-football-section-header>
+          @for (group of groupLive(); track group.competitionSlug) {<app-football-competition-group [group]="group"></app-football-competition-group>}
+          <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">{{ liveAnnouncement() }}</p>
+        </section>
+        }
+
+        <section id="partidos" class="football-home__section">
+          <app-football-section-header [title]="selectedDateLabel" link="/deportes/futbol/calendario"></app-football-section-header>
+          @if (selectedProvider()) {<p class="football-home__filter-note">Mostrando emisiones en <strong>{{ selectedProvider() }}</strong>. <button type="button" (click)="onProviderSelect(null)">Quitar filtro</button></p>}
+          @if (matchGroups().length) {
+            @for (group of matchGroups(); track group.competitionSlug) {<app-football-competition-group [group]="group"></app-football-competition-group>}
+          } @else {
+          <div class="football-home__empty">
+            @if (loadFailed()) {
+            <h2>No hemos podido cargar los partidos</h2>
+            <p>Comprueba tu conexión y vuelve a intentarlo.</p>
+            <div><button type="button" (click)="retryLoad()">Reintentar</button></div>
+            } @else {
+            <h2>No hay partidos programados para este día</h2>
+            <p>Prueba con otra fecha, explora las competiciones o consulta la actualidad.</p>
+            <div><a routerLink="/deportes/futbol/calendario">Explorar calendario</a><a routerLink="/deportes/futbol/noticias">Noticias de fútbol</a></div>
+            }
+          </div>
+          }
+        </section>
+
+        @if (featuredMatch(); as match) {
+        <section class="football-home__section football-home__featured">
+          <app-football-section-header title="Partido destacado"></app-football-section-header>
+          <app-football-match-card [match]="match" variant="featured" [enableAffiliateCta]="true" affiliatePlacement="football-home"></app-football-match-card>
+        </section>
+        }
+
+        @if (upcomingMatches().length) {
+        <section class="football-home__section">
+          <app-football-section-header title="Próximos grandes partidos" link="/deportes/futbol/calendario"></app-football-section-header>
+          <div class="football-home__upcoming">
+            @for (match of upcomingMatches(); track match.id) {<app-football-match-card [match]="match" variant="compact"></app-football-match-card>}
+          </div>
+        </section>
+        }
+
+        <section class="football-home__section football-home__news-section">
+          <app-football-section-header title="Qué está pasando" link="/deportes/futbol/noticias"></app-football-section-header>
+          @if (home()?.latestNews?.length) {
+          <div class="football-home__news">
+            @for (article of home()?.latestNews; track article.slug; let first = $first) {<app-football-news-card [item]="article" [class.football-home__news-lead]="first"></app-football-news-card>}
+          </div>
+          } @else {<p class="football-home__quiet-empty">La actualidad de fútbol aparecerá cuando haya contenidos editoriales verificados.</p>}
+        </section>
+      }
     </div>
 
-    <ng-container *ngIf="!loading()">
-      <!-- LIVE NOW -->
-      <section *ngIf="liveMatches().length" class="home__section">
-        <app-football-section-header eyebrow="Ahora" title="En directo"></app-football-section-header>
-        <app-football-competition-group
-          *ngFor="let group of groupLive(); trackBy: trackByGroup"
-          [group]="group"
-        ></app-football-competition-group>
+    <aside class="football-home__rail" aria-label="Información útil de fútbol">
+      <div id="donde-ver"><app-football-broadcast-widget [providers]="broadcastProviders()" [activeProvider]="selectedProvider()" (providerSelect)="onProviderSelect($event)"></app-football-broadcast-widget></div>
+
+      @if (televisedMatches().length) {
+      <section class="football-home__tv">
+        <div class="football-home__rail-head"><h2>Fútbol en TV</h2><a routerLink="/deportes/futbol/calendario">Ver agenda</a></div>
+        <ol>
+          @for (match of televisedMatches(); track match.id) {
+          @if (primaryConfirmedBroadcast(match); as broadcast) {
+          <li><time [attr.datetime]="match.kickoffAt">{{ match.kickoffAt | date:'HH:mm' }}</time><a [routerLink]="['/deportes/futbol/partido', match.slug]"><strong>{{ match.homeTeam.shortName || match.homeTeam.name }} – {{ match.awayTeam.shortName || match.awayTeam.name }}</strong><span>{{ broadcast.channelName }}</span></a></li>
+          }
+          }
+        </ol>
       </section>
+      }
 
-      <!-- TODAY -->
-      <section class="home__section">
-        <app-football-section-header
-          eyebrow="Hoy"
-          title="Partidos de hoy"
-          link="/deportes/futbol/partidos-hoy"
-        ></app-football-section-header>
+      @if (home()?.standingsSnapshot; as standings) {<app-football-standings-mini [competition]="standings.competition" [rows]="standings.rows"></app-football-standings-mini>}
 
-        <ng-container *ngIf="todayGroups().length; else noToday">
-          <app-football-competition-group
-            *ngFor="let group of todayGroups(); trackBy: trackByGroup"
-            [group]="group"
-          ></app-football-competition-group>
-        </ng-container>
-
-        <ng-template #noToday>
-          <div class="home__empty">
-            <p class="home__empty-title">No hay partidos programados para hoy</p>
-            <p class="home__empty-sub">Consulta el calendario completo o las últimas noticias.</p>
-          </div>
-        </ng-template>
+      <section class="football-home__competitions">
+        <div class="football-home__rail-head"><h2>Competiciones</h2><a routerLink="/deportes/futbol/competiciones">Ver todas</a></div>
+        @if (home()?.featuredCompetitions?.length) {
+        <div>@for (competition of home()?.featuredCompetitions; track competition.id) {<app-football-competition-card [competition]="competition" variant="chip"></app-football-competition-card>}</div>
+        } @else {<p class="football-home__quiet-empty">No hay competiciones disponibles ahora mismo.</p>}
       </section>
-
-      <!-- FEATURED -->
-      <section *ngIf="home()?.featuredMatches?.length" class="home__section">
-        <app-football-section-header eyebrow="Destacados" title="No te pierdas"></app-football-section-header>
-        <div class="home__grid">
-          <app-football-match-card
-            *ngFor="let match of home()?.featuredMatches"
-            [match]="match"
-            variant="featured"
-          ></app-football-match-card>
-        </div>
-      </section>
-
-      <!-- NEWS -->
-      <section class="home__section">
-        <app-football-section-header
-          eyebrow="Actualidad"
-          title="Noticias"
-          link="/deportes/futbol/noticias"
-        ></app-football-section-header>
-        <div *ngIf="home()?.latestNews?.length; else noNews" class="home__news">
-          <app-football-news-card
-            *ngFor="let article of home()?.latestNews"
-            [item]="article"
-          ></app-football-news-card>
-        </div>
-        <ng-template #noNews>
-          <div class="home__empty">
-            <p class="home__empty-title">No hay noticias disponibles ahora mismo</p>
-          </div>
-        </ng-template>
-      </section>
-
-      <!-- UPCOMING -->
-      <section *ngIf="home()?.upcomingMatches?.length" class="home__section">
-        <app-football-section-header
-          eyebrow="Próximos"
-          title="Próximos partidos"
-          link="/deportes/futbol/calendario"
-        ></app-football-section-header>
-        <div class="home__grid">
-          <app-football-match-card
-            *ngFor="let match of home()?.upcomingMatches?.slice(0, 6)"
-            [match]="match"
-            variant="compact"
-          ></app-football-match-card>
-        </div>
-      </section>
-
-      <!-- COMPETITIONS -->
-      <section class="home__section">
-        <app-football-section-header
-          eyebrow="Torneos"
-          title="Competiciones"
-          link="/deportes/futbol/competiciones"
-        ></app-football-section-header>
-        <div *ngIf="home()?.featuredCompetitions?.length; else noCompetitions" class="home__competitions">
-          <app-football-competition-card
-            *ngFor="let competition of home()?.featuredCompetitions"
-            [competition]="competition"
-            variant="chip"
-          ></app-football-competition-card>
-        </div>
-        <ng-template #noCompetitions>
-          <div class="home__empty">
-            <p class="home__empty-title">No hay competiciones disponibles ahora mismo</p>
-          </div>
-        </ng-template>
-      </section>
-    </ng-container>
+    </aside>
   </main>
 </div>

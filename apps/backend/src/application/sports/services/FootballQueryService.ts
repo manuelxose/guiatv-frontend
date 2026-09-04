@@ -18,6 +18,7 @@ import {
   FootballMatchQuery,
   FootballNewsItem,
   FootballTeam,
+  isLiveMatchStatus,
 } from '@/domain/sports/football/types';
 import { BroadcastReconciliationService } from './BroadcastReconciliationService';
 import {
@@ -75,7 +76,7 @@ export class FootballQueryService {
   }
 
   async getHome(): Promise<FootballHomeDTO> {
-    return this.swrCache.getOrLoad(`${CACHE_PREFIX}:home`, CACHE_POLICIES.home, async () => {
+    return this.swrCache.getOrLoad(`${CACHE_PREFIX}:home:v2`, CACHE_POLICIES.home, async () => {
     const now = new Date();
     const todayKey = 'today';
     const tomorrowKey = 'tomorrow';
@@ -93,7 +94,9 @@ export class FootballQueryService {
     ]));
 
     const byId = new Map(reconciled.map((match) => [match.id, match]));
-    const reconciledLive = liveMatches.map((match) => byId.get(match.id) ?? match);
+    const reconciledLive = liveMatches
+      .map((match) => byId.get(match.id) ?? match)
+      .filter((match) => isLiveMatchStatus(match.status));
     const reconciledToday = todayMatches.map((match) => byId.get(match.id) ?? match);
     const reconciledUpcoming = upcomingMatches.map((match) => byId.get(match.id) ?? match);
 
@@ -102,12 +105,24 @@ export class FootballQueryService {
       settle(this.getNews({ limit: 6 }), []),
     ]);
 
+    // One compact, provider-backed table for the home rail. Prefer the
+    // Spanish top flight for this Spain-first product, then preserve the
+    // provider's order. If standings are unavailable, omit the module.
+    const prioritizedCompetitions = prioritizeSpanishLeague(competitions);
+    const standingsCompetition = prioritizedCompetitions.find((competition) => competition.type === 'league');
+    const standingsRows = standingsCompetition
+      ? await measureTiming('provider', () => settle(this.provider.getStandings(standingsCompetition.slug), []))
+      : [];
+
     const home: FootballHomeDTO = {
       liveMatches: reconciledLive,
       todayMatches: reconciledToday,
       featuredMatches: this.pickFeatured(reconciledToday, reconciledUpcoming),
       upcomingMatches: reconciledUpcoming,
-      featuredCompetitions: competitions.slice(0, 6),
+      featuredCompetitions: prioritizedCompetitions.slice(0, 6),
+      standingsSnapshot: standingsCompetition && standingsRows.length
+        ? { competition: standingsCompetition, rows: standingsRows.slice(0, 5) }
+        : null,
       latestNews,
       generatedAt: now.toISOString(),
     };
@@ -140,9 +155,10 @@ export class FootballQueryService {
     return this.swrCache.getOrLoad(`${CACHE_PREFIX}:matches:live`, CACHE_POLICIES.live, async () => {
       const matches = await measureTiming('provider', () => this.provider.getLiveMatches());
       const reconciled = await measureTiming('reconcile', () => this.reconciliation.reconcile(matches));
+      const liveMatches = reconciled.filter((match) => isLiveMatchStatus(match.status));
       return {
-        matches: reconciled,
-        meta: { total: reconciled.length, status: 'live', generatedAt: new Date().toISOString() },
+        matches: liveMatches,
+        meta: { total: liveMatches.length, status: 'live', generatedAt: new Date().toISOString() },
       };
     });
   }
@@ -337,6 +353,19 @@ export class FootballQueryService {
     return pool.slice(0, 4);
   }
 
+}
+
+/** Keep the product's home market first without disturbing provider order for the rest. */
+export function prioritizeSpanishLeague<T extends { slug: string; name: string; country?: string; type?: string }>(competitions: T[]): T[] {
+  const spanishLeagueIndex = competitions.findIndex((competition) => {
+    const slug = normalizeQuery(competition.slug);
+    const name = normalizeQuery(competition.name);
+    const country = normalizeQuery(competition.country || '');
+    const isSpanish = country === 'spain' || country === 'espana';
+    return slug === 'laliga' || name === 'laliga' || (isSpanish && (!competition.type || competition.type === 'league'));
+  });
+  if (spanishLeagueIndex <= 0) return [...competitions];
+  return [competitions[spanishLeagueIndex], ...competitions.slice(0, spanishLeagueIndex), ...competitions.slice(spanishLeagueIndex + 1)];
 }
 
 function stableKey(value: object): string {

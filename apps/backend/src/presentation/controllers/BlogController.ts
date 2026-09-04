@@ -1,11 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import {
+  BlogAffiliatePlacementMode,
   BlogContentType,
   BlogPostModel,
   IBlogFaqItem,
   IBlogPostCategory,
   IBlogPostDocument,
 } from '../../infrastructure/database/models/BlogPost.model';
+import {
+  normalizeAffiliatePlacementMode,
+  normalizeLowercaseKeys,
+  normalizeOfferIds,
+} from '../../shared/utils/blogAffiliateFields';
 import { CATALOG_PLATFORM_REGISTRY } from '../../application/dto/CatalogDTO';
 import { successResponse } from '../../shared/types/ApiResponse';
 import { ICacheRepository } from '../../domain/repositories/ICacheRepository';
@@ -17,6 +23,11 @@ import {
   NotFoundError,
   ValidationError,
 } from '../../shared/errors';
+import {
+  buildEditorialApproval,
+  EditorialOrigin,
+  PUBLIC_EDITORIAL_FILTER,
+} from '../../application/services/EditorialReviewPolicy';
 
 interface BlogWritePayload {
   title?: string;
@@ -38,6 +49,10 @@ interface BlogWritePayload {
   };
   faqItems?: Array<{ question?: string; answer?: string }> | string;
   evergreen?: boolean | string;
+  affiliatePlacementMode?: string;
+  relatedOfferCategories?: string[] | string;
+  relatedMerchantKeys?: string[] | string;
+  manualAffiliateOfferIds?: string[] | string;
   coverImage?: string;
   featuredImage?: string;
   metaTitle?: string;
@@ -46,6 +61,9 @@ interface BlogWritePayload {
   ogImage?: string;
   canonicalUrl?: string;
   publishedAt?: string;
+  authorName?: string;
+  authorId?: string;
+  origin?: EditorialOrigin;
 }
 
 const CONTENT_TYPES: ReadonlySet<BlogContentType> = new Set([
@@ -72,6 +90,7 @@ interface NormalizedBlogPayload {
   title: string;
   slug: string;
   status: 'draft' | 'publish';
+  origin: EditorialOrigin;
   excerpt?: string;
   content?: string;
   categories: IBlogPostCategory[];
@@ -88,6 +107,10 @@ interface NormalizedBlogPayload {
   };
   faqItems: IBlogFaqItem[];
   evergreen: boolean;
+  affiliatePlacementMode: BlogAffiliatePlacementMode;
+  relatedOfferCategories: string[];
+  relatedMerchantKeys: string[];
+  manualAffiliateOfferIds: string[];
   featuredImage?: {
     sourceUrl?: string;
     caption?: string;
@@ -100,17 +123,21 @@ interface NormalizedBlogPayload {
     canonicalUrl?: string;
   };
   publishedAt?: Date;
+  author?: { name?: string; id?: string };
 }
 
 const BLOG_LIST_PROJECTION = {
   title: 1,
   slug: 1,
   status: 1,
+  origin: 1,
+  reviewState: 1,
   excerpt: 1,
   categories: 1,
   contentType: 1,
   featured: 1,
   featuredImage: 1,
+  author: 1,
   publishedAt: 1,
   createdAt: 1,
   updatedAt: 1,
@@ -173,6 +200,7 @@ export class BlogController {
       } else {
         filters.status = 'publish';
       }
+      if (!isAdminRequest) filters.reviewState = 'approved';
 
       if (categories && typeof categories === 'string') {
         const ids = categories
@@ -258,10 +286,17 @@ export class BlogController {
     try {
       const payload = req.body as BlogWritePayload;
       const normalized = this.normalizePayload(payload);
+      if (normalized.status === 'publish') {
+        throw new ValidationError('Direct publication is disabled', [
+          { field: 'status', message: 'Save as draft, then use the editorial approval endpoint', value: payload.status },
+        ]);
+      }
       await this.assertUniqueSlug(normalized.slug);
 
       const created = await BlogPostModel.create({
         ...normalized,
+        status: 'draft',
+        reviewState: 'unreviewed',
       });
       await this.invalidatePublicReads();
 
@@ -295,11 +330,21 @@ export class BlogController {
 
       const payload = req.body as BlogWritePayload;
       const normalized = this.normalizePayload(payload, existing);
+      if (normalized.status === 'publish') {
+        throw new ValidationError('Direct publication is disabled', [
+          { field: 'status', message: 'Save as draft, then use the editorial approval endpoint', value: payload.status },
+        ]);
+      }
       await this.assertUniqueSlug(normalized.slug, postId);
 
       existing.title = normalized.title;
       existing.slug = normalized.slug;
-      existing.status = normalized.status;
+      existing.status = 'draft';
+      existing.reviewState = 'unreviewed';
+      existing.reviewedBy = undefined;
+      existing.reviewedAt = undefined;
+      existing.reviewNotes = undefined;
+      existing.origin = normalized.origin;
       existing.excerpt = normalized.excerpt;
       existing.content = normalized.content;
       existing.categories = normalized.categories;
@@ -312,9 +357,14 @@ export class BlogController {
       existing.sportsRelations = normalized.sportsRelations;
       existing.faqItems = normalized.faqItems;
       existing.evergreen = normalized.evergreen;
+      existing.affiliatePlacementMode = normalized.affiliatePlacementMode;
+      existing.relatedOfferCategories = normalized.relatedOfferCategories;
+      existing.relatedMerchantKeys = normalized.relatedMerchantKeys;
+      existing.manualAffiliateOfferIds = normalized.manualAffiliateOfferIds;
       existing.featuredImage = normalized.featuredImage;
       existing.seo = normalized.seo;
       existing.publishedAt = normalized.publishedAt;
+      existing.author = normalized.author;
 
       await existing.save();
       await this.invalidatePublicReads();
@@ -324,6 +374,41 @@ export class BlogController {
           post: this.mapPost(existing.toObject()),
         })
       );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public approvePost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const postId = String(req.params.id || '').trim();
+      const reviewer = String(req.header('x-editorial-reviewer') || req.body?.reviewer || '').trim();
+      const post = await BlogPostModel.findById(postId).exec();
+      if (!post) throw new NotFoundError('Editorial post not found');
+
+      let approval;
+      try {
+        approval = buildEditorialApproval(post.toObject(), reviewer);
+      } catch (error) {
+        throw new ValidationError('Editorial quality gate failed', [
+          { field: 'review', message: error instanceof Error ? error.message : 'Approval rejected', value: postId },
+        ]);
+      }
+
+      post.status = approval.status;
+      post.reviewState = approval.reviewState;
+      post.reviewedBy = approval.reviewedBy;
+      post.reviewedAt = approval.reviewedAt;
+      post.publishedAt = approval.publishedAt;
+      post.reviewNotes = String(req.body?.notes || '').trim() || undefined;
+      await post.save();
+      await this.invalidatePublicReads();
+
+      res.status(200).json(successResponse({ post: this.mapPost(post.toObject()) }));
     } catch (error) {
       next(error);
     }
@@ -366,7 +451,7 @@ export class BlogController {
   ): Promise<void> => {
     try {
       const isAdminRequest = this.isAdminRequest(req);
-      const match = isAdminRequest ? {} : { status: 'publish' };
+      const match = isAdminRequest ? {} : PUBLIC_EDITORIAL_FILTER;
       const loadCategories = () => BlogPostModel.aggregate<{
         _id: number;
         count: number;
@@ -417,6 +502,8 @@ export class BlogController {
       modified_gmt: post.updatedAt || post.modified || new Date().toISOString(),
       slug: post.slug,
       status: post.status,
+      reviewState: post.reviewState || 'unreviewed',
+      origin: post.origin || 'legacy',
       type: 'post',
       link: `/editorial/${post.slug}`,
       title: { rendered: post.title },
@@ -435,6 +522,7 @@ export class BlogController {
       seo: post.seo,
       contentType: post.contentType || 'guide',
       featured: Boolean(post.featured),
+      author: post.author || null,
       primaryIntent: post.primaryIntent || '',
       targetQuery: post.targetQuery || '',
       relatedPlatformKeys: Array.isArray(post.relatedPlatformKeys)
@@ -446,6 +534,21 @@ export class BlogController {
       sportsRelations: post.sportsRelations || { teamIds: [], competitionIds: [], matchIds: [] },
       faqItems: Array.isArray(post.faqItems) ? post.faqItems : [],
       evergreen: post.evergreen !== false,
+      ...this.mapAffiliateFields(post),
+    };
+  }
+
+  private mapAffiliateFields(post: any): {
+    affiliatePlacementMode: BlogAffiliatePlacementMode;
+    relatedOfferCategories: string[];
+    relatedMerchantKeys: string[];
+    manualAffiliateOfferIds: string[];
+  } {
+    return {
+      affiliatePlacementMode: normalizeAffiliatePlacementMode(post.affiliatePlacementMode),
+      relatedOfferCategories: Array.isArray(post.relatedOfferCategories) ? post.relatedOfferCategories : [],
+      relatedMerchantKeys: Array.isArray(post.relatedMerchantKeys) ? post.relatedMerchantKeys : [],
+      manualAffiliateOfferIds: Array.isArray(post.manualAffiliateOfferIds) ? post.manualAffiliateOfferIds : [],
     };
   }
 
@@ -458,6 +561,8 @@ export class BlogController {
       modified_gmt: post.updatedAt || post.publishedAt || post.createdAt || new Date().toISOString(),
       slug: post.slug,
       status: post.status,
+      reviewState: post.reviewState || 'unreviewed',
+      origin: post.origin || 'legacy',
       type: 'post',
       link: `/editorial/${post.slug}`,
       title: { rendered: post.title },
@@ -471,6 +576,8 @@ export class BlogController {
       seo: post.seo,
       contentType: post.contentType || 'guide',
       featured: Boolean(post.featured),
+      author: post.author || null,
+      ...this.mapAffiliateFields(post),
     };
   }
 
@@ -495,6 +602,7 @@ export class BlogController {
     }
 
     const status = this.normalizeStatus(payload.status, existing?.status);
+    const origin = this.normalizeOrigin(payload.origin, existing?.origin);
     const excerpt = this.resolveOptionalString(payload.excerpt, existing?.excerpt);
     const content = this.resolveOptionalString(payload.content, existing?.content);
     const categories = this.normalizeCategories(payload.categories, existing?.categories);
@@ -520,6 +628,19 @@ export class BlogController {
     const sportsRelations = this.normalizeSportsRelations(payload.sportsRelations, existing?.sportsRelations);
     const faqItems = this.normalizeFaqItems(payload.faqItems, existing?.faqItems);
     const evergreen = this.normalizeBoolean(payload.evergreen, existing?.evergreen, true);
+    const affiliatePlacementMode = normalizeAffiliatePlacementMode(
+      payload.affiliatePlacementMode,
+      existing?.affiliatePlacementMode
+    );
+    const relatedOfferCategories = normalizeLowercaseKeys(
+      payload.relatedOfferCategories,
+      existing?.relatedOfferCategories
+    );
+    const relatedMerchantKeys = normalizeLowercaseKeys(payload.relatedMerchantKeys, existing?.relatedMerchantKeys);
+    const manualAffiliateOfferIds = normalizeOfferIds(
+      payload.manualAffiliateOfferIds,
+      existing?.manualAffiliateOfferIds
+    );
     const featuredImageSource = this.resolveFeaturedImage(payload, existing);
     const metaTitle = this.resolveOptionalString(payload.metaTitle, existing?.seo?.metaTitle);
     const metaDescription = this.resolveOptionalString(
@@ -533,11 +654,14 @@ export class BlogController {
     );
     const keywords = this.normalizeKeywords(payload.keywords, existing?.seo?.keywords);
     const publishedAt = this.normalizePublishedAt(payload.publishedAt, status, existing?.publishedAt);
+    const authorName = this.resolveOptionalString(payload.authorName, existing?.author?.name);
+    const authorId = this.resolveOptionalString(payload.authorId, existing?.author?.id);
 
     return {
       title,
       slug,
       status,
+      origin,
       excerpt,
       content,
       categories,
@@ -550,6 +674,10 @@ export class BlogController {
       sportsRelations,
       faqItems,
       evergreen,
+      affiliatePlacementMode,
+      relatedOfferCategories,
+      relatedMerchantKeys,
+      manualAffiliateOfferIds,
       featuredImage: featuredImageSource
         ? { sourceUrl: featuredImageSource }
         : undefined,
@@ -561,7 +689,18 @@ export class BlogController {
         canonicalUrl: canonicalUrl || `/editorial/${slug}`,
       },
       publishedAt,
+      author: authorName || authorId ? { name: authorName, id: authorId } : undefined,
     };
+  }
+
+  private normalizeOrigin(value: unknown, fallback?: EditorialOrigin): EditorialOrigin {
+    const normalized = String(value || fallback || 'automated-import').trim().toLowerCase();
+    if (['human', 'ai-assisted', 'automated-import', 'legacy'].includes(normalized)) {
+      return normalized as EditorialOrigin;
+    }
+    throw new ValidationError('Invalid editorial origin', [
+      { field: 'origin', message: 'Expected human, ai-assisted, automated-import or legacy', value },
+    ]);
   }
 
   private resolveRequiredString(
@@ -876,7 +1015,7 @@ export class BlogController {
   private isAdminRequest(req: Request): boolean {
     const requiredKey = process.env.ANALYTICS_ADMIN_KEY;
     if (!requiredKey) {
-      return true;
+      return false;
     }
     const headerKey = req.header('x-admin-key');
     const authHeader = req.header('authorization') || '';

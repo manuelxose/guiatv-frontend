@@ -10,10 +10,11 @@ import { ProgramDataParser } from '../../infrastructure/parsers/ProgramDataParse
 import { DateUtils } from '../../shared/utils/dateUtils';
 import { logger } from '../../shared/utils/logger';
 import { IStorageRepository } from '../../domain/repositories/IStorageRepository';
-import { TMDBService } from '../../infrastructure/external/TMDBService';
+import { TMDBService, TMDBResult } from '../../infrastructure/external/TMDBService';
 import { Program } from '../../domain/entities/Program';
 import type { ProgramProps } from '../../domain/entities/Program';
 import { DateRange } from '../../domain/value-objects/DateRange';
+import { ChannelId } from '../../domain/value-objects/ChannelId';
 import { ProgramDeduplicator } from '../services/ProgramDeduplicator';
 import { normalizeCategory } from '../../shared/constants/categories';
 import { normalizeExternalMediaUrl } from '../../shared/utils/mediaUrl';
@@ -27,6 +28,8 @@ import https from 'https';
 import { readFileSync } from 'fs';
 import { resolve as pathResolve } from 'path';
 import { l1Cache } from '../../infrastructure/cache/L1Cache';
+import { mapTmdbGenreIdsToTags } from '../../shared/utils/tmdbGenres';
+import { MediaCatalogService } from '../services/MediaCatalogService';
 
 export interface SyncEPGDataRequest {
   sourceUrl: string;
@@ -62,7 +65,11 @@ export class SyncEPGData {
     private readonly storageRepository: IStorageRepository,
     private readonly xmlParser: XMLParser,
     private readonly programParser: ProgramDataParser,
-    private readonly tmdbService: TMDBService
+    private readonly tmdbService: TMDBService,
+    // Optional: persists TMDB search matches found during EPG enrichment into
+    // the local media catalog so detail lookups for the same title/tmdbId
+    // resolve locally afterwards. Absent in tests/call sites that don't wire it.
+    private readonly mediaCatalogService?: MediaCatalogService
   ) {
     // Load channel-types config
     try {
@@ -98,6 +105,11 @@ export class SyncEPGData {
     return value === '1' || value === 'true' || value === 'yes';
   }
 
+  private hasStoredChannelIcon(icon: string | null | undefined): boolean {
+    const value = String(icon || '').trim();
+    return value.startsWith('/storage/') || value.startsWith('storage/');
+  }
+
   private cloneProgram(program: Program, overrides: Partial<ProgramProps> = {}): Program {
     return Program.create({
       id: program.id,
@@ -114,9 +126,11 @@ export class SyncEPGData {
       image: program.image,
       genre: program.genre,
       subgenre: program.subgenre,
+      genreTags: program.genreTags,
       year: program.year,
       rating: program.rating,
       tmdbId: program.tmdbId,
+      mediaId: program.mediaId,
       sourceFeed: program.sourceFeed,
       sourceProgrammeId: program.sourceProgrammeId,
       sourceAssetCandidates: program.sourceAssetCandidates,
@@ -167,7 +181,9 @@ export class SyncEPGData {
         request.parsedData || (await this.xmlParser.parse(xmlContent));
 
       // 4. Procesar Canales
-      const channelMap = await this.processChannels(parsedData.channels);
+      const { channelMap, iconCacheDrain } = await this.processChannels(
+        parsedData.channels
+      );
       channelsProcessed = channelMap.size;
 
       // Build set of normalized channel icon URLs so we can exclude them from
@@ -179,14 +195,22 @@ export class SyncEPGData {
         if (normalized) channelIconUrls.add(normalized);
       }
 
-      // 5. Procesar Programas
-      programsProcessed = await this.processPrograms(
-        parsedData.programmes,
-        channelMap,
-        date,
-        channelIconUrls,
-        request.sourceUrl
-      );
+      // 5. Procesar Programas — runs concurrently with the channel-icon
+      // background caching kicked off by processChannels() above; program
+      // ingestion (Mongo-bound) and icon fetching (network/storage-bound)
+      // don't depend on each other, so overlapping them shortens sync time
+      // instead of treating icon caching as its own serial phase.
+      const [programsResult] = await Promise.all([
+        this.processPrograms(
+          parsedData.programmes,
+          channelMap,
+          date,
+          channelIconUrls,
+          request.sourceUrl
+        ),
+        iconCacheDrain,
+      ]);
+      programsProcessed = programsResult;
 
       // 6. Limpiar caché
       if (request.forceRefresh) {
@@ -360,12 +384,30 @@ export class SyncEPGData {
       country?: string;
       countryCode?: string;
     }>
-  ): Promise<Map<string, string>> {
+  ): Promise<{ channelMap: Map<string, string>; iconCacheDrain: Promise<void> }> {
     this.syncLogger.info('Processing channels', {
       count: parsedChannels.length,
     });
 
     const channelMap = new Map<string, string>();
+    // Channel identity/alias resolution below is inherently sequential — each
+    // iteration reads and mutates `existingByAlias`, so a later parsed entry
+    // for the same channel sees earlier iterations' new-channel creations and
+    // isn't duplicated. Icon caching has no such dependency (one channel's
+    // icon fetch never affects another's identity resolution), but used to
+    // block that sequential loop on a real network call (up to ~20s on
+    // failure, with a retry) for every new/changed channel — dominating a
+    // cold-start sync with hundreds of channels. Icon fetches whose need is
+    // decided below are queued here and run afterward with bounded
+    // concurrency instead of serially in-loop; the channel is saved
+    // immediately with the raw feed icon URL (the same fallback already used
+    // when a fetch fails) and gets the locally-cached path in a follow-up
+    // save once fetched.
+    const pendingIconCacheTasks: Array<{
+      channelId: string;
+      iconUrl: string;
+      targetChannelId: string;
+    }> = [];
 
     // Obtener canales existentes
     const existingChannels = await this.channelRepository.findAll();
@@ -416,16 +458,24 @@ export class SyncEPGData {
               parsed.country;
 
         if (!channel) {
-          const iconForChannel = parsed.icon
-            ? this.shouldSkipChannelIconCache()
-              ? parsed.icon
-              : await this.cacheChannelIcon(parsed.icon, this.generateChannelId(parsed.displayName))
-            : null;
-          // Crear nuevo canal
+          const newChannelId = identity.canonicalId || this.generateChannelId(parsed.displayName);
+          if (parsed.icon && !this.shouldSkipChannelIconCache()) {
+            // channelId kept as generateChannelId(displayName) — matches the
+            // storage key the original inline cacheChannelIcon() call used
+            // here, even when it differs from newChannelId (canonicalId).
+            pendingIconCacheTasks.push({
+              channelId: this.generateChannelId(parsed.displayName),
+              iconUrl: parsed.icon,
+              targetChannelId: newChannelId,
+            });
+          }
+          // Crear nuevo canal — icon starts as the raw feed URL (same
+          // fallback used if the background cache fetch below fails) and is
+          // upgraded to the locally-cached path once that fetch completes.
           channel = Channel.create({
-            id: identity.canonicalId || this.generateChannelId(parsed.displayName),
+            id: newChannelId,
             name: parsed.displayName,
-            icon: iconForChannel || null,
+            icon: parsed.icon || null,
             type: inferredType,
             aliases: identity.aliases,
             sourceIds: identity.sourceIds,
@@ -435,16 +485,38 @@ export class SyncEPGData {
               inferredType === 'Autonomico'
                 ? inferredRegion || 'Spain'
                 : this.inferRegionWithGeo(parsed.displayName, parsed.country),
+            distribution: identity.distribution,
+            access: identity.access,
+            operator: identity.operator,
+            providers: identity.providers,
+            contentFacets: identity.contentFacets,
+            market: identity.market,
+            quality: identity.quality,
+            capabilities: identity.capabilities,
+            provenance: identity.provenance,
             isActive: true,
           });
 
           await this.channelRepository.save(channel);
           this.syncLogger.info('New channel created', { name: channel.name });
-        } else if (parsed.icon && parsed.icon !== channel.icon) {
+        } else if (
+          parsed.icon &&
+          parsed.icon !== channel.icon &&
+          !this.hasStoredChannelIcon(channel.icon)
+        ) {
+          // Actualizar icono si cambió — same deferred-caching treatment as
+          // the new-channel branch above: save immediately with the raw feed
+          // URL, queue the real fetch+cache to run after this loop.
+          if (!this.shouldSkipChannelIconCache()) {
+            pendingIconCacheTasks.push({
+              channelId: this.generateChannelId(parsed.displayName),
+              iconUrl: parsed.icon,
+              targetChannelId: channel.id,
+            });
+          }
           const iconForChannel = this.shouldSkipChannelIconCache()
             ? channel.icon || parsed.icon
-            : await this.cacheChannelIcon(parsed.icon, this.generateChannelId(parsed.displayName));
-          // Actualizar icono si cambió
+            : parsed.icon;
           const regionForUpdate =
             inferredType === 'Autonomico'
               ? inferredRegion || channel.region || 'Spain'
@@ -524,7 +596,67 @@ export class SyncEPGData {
       }
     }
 
-    return channelMap;
+    // Not awaited here: icon caching is pure network/storage I/O with no
+    // effect on program processing, so the caller runs it concurrently with
+    // processPrograms() instead of treating it as a blocking phase of its
+    // own. The caller still awaits it before reporting the sync as done.
+    const iconCacheDrain = this.drainPendingIconCacheTasks(pendingIconCacheTasks);
+
+    return { channelMap, iconCacheDrain };
+  }
+
+  /**
+   * Fetches and locally caches channel icons queued during the sequential
+   * identity-resolution loop above, with bounded concurrency instead of the
+   * one-at-a-time `await` that used to sit inline in that loop. Each channel
+   * was already saved with the raw feed icon URL, so a fetch failure here
+   * just leaves that fallback in place — same outcome as the old inline
+   * failure path, only reached in parallel instead of serially.
+   */
+  private async drainPendingIconCacheTasks(
+    tasks: Array<{ channelId: string; iconUrl: string; targetChannelId: string }>
+  ): Promise<void> {
+    if (!tasks.length) return;
+    const CONCURRENCY = 8;
+
+    await this.runWithConcurrencyLimit(tasks, CONCURRENCY, async (task) => {
+      const cachedIcon = await this.cacheChannelIcon(task.iconUrl, task.channelId);
+      if (!cachedIcon || cachedIcon === task.iconUrl) {
+        // Fetch failed (falls back to the original URL, already stored) or
+        // returned the same value already saved — nothing to update.
+        return;
+      }
+      const current = await this.channelRepository.findById(
+        ChannelId.create(task.targetChannelId)
+      );
+      if (!current) return;
+      await this.channelRepository.save(
+        Channel.create({ ...current.toJSON(), icon: cachedIcon })
+      );
+    });
+  }
+
+  /** Runs `worker` over `items` with at most `limit` in flight at once. */
+  private async runWithConcurrencyLimit<T>(
+    items: T[],
+    limit: number,
+    worker: (item: T) => Promise<void>
+  ): Promise<void> {
+    let cursor = 0;
+    const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (cursor < items.length) {
+        const item = items[cursor];
+        cursor += 1;
+        try {
+          await worker(item);
+        } catch (error) {
+          this.syncLogger.warn('Background channel icon cache task failed', {
+            error: (error as Error).message,
+          });
+        }
+      }
+    });
+    await Promise.all(runners);
   }
 
   private async processPrograms(
@@ -701,14 +833,14 @@ export class SyncEPGData {
    * Returns a map from normalized title → enriched fields, used to avoid redundant API calls.
    */
   private async loadExistingEnrichment(programs: Program[]): Promise<Map<string, {
-    tmdbId: number; image: string; description?: string; year?: string; rating?: string;
+    tmdbId: number; image: string; description?: string; year?: string; rating?: string; genreTags?: string[];
   }>> {
       const uniqueTitles = [...new Set(programs.map((p) => p.title))];
     if (!uniqueTitles.length) return new Map();
 
     try {
       const existing = await this.programRepository.findEnrichedByTitles(uniqueTitles);
-      const map = new Map<string, { tmdbId: number; image: string; description?: string; year?: string; rating?: string }>();
+      const map = new Map<string, { tmdbId: number; image: string; description?: string; year?: string; rating?: string; genreTags?: string[] }>();
       for (const entry of existing) {
         buildProgramTitleAliases(entry.title).forEach((alias) => {
           if (alias && !map.has(alias)) {
@@ -718,6 +850,7 @@ export class SyncEPGData {
               description: entry.description,
               year: entry.year,
               rating: entry.rating,
+              genreTags: entry.genreTags,
             });
           }
         });
@@ -728,6 +861,29 @@ export class SyncEPGData {
       this.syncLogger.warn('Failed to load DB enrichment cache', { error: (err as Error).message });
       return new Map();
     }
+  }
+
+  /** Records a TMDB search match into the local media catalog and returns the
+   * shared entry's id, so the calling Program row can reference it via
+   * `mediaId` instead of duplicating full metadata. Never throws — a failed
+   * write degrades to "no reference yet", not a broken enrichment pass. */
+  private async recordCatalogMatch(
+    tmdbResult: TMDBResult,
+    tmdbType: 'movie' | 'tv'
+  ): Promise<string | undefined> {
+    if (!this.mediaCatalogService) return undefined;
+    return this.mediaCatalogService
+      .recordSearchMatch({
+        tmdbId: tmdbResult.id,
+        tmdbType,
+        title: tmdbResult.title || tmdbResult.name || tmdbResult.original_title || tmdbResult.original_name || '',
+        synopsis: tmdbResult.overview,
+        year: tmdbResult.release_date?.split('-')[0] || tmdbResult.first_air_date?.split('-')[0],
+        rating: typeof tmdbResult.vote_average === 'number' ? tmdbResult.vote_average : undefined,
+        posterPath: tmdbResult.poster_path,
+        genreTags: mapTmdbGenreIdsToTags(tmdbResult.genre_ids),
+      })
+      .catch(() => undefined);
   }
 
   private async enrichProgramsWithTMDB(programs: Program[]): Promise<Program[]> {
@@ -762,7 +918,7 @@ export class SyncEPGData {
             const dbHit = titleAliases
               .map((alias) => dbEnrichmentMap.get(alias))
               .find(Boolean);
-            if (dbHit) {
+            if (dbHit?.genreTags?.length) {
               this.syncLogger.debug('TMDB DB cache hit (phase1)', { title: program.title });
               return this.cloneProgram(program, {
                 description: dbHit.description || program.description,
@@ -770,6 +926,7 @@ export class SyncEPGData {
                 rating: dbHit.rating || program.rating,
                 year: dbHit.year || program.year,
                 tmdbId: dbHit.tmdbId,
+                genreTags: dbHit.genreTags,
                 trustFlags: {
                   ...(program.trustFlags || {}),
                   tmdbMatched: true,
@@ -796,6 +953,7 @@ export class SyncEPGData {
             }
 
             if (tmdbResult) {
+              const mediaId = await this.recordCatalogMatch(tmdbResult, isMovie ? 'movie' : 'tv');
               return this.cloneProgram(program, {
                 description: tmdbResult.overview || program.description,
                 image: this.tmdbService.getImageUrl(tmdbResult.poster_path) || program.image,
@@ -806,6 +964,8 @@ export class SyncEPGData {
                     ? tmdbResult.first_air_date.split('-')[0]
                     : undefined,
                 tmdbId: tmdbResult.id,
+                mediaId,
+                genreTags: mapTmdbGenreIdsToTags(tmdbResult.genre_ids),
                 trustFlags: {
                   ...(program.trustFlags || {}),
                   tmdbMatched: true,
@@ -828,7 +988,7 @@ export class SyncEPGData {
           const dbHit2 = cleanTitles
             .map((alias) => dbEnrichmentMap.get(alias))
             .find(Boolean);
-          if (dbHit2) {
+          if (dbHit2?.genreTags?.length) {
             this.syncLogger.debug('TMDB DB cache hit (phase2)', { title: program.title });
             return this.cloneProgram(program, {
               description: dbHit2.description || program.description,
@@ -836,6 +996,7 @@ export class SyncEPGData {
               rating: dbHit2.rating || program.rating,
               year: dbHit2.year || program.year,
               tmdbId: dbHit2.tmdbId,
+              genreTags: dbHit2.genreTags,
               trustFlags: {
                 ...(program.trustFlags || {}),
                 tmdbMatched: true,
@@ -881,6 +1042,11 @@ export class SyncEPGData {
             genre: program.genre,
           });
 
+          const fallbackMediaId = await this.recordCatalogMatch(
+            tmdbResult,
+            matchedKind === 'series' ? 'tv' : 'movie'
+          );
+
           return this.cloneProgram(program, {
             description: tmdbResult.overview || program.description,
             image: posterUrl,
@@ -889,6 +1055,8 @@ export class SyncEPGData {
                ?? tmdbResult.first_air_date?.split('-')[0]
                ?? program.year,
             tmdbId: tmdbResult.id,
+            mediaId: fallbackMediaId,
+            genreTags: mapTmdbGenreIdsToTags(tmdbResult.genre_ids),
             trustFlags: {
               ...(program.trustFlags || {}),
               tmdbMatched: true,

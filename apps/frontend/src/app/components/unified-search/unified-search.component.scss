@@ -23,7 +23,7 @@
 
 .search-shell__leading-icon {
   width: 2.5rem;
-  color: var(--guide-text-muted, #94a3b8);
+  color: var(--guide-text-muted);
 }
 
 .search-shell__leading-icon svg,
@@ -45,7 +45,7 @@
 }
 
 .search-shell__field input::placeholder {
-  color: var(--guide-text-muted, #94a3b8);
+  color: var(--guide-text-muted);
 }
 
 .search-shell__clear {
@@ -53,14 +53,14 @@
   height: 2.25rem;
   margin-right: 0.15rem;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
-  color: var(--guide-text-muted, #94a3b8);
+  color: var(--guide-text-muted);
 }
 
 .search-shell__field:focus-within {
-  border-color: var(--guide-accent);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--guide-accent) 16%, transparent);
+  border-color: var(--spotify-green);
+  box-shadow: 0 0 0 1px var(--spotify-green);
 }
 
 .search-shell__clear:focus-visible,
@@ -105,13 +105,13 @@
 
 .search-shell__menu-head span,
 .search-shell__loading-text {
-  color: var(--guide-text-muted, #94a3b8);
+  color: var(--guide-text-muted);
   font-size: 0.74rem;
 }
 
 .search-shell__loading-text {
   font-weight: 800;
-  color: var(--guide-accent, #ef4444);
+  color: var(--guide-accent);
 }
 
 .search-shell__group + .search-shell__group {
@@ -124,7 +124,7 @@
   gap: 0.4rem;
   margin: 0;
   padding: 0.7rem 1rem 0.35rem;
-  color: var(--portal-text-muted, #94a3b8);
+  color: var(--portal-text-muted);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -134,7 +134,7 @@
 .search-shell__group-dot {
   width: 0.4rem;
   height: 0.4rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent-discover);
 }
 
@@ -146,6 +146,10 @@
 
 .search-shell__group-heading[data-accent='streaming'] .search-shell__group-dot {
   background: var(--accent-streaming);
+}
+
+.search-shell__group-heading[data-accent='sports'] .search-shell__group-dot {
+  background: var(--accent-sports);
 }
 
 .search-shell__option,
@@ -182,7 +186,7 @@
   height: 2.1rem;
   border-radius: 0.9rem;
   background: var(--portal-surface);
-  color: var(--guide-accent, #ef4444);
+  color: var(--guide-accent);
 }
 
 .search-shell__option-icon svg {
@@ -202,13 +206,13 @@
 }
 
 .search-shell__option-meta {
-  color: var(--guide-text-muted, #94a3b8);
+  color: var(--guide-text-muted);
   font-size: 0.75rem;
   line-height: 1.4;
 }
 
 .search-shell__submit {
-  color: var(--guide-accent, #f87171);
+  color: var(--guide-accent);
   font-weight: 800;
 }
 

@@ -148,7 +148,7 @@
   top: auto;
   bottom: 0;
   height: 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .epg-grid__cell {

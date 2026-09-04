@@ -1,3 +1,66 @@
+// display:contents removes the host's own box from the layout tree — its
+// child <aside> is "hoisted" to become the direct grid item of .admin-shell
+// (parent, AdminComponent). This lets the sidebar own a real CSS Grid track
+// on desktop instead of competing with content via fixed positioning +
+// margin hacks, while still being free to use fixed positioning for the
+// mobile drawer without fighting the grid.
 :host {
-  display: block;
+  display: contents;
+}
+
+.admin-sidebar {
+  // Mobile/tablet: overlay drawer, off-canvas by default.
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 40;
+  width: 18rem;
+  max-width: 85vw;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+
+.admin-sidebar--mobile-open {
+  transform: translateX(0);
+}
+
+.admin-sidebar__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+@media (min-width: 1024px) {
+  .admin-sidebar {
+    grid-area: sidebar;
+    position: sticky;
+    top: 0;
+    inset-inline-start: auto;
+    z-index: 1;
+    width: 100%;
+    max-width: none;
+    height: 100vh;
+    transform: none;
+  }
+
+  // Icon rail: hide every text label, keep icons + active affordances.
+  .admin-sidebar--desktop-collapsed {
+    .admin-sidebar__label,
+    .admin-sidebar__brand,
+    .admin-sidebar__env {
+      display: none;
+    }
+
+    .admin-sidebar__brand-mark {
+      display: flex;
+    }
+
+    .admin-sidebar__group-label,
+    button,
+    a {
+      justify-content: center;
+    }
+  }
 }

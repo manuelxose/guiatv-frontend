@@ -4,7 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap, tap } from 'rxjs';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
-import { PortalLocalToolbarComponent } from '../../../components/portal-local-toolbar/portal-local-toolbar.component';
+import { FilterChipBarComponent } from '../../../components/filter-chip-bar/filter-chip-bar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
 import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skeleton-block/unified-skeleton-block.component';
@@ -47,7 +47,7 @@ interface StreamingModule {
     UnifiedProgramCardComponent,
     UnifiedSkeletonBlockComponent,
     PlatformBadgeComponent,
-    PortalLocalToolbarComponent,
+    FilterChipBarComponent,
   ],
   templateUrl: './streaming-view.component.html',
   styleUrl: './streaming-view.component.scss',

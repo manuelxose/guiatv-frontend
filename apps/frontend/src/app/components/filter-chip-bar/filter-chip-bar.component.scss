@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
 .chip-bar {
   display: flex;
   gap: 0.625rem;
@@ -12,7 +17,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: var(--portal-surface);
   color: var(--portal-text-muted);
@@ -20,12 +25,19 @@
   white-space: nowrap;
   font-size: 0.8125rem;
   font-weight: 600;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
 }
 
 .chip-bar__item:hover {
   border-color: var(--portal-border-strong);
   color: var(--portal-text);
+}
+
+.chip-bar__item:focus-visible {
+  outline: 2px solid var(--guide-accent, var(--accent-sports));
+  outline-offset: 2px;
 }
 
 .chip-bar__icon {
@@ -48,13 +60,13 @@
 }
 
 .chip-bar__item--active {
-  border-color: var(--guide-accent, #dc2626);
-  background: color-mix(in srgb, var(--guide-accent, #dc2626) 8%, var(--portal-surface));
-  color: var(--guide-accent, #dc2626);
+  border-color: var(--guide-accent, var(--accent-live));
+  background: color-mix(in srgb, var(--guide-accent, var(--accent-live)) 8%, var(--portal-surface));
+  color: var(--guide-accent, var(--accent-live));
 }
 
 .chip-bar__count {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface-strong);
   padding: 0.15rem 0.45rem;
   font-size: 0.6875rem;
@@ -80,9 +92,9 @@
 }
 
 .chip-bar--shelf .chip-bar__item--active {
-  border-color: var(--guide-accent, #dc2626);
-  background: color-mix(in srgb, var(--guide-accent, #dc2626) 8%, var(--portal-surface));
-  color: var(--guide-accent, #dc2626);
+  border-color: var(--guide-accent, var(--accent-live));
+  background: color-mix(in srgb, var(--guide-accent, var(--accent-live)) 8%, var(--portal-surface));
+  color: var(--guide-accent, var(--accent-live));
 }
 
 @media (prefers-reduced-motion: reduce) {

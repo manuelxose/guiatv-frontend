@@ -21,12 +21,12 @@ import {
 import {
   FootballLiveRefreshService,
   mergeLiveUpdates,
+  resolveLiveSnapshot,
+  shouldPollLiveTransitions,
 } from '@app/features/football/football-live-refresh.service';
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
-import { PortalLocalToolbarComponent } from '@app/components/portal-local-toolbar/portal-local-toolbar.component';
-import { PortalContextDestination } from '@app/config/portal-navigation.config';
 
 type MatchesView = 'live' | 'today' | 'calendar';
 
@@ -43,7 +43,6 @@ function todayKey(): string {
     FootballCompetitionGroupComponent,
     FootballDateStripComponent,
     FootballFilterBarComponent,
-    PortalLocalToolbarComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './football-matches.component.html',
@@ -57,14 +56,9 @@ export class FootballMatchesComponent implements OnInit {
   private readonly meta = inject(MetaService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  readonly tabs: readonly PortalContextDestination[] = [
-    { id: 'live', label: 'En directo', kind: 'route', path: '/deportes/futbol/en-directo' },
-    { id: 'today', label: 'Hoy', kind: 'route', path: '/deportes/futbol/partidos-hoy' },
-    { id: 'calendar', label: 'Calendario', kind: 'route', path: '/deportes/futbol/calendario' },
-  ];
-
   readonly view = signal<MatchesView>('today');
   readonly filter = signal<FootballMatchFilter>('all');
+  readonly loadFailed = signal(false);
   safeLdHtml: SafeHtml | null = null;
 
   // Mirrors the sibling detail pages' loading semantics: true only until the
@@ -99,13 +93,15 @@ export class FootballMatchesComponent implements OnInit {
   // Live polling only runs while at least one visible match is actually
   // live — no point polling a calendar page full of finished fixtures.
   private readonly hasLiveMatches$ = this.matches$.pipe(
-    map((matches) => matches.some((m) => m.status === 'live' || m.status === 'halftime'))
+    map((matches) => this.view() === 'live' || shouldPollLiveTransitions(matches))
   );
   private readonly liveUpdates = toSignal(this.liveRefresh.liveMatches(this.hasLiveMatches$), {
-    initialValue: [] as FootballMatchDTO[],
+    initialValue: null as FootballMatchDTO[] | null,
   });
 
-  readonly matches = computed(() => mergeLiveUpdates(this.baseMatches(), this.liveUpdates()));
+  readonly matches = computed(() => this.view() === 'live'
+    ? resolveLiveSnapshot(this.baseMatches(), this.liveUpdates())
+    : mergeLiveUpdates(this.baseMatches(), this.liveUpdates()));
 
   readonly filteredMatches = computed(() => applyFootballMatchFilter(this.matches(), this.filter()));
 
@@ -176,6 +172,8 @@ export class FootballMatchesComponent implements OnInit {
     });
   }
 
+  retryLoad(): void { globalThis.location?.reload(); }
+
   trackByGroup(_index: number, group: { competitionSlug: string }): string {
     return group.competitionSlug;
   }
@@ -188,11 +186,11 @@ export class FootballMatchesComponent implements OnInit {
 
   private loadFor(view: MatchesView, date: string) {
     if (view === 'live') {
-      return this.facade.getLiveMatches().pipe(map((res) => res.matches));
+      return this.facade.getLiveMatches().pipe(map((res) => { this.loadFailed.set(res.meta?.['loadError'] === true); return res.matches; }));
     }
     if (view === 'today') {
-      return this.facade.getMatches({ date: 'today' }).pipe(map((res) => res.matches));
+      return this.facade.getMatches({ date: 'today' }).pipe(map((res) => { this.loadFailed.set(res.meta?.['loadError'] === true); return res.matches; }));
     }
-    return this.facade.getMatches({ date }).pipe(map((res) => res.matches));
+    return this.facade.getMatches({ date }).pipe(map((res) => { this.loadFailed.set(res.meta?.['loadError'] === true); return res.matches; }));
   }
 }

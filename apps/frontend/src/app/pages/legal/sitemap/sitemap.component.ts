@@ -85,15 +85,15 @@ export class SitemapComponent {
 
   getPriorityColor(priority: number | undefined): string {
     if (!priority) return 'text-[var(--portal-text-muted)]';
-    if (priority >= 0.8) return 'text-green-400';
-    if (priority >= 0.5) return 'text-yellow-400';
+    if (priority >= 0.8) return 'text-[var(--accent-discover)]';
+    if (priority >= 0.5) return 'text-[var(--spotify-warning)]';
     return 'text-[var(--portal-text-muted)]';
   }
 
   getPriorityBg(priority: number | undefined): string {
     if (!priority) return 'bg-gray-500/20';
-    if (priority >= 0.8) return 'bg-green-500/20';
-    if (priority >= 0.5) return 'bg-yellow-500/20';
+    if (priority >= 0.8) return 'bg-[var(--accent-discover)]/20';
+    if (priority >= 0.5) return 'bg-[var(--spotify-warning)]/20';
     return 'bg-gray-500/20';
   }
 }

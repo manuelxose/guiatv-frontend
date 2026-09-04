@@ -67,7 +67,7 @@ const DEFAULT_STATE: UnifiedGuideState = {
     lastSearchByTab: {},
   },
   liveFilters: {
-    group: 'tdt',
+    group: 'all',
     category: 'all',
     liveView: 'now',
     date: 'today',
@@ -272,7 +272,7 @@ export class UnifiedGuideStateService {
     if (tab === 'live') {
       return {
         ...base,
-        group: nullable(state.liveFilters.group, 'tdt'),
+        group: nullable(state.liveFilters.group, 'all'),
         category: nullable(state.liveFilters.category, 'all'),
         liveView: nullable(state.liveFilters.liveView, 'now'),
         date: nullable(state.liveFilters.date, 'today'),

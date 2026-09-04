@@ -2,3 +2,50 @@
   display: block;
   font-family: 'Inter', 'Roboto', 'Source Sans 3', sans-serif;
 }
+
+// CSS Grid shell — sidebar owns a real track (never an overlaid fixed
+// element competing with content margin). Desktop: two columns, the
+// sidebar column width switches between full and icon-rail. Mobile: a
+// single column; the sidebar becomes an overlay drawer positioned by
+// admin-sidebar's own fixed styles, independent of this grid.
+.admin-shell {
+  --admin-sidebar-w: 18rem; // 288px, matches the prior w-72
+  --admin-sidebar-w-collapsed: 4.5rem;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'content';
+}
+
+.admin-shell__content {
+  grid-area: content;
+}
+
+@media (min-width: 1024px) {
+  .admin-shell {
+    grid-template-columns: var(--admin-sidebar-w) minmax(0, 1fr);
+    grid-template-areas: 'sidebar content';
+    transition: grid-template-columns 0.2s ease;
+  }
+
+  .admin-shell--collapsed {
+    grid-template-columns: var(--admin-sidebar-w-collapsed) minmax(0, 1fr);
+  }
+}
+
+.admin-shell__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgb(0 0 0 / 0.6);
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+@media (min-width: 1024px) {
+  .admin-shell__backdrop {
+    display: none;
+  }
+}

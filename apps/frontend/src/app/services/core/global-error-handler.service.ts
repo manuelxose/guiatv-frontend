@@ -44,7 +44,10 @@ export class GlobalErrorHandlerService implements ErrorHandler {
 
   private isChunkLoadError(error: unknown): boolean {
     const message = this.extractMessage(error);
-    return /Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk [\w-]+ failed|ERR_MODULE_NOT_FOUND|chunk-[A-Z0-9_-]+\.(?:js|mjs)/i.test(
+    // Do not match a bare `chunk-*.js` from an ordinary stack trace: every
+    // runtime exception in a split bundle contains one and used to trigger
+    // reload loops unrelated to chunk loading.
+    return /Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk [\w-]+ failed|ERR_MODULE_NOT_FOUND/i.test(
       message
     );
   }

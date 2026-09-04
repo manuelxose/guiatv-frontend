@@ -75,7 +75,7 @@ export class AppConfigurationService {
         },
         tmdb: {
           baseUrl: 'https://api.themoviedb.org/3',
-          apiKey: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8',
+          apiKey: '',
           language: 'es-ES'
         }
       },

@@ -10,6 +10,7 @@ import { FootballNewsCardComponent } from '@app/features/football/components/foo
 import { FootballStandingsTableComponent } from '@app/features/football/components/football-standings-table/football-standings-table.component';
 import { FootballSectionHeaderComponent } from '@app/features/football/components/football-section-header/football-section-header.component';
 import { FootballMatchRowComponent } from '@app/features/football/components/football-match-row/football-match-row.component';
+import { FootballBroadcastListComponent } from '@app/features/football/components/football-broadcast-list/football-broadcast-list.component';
 import {
   applyFootballMatchFilter,
   FootballFilterBarComponent,
@@ -18,8 +19,7 @@ import {
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
-import { PortalLocalToolbarComponent } from '@app/components/portal-local-toolbar/portal-local-toolbar.component';
-import { PortalContextDestination } from '@app/config/portal-navigation.config';
+import { FilterChipBarComponent, FilterChipItem } from '@app/components/filter-chip-bar/filter-chip-bar.component';
 
 type CompetitionTab = 'resumen' | 'calendario' | 'clasificacion';
 
@@ -54,8 +54,9 @@ export function groupByRound(matches: FootballMatchDTO[]): RoundGroup[] {
     FootballStandingsTableComponent,
     FootballSectionHeaderComponent,
     FootballMatchRowComponent,
+    FootballBroadcastListComponent,
     FootballFilterBarComponent,
-    PortalLocalToolbarComponent,
+    FilterChipBarComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './football-competition-detail.component.html',
@@ -67,10 +68,10 @@ export class FootballCompetitionDetailComponent {
   private readonly meta = inject(MetaService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  readonly tabs: readonly PortalContextDestination[] = [
-    { id: 'resumen', label: 'Resumen', kind: 'action' },
-    { id: 'calendario', label: 'Calendario', kind: 'action' },
-    { id: 'clasificacion', label: 'Clasificación', kind: 'action' },
+  readonly tabs: readonly FilterChipItem[] = [
+    { id: 'resumen', label: 'Resumen' },
+    { id: 'calendario', label: 'Calendario' },
+    { id: 'clasificacion', label: 'Clasificación' },
   ];
   readonly activeTab = signal<CompetitionTab>('resumen');
   readonly filter = signal<FootballMatchFilter>('all');
@@ -106,6 +107,8 @@ export class FootballCompetitionDetailComponent {
       .filter((m) => m.status === 'scheduled')
       .slice(0, 5)
   );
+  /** The single next scheduled match — the "where to watch" CTA is always scoped to it, never to the whole competition. */
+  readonly nextMatch = computed(() => this.upcomingPreview()[0] ?? null);
   readonly resultsPreview = computed(() =>
     this.matches()
       .filter((m) => m.status === 'finished')

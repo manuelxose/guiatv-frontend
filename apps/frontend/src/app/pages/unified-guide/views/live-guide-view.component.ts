@@ -1,17 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs';
+import { catchError, Observable, of, switchMap, tap } from 'rxjs';
 import { EpgGridComponent } from '../../../components/epg-grid/epg-grid.component';
 import { FilterChipItem } from '../../../components/filter-chip-bar/filter-chip-bar.component';
-import { PortalLocalToolbarComponent } from '../../../components/portal-local-toolbar/portal-local-toolbar.component';
+import { FilterChipBarComponent } from '../../../components/filter-chip-bar/filter-chip-bar.component';
 import { UnifiedFilterDockComponent, UnifiedFilterDockSection } from '../../../components/unified-filter-dock/unified-filter-dock.component';
 import { UnifiedProgramCardComponent } from '../../../components/unified-program-card/unified-program-card.component';
+import { UnifiedAsyncStateComponent } from '../../../components/unified-async-state/unified-async-state.component';
 import { ChannelMetaDTO, TvReadItemDTO } from '../../../api/models';
 import { UnifiedGuideStateService } from '../../../state/unified-guide.state';
 import { UnifiedShellUiStateService } from '../../../state/unified-shell-ui.state';
 import { TvDataFacade } from '../../../state/tv-data.facade';
+import { formatMadridHM } from '../../../utils/madrid-time';
 import { normalizeToCard } from '../../../utils/tv-normalizers';
 
 interface EpgRow {
@@ -26,6 +28,11 @@ interface EpgRow {
   }>;
 }
 
+export interface MobileChannelScheduleSection {
+  channel: ChannelMetaDTO;
+  items: TvReadItemDTO[];
+}
+
 @Component({
   selector: 'app-live-guide-view',
   standalone: true,
@@ -34,8 +41,9 @@ interface EpgRow {
     RouterModule,
     EpgGridComponent,
     UnifiedFilterDockComponent,
-    PortalLocalToolbarComponent,
+    FilterChipBarComponent,
     UnifiedProgramCardComponent,
+    UnifiedAsyncStateComponent,
   ],
   templateUrl: './live-guide-view.component.html',
   styleUrl: './live-guide-view.component.scss',
@@ -58,6 +66,7 @@ export class LiveGuideViewComponent {
     { id: 'cable', label: 'Cable' },
     { id: 'movistar', label: 'Movistar+' },
     { id: 'online', label: 'Online' },
+    { id: 'deporte', label: 'Deportes' },
   ];
   readonly liveFlagChips: FilterChipItem[] = [
     { id: 'live', label: 'Directo' },
@@ -69,30 +78,43 @@ export class LiveGuideViewComponent {
     ...this.guideState.liveFilters(),
     q: this.guideState.searchQuery(),
   }));
+  private readonly retryNonce = signal(0);
+  private readonly request = computed(() => ({
+    filters: this.filters(),
+    retryNonce: this.retryNonce(),
+  }));
+  readonly loadState = signal<'loading' | 'ready' | 'error'>('loading');
   // toObservable() emits the signal's current value on subscription. A
   // startWith(this.filters()) here previously duplicated every initial API
   // request, including the expensive day and guide-surface views.
-  private readonly filters$ = toObservable(this.filters);
+  private readonly filters$ = toObservable(this.request);
 
   private readonly selectedPrograms = toSignal(
     this.filters$.pipe(
-      switchMap((filters) => {
+      switchMap(({ filters }) => {
+        this.loadState.set('loading');
+        let request: Observable<TvReadItemDTO[]>;
         if (filters.q) {
-          return this.facade.searchTvPrograms({ ...filters, limit: 48 });
+          request = this.facade.searchTvPrograms({ ...filters, limit: 48 });
+        } else if (filters.liveView === 'next') {
+          request = this.facade.getNextPrograms({ ...filters, limit: 48 });
+        } else if (filters.liveView === 'night') {
+          request = this.facade.getTonightPrograms({ ...filters, limit: 48 });
+        } else if (filters.liveView === 'day') {
+          request = this.facade.getDaySchedule(filters);
+        } else {
+          request = this.facade.getLivePrograms({ ...filters, limit: 36 });
         }
-        if (filters.liveView === 'next') {
-          return this.facade.getNextPrograms({ ...filters, limit: 48 });
-        }
-        if (filters.liveView === 'night') {
-          return this.facade.getTonightPrograms({ ...filters, limit: 48 });
-        }
-        if (filters.liveView === 'day') {
-          return this.facade.getAllPrograms({ ...filters, limit: 240 });
-        }
-        return this.facade.getLivePrograms({ ...filters, limit: 36 });
+        return request.pipe(
+          tap(() => this.loadState.set('ready')),
+          catchError(() => {
+            this.loadState.set('error');
+            return of([] as TvReadItemDTO[]);
+          })
+        );
       })
     ),
-    { initialValue: null as TvReadItemDTO[] | null }
+    { initialValue: [] as TvReadItemDTO[] }
   );
   readonly visiblePrograms = computed(() => this.selectedPrograms() ?? []);
   readonly allPrograms = computed(() =>
@@ -105,7 +127,7 @@ export class LiveGuideViewComponent {
     );
     return Array.from(unique.values());
   });
-  readonly loading = computed(() => this.selectedPrograms() === null);
+  readonly loading = computed(() => this.loadState() === 'loading');
   readonly sectionTitle = computed(() => {
     const view = this.guideState.liveFilters().liveView;
     if (view === 'next') return 'A continuación';
@@ -135,13 +157,14 @@ export class LiveGuideViewComponent {
     return this.visiblePrograms().slice(this.leadProgram() ? 4 : 0);
   });
   readonly topChannels = computed(() => this.channels().slice(0, 12));
-  readonly dayChannelSections = computed(() =>
-    this.topChannels()
+  readonly dayChannelSections = computed<MobileChannelScheduleSection[]>(() =>
+    this.channels()
       .map((channel) => ({
         channel,
-        items: this.allPrograms()
-          .filter((item) => item.channel.id === channel.id)
-          .slice(0, 4),
+        items: selectMobileChannelSchedule(
+          this.allPrograms().filter((item) => item.channel.id === channel.id),
+          this.guideState.liveFilters().date
+        ),
       }))
       .filter((entry) => entry.items.length)
   );
@@ -284,7 +307,7 @@ export class LiveGuideViewComponent {
 
   clearFilters(): void {
     this.guideState.updateLiveFilters({
-      group: 'tdt',
+      group: 'all',
       category: 'all',
       liveView: 'now',
       date: 'today',
@@ -293,6 +316,10 @@ export class LiveGuideViewComponent {
       region: 'all',
       flags: [],
     });
+  }
+
+  retry(): void {
+    this.retryNonce.update((value) => value + 1);
   }
 
   removeFilter(key: string): void {
@@ -304,7 +331,7 @@ export class LiveGuideViewComponent {
       this.guideState.setSearch('');
       return;
     }
-    if (key === 'group') this.guideState.updateLiveFilters({ group: 'tdt' });
+    if (key === 'group') this.guideState.updateLiveFilters({ group: 'all' });
     if (key === 'category') this.guideState.updateLiveFilters({ category: 'all' });
     if (key === 'channel') this.guideState.updateLiveFilters({ channel: '' });
     if (key === 'channelType') this.guideState.updateLiveFilters({ channelType: 'all' });
@@ -346,6 +373,27 @@ export class LiveGuideViewComponent {
     void this.router.navigateByUrl(normalizeToCard(item).detailPath);
   }
 
+  detailPath(item: TvReadItemDTO): string {
+    return normalizeToCard(item).detailPath;
+  }
+
+  channelPath(item: TvReadItemDTO): string {
+    return normalizeToCard(item).channelPath || '/programacion-tv/guia-canales';
+  }
+
+  schedulePositionLabel(item: TvReadItemDTO, index: number): string {
+    if (item.airing.liveNow) return 'En directo';
+    if (index === 0) return this.guideState.liveFilters().date === 'today' ? 'Próximo' : 'Primero';
+    if (index === 1) return 'A continuación';
+    return 'Más tarde';
+  }
+
+  formatScheduleTime(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return formatMadridHM(date);
+  }
+
   trackByItem(_index: number, item: TvReadItemDTO): string {
     return item.id;
   }
@@ -378,6 +426,29 @@ function humanizeGroup(value: string): string {
     deporte: 'Deportes',
   };
   return labels[value] || value;
+}
+
+/**
+ * Mobile starts at the programme that matters now instead of forcing people
+ * to scan from midnight. Future dates keep their chronological first items.
+ */
+export function selectMobileChannelSchedule(
+  items: TvReadItemDTO[],
+  date: string,
+  nowMs = Date.now()
+): TvReadItemDTO[] {
+  const sorted = [...items].sort(
+    (left, right) => new Date(left.airing.start).getTime() - new Date(right.airing.start).getTime()
+  );
+  if (date !== 'today') return sorted.slice(0, 4);
+
+  const liveIndex = sorted.findIndex((item) => item.airing.liveNow);
+  const nextIndex = sorted.findIndex((item) => {
+    const end = new Date(item.airing.end).getTime();
+    return Number.isFinite(end) && end > nowMs;
+  });
+  const startIndex = liveIndex >= 0 ? liveIndex : nextIndex;
+  return startIndex >= 0 ? sorted.slice(startIndex, startIndex + 4) : sorted.slice(-4);
 }
 
 function buildEpgRows(items: TvReadItemDTO[]): EpgRow[] {

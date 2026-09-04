@@ -20,9 +20,9 @@ import { UserFavorite } from '../../../../interfaces/user.interface';
           *ngFor="let filter of filters"
           type="button"
           (click)="activeFilter = filter.id"
-          class="min-h-[44px] px-4 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+          class="min-h-[44px] px-4 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
           [attr.aria-pressed]="activeFilter === filter.id"
-          [ngClass]="activeFilter === filter.id ? 'border-red-500/60 text-[var(--accent-live)] bg-red-500/10' : 'border-[var(--portal-border)] text-[var(--portal-text-muted)] hover:text-[var(--accent-live)] hover:border-[var(--portal-border-strong)]'"
+          [ngClass]="activeFilter === filter.id ? 'border-[var(--accent-live)]/60 text-[var(--accent-live)] bg-[var(--accent-live-soft)]' : 'border-[var(--portal-border)] text-[var(--portal-text-muted)] hover:text-[var(--accent-live)] hover:border-[var(--portal-border-strong)]'"
         >
           {{ filter.label }}
         </button>
@@ -36,7 +36,8 @@ import { UserFavorite } from '../../../../interfaces/user.interface';
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         <div
           *ngFor="let item of getFilteredItems()"
-          class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] overflow-hidden flex flex-col"
+          data-vertical="discover"
+          class="favorite-card overflow-hidden rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] flex flex-col"
         >
           <div class="aspect-[2/3] bg-[var(--portal-surface-soft)]">
             <img *ngIf="item.image" [src]="item.image" class="w-full h-full object-cover" [alt]="item.title" />
@@ -53,14 +54,14 @@ import { UserFavorite } from '../../../../interfaces/user.interface';
             <div class="mt-auto flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               >
                 Abrir
               </button>
               <button
                 type="button"
                 (click)="onRemove(item.id)"
-                class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="min-h-[44px] px-3 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                 aria-label="Quitar favorito"
               >
                 Quitar
@@ -71,6 +72,15 @@ import { UserFavorite } from '../../../../interfaces/user.interface';
       </div>
     </div>
   `,
+  styles: [
+    `
+      @use '../../../../../styles/card-accent' as cards;
+
+      .favorite-card {
+        @include cards.card-vertical-accent();
+      }
+    `,
+  ],
 })
 export class UserFavoritesComponent {
   @Input() favorites: UserFavorite[] = [];

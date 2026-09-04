@@ -1,0 +1,81 @@
+<main class="channel-catalog">
+  <header class="channel-catalog__header">
+    <div>
+      <h1>Canales de televisión</h1>
+      <p>Encuentra cada señal, comprueba qué emite ahora y abre su programación completa.</p>
+    </div>
+    <a routerLink="/programacion-tv/guia-canales" class="channel-catalog__guide-link">
+      Abrir la guía en directo
+    </a>
+  </header>
+
+  <section class="channel-catalog__controls" aria-label="Buscar y filtrar canales">
+    <label class="channel-catalog__search">
+      <span>Buscar canal u operador</span>
+      <input
+        type="search"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
+        placeholder="Ej. AXN, Movistar+, AMC"
+        autocomplete="off"
+      />
+    </label>
+
+    <div class="channel-catalog__filter-row" aria-label="Filtrar por grupo">
+      <button
+        *ngFor="let group of groups"
+        type="button"
+        [class.is-active]="selectedGroup() === group.id"
+        [attr.aria-pressed]="selectedGroup() === group.id"
+        (click)="selectGroup(group.id)"
+      >
+        {{ group.label }}
+      </button>
+    </div>
+
+    <div class="channel-catalog__access" aria-label="Filtrar por acceso">
+      <button type="button" [class.is-active]="selectedAccess() === 'all'" (click)="selectAccess('all')">Cualquier acceso</button>
+      <button type="button" [class.is-active]="selectedAccess() === 'free'" (click)="selectAccess('free')">En abierto</button>
+      <button type="button" [class.is-active]="selectedAccess() === 'pay'" (click)="selectAccess('pay')">De pago</button>
+      <span *ngIf="status() === 'ready'" role="status">{{ resultLabel() }}</span>
+    </div>
+  </section>
+
+  <section *ngIf="status() === 'loading'" class="channel-catalog__grid" aria-label="Cargando canales" aria-busy="true">
+    <article *ngFor="let item of [1,2,3,4,5,6,7,8]" class="channel-card channel-card--loading">
+      <span class="channel-card__logo-skeleton"></span>
+      <span class="channel-card__line channel-card__line--strong"></span>
+      <span class="channel-card__line"></span>
+      <span class="channel-card__line channel-card__line--short"></span>
+    </article>
+  </section>
+
+  <app-unified-async-state
+    *ngIf="status() === 'error'"
+    kind="error"
+    title="No pudimos cargar los canales"
+    message="La guía no ha respondido. Puedes intentarlo de nuevo sin perder tus filtros."
+    actionLabel="Reintentar"
+    (action)="retry()"
+  ></app-unified-async-state>
+
+  <section
+    *ngIf="status() === 'ready' && channels().length"
+    class="channel-catalog__grid"
+    aria-label="Directorio de canales"
+  >
+    <app-channel-card
+      *ngFor="let entry of channels(); trackBy: trackByChannel"
+      [entry]="entry"
+    ></app-channel-card>
+  </section>
+
+  <app-unified-async-state
+    *ngIf="status() === 'ready' && !channels().length"
+    kind="empty"
+    title="No encontramos canales con estos filtros"
+    message="Prueba otro nombre o recupera el directorio completo."
+    actionLabel="Limpiar filtros"
+    (action)="clearFilters()"
+  ></app-unified-async-state>
+</main>

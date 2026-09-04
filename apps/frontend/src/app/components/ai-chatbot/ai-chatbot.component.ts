@@ -1,4 +1,4 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectorRef,
@@ -7,7 +7,6 @@ import {
   ElementRef,
   EventEmitter,
   Output,
-  PLATFORM_ID,
   ViewChild,
   inject,
 } from '@angular/core';
@@ -21,19 +20,20 @@ import {
   ChatbotRequestState,
   ChatbotSessionState,
   ConversationSummary,
+  isChatbotBusyState,
 } from '../../interfaces/chatbot.interface';
 import { ChatbotService } from '../../services/chatbot.service';
 import { UserService } from '../../services/user.service';
+import { AnalyticsService } from '../../services/analytics.service';
 
 import { ChatHeaderComponent } from './chat-header/chat-header.component';
-import { ChatMemoryEditorComponent } from './chat-memory-editor/chat-memory-editor.component';
 import { ChatWelcomeScreenComponent } from './chat-welcome-screen/chat-welcome-screen.component';
-import { ChatOnboardingWizardComponent, OnboardingWizardResult } from './chat-onboarding-wizard/chat-onboarding-wizard.component';
 import { ChatMessageBubbleComponent } from './chat-message-bubble/chat-message-bubble.component';
 import { ChatInputBarComponent } from './chat-input-bar/chat-input-bar.component';
-import { ChatPreferencePromptComponent } from './chat-preference-prompt/chat-preference-prompt.component';
 import { ChatSkeletonComponent } from './chat-skeleton/chat-skeleton.component';
 import { ChatConversationSidebarComponent } from './chat-conversation-sidebar/chat-conversation-sidebar.component';
+import { ChatProfilePanelComponent } from './chat-profile-panel/chat-profile-panel.component';
+import { PreferenceAnswer } from '../../interfaces/chat-profile.types';
 
 @Component({
   selector: 'app-ai-chatbot',
@@ -41,23 +41,22 @@ import { ChatConversationSidebarComponent } from './chat-conversation-sidebar/ch
   imports: [
     CommonModule,
     ChatHeaderComponent,
-    ChatMemoryEditorComponent,
     ChatWelcomeScreenComponent,
-    ChatOnboardingWizardComponent,
     ChatMessageBubbleComponent,
     ChatInputBarComponent,
-    ChatPreferencePromptComponent,
     ChatSkeletonComponent,
     ChatConversationSidebarComponent,
+    ChatProfilePanelComponent,
   ],
   templateUrl: './ai-chatbot.component.html',
   styleUrl: './ai-chatbot.component.scss',
 })
 export class AIChatbotComponent implements AfterViewInit {
   @Output() close = new EventEmitter<void>();
+  @Output() openSocial = new EventEmitter<void>();
   @ViewChild('messagesContainer') private messagesContainer?: ElementRef<HTMLDivElement>;
   @ViewChild('inputBar') inputBar?: ChatInputBarComponent;
-  @ViewChild('memoryEditor') memoryEditor?: ChatMemoryEditorComponent;
+  @ViewChild('profilePanel') profilePanel?: ChatProfilePanelComponent;
 
   public messages: ChatMessage[] = [];
   public needsOnboarding = false;
@@ -65,18 +64,13 @@ export class AIChatbotComponent implements AfterViewInit {
   public chatState: ChatbotRequestState = 'login_required';
   public previewSuggestions: string[] = [];
   public assistantMemory: AssistantMemorySnapshot | null = null;
-  public dismissedPreferencePromptKeys = new Set<string>();
+  public profilePlatforms: string[] = [];
+  public profileGenres: string[] = [];
+  public profileSaving = false;
+  public profileSaveError = '';
   public showScrollFab = false;
   public conversations: ConversationSummary[] = [];
   public activeConversationId: string | null = null;
-  public readonly memoryEditorFields: Array<{ key: string; label: string; placeholder: string }> = [
-    { key: 'likedGenres', label: 'Géneros favoritos', placeholder: 'Añadir género…' },
-    { key: 'dislikedGenres', label: 'Géneros a evitar', placeholder: 'Añadir género…' },
-    { key: 'preferredPlatforms', label: 'Plataformas', placeholder: 'Añadir plataforma…' },
-    { key: 'avoidedPlatforms', label: 'Plataformas a evitar', placeholder: 'Añadir plataforma…' },
-    { key: 'preferredViewingContexts', label: 'Contexto', placeholder: 'Solo, pareja…' },
-    { key: 'preferredDurations', label: 'Duración', placeholder: 'Corto, largo…' },
-  ];
   public readonly autonomousCommunities = [
     'Andalucía',
     'Aragón',
@@ -99,34 +93,15 @@ export class AIChatbotComponent implements AfterViewInit {
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly platformId = inject(PLATFORM_ID);
-
-  private get isMobile(): boolean {
-    return isPlatformBrowser(this.platformId) && window.innerWidth < 768;
-  }
-
-  // Single "which panel is open" state for the header's profile block, the
-  // memory editor, and the conversation sidebar — they used to be three
-  // independent booleans that could all be true at once, which is what
-  // caused them to visually overlap and obscure each other. Opening any one
-  // now closes the others. Kept as getter/setter pairs (rather than renaming
-  // every call site to a method) so `sidebarOpen`/`memoryEditorOpen` keep
-  // working exactly as before everywhere they're already read/assigned,
-  // including directly from templates (e.g. `(close)="sidebarOpen = false"`).
-  private _activePanel: 'none' | 'profile' | 'memory' | 'sidebar' = 'none';
+  // The profile and conversation surfaces are mutually exclusive so neither
+  // can obscure the other inside the constrained chat viewport.
+  private _activePanel: 'none' | 'profile' | 'sidebar' = 'none';
 
   get sidebarOpen(): boolean {
     return this._activePanel === 'sidebar';
   }
   set sidebarOpen(value: boolean) {
     this._activePanel = value ? 'sidebar' : this._activePanel === 'sidebar' ? 'none' : this._activePanel;
-  }
-
-  get memoryEditorOpen(): boolean {
-    return this._activePanel === 'memory';
-  }
-  set memoryEditorOpen(value: boolean) {
-    this._activePanel = value ? 'memory' : this._activePanel === 'memory' ? 'none' : this._activePanel;
   }
 
   get profileExpanded(): boolean {
@@ -139,7 +114,8 @@ export class AIChatbotComponent implements AfterViewInit {
   constructor(
     private readonly chatbotService: ChatbotService,
     private readonly userService: UserService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly analytics: AnalyticsService
   ) {}
 
   ngAfterViewInit(): void {
@@ -189,6 +165,8 @@ export class AIChatbotComponent implements AfterViewInit {
     ])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([isAuthenticated, profile]) => {
+        this.profilePlatforms = [...(profile.preferredPlatforms || [])];
+        this.profileGenres = [...(profile.favoriteGenres || [])];
         this.needsOnboarding = Boolean(
           isAuthenticated &&
             (!profile.favoriteGenres?.length || !profile.preferredPlatforms?.length)
@@ -199,12 +177,13 @@ export class AIChatbotComponent implements AfterViewInit {
   onMessageSent(text: string): void {
     if (
       !text ||
-      this.chatState === 'sending' ||
+      isChatbotBusyState(this.chatState) ||
       this.sessionState !== 'authenticated'
     ) {
       return;
     }
 
+    this.analytics.trackEvent('assistant_prompt_sent', { promptLength: text.length });
     this.chatbotService.sendMessageStream(text).subscribe({
       error: () => undefined,
     });
@@ -232,6 +211,7 @@ export class AIChatbotComponent implements AfterViewInit {
   }
 
   openRecommendation(recommendation: ChatbotRecommendation): void {
+    this.analytics.trackEvent('assistant_recommendation_opened', { type: recommendation.type });
     this.chatbotService
       .trackRecommendationAction('open_recommendation', recommendation)
       .subscribe();
@@ -331,10 +311,27 @@ export class AIChatbotComponent implements AfterViewInit {
     });
   }
 
+  stopGeneration(): void {
+    this.analytics.trackEvent('assistant_generation_stopped');
+    this.chatbotService.stopGeneration();
+  }
+
+  retryLastPrompt(): void {
+    this.analytics.trackEvent('assistant_prompt_retried');
+    this.chatbotService.retryLastPrompt().subscribe({ error: () => undefined });
+  }
+
+  canRetryLastPrompt(): boolean {
+    return this.chatbotService.hasRetryablePrompt() &&
+      (this.chatState === 'cancelled' ||
+        this.chatState === 'rate_limited' ||
+        this.chatState === 'offline' ||
+        this.chatState === 'unavailable');
+  }
+
   startNewConversation(): void {
     this.chatbotService.startNewConversation();
     this.activeConversationId = null;
-    this.dismissedPreferencePromptKeys.clear();
     this.inputBar?.setDraft('');
     queueMicrotask(() => this.inputBar?.focus());
     if (this.sidebarOpen) {
@@ -358,7 +355,6 @@ export class AIChatbotComponent implements AfterViewInit {
     this.chatbotService.switchConversation(conversationId).subscribe(() => {
       this.activeConversationId = conversationId;
       this.sidebarOpen = false;
-      this.dismissedPreferencePromptKeys.clear();
     });
   }
 
@@ -477,129 +473,6 @@ export class AIChatbotComponent implements AfterViewInit {
     return 'También puedo incluir autonómicas si me dices tu comunidad autónoma.';
   }
 
-  getPreferencePromptKey(checkDismissed = true): string {
-    if (this.sessionState !== 'authenticated' || this.chatState === 'sending') {
-      return '';
-    }
-
-    const userMessageCount = this.getUserMessageCount();
-    if (userMessageCount < 2) {
-      return '';
-    }
-
-    const profile = this.userService.getProfileSnapshot();
-    const knownPlatforms = new Set([
-      ...(profile.preferredPlatforms || []),
-      ...(this.assistantMemory?.preferredPlatforms || []),
-    ].filter(Boolean));
-    const knownGenres = new Set([
-      ...(profile.favoriteGenres || []),
-      ...(this.assistantMemory?.likedGenres || []),
-    ].filter(Boolean));
-
-    let key = '';
-    if (!knownPlatforms.size) {
-      key = 'platforms';
-    } else if (!knownGenres.size) {
-      key = 'genres';
-    } else if (!(this.assistantMemory?.preferredViewingContexts || []).length) {
-      key = 'context';
-    } else if (!(this.assistantMemory?.preferredDurations || []).length) {
-      key = 'duration';
-    } else if (!(this.assistantMemory?.favoriteFranchisesOrTitles || []).length) {
-      key = 'titles';
-    } else if (
-      this.messages.some((message) => Boolean(message.queryContext?.hasAutonomicMatches)) &&
-      !this.assistantMemory?.preferredAutonomousCommunity
-    ) {
-      key = 'community';
-    } else if (
-      userMessageCount >= 3 &&
-      !(this.assistantMemory?.negativeSignals || []).length
-    ) {
-      key = 'avoid';
-    }
-
-    if (!key) {
-      return '';
-    }
-
-    return checkDismissed && this.dismissedPreferencePromptKeys.has(key) ? '' : key;
-  }
-
-  getPreferencePrompt(): string {
-    if (this.sessionState !== 'authenticated' || this.chatState === 'sending') {
-      return '';
-    }
-    switch (this.getPreferencePromptKey()) {
-      case 'platforms':
-        return '¿Dónde sueles ver más cosas? Si me dices tus plataformas principales, ajusto mejor entre streaming y TV.';
-      case 'genres':
-        return '¿Qué te suele apetecer más? Con un par de géneros afino mucho mejor desde el siguiente turno.';
-      case 'context':
-        return '¿Sueles buscar plan para ver solo, en pareja, en familia o con amigos?';
-      case 'duration':
-        return '¿Hoy te encaja mejor algo corto o también una película larga?';
-      case 'titles':
-        return 'Dime una serie, película o saga que te represente y usaré esa referencia para afinar mejor.';
-      case 'community':
-        return 'Si quieres incluir autonómicas cuando toque, dime tu comunidad autónoma y la recordaré.';
-      case 'avoid':
-        return 'Si quieres, también dime qué prefieres evitar casi siempre. Solo lo usaré como filtro secundario.';
-      default:
-        return '';
-    }
-  }
-
-  getPreferenceOptions(): string[] {
-    switch (this.getPreferencePromptKey()) {
-      case 'platforms':
-        return [
-          'Uso Netflix y Prime Video',
-          'Tengo Movistar+ y Max',
-          'Ahora mismo tiro más de TV',
-        ];
-      case 'genres':
-        return [
-          'Suspense y drama',
-          'Comedia y series',
-          'Más cine que series',
-        ];
-      case 'context':
-        return ['Para ver solo', 'En pareja', 'En familia', 'Con amigos'];
-      case 'duration':
-        return [
-          'Algo corto hoy',
-          'Me va bien una peli larga',
-          'Mejor episodios de 30-45 min',
-        ];
-      case 'titles':
-        return [
-          'Me encantó Succession',
-          'The Bear es muy mi rollo',
-          'Quiero algo tipo La infiltrada',
-        ];
-      case 'community':
-        return ['Andalucía', 'Madrid', 'Cataluña'];
-      case 'avoid':
-        return [
-          'Prefiero evitar terror',
-          'Mejor sin deportes',
-          'Paso de realities',
-        ];
-      default:
-        return [];
-    }
-  }
-
-  dismissPreferencePrompt(): void {
-    const promptKey = this.getPreferencePromptKey(false);
-    if (!promptKey) {
-      return;
-    }
-    this.dismissedPreferencePromptKeys.add(promptKey);
-  }
-
   getResultSummary(message: ChatMessage): string {
     const context = message.queryContext;
     if (!context || !context.totalMatches) {
@@ -616,10 +489,6 @@ export class AIChatbotComponent implements AfterViewInit {
   private getLatestUserMessage(): string {
     const latest = [...this.messages].reverse().find((message) => message.role === 'user');
     return latest?.content || '';
-  }
-
-  private getUserMessageCount(): number {
-    return this.messages.filter((message) => message.role === 'user').length;
   }
 
   private buildRequestedLabel(
@@ -646,15 +515,10 @@ export class AIChatbotComponent implements AfterViewInit {
     const normalized = text.trim();
     if (
       !normalized ||
-      this.chatState === 'sending' ||
+      isChatbotBusyState(this.chatState) ||
       this.sessionState !== 'authenticated'
     ) {
       return;
-    }
-
-    const promptKey = this.getPreferencePromptKey(false);
-    if (promptKey) {
-      this.dismissedPreferencePromptKeys.add(promptKey);
     }
 
     this.chatbotService.sendMessageStream(normalized).subscribe({
@@ -662,77 +526,43 @@ export class AIChatbotComponent implements AfterViewInit {
     });
   }
 
-  onWizardCompleted(result: OnboardingWizardResult): void {
-    const memoryUpdate: Record<string, string[]> = {
-      preferredPlatforms: result.preferredPlatforms,
-      likedGenres: result.likedGenres,
-    };
-    if (result.preferredViewingContexts.length) {
-      memoryUpdate['preferredViewingContexts'] = result.preferredViewingContexts;
-    }
-    if (result.preferredDurations.length) {
-      memoryUpdate['preferredDurations'] = result.preferredDurations;
-    }
+  openProfilePanel(): void {
+    this.profileSaveError = '';
+    this.profileExpanded = true;
+  }
 
+  closeProfilePanel(): void {
+    this.profileSaveError = '';
+    this.profileSaving = false;
+    this.profileExpanded = false;
+    queueMicrotask(() => this.inputBar?.focus());
+  }
+
+  onPreferenceAnswer(answer: PreferenceAnswer): void {
+    if (this.profileSaving) return;
+    this.profileSaving = true;
+    this.profileSaveError = '';
+
+    // Shared with Mi GuíaTV's assistant-preferences surface so both UIs
+    // route an answer to the same store (profile vs. assistant memory) the
+    // same way — see ChatbotService.applyPreferenceAnswer.
     this.chatbotService
-      .updateAssistantMemory(memoryUpdate, result.preferredAutonomousCommunity)
-      .subscribe({ error: () => undefined });
-
-    this.userService
-      .saveGenrePreferences(result.likedGenres, result.preferredPlatforms)
-      .subscribe({ error: () => undefined });
-
-    this.needsOnboarding = false;
+      .applyPreferenceAnswer(answer, this.profilePlatforms, this.profileGenres)
+      .subscribe({
+        next: (saved) => (saved ? this.completeProfileSave() : this.failProfileSave()),
+        error: () => this.failProfileSave(),
+      });
   }
 
-  onWizardSkipped(): void {
-    this.needsOnboarding = false;
+  private completeProfileSave(): void {
+    this.profileSaving = false;
+    this.profileSaveError = '';
+    this.profilePanel?.onSaveComplete();
   }
 
-  onMemorySaved(draft: Record<string, string[]>): void {
-    this.chatbotService.updateAssistantMemory(draft).subscribe({
-      next: () => {
-        this.memoryEditor?.onSaveComplete();
-        this.memoryEditorOpen = false;
-      },
-      error: () => undefined,
-    });
-  }
-
-  onRemoveMemoryTag(event: { key: string; value: string }): void {
-    if (!this.assistantMemory) return;
-    const current = (this.assistantMemory as any)[event.key];
-    if (!Array.isArray(current)) return;
-    const updated = current.filter((v: string) => v !== event.value);
-    this.chatbotService
-      .updateAssistantMemory({ [event.key]: updated })
-      .subscribe({ error: () => undefined });
-  }
-
-  getMemoryHighlights(): string[] {
-    const highlights: string[] = [];
-
-    if (this.assistantMemory?.preferredPlatforms?.length) {
-      highlights.push(
-        `Plataformas: ${this.assistantMemory.preferredPlatforms.slice(0, 2).join(', ')}`
-      );
-    }
-    if (this.assistantMemory?.likedGenres?.length) {
-      highlights.push(
-        `Gustos: ${this.assistantMemory.likedGenres.slice(0, 2).join(', ')}`
-      );
-    }
-    if (this.assistantMemory?.preferredViewingContexts?.length) {
-      highlights.push(
-        `Contexto: ${this.assistantMemory.preferredViewingContexts[0]}`
-      );
-    }
-
-    return highlights.slice(0, 3);
-  }
-
-  toggleMemoryEditor(): void {
-    this.memoryEditorOpen = !this.memoryEditorOpen;
+  private failProfileSave(): void {
+    this.profileSaving = false;
+    this.profileSaveError = 'No se ha podido guardar. Revisa la conexión y vuelve a intentarlo.';
   }
 
   trackByMessage(_index: number, message: ChatMessage): string {

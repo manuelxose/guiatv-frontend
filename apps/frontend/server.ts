@@ -17,6 +17,7 @@ const KNOWN_ROUTES: RegExp[] = [
   /^\/admin$/,
   /^\/programacion-tv\/(series|peliculas|guia-canales|en-directo|que-ver-hoy)$/,
   /^\/programacion-tv\/ver-canal\/[^/]+$/,
+  /^\/canales$/,
   /^\/canales\/[^/]+$/,
   /^\/plataformas$/,
   /^\/contenido\/[^/]+$/,
@@ -82,6 +83,42 @@ export function app(): express.Express {
   server.get('/blog', (_req, res) => res.redirect(301, '/editorial'));
   server.get('/mi-cuenta', (_req, res) => res.redirect(301, '/perfil'));
   server.get('/comunidad', (_req, res) => res.redirect(301, '/perfil'));
+
+  const redirectLegacyCatalog = async (
+    req: express.Request,
+    res: express.Response,
+    catalogId: string
+  ): Promise<void> => {
+    if (!catalogId) {
+      res.status(404).send('Not found');
+      return;
+    }
+    try {
+      const apiRes = await fetch(
+        `http://localhost:4000/v2/catalog/${encodeURIComponent(catalogId)}`
+      );
+      if (apiRes.ok) {
+        const json = await apiRes.json();
+        const detailPath = json?.data?.detailPath;
+        if (detailPath && detailPath !== req.path) {
+          res.redirect(301, detailPath);
+          return;
+        }
+      }
+    } catch {
+      // An unresolved legacy identifier is genuinely gone.
+    }
+    res.status(404).send('Not found');
+  };
+
+  server.get('/pelicula-details/:id', (req, res) => {
+    const id = Number(req.params.id);
+    void redirectLegacyCatalog(req, res, Number.isInteger(id) && id > 0 ? `tmdb:movie:${id}` : '');
+  });
+  server.get(['/detalles/:id', '/program-full-details/:id'], (req, res) => {
+    const id = String(req.params.id || '').trim();
+    void redirectLegacyCatalog(req, res, id ? `program:${id}` : '');
+  });
 
   // 301 redirect legacy /contenido/:catalogId → slug-based route
   server.get('/contenido/:catalogId', async (req, res) => {

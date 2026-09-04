@@ -1,4 +1,11 @@
 export type EditorialContentType = 'guide' | 'ranking' | 'trend';
+/**
+ * Editorial monetization controls (Affiliate Engine Phase 8). 'auto' resolves
+ * offers contextually from relatedPlatformKeys/relatedMerchantKeys/relatedOfferCategories
+ * (plus any manualAffiliateOfferIds pinned ahead of ranking); 'manual' shows
+ * only manualAffiliateOfferIds; 'off' disables monetization on this post.
+ */
+export type EditorialAffiliatePlacementMode = 'auto' | 'manual' | 'off';
 export type EditorialRouteRelationKey =
   | 'platforms'
   | 'guide'
@@ -21,6 +28,17 @@ export interface EditorialFaqItem {
   answer: string;
 }
 
+export interface EditorialAuthor {
+  name: string;
+  id: string | null;
+}
+
+export interface EditorialTocItem {
+  id: string;
+  label: string;
+  level: 2 | 3;
+}
+
 export interface EditorialPost {
   id: string;
   slug: string;
@@ -32,6 +50,8 @@ export interface EditorialPost {
   publishedAt: string;
   modifiedAt: string;
   readingMinutes: number;
+  tocItems: EditorialTocItem[];
+  author: EditorialAuthor | null;
   canonicalPath: string;
   categories: EditorialCategory[];
   primaryCategory: EditorialCategory | null;
@@ -43,6 +63,10 @@ export interface EditorialPost {
   relatedRouteKeys: EditorialRouteRelationKey[];
   faqItems: EditorialFaqItem[];
   evergreen: boolean;
+  affiliatePlacementMode: EditorialAffiliatePlacementMode;
+  relatedOfferCategories: string[];
+  relatedMerchantKeys: string[];
+  manualAffiliateOfferIds: string[];
   isRanking: boolean;
   rankingReason: 'type' | 'category' | 'keyword' | 'none';
   metaTitle: string | null;
@@ -57,6 +81,7 @@ export interface EditorialCategorySection {
 
 export interface EditorialHubState {
   hero: EditorialPost | null;
+  latestPosts: EditorialPost[];
   guidePosts: EditorialPost[];
   rankingPosts: EditorialPost[];
   trendPosts: EditorialPost[];

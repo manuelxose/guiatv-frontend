@@ -51,6 +51,7 @@ export class AppPublicLayoutShellComponent {
 
 function resolvePublicShellSection(path: string): PortalPublicShellSection {
   if (
+    path === '/canales' ||
     path.startsWith('/canales/') ||
     path.startsWith('/programacion-tv/ver-canal') ||
     path.startsWith('/programacion-tv/guia-canales')

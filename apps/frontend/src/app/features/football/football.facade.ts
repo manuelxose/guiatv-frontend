@@ -39,20 +39,20 @@ export class FootballFacade {
   getHome(): Observable<FootballHomeDTO> {
     return this.transferable<FootballHomeDTO>('football:home', () =>
       this.api.getHome().pipe(map((res) => res.data ?? this.emptyHome()))
-    ).pipe(catchError(() => of(this.emptyHome())));
+    ).pipe(catchError(() => of(this.emptyHome(true))));
   }
 
   getMatches(params: Parameters<FootballApiService['getMatches']>[0] = {}): Observable<FootballMatchesResponseDTO> {
     const key = `football:matches:${JSON.stringify(params)}`;
     return this.transferable<FootballMatchesResponseDTO>(key, () =>
       this.api.getMatches(params).pipe(map((res) => res.data ?? { matches: [], meta: {} }))
-    ).pipe(catchError(() => of({ matches: [], meta: {} })));
+    ).pipe(catchError(() => of({ matches: [], meta: { loadError: true } })));
   }
 
   getLiveMatches(): Observable<FootballMatchesResponseDTO> {
     return this.transferable<FootballMatchesResponseDTO>('football:live', () =>
       this.api.getLiveMatches().pipe(map((res) => res.data ?? { matches: [], meta: {} }))
-    ).pipe(catchError(() => of({ matches: [], meta: {} })));
+    ).pipe(catchError(() => of({ matches: [], meta: { loadError: true } })));
   }
 
   getMatch(idOrSlug: string): Observable<FootballMatchDetailDTO | null> {
@@ -132,15 +132,17 @@ export class FootballFacade {
     );
   }
 
-  private emptyHome(): FootballHomeDTO {
+  private emptyHome(loadError = false): FootballHomeDTO {
     return {
       liveMatches: [],
       todayMatches: [],
       featuredMatches: [],
       upcomingMatches: [],
       featuredCompetitions: [],
+      standingsSnapshot: null,
       latestNews: [],
       generatedAt: new Date().toISOString(),
+      ...(loadError ? { loadError: true } : {}),
     };
   }
 

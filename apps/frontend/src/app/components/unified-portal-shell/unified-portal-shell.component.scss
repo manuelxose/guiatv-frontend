@@ -60,7 +60,8 @@
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   border: 1px solid transparent;
   border-bottom: none;
-  color: var(--portal-text);
+  color: var(--portal-text-muted);
+  font-weight: 600;
   transition: background 160ms ease, color 160ms ease;
 }
 
@@ -74,7 +75,7 @@
   justify-content: center;
   width: 1.95rem;
   height: 1.95rem;
-  border-radius: 0.82rem;
+  border-radius: var(--radius-lg);
   background: var(--portal-surface);
   flex: 0 0 auto;
 }
@@ -99,15 +100,18 @@
   display: none;
 }
 
+// Spotify nav pattern: active state reads via weight/color, not a colored
+// underline/tint.
 .portal-shell__tab--active {
-  background: color-mix(in srgb, var(--guide-accent) 8%, var(--portal-surface-strong) 92%);
-  border-color: var(--portal-border);
-  border-bottom: 2px solid var(--guide-accent);
-  color: var(--guide-accent);
+  background: var(--portal-surface-strong);
+  border-color: transparent;
+  border-bottom: none;
+  color: var(--portal-text);
+  font-weight: 800;
 }
 
 .portal-shell__tab--active .portal-shell__tab-icon {
-  background: color-mix(in srgb, var(--guide-accent) 15%, transparent);
+  background: var(--portal-card-elevated);
 }
 
 @media (min-width: 1280px) {
@@ -155,7 +159,7 @@
   justify-content: center;
   gap: 0.55rem;
   min-height: 42px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--portal-border);
   background: var(--portal-surface);
   color: var(--portal-text);
@@ -189,7 +193,7 @@
   justify-content: center;
   min-width: 1.4rem;
   height: 1.4rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface-strong);
   font-size: 0.72rem;
 }
@@ -197,6 +201,12 @@
 .portal-shell__layout {
   display: grid;
   gap: var(--space-5);
+  /* Cap to the same --portal-content-max the global header centers on
+     (unified-top-nav__frame) — without this the header stays boxed while
+     routed content stretches edge-to-edge on wide/ultra-wide screens. */
+  max-width: var(--portal-content-max);
+  width: 100%;
+  margin-inline: auto;
   padding: var(--space-4) 1rem var(--space-10);
   align-items: start;
 }
@@ -266,7 +276,7 @@
   gap: 0.7rem;
   min-height: 2.9rem;
   padding: 0.45rem 0.65rem;
-  border-radius: 0.9rem;
+  border-radius: var(--radius-lg);
 }
 
 .portal-shell__rail--left .portal-shell__rail-icon {
@@ -490,7 +500,7 @@
   justify-content: center;
   min-width: 1.8rem;
   height: 1.8rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface-strong);
   color: var(--portal-text-muted);
   font-size: 0.74rem;
@@ -541,7 +551,7 @@
 
 .portal-shell__rail-item--active {
   background: var(--portal-surface-strong);
-  color: var(--guide-accent);
+  color: var(--portal-text);
   font-weight: 800;
 }
 
@@ -559,14 +569,14 @@
 .portal-shell__rail-icon {
   width: 2.1rem;
   height: 2.1rem;
-  border-radius: 0.9rem;
+  border-radius: var(--radius-lg);
   background: var(--portal-surface-strong);
 }
 
 .portal-shell__rail-image {
   width: 2.1rem;
   height: 2.1rem;
-  border-radius: 0.9rem;
+  border-radius: var(--radius-lg);
   object-fit: cover;
 }
 
@@ -596,7 +606,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface-strong);
   color: var(--portal-text);
   padding: 0.35rem 0.68rem;
@@ -611,7 +621,7 @@
 .portal-shell__rail-list--logos .portal-shell__rail-image {
   width: 3rem;
   height: 3rem;
-  border-radius: 1rem;
+  border-radius: var(--radius-xl);
   background: var(--portal-surface-strong);
   padding: 0.35rem;
 }
@@ -628,7 +638,7 @@
 .portal-shell__rail-card--feature .portal-shell__rail-list--context > .portal-shell__rail-item:first-child .portal-shell__rail-icon {
   width: 3rem;
   height: 3rem;
-  border-radius: 1rem;
+  border-radius: var(--radius-xl);
 }
 
 .portal-shell__rail-card--compact .portal-shell__rail-list {
@@ -689,7 +699,7 @@
 
 .portal-shell--discover,
 .portal-shell--home {
-  --guide-accent: var(--guide-accent-discover, #f59e0b);
+  --guide-accent: var(--guide-accent-discover);
 }
 
 .portal-shell--editorial,
@@ -698,11 +708,11 @@
 }
 
 .portal-shell--streaming {
-  --guide-accent: var(--guide-accent-streaming, #38bdf8);
+  --guide-accent: var(--guide-accent-streaming);
 }
 
 .portal-shell--sports {
-  --guide-accent: var(--guide-accent-sports, #22c55e);
+  --guide-accent: var(--guide-accent-sports);
 }
 
 .portal-shell--left-collapsed .portal-shell__rail--left .portal-shell__rail-chrome {

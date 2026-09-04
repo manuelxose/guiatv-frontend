@@ -1,0 +1,40 @@
+/**
+ * Hand-written editorial updates for the public seed corpus.
+ *
+ * These blocks intentionally live outside the seed declarations: they are
+ * easy for an editor to review, cite and replace when a provider changes a
+ * plan or when the catalogue snapshot is refreshed.
+ */
+export const EDITORIAL_QUALITY_ADDENDA: Record<string, string> = {
+  'plataformas-streaming-mas-baratas': `
+<section><h2>Comparativa de precios en España</h2>
+<p>La respuesta corta depende de si aceptas publicidad y de si buscas una suscripción completa o un catálogo muy especializado. En la última comprobación editorial, Netflix mostraba planes de 8,99 a 21,99 € al mes; Disney+ mostraba 6,99 € con anuncios, 10,99 € en Estándar y 15,99 € en Prémium. Son precios mensuales publicados por cada servicio, no una estimación de GuíaTV.</p>
+<table><thead><tr><th>Servicio</th><th>Precio que hemos podido verificar</th><th>Qué significa para la decisión</th></tr></thead><tbody>
+<tr><td>Netflix</td><td>Desde 8,99 €/mes</td><td>La entrada más barata incluye anuncios; el precio aumenta si necesitas más pantallas o 4K.</td></tr>
+<tr><td>Disney+</td><td>6,99 €/mes con anuncios; 10,99 €/mes Estándar; 15,99 €/mes Prémium</td><td>Es competitivo para familias y franquicias; compara la calidad de imagen y las pantallas, no solo la tarifa de entrada.</td></tr>
+<tr><td>Prime Video</td><td>La tarifa depende de la modalidad y del país de residencia</td><td>Amazon confirma que el catálogo incluido cambia y que existen alquileres, compras y suscripciones adicionales: hay que distinguirlos antes de comparar.</td></tr>
+</tbody></table>
+<p>Max no publica una tarifa única aplicable a todos los proveedores: su centro de ayuda advierte que el precio varía según el plan y el intermediario. Por eso no rellenamos una cifra que pueda quedar desactualizada; el enlace de suscripción es la comprobación final.</p></section>
+<section><h2>Cuál compensa según tu uso</h2>
+<p><strong>Si quieres gastar lo mínimo:</strong> empieza por un plan con anuncios solo si sus restricciones no te molestan. El ahorro mensual deja de serlo si el catálogo no cubre lo que realmente ves. <strong>Si ves cine y series varias noches:</strong> calcula el coste por sesión y revisa primero el catálogo de <a href="/plataformas">GuíaTV</a>; una plataforma que utilizas cuatro veces por semana puede salir mejor que dos servicios baratos que apenas abres. <strong>Si es para una familia:</strong> pesan más las reproducciones simultáneas, los perfiles y la calidad de imagen que la tarifa inicial.</p>
+<p>Nuestra recomendación práctica es rotar una suscripción: conserva el servicio que resuelve tu hábito principal y activa otro solo durante el mes en el que tenga estrenos que quieras ver. El <a href="/comparador-streaming">comparador de GuíaTV</a> sirve para contrastar el coste; el catálogo y la disponibilidad deben comprobarse en la ficha del título.</p></section>
+<section><h2>Fuentes y fecha de verificación</h2>
+<p>Precios y condiciones comprobados el <time datetime="2026-08-31">31 de agosto de 2026</time> en las páginas oficiales de <a href="https://www.netflix.com/es/n/9878a145-7b3e-4568-a660-338d1b5f7d5d" rel="nofollow noopener">Netflix</a>, <a href="https://www.disneyplus.com/es-es" rel="nofollow noopener">Disney+</a>, <a href="https://www.primevideo.com/help/?language=dpb58f0815496d414184ce48423eec73c8dp&amp;nodeId=GD5REBNJD74BURF6" rel="nofollow noopener">Prime Video</a> y <a href="https://help.max.com/es-es/answer/detail/000002543" rel="nofollow noopener">Max</a>. Las promociones temporales no se usan para declarar qué servicio es más barato.</p></section>`,
+  'mejores-series-netflix': `
+<section><h2>Cómo leer este ranking sin confundirlo con una lista automática</h2>
+<p>Una serie entra en esta selección por una razón concreta: debe tener un punto de entrada claro y aportar algo distinto al resto de la lista. No ordenamos por una cifra de popularidad que Netflix no haya publicado para España ni convertimos el carrusel de tendencias en una recomendación. La selección editorial debe contrastarse con la disponibilidad actual en el <a href="/plataformas?platforms=Netflix&amp;availability=streaming&amp;types=movie,series">catálogo de Netflix en GuíaTV</a>.</p>
+<p>Para elegir, decide primero el tipo de sesión: una temporada corta para terminar pronto, una ficción de recorrido para varios días o una serie familiar que admita edades distintas. Después comprueba la ficha y la plataforma. Este orden evita recomendar un título solo porque aparece muchas veces en titulares.</p></section>
+<section><h2>Lo que sí verificamos y lo que no afirmamos</h2>
+<ul><li>La plataforma y el tipo de contenido se contrastan con el catálogo disponible en GuíaTV.</li><li>La sinopsis, el reparto y la fecha de estreno se consideran datos del título y pueden cambiar; no sustituyen la selección editorial.</li><li>No afirmamos que una serie sea «la más vista» sin una fuente pública y localizada para España.</li><li>Si un título deja de estar disponible, se retira de la recomendación en la siguiente revisión en vez de conservarlo por inercia.</li></ul>
+<p>Netflix confirma que su catálogo depende de la región y cambia con el tiempo. Ese es el motivo por el que el ranking enlaza a una vista viva y muestra una fecha de comprobación: una recomendación útil debe poder auditarse, no quedarse congelada en la fecha de publicación.</p></section>
+<section><h2>Fuentes, autoría y última revisión</h2>
+<p>Esta pieza está firmada por el <strong>Equipo editorial Guía TV</strong>. Disponibilidad: catálogo interno de GuíaTV. Información sobre planes, región y cambios de catálogo: <a href="https://help.netflix.com/es-es/node/412" rel="nofollow noopener">Centro de ayuda oficial de Netflix</a>. Última verificación editorial: <time datetime="2026-08-31">31 de agosto de 2026</time>.</p></section>`,
+  'que-ver-hoy-en-tv-y-streaming': `
+<section><h2>La respuesta útil para hoy sale de la programación real</h2>
+<p>Este artículo no sustituye una parrilla que cambia durante el día. Para saber qué puedes ver ahora, abre <a href="/programacion-tv/que-ver-hoy">Qué ver hoy</a>: la página reúne emisiones del EPG de GuíaTV y permite continuar hacia la ficha del programa, película o serie. Si lo que buscas es algo que empiece esta noche, usa la <a href="/programacion-tv/guia-canales">guía de canales</a> y revisa la hora local antes de decidir.</p>
+<p>Nuestra forma de recomendar es sencilla: primero disponibilidad y horario; después encaje. Una película que empieza en diez minutos resuelve mejor una sesión corta que una serie de ocho episodios, aunque esta última tenga mejores reseñas. Para streaming, confirma el servicio en la ficha porque los derechos cambian por país y fecha. Para fútbol, consulta la sección de <a href="/deportes/futbol">fútbol</a> y su información de emisión: no damos por hecho que una competición se vea en abierto.</p></section>
+<section><h2>Cómo elaboramos la selección</h2>
+<ol><li>Consultamos la programación y los contenidos disponibles en la lectura interna de GuíaTV.</li><li>Separamos emisión en directo, contenido ya empezado y catálogo bajo demanda.</li><li>Explicamos por qué una opción encaja con el tiempo y el tipo de espectador, en lugar de repetir una sinopsis.</li><li>Enlazamos a la fuente operativa para que puedas comprobar la hora, el canal o la plataforma antes de reproducir.</li></ol>
+<p>La parrilla se actualiza con frecuencia. Última revisión editorial de este criterio: <time datetime="2026-08-31">31 de agosto de 2026</time>. Las horas, canales y emisiones concretas deben verificarse en la guía viva justo antes de verlas.</p></section>
+<section><h2>Fuentes y metodología</h2><p>Fuente principal para horarios: EPG interno de GuíaTV y su vista pública de programación. Fuente principal para disponibilidad de streaming: catálogo interno enlazado desde <a href="/plataformas">Plataformas</a>. No se inventan horarios ni se presenta una recomendación genérica como si fuera una emisión confirmada.</p></section>`
+};

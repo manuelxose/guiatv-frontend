@@ -88,6 +88,11 @@ export interface CatalogItem {
     channelIcon?: string;
     start: string;
     end: string;
+    /** Title of the program airing in this slot — show this, not the channel name. */
+    title: string;
+    catalogId: string;
+    detailPath: string;
+    liveNow?: boolean;
   }>;
   userInteraction?: CatalogUserInteraction;
   cast?: Array<{ name: string; character?: string; profile?: string }>;
@@ -97,6 +102,22 @@ export interface CatalogItem {
     friendsWhoWatched: number;
     avgFriendRating?: number;
   };
+  /** true when the backend deliberately left related/social/providers/
+   * userInteraction out of this response to stay on the fast path — fetch
+   * them via `CatalogService.getDetailEnrichment(catalogId)`. */
+  enrichmentPending?: boolean;
+}
+
+/** Secondary detail data fetched separately from (and after) the critical
+ * `getDetail`/`getBySlug` response — see `enrichmentPending`. */
+export interface CatalogDetailEnrichment {
+  related: CatalogItem[];
+  socialSummary?: {
+    friendsWhoWatched: number;
+    avgFriendRating?: number;
+  };
+  whereToWatch?: CatalogItem['whereToWatch'];
+  userInteraction?: CatalogUserInteraction;
 }
 
 export interface CatalogSuggestion {
@@ -152,19 +173,36 @@ interface CooldownEntry {
   status?: number;
 }
 
+// Bootstrap-only fallback, used while the backend-computed `availableGenres`
+// facet is empty (see CatalogService.query). Keep in sync with the canonical
+// genre labels in apps/backend/src/shared/taxonomy/genreTaxonomy.ts — the
+// frontend and backend are separate deployables so this list is hand-synced
+// rather than imported.
 export const FALLBACK_CATALOG_GENRES: string[] = [
   'Cine',
   'Series',
   'Acción',
-  'Drama',
+  'Aventura',
   'Comedia',
-  'Terror',
-  'Ciencia ficción',
-  'Documental',
-  'Deportes',
-  'Infantil',
+  'Drama',
   'Suspense',
+  'Terror',
+  'Crimen',
+  'Misterio',
   'Romance',
+  'Ciencia ficción',
+  'Fantasía',
+  'Guerra',
+  'Western',
+  'Animación',
+  'Familia',
+  'Infantil',
+  'Documental',
+  'Historia',
+  'Música',
+  'Reality',
+  'Deportes',
+  'Noticias',
 ];
 
 export { FALLBACK_CATALOG_PLATFORMS } from '../data/catalog-platforms.data';
@@ -300,6 +338,57 @@ export class CatalogService {
           )
           .pipe(map((resp) => resp?.data || null)),
     }).pipe(map((state) => state.data));
+  }
+
+  /**
+   * Secondary detail data (related titles, providers, social summary, user
+   * interaction) for a page whose critical response came back with
+   * `enrichmentPending: true`. Cached/deduped the same way as `getDetail`,
+   * but on its own key/TTL so a slow or failing enrichment call never
+   * invalidates the already-rendered critical detail.
+   */
+  getDetailEnrichment(catalogId: string): Observable<CatalogDetailEnrichment> {
+    const empty: CatalogDetailEnrichment = { related: [] };
+    if (!catalogId) {
+      return of(empty);
+    }
+
+    return this.requestState<CatalogDetailEnrichment>({
+      key: this.buildCacheKey('detail', `enrichment:${catalogId}`),
+      ttlMs: this.ttlByKind.detail,
+      fallbackData: empty,
+      requestFactory: () =>
+        this.http
+          .get<ApiResponse<CatalogDetailEnrichment>>(
+            `${this.baseUrl}/catalog/${encodeURIComponent(catalogId)}/enrichment`,
+            { headers: this.getAuthHeaders() }
+          )
+          .pipe(map((resp) => resp?.data || empty)),
+    }).pipe(map((state) => state.data));
+  }
+
+  /**
+   * Speculatively warms the detail cache/in-flight request for `catalogId`
+   * ahead of navigation (hover, pointerdown, or viewport-intent on a card),
+   * so that when the user actually lands on the detail route `getDetail`
+   * resolves from cache instead of starting a fresh request. Safe to call
+   * repeatedly — `getDetail` already dedupes and caches internally; errors
+   * are swallowed since a failed *speculative* prefetch must never surface
+   * anywhere, the real navigation's own request will simply try again.
+   */
+  prefetchDetail(catalogId: string | undefined | null): void {
+    if (!catalogId || !this.isBrowser) {
+      return;
+    }
+    this.getDetail(catalogId).subscribe({ error: () => undefined });
+  }
+
+  /** Same speculative warm-up as `prefetchDetail`, keyed by slug route instead. */
+  prefetchBySlug(contentType: CatalogContentType | undefined | null, slug: string | undefined | null): void {
+    if (!contentType || !slug || !this.isBrowser) {
+      return;
+    }
+    this.getBySlug(contentType, slug).subscribe({ error: () => undefined });
   }
 
   getForYou(limit = 12): Observable<any[]> {

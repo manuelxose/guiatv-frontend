@@ -66,11 +66,11 @@
 .prose {
   /* Optimización para lectura */
   line-height: 1.75;
-  color: #d1d5db;
+  color: var(--portal-text-muted);
 }
 
 .prose img {
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   margin-top: 2rem;
   margin-bottom: 2rem;
 }
@@ -81,7 +81,7 @@
 }
 
 .prose figcaption {
-  color: #9ca3af;
+  color: var(--portal-text-faint);
   font-size: 0.875rem;
   text-align: center;
   margin-top: 0.75rem;
@@ -105,7 +105,7 @@
   max-width: 100%;
   height: auto;
   aspect-ratio: 16 / 9;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
 }
 
 /* ============================================
@@ -119,13 +119,14 @@
 
 ::-webkit-scrollbar-track {
   background: var(--portal-surface-strong);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb {
+  /* Decorative neutral-gray gradient, not a brand/token color */
   background: linear-gradient(135deg, #6b7280, #9ca3af);
-  border-radius: 4px;
-  transition: all 0.3s ease;
+  border-radius: var(--radius-sm);
+  transition: background var(--motion-base) var(--motion-ease);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -182,6 +183,7 @@ img {
 
 /* Lazy loading placeholder */
 .lazy-placeholder {
+  /* Decorative neutral-gray shimmer, independent of theme tokens */
   background: linear-gradient(
     90deg,
     rgba(55, 65, 81, 0.3) 25%,
@@ -206,9 +208,9 @@ img {
    ============================================ */
 
 :focus-visible {
-  outline: 2px solid rgba(220, 38, 38, 0.7);
+  outline: 2px solid var(--spotify-green);
   outline-offset: 2px;
-  border-radius: 0.25rem;
+  border-radius: var(--radius-sm);
 }
 
 /* ============================================
@@ -274,6 +276,7 @@ img {
    ============================================ */
 
 .skeleton {
+  /* Decorative neutral-gray shimmer, independent of theme tokens */
   background: linear-gradient(
     90deg,
     rgba(55, 65, 81, 0.4) 25%,
@@ -282,7 +285,7 @@ img {
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
 }
 
 @keyframes skeleton-loading {
@@ -309,7 +312,7 @@ script[type="application/ld+json"] {
   left: -9999px;
   z-index: 999;
   padding: 1rem;
-  background-color: #dc2626;
+  background-color: var(--status-live);
   color: white;
   text-decoration: none;
 }

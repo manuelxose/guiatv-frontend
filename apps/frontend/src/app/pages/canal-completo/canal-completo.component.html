@@ -11,23 +11,21 @@
             <div class="h-4 w-2/3 rounded-full bg-[var(--portal-surface-strong)] animate-pulse"></div>
           </div>
         </div>
-        <div class="grid gap-3 sm:grid-cols-3">
-          <div *ngFor="let _ of [1, 2, 3]" class="h-28 rounded-[1.5rem] bg-[var(--portal-surface-strong)] animate-pulse"></div>
-        </div>
-        <div class="space-y-3">
-          <div *ngFor="let _ of [1, 2, 3]" class="h-24 rounded-[1.5rem] bg-[var(--portal-surface-strong)] animate-pulse"></div>
-        </div>
+        <app-unified-skeleton-block [count]="3" [columns]="3" cardHeight="7rem"></app-unified-skeleton-block>
+        <app-unified-skeleton-block [count]="3" [columns]="1" cardHeight="6rem"></app-unified-skeleton-block>
       </div>
       <div class="hidden h-80 rounded-[1.75rem] bg-[var(--portal-surface-strong)] animate-pulse lg:block"></div>
     </div>
   </div>
 
-  <div *ngIf="!isLoading && error" class="mx-auto flex min-h-[70vh] max-w-3xl flex-col items-center justify-center px-6 text-center">
-    <p class="text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Canal no disponible</p>
-    <h1 class="mt-3 text-3xl font-black tracking-tight text-[var(--portal-text)]">No hemos podido cargar esta señal</h1>
-    <p class="mt-3 max-w-xl text-sm leading-7 text-[var(--portal-text-muted)]">
-      {{ error }}
-    </p>
+  <div *ngIf="!isLoading && error" class="mx-auto min-h-[70vh] max-w-3xl px-6 py-20">
+    <app-unified-async-state
+      [kind]="channelNotFound ? 'empty' : 'error'"
+      [title]="channelNotFound ? 'Canal no disponible' : 'No hemos podido cargar esta señal'"
+      [message]="error"
+      [actionLabel]="channelNotFound ? undefined : 'Reintentar'"
+      (action)="retry()"
+    ></app-unified-async-state>
     <a
       routerLink="/programacion-tv/guia-canales"
       class="mt-6 inline-flex min-h-[44px] items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-5 text-sm font-semibold text-[var(--portal-text)]"
@@ -52,10 +50,12 @@
         <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
           <div class="space-y-6">
             <div class="flex items-start gap-4">
-              <div class="flex h-20 w-20 flex-none items-center justify-center rounded-[1.5rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-3 shadow-[0_16px_40px_rgba(2,6,23,0.45)]">
+              <div class="flex h-20 w-20 flex-none items-center justify-center rounded-[1.5rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-3 shadow-[var(--shadow-lg)]">
+                <span *ngIf="!logo" class="text-xl font-black text-[var(--portal-text-soft)]" aria-hidden="true">{{ canal.slice(0, 2) }}</span>
                 <img
+                  *ngIf="logo"
                   [src]="logo"
-                  [alt]="canal"
+                  [alt]="'Logotipo de ' + canal"
                   class="max-h-full max-w-full object-contain"
                   (error)="onChannelLogoError($event)"
                 />
@@ -82,6 +82,26 @@
                 <p class="mt-3 max-w-3xl text-sm leading-7 text-[var(--portal-text-soft)]">
                   {{ channelDescription || ('Consulta qué están emitiendo ahora, qué viene después y la parrilla completa de ' + canal + ' con acceso directo a cada programa.') }}
                 </p>
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <span class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 py-1 text-[11px] font-semibold text-[var(--portal-text-soft)]">{{ accessLabel() }}</span>
+                  <span class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 py-1 text-[11px] font-semibold text-[var(--portal-text-soft)]">{{ distributionLabel() }}</span>
+                  <span *ngFor="let provider of providerLabels" class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 py-1 text-[11px] font-semibold text-[var(--portal-text-soft)]">{{ provider }}</span>
+                  <span *ngIf="resolutionLabel() as resolution" class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 py-1 text-[11px] font-semibold text-[var(--portal-text-soft)]">{{ resolution }}</span>
+                  <span *ngFor="let facet of contentFacetLabels" class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] px-3 py-1 text-[11px] font-semibold text-[var(--portal-text-soft)]">{{ facet }}</span>
+                </div>
+
+                <div *ngIf="channelAffiliateOffers.length" class="mt-4 flex flex-wrap items-center gap-3">
+                  <app-affiliate-cta
+                    *ngFor="let offer of channelAffiliateOffers"
+                    [offer]="offer"
+                    variant="primary"
+                    [appAffiliateImpression]="offer"
+                    [appAffiliateImpressionContext]="channelAffiliateImpressionContext()"
+                    [appAffiliateImpressionPage]="channelPagePath"
+                  ></app-affiliate-cta>
+                  <app-affiliate-disclosure [sponsored]="showChannelSponsoredDisclosure" [compact]="true"></app-affiliate-disclosure>
+                </div>
 
                 <div class="mt-4 flex flex-wrap gap-2">
                   <button
@@ -188,7 +208,7 @@
               />
             <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-center gap-2">
-                <span class="rounded-full border border-red-500/40 bg-red-600/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-white">
+                <span class="rounded-full border border-[var(--accent-live)]/40 bg-[var(--accent-live)]/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-white">
                   Ahora
                 </span>
                 <span class="rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] px-3 py-1 text-[11px] font-semibold text-[var(--portal-text-soft)]">
@@ -202,6 +222,20 @@
                 {{ formatTimeRange(liveProgram) }}
                 <span *ngIf="liveProgram.durationMinutes"> · {{ liveProgram.durationMinutes }} min</span>
               </p>
+              <div
+                *ngIf="liveProgram.liveNow"
+                class="mt-4"
+                role="progressbar"
+                aria-label="Progreso de la emisión actual"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                [attr.aria-valuenow]="progressPercentage(liveProgram)"
+              >
+                <div class="h-1.5 overflow-hidden rounded-full bg-[var(--portal-surface-strong)]">
+                  <div class="h-full rounded-full bg-[var(--accent-live)]" [style.width.%]="progressPercentage(liveProgram)"></div>
+                </div>
+                <p class="mt-2 text-xs text-[var(--portal-text-muted)]">{{ progressPercentage(liveProgram) }}% emitido</p>
+              </div>
               <p class="mt-4 max-w-2xl text-sm leading-7 text-[var(--portal-text-soft)]">
                 {{ liveProgram.description || 'Programa destacado en emisión ahora mismo en este canal.' }}
               </p>
@@ -209,7 +243,7 @@
               <div class="mt-5 flex flex-wrap gap-3">
                 <a
                   [routerLink]="[liveProgram.detailPath]"
-                  class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-red-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+                  class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[var(--accent-live)] px-5 text-sm font-semibold text-white transition-colors hover:opacity-90"
                 >
                   Ver ficha completa
                 </a>
@@ -228,26 +262,11 @@
         <aside class="rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-bg-deep)]/78 p-5">
           <p class="text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Canales relacionados</p>
           <div class="mt-4 space-y-3">
-            <a
+            <app-channel-card
               *ngFor="let channel of relatedChannels; trackBy: trackChannel"
-              [routerLink]="channel.link"
-              class="flex items-center gap-3 rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] p-3 transition-colors hover:border-[var(--portal-border-strong)] hover:bg-[var(--portal-surface)]"
-            >
-              <div class="flex h-12 w-12 flex-none items-center justify-center rounded-xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)]/90 p-2">
-                <img
-                  [src]="channel.logo"
-                  [alt]="channel.name"
-                  class="max-h-full max-w-full object-contain"
-                  (error)="onChannelLogoError($event)"
-                />
-              </div>
-              <div class="min-w-0">
-                <p class="truncate text-sm font-semibold text-[var(--portal-text)]">{{ channel.name }}</p>
-                <p class="line-clamp-2 text-xs text-[var(--portal-text-muted)]">
-                  {{ channel.description || 'Explora la programación completa de este canal.' }}
-                </p>
-              </div>
-            </a>
+              [entry]="channel"
+              [headingLevel]="3"
+            ></app-channel-card>
           </div>
         </aside>
       </div>

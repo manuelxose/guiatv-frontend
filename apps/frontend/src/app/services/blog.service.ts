@@ -8,6 +8,7 @@ import {
   tap,
   catchError,
   shareReplay,
+  throwError,
   retryWhen,
   scan,
   concatMap,
@@ -148,7 +149,7 @@ export class BlogService {
         );
         this.setPosts([]);
         this.cacheTimestamp = now;
-        return of([]);
+        return throwError(() => error);
       }),
       shareReplay(1)
     );
@@ -170,7 +171,7 @@ export class BlogService {
       }),
       catchError((error) => {
         console.error('Error fetching post by slug:', error);
-        return of([]);
+        return throwError(() => error);
       })
     );
   }

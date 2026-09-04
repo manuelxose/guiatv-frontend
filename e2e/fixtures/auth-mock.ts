@@ -46,6 +46,16 @@ const MOCK_PROFILE = {
   stats: { followers: 0, following: 0, listsCreated: 0, ratings: 0 },
 };
 
+const MOCK_CONVERSATIONS = [{
+  conversationId: 'e2e-conversation-1',
+  sessionTitle: 'Series para el fin de semana',
+  lastUsedAt: new Date().toISOString(),
+  pinned: false,
+  archived: false,
+  messageCount: 4,
+  lastMessage: 'Opciones en Netflix y Max',
+}];
+
 export async function mockAuthBackend(context: BrowserContext): Promise<void> {
   await context.route('**/v2/**', async (route) => {
     const request = route.request();
@@ -62,6 +72,37 @@ export async function mockAuthBackend(context: BrowserContext): Promise<void> {
 
     if (method === 'GET' && url.includes('/user/profile')) {
       return route.fulfill({ json: { success: true, data: { profile: MOCK_PROFILE } } });
+    }
+
+    if (method === 'PATCH' && url.includes('/user/profile')) {
+      const updates = request.postDataJSON() || {};
+      return route.fulfill({
+        json: { success: true, data: { profile: { ...MOCK_PROFILE, ...updates } } },
+      });
+    }
+
+    if (method === 'GET' && url.includes('/ai/memory')) {
+      return route.fulfill({
+        json: {
+          success: true,
+          data: {
+            memory: {
+              likedGenres: [], dislikedGenres: [], preferredPlatforms: [], avoidedPlatforms: [],
+              preferredDurations: [], preferredViewingContexts: [], favoriteFranchisesOrTitles: [],
+              recentTopics: [], negativeSignals: [],
+            },
+          },
+        },
+      });
+    }
+
+    if (method === 'PATCH' && url.includes('/ai/memory')) {
+      const updates = request.postDataJSON() || {};
+      return route.fulfill({ json: { success: true, data: { memory: updates } } });
+    }
+
+    if (method === 'GET' && url.includes('/ai/conversations')) {
+      return route.fulfill({ json: { success: true, data: MOCK_CONVERSATIONS } });
     }
 
     // Every other /v2/* call the profile page fires (lists, favorites,

@@ -1,0 +1,21 @@
+[Unit]
+OnFailure=guiatv-crash-alert@%n.service
+Description=Guiatv API
+After=network.target mongod.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/guiatv/current/apps/backend
+EnvironmentFile=/etc/guiatv/api.env
+Environment=NODE_OPTIONS=--max-old-space-size=1536
+# Hard memory ceiling: if the API accumulates memory over time (GC thrashing
+# was the root cause of ~1-1.5s per-endpoint latency), systemd kills and
+# Restart=always brings a fresh process back.
+MemoryMax=2G
+ExecStart=/usr/bin/node /var/www/guiatv/current/apps/backend/dist/server/index.js
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

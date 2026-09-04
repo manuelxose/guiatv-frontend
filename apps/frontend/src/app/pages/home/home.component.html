@@ -20,10 +20,12 @@
     <app-unified-skeleton-block [count]="6" [columns]="3" cardHeight="15rem"></app-unified-skeleton-block>
   </section>
 
-  <section *ngIf="error()" class="home-page__error">
-    <h2>Portada no disponible</h2>
-    <p>{{ error() }}</p>
-  </section>
+  <app-unified-async-state
+    *ngIf="error()"
+    kind="error"
+    title="Portada no disponible"
+    [message]="error() || 'No se pudo cargar la portada.'"
+  ></app-unified-async-state>
 
   <ng-container *ngIf="!loading() && !error()">
     <section *ngIf="liveNow().length" class="home-page__module">
@@ -41,6 +43,23 @@
           variant="compact"
           [showActions]="false"
         ></app-unified-program-card>
+      </div>
+    </section>
+
+    <section *ngIf="featuredChannels().length" class="home-page__module">
+      <app-unified-section-header
+        eyebrow="Canales"
+        title="Señales en abierto y de pago"
+        linkLabel="Ver todos los canales"
+        [linkPath]="appPaths.channels"
+      ></app-unified-section-header>
+
+      <div class="home-page__channel-grid">
+        <app-channel-card
+          *ngFor="let entry of featuredChannels()"
+          [entry]="entry"
+          [headingLevel]="3"
+        ></app-channel-card>
       </div>
     </section>
 
@@ -88,19 +107,42 @@
       </div>
     </section>
 
-    <section *ngIf="streamingHighlights().length" class="home-page__module">
+    <section *ngIf="movieHighlights().length" class="home-page__module">
       <app-unified-section-header
-        eyebrow="Streaming en foco"
-        title="Catálogo visible antes que los filtros"
-        linkLabel="Ver plataformas"
-        [linkPath]="appPaths.platforms"
+        eyebrow="Películas"
+        title="Cine para ver hoy"
+        linkLabel="Explorar películas"
+        [linkPath]="appPaths.explore"
+        [linkQueryParams]="{ types: 'movie' }"
       ></app-unified-section-header>
 
       <div class="home-page__grid">
         <app-unified-program-card
-          *ngFor="let item of streamingHighlights()"
+          *ngFor="let item of movieHighlights(); let i = index"
           [item]="item"
           variant="streaming"
+          [enableAffiliateCta]="i < 4"
+          affiliatePlacement="home"
+        ></app-unified-program-card>
+      </div>
+    </section>
+
+    <section *ngIf="seriesHighlights().length" class="home-page__module">
+      <app-unified-section-header
+        eyebrow="Series"
+        title="Series para continuar o descubrir"
+        linkLabel="Explorar series"
+        [linkPath]="appPaths.explore"
+        [linkQueryParams]="{ types: 'series' }"
+      ></app-unified-section-header>
+
+      <div class="home-page__grid">
+        <app-unified-program-card
+          *ngFor="let item of seriesHighlights(); let i = index"
+          [item]="item"
+          variant="streaming"
+          [enableAffiliateCta]="i < 4"
+          affiliatePlacement="home"
         ></app-unified-program-card>
       </div>
     </section>
@@ -114,7 +156,12 @@
       ></app-unified-section-header>
 
       <div class="home-page__grid home-page__grid--sports">
-        <a class="home-page__football-cta" [routerLink]="appPaths.sports">
+        <app-football-match-card
+          *ngFor="let match of footballHighlights()"
+          [match]="match"
+          variant="compact"
+        ></app-football-match-card>
+        <a *ngIf="!footballHighlights().length" class="home-page__football-cta" [routerLink]="appPaths.sports">
           <span class="home-page__football-cta-title">Fútbol hoy</span>
           <span class="home-page__football-cta-sub">
             Partidos en directo, horarios, competiciones y dónde ver cada partido.

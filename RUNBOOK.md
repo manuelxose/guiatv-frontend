@@ -21,6 +21,22 @@
 sudo /var/www/guiatv/deploy-guiatv.sh
 ```
 
+## Deploy automatico (GitHub Actions)
+
+El workflow `.github/workflows/deploy.yml` despliega a produccion en cada push a `main`
+(o manualmente desde la pestaña Actions con `workflow_dispatch`).
+
+- CI hace SSH con el usuario `deploy` del VPS (clave dedicada, sin password).
+- Ejecuta `sudo /var/www/guiatv/deploy-guiatv.sh` (build + release + restart + smoke).
+- El usuario `deploy` solo puede ejecutar los 3 scripts de deploy via sudo
+  (`/etc/sudoers.d/90-deploy`), nada mas.
+- Secretos del repo: `DEPLOY_SSH_HOST` (109.123.248.164), `DEPLOY_SSH_USER` (deploy),
+  `DEPLOY_SSH_KEY` (clave privada `id_ed25519_deploy_contabo`).
+- Si el smoke falla, el script sale con error y el workflow queda en rojo;
+  el rollback es manual (ver seccion Rollback).
+- Config de servidor versionada en `infra/` (nginx, systemd) para que los cambios
+  de operacion pasen por git.
+
 Con bootstrap DB (solo cuando haga falta):
 ```bash
 sudo BOOTSTRAP_DB=1 /var/www/guiatv/deploy-guiatv.sh

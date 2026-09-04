@@ -57,6 +57,7 @@ export class SitemapService {
       { loc: '/programacion-tv/peliculas', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/programacion-tv/series', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/programacion-tv/guia-canales', lastmod: today, changefreq: 'daily', priority: 0.9 },
+      { loc: '/canales', lastmod: today, changefreq: 'hourly', priority: 0.8 },
       { loc: '/deportes', lastmod: today, changefreq: 'hourly', priority: 0.9 },
       
       // Editorial - medium-high priority

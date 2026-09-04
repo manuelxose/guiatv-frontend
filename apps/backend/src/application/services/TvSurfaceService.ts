@@ -4,6 +4,7 @@ import {
   selectCurrentTvItems,
   selectNextTvItems,
   selectPrimeTimeTvItems,
+  tvReadChannelMatchesGroup,
   TvReadQueryService,
 } from './TvReadQueryService';
 import {
@@ -146,7 +147,7 @@ function filterGuideChannels(
     if (!group) {
       return !shouldHideFromMixedGuide(summary.channel.group);
     }
-    return normalizeTvToken(summary.channel.group, ' ') === group;
+    return tvReadChannelMatchesGroup(summary.channel, group);
   });
 }
 
@@ -158,7 +159,7 @@ function filterGuideItemsByGroup(
     if (!group) {
       return !shouldHideFromMixedGuide(item.channel.group);
     }
-    return normalizeTvToken(item.channel.group, ' ') === group;
+    return tvReadChannelMatchesGroup(item.channel, group);
   });
 }
 
@@ -335,15 +336,21 @@ export class TvSurfaceService {
     }
 
     const response = await this.tvReadQueryService.getChannelDetail(channelId, date || 'today', 'day');
-    const channel = response.channels[0]?.channel || response.items[0]?.channel || null;
-    const relatedSource = channel
-      ? await this.tvReadQueryService.getChannels(date || 'today', channel.group)
+    const detailChannel = response.channels[0]?.channel || response.items[0]?.channel || null;
+    const relatedSource = detailChannel
+      ? await this.tvReadQueryService.getChannels(date || 'today', detailChannel.group)
       : { channels: [] };
+    const channel = detailChannel
+      ? (relatedSource.channels || []).find((entry) =>
+          entry.channel.id === detailChannel.id ||
+          entry.channel.normalizedName === detailChannel.normalizedName
+        )?.channel || detailChannel
+      : null;
     const current = selectCurrentTvItems(response.items)[0];
     const next = selectNextTvItems(response.items, new Date())[0];
     const tonightItems = buildChannelPrimeTimeItems(response.items, response.date);
     const relatedChannels = (relatedSource.channels || [])
-      .filter((entry) => entry.channel.id !== channelId)
+      .filter((entry) => entry.channel.id !== channel?.id)
       .slice(0, 8);
 
     const surface: TvChannelSurfaceDTO = {

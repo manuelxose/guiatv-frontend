@@ -157,3 +157,44 @@ test('TvSurfaceService guide surface deduplicates current items per channel', as
   assert.equal(queryCalls, 1);
   assert.deepEqual(surface.meta.groupCounts, { tdt: 2, cable: 4 });
 });
+
+test('TvSurfaceService channel surface uses canonical directory metadata', async () => {
+  const item = buildItem('amc-a', 'amc', 200, 'Cine AMC');
+  const canonicalChannel = {
+    ...item.channel,
+    distribution: 'cable' as const,
+    access: 'pay' as const,
+    operator: 'AMC Networks',
+    providers: ['AMC Networks'],
+    contentFacets: ['movies' as const],
+    quality: { resolution: 'hd' as const, timeshift: false },
+    capabilities: { linear: true, catchup: true, streaming: false },
+    provenance: { classification: 'registry' as const, sourceIds: ['amc'] },
+  };
+  const tvReadQueryService = {
+    getChannelDetail: async () => ({
+      date: '20260326',
+      view: 'day',
+      items: [item],
+      channels: [{ channel: item.channel, counts: { total: 1, live: 1, tonight: 0 } }],
+      filters: {},
+      meta: { total: 1, limit: 1000, generatedAt: new Date().toISOString() },
+    }),
+    getChannels: async () => ({
+      channels: [
+        { channel: canonicalChannel, current: item, counts: { total: 1, live: 1, tonight: 0 } },
+      ],
+    }),
+  } as any;
+  const cacheRepository = {
+    get: async () => null,
+    set: async () => undefined,
+  } as any;
+
+  const service = new TvSurfaceService(tvReadQueryService, cacheRepository);
+  const surface = await service.getChannelSurface('amc', 'today');
+
+  assert.equal(surface.channel?.access, 'pay');
+  assert.equal(surface.channel?.operator, 'AMC Networks');
+  assert.equal(surface.channel?.quality?.resolution, 'hd');
+});

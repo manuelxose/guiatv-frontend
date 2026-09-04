@@ -2,14 +2,14 @@
   <div *ngIf="safeLdHtml" [innerHTML]="safeLdHtml"></div>
 
   <header class="head">
-    <h1 class="head__title">Buscar en fútbol</h1>
+    <h1 class="head__title">{{ teamsOnly() ? 'Buscar equipos' : 'Buscar en fútbol' }}</h1>
     <form class="search" (ngSubmit)="onSubmit()">
-      <label class="sr-only" for="football-search-input">Buscar equipos, partidos o competiciones</label>
+      <label class="sr-only" for="football-search-input">{{ teamsOnly() ? 'Buscar un equipo de fútbol' : 'Buscar equipos, partidos o competiciones' }}</label>
       <input
         id="football-search-input"
         type="search"
         class="search__input"
-        placeholder="Equipos, partidos, competiciones…"
+        [placeholder]="teamsOnly() ? 'Nombre del equipo…' : 'Equipos, partidos, competiciones…'"
         [ngModel]="inputValue()"
         (ngModelChange)="inputValue.set($event)"
         name="q"
@@ -64,14 +64,14 @@
 
       <div *ngIf="!hasResults()" class="empty">
         <p class="empty__title">Sin resultados para "{{ query() }}"</p>
-        <p class="empty__sub">Prueba con el nombre de un equipo, competición o partido.</p>
+        <p class="empty__sub">{{ teamsOnly() ? 'Prueba con el nombre completo o la ciudad del equipo.' : 'Prueba con el nombre de un equipo, competición o partido.' }}</p>
       </div>
     </ng-container>
   </ng-container>
 
   <ng-template #prompt>
     <div class="empty">
-      <p class="empty__title">Busca un equipo, partido o competición</p>
+      <p class="empty__title">{{ teamsOnly() ? 'Escribe el nombre del equipo que quieres encontrar' : 'Busca un equipo, partido o competición' }}</p>
     </div>
   </ng-template>
 </div>

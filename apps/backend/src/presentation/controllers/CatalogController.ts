@@ -35,6 +35,22 @@ export class CatalogController {
     res.status(200).json(successResponse(result));
   }
 
+  /**
+   * Secondary, deferrable detail data (related titles, providers, social
+   * summary, user interaction) — split out of `getDetail` so the primary
+   * response never waits on it. Called by the frontend after the critical
+   * detail response has already rendered.
+   */
+  async getDetailEnrichment(req: Request, res: Response): Promise<void> {
+    const { catalogId } = req.params;
+    const result = await this.catalogService.getDetailEnrichment(
+      catalogId,
+      (req as AuthenticatedRequest).user?.id
+    );
+
+    res.status(200).json(successResponse(result));
+  }
+
   async getPlatforms(_req: Request, res: Response): Promise<void> {
     res.status(200).json(
       successResponse({

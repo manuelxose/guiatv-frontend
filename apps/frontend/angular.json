@@ -40,6 +40,11 @@
                 "glob": "robots.txt",
                 "input": "src",
                 "output": "/"
+              },
+              {
+                "glob": "ads.txt",
+                "input": "src",
+                "output": "/"
               }
             ],
             "styles": [
@@ -132,6 +137,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
+            "karmaConfig": "karma.conf.cjs",
             "polyfills": [
               "zone.js",
               "zone.js/testing"

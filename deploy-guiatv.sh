@@ -20,8 +20,8 @@ wait_http() {
   local i
   for i in {1..30}; do
     local code
-    code=$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)
-    if [ "$code" != "000" ]; then
+    code=$(curl --max-time 5 -s -o /dev/null -w "%{http_code}" "$url" || true)
+    if [[ "$code" =~ ^2[0-9][0-9]$ ]]; then
       return 0
     fi
     sleep 2
@@ -87,7 +87,7 @@ verify_local_ssr_assets() {
 
   local asset code
   for asset in "${assets[@]}"; do
-    code="$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${SSR_PORT}${asset}" || true)"
+    code="$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:${SSR_PORT}${asset}" || true)"
     if [ "${code}" != "200" ]; then
       echo "Referenced asset failed: ${asset} -> ${code}"
       exit 1
@@ -99,7 +99,7 @@ smoke_http() {
   local url="$1"
   local expected="${2:-200}"
   local code
-  code=$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)
+  code=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" "$url" || true)
   if [ "$code" != "$expected" ]; then
     echo "Smoke check failed: $url -> $code (expected $expected)"
     exit 1
@@ -116,7 +116,7 @@ smoke_auth_http() {
   fi
 
   local code
-  code=$(curl -s -o /dev/null -w "%{http_code}" \
+  code=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" \
     -H "Authorization: Bearer ${SMOKE_AUTH_TOKEN}" \
     "$url" || true)
   if [ "$code" != "$expected" ]; then

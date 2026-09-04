@@ -1,0 +1,6 @@
+[Unit]
+Description=Immediate crash alert for %i
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo "[$(date -Is)] ALERT: %i crashed (OnFailure trigger)" >> /var/log/guiatv/health-alerts.log; logger -t guiatv-crash-alert "%i crashed"'

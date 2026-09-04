@@ -4,10 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { UserList } from '../../../../interfaces/user.interface';
 
 const COVER_GRADIENTS = [
-  'from-red-600/40 to-red-900/60',
-  'from-amber-600/40 to-amber-900/60',
-  'from-blue-600/40 to-blue-900/60',
-  'from-emerald-600/40 to-emerald-900/60',
+  'from-[var(--accent-live)]/40 to-[var(--accent-live-strong)]/60',
+  'from-[var(--spotify-warning)]/40 to-[var(--spotify-warning)]/60',
+  'from-[var(--accent-streaming)]/40 to-[var(--accent-streaming)]/60',
+  'from-[var(--accent-discover)]/40 to-[var(--accent-discover)]/60',
   'from-violet-600/40 to-violet-900/60',
   'from-sky-600/40 to-sky-900/60',
   'from-rose-600/40 to-rose-900/60',
@@ -114,9 +114,10 @@ const COVER_GRADIENTS = [
           *ngFor="let list of lists"
           role="button"
           tabindex="0"
+          data-vertical="discover"
           (click)="onSelect(list)"
           (keydown.enter)="onSelect(list)"
-          class="group rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
+          class="list-card group rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-surface-soft)] overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
         >
           <div class="relative aspect-video">
             <img
@@ -166,7 +167,15 @@ const COVER_GRADIENTS = [
       </div>
     </div>
   `,
-  styles: [],
+  styles: [
+    `
+      @use '../../../../../styles/card-accent' as cards;
+
+      .list-card {
+        @include cards.card-vertical-accent();
+      }
+    `,
+  ],
 })
 export class UserListsComponent {
   @Input() lists: UserList[] = [];

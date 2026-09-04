@@ -1,5 +1,4 @@
 .live-view {
-  --live-accent: #f97316;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
@@ -77,7 +76,7 @@
   align-items: center;
   justify-content: center;
   min-height: 2.25rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--guide-border);
   background: var(--guide-surface);
   color: var(--guide-text);
@@ -119,12 +118,11 @@
   letter-spacing: 0.1em;
 }
 
-.live-view__basic-filters button,
-.live-view__empty button {
+.live-view__basic-filters button {
   min-height: 44px;
   flex: 0 0 auto;
   border: 1px solid var(--portal-border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--portal-surface);
   color: var(--portal-text);
   padding: 0 1rem;
@@ -342,23 +340,23 @@
 .live-view__directory-chip:hover,
 .live-view__section-action:hover,
 .live-view__channel-link:hover {
-  transform: translateY(-2px);
   background: color-mix(in srgb, var(--guide-surface-strong) 92%, var(--guide-text) 8%);
 }
 
-// EPG grid vs. rails: mobile-first, breakpoint decided purely by CSS so SSR
-// (which can't know the real device viewport) always emits real content for
-// *both* blocks — the `min-width: 1024px` query below is what actually
-// picks the default per screen size, not JS. `.live-view--rails-mode`
-// (bound from `desktopViewMode()`) only matters at ≥1024px, where it lets
-// the "Ver rails" toggle flip back to the rail view; below 1024px the rail
-// view is shown unconditionally, matching the spec's "mobile unchanged".
-.live-view__mode-toggle {
-  display: none;
+@media (prefers-reduced-motion: no-preference) {
+  .live-view__channel-chip:hover,
+  .live-view__directory-chip:hover,
+  .live-view__section-action:hover,
+  .live-view__channel-link:hover {
+    transform: translateY(-4px);
+  }
 }
 
+// SSR emits both day representations. CSS is the viewport source of truth:
+// channel-centric rows below 768px, the dense EPG matrix from tablet upward.
 .live-view__grid-wrap {
   display: none;
+  min-width: 0;
 }
 
 .live-view__rails-wrap {
@@ -367,6 +365,147 @@
   gap: 1.25rem;
   min-width: 0;
   max-width: 100%;
+}
+
+.live-view__mobile-day {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.live-view__mobile-channel {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 20rem;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--portal-border);
+  border-radius: var(--radius-sm);
+  background: var(--portal-card);
+}
+
+.live-view__mobile-channel-head {
+  border-bottom: 1px solid var(--portal-divider);
+  background: var(--portal-surface-strong);
+}
+
+.live-view__mobile-channel-head a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding: var(--space-2) var(--space-4);
+  color: var(--portal-text);
+  text-decoration: none;
+}
+
+.live-view__mobile-channel-head img {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  border-radius: 0.5rem;
+  background: var(--portal-bg-elevated);
+  object-fit: contain;
+  padding: 0.2rem;
+}
+
+.live-view__mobile-channel-head span,
+.live-view__mobile-program-copy {
+  display: grid;
+  min-width: 0;
+}
+
+.live-view__mobile-channel-head small,
+.live-view__mobile-program-copy small {
+  color: var(--portal-text-muted);
+  font-size: var(--text-2xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.live-view__mobile-channel-head strong {
+  overflow: hidden;
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-view__mobile-schedule {
+  display: grid;
+}
+
+.live-view__mobile-program {
+  display: grid;
+  grid-template-columns: 3.6rem minmax(0, 1fr) 1rem;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 64px;
+  border-bottom: 1px solid var(--portal-divider);
+  padding: var(--space-2) var(--space-4);
+  color: var(--portal-text);
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.live-view__mobile-program:last-child {
+  border-bottom: 0;
+}
+
+.live-view__mobile-program time {
+  color: var(--portal-text-soft);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.live-view__mobile-program-copy {
+  gap: 0.1rem;
+}
+
+.live-view__mobile-program-copy strong {
+  overflow: hidden;
+  font-size: var(--text-sm);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-view__mobile-program-copy > span {
+  overflow: hidden;
+  color: var(--portal-text-muted);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-view__mobile-program--live {
+  background: var(--accent-live-soft);
+  box-shadow: inset 3px 0 0 var(--status-live);
+}
+
+.live-view__mobile-program--live .live-view__mobile-program-copy small {
+  color: var(--status-live);
+}
+
+.live-view__mobile-program-arrow {
+  color: var(--portal-text-muted);
+  font-size: var(--text-lg);
+}
+
+.live-view__mobile-channel-head a:focus-visible,
+.live-view__mobile-program:focus-visible {
+  outline: 2px solid var(--accent-live);
+  outline-offset: -2px;
+}
+
+@media (min-width: 768px) {
+  .live-view__mobile-day {
+    display: none;
+  }
+
+  .live-view__grid-wrap {
+    display: block;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -379,39 +518,9 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .live-view__mode-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    align-self: start;
-    min-height: 2.25rem;
-    border-radius: 999px;
-    border: 1px solid var(--guide-border);
-    background: var(--guide-surface);
-    color: var(--guide-text);
-    padding: 0 0.9rem;
-    font-size: 0.76rem;
-    font-weight: 800;
-    cursor: pointer;
-  }
-
-  .live-view__mode-toggle:hover {
-    background: color-mix(in srgb, var(--guide-surface-strong) 92%, var(--guide-text) 8%);
-  }
-
-  .live-view__mode-toggle:focus-visible {
-    outline: 2px solid var(--accent-discover);
-    outline-offset: 2px;
-  }
-
   .live-view__rails-wrap {
     display: grid;
   }
-}
-
-.live-view__grid-wrap {
-  display: block;
-  min-width: 0;
 }
 
 .live-view__loading {
@@ -426,25 +535,6 @@
   background: linear-gradient(100deg, var(--portal-surface) 20%, var(--portal-surface-strong) 45%, var(--portal-surface) 70%);
   background-size: 220% 100%;
   animation: live-loading 1.4s ease-in-out infinite;
-}
-
-.live-view__empty {
-  display: grid;
-  justify-items: start;
-  gap: 0.65rem;
-  border: 1px solid var(--portal-border);
-  border-radius: 1.25rem;
-  background: var(--portal-surface);
-  padding: clamp(1.25rem, 3vw, 2rem);
-}
-
-.live-view__empty h2,
-.live-view__empty p {
-  margin: 0;
-}
-
-.live-view__empty p {
-  color: var(--portal-text-muted);
 }
 
 @keyframes live-loading {

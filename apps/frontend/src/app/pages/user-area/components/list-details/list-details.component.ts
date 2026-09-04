@@ -3,10 +3,10 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { UserList, UserListItem } from '../../../../interfaces/user.interface';
 
 const COVER_GRADIENTS = [
-  'from-red-600/50 to-red-950/80',
-  'from-amber-600/50 to-amber-950/80',
-  'from-blue-600/50 to-blue-950/80',
-  'from-emerald-600/50 to-emerald-950/80',
+  'from-[var(--accent-live)]/50 to-[var(--accent-live-strong)]/80',
+  'from-[var(--spotify-warning)]/50 to-[var(--spotify-warning)]/80',
+  'from-[var(--accent-streaming)]/50 to-[var(--accent-streaming)]/80',
+  'from-[var(--accent-discover)]/50 to-[var(--accent-discover)]/80',
   'from-violet-600/50 to-violet-950/80',
   'from-sky-600/50 to-sky-950/80',
   'from-rose-600/50 to-rose-950/80',
@@ -58,7 +58,7 @@ const COVER_GRADIENTS = [
                 <h2 id="list-details-title" class="text-2xl font-semibold text-[var(--portal-text)]">{{ list.title }}</h2>
                 <span
                   *ngIf="list.isDefault"
-                  class="text-[10px] uppercase tracking-[0.3em] px-2 py-1 rounded-full border border-red-500/40 text-red-200"
+                  class="text-[10px] uppercase tracking-[0.3em] px-2 py-1 rounded-full border border-[var(--accent-live)]/40 text-[var(--accent-live)]"
                 >
                   Default
                 </span>
@@ -69,14 +69,14 @@ const COVER_GRADIENTS = [
               <button
                 type="button"
                 (click)="onAddItem()"
-                class="min-h-[44px] px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="min-h-[44px] px-4 rounded-xl bg-[var(--accent-live)] hover:opacity-90 text-white text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               >
                 Anadir contenido
               </button>
               <button
                 type="button"
                 (click)="close()"
-                class="min-h-[44px] px-4 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                class="min-h-[44px] px-4 rounded-xl border border-[var(--portal-border)] text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
               >
                 Cerrar
               </button>
@@ -113,13 +113,13 @@ const COVER_GRADIENTS = [
                   <button
                     type="button"
                     (click)="onRemoveItem(item.id, $event)"
-                    class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                   >
                     Quitar
                   </button>
                   <button
                     type="button"
-                    class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                    class="min-h-[44px] px-4 rounded-lg border border-[var(--portal-border)] text-xs text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
                   >
                     Abrir
                   </button>

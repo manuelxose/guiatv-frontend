@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { PLATFORM_ID } from '@angular/core';
 import { of } from 'rxjs';
-import { FootballLiveRefreshService, mergeLiveUpdates } from './football-live-refresh.service';
+import { FootballLiveRefreshService, mergeLiveUpdates, resolveLiveSnapshot, shouldPollLiveTransitions } from './football-live-refresh.service';
 import { FootballApiService } from './football-api.service';
 import { FootballMatchDTO } from './football.models';
 
@@ -44,6 +44,32 @@ describe('mergeLiveUpdates', () => {
     const result = mergeLiveUpdates(base, [match('999')]);
     expect(result.length).toBe(1);
     expect(result[0].id).toBe('1');
+  });
+});
+
+describe('resolveLiveSnapshot', () => {
+  it('keeps the initial response until the first successful poll completes', () => {
+    const base = [match('1')];
+    expect(resolveLiveSnapshot(base, null)).toBe(base);
+  });
+
+  it('adds newly live matches and removes matches absent from an authoritative snapshot', () => {
+    expect(resolveLiveSnapshot([match('old')], [match('new')]).map((item) => item.id)).toEqual(['new']);
+    expect(resolveLiveSnapshot([match('old')], [])).toEqual([]);
+  });
+});
+
+describe('shouldPollLiveTransitions', () => {
+  const now = new Date('2026-08-21T19:00:00.000Z').getTime();
+
+  it('polls live matches and scheduled matches close to kickoff', () => {
+    expect(shouldPollLiveTransitions([match('live')], now)).toBeTrue();
+    expect(shouldPollLiveTransitions([match('soon', { status: 'scheduled', kickoffAt: '2026-08-21T19:15:00.000Z' })], now)).toBeTrue();
+  });
+
+  it('does not poll distant scheduled or finished matches', () => {
+    expect(shouldPollLiveTransitions([match('later', { status: 'scheduled', kickoffAt: '2026-08-21T21:00:00.000Z' })], now)).toBeFalse();
+    expect(shouldPollLiveTransitions([match('done', { status: 'finished' })], now)).toBeFalse();
   });
 });
 

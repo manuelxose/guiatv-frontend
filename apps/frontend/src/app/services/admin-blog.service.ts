@@ -20,6 +20,7 @@ export interface AdminBlogSeo {
 }
 
 export type AdminBlogContentType = 'guide' | 'ranking' | 'trend';
+export type AdminBlogAffiliatePlacementMode = 'auto' | 'manual' | 'off';
 
 export interface AdminBlogFaqItem {
   question: string;
@@ -32,6 +33,9 @@ export interface AdminBlogPost {
   modified?: string;
   slug: string;
   status?: string;
+  reviewState?: 'unreviewed' | 'in-review' | 'approved' | 'rejected';
+  origin?: 'human' | 'ai-assisted' | 'automated-import' | 'legacy';
+  author?: { name?: string; id?: string };
   contentType?: AdminBlogContentType;
   featured?: boolean;
   primaryIntent?: string;
@@ -40,6 +44,10 @@ export interface AdminBlogPost {
   relatedRouteKeys?: string[];
   faqItems?: AdminBlogFaqItem[];
   evergreen?: boolean;
+  affiliatePlacementMode?: AdminBlogAffiliatePlacementMode;
+  relatedOfferCategories?: string[];
+  relatedMerchantKeys?: string[];
+  manualAffiliateOfferIds?: string[];
   title?: { rendered?: string };
   excerpt?: { rendered?: string };
   content?: { rendered?: string };
@@ -56,6 +64,9 @@ export interface AdminBlogCreatePayload {
   title: string;
   slug?: string;
   status?: 'draft' | 'publish';
+  origin?: 'human' | 'ai-assisted' | 'automated-import' | 'legacy';
+  authorName?: string;
+  authorId?: string;
   excerpt?: string;
   content?: string;
   categories?: string[] | string;
@@ -67,6 +78,10 @@ export interface AdminBlogCreatePayload {
   relatedRouteKeys?: string[] | string;
   faqItems?: AdminBlogFaqItem[];
   evergreen?: boolean;
+  affiliatePlacementMode?: AdminBlogAffiliatePlacementMode;
+  relatedOfferCategories?: string[] | string;
+  relatedMerchantKeys?: string[] | string;
+  manualAffiliateOfferIds?: string[] | string;
   coverImage?: string;
   featuredImage?: string;
   metaTitle?: string;
@@ -95,7 +110,6 @@ interface ApiResponse<T> {
 @Injectable({ providedIn: 'root' })
 export class AdminBlogService {
   private readonly baseUrl = environment.API_BASE_URL;
-  private readonly adminKey = environment.ANALYTICS_ADMIN_KEY || '';
 
   constructor(private http: HttpClient) {}
 
@@ -206,11 +220,9 @@ export class AdminBlogService {
   }
 
   private buildHeaders(): HttpHeaders {
-    const headers: Record<string, string> = {};
-    if (this.adminKey) {
-      headers['x-admin-key'] = this.adminKey;
-    }
-    return new HttpHeaders(headers);
+    // Authorization is attached globally by authRefreshInterceptor for every
+    // outgoing request that has a session token — admin auth is Bearer-only.
+    return new HttpHeaders();
   }
 
   private isApiResponse(resp: unknown): resp is ApiResponse<unknown> {

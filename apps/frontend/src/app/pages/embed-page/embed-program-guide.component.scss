@@ -8,14 +8,19 @@
   padding: 12px;
 }
 
+// Explicit theme=light|dark query param controls this widget, independent of
+// the host page's data-theme/prefers-color-scheme (an embedded iframe must
+// render the theme the embedding site asked for, not the visitor's OS
+// preference) — hence fixed Spotify primitives here rather than the
+// data-theme-reactive --portal-* aliases.
 .embed-widget--light {
-  background: #f8fafc;
-  color: #0f172a;
+  background: var(--spotify-light);
+  color: var(--spotify-bg-base);
 }
 
 .embed-widget--dark {
-  background: #081018;
-  color: var(--portal-text);
+  background: var(--spotify-bg-base);
+  color: var(--spotify-white);
 }
 
 .embed-widget__header {
@@ -24,17 +29,17 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in oklch, var(--spotify-border-gray) 16%, transparent);
   padding: 14px 16px;
 }
 
 .embed-widget--light .embed-widget__header {
-  background: rgba(255, 255, 255, 0.92);
+  background: color-mix(in oklch, var(--spotify-white) 92%, transparent);
 }
 
 .embed-widget--dark .embed-widget__header {
-  background: var(--portal-surface-strong);
+  background: var(--spotify-bg-elevated);
 }
 
 .embed-widget__eyebrow {
@@ -60,9 +65,9 @@
 }
 
 .embed-widget--light .embed-widget__brand {
-  color: #0f172a;
+  color: var(--spotify-bg-base);
 }
 
 .embed-widget--dark .embed-widget__brand {
-  color: var(--portal-text);
+  color: var(--spotify-white);
 }

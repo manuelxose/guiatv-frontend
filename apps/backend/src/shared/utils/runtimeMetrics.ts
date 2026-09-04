@@ -1,10 +1,22 @@
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 
 const MAX_SAMPLES = 2_000;
+// Per-route sample cap is smaller than the global cap: with dozens of routes
+// a global-sized buffer per route would multiply memory for little benefit —
+// P50/P95/P99 over the last 500 requests per endpoint is plenty stable.
+const MAX_ROUTE_SAMPLES = 500;
+// Bounded by the number of distinct Express route definitions (req.route.path
+// is the templated path, e.g. "/catalog/:catalogId" — not the raw URL), so
+// this map's key cardinality does not grow with traffic or user input.
+const MAX_TRACKED_ROUTES = 200;
 const requestDurations: number[] = [];
 const mongoDurations: number[] = [];
 const providerDurations: number[] = [];
 const cacheDurations: number[] = [];
+const epgDurations: number[] = [];
+const routeDurations = new Map<string, number[]>();
+const routeCounts = new Map<string, number>();
+const routeErrors = new Map<string, number>();
 let requestCount = 0;
 let serverErrors = 0;
 let responseBytes = 0;
@@ -14,6 +26,11 @@ let cacheErrors = 0;
 let cacheConnected = false;
 let cacheMemoryBytes = 0;
 let cacheEvictions = 0;
+// Monotonic counters — never trimmed, unlike the rolling latency sample
+// arrays — so "requests since process start" stays exact even under
+// sustained high traffic instead of only reflecting the last MAX_SAMPLES.
+let providerRequestCount = 0;
+let mongoRequestCount = 0;
 const startedAt = Date.now();
 const eventLoop = monitorEventLoopDelay({ resolution: 20 });
 eventLoop.enable();
@@ -22,15 +39,41 @@ export function recordRequestMetric(input: {
   durationMs: number;
   statusCode: number;
   responseBytes?: number;
+  route?: string;
   timings?: Record<string, number>;
 }): void {
   requestCount += 1;
   if (input.statusCode >= 500) serverErrors += 1;
   responseBytes += Math.max(input.responseBytes || 0, 0);
   push(requestDurations, input.durationMs);
-  if (input.timings?.db != null) push(mongoDurations, input.timings.db);
-  if (input.timings?.provider != null) push(providerDurations, input.timings.provider);
+  if (input.timings?.db != null) {
+    push(mongoDurations, input.timings.db);
+    mongoRequestCount += 1;
+  }
+  if (input.timings?.provider != null) {
+    push(providerDurations, input.timings.provider);
+    providerRequestCount += 1;
+  }
   if (input.timings?.cache != null) push(cacheDurations, input.timings.cache);
+  if (input.timings?.epg != null) push(epgDurations, input.timings.epg);
+
+  if (input.route) {
+    recordRouteMetric(input.route, input.durationMs, input.statusCode);
+  }
+}
+
+function recordRouteMetric(route: string, durationMs: number, statusCode: number): void {
+  let samples = routeDurations.get(route);
+  if (!samples) {
+    if (routeDurations.size >= MAX_TRACKED_ROUTES) return;
+    samples = [];
+    routeDurations.set(route, samples);
+  }
+  push(samples, durationMs, MAX_ROUTE_SAMPLES);
+  routeCounts.set(route, (routeCounts.get(route) || 0) + 1);
+  if (statusCode >= 500) {
+    routeErrors.set(route, (routeErrors.get(route) || 0) + 1);
+  }
 }
 
 export function recordCacheLookup(hit: boolean, durationMs: number): void {
@@ -62,8 +105,10 @@ export function runtimeMetricsSnapshot(): Record<string, unknown> {
       responseBytes,
       latencyMs: summary(requestDurations),
     },
-    mongo: { latencyMs: summary(mongoDurations) },
-    provider: { latencyMs: summary(providerDurations) },
+    mongo: { requestCount: mongoRequestCount, latencyMs: summary(mongoDurations) },
+    provider: { requestCount: providerRequestCount, latencyMs: summary(providerDurations) },
+    epg: { latencyMs: summary(epgDurations) },
+    routes: routeMetricsSnapshot(),
     cache: {
       connected: cacheConnected,
       hits: cacheHits,
@@ -88,10 +133,32 @@ export function runtimeMetricsSnapshot(): Record<string, unknown> {
   };
 }
 
-function push(target: number[], value: number): void {
+function push(target: number[], value: number, cap: number = MAX_SAMPLES): void {
   if (!Number.isFinite(value)) return;
   target.push(value);
-  if (target.length > MAX_SAMPLES) target.shift();
+  if (target.length > cap) target.shift();
+}
+
+/** Endpoint-level P50/P95/P99, sorted by traffic so the busiest routes — the
+ * ones worth investigating first — are easy to find in the JSON payload. */
+function routeMetricsSnapshot(): Array<{
+  route: string;
+  count: number;
+  errorRate: number;
+  latencyMs: Record<string, number>;
+}> {
+  return Array.from(routeDurations.entries())
+    .map(([route, samples]) => {
+      const count = routeCounts.get(route) || samples.length;
+      const errors = routeErrors.get(route) || 0;
+      return {
+        route,
+        count,
+        errorRate: count ? round(errors / count) : 0,
+        latencyMs: summary(samples),
+      };
+    })
+    .sort((a, b) => b.count - a.count);
 }
 
 function summary(values: number[]): Record<string, number> {

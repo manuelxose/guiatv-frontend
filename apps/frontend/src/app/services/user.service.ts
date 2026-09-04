@@ -1,4 +1,4 @@
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable, forkJoin, of } from 'rxjs';
 import { catchError, finalize, map, shareReplay, switchMap, tap } from 'rxjs/operators';
@@ -10,6 +10,7 @@ import {
   UserRecommendation,
   UserNotifications,
   UserPrivacy,
+  UserTvPreferences,
   WatchingNow,
   UserList,
   Top10Category,
@@ -47,6 +48,12 @@ const EMPTY_PROFILE: UserProfile = {
   role: 'user',
   favoriteGenres: [],
   preferredPlatforms: [],
+  tvPreferences: {
+    favoriteChannelIds: [],
+    favoriteFootballTeamIds: [],
+    favoriteFootballCompetitionIds: [],
+    preferredContentLanguages: [],
+  },
   discoveryDefaults: {
     types: ['program', 'movie', 'series'],
     availability: [],
@@ -99,6 +106,14 @@ export class UserService {
   private interactionHistorySubject = new BehaviorSubject<UserContentInteraction[]>([]);
   private notificationsSubject = new BehaviorSubject<UserNotification[]>([]);
   private unreadNotificationsSubject = new BehaviorSubject<number>(0);
+  /**
+   * Signal twin of the unread counter. Socket.io-driven fetches complete
+   * outside Angular's zone, and global change detection does not reliably run
+   * for them in production; signals notify their template readers directly
+   * and are immune to zone timing.
+   */
+  public readonly unreadNotificationsSignal = signal<number>(0);
+  private notificationsHydrated = false;
   private top10Subject = new BehaviorSubject<Top10Category[]>([]);
   private newsSubject = new BehaviorSubject<NewsItem[]>([]);
   private authenticatedSubject = new BehaviorSubject<boolean>(false);
@@ -251,6 +266,23 @@ export class UserService {
       );
   }
 
+  /** Updates only normalized TV/sports preferences, independently of profile copy. */
+  updateTvPreferences(preferences: UserTvPreferences): Observable<UserTvPreferences> {
+    return this.http
+      .patch<ApiResponse<{ tvPreferences: UserTvPreferences }>>(
+        `${this.baseUrl}/user/preferences`,
+        preferences,
+        { headers: this.getAuthHeaders() }
+      )
+      .pipe(
+        map((response) => response?.data?.tvPreferences || EMPTY_PROFILE.tvPreferences),
+        tap((tvPreferences) => {
+          this.profileSubject.next({ ...this.profileSubject.value, tvPreferences });
+        }),
+        catchError(this.handleError(EMPTY_PROFILE.tvPreferences, 'No se pudieron guardar las preferencias.'))
+      );
+  }
+
   applySession(user: Partial<UserProfile>, token: string): void {
     const current = this.profileSubject.value;
     const merged: UserProfile = {
@@ -261,6 +293,7 @@ export class UserService {
       watchingNow: { ...current.watchingNow, ...(user.watchingNow || {}) },
       favoriteGenres: user.favoriteGenres || current.favoriteGenres,
       preferredPlatforms: user.preferredPlatforms || current.preferredPlatforms,
+      tvPreferences: { ...current.tvPreferences, ...(user.tvPreferences || {}) },
       discoveryDefaults:
         user.discoveryDefaults || current.discoveryDefaults,
       stats: { ...current.stats, ...(user.stats || {}) },
@@ -282,10 +315,8 @@ export class UserService {
       }
     }
 
-    this.loadingSubject.next(true);
-    this.hydrateUserAreaData()
-      .pipe(finalize(() => this.loadingSubject.next(false)))
-      .subscribe();
+    // Profile context is sufficient at sign-in. Private areas request their own
+    // data when opened instead of eagerly loading the community surface.
   }
 
   logout(nextState: UserAuthState = 'unauthenticated'): void {
@@ -307,6 +338,7 @@ export class UserService {
     this.interactionHistorySubject.next([]);
     this.notificationsSubject.next([]);
     this.unreadNotificationsSubject.next(0);
+    this.unreadNotificationsSignal.set(0);
     this.interactionCache.clear();
     this.interactionInFlight.clear();
     this.authenticatedSubject.next(false);
@@ -314,6 +346,7 @@ export class UserService {
     this.loadingSubject.next(false);
     this.errorSubject.next(null);
     this.defaultListId = null;
+    this.notificationsHydrated = false;
   }
 
   updateProfile(data: Partial<UserProfile>): Observable<UserProfile | null> {
@@ -677,7 +710,10 @@ export class UserService {
       .get<ApiResponse<{ unreadCount: number }>>(url, { headers: this.getAuthHeaders() })
       .pipe(
         map((resp) => Number(resp?.data?.unreadCount || 0)),
-        tap((count) => this.unreadNotificationsSubject.next(count)),
+        tap((count) => {
+          this.unreadNotificationsSubject.next(count);
+          this.unreadNotificationsSignal.set(count);
+        }),
         catchError(this.handleError(0, 'No se pudo cargar el contador de notificaciones.'))
       );
   }
@@ -1037,6 +1073,7 @@ export class UserService {
       watchingNow: { ...current.watchingNow, ...(profile.watchingNow || {}) },
       favoriteGenres: profile.favoriteGenres || current.favoriteGenres,
       preferredPlatforms: profile.preferredPlatforms || current.preferredPlatforms,
+      tvPreferences: { ...current.tvPreferences, ...(profile.tvPreferences || {}) },
       discoveryDefaults:
         profile.discoveryDefaults || current.discoveryDefaults,
       stats: { ...current.stats, ...(profile.stats || {}) },
@@ -1141,25 +1178,15 @@ export class UserService {
 
         this.authenticatedSubject.next(true);
         this.authStateSubject.next('authenticated');
-        return this.hydrateUserAreaData();
+        if (!this.notificationsHydrated) {
+          this.notificationsHydrated = true;
+          // Load the persisted unread badge + list so the bell reflects state
+          // without requiring a visit to the user area.
+          this.fetchNotifications().subscribe();
+        }
+        return of(true);
       }),
       finalize(() => this.loadingSubject.next(false))
-    );
-  }
-
-  private hydrateUserAreaData(): Observable<boolean> {
-    return forkJoin({
-      lists: this.fetchLists(),
-      favorites: this.fetchFavorites(),
-      interactions: this.fetchInteractionHistory(),
-      notifications: this.fetchNotifications(),
-      friends: this.fetchFriends(),
-      activities: this.fetchActivities('all'),
-      recommendations: this.fetchRecommendations('friends'),
-    }).pipe(
-      switchMap(() => this.fetchWatchlist()),
-      map(() => true),
-      catchError(this.handleError(false, 'No se pudo cargar la informacion.'))
     );
   }
 

@@ -264,6 +264,7 @@ export function generateEditorialArticleSchema(post: {
   canonicalPath: string;
   contentType?: string;
   targetQuery?: string | null;
+  author?: { name: string } | null;
 }, baseUrl: string): object {
   const schema: Record<string, any> = {
     '@context': 'https://schema.org',
@@ -278,8 +279,8 @@ export function generateEditorialArticleSchema(post: {
       ? formatDateForSEO(post.publishedAt)
       : undefined,
     author: {
-      '@type': 'Organization',
-      name: 'Guia TV',
+      '@type': post.author ? 'Person' : 'Organization',
+      name: post.author?.name || 'Guia TV',
     },
     publisher: {
       '@type': 'Organization',

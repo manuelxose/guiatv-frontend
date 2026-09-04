@@ -44,7 +44,7 @@ const AssistantQueryContextSchema = new Schema(
   {
     mode: {
       type: String,
-      enum: ['tv_now', 'tv_tonight', 'streaming', 'general'],
+      enum: ['tv_now', 'tv_tonight', 'tv_channel_schedule', 'streaming', 'football_today', 'general'],
     },
     requestedTypes: {
       type: [String],
@@ -148,7 +148,7 @@ export interface IUserAssistantConversationDocument extends Document {
     }>;
     followUpSuggestions?: string[];
     queryContext?: {
-      mode?: 'tv_now' | 'tv_tonight' | 'streaming' | 'general';
+      mode?: 'tv_now' | 'tv_tonight' | 'tv_channel_schedule' | 'streaming' | 'football_today' | 'general';
       requestedTypes?: Array<'movie' | 'series' | 'program'>;
       totalMatches?: number;
       primaryMatches?: number;

@@ -1,0 +1,13 @@
+<section class="async-state" [class.async-state--error]="kind() === 'error'">
+  <div class="async-state__signal" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path *ngIf="kind() === 'error'" d="M12 8v5m0 3.5v.5M4.7 19h14.6a1 1 0 0 0 .87-1.5L12.87 4.8a1 1 0 0 0-1.74 0L3.83 17.5A1 1 0 0 0 4.7 19Z"></path>
+      <path *ngIf="kind() === 'empty'" d="M4 7.5h16v11H4zM7 7.5l1.5-3h7L17 7.5M9 12h6"></path>
+    </svg>
+  </div>
+  <div>
+    <h2>{{ title() }}</h2>
+    <p>{{ message() }}</p>
+  </div>
+  <button *ngIf="actionLabel()" type="button" (click)="action.emit()">{{ actionLabel() }}</button>
+</section>

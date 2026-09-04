@@ -238,6 +238,7 @@ export class DiscoverViewComponent {
   readonly editorialHub = toSignal(this.editorialService.getHubState(), {
     initialValue: {
       hero: null,
+      latestPosts: [],
       guidePosts: [],
       rankingPosts: [],
       trendPosts: [],

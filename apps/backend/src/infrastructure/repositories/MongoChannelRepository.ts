@@ -190,6 +190,40 @@ export class MongoChannelRepository implements IChannelRepository {
         metadata.inferredRegion ||
         (metadata.inferredType === 'Autonomico' ? doc.country : undefined),
       description: doc.description,
+      distribution:
+        doc.distribution && doc.distribution !== 'unknown'
+          ? (doc.distribution as any)
+          : metadata.distribution,
+      access:
+        doc.access && doc.access !== 'unknown' ? (doc.access as any) : metadata.access,
+      operator:
+        doc.operator && doc.operator !== 'unknown' ? doc.operator : metadata.operator,
+      providers: Array.isArray(doc.providers) && doc.providers.length ? doc.providers : metadata.providers,
+      contentFacets:
+        Array.isArray(doc.contentFacets) &&
+        doc.contentFacets.length &&
+        !doc.contentFacets.every((facet) => facet === 'unknown')
+          ? (doc.contentFacets as any)
+          : metadata.contentFacets,
+      market:
+        doc.market && doc.market.scope && doc.market.scope !== 'unknown'
+          ? (doc.market as any)
+          : metadata.market,
+      quality:
+        doc.quality && doc.quality.resolution && doc.quality.resolution !== 'unknown'
+          ? (doc.quality as any)
+          : metadata.quality,
+      capabilities:
+        doc.capabilities &&
+        Object.values(doc.capabilities).some((value) => value !== 'unknown')
+          ? (doc.capabilities as any)
+          : metadata.capabilities,
+      provenance:
+        doc.provenance &&
+        doc.provenance.classification &&
+        doc.provenance.classification !== 'unknown'
+          ? (doc.provenance as any)
+          : metadata.provenance,
       isActive: doc.active,
     };
 
@@ -221,6 +255,15 @@ export class MongoChannelRepository implements IChannelRepository {
       countryCode: channel.countryCode,
       region: channel.region,
       description: channel.description,
+      distribution: channel.distribution,
+      access: channel.access,
+      operator: channel.operator,
+      providers: channel.providers,
+      contentFacets: channel.contentFacets,
+      market: channel.market,
+      quality: channel.quality,
+      capabilities: channel.capabilities,
+      provenance: channel.provenance,
       active: channel.isActive,
       order: metadata.sortOrder,
     };
