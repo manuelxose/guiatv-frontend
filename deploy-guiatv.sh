@@ -190,6 +190,7 @@ smoke_http "http://127.0.0.1:${API_PORT}/v2/discovery/browse?type=movie&availabi
 smoke_http "http://127.0.0.1:${API_PORT}/v2/tv/surface/guide?date=$(date +%F)&group=tdt" "200"
 smoke_http "http://127.0.0.1:${API_PORT}/v2/tv/surface/channels/la_2?date=$(date +%F)" "200"
 smoke_http "http://127.0.0.1:${API_PORT}/v2/catalog/platforms" "200"
+smoke_http "http://127.0.0.1:${API_PORT}/v2/sports/football/competitions" "200"
 smoke_auth_http "http://127.0.0.1:${API_PORT}/v2/discovery/for-you" "200"
 smoke_auth_http "http://127.0.0.1:${API_PORT}/v2/user/interactions" "200"
 

@@ -21,6 +21,7 @@
     "seed:affiliate": "node dist/scripts/seed-affiliate-offers.js",
     "migrate:social-data": "node dist/scripts/migrate-social-data.js",
     "migrate:user-privacy-defaults": "node dist/scripts/migrate-user-privacy-defaults.js",
+    "validate:football-provider": "node dist/scripts/validate-football-provider.js",
     "seo:submit-sitemap": "node dist/scripts/submit-sitemap.js"
   },
   "engines": {
