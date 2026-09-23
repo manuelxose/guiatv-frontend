@@ -74,19 +74,32 @@ export class StreamingViewComponent {
     { id: 'buy', label: 'Compra' },
   ];
 
-  private readonly filters = computed(() => ({
-    ...this.guideState.streamingFilters(),
-    q: this.guideState.searchQuery(),
-  }));
-  private readonly filters$ = toObservable(this.filters);
+  // `page` is excluded from the reactive fetch key: any *other* filter change
+  // must reset to page 1 (fresh switchMap fetch below), while `loadMore()`
+  // drives pagination imperatively and appends results instead of replacing
+  // them — see `extraItems`/`combinedItems`.
+  private readonly baseFilters = computed(() => {
+    const { page: _page, ...rest } = this.guideState.streamingFilters();
+    return { ...rest, q: this.guideState.searchQuery() };
+  });
+  private readonly baseFilters$ = toObservable(this.baseFilters);
 
   /** True while the streaming catalogue request (or a filter change) is in flight. */
   readonly gridLoading = signal(true);
+  readonly loadMoreLoading = signal(false);
+  private readonly extraItems = signal<CatalogItem[]>([]);
+  private readonly extraHasMore = signal<boolean | null>(null);
+  private currentPage = 1;
   readonly platforms = toSignal(this.facade.getPlatforms(), { initialValue: [] });
   readonly gridData = toSignal(
-    this.filters$.pipe(
-      tap(() => this.gridLoading.set(true)),
-      switchMap((filters) => this.facade.getStreamingContent(filters)),
+    this.baseFilters$.pipe(
+      tap(() => {
+        this.gridLoading.set(true);
+        this.currentPage = 1;
+        this.extraItems.set([]);
+        this.extraHasMore.set(null);
+      }),
+      switchMap((filters) => this.facade.getStreamingContent({ ...filters, page: 1 })),
       tap(() => this.gridLoading.set(false))
     ),
     {
@@ -98,10 +111,16 @@ export class StreamingViewComponent {
       },
     }
   );
+  /** Grid items across every page fetched so far — `gridData().items` is only page 1. */
+  readonly combinedItems = computed(() => uniqueCatalogItems([...this.gridData().items, ...this.extraItems()]));
+  readonly hasMoreItems = computed(() => this.extraHasMore() ?? this.gridData().meta.hasMore);
   readonly popularRail = toSignal(this.facade.getStreamingContent({ sort: 'popular', limit: 12 }), { initialValue: { items: [], meta: { total: 0, page: 1, limit: 12, hasMore: false }, availableGenres: [], availablePlatforms: [] } });
   readonly recentRail = toSignal(this.facade.getStreamingContent({ sort: 'recent', limit: 12 }), { initialValue: { items: [], meta: { total: 0, page: 1, limit: 12, hasMore: false }, availableGenres: [], availablePlatforms: [] } });
   readonly ratingRail = toSignal(this.facade.getStreamingContent({ sort: 'rating', limit: 12 }), { initialValue: { items: [], meta: { total: 0, page: 1, limit: 12, hasMore: false }, availableGenres: [], availablePlatforms: [] } });
-  readonly availableGenres = computed(() => this.gridData().availableGenres.slice(0, 10));
+  // Was capped to 10 (and quickDirectories/dock consume this), which hid most
+  // genres from a 17-platform catalog. Layout is an `auto-fit` wrap grid
+  // (streaming-view.component.scss), so a larger set just wraps more rows.
+  readonly availableGenres = computed(() => this.gridData().availableGenres.slice(0, 20));
   readonly activePlatform = computed(() =>
     this.platforms().find((platform) => platform.name === this.guideState.streamingFilters().platform) || null
   );
@@ -114,7 +133,7 @@ export class StreamingViewComponent {
   );
   readonly featuredStack = computed(() =>
     uniqueCatalogItems([
-      ...this.gridData().items,
+      ...this.combinedItems(),
       ...this.popularRail().items,
       ...this.recentRail().items,
       ...this.ratingRail().items,
@@ -123,13 +142,13 @@ export class StreamingViewComponent {
       .slice(0, 3)
   );
   readonly movieHighlights = computed(() =>
-    this.gridData().items.filter((item) => item.contentType === 'movie').slice(0, 6)
+    this.combinedItems().filter((item) => item.contentType === 'movie').slice(0, 6)
   );
   readonly seriesHighlights = computed(() =>
-    this.gridData().items.filter((item) => item.contentType === 'series').slice(0, 6)
+    this.combinedItems().filter((item) => item.contentType === 'series').slice(0, 6)
   );
   readonly freeHighlights = computed(() =>
-    this.gridData().items.filter((item) => hasFreeAvailability(item)).slice(0, 6)
+    this.combinedItems().filter((item) => hasFreeAvailability(item)).slice(0, 6)
   );
   readonly streamingPulse = computed(() => [
     {
@@ -156,7 +175,7 @@ export class StreamingViewComponent {
       eyebrow: 'Servicios',
       title: 'Mapa de plataformas',
       description: 'Acceso rápido por marca, con identidad propia y cambio de contexto inmediato.',
-      items: this.platforms().slice(0, 8).map((platform) => ({
+      items: this.platforms().slice(0, 16).map((platform) => ({
         id: platform.name,
         label: platform.name,
         meta: this.guideState.streamingFilters().platform === platform.name ? 'Activa' : 'Abrir servicio',
@@ -168,7 +187,7 @@ export class StreamingViewComponent {
       eyebrow: 'Discovery',
       title: 'Géneros y tono',
       description: 'El filtro editorial convive con el catálogo sin esconderlo.',
-      items: this.availableGenres().slice(0, 8).map((genre) => ({
+      items: this.availableGenres().slice(0, 16).map((genre) => ({
         id: genre,
         label: genre,
         meta: this.guideState.streamingFilters().genres.includes(genre) ? 'Activo' : 'Explorar género',
@@ -223,21 +242,17 @@ export class StreamingViewComponent {
       this.guideState.searchQuery()
     );
   });
+  // Platform selection lives only in the inline `.streaming-view__platform-row`
+  // (prominent, branded) — the dock used to duplicate it as a "Plataforma"
+  // section, which is exactly the doubled-filter-hierarchy problem the
+  // football nav rework fixed for navigation. Sort moves here instead: it
+  // previously existed only as the inline chip bar with no dock coverage.
   readonly filterDockSections = computed<UnifiedFilterDockSection[]>(() => [
-    {
-      id: 'platform',
-      title: 'Plataforma',
-      description: 'Selector de servicios con catálogo real',
-      options: this.platforms().map((platform) => ({
-        id: platform.name,
-        label: platform.name,
-        selected: this.guideState.streamingFilters().platform === platform.name,
-      })),
-    },
     {
       id: 'availability',
       title: 'Disponibilidad',
       description: 'Refina más allá del streaming genérico',
+      multiSelect: true,
       options: this.availabilityChips.map((chip) => ({
         id: chip.id,
         label: chip.label,
@@ -253,6 +268,15 @@ export class StreamingViewComponent {
         id: genre,
         label: genre,
         selected: this.guideState.streamingFilters().genres.includes(genre),
+      })),
+    },
+    {
+      id: 'sort',
+      title: 'Orden',
+      options: this.sortChips.map((chip) => ({
+        id: chip.id,
+        label: chip.label,
+        selected: this.guideState.streamingFilters().sort === chip.id,
       })),
     },
   ]);
@@ -291,12 +315,28 @@ export class StreamingViewComponent {
   }
 
   toggleAvailability(value: string): void {
-    const next = new Set(this.guideState.streamingFilters().availability);
-    if (next.has(value as any)) {
-      next.delete(value as any);
+    // Was single-select (cleared the set before adding), unlike toggleGenre()
+    // right below it — the API/facade already accepts multiple SPECIFIC
+    // availability values (resolveStreamingAvailability), so specific values
+    // can multi-select freely. But 'streaming' is the generic/default bucket,
+    // not a specific one — TvDataFacade.resolveStreamingAvailability already
+    // drops it from the outgoing request whenever any specific value is also
+    // selected, so leaving it checked in the UI alongside a specific value
+    // was misleading (looked active, was silently ignored). Keep the two
+    // kinds mutually exclusive here so the chip state matches what's
+    // actually sent: picking a specific value clears 'streaming', and
+    // picking 'streaming' clears every specific value.
+    const current = this.guideState.streamingFilters().availability;
+    let next: Set<string>;
+    if (value === 'streaming') {
+      next = current.includes('streaming' as any) ? new Set() : new Set(['streaming']);
     } else {
-      next.clear();
-      next.add(value as any);
+      next = new Set(current.filter((entry) => entry !== 'streaming'));
+      if (next.has(value)) {
+        next.delete(value);
+      } else {
+        next.add(value);
+      }
     }
     this.guideState.updateStreamingFilters({
       availability: Array.from(next) as any,
@@ -328,6 +368,33 @@ export class StreamingViewComponent {
     });
   }
 
+  loadMore(): void {
+    if (this.loadMoreLoading() || !this.hasMoreItems()) {
+      return;
+    }
+    // Snapshot the filters this request is for. If they change before the
+    // response arrives, gridData()'s own switchMap has already reset
+    // extraItems/currentPage for the new filter set — applying this now-
+    // stale response would append page-N results from the OLD filters onto
+    // the NEW filters' grid. baseFilters() is a computed signal, so it's
+    // reference-stable until the underlying filters actually change.
+    const requestFilters = this.baseFilters();
+    const nextPage = this.currentPage + 1;
+    this.loadMoreLoading.set(true);
+    this.facade.getStreamingContent({ ...requestFilters, page: nextPage }).subscribe({
+      next: (response) => {
+        this.loadMoreLoading.set(false);
+        if (this.baseFilters() !== requestFilters) {
+          return;
+        }
+        this.extraItems.update((current) => uniqueCatalogItems([...current, ...response.items]));
+        this.extraHasMore.set(response.meta.hasMore);
+        this.currentPage = nextPage;
+      },
+      error: () => this.loadMoreLoading.set(false),
+    });
+  }
+
   openItem(item: CatalogItem): void {
     if (this.isBrowser && this.viewport.isMobile()) {
       this.selectedItem.set(item);
@@ -353,16 +420,16 @@ export class StreamingViewComponent {
   }
 
   handleDockSelect(event: { sectionId: string; optionId: string }): void {
-    if (event.sectionId === 'platform') {
-      this.selectPlatform(event.optionId);
-      return;
-    }
     if (event.sectionId === 'availability') {
       this.toggleAvailability(event.optionId);
       return;
     }
     if (event.sectionId === 'genres') {
       this.toggleGenre(event.optionId);
+      return;
+    }
+    if (event.sectionId === 'sort') {
+      this.selectSort(event.optionId);
     }
   }
 

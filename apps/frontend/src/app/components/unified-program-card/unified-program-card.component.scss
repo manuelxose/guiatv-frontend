@@ -265,12 +265,6 @@
   box-shadow: 0 0 0 0.18rem color-mix(in oklch, var(--accent-live) 18%, transparent);
 }
 
-.program-card__action {
-  color: var(--guide-accent);
-  font-size: 0.8125rem;
-  font-weight: 700;
-}
-
 .program-card__actions {
   display: flex;
   align-items: center;

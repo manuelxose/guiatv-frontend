@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, Data, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { combineLatest, of, Subject } from 'rxjs';
@@ -23,6 +23,7 @@ import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton
 import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
 
 type LegacyCatalogMode = 'program' | 'movie' | 'series';
+type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
 
 @Component({
   selector: 'app-catalog-detail',
@@ -59,10 +60,7 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
       </div>
 
       <ng-container *ngIf="!loading && item as content; else emptyState">
-        <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-          <app-breadcrumb [items]="breadcrumbItems"></app-breadcrumb>
-        </div>
-        <!-- Cinematic banner: image-backed, hero-* tokens only (constant-dark by design). -->
+        <!-- Cinematic banner: image-backed, hero-* tokens only (constant-dark by design). Breadcrumb lives inside it (canal-completo pattern) instead of a separate strip above. -->
         <section class="relative overflow-hidden bg-[var(--hero-bg)]">
           <div class="absolute inset-0">
             <img
@@ -71,11 +69,20 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
               [alt]="''"
               class="h-full w-full object-cover opacity-55"
             />
+            <!-- No backdrop/poster at all (common for plain EPG programs without TMDB enrichment) — a flat hero-bg reads as broken, so fall back to the same accent-tinted radial wash canal-completo uses for channels with no artwork. -->
+            <div
+              *ngIf="!(content.backdrop || content.image)"
+              class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--accent-live)_14%,transparent),transparent_38%),radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--accent-discover)_10%,transparent),transparent_32%)]"
+            ></div>
             <div class="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_oklch,var(--hero-bg)_98%,transparent)_0%,color-mix(in_oklch,var(--hero-bg)_78%,transparent)_55%,color-mix(in_oklch,var(--hero-bg)_45%,transparent)_100%)]"></div>
             <div class="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_oklch,var(--hero-bg)_10%,transparent),var(--hero-bg)_100%)]"></div>
           </div>
 
-          <div class="relative mx-auto flex min-h-[22rem] max-w-7xl flex-col gap-6 px-4 pb-10 pt-10 sm:px-6 md:flex-row md:items-end lg:px-8 lg:pt-14">
+          <div class="relative mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8 lg:pt-8">
+            <app-breadcrumb [items]="breadcrumbItems" [embedded]="true"></app-breadcrumb>
+          </div>
+
+          <div class="relative mx-auto flex min-h-[20rem] max-w-7xl flex-col gap-6 px-4 pb-10 pt-6 sm:px-6 md:flex-row md:items-end lg:px-8 lg:pt-8">
             <!-- Poster / artwork -->
             <div
               *ngIf="content.image"
@@ -139,9 +146,14 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
           </div>
         </section>
 
-        <!-- Main composition: theme-aware surface, CTA + streaming availability integrated (not a boxed dashboard card). -->
-        <section class="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-          <div class="flex flex-wrap items-center gap-3">
+        <!--
+          Body rhythm follows canal-completo.component.html: generous
+          eyebrow+h2 sections separated by whitespace (mb-10/lg:mb-14),
+          no hairline dividers between them — reads as one editorial page
+          instead of a stacked settings form.
+        -->
+        <section class="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8 lg:pt-10">
+          <div class="mb-10 flex flex-wrap items-center gap-3 lg:mb-14">
             <app-interaction-buttons
               [itemId]="content.catalogId"
               [title]="content.title"
@@ -157,24 +169,27 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
 
           <div
             *ngIf="content.whereToWatch || content.primaryPlatforms?.length || content.tmdbId"
-            class="border-t border-[var(--portal-divider)] pt-6"
+            class="mb-10 lg:mb-14"
           >
-            <h2 class="eyebrow mb-3 text-[var(--portal-text-muted)]">Dónde ver</h2>
-            <app-where-to-watch
-              [providersData]="content.whereToWatch"
-              [primaryPlatforms]="content.primaryPlatforms"
-              [tmdbId]="content.tmdbId"
-              [contentType]="providerContentType(content)"
-              placement="catalog-detail"
-              [catalogId]="content.catalogId"
-              [providerHint]="content.channel?.name"
-              [page]="content.detailPath"
-            ></app-where-to-watch>
+            <p class="eyebrow text-[var(--portal-text-muted)]">Disponibilidad</p>
+            <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Dónde ver</h2>
+            <div class="mt-4">
+              <app-where-to-watch
+                [providersData]="content.whereToWatch"
+                [primaryPlatforms]="content.primaryPlatforms"
+                [tmdbId]="content.tmdbId"
+                [contentType]="providerContentType(content)"
+                placement="catalog-detail"
+                [catalogId]="content.catalogId"
+                [providerHint]="content.channel?.name"
+                [page]="content.detailPath"
+              ></app-where-to-watch>
+            </div>
           </div>
 
           <div
             *ngIf="content.director || content.socialSummary?.friendsWhoWatched || content.userInteraction?.status || content.userInteraction?.rating"
-            class="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-[var(--portal-divider)] pt-6 text-sm text-[var(--portal-text-soft)]"
+            class="mb-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[var(--portal-text-soft)] lg:mb-14"
           >
             <span *ngIf="content.director"><span class="text-[var(--portal-text-muted)]">Dirección:</span> {{ content.director }}</span>
             <span *ngIf="content.socialSummary?.friendsWhoWatched">
@@ -191,30 +206,137 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
             </span>
           </div>
 
-          <div *ngIf="content.airings?.length" class="border-t border-[var(--portal-divider)] pt-6">
-            <p class="eyebrow mb-1 text-[var(--portal-text-muted)]">TV lineal</p>
-            <h2 class="mb-4 text-xl font-bold text-[var(--portal-text)]">Próximas emisiones</h2>
-            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <a
-                *ngFor="let airing of content.airings"
-                [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
-                class="tnum rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 transition-colors hover:border-[var(--portal-border-strong)]"
-              >
-                <p class="text-sm font-semibold text-[var(--portal-text)]">{{ airing.title || airing.channelName }}</p>
+          <!--
+            A programa page is schedule-centric like a canal (see
+            canal-completo.component.html's "Ahora en emisión"/"A
+            continuación" split) — for content.contentType === 'program'
+            specifically, lead with that framing instead of the generic
+            "Próximas emisiones" list movies/series get. Scoped strictly to
+            'program' so the canal-style day-tabs/full-timeline themselves
+            are intentionally NOT ported here — this is copy/grouping only.
+          -->
+          <div *ngIf="content.airings?.length" class="mb-10 lg:mb-14">
+            <ng-container *ngIf="content.contentType === 'program'; else genericAirings">
+              <ng-container *ngIf="nowAiring(content) as live">
+                <p class="eyebrow text-[var(--accent-live)]">En directo</p>
+                <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Ahora en emisión</h2>
+                <a
+                  [routerLink]="live.detailPath || ['/canales', live.channelId]"
+                  class="tnum mt-4 flex items-center gap-4 rounded-[var(--radius-md)] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-4 transition-colors"
+                >
+                  <span class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--portal-surface-strong)] sm:h-20 sm:w-20">
+                    <ng-container *ngTemplateOutlet="airingThumb; context: { $implicit: live }"></ng-container>
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-sm font-semibold text-[var(--portal-text)]">{{ live.title || live.channelName }}</span>
+                    <span class="mt-1 block text-xs text-[var(--portal-text-muted)]">
+                      {{ live.channelName }} · {{ formatTime(live.start) }} - {{ formatTime(live.end) }}
+                    </span>
+                  </span>
+                  <span class="flex-shrink-0 text-xs font-semibold text-[var(--accent-live)]">Ver canal →</span>
+                </a>
+              </ng-container>
+
+              <ng-container *ngIf="nextAirings(content) as next">
+                <ng-container *ngIf="next.length">
+                  <p class="eyebrow text-[var(--portal-text-muted)]" [class.mt-6]="nowAiring(content)">TV lineal</p>
+                  <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">A continuación</h2>
+                  <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <ng-container *ngFor="let airing of next">
+                      <ng-container *ngTemplateOutlet="airingCard; context: { $implicit: airing }"></ng-container>
+                    </ng-container>
+                  </div>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+
+            <ng-template #genericAirings>
+              <p class="eyebrow text-[var(--portal-text-muted)]">TV lineal</p>
+              <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Próximas emisiones</h2>
+              <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <ng-container *ngFor="let airing of content.airings">
+                  <ng-container *ngTemplateOutlet="airingCard; context: { $implicit: airing }"></ng-container>
+                </ng-container>
+              </div>
+            </ng-template>
+          </div>
+
+          <!-- Shared airing-card row (thumbnail + title/time/CTA), used by both the
+               program "A continuación" grid and the generic "Próximas emisiones" grid
+               above — kept as one template so the "no aparecen imágenes" fix only
+               needed to land once. -->
+          <ng-template #airingCard let-airing>
+            <a
+              [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
+              class="tnum flex gap-3 rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-3 transition-colors hover:border-[var(--portal-border-strong)]"
+            >
+              <span class="h-16 w-12 flex-shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--portal-surface-strong)]">
+                <ng-container *ngTemplateOutlet="airingThumb; context: { $implicit: airing }"></ng-container>
+              </span>
+              <span class="min-w-0 flex-1">
+                <p class="truncate text-sm font-semibold text-[var(--portal-text)]">{{ airing.title || airing.channelName }}</p>
                 <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
                   {{ airing.channelName }} · {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
                 </p>
-                <span class="mt-3 inline-block text-xs font-semibold text-[var(--accent-live)]">
+                <span class="mt-2 inline-block text-xs font-semibold text-[var(--accent-live)]">
                   {{ airing.detailPath ? 'Ver qué se emite →' : 'Ver programación del canal →' }}
                 </span>
-              </a>
-            </div>
-          </div>
+              </span>
+            </a>
+          </ng-template>
+
+          <!-- Program poster/still when the EPG source has one; the channel logo
+               (already always available) as a legible fallback instead of a blank box. -->
+          <ng-template #airingThumb let-airing>
+            <img
+              *ngIf="airing.image; else airingChannelIcon"
+              [src]="airingThumbUrl(airing.image)"
+              [alt]="''"
+              loading="lazy"
+              decoding="async"
+              class="h-full w-full object-cover"
+            />
+            <ng-template #airingChannelIcon>
+              <img
+                *ngIf="airing.channelIcon"
+                [src]="airing.channelIcon"
+                [alt]="''"
+                loading="lazy"
+                class="h-full w-full object-contain p-2"
+              />
+            </ng-template>
+          </ng-template>
 
           <!-- Cast: compact rail, photo when available, text-only fallback otherwise. -->
-          <div *ngIf="content.cast?.length" class="border-t border-[var(--portal-divider)] pt-6">
-            <h2 class="eyebrow mb-4 text-[var(--portal-text-muted)]">Reparto</h2>
-            <div class="scrollbar-hide flex gap-4 overflow-x-auto pb-2">
+          <div *ngIf="content.cast?.length" class="group/rail relative mb-2">
+            <p class="eyebrow text-[var(--portal-text-muted)]">Equipo</p>
+            <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Reparto</h2>
+
+            <!-- Click arrows for desktop — dragging a rail with a mouse is fiddly; touch swipe already covers mobile, so these stay md+ only. -->
+            <button
+              *ngIf="content.cast!.length > 4"
+              type="button"
+              aria-label="Desplazar reparto hacia la izquierda"
+              class="absolute left-0 top-1/2 z-10 hidden -translate-x-1/2 translate-y-2 items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] p-2 text-[var(--portal-text)] opacity-0 shadow-[var(--shadow-sm)] transition-opacity group-hover/rail:opacity-100 focus-visible:opacity-100 md:flex"
+              (click)="scrollCastBy(-1)"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="m12.5 4.5-5 5.5 5 5.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
+            <button
+              *ngIf="content.cast!.length > 4"
+              type="button"
+              aria-label="Desplazar reparto hacia la derecha"
+              class="absolute right-0 top-1/2 z-10 hidden translate-x-1/2 translate-y-2 items-center justify-center rounded-full border border-[var(--portal-border)] bg-[var(--portal-surface-strong)] p-2 text-[var(--portal-text)] opacity-0 shadow-[var(--shadow-sm)] transition-opacity group-hover/rail:opacity-100 focus-visible:opacity-100 md:flex"
+              (click)="scrollCastBy(1)"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true">
+                <path d="m7.5 4.5 5 5.5-5 5.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+              </svg>
+            </button>
+
+            <div #castScrollEl class="scrollbar-hide mt-4 flex gap-4 overflow-x-auto scroll-smooth pb-2">
               <div
                 *ngFor="let member of content.cast"
                 class="w-24 flex-shrink-0 text-center sm:w-28"
@@ -282,6 +404,21 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
   public safeLdHtml: SafeHtml | null = null;
   public breadcrumbItems: BreadcrumbItem[] = [];
   public shareUrl = '';
+
+  @ViewChild('castScrollEl') private readonly castScrollEl?: ElementRef<HTMLElement>;
+
+  scrollCastBy(direction: 1 | -1): void {
+    const el = this.castScrollEl?.nativeElement;
+    if (!el) {
+      return;
+    }
+    // Explicit `behavior: 'instant'` (not the legacy 2-arg scrollBy(x, y),
+    // which resolves to 'auto' and so still defers to CSS `scroll-behavior`)
+    // — some automated/headless browsers silently no-op a smooth scrollBy,
+    // and 'instant' is the one value guaranteed to actually move the
+    // container regardless of any `scroll-smooth` class on it.
+    el.scrollBy({ left: direction * el.clientWidth * 0.85, behavior: 'instant' as ScrollBehavior });
+  }
 
   ngOnInit(): void {
     combineLatest([this.route.paramMap, this.route.data])
@@ -361,6 +498,19 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  // For contentType 'program' only — splits content.airings (current airing +
+  // relatedChannelItems, per CatalogService.getProgramDetail) into the
+  // "ahora en emisión" / "a continuación" framing borrowed from
+  // canal-completo.component.html, instead of one flat "Próximas emisiones"
+  // list.
+  nowAiring(item: CatalogItem): CatalogAiring | null {
+    return item.airings?.find((airing) => airing.liveNow) ?? null;
+  }
+
+  nextAirings(item: CatalogItem): CatalogAiring[] {
+    return (item.airings || []).filter((airing) => !airing.liveNow);
+  }
+
   humanStatus(status: string): string {
     if (status === 'seen') return 'Visto';
     if (status === 'watching') return 'Viendo';
@@ -382,6 +532,11 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
 
   /** Cast headshots are small in the rail — request TMDb's smallest useful profile size. */
   castImageUrl(value: string): string {
+    return value.replace('https://image.tmdb.org/t/p/original/', 'https://image.tmdb.org/t/p/w185/');
+  }
+
+  /** Airing-card thumbnails are small (3-5rem) — no need for a full-size TMDb image. */
+  airingThumbUrl(value: string): string {
     return value.replace('https://image.tmdb.org/t/p/original/', 'https://image.tmdb.org/t/p/w185/');
   }
 
@@ -584,6 +739,14 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     const baseUrl = 'https://guiaprogramaciontv.com';
     const schemas: object[] = [generateBreadcrumbSchema(this.breadcrumbItems, baseUrl)];
 
+    // 'program' items now get real TMDB enrichment (cast/director/rating)
+    // when they carry a tmdbId (CatalogService.resolveProgramTmdbType,
+    // backend), but generateTVSeriesSchema hardcodes `${baseUrl}/series/...`
+    // as the canonical url — reusing it as-is for a program would emit a
+    // wrong (nonexistent) canonical URL, which is worse for SEO than the
+    // breadcrumb-only schema it gets today. Left as a follow-up: needs
+    // generateTVSeriesSchema to accept an explicit url instead of assuming
+    // /series/.
     if (item.contentType === 'series') {
       schemas.unshift(generateTVSeriesSchema(item, baseUrl));
     } else if (item.contentType === 'movie') {
