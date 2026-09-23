@@ -252,8 +252,7 @@ export class Container {
     const programService = new ProgramService();
     this.dependencies.set('programService', programService);
 
-    // Use env var or fallback to the known token (temporary)
-    const tmdbApiKey = process.env.TMDB_API_KEY || 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiNmE2MGE5YmRkZmZhZmU1YmMzZjZmNzAwZjIxZDBiMyIsInN1YiI6IjY1OGZmOWJlNDFhNTYxNjY3NTA0NzhmMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.A6Pj5IuTllkQRXivh_KMmlHrKAnkh6NvJTiaEPYBAO8';
+    const tmdbApiKey = process.env.TMDB_API_KEY || '';
     const cacheRepositoryForTmdb = this.has('cacheRepository')
       ? this.get<ICacheRepository>('cacheRepository')
       : null;
@@ -352,15 +351,22 @@ export class Container {
     );
 
     const footballApiKey = process.env.FOOTBALL_DATA_API_KEY;
+    const epgFootballProvider = new EpgFootballDataProvider();
     let footballProvider: any;
     if (footballApiKey) {
       const { FootballDataOrgAdapter } = await import(
         '../infrastructure/sports/providers/FootballDataOrgAdapter'
       );
-      footballProvider = new FootballDataOrgAdapter(footballApiKey);
-      logger.info('Football provider: football-data.org (live scores enabled)');
+      const { FallbackFootballDataProvider } = await import(
+        '../infrastructure/sports/providers/FallbackFootballDataProvider'
+      );
+      footballProvider = new FallbackFootballDataProvider(
+        new FootballDataOrgAdapter(footballApiKey),
+        epgFootballProvider
+      );
+      logger.info('Football provider: football-data.org (live scores enabled, EPG fallback)');
     } else {
-      footballProvider = new EpgFootballDataProvider();
+      footballProvider = epgFootballProvider;
       logger.info('Football provider: EPG (real fixtures/broadcasts, no live scores)');
     }
     this.dependencies.set('footballProvider', footballProvider);
