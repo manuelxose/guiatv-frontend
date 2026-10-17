@@ -22,6 +22,8 @@ jobs:
       - run: npm run lint:frontend
       - run: npm run test:backend
       - run: npm run test:deploy
+      - name: Install the Playwright Chromium used by Karma
+        run: npx playwright install --with-deps chromium
       - run: npm run test:frontend
       - name: Production build with Angular bundle budgets
         run: npm run build

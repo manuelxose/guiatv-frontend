@@ -55,8 +55,11 @@ describe('tv-normalizers', () => {
 
     expect(normalized.contentType).toBe('movie');
     expect(normalized.image).toBe('https://img.example.com/backdrop.jpg');
-    expect(normalized.badges).toContain('Netflix');
-    expect(normalized.badges).toContain('Película');
+    // The platform and the content type have their own place on the card (platform badge, eyebrow), so the
+    // poster chips deliberately do not repeat them (see buildCatalogBadges).
+    expect(normalized.platforms).toContain('Netflix');
+    expect(normalized.badges).not.toContain('Netflix');
+    expect(normalized.badges).not.toContain('Película');
     expect(normalized.detailPath).toContain('/peliculas/');
   });
 
