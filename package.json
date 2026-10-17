@@ -24,6 +24,7 @@
     "deploy": "bash ./deploy-guiatv.sh",
     "test": "npm run test -w apps/backend && npm run test -w apps/frontend",
     "test:backend": "npm run test -w apps/backend",
+    "test:deploy": "bash scripts/test-deploy-script.sh",
     "test:frontend": "npm run test -w apps/frontend",
     "test:e2e": "playwright test",
     "lint": "npm run lint -w apps/backend && npm run lint -w apps/frontend",

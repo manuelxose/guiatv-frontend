@@ -2,7 +2,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-APP_DIR="/var/www/guiatv"
+APP_DIR="${APP_DIR:-/var/www/guiatv}"
 BRANCH="${1:-main}"
 SSR_PORT="3000"
 API_PORT="4000"
@@ -10,7 +10,7 @@ BACKEND_BUILD_DIR="${APP_DIR}/apps/backend/dist"
 FRONTEND_BUILD_DIR="${APP_DIR}/apps/frontend/dist/guiatv"
 CURRENT_RELEASE_LINK="${APP_DIR}/current"
 
-if [ "${EUID:-$(id -u)}" -ne 0 ]; then
+if [ "${EUID:-$(id -u)}" -ne 0 ] && [ "${DEPLOY_ALLOW_NON_ROOT:-0}" != "1" ]; then
   echo "Run as root"
   exit 1
 fi
@@ -162,12 +162,34 @@ socket.on('connect_error', (error) => {
 NODE
 }
 
+PREVIOUS_RELEASE=""
+PUBLISH_STARTED=0
+
+# If anything fails once publishing has started, repoint `current` at the release that was live before and
+# restart both services (see docs/release-workflow.md, "Rollback"). Failures before publishing change nothing.
+rollback_on_failure() {
+  local status=$?
+  trap - EXIT
+  if [ "${status}" -ne 0 ] && [ "${PUBLISH_STARTED}" = "1" ] && [ -n "${PREVIOUS_RELEASE}" ] && [ -d "${PREVIOUS_RELEASE}" ]; then
+    echo "Deploy failed (exit ${status}); rolling back to ${PREVIOUS_RELEASE}"
+    ln -sfn "${PREVIOUS_RELEASE}" "${CURRENT_RELEASE_LINK}.rollback"
+    mv -Tf "${CURRENT_RELEASE_LINK}.rollback" "${CURRENT_RELEASE_LINK}"
+    systemctl restart guiatv-api guiatv-ssr || true
+    wait_http "http://127.0.0.1:${API_PORT}/v2/health" || echo "Rollback: API did not recover"
+    wait_http "http://127.0.0.1:${SSR_PORT}/" || echo "Rollback: SSR did not recover"
+  fi
+  exit "${status}"
+}
+trap rollback_on_failure EXIT
+
 cd "${APP_DIR}"
 
 if git diff --quiet && git diff --cached --quiet; then
   git fetch --prune origin
   git checkout "${BRANCH}"
-  git pull --ff-only origin "${BRANCH}"
+  # The server never commits here, so align with the remote even when its history was rewritten
+  # (a plain fast-forward pull fails after a force-push and used to block every deploy).
+  git reset --hard "origin/${BRANCH}"
 else
   echo "Working tree has local changes. Deploying current checkout without git sync."
 fi
@@ -176,6 +198,8 @@ npm install --workspaces --include-workspace-root --legacy-peer-deps --no-audit 
 npm run build
 verify_backend_build
 verify_frontend_build
+PREVIOUS_RELEASE="$(readlink -f "${CURRENT_RELEASE_LINK}" 2>/dev/null || true)"
+PUBLISH_STARTED=1
 npm run publish:release
 
 if [ "${BOOTSTRAP_DB:-0}" = "1" ]; then

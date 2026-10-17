@@ -9,6 +9,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      TZ: Europe/Madrid # production runs in this zone; several tests assert Madrid wall-clock times
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,6 +21,7 @@ jobs:
       - run: npm run lint:backend
       - run: npm run lint:frontend
       - run: npm run test:backend
+      - run: npm run test:deploy
       - run: npm run test:frontend
       - name: Production build with Angular bundle budgets
         run: npm run build
