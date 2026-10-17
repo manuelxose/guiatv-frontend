@@ -86,6 +86,17 @@ Expected result:
 - SSR routes return `200`
 - API logs do not show legacy frontend traffic such as `/v2/channels` or `/v2/programs`
 
+## Server sync and automatic rollback
+
+`deploy-guiatv.sh` aligns the checkout in `/var/www/guiatv` with `origin/<branch>` using
+`git fetch` + `git reset --hard`, because the server never commits there. A plain
+fast-forward pull stopped every deploy when the remote history was rewritten (2026-09-23).
+Local changes still skip the sync, as before.
+
+Once publishing has started, any failure (build output, API/SSR health, smoke checks)
+repoints `current` at the release that was live before and restarts both services. The
+behaviour is covered by `npm run test:deploy` (sandbox with a real git remote), which runs in CI.
+
 ## Rollback
 
 Before publishing, record `readlink -f /var/www/guiatv/current`. To roll back,
