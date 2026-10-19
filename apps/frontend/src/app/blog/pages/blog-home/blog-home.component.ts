@@ -44,7 +44,7 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
   public readonly appPaths = APP_PATHS;
   public readonly breadcrumbItems = [
     { name: 'Inicio', url: APP_PATHS.home },
-    { name: 'Blog', url: APP_PATHS.blog },
+    { name: 'Editorial', url: APP_PATHS.blog },
   ];
 
   public loading = true;

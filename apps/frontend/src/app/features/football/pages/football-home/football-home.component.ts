@@ -120,7 +120,7 @@ export class FootballHomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.meta.setMetaTags({ title: 'Fútbol hoy: partidos en directo, horarios y dónde verlos - Guía TV',
+    this.meta.setMetaTags({ title: 'Fútbol hoy: partidos, horarios y dónde verlos | Guía TV',
       description: 'Partidos de fútbol de hoy, en directo, próximos partidos, clasificaciones y dónde ver cada partido por TV y streaming.', canonicalUrl: '/deportes/futbol' });
     const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(`<script type="application/ld+json">${JSON.stringify(

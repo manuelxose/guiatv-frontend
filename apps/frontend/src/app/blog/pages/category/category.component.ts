@@ -126,7 +126,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
   public get breadcrumbItems(): Array<{ name: string; url: string }> {
     return [
       { name: 'Inicio', url: APP_PATHS.home },
-      { name: 'Blog', url: APP_PATHS.blog },
+      { name: 'Editorial', url: APP_PATHS.blog },
       ...(this.state ? [{ name: this.state.category.name, url: this.state.category.canonicalPath }] : []),
     ];
   }

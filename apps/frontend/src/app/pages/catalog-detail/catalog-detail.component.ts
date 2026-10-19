@@ -723,13 +723,19 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
       'Ficha de contenido, plataformas, emisiones y relacionados en Guía TV.';
 
     this.metaService.setMetaTags({
-      title: `${MetaService.clamp(item.title, 55)} - Guía TV`,
+      title: this.buildMetaTitle(item),
       description,
       image: item.backdrop || item.image,
       canonicalUrl,
       type: 'article',
       robots: catalogRobotsPolicy(item),
     });
+  }
+
+  /** "<title>: <intent> | Guía TV", kept under ~65 characters so titles are not cut in results. */
+  private buildMetaTitle(item: CatalogItem): string {
+    const suffix = item.contentType === 'program' ? ': cuándo ver en TV | Guía TV' : ': dónde ver | Guía TV';
+    return `${MetaService.clamp(item.title, 65 - suffix.length)}${suffix}`;
   }
 
   private buildMetaDescription(item: CatalogItem): string {

@@ -185,7 +185,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   public get breadcrumbItems(): Array<{ name: string; url: string }> {
     return [
       { name: 'Inicio', url: APP_PATHS.home },
-      { name: 'Blog', url: APP_PATHS.blog },
+      { name: 'Editorial', url: APP_PATHS.blog },
       ...(this.state?.post.primaryCategory
         ? [{ name: this.state.post.primaryCategory.name, url: this.state.post.primaryCategory.canonicalPath }]
         : []),

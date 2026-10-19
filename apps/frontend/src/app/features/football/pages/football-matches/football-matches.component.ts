@@ -122,6 +122,22 @@ export class FootballMatchesComponent implements OnInit {
     return 'Partidos de fútbol hoy';
   }
 
+  get metaTitle(): string {
+    if (this.view() === 'live') return 'Fútbol en directo: marcadores y dónde ver cada partido | Guía TV';
+    if (this.view() === 'calendar') return 'Calendario de fútbol: partidos por día y dónde verlos | Guía TV';
+    return 'Partidos de fútbol hoy: horarios y dónde verlos | Guía TV';
+  }
+
+  get metaDescription(): string {
+    if (this.view() === 'live') {
+      return 'Partidos de fútbol en directo ahora: marcador, minuto y en qué canal o plataforma de TV y streaming se emite cada uno en España.';
+    }
+    if (this.view() === 'calendar') {
+      return 'Agenda de partidos de fútbol por día, con horarios y dónde ver cada uno por TV y streaming en España.';
+    }
+    return 'Todos los partidos de fútbol de hoy por competición, con horarios y el canal o plataforma de TV y streaming que los emite en España.';
+  }
+
   get subtitle(): string {
     if (this.view() === 'live') return 'Sigue en tiempo real los partidos de hoy.';
     if (this.view() === 'calendar') return 'Agenda de partidos por día.';
@@ -142,8 +158,8 @@ export class FootballMatchesComponent implements OnInit {
 
   ngOnInit(): void {
     this.meta.setMetaTags({
-      title: `${this.title} - Guía TV`,
-      description: this.subtitle,
+      title: this.metaTitle,
+      description: this.metaDescription,
       canonicalUrl: this.pathForTab(this.view()),
     });
 

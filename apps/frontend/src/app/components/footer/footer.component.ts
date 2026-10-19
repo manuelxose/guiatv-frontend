@@ -19,10 +19,10 @@ interface FooterLinkGroup {
 export class FooterComponent {
   readonly currentYear = new Date().getFullYear();
   readonly highlightLinks = [
-    { label: 'TV Directo', path: APP_PATHS.guide },
-    { label: 'Qué Ver', path: APP_PATHS.explore },
-    { label: 'Streaming', path: APP_PATHS.platforms },
-    { label: 'Fútbol', path: APP_PATHS.sports },
+    { label: 'TV en directo', description: 'Qué emiten ahora los canales', path: APP_PATHS.guide },
+    { label: 'Qué ver hoy', description: 'Películas, series y deporte', path: APP_PATHS.explore },
+    { label: 'Plataformas', description: 'Streaming y comparador de planes', path: APP_PATHS.platforms },
+    { label: 'Fútbol', description: 'Partidos de hoy y dónde verlos', path: APP_PATHS.sports },
   ];
   readonly groups: FooterLinkGroup[] = [
     {
@@ -30,8 +30,8 @@ export class FooterComponent {
       title: 'Producto',
       links: [
         { label: 'Inicio', path: APP_PATHS.home },
-        { label: 'TV Directo', path: APP_PATHS.guide },
-        { label: 'Qué Ver Hoy', path: APP_PATHS.explore },
+        { label: 'TV en directo', path: APP_PATHS.guide },
+        { label: 'Qué ver hoy', path: APP_PATHS.explore },
         { label: 'Plataformas', path: APP_PATHS.platforms },
         { label: 'Fútbol', path: APP_PATHS.sports },
       ],
@@ -40,7 +40,7 @@ export class FooterComponent {
       id: 'explorar',
       title: 'Explorar',
       links: [
-        { label: 'Blog', path: APP_PATHS.blog },
+        { label: 'Editorial', path: APP_PATHS.blog },
         { label: 'Rankings', path: APP_PATHS.top10 },
         { label: 'Tendencias', path: APP_PATHS.stats },
         { label: 'Comparador', path: APP_PATHS.streamingComparison },
@@ -51,8 +51,7 @@ export class FooterComponent {
       id: 'cuenta',
       title: 'Cuenta',
       links: [
-        { label: 'Perfil', path: APP_PATHS.profile },
-        { label: 'Mi cuenta', path: APP_PATHS.account },
+        { label: 'Mi perfil', path: APP_PATHS.profile },
         { label: 'Acceder', path: APP_PATHS.login },
         { label: 'Crear cuenta', path: APP_PATHS.register },
       ],

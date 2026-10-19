@@ -16,7 +16,7 @@
   <app-unified-async-state
     *ngIf="!loading && error"
     kind="error"
-    title="El Blog no está disponible ahora mismo"
+    title="Editorial no está disponible ahora mismo"
     [message]="error"
     actionLabel="Reintentar"
     (action)="retry()"
@@ -38,7 +38,7 @@
         </div>
         <div class="editorial-lead__copy">
           <span>{{ hero.primaryCategory?.name || 'Selección editorial' }}</span>
-          <h1>{{ hero.title }}</h1>
+          <h2>{{ hero.title }}</h2>
           <p>{{ hero.excerptText }}</p>
           <small>{{ hero.publishedAt | date : 'dd MMM yyyy' }} · {{ hero.readingMinutes }} min de lectura</small>
         </div>
@@ -47,7 +47,7 @@
       <aside *ngIf="latestPosts.length" class="editorial-latest" aria-labelledby="latest-heading">
         <h2 id="latest-heading">Sigue leyendo</h2>
         <a *ngFor="let post of latestPosts; trackBy: trackPost" [routerLink]="post.canonicalPath">
-          <span>{{ post.primaryCategory?.name || 'Blog' }}</span>
+          <span>{{ post.primaryCategory?.name || 'Editorial' }}</span>
           <h3>{{ post.title }}</h3>
           <small>{{ post.publishedAt | date : 'dd MMM' }} · {{ post.readingMinutes }} min</small>
         </a>

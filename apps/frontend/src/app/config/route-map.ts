@@ -73,7 +73,7 @@ export const SECONDARY_NAV_ROUTES: AppRouteEntry[] = [
   { key: 'canales', label: 'Canales', path: APP_PATHS.channels },
   { key: 'peliculas', label: 'Películas', path: APP_PATHS.movies },
   { key: 'series', label: 'Series', path: APP_PATHS.series },
-  { key: 'editorial', label: 'Blog', path: APP_PATHS.blog },
+  { key: 'editorial', label: 'Editorial', path: APP_PATHS.blog },
   { key: 'rankings', label: 'Rankings', path: APP_PATHS.top10 },
 ];
 

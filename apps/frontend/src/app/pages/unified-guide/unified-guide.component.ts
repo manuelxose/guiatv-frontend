@@ -36,13 +36,13 @@ const TAB_META: Record<UnifiedGuideTab, { title: string; seoTitle?: string; desc
   },
   discover: {
     title: 'Qué Ver',
-    seoTitle: 'Qué ver hoy en TV y streaming: películas, series y deporte',
+    seoTitle: 'Qué ver hoy en TV y streaming: cine, series y deporte',
     description: 'Descubre qué ver hoy mezclando TV en directo, catálogo editorial y streaming.',
     path: APP_PATHS.explore,
   },
   streaming: {
     title: 'Plataformas',
-    seoTitle: 'Plataformas de streaming en España: catálogo y novedades',
+    seoTitle: 'Plataformas de streaming en España: catálogo y planes',
     description: 'Explora plataformas, novedades y catálogo en streaming dentro del mismo sistema.',
     path: APP_PATHS.platforms,
   },

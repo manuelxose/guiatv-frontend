@@ -15,10 +15,16 @@ import { APP_PATHS } from '../../../config/route-map';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="editorial-masthead" [class.editorial-masthead--compact]="compact">
-      <a [routerLink]="appPaths.blog" class="editorial-masthead__lockup">
-        <span class="editorial-masthead__kicker">Guía TV</span>
-        <span class="editorial-masthead__word">Editorial</span>
-      </a>
+      <h1 *ngIf="!compact; else lockupOnly" class="editorial-masthead__heading">
+        <ng-container *ngTemplateOutlet="lockup"></ng-container>
+      </h1>
+      <ng-template #lockupOnly><ng-container *ngTemplateOutlet="lockup"></ng-container></ng-template>
+      <ng-template #lockup>
+        <a [routerLink]="appPaths.blog" class="editorial-masthead__lockup">
+          <span class="editorial-masthead__kicker">Guía TV</span>
+          <span class="editorial-masthead__word">Editorial</span>
+        </a>
+      </ng-template>
       <p *ngIf="!compact" class="editorial-masthead__tagline">Qué ver, qué merece la pena y por qué.</p>
     </div>
   `,
@@ -37,6 +43,11 @@ import { APP_PATHS } from '../../../config/route-map';
 
       .editorial-masthead--compact {
         padding-block: var(--space-4) 0;
+      }
+
+      .editorial-masthead__heading {
+        margin: 0;
+        font: inherit;
       }
 
       .editorial-masthead__lockup {

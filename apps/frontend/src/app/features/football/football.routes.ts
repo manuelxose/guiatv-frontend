@@ -14,7 +14,7 @@ export const FOOTBALL_ROUTES: Routes = [
           import('./pages/football-home/football-home.component').then(
             (m) => m.FootballHomeComponent
           ),
-        title: 'Fútbol hoy: partidos, horarios y dónde verlos - Guía TV',
+        title: 'Fútbol hoy: partidos, horarios y dónde verlos | Guía TV',
         data: { layout: 'public-shell' },
       },
       {
@@ -23,7 +23,7 @@ export const FOOTBALL_ROUTES: Routes = [
           import('./pages/football-matches/football-matches.component').then(
             (m) => m.FootballMatchesComponent
           ),
-        title: 'Partidos de fútbol hoy - Guía TV',
+        title: 'Partidos de fútbol hoy: horarios y dónde verlos | Guía TV',
         data: { footballView: 'today', layout: 'public-shell' },
       },
       {
@@ -32,7 +32,7 @@ export const FOOTBALL_ROUTES: Routes = [
           import('./pages/football-matches/football-matches.component').then(
             (m) => m.FootballMatchesComponent
           ),
-        title: 'Fútbol en directo hoy - Guía TV',
+        title: 'Fútbol en directo: marcadores y dónde ver cada partido | Guía TV',
         data: { footballView: 'live', layout: 'public-shell' },
       },
       {
@@ -41,7 +41,7 @@ export const FOOTBALL_ROUTES: Routes = [
           import('./pages/football-matches/football-matches.component').then(
             (m) => m.FootballMatchesComponent
           ),
-        title: 'Calendario de fútbol - Guía TV',
+        title: 'Calendario de fútbol: partidos por día y dónde verlos | Guía TV',
         data: { footballView: 'calendar', layout: 'public-shell' },
       },
       {

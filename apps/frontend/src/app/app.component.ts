@@ -456,6 +456,15 @@ export class AppComponent implements OnInit, OnDestroy {
       route = route.firstChild;
     }
     const routeData = route.snapshot.data;
+    // Static pages with no component-level meta (legal pages) declare their own description in route data,
+    // instead of inheriting the generic one from index.html.
+    if (routeData['description'] && !routeData['robots']) {
+      this.metaService.setMetaTags({
+        title: route.snapshot.title || 'Guía TV',
+        description: routeData['description'],
+        canonicalUrl: this.router.url.split(/[?#]/)[0],
+      });
+    }
     if (routeData['robots']) {
       this.metaService.setMetaTags({
         title: routeData['title'] || route.snapshot.title || 'Guía TV',

@@ -333,8 +333,8 @@ export const routes: Routes = [
       import('./pages/legal/legal-notice/legal-notice.component').then(
         (m) => m.LegalNoticeComponent
       ),
-    title: 'Aviso Legal - Guía TV',
-    data: { layout: 'minimal-shell' },
+    title: 'Aviso legal | Guía TV',
+    data: { layout: 'minimal-shell', description: 'Aviso legal de Guía Programación TV: titular del servicio, datos de contacto, condiciones de uso y propiedad intelectual.' },
   },
   {
     path: 'politica-editorial',
@@ -350,8 +350,8 @@ export const routes: Routes = [
       import('./pages/legal/privacy/privacy.component').then(
         (m) => m.PrivacyComponent
       ),
-    title: 'Política de Privacidad - Guía TV',
-    data: { layout: 'minimal-shell' },
+    title: 'Política de privacidad | Guía TV',
+    data: { layout: 'minimal-shell', description: 'Política de privacidad de Guía Programación TV: qué datos personales tratamos, para qué, durante cuánto tiempo y cómo ejercer tus derechos.' },
   },
   {
     path: 'cookies',
@@ -359,8 +359,8 @@ export const routes: Routes = [
       import('./pages/legal/cookies/cookies.component').then(
         (m) => m.CookiesComponent
       ),
-    title: 'Política de Cookies - Guía TV',
-    data: { layout: 'minimal-shell' },
+    title: 'Política de cookies | Guía TV',
+    data: { layout: 'minimal-shell', description: 'Política de cookies de Guía Programación TV: qué cookies usamos, con qué finalidad y cómo aceptarlas, rechazarlas o configurarlas.' },
   },
   {
     path: 'terminos',
@@ -368,8 +368,8 @@ export const routes: Routes = [
       import('./pages/legal/terms/terms.component').then(
         (m) => m.TermsComponent
       ),
-    title: 'Términos y Condiciones - Guía TV',
-    data: { layout: 'minimal-shell' },
+    title: 'Términos y condiciones | Guía TV',
+    data: { layout: 'minimal-shell', description: 'Términos y condiciones de uso de Guía Programación TV: reglas de uso del servicio, contenidos, responsabilidad y propiedad intelectual.' },
   },
   {
     path: 'accesibilidad',
@@ -377,8 +377,8 @@ export const routes: Routes = [
       import('./pages/legal/accessibility/accessibility.component').then(
         (m) => m.AccessibilityComponent
       ),
-    title: 'Accesibilidad - Guía TV',
-    data: { layout: 'minimal-shell' },
+    title: 'Declaración de accesibilidad | Guía TV',
+    data: { layout: 'minimal-shell', description: 'Declaración de accesibilidad de Guía Programación TV: nivel de conformidad, limitaciones conocidas y cómo comunicarnos un problema de acceso.' },
   },
   {
     path: 'sitemap',

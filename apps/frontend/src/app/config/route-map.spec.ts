@@ -25,7 +25,7 @@ describe('route map', () => {
 
   it('defines the canonical desktop hierarchy and contextual children', () => {
     expect(PORTAL_PRIMARY_DESTINATIONS.map((tab) => tab.label)).toEqual([
-      'TV', 'Qué ver', 'Plataformas', 'Fútbol', 'Blog',
+      'TV', 'Qué ver', 'Plataformas', 'Fútbol', 'Editorial',
     ]);
     expect(PORTAL_BLOG_DESTINATIONS.map((tab) => tab.label)).toEqual([
       'Últimos', 'Guías', 'Rankings', 'Tendencias',
@@ -41,7 +41,7 @@ describe('route map', () => {
       'Portada', 'Partidos', 'Competiciones', 'Dónde ver', 'Noticias',
     ]);
     expect(PORTAL_MOBILE_MORE_DESTINATIONS.map((tab) => tab.label)).toEqual([
-      'Plataformas', 'Blog', 'Rankings', 'Tendencias',
+      'Plataformas', 'Editorial', 'Rankings', 'Tendencias',
     ]);
   });
 

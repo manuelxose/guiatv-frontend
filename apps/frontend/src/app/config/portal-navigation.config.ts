@@ -130,7 +130,7 @@ export const PORTAL_PRIMARY_DESTINATIONS: readonly PortalDestination[] = [
   },
   {
     id: 'editorial',
-    label: 'Blog',
+    label: 'Editorial',
     hint: 'Guías, rankings y tendencias',
     path: APP_PATHS.blog,
     iconPath: PORTAL_ICON_PATHS.editorial,
@@ -169,7 +169,7 @@ export const PORTAL_GLOBAL_DESTINATIONS: readonly PortalDestination[] = [
   },
 ] as const;
 
-/** Contextual navigation for the Blog family. URLs remain stable for SEO. */
+/** Contextual navigation for the Editorial family. URLs remain stable for SEO. */
 export const PORTAL_BLOG_DESTINATIONS: readonly PortalContextDestination[] = [
   { id: 'latest', label: 'Últimos', kind: 'route', path: APP_PATHS.blog },
   { id: 'guides', label: 'Guías', kind: 'route', path: APP_PATHS.blog, fragment: 'guias' },
@@ -245,8 +245,8 @@ export const PORTAL_SECTION_NAVIGATION: Readonly<Record<PortalSection, PortalSec
     items: PORTAL_SPORTS_DESTINATIONS,
   },
   blog: {
-    label: 'Secciones del Blog',
-    rootLabel: 'Blog',
+    label: 'Secciones de Editorial',
+    rootLabel: 'Editorial',
     rootPath: APP_PATHS.blog,
     items: PORTAL_BLOG_DESTINATIONS,
   },
@@ -361,7 +361,7 @@ export function getPortalPublicContextualLeftRailSection(
         title: 'Contexto útil',
         description: 'Guías, rankings y cruces con discovery.',
         items: [
-          { id: 'public-editorial-home', label: 'Blog', description: 'Portada del Blog', iconPath: PORTAL_ICON_PATHS.editorial, path: APP_PATHS.blog },
+          { id: 'public-editorial-home', label: 'Editorial', description: 'Portada de Editorial', iconPath: PORTAL_ICON_PATHS.editorial, path: APP_PATHS.blog },
           { id: 'public-editorial-rankings', label: 'Rankings', description: 'Top listas conectadas', iconPath: PORTAL_ICON_PATHS.rankings, path: APP_PATHS.top10 },
           { id: 'public-editorial-explore', label: 'Qué Ver', description: 'Volver al discovery', iconPath: PORTAL_ICON_PATHS.discover, path: APP_PATHS.explore },
         ],
