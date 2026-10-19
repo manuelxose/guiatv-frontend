@@ -326,6 +326,17 @@ const EDITORIAL_REDIRECTS = {
   'como-saber-que-ver-esta-noche': '/programacion-tv/que-ver-hoy',
   'que-ver-esta-noche-en-la-tdt': '/programacion-tv/que-ver-hoy',
   'que-ver-en-familia-este-fin-de-semana': '/programacion-tv/que-ver-hoy',
+  // Old per-platform ranking posts -> the rebuilt per-platform rankings
+  'mejores-series-max-espana': 'mejores-series-y-peliculas-hbo-max-espana',
+  'mejores-peliculas-max-espana': 'mejores-series-y-peliculas-hbo-max-espana',
+  'mejores-series-max': 'mejores-series-y-peliculas-hbo-max-espana',
+  'mejores-series-prime-video-espana': 'mejores-series-y-peliculas-prime-video-espana',
+  'mejores-peliculas-prime-video-espana': 'mejores-series-y-peliculas-prime-video-espana',
+  'mejores-peliculas-prime-video': 'mejores-series-y-peliculas-prime-video-espana',
+  'mejores-peliculas-netflix-espana': 'mejores-series-y-peliculas-netflix-espana',
+  'mejores-series-netflix': 'mejores-series-y-peliculas-netflix-espana',
+  'mejores-series-disney-plus': 'mejores-series-y-peliculas-disney-plus-espana',
+  'mejores-series-movistar-plus': 'mejores-series-y-peliculas-movistar-plus-espana',
   // TDT channel guides: the live channel directory is the maintained source
   'mejores-canales-tdt-para-cine-y-series': '/canales',
   'canales-de-cine-en-tdt-guia-completa-para-ver-peliculas-gratis-hoy': '/canales',
