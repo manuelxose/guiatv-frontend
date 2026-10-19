@@ -51,12 +51,20 @@ function mapCompetitionType(raw: any): FootballCompetitionType {
   return 'league';
 }
 
+// Names Spanish viewers search for; the provider's English/unaccented names ("Primera Division") stay in the slug
+// so existing competition URLs do not change.
+const SPANISH_COMPETITION_NAMES: Record<string, string> = {
+  PD: 'LaLiga', CL: 'Champions League', PL: 'Premier League', SA: 'Serie A', BL1: 'Bundesliga', FL1: 'Ligue 1',
+  PPL: 'Liga Portugal', DED: 'Eredivisie', ELC: 'Championship', BSA: 'Brasileirão', CLI: 'Copa Libertadores',
+  EC: 'Eurocopa', WC: 'Mundial',
+};
+
 export function mapFootballDataOrgCompetition(raw: any): FootballCompetition {
-  const name = raw.name || 'Competición';
+  const providerName = raw.name || 'Competición';
   return {
     id: String(raw.id),
-    slug: slugify(name),
-    name,
+    slug: slugify(providerName),
+    name: SPANISH_COMPETITION_NAMES[raw.code] ?? providerName,
     shortName: raw.code,
     country: raw.area?.name,
     logo: raw.emblem ?? null,
