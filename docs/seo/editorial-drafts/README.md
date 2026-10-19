@@ -8,4 +8,5 @@ Each draft contains only claims checked against a source listed at its end on 20
 |---|---|
 | [01-champions-league-2026-27.md](01-champions-league-2026-27.md) | `donde-ver-la-champions-league-2026-27-en-tv-y-streaming-en-espana`, `donde-ver-champions-league-en-espana` |
 | [02-laliga-2026-27.md](02-laliga-2026-27.md) | `como-ver-laliga-en-streaming-en-espana-guia-2026`, `como-ver-laliga-en-streaming-plataformas-precios-y-canales`, `donde-ver-laliga-en-espana` |
+| [03-precios-streaming-espana.md](03-precios-streaming-espana.md) | the 5 price/cheap-streaming posts in the consolidation map |
 | [consolidation-map.md](consolidation-map.md) | Intent clusters for the 52-post corpus, proposed action per post |
