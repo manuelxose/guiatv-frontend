@@ -170,6 +170,8 @@ export class UnifiedGuideComponent {
       });
 
     effect(() => {
+      // URL updates reflect browser filter interactions; SSR must render the canonical URL directly.
+      if (!this.isBrowser) return;
       const queryParams = this.state.toQueryParams(this.activeTab());
       const current = this.route.snapshot.queryParams;
       if (sameParams(current, queryParams)) {

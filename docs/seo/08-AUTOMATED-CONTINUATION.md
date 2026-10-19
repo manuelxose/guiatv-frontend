@@ -66,3 +66,9 @@ PR #8 merged as `f1b9a9b`; deployment `39305365427` and CI `39305365344` succeed
 - Test result: https://search.google.com/test/rich-results/result?id=kx2oo6aQLXNNpz0PtYUODA . Screenshot: `artifacts/seo/rich-results-article.png`.
 - Lighthouse 13.5.0, a single mobile lab run at 18:47 UTC: performance **84**, accessibility **96**, best practices **96**, SEO **100**; LCP **3.4 s**, TBT **290 ms**, CLS **0.001**. This is not field CWV or traffic recovery. Five icon requests transiently returned 503 during the run; a later direct and public probe returned 200. Existing contrast and accessible-name findings remain. Summary: `artifacts/seo/lighthouse-home-mobile-summary.json`; full local report in `.runtime/seo-ops/`.
 - Frontend regression suite after the completeness fix: **255 passed**; production build and live-API SSR checks passed.
+
+## Full crawl and follow-up
+
+The paced full crawl inspected 453 sitemap URLs and three probes after the first release, overlapping the second deployment. It reported **15 URLs with findings**, including four 5xx responses, two editorial category noindex mismatches, the known `/programas/deportes` 404, three short discovery surfaces, and metadata-length warnings. This is not a clean-crawl claim. The raw snapshot is `artifacts/seo/crawl-post-deploy.json`; failed URLs must be rechecked on the stable final release to distinguish transient responses from persistent defects.
+
+It also exposed an SSR redirect from `/programacion-tv/que-ver-hoy` to the same path with default filter parameters. Filter URL synchronisation is now browser-only; live-API SSR checks confirm the canonical path renders 200 directly. The crawl's metadata reader now decodes Angular's escaped attribute entities before measuring title/description lengths, with a runnable `--self-check`, avoiding false length findings for `&amp;` and `&quot;`.
