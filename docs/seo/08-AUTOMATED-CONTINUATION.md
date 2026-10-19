@@ -50,3 +50,25 @@ The owner confirmed TecnoRia (`https://tecnoriasl.com/`) as the business, Max No
 The new `/politica-editorial` page names those people and describes sourcing, human review, AI assistance, affiliate disclosure and corrections. It explicitly states that archive remediation is unfinished. The footer and About page link to it; the About page's unsupported generic expert claim is replaced with the owner-provided names. Historical post authorship is not reassigned.
 
 Local policy validation: production build, SSR 200/canonical/name checks, 390px and 1440px browser layouts without overflow, and axe checks of the policy content all passed (zero violations). Exact corporate legal name and tax ID have been requested because the linked TecnoRia site did not expose them through its public legal links. The existing individual fiscal identity is not silently relabelled as a company's tax ID.
+
+## Confirmed identity and second deployment
+
+The owner clarified that TecnoRia is a **trade name**, not a separate corporate entity, and confirmed that `53198877S` is his personal NIF. The existing individual legal name and address remain; the legal notice now distinguishes the TecnoRia trade name from the GPTV service. No corporate tax number is invented or needed for this distinction.
+
+PR #8 merged as `f1b9a9b`; deployment `39305365427` and CI `39305365344` succeeded. Release `20261019204931` contains the public policy and editorial names. Direct inspection of the running API process confirms the three-name allowlist is active, the separate human review key remains configured, and automation approval credentials have been removed from the GuíaTV API. Auctorio remains assisted.
+
+## Additional validation and completeness correction
+
+- A read-only database count found **52 approved public posts**, not 50. The original audit and frontend both used the API's default 50-row limit. `getAllPosts` and the audit now explicitly request `limit=0`, the existing API contract for the complete list. A regression test reproduces the 50/52 boundary.
+- The complete audit finds **35 posts with blocking issues**, **12 thin bodies**, 23 non-human posts without external sources, 19 near-duplicate posts, and the same 17 stored Markdown/image problems. The original 50-post snapshots remain as historical evidence, not a complete current inventory.
+- Live-API local SSR confirms that loading all posts restores `index, follow` on `/editorial/categoria/max` (previously noindex despite being in the sitemap).
+- Google Rich Results Test successfully fetched `/editorial/mejores-series-disney-plus`: one valid Article and two valid breadcrumb items; Article has only an optional missing author URL warning. The duplicate article breadcrumb generator is now removed in favour of the visible navigation's schema; local SSR confirms exactly one BreadcrumbList and an Article.
+- Test result: https://search.google.com/test/rich-results/result?id=kx2oo6aQLXNNpz0PtYUODA . Screenshot: `artifacts/seo/rich-results-article.png`.
+- Lighthouse 13.5.0, a single mobile lab run at 18:47 UTC: performance **84**, accessibility **96**, best practices **96**, SEO **100**; LCP **3.4 s**, TBT **290 ms**, CLS **0.001**. This is not field CWV or traffic recovery. Five icon requests transiently returned 503 during the run; a later direct and public probe returned 200. Existing contrast and accessible-name findings remain. Summary: `artifacts/seo/lighthouse-home-mobile-summary.json`; full local report in `.runtime/seo-ops/`.
+- Frontend regression suite after the completeness fix: **255 passed**; production build and live-API SSR checks passed.
+
+## Full crawl and follow-up
+
+The paced full crawl inspected 453 sitemap URLs and three probes after the first release, overlapping the second deployment. It reported **15 URLs with findings**, including four 5xx responses, two editorial category noindex mismatches, the known `/programas/deportes` 404, three short discovery surfaces, and metadata-length warnings. This is not a clean-crawl claim. The raw snapshot is `artifacts/seo/crawl-post-deploy.json`; failed URLs must be rechecked on the stable final release to distinguish transient responses from persistent defects.
+
+It also exposed an SSR redirect from `/programacion-tv/que-ver-hoy` to the same path with default filter parameters. Filter URL synchronisation is now browser-only; live-API SSR checks confirm the canonical path renders 200 directly. The crawl's metadata reader now decodes Angular's escaped attribute entities before measuring title/description lengths, with a runnable `--self-check`, avoiding false length findings for `&amp;` and `&quot;`.

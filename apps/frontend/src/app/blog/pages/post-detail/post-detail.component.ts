@@ -13,7 +13,6 @@ import { getCatalogPlatformByKey } from '../../../data/catalog-platforms.data';
 import { CatalogItem, CatalogService } from '../../../services/catalog.service';
 import { MetaService } from '../../../services/meta.service';
 import {
-  generateBreadcrumbSchema,
   generateEditorialArticleSchema,
 } from '../../../utils/utils';
 import { EditorialPostPageState } from '../../models/editorial.models';
@@ -291,13 +290,6 @@ export class PostDetailComponent implements OnInit, OnDestroy {
 
   private buildStructuredData(state: EditorialPostPageState): void {
     const baseUrl = 'https://guiaprogramaciontv.com';
-    const breadcrumbItems = [
-      { name: 'Blog', url: '/editorial' },
-      ...(state.post.primaryCategory
-        ? [{ name: state.post.primaryCategory.name, url: state.post.primaryCategory.canonicalPath }]
-        : []),
-      { name: state.post.title, url: state.post.canonicalPath },
-    ];
     const schemas = [
       generateEditorialArticleSchema(
         {
@@ -313,7 +305,6 @@ export class PostDetailComponent implements OnInit, OnDestroy {
         },
         baseUrl
       ),
-      generateBreadcrumbSchema(breadcrumbItems, baseUrl),
     ];
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
       schemas

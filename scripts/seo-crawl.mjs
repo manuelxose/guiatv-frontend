@@ -3,6 +3,7 @@
 // and fails (exit 1) on sitemap URLs that are not a canonical, indexable 200 with title/description/one h1.
 // Usage: node scripts/seo-crawl.mjs [baseUrl] [--out file.json] [--limit N] [--probe /path /path ...]
 import { writeFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
 
 const args = process.argv.slice(2);
 const base = (args.find((a) => /^https?:/.test(a)) ?? 'https://guiaprogramaciontv.com').replace(/\/$/, '');
@@ -17,7 +18,17 @@ const get = async (url) => {
   return { r, body: await r.text() };
 };
 const locs = (xml) => [...xml.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => m[1].replace(/&amp;/g, '&'));
-const attr = (html, re) => html.match(re)?.[1]?.trim();
+// Angular escapes attribute values; measure the text Google reads, not the entity spelling.
+const entities = { '&amp;': '&', '&quot;': '"', '&apos;': "'", '&#39;': "'", '&#x27;': "'", '&lt;': '<', '&gt;': '>' };
+const attr = (html, re) => html.match(re)?.[1]?.trim()
+  .replace(/&(?:amp|quot|apos|#39|#x27|lt|gt);/gi, (entity) => entities[entity.toLowerCase()]);
+if (args.includes('--self-check')) {
+  assert.equal(attr('<meta content="Cine &amp; TV &quot;hoy&quot;">', /content="([^"]*)"/), 'Cine & TV "hoy"');
+  assert.equal(attr('<title>Series &amp; cine</title>', /<title>([^<]*)<\/title>/), 'Series & cine');
+  assert.equal(attr('', /<title>([^<]*)<\/title>/), undefined);
+  console.log('self-check ok');
+  process.exit(0);
+}
 
 const analyse = (url, r, body, fromSitemap) => {
   const robotsMeta = attr(body, /<meta[^>]+name=["']robots["'][^>]*content=["']([^"']+)/i) ?? attr(body, /<meta[^>]+content=["']([^"']+)["'][^>]*name=["']robots["']/i);
