@@ -16,7 +16,7 @@ const shingles = (t, n = 4) => { const w = words(t.toLowerCase()); const s = new
 const jaccard = (a, b) => { let i = 0; for (const x of a) if (b.has(x)) i++; return i / (a.size + b.size - i || 1); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const list = await (await fetch(`${base}/v2/blog`)).json();
+const list = await (await fetch(`${base}/v2/blog?limit=0`)).json();
 const posts = [];
 for (const p of list) {
   const d = (await (await fetch(`${base}/v2/blog?slug=${encodeURIComponent(p.slug)}`)).json())[0];

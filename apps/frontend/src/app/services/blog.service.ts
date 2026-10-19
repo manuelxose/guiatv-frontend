@@ -114,7 +114,8 @@ export class BlogService {
     // Crear nueva petición con caché
     const maxRetries = 3;
 
-    const request$ = this.httpService.get<any[]>(this.API_URL);
+    // The API defaults to 50 rows; category counts and related articles need the complete public list.
+    const request$ = this.httpService.get<any[]>(`${this.API_URL}?limit=0`);
     const requestWithRetry$ = this.isServer
       ? request$
       : request$.pipe(
