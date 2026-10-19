@@ -1,0 +1,388 @@
+{
+  "base": "https://guiaprogramaciontv.com",
+  "at": "2026-10-19T19:07:31.557Z",
+  "results": [
+    {
+      "sitemap": "sitemap-static.xml",
+      "url": "https://guiaprogramaciontv.com/plataformas",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/plataformas",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Plataformas | Guía TV",
+      "titleLen": 21,
+      "descLen": 80,
+      "h1s": 1,
+      "words": 146,
+      "ld": [
+        "BreadcrumbList"
+      ],
+      "issues": [
+        "thin: 146 words"
+      ],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-static.xml",
+      "url": "https://guiaprogramaciontv.com/deportes/futbol/partidos-hoy",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/deportes/futbol/partidos-hoy",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Partidos de fútbol hoy - Guía TV",
+      "titleLen": 32,
+      "descLen": 43,
+      "h1s": 1,
+      "words": 100,
+      "ld": [
+        "BreadcrumbList",
+        "BreadcrumbList"
+      ],
+      "issues": [
+        "thin: 100 words"
+      ],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-static.xml",
+      "url": "https://guiaprogramaciontv.com/deportes/futbol/en-directo",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/deportes/futbol/en-directo",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Partidos en directo - Guía TV",
+      "titleLen": 29,
+      "descLen": 41,
+      "h1s": 1,
+      "words": 86,
+      "ld": [
+        "BreadcrumbList",
+        "BreadcrumbList"
+      ],
+      "issues": [
+        "thin: 86 words"
+      ],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-static.xml",
+      "url": "https://guiaprogramaciontv.com/programacion-tv/que-ver-hoy",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/programacion-tv/que-ver-hoy",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Qué Ver | Guía TV",
+      "titleLen": 17,
+      "descLen": 77,
+      "h1s": 1,
+      "words": 4428,
+      "ld": [
+        "BreadcrumbList"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-programs.xml",
+      "url": "https://guiaprogramaciontv.com/programas/macbeth",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/programas/macbeth",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Macbeth - Guía TV",
+      "titleLen": 17,
+      "descLen": 157,
+      "h1s": 1,
+      "words": 825,
+      "ld": [
+        "Movie",
+        "BreadcrumbList"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-programs.xml",
+      "url": "https://guiaprogramaciontv.com/programas/caso-abierto",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/programas/caso-abierto",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Caso abierto - Guía TV",
+      "titleLen": 22,
+      "descLen": 158,
+      "h1s": 1,
+      "words": 782,
+      "ld": [
+        "TVSeries",
+        "BreadcrumbList"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-programs.xml",
+      "url": "https://guiaprogramaciontv.com/programas/deportes",
+      "status": 404,
+      "canonical": "https://guiaprogramaciontv.com/programas/deportes",
+      "robotsMeta": "noindex, nofollow",
+      "xrobots": "noindex, nofollow",
+      "title": "Contenido no disponible - Guía TV",
+      "titleLen": 33,
+      "descLen": 43,
+      "h1s": 0,
+      "words": 122,
+      "ld": [],
+      "issues": [
+        "status 404",
+        "h1 count 0",
+        "thin: 122 words",
+        "noindex in sitemap"
+      ],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-programs.xml",
+      "url": "https://guiaprogramaciontv.com/programas/paz-rota",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/programas/paz-rota",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Paz rota - Guía TV",
+      "titleLen": 18,
+      "descLen": 157,
+      "h1s": 1,
+      "words": 819,
+      "ld": [
+        "Movie",
+        "BreadcrumbList"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-programs.xml",
+      "url": "https://guiaprogramaciontv.com/programas/los-misterios-de-murdoch-t18-e21",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/programas/los-misterios-de-murdoch-t18-e21",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Los misterios de Murdoch T18 E21 - Guía TV",
+      "titleLen": 42,
+      "descLen": 159,
+      "h1s": 1,
+      "words": 797,
+      "ld": [
+        "TVSeries",
+        "BreadcrumbList"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-programs.xml",
+      "url": "https://guiaprogramaciontv.com/programas/el-paraso-de-las-seoras",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/programas/el-paraso-de-las-seoras",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "El paraíso de las señoras - Guía TV",
+      "titleLen": 35,
+      "descLen": 151,
+      "h1s": 1,
+      "words": 755,
+      "ld": [
+        "TVSeries",
+        "BreadcrumbList"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-programs.xml",
+      "url": "https://guiaprogramaciontv.com/programas/y2k",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/programas/y2k",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Y2K - Guía TV",
+      "titleLen": 13,
+      "descLen": 159,
+      "h1s": 1,
+      "words": 860,
+      "ld": [
+        "Movie",
+        "BreadcrumbList"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-blog.xml",
+      "url": "https://guiaprogramaciontv.com/editorial/anoche-conquiste-tebas",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/editorial/anoche-conquiste-tebas",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Anoche conquisté Tebas",
+      "titleLen": 22,
+      "descLen": 155,
+      "h1s": 1,
+      "words": 1515,
+      "ld": [
+        "BreadcrumbList",
+        "Article"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-blog.xml",
+      "url": "https://guiaprogramaciontv.com/editorial/categoria/prime-video",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/editorial/categoria/prime-video",
+      "robotsMeta": "index, follow",
+      "xrobots": "index, follow",
+      "title": "Prime Video | Blog Guía TV",
+      "titleLen": 26,
+      "descLen": 62,
+      "h1s": 1,
+      "words": 197,
+      "ld": [
+        "BreadcrumbList",
+        "CollectionPage",
+        "ItemList"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "changed-page",
+      "url": "https://guiaprogramaciontv.com/",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Programación TV hoy: qué ver en televisión y streaming | Guía TV",
+      "titleLen": 64,
+      "descLen": 137,
+      "h1s": 1,
+      "words": 1756,
+      "ld": [
+        "WebSite",
+        "Organization",
+        "WebApplication"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-blog.xml",
+      "url": "https://guiaprogramaciontv.com/editorial/netflix-vs-prime-video-espana",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/editorial/netflix-vs-prime-video-espana",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Netflix vs Prime Video en España: cuál encaja mejor con tu forma de ver",
+      "titleLen": 71,
+      "descLen": 90,
+      "h1s": 1,
+      "words": 1633,
+      "ld": [
+        "BreadcrumbList",
+        "Article"
+      ],
+      "issues": [
+        "title 71ch"
+      ],
+      "location": null
+    },
+    {
+      "sitemap": "sitemap-blog.xml",
+      "url": "https://guiaprogramaciontv.com/editorial/categoria/max",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/editorial/categoria/max",
+      "robotsMeta": "index, follow",
+      "xrobots": "index, follow",
+      "title": "Max | Blog Guía TV",
+      "titleLen": 18,
+      "descLen": 54,
+      "h1s": 1,
+      "words": 195,
+      "ld": [
+        "BreadcrumbList",
+        "CollectionPage",
+        "ItemList"
+      ],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "changed-page",
+      "url": "https://guiaprogramaciontv.com/politica-editorial",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/politica-editorial",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Política editorial | Guía TV",
+      "titleLen": 28,
+      "descLen": 115,
+      "h1s": 1,
+      "words": 218,
+      "ld": [],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "changed-page",
+      "url": "https://guiaprogramaciontv.com/avisolegal",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/avisolegal",
+      "xrobots": null,
+      "title": "Aviso Legal - Guía TV",
+      "titleLen": 21,
+      "descLen": 156,
+      "h1s": 1,
+      "words": 243,
+      "ld": [],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "changed-page",
+      "url": "https://guiaprogramaciontv.com/canales",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/canales",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Canales de televisión en España: TDT, cable y online | Guía TV",
+      "titleLen": 62,
+      "descLen": 160,
+      "h1s": 1,
+      "words": 10493,
+      "ld": [],
+      "issues": [],
+      "location": null
+    },
+    {
+      "sitemap": "changed-page",
+      "url": "https://guiaprogramaciontv.com/sobre-nosotros",
+      "status": 200,
+      "canonical": "https://guiaprogramaciontv.com/sobre-nosotros",
+      "robotsMeta": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "xrobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      "title": "Sobre nosotros - Guía Programación TV",
+      "titleLen": 37,
+      "descLen": 133,
+      "h1s": 1,
+      "words": 535,
+      "ld": [
+        "Organization",
+        "FAQPage"
+      ],
+      "issues": [],
+      "location": null
+    }
+  ],
+  "note": "Recheck of all 15 flagged sitemap URLs plus changed public pages, not another full-site crawl."
+}

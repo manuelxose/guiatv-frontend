@@ -1,6 +1,10 @@
 # 02 — Traffic recovery (2026-10-19)
 
-## Status: the decline cannot be quantified or dated from available evidence
+## Updated continuation status
+
+Authorized browser access to the correct domain property now works. Daily performance, page/query comparisons, devices, indexing reasons and example inventories were copied from rendered Search Console tables into ignored `.runtime/gsc/`. The official download was not recovered. The decline is now dated and quantified in `.runtime/gsc/TRAFFIC-RECOVERY.md`; private analytics are not committed to this public repository. Manual actions and security reports show no issues; both mobile and desktop field CWV reports lack sufficient data. Sitemaps and indexing were inspected without resubmission or validation batches. See [08](08-AUTOMATED-CONTINUATION.md) for deployed fixes and remaining work.
+
+## Original audit status (superseded by the update above)
 No Search Console, analytics or server-log data is accessible from this workspace (no credentials in the repo; `RUNBOOK.md` says a GSC service account lives at `/etc/guiatv/gsc-service-account.json` on the VPS and is used only to *submit* sitemaps). `site:` search is not usable evidence. **Nothing below is a measured traffic number.**
 
 ## What was built so the analysis can be done in minutes once data exists

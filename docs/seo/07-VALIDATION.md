@@ -32,3 +32,19 @@ npm run seo:editorial-audit
 curl -sI https://guiaprogramaciontv.com/canales | grep -i -E 'HTTP|cache-control|x-robots'
 ```
 Expected: crawl exit 0 (descriptions ≤ 170 on programme pages), `/editorial/zzz` 404, no `x-ssr-cache` MISS storms.
+
+## Autonomous continuation — deployed validation
+
+- PRs #7, #8 and #9 merged; final runtime commit `30b41e3`, release `20261019210550`.
+- Final deployment `39307670951` and build/test workflow `39307670824`: **success**.
+- Final frontend suite: **255 passed**; backend: **341 passed, 1 skipped**. SSR resilience: **11 routes passed**, including on an isolated SSR process on the VPS; crawler and GSC self-checks passed.
+- Production build, local SSR checks for complete category counts / one article breadcrumb / canonical discovery 200, and mobile/desktop policy axe checks passed.
+- Full crawl: 453 sitemap URLs + 3 probes, **15 URLs with findings**. Final stable-release recheck: **19 of 20 URLs returned 200**, with the known `/programas/deportes` 404 remaining. The four earlier 5xx responses did not recur in this recheck. Three short discovery surfaces and the 71-character Netflix-vs-Prime title remain flagged. The recheck is not another full crawl; see `artifacts/seo/crawl-final-recheck.json`.
+- The two category noindex mismatches were fixed by loading all 52 approved posts instead of the API's default 50. Escaped metadata is decoded before length measurements; previous description-length flags did not remain on recheck.
+- Google Rich Results Test on the final deployed Disney Plus article: **one valid Article + one valid BreadcrumbList**, with an optional author URL warning. Result: https://search.google.com/test/rich-results/result?id=T9NNpTlLKi7FsAv1NQjohw . Screenshot: `artifacts/seo/rich-results-final.png`.
+- Lighthouse mobile lab run: performance 84 / accessibility 96 / best practices 96 / SEO 100. LCP 3.4s, TBT 290ms, CLS 0.001. This is one lab sample, not field CWV.
+- Complete corpus audit: **52 posts, 35 with blocking findings**, 12 thin bodies. Content records have not been automatically approved or rewritten.
+- Full Playwright suite remains **not passing / incomplete**; the interrupted attempt is documented in 08. This limitation is not erased by the narrower passing checks.
+
+- Final targeted production probe: **21 routes, 18 successful pages and 3 expected unknown-URL 404s; no unexpected failures** (`artifacts/seo/post-deploy-targeted.json`).
+- Authorized Search Console performance/indexing analysis completed privately; raw data and measured totals are not committed. Manual actions/security: no issues. Field CWV: insufficient data on both device types. No recovery claim.

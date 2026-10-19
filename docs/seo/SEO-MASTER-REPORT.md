@@ -1,5 +1,7 @@
 # GuíaTV — SEO master report (2026-10-19)
 
+> **Current continuation status:** the fixes and editorial policy are now committed and deployed as `30b41e3`, release `20261019210550`; CI and deployment passed. TecnoRia is confirmed as the owner's trade name; Max Nova, Beatriz Olmedo and Arturo Baroja are the configured human reviewers. Auctorio is assisted and its API approval credentials are removed. The complete public corpus is **52 posts, 35 with blocking editorial findings**, superseding the original default-limited 50-post count. A full 453-URL crawl and a final 20-URL recheck are recorded in [08 — automated continuation](08-AUTOMATED-CONTINUATION.md). The final recheck leaves one known sitemap 404 (`/programas/deportes`), three short discovery pages and one long title. **AdSense remains no-go.** Authorized Search Console access now works; the visibility decline is dated and quantified in the private local report `.runtime/gsc/TRAFFIC-RECOVERY.md`. Raw analytics and measured totals are deliberately excluded from this public repository. Sections below preserve the original audit state, including its superseded access and deployment blockers.
+
 Detail: [01 technical](01-TECHNICAL-AUDIT.md) · [02 traffic](02-TRAFFIC-RECOVERY.md) · [03 AdSense](03-ADSENSE-READINESS.md) · [04 implementation](04-IMPLEMENTATION-REPORT.md) · [05 content](05-CONTENT-STRATEGY.md) · [06 Auctorio](06-AUCTORIO-INTEGRATION.md) · [07 validation](07-VALIDATION.md) · [skills](SKILL-INVENTORY.md)
 
 ## 1. Executive summary

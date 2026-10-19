@@ -72,3 +72,30 @@ PR #8 merged as `f1b9a9b`; deployment `39305365427` and CI `39305365344` succeed
 The paced full crawl inspected 453 sitemap URLs and three probes after the first release, overlapping the second deployment. It reported **15 URLs with findings**, including four 5xx responses, two editorial category noindex mismatches, the known `/programas/deportes` 404, three short discovery surfaces, and metadata-length warnings. This is not a clean-crawl claim. The raw snapshot is `artifacts/seo/crawl-post-deploy.json`; failed URLs must be rechecked on the stable final release to distinguish transient responses from persistent defects.
 
 It also exposed an SSR redirect from `/programacion-tv/que-ver-hoy` to the same path with default filter parameters. Filter URL synchronisation is now browser-only; live-API SSR checks confirm the canonical path renders 200 directly. The crawl's metadata reader now decodes Angular's escaped attribute entities before measuring title/description lengths, with a runnable `--self-check`, avoiding false length findings for `&amp;` and `&quot;`.
+
+## Final runtime release and recheck
+
+- PR #9 merged as **`30b41e3`**. Final release: **`20261019210550`**, published at 19:05:51 UTC. Deployment `39307670951` and build/test workflow `39307670824` succeeded. Both services are active.
+- The running API again verified the exact three-person allowlist, a configured human review key, and no automation approval key/reviewer. Only cached copies of changed public pages and the 15 flagged URLs were invalidated for validation; unrelated cache trees were untouched.
+- The final recheck covered **all 15 flagged URLs plus five changed public pages**: 19 returned 200; `/programas/deportes` remains 404 while listed in the sitemap. The earlier four 5xx responses did not recur. `/programacion-tv/que-ver-hoy` now returns 200 without a default-filter redirect; Prime Video and Max category pages are indexable.
+- Remaining crawl findings are one sitemap 404, three short discovery surfaces (`/plataformas`, football today and football live), and the 71-character Netflix-vs-Prime title. Short-word-count warnings are discovery signals, not proof that an interactive page lacks value. No clean full-crawl or permanent-availability claim is made.
+- Artifact: `artifacts/seo/crawl-final-recheck.json`. Its wrapper restores sitemap/noindex/thin checks to the probe results; the underlying crawler's printed `with issues: 0` counts sitemap rows only and must not be interpreted as 20 clean pages.
+- Google retested the final deployed article at 19:07 UTC: **two valid items, one Article and one BreadcrumbList**. The optional author URL warning remains. Result: https://search.google.com/test/rich-results/result?id=T9NNpTlLKi7FsAv1NQjohw ; screenshot: `artifacts/seo/rich-results-final.png`.
+
+## Search Console analysis completed
+
+The owner identified the authorized business Google account; the correct domain property is now accessible. Daily performance over 487 days, complete visible page/query/device tables, an equal-length comparison around the observed break, indexing reason counts and 404/crawled-not-indexed inventories were saved privately in ignored `.runtime/gsc/`. The official CSV download did not complete, so provenance is explicitly **rendered UI table extraction**, with normalized CSV copies and validation of daily totals against the UI.
+
+The visibility decline is now dated and quantified; the private report distinguishes impressions from clicks and page aggregation from property aggregation. It does not infer lost visits or recovery. The homepage concentration changes the investigation priority; sitemap contraction alone is not an adequate explanation. Exact metrics and query data remain outside this public repository in `.runtime/gsc/TRAFFIC-RECOVERY.md`.
+
+Manual actions and security reports both show no issues. Current submitted sitemaps are processed successfully; one obsolete API sitemap retains a historical fetch failure. Both mobile and desktop CWV reports have insufficient usage data over the last 90 days (updated October 17). No account permissions, sitemap submissions, validation batches or reindexing requests were changed.
+
+The final targeted 21-route production probe returned 18 successful pages and three expected unknown-URL 404s, with no unexpected failures. Artifact: `artifacts/seo/post-deploy-targeted.json`.
+
+## Remaining work
+
+1. Monitor comparable Search Console windows using the private baseline; investigate homepage visibility without attributing the decline to a deployment solely from timing. Do not infer recovery from a release or a Lighthouse score.
+2. Human editorial review of 35 flagged posts: factual sources, 12 short bodies, duplicate consolidation, image provenance and visible AI-assistance disclosure where relevant. Historical authorship has not been reassigned to the newly named editors.
+3. Resolve the pre-existing `/programas/deportes` sitemap/resolver mismatch; assess the three short discovery surfaces and remaining metadata warning.
+4. Investigate the workload behind MongoDB connection-pool exhaustion and SSR deadlines if it recurs. No arbitrary pool-size/rate-limit increase was applied, and production protections were retained.
+5. Complete the full end-to-end suite; field CWV cannot yet be assessed because Google reports insufficient data. No new recurring job, automatic editorial approval, reindexing batch or AdSense re-review was enabled.
