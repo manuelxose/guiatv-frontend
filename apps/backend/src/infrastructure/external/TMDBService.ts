@@ -3,6 +3,7 @@ import https from 'node:https';
 import { logger } from '../../shared/utils/logger';
 import type { StreamingProvidersService, WatchProvidersResult } from './StreamingProvidersService';
 import type { ICacheRepository } from '../../domain/repositories/ICacheRepository';
+import { tmdbAuth } from './tmdbAuth';
 
 export interface TMDBResult {
   id: number;
@@ -88,9 +89,10 @@ export class TMDBService {
         ? new https.Agent({ rejectUnauthorized: false })
         : undefined,
       headers: {
-        Authorization: `Bearer ${this.apiKey}`,
+        ...tmdbAuth(this.apiKey).headers,
         Accept: 'application/json',
       },
+      params: tmdbAuth(this.apiKey).params,
       // Reuse connections to avoid repeated TLS handshakes
       timeout: 8000,
     });

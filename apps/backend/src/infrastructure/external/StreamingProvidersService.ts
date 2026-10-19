@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import https from 'node:https';
 import { TMDBService } from './TMDBService';
+import { tmdbAuth } from './tmdbAuth';
 import type { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 
 export interface StreamingProvider {
@@ -56,9 +57,10 @@ export class StreamingProvidersService {
         ? new https.Agent({ rejectUnauthorized: false })
         : undefined,
       headers: {
-        Authorization: `Bearer ${this.apiKey}`,
+        ...tmdbAuth(this.apiKey).headers,
         Accept: 'application/json',
       },
+      params: tmdbAuth(this.apiKey).params,
       timeout: 8000,
     });
   }
