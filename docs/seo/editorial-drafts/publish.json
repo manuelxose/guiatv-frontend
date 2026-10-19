@@ -1,0 +1,44 @@
+[
+  {
+    "file": "01-champions-league-2026-27.md",
+    "slug": "donde-ver-champions-league-2026-27-espana",
+    "title": "Dónde ver la Champions League 2026-27 en España",
+    "excerpt": "Quién emite la Champions League 2026-27 en España según UEFA, qué se ve en abierto (la final en RTVE) y cómo localizar cada partido en la programación.",
+    "metaTitle": "Dónde ver la Champions League 2026-27 en España",
+    "metaDescription": "La Champions 2026-27 se emite en Movistar Plus+ (Telefónica, según UEFA) y la final de 2027 en abierto en RTVE. Cómo encontrar cada partido en TV.",
+    "keywords": ["dónde ver Champions League", "Champions League 2026-27 España TV"],
+    "categories": ["Fútbol", "Streaming"],
+    "targetQuery": "dónde ver champions league españa",
+    "relatedPlatformKeys": ["movistar-plus"],
+    "relatedRouteKeys": ["guide"],
+    "replaces": ["donde-ver-la-champions-league-2026-27-en-tv-y-streaming-en-espana", "donde-ver-champions-league-en-espana"]
+  },
+  {
+    "file": "02-laliga-2026-27.md",
+    "slug": "donde-ver-laliga-2026-27-espana",
+    "title": "Dónde ver LaLiga EA Sports 2026-27 en España",
+    "excerpt": "Cómo se reparten LaLiga EA Sports entre DAZN y Movistar Plus+ en 2026-27, qué incluye el plan de 9,99 € de Movistar Plus+ y dónde comprobar cada jornada.",
+    "metaTitle": "Dónde ver LaLiga EA Sports 2026-27 en España",
+    "metaDescription": "LaLiga 2026-27 se reparte entre DAZN y Movistar Plus+. Qué partidos emite cada uno, qué incluye el plan de 9,99 € y cómo ver cada jornada.",
+    "keywords": ["dónde ver LaLiga", "LaLiga EA Sports 2026-27 TV"],
+    "categories": ["Fútbol", "Streaming"],
+    "targetQuery": "dónde ver laliga",
+    "relatedPlatformKeys": ["movistar-plus"],
+    "relatedRouteKeys": ["guide", "comparison"],
+    "replaces": ["como-ver-laliga-en-streaming-en-espana-guia-2026", "como-ver-laliga-en-streaming-plataformas-precios-y-canales", "donde-ver-laliga-en-espana"]
+  },
+  {
+    "file": "03-precios-streaming-espana.md",
+    "slug": "precios-plataformas-streaming-espana",
+    "title": "Precios de las plataformas de streaming en España (octubre 2026)",
+    "excerpt": "Tabla con los precios mensuales de Netflix, HBO Max, Disney+, Prime, Apple TV y Movistar Plus+ en España, tomados de sus webs oficiales el 19 de octubre de 2026.",
+    "metaTitle": "Precios del streaming en España (octubre 2026)",
+    "metaDescription": "Precios de Netflix, HBO Max, Disney+, Prime, Apple TV y Movistar Plus+ en España según sus webs oficiales, con planes con anuncios y sin permanencia.",
+    "keywords": ["precios plataformas streaming España", "cuánto cuesta Netflix HBO Max Disney+"],
+    "categories": ["Streaming", "Plataformas"],
+    "targetQuery": "precio plataformas streaming españa",
+    "relatedPlatformKeys": [],
+    "relatedRouteKeys": ["platforms", "comparison"],
+    "replaces": ["comparativa-de-precios-de-plataformas-de-streaming-en-espana-netflix", "comparativa-de-plataformas-de-streaming-en-espana-precios-y-catalogo", "cuanto-cuesta-streaming-espana", "streaming-por-menos-de-10-euros", "plataformas-streaming-mas-baratas"]
+  }
+]
