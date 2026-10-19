@@ -83,6 +83,7 @@ const KNOWN_ROUTES = [
   /^\/prensa$/,
   /^\/program-full-details\/[^/]+$/,
   /^\/avisolegal$/,
+  /^\/politica-editorial$/,
   /^\/privacidad$/,
   /^\/cookies$/,
   /^\/terminos$/,

@@ -337,6 +337,14 @@ export const routes: Routes = [
     data: { layout: 'minimal-shell' },
   },
   {
+    path: 'politica-editorial',
+    loadComponent: () => import('./pages/editorial-policy/editorial-policy.component').then(
+      (m) => m.EditorialPolicyComponent
+    ),
+    title: 'Política editorial - Guía TV',
+    data: { layout: 'minimal-shell' },
+  },
+  {
     path: 'privacidad',
     loadComponent: () =>
       import('./pages/legal/privacy/privacy.component').then(
