@@ -27,19 +27,22 @@ import { StreamingViewComponent } from './views/streaming-view.component';
 import { StreamingComparisonComponent } from '../streaming-comparison/streaming-comparison.component';
 import { UnifiedTopNavTab } from '../../components/unified-top-nav/unified-top-nav.component';
 
-const TAB_META: Record<UnifiedGuideTab, { title: string; description: string; path: string }> = {
+const TAB_META: Record<UnifiedGuideTab, { title: string; seoTitle?: string; description: string; path: string }> = {
   live: {
     title: 'TV Directo',
+    seoTitle: 'TV en directo: qué emiten ahora los canales de España',
     description: 'Guía unificada de emisiones en directo, próximas franjas y parrilla completa.',
     path: APP_PATHS.guide,
   },
   discover: {
     title: 'Qué Ver',
+    seoTitle: 'Qué ver hoy en TV y streaming: películas, series y deporte',
     description: 'Descubre qué ver hoy mezclando TV en directo, catálogo editorial y streaming.',
     path: APP_PATHS.explore,
   },
   streaming: {
     title: 'Plataformas',
+    seoTitle: 'Plataformas de streaming en España: catálogo y novedades',
     description: 'Explora plataformas, novedades y catálogo en streaming dentro del mismo sistema.',
     path: APP_PATHS.platforms,
   },
@@ -240,7 +243,7 @@ export class UnifiedGuideComponent {
   private updateMeta(): void {
     const meta = this.pageMeta();
     this.meta.setMetaTags({
-      title: `${meta.title} | Guía TV`,
+      title: `${('seoTitle' in meta && meta.seoTitle) || meta.title} | Guía TV`,
       description: meta.description,
       canonicalUrl: meta.path,
       type: 'website',

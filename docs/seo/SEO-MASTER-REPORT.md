@@ -2,6 +2,31 @@
 
 > **Current continuation status:** the fixes and editorial policy are now committed and deployed as `30b41e3`, release `20261019210550`; CI and deployment passed. TecnoRia is confirmed as the owner's trade name; Max Nova, Beatriz Olmedo and Arturo Baroja are the configured human reviewers. Auctorio is assisted and its API approval credentials are removed. The complete public corpus is **52 posts, 35 with blocking editorial findings**, superseding the original default-limited 50-post count. A full 453-URL crawl and a final 20-URL recheck are recorded in [08 — automated continuation](08-AUTOMATED-CONTINUATION.md). The final recheck leaves one known sitemap 404 (`/programas/deportes`), three short discovery pages and one long title. **AdSense remains no-go.** Authorized Search Console access now works; the visibility decline is dated and quantified in the private local report `.runtime/gsc/TRAFFIC-RECOVERY.md`. Raw analytics and measured totals are deliberately excluded from this public repository. Sections below preserve the original audit state, including its superseded access and deployment blockers.
 
+## Continuation 2 (2026-10-19, runtime `b940130` + follow-up) — single running status
+
+**Evidence vs hypothesis.** Search Console data (private, `.runtime/gsc/`) shows the site never had meaningful organic visibility: its best period was impressions at average positions ~50–70 for generic head terms, with ~0 clicks. The 1 September cut-off is abrupt (day-level zero after ~55–60 impressions/day), but its cause is **unproven**: it coincides with the 31 Aug/1 Sep releases and is equally consistent with Google ceasing to show the home at positions 50–70. The later improvement in average position reflects a change in which queries still show, not a recovery. No recovery is claimed. Equivalent-window comparisons are in the private report.
+
+**Confirmed and fixed**
+| Defect | Cause (confirmed in code + production API) | Fix | Verified |
+|---|---|---|---|
+| `/programas/deportes` in sitemap, 404 (only 1 of 286 programme URLs) | slug resolver read a 500-row, start-sorted candidate set per search token; `searchTokens` also contains category/channel names, so "deportes" tags thousands of airings and never reached the exact title | resolve through distinct titles, then load the exact match (`CatalogService.findTvReadItemBySlug`) | unit tests; production after deploy: 200, own title/canonical, unknown slug still 404 noindex |
+| Home had no topical H1 (carousel title "Telediario 2" was the H1) | design: media-only hero | visible H1 "Programación de TV hoy en España" + intro; carousel title is H2 | SSR + 390/1440 px, production HTML: one H1 |
+| Generic titles on `/programacion-tv/que-ver-hoy` ("Qué Ver"), `/programacion-tv/guia-canales` ("TV Directo"), `/plataformas` | tab name reused as SEO title | descriptive `seoTitle` per tab | unit suite; production check pending |
+| Possible MongoDB pool exhaustion on cache expiry | **hypothesis, mechanism in code**: no coalescing of identical concurrent TV reads → N aggregations per expiry | single-flight in `TvReadQueryService` (no limit changes) | unit test; production effect unproven (SSH to the VPS was refused, logs not re-read) |
+
+**Tests.** Backend 343 pass / 0 fail / 1 skipped; frontend 255/255. Playwright, full local run: **81 passed, 26 failed, 4 skipped**. The same specs on the previous commit (`18f4ea6`) fail in the same way (24 failed; `home-live` failed there too; `admin-affiliate` desktop is flaky and passes on rerun). The failures are environmental (local data without live airings, TMDB 401, local 429 rate limit) and pre-existing: **the e2e suite is complete but not green; this is not a passing end-to-end run.**
+
+**Editorial.** Drafts prepared, not published, no human reviewer assigned: [`editorial-drafts/`](editorial-drafts/README.md) (Champions League 2026-27, LaLiga 2026-27) built only from primary sources (UEFA, LaLiga, DAZN) with unverified claims and prices omitted; consolidation map for the 52 posts with proposed redirects (nothing executed). The 35 blocking posts remain blocking.
+
+**Still open**
+1. Human review and approval of the drafts; editor decision on the consolidation map; blog slug redirect support not built (needs approval of what to redirect).
+2. 17 posts with hotlinked `auctorio.com` images and raw Markdown tokens; 23 AI posts without external sources.
+3. Short discovery pages (`/plataformas`, football today/live) and the 71-character Netflix-vs-Prime title.
+4. Home HTML carries ~650 KB of duplicated transfer state (61 KB brotli): low priority.
+5. Mongo pool / SSR timeouts: confirm in production logs after this release (needs server access).
+6. Field Core Web Vitals: insufficient Google data.
+7. Next Search Console comparison: same 28-day windows from 16 Nov 2026, home generic queries separately.
+
 Detail: [01 technical](01-TECHNICAL-AUDIT.md) · [02 traffic](02-TRAFFIC-RECOVERY.md) · [03 AdSense](03-ADSENSE-READINESS.md) · [04 implementation](04-IMPLEMENTATION-REPORT.md) · [05 content](05-CONTENT-STRATEGY.md) · [06 Auctorio](06-AUCTORIO-INTEGRATION.md) · [07 validation](07-VALIDATION.md) · [skills](SKILL-INVENTORY.md)
 
 ## 1. Executive summary
