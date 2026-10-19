@@ -1,0 +1,1178 @@
+{
+ "base": "https://guiaprogramaciontv.com",
+ "at": "2026-10-19T18:10:10.777Z",
+ "thresholds": {
+  "minWords": 250,
+  "minWordsAi": 600,
+  "dupJaccard": 0.35,
+  "staleDays": 45,
+  "metaTitle": 70,
+  "metaDesc": 170
+ },
+ "posts": [
+  {
+   "slug": "estrenos-en-streaming-esta-semana",
+   "origin": "human",
+   "words": 183,
+   "sources": 0,
+   "internal": 4,
+   "ageDays": 49,
+   "blocking": [
+    "thin body (183 words < 250)"
+   ],
+   "warn": [
+    "time-bound title not updated for 49 days"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "que-ver-hoy-en-tv-y-streaming",
+   "origin": "human",
+   "words": 275,
+   "sources": 0,
+   "internal": 9,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "time-bound title not updated for 49 days"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "mejores-series-netflix",
+   "origin": "human",
+   "words": 141,
+   "sources": 0,
+   "internal": 3,
+   "ageDays": 49,
+   "blocking": [
+    "thin body (141 words < 250)"
+   ],
+   "warn": [
+    "time-bound title not updated for 49 days"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "donde-ver-la-champions-league-2026-27-en-tv-y-streaming-en-espana",
+   "origin": "ai-assisted",
+   "words": 1262,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "time-bound title not updated for 47 days",
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "comparativa-de-precios-de-plataformas-de-streaming-en-espana-netflix",
+   "origin": "ai-assisted",
+   "words": 1702,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "donde-ver-deporte-gratis-en-tv-en-espana-canales-en-abierto-y-opcion",
+   "origin": "ai-assisted",
+   "words": 1221,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "mejores-series-de-estreno-en-septiembre-2026-no-te-las-pierdas",
+   "origin": "ai-assisted",
+   "words": 1991,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML",
+    "raw markdown tokens in excerpt"
+   ],
+   "warn": [
+    "time-bound title not updated for 47 days",
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "las-mejores-peliculas-que-llegan-a-las-plataformas-en-septiembre-de-2",
+   "origin": "ai-assisted",
+   "words": 1432,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "como-ver-laliga-en-streaming-en-espana-guia-2026",
+   "origin": "ai-assisted",
+   "words": 1591,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "time-bound title not updated for 47 days",
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "estrenos-de-cine-de-la-semana-que-ver-en-cines",
+   "origin": "ai-assisted",
+   "words": 1330,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "donde-ver-la-vuelta-2026-en-tv-y-streaming-canales-horarios-y-opcio",
+   "origin": "ai-assisted",
+   "words": 1896,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "time-bound title not updated for 47 days",
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "canales-de-cine-en-tdt-guia-completa-para-ver-peliculas-gratis-hoy",
+   "origin": "ai-assisted",
+   "words": 1244,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "time-bound title not updated for 47 days",
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "comparativa-de-plataformas-de-streaming-en-espana-precios-y-catalogo",
+   "origin": "ai-assisted",
+   "words": 1807,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "deporte-en-abierto-programacion-de-esport3-y-la-otra-semana-del-25",
+   "origin": "ai-assisted",
+   "words": 1117,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "como-ver-laliga-en-streaming-plataformas-precios-y-canales",
+   "origin": "ai-assisted",
+   "words": 2109,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "como-ver-la-vuelta-2026-en-tv-y-streaming-canales-y-horarios",
+   "origin": "ai-assisted",
+   "words": 1271,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "time-bound title not updated for 47 days",
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "canales-infantiles-en-tdt-boing-sx3-y-clan-guia-de-programacion",
+   "origin": "ai-assisted",
+   "words": 1274,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "anoche-conquiste-tebas",
+   "origin": "ai-assisted",
+   "words": 874,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML",
+    "raw markdown tokens in excerpt"
+   ],
+   "warn": [
+    "time-bound title not updated for 47 days",
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "katy-perry-the-lifetimes-tour-live-from-paris",
+   "origin": "ai-assisted",
+   "words": 1088,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 47,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML",
+    "raw markdown tokens in excerpt"
+   ],
+   "warn": [
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "harry-potter-y-la-piedra-filosofal",
+   "origin": "ai-assisted",
+   "words": 1122,
+   "sources": 0,
+   "internal": 0,
+   "ageDays": 48,
+   "blocking": [
+    "no external source link (non-human origin)",
+    "raw markdown tokens in HTML"
+   ],
+   "warn": [
+    "auto-truncated seo metadata (ends with …)",
+    "hotlinked image on auctorio.com (no own copy/licence record)",
+    "no internal links"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "como-saber-que-ver-esta-noche",
+   "origin": "ai-assisted",
+   "words": 847,
+   "sources": 3,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 9 post(s)"
+   ],
+   "dupes": [
+    [
+     "donde-ver-champions-league-en-espana",
+     0.45
+    ],
+    [
+     "estrenos-streaming-del-mes",
+     0.4
+    ],
+    [
+     "streaming-por-menos-de-10-euros",
+     0.38
+    ],
+    [
+     "mejor-plataforma-streaming-familias",
+     0.37
+    ],
+    [
+     "donde-ver-laliga-en-espana",
+     0.39
+    ],
+    [
+     "futbol-hoy-en-tv",
+     0.4
+    ],
+    [
+     "series-hoy-en-tv",
+     0.4
+    ],
+    [
+     "peliculas-hoy-en-tv",
+     0.39
+    ],
+    [
+     "que-ver-en-familia-este-fin-de-semana",
+     0.43
+    ]
+   ]
+  },
+  {
+   "slug": "donde-ver-champions-league-en-espana",
+   "origin": "ai-assisted",
+   "words": 871,
+   "sources": 0,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [
+    "no external source link (non-human origin)"
+   ],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 9 post(s)"
+   ],
+   "dupes": [
+    [
+     "como-saber-que-ver-esta-noche",
+     0.45
+    ],
+    [
+     "estrenos-streaming-del-mes",
+     0.39
+    ],
+    [
+     "streaming-por-menos-de-10-euros",
+     0.37
+    ],
+    [
+     "mejor-plataforma-streaming-familias",
+     0.37
+    ],
+    [
+     "donde-ver-laliga-en-espana",
+     0.4
+    ],
+    [
+     "futbol-hoy-en-tv",
+     0.4
+    ],
+    [
+     "series-hoy-en-tv",
+     0.39
+    ],
+    [
+     "peliculas-hoy-en-tv",
+     0.39
+    ],
+    [
+     "que-ver-en-familia-este-fin-de-semana",
+     0.41
+    ]
+   ]
+  },
+  {
+   "slug": "mejores-series-max-espana",
+   "origin": "ai-assisted",
+   "words": 888,
+   "sources": 1,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 6 post(s)"
+   ],
+   "dupes": [
+    [
+     "mejores-series-prime-video-espana",
+     0.42
+    ],
+    [
+     "mejores-peliculas-max-espana",
+     0.43
+    ],
+    [
+     "mejores-peliculas-prime-video-espana",
+     0.4
+    ],
+    [
+     "mejores-peliculas-netflix-espana",
+     0.39
+    ],
+    [
+     "mejores-plataformas-para-series",
+     0.38
+    ],
+    [
+     "mejores-plataformas-para-peliculas",
+     0.37
+    ]
+   ]
+  },
+  {
+   "slug": "mejores-series-prime-video-espana",
+   "origin": "ai-assisted",
+   "words": 888,
+   "sources": 1,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 6 post(s)"
+   ],
+   "dupes": [
+    [
+     "mejores-series-max-espana",
+     0.42
+    ],
+    [
+     "mejores-peliculas-max-espana",
+     0.41
+    ],
+    [
+     "mejores-peliculas-prime-video-espana",
+     0.4
+    ],
+    [
+     "mejores-peliculas-netflix-espana",
+     0.39
+    ],
+    [
+     "mejores-plataformas-para-series",
+     0.37
+    ],
+    [
+     "mejores-plataformas-para-peliculas",
+     0.37
+    ]
+   ]
+  },
+  {
+   "slug": "mejores-peliculas-max-espana",
+   "origin": "ai-assisted",
+   "words": 896,
+   "sources": 1,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 6 post(s)"
+   ],
+   "dupes": [
+    [
+     "mejores-series-max-espana",
+     0.43
+    ],
+    [
+     "mejores-series-prime-video-espana",
+     0.41
+    ],
+    [
+     "mejores-peliculas-prime-video-espana",
+     0.4
+    ],
+    [
+     "mejores-peliculas-netflix-espana",
+     0.39
+    ],
+    [
+     "mejores-plataformas-para-series",
+     0.37
+    ],
+    [
+     "mejores-plataformas-para-peliculas",
+     0.37
+    ]
+   ]
+  },
+  {
+   "slug": "mejores-peliculas-prime-video-espana",
+   "origin": "ai-assisted",
+   "words": 962,
+   "sources": 1,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 6 post(s)"
+   ],
+   "dupes": [
+    [
+     "mejores-series-max-espana",
+     0.4
+    ],
+    [
+     "mejores-series-prime-video-espana",
+     0.4
+    ],
+    [
+     "mejores-peliculas-max-espana",
+     0.4
+    ],
+    [
+     "mejores-peliculas-netflix-espana",
+     0.37
+    ],
+    [
+     "mejores-plataformas-para-series",
+     0.35
+    ],
+    [
+     "mejores-plataformas-para-peliculas",
+     0.36
+    ]
+   ]
+  },
+  {
+   "slug": "mejores-peliculas-netflix-espana",
+   "origin": "ai-assisted",
+   "words": 981,
+   "sources": 1,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 4 post(s)"
+   ],
+   "dupes": [
+    [
+     "mejores-series-max-espana",
+     0.39
+    ],
+    [
+     "mejores-series-prime-video-espana",
+     0.39
+    ],
+    [
+     "mejores-peliculas-max-espana",
+     0.39
+    ],
+    [
+     "mejores-peliculas-prime-video-espana",
+     0.37
+    ]
+   ]
+  },
+  {
+   "slug": "estrenos-streaming-del-mes",
+   "origin": "ai-assisted",
+   "words": 982,
+   "sources": 4,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 5 post(s)"
+   ],
+   "dupes": [
+    [
+     "como-saber-que-ver-esta-noche",
+     0.4
+    ],
+    [
+     "donde-ver-champions-league-en-espana",
+     0.39
+    ],
+    [
+     "streaming-por-menos-de-10-euros",
+     0.35
+    ],
+    [
+     "futbol-hoy-en-tv",
+     0.36
+    ],
+    [
+     "que-ver-en-familia-este-fin-de-semana",
+     0.37
+    ]
+   ]
+  },
+  {
+   "slug": "cuanto-cuesta-streaming-espana",
+   "origin": "ai-assisted",
+   "words": 1052,
+   "sources": 8,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 1 post(s)"
+   ],
+   "dupes": [
+    [
+     "max-vs-disney-plus-espana",
+     0.35
+    ]
+   ]
+  },
+  {
+   "slug": "streaming-por-menos-de-10-euros",
+   "origin": "ai-assisted",
+   "words": 1056,
+   "sources": 2,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 3 post(s)"
+   ],
+   "dupes": [
+    [
+     "como-saber-que-ver-esta-noche",
+     0.38
+    ],
+    [
+     "donde-ver-champions-league-en-espana",
+     0.37
+    ],
+    [
+     "estrenos-streaming-del-mes",
+     0.35
+    ]
+   ]
+  },
+  {
+   "slug": "mejor-plataforma-streaming-familias",
+   "origin": "ai-assisted",
+   "words": 1054,
+   "sources": 3,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 3 post(s)"
+   ],
+   "dupes": [
+    [
+     "como-saber-que-ver-esta-noche",
+     0.37
+    ],
+    [
+     "donde-ver-champions-league-en-espana",
+     0.37
+    ],
+    [
+     "que-ver-en-familia-este-fin-de-semana",
+     0.35
+    ]
+   ]
+  },
+  {
+   "slug": "mejores-plataformas-para-series",
+   "origin": "ai-assisted",
+   "words": 1041,
+   "sources": 4,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 4 post(s)"
+   ],
+   "dupes": [
+    [
+     "mejores-series-max-espana",
+     0.38
+    ],
+    [
+     "mejores-series-prime-video-espana",
+     0.37
+    ],
+    [
+     "mejores-peliculas-max-espana",
+     0.37
+    ],
+    [
+     "mejores-peliculas-prime-video-espana",
+     0.35
+    ]
+   ]
+  },
+  {
+   "slug": "mejores-plataformas-para-peliculas",
+   "origin": "ai-assisted",
+   "words": 1059,
+   "sources": 3,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 4 post(s)"
+   ],
+   "dupes": [
+    [
+     "mejores-series-max-espana",
+     0.37
+    ],
+    [
+     "mejores-series-prime-video-espana",
+     0.37
+    ],
+    [
+     "mejores-peliculas-max-espana",
+     0.37
+    ],
+    [
+     "mejores-peliculas-prime-video-espana",
+     0.36
+    ]
+   ]
+  },
+  {
+   "slug": "movistar-plus-vs-dazn",
+   "origin": "ai-assisted",
+   "words": 1155,
+   "sources": 0,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [
+    "no external source link (non-human origin)"
+   ],
+   "warn": [],
+   "dupes": []
+  },
+  {
+   "slug": "max-vs-disney-plus-espana",
+   "origin": "ai-assisted",
+   "words": 1144,
+   "sources": 4,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 1 post(s)"
+   ],
+   "dupes": [
+    [
+     "cuanto-cuesta-streaming-espana",
+     0.35
+    ]
+   ]
+  },
+  {
+   "slug": "netflix-vs-max-espana",
+   "origin": "ai-assisted",
+   "words": 1175,
+   "sources": 4,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [],
+   "dupes": []
+  },
+  {
+   "slug": "netflix-vs-prime-video-espana",
+   "origin": "ai-assisted",
+   "words": 1187,
+   "sources": 4,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "metaTitle too long"
+   ],
+   "dupes": []
+  },
+  {
+   "slug": "donde-ver-laliga-en-espana",
+   "origin": "ai-assisted",
+   "words": 1038,
+   "sources": 0,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [
+    "no external source link (non-human origin)"
+   ],
+   "warn": [
+    "near-duplicate (4-gram Jaccard >= 0.35) of 4 post(s)"
+   ],
+   "dupes": [
+    [
+     "como-saber-que-ver-esta-noche",
+     0.39
+    ],
+    [
+     "donde-ver-champions-league-en-espana",
+     0.4
+    ],
+    [
+     "futbol-hoy-en-tv",
+     0.36
+    ],
+    [
+     "que-ver-en-familia-este-fin-de-semana",
+     0.36
+    ]
+   ]
+  },
+  {
+   "slug": "futbol-hoy-en-tv",
+   "origin": "ai-assisted",
+   "words": 1000,
+   "sources": 0,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [
+    "no external source link (non-human origin)"
+   ],
+   "warn": [
+    "time-bound title not updated for 49 days",
+    "near-duplicate (4-gram Jaccard >= 0.35) of 7 post(s)"
+   ],
+   "dupes": [
+    [
+     "como-saber-que-ver-esta-noche",
+     0.4
+    ],
+    [
+     "donde-ver-champions-league-en-espana",
+     0.4
+    ],
+    [
+     "estrenos-streaming-del-mes",
+     0.36
+    ],
+    [
+     "donde-ver-laliga-en-espana",
+     0.36
+    ],
+    [
+     "series-hoy-en-tv",
+     0.36
+    ],
+    [
+     "peliculas-hoy-en-tv",
+     0.37
+    ],
+    [
+     "que-ver-en-familia-este-fin-de-semana",
+     0.37
+    ]
+   ]
+  },
+  {
+   "slug": "series-hoy-en-tv",
+   "origin": "ai-assisted",
+   "words": 1041,
+   "sources": 0,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [
+    "no external source link (non-human origin)"
+   ],
+   "warn": [
+    "time-bound title not updated for 49 days",
+    "near-duplicate (4-gram Jaccard >= 0.35) of 5 post(s)"
+   ],
+   "dupes": [
+    [
+     "como-saber-que-ver-esta-noche",
+     0.4
+    ],
+    [
+     "donde-ver-champions-league-en-espana",
+     0.39
+    ],
+    [
+     "futbol-hoy-en-tv",
+     0.36
+    ],
+    [
+     "peliculas-hoy-en-tv",
+     0.36
+    ],
+    [
+     "que-ver-en-familia-este-fin-de-semana",
+     0.36
+    ]
+   ]
+  },
+  {
+   "slug": "peliculas-hoy-en-tv",
+   "origin": "ai-assisted",
+   "words": 1028,
+   "sources": 0,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [
+    "no external source link (non-human origin)"
+   ],
+   "warn": [
+    "time-bound title not updated for 49 days",
+    "near-duplicate (4-gram Jaccard >= 0.35) of 5 post(s)"
+   ],
+   "dupes": [
+    [
+     "como-saber-que-ver-esta-noche",
+     0.39
+    ],
+    [
+     "donde-ver-champions-league-en-espana",
+     0.39
+    ],
+    [
+     "futbol-hoy-en-tv",
+     0.37
+    ],
+    [
+     "series-hoy-en-tv",
+     0.36
+    ],
+    [
+     "que-ver-en-familia-este-fin-de-semana",
+     0.37
+    ]
+   ]
+  },
+  {
+   "slug": "que-ver-en-familia-este-fin-de-semana",
+   "origin": "ai-assisted",
+   "words": 957,
+   "sources": 2,
+   "internal": 1,
+   "ageDays": 49,
+   "blocking": [],
+   "warn": [
+    "time-bound title not updated for 49 days",
+    "near-duplicate (4-gram Jaccard >= 0.35) of 8 post(s)"
+   ],
+   "dupes": [
+    [
+     "como-saber-que-ver-esta-noche",
+     0.43
+    ],
+    [
+     "donde-ver-champions-league-en-espana",
+     0.41
+    ],
+    [
+     "estrenos-streaming-del-mes",
+     0.37
+    ],
+    [
+     "mejor-plataforma-streaming-familias",
+     0.35
+    ],
+    [
+     "donde-ver-laliga-en-espana",
+     0.36
+    ],
+    [
+     "futbol-hoy-en-tv",
+     0.37
+    ],
+    [
+     "series-hoy-en-tv",
+     0.36
+    ],
+    [
+     "peliculas-hoy-en-tv",
+     0.37
+    ]
+   ]
+  },
+  {
+   "slug": "donde-ver-series-espanolas",
+   "origin": "human",
+   "words": 171,
+   "sources": 0,
+   "internal": 3,
+   "ageDays": 49,
+   "blocking": [
+    "thin body (171 words < 250)"
+   ],
+   "warn": [],
+   "dupes": []
+  },
+  {
+   "slug": "que-ver-esta-noche-en-la-tdt",
+   "origin": "human",
+   "words": 195,
+   "sources": 0,
+   "internal": 4,
+   "ageDays": 49,
+   "blocking": [
+    "thin body (195 words < 250)"
+   ],
+   "warn": [],
+   "dupes": []
+  },
+  {
+   "slug": "mejores-canales-tdt-para-cine-y-series",
+   "origin": "human",
+   "words": 87,
+   "sources": 0,
+   "internal": 4,
+   "ageDays": 49,
+   "blocking": [
+    "thin body (87 words < 250)"
+   ],
+   "warn": [],
+   "dupes": []
+  },
+  {
+   "slug": "que-plataforma-tiene-mas-peliculas",
+   "origin": "human",
+   "words": 79,
+   "sources": 0,
+   "internal": 2,
+   "ageDays": 49,
+   "blocking": [
+    "thin body (79 words < 250)"
+   ],
+   "warn": [],
+   "dupes": []
+  },
+  {
+   "slug": "plataformas-streaming-mas-baratas",
+   "origin": "human",
+   "words": 105,
+   "sources": 0,
+   "internal": 2,
+   "ageDays": 49,
+   "blocking": [
+    "thin body (105 words < 250)"
+   ],
+   "warn": [],
+   "dupes": []
+  },
+  {
+   "slug": "mejores-animes-crunchyroll",
+   "origin": "human",
+   "words": 73,
+   "sources": 0,
+   "internal": 3,
+   "ageDays": 49,
+   "blocking": [
+    "thin body (73 words < 250)"
+   ],
+   "warn": [],
+   "dupes": []
+  },
+  {
+   "slug": "mejores-series-movistar-plus",
+   "origin": "human",
+   "words": 73,
+   "sources": 0,
+   "internal": 2,
+   "ageDays": 49,
+   "blocking": [
+    "thin body (73 words < 250)"
+   ],
+   "warn": [],
+   "dupes": []
+  },
+  {
+   "slug": "mejores-series-disney-plus",
+   "origin": "human",
+   "words": 79,
+   "sources": 0,
+   "internal": 2,
+   "ageDays": 49,
+   "blocking": [
+    "thin body (79 words < 250)"
+   ],
+   "warn": [],
+   "dupes": []
+  }
+ ]
+}

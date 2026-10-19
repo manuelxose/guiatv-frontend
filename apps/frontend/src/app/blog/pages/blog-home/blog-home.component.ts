@@ -143,6 +143,7 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.error = 'No se han podido cargar las publicaciones. Comprueba tu conexión e inténtalo de nuevo.';
+          this.metaService.markUnavailable('Editorial no disponible | Guía TV', '/editorial');
           this.loading = false;
           this.changeDetector.markForCheck();
         },

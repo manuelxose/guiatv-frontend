@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   assertEditorialPostCanBeApproved,
+  assertReviewerIsAccountable,
   buildEditorialApproval,
   PUBLIC_EDITORIAL_FILTER,
 } from './EditorialReviewPolicy';
@@ -59,4 +60,32 @@ test('approval records reviewer and publishes in one auditable transition', () =
 
 test('approval requires a named reviewer distinct from content generation', () => {
   assert.throws(() => buildEditorialApproval(validPost, '', new Date()), /reviewer/i);
+});
+
+test('approval rejects leftover markdown and unsourced non-human content', () => {
+  assert.throws(
+    () => assertEditorialPostCanBeApproved({ ...validPost, content: `${validPost.content}<p>### Título</p>` }),
+    /markdown/i
+  );
+  assert.throws(
+    () => assertEditorialPostCanBeApproved({ ...validPost, origin: 'ai-assisted' }),
+    /fuentes/i
+  );
+  assert.doesNotThrow(() =>
+    assertEditorialPostCanBeApproved({
+      ...validPost,
+      origin: 'ai-assisted',
+      content: `${validPost.content}<p><a href="https://help.netflix.com/es-es">Netflix</a></p>`,
+    })
+  );
+  assert.doesNotThrow(() => assertEditorialPostCanBeApproved({ ...validPost, origin: 'human' }));
+});
+
+test('reviewer must be a person: machine identities and non-allowlisted names are refused', () => {
+  assert.throws(() => assertReviewerIsAccountable('auctorio-quality-gate', ''), /accountable person/);
+  assert.throws(() => assertReviewerIsAccountable('auctorio-quality-gate', 'auctorio-quality-gate'), /accountable person/);
+  assert.doesNotThrow(() => assertReviewerIsAccountable('Ana Gates', ''));
+  assert.throws(() => assertReviewerIsAccountable('Ana Gates', 'maria@guia.test'), /accountable person/);
+  assert.doesNotThrow(() => assertReviewerIsAccountable('Maria@guia.test', 'maria@guia.test'));
+  assert.throws(() => buildEditorialApproval(validPost, 'auctorio-quality-gate', new Date(), ''), /accountable person/);
 });

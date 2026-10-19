@@ -266,8 +266,13 @@ export class CatalogService {
   }
 
   getDetail(catalogId: string): Observable<CatalogItem | null> {
+    return this.getDetailState(catalogId).pipe(map((state) => state.data));
+  }
+
+  /** Like `getDetail`, but keeps `unavailable`/`status` so callers can tell "not found" from "backend failed". */
+  getDetailState(catalogId: string): Observable<CatalogRequestState<CatalogItem | null>> {
     if (!catalogId) {
-      return of(null);
+      return of(this.toState(null, false, false));
     }
 
     return this.requestState<CatalogItem | null>({
@@ -281,7 +286,7 @@ export class CatalogService {
             { headers: this.getAuthHeaders() }
           )
           .pipe(map((resp) => resp?.data || null)),
-    }).pipe(map((state) => state.data));
+    });
   }
 
   getPlatforms(): Observable<CatalogPlatform[]> {
@@ -323,8 +328,16 @@ export class CatalogService {
   }
 
   getBySlug(contentType: CatalogContentType, slug: string): Observable<CatalogItem | null> {
+    return this.getBySlugState(contentType, slug).pipe(map((state) => state.data));
+  }
+
+  /** Like `getBySlug`, but keeps `unavailable`/`status` so callers can tell "not found" from "backend failed". */
+  getBySlugState(
+    contentType: CatalogContentType,
+    slug: string
+  ): Observable<CatalogRequestState<CatalogItem | null>> {
     if (!contentType || !slug) {
-      return of(null);
+      return of(this.toState(null, false, false));
     }
 
     const normalizedSlug = String(slug).trim().toLowerCase();
@@ -339,7 +352,7 @@ export class CatalogService {
             { headers: this.getAuthHeaders() }
           )
           .pipe(map((resp) => resp?.data || null)),
-    }).pipe(map((state) => state.data));
+    });
   }
 
   /**

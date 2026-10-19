@@ -1,0 +1,46 @@
+name: SEO regression
+
+on:
+  pull_request:
+    paths:
+      - 'apps/frontend/**'
+      - 'apps/backend/src/**'
+      - 'scripts/seo-*.mjs'
+  workflow_dispatch:
+  # Weekly live crawl is intentionally NOT scheduled until the owner approves it:
+  # schedule:
+  #   - cron: '0 6 * * 1'
+
+jobs:
+  ssr-resilience:
+    # API down => data routes must answer 503/no-store/noindex, never a cacheable 200 or a false 404.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npm run build:frontend
+      - run: npm run seo:ssr-resilience
+
+  live-crawl:
+    # Read-only audit of production; only on manual dispatch.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/seo-crawl.mjs --out seo-crawl.json
+      - run: node scripts/editorial-audit.mjs --json editorial-audit.json
+        continue-on-error: true # findings are review prompts; the crawl above is the hard gate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: seo-reports
+          path: |
+            seo-crawl.json
+            editorial-audit.json
