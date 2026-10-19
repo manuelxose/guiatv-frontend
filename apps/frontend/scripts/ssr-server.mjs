@@ -299,6 +299,7 @@ app.get('/programacion-tv/en-directo', (_req, res) => {
   res.redirect(301, '/programacion-tv/guia-canales');
 });
 // Editorial posts merged into one canonical guide (docs/seo/editorial-drafts/consolidation-map.md): old slug -> new slug.
+const PLAN_GUIDE = 'netflix-hbo-max-disney-prime-video-que-plan-elegir';
 const EDITORIAL_REDIRECTS = {
   'donde-ver-la-champions-league-2026-27-en-tv-y-streaming-en-espana': 'donde-ver-champions-league-2026-27-espana',
   'donde-ver-champions-league-en-espana': 'donde-ver-champions-league-2026-27-espana',
@@ -310,13 +311,26 @@ const EDITORIAL_REDIRECTS = {
   'cuanto-cuesta-streaming-espana': 'precios-plataformas-streaming-espana',
   'streaming-por-menos-de-10-euros': 'precios-plataformas-streaming-espana',
   'plataformas-streaming-mas-baratas': 'precios-plataformas-streaming-espana',
-  'netflix-vs-max-espana': 'netflix-hbo-max-disney-prime-video-que-plan-elegir',
-  'max-vs-disney-plus-espana': 'netflix-hbo-max-disney-prime-video-que-plan-elegir',
-  'netflix-vs-prime-video-espana': 'netflix-hbo-max-disney-prime-video-que-plan-elegir',
+  'netflix-vs-max-espana': PLAN_GUIDE,
+  'max-vs-disney-plus-espana': PLAN_GUIDE,
+  'netflix-vs-prime-video-espana': PLAN_GUIDE,
+  'mejores-plataformas-para-series': PLAN_GUIDE,
+  'mejores-plataformas-para-peliculas': PLAN_GUIDE,
+  'mejor-plataforma-streaming-familias': PLAN_GUIDE,
+  'que-plataforma-tiene-mas-peliculas': PLAN_GUIDE,
+  // "hoy en TV" posts duplicated live pages: send readers to the live page (a value starting with "/" is a full path)
+  'futbol-hoy-en-tv': '/deportes/futbol/partidos-hoy',
+  'series-hoy-en-tv': '/programacion-tv/series',
+  'peliculas-hoy-en-tv': '/programacion-tv/peliculas',
+  'que-ver-hoy-en-tv-y-streaming': '/programacion-tv/que-ver-hoy',
+  'como-saber-que-ver-esta-noche': '/programacion-tv/que-ver-hoy',
+  'que-ver-esta-noche-en-la-tdt': '/programacion-tv/que-ver-hoy',
+  'que-ver-en-familia-este-fin-de-semana': '/programacion-tv/que-ver-hoy',
+  'mejores-canales-tdt-para-cine-y-series': 'canales-de-cine-en-tdt-guia-completa-para-ver-peliculas-gratis-hoy',
 };
 app.get('/editorial/:slug', (req, res, next) => {
   const target = EDITORIAL_REDIRECTS[req.params.slug];
-  return target ? res.redirect(301, `/editorial/${target}`) : next();
+  return target ? res.redirect(301, target.startsWith('/') ? target : `/editorial/${target}`) : next();
 });
 app.get('/blog/top10', (_req, res) => res.redirect(301, '/editorial/rankings'));
 app.get('/blog/categoria/:slug', (req, res) => res.redirect(301, `/editorial/categoria/${req.params.slug}`));
