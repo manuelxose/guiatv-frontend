@@ -323,6 +323,7 @@ export class EditorialService {
       readingMinutes,
       tocItems: readingMinutes >= 5 ? contentWithHeadings.tocItems : [],
       author: this.normalizeAuthor(rawPost?.author),
+      reviewedBy: this.ensureString(rawPost?.reviewedBy) || null,
       canonicalPath: `/editorial/${rawPost?.slug}`,
       categories,
       primaryCategory: categories[0] ?? null,

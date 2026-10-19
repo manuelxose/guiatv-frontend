@@ -523,6 +523,8 @@ export class BlogController {
       contentType: post.contentType || 'guide',
       featured: Boolean(post.featured),
       author: post.author || null,
+      // Shown as the byline's reviewer; only an approval made through the human review gate sets it.
+      reviewedBy: post.reviewState === 'approved' ? post.reviewedBy || null : null,
       primaryIntent: post.primaryIntent || '',
       targetQuery: post.targetQuery || '',
       relatedPlatformKeys: Array.isArray(post.relatedPlatformKeys)
