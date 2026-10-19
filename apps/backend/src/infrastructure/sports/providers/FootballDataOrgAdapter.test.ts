@@ -4,6 +4,8 @@ import {
   dedupeTeamsFromMatches,
   extractSlugDate,
   filterMatchesByIsoDay,
+  madridDayQueryRange,
+  fixturesAroundNow,
   findTeamBySlugInMatches,
   mapFootballDataOrgCompetition,
   mapFootballDataOrgMatch,
@@ -120,6 +122,28 @@ test('filterMatchesByIsoDay provides an exact fallback when upstream day filters
   const target = mapFootballDataOrgMatch(rawMatch({ id: 1, utcDate: '2026-09-05T20:00:00Z' }))!;
   const other = mapFootballDataOrgMatch(rawMatch({ id: 2, utcDate: '2026-09-06T18:00:00Z' }))!;
   assert.deepEqual(filterMatchesByIsoDay([target, other], '20260905').map((match) => match.id), ['1']);
+});
+
+test('filterMatchesByIsoDay cuts the Spanish calendar day, not the UTC one', () => {
+  const lateMadrid = mapFootballDataOrgMatch(rawMatch({ id: 3, utcDate: '2026-10-24T22:30:00Z' }))!; // 00:30 on the 25th in Madrid
+  const evening = mapFootballDataOrgMatch(rawMatch({ id: 4, utcDate: '2026-10-24T19:00:00Z' }))!;
+  assert.deepEqual(filterMatchesByIsoDay([lateMadrid, evening], '20261024').map((m) => m.id), ['4']);
+  assert.deepEqual(filterMatchesByIsoDay([lateMadrid, evening], '20261025').map((m) => m.id), ['3']);
+});
+
+test('madridDayQueryRange spans the neighbouring UTC days, never a single-day range', () => {
+  assert.deepEqual(madridDayQueryRange('20261024'), { dateFrom: '2026-10-23', dateTo: '2026-10-25' });
+  assert.deepEqual(madridDayQueryRange('20270101'), { dateFrom: '2026-12-31', dateTo: '2027-01-02' });
+});
+
+test('fixturesAroundNow keeps recent results and upcoming fixtures, not the season opener', () => {
+  const season = Array.from({ length: 38 }, (_, i) =>
+    mapFootballDataOrgMatch(rawMatch({ id: i + 1, utcDate: new Date(Date.UTC(2026, 7, 15) + i * 7 * 86_400_000).toISOString() }))!
+  );
+  const now = Date.UTC(2026, 9, 20); // matchday 10 (index 9) is 17 Oct, 11 is 24 Oct
+  const picked = fixturesAroundNow(season, 8, now).map((m) => Number(m.id));
+  assert.deepEqual(picked, [9, 10, 11, 12, 13, 14, 15, 16]);
+  assert.deepEqual(fixturesAroundNow(season, 8, Date.UTC(2027, 6, 1)).map((m) => Number(m.id)), [31, 32, 33, 34, 35, 36, 37, 38]);
 });
 
 // Regression: getTeam() had the same id/slug bug as getMatch()/getStandings()
