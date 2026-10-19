@@ -10,6 +10,7 @@ interface ApprovableEditorialPost {
   title?: string;
   excerpt?: string;
   content?: string;
+  origin?: string;
   author?: { name?: string; id?: string };
   seo?: { metaTitle?: string; metaDescription?: string };
   categories?: Array<{ name?: string; slug?: string }>;
@@ -64,6 +65,13 @@ function hasEntertainmentSignal(post: ApprovableEditorialPost): boolean {
   return ENTERTAINMENT_SIGNAL_KEYWORDS.some((keyword) => contentHaystack.includes(keyword));
 }
 
+const hasExternalSource = (html: string | undefined): boolean =>
+  /href=["']https?:\/\/(?!(?:www\.)?guiaprogramaciontv\.com)/i.test(String(html || ''));
+
+// Markdown that reached the HTML body renders as literal `**` / `###` characters.
+const hasRawMarkdown = (html: string | undefined): boolean =>
+  /\*\*[^*<>\n]+\*\*|<p>\s*#{1,6}\s/.test(String(html || ''));
+
 export function assertEditorialPostCanBeApproved(post: ApprovableEditorialPost): void {
   const failures: string[] = [];
   if (!String(post.title || '').trim()) failures.push('title');
@@ -74,6 +82,11 @@ export function assertEditorialPostCanBeApproved(post: ApprovableEditorialPost):
   }
   if (!String(post.seo?.metaTitle || '').trim()) failures.push('seo.metaTitle');
   if (!String(post.seo?.metaDescription || '').trim()) failures.push('seo.metaDescription');
+  if (hasRawMarkdown(post.content)) failures.push('markdown sin convertir en el contenido');
+  // Human-written pieces may rely on first-hand knowledge; machine-assisted ones must show where facts come from.
+  if (post.origin && post.origin !== 'human' && !hasExternalSource(post.content)) {
+    failures.push('fuentes (al menos un enlace externo para contenido no humano)');
+  }
   if (!hasEntertainmentSignal(post)) {
     failures.push('relevancia editorial (sin señales de cine, series, TV o streaming)');
   }
@@ -83,10 +96,29 @@ export function assertEditorialPostCanBeApproved(post: ApprovableEditorialPost):
   }
 }
 
+// A bot identity in `reviewedBy` is not editorial review. EDITORIAL_HUMAN_REVIEWERS (comma-separated)
+// pins approvals to named people; without it only the known machine identities are refused.
+const MACHINE_REVIEWER = /auctorio|quality-gate/i;
+
+export function assertReviewerIsAccountable(
+  reviewer: string,
+  humanReviewers: string | undefined = process.env.EDITORIAL_HUMAN_REVIEWERS
+): void {
+  const allowed = String(humanReviewers || '')
+    .split(',')
+    .map((name) => name.trim().toLowerCase())
+    .filter(Boolean);
+  const name = reviewer.trim().toLowerCase();
+  if (MACHINE_REVIEWER.test(name) || (allowed.length > 0 && !allowed.includes(name))) {
+    throw new Error('Editorial reviewer must be an accountable person, not an automation identity');
+  }
+}
+
 export function buildEditorialApproval(
   post: ApprovableEditorialPost,
   reviewer: string,
-  now = new Date()
+  now = new Date(),
+  humanReviewers?: string
 ): {
   status: 'publish';
   reviewState: 'approved';
@@ -96,6 +128,7 @@ export function buildEditorialApproval(
 } {
   const normalizedReviewer = String(reviewer || '').trim();
   if (!normalizedReviewer) throw new Error('Editorial reviewer is required');
+  assertReviewerIsAccountable(normalizedReviewer, humanReviewers);
   assertEditorialPostCanBeApproved(post);
   return {
     status: 'publish',

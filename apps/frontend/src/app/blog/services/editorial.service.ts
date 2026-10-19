@@ -1,3 +1,4 @@
+import { markdownLeftoversToHtml } from '../utils/markdown-leftovers';
 import { Injectable } from '@angular/core';
 import { Observable, combineLatest, map, shareReplay } from 'rxjs';
 import { BlogService } from '../../services/blog.service';
@@ -373,7 +374,7 @@ export class EditorialService {
   }
 
   private optimizeContentHtml(contentHtml: string): string {
-    return contentHtml
+    return markdownLeftoversToHtml(contentHtml)
       .replace(/https:\/\/image\.tmdb\.org\/t\/p\/original\//g, 'https://image.tmdb.org/t/p/w780/')
       .replace(/<img\b(?![^>]*\bloading=)([^>]*)>/gi, '<img loading="lazy"$1>')
       .replace(/<img\b(?![^>]*\bdecoding=)([^>]*)>/gi, '<img decoding="async"$1>');

@@ -57,6 +57,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   public readonly isBrowser: boolean;
   public loading = true;
   public error: string | null = null;
+  public notFound = false;
   public state: EditorialPostPageState | null = null;
   public currentUrl = '';
   public safeLdHtml: SafeHtml | null = null;
@@ -91,6 +92,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
         switchMap((slug) => {
           this.loading = true;
           this.error = null;
+          this.notFound = false;
           this.state = null;
           this.changeDetector.markForCheck();
           return this.editorialService.getPostPageState(slug).pipe(
@@ -104,12 +106,23 @@ export class PostDetailComponent implements OnInit, OnDestroy {
         next: ({ state, failed }) => {
           if (failed) {
             this.error = 'No se ha podido cargar este artículo. Comprueba tu conexión e inténtalo de nuevo.';
+            this.metaService.markUnavailable('Artículo no disponible | Guía TV', this.router.url);
             this.loading = false;
             this.changeDetector.markForCheck();
             return;
           }
           if (!state) {
-            void this.router.navigateByUrl(APP_PATHS.blog);
+            // Unknown slug: a real 404, not a redirect to the hub (which search engines read as a soft 404).
+            this.notFound = true;
+            this.loading = false;
+            this.metaService.setMetaTags({
+              title: 'Artículo no encontrado | Guía TV',
+              description: 'La página que buscas no existe o ha cambiado de dirección.',
+              canonicalUrl: this.router.url,
+              robots: 'noindex, nofollow',
+              httpStatus: 404,
+            });
+            this.changeDetector.markForCheck();
             return;
           }
 

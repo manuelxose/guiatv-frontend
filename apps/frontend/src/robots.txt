@@ -8,12 +8,6 @@ Disallow: /iniciar-sesion
 Disallow: /registro
 Disallow: /comunidad
 
-# Legacy ID-based routes (redirected to canonical slug routes)
-Disallow: /detalles/
-Disallow: /pelicula-details/
-Disallow: /program-full-details/
-
-# Internal catalog IDs
-Disallow: /contenido/
+# Legacy routes remain crawlable so redirects consolidate into canonical URLs.
 
 Sitemap: https://guiaprogramaciontv.com/sitemap.xml

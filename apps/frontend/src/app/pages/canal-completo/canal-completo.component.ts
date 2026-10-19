@@ -318,6 +318,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
         error: () => {
           this.error =
             'No se pudo cargar la programación del canal ahora mismo. Inténtalo de nuevo en unos minutos.';
+          this.metaService.markUnavailable('Canal no disponible | Guía TV', this.router.url);
           this.isLoading = false;
         },
       });

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, Data, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { combineLatest, of, Subject } from 'rxjs';
+import { combineLatest, Observable, of, Subject } from 'rxjs';
 import { catchError, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
 import { CatalogRailComponent } from '../../components/catalog-rail/catalog-rail.component';
 import { InteractionButtonsComponent } from '../../components/interaction-buttons/interaction-buttons.component';
@@ -13,6 +13,7 @@ import {
   CatalogContentType,
   CatalogItem,
   CatalogQuery,
+  CatalogRequestState,
   CatalogService,
 } from '../../services/catalog.service';
 import { MetaService } from '../../services/meta.service';
@@ -79,7 +80,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
           </div>
 
           <div class="relative mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8 lg:pt-8">
-            <app-breadcrumb [items]="breadcrumbItems" [embedded]="true"></app-breadcrumb>
+            <app-breadcrumb [items]="breadcrumbItems" [embedded]="true" [emitSchema]="false"></app-breadcrumb>
           </div>
 
           <div class="relative mx-auto flex min-h-[20rem] max-w-7xl flex-col gap-6 px-4 pb-10 pt-6 sm:px-6 md:flex-row md:items-end lg:px-8 lg:pt-8">
@@ -401,6 +402,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
   public item: CatalogItem | null = null;
   public relatedItems: CatalogItem[] = [];
   public loading = true;
+  private loadFailed = false;
   public safeLdHtml: SafeHtml | null = null;
   public breadcrumbItems: BreadcrumbItem[] = [];
   public shareUrl = '';
@@ -429,8 +431,13 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
           this.item = null;
           this.relatedItems = [];
 
+          this.loadFailed = false;
           return this.resolveCatalogItem(params, data).pipe(
-            switchMap((item) => {
+            switchMap((state) => {
+              const item = state.data;
+              // 404/410 = the item does not exist. Anything else (429, 5xx, timeout) is a
+              // backend failure and must not be served as a cacheable "not found".
+              this.loadFailed = !item && state.unavailable && state.status !== 404 && state.status !== 410;
               if (!item) {
                 return of({ item: null, related: [] as CatalogItem[] });
               }
@@ -474,8 +481,8 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
           title: 'Contenido no disponible - Guía TV',
           description: 'No hemos podido cargar la ficha solicitada.',
           canonicalUrl: this.router.url,
-          robots: 'noindex, follow',
-          httpStatus: 404,
+          robots: this.loadFailed ? 'noindex, nofollow' : 'noindex, follow',
+          httpStatus: this.loadFailed ? 503 : 404,
         });
       });
   }
@@ -566,34 +573,35 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
   private resolveCatalogItem(
     params: { get(name: string): string | null },
     data: Data
-  ) {
+  ): Observable<CatalogRequestState<CatalogItem | null>> {
+    const missing = of<CatalogRequestState<CatalogItem | null>>({ data: null, unavailable: false, stale: false });
     const catalogId = decodeURIComponent(String(params.get('catalogId') || '')).trim();
     if (catalogId) {
-      return this.catalogService.getDetail(catalogId);
+      return this.catalogService.getDetailState(catalogId);
     }
 
     const slug = decodeURIComponent(String(params.get('slug') || '')).trim();
     const contentType = this.normalizeContentType(data['contentType']);
     if (slug && contentType) {
-      return this.catalogService.getBySlug(contentType, slug);
+      return this.catalogService.getBySlugState(contentType, slug);
     }
 
     const legacyId = decodeURIComponent(String(params.get('id') || '')).trim();
     const legacyMode = this.normalizeLegacyMode(data['legacyCatalogMode']);
     if (!legacyId || !legacyMode) {
-      return of(null);
+      return missing;
     }
 
     if (legacyMode === 'program') {
-      return this.catalogService.getDetail(buildProgramCatalogId(legacyId));
+      return this.catalogService.getDetailState(buildProgramCatalogId(legacyId));
     }
 
     const tmdbId = Number(legacyId);
     if (!Number.isFinite(tmdbId)) {
-      return of(null);
+      return missing;
     }
 
-    return this.catalogService.getDetail(
+    return this.catalogService.getDetailState(
       buildTmdbCatalogId(legacyMode === 'series' ? 'tv' : 'movie', tmdbId)
     );
   }
@@ -715,7 +723,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
       'Ficha de contenido, plataformas, emisiones y relacionados en Guía TV.';
 
     this.metaService.setMetaTags({
-      title: `${item.title} - Guía TV`,
+      title: `${MetaService.clamp(item.title, 55)} - Guía TV`,
       description,
       image: item.backdrop || item.image,
       canonicalUrl,

@@ -29,6 +29,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
   public readonly appPaths = APP_PATHS;
   public loading = true;
   public error: string | null = null;
+  public notFound = false;
   public state: EditorialCategoryPageState | null = null;
   public safeLdHtml: SafeHtml | null = null;
 
@@ -54,6 +55,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
         switchMap((slug) => {
           this.loading = true;
           this.error = null;
+          this.notFound = false;
           this.state = null;
           this.changeDetector.markForCheck();
           return this.editorialService.getCategoryPageState(slug).pipe(
@@ -67,12 +69,23 @@ export class CategoryComponent implements OnInit, OnDestroy {
         next: ({ state, failed }) => {
           if (failed) {
             this.error = 'No se ha podido cargar esta categoría. Comprueba tu conexión e inténtalo de nuevo.';
+            this.metaService.markUnavailable('Categoría no disponible | Guía TV', this.router.url);
             this.loading = false;
             this.changeDetector.markForCheck();
             return;
           }
           if (!state) {
-            void this.router.navigateByUrl(APP_PATHS.blog);
+            // Unknown slug: a real 404, not a redirect to the hub (which search engines read as a soft 404).
+            this.notFound = true;
+            this.loading = false;
+            this.metaService.setMetaTags({
+              title: 'Categoría no encontrada | Guía TV',
+              description: 'La página que buscas no existe o ha cambiado de dirección.',
+              canonicalUrl: this.router.url,
+              robots: 'noindex, nofollow',
+              httpStatus: 404,
+            });
+            this.changeDetector.markForCheck();
             return;
           }
 

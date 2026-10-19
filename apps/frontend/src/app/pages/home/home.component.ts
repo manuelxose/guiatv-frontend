@@ -242,9 +242,9 @@ export class HomeComponent {
     private readonly router: Router
   ) {
     this.metaService.setMetaTags({
-      title: 'Inicio | Guía TV',
+      title: 'Programación TV hoy: qué ver en televisión y streaming | Guía TV',
       description:
-        'Portal unificado para descubrir qué ver hoy en TV, streaming, deportes y capas editoriales desde una sola experiencia.',
+        'Programación de TV en España en directo: qué ponen hoy en cada canal, películas y series, fútbol y dónde verlo en televisión o streaming.',
       canonicalUrl: '/',
       type: 'website',
     });

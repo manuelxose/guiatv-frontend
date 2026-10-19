@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -11,6 +11,7 @@ import {
 import { TvApiService } from '../../api/tv-api.service';
 import { ChannelCardComponent } from '../../components/channel-card/channel-card.component';
 import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
+import { MetaService } from '../../services/meta.service';
 
 type DirectoryState =
   | { status: 'loading'; data: null }
@@ -29,6 +30,7 @@ export type ChannelAccessFilter = 'all' | 'free' | 'pay';
 })
 export class ChannelCatalogComponent {
   private readonly api = inject(TvApiService);
+  private readonly metaService = inject(MetaService);
   readonly groups = [
     { id: 'all', label: 'Todos' },
     { id: 'tdt', label: 'TDT' },
@@ -62,6 +64,20 @@ export class ChannelCatalogComponent {
   );
 
   readonly status = computed(() => this.state().status);
+  private readonly seo = effect(() => {
+    const status = this.status();
+    if (status === 'loading') return;
+    if (status === 'error') {
+      this.metaService.markUnavailable('Canales de televisión | Guía TV', '/canales');
+      return;
+    }
+    this.metaService.setMetaTags({
+      title: 'Canales de televisión en España: TDT, cable y online | Guía TV',
+      description:
+        'Directorio de canales de TV en España con su emisión actual: TDT, cable, Movistar+, deportes, autonómicos y online. Abre la programación completa de cada canal.',
+      canonicalUrl: '/canales',
+    });
+  });
   readonly channels = computed(() => filterChannelDirectory(
     this.state().data?.channels || [],
     this.query(),

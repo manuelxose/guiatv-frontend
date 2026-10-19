@@ -165,6 +165,12 @@ function getFallbackIndexPath() {
 }
 
 function sendCsrFallback(req, res, statusCode, cacheable = false) {
+  if (statusCode >= 500) {
+    cacheable = false;
+    res.setHeader('Retry-After', '120');
+  }
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   const fallbackPath = getFallbackIndexPath();
   if (!fallbackPath) {
     res.status(500).send('<h1>500 - Error Interno</h1><p>No se pudo cargar la aplicación.</p>');
@@ -301,14 +307,19 @@ app.get('/comunidad', (_req, res) => res.redirect(301, '/perfil'));
 async function redirectLegacyCatalog(req, res, catalogId) {
   if (!catalogId) return res.status(404).send('Not found');
   try {
-    const apiResponse = await fetch(`${backendOrigin}/v2/catalog/${encodeURIComponent(catalogId)}`);
+    const apiResponse = await fetch(`${backendOrigin}/v2/catalog/${encodeURIComponent(catalogId)}`, {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!apiResponse.ok && apiResponse.status !== 404 && apiResponse.status !== 410) {
+      return sendCsrFallback(req, res, 503);
+    }
     if (apiResponse.ok) {
       const payload = await apiResponse.json();
       const detailPath = payload?.data?.detailPath;
       if (detailPath && detailPath !== req.path) return res.redirect(301, detailPath);
     }
   } catch {
-    // An unresolved legacy identifier is genuinely gone.
+    return sendCsrFallback(req, res, 503);
   }
   return res.status(404).send('Not found');
 }
@@ -324,18 +335,7 @@ app.get(['/detalles/:id', '/program-full-details/:id'], (req, res) => {
 
 app.get('/contenido/:catalogId', async (req, res) => {
   const catalogId = decodeURIComponent(req.params.catalogId || '');
-  if (!catalogId) return res.status(404).send('Not found');
-  try {
-    const apiResponse = await fetch(`${backendOrigin}/v2/catalog/${encodeURIComponent(catalogId)}`);
-    if (apiResponse.ok) {
-      const payload = await apiResponse.json();
-      const detailPath = payload?.data?.detailPath;
-      if (detailPath) return res.redirect(301, detailPath);
-    }
-  } catch {
-    // A legacy URL whose catalog entry cannot be resolved is genuinely gone.
-  }
-  return res.status(404).send('Not found');
+  return redirectLegacyCatalog(req, res, catalogId);
 });
 
 app.get(['/programacion-tv/ver-canal/:id', '/ver-canal/:id'], (req, res) => {
@@ -379,7 +379,7 @@ app.get('*', async (req, res) => {
     ]);
 
     if (!response) {
-      return sendCsrFallback(req, res, isKnownRoute(req.originalUrl) ? 200 : 404, publicCacheable);
+      return sendCsrFallback(req, res, isKnownRoute(req.originalUrl) ? 503 : 404);
     }
 
     if (response.status >= 300 && response.status < 400) {
@@ -405,7 +405,7 @@ app.get('*', async (req, res) => {
     }
 
     if (!html.trim() || html.includes('<app-root></app-root>')) {
-      return sendCsrFallback(req, res, statusCode, publicCacheable);
+      return sendCsrFallback(req, res, statusCode >= 400 ? statusCode : 503);
     }
 
     html = injectCanonical(stripStatusMarker(html), req.path);
@@ -415,7 +415,12 @@ app.get('*', async (req, res) => {
 
     applyRobotsHeader(html, res);
 
-    res.setHeader('Cache-Control', publicCacheable ? 'public, max-age=60, s-maxage=300' : 'no-store');
+    // 5xx = the route could not load its data (see MetaService.markUnavailable): never cache it.
+    if (statusCode >= 500) res.setHeader('Retry-After', '120');
+    res.setHeader(
+      'Cache-Control',
+      publicCacheable && statusCode < 500 ? 'public, max-age=60, s-maxage=300' : 'no-store'
+    );
     if (publicCacheable && statusCode < 500) {
       setCachedResponse(cachePath, statusCode, html);
     }
@@ -423,7 +428,7 @@ app.get('*', async (req, res) => {
     return res.status(statusCode).send(html);
   } catch (err) {
     console.error('[SSR] ❌ Render Error:', err);
-    return sendCsrFallback(req, res, isKnownRoute(req.originalUrl) ? 200 : 404, false);
+    return sendCsrFallback(req, res, 503);
   }
 });
 

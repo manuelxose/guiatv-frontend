@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -103,31 +103,28 @@ export interface BreadcrumbItem {
     }
   `],
 })
-export class BreadcrumbComponent {
-  private _items: BreadcrumbItem[] = [];
-  safeLdHtml: SafeHtml | null = null;
+export class BreadcrumbComponent implements OnChanges {
+  @Input() items: BreadcrumbItem[] = [];
   @Input() embedded = false;
+  /** Set to false when the page already emits its own BreadcrumbList JSON-LD. */
+  @Input() emitSchema = true;
+  safeLdHtml: SafeHtml | null = null;
 
   private static readonly BASE_URL = 'https://guiaprogramaciontv.com';
 
   constructor(private readonly sanitizer: DomSanitizer) {}
 
-  @Input()
-  set items(value: BreadcrumbItem[]) {
-    this._items = value || [];
+  ngOnChanges(): void {
     this.buildLdJson();
   }
 
-  get items(): BreadcrumbItem[] {
-    return this._items;
-  }
-
   private buildLdJson(): void {
-    if (!this._items.length) {
+    // A one-item trail ("Inicio" only) carries no information for search engines.
+    if (!this.emitSchema || (this.items?.length ?? 0) < 2) {
       this.safeLdHtml = null;
       return;
     }
-    const schema = generateBreadcrumbSchema(this._items, BreadcrumbComponent.BASE_URL);
+    const schema = generateBreadcrumbSchema(this.items, BreadcrumbComponent.BASE_URL);
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
       `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
     );

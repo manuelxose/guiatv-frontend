@@ -18,6 +18,13 @@
       (action)="retry()"
     ></app-unified-async-state>
 
+    <app-unified-async-state
+      *ngIf="!loading && notFound"
+      kind="empty"
+      title="Categoría no encontrada"
+      message="La página que buscas no existe o ha cambiado de dirección."
+    ></app-unified-async-state>
+
     <ng-container *ngIf="!loading && state">
       <header class="category-header">
         <h1>{{ state.category.name }}</h1>

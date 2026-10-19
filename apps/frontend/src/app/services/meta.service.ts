@@ -16,7 +16,15 @@ export class MetaService {
     @Inject(DOCUMENT) private document: Document
   ) {}
 
+  /** Cut at a word boundary so search snippets and social cards do not truncate mid-word. */
+  static clamp(text: string | undefined, max: number): string {
+    const clean = String(text ?? '').replace(/\s+/g, ' ').trim();
+    if (clean.length <= max) return clean;
+    return clean.slice(0, max - 1).replace(/\s+\S*$/, '').replace(/[,;:.\-–—\s]+$/, '') + '…';
+  }
+
   setMetaTags(config: any) {
+    config = { ...config, description: MetaService.clamp(config.description, 160) };
     // Set title using Angular's Title service
     this.title.setTitle(config.title);
 
@@ -122,6 +130,20 @@ export class MetaService {
       // oEmbed discovery link for WordPress/CMS auto-embed
       this.setOembedLink(this.url + cleanPath);
     }
+  }
+
+  /**
+   * Data for the route could not be loaded. On the server this makes ssr-server answer
+   * 503 + no-store + noindex instead of caching a 200 page that shows an error state.
+   */
+  markUnavailable(title: string, canonicalPath: string): void {
+    this.setMetaTags({
+      title,
+      description: 'Este contenido no está disponible temporalmente. Vuelve a intentarlo en unos minutos.',
+      canonicalUrl: canonicalPath,
+      robots: 'noindex, nofollow',
+      httpStatus: 503,
+    });
   }
 
   private setOembedLink(pageUrl: string): void {

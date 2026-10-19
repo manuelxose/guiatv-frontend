@@ -37,7 +37,11 @@
     "perf:critical": "node scripts/perf-http.mjs critical",
     "cache:prewarm": "node scripts/prewarm-public-reads.mjs",
     "perf:load": "node scripts/load-http.mjs",
-    "validate:tv:operational": "node scripts/validate-tv-operational.mjs"
+    "validate:tv:operational": "node scripts/validate-tv-operational.mjs",
+    "seo:crawl": "node scripts/seo-crawl.mjs",
+    "seo:ssr-resilience": "node scripts/seo-ssr-resilience.mjs",
+    "seo:editorial-audit": "node scripts/editorial-audit.mjs",
+    "seo:gsc-compare": "node scripts/gsc-compare.mjs"
   },
   "devDependencies": {
     "@angular/animations": "20.3.29",
