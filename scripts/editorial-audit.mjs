@@ -20,7 +20,7 @@ const list = await (await fetch(`${base}/v2/blog?limit=0`)).json();
 const posts = [];
 for (const p of list) {
   const d = (await (await fetch(`${base}/v2/blog?slug=${encodeURIComponent(p.slug)}`)).json())[0];
-  posts.push(d);
+  if (d) posts.push(d); // a post unpublished while the cached list is still warm has no detail
   await sleep(200);
 }
 
