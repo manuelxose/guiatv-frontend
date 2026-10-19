@@ -426,6 +426,9 @@ app.get('*', async (req, res) => {
     }
 
     if (!html.trim() || html.includes('<app-root></app-root>')) {
+      // Private/auth pages (noindex, rendered client-side) are not a server failure: serve the shell with 200 + noindex
+      // instead of a 503 that crawlers would read as an outage on every footer link to /perfil.
+      if (noindexRoute && statusCode < 400) return sendCsrFallback(req, res, 200);
       return sendCsrFallback(req, res, statusCode >= 400 ? statusCode : 503);
     }
 
