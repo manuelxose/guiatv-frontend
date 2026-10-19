@@ -31,7 +31,7 @@ Precios mensuales en euros, tomados de la página oficial de cada servicio el 19
 
 ## Lo más barato, según estos precios
 - **Con anuncios:** HBO Max Básico con anuncios (6,99 €) y Disney+ Estándar con anuncios (6,99 €; 5,99 € en el plan de ahorro de 6 meses) son los más baratos; Netflix con anuncios cuesta 8,99 €.
-- **Más baratos en general:** la membresía Prime (4,99 €) y Movistar Plus+ Libre Cine y Series (4,99 €, sin permanencia, sin deportes). Las condiciones de anuncios de Prime Video no las hemos verificado.
+- **Más baratos en general:** la membresía Prime (4,99 €) y Movistar Plus+ Libre Cine y Series (4,99 €, sin permanencia, sin deportes). Prime Video incluye anuncios limitados que no se pueden saltar (ayuda oficial de Prime Video); la opción sin anuncios es un complemento mensual aparte cuyo precio no figura en la ayuda consultada.
 - Menos de 10 €: Prime (4,99), Movistar Plus+ 4,99 y 9,99, HBO Max con anuncios (6,99), Disney+ con anuncios (6,99) y Apple TV (9,99), Netflix con anuncios (8,99).
 
 ## Una nota sobre nombres
@@ -50,10 +50,10 @@ Usa el [comparador de streaming](/comparador-streaming) de GuíaTV para filtrar 
 - HBO Max: https://www.hbomax.com/es/es
 - Disney+: https://www.disneyplus.com/es-es
 - Prime Video / Prime: https://www.primevideo.com/offers/ref=dv_web_force_root
+- Prime Video, ayuda «Prime Video sin anuncios»: https://www.primevideo.com/-/es/help/ref=atv_hp_nd_nav?nodeId=TR7P4YDu3J97ETYJ7S
 - Apple TV: https://www.apple.com/es/apple-tv-plus/
 - Movistar Plus+: https://www.movistarplus.es/planes
 
 ## Notas para el revisor
-- Anuncios en Prime Video: no verificado; el texto no lo afirma.
 - Los precios de HBO Max Premium (4K) y los dispositivos se copiaron de la página en la fecha indicada.
 - Anchor de «mejores»: esta página no recomienda marca; enumera datos.

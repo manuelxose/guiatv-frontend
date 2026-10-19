@@ -40,5 +40,19 @@
     "relatedPlatformKeys": [],
     "relatedRouteKeys": ["platforms", "comparison"],
     "replaces": ["comparativa-de-precios-de-plataformas-de-streaming-en-espana-netflix", "comparativa-de-plataformas-de-streaming-en-espana-precios-y-catalogo", "cuanto-cuesta-streaming-espana", "streaming-por-menos-de-10-euros", "plataformas-streaming-mas-baratas"]
+  },
+  {
+    "file": "04-netflix-hbo-max-disney-prime-que-plan-elegir.md",
+    "slug": "netflix-hbo-max-disney-prime-video-que-plan-elegir",
+    "title": "Netflix, HBO Max, Disney+ y Prime Video: qué plan elegir en España",
+    "excerpt": "Comparativa de planes de Netflix, HBO Max, Disney+ y Prime Video en España: precio mensual y anual, calidad, pantallas y anuncios, con datos de sus webs oficiales.",
+    "metaTitle": "Netflix, HBO Max, Disney+ y Prime Video: qué plan elegir",
+    "metaDescription": "Planes de Netflix, HBO Max, Disney+ y Prime Video en España comparados: precio mensual y anual, 4K, pantallas y anuncios según sus webs oficiales.",
+    "keywords": ["netflix vs hbo max", "qué plataforma de streaming elegir", "netflix disney+ prime video precios"],
+    "categories": ["Streaming", "Plataformas"],
+    "targetQuery": "netflix vs hbo max vs disney plus",
+    "relatedPlatformKeys": [],
+    "relatedRouteKeys": ["platforms", "comparison"],
+    "replaces": ["netflix-vs-max-espana", "max-vs-disney-plus-espana", "netflix-vs-prime-video-espana"]
   }
 ]

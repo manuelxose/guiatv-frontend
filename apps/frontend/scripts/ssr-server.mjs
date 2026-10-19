@@ -310,6 +310,9 @@ const EDITORIAL_REDIRECTS = {
   'cuanto-cuesta-streaming-espana': 'precios-plataformas-streaming-espana',
   'streaming-por-menos-de-10-euros': 'precios-plataformas-streaming-espana',
   'plataformas-streaming-mas-baratas': 'precios-plataformas-streaming-espana',
+  'netflix-vs-max-espana': 'netflix-hbo-max-disney-prime-video-que-plan-elegir',
+  'max-vs-disney-plus-espana': 'netflix-hbo-max-disney-prime-video-que-plan-elegir',
+  'netflix-vs-prime-video-espana': 'netflix-hbo-max-disney-prime-video-que-plan-elegir',
 };
 app.get('/editorial/:slug', (req, res, next) => {
   const target = EDITORIAL_REDIRECTS[req.params.slug];
