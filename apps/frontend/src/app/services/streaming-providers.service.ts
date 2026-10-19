@@ -80,7 +80,7 @@ export class StreamingProvidersService {
       Netflix: '#e50914',
       'Prime Video': '#00a8e1',
       'Disney+': '#113ccf',
-      Max: '#0b5cff',
+      'HBO Max': '#0b5cff',
       'Movistar+': '#00c6ff',
       SkyShowtime: '#1d9bf0',
       'Apple TV+': '#a3a3a3',

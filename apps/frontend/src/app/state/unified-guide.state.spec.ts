@@ -113,6 +113,13 @@ describe('UnifiedGuideStateService', () => {
     });
   });
 
+  it('reads the pre-rebrand "Max" platform param as HBO Max', () => {
+    service.syncFromQueryParams({ platforms: 'Netflix,Max' }, 'discover');
+    expect(service.discoverFilters().platforms).toEqual(['Netflix', 'HBO Max']);
+    service.syncFromQueryParams({ platform: 'max' }, 'streaming');
+    expect(service.streamingFilters().platform).toBe('HBO Max');
+  });
+
   it('preserves tab-specific state when switching tabs', () => {
     service.updateLiveFilters({ group: 'online', liveView: 'night' });
     service.setSearch('tenis');

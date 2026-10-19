@@ -410,7 +410,7 @@ export function getPortalPublicRightRailSections(
           items: [
             { id: 'right-streaming-netflix', label: 'Netflix', description: 'Abrir servicio', path: APP_PATHS.platforms, queryParams: { platform: 'Netflix' } },
             { id: 'right-streaming-prime', label: 'Prime Video', description: 'Abrir servicio', path: APP_PATHS.platforms, queryParams: { platform: 'Prime Video' } },
-            { id: 'right-streaming-max', label: 'Max', description: 'Abrir servicio', path: APP_PATHS.platforms, queryParams: { platform: 'Max' } },
+            { id: 'right-streaming-max', label: 'HBO Max', description: 'Abrir servicio', path: APP_PATHS.platforms, queryParams: { platform: 'HBO Max' } },
           ],
         },
       ];

@@ -221,7 +221,7 @@ export class UnifiedGuideStateService {
         platforms: readCsvOrDefault(
           safeParams['platforms'],
           DEFAULT_STATE.discoverFilters.platforms
-        ),
+        ).map(readPlatform),
         genres: readCsvOrDefault(safeParams['genres'], DEFAULT_STATE.discoverFilters.genres),
         intent: readIntent(safeParams['intent']) || DEFAULT_STATE.discoverFilters.intent,
         sort: readSort(safeParams['sort']) || DEFAULT_STATE.discoverFilters.sort,
@@ -233,7 +233,7 @@ export class UnifiedGuideStateService {
     if (tab === 'streaming') {
       const nextType = readString(safeParams['type']);
       nextState.streamingFilters = {
-        platform: readString(safeParams['platform']),
+        platform: readPlatform(safeParams['platform']),
         type: nextType === 'movie' || nextType === 'series' ? nextType : DEFAULT_STATE.streamingFilters.type,
         availability:
           (readCsvOrDefault(
@@ -374,6 +374,12 @@ export class UnifiedGuideStateService {
 
 function readString(value: unknown): string {
   return String(value || '').trim();
+}
+
+// "Max" is the pre-rebrand name; old shared links still carry it.
+function readPlatform(value: unknown): string {
+  const platform = readString(value);
+  return platform.toLowerCase() === 'max' ? 'HBO Max' : platform;
 }
 
 function readCsv(value: unknown): string[] {
