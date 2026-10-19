@@ -278,13 +278,16 @@ export function generateEditorialArticleSchema(post: {
       : post.publishedAt
       ? formatDateForSEO(post.publishedAt)
       : undefined,
+    // "Equipo editorial …" is a team, not a person: mark it as an Organization linked to the editorial policy.
     author: {
-      '@type': post.author ? 'Person' : 'Organization',
-      name: post.author?.name || 'Guia TV',
+      '@type': post.author && !/equipo|guía\s*tv|guia\s*tv/i.test(post.author.name) ? 'Person' : 'Organization',
+      name: post.author?.name || 'Guía Programación TV',
+      url: `${baseUrl}/politica-editorial`,
     },
     publisher: {
       '@type': 'Organization',
-      name: 'Guia TV',
+      name: 'Guía Programación TV',
+      url: baseUrl,
       logo: {
         '@type': 'ImageObject',
         url: `${baseUrl}/assets/images/logo.png`,
