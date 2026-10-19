@@ -20,15 +20,18 @@ import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring
  */
 async function withStubbedTvReadFind<T>(run: () => Promise<T>): Promise<T> {
   const original = TVReadAiringModel.find;
+  const originalDistinct = TVReadAiringModel.distinct;
   (TVReadAiringModel as any).find = () => ({
     sort: () => ({
       limit: () => ({ lean: () => ({ exec: async () => [] }) }),
     }),
   });
+  (TVReadAiringModel as any).distinct = () => ({ exec: async () => [] });
   try {
     return await run();
   } finally {
     TVReadAiringModel.find = original;
+    TVReadAiringModel.distinct = originalDistinct;
   }
 }
 

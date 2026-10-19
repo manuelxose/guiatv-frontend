@@ -14,6 +14,23 @@
   background-size: 200% 100%;
 }
 
+.home-page__intro {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.home-page__intro h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);
+  line-height: 1.15;
+}
+
+.home-page__intro p {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--portal-text-muted, inherit);
+}
+
 .home-page__loading,
 .home-page__module {
   display: grid;

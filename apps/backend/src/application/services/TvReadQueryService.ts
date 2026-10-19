@@ -678,7 +678,42 @@ export class TvReadQueryService {
     private readonly readAiringModel: typeof TVReadAiringModel = TVReadAiringModel
   ) {}
 
-  async query(params: TvReadQueryParams): Promise<TvReadResponseDTO> {
+  private readonly inFlight = new Map<string, Promise<unknown>>();
+
+  /**
+   * Identical concurrent reads share one load. Each cache expiry otherwise
+   * lets every simultaneous caller (SSR renders, bots) start the same heavy
+   * aggregation, each holding a MongoDB connection until the pool's wait
+   * queue times out.
+   */
+  private singleFlight<T>(key: string, load: () => Promise<T>): Promise<T> {
+    const running = this.inFlight.get(key) as Promise<T> | undefined;
+    if (running) return running;
+    const operation = load().finally(() => this.inFlight.delete(key));
+    this.inFlight.set(key, operation);
+    return operation;
+  }
+
+  query(params: TvReadQueryParams): Promise<TvReadResponseDTO> {
+    return this.singleFlight(`query:${JSON.stringify(params)}`, () => this.loadQuery(params));
+  }
+
+  getChannels(
+    dateAliasOrDate: string,
+    group?: string,
+    limit?: number
+  ): Promise<TvReadChannelsResponseDTO> {
+    return this.singleFlight(
+      `channels:${JSON.stringify([dateAliasOrDate, group, limit])}`,
+      () => this.loadChannels(dateAliasOrDate, group, limit)
+    );
+  }
+
+  getSchedule(params: TvReadScheduleParams): Promise<TvReadScheduleResponseDTO> {
+    return this.singleFlight(`schedule:${JSON.stringify(params)}`, () => this.loadSchedule(params));
+  }
+
+  private async loadQuery(params: TvReadQueryParams): Promise<TvReadResponseDTO> {
     const date = DateUtils.parseDateAlias(params.date || 'today');
     const view = normalizeTvReadView(params.view);
     const group =
@@ -841,7 +876,7 @@ export class TvReadQueryService {
     return response;
   }
 
-  async getChannels(
+  private async loadChannels(
     dateAliasOrDate: string,
     group?: string,
     limit?: number
@@ -967,7 +1002,7 @@ export class TvReadQueryService {
     });
   }
 
-  async getSchedule(params: TvReadScheduleParams): Promise<TvReadScheduleResponseDTO> {
+  private async loadSchedule(params: TvReadScheduleParams): Promise<TvReadScheduleResponseDTO> {
     const date = DateUtils.parseDateAlias(params.date || 'today');
     const group = normalizeTvToken(params.group, ' ') === 'all' ? undefined : params.group;
     const category = normalizeTvToken(params.category, ' ') === 'all'

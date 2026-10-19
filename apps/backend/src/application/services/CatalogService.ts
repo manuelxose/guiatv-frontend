@@ -1842,20 +1842,22 @@ export class CatalogService {
       return null;
     }
 
-    // Query tokens from most distinctive to least distinctive. A single `$in`
-    // query was dominated by common words such as "the", "los" and "de";
-    // its 500-row cap could omit the exact title even when a rare token such
-    // as "gentlemen" had an indexed match.
+    // Query tokens from most distinctive to least distinctive. searchTokens
+    // also holds the editorial category and channel names, so a token such as
+    // "deportes" tags thousands of airings: a capped, start-sorted `find`
+    // never reaches an exact title like "Deportes". Distinct titles for the
+    // token are small and uncapped; only the exact slug match is then loaded.
     for (const token of tokens) {
-      const candidates = (await TVReadAiringModel.find({
+      const titles = (await TVReadAiringModel.distinct('program.title', {
         date,
         searchTokens: token,
-      })
+      }).exec()) as string[];
+      const title = titles.find((candidate) => this.slugify(candidate) === slug);
+      if (!title) continue;
+      const match = (await TVReadAiringModel.findOne({ date, 'program.title': title })
         .sort({ 'airing.start': 1 })
-        .limit(500)
         .lean()
-        .exec()) as unknown as TvReadItemDTO[];
-      const match = candidates.find((item) => this.slugify(item.program.title) === slug);
+        .exec()) as unknown as TvReadItemDTO | null;
       if (match) return match;
     }
     return null;

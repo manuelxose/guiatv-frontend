@@ -24,9 +24,9 @@
 
   <div class="home-hero__content">
     <p class="home-hero__eyebrow"><span></span>{{ item.eyebrow }}</p>
-    <h1 [class.home-hero__title--long]="item.title.length > 34" [class.home-hero__title--very-long]="item.title.length > 58">
+    <h2 [class.home-hero__title--long]="item.title.length > 34" [class.home-hero__title--very-long]="item.title.length > 58">
       {{ item.title }}
-    </h1>
+    </h2>
     <p class="home-hero__meta">{{ item.meta }}</p>
     <p class="home-hero__description" *ngIf="item.description">{{ item.description }}</p>
 

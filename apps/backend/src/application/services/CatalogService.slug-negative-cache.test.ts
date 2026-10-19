@@ -50,13 +50,7 @@ function buildService(tmdbCallCounter: { count: number }, cache: InMemoryCache) 
  * the bounded-query shape overrides this with its own spy.
  */
 function stubTvReadFind(): void {
-  (TVReadAiringModel as any).find = () => ({
-    sort: () => ({
-      limit: () => ({
-        lean: () => ({ exec: async () => [] }),
-      }),
-    }),
-  });
+  (TVReadAiringModel as any).distinct = () => ({ exec: async () => [] });
 }
 
 test('getBySlug: first lookup of a missing slug hits TMDB, second identical lookup is served from the negative cache', async () => {
@@ -150,27 +144,33 @@ test('getBySlug: distinct missing slugs are cached independently', async () => {
   }
 });
 
-test('getBySlug: missing program slugs use a bounded indexed candidate query instead of hydrating the day view', async () => {
+function stubTvReadSlug(
+  titlesByToken: Record<string, string[]>,
+  observed: Record<string, unknown>[] = []
+): () => void {
+  const originalDistinct = TVReadAiringModel.distinct;
+  const originalFindOne = TVReadAiringModel.findOne;
+  (TVReadAiringModel as any).distinct = (_field: string, query: Record<string, unknown>) => {
+    observed.push(query);
+    return { exec: async () => titlesByToken[String(query.searchTokens)] || [] };
+  };
+  (TVReadAiringModel as any).findOne = (query: { 'program.title': string }) => ({
+    sort: () => ({
+      lean: () => ({ exec: async () => ({ id: 'airing-1', program: { title: query['program.title'] } }) }),
+    }),
+  });
+  return () => {
+    TVReadAiringModel.distinct = originalDistinct;
+    TVReadAiringModel.findOne = originalFindOne;
+  };
+}
+
+test('getBySlug: missing program slugs use bounded indexed token lookups instead of hydrating the day view', async () => {
   const cache = new InMemoryCache();
   const tmdbCallCounter = { count: 0 };
   const service = buildService(tmdbCallCounter, cache);
-  const originalFind = TVReadAiringModel.find;
-  const observed: { queries: Record<string, unknown>[]; limits: number[] } = {
-    queries: [],
-    limits: [],
-  };
-
-  (TVReadAiringModel as any).find = (query: Record<string, unknown>) => {
-    observed.queries.push(query);
-    return {
-      sort: () => ({
-        limit: (limit: number) => {
-          observed.limits.push(limit);
-          return { lean: () => ({ exec: async () => [] }) };
-        },
-      }),
-    };
-  };
+  const observed: Record<string, unknown>[] = [];
+  const restore = stubTvReadSlug({}, observed);
 
   try {
     await assert.rejects(
@@ -178,15 +178,14 @@ test('getBySlug: missing program slugs use a bounded indexed candidate query ins
       NotFoundError
     );
 
-    assert.equal(observed.queries.length, 6, 'each indexed token is checked for today and tomorrow');
-    assert.deepEqual(observed.limits, [500, 500, 500, 500, 500, 500]);
-    observed.queries.forEach((query, index) => {
+    assert.equal(observed.length, 6, 'each indexed token is checked for today and tomorrow');
+    observed.forEach((query, index) => {
       assert.equal(query.searchTokens, ['inexistente', 'programa', 'distinto'][index % 3]);
       assert.match(String(query.date), /^\d{8}$/);
     });
     assert.equal(tmdbCallCounter.count, 0, 'program lookup must not call TMDB');
   } finally {
-    (TVReadAiringModel as any).find = originalFind;
+    restore();
     cache.destroy();
   }
 });
@@ -194,22 +193,10 @@ test('getBySlug: missing program slugs use a bounded indexed candidate query ins
 test('program slug lookup is not crowded out by common search tokens', async () => {
   const cache = new InMemoryCache();
   const service = buildService({ count: 0 }, cache);
-  const originalFind = TVReadAiringModel.find;
   const title = 'The Gentlemen: Los señores de la mafia';
-
-  (TVReadAiringModel as any).find = (query: { searchTokens?: string }) => ({
-    sort: () => ({
-      limit: () => ({
-        lean: () => ({
-          exec: async () => query.searchTokens === 'gentlemen'
-            ? [{ id: 'airing-1', program: { title } }]
-            : Array.from({ length: 500 }, (_, index) => ({
-                id: `common-${index}`,
-                program: { title: `Common result ${index}` },
-              })),
-        }),
-      }),
-    }),
+  const restore = stubTvReadSlug({
+    gentlemen: [title],
+    mafia: Array.from({ length: 2000 }, (_, index) => `Common result ${index}`),
   });
 
   try {
@@ -220,7 +207,23 @@ test('program slug lookup is not crowded out by common search tokens', async () 
     );
     assert.equal(found?.id, 'airing-1');
   } finally {
-    (TVReadAiringModel as any).find = originalFind;
+    restore();
+    cache.destroy();
+  }
+});
+
+test('program slug "deportes" resolves although the category token tags thousands of airings', async () => {
+  const cache = new InMemoryCache();
+  const service = buildService({ count: 0 }, cache);
+  const restore = stubTvReadSlug({
+    deportes: [...Array.from({ length: 900 }, (_, index) => `Deportes ${index + 2}`), 'Deportes'],
+  });
+
+  try {
+    const found = await (service as any).findTvReadItemBySlug('deportes', 'deportes', '20261020');
+    assert.equal(found?.program.title, 'Deportes');
+  } finally {
+    restore();
     cache.destroy();
   }
 });

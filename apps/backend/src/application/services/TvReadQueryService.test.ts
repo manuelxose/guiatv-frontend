@@ -535,3 +535,26 @@ test('selectPrimeTimeTvItems can require shows to start inside the prime-time wi
   assert.equal(selected.length, 1);
   assert.equal(selected[0]?.program.title, 'El Objetivo');
 });
+
+test('concurrent identical channel reads on a cache miss share one aggregation', async () => {
+  let aggregations = 0;
+  const fakeModel = {
+    aggregate: () => ({
+      exec: async () => {
+        aggregations += 1;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        return [];
+      },
+    }),
+  };
+  const service = new TvReadQueryService(
+    { get: async () => null, set: async () => undefined, clear: async () => undefined } as any,
+    fakeModel as any
+  );
+
+  await Promise.all(Array.from({ length: 10 }, () => service.getChannels('20260326', 'cable')));
+  assert.equal(aggregations, 1, 'ten simultaneous misses must not run ten aggregations');
+
+  await service.getChannels('20260326', 'cable');
+  assert.equal(aggregations, 2, 'a later call loads again: the in-flight entry is released');
+});
