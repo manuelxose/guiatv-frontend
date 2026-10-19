@@ -208,7 +208,7 @@ export const CATALOG_PLATFORM_REGISTRY: CatalogPlatformDTO[] = [
   },
   {
     key: 'max',
-    name: 'Max',
+    name: 'HBO Max',
     tmdbProviderId: 1899,
     color: '#2962FF',
     supportedAvailability: ['streaming', 'flatrate'],
@@ -281,3 +281,5 @@ export const CATALOG_PLATFORM_REGISTRY: CatalogPlatformDTO[] = [
 export const CATALOG_PLATFORM_NAME_MAP = new Map(
   CATALOG_PLATFORM_REGISTRY.map((platform) => [platform.name.toLowerCase(), platform])
 );
+// Pre-rebrand name, kept so old ?platform=Max links and stored preferences still resolve.
+CATALOG_PLATFORM_NAME_MAP.set('max', CATALOG_PLATFORM_NAME_MAP.get('hbo max')!);

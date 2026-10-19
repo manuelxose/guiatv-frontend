@@ -53,7 +53,7 @@ export const MONETIZATION_OFFERS: MonetizationOfferConfig[] = [
     recommendation: { intents: ['family', 'movies'] }, destinationUrl: 'https://www.disneyplus.com/es-es', allowedHosts: ['disneyplus.com'], affiliateEnvKey: 'AFFILIATE_DISNEY_PLUS_URL', defaultRelationship: 'manual_agreement_required', verifiedAt: '2026-08-26', sourceUrl: 'https://www.disneyplus.com/es-es',
   }),
   offer({
-    id: 'max-basic-with-ads', provider: { id: 'max', name: 'Max' }, plan: { id: 'basic-with-ads', name: 'Básico con anuncios' },
+    id: 'max-basic-with-ads', provider: { id: 'max', name: 'HBO Max' }, plan: { id: 'basic-with-ads', name: 'Básico con anuncios' },
     pricing: { currency: 'EUR', monthlyAmount: null, annualAmount: null, monthlyLabel: 'Consulta proveedor', annualLabel: 'Consulta proveedor', activationFeeAmount: null },
     features: { simultaneousStreams: '2', maxResolution: '1080p', downloads: false, ads: true, liveContent: true, sports: true, football: false, movies: true, series: true, family: true, fourK: false },
     trialDays: null, bestFor: 'HBO, Warner y series premium', highlight: 'Prestige TV, cine de estudio y deporte en planes compatibles.',

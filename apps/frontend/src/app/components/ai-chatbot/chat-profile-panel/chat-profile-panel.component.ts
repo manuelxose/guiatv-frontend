@@ -195,7 +195,7 @@ export class ChatProfilePanelComponent implements OnChanges {
     {
       key: 'preferredPlatforms', target: 'profile', field: 'preferredPlatforms', kind: 'multi',
       title: '¿Qué plataformas utilizas?', description: 'Selecciona todas las que tengas para priorizar contenido que realmente puedas ver.',
-      options: ['Netflix', 'Prime Video', 'Disney+', 'Max', 'Movistar+', 'SkyShowtime', 'Apple TV+', 'Filmin', 'RTVE Play', 'ATRESplayer', 'Mitele', 'Pluto TV'].map((value) => ({ value, label: value })),
+      options: ['Netflix', 'Prime Video', 'Disney+', 'HBO Max', 'Movistar+', 'SkyShowtime', 'Apple TV+', 'Filmin', 'RTVE Play', 'ATRESplayer', 'Mitele', 'Pluto TV'].map((value) => ({ value, label: value })),
     },
     {
       key: 'likedGenres', target: 'profile', field: 'likedGenres', kind: 'multi',

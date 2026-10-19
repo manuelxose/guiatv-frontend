@@ -289,9 +289,9 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
       // reuse the cached general snapshot.
       const params: Record<string, string> = {};
       if (requestedDay) {
-        const isoDay = `${requestedDay.slice(0, 4)}-${requestedDay.slice(4, 6)}-${requestedDay.slice(6, 8)}`;
-        params.dateFrom = isoDay;
-        params.dateTo = isoDay;
+        // dateFrom == dateTo returns nothing for future days (production, Oct 2026) and the docs leave
+        // dateTo's inclusivity ambiguous; ask for the surrounding UTC days and cut the Madrid day locally.
+        Object.assign(params, madridDayQueryRange(requestedDay));
       } else {
         if (query.dateFrom) params.dateFrom = query.dateFrom;
         if (query.dateTo) params.dateTo = query.dateTo;
@@ -299,11 +299,13 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
       if (query.status && query.status !== 'live') params.status = query.status.toUpperCase();
       const { data } = await this.fetch<any>(`${BASE_URL}/matches`, { headers: this.headers(), params });
       matches = (data.matches || []).map((raw: any) => mapFootballDataOrgMatch(raw)).filter(Boolean) as FootballMatch[];
-      // Some football-data.org plans have returned an empty response for a
-      // valid single-day filter. Preserve precise day semantics with a
-      // tested client-side fallback over the canonical general snapshot.
-      if (requestedDay && matches.length === 0) {
-        matches = filterMatchesByIsoDay(await this.fetchGeneralMatches(), requestedDay);
+      if (requestedDay) {
+        matches = filterMatchesByIsoDay(matches, requestedDay);
+        // Some football-data.org plans have returned an empty response for a
+        // valid day filter; fall back to the general snapshot (today only).
+        if (matches.length === 0) {
+          matches = filterMatchesByIsoDay(await this.fetchGeneralMatches(), requestedDay);
+        }
       }
     } else {
       // `date`/`status: 'live'` are both effectively no-ops on this
@@ -348,7 +350,7 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
       const now = Date.now();
       const cached = this.competitionMatchesCache.get(providerId);
       if (cached && cached.expiresAt > now) {
-        return query.limit ? cached.value.slice(0, query.limit) : cached.value;
+        return query.limit ? fixturesAroundNow(cached.value, query.limit) : cached.value;
       }
     }
 
@@ -367,7 +369,7 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
       this.competitionMatchesCache.set(providerId, { value: matches, expiresAt: Date.now() + COMPETITION_SUBRESOURCE_CACHE_TTL_MS });
     }
     if (query.limit) {
-      matches = matches.slice(0, query.limit);
+      matches = fixturesAroundNow(matches, query.limit);
     }
     return matches;
   }
@@ -500,7 +502,29 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
   }
 }
 
+const madridDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' });
+
+/** Keeps the matches whose kickoff falls on `day` (YYYYMMDD) in Spanish time. */
 export function filterMatchesByIsoDay(matches: FootballMatch[], day: string): FootballMatch[] {
   const isoDay = `${day.slice(0, 4)}-${day.slice(4, 6)}-${day.slice(6, 8)}`;
-  return matches.filter((match) => match.kickoffAt.slice(0, 10) === isoDay);
+  return matches.filter((match) => madridDate.format(new Date(match.kickoffAt)) === isoDay);
+}
+
+/**
+ * A season list comes back oldest first, so slicing its head showed August fixtures in October.
+ * Keep the `limit` fixtures around now: a quarter recent results, the rest upcoming.
+ */
+export function fixturesAroundNow(matches: FootballMatch[], limit: number, now = Date.now()): FootballMatch[] {
+  const sorted = [...matches].sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+  const next = sorted.findIndex((match) => Date.parse(match.kickoffAt) >= now);
+  const pivot = next === -1 ? sorted.length : next;
+  const start = Math.max(0, Math.min(pivot - Math.floor(limit / 4), sorted.length - limit));
+  return sorted.slice(start, start + limit);
+}
+
+/** Upstream UTC date range (day before → day after) that contains the whole Madrid day `day`. */
+export function madridDayQueryRange(day: string): { dateFrom: string; dateTo: string } {
+  const noon = Date.UTC(Number(day.slice(0, 4)), Number(day.slice(4, 6)) - 1, Number(day.slice(6, 8)), 12);
+  const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  return { dateFrom: iso(noon - 86_400_000), dateTo: iso(noon + 86_400_000) };
 }

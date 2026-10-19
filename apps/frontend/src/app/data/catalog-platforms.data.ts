@@ -24,7 +24,7 @@ export const FALLBACK_CATALOG_PLATFORMS: CatalogPlatform[] = [
   },
   {
     key: 'max',
-    name: 'Max',
+    name: 'HBO Max',
     tmdbProviderId: 1899,
     color: '#2962FF',
     supportedAvailability: ['streaming', 'flatrate'],
