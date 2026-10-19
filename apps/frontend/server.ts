@@ -77,6 +77,7 @@ export function app(): express.Express {
   server.get('/programacion-tv/en-directo', (_req, res) => {
     res.redirect(301, '/programacion-tv/guia-canales');
   });
+  // Production serves via scripts/ssr-server.mjs, which holds the EDITORIAL_REDIRECTS map; keep both in sync.
   server.get('/blog/top10', (_req, res) => res.redirect(301, '/editorial/rankings'));
   server.get('/blog/categoria/:slug', (req, res) => res.redirect(301, `/editorial/categoria/${req.params['slug']}`));
   server.get('/blog/:slug', (req, res) => res.redirect(301, `/editorial/${req.params['slug']}`));

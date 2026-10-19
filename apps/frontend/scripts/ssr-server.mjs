@@ -298,6 +298,23 @@ app.get('/.well-known/*', (_req, res) => {
 app.get('/programacion-tv/en-directo', (_req, res) => {
   res.redirect(301, '/programacion-tv/guia-canales');
 });
+// Editorial posts merged into one canonical guide (docs/seo/editorial-drafts/consolidation-map.md): old slug -> new slug.
+const EDITORIAL_REDIRECTS = {
+  'donde-ver-la-champions-league-2026-27-en-tv-y-streaming-en-espana': 'donde-ver-champions-league-2026-27-espana',
+  'donde-ver-champions-league-en-espana': 'donde-ver-champions-league-2026-27-espana',
+  'como-ver-laliga-en-streaming-en-espana-guia-2026': 'donde-ver-laliga-2026-27-espana',
+  'como-ver-laliga-en-streaming-plataformas-precios-y-canales': 'donde-ver-laliga-2026-27-espana',
+  'donde-ver-laliga-en-espana': 'donde-ver-laliga-2026-27-espana',
+  'comparativa-de-precios-de-plataformas-de-streaming-en-espana-netflix': 'precios-plataformas-streaming-espana',
+  'comparativa-de-plataformas-de-streaming-en-espana-precios-y-catalogo': 'precios-plataformas-streaming-espana',
+  'cuanto-cuesta-streaming-espana': 'precios-plataformas-streaming-espana',
+  'streaming-por-menos-de-10-euros': 'precios-plataformas-streaming-espana',
+  'plataformas-streaming-mas-baratas': 'precios-plataformas-streaming-espana',
+};
+app.get('/editorial/:slug', (req, res, next) => {
+  const target = EDITORIAL_REDIRECTS[req.params.slug];
+  return target ? res.redirect(301, `/editorial/${target}`) : next();
+});
 app.get('/blog/top10', (_req, res) => res.redirect(301, '/editorial/rankings'));
 app.get('/blog/categoria/:slug', (req, res) => res.redirect(301, `/editorial/categoria/${req.params.slug}`));
 app.get('/blog/:slug', (req, res) => res.redirect(301, `/editorial/${req.params.slug}`));
