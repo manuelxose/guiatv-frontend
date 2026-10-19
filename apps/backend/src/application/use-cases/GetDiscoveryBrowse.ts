@@ -40,7 +40,24 @@ export class GetDiscoveryBrowse {
     private readonly catalogService: CatalogService
   ) {}
 
-  async execute(
+  private readonly inFlight = new Map<
+    string,
+    Promise<{ view: DiscoveryBrowseViewDTO; cached: boolean }>
+  >();
+
+  /** Identical concurrent cache misses share one catalog + TV read load. */
+  execute(
+    request: DiscoveryBrowseRequest
+  ): Promise<{ view: DiscoveryBrowseViewDTO; cached: boolean }> {
+    const key = JSON.stringify(request);
+    const running = this.inFlight.get(key);
+    if (running) return running;
+    const operation = this.load(request).finally(() => this.inFlight.delete(key));
+    this.inFlight.set(key, operation);
+    return operation;
+  }
+
+  private async load(
     request: DiscoveryBrowseRequest
   ): Promise<{ view: DiscoveryBrowseViewDTO; cached: boolean }> {
     const contentType =
