@@ -92,7 +92,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
           this.state = state;
           this.loading = false;
           this.metaService.setMetaTags({
-            title: `${state.category.name} | Blog Guía TV`,
+            title: `${state.category.name} | Editorial Guía TV`,
             description:
               state.category.description ||
               `Artículos y rankings editoriales relacionados con ${state.category.name}.`,
@@ -136,7 +136,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
     const schemas = [
       generateCollectionPageSchema(
         {
-          name: `${state.category.name} - Blog Guía TV`,
+          name: `${state.category.name} - Editorial Guía TV`,
           description:
             state.category.description ||
             `Coleccion editorial de ${state.category.name} en Guia TV.`,
@@ -152,7 +152,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
             detailPath: post.canonicalPath,
             image: post.coverImage,
           })),
-        `${state.category.name} - Blog Guía TV`,
+        `${state.category.name} - Editorial Guía TV`,
         baseUrl
       ),
     ];

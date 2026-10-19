@@ -41,7 +41,6 @@ export class FooterComponent {
       title: 'Explorar',
       links: [
         { label: 'Editorial', path: APP_PATHS.blog },
-        { label: 'Rankings', path: APP_PATHS.top10 },
         { label: 'Tendencias', path: APP_PATHS.stats },
         { label: 'Comparador', path: APP_PATHS.streamingComparison },
         { label: 'Series', path: APP_PATHS.series },

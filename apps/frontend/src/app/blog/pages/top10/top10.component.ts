@@ -81,6 +81,17 @@ export class Top10Component implements OnInit, OnDestroy {
           this.featured = state.featured;
           this.posts = state.posts;
           this.categories = state.categories;
+          if (!state.featured && !state.posts.length) {
+            // An empty hub is not worth indexing; it returns to the index once a ranking is published.
+            this.metaService.setMetaTags({
+              title: 'Rankings editoriales de cine, series y streaming | Guía TV',
+              description:
+                'Listas, tops y selecciones editoriales conectadas con la guía, el catálogo y las plataformas reales de la app.',
+              canonicalUrl: '/editorial/rankings',
+              type: 'website',
+              robots: 'noindex, follow',
+            });
+          }
           this.buildStructuredData();
           this.loading = false;
           this.changeDetector.markForCheck();

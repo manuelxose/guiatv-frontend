@@ -294,3 +294,24 @@ test('sitemap-channels.xml excludes channels without a resolvable schedule', asy
   assert.match(getSentXml(), /\/canales\/la_1/);
   assert.doesNotMatch(getSentXml(), /\/canales\/canal_vacio/);
 });
+
+test('sitemap-blog.xml lists the rankings hub only when a ranking post is published', async () => {
+  invalidateSitemapCache();
+  const Model = (await import('../../infrastructure/database/models/BlogPost.model')).BlogPostModel;
+  const originalFind = Model.find;
+  const run = async (posts: unknown[]) => {
+    invalidateSitemapCache();
+    (Model as any).find = () => ({ select: () => ({ lean: () => ({ exec: async () => posts }) }) });
+    const controller = new SitemapController({} as any, {} as any);
+    const { req, res, getSentXml } = fakeReqRes();
+    await controller.getBlogSitemap(req, res, (() => {}) as any);
+    return getSentXml();
+  };
+  try {
+    assert.doesNotMatch(await run([{ slug: 'a', contentType: 'guide', categories: [] }]), /editorial\/rankings/);
+    assert.match(await run([{ slug: 'b', contentType: 'ranking', categories: [] }]), /editorial\/rankings/);
+  } finally {
+    (Model as any).find = originalFind;
+    invalidateSitemapCache();
+  }
+});

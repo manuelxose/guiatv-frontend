@@ -317,9 +317,14 @@ export class SitemapController {
     const urls: SitemapUrlEntry[] = [];
 
     const posts = await BlogPostModel.find(PUBLIC_EDITORIAL_FILTER)
-      .select({ slug: 1, publishedAt: 1, updatedAt: 1, categories: 1 })
+      .select({ slug: 1, publishedAt: 1, updatedAt: 1, categories: 1, contentType: 1 })
       .lean()
       .exec();
+
+    // The rankings hub is only worth indexing once at least one ranking is published.
+    if (posts.some((post) => (post as { contentType?: string }).contentType === 'ranking')) {
+      urls.push({ loc: '/editorial/rankings', lastmod: todayIso, changefreq: 'weekly', priority: 0.7 });
+    }
 
     const categoryCounts = new Map<string, number>();
     for (const post of posts) {
@@ -394,7 +399,6 @@ export class SitemapController {
       { loc: '/deportes/futbol/noticias', lastmod: today, changefreq: 'daily', priority: 0.7 },
       { loc: '/comparador-streaming', lastmod: today, changefreq: 'weekly', priority: 0.8 },
       { loc: '/editorial', lastmod: today, changefreq: 'daily', priority: 0.8 },
-      { loc: '/editorial/rankings', lastmod: today, changefreq: 'weekly', priority: 0.7 },
       { loc: '/sobre-nosotros', lastmod: today, changefreq: 'monthly', priority: 0.6 },
       { loc: '/prensa', lastmod: today, changefreq: 'monthly', priority: 0.5 },
       { loc: '/developers', lastmod: today, changefreq: 'monthly', priority: 0.5 },

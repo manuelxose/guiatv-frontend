@@ -133,7 +133,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
             : `https://guiaprogramaciontv.com${state.post.canonicalPath}`;
 
           this.metaService.setMetaTags({
-            title: state.post.metaTitle || `${state.post.title} | Blog Guía TV`,
+            title: state.post.metaTitle || `${state.post.title} | Editorial Guía TV`,
             description:
               state.post.metaDescription || state.post.excerptText || 'Artículo editorial de Guía TV.',
             canonicalUrl: state.post.canonicalPath,
