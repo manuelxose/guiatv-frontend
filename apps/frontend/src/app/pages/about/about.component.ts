@@ -80,7 +80,7 @@ import { FaqSectionComponent, FaqItem } from '../../components/faq-section/faq-s
             </div>
             <div class="rounded-2xl border border-[var(--portal-border)] bg-[var(--portal-bg-deep)] p-6">
               <h3 class="text-lg font-semibold text-[var(--portal-text)] mb-2">Editorial y rankings</h3>
-              <p class="text-sm text-[var(--portal-text-soft)]">Artículos, reseñas, rankings y análisis sobre cine, series y anime, conectados con el resto de la app y escritos por expertos en entretenimiento audiovisual.</p>
+              <p class="text-sm text-[var(--portal-text-soft)]">Artículos, reseñas, rankings y análisis sobre cine, series y anime. Max Nova es el editor responsable, con la colaboración de Beatriz Olmedo y Arturo Baroja. Consulta nuestra <a routerLink="/politica-editorial" class="underline">política editorial</a> para conocer los criterios de revisión y correcciones.</p>
             </div>
           </div>
         </section>

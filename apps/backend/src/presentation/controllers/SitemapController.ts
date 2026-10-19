@@ -400,6 +400,7 @@ export class SitemapController {
       { loc: '/developers', lastmod: today, changefreq: 'monthly', priority: 0.5 },
       { loc: '/embed', lastmod: today, changefreq: 'monthly', priority: 0.4 },
       { loc: '/avisolegal', lastmod: today, changefreq: 'monthly', priority: 0.3 },
+      { loc: '/politica-editorial', lastmod: today, changefreq: 'monthly', priority: 0.3 },
       { loc: '/privacidad', lastmod: today, changefreq: 'monthly', priority: 0.3 },
       { loc: '/cookies', lastmod: today, changefreq: 'monthly', priority: 0.3 },
       { loc: '/terminos', lastmod: today, changefreq: 'monthly', priority: 0.3 },

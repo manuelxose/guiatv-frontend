@@ -34,4 +34,19 @@ The site-specific `guiatv-editorial` policy was confirmed to be enabled in **aut
 
 Legal identity and named human reviewer are not inferred from Git authorship. Do not populate `EDITORIAL_HUMAN_REVIEWERS` with an invented identity. The public legal drafting note can be removed without deciding the entity; identity consistency remains unresolved. A public editorial policy must accurately describe the enforced approval gate and acknowledge the current corpus remediation work.
 
-No new scheduled production job or automatic AdSense submission has been enabled. Content consolidation, sourcing, and factual editorial review remain open. Deployment and post-deploy results will be appended after execution.
+No new scheduled production job or automatic AdSense submission has been enabled. Content consolidation, sourcing, and factual editorial review remain open.
+
+## First deployment and checks
+
+- PR #7 was merged as `d0882c1`. Deployment workflow `39303756764` succeeded; active release: `20261019203836`.
+- GitHub CI `39303756709` and PR verification `39303700363` succeeded. Expanded SSR regression `39303700505` succeeded.
+- `/canales` and all 13 formerly broken editorial URLs now return 200 with their own title and one H1. Unknown article, category and programme probes return 404/noindex. The legal page no longer contains the internal AdSense note.
+- The home title was correct at the direct SSR origin but initially stale at the public proxy. This was cache propagation, not a confirmed router defect. Release checks must distinguish cached responses from the active origin.
+
+## Owner-provided editorial identities
+
+The owner confirmed TecnoRia (`https://tecnoriasl.com/`) as the business, Max Nova as editor, and Beatriz Olmedo / Arturo Baroja as additional writers and reviewers. `EDITORIAL_HUMAN_REVIEWERS="Max Nova,Beatriz Olmedo,Arturo Baroja"` has been saved in `/etc/guiatv/api.env`, with a private backup of the previous env file. The API must restart to activate it.
+
+The new `/politica-editorial` page names those people and describes sourcing, human review, AI assistance, affiliate disclosure and corrections. It explicitly states that archive remediation is unfinished. The footer and About page link to it; the About page's unsupported generic expert claim is replaced with the owner-provided names. Historical post authorship is not reassigned.
+
+Local policy validation: production build, SSR 200/canonical/name checks, 390px and 1440px browser layouts without overflow, and axe checks of the policy content all passed (zero violations). Exact corporate legal name and tax ID have been requested because the linked TecnoRia site did not expose them through its public legal links. The existing individual fiscal identity is not silently relabelled as a company's tax ID.
