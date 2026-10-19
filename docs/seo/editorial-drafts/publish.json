@@ -54,5 +54,19 @@
     "relatedPlatformKeys": [],
     "relatedRouteKeys": ["platforms", "comparison"],
     "replaces": ["netflix-vs-max-espana", "max-vs-disney-plus-espana", "netflix-vs-prime-video-espana"]
+  },
+  {
+    "file": "05-movistar-plus-vs-dazn.md",
+    "slug": "movistar-plus-vs-dazn",
+    "title": "Movistar Plus+ vs DAZN: qué incluye cada uno para ver fútbol en España",
+    "excerpt": "Qué partidos de LaLiga emite cada servicio en 2026-27, qué incluye el plan de 9,99 € de Movistar Plus+ y el Plan Fútbol de DAZN, con datos de LaLiga y de sus webs oficiales.",
+    "metaTitle": "Movistar Plus+ vs DAZN: qué incluye cada uno",
+    "metaDescription": "Comparativa de Movistar Plus+ y DAZN para ver fútbol en España en 2026-27: partidos de LaLiga, otras ligas, plan de 9,99 € y permanencia.",
+    "keywords": ["Movistar Plus+ vs DAZN", "dónde ver LaLiga DAZN Movistar"],
+    "categories": ["Fútbol", "Streaming"],
+    "targetQuery": "movistar plus vs dazn",
+    "relatedPlatformKeys": ["movistar-plus"],
+    "relatedRouteKeys": ["guide", "comparison"],
+    "replaces": []
   }
 ]

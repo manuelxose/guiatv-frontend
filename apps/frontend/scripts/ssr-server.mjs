@@ -326,7 +326,10 @@ const EDITORIAL_REDIRECTS = {
   'como-saber-que-ver-esta-noche': '/programacion-tv/que-ver-hoy',
   'que-ver-esta-noche-en-la-tdt': '/programacion-tv/que-ver-hoy',
   'que-ver-en-familia-este-fin-de-semana': '/programacion-tv/que-ver-hoy',
-  'mejores-canales-tdt-para-cine-y-series': 'canales-de-cine-en-tdt-guia-completa-para-ver-peliculas-gratis-hoy',
+  // TDT channel guides: the live channel directory is the maintained source
+  'mejores-canales-tdt-para-cine-y-series': '/canales',
+  'canales-de-cine-en-tdt-guia-completa-para-ver-peliculas-gratis-hoy': '/canales',
+  'canales-infantiles-en-tdt-boing-sx3-y-clan-guia-de-programacion': '/canales',
 };
 app.get('/editorial/:slug', (req, res, next) => {
   const target = EDITORIAL_REDIRECTS[req.params.slug];
