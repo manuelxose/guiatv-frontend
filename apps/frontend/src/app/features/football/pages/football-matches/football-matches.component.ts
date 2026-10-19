@@ -139,9 +139,9 @@ export class FootballMatchesComponent implements OnInit {
   }
 
   get subtitle(): string {
-    if (this.view() === 'live') return 'Sigue en tiempo real los partidos de hoy.';
-    if (this.view() === 'calendar') return 'Agenda de partidos por día.';
-    return 'Todos los partidos de hoy, por competición.';
+    if (this.view() === 'live') return 'Sigue en tiempo real los partidos de hoy: marcador, minuto y el canal o plataforma que emite cada uno. La lista se actualiza sola mientras hay partidos en juego.';
+    if (this.view() === 'calendar') return 'Agenda de partidos por día, con la hora de inicio y dónde ver cada uno. Elige una fecha en el selector para consultar jornadas pasadas o próximas.';
+    return 'Todos los partidos de fútbol de hoy agrupados por competición, con la hora de inicio y el canal o plataforma que los emite. Usa el selector de fecha para ver otro día y los filtros para quedarte con los partidos en directo.';
   }
 
   get emptyTitle(): string {
