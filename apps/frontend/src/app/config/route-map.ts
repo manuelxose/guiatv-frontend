@@ -107,6 +107,12 @@ export function channelPath(channelId: string): string {
   return `/canales/${encodeURIComponent(String(channelId).replace(/_/g, '-'))}`;
 }
 
+/** A channel page's canonical: the `normalizedName` the sitemap lists (`/canales/discovery`), not the internal id
+ * (`dmax`), which serves the same page under a second URL. */
+export function channelCanonicalPath(channel: { id?: string; normalizedName?: string } | null | undefined, fallback: string): string {
+  return channelPath(channel?.normalizedName || channel?.id || fallback);
+}
+
 export function normalizePath(value: string): string {
   const raw = String(value || '')
     .split('?')[0]
