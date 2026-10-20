@@ -86,6 +86,12 @@ Variables requeridas en `/etc/guiatv/api.env`:
 
 Si falta el fichero de credenciales, el submit se marca como `skipped` y no rompe deploy/jobs.
 
+El envío es automático: al final de cada deploy (`deploy-guiatv.sh`) y tras el precompute diario. Solo requiere, una vez, la cuenta de servicio:
+1. Google Cloud Console → proyecto → activar **Google Search Console API**.
+2. IAM → Cuentas de servicio → crear `guiatv-gsc` → Claves → JSON.
+3. Search Console (`sc-domain:guiaprogramaciontv.com`) → Configuración → Usuarios y permisos → añadir el email de la cuenta de servicio como **Propietario**.
+4. Servidor: copiar el JSON a `/etc/guiatv/gsc-service-account.json` (`chmod 600`), añadir las 4 variables de arriba a `api.env` y comprobar con `npm run seo:submit-sitemap -w apps/backend` (debe registrar `Sitemap submit completed`).
+
 ## Operación diaria
 ```bash
 systemctl status mongod valkey-server guiatv-api guiatv-ssr --no-pager

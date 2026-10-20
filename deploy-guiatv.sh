@@ -238,4 +238,8 @@ smoke_http "http://127.0.0.1:${SSR_PORT}/plataformas" "200"
 smoke_http "http://127.0.0.1:${SSR_PORT}/deportes/futbol" "200"
 smoke_socket_io
 
+# Tell Google about the new release's sitemaps (URLs may have moved). Never fails the deploy: without
+# GSC_AUTO_SUBMIT_ENABLED / the service-account file it logs "skipped"; the daily precompute job submits too.
+npm run seo:submit-sitemap -w apps/backend || echo "Search Console sitemap submit failed (non-fatal)"
+
 echo "Unified release active: $(readlink -f "${CURRENT_RELEASE_LINK}")"
