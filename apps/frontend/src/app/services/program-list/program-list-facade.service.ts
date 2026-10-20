@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, filter, map, shareReplay, tap } from 'rxjs/operators';
 import { LayoutsQuery } from '../../api/models';
 import { ProgramListService, ProgramListSnapshot } from '../../state/program-list.service';
+import { madridMinutesSinceMidnight } from '../../utils/madrid-time';
 import {
   IDayInfo,
   IProgramItem,
@@ -85,8 +86,8 @@ export class ProgramListFacadeService {
   }
 
   getCurrentTimeSlot(): number {
-    const now = new Date();
-    return Math.floor(now.getHours() / 3);
+    // Slots are Europe/Madrid hours, whatever the viewer's (or the iframe host's) time zone.
+    return Math.floor(madridMinutesSinceMidnight(new Date()) / 180);
   }
 
   getConfiguredTimeSlot(): number | null {
@@ -289,6 +290,7 @@ export class ProgramListFacadeService {
   }
 
   private normalizeTimeSlot(value?: string | null): string | undefined {
+    if (value == null || value === '') return undefined; // Number(null) === 0 pinned the widget to 00:00
     const parsed = Number(value);
     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 7) {
       return undefined;

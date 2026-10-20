@@ -65,6 +65,7 @@ function fromKey(key: string): Date | null {
     // sections, not cards).
     .strip {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 0.375rem;
       overflow: hidden;
@@ -93,7 +94,8 @@ function fromKey(key: string): Date | null {
       gap: 0.25rem;
       overflow-x: auto;
       scrollbar-width: none;
-      flex: 1 1 auto;
+      // A real basis: on a phone the native date picker wraps to its own row instead of squeezing the days to ~70px.
+      flex: 1 1 14rem;
     }
     .strip__days::-webkit-scrollbar { display: none; }
 

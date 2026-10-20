@@ -20,6 +20,7 @@
   </div>
 
   <div *ngIf="detail() as data">
+    <h1 class="match-title">{{ data.match.homeTeam.name }} - {{ data.match.awayTeam.name }}</h1>
     <div #scoreboardAnchor>
       <app-football-scoreboard [match]="data.match"></app-football-scoreboard>
     </div>
@@ -90,7 +91,7 @@
   </div>
 
   <div *ngIf="!detail() && !loading()" class="empty">
-    <p class="empty__title">Partido no encontrado</p>
+    <h1 class="empty__title">Partido no encontrado</h1>
     <a class="empty__link" routerLink="/deportes/futbol/partidos-hoy">Ver partidos de hoy</a>
   </div>
 </div>

@@ -4,5 +4,9 @@
 
 .app-public-layout-shell__content {
   display: grid;
+  // A bare `auto` track grows to the routed page's min-content width (a nowrap
+  // date strip made /deportes/futbol/partidos-hoy 751 px wide at 390 px, then
+  // clipped by the shell). minmax(0, 1fr) keeps every routed page at the viewport width.
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
 }

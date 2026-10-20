@@ -50,6 +50,9 @@
 // ===============================================
 
 .rail-scroll {
+  // Containing block for the cards' absolutely positioned `.sr-only` text, which
+  // otherwise escapes the scroller and widens the document (+545 px at 390 px).
+  position: relative;
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;

@@ -119,6 +119,7 @@ export class EmbedProgramGuideComponent implements OnInit, OnDestroy {
   }
 
   private normalizeTimeSlot(rawValue: string | null): string | null {
+    if (rawValue == null || rawValue.trim() === '') return null; // absent → current slot, not Number(null) === 0
     const parsed = Number(rawValue);
     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 7) {
       return null;

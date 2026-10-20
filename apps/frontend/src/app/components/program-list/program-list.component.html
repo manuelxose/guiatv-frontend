@@ -46,27 +46,33 @@
     <header class="tv-mobile__header">
       <div class="tv-mobile__filters">
         <!-- Día -->
-        <button 
+        <button
+          type="button"
+          [attr.aria-expanded]="isDayDropdownOpen()"
           class="tv-chip"
           [class.tv-chip--active]="isDayDropdownOpen()"
           (click)="toggleDayDropdown(); $event.stopPropagation()"
         >
           <span>{{ getCurrentSelectedDayShort() }}</span>
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
         </button>
         
         <!-- Tipo Canal -->
-        <button 
+        <button
+          type="button"
+          [attr.aria-expanded]="isChannelTypeDropdownOpen()"
           class="tv-chip"
           [class.tv-chip--active]="isChannelTypeDropdownOpen()"
           (click)="toggleChannelTypeDropdown(); $event.stopPropagation()"
         >
           <span>{{ channelTypeFilter() }}</span>
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
         </button>
         
         <!-- Franja Horaria (Replaces "Ahora" button) -->
-        <button 
+        <button
+          type="button"
+          [attr.aria-expanded]="isTimeSlotDropdownOpen()"
           class="tv-chip" 
           [class.tv-chip--highlight]="showTimeIndicator()"
           [class.tv-chip--active]="isTimeSlotDropdownOpen()"
@@ -74,7 +80,7 @@
         >
           <span *ngIf="showTimeIndicator()" class="tv-live-dot"></span>
           <span>{{ showTimeIndicator() ? 'Ahora' : getCurrentSelectedTimeSlot() }}</span>
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
         </button>
 
         <!-- Filtros categoría -->
@@ -159,7 +165,7 @@
             >
               <!-- Hora -->
               <div class="tv-program__time">
-                <span class="tv-program__hour">{{ getProgramLayout(prog).visibleStartTime }}</span>
+                <span class="tv-program__hour">{{ clockTime(prog.start) }}</span>
                 <span class="tv-live-badge" *ngIf="isProgramLive(prog)">EN VIVO</span>
               </div>
               
@@ -455,7 +461,7 @@
                     tabindex="0"
                     [title]="getProgramTitle(prog)"
                   >
-                    <span class="tv-grid__time">{{ prog.visibleStartTime }}</span>
+                    <span class="tv-grid__time">{{ clockTime(prog.visibleStartTime) }}</span>
                     <span class="tv-grid__title">{{ getProgramTitle(prog) }}</span>
                     <div *ngIf="isProgramLive(prog)" class="tv-grid__live">
                       <span class="tv-live-dot tv-live-dot--small"></span>

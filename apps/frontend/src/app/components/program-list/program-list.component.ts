@@ -59,6 +59,7 @@ import {
 import { ProgramDetailModalComponent } from '../program-detail-modal/program-detail-modal.component';
 import { ApiConfigService } from 'src/app/api/api-config.service';
 import { environment } from 'src/environments/environment';
+import { formatMadridHM, madridMinutesSinceMidnight } from '../../utils/madrid-time';
 
 const UI_CONFIG = {
   PIXELS_PER_HOUR: 240,
@@ -566,8 +567,7 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     // Verificar si es hoy usando el dayIndex real
     this.showTimeIndicator.set(
       currentDayIndex === 0 &&
-        this.activeTimeSlot() === this.facade.getCurrentTimeSlot() &&
-        !this.isEmbedMode()
+        this.activeTimeSlot() === this.facade.getCurrentTimeSlot()
     );
   }
 
@@ -1738,18 +1738,12 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
       // Construir fecha basada en el día seleccionado y el inicio de la franja
       const currentHours = this.currentHours();
       if (currentHours.length > 0) {
+        // Inicio de la franja (hora de Madrid) del día seleccionado, sea cual sea la zona del navegador
         const slotStartMinutes = this.parseTimeToMinutes(currentHours[0]);
         const now = new Date();
-        referenceTime = new Date(now);
-        // Ajustar al día seleccionado: hoy + offset de días
-        referenceTime.setDate(now.getDate() + this.activeDayOffset());
-        // Ajustar a la hora de inicio de la franja
-        referenceTime.setHours(
-          Math.floor(slotStartMinutes / 60),
-          slotStartMinutes % 60,
-          0,
-          0
-        );
+        const offsetMinutes =
+          this.activeDayOffset() * 1440 + slotStartMinutes - madridMinutesSinceMidnight(now);
+        referenceTime = new Date(now.getTime() + offsetMinutes * 60000);
       } else {
         // Fallback por si algo falla
         referenceTime = new Date();
@@ -1849,6 +1843,12 @@ export class ProgramListComponent implements OnInit, OnDestroy, AfterViewInit {
     
     if (total <= 0) return 0;
     return Math.min(100, Math.max(0, (elapsed / total) * 100));
+  }
+
+  /** EPG instants arrive as ISO strings; show them as HH:mm in Europe/Madrid. */
+  public clockTime(value: string | undefined): string {
+    const date = value && value.includes('T') ? new Date(value) : null;
+    return date && !isNaN(date.getTime()) ? formatMadridHM(date) : value || '';
   }
 
   public getProgramLayout(programa: IProgramItem) {

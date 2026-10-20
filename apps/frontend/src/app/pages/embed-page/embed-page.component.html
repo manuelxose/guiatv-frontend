@@ -29,7 +29,7 @@
       </div>
     </section>
 
-    <section class="mt-10 grid gap-8 lg:grid-cols-[420px_minmax(0,1fr)]">
+    <section class="mt-10 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[420px_minmax(0,1fr)]">
       <div class="space-y-4">
         <div>
           <p class="text-[11px] uppercase tracking-[0.35em] text-[var(--hero-text-muted)]">Vista previa</p>
@@ -60,7 +60,7 @@
               {{ copied ? 'Copiado' : 'Copiar código' }}
             </button>
           </div>
-          <pre class="overflow-x-auto p-5 text-sm leading-7 text-[var(--hero-success)]"><code>{{ embedCode }}</code></pre>
+          <pre tabindex="0" aria-label="Snippet de inserción" class="overflow-x-auto p-5 text-sm leading-7 text-[var(--hero-success)]"><code>{{ embedCode }}</code></pre>
         </section>
 
         <section class="rounded-[1.75rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] overflow-hidden">
@@ -68,7 +68,7 @@
             <p class="text-[11px] uppercase tracking-[0.28em] text-[var(--hero-text-muted)]">Parámetros</p>
             <h2 class="mt-1 text-lg font-semibold text-[var(--hero-text)]">Opciones reales del widget</h2>
           </div>
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Opciones del widget">
             <table class="w-full min-w-[680px] text-sm">
               <thead>
                 <tr class="border-b border-[var(--hero-border)] bg-[var(--hero-bg-soft)]">
@@ -101,7 +101,7 @@
               class="rounded-[1.5rem] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] p-5"
             >
               <h3 class="text-sm font-semibold text-[var(--hero-text)]">{{ example.title }}</h3>
-              <pre class="mt-3 overflow-x-auto text-xs leading-6 text-[var(--hero-success)]"><code>{{ example.code }}</code></pre>
+              <pre tabindex="0" [attr.aria-label]="'Código: ' + example.title" class="mt-3 overflow-x-auto text-xs leading-6 text-[var(--hero-success)]"><code>{{ example.code }}</code></pre>
             </article>
           </div>
         </section>
