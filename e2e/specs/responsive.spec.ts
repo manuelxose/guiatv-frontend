@@ -219,15 +219,45 @@ test.describe('embeddable widget in a cross-origin iframe', () => {
     });
   }
 
-  test('an explicit ?timeSlot is still honoured and slots stay navigable', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await openAndSettle(page, '/embed/programacion?timeSlot=0&channels=3');
-    const chip = page.getByRole('button', { name: /00:00\s*-\s*03:00/ });
-    await expect(chip).toBeVisible({ timeout: 30_000 });
-    await expect(chip).toHaveAttribute('aria-expanded', 'false');
-    await chip.click();
-    await expect(chip).toHaveAttribute('aria-expanded', 'true');
-    await page.getByRole('button', { name: '18:00', exact: true }).click();
-    await expect(page.getByRole('button', { name: /18:00\s*-\s*21:00/ })).toBeVisible();
+  // The chip names the selected slot ("18:00 - 21:00") unless it is the current one, which reads "Ahora" (#22). The
+  // browser clock starts at 19:30 Madrid today, offset taken from the zone so CET and CEST both hold; the date stays
+  // today so the server's schedule still applies. The app reads the browser's local hour, hence the Madrid timezone.
+  test.describe(() => {
+    test.use({ timezoneId: 'Europe/Madrid' });
+
+    test('an explicit ?timeSlot is still honoured and slots stay navigable', async ({ page }) => {
+      await page.clock.install({ time: madridToday(19, 30) });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await openAndSettle(page, '/embed/programacion?timeSlot=0&channels=3');
+      expect(await page.evaluate(() => new Date().getHours())).toBe(19);
+
+      const chip = page.locator('button.tv-chip[aria-expanded]').filter({ hasText: /^\s*(Ahora|\d\d:\d\d\s*-\s*\d\d:\d\d)\s*$/ });
+      await expect(chip).toHaveText(/00:00\s*-\s*03:00/, { timeout: 30_000 });
+      await expect(chip).toHaveAttribute('aria-expanded', 'false');
+      await expect(chip).not.toHaveClass(/tv-chip--highlight/);
+      await chip.click();
+      await expect(chip).toHaveAttribute('aria-expanded', 'true');
+
+      // 18:00–21:00 is the current slot: highlighted as "Ahora".
+      await page.getByRole('button', { name: '18:00', exact: true }).click();
+      await expect(chip).toHaveText(/^\s*Ahora\s*$/);
+      await expect(chip).toHaveClass(/tv-chip--highlight/);
+
+      // Any other slot shows its range and drops the highlight.
+      await chip.click();
+      await page.getByRole('button', { name: '21:00', exact: true }).click();
+      await expect(chip).toHaveText(/21:00\s*-\s*00:00/);
+      await expect(chip).not.toHaveClass(/tv-chip--highlight/);
+    });
   });
 });
+
+/** Today's Madrid date at hh:mm Madrid time, as an instant, with the zone's own UTC offset (CET +1 / CEST +2). */
+function madridToday(hh: number, mm: number): Date {
+  const [y, m, d] = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date()).split('-').map(Number);
+  const asUtc = Date.UTC(y, m - 1, d, hh, mm);
+  const offset = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Madrid', timeZoneName: 'longOffset' })
+    .formatToParts(asUtc).find((p) => p.type === 'timeZoneName')!.value; // "GMT+02:00"
+  const [, sign, oh, om] = /GMT([+-])(\d\d):(\d\d)/.exec(offset)!;
+  return new Date(asUtc - (sign === '-' ? -1 : 1) * (Number(oh) * 60 + Number(om)) * 60_000);
+}

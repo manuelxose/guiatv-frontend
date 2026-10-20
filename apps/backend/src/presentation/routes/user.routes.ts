@@ -15,6 +15,7 @@ export const createUserRoutes = (controller: UserController, authService: AuthSe
     windowMs: 24 * 60 * 60 * 1000,
     max: 3,
     message: 'Export limit reached, please try again tomorrow',
+    exemptLocalReads: false,
   });
 
   router.use(authGuard);

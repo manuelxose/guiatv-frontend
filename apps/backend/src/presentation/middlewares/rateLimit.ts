@@ -18,6 +18,11 @@ const LOOPBACK_ADDRESSES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
  * ports 3000/4000 are closed to the outside by ufw. The check uses the TCP peer address, which a remote client cannot
  * forge, and requires the forwarding headers to be absent, which a client cannot achieve through nginx. A forwarded
  * header never grants the exemption. Only GET/HEAD are exempt, so writes (login, telemetry, admin) stay limited.
+ * It skips rate limiting only, never authentication; per-endpoint quotas opt out with `exemptLocalReads: false`.
+ *
+ * ponytail: any process on this host is exempt, including the other sites' services (separate Unix users). Their
+ * unlimited reads are an availability risk only; the upgrade path is a secret header that only guiatv-ssr holds
+ * (root-only /etc/guiatv/ssr.env + api.env).
  */
 export function isDirectLocalRead(req: Request): boolean {
   return (
@@ -36,13 +41,15 @@ export const createRateLimiter = (options?: {
   windowMs?: number;
   max?: number;
   message?: string;
+  /** false for a per-endpoint quota (e.g. data export) that must hold for local callers too. */
+  exemptLocalReads?: boolean;
 }) => {
   return rateLimit({
     windowMs: options?.windowMs || 60 * 1000, // 1 minuto
     max: options?.max || 100, // 100 requests por ventana
     standardHeaders: true,
     legacyHeaders: false,
-    skip: isDirectLocalRead,
+    skip: options?.exemptLocalReads === false ? undefined : isDirectLocalRead,
     handler: (req: Request, res: Response) => {
       void req;
       void res;

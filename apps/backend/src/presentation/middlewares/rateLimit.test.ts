@@ -6,10 +6,13 @@ import { createRateLimiter } from './rateLimit';
 
 // A real express app with the production proxy setting (`trust proxy` 1, app.ts). The test client connects over
 // loopback, exactly like nginx and Angular SSR do on the server; what tells them apart is nginx's forwarding header.
-async function withApp(run: (call: (init?: { method?: string; headers?: Record<string, string> }) => Promise<number>) => Promise<void>) {
+async function withApp(
+  run: (call: (init?: { method?: string; headers?: Record<string, string> }) => Promise<number>) => Promise<void>,
+  limiterOptions: Parameters<typeof createRateLimiter>[0] = {},
+) {
   const app = express();
   app.set('trust proxy', 1);
-  app.use(createRateLimiter({ windowMs: 60_000, max: 2 }));
+  app.use(createRateLimiter({ windowMs: 60_000, max: 2, ...limiterOptions }));
   app.all('/v2/x', (_req, res) => res.status(200).end());
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => res.status(err.statusCode || 500).end());
   const server = app.listen(0, '127.0.0.1');
@@ -55,4 +58,10 @@ test('writes from this host stay rate-limited', async () => {
   await withApp(async (call) => {
     assert.deepEqual(await statuses(() => call({ method: 'POST' }), 3), [200, 200, 429]);
   });
+});
+
+test('a per-endpoint quota that opts out (data export) still limits direct local reads', async () => {
+  await withApp(async (call) => {
+    assert.deepEqual(await statuses(() => call(), 3), [200, 200, 429]);
+  }, { exemptLocalReads: false });
 });
