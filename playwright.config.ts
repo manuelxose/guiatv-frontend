@@ -18,12 +18,15 @@ import { defineConfig, devices } from '@playwright/test';
  */
 const PORT = process.env.E2E_PORT || '4210';
 const BACKEND_PORT = process.env.E2E_BACKEND_PORT || '4310';
-const BASE_URL = `http://localhost:${PORT}`;
+// E2E_BASE_URL points the suite at an already running origin (a local SSR
+// candidate or production) and skips booting the dev server and backend.
+const EXTERNAL_BASE_URL = process.env.E2E_BASE_URL;
+const BASE_URL = EXTERNAL_BASE_URL || `http://localhost:${PORT}`;
 process.env.E2E_BACKEND_URL ||= `http://127.0.0.1:${BACKEND_PORT}`;
 
 export default defineConfig({
   testDir: './e2e/specs',
-  globalSetup: require.resolve('./e2e/global-setup.ts'),
+  globalSetup: EXTERNAL_BASE_URL ? undefined : require.resolve('./e2e/global-setup.ts'),
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   // 1 retry in CI; locally, leave at 0 by default so a run reports true
@@ -55,7 +58,7 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: [
+  webServer: EXTERNAL_BASE_URL ? undefined : [
     {
       command: 'npm run build:backend && node apps/backend/dist/server/index.js',
       cwd: '.',
