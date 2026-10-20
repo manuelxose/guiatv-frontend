@@ -167,6 +167,7 @@ $bp-xl: 1280px;
 :host.program-list--theme-light .tv-row__name,
 :host.program-list--theme-light .tv-channel__name,
 :host.program-list--theme-light .tv-program__title,
+:host.program-list--theme-light .tv-program__hour,
 :host.program-list--theme-light .tv-grid__title,
 :host.program-list--theme-light .tv-sheet__header h3 {
   color: $color-light-text;
