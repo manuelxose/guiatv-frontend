@@ -18,6 +18,7 @@ import {
 } from '../../../domain/sports/football/types';
 import {
   isFootballAiring,
+  matchHasSlug,
   normalizeEpgAiringToMatch,
   toNormalizedAiringInput,
 } from '../../../application/sports/services/FootballNormalizer';
@@ -76,7 +77,7 @@ export class EpgFootballDataProvider implements FootballDataProvider {
 
     // Slug lookup over a recent window.
     const matches = await this.getMatches({ dateFrom: this.isoDaysAgo(3), dateTo: this.isoDaysAhead(7) });
-    return matches.find((match) => match.slug === idOrSlug) ?? null;
+    return matches.find((match) => matchHasSlug(match, idOrSlug)) ?? null;
   }
 
   async getCompetitions(): Promise<FootballCompetition[]> {

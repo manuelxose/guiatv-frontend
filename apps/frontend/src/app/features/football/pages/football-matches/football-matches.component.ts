@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { combineLatest, map, shareReplay, switchMap, tap } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FootballFacade } from '@app/features/football/football.facade';
@@ -25,8 +24,6 @@ import {
   shouldPollLiveTransitions,
 } from '@app/features/football/football-live-refresh.service';
 import { MetaService } from '@app/services/meta.service';
-import { environment } from 'src/environments/environment';
-import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
 
 type MatchesView = 'live' | 'today' | 'calendar';
 
@@ -54,12 +51,10 @@ export class FootballMatchesComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly meta = inject(MetaService);
-  private readonly sanitizer = inject(DomSanitizer);
 
   readonly view = signal<MatchesView>('today');
   readonly filter = signal<FootballMatchFilter>('all');
   readonly loadFailed = signal(false);
-  safeLdHtml: SafeHtml | null = null;
 
   // Mirrors the sibling detail pages' loading semantics: true only until the
   // very first emission ever arrives, so a fresh page load reserves space
@@ -163,19 +158,6 @@ export class FootballMatchesComponent implements OnInit {
       canonicalUrl: this.pathForTab(this.view()),
     });
 
-    const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';
-    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(
-        generateFootballBreadcrumbSchema(
-          [
-            { name: 'Inicio', path: '/' },
-            { name: 'Fútbol', path: '/deportes/futbol' },
-            { name: this.title, path: this.pathForTab(this.view()) },
-          ],
-          baseUrl
-        )
-      )}</script>`
-    );
   }
 
   onDateChange(dateKey: string): void {

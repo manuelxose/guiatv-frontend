@@ -172,7 +172,7 @@ export class SitemapController {
 
   private async buildSitemapIndex(): Promise<string> {
     const baseUrl = this.getBaseUrl();
-    const todayIso = this.formatDate(new Date());
+    const todayIso = this.formatLastmod(new Date());
 
     const subs = [
       'sitemap-static.xml',
@@ -200,12 +200,13 @@ export class SitemapController {
   /* ------------------------------------------------------------------ */
 
   private async buildStaticSitemap(): Promise<string> {
-    const todayIso = this.formatDate(new Date());
+    const todayIso = this.formatLastmod(new Date());
     return this.renderUrlset(this.getStaticUrls(todayIso));
   }
 
   private async buildChannelsSitemap(): Promise<string> {
-    const todayIso = this.formatDate(new Date());
+    // A channel page is its schedule, regenerated every day.
+    const todayIso = this.formatLastmod(new Date());
     const urls: SitemapUrlEntry[] = [];
 
     if (this.tvReadQueryService) {
@@ -273,13 +274,19 @@ export class SitemapController {
         todayYmd,
         tomorrowYmd,
       ]);
+      // lastmod = the newest change among the airings the page lists, never the airing start (tomorrow's airings
+      // made it a future date).
+      const lastChanged = new Map<string, number>();
       for (const row of rows) {
         const slug = buildLegacyProgramSlug(row.title);
-        if (!slug || seenSlugs.has(slug)) continue;
-        seenSlugs.add(slug);
+        if (!slug) continue;
+        const changed = row.updatedAt ? new Date(row.updatedAt).getTime() : NaN;
+        lastChanged.set(slug, Math.max(lastChanged.get(slug) ?? -Infinity, Number.isNaN(changed) ? -Infinity : changed));
+      }
+      for (const [slug, changed] of lastChanged) {
         urls.push({
           loc: `/programas/${slug}`,
-          lastmod: this.formatDate(row.start),
+          lastmod: Number.isFinite(changed) ? this.formatLastmod(new Date(changed)) : undefined,
           changefreq: 'daily',
           priority: 0.6,
         });
@@ -302,9 +309,9 @@ export class SitemapController {
       const slug = buildLegacyProgramSlug(program.title);
       if (!slug || seenSlugs.has(slug)) continue;
       seenSlugs.add(slug);
+      // The repository rows carry no change time; the airing start is not one.
       urls.push({
         loc: `/programas/${slug}`,
-        lastmod: this.formatDate(program.startTime),
         changefreq: 'daily',
         priority: 0.6,
       });
@@ -313,26 +320,28 @@ export class SitemapController {
   }
 
   private async buildBlogSitemap(): Promise<string> {
-    const todayIso = this.formatDate(new Date());
     const urls: SitemapUrlEntry[] = [];
 
     const posts = await BlogPostModel.find(PUBLIC_EDITORIAL_FILTER)
       .select({ slug: 1, publishedAt: 1, updatedAt: 1, categories: 1, contentType: 1 })
       .lean()
       .exec();
+    const postChanged = (post: (typeof posts)[number]) => new Date(post.updatedAt || post.publishedAt || NaN).getTime();
+    // A listing changes when one of its posts does.
+    const newest = (list: typeof posts) => this.formatLastmod(new Date(Math.max(...list.map(postChanged).filter(Number.isFinite))));
 
     // The rankings hub is only worth indexing once at least one ranking is published.
-    if (posts.some((post) => (post as { contentType?: string }).contentType === 'ranking')) {
-      urls.push({ loc: '/guias/rankings', lastmod: todayIso, changefreq: 'weekly', priority: 0.7 });
+    const rankings = posts.filter((post) => (post as { contentType?: string }).contentType === 'ranking');
+    if (rankings.length) {
+      urls.push({ loc: '/guias/rankings', lastmod: newest(rankings), changefreq: 'weekly', priority: 0.7 });
     }
 
-    const categoryCounts = new Map<string, number>();
+    const categoryPosts = new Map<string, typeof posts>();
     for (const post of posts) {
       if (post.slug) {
-        const lastmod = post.updatedAt || post.publishedAt || new Date();
         urls.push({
           loc: `/guias/${post.slug}`,
-          lastmod: this.formatDate(lastmod),
+          lastmod: this.formatLastmod(post.updatedAt || post.publishedAt),
           changefreq: 'weekly',
           priority: 0.7,
         });
@@ -342,15 +351,16 @@ export class SitemapController {
         if (category?.slug) postCategorySlugs.add(category.slug);
       }
       for (const slug of postCategorySlugs) {
-        categoryCounts.set(slug, (categoryCounts.get(slug) || 0) + 1);
+        categoryPosts.set(slug, [...(categoryPosts.get(slug) || []), post]);
       }
     }
 
-    for (const [slug, count] of categoryCounts) {
-      if (count < 3) continue;
+    for (const [slug, list] of categoryPosts) {
+      // `/guias/categoria/rankings` 301s to the rankings hub listed above.
+      if (list.length < 3 || slug === 'rankings') continue;
       urls.push({
         loc: `/guias/categoria/${slug}`,
-        lastmod: todayIso,
+        lastmod: newest(list),
         changefreq: 'weekly',
         priority: 0.5,
       });
@@ -364,7 +374,7 @@ export class SitemapController {
   }
 
   private async buildStreamingSitemap(): Promise<string> {
-    const todayIso = this.formatDate(new Date());
+    const todayIso = this.formatLastmod(new Date());
 
     // Keep this child sitemap non-empty: Search Console rejects an empty
     // urlset even though it is well-formed XML. These are stable, public
@@ -382,7 +392,12 @@ export class SitemapController {
   /*  Static URL definitions                                             */
   /* ------------------------------------------------------------------ */
 
-  private getStaticUrls(today: string): SitemapUrlEntry[] {
+  /**
+   * `today` only on pages whose content is the day's schedule or catalogue (regenerated daily). Hubs and stable
+   * pages carry no lastmod: the sitemap is built on every request, so "today" there would claim a change that
+   * did not happen.
+   */
+  private getStaticUrls(today: string | undefined): SitemapUrlEntry[] {
     return [
       { loc: '/', lastmod: today, changefreq: 'daily', priority: 1.0 },
       { loc: '/programacion-tv/que-ver-hoy', lastmod: today, changefreq: 'daily', priority: 0.9 },
@@ -394,19 +409,19 @@ export class SitemapController {
       { loc: '/deportes/futbol', lastmod: today, changefreq: 'hourly', priority: 0.9 },
       { loc: '/deportes/futbol/partidos-hoy', lastmod: today, changefreq: 'hourly', priority: 0.8 },
       { loc: '/deportes/futbol/competiciones', lastmod: today, changefreq: 'daily', priority: 0.8 },
-      { loc: '/deportes/futbol/noticias', lastmod: today, changefreq: 'daily', priority: 0.7 },
-      { loc: '/comparador-streaming', lastmod: today, changefreq: 'weekly', priority: 0.8 },
-      { loc: '/guias', lastmod: today, changefreq: 'daily', priority: 0.8 },
-      { loc: '/sobre-nosotros', lastmod: today, changefreq: 'monthly', priority: 0.6 },
-      { loc: '/prensa', lastmod: today, changefreq: 'monthly', priority: 0.5 },
-      { loc: '/developers', lastmod: today, changefreq: 'monthly', priority: 0.5 },
-      { loc: '/embed', lastmod: today, changefreq: 'monthly', priority: 0.4 },
-      { loc: '/avisolegal', lastmod: today, changefreq: 'monthly', priority: 0.3 },
-      { loc: '/politica-editorial', lastmod: today, changefreq: 'monthly', priority: 0.3 },
-      { loc: '/privacidad', lastmod: today, changefreq: 'monthly', priority: 0.3 },
-      { loc: '/cookies', lastmod: today, changefreq: 'monthly', priority: 0.3 },
-      { loc: '/terminos', lastmod: today, changefreq: 'monthly', priority: 0.3 },
-      { loc: '/accesibilidad', lastmod: today, changefreq: 'monthly', priority: 0.3 },
+      { loc: '/deportes/futbol/noticias', changefreq: 'daily', priority: 0.7 },
+      { loc: '/comparador-streaming', changefreq: 'weekly', priority: 0.8 },
+      { loc: '/guias', changefreq: 'daily', priority: 0.8 },
+      { loc: '/sobre-nosotros', changefreq: 'monthly', priority: 0.6 },
+      { loc: '/prensa', changefreq: 'monthly', priority: 0.5 },
+      { loc: '/developers', changefreq: 'monthly', priority: 0.5 },
+      { loc: '/embed', changefreq: 'monthly', priority: 0.4 },
+      { loc: '/avisolegal', changefreq: 'monthly', priority: 0.3 },
+      { loc: '/politica-editorial', changefreq: 'monthly', priority: 0.3 },
+      { loc: '/privacidad', changefreq: 'monthly', priority: 0.3 },
+      { loc: '/cookies', changefreq: 'monthly', priority: 0.3 },
+      { loc: '/terminos', changefreq: 'monthly', priority: 0.3 },
+      { loc: '/accesibilidad', changefreq: 'monthly', priority: 0.3 },
     ];
   }
 
@@ -456,10 +471,11 @@ export class SitemapController {
     return path.startsWith('/') ? `${baseUrl}${path}` : `${baseUrl}/${path}`;
   }
 
-  private formatDate(date: Date | string): string {
-    const value = typeof date === 'string' ? new Date(date) : date;
-    if (Number.isNaN(value.getTime())) return new Date().toISOString().split('T')[0];
-    return value.toISOString().split('T')[0];
+  /** W3C date of a real content change: nothing when the change time is unknown, never a date in the future. */
+  private formatLastmod(date?: Date | string | null): string | undefined {
+    const time = date ? new Date(date).getTime() : NaN;
+    if (!Number.isFinite(time)) return undefined;
+    return new Date(Math.min(time, Date.now())).toISOString().split('T')[0];
   }
 
   private formatYmd(date: Date): string {

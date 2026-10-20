@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FootballFacade } from '@app/features/football/football.facade';
@@ -8,8 +7,6 @@ import { FootballCompetitionDTO } from '@app/features/football/football.models';
 import { FootballCompetitionCardComponent } from '@app/features/football/components/football-competition-card/football-competition-card.component';
 import { FootballSectionHeaderComponent } from '@app/features/football/components/football-section-header/football-section-header.component';
 import { MetaService } from '@app/services/meta.service';
-import { environment } from 'src/environments/environment';
-import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
 
 // A small, honest curation — not a data guess: these are real competitions
 // already in the catalog, just surfaced first (spec §32 "Featured"). Falls
@@ -32,7 +29,6 @@ interface CountryGroup {
 export class FootballCompetitionsComponent implements OnInit {
   private readonly facade = inject(FootballFacade);
   private readonly meta = inject(MetaService);
-  private readonly sanitizer = inject(DomSanitizer);
 
   readonly competitions = toSignal(this.facade.getCompetitions(), { initialValue: null as FootballCompetitionDTO[] | null });
   readonly loading = computed(() => this.competitions() === null);
@@ -59,8 +55,6 @@ export class FootballCompetitionsComponent implements OnInit {
       .sort((a, b) => a.country.localeCompare(b.country, 'es'));
   });
 
-  safeLdHtml: SafeHtml | null = null;
-
   ngOnInit(): void {
     this.meta.setMetaTags({
       title: 'Competiciones de fútbol: LaLiga, Champions, Premier - Guía TV',
@@ -68,19 +62,6 @@ export class FootballCompetitionsComponent implements OnInit {
       canonicalUrl: '/deportes/futbol/competiciones',
     });
 
-    const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';
-    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(
-        generateFootballBreadcrumbSchema(
-          [
-            { name: 'Inicio', path: '/' },
-            { name: 'Fútbol', path: '/deportes/futbol' },
-            { name: 'Competiciones', path: '/deportes/futbol/competiciones' },
-          ],
-          baseUrl
-        )
-      )}</script>`
-    );
   }
 
   trackByCompetition(_index: number, competition: FootballCompetitionDTO): string {

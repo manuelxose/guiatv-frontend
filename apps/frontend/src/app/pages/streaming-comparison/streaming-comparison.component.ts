@@ -6,6 +6,7 @@ import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton
 import { APP_PATHS } from '../../config/route-map';
 import { getCatalogPlatformByKey } from '../../data/catalog-platforms.data';
 import { AnalyticsService } from '../../services/analytics.service';
+import { outboundRel } from '../../services/affiliate.service';
 import {
   MonetizationFeature,
   MonetizationIntent,
@@ -171,9 +172,7 @@ export class StreamingComparisonComponent implements OnInit {
   }
 
   outboundRel(offer: MonetizationOffer): string {
-    return offer.outbound.isSponsored
-      ? 'sponsored noopener noreferrer'
-      : 'noopener noreferrer';
+    return outboundRel(offer.outbound.path, offer.outbound.isSponsored);
   }
 
   trackOutbound(offer: MonetizationOffer, placement: MonetizationPlacement): void {

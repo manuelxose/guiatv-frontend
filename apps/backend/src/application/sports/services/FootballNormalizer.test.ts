@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildMatchSlug,
+  matchHasSlug,
   inferStatus,
   isFootballAiring,
   normalizeEpgAiringToMatch,
@@ -79,6 +80,26 @@ test('normalizeEpgAiringToMatch never fabricates scores or minutes', () => {
 test('normalizeEpgAiringToMatch rejects non-matchup sports programs', () => {
   const match = normalizeEpgAiringToMatch(airing({ title: 'ElDesmarque' }));
   assert.equal(match, null);
+});
+
+test('buildMatchSlug dates the slug by the Europe/Madrid kickoff day, across midnight and DST', () => {
+  // 23:00Z on 19 Oct (CEST, UTC+2) is 01:00 on 20 Oct in Madrid: listed under the 20th, so dated the 20th.
+  assert.equal(buildMatchSlug('SC Corinthians Paulista', 'EC Vitória', '2026-10-19T23:00:00Z'), 'sc-corinthians-paulista-ec-vitoria-2026-10-20');
+  assert.equal(buildMatchSlug('A', 'B', '2026-10-19T21:59:00Z'), 'a-b-2026-10-19'); // 23:59 Madrid
+  assert.equal(buildMatchSlug('A', 'B', '2026-10-19T22:00:00Z'), 'a-b-2026-10-20'); // 00:00 Madrid
+  // Winter time (CET, UTC+1): the day turns at 23:00Z.
+  assert.equal(buildMatchSlug('A', 'B', '2026-12-01T22:59:00Z'), 'a-b-2026-12-01');
+  assert.equal(buildMatchSlug('A', 'B', '2026-12-01T23:00:00Z'), 'a-b-2026-12-02');
+  // An offset-bearing ISO string is read as the instant it names, not by its leading characters.
+  assert.equal(buildMatchSlug('A', 'B', '2026-10-20T01:00:00+02:00'), 'a-b-2026-10-20');
+});
+
+test('matchHasSlug accepts the current slug and the legacy UTC-dated one, nothing else', () => {
+  const match = { slug: buildMatchSlug('A', 'B', '2026-10-19T23:00:00Z'), kickoffAt: '2026-10-19T23:00:00Z' };
+  assert.equal(matchHasSlug(match, 'a-b-2026-10-20'), true);
+  assert.equal(matchHasSlug(match, 'a-b-2026-10-19'), true); // links built before the fix keep resolving
+  assert.equal(matchHasSlug(match, 'a-b-2026-10-21'), false);
+  assert.equal(matchHasSlug(match, 'a-c-2026-10-20'), false);
 });
 
 test('buildMatchSlug is collision-safe with date suffix', () => {

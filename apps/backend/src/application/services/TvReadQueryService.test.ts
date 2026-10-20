@@ -6,6 +6,7 @@ import {
   buildTvReadChannelGroupClause,
   buildTvReadSchedulePipeline,
   applyTvReadTemporalBounds,
+  airingsNotEnded,
   hydrateTvReadItemRuntime,
   isConsumerVisibleTvReadItem,
   isFeaturedTvReadItem,
@@ -557,4 +558,18 @@ test('concurrent identical channel reads on a cache miss share one aggregation',
 
   await service.getChannels('20260326', 'cable');
   assert.equal(aggregations, 2, 'a later call loads again: the in-flight entry is released');
+});
+
+// Phase 1 TS-15: a programme page listed last night's 23:00-02:15 airing under "A continuación" at 12:40.
+test('airingsNotEnded keeps on-air and future airings, drops finished ones, across midnight', () => {
+  const airing = (id: string, start: string, end: string) => ({ id, airing: { start, end } }) as unknown as TvReadItemDTO;
+  const items = [
+    airing('overnight-finished', '2026-10-19T21:00:00.000Z', '2026-10-20T00:15:00.000Z'), // 23:00-02:15 Madrid
+    airing('morning-finished', '2026-10-20T06:00:00.000Z', '2026-10-20T08:00:00.000Z'),
+    airing('on-air', '2026-10-20T10:00:00.000Z', '2026-10-20T11:00:00.000Z'),
+    airing('ends-exactly-now', '2026-10-20T09:40:00.000Z', '2026-10-20T10:40:00.000Z'),
+    airing('tonight-past-midnight', '2026-10-20T21:30:00.000Z', '2026-10-21T00:30:00.000Z'),
+  ];
+  const kept = airingsNotEnded(items, new Date('2026-10-20T10:40:00.000Z')).map((item) => item.id); // 12:40 Madrid
+  assert.deepEqual(kept, ['on-air', 'tonight-past-midnight']);
 });

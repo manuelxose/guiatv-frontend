@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { map, switchMap } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FootballFacade } from '@app/features/football/football.facade';
@@ -17,8 +16,6 @@ import {
   FootballMatchFilter,
 } from '@app/features/football/components/football-filter-bar/football-filter-bar.component';
 import { MetaService } from '@app/services/meta.service';
-import { environment } from 'src/environments/environment';
-import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
 import { FilterChipBarComponent, FilterChipItem } from '@app/components/filter-chip-bar/filter-chip-bar.component';
 
 type CompetitionTab = 'resumen' | 'calendario' | 'clasificacion';
@@ -66,7 +63,6 @@ export class FootballCompetitionDetailComponent {
   private readonly facade = inject(FootballFacade);
   private readonly route = inject(ActivatedRoute);
   private readonly meta = inject(MetaService);
-  private readonly sanitizer = inject(DomSanitizer);
 
   readonly tabs: readonly FilterChipItem[] = [
     { id: 'resumen', label: 'Resumen' },
@@ -117,8 +113,6 @@ export class FootballCompetitionDetailComponent {
   );
   readonly standingsPreview = computed(() => (this.detail()?.standings ?? []).slice(0, 5));
 
-  safeLdHtml: SafeHtml | null = null;
-
   constructor() {
     effect(() => {
       const state = this.state();
@@ -151,25 +145,11 @@ export class FootballCompetitionDetailComponent {
   }
 
   private applyDetailMeta(detail: FootballCompetitionDetailDTO): void {
-    const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';
     this.meta.setMetaTags({
       title: `${detail.competition.name} - partidos, clasificación y dónde verlos - Guía TV`,
       description: `${detail.competition.name}: partidos, resultados, clasificación y noticias.`,
       canonicalUrl: `/deportes/futbol/competiciones/${detail.competition.slug}`,
     });
-    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(
-        generateFootballBreadcrumbSchema(
-          [
-            { name: 'Inicio', path: '/' },
-            { name: 'Fútbol', path: '/deportes/futbol' },
-            { name: 'Competiciones', path: '/deportes/futbol/competiciones' },
-            { name: detail.competition.name, path: `/deportes/futbol/competiciones/${detail.competition.slug}` },
-          ],
-          baseUrl
-        )
-      )}</script>`
-    );
   }
 
   private applyNotFoundMeta(): void {

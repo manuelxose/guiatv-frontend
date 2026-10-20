@@ -24,7 +24,7 @@ import {
   isLiveMatchStatus,
   normalizeMatchStatus,
 } from '../../../domain/sports/football/types';
-import { buildMatchSlug, slugify } from '../../../application/sports/services/FootballNormalizer';
+import { buildMatchSlug, matchHasSlug, slugify } from '../../../application/sports/services/FootballNormalizer';
 import { DateUtils } from '../../../shared/utils/dateUtils';
 
 const BASE_URL = 'https://api.football-data.org/v4';
@@ -411,12 +411,16 @@ export class FootballDataOrgAdapter implements FootballDataProvider {
   }
 
   private async getMatchBySlug(slug: string): Promise<FootballMatch | null> {
-    if (!extractSlugDate(slug)) return null;
-    // Use the canonical general snapshot for slug resolution; the provider
-    // path accepts numeric ids only. Filtering client-side by slug is safe:
-    // a collision would require identical teams and kickoff date.
-    const matches = await this.getMatches({});
-    return matches.find((match) => match.slug === slug) ?? null;
+    const date = extractSlugDate(slug);
+    if (!date) return null;
+    // The provider path accepts numeric ids only, so filter a listing by slug (a collision would need identical
+    // teams and kickoff day). The cached general snapshot covers today's matches; any other day, or a kickoff
+    // whose UTC and Madrid days differ, needs the dated range around the slug's day (UTC day before to after,
+    // which holds both the Madrid day and the legacy UTC-dated slug).
+    const found = (await this.getMatches({})).find((match) => matchHasSlug(match, slug));
+    if (found) return found;
+    const ranged = await this.getMatches(madridDayQueryRange(date.replace(/-/g, '')));
+    return ranged.find((match) => matchHasSlug(match, slug)) ?? null;
   }
 
   async getCompetitions(): Promise<FootballCompetition[]> {

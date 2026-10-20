@@ -108,3 +108,19 @@ export function slugifyTitle(text: string): string {
   );
 }
 
+
+/**
+ * Splits airings by instant (epoch ms, so time zones and midnight-spanning airings compare correctly) at `now`:
+ * on air (start <= now < end) and upcoming (start > now). Finished airings are in neither; the API response may
+ * be cached, so its `liveNow` flag is not trusted.
+ */
+export function splitAiringsByTime<T extends { start: string; end: string }>(
+  airings: readonly T[] | undefined,
+  now: number = Date.now()
+): { current: T | null; upcoming: T[] } {
+  const timed = (airings || []).map((airing) => ({ airing, start: Date.parse(airing.start), end: Date.parse(airing.end) }));
+  return {
+    current: timed.find(({ start, end }) => start <= now && now < end)?.airing ?? null,
+    upcoming: timed.filter(({ start }) => start > now).sort((a, b) => a.start - b.start).map(({ airing }) => airing),
+  };
+}

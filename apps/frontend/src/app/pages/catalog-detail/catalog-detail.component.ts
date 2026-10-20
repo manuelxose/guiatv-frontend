@@ -17,7 +17,7 @@ import {
   CatalogService,
 } from '../../services/catalog.service';
 import { MetaService } from '../../services/meta.service';
-import { buildProgramCatalogId, buildTmdbCatalogId } from '../../utils/catalog';
+import { buildProgramCatalogId, buildTmdbCatalogId, splitAiringsByTime } from '../../utils/catalog';
 import { catalogRobotsPolicy } from '../../utils/catalog-indexability';
 import { generateTVSeriesSchema, generateMovieSchema, generateBreadcrumbSchema } from '../../utils/utils';
 import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
@@ -217,7 +217,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
             'program' so the canal-style day-tabs/full-timeline themselves
             are intentionally NOT ported here — this is copy/grouping only.
           -->
-          <div *ngIf="content.airings?.length" class="mb-10 lg:mb-14">
+          <div *ngIf="nowAiring(content) || nextAirings(content).length" class="mb-10 lg:mb-14">
             <ng-container *ngIf="content.contentType === 'program'; else genericAirings">
               <ng-container *ngIf="nowAiring(content) as live">
                 <p class="eyebrow text-[var(--accent-live)]">En directo</p>
@@ -256,7 +256,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
               <p class="eyebrow text-[var(--portal-text-muted)]">TV lineal</p>
               <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Próximas emisiones</h2>
               <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <ng-container *ngFor="let airing of content.airings">
+                <ng-container *ngFor="let airing of currentAndNextAirings(content)">
                   <ng-container *ngTemplateOutlet="airingCard; context: { $implicit: airing }"></ng-container>
                 </ng-container>
               </div>
@@ -513,11 +513,17 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
   // canal-completo.component.html, instead of one flat "Próximas emisiones"
   // list.
   nowAiring(item: CatalogItem): CatalogAiring | null {
-    return item.airings?.find((airing) => airing.liveNow) ?? null;
+    return splitAiringsByTime(item.airings).current;
   }
 
   nextAirings(item: CatalogItem): CatalogAiring[] {
-    return (item.airings || []).filter((airing) => !airing.liveNow);
+    return splitAiringsByTime(item.airings).upcoming;
+  }
+
+  /** Movies/series "Próximas emisiones": the airing on now, then the upcoming ones; never finished ones. */
+  currentAndNextAirings(item: CatalogItem): CatalogAiring[] {
+    const { current, upcoming } = splitAiringsByTime(item.airings);
+    return current ? [current, ...upcoming] : upcoming;
   }
 
   humanStatus(status: string): string {

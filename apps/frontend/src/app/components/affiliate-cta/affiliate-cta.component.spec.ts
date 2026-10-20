@@ -43,18 +43,18 @@ describe('AffiliateCTAComponent', () => {
     const link = fixture.debugElement.query(By.css('a'));
     expect(link.nativeElement.getAttribute('href')).toBe(SPONSORED_OFFER.outbound.path);
     expect(link.nativeElement.getAttribute('target')).toBe('_blank');
-    expect(link.nativeElement.getAttribute('rel')).toBe('sponsored noopener noreferrer');
+    expect(link.nativeElement.getAttribute('rel')).toBe('sponsored nofollow noopener noreferrer');
     expect(link.nativeElement.textContent).toContain('Ver oferta');
     expect(link.nativeElement.textContent).toContain('Patrocinado');
   });
 
-  it('omits the sponsored badge and uses plain rel for a direct (non-affiliate) offer', () => {
+  it('omits the sponsored badge for a direct (non-affiliate) offer but keeps its tracking redirect nofollow', () => {
     const fixture = create();
     fixture.componentRef.setInput('offer', DIRECT_OFFER);
     fixture.detectChanges();
 
     const link = fixture.debugElement.query(By.css('a'));
-    expect(link.nativeElement.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(link.nativeElement.getAttribute('rel')).toBe('nofollow noopener noreferrer');
     expect(link.nativeElement.textContent).not.toContain('Patrocinado');
   });
 
@@ -91,6 +91,15 @@ describe('AffiliateCTAComponent', () => {
     fixture.debugElement.query(By.css('a')).triggerEventHandler('click', new MouseEvent('click'));
 
     expect(emitted).toEqual([SPONSORED_OFFER]);
+  });
+
+  it('keeps a plain external link (not a tracking redirect) followable and unsponsored', () => {
+    const fixture = create();
+    fixture.componentRef.setInput('cta', { label: 'Web oficial', sponsored: false });
+    fixture.componentRef.setInput('href', 'https://www.rtve.es/play/');
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('a')).nativeElement.getAttribute('rel')).toBe('noopener noreferrer');
   });
 
   it('drops target/rel when external is false', () => {

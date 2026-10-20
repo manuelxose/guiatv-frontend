@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, distinctUntilChanged, map, of, shareReplay, switchMap, tap } from 'rxjs';
@@ -16,8 +15,6 @@ import { FootballBroadcastWidgetComponent, summarizeFootballBroadcasts } from '@
 import { FootballStandingsMiniComponent } from '@app/features/football/components/football-standings-mini/football-standings-mini.component';
 import { FootballLiveRefreshService, mergeLiveUpdates, shouldPollLiveTransitions } from '@app/features/football/football-live-refresh.service';
 import { MetaService } from '@app/services/meta.service';
-import { environment } from 'src/environments/environment';
-import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
 
 function toDateKey(date = new Date()): string {
   return `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
@@ -40,7 +37,6 @@ export class FootballHomeComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly meta = inject(MetaService);
-  private readonly sanitizer = inject(DomSanitizer);
 
   private readonly home$ = this.facade.getHome().pipe(shareReplay({ bufferSize: 1, refCount: true }));
   private readonly selectedDate$ = this.route.queryParamMap.pipe(map((params) => params.get('date') || toDateKey()), distinctUntilChanged());
@@ -54,7 +50,6 @@ export class FootballHomeComponent implements OnInit {
   readonly loading = computed(() => this.home() === null);
   private readonly datedLoadFailed = signal(false);
   readonly loadFailed = computed(() => this.home()?.loadError === true || this.datedLoadFailed());
-  safeLdHtml: SafeHtml | null = null;
 
   private readonly datedMatches$ = combineLatest([this.home$, this.selectedDate$]).pipe(
     switchMap(([home, date]) => {
@@ -121,10 +116,6 @@ export class FootballHomeComponent implements OnInit {
   ngOnInit(): void {
     this.meta.setMetaTags({ title: 'Fútbol hoy: partidos, horarios y dónde verlos | Guía TV',
       description: 'Partidos de fútbol de hoy, en directo, próximos partidos, clasificaciones y dónde ver cada partido por TV y streaming.', canonicalUrl: '/deportes/futbol' });
-    const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';
-    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(`<script type="application/ld+json">${JSON.stringify(
-      generateFootballBreadcrumbSchema([{ name: 'Inicio', path: '/' }, { name: 'Fútbol', path: '/deportes/futbol' }], baseUrl)
-    )}</script>`);
   }
 
   onProviderSelect(provider: string | null): void { void this.router.navigate([], { relativeTo: this.route, queryParams: { provider }, queryParamsHandling: 'merge', fragment: provider ? 'partidos' : undefined }); }

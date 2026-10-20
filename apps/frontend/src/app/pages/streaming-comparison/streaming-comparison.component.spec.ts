@@ -88,8 +88,9 @@ describe('StreamingComparisonComponent', () => {
     const netflix = component.offers[0];
 
     expect(component.outboundUrl(netflix, 'comparison-card')).toContain('/v2/monetization/go/');
-    expect(component.outboundRel(netflix)).toBe('sponsored noopener noreferrer');
-    expect(component.outboundRel(component.offers[1])).toBe('noopener noreferrer');
+    expect(component.outboundRel(netflix)).toBe('sponsored nofollow noopener noreferrer');
+    // Not commission-bearing, but still a click-tracking redirect: nofollow, never sponsored.
+    expect(component.outboundRel(component.offers[1])).toBe('nofollow noopener noreferrer');
   });
 
   it('shows a retryable error instead of static fallback offers', () => {

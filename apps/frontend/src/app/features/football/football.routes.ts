@@ -82,15 +82,8 @@ export const FOOTBALL_ROUTES: Routes = [
         title: 'Noticias de fútbol - Guía TV',
         data: { layout: 'public-shell' },
       },
-      {
-        path: 'noticias/:slug',
-        loadComponent: () =>
-          import('./pages/football-news-detail/football-news-detail.component').then(
-            (m) => m.FootballNewsDetailComponent
-          ),
-        title: 'Noticia de fútbol - Guía TV',
-        data: { layout: 'public-shell' },
-      },
+      // Football articles are guides: one canonical URL, /guias/:slug (the HTTP 301 is in ssr-server.mjs).
+      { path: 'noticias/:slug', redirectTo: '/guias/:slug' },
       {
         path: 'buscar',
         loadComponent: () =>
