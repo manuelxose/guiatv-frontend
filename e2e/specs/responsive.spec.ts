@@ -1,4 +1,4 @@
-import { test, expect, Page, Response } from '@playwright/test';
+import { test, expect, Locator, Page, Response } from '@playwright/test';
 
 /**
  * Responsive regression guard (Phase 2B): one URL per public template at every
@@ -135,6 +135,10 @@ for (const name of TEMPLATES) {
         const h1Box = await h1.evaluate((el) => ({ right: el.getBoundingClientRect().right, clipped: el.scrollWidth > el.clientWidth + 1 }));
         expect(h1Box.right, `${path}: H1 runs past the viewport`).toBeLessThanOrEqual(width + 1);
         expect(h1Box.clipped, `${path}: H1 text is clipped`).toBe(false);
+        if (!STATIC_ROUTES[name]) {
+          // A page linked from its own listing must resolve, not render the "no encontrado" state.
+          await expect(h1, `${path}: linked from ${DISCOVERED_ROUTES[name].listing} but renders a not-found state`).not.toHaveText(/no encontrad/i);
+        }
 
         const text = await page.locator('body').innerText();
         expect(text.match(ISO_INSTANT)?.[0] ?? null, `${path}: raw ISO timestamp rendered`).toBeNull();
@@ -146,25 +150,38 @@ for (const name of TEMPLATES) {
 }
 
 test.describe('responsive: primary navigation', () => {
+  /** Every visible link/button in `scope` fits the viewport and is at least 24px (WCAG 2.2 2.5.8). */
+  async function assertTargets(scope: Locator, width: number, label: string): Promise<void> {
+    const boxes = await scope.locator('a[href], button').evaluateAll((els) =>
+      els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0)
+    );
+    expect(boxes.length, `${label}: no visible targets`).toBeGreaterThan(2);
+    for (const r of boxes) {
+      expect(r.right, `@${width}px ${label}: target off screen`).toBeLessThanOrEqual(width + 1);
+      expect(Math.min(r.width, r.height), `@${width}px ${label}: target under 24px`).toBeGreaterThanOrEqual(24);
+    }
+  }
+
   for (const width of [320, 390, 768, 1440]) {
     test(`${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 844 });
       await openAndSettle(page, '/');
-      const sections = page.getByRole('navigation', { name: 'Secciones principales' }).getByRole('link');
-      const menu = page.getByRole('button', { name: 'Abrir navegación lateral' });
+      const desktop = page.getByRole('navigation', { name: 'Secciones principales' });
+      const mobile = page.getByRole('navigation', { name: 'Navegación principal móvil' });
+      const nav = (await mobile.isVisible()) ? mobile : desktop;
+      await expect(nav, `@${width}px: neither the section tabs nor the mobile tab bar is visible`).toBeVisible();
+      await assertTargets(nav, width, 'primary navigation');
 
-      // Either the section tabs are on screen, or the menu button opens a panel whose links are.
-      let links = sections;
-      if (!(await sections.first().isVisible()) && (await menu.isVisible())) {
-        await menu.click();
-        links = page.locator('aside a[href]:visible, [role="dialog"] a[href]:visible');
-      }
-      await expect(links.first(), `@${width}px: no reachable navigation link`).toBeVisible();
-      const boxes = await links.evaluateAll((els) => els.map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0));
-      expect(boxes.length).toBeGreaterThan(2);
-      for (const r of boxes) {
-        expect(r.right, `@${width}px: navigation link off screen`).toBeLessThanOrEqual(width + 1);
-        expect(Math.min(r.width, r.height), `@${width}px: navigation target under 24px (WCAG 2.5.8)`).toBeGreaterThanOrEqual(24);
+      // The mobile "Más" sheet: opens, its destinations are reachable, and it closes again.
+      const more = mobile.locator('button[aria-controls="mobile-more-sheet"]');
+      if (await more.isVisible()) {
+        await more.click();
+        const sheet = page.getByRole('dialog', { name: 'Más opciones' });
+        await expect(sheet).toBeVisible();
+        await expect(more).toHaveAttribute('aria-expanded', 'true');
+        await assertTargets(sheet.getByRole('navigation'), width, '"Más" sheet');
+        await sheet.getByRole('button', { name: 'Cerrar más opciones' }).click();
+        await expect(sheet).toBeHidden();
       }
     });
   }
@@ -173,7 +190,9 @@ test.describe('responsive: primary navigation', () => {
 test.describe('embeddable widget in a cross-origin iframe', () => {
   for (const width of [320, 420]) {
     test(`${width}px iframe shows Madrid clock times and the current slot`, async ({ page, baseURL }) => {
-      const host = 'http://widget-host.test/';
+      // A loopback host on another port: cross-origin to the widget, without tripping Private Network Access
+      // (a public-looking host framing a 127.0.0.1 candidate is blocked before the widget's own headers matter).
+      const host = new URL(baseURL!).hostname === '127.0.0.1' ? 'http://localhost:3999/' : 'http://127.0.0.1:3999/';
       await page.route(host, (route) =>
         route.fulfill({
           contentType: 'text/html',
