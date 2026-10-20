@@ -20,6 +20,7 @@
   </div>
 
   <div *ngIf="detail() as data">
+    <h1 class="match-title">{{ data.match.homeTeam.name }} - {{ data.match.awayTeam.name }}</h1>
     <div #scoreboardAnchor>
       <app-football-scoreboard [match]="data.match"></app-football-scoreboard>
     </div>

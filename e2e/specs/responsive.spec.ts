@@ -1,3 +1,5 @@
+import { createServer } from 'node:http';
+import { AddressInfo } from 'node:net';
 import { test, expect, Locator, Page, Response } from '@playwright/test';
 
 /**
@@ -190,16 +192,16 @@ test.describe('responsive: primary navigation', () => {
 test.describe('embeddable widget in a cross-origin iframe', () => {
   for (const width of [320, 420]) {
     test(`${width}px iframe shows Madrid clock times and the current slot`, async ({ page, baseURL }) => {
-      // A loopback host on another port: cross-origin to the widget, without tripping Private Network Access
-      // (a public-looking host framing a 127.0.0.1 candidate is blocked before the widget's own headers matter).
-      const host = new URL(baseURL!).hostname === '127.0.0.1' ? 'http://localhost:3999/' : 'http://127.0.0.1:3999/';
-      await page.route(host, (route) =>
-        route.fulfill({
-          contentType: 'text/html',
-          body: `<!doctype html><iframe title="Guía TV" src="${baseURL}/embed/programacion?channels=4" width="${width}" height="720" style="border:0"></iframe>`,
-        })
-      );
-      await page.goto(host);
+      // The host page comes from a real loopback server on another port: cross-origin to the widget, and in the
+      // same address space as a 127.0.0.1 candidate (a route-fulfilled page trips Local Network Access checks).
+      const hostServer = createServer((_req, res) => {
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+        res.end(`<!doctype html><iframe title="Guía TV" src="${baseURL}/embed/programacion?channels=4" width="${width}" height="720" style="border:0"></iframe>`);
+      });
+      await new Promise<void>((ok) => hostServer.listen(0, 'localhost', ok));
+      const { port } = hostServer.address() as AddressInfo;
+      test.info().attach('host', { body: `http://localhost:${port}/ frames ${baseURL}` });
+      await page.goto(`http://localhost:${port}/`);
       const frame = page.frameLocator('iframe');
       const times = frame.locator('.tv-program__hour, .tv-grid__time');
       await expect(times.first(), 'widget rendered no programmes inside the foreign-origin iframe').toBeVisible({ timeout: 30_000 });
@@ -213,6 +215,7 @@ test.describe('embeddable widget in a cross-origin iframe', () => {
 
       const overflow = await frame.locator('html').evaluate((el) => el.scrollWidth - el.clientWidth);
       expect(overflow, 'widget overflows its iframe').toBeLessThanOrEqual(0);
+      hostServer.close();
     });
   }
 
