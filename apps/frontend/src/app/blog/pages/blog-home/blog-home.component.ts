@@ -44,7 +44,7 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
   public readonly appPaths = APP_PATHS;
   public readonly breadcrumbItems = [
     { name: 'Inicio', url: APP_PATHS.home },
-    { name: 'Editorial', url: APP_PATHS.blog },
+    { name: 'Guías', url: APP_PATHS.blog },
   ];
 
   public loading = true;
@@ -80,10 +80,10 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.metaService.setMetaTags({
-      title: 'Editorial | Cine, series y streaming — Guía TV',
+      title: 'Guías de streaming, fútbol y TV en España | Guía TV',
       description:
-        'Reportajes, guías y rankings de cine, series, television y streaming, conectados con la programación y el catálogo reales de Guía TV.',
-      canonicalUrl: '/editorial',
+        'Dónde ver LaLiga y la Champions, precios de Netflix, HBO Max, Disney+ y Prime Video, y los mejores títulos de cada plataforma, con fuentes oficiales.',
+      canonicalUrl: '/guias',
       image: '/assets/images/blog-og-image.webp',
       type: 'website',
     });
@@ -118,19 +118,6 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
         next: ([hub, sections, posts]) => {
           this.hero = hub.hero;
           this.latestPosts = hub.latestPosts;
-          this.trendPosts = hub.trendPosts;
-          this.rankingPosts = hub.rankingPosts;
-
-          this.cineSection = sections.cine;
-          this.seriesSection = sections.series;
-          this.streamingSection = sections.streaming;
-          this.collections = sections.collections;
-          this.streamingPlatforms = {};
-          sections.streaming?.posts.forEach((post) => {
-            this.streamingPlatforms[post.slug] = post.relatedPlatformKeys
-              .map((key) => getCatalogPlatformByKey(key)?.name)
-              .filter((name): name is string => Boolean(name));
-          });
 
           const featuredSlugs = new Set([
             hub.hero?.slug,
@@ -138,12 +125,33 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
           ].filter(Boolean) as string[]);
           this.latestStories = posts.filter((post) => !featuredSlugs.has(post.slug)).slice(0, 6);
 
+          // Lower sections only add stories the lead, "Sigue leyendo" and the main grid have not shown:
+          // with a small archive they were repeating the same cards three times.
+          const shown = new Set([...featuredSlugs, ...this.latestStories.map((post) => post.slug)]);
+          const unseen = (list: EditorialPost[]) => list.filter((post) => !shown.has(post.slug));
+          const section = (value: EditorialCategorySection | null) => {
+            const remaining = value ? unseen(value.posts) : [];
+            return value && remaining.length ? { ...value, posts: remaining } : null;
+          };
+          this.trendPosts = unseen(hub.trendPosts);
+          this.rankingPosts = unseen(hub.rankingPosts);
+          this.cineSection = section(sections.cine);
+          this.seriesSection = section(sections.series);
+          this.streamingSection = section(sections.streaming);
+          this.collections = sections.collections.map(section).filter((value): value is EditorialCategorySection => Boolean(value));
+          this.streamingPlatforms = {};
+          sections.streaming?.posts.forEach((post) => {
+            this.streamingPlatforms[post.slug] = post.relatedPlatformKeys
+              .map((key) => getCatalogPlatformByKey(key)?.name)
+              .filter((name): name is string => Boolean(name));
+          });
+
           this.loading = false;
           this.changeDetector.markForCheck();
         },
         error: () => {
           this.error = 'No se han podido cargar las publicaciones. Comprueba tu conexión e inténtalo de nuevo.';
-          this.metaService.markUnavailable('Editorial no disponible | Guía TV', '/editorial');
+          this.metaService.markUnavailable('Guías no disponibles | Guía TV', '/guias');
           this.loading = false;
           this.changeDetector.markForCheck();
         },
@@ -190,10 +198,10 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
     const baseUrl = 'https://guiaprogramaciontv.com';
     const schema = generateCollectionPageSchema(
       {
-        name: 'Editorial Guía TV',
+        name: 'Guías de streaming, fútbol y TV',
         description:
-          'Guías, rankings y tendencias de cine, series y streaming conectadas con la programación TV, las plataformas y el descubrimiento de la app.',
-        path: '/editorial',
+          'Dónde ver cada competición, precios de las plataformas de streaming en España y rankings por servicio, con fuentes oficiales.',
+        path: '/guias',
       },
       baseUrl
     );

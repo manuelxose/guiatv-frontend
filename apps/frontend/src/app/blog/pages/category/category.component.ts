@@ -92,7 +92,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
           this.state = state;
           this.loading = false;
           this.metaService.setMetaTags({
-            title: `${state.category.name} | Editorial Guía TV`,
+            title: `${state.category.name}: guías | Guía TV`,
             description:
               state.category.description ||
               `Artículos y rankings editoriales relacionados con ${state.category.name}.`,
@@ -126,7 +126,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
   public get breadcrumbItems(): Array<{ name: string; url: string }> {
     return [
       { name: 'Inicio', url: APP_PATHS.home },
-      { name: 'Editorial', url: APP_PATHS.blog },
+      { name: 'Guías', url: APP_PATHS.blog },
       ...(this.state ? [{ name: this.state.category.name, url: this.state.category.canonicalPath }] : []),
     ];
   }
@@ -136,7 +136,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
     const schemas = [
       generateCollectionPageSchema(
         {
-          name: `${state.category.name} - Editorial Guía TV`,
+          name: `${state.category.name}: guías`,
           description:
             state.category.description ||
             `Coleccion editorial de ${state.category.name} en Guia TV.`,
@@ -152,7 +152,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
             detailPath: post.canonicalPath,
             image: post.coverImage,
           })),
-        `${state.category.name} - Editorial Guía TV`,
+        `${state.category.name}: guías`,
         baseUrl
       ),
     ];

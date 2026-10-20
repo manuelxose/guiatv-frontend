@@ -2,7 +2,7 @@
   <header class="streaming-view__masthead">
     <div class="streaming-view__masthead-copy">
       <p class="streaming-view__eyebrow">Streaming</p>
-      <h1>{{ activePlatform()?.name || 'Plataformas y catálogo en un mismo flujo' }}</h1>
+      <h1>{{ activePlatform()?.name || 'Plataformas de streaming en España' }}</h1>
       <p>
         {{
           activePlatform()
@@ -69,7 +69,7 @@
         <header class="streaming-view__section-head">
           <div>
             <p class="streaming-view__eyebrow">Popular</p>
-            <h3>Lo más visible ahora</h3>
+            <h2>Lo más visible ahora</h2>
           </div>
         </header>
         <div class="streaming-view__rail">
@@ -85,7 +85,7 @@
         <header class="streaming-view__section-head">
           <div>
             <p class="streaming-view__eyebrow">Novedades</p>
-            <h3>Entradas recientes</h3>
+            <h2>Entradas recientes</h2>
           </div>
         </header>
         <div class="streaming-view__rail">
@@ -101,7 +101,7 @@
         <header class="streaming-view__section-head">
           <div>
             <p class="streaming-view__eyebrow">Top valorado</p>
-            <h3>La mejor percepción crítica</h3>
+            <h2>La mejor percepción crítica</h2>
           </div>
         </header>
         <div class="streaming-view__rail">
@@ -120,7 +120,7 @@
       <header class="streaming-view__section-head">
         <div>
           <p class="streaming-view__eyebrow">Catálogo filtrado</p>
-          <h3>{{ gridData().meta.total || combinedItems().length }} títulos en foco</h3>
+          <h2>{{ gridData().meta.total || combinedItems().length }} títulos en foco</h2>
         </div>
         <button type="button" class="streaming-view__action" (click)="clearFilters()">Limpiar</button>
       </header>

@@ -62,7 +62,7 @@
 }
 
 .portal-footer__brand-copy p,
-.portal-footer__brand-copy h2,
+.portal-footer__brand-copy .portal-footer__brand-name,
 .portal-footer__brand-copy span,
 .portal-footer__meta p {
   margin: 0;
@@ -76,7 +76,7 @@
   text-transform: uppercase;
 }
 
-.portal-footer__brand-copy h2 {
+.portal-footer__brand-copy .portal-footer__brand-name {
   color: var(--portal-text);
   font-size: clamp(1.2rem, 3vw, 1.8rem);
   line-height: 1.1;

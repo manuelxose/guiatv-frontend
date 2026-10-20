@@ -133,7 +133,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
             : `https://guiaprogramaciontv.com${state.post.canonicalPath}`;
 
           this.metaService.setMetaTags({
-            title: state.post.metaTitle || `${state.post.title} | Editorial Guía TV`,
+            title: state.post.metaTitle || `${state.post.title} | Guía TV`,
             description:
               state.post.metaDescription || state.post.excerptText || 'Artículo editorial de Guía TV.',
             canonicalUrl: state.post.canonicalPath,
@@ -185,7 +185,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   public get breadcrumbItems(): Array<{ name: string; url: string }> {
     return [
       { name: 'Inicio', url: APP_PATHS.home },
-      { name: 'Editorial', url: APP_PATHS.blog },
+      { name: 'Guías', url: APP_PATHS.blog },
       ...(this.state?.post.primaryCategory
         ? [{ name: this.state.post.primaryCategory.name, url: this.state.post.primaryCategory.canonicalPath }]
         : []),

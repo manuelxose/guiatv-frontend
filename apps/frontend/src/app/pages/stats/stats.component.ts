@@ -14,8 +14,8 @@ interface PopularItem { title: string; path: string; platform?: string; category
   imports: [CommonModule, RouterModule, PortalContextNavComponent],
   template: `
     <div class="popular-page">
-      <app-portal-context-nav kind="blog"></app-portal-context-nav>
-      <header class="popular-page__header"><p>Blog</p><h1>Tendencias</h1><span>Contenidos populares del catálogo de Guía TV.</span></header>
+      <app-portal-context-nav kind="discover"></app-portal-context-nav>
+      <header class="popular-page__header"><p>Qué ver</p><h1>Tendencias</h1><span>Contenidos populares del catálogo de Guía TV.</span></header>
       @if (loading) { <p class="popular-page__status" role="status">Cargando contenidos populares…</p> }
       @else if (error) { <p class="popular-page__status" role="alert">No hemos podido cargar las tendencias ahora mismo.</p> }
       @else if (!items.length) { <p class="popular-page__status">Todavía no hay contenidos populares disponibles.</p> }

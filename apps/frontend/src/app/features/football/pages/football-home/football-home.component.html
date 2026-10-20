@@ -4,20 +4,18 @@
   <header class="football-home__header">
     <div class="football-home__intro">
       <div class="football-home__title-line">
-        <h1>Fútbol</h1>
+        <h1>Fútbol hoy en TV</h1>
         @if (liveMatches().length) {
-        <a routerLink="/deportes/futbol/en-directo" class="football-home__live-count">
+        <a routerLink="/deportes/futbol/partidos-hoy" [queryParams]="{ filter: 'live' }" class="football-home__live-count">
           <span aria-hidden="true"></span>{{ liveMatches().length }} {{ liveMatches().length === 1 ? 'partido' : 'partidos' }} en directo
         </a>
         }
       </div>
-      <p>Partidos, resultados, horarios y dónde ver fútbol hoy</p>
+      <p>Lo que se juega hoy, qué canal lo emite y los próximos grandes partidos. Para otro día o un filtro concreto, abre <a routerLink="/deportes/futbol/partidos-hoy">la lista completa de partidos</a>.</p>
     </div>
   </header>
 
-  <app-football-date-strip [selected]="selectedDate()" (dateChange)="onDateChange($event)"></app-football-date-strip>
-  <app-football-filter-bar [active]="filter()" (filterChange)="onFilterChange($event)"></app-football-filter-bar>
-
+  <!-- Date and filter controls live on /partidos-hoy only: here they duplicated that page's listing. -->
   <main class="football-home__layout" [attr.aria-busy]="loading()">
     <div class="football-home__primary">
       @if (loading()) {
@@ -25,14 +23,14 @@
       } @else {
         @if (liveMatches().length) {
         <section class="football-home__section football-home__section--live">
-          <app-football-section-header title="En directo" link="/deportes/futbol/en-directo"></app-football-section-header>
+          <app-football-section-header title="En directo" link="/deportes/futbol/partidos-hoy"></app-football-section-header>
           @for (group of groupLive(); track group.competitionSlug) {<app-football-competition-group [group]="group"></app-football-competition-group>}
           <p class="sr-only" role="status" aria-live="polite" aria-atomic="true">{{ liveAnnouncement() }}</p>
         </section>
         }
 
         <section id="partidos" class="football-home__section">
-          <app-football-section-header [title]="selectedDateLabel" link="/deportes/futbol/calendario"></app-football-section-header>
+          <app-football-section-header [title]="selectedDateLabel" link="/deportes/futbol/partidos-hoy"></app-football-section-header>
           @if (selectedProvider()) {<p class="football-home__filter-note">Mostrando emisiones en <strong>{{ selectedProvider() }}</strong>. <button type="button" (click)="onProviderSelect(null)">Quitar filtro</button></p>}
           @if (matchGroups().length) {
             @for (group of matchGroups(); track group.competitionSlug) {<app-football-competition-group [group]="group"></app-football-competition-group>}

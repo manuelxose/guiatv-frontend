@@ -26,7 +26,7 @@
 
     <section class="mt-8">
       <app-catalog-filters
-        [title]="pageTitle"
+        [title]="contentType === 'series' ? 'Filtra series por género y plataforma' : 'Filtra películas por género y plataforma'"
         variant="content-type"
         [filters]="filters"
         [genres]="genres"
@@ -53,7 +53,7 @@
       <section class="mt-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <p class="text-[11px] uppercase tracking-[0.32em] text-[var(--portal-text-muted)]">Resultados</p>
-          <h2 class="text-2xl font-semibold text-[var(--portal-text)]">{{ total | number }} resultados</h2>
+          <p class="text-2xl font-semibold text-[var(--portal-text)]">{{ total | number }} resultados</p>
         </div>
         <a
           [routerLink]="appPaths.explore"

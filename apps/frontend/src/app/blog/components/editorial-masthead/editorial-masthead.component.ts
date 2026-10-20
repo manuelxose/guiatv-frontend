@@ -6,7 +6,7 @@ import { APP_PATHS } from '../../../config/route-map';
 /**
  * Editorial product identity lockup. Full version on the Editorial home;
  * `compact` on category/rankings/article pages so the section still reads
- * as "Guía TV Editorial" without repeating the full masthead height.
+ * as "Guías" without repeating the full masthead height.
  */
 @Component({
   selector: 'app-editorial-masthead',
@@ -21,11 +21,11 @@ import { APP_PATHS } from '../../../config/route-map';
       <ng-template #lockupOnly><ng-container *ngTemplateOutlet="lockup"></ng-container></ng-template>
       <ng-template #lockup>
         <a [routerLink]="appPaths.blog" class="editorial-masthead__lockup">
-          <span class="editorial-masthead__kicker">Guía TV</span>
-          <span class="editorial-masthead__word">Editorial</span>
+          <span class="editorial-masthead__word">Guías</span>
+          <span *ngIf="!compact" class="editorial-masthead__kicker">de streaming, fútbol y TV</span>
         </a>
       </ng-template>
-      <p *ngIf="!compact" class="editorial-masthead__tagline">Qué ver, qué merece la pena y por qué.</p>
+      <p *ngIf="!compact" class="editorial-masthead__tagline">Dónde ver cada competición, cuánto cuesta cada plataforma y qué merece la pena, con fuentes oficiales y fecha de comprobación.</p>
     </div>
   `,
   styles: [
