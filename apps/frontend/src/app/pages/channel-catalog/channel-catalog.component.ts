@@ -68,7 +68,7 @@ export class ChannelCatalogComponent {
     const status = this.status();
     if (status === 'loading') return;
     if (status === 'error') {
-      this.metaService.markUnavailable('Canales de televisión | Guía TV', '/canales');
+      this.metaService.markUnavailable('Canales de televisión | Guía TV');
       return;
     }
     this.metaService.setMetaTags({

@@ -105,7 +105,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
         next: ({ state, failed }) => {
           if (failed) {
             this.error = 'No se ha podido cargar este artículo. Comprueba tu conexión e inténtalo de nuevo.';
-            this.metaService.markUnavailable('Artículo no disponible | Guía TV', this.router.url);
+            this.metaService.markUnavailable('Artículo no disponible | Guía TV');
             this.loading = false;
             this.changeDetector.markForCheck();
             return;
@@ -117,7 +117,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
             this.metaService.setMetaTags({
               title: 'Artículo no encontrado | Guía TV',
               description: 'La página que buscas no existe o ha cambiado de dirección.',
-              canonicalUrl: this.router.url,
+              canonicalUrl: null,
               robots: 'noindex, nofollow',
               httpStatus: 404,
             });

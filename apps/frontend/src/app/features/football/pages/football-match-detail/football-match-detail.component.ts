@@ -169,7 +169,7 @@ export class FootballMatchDetailComponent implements AfterViewInit, OnDestroy {
     this.meta.setMetaTags({
       title: 'Partido no encontrado - Guía TV',
       description: 'Este partido no está disponible.',
-      canonicalUrl: '/deportes/futbol/partidos-hoy',
+      canonicalUrl: null,
       robots: 'noindex, follow',
     });
   }

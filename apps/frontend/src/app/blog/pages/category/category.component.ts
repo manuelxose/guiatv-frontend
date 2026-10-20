@@ -69,7 +69,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
         next: ({ state, failed }) => {
           if (failed) {
             this.error = 'No se ha podido cargar esta categoría. Comprueba tu conexión e inténtalo de nuevo.';
-            this.metaService.markUnavailable('Categoría no disponible | Guía TV', this.router.url);
+            this.metaService.markUnavailable('Categoría no disponible | Guía TV');
             this.loading = false;
             this.changeDetector.markForCheck();
             return;
@@ -81,7 +81,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
             this.metaService.setMetaTags({
               title: 'Categoría no encontrada | Guía TV',
               description: 'La página que buscas no existe o ha cambiado de dirección.',
-              canonicalUrl: this.router.url,
+              canonicalUrl: null,
               robots: 'noindex, nofollow',
               httpStatus: 404,
             });

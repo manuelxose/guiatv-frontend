@@ -36,7 +36,7 @@ describe('FootballMatchDetailComponent (SEO/meta regression)', () => {
   // crawlers. This locks in the discriminated-state fix: a found match must
   // end up indexable, a genuinely missing one must end up noindex.
 
-  function setup(matchResult: FootballMatchDetailDTO | null) {
+  function setup(matchResult: FootballMatchDetailDTO | null, slug = 'real-madrid-barcelona') {
     const setMetaTags = jasmine.createSpy('setMetaTags');
     TestBed.configureTestingModule({
       imports: [FootballMatchDetailComponent],
@@ -44,7 +44,7 @@ describe('FootballMatchDetailComponent (SEO/meta regression)', () => {
         provideRouter([]),
         {
           provide: ActivatedRoute,
-          useValue: { paramMap: of(convertToParamMap({ slug: 'real-madrid-barcelona' })) },
+          useValue: { paramMap: of(convertToParamMap({ slug })) },
         },
         {
           provide: FootballFacade,
@@ -71,6 +71,19 @@ describe('FootballMatchDetailComponent (SEO/meta regression)', () => {
     const calls = setMetaTags.calls.allArgs().map((args) => args[0]);
     const lastCall = calls[calls.length - 1];
     expect(lastCall.robots).toBe('noindex, follow');
+    // Not a page to consolidate on: no canonical (it used to point at the today list).
+    expect(lastCall.canonicalUrl).toBeNull();
+  });
+
+  it('a legacy slug declares the current slug as canonical, matching the JSON-LD url (issue #17)', () => {
+    const current = 'real-madrid-barcelona-2026-08-21';
+    const { fixture, setMetaTags } = setup(detail({ slug: current }), 'real-madrid-barcelona-2026-08-20');
+    const lastCall = setMetaTags.calls.mostRecent().args[0];
+    expect(lastCall.canonicalUrl).toBe(`/deportes/futbol/partido/${current}`);
+    fixture.detectChanges();
+    const ld = String((fixture.componentInstance.safeLdHtml as any)?.changingThisBreaksApplicationSecurity || '');
+    expect(ld).toContain(`/deportes/futbol/partido/${current}"`);
+    expect(ld).not.toContain('2026-08-20');
   });
 
   it('exposes loading()/detail() consistently with the resolved state', () => {

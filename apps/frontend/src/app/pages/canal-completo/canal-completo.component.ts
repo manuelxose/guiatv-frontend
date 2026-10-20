@@ -30,7 +30,7 @@ import {
 } from 'src/app/utils/catalog';
 import { normalizePublicImageUrl } from 'src/app/utils/media-url';
 import { slugify } from 'src/app/utils/utils';
-import { channelPath } from '../../config/route-map';
+import { channelCanonicalPath } from '../../config/route-map';
 
 type GuideQuickCategory = 'all' | 'Cine' | 'Series' | 'Deportes';
 type DayAlias = 'today' | 'tomorrow' | 'after_tomorrow';
@@ -106,7 +106,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     return [
       { name: 'Inicio', url: '/' },
       { name: 'Canales', url: '/canales' },
-      { name: this.canal, url: channelPath(this.channel?.id || this.query) },
+      { name: this.canal, url: channelCanonicalPath(this.channel, this.query) },
     ];
   }
   public logo = '';
@@ -319,7 +319,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
         error: () => {
           this.error =
             'No se pudo cargar la programación del canal ahora mismo. Inténtalo de nuevo en unos minutos.';
-          this.metaService.markUnavailable('Canal no disponible | Guía TV', this.router.url);
+          this.metaService.markUnavailable('Canal no disponible | Guía TV');
           this.isLoading = false;
         },
       });
@@ -332,7 +332,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       this.metaService.setMetaTags({
         title: 'Canal no disponible - Guía TV',
         description: 'No hemos encontrado este canal en la guía actual.',
-        canonicalUrl: this.router.url,
+        canonicalUrl: null,
         robots: 'noindex, follow',
         httpStatus: 404,
       });
@@ -489,8 +489,8 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       description:
         this.channelDescription ||
         `Consulta qué están emitiendo ahora, qué viene después y la parrilla completa de ${channelName} ${currentText}.`,
-      // One URL per channel: not the request path (la_1 vs la-1, ?dia=…), the id-derived one.
-      canonicalUrl: channelPath(this.channel?.id || this.query),
+      // One URL per channel: not the request path (la_1 vs la-1, dmax vs discovery, ?dia=…), the one in the sitemap.
+      canonicalUrl: channelCanonicalPath(this.channel, this.query),
       ogTitle: `${channelName} en directo y programación ${currentText}`,
       ogDescription:
         this.channelDescription ||

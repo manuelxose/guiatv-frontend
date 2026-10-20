@@ -5,6 +5,7 @@ import https from 'node:https';
 import { dirname, join, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { finalizeCanonical } from './ssr-canonical.mjs';
 
 const require = createRequire(import.meta.url);
 try {
@@ -114,18 +115,6 @@ function isNoindexRoute(url) {
   return NOINDEX_ROUTES.some((re) => re.test(path));
 }
 
-function canonicalHref(pathname) {
-  return `${BASE_SITE_URL}${pathname}`;
-}
-
-function injectCanonical(html, pathname) {
-  const href = canonicalHref(pathname);
-  if (html.includes('rel="canonical"')) {
-    return html.replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${href}">`);
-  }
-  return html.replace('</head>', `<link rel="canonical" href="${href}"></head>`);
-}
-
 function injectRobots(html, value) {
   if (/<meta\s+name="robots"\s+content="[^"]*"\s*\/?>/i.test(html)) {
     return html.replace(
@@ -183,10 +172,11 @@ function sendCsrFallback(req, res, statusCode, cacheable = false) {
     return;
   }
 
-  let html = injectCanonical(readFileSync(fallbackPath, 'utf-8'), req.path);
+  let html = readFileSync(fallbackPath, 'utf-8');
   if (statusCode >= 400 || isNoindexRoute(req.originalUrl)) {
     html = injectRobots(html, statusCode >= 400 ? 'noindex, nofollow' : 'noindex, follow');
   }
+  html = finalizeCanonical(html, { baseUrl: BASE_SITE_URL, pathname: req.path, statusCode }).html;
   applyRobotsHeader(html, res);
   if (cacheable) {
     setCachedResponse(req.path, statusCode, html);
@@ -488,10 +478,14 @@ app.get('*', async (req, res) => {
       return sendCsrFallback(req, res, statusCode >= 400 ? statusCode : 503);
     }
 
-    html = injectCanonical(stripStatusMarker(html), req.path);
+    html = stripStatusMarker(html);
     if (statusCode >= 400 || noindexRoute) {
       html = injectRobots(html, statusCode >= 400 ? 'noindex, nofollow' : 'noindex, follow');
     }
+    // Keeps the canonical Angular rendered (it used to be overwritten with req.path); see ssr-canonical.mjs.
+    const canonical = finalizeCanonical(html, { baseUrl: BASE_SITE_URL, pathname: req.path, statusCode });
+    html = canonical.html;
+    if (canonical.fallback) res.setHeader('X-SSR-Canonical', 'fallback');
 
     applyRobotsHeader(html, res);
 

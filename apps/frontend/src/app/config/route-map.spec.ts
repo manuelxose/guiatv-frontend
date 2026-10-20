@@ -1,4 +1,4 @@
-import { APP_PATHS, channelPath, normalizePath } from './route-map';
+import { APP_PATHS, channelCanonicalPath, channelPath, normalizePath } from './route-map';
 import {
   PORTAL_BLOG_DESTINATIONS,
   PORTAL_MOBILE_MORE_DESTINATIONS,
@@ -77,5 +77,18 @@ describe('route map', () => {
   it('normalizes query strings, hashes, and trailing slashes', () => {
     expect(normalizePath('/deportes/?day=today#live')).toBe('/deportes');
     expect(normalizePath('')).toBe('/');
+  });
+});
+
+describe('channelCanonicalPath', () => {
+  it('uses the sitemap identity (normalizedName), not the internal id', () => {
+    expect(channelCanonicalPath({ id: 'dmax', normalizedName: 'discovery' }, 'dmax')).toBe('/canales/discovery');
+    expect(channelCanonicalPath({ id: 'fdf', normalizedName: 'factoria_de_ficcion' }, 'fdf')).toBe('/canales/factoria-de-ficcion');
+    expect(channelCanonicalPath({ id: 'la_1', normalizedName: 'la_1' }, 'la-1')).toBe('/canales/la-1');
+  });
+
+  it('falls back to the id, then the requested slug', () => {
+    expect(channelCanonicalPath({ id: 'la_2' }, 'x')).toBe('/canales/la-2');
+    expect(channelCanonicalPath(null, 'la-sexta')).toBe('/canales/la-sexta');
   });
 });
