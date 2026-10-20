@@ -42,11 +42,13 @@ for a in "$@"; do
   if [ "$a" = "-fsS" ]; then echo '<script src="/main.js"></script>'; exit 0; fi
 done
 if [ -e "${FAIL_FLAG}" ] && [ "$(basename "$(readlink -f "${APP_DIR}/current")")" = "${FAIL_RELEASE}" ]; then echo 500; exit 0; fi
+# Cold start: the first discovery/home call of a run times out (000), like production on 2026-10-20.
+case "${*: -1}" in */v2/discovery/home) [ -e "${COLD_FLAG}" ] || { touch "${COLD_FLAG}"; echo 000; exit 0; } ;; esac
 # Legacy public paths answer like the real SSR server: a permanent redirect.
 case "${*: -1}" in */programacion-tv/guia-canales|*/canales/*_*|*/editorial) echo 301 ;; *) echo 200 ;; esac
 EOF
 chmod +x "${T}/bin/"*
-export PATH="${T}/bin:${PATH}" APP_DIR="${SRV}" DEPLOY_ALLOW_NON_ROOT=1 SYSTEMCTL_LOG="${T}/systemctl.log" FAIL_FLAG="${T}/fail" FAIL_RELEASE=none
+export PATH="${T}/bin:${PATH}" APP_DIR="${SRV}" DEPLOY_ALLOW_NON_ROOT=1 SYSTEMCTL_LOG="${T}/systemctl.log" FAIL_FLAG="${T}/fail" FAIL_RELEASE=none COLD_FLAG="${T}/cold" SMOKE_RETRY_DELAY=0
 : >"${SYSTEMCTL_LOG}"
 
 # --- 1. remote history rewritten after the server last synced --------------------------------------------------
