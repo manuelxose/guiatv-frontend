@@ -1,0 +1,121 @@
+{
+ "window": [
+  "2026-10-19T19:08:55.474Z",
+  "2026-10-19T21:08:29.542Z"
+ ],
+ "ssrTotal": 3391,
+ "groups": [
+  {
+   "source": "other",
+   "route": "internal",
+   "kind": "read",
+   "count": 47,
+   "shareOfSsr": null,
+   "status": {
+    "ok": 47
+   },
+   "backendMs": {
+    "p50": 56,
+    "p90": 803.5,
+    "p99": 4296.7
+   }
+  },
+  {
+   "source": "other",
+   "route": "public",
+   "kind": "read",
+   "count": 687,
+   "shareOfSsr": null,
+   "status": {
+    "ok": 633,
+    "404": 39,
+    "other4xx": 15
+   },
+   "backendMs": {
+    "p50": 67.4,
+    "p90": 333.2,
+    "p99": 3652
+   }
+  },
+  {
+   "source": "other",
+   "route": "public",
+   "kind": "write",
+   "count": 573,
+   "shareOfSsr": null,
+   "status": {
+    "ok": 573
+   },
+   "backendMs": {
+    "p50": 5.8,
+    "p90": 37.3,
+    "p99": 172.3
+   }
+  },
+  {
+   "source": "ssr",
+   "route": "internal",
+   "kind": "read",
+   "count": 475,
+   "shareOfSsr": 0.1401,
+   "status": {
+    "404": 10,
+    "ok": 437,
+    "5xx": 28
+   },
+   "backendMs": {
+    "p50": 69.6,
+    "p90": 5014,
+    "p99": 13432.3
+   }
+  },
+  {
+   "source": "ssr",
+   "route": "internal",
+   "kind": "write",
+   "count": 11,
+   "shareOfSsr": 0.0032,
+   "status": {
+    "ok": 11
+   },
+   "backendMs": {
+    "p50": 132.5,
+    "p90": 259.7,
+    "p99": 277.6
+   }
+  },
+  {
+   "source": "ssr",
+   "route": "public",
+   "kind": "read",
+   "count": 2828,
+   "shareOfSsr": 0.834,
+   "status": {
+    "404": 222,
+    "ok": 2605,
+    "5xx": 1
+   },
+   "backendMs": {
+    "p50": 21.3,
+    "p90": 230.9,
+    "p99": 4541.1
+   }
+  },
+  {
+   "source": "ssr",
+   "route": "public",
+   "kind": "write",
+   "count": 77,
+   "shareOfSsr": 0.0227,
+   "status": {
+    "ok": 77
+   },
+   "backendMs": {
+    "p50": 37.5,
+    "p90": 112.5,
+    "p99": 282.9
+   }
+  }
+ ],
+ "ssrRenderTimeouts": 6
+}

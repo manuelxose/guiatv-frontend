@@ -92,3 +92,44 @@ Status codes are unchanged: pages map any API error to 503 + noindex (`MetaServi
 3. nginx: the count of `"node"` user-agent GETs on `/v2` drops to near zero; affiliate POSTs remain.
 
 **Rollback:** revert the merge commit on `main` and push; `deploy.yml` redeploys. For a faster manual rollback, repoint `/var/www/guiatv/current` to the previous release (`20261020200327`, `aa46e40`) and `systemctl restart guiatv-ssr`. The backend is unchanged, so `guiatv-api` doesn't need a restart. `RUNBOOK.md` §Rollback describes the full rebuild path.
+
+## 9. Deployment and production validation (2026-10-20)
+
+PR #25 merged as `5c97b01` (merge commit, no bypass). Branch CI on `781c20a`: `verify` and `ssr-resilience` passed; `live-crawl` skipped. CI on `main` passed too. `deploy.yml` deployed release `20261020210703` (`release.json` `gitSha` = `5c97b01…`) at about 19:07 UTC, and both `guiatv-ssr` and `guiatv-api` are active. Pre-merge review found nothing new. Unknown hosts are rejected before render (`ssr-server.mjs` `SSR_ALLOWED_HOST_SET`), the target origin is fixed, and only GET/HEAD to `/v2` on a site host are rewritten. The backend is server-only, and the browser base is still `/v2`.
+
+**Production checks** (after nginx's 5-minute cache had expired, 19:13 UTC onward):
+
+| Check | Result |
+|---|---|
+| `seo:crawl` | 937/937, 0 issues |
+| Canonical matrix (`phase-2d0/canonical-matrix.mjs`) | 26 rows. Only `/embed/programacion` is inconsistent, as before |
+| Responsive Playwright (2 workers) | 183/183, including the 3 cross-origin widget iframe tests |
+| Internal URLs in HTML (8 templates) | 0 × `127.0.0.1`, `:4000`, `localhost`. Channel logo is `/storage/channel_icons/la_1.webp` |
+| Browser bundles (92 chunks) | No `SSR_API_BASE_URL` or `API_ORIGIN`. Only the two known server-branch fallback literals (§4) |
+| Rate-limit smoke (5 spaced GETs) | `ratelimit-limit: 300` on public requests. `remaining` stays at 299 across requests, which is the open edge-IP keying issue (#28) |
+
+**Traffic** (`ssr-api-traffic.py`, SSR = UA `node`). Both windows are 2 h. "Before" is the 2 h immediately before deploy on the old release. Backend time is the API's own handling time and doesn't include the network hop.
+
+| SSR API calls | Before 17:06–19:05 UTC | After 19:08–21:08 UTC |
+|---|---|---|
+| Total | 24,227 | 7,277 |
+| Internal GET/HEAD | 937 (3.9%) | **6,256 (86.0%)** |
+| Via Cloudflare GET/HEAD | 19,772 (81.6%) | **0** |
+| Affiliate POST (Cloudflare) | 3,504 (14.5%) | 1,021 (14.0%) |
+| 429 | 561 (501 read, 60 POST) | **0** |
+| 5xx | 66 (63 internal legacy lookup) | 45 (all internal legacy lookup, #30) |
+| SSR render timeouts | 11 | **0** |
+| Backend p50/p90/p99, reads (ms) | via CF 3.3/64/349; internal 34/457/8,931 | internal 5.6/123/6,805 |
+| Backend p50/p90/p99, POST (ms) | 23/59/174 | 26/78/318 |
+
+nginx since deploy: 0 `node` GETs on `/v2`, 1,030 `node` affiliate POSTs.
+
+- **The distribution matches the projection** (§3: about 85% internal, about 15% affiliate POSTs on Cloudflare).
+- **Total volume fell 70%. This is load, not routing.** Page requests fell 42% (4,702 → 2,715, evening in Madrid), and the "before" window includes a burst of about 3,700 SSR calls at 18:43–18:45 UTC. The affiliate POSTs, which this change doesn't touch, fell in the same proportion as the reads (reads per POST: 5.9 → 6.1). Yesterday's same-time window (`ssr-api-traffic-before-sametime-production.json`, old routing) had 3,391 SSR calls, so day-to-day volume isn't a usable baseline. It still shows the same about 83% via Cloudflare.
+- **All 501 SSR read 429s fell in the burst**, keyed on Cloudflare edge IPs. This is the hairpin failure this change removes: the burst produced 0 429s on the internal route.
+- **404s are unchanged in kind and in absolute numbers** (318 → 274; nginx page 404s 316 → 260): unknown `catalog/slug/program/*`. Their share rose only because total volume fell.
+- **Page 503s** (79 → 45) are almost all `/contenido/*`, the legacy catalogue lookup (#30), in both windows.
+
+**Backlog:** #26 transfer cache, #27 SSR timeouts, #28 Cloudflare real-IP trust, #29 SSR service credential, #30 legacy catalogue 500s.
+
+**Rollback readiness:** the previous release `20261020200327` (`aa46e40`) is still in `/var/www/guiatv/releases/`. Repoint `current` and `systemctl restart guiatv-ssr`, or revert `5c97b01` on `main`.
