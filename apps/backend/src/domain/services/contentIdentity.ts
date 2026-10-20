@@ -4,7 +4,7 @@
  * identity, path and matching policies are unit-testable without a database.
  */
 import { randomBytes } from 'node:crypto';
-import { buildProgramBrandKey, isGenericMovieTitle } from '@/shared/utils/tvMetadata';
+import { buildProgramBrandKey, resolveProgramDisplayTitle } from '@/shared/utils/tvMetadata';
 
 export const CONTENT_KINDS = ['show', 'series', 'movie', 'event', 'unknown'] as const;
 export type ContentKind = (typeof CONTENT_KINDS)[number];
@@ -117,7 +117,11 @@ export function normalizeContentPath(input: unknown): PathCheck {
 // `key|kind|discriminator`, and several rows may share a key.
 
 const EPISODE_MARKER = /_(capitulo|cap|episodio|ep|chapter|parte)_\d+$/;
-const GENERIC_TITLE_KEYS = new Set([...RESERVED_SLUGS].map((slug) => slug.replace(/-/g, '_')));
+/** Bare slot words only. Named programmes built on them ("Cine de barrio") are real entities. */
+const GENERIC_TITLE_KEYS = new Set([
+  ...[...RESERVED_SLUGS].map((slug) => slug.replace(/-/g, '_')),
+  'movie', 'film', 'cinema', 'estreno', 'blockbuster', 'taquillazo', 'peliculon',
+]);
 
 /** `buildProgramBrandKey` (unchanged, so stored brand keys stay reusable) minus a trailing
  * "capítulo N" style episode marker. Null when the title has no usable Latin identity. */
@@ -131,8 +135,13 @@ export function titleIdentityKey(title: string | null | undefined): string | nul
   return key || null;
 }
 
+/**
+ * Not `isGenericMovieTitle`: its "cine + up to 4 words" rule suppresses movie slots in the grid but
+ * would reject named programmes such as "Cine de barrio". A container that carries a film
+ * ("Cine: Matrix") is still rejected: the film is the identity, matched by its own title.
+ */
 export function isGenericContentTitle(title: string | null | undefined): boolean {
-  if (isGenericMovieTitle(title)) return true;
+  if (resolveProgramDisplayTitle(title) !== String(title || '').trim()) return true;
   const key = titleIdentityKey(title);
   return key !== null && GENERIC_TITLE_KEYS.has(key);
 }
@@ -215,34 +224,47 @@ export function decideTitleMatch(
   const base = { id, key, kind: input.kind, discriminator, year: input.year, method: input.method };
   const confidence = Math.max(0, Math.min(1, input.confidence));
 
-  if (input.tmdb) {
-    const strong = input.method === 'manual' || confidence >= VERIFIED_CONFIDENCE;
-    const state: TitleKeyState = strong ? 'verified' : 'candidate';
-    if (!tmdbEntity) return { decision: 'create', row: { ...base, state, confidence } };
-    if (input.kind !== 'unknown' && tmdbEntity.kind !== input.kind) {
-      return {
-        decision: 'review',
-        row: { ...base, state: 'manual_review', confidence, candidates: [tmdbEntity.entityId], reason: 'kind_conflict' },
-      };
-    }
-    return { decision: 'bind', row: { ...base, state, confidence, entityId: tmdbEntity.entityId } };
-  }
-
-  // Without a TMDB id, only bound rows of the same kind (any kind when ours is unknown) and a
-  // compatible year (±1, §E.2) can be the same work.
-  const compatible = rows.filter(
+  const review = (state: 'ambiguous' | 'manual_review', reason: string, candidates: string[], conf = confidence) =>
+    ({ decision: 'review', row: { ...base, state, confidence: conf, candidates, reason } }) as const;
+  // Bound rows that could be the same work: same kind (any when ours is unknown).
+  const sameKind = rows.filter(
     (row) =>
       row.entityId &&
       (row.state === 'verified' || row.state === 'candidate') &&
-      (input.kind === 'unknown' || row.kind === input.kind) &&
-      !(input.year && row.year && Math.abs(row.year - input.year) > 1)
+      (input.kind === 'unknown' || row.kind === input.kind)
   );
-  const entityIds = [...new Set(compatible.map((row) => row.entityId as string))];
+  // Year is evidence, not authority: only years more than one apart tell two works apart.
+  const yearsApart = (row: TitleKeyRow) => Boolean(input.year && row.year && Math.abs(row.year - input.year) > 1);
+  const entityIdsOf = (list: TitleKeyRow[]) => [...new Set(list.map((row) => row.entityId as string))];
+
+  if (input.tmdb) {
+    if (TMDB_TYPE_BY_KIND[input.kind] && TMDB_TYPE_BY_KIND[input.kind] !== input.tmdb.type) {
+      return review('manual_review', 'tmdb_type_mismatch', tmdbEntity ? [tmdbEntity.entityId] : []);
+    }
+    const strong = input.method === 'manual' || confidence >= VERIFIED_CONFIDENCE;
+    const state: TitleKeyState = strong ? 'verified' : 'candidate';
+    if (tmdbEntity) {
+      if (input.kind !== 'unknown' && tmdbEntity.kind !== input.kind) {
+        return review('manual_review', 'kind_conflict', [tmdbEntity.entityId]);
+      }
+      return { decision: 'bind', row: { ...base, state, confidence, entityId: tmdbEntity.entityId } };
+    }
+    // The same title and kind already bound to another TMDB work, with no year to separate them.
+    const rivals = sameKind.filter((row) => row.discriminator.startsWith('tmdb:') && !yearsApart(row));
+    if (rivals.length) return review('manual_review', 'tmdb_conflict', entityIdsOf(rivals));
+    return { decision: 'create', row: { ...base, state, confidence } };
+  }
+
+  // Without a TMDB id: a provisional candidate at most. Only a same-year (or yearless) row binds;
+  // an adjacent year (±1, §E.2) only nominates for review.
   const titleOnly = Math.min(confidence, TITLE_ONLY_CONFIDENCE);
-  if (entityIds.length === 0) {
+  const entityIds = entityIdsOf(sameKind.filter((row) => !(input.year && row.year && row.year !== input.year)));
+  const adjacent = entityIdsOf(sameKind.filter((row) => !yearsApart(row))).filter((id) => !entityIds.includes(id));
+  if (entityIds.length === 0 && adjacent.length === 0) {
     return { decision: 'create', row: { ...base, state: 'candidate', confidence: titleOnly } };
   }
-  if (entityIds.length === 1) {
+  if (entityIds.length === 0) return review('ambiguous', 'year_adjacent', adjacent, titleOnly);
+  if (entityIds.length === 1 && adjacent.length === 0) {
     return {
       decision: 'bind',
       row: {
@@ -254,8 +276,18 @@ export function decideTitleMatch(
       },
     };
   }
-  return {
-    decision: 'review',
-    row: { ...base, state: 'ambiguous', confidence: titleOnly, candidates: entityIds, reason: 'several_entities' },
-  };
+  return review('ambiguous', 'several_entities', [...entityIds, ...adjacent], titleOnly);
+}
+
+/** A TMDB ref must be typed for the kind it identifies; `event` and `unknown` take either. */
+const TMDB_TYPE_BY_KIND: Partial<Record<ContentKind, TmdbRef['type']>> = { movie: 'movie', series: 'tv', show: 'tv' };
+
+/**
+ * Indexing needs an active entity whose identity is manual or a reliable TMDB link. Title-only
+ * and low-confidence matches stay `noindex` until a person verifies them.
+ */
+export function mayBeIndexable(entity: { status: ContentStatus; matching?: { method: MatchMethod; confidence: number } }): boolean {
+  const m = entity.matching;
+  if (entity.status !== 'active' || !m) return false;
+  return m.method === 'manual' || ((m.method === 'tmdb_id' || m.method === 'tmdb_exact') && m.confidence >= VERIFIED_CONFIDENCE);
 }

@@ -113,9 +113,9 @@ TVReadAiringSchema.index(
 
 /**
  * "Next airings of this entity" and the airingStats roll-up (2C §D.4). Deliberately NOT registered
- * on the schema: boot `syncIndexes()` and mongoose `autoIndex` would build it on the live 786k-row
- * collection during startup, and `syncIndexes()` drops any index the schema doesn't declare. 2D-2
- * builds it off-peak first (report §C), then registers it here in the same release.
+ * on the schema: boot `createIndexes()` and mongoose `autoIndex` would build it on the live 786k-row
+ * collection during startup. 2D-2 builds it off-peak first (report §C), then registers it here;
+ * boot never drops indexes, so the hand-built index survives restarts in between.
  * Partial: only rows that carry an entityId are indexed, so the index starts empty.
  */
 export const TV_READ_AIRING_ENTITY_INDEX = {

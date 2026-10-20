@@ -87,6 +87,13 @@ test('content_entities schema: strict validation', () => {
   assert.equal(doc.status, 'candidate');
   assert.equal(doc.version, 0);
   assert.equal(doc.indexability.state, 'noindex');
+
+  // Uncertain identities are never indexable, whatever the caller sets.
+  const index = { indexability: { state: 'index', reasons: [] } };
+  assert.ok(bad(index)?.errors.indexability, 'candidate');
+  const title = { method: 'title_kind', confidence: 0.8, decidedAt: new Date(), decidedBy: 'x' };
+  assert.ok(bad({ ...index, status: 'active', matching: title })?.errors.indexability, 'title-only');
+  assert.equal(bad({ ...index, status: 'active' }), undefined, 'active + TMDB');
 });
 
 test('content_slugs and content_title_keys schemas: strict validation', () => {
@@ -382,6 +389,10 @@ test('content identity on MongoDB', { skip: mongoUri ? false : 'TEST_MONGO_URI n
     await t.test('airing entity index: partial, starts empty, used for entity lookups', async () => {
       const airings = db.collection('tv_read_airings');
       await airings.createIndex(TV_READ_AIRING_ENTITY_INDEX.key, TV_READ_AIRING_ENTITY_INDEX.options);
+      // A hand-built index the schema doesn't declare survives the next boot.
+      const before = (await airings.indexes()).map((i) => i.name).sort();
+      await ensureMongoCollectionsAndIndexes();
+      assert.deepEqual((await airings.indexes()).map((i) => i.name).sort(), before);
       await TVReadAiringModel.insertMany([
         legacyAiring({ id: 'a2', program: { ...legacyAiring().program, entityId: E1 }, airing: { start: '2026-10-21T13:00:00.000Z' } }),
         legacyAiring({ id: 'a3', airing: { start: '2026-10-22T13:00:00.000Z' } }),
