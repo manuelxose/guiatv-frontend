@@ -222,8 +222,13 @@ systemctl restart guiatv-ssr
 wait_http "http://127.0.0.1:${SSR_PORT}/"
 verify_local_ssr_assets
 smoke_http "http://127.0.0.1:${SSR_PORT}/" "200"
-smoke_http "http://127.0.0.1:${SSR_PORT}/programacion-tv/guia-canales" "200"
-smoke_http "http://127.0.0.1:${SSR_PORT}/canales/la_2" "200"
+smoke_http "http://127.0.0.1:${SSR_PORT}/programacion-tv/en-directo" "200"
+smoke_http "http://127.0.0.1:${SSR_PORT}/canales/la-2" "200"
+smoke_http "http://127.0.0.1:${SSR_PORT}/guias" "200"
+# 2026-10-20 URL restructure: the old paths must stay permanent redirects (docs/seo/redirect-map.csv).
+smoke_http "http://127.0.0.1:${SSR_PORT}/programacion-tv/guia-canales" "301"
+smoke_http "http://127.0.0.1:${SSR_PORT}/canales/la_2" "301"
+smoke_http "http://127.0.0.1:${SSR_PORT}/editorial" "301"
 smoke_http "http://127.0.0.1:${SSR_PORT}/plataformas" "200"
 smoke_http "http://127.0.0.1:${SSR_PORT}/deportes/futbol" "200"
 smoke_socket_io
