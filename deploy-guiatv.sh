@@ -98,12 +98,17 @@ verify_local_ssr_assets() {
 smoke_http() {
   local url="$1"
   local expected="${2:-200}"
-  local code
-  code=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" "$url" || true)
-  if [ "$code" != "$expected" ]; then
-    echo "Smoke check failed: $url -> $code (expected $expected)"
-    exit 1
-  fi
+  local code attempt
+  # Right after a restart the first uncached read can exceed the timeout (2026-10-20: discovery/home -> 000
+  # while it answers in 0.2 s warm); retry so a cold cache does not roll back a healthy release.
+  for attempt in 1 2 3; do
+    code=$(curl --max-time 15 -s -o /dev/null -w "%{http_code}" "$url" || true)
+    [ "$code" = "$expected" ] && return 0
+    echo "Smoke attempt ${attempt}/3: $url -> $code (expected $expected)"
+    [ "$attempt" -lt 3 ] && sleep "${SMOKE_RETRY_DELAY:-5}"
+  done
+  echo "Smoke check failed: $url -> $code (expected $expected)"
+  exit 1
 }
 
 smoke_auth_http() {
