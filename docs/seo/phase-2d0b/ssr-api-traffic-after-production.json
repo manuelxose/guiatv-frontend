@@ -1,0 +1,88 @@
+{
+ "window": [
+  "2026-10-20T19:08:30.884Z",
+  "2026-10-20T21:08:27.343Z"
+ ],
+ "ssrTotal": 7277,
+ "groups": [
+  {
+   "source": "other",
+   "route": "internal",
+   "kind": "read",
+   "count": 12,
+   "shareOfSsr": null,
+   "status": {
+    "ok": 12
+   },
+   "backendMs": {
+    "p50": 58.9,
+    "p90": 71.6,
+    "p99": 112.2
+   }
+  },
+  {
+   "source": "other",
+   "route": "public",
+   "kind": "read",
+   "count": 400,
+   "shareOfSsr": null,
+   "status": {
+    "ok": 394,
+    "404": 6
+   },
+   "backendMs": {
+    "p50": 3.5,
+    "p90": 52.5,
+    "p99": 2726.6
+   }
+  },
+  {
+   "source": "other",
+   "route": "public",
+   "kind": "write",
+   "count": 1145,
+   "shareOfSsr": null,
+   "status": {
+    "ok": 1145
+   },
+   "backendMs": {
+    "p50": 3.4,
+    "p90": 18.6,
+    "p99": 114.5
+   }
+  },
+  {
+   "source": "ssr",
+   "route": "internal",
+   "kind": "read",
+   "count": 6256,
+   "shareOfSsr": 0.8597,
+   "status": {
+    "ok": 5937,
+    "404": 274,
+    "5xx": 45
+   },
+   "backendMs": {
+    "p50": 5.6,
+    "p90": 122.6,
+    "p99": 6805.2
+   }
+  },
+  {
+   "source": "ssr",
+   "route": "public",
+   "kind": "write",
+   "count": 1021,
+   "shareOfSsr": 0.1403,
+   "status": {
+    "ok": 1021
+   },
+   "backendMs": {
+    "p50": 25.7,
+    "p90": 77.9,
+    "p99": 318.4
+   }
+  }
+ ],
+ "ssrRenderTimeouts": 0
+}
