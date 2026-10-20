@@ -1,0 +1,439 @@
+{
+  generatedAt: '2026-10-20T21:31:41.549Z',
+  server: {
+    version: '8.0.19',
+    replicaSet: null
+  },
+  collections: {
+    tv_read_airings: {
+      count: 785786,
+      sizeMB: 2901.3,
+      avgObjBytes: 3692,
+      storageMB: 565.6,
+      totalIndexMB: 630.2,
+      indexMB: {
+        _id_: 9.2,
+        id_1: 14.4,
+        date_1: 3.7,
+        viewDate_1: 3.7,
+        searchTokens_1: 195.6,
+        idx_tvread_date_group_timeslot_sort: 6.3,
+        idx_tvread_channel_date_start: 25.5,
+        idx_tvread_brand_date_start: 53.5,
+        idx_tvread_search_tokens: 253.8,
+        idx_tvread_date_group_sort_start: 9.3,
+        idx_tvread_date_airing_window: 15.4,
+        idx_tvread_date_sort_start: 8.7,
+        idx_tvread_date_partofday_sort_start: 8.6,
+        idx_tvread_sport_date_start: 7.2,
+        idx_tvread_category_date_start: 10,
+        idx_tvread_tmdbid_date: 5.3
+      }
+    },
+    tv_program_brands: {
+      count: 150797,
+      sizeMB: 295.9,
+      avgObjBytes: 1962,
+      storageMB: 84,
+      totalIndexMB: 114.7,
+      indexMB: {
+        _id_: 2.2,
+        editorialCategory_1: 1.9,
+        tmdbId_1: 0.3,
+        'normalizedTitle_1_updatedAt_-1': 18.3,
+        'titleAliases_1_updatedAt_-1': 47.5,
+        idx_tvbrands_brandKey: 8.5,
+        idx_tvbrands_normalizedTitle: 9.7,
+        idx_tvbrands_titleAliases: 26.3
+      }
+    },
+    media_catalog: {
+      count: 17172,
+      sizeMB: 26.9,
+      avgObjBytes: 1564,
+      storageMB: 22.2,
+      totalIndexMB: 2.4,
+      indexMB: {
+        _id_: 0.3,
+        tmdbType_1_tmdbId_1: 0.3,
+        normalizedIdentity_1: 0.8,
+        normalizedTitle_1: 0.6,
+        lastEnrichedAt_1: 0.3
+      }
+    },
+    programs: {
+      count: 206532,
+      sizeMB: 359.2,
+      avgObjBytes: 1739,
+      storageMB: 191,
+      totalIndexMB: 203.1,
+      indexMB: {
+        _id_: 10.3,
+        id_1: 27.1,
+        channelId_1_startTime_1: 6.1,
+        'title_1_startTime_-1': 11,
+        idx_tmdbId: 0.3,
+        idx_overlap: 5.8,
+        normalizedTitle_1: 6.2,
+        titleAliases_1: 17.1,
+        idx_normalizedTitle_startTime: 11,
+        idx_titleAliases_startTime: 33.4,
+        canonicalChannelId_1: 3,
+        brandKey_1: 7.6,
+        sourceFeed_1: 5.6,
+        idx_date_canonicalChannel_start: 11.5,
+        brandKey_1_date_1: 7.9,
+        sourceFeed_1_sourceProgrammeId_1: 32.8,
+        sourceFeed_1_channelId_1_startTime_1: 6.5,
+        mediaId_1: 0.1
+      }
+    }
+  },
+  tvReadAirings: {
+    firstDate: '20260319',
+    lastDate: '20261022',
+    distinctDates: 82,
+    docsPerDate: {
+      min: 136,
+      max: 20368,
+      avg: 9583
+    }
+  },
+  window90d: {
+    since: '20260722',
+    airings: 548404,
+    genericAirings: 1069,
+    genericDistinctTitles: 70,
+    genericTopExamples: [
+      {
+        title: 'cine',
+        airings: 595
+      },
+      {
+        title: 'cine de barrio',
+        airings: 107
+      },
+      {
+        title: 'cine western',
+        airings: 48
+      },
+      {
+        title: 'cine friki',
+        airings: 48
+      },
+      {
+        title: 'cine de verano',
+        airings: 40
+      },
+      {
+        title: 'cine imas',
+        airings: 40
+      },
+      {
+        title: 'cineole',
+        airings: 30
+      },
+      {
+        title: 'historia de nuestro cine',
+        airings: 22
+      },
+      {
+        title: 'cine argentino',
+        airings: 12
+      },
+      {
+        title: 'cine george b',
+        airings: 11
+      }
+    ],
+    distinctBrandKeys: 76008,
+    brandKeysWithTmdb: 6654,
+    sportBrandKeys: 14188,
+    airingsPerBrandKey: {
+      '<=1': 32324,
+      '<=5': 15535,
+      '<=2': 15918,
+      '<=20': 8686,
+      '<=100': 2738,
+      '>100': 807
+    },
+    titlesPerBrandKey: {
+      '<=1': 70579,
+      '<=2': 3986,
+      '<=5': 840,
+      '>5': 603
+    },
+    collisions: {
+      brandKeyWithManyTmdbIds: 213,
+      brandKeyWithManyTmdbIdsExamples: [
+        {
+          key: 'la_promesa',
+          airings: 1842,
+          tmdbIds: 2,
+          titles: [
+            'La Promesa T1 E929',
+            'La Promesa T1 E888',
+            'La Promesa T1 E904'
+          ]
+        },
+        {
+          key: 'focus',
+          airings: 510,
+          tmdbIds: 2,
+          titles: [
+            'Focus'
+          ]
+        },
+        {
+          key: 'rosario',
+          airings: 258,
+          tmdbIds: 2,
+          titles: [
+            'Rosario T1 E59',
+            'Rosario T1 E44',
+            'Rosario T1 E69'
+          ]
+        },
+        {
+          key: 'dog_house',
+          airings: 254,
+          tmdbIds: 3,
+          titles: [
+            'Dog House T2 E3',
+            'Dog House',
+            'Dog House T2 E4'
+          ]
+        },
+        {
+          key: 'una_casa_de_locos',
+          airings: 193,
+          tmdbIds: 2,
+          titles: [
+            'Una casa de locos',
+            'Una casa de locos T9 E5',
+            'Una casa de locos T9 E6'
+          ]
+        },
+        {
+          key: 'deportes',
+          airings: 180,
+          tmdbIds: 2,
+          titles: [
+            'Deportes'
+          ]
+        },
+        {
+          key: 'rebeca',
+          airings: 94,
+          tmdbIds: 2,
+          titles: [
+            'Rebeca'
+          ]
+        },
+        {
+          key: 'que_cine',
+          airings: 84,
+          tmdbIds: 2,
+          titles: [
+            '+ Que Cine'
+          ]
+        },
+        {
+          key: 'rubi',
+          airings: 80,
+          tmdbIds: 2,
+          titles: [
+            'Rubí'
+          ]
+        },
+        {
+          key: 'cara_a_cara',
+          airings: 71,
+          tmdbIds: 2,
+          titles: [
+            'Cara a cara'
+          ]
+        }
+      ],
+      tmdbIdSharedByManyBrandKeys: 310,
+      legacySlugSharedByManyBrandKeys: 13,
+      legacySlugCollisionExamples: [
+        {
+          slug: 'converses-connecticat',
+          brandKeys: [
+            'converses_connecti_cat',
+            'converses_connecticat'
+          ]
+        },
+        {
+          slug: 'los-conciertos-de-radio-3-the-birras-terror',
+          brandKeys: [
+            'los_conciertos_de_radio_3_the_birra_s_terror',
+            'los_conciertos_de_radio_3_the_birras_terror'
+          ]
+        },
+        {
+          slug: 'no',
+          brandKeys: [
+            'noe',
+            'no'
+          ]
+        },
+        {
+          slug: 'repoblem',
+          brandKeys: [
+            'repoblem',
+            're_poblem'
+          ]
+        },
+        {
+          slug: 'mozart-sinfona-n-34-y-dvok-sinfona-n-7',
+          brandKeys: [
+            'mozart_sinfonia_n_34_y_dvoak_sinfonia_n_7',
+            'mozart_sinfonia_n_34_y_dvorak_sinfonia_n_7'
+          ]
+        },
+        {
+          slug: 'funerarias-sa',
+          brandKeys: [
+            'funerarias_sa',
+            'funerarias_s_a'
+          ]
+        },
+        {
+          slug: 'converses-connecticat-r',
+          brandKeys: [
+            'converses_connecti_cat_r',
+            'converses_connecticat_r'
+          ]
+        },
+        {
+          slug: 'martin-concertino-para-tro-de-piano-y-cuerdas',
+          brandKeys: [
+            'martin_concertino_para_trio_de_piano_y_cuerdas',
+            'martinu_concertino_para_trio_de_piano_y_cuerdas'
+          ]
+        },
+        {
+          slug: 'pets-life',
+          brandKeys: [
+            'pets_life',
+            'pet_s_life'
+          ]
+        },
+        {
+          slug: 'csi-miami',
+          brandKeys: [
+            'csi_miami',
+            'c_s_i_miami'
+          ]
+        }
+      ],
+      brandKeyWithManyLegacySlugs: 2950,
+      brandKeyWithSeriesAndFilmCategories: 228
+    }
+  },
+  mediaCatalog: {
+    sameTitleKindManyTmdbIds: 304,
+    examples: [
+      {
+        title: '',
+        kind: 'movie',
+        tmdbIds: 27,
+        years: [
+          '2026',
+          '2004',
+          '1960',
+          '2024'
+        ]
+      },
+      {
+        title: '',
+        kind: 'series',
+        tmdbIds: 27,
+        years: [
+          '2011',
+          '2026',
+          '2021',
+          '2024'
+        ]
+      },
+      {
+        title: '2 37',
+        kind: 'movie',
+        tmdbIds: 2,
+        years: [
+          '2006',
+          '2025'
+        ]
+      },
+      {
+        title: '50 50',
+        kind: 'movie',
+        tmdbIds: 2,
+        years: [
+          '1998',
+          '2011'
+        ]
+      },
+      {
+        title: 'a ciegas',
+        kind: 'movie',
+        tmdbIds: 2,
+        years: [
+          '2012',
+          '2018'
+        ]
+      },
+      {
+        title: 'acosada',
+        kind: 'movie',
+        tmdbIds: 2,
+        years: [
+          '1985',
+          '1994'
+        ]
+      },
+      {
+        title: 'actos de violencia',
+        kind: 'movie',
+        tmdbIds: 2,
+        years: [
+          '1991',
+          '2018'
+        ]
+      },
+      {
+        title: 'agnes',
+        kind: 'movie',
+        tmdbIds: 2,
+        years: [
+          '2016',
+          '1992'
+        ]
+      },
+      {
+        title: 'aire',
+        kind: 'movie',
+        tmdbIds: 2,
+        years: [
+          '2018',
+          '2015'
+        ]
+      },
+      {
+        title: 'aisha',
+        kind: 'movie',
+        tmdbIds: 2,
+        years: [
+          '2022'
+        ]
+      }
+    ],
+    sameTitleFilmAndSeries: 226
+  },
+  tvProgramBrands: {
+    total: 150797,
+    withTmdb: 11708
+  }
+}

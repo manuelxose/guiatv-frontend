@@ -36,6 +36,17 @@ import { AffiliateOfferModel } from './models/AffiliateOffer.model';
 import { AffiliatePlacementModel } from './models/AffiliatePlacement.model';
 import { AdminOperationModel } from './models/AdminOperation.model';
 import { AdminOperationalEventModel } from './models/AdminOperationalEvent.model';
+import { ContentEntityModel } from './models/ContentEntity.model';
+import { ContentSlugModel } from './models/ContentSlug.model';
+import { ContentTitleKeyModel } from './models/ContentTitleKey.model';
+import { isContentEntitiesEnabled } from '../../shared/config/contentEntities';
+
+/** New, empty collections: created only when the flag is on (2D-1). */
+export const CONTENT_IDENTITY_RESOURCES = [
+  { name: 'content_entities', model: ContentEntityModel },
+  { name: 'content_slugs', model: ContentSlugModel },
+  { name: 'content_title_keys', model: ContentTitleKeyModel },
+] as const;
 
 /**
  * Ensure required Mongo collections exist and indexes are in place.
@@ -82,6 +93,7 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     { name: 'affiliate_placements', model: AffiliatePlacementModel },
     { name: 'admin_operations', model: AdminOperationModel },
     { name: 'admin_operational_events', model: AdminOperationalEventModel },
+    ...(isContentEntitiesEnabled() ? CONTENT_IDENTITY_RESOURCES : []),
   ] as const;
 
   for (const { name, model } of resources) {
