@@ -5,6 +5,7 @@ import {
   decideTitleMatch,
   ENTITY_ID_PATTERN,
   isGenericContentTitle,
+  mayBeIndexable,
   newEntityId,
   normalizeContentPath,
   TitleKeyRow,
@@ -88,7 +89,10 @@ test('generic programme names are rejected, real titles are not', () => {
       title
     );
   }
-  for (const title of ['Espejo Público', 'Friends', 'Informativos Telecinco 15:00']) {
+  // Containers carrying a film: the film is the identity, matched by its own title.
+  for (const title of ['Cine: Matrix', 'El peliculón: Titanic']) assert.ok(isGenericContentTitle(title), title);
+  // Named programmes built on slot words are real entities.
+  for (const title of ['Espejo Público', 'Friends', 'Informativos Telecinco 15:00', 'Cine de barrio', 'Historia de nuestro cine', 'Cine western']) {
     assert.ok(!isGenericContentTitle(title), title);
   }
   assert.deepEqual(decideTitleMatch({ title: '捕风追影2', kind: 'movie', method: 'title', confidence: 1 }, []), {
@@ -106,6 +110,13 @@ test('same title, different years: separate works; no year is ambiguous', () => 
   assert.equal(y2015.decision, 'bind');
   assert.equal(y2015.decision === 'bind' && y2015.row.entityId, E2);
   assert.equal(y2015.decision === 'bind' && y2015.row.state, 'candidate');
+
+  // ±1 year is supporting evidence only: it nominates for review, never binds.
+  const y2016 = decideTitleMatch({ title: 'Cenicienta', kind: 'movie', year: 2016, method: 'title', confidence: 1 }, rows);
+  assert.equal(y2016.decision, 'review');
+  assert.equal(y2016.decision === 'review' && y2016.row.reason, 'year_adjacent');
+  assert.deepEqual(y2016.decision === 'review' && y2016.row.candidates, [E2]);
+  assert.equal(y2016.decision === 'review' && y2016.row.entityId, undefined);
 
   const y2021 = decideTitleMatch({ title: 'Cenicienta', kind: 'movie', year: 2021, method: 'title', confidence: 1 }, rows);
   assert.equal(y2021.decision, 'create');
@@ -131,24 +142,45 @@ test('same title, film versus series: kind keeps them apart', () => {
   assert.equal(seriesTmdb.decision, 'create');
   assert.equal(seriesTmdb.decision === 'create' && seriesTmdb.row.state, 'verified');
 
+  // A TMDB ref typed for another kind is not reliable: review, never create or bind.
+  for (const owner of [null, { entityId: E1, kind: 'movie' as const }]) {
+    const mistyped = decideTitleMatch(
+      { title: 'Fargo', kind: 'series', tmdb: { type: 'movie', id: 275 }, method: 'tmdb_id', confidence: 1 },
+      rows,
+      owner
+    );
+    assert.equal(mistyped.decision === 'review' && mistyped.row.reason, 'tmdb_type_mismatch');
+    assert.equal(mistyped.decision === 'review' && mistyped.row.state, 'manual_review');
+  }
+
   // TMDB id already owned by an entity of another kind: never auto-bound.
   const conflict = decideTitleMatch(
-    { title: 'Fargo', kind: 'series', tmdb: { type: 'movie', id: 275 }, method: 'tmdb_id', confidence: 1 },
+    { title: 'Fargo', kind: 'show', tmdb: { type: 'tv', id: 60622 }, method: 'tmdb_id', confidence: 1 },
     rows,
-    { entityId: E1, kind: 'movie' }
+    { entityId: E2, kind: 'series' }
   );
   assert.equal(conflict.decision, 'review');
   assert.equal(conflict.decision === 'review' && conflict.row.reason, 'kind_conflict');
 });
 
-test('reboots/remakes: distinct TMDB ids create distinct entities, the shared title is ambiguous', () => {
+test('conflicting TMDB ids for one title: review unless years more than one apart separate them', () => {
   const rows = [row({ key: 'dog_house', kind: 'series', discriminator: 'tmdb:tv:1', entityId: E1 })];
-  const remake = decideTitleMatch(
+  const rival = decideTitleMatch(
     { title: 'Dog House', kind: 'series', tmdb: { type: 'tv', id: 2 }, method: 'tmdb_id', confidence: 1 },
     rows,
     null
   );
+  assert.equal(rival.decision, 'review');
+  assert.equal(rival.decision === 'review' && rival.row.reason, 'tmdb_conflict');
+  assert.deepEqual(rival.decision === 'review' && rival.row.candidates, [E1]);
+  assert.equal(rival.decision === 'review' && rival.row.entityId, undefined);
+
+  const dated = [row({ key: 'cenicienta', kind: 'movie', discriminator: 'tmdb:movie:11224', year: 1950, entityId: E1 })];
+  const adjacentYear = { title: 'Cenicienta', kind: 'movie' as const, method: 'tmdb_id' as const, confidence: 1 };
+  assert.equal(decideTitleMatch({ ...adjacentYear, tmdb: { type: 'movie', id: 7 }, year: 1951 }, dated, null).decision, 'review');
+  const remake = decideTitleMatch({ ...adjacentYear, tmdb: { type: 'movie', id: 150689 }, year: 2015 }, dated, null);
   assert.equal(remake.decision, 'create');
+  assert.equal(remake.decision === 'create' && remake.row.state, 'verified');
   const both = [...rows, row({ key: 'dog_house', kind: 'series', discriminator: 'tmdb:tv:2', entityId: E2 })];
   assert.equal(decideTitleMatch({ title: 'Dog House T2 E3', kind: 'series', method: 'title', confidence: 1 }, both).decision, 'review');
 });
@@ -212,4 +244,15 @@ test('ambiguous rows stay held; title-only bindings are capped below verified', 
     row({ key: 'rubi', kind: 'movie', discriminator: 'tmdb:movie:5', entityId: E1 }),
   ];
   assert.equal(decideTitleMatch({ title: 'Rubí', kind: 'unknown', method: 'title', confidence: 1 }, unknownKind).decision, 'review');
+});
+
+test('indexability: only active entities with a manual or reliable TMDB identity', () => {
+  const at = (status: 'candidate' | 'active', method: 'manual' | 'tmdb_id' | 'tmdb_exact' | 'title' | 'title_year', confidence: number) =>
+    mayBeIndexable({ status, matching: { method, confidence } });
+  assert.ok(at('active', 'manual', 0.5));
+  assert.ok(at('active', 'tmdb_id', 1));
+  assert.ok(!at('active', 'tmdb_exact', 0.6));
+  assert.ok(!at('active', 'title', 1));
+  assert.ok(!at('active', 'title_year', 1));
+  assert.ok(!at('candidate', 'manual', 1));
 });

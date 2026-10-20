@@ -260,3 +260,22 @@ Verify:
 - With the flag off there is no data to undo. With it on, the empty `content_*` collections can stay or be dropped.
 
 **STOP.** Waiting for review. Nothing was populated, migrated, indexed in production, enabled, pushed, merged or deployed.
+
+## M. Final review (2026-10-21)
+
+PR #32 was merged and deployed (`af476d2`, release `20261021000813`) before the final review. The review checked it against the approved decisions; the deviations are fixed in a follow-up PR (`fix/content-identity-2d1-review`) with unit and Mongo integration tests.
+
+| Approved decision | 2D-1 as merged | Fix |
+|---|---|---|
+| Composite title keys; a bare title is not unique | done | none needed |
+| Title-only matches: provisional candidates, never verified or indexable on their own | capped at `candidate`/0.8, but nothing stopped an `index` state | schema validator on `indexability`: `index` requires `active` and a manual or TMDB (≥ 0.95) identity (`mayBeIndexable`) |
+| Year tolerance is evidence, not merge authority | ±1 year bound automatically | only a same-year or yearless row binds; ±1 goes to review (`ambiguous`, `year_adjacent`) |
+| TMDB ids win when reliable and correctly typed | type not checked against kind | `movie`↔`movie`, `series`/`show`↔`tv`; a mismatch goes to `manual_review`, `tmdb_type_mismatch` |
+| Conflicting TMDB ids require review | a second TMDB id for the same title and kind created a second entity | `manual_review`, `tmdb_conflict`, unless the years are more than one apart (remake) |
+| Generic filtering must not reject named programmes | "Cine de barrio", "Historia de nuestro cine" were rejected (`isGenericMovieTitle`) | identity uses bare slot words only; "Cine: <film>" containers are still rejected (the film is the identity) |
+| Uncertain candidates remain non-indexable | default `noindex`, unenforced | validator above |
+| Streaming availability deferred | done | none needed |
+
+**Index safety.** Boot now calls `createIndexes()` instead of `syncIndexes()`: it creates missing schema indexes and never drops one. A hand-built index (2D-2's airing index) survives restarts, and dropping or changing an index becomes an explicit migration. An index whose options differ from the schema (codes 85/86) is logged and kept; because `diffIndexes()` still reports it, content identity writes keep refusing. Production indexes already match the schemas, since every earlier boot ran `syncIndexes()`, so the first boot after this change is a no-op. The rest of §C, §F and §H is unchanged: the airing index isn't on the schema, the new models are `autoIndex`/`autoCreate: false`, and the flag-off boot creates nothing.
+
+**Nondeterministic test.** `SyncEPGData.icon-cache-deferred` failed once in the full local run (1563 ms against a 1200 ms wall-clock bound; ideal ≈ 300 ms) and passed 3/3 alone. The cause is CPU contention while the whole suite runs in parallel in a 6 GB WSL with no free memory. The code under test is untouched, and the test passes in CI. Making it deterministic means counting in-flight fetches instead of timing wall-clock; that is out of scope here.

@@ -109,9 +109,11 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
     }
 
     try {
-      // Align indexes defined in the schema
-      await model.syncIndexes();
-      logger.info(`Mongo indexes synced`, { collection: name });
+      // Create missing schema indexes; never drop. `syncIndexes()` dropped every index the schema
+      // didn't declare, so an index built by hand off-peak (2D-2's airing entity index) vanished
+      // at the next restart. Dropping or changing an index is an explicit migration.
+      await model.createIndexes();
+      logger.info(`Mongo indexes ensured`, { collection: name });
     } catch (error: any) {
       const message = String(error?.message || '');
       const duplicateIndexError =
@@ -124,6 +126,13 @@ export async function ensureMongoCollectionsAndIndexes(): Promise<void> {
           collection: name,
           error: message,
         });
+        continue;
+      }
+
+      // IndexOptionsConflict / IndexKeySpecsConflict: a schema index differs from the live one.
+      // Keep the live index and boot; content identity writes refuse until it matches.
+      if (error?.code === 85 || error?.code === 86) {
+        logger.warn(`Mongo index differs from schema; kept as is`, { collection: name, error: message });
         continue;
       }
 

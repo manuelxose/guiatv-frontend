@@ -5,6 +5,7 @@ import {
   CONTENT_STATUSES,
   ENTITY_ID_PATTERN,
   MATCH_METHODS,
+  mayBeIndexable,
   normalizeContentPath,
   PROVENANCE_SOURCES,
 } from '@/domain/services/contentIdentity';
@@ -95,6 +96,12 @@ const ContentEntitySchema = new Schema<ContentEntityRecord>(
         strictSub
       ),
       default: () => ({}),
+      validate: {
+        validator(this: ContentEntityRecord, value: ContentEntityRecord['indexability']) {
+          return value?.state !== 'index' || mayBeIndexable(this);
+        },
+        message: 'only an active entity with a manual or verified TMDB identity may be indexed',
+      },
     },
     lifecycle: {
       type: new Schema(
