@@ -156,7 +156,7 @@ export class FootballCompetitionDetailComponent {
     this.meta.setMetaTags({
       title: 'Competición no encontrada - Guía TV',
       description: 'Esta competición no está disponible.',
-      canonicalUrl: '/deportes/futbol/competiciones',
+      canonicalUrl: null,
       robots: 'noindex, follow',
     });
   }

@@ -319,7 +319,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
         error: () => {
           this.error =
             'No se pudo cargar la programación del canal ahora mismo. Inténtalo de nuevo en unos minutos.';
-          this.metaService.markUnavailable('Canal no disponible | Guía TV', this.router.url);
+          this.metaService.markUnavailable('Canal no disponible | Guía TV');
           this.isLoading = false;
         },
       });
@@ -332,7 +332,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       this.metaService.setMetaTags({
         title: 'Canal no disponible - Guía TV',
         description: 'No hemos encontrado este canal en la guía actual.',
-        canonicalUrl: this.router.url,
+        canonicalUrl: null,
         robots: 'noindex, follow',
         httpStatus: 404,
       });

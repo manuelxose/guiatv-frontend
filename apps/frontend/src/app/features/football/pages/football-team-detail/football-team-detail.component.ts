@@ -157,7 +157,7 @@ export class FootballTeamDetailComponent {
     this.meta.setMetaTags({
       title: 'Equipo no encontrado - Guía TV',
       description: 'Este equipo no está disponible.',
-      canonicalUrl: '/deportes/futbol',
+      canonicalUrl: null,
       robots: 'noindex, follow',
     });
   }

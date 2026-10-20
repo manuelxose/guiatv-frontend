@@ -129,6 +129,10 @@ export class MetaService {
 
       // oEmbed discovery link for WordPress/CMS auto-embed
       this.setOembedLink(this.url + cleanPath);
+    } else if (this.document && config.canonicalUrl === null) {
+      // Error and not-found states declare no canonical: the requested path is not a page to consolidate on.
+      this.document.querySelector('link[rel="canonical"]')?.remove();
+      this.document.querySelector('link[type="application/json+oembed"]')?.remove();
     }
   }
 
@@ -136,11 +140,11 @@ export class MetaService {
    * Data for the route could not be loaded. On the server this makes ssr-server answer
    * 503 + no-store + noindex instead of caching a 200 page that shows an error state.
    */
-  markUnavailable(title: string, canonicalPath: string): void {
+  markUnavailable(title: string): void {
     this.setMetaTags({
       title,
       description: 'Este contenido no está disponible temporalmente. Vuelve a intentarlo en unos minutos.',
-      canonicalUrl: canonicalPath,
+      canonicalUrl: null,
       robots: 'noindex, nofollow',
       httpStatus: 503,
     });

@@ -5,6 +5,30 @@ import { TooManyRequestsError } from '../../shared/errors';
 import { Request, Response } from 'express';
 import { AuthenticatedRequest } from './authGuard';
 
+const LOOPBACK_ADDRESSES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+
+/**
+ * A read made by a process on this host, i.e. Angular SSR calling http://127.0.0.1:4000 directly.
+ *
+ * SSR sends no visitor address, so without this every server render on the site shared the single "127.0.0.1"
+ * bucket of the per-IP limiters, and a crawl burst rate-limited the renderer itself (Phase 2D-0).
+ *
+ * Trust assumptions (verified 2026-10-20): every public request reaches the API through nginx, and every nginx
+ * location that proxies to the API sets X-Forwarded-For and X-Real-IP (`$proxy_add_x_forwarded_for`, never empty);
+ * ports 3000/4000 are closed to the outside by ufw. The check uses the TCP peer address, which a remote client cannot
+ * forge, and requires the forwarding headers to be absent, which a client cannot achieve through nginx. A forwarded
+ * header never grants the exemption. Only GET/HEAD are exempt, so writes (login, telemetry, admin) stay limited.
+ */
+export function isDirectLocalRead(req: Request): boolean {
+  return (
+    (req.method === 'GET' || req.method === 'HEAD') &&
+    LOOPBACK_ADDRESSES.has(req.socket?.remoteAddress ?? '') &&
+    req.headers['x-forwarded-for'] === undefined &&
+    req.headers['x-real-ip'] === undefined &&
+    req.headers['forwarded'] === undefined
+  );
+}
+
 /**
  * Creates a typed rate limiter that throws domain errors instead of generic responses.
  */
@@ -18,6 +42,7 @@ export const createRateLimiter = (options?: {
     max: options?.max || 100, // 100 requests por ventana
     standardHeaders: true,
     legacyHeaders: false,
+    skip: isDirectLocalRead,
     handler: (req: Request, res: Response) => {
       void req;
       void res;

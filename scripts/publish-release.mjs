@@ -228,6 +228,8 @@ mkdirSync(join(releaseFrontendRoot, 'scripts'), { recursive: true });
 cpSync(backendDistRoot, join(releaseBackendRoot, 'dist'), { recursive: true });
 cpSync(frontendDistRoot, join(releaseFrontendRoot, 'dist/guiatv'), { recursive: true });
 cpSync(frontendServerScript, join(releaseFrontendRoot, 'scripts/ssr-server.mjs'));
+// Imported by ssr-server.mjs.
+cpSync(resolve(projectRoot, 'apps/frontend/scripts/ssr-canonical.mjs'), join(releaseFrontendRoot, 'scripts/ssr-canonical.mjs'));
 const carriedBrowserAssetCount = carryForwardBrowserAssets(
   releasesRoot,
   join(releaseFrontendRoot, 'dist/guiatv/browser'),

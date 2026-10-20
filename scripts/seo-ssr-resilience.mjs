@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 
 const port = 3190;
+const canonicals = (html) => [...html.matchAll(/<link\b[^>]*rel="canonical"[^>]*href="([^"]*)"/g)].map((m) => m[1]);
 const routes = ['/canales', '/canales/la_sexta', '/guias', '/guias/categoria/series', '/guias/mejores-series-netflix', '/programas/un-lugar-llamado-milagro', '/peliculas/el-caballero-oscuro', '/pelicula-details/155', '/detalles/test-program', '/program-full-details/test-program', '/contenido/tmdb%3Amovie%3A155'];
 const child = spawn('node', ['apps/frontend/scripts/ssr-server.mjs'], {
   env: { ...process.env, PORT: String(port), API_ORIGIN: 'http://127.0.0.1:9' }, // port 9 = discard, connection refused
@@ -33,7 +34,8 @@ try {
     assert.equal(res.headers.get('retry-after'), '120', `${route}: retry-after`);
     assert.equal(res.headers.get('x-robots-tag'), 'noindex, nofollow', `${route}: x-robots-tag`);
     assert.match(html, /<meta name="robots" content="noindex, nofollow"/, `${route}: robots meta`);
-    console.log(`ok ${route} -> 503 no-store noindex`);
+    assert.equal(canonicals(html).length, 0, `${route}: an error response must not declare a canonical`);
+    console.log(`ok ${route} -> 503 no-store noindex, no canonical`);
   }
 
   // Permanent redirects answered by ssr-server.mjs itself (no API needed): one 301 hop to the final URL, query kept.
@@ -60,7 +62,9 @@ try {
   assert.equal(widget.headers.get('x-robots-tag'), 'noindex, follow', '/embed/programacion: x-robots-tag');
   assert.equal(widget.headers.get('content-security-policy'), 'frame-ancestors *', '/embed/programacion: frame-ancestors');
   assert.equal(widget.headers.get('x-frame-options'), null, '/embed/programacion: X-Frame-Options would block other sites');
-  assert.match(await widget.text(), /<app-root/, '/embed/programacion: app shell');
+  const widgetHtml = await widget.text();
+  assert.match(widgetHtml, /<app-root/, '/embed/programacion: app shell');
+  assert.equal(canonicals(widgetHtml).length, 0, '/embed/programacion: a noindex CSR shell gets no server canonical');
   console.log('ok /embed/programacion -> 200 noindex, frame-ancestors *');
   // ...and only the widget: every other page keeps SAMEORIGIN.
   for (const route of ['/embed', '/canales', '/embed/programacion/x']) {
@@ -76,6 +80,20 @@ try {
   assert.match(trends.headers.get('x-robots-tag') || '', /noindex/, `/tendencias without data: x-robots-tag ${trends.headers.get('x-robots-tag')}`);
   assert.doesNotMatch(trendsHtml, /Cargando contenidos populares/, '/tendencias: loading state server-rendered');
   console.log(`ok /tendencias without data -> ${trends.status} ${trends.headers.get('x-robots-tag')}`);
+
+  // Canonical policy (Phase 2D-0, apps/frontend/scripts/ssr-canonical.mjs): the page's own canonical, one tag, no
+  // query string; none on errors. Static pages render without the API.
+  for (const [route, expected] of [['/avisolegal', '/avisolegal'], ['/avisolegal?utm_source=x&dia=1', '/avisolegal'], ['/sobre-nosotros', '/sobre-nosotros']]) {
+    const res = await fetch(`http://127.0.0.1:${port}${route}`, { signal: AbortSignal.timeout(30000) });
+    const found = canonicals(await res.text());
+    assert.equal(res.status, 200, `${route}: status ${res.status}`);
+    assert.deepEqual(found, [`https://guiaprogramaciontv.com${expected}`], `${route}: canonical ${found}`);
+    console.log(`ok ${route} -> one canonical ${expected}`);
+  }
+  const unknown = await fetch(`http://127.0.0.1:${port}/no-existe-2d0`, { signal: AbortSignal.timeout(30000) });
+  assert.equal(unknown.status, 404, `/no-existe-2d0: status ${unknown.status}`);
+  assert.equal(canonicals(await unknown.text()).length, 0, '/no-existe-2d0: a 404 must not declare a canonical');
+  console.log('ok /no-existe-2d0 -> 404, no canonical');
 } finally {
   if (child.exitCode === null && child.signalCode === null) {
     const exited = once(child, 'exit');

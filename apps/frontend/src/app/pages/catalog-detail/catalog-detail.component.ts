@@ -468,7 +468,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
           this.applyMeta(item);
           this.buildBreadcrumbs(item);
           this.buildStructuredData(item);
-          this.shareUrl = `https://guiaprogramaciontv.com${item.detailPath || this.router.url}`;
+          this.shareUrl = `https://guiaprogramaciontv.com${this.canonicalPath()}`;
           // The critical response intentionally left providers/social/user
           // interaction (and possibly related) out to stay fast — fetch them
           // now, in the background, and patch them in when they arrive. This
@@ -482,7 +482,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
         this.metaService.setMetaTags({
           title: 'Contenido no disponible - Guía TV',
           description: 'No hemos podido cargar la ficha solicitada.',
-          canonicalUrl: this.router.url,
+          canonicalUrl: null,
           robots: this.loadFailed ? 'noindex, nofollow' : 'noindex, follow',
           httpStatus: this.loadFailed ? 503 : 404,
         });
@@ -723,8 +723,17 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  /**
+   * The requested path, which is the URL this page has always been served and indexed under. `item.detailPath` is
+   * not used: it is rebuilt from the inferred content type and title (a /programas/ page can yield /series/…), and
+   * nothing guarantees that URL resolves to this item. The persistent entity canonical replaces this in Phase 2D-6.
+   */
+  private canonicalPath(): string {
+    return this.router.url.split(/[?#]/)[0];
+  }
+
   private applyMeta(item: CatalogItem): void {
-    const canonicalUrl = item.detailPath || this.router.url;
+    const canonicalUrl = this.canonicalPath();
     const description =
       item.synopsis ||
       this.buildMetaDescription(item) ||
@@ -761,18 +770,12 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     const baseUrl = 'https://guiaprogramaciontv.com';
     const schemas: object[] = [generateBreadcrumbSchema(this.breadcrumbItems, baseUrl)];
 
-    // 'program' items now get real TMDB enrichment (cast/director/rating)
-    // when they carry a tmdbId (CatalogService.resolveProgramTmdbType,
-    // backend), but generateTVSeriesSchema hardcodes `${baseUrl}/series/...`
-    // as the canonical url — reusing it as-is for a program would emit a
-    // wrong (nonexistent) canonical URL, which is worse for SEO than the
-    // breadcrumb-only schema it gets today. Left as a follow-up: needs
-    // generateTVSeriesSchema to accept an explicit url instead of assuming
-    // /series/.
+    // The generators assume /series/ or /peliculas/ + slug; the page's URL is its canonical (see canonicalPath).
+    const url = `${baseUrl}${this.canonicalPath()}`;
     if (item.contentType === 'series') {
-      schemas.unshift(generateTVSeriesSchema(item, baseUrl));
+      schemas.unshift({ ...generateTVSeriesSchema(item, baseUrl), url });
     } else if (item.contentType === 'movie') {
-      schemas.unshift(generateMovieSchema(item, baseUrl));
+      schemas.unshift({ ...generateMovieSchema(item, baseUrl), url });
     }
 
     try {
@@ -794,7 +797,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     this.breadcrumbItems = [
       { name: 'Inicio', url: '/' },
       { name: entry.label, url: entry.path },
-      { name: item.title, url: item.detailPath || this.router.url },
+      { name: item.title, url: this.canonicalPath() },
     ];
   }
 }
