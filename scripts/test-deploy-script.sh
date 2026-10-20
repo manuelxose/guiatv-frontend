@@ -41,7 +41,9 @@ cat >"${T}/bin/curl" <<'EOF'
 for a in "$@"; do
   if [ "$a" = "-fsS" ]; then echo '<script src="/main.js"></script>'; exit 0; fi
 done
-if [ -e "${FAIL_FLAG}" ] && [ "$(basename "$(readlink -f "${APP_DIR}/current")")" = "${FAIL_RELEASE}" ]; then echo 500; else echo 200; fi
+if [ -e "${FAIL_FLAG}" ] && [ "$(basename "$(readlink -f "${APP_DIR}/current")")" = "${FAIL_RELEASE}" ]; then echo 500; exit 0; fi
+# Legacy public paths answer like the real SSR server: a permanent redirect.
+case "${*: -1}" in */programacion-tv/guia-canales|*/canales/*_*|*/editorial) echo 301 ;; *) echo 200 ;; esac
 EOF
 chmod +x "${T}/bin/"*
 export PATH="${T}/bin:${PATH}" APP_DIR="${SRV}" DEPLOY_ALLOW_NON_ROOT=1 SYSTEMCTL_LOG="${T}/systemctl.log" FAIL_FLAG="${T}/fail" FAIL_RELEASE=none
