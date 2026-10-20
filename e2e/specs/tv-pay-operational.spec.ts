@@ -19,7 +19,7 @@ test.describe('TV pay/Movistar operational journeys', () => {
     expect(item?.channel?.id).toBeTruthy();
     expect(item?.channel?.name).toBeTruthy();
 
-    await page.goto('/programacion-tv/guia-canales?group=cable&liveView=day');
+    await page.goto('/programacion-tv/en-directo?group=cable&liveView=day');
     await expect(page.getByText(item.channel.name!, { exact: true }).first()).toBeVisible({ timeout: 20_000 });
   });
 
@@ -30,7 +30,7 @@ test.describe('TV pay/Movistar operational journeys', () => {
     const tcm = (payload?.data?.items || []).find((entry: ReadItem) => entry.channel?.id === 'tcm');
     expect(tcm?.channel?.id, 'TCM must resolve from canonical read data').toBe('tcm');
 
-    await page.goto('/programacion-tv/guia-canales?q=TCM');
+    await page.goto('/programacion-tv/en-directo?q=TCM');
     await expect(page.getByText('TCM', { exact: true }).first()).toBeVisible({ timeout: 20_000 });
   });
 });

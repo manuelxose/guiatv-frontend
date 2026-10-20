@@ -72,6 +72,7 @@ const KNOWN_ROUTES = [
   /^\/peliculas\/[^/]+$/,
   /^\/series\/[^/]+$/,
   /^\/programas\/[^/]+$/,
+  /^\/guias(\/.*)?$/,
   /^\/editorial(\/.*)?$/,
   /^\/blog(\/.*)?$/,
   /^\/comparador-streaming$/,
@@ -295,9 +296,17 @@ app.get('/.well-known/*', (_req, res) => {
   res.status(204).end();
 });
 
-app.get('/programacion-tv/en-directo', (_req, res) => {
-  res.redirect(301, '/programacion-tv/guia-canales');
-});
+// 301 to `path`, keeping the query string (filters in shared links survive the move).
+const movedTo = (req, res, path) => {
+  const query = req.originalUrl.indexOf('?');
+  return res.redirect(301, query === -1 ? path : path + req.originalUrl.slice(query));
+};
+// 2026-10-20 restructure: section renamed to "Guías", live TV page named after its content, channel slugs hyphenated.
+app.get('/programacion-tv/guia-canales', (req, res) => movedTo(req, res, '/programacion-tv/en-directo'));
+app.get('/deportes/futbol/en-directo', (_req, res) => res.redirect(301, '/deportes/futbol/partidos-hoy?filter=live'));
+app.get('/canales/:id', (req, res, next) =>
+  req.params.id.includes('_') ? movedTo(req, res, `/canales/${encodeURIComponent(req.params.id.replace(/_/g, '-'))}`) : next()
+);
 // Editorial posts merged into one canonical guide (docs/seo/editorial-drafts/consolidation-map.md): old slug -> new slug.
 const PLAN_GUIDE = 'netflix-hbo-max-disney-prime-video-que-plan-elegir';
 const EDITORIAL_REDIRECTS = {
@@ -342,14 +351,19 @@ const EDITORIAL_REDIRECTS = {
   'canales-de-cine-en-tdt-guia-completa-para-ver-peliculas-gratis-hoy': '/canales',
   'canales-infantiles-en-tdt-boing-sx3-y-clan-guia-de-programacion': '/canales',
 };
-app.get('/editorial/:slug', (req, res, next) => {
-  const target = EDITORIAL_REDIRECTS[req.params.slug];
-  return target ? res.redirect(301, target.startsWith('/') ? target : `/editorial/${target}`) : next();
-});
-app.get('/blog/top10', (_req, res) => res.redirect(301, '/editorial/rankings'));
-app.get('/blog/categoria/:slug', (req, res) => res.redirect(301, `/editorial/categoria/${req.params.slug}`));
-app.get('/blog/:slug', (req, res) => res.redirect(301, `/editorial/${req.params.slug}`));
-app.get('/blog', (_req, res) => res.redirect(301, '/editorial'));
+const guidePath = (slug) => {
+  const target = EDITORIAL_REDIRECTS[slug] || slug;
+  return target.startsWith('/') ? target : `/guias/${encodeURIComponent(target)}`;
+};
+app.get('/guias/:slug', (req, res, next) =>
+  EDITORIAL_REDIRECTS[req.params.slug] ? movedTo(req, res, guidePath(req.params.slug)) : next()
+);
+app.get(['/editorial', '/blog'], (req, res) => movedTo(req, res, '/guias'));
+app.get(['/editorial/rankings', '/blog/top10'], (req, res) => movedTo(req, res, '/guias/rankings'));
+app.get(['/editorial/categoria/:slug', '/blog/categoria/:slug'], (req, res) =>
+  movedTo(req, res, `/guias/categoria/${encodeURIComponent(req.params.slug)}`)
+);
+app.get(['/editorial/:slug', '/blog/:slug'], (req, res) => movedTo(req, res, guidePath(req.params.slug)));
 app.get('/mi-cuenta', (_req, res) => res.redirect(301, '/perfil'));
 app.get('/comunidad', (_req, res) => res.redirect(301, '/perfil'));
 

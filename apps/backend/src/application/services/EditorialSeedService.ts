@@ -87,7 +87,7 @@ function mapSeedPostToDocument(
       metaDescription: post.metaDescription,
       keywords: [...post.keywords],
       ogImage: post.coverImage,
-      canonicalUrl: `/editorial/${post.slug}`,
+      canonicalUrl: `/guias/${post.slug}`,
     },
     publishedAt: new Date(post.publishedAt),
   };

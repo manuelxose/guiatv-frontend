@@ -258,8 +258,8 @@ test('sitemap-blog.xml excludes categories with fewer than three approved posts'
     const controller = new SitemapController({} as any, {} as any);
     const { req, res, getSentXml } = fakeReqRes();
     await controller.getBlogSitemap(req, res, (() => {}) as any);
-    assert.match(getSentXml(), /\/editorial\/categoria\/enough/);
-    assert.doesNotMatch(getSentXml(), /\/editorial\/categoria\/sparse/);
+    assert.match(getSentXml(), /\/guias\/categoria\/enough/);
+    assert.doesNotMatch(getSentXml(), /\/guias\/categoria\/sparse/);
   } finally {
     (await import('../../infrastructure/database/models/BlogPost.model')).BlogPostModel.find = originalFind;
   }
@@ -291,8 +291,8 @@ test('sitemap-channels.xml excludes channels without a resolvable schedule', asy
 
   await controller.getChannelsSitemap(req, res, (() => {}) as any);
 
-  assert.match(getSentXml(), /\/canales\/la_1/);
-  assert.doesNotMatch(getSentXml(), /\/canales\/canal_vacio/);
+  assert.match(getSentXml(), /\/canales\/la-1</);
+  assert.doesNotMatch(getSentXml(), /\/canales\/canal[-_]vacio/);
 });
 
 test('sitemap-blog.xml lists the rankings hub only when a ranking post is published', async () => {
@@ -308,8 +308,8 @@ test('sitemap-blog.xml lists the rankings hub only when a ranking post is publis
     return getSentXml();
   };
   try {
-    assert.doesNotMatch(await run([{ slug: 'a', contentType: 'guide', categories: [] }]), /editorial\/rankings/);
-    assert.match(await run([{ slug: 'b', contentType: 'ranking', categories: [] }]), /editorial\/rankings/);
+    assert.doesNotMatch(await run([{ slug: 'a', contentType: 'guide', categories: [] }]), /guias\/rankings/);
+    assert.match(await run([{ slug: 'b', contentType: 'ranking', categories: [] }]), /guias\/rankings/);
   } finally {
     (Model as any).find = originalFind;
     invalidateSitemapCache();

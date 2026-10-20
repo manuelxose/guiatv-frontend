@@ -132,7 +132,7 @@ test.describe('Football Matches -> Match Centre', () => {
 
   test('the Live filter narrows the list to live/halftime matches only', async ({ page }) => {
     test.setTimeout(90_000);
-    await page.goto('/deportes/futbol/en-directo');
+    await page.goto('/deportes/futbol/partidos-hoy?filter=live');
     await assertNotBlankScreen(page);
     // A dedicated live view is expected to show either real live matches or
     // the page's own honest empty state — never a stuck loading indicator.

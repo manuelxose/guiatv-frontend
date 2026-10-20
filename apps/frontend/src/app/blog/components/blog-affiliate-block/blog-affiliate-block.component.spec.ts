@@ -22,7 +22,7 @@ function post(overrides: Partial<EditorialPost> = {}): EditorialPost {
     readingMinutes: 3,
     tocItems: [],
     author: null,
-    canonicalPath: '/editorial/articulo',
+    canonicalPath: '/guias/articulo',
     categories: [],
     primaryCategory: null,
     contentType: 'guide',

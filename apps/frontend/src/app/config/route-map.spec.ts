@@ -1,4 +1,4 @@
-import { APP_PATHS, normalizePath } from './route-map';
+import { APP_PATHS, channelPath, normalizePath } from './route-map';
 import {
   PORTAL_BLOG_DESTINATIONS,
   PORTAL_MOBILE_MORE_DESTINATIONS,
@@ -25,23 +25,23 @@ describe('route map', () => {
 
   it('defines the canonical desktop hierarchy and contextual children', () => {
     expect(PORTAL_PRIMARY_DESTINATIONS.map((tab) => tab.label)).toEqual([
-      'TV', 'Qué ver', 'Plataformas', 'Fútbol', 'Editorial',
+      'TV', 'Qué ver', 'Plataformas', 'Fútbol', 'Guías',
     ]);
     expect(PORTAL_BLOG_DESTINATIONS.map((tab) => tab.label)).toEqual([
-      'Últimos', 'Guías', 'Rankings', 'Tendencias',
+      'Todas', 'Streaming', 'Fútbol', 'Rankings',
     ]);
     expect(PORTAL_PLATFORM_DESTINATIONS.map((tab) => tab.label)).toEqual(['Plataformas', 'Comparador']);
     expect(PORTAL_TV_DESTINATIONS.map((tab) => tab.label)).toEqual([
-      'En emisión', 'A continuación', 'Esta noche', 'Parrilla',
+      'En emisión', 'A continuación', 'Esta noche', 'Parrilla', 'Canales',
     ]);
     expect(PORTAL_DISCOVER_DESTINATIONS.map((tab) => tab.label)).toEqual([
-      'Todo', 'En TV', 'Películas', 'Series', 'Gratis',
+      'Todo', 'En TV', 'Gratis', 'Películas', 'Series', 'Tendencias',
     ]);
     expect(PORTAL_SPORTS_DESTINATIONS.map((tab) => tab.label)).toEqual([
       'Portada', 'Partidos', 'Competiciones', 'Dónde ver', 'Noticias',
     ]);
     expect(PORTAL_MOBILE_MORE_DESTINATIONS.map((tab) => tab.label)).toEqual([
-      'Plataformas', 'Editorial', 'Rankings', 'Tendencias',
+      'Plataformas', 'Guías', 'Rankings', 'Tendencias',
     ]);
   });
 
@@ -49,7 +49,8 @@ describe('route map', () => {
     expect(Object.keys(PORTAL_SECTION_NAVIGATION)).toEqual([
       'live', 'discover', 'platforms', 'sports', 'blog',
     ]);
-    expect(PORTAL_SECTION_NAVIGATION.live.items.every((item) => item.kind === 'action')).toBeTrue();
+    // In-page states are actions; anything with its own URL (Canales, Películas…) is a crawlable route.
+    expect(PORTAL_SECTION_NAVIGATION.live.items.filter((item) => item.kind === 'route').map((item) => item.path)).toEqual([APP_PATHS.channels]);
     expect(PORTAL_SECTION_NAVIGATION.sports.items.every((item) => item.kind === 'route')).toBeTrue();
     expect(PORTAL_SECTION_NAVIGATION.sports.items.map((item) => item.label)).toEqual([
       'Portada',
@@ -63,9 +64,14 @@ describe('route map', () => {
   it('resolves active primary destinations from canonical and detail routes', () => {
     expect(resolvePortalPrimaryDestination(APP_PATHS.blog)).toBe('editorial');
     expect(resolvePortalPrimaryDestination(APP_PATHS.top10)).toBe('editorial');
-    expect(resolvePortalPrimaryDestination(APP_PATHS.stats)).toBe('editorial');
+    expect(resolvePortalPrimaryDestination(APP_PATHS.stats)).toBe('discover');
     expect(resolvePortalPrimaryDestination(APP_PATHS.streamingComparison)).toBe('streaming');
     expect(resolvePortalPrimaryDestination('/peliculas/una-pelicula')).toBe('discover');
+  });
+
+  it('builds hyphenated channel URLs from underscore ids', () => {
+    expect(channelPath('la_1')).toBe('/canales/la-1');
+    expect(channelPath('m_liga_de_campeones_2')).toBe('/canales/m-liga-de-campeones-2');
   });
 
   it('normalizes query strings, hashes, and trailing slashes', () => {

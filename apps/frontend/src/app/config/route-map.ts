@@ -1,7 +1,7 @@
 export const APP_PATHS = {
   home: '/',
   forYou: '/para-ti',
-  guide: '/programacion-tv/guia-canales',
+  guide: '/programacion-tv/en-directo',
   channels: '/canales',
   explore: '/programacion-tv/que-ver-hoy',
   platforms: '/plataformas',
@@ -11,8 +11,8 @@ export const APP_PATHS = {
   series: '/programacion-tv/series',
   movies: '/programacion-tv/peliculas',
   content: '/contenido', // legacy — kept for redirect support
-  blog: '/editorial',
-  top10: '/editorial/rankings',
+  blog: '/guias',
+  top10: '/guias/rankings',
   about: '/sobre-nosotros',
   pressKit: '/prensa',
   streamingComparison: '/comparador-streaming',
@@ -73,7 +73,7 @@ export const SECONDARY_NAV_ROUTES: AppRouteEntry[] = [
   { key: 'canales', label: 'Canales', path: APP_PATHS.channels },
   { key: 'peliculas', label: 'Películas', path: APP_PATHS.movies },
   { key: 'series', label: 'Series', path: APP_PATHS.series },
-  { key: 'editorial', label: 'Editorial', path: APP_PATHS.blog },
+  { key: 'editorial', label: 'Guías', path: APP_PATHS.blog },
   { key: 'rankings', label: 'Rankings', path: APP_PATHS.top10 },
 ];
 
@@ -101,6 +101,11 @@ export const USER_NAV_ROUTES: AppRouteEntry[] = [
   { key: 'iniciar-sesion', label: 'Iniciar sesión', path: APP_PATHS.login },
   { key: 'registro', label: 'Crear cuenta', path: APP_PATHS.register },
 ];
+
+/** Public channel URL: ids are `[a-z0-9_]`, URLs use hyphens (`la_1` -> `/canales/la-1`); the API accepts either. */
+export function channelPath(channelId: string): string {
+  return `/canales/${encodeURIComponent(String(channelId).replace(/_/g, '-'))}`;
+}
 
 export function normalizePath(value: string): string {
   const raw = String(value || '')

@@ -25,6 +25,7 @@ import {
   getCompetitionCatalogBySlug,
   toCompetitionEntity,
 } from './FootballCompetitionCatalog';
+import { channelPagePath } from '../../../shared/utils/tvMetadata';
 
 /** Non-football signals that override a "Deportes" editorial category. */
 const NON_FOOTBALL_SIGNAL =
@@ -228,7 +229,7 @@ function buildBroadcast(input: NormalizedAiringInput): FootballBroadcast[] {
       availability: input.streaming ? 'both' : 'tv',
       provenance: 'airing',
       confidence: 'high',
-      channelPath: input.channelId ? `/canales/${input.channelId}` : undefined,
+      channelPath: input.channelId ? channelPagePath(input.channelId) : undefined,
     },
   ];
 }

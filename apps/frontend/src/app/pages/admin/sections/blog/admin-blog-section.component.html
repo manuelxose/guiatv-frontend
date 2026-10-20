@@ -434,7 +434,7 @@
               type="text"
               class="mt-2 w-full bg-[var(--portal-surface)] border border-[var(--portal-border)] rounded-xl px-4 py-2 text-sm text-[var(--portal-text)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--spotify-green)]"
               [ngClass]="{ 'border-[var(--spotify-negative)]/60': !isCanonicalValid() }"
-              placeholder="/editorial/slug o https://..."
+              placeholder="/guias/slug o https://..."
             />
             <p *ngIf="!isCanonicalValid()" class="text-xs text-[var(--spotify-negative)] mt-1">Canonical invalida.</p>
           </div>

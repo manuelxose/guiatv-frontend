@@ -324,7 +324,7 @@ export class EditorialService {
       tocItems: readingMinutes >= 5 ? contentWithHeadings.tocItems : [],
       author: this.normalizeAuthor(rawPost?.author),
       reviewedBy: this.ensureString(rawPost?.reviewedBy) || null,
-      canonicalPath: `/editorial/${rawPost?.slug}`,
+      canonicalPath: `/guias/${rawPost?.slug}`,
       categories,
       primaryCategory: categories[0] ?? null,
       contentType,
@@ -378,7 +378,9 @@ export class EditorialService {
     return markdownLeftoversToHtml(contentHtml)
       .replace(/https:\/\/image\.tmdb\.org\/t\/p\/original\//g, 'https://image.tmdb.org/t/p/w780/')
       .replace(/<img\b(?![^>]*\bloading=)([^>]*)>/gi, '<img loading="lazy"$1>')
-      .replace(/<img\b(?![^>]*\bdecoding=)([^>]*)>/gi, '<img decoding="async"$1>');
+      .replace(/<img\b(?![^>]*\bdecoding=)([^>]*)>/gi, '<img decoding="async"$1>')
+      // Stored bodies still link the pre-2026-10-20 section path; link the current one instead of a 301 hop.
+      .replace(/href="(?:https:\/\/guiaprogramaciontv\.com)?\/editorial(?=[/"#?])/g, 'href="/guias');
   }
 
   private addHeadingAnchors(contentHtml: string): {
@@ -425,7 +427,7 @@ export class EditorialService {
       slug,
       description: this.ensureString(rawCategory?.description),
       count: Number(rawCategory?.count || 0),
-      canonicalPath: `/editorial/categoria/${slug}`,
+      canonicalPath: `/guias/categoria/${slug}`,
       isRankingCategory: this.isRankingCategory(rawCategory),
     };
   }

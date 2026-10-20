@@ -1,7 +1,7 @@
 import { generateEditorialArticleSchema } from './utils';
 
 describe('generateEditorialArticleSchema author', () => {
-  const base = { title: 'T', canonicalPath: '/editorial/t' };
+  const base = { title: 'T', canonicalPath: '/guias/t' };
 
   it('marks the editorial team as an Organization linked to the editorial policy', () => {
     const schema = generateEditorialArticleSchema({ ...base, author: { name: 'Equipo editorial Guía TV' } }, 'https://x.test') as any;

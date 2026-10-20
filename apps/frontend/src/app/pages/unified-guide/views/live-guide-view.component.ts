@@ -378,7 +378,7 @@ export class LiveGuideViewComponent {
   }
 
   channelPath(item: TvReadItemDTO): string {
-    return normalizeToCard(item).channelPath || '/programacion-tv/guia-canales';
+    return normalizeToCard(item).channelPath || '/programacion-tv/en-directo';
   }
 
   schedulePositionLabel(item: TvReadItemDTO, index: number): string {

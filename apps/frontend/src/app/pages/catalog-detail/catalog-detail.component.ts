@@ -22,6 +22,7 @@ import { catalogRobotsPolicy } from '../../utils/catalog-indexability';
 import { generateTVSeriesSchema, generateMovieSchema, generateBreadcrumbSchema } from '../../utils/utils';
 import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
 import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
+import { channelPath } from '../../config/route-map';
 
 type LegacyCatalogMode = 'program' | 'movie' | 'series';
 type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
@@ -222,7 +223,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                 <p class="eyebrow text-[var(--accent-live)]">En directo</p>
                 <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Ahora en emisión</h2>
                 <a
-                  [routerLink]="live.detailPath || ['/canales', live.channelId]"
+                  [routerLink]="live.detailPath || channelPath(live.channelId)"
                   class="tnum mt-4 flex items-center gap-4 rounded-[var(--radius-md)] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-4 transition-colors"
                 >
                   <span class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--portal-surface-strong)] sm:h-20 sm:w-20">
@@ -268,7 +269,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                needed to land once. -->
           <ng-template #airingCard let-airing>
             <a
-              [routerLink]="airing.detailPath || ['/canales', airing.channelId]"
+              [routerLink]="airing.detailPath || channelPath(airing.channelId)"
               class="tnum flex gap-3 rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-3 transition-colors hover:border-[var(--portal-border-strong)]"
             >
               <span class="h-16 w-12 flex-shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--portal-surface-strong)]">
@@ -392,6 +393,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
   `,
 })
 export class CatalogDetailComponent implements OnInit, OnDestroy {
+  protected readonly channelPath = channelPath;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly catalogService = inject(CatalogService);
@@ -780,7 +782,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     const typeLabels: Record<string, { label: string; path: string }> = {
       movie: { label: 'Películas', path: '/programacion-tv/peliculas' },
       series: { label: 'Series', path: '/programacion-tv/series' },
-      program: { label: 'Programas', path: '/programacion-tv/guia-canales' },
+      program: { label: 'Programas', path: '/programacion-tv/en-directo' },
     };
     const entry = typeLabels[item.contentType] || typeLabels['program'];
     this.breadcrumbItems = [

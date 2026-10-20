@@ -50,7 +50,7 @@ interface EpgGridTick {
 /**
  * True channel×time grid for the EPG (Direction 3 "Hybrid Signal" — grid is
  * the ≥768px (tablet+, MASTER.md's breakpoint scale) default view on
- * `programacion-tv/guia-canales`; the mobile channel-list view takes over
+ * `programacion-tv/en-directo`; the mobile channel-list view takes over
  * below that). Channels are
  * rows, a horizontal time axis runs left→right, program blocks are
  * positioned/sized from their real `airing.start`/`airing.end`.

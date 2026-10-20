@@ -30,6 +30,7 @@ import {
 } from 'src/app/utils/catalog';
 import { normalizePublicImageUrl } from 'src/app/utils/media-url';
 import { slugify } from 'src/app/utils/utils';
+import { channelPath } from '../../config/route-map';
 
 type GuideQuickCategory = 'all' | 'Cine' | 'Series' | 'Deportes';
 type DayAlias = 'today' | 'tomorrow' | 'after_tomorrow';
@@ -104,8 +105,8 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   get breadcrumbItems(): BreadcrumbItem[] {
     return [
       { name: 'Inicio', url: '/' },
-      { name: 'Guía TV', url: '/programacion-tv/guia-canales' },
-      { name: this.canal, url: `/canales/${this.query}` },
+      { name: 'Canales', url: '/canales' },
+      { name: this.canal, url: channelPath(this.channel?.id || this.query) },
     ];
   }
   public logo = '';
@@ -488,7 +489,8 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       description:
         this.channelDescription ||
         `Consulta qué están emitiendo ahora, qué viene después y la parrilla completa de ${channelName} ${currentText}.`,
-      canonicalUrl: this.router.url,
+      // One URL per channel: not the request path (la_1 vs la-1, ?dia=…), the id-derived one.
+      canonicalUrl: channelPath(this.channel?.id || this.query),
       ogTitle: `${channelName} en directo y programación ${currentText}`,
       ogDescription:
         this.channelDescription ||

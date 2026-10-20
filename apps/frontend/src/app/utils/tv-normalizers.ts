@@ -2,6 +2,7 @@ import { CatalogItem } from '../services/catalog.service';
 import { TvReadItemDTO } from '../api/models';
 import { buildDetailPath, CatalogContentType, slugifyTitle } from './catalog';
 import { slugify } from './utils';
+import { channelPath } from '../config/route-map';
 
 // The five verticals the design system's accent tokens key off
 // (--accent-live/discover/streaming/sports/editorial). See
@@ -77,7 +78,7 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
       image: resolveTvImage(item),
       channelName: String(item.channel.name || '').trim(),
       channelId: String(item.channel.id || '').trim(),
-      channelPath: item.channel.id ? `/canales/${encodeURIComponent(item.channel.id)}` : '',
+      channelPath: item.channel.id ? channelPath(item.channel.id) : '',
       channelIcon: String(item.assets.channelLogo?.url || item.channel.icon || '').trim(),
       startTime: item.airing.start,
       endTime: item.airing.end,
@@ -109,7 +110,7 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
     image: String(item.backdrop || item.image || '').trim(),
     channelName: String(item.channel?.name || '').trim(),
     channelId: String(item.channel?.id || '').trim(),
-    channelPath: item.channel?.id ? `/canales/${encodeURIComponent(item.channel.id)}` : '',
+    channelPath: item.channel?.id ? channelPath(item.channel.id) : '',
     channelIcon: String(item.channel?.icon || '').trim(),
     startTime: String(item.start || '').trim(),
     endTime: String(item.end || '').trim(),

@@ -212,7 +212,6 @@ export class FootballMatchesComponent implements OnInit {
   }
 
   private pathForTab(tab: MatchesView): string {
-    if (tab === 'live') return '/deportes/futbol/en-directo';
     if (tab === 'calendar') return '/deportes/futbol/calendario';
     return '/deportes/futbol/partidos-hoy';
   }

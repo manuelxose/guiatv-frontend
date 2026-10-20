@@ -4,7 +4,7 @@ import { reviewArtifactPath } from '../fixtures/review-artifact';
 test.describe('Shared responsive shell', () => {
   test('mobile exposes the intentional primary destinations and More sheet', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/programacion-tv/guia-canales');
+    await page.goto('/programacion-tv/en-directo');
 
     const nav = page.getByRole('navigation', { name: 'Navegación principal móvil' });
     await expect(nav).toBeVisible();
@@ -40,7 +40,7 @@ test.describe('Shared responsive shell', () => {
   });
 
   test('one theme click always flips the concrete palette and persists', async ({ page }) => {
-    await page.goto('/editorial');
+    await page.goto('/guias');
     const themeButton = page.locator('.unified-top-nav__theme');
     const before = await page.locator('html').getAttribute('data-theme');
     await themeButton.click();
