@@ -15,7 +15,7 @@ const urls = [
   `${apiBase}/v2/blog?limit=20`,
   `${apiBase}/v2/blog/categories`,
   `${frontendBase}/`,
-  `${frontendBase}/programacion-tv/guia-canales`,
+  `${frontendBase}/programacion-tv/en-directo`,
   `${frontendBase}/deportes`,
   `${frontendBase}/editorial`,
   `${frontendBase}/deportes/futbol/noticias`,

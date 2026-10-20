@@ -5,7 +5,7 @@ import { BlogPostModel } from '../../infrastructure/database/models/BlogPost.mod
 import { TMDBService } from '../../infrastructure/external/TMDBService';
 import { ChannelType } from '../../domain/entities/Channel';
 import { FootballQueryService } from '../../application/sports/services/FootballQueryService';
-import { buildLegacyProgramSlug, normalizeTvToken } from '../../shared/utils/tvMetadata';
+import { buildLegacyProgramSlug, normalizeTvToken, channelPagePath } from '../../shared/utils/tvMetadata';
 import { TvReadQueryService } from '../../application/services/TvReadQueryService';
 import { PUBLIC_EDITORIAL_FILTER } from '../../application/services/EditorialReviewPolicy';
 
@@ -216,7 +216,7 @@ export class SitemapController {
         const slug = channel.normalizedName || normalizeTvToken(channel.name);
         if (!slug) continue;
         urls.push({
-          loc: `/canales/${slug}`,
+          loc: channelPagePath(slug),
           lastmod: todayIso,
           changefreq: 'weekly',
           priority: 0.7,
@@ -248,7 +248,7 @@ export class SitemapController {
         .map((value) => normalizeTvToken(value));
       if (!channelIdentifiers.some((identifier) => scheduledChannelIds.has(identifier))) continue;
       urls.push({
-        loc: `/canales/${slug}`,
+        loc: channelPagePath(slug),
         lastmod: todayIso,
         changefreq: 'weekly',
         priority: 0.7,
@@ -323,7 +323,7 @@ export class SitemapController {
 
     // The rankings hub is only worth indexing once at least one ranking is published.
     if (posts.some((post) => (post as { contentType?: string }).contentType === 'ranking')) {
-      urls.push({ loc: '/editorial/rankings', lastmod: todayIso, changefreq: 'weekly', priority: 0.7 });
+      urls.push({ loc: '/guias/rankings', lastmod: todayIso, changefreq: 'weekly', priority: 0.7 });
     }
 
     const categoryCounts = new Map<string, number>();
@@ -331,7 +331,7 @@ export class SitemapController {
       if (post.slug) {
         const lastmod = post.updatedAt || post.publishedAt || new Date();
         urls.push({
-          loc: `/editorial/${post.slug}`,
+          loc: `/guias/${post.slug}`,
           lastmod: this.formatDate(lastmod),
           changefreq: 'weekly',
           priority: 0.7,
@@ -349,7 +349,7 @@ export class SitemapController {
     for (const [slug, count] of categoryCounts) {
       if (count < 3) continue;
       urls.push({
-        loc: `/editorial/categoria/${slug}`,
+        loc: `/guias/categoria/${slug}`,
         lastmod: todayIso,
         changefreq: 'weekly',
         priority: 0.5,
@@ -386,19 +386,17 @@ export class SitemapController {
     return [
       { loc: '/', lastmod: today, changefreq: 'daily', priority: 1.0 },
       { loc: '/programacion-tv/que-ver-hoy', lastmod: today, changefreq: 'daily', priority: 0.9 },
-      // NOTE: /programacion-tv/en-directo is excluded — it redirects to /guia-canales (301)
-      { loc: '/programacion-tv/guia-canales', lastmod: today, changefreq: 'hourly', priority: 0.9 },
+      { loc: '/programacion-tv/en-directo', lastmod: today, changefreq: 'hourly', priority: 0.9 },
       { loc: '/canales', lastmod: today, changefreq: 'hourly', priority: 0.8 },
       { loc: '/programacion-tv/peliculas', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/programacion-tv/series', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/plataformas', lastmod: today, changefreq: 'daily', priority: 0.9 },
       { loc: '/deportes/futbol', lastmod: today, changefreq: 'hourly', priority: 0.9 },
       { loc: '/deportes/futbol/partidos-hoy', lastmod: today, changefreq: 'hourly', priority: 0.8 },
-      { loc: '/deportes/futbol/en-directo', lastmod: today, changefreq: 'hourly', priority: 0.8 },
       { loc: '/deportes/futbol/competiciones', lastmod: today, changefreq: 'daily', priority: 0.8 },
       { loc: '/deportes/futbol/noticias', lastmod: today, changefreq: 'daily', priority: 0.7 },
       { loc: '/comparador-streaming', lastmod: today, changefreq: 'weekly', priority: 0.8 },
-      { loc: '/editorial', lastmod: today, changefreq: 'daily', priority: 0.8 },
+      { loc: '/guias', lastmod: today, changefreq: 'daily', priority: 0.8 },
       { loc: '/sobre-nosotros', lastmod: today, changefreq: 'monthly', priority: 0.6 },
       { loc: '/prensa', lastmod: today, changefreq: 'monthly', priority: 0.5 },
       { loc: '/developers', lastmod: today, changefreq: 'monthly', priority: 0.5 },

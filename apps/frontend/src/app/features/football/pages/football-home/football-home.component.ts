@@ -11,8 +11,7 @@ import { FootballNewsCardComponent } from '@app/features/football/components/foo
 import { FootballSectionHeaderComponent } from '@app/features/football/components/football-section-header/football-section-header.component';
 import { FootballCompetitionCardComponent } from '@app/features/football/components/football-competition-card/football-competition-card.component';
 import { FootballCompetitionGroupComponent, groupMatchesByCompetition } from '@app/features/football/components/football-competition-group/football-competition-group.component';
-import { FootballDateStripComponent } from '@app/features/football/components/football-date-strip/football-date-strip.component';
-import { applyFootballMatchFilter, FootballFilterBarComponent, FootballMatchFilter } from '@app/features/football/components/football-filter-bar/football-filter-bar.component';
+import { applyFootballMatchFilter, FootballMatchFilter } from '@app/features/football/components/football-filter-bar/football-filter-bar.component';
 import { FootballBroadcastWidgetComponent, summarizeFootballBroadcasts } from '@app/features/football/components/football-broadcast-widget/football-broadcast-widget.component';
 import { FootballStandingsMiniComponent } from '@app/features/football/components/football-standings-mini/football-standings-mini.component';
 import { FootballLiveRefreshService, mergeLiveUpdates, shouldPollLiveTransitions } from '@app/features/football/football-live-refresh.service';
@@ -29,7 +28,7 @@ function toDateKey(date = new Date()): string {
   standalone: true,
   imports: [CommonModule, RouterModule, FootballMatchCardComponent, FootballNewsCardComponent,
     FootballSectionHeaderComponent, FootballCompetitionGroupComponent, FootballCompetitionCardComponent,
-    FootballDateStripComponent, FootballFilterBarComponent, FootballBroadcastWidgetComponent,
+    FootballBroadcastWidgetComponent,
     FootballStandingsMiniComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './football-home.component.html',
@@ -128,8 +127,6 @@ export class FootballHomeComponent implements OnInit {
     )}</script>`);
   }
 
-  onDateChange(date: string): void { void this.router.navigate([], { relativeTo: this.route, queryParams: { date: date === toDateKey() ? null : date }, queryParamsHandling: 'merge' }); }
-  onFilterChange(filter: FootballMatchFilter): void { void this.router.navigate([], { relativeTo: this.route, queryParams: { filter: filter === 'all' ? null : filter }, queryParamsHandling: 'merge' }); }
   onProviderSelect(provider: string | null): void { void this.router.navigate([], { relativeTo: this.route, queryParams: { provider }, queryParamsHandling: 'merge', fragment: provider ? 'partidos' : undefined }); }
   retryLoad(): void { globalThis.location?.reload(); }
   primaryConfirmedBroadcast(match: FootballMatchDTO): FootballBroadcastDTO | null {

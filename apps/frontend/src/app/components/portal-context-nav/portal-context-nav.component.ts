@@ -101,7 +101,12 @@ export class PortalContextNavComponent implements AfterViewInit {
     const [beforeFragment, fragment = ''] = url.split('#');
     const [path, query = ''] = beforeFragment.split('?');
     if (this.kind() === 'live') return 'now';
-    if (this.kind() === 'discover') return 'all';
+    if (this.kind() === 'discover') {
+      if (path.startsWith(APP_PATHS.movies)) return 'movies';
+      if (path.startsWith(APP_PATHS.series)) return 'series';
+      if (path.startsWith(APP_PATHS.stats)) return 'trends';
+      return 'all';
+    }
     if (this.kind() === 'platforms') {
       return path.startsWith(APP_PATHS.streamingComparison) ? 'compare' : 'platforms';
     }
@@ -117,8 +122,8 @@ export class PortalContextNavComponent implements AfterViewInit {
       return 'home';
     }
     if (path.startsWith(APP_PATHS.top10)) return 'rankings';
-    if (path.startsWith(APP_PATHS.stats)) return 'trends';
-    if (path.startsWith(`${APP_PATHS.blog}/categoria/`) || fragment === 'guias') return 'guides';
+    if (path.startsWith(`${APP_PATHS.blog}/categoria/streaming`)) return 'streaming';
+    if (path.startsWith(`${APP_PATHS.blog}/categoria/futbol`)) return 'football';
     return 'latest';
   }
 

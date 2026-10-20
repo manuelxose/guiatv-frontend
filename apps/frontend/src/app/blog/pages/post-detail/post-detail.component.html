@@ -35,21 +35,11 @@
           >
             <div class="absolute inset-0 bg-[linear-gradient(135deg,color-mix(in_oklch,var(--portal-text)_4%,transparent),transparent_35%,transparent_65%,color-mix(in_oklch,var(--accent-editorial)_8%,transparent))]"></div>
             <div class="relative space-y-6">
-              <nav class="flex flex-wrap items-center gap-2 text-sm text-[var(--portal-text-soft)]" aria-label="Breadcrumb">
-                <a [routerLink]="appPaths.blog" class="transition-colors hover:text-[var(--portal-text)]">Blog</a>
-                <ng-container *ngIf="state.post.primaryCategory">
-                  <span>/</span>
-                  <a [routerLink]="state.post.primaryCategory.canonicalPath" class="transition-colors hover:text-[var(--portal-text)]">
-                    {{ state.post.primaryCategory.name }}
-                  </a>
-                </ng-container>
-              </nav>
-
               <div class="flex flex-wrap gap-2">
                 <span
                   class="rounded-full border border-[var(--accent-editorial)] bg-[var(--accent-editorial-soft)] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--accent-editorial)]"
                 >
-                  {{ state.post.contentType === 'ranking' ? 'Ranking' : state.post.contentType === 'trend' ? 'Tendencia' : 'Guia' }}
+                  {{ state.post.contentType === 'ranking' ? 'Ranking' : state.post.contentType === 'trend' ? 'Tendencia' : 'Guía' }}
                 </span>
                 <span
                   *ngFor="let category of state.post.categories"
@@ -70,10 +60,11 @@
 
               <div class="flex flex-wrap items-center gap-4 text-sm text-[var(--portal-text-soft)]">
                 <span *ngIf="state.post.author">Por {{ state.post.author.name }}</span>
+                <span *ngIf="state.post.reviewedBy">• Revisado por {{ state.post.reviewedBy }}</span>
                 <span *ngIf="state.post.author">•</span>
-                <span>{{ state.post.publishedAt | date : 'dd MMMM yyyy' }}</span>
+                <span>{{ state.post.publishedAt | date : 'longDate' }}</span>
                 <span *ngIf="showUpdatedDate">•</span>
-                <span *ngIf="showUpdatedDate">Actualizado {{ state.post.modifiedAt | date : 'dd MMMM yyyy' }}</span>
+                <span *ngIf="showUpdatedDate">Actualizado {{ state.post.modifiedAt | date : 'longDate' }}</span>
                 <span>•</span>
                 <span>{{ state.post.readingMinutes }} min de lectura</span>
                 <span *ngIf="state.post.isRanking">• Ranking editorial</span>
@@ -81,7 +72,8 @@
             </div>
           </section>
 
-          <figure class="overflow-hidden rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)]">
+          <!-- The shared fallback cover is the same on every post: only show a post's own image. -->
+          <figure *ngIf="state.post.coverImage !== '/assets/images/blog-og-image.webp'" class="overflow-hidden rounded-[1.75rem] border border-[var(--portal-border)] bg-[var(--portal-surface)]">
             <img
               [src]="state.post.coverImage"
               [alt]="state.post.title"

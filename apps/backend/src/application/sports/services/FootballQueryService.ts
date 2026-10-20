@@ -52,6 +52,7 @@ const CACHE_POLICIES = {
   news: { freshSeconds: 3 * 60, staleSeconds: 30 * 60 },
   newsDetail: { freshSeconds: 60 * 60, staleSeconds: 24 * 60 * 60 },
   search: { freshSeconds: 60, staleSeconds: 5 * 60 },
+  empty: { freshSeconds: 60, staleSeconds: 5 * 60 },
 } satisfies Record<string, CacheFreshnessPolicy>;
 
 // The frontend polls this endpoint client-side for live matches (every
@@ -148,7 +149,8 @@ export class FootballQueryService {
           generatedAt: new Date().toISOString(),
         },
       };
-    });
+    // An empty day may be a transient upstream blank (seen 2026-10-19 under rate limiting): keep it briefly.
+    }, (result) => result.matches.length ? true : CACHE_POLICIES.empty);
   }
 
   async getLiveMatches(): Promise<FootballMatchesResponseDTO> {

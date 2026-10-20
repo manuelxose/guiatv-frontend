@@ -23,7 +23,7 @@ import { MetaService } from 'src/app/services/meta.service';
             Volver al inicio
           </a>
           <a
-            routerLink="/programacion-tv/guia-canales"
+            routerLink="/programacion-tv/en-directo"
             class="min-h-[44px] inline-flex items-center justify-center rounded-xl border border-[var(--portal-border)] px-5 py-2.5 text-sm font-semibold text-[var(--portal-text-soft)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-live)]"
           >
             Ir a la guía

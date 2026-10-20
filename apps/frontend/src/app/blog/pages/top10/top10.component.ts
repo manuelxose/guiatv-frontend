@@ -34,7 +34,7 @@ export class Top10Component implements OnInit, OnDestroy {
   public readonly appPaths = APP_PATHS;
   public readonly breadcrumbItems = [
     { name: 'Inicio', url: APP_PATHS.home },
-    { name: 'Editorial', url: APP_PATHS.blog },
+    { name: 'Guías', url: APP_PATHS.blog },
     { name: 'Rankings', url: APP_PATHS.top10 },
   ];
 
@@ -60,7 +60,7 @@ export class Top10Component implements OnInit, OnDestroy {
       title: 'Rankings editoriales de cine, series y streaming | Guía TV',
       description:
         'Listas, tops y selecciones editoriales conectadas con la guía, el catálogo y las plataformas reales de la app.',
-      canonicalUrl: '/editorial/rankings',
+      canonicalUrl: '/guias/rankings',
       image: '/assets/images/blog-og-image.webp',
       type: 'website',
     });
@@ -87,7 +87,7 @@ export class Top10Component implements OnInit, OnDestroy {
               title: 'Rankings editoriales de cine, series y streaming | Guía TV',
               description:
                 'Listas, tops y selecciones editoriales conectadas con la guía, el catálogo y las plataformas reales de la app.',
-              canonicalUrl: '/editorial/rankings',
+              canonicalUrl: '/guias/rankings',
               type: 'website',
               robots: 'noindex, follow',
             });
@@ -148,7 +148,7 @@ export class Top10Component implements OnInit, OnDestroy {
           name: 'Rankings editoriales de Guia TV',
           description:
             'Selecciones editoriales y rankings de series, peliculas y streaming conectados con la app.',
-          path: '/editorial/rankings',
+          path: '/guias/rankings',
         },
         baseUrl
       ),

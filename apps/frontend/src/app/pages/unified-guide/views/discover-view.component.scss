@@ -59,7 +59,7 @@
 }
 
 .discover-view__masthead h1,
-.discover-view__section-head h3,
+.discover-view__section-head :is(h2, h3),
 .discover-view__empty h2 {
   margin: 0;
   color: var(--guide-text);
@@ -208,7 +208,7 @@
   margin-bottom: 0.9rem;
 }
 
-.discover-view__section-head h3 {
+.discover-view__section-head :is(h2, h3) {
   font-size: 1.08rem;
   line-height: 1.18;
 }

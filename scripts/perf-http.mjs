@@ -26,9 +26,9 @@ const apiRoutes = [
 ];
 const frontendRoutes = [
   '/',
-  '/programacion-tv/guia-canales',
+  '/programacion-tv/en-directo',
   '/deportes',
-  '/editorial',
+  '/guias',
   '/deportes/futbol/noticias',
 ];
 

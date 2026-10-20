@@ -26,15 +26,8 @@ export const FOOTBALL_ROUTES: Routes = [
         title: 'Partidos de fútbol hoy: horarios y dónde verlos | Guía TV',
         data: { footballView: 'today', layout: 'public-shell' },
       },
-      {
-        path: 'en-directo',
-        loadComponent: () =>
-          import('./pages/football-matches/football-matches.component').then(
-            (m) => m.FootballMatchesComponent
-          ),
-        title: 'Fútbol en directo: marcadores y dónde ver cada partido | Guía TV',
-        data: { footballView: 'live', layout: 'public-shell' },
-      },
+      // Merged into today's list (its "En directo" filter) on 2026-10-20; the HTTP 301 is in ssr-server.mjs.
+      { path: 'en-directo', redirectTo: () => '/deportes/futbol/partidos-hoy?filter=live' },
       {
         path: 'calendario',
         loadComponent: () =>

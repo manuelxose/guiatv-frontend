@@ -163,11 +163,11 @@ export class MenuStateService {
       return 'en-directo';
     }
 
-    if (path.startsWith('/editorial/rankings')) {
+    if (path.startsWith('/guias/rankings')) {
       return 'rankings';
     }
 
-    if (path.startsWith('/editorial')) {
+    if (path.startsWith('/guias')) {
       return 'editorial';
     }
 

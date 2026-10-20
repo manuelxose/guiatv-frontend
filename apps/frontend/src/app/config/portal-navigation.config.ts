@@ -130,8 +130,8 @@ export const PORTAL_PRIMARY_DESTINATIONS: readonly PortalDestination[] = [
   },
   {
     id: 'editorial',
-    label: 'Editorial',
-    hint: 'Guías, rankings y tendencias',
+    label: 'Guías',
+    hint: 'Dónde ver, precios y rankings',
     path: APP_PATHS.blog,
     iconPath: PORTAL_ICON_PATHS.editorial,
   },
@@ -169,12 +169,12 @@ export const PORTAL_GLOBAL_DESTINATIONS: readonly PortalDestination[] = [
   },
 ] as const;
 
-/** Contextual navigation for the Editorial family. URLs remain stable for SEO. */
+/** Contextual navigation for the Guías family: crawlable category hubs, not fragments of one page. */
 export const PORTAL_BLOG_DESTINATIONS: readonly PortalContextDestination[] = [
-  { id: 'latest', label: 'Últimos', kind: 'route', path: APP_PATHS.blog },
-  { id: 'guides', label: 'Guías', kind: 'route', path: APP_PATHS.blog, fragment: 'guias' },
+  { id: 'latest', label: 'Todas', kind: 'route', path: APP_PATHS.blog },
+  { id: 'streaming', label: 'Streaming', kind: 'route', path: `${APP_PATHS.blog}/categoria/streaming` },
+  { id: 'football', label: 'Fútbol', kind: 'route', path: `${APP_PATHS.blog}/categoria/futbol` },
   { id: 'rankings', label: 'Rankings', kind: 'route', path: APP_PATHS.top10 },
-  { id: 'trends', label: 'Tendencias', kind: 'route', path: APP_PATHS.stats },
 ] as const;
 
 /** Destinations progressively disclosed from the compact mobile bar. */
@@ -194,14 +194,17 @@ export const PORTAL_TV_DESTINATIONS: readonly PortalContextDestination[] = [
   { id: 'next', label: 'A continuación', kind: 'action', iconPath: PORTAL_ICON_PATHS.clock },
   { id: 'night', label: 'Esta noche', kind: 'action', iconPath: PORTAL_ICON_PATHS.clock },
   { id: 'day', label: 'Parrilla', kind: 'action', iconPath: PORTAL_ICON_PATHS.channels },
+  { id: 'channels', label: 'Canales', kind: 'route', path: APP_PATHS.channels, iconPath: PORTAL_ICON_PATHS.channels },
 ] as const;
 
 export const PORTAL_DISCOVER_DESTINATIONS: readonly PortalContextDestination[] = [
   { id: 'all', label: 'Todo', kind: 'action', iconPath: PORTAL_ICON_PATHS.discover },
   { id: 'live', label: 'En TV', kind: 'action', iconPath: PORTAL_ICON_PATHS.liveDot },
-  { id: 'movie', label: 'Películas', kind: 'action', iconPath: PORTAL_ICON_PATHS.play },
-  { id: 'series', label: 'Series', kind: 'action', iconPath: PORTAL_ICON_PATHS.editorial },
   { id: 'free', label: 'Gratis', kind: 'action', iconPath: PORTAL_ICON_PATHS.sparkles },
+  // Real landing pages rather than in-page filters, so crawlers and users reach them from the section menu.
+  { id: 'movies', label: 'Películas', kind: 'route', path: APP_PATHS.movies, iconPath: PORTAL_ICON_PATHS.play },
+  { id: 'series', label: 'Series', kind: 'route', path: APP_PATHS.series, iconPath: PORTAL_ICON_PATHS.editorial },
+  { id: 'trends', label: 'Tendencias', kind: 'route', path: APP_PATHS.stats, iconPath: PORTAL_ICON_PATHS.trends },
 ] as const;
 
 // Consolidated structural destinations (§4 nav rework): "En directo",
@@ -245,8 +248,8 @@ export const PORTAL_SECTION_NAVIGATION: Readonly<Record<PortalSection, PortalSec
     items: PORTAL_SPORTS_DESTINATIONS,
   },
   blog: {
-    label: 'Secciones de Editorial',
-    rootLabel: 'Editorial',
+    label: 'Secciones de Guías',
+    rootLabel: 'Guías',
     rootPath: APP_PATHS.blog,
     items: PORTAL_BLOG_DESTINATIONS,
   },
@@ -257,7 +260,7 @@ export type PortalPrimaryDestinationId = 'live' | 'discover' | 'streaming' | 'sp
 export function resolvePortalPrimaryDestination(path: string): PortalPrimaryDestinationId | null {
   const normalized = path.split('?')[0].split('#')[0].replace(/\/$/, '') || '/';
 
-  if (normalized.startsWith(APP_PATHS.blog) || normalized.startsWith(APP_PATHS.top10) || normalized.startsWith(APP_PATHS.stats)) {
+  if (normalized.startsWith(APP_PATHS.blog)) {
     return 'editorial';
   }
   if (normalized.startsWith(APP_PATHS.sports)) return 'sports';
@@ -271,6 +274,7 @@ export function resolvePortalPrimaryDestination(path: string): PortalPrimaryDest
     normalized.startsWith(APP_PATHS.explore) ||
     normalized.startsWith(APP_PATHS.movies) ||
     normalized.startsWith(APP_PATHS.series) ||
+    normalized.startsWith(APP_PATHS.stats) ||
     /^\/(contenido|peliculas|series|programas|detalles|pelicula-details)\//.test(normalized)
   ) return 'discover';
   return null;

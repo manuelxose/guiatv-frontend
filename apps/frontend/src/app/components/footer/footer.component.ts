@@ -40,7 +40,7 @@ export class FooterComponent {
       id: 'explorar',
       title: 'Explorar',
       links: [
-        { label: 'Editorial', path: APP_PATHS.blog },
+        { label: 'Guías', path: APP_PATHS.blog },
         { label: 'Tendencias', path: APP_PATHS.stats },
         { label: 'Comparador', path: APP_PATHS.streamingComparison },
         { label: 'Series', path: APP_PATHS.series },

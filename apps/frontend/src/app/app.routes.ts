@@ -102,12 +102,12 @@ export const routes: Routes = [
     data: { type: 'movies', layout: 'public-shell' }
   },
   {
-    path: 'programacion-tv/guia-canales',
+    path: 'programacion-tv/en-directo',
     loadComponent: () =>
       import('./pages/unified-guide/unified-guide.component').then(
         (m) => m.UnifiedGuideComponent
       ),
-    title: 'Guía de Canales - Guía TV',
+    title: 'TV en directo - Guía TV',
     data: { tab: 'live', layout: 'portal-page' },
   },
   {
@@ -226,37 +226,21 @@ export const routes: Routes = [
     data: { contentType: 'program', layout: 'public-shell' }
   },
 
+  // Pre-2026-10-20 URLs (the HTTP 301s live in scripts/ssr-server.mjs; these cover in-app navigation).
+  { path: 'programacion-tv/guia-canales', redirectTo: 'programacion-tv/en-directo', pathMatch: 'full' },
   {
-    path: 'programacion-tv/en-directo',
-    redirectTo: 'programacion-tv/guia-canales',
-    pathMatch: 'full',
-  },
-  {
-    path: 'editorial',
+    path: 'guias',
     children: BLOG_ROUTES && BLOG_ROUTES.length ? BLOG_ROUTES[0].children : [],
-    title: 'Blog - Guía TV',
+    title: 'Guías - Guía TV',
     data: { layout: 'portal-page' },
   },
-  {
-    path: 'blog/top10',
-    redirectTo: 'editorial/rankings',
-    pathMatch: 'full',
-  },
-  {
-    path: 'blog/categoria/:slug',
-    redirectTo: 'editorial/categoria/:slug',
-    pathMatch: 'full',
-  },
-  {
-    path: 'blog/:slug',
-    redirectTo: 'editorial/:slug',
-    pathMatch: 'full',
-  },
-  {
-    path: 'blog',
-    redirectTo: 'editorial',
-    pathMatch: 'full',
-  },
+  { path: 'editorial/categoria/:slug', redirectTo: 'guias/categoria/:slug', pathMatch: 'full' },
+  { path: 'editorial/:slug', redirectTo: 'guias/:slug', pathMatch: 'full' },
+  { path: 'editorial', redirectTo: 'guias', pathMatch: 'full' },
+  { path: 'blog/top10', redirectTo: 'guias/rankings', pathMatch: 'full' },
+  { path: 'blog/categoria/:slug', redirectTo: 'guias/categoria/:slug', pathMatch: 'full' },
+  { path: 'blog/:slug', redirectTo: 'guias/:slug', pathMatch: 'full' },
+  { path: 'blog', redirectTo: 'guias', pathMatch: 'full' },
   {
     path: 'program-full-details/:id',
     loadComponent: () =>

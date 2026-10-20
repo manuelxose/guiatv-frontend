@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 
 const port = 3190;
-const routes = ['/canales', '/canales/la_sexta', '/editorial', '/editorial/categoria/series', '/editorial/mejores-series-netflix', '/programas/un-lugar-llamado-milagro', '/peliculas/el-caballero-oscuro', '/pelicula-details/155', '/detalles/test-program', '/program-full-details/test-program', '/contenido/tmdb%3Amovie%3A155'];
+const routes = ['/canales', '/canales/la_sexta', '/guias', '/guias/categoria/series', '/guias/mejores-series-netflix', '/programas/un-lugar-llamado-milagro', '/peliculas/el-caballero-oscuro', '/pelicula-details/155', '/detalles/test-program', '/program-full-details/test-program', '/contenido/tmdb%3Amovie%3A155'];
 const child = spawn('node', ['apps/frontend/scripts/ssr-server.mjs'], {
   env: { ...process.env, PORT: String(port), API_ORIGIN: 'http://127.0.0.1:9' }, // port 9 = discard, connection refused
   stdio: ['ignore', 'pipe', 'ignore'],

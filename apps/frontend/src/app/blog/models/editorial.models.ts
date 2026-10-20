@@ -52,6 +52,7 @@ export interface EditorialPost {
   readingMinutes: number;
   tocItems: EditorialTocItem[];
   author: EditorialAuthor | null;
+  reviewedBy?: string | null;
   canonicalPath: string;
   categories: EditorialCategory[];
   primaryCategory: EditorialCategory | null;

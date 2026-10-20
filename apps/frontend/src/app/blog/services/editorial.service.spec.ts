@@ -136,6 +136,20 @@ describe('EditorialService', () => {
     expect(state?.posts.map((post) => post.slug)).toEqual([guide.slug]);
   });
 
+  it('points stored /editorial links at /guias, leaving the editorial policy page alone', async () => {
+    const article = rawPost(1, 'Guía con enlaces', 'Guías');
+    article.content.rendered =
+      '<a href="/editorial/precios">a</a><a href="https://guiaprogramaciontv.com/editorial">b</a><a href="/politica-editorial">c</a>';
+    const service = new EditorialService({ getAllPosts: () => of([article]) } as any);
+
+    const [post] = await firstValueFrom(service.getPosts());
+
+    expect(post.contentHtml).toContain('href="/guias/precios"');
+    expect(post.contentHtml).toContain('href="/guias"');
+    expect(post.contentHtml).toContain('href="/politica-editorial"');
+    expect(post.canonicalPath).toBe('/guias/guía-con-enlaces');
+  });
+
   it('builds stable contents navigation for long articles with real headings', async () => {
     const article = rawPost(1, 'Guía extensa', 'Guías');
     const longParagraph = `<p>${'contenido '.repeat(1100)}</p>`;

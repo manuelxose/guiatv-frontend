@@ -514,6 +514,11 @@ const MOVIE_CONTAINER_TITLE_PATTERNS: RegExp[] = [
   /^(?:el\s+western\s+de\s+la\s+2)\s+(.+)$/i,
 ];
 
+/** Public channel URL: ids are `[a-z0-9_]`, URLs use hyphens (`la_1` -> `/canales/la-1`), as the frontend does. */
+export function channelPagePath(channelId: string): string {
+  return `/canales/${encodeURIComponent(String(channelId).replace(/_/g, '-'))}`;
+}
+
 export function normalizeTvToken(
   value: string | null | undefined,
   separator: '_' | ' ' = '_'

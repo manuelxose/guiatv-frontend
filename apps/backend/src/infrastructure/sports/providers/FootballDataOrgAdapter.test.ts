@@ -136,6 +136,11 @@ test('madridDayQueryRange spans the neighbouring UTC days, never a single-day ra
   assert.deepEqual(madridDayQueryRange('20270101'), { dateFrom: '2026-12-31', dateTo: '2027-01-02' });
 });
 
+test('competitions carry Spanish names and areas, with the provider slug kept for URL stability', () => {
+  const competition = mapFootballDataOrgCompetition({ id: 2014, name: 'Primera Division', code: 'PD', area: { name: 'Spain' } });
+  assert.deepEqual([competition.slug, competition.name, competition.shortName, competition.country], ['primera-division', 'LaLiga', 'LaLiga', 'España']);
+});
+
 test('fixturesAroundNow keeps recent results and upcoming fixtures, not the season opener', () => {
   const season = Array.from({ length: 38 }, (_, i) =>
     mapFootballDataOrgMatch(rawMatch({ id: i + 1, utcDate: new Date(Date.UTC(2026, 7, 15) + i * 7 * 86_400_000).toISOString() }))!

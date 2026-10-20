@@ -19,7 +19,7 @@ test.describe('Home -> Esta noche -> filtrar -> abrir contenido', () => {
     } else {
       // Tonight rail is data-dependent (empty outside the evening window in
       // real data); fall back to the same destination the link would open.
-      await page.goto('/programacion-tv/guia-canales?liveView=night');
+      await page.goto('/programacion-tv/en-directo?liveView=night');
     }
 
     await page.waitForURL(/\/programacion-tv\/guia-canales/, { timeout: 15_000 });

@@ -176,7 +176,7 @@ export class AdminBlogSectionComponent implements OnInit {
 
   get blogPreviewUrl(): string {
     const slug = this.blogPreviewSlug || 'nuevo-articulo';
-    return `${this.siteUrl}/editorial/${slug}`;
+    return `${this.siteUrl}/guias/${slug}`;
   }
 
   get blogTitleValue(): string {
@@ -572,7 +572,7 @@ export class AdminBlogSectionComponent implements OnInit {
 
   getPostUrl(post: AdminBlogPost): string {
     const slug = post.slug || 'articulo';
-    return `${this.siteUrl}/editorial/${slug}`;
+    return `${this.siteUrl}/guias/${slug}`;
   }
 
   getPostStatusClass(status?: string): string {

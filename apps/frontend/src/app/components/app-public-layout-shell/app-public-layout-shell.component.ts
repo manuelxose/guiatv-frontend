@@ -30,9 +30,8 @@ export class AppPublicLayoutShellComponent {
     normalizePath(this.currentUrl()?.urlAfterRedirects || this.router.url)
   );
   readonly section = computed<PortalPublicShellSection>(() => resolvePublicShellSection(this.normalizedPath()));
-  readonly breadcrumbItems = computed(() =>
-    this.section() === 'sports' ? [] : buildBreadcrumbItems(this.normalizedPath())
-  );
+  // Pages render their own full breadcrumb; a shell-level one only ever said "Inicio" and doubled it.
+  readonly breadcrumbItems = computed(() => [] as { name: string; url: string }[]);
   readonly tone = computed<PublicShellTone>(() => {
     const section = this.section();
     switch (section) {
@@ -54,7 +53,7 @@ function resolvePublicShellSection(path: string): PortalPublicShellSection {
     path === '/canales' ||
     path.startsWith('/canales/') ||
     path.startsWith('/programacion-tv/ver-canal') ||
-    path.startsWith('/programacion-tv/guia-canales')
+    path.startsWith('/programacion-tv/en-directo')
   ) {
     return 'live';
   }
@@ -78,6 +77,7 @@ function resolvePublicShellSection(path: string): PortalPublicShellSection {
     path.startsWith(APP_PATHS.explore) ||
     path.startsWith(APP_PATHS.movies) ||
     path.startsWith(APP_PATHS.series) ||
+    path.startsWith(APP_PATHS.stats) ||
     path.startsWith('/contenido/') ||
     path.startsWith('/peliculas/') ||
     path.startsWith('/series/') ||
@@ -88,20 +88,5 @@ function resolvePublicShellSection(path: string): PortalPublicShellSection {
     return 'discover';
   }
 
-  if (path.startsWith(APP_PATHS.stats)) {
-    return 'editorial';
-  }
-
   return 'generic';
-}
-
-function buildBreadcrumbItems(path: string): { name: string; url: string }[] {
-  if (
-    path === APP_PATHS.home ||
-    path.startsWith(APP_PATHS.stats) ||
-    /^\/(peliculas|series|programas|contenido|detalles|pelicula-details)\//.test(path)
-  ) {
-    return [];
-  }
-  return [{ name: 'Inicio', url: APP_PATHS.home }];
 }

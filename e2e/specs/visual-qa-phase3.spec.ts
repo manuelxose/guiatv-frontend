@@ -176,7 +176,7 @@ const scenarios: Scenario[] = [
   {
     name: 'tv-guide-epg',
     open: async (page) => {
-      await page.goto('/programacion-tv/guia-canales');
+      await page.goto('/programacion-tv/en-directo');
       await assertNotBlankScreen(page);
     },
   },
@@ -210,14 +210,14 @@ const scenarios: Scenario[] = [
   {
     name: 'editorial-home',
     open: async (page) => {
-      await page.goto('/editorial');
+      await page.goto('/guias');
       await assertNotBlankScreen(page);
     },
   },
   {
     name: 'editorial-article',
     open: async (page) => {
-      await page.goto('/editorial');
+      await page.goto('/guias');
       await assertNotBlankScreen(page);
       const link = page.locator('a.category-lead__story, a.editorial-post-card').first();
       const ok = await link.isVisible({ timeout: 15_000 }).catch(() => false);
@@ -230,7 +230,7 @@ const scenarios: Scenario[] = [
   {
     name: 'program-detail-modal',
     open: async (page) => {
-      await page.goto('/programacion-tv/guia-canales');
+      await page.goto('/programacion-tv/en-directo');
       await assertNotBlankScreen(page);
       const railsToggle = page.getByRole('button', { name: 'Ver rails' });
       if (await railsToggle.isVisible({ timeout: 3_000 }).catch(() => false)) {

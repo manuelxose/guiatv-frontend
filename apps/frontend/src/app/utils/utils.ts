@@ -235,7 +235,7 @@ export function generatePostSchema(post: any, baseUrl: string): object {
     ),
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `${baseUrl}/editorial/${slugify(post.slug)}`,
+      '@id': `${baseUrl}/guias/${slugify(post.slug)}`,
     },
   };
 }

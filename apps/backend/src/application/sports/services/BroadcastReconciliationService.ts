@@ -22,6 +22,7 @@ import {
   splitMatchup,
   toNormalizedAiringInput,
 } from '../../../application/sports/services/FootballNormalizer';
+import { channelPagePath } from '../../../shared/utils/tvMetadata';
 
 const KICKOFF_PROXIMITY_MS = 30 * 60 * 1000; // ±30 minutes
 
@@ -60,7 +61,7 @@ export class BroadcastReconciliationService {
         availability: override.availability,
         provenance: 'override' as const,
         confidence: 'high' as const,
-        channelPath: override.channelId ? `/canales/${override.channelId}` : undefined,
+        channelPath: override.channelId ? channelPagePath(override.channelId) : undefined,
       }));
 
       if (matchOverrides.length) {
@@ -86,7 +87,7 @@ export class BroadcastReconciliationService {
                 availability: 'tv',
                 provenance: 'reconciliation',
                 confidence: best.confidence,
-                channelPath: best.channelId ? `/canales/${best.channelId}` : undefined,
+                channelPath: best.channelId ? channelPagePath(best.channelId) : undefined,
               },
             ],
           };

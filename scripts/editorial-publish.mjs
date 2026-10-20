@@ -41,7 +41,7 @@ for (const e of entries) {
     categories: e.categories, contentType: e.contentType || 'guide', evergreen: true, targetQuery: e.targetQuery, primaryIntent: e.targetQuery,
     relatedPlatformKeys: e.relatedPlatformKeys, relatedRouteKeys: e.relatedRouteKeys,
     metaTitle: e.metaTitle, metaDescription: e.metaDescription, keywords: e.keywords,
-    canonicalUrl: `/editorial/${e.slug}`, authorName: 'Equipo editorial Guía TV', authorId: 'guiatv-editorial',
+    canonicalUrl: `/guias/${e.slug}`, authorName: 'Equipo editorial Guía TV', authorId: 'guiatv-editorial',
   };
   if (dryRun) {
     const external = (content.match(/href="https?:\/\/(?!(?:www\.)?guiaprogramaciontv)/g) || []).length;

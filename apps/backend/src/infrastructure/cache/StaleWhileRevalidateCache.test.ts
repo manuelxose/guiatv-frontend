@@ -66,3 +66,13 @@ test('does not cache rejected or semantically empty values', async () => {
   await cache.getOrLoad('v2:test:empty', { freshSeconds: 30, staleSeconds: 60 }, async () => [], (value) => value.length > 0);
   assert.equal(await repository.get('v2:test:empty'), null);
 });
+
+test('a policy returned by shouldCache overrides the default TTL for that value', async () => {
+  const repository = memoryRepository();
+  const cache = new StaleWhileRevalidateCache(repository);
+  const before = Date.now();
+  await cache.getOrLoad('v2:test:short', { freshSeconds: 600, staleSeconds: 3600, jitterRatio: 0 }, async () => [],
+    () => ({ freshSeconds: 60, staleSeconds: 300, jitterRatio: 0 }));
+  const envelope = await repository.get<CacheEnvelope<unknown[]>>('v2:test:short');
+  assert.ok(envelope && envelope.freshUntil - before <= 61_000 && envelope.staleUntil - before <= 301_000);
+});

@@ -28,14 +28,14 @@ test.describe('Editorial -> categoría -> artículo -> artículo relacionado', (
       )[0];
     expect(firstCategory, 'The editorial journey needs a category with related posts').toBeTruthy();
 
-    await page.goto('/editorial');
+    await page.goto('/guias');
     await assertNotBlankScreen(page);
 
     const categoryLink = page.getByRole('link', { name: 'Ver categoría' }).first();
     if (await categoryLink.isVisible({ timeout: 8_000 }).catch(() => false)) {
       await categoryLink.click();
     } else {
-      await page.goto(`/editorial/categoria/${firstCategory!.slug}`);
+      await page.goto(`/guias/categoria/${firstCategory!.slug}`);
     }
 
     await page.waitForURL(/\/editorial\/categoria\//, { timeout: 15_000 });

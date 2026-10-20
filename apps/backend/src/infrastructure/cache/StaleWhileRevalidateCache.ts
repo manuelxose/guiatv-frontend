@@ -38,7 +38,8 @@ export class StaleWhileRevalidateCache {
     key: string,
     policy: CacheFreshnessPolicy,
     loader: () => Promise<T>,
-    shouldCache: (value: T) => boolean = () => true
+    // false skips the write; a policy overrides `policy` for this value (e.g. shorter TTL for empty results).
+    shouldCache: (value: T) => boolean | CacheFreshnessPolicy = () => true
   ): Promise<T> {
     const now = Date.now();
     const cached = await measureTiming('cache', () => this.read<T>(key));
@@ -70,7 +71,7 @@ export class StaleWhileRevalidateCache {
     key: string,
     policy: CacheFreshnessPolicy,
     loader: () => Promise<T>,
-    shouldCache: (value: T) => boolean
+    shouldCache: (value: T) => boolean | CacheFreshnessPolicy
   ): Promise<T> {
     const existing = this.inFlight.get(key) as Promise<T> | undefined;
     if (existing) return existing;
@@ -85,7 +86,7 @@ export class StaleWhileRevalidateCache {
     key: string,
     policy: CacheFreshnessPolicy,
     loader: () => Promise<T>,
-    shouldCache: (value: T) => boolean
+    shouldCache: (value: T) => boolean | CacheFreshnessPolicy
   ): Promise<T> {
     const lockKey = `${key}:lock`;
     const lockValue = randomUUID();
@@ -108,7 +109,8 @@ export class StaleWhileRevalidateCache {
 
     try {
       const value = await loader();
-      if (shouldCache(value)) await this.write(key, value, policy);
+      const decision = shouldCache(value);
+      if (decision) await this.write(key, value, decision === true ? policy : decision);
       return value;
     } catch (error) {
       const stale = await this.read<T>(key);

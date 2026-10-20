@@ -6,9 +6,12 @@
 import {
   ApplicationConfig,
   ErrorHandler,
+  LOCALE_ID,
   mergeApplicationConfig,
   Provider,
 } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
 // Preserve interactions made before the client bundle finishes hydrating.
@@ -29,8 +32,12 @@ import { environment } from '../environments/environment';
 /**
  * Configuración principal de la aplicación con arquitectura SOLID COMPLETA
  */
+// Spanish dates and numbers in every pipe ("19 de octubre de 2026", "7,5"), on the server and in the browser.
+registerLocaleData(localeEs, 'es-ES');
+
 export const appConfig: ApplicationConfig = {
   providers: [
+    { provide: LOCALE_ID, useValue: 'es-ES' },
     // Providers básicos de Angular para standalone
     provideRouter(routes, withEnabledBlockingInitialNavigation()),
     // Fetch API es requerida para SSR moderno

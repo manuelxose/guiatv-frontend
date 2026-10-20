@@ -119,6 +119,7 @@ export function filterChannelDirectory(
   const normalizedQuery = normalizeSearch(query);
   return entries.filter((entry) => {
     const channel = entry.channel;
+    if (isRawFeedName(channel.name)) return false;
     if (access !== 'all' && channel.access !== access) return false;
     if (!normalizedQuery) return true;
     const haystack = [
@@ -129,6 +130,12 @@ export function filterChannelDirectory(
     ].map(normalizeSearch).join(' ');
     return haystack.includes(normalizedQuery);
   });
+}
+
+// ponytail: names like "Xarxa_TVMataro.TV" or "ETB1.TV" are raw ids from a secondary EPG feed (mostly duplicates
+// of a properly named channel); hide them from the directory. Proper fix: name or merge them in the channel import.
+function isRawFeedName(name?: string): boolean {
+  return /_|\.TV$/.test(String(name || ''));
 }
 
 function normalizeSearch(value?: string): string {

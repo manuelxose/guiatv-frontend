@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 const routes = [
-  { path: '/editorial', heading: /Historias y guías/, active: 'Últimos' },
-  { path: '/editorial/rankings', heading: 'Rankings', active: 'Rankings' },
+  { path: '/guias', heading: /Guías/, active: 'Todas' },
+  { path: '/guias/rankings', heading: 'Rankings', active: 'Rankings' },
   { path: '/tendencias', heading: 'Tendencias', active: 'Tendencias' },
   { path: '/comparador-streaming', heading: 'Compara plataformas con datos útiles', active: 'Comparador' },
 ] as const;
@@ -21,16 +21,16 @@ const viewports = [
 
 const visualRoutes = [
   '/',
-  '/programacion-tv/guia-canales',
+  '/programacion-tv/en-directo',
   '/programacion-tv/que-ver-hoy',
   '/plataformas',
   '/deportes/futbol',
   '/deportes/futbol/partidos-hoy',
-  '/editorial',
-  '/editorial/rankings',
+  '/guias',
+  '/guias/rankings',
   '/tendencias',
   '/comparador-streaming',
-  '/editorial/estrenos-en-streaming-esta-semana',
+  '/guias/estrenos-en-streaming-esta-semana',
 ] as const;
 
 test.describe('Canonical section navigation', () => {
@@ -38,9 +38,9 @@ test.describe('Canonical section navigation', () => {
     test(`${route.path} exposes its contextual active state`, async ({ page }) => {
       await page.goto(route.path);
       await expect(page.getByRole('heading', { name: route.heading }).first()).toBeVisible();
-      const contextLabel = route.path.startsWith('/editorial') || route.path === '/tendencias'
-        ? 'Secciones del Blog'
-        : 'Secciones de Plataformas';
+      const contextLabel = route.path.startsWith('/guias')
+        ? 'Secciones de Guías'
+        : route.path === '/tendencias' ? 'Secciones de Qué ver' : 'Secciones de Plataformas';
       await expect(
         page.getByRole('navigation', { name: contextLabel }).getByRole('link', { name: route.active, exact: true })
       ).toHaveAttribute('aria-current', 'page');
@@ -48,11 +48,7 @@ test.describe('Canonical section navigation', () => {
       await expect(page.locator('app-breadcrumb')).toHaveCount(1);
       await expect(page.locator('app-portal-context-nav .portal-context-nav')).toHaveCSS('border-radius', /16px|20px/);
 
-      if (route.path.startsWith('/editorial') || route.path === '/tendencias') {
-        await expect(page.getByRole('navigation', { name: 'Secciones del Blog' })).toBeVisible();
-      } else {
-        await expect(page.getByRole('navigation', { name: 'Secciones de Plataformas' })).toBeVisible();
-      }
+      await expect(page.getByRole('navigation', { name: contextLabel })).toBeVisible();
     });
   }
 
@@ -94,9 +90,9 @@ test.describe('Canonical section navigation', () => {
 
   test('TV, Qué ver and Fútbol share the same contextual navigation structure', async ({ page }) => {
     const sections = [
-      { path: '/programacion-tv/guia-canales', label: 'Secciones de TV', items: ['En emisión', 'A continuación', 'Esta noche', 'Parrilla'] },
-      { path: '/programacion-tv/que-ver-hoy', label: 'Secciones de Qué ver', items: ['Todo', 'En TV', 'Películas', 'Series', 'Gratis'] },
-      { path: '/deportes/futbol', label: 'Secciones de Fútbol', items: ['Portada', 'En directo', 'Partidos de hoy', 'Calendario', 'Competiciones', 'Dónde ver', 'Noticias'] },
+      { path: '/programacion-tv/en-directo', label: 'Secciones de TV', items: ['En emisión', 'A continuación', 'Esta noche', 'Parrilla', 'Canales'] },
+      { path: '/programacion-tv/que-ver-hoy', label: 'Secciones de Qué ver', items: ['Todo', 'En TV', 'Gratis', 'Películas', 'Series', 'Tendencias'] },
+      { path: '/deportes/futbol', label: 'Secciones de Fútbol', items: ['Portada', 'Partidos', 'Competiciones', 'Dónde ver', 'Noticias'] },
     ] as const;
 
     for (const section of sections) {
@@ -121,7 +117,7 @@ test.describe('Canonical section navigation', () => {
 
   test('renders one search affordance for each responsive mode', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 768 });
-    await page.goto('/editorial');
+    await page.goto('/guias');
     await expect(page.locator('#unified-search-input')).toHaveCount(1);
     await expect(page.getByRole('button', { name: 'Buscar', exact: true })).toHaveCount(0);
 
@@ -139,7 +135,7 @@ test.describe('Canonical section navigation', () => {
   test('uses channel schedule rows on mobile and the EPG matrix on desktop', async ({ page }) => {
     test.setTimeout(60_000);
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/programacion-tv/guia-canales?liveView=day');
+    await page.goto('/programacion-tv/en-directo?liveView=day');
     await expect(page.locator('.live-view__mobile-day')).toBeVisible({ timeout: 40_000 });
     await expect(page.locator('.live-view__grid-wrap')).toBeHidden();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
@@ -183,7 +179,7 @@ test.describe('Canonical section navigation', () => {
       await page.addInitScript((mode) => localStorage.setItem('guiatv-theme', mode), theme);
       await page.setViewportSize({ width: 1440, height: 900 });
 
-      for (const path of ['/editorial', '/editorial/rankings', '/comparador-streaming']) {
+      for (const path of ['/guias', '/guias/rankings', '/comparador-streaming']) {
         await page.goto(path);
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1440);

@@ -1,0 +1,13 @@
+old_url,new_url,status,reason,implemented_in,date
+/editorial,/guias,301,Section renamed to Guías (owner decision),apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/editorial/:slug,/guias/:slug,301,Section renamed; merged slugs go straight to their final target (no chain),apps/frontend/scripts/ssr-server.mjs (EDITORIAL_REDIRECTS),2026-10-20
+/editorial/rankings,/guias/rankings,301,Section renamed,apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/editorial/categoria/:slug,/guias/categoria/:slug,301,Section renamed,apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/blog,/guias,301,Legacy blog path (was a 301 to /editorial; now one hop),apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/blog/top10,/guias/rankings,301,Legacy blog path; one hop,apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/blog/categoria/:slug,/guias/categoria/:slug,301,Legacy blog path; one hop,apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/blog/:slug,/guias/:slug,301,Legacy blog path; one hop,apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/guias/<merged slug>,/guias/<target> or live page,301,Posts merged on 2026-10-19/20 (EDITORIAL_REDIRECTS),apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/programacion-tv/guia-canales,/programacion-tv/en-directo,301,URL named after the page content (TV en directo); query string kept,apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/canales/<id_with_underscores>,/canales/<id-with-hyphens>,301,Hyphenated slugs; both forms were self-canonical (duplicate content); query string kept,apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/deportes/futbol/en-directo,/deportes/futbol/partidos-hoy?filter=live,301,Live view was a filtered duplicate of today's list and usually empty (thin),apps/frontend/scripts/ssr-server.mjs,2026-10-20
