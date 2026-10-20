@@ -1,33 +1,18 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 
 /**
  * Minimal config service for API base URLs.
- * Keeps defaults aligned with backend README and uses 127.0.0.1 on SSR
- * to avoid localhost IPv6 resolution issues on this host.
- * Uses relative "/v2" in browser to allow proxying.
+ * The base is the relative "/v2" on both platforms, so server and browser issue identical URLs (same
+ * transfer-cache keys, no internal origin in rendered HTML). On the server, InternalApiBackend sends
+ * those requests to the internal API.
  */
 @Injectable({ providedIn: 'root' })
 export class ApiConfigService {
   private readonly baseUrl: string;
 
-  constructor(@Inject(PLATFORM_ID) platformId: object) {
-    const isBrowser = isPlatformBrowser(platformId);
-    const envBase = (environment as any).API_BASE_URL?.trim();
-    const envSsrBase = (environment as any).SSR_API_BASE_URL?.trim();
-
-    // In SSR, always use an absolute URL to the backend API to avoid
-    // self-referencing requests that loop back into the SSR server.
-    let base: string;
-    if (isBrowser) {
-      base = envBase || '/v2';
-    } else {
-      base =
-        envSsrBase ||
-        (envBase && /^https?:\/\//.test(envBase) ? envBase : '') ||
-        this.resolveServerBaseUrl();
-    }
+  constructor() {
+    let base: string = (environment as any).API_BASE_URL?.trim() || '/v2';
 
     if (base.endsWith('/')) base = base.slice(0, -1);
     if (!base.startsWith('http') && !base.startsWith('/')) {
@@ -68,14 +53,5 @@ export class ApiConfigService {
     }
 
     return this.baseUrl;
-  }
-
-  private resolveServerBaseUrl(): string {
-    // Allow the SSR process to point at a specific backend (env-driven), then
-    // fall back to the local default.
-    const envSsr = (typeof process !== 'undefined' && process.env?.SSR_API_BASE_URL) || '';
-    const envOrigin = (typeof process !== 'undefined' && process.env?.API_ORIGIN) || '';
-    const base = envSsr || envOrigin || 'http://127.0.0.1:4000';
-    return base.endsWith('/v2') ? base : `${base.replace(/\/$/, '')}/v2`;
   }
 }

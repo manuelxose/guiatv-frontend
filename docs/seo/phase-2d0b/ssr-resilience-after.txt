@@ -1,0 +1,36 @@
+ok /canales -> 503 no-store noindex, no canonical
+ok /canales/la_sexta -> 503 no-store noindex, no canonical
+ok /guias -> 503 no-store noindex, no canonical
+ok /guias/categoria/series -> 503 no-store noindex, no canonical
+ok /guias/mejores-series-netflix -> 503 no-store noindex, no canonical
+ok /programas/un-lugar-llamado-milagro -> 503 no-store noindex, no canonical
+ok /peliculas/el-caballero-oscuro -> 503 no-store noindex, no canonical
+ok /pelicula-details/155 -> 503 no-store noindex, no canonical
+ok /detalles/test-program -> 503 no-store noindex, no canonical
+ok /program-full-details/test-program -> 503 no-store noindex, no canonical
+ok /contenido/tmdb%3Amovie%3A155 -> 503 no-store noindex, no canonical
+ok /deportes -> 301 /deportes/futbol
+ok /deportes?utm_source=x -> 301 /deportes/futbol?utm_source=x
+ok /deportes/futbol/noticias/movistar-plus-vs-dazn -> 301 /guias/movistar-plus-vs-dazn
+ok /deportes/futbol/noticias/donde-ver-laliga-en-espana -> 301 /guias/donde-ver-laliga-2026-27-espana
+ok /guias/categoria/rankings -> 301 /guias/rankings
+ok /editorial/categoria/rankings -> 301 /guias/rankings
+ok /blog/categoria/rankings -> 301 /guias/rankings
+ok /editorial/categoria/series -> 301 /guias/categoria/series
+ok /embed/programacion -> 200 noindex, frame-ancestors *
+ok other routes keep X-Frame-Options: SAMEORIGIN
+ok /tendencias without data -> 200 noindex, follow
+ok /avisolegal -> one canonical /avisolegal
+ok /avisolegal?utm_source=x&dia=1 -> one canonical /avisolegal
+ok /sobre-nosotros -> one canonical /sobre-nosotros
+ok /no-existe-2d0 -> 404, no canonical
+ok Host guiaprogramaciontv.com /canales/la-sexta: 1 API request(s) to API_ORIGIN, 429 -> 503 noindex
+ok Host guiaprogramaciontv.com /guias: 4 API request(s) to API_ORIGIN, 429 -> 503 noindex
+ok Host guiaprogramaciontv.com /peliculas/el-caballero-oscuro: 1 API request(s) to API_ORIGIN, 429 -> 503 noindex
+ok Host localhost:9999 /canales/la-sexta: 1 API request(s) to API_ORIGIN, 429 -> 503 noindex
+ok Host localhost:9999 /guias: 4 API request(s) to API_ORIGIN, 429 -> 503 noindex
+ok Host localhost:9999 /peliculas/el-caballero-oscuro: 1 API request(s) to API_ORIGIN, 429 -> 503 noindex
+ok 12 SSR API requests: all /v2 on API_ORIGIN, no visitor cookie/Authorization, no X-Forwarded-For
+ok /canales/la-sexta: API 500 -> 503
+ok /guias: API 500 -> 503
+ok /programas/un-lugar-llamado-milagro: API 500 -> 503
