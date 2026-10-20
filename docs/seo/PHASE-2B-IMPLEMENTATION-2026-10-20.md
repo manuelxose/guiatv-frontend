@@ -14,7 +14,7 @@
 - **Read and applied by hand:** `seo-page` (image dimensions and CLS checks). The project skills became invocable only partway through the session.
 - **Ponytail** is the user's global working mode (`~/.claude/CLAUDE.md`), not an installed skill. It was applied: root-cause fixes, the smallest diff, no new dependencies.
 - **Not available:** no accessibility, responsive-design or Playwright skill is installed. The existing tools were used instead: `@axe-core/playwright` (already a devDependency), Playwright and Karma.
-- Nothing was installed. Lighthouse is not installed, so no Lighthouse run was made (see §12 below).
+- Nothing was added to the project. Lighthouse 12.8.2 was installed into a temporary folder outside the repo (`%TEMP%\lh`), not into `package.json`. Results are in §I.
 
 ## C. Responsive audit matrix
 
@@ -159,7 +159,38 @@ The existing suites were not re-run. Phase 2A recorded their baseline (17 pass /
 | Frontend Karma | **266/266** (Phase 2A: 264). The 2 new specs: Madrid slot for CEST, CET and the DST night; absent `?timeSlot` is null and not slot 0 |
 | Backend `npm test` | 360 pass, 0 fail, 1 skip (Redis, environmental), identical to 2A. The backend was not changed |
 | ESLint, changed files | 0 errors. The warnings are existing `prefer-inject`/`any` |
-| SSR production build | OK. Initial bundle 1.10 MB raw / 258.87 kB transfer (first branch build 258.86 kB). No new dependency |
+| SSR production build | OK. Initial bundle 1.10 MB raw / 258.87 kB transfer, against 258.19 kB for `main` built the same way (+0.68 kB). No new dependency |
+
+### Lighthouse (lab data, not field data)
+
+Setup: Lighthouse 12.8.2, mobile default profile (simulated Moto G Power, 4G throttling), headless Chromium, Windows host. Each value is the median of 3 or 5 runs. These are lab measurements; field Core Web Vitals (CrUX) don't have enough data for this site (Phase 1).
+
+**Like for like: the same local SSR setup for both builds, 5 runs each.** Both builds ran side by side from `%TEMP%`, served by `ssr-server.mjs` against the production API.
+
+| URL | Build | Perf (5 runs) | LCP | FCP | TBT | CLS | A11y / SEO / BP |
+|---|---|---|---|---|---|---|---|
+| `/` | main | 67 (68,68,67,67,67) | 5.88 s | 3.60 s | 194 ms | 0.026 | 96 / 100 / 96 |
+| `/` | 2B | 68 (68,67,69,69,67) | 5.46 s | 3.62 s | 195 ms | 0.026 | 96 / 100 / 96 |
+| `/canales/la-1` | main | 67 | 7.28 s | 3.47 s | 135 ms | 0.002 | 96 / 100 / 96 |
+| `/canales/la-1` | 2B | 68 | 7.09 s | 3.40 s | 133 ms | 0.003 | 96 / 100 / 96 |
+| `/deportes/futbol/partidos-hoy` | main | 81 (×5) | 3.92 s | 3.24 s | 25 ms | 0.016 | 96 / 100 / 96 |
+| `/deportes/futbol/partidos-hoy` | 2B | 80 (×5) | 4.21 s | 3.18 s | 28 ms | 0.015 | 96 / 100 / 96 |
+
+- **`/` and channel:** no regression; the differences are within run-to-run noise.
+- **Football:** −1 point and +0.29 s LCP, consistent across all 5 runs.
+  - The LCP element in both builds is the intro paragraph (`.head__sub`). On `main` the page was 751 px wide and the shell clipped that paragraph. In 2B it shows in full over more lines, so the element painted is larger.
+  - This cost comes from showing the content that had been cut off; it is not a slowdown. CLS improved slightly.
+
+**Production (Cloudflare + nginx) against the local candidate, 3 runs, for context only:**
+- `/`: 70 / LCP 5.29 s vs 64 / 6.42 s
+- channel: 66 / 8.44 s vs 68 / 7.09 s
+- football: 80 / 4.01 s vs 80 / 4.13 s
+
+The two serving paths differ (CDN, nginx SSR cache, HTTP/2 against a local Node proxy), so these numbers say nothing about the code. The like-for-like table above is the comparison that counts.
+
+Best Practices was 75 on production's `/canales/la-1` against 96 locally. The difference comes from browser console errors, which are the Cloudflare-refused speculation prefetches (see H); it is not a code difference.
+
+None of the pages has LCP within 2.5 s in the lab: the home page is around 5.5 s and the channel page around 7 s. That predates 2B and is for Phase 2C/performance work. TS-14 (home transfer state) is the known lead.
 
 ## J. SEO regression
 
