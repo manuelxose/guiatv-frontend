@@ -309,7 +309,7 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
         id: `football-news:${article.id}`,
         title: article.title,
         meta: 'Noticia de fútbol',
-        detailPath: `/deportes/futbol/noticias/${article.slug}`,
+        detailPath: `/guias/${article.slug}`,
         group: 'football' as const,
       })),
     ];

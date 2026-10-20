@@ -11,3 +11,7 @@ old_url,new_url,status,reason,implemented_in,date
 /programacion-tv/guia-canales,/programacion-tv/en-directo,301,URL named after the page content (TV en directo); query string kept,apps/frontend/scripts/ssr-server.mjs,2026-10-20
 /canales/<id_with_underscores>,/canales/<id-with-hyphens>,301,Hyphenated slugs; both forms were self-canonical (duplicate content); query string kept,apps/frontend/scripts/ssr-server.mjs,2026-10-20
 /deportes/futbol/en-directo,/deportes/futbol/partidos-hoy?filter=live,301,Live view was a filtered duplicate of today's list and usually empty (thin),apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/deportes,/deportes/futbol,301,Football is the only sport; was an Angular 302 (Phase 2A TS-11),apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/deportes/futbol/noticias/:slug,/guias/:slug,301,Football articles are the same blog posts as guides; one canonical URL (Phase 2A TS-04),apps/frontend/scripts/ssr-server.mjs (guidePath),2026-10-20
+/guias/categoria/rankings,/guias/rankings,301,Category duplicated the rankings hub (Phase 2A TS-17),apps/frontend/scripts/ssr-server.mjs,2026-10-20
+/editorial/categoria/rankings + /blog/categoria/rankings,/guias/rankings,301,Straight to the final target (no chain),apps/frontend/scripts/ssr-server.mjs (categoryPath),2026-10-20

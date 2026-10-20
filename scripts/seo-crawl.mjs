@@ -2,6 +2,7 @@
 // Dependency-free SEO regression crawl. Fetches the sitemap index, then every URL (raw HTML, no JS),
 // and fails (exit 1) on sitemap URLs that are not a canonical, indexable 200 with title/description/one h1.
 // Usage: node scripts/seo-crawl.mjs [baseUrl] [--out file.json] [--limit N] [--probe /path /path ...]
+// baseUrl may be a local candidate (e.g. http://127.0.0.1:3000): sitemap URLs are fetched from it.
 import { writeFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
@@ -67,7 +68,8 @@ const results = [];
 const queue = [...uniq.map((x) => ({ ...x, fromSitemap: true })), ...probes.map((p) => ({ u: base + p, sitemap: 'probe', fromSitemap: false }))];
 await Promise.all(Array.from({ length: 6 }, async () => {
   for (let x; (x = queue.shift()); ) {
-    try { const { r, body } = await get(x.u); results.push({ sitemap: x.sitemap, ...analyse(x.u, r, body, x.fromSitemap), location: r.headers.get('location') }); }
+    // A local candidate serves the production sitemap: fetch each loc from `base`, check its canonical against the loc.
+    try { const { r, body } = await get(x.u.replace(/^https?:\/\/[^/]+/, base)); results.push({ sitemap: x.sitemap, ...analyse(x.u, r, body, x.fromSitemap), location: r.headers.get('location') }); }
     catch (e) { results.push({ sitemap: x.sitemap, url: x.u, issues: [`fetch error ${e.message}`] }); }
   }
 }));

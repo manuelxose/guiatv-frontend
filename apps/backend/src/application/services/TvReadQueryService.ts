@@ -62,6 +62,8 @@ export interface TvReadScheduleParams {
 export interface TvReadProgramSitemapRow {
   title: string;
   start: string | Date;
+  /** When the projection row last changed: the sitemap's lastmod (the airing start is not a modification). */
+  updatedAt?: string | Date;
 }
 
 export function buildTvReadChannelGroupClause(group: string): Record<string, any> {
@@ -357,6 +359,14 @@ export function scopeChannelSummariesToPage(
   if (view === 'day') return summaries;
   const channelIds = new Set(pagedItems.map((item) => item.channel.id));
   return summaries.filter((summary) => channelIds.has(summary.channel.id));
+}
+
+/**
+ * Airings still on air or yet to start at `reference`, compared as instants (the EPG day groups overnight
+ * airings under the previous date, so a calendar-date comparison would keep last night's late show).
+ */
+export function airingsNotEnded(items: TvReadItemDTO[], reference: Date = new Date()): TvReadItemDTO[] {
+  return items.filter((item) => new Date(item.airing.end).getTime() > reference.getTime());
 }
 
 export function hydrateTvReadItemRuntime(
@@ -981,13 +991,14 @@ export class TvReadQueryService {
       'program.titleResolutionState': { $nin: ['generic_unresolved', 'generic_suppressed'] },
       'trustDecision.consumerSuppressed': { $ne: true },
     })
-      .select({ _id: 0, 'program.title': 1, 'airing.start': 1, searchTokens: 1 })
+      .select({ _id: 0, 'program.title': 1, 'airing.start': 1, searchTokens: 1, updatedAt: 1 })
       .sort({ date: 1, 'airing.start': 1 })
       .lean()
       .exec() as Array<{
         program?: { title?: string };
         airing?: { start?: string | Date };
         searchTokens?: string[];
+        updatedAt?: Date;
       }>;
 
     return rows.flatMap((row) => {
@@ -998,7 +1009,7 @@ export class TvReadQueryService {
         .filter((token) => !token.includes(' ') && !token.includes('_') && token.length >= 3);
       const indexedTokens = new Set(row.searchTokens || []);
       const searchable = lookupTokens.some((token) => indexedTokens.has(token));
-      return title && start && searchable ? [{ title, start }] : [];
+      return title && start && searchable ? [{ title, start, updatedAt: row.updatedAt }] : [];
     });
   }
 
@@ -1107,10 +1118,12 @@ export class TvReadQueryService {
       throw new Error(`TV read item not found: ${airingId}`);
     }
 
+    // The channel's next airings, not the first twelve of its EPG day (which listed finished ones as upcoming).
     const relatedChannelItems = (await TVReadAiringModel.find({
       date: item.airing.date,
       'channel.id': item.channel.id,
       id: { $ne: item.id },
+      'airing.end': { $gt: new Date().toISOString() },
     })
       .sort({ 'airing.start': 1 })
       .limit(12)
@@ -1270,7 +1283,8 @@ export class TvReadQueryService {
     const reference = new Date();
     return {
       item: hydrateTvReadItemRuntime(response.item, reference),
-      relatedChannelItems: response.relatedChannelItems.map((item) =>
+      // The response is cached for 30 minutes: drop what has ended since.
+      relatedChannelItems: airingsNotEnded(response.relatedChannelItems, reference).map((item) =>
         hydrateTvReadItemRuntime(item, reference)
       ),
       meta: {

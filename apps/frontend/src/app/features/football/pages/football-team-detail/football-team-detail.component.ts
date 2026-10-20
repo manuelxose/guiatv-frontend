@@ -17,7 +17,7 @@ import {
 } from '@app/features/football/components/football-filter-bar/football-filter-bar.component';
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
-import { generateFootballBreadcrumbSchema, generateFootballTeamSchema } from '@app/features/football/football-seo';
+import { generateFootballTeamSchema } from '@app/features/football/football-seo';
 import { FilterChipBarComponent, FilterChipItem } from '@app/components/filter-chip-bar/filter-chip-bar.component';
 
 type TeamTab = 'resumen' | 'partidos';
@@ -144,18 +144,8 @@ export class FootballTeamDetailComponent {
       canonicalUrl: `/deportes/futbol/equipos/${detail.team.slug}`,
     });
 
-    const schemas = [
-      generateFootballTeamSchema(detail.team, baseUrl),
-      generateFootballBreadcrumbSchema(
-        [
-          { name: 'Inicio', path: '/' },
-          { name: 'Fútbol', path: '/deportes/futbol' },
-          { name: 'Equipos', path: '/deportes/futbol/equipos' },
-          { name: detail.team.name, path: `/deportes/futbol/equipos/${detail.team.slug}` },
-        ],
-        baseUrl
-      ),
-    ];
+    // The breadcrumb's BreadcrumbList comes from the visible breadcrumb in the section nav, not from here.
+    const schemas = [generateFootballTeamSchema(detail.team, baseUrl)];
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
       schemas
         .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)

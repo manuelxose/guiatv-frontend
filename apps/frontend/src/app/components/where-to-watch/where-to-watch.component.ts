@@ -11,7 +11,7 @@ import {
   ProviderChipDTO,
   StreamingProvidersService,
 } from '../../services/streaming-providers.service';
-import { AffiliateService } from '../../services/affiliate.service';
+import { AffiliateService, outboundRel } from '../../services/affiliate.service';
 import {
   AffiliateContext,
   AffiliatePlacementKey,
@@ -211,7 +211,7 @@ export class WhereToWatchComponent implements OnChanges {
   resolveRel(provider: ProviderChipDTO): string {
     const offer = this.affiliateOfferFor(provider);
     if (!offer) return 'noopener';
-    return offer.cta.sponsored ? 'sponsored noopener noreferrer' : 'noopener noreferrer';
+    return outboundRel(offer.outbound.path, offer.cta.sponsored);
   }
 
   impressionContext(): Pick<AffiliateContext, 'market' | 'placement' | 'contentType' | 'contentId'> {

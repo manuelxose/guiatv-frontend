@@ -1,11 +1,14 @@
 /**
  * Football SEO helpers — schema.org structured data.
  *
- * Uses SportsEvent + BroadcastEvent + SportsTeam + NewsArticle + BreadcrumbList
- * only where semantically appropriate.
+ * SportsEvent / BroadcastEvent for matches, SportsTeam for teams; each top-level block carries its own `@context`.
+ * BreadcrumbList comes from the visible breadcrumb (BreadcrumbComponent), never from here: two per page disagreed.
+ * Football articles are guides: their Article markup lives on /guias/:slug.
  */
 
-import { FootballMatchDTO, FootballNewsDTO } from './football.models';
+import { FootballMatchDTO } from './football.models';
+
+const SCHEMA_CONTEXT = 'https://schema.org';
 
 function stripUndefined(value: Record<string, any>): Record<string, any> {
   Object.keys(value).forEach((key) => {
@@ -42,9 +45,10 @@ export function generateFootballMatchSchema(match: FootballMatchDTO, baseUrl: st
     url: `${baseUrl}/deportes/futbol/partido/${match.slug}`,
   });
 
-  if (!broadcast) return stripUndefined(event);
+  if (!broadcast) return { '@context': SCHEMA_CONTEXT, ...event };
 
   return stripUndefined({
+    '@context': SCHEMA_CONTEXT,
     '@type': 'BroadcastEvent',
     name: `${match.homeTeam.name} - ${match.awayTeam.name}`,
     startDate: match.kickoffAt,
@@ -61,38 +65,11 @@ export function generateFootballTeamSchema(
   baseUrl: string
 ): object {
   return stripUndefined({
+    '@context': SCHEMA_CONTEXT,
     '@type': 'SportsTeam',
     name: team.name,
     logo: team.crest || undefined,
     sport: 'Fútbol',
     url: `${baseUrl}/deportes/futbol/equipos/${team.slug}`,
   });
-}
-
-export function generateFootballNewsSchema(article: FootballNewsDTO, baseUrl: string): object {
-  return stripUndefined({
-    '@type': 'NewsArticle',
-    headline: article.title,
-    description: article.excerpt,
-    image: article.coverImage || undefined,
-    datePublished: article.publishedAt,
-    dateModified: article.updatedAt || article.publishedAt,
-    author: article.author?.name ? { '@type': 'Person', name: article.author.name } : undefined,
-    url: `${baseUrl}/deportes/futbol/noticias/${article.slug}`,
-  });
-}
-
-export function generateFootballBreadcrumbSchema(
-  items: Array<{ name: string; path: string }>,
-  baseUrl: string
-): object {
-  return {
-    '@type': 'BreadcrumbList',
-    itemListElement: items.map((item, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: item.name,
-      item: `${baseUrl}${item.path}`,
-    })),
-  };
 }

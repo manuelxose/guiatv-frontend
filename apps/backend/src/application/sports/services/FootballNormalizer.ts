@@ -207,10 +207,23 @@ export function inferStatus(startIso: string, endIso: string, reference = new Da
   return 'scheduled';
 }
 
+const madridDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' });
+
+/**
+ * `<home>-<away>-<YYYY-MM-DD>` where the date is the kickoff's Europe/Madrid calendar day, the same day the
+ * match is listed under. A 01:00 Madrid kickoff is 23:00 UTC the day before: dating it in UTC built a slug
+ * for a day whose listing does not contain the match.
+ */
 export function buildMatchSlug(home: string, away: string, kickoffIso: string): string {
-  const date = kickoffIso.slice(0, 10); // YYYY-MM-DD
+  const kickoff = new Date(kickoffIso);
+  const date = Number.isNaN(kickoff.getTime()) ? kickoffIso.slice(0, 10) : madridDate.format(kickoff);
   const base = `${slugify(home)}-${slugify(away)}`.slice(0, 120);
   return `${base}-${date}`;
+}
+
+/** True when `slug` names `match`: its current slug, or the pre-2026-10-20 one dated by the UTC kickoff day. */
+export function matchHasSlug(match: { slug: string; kickoffAt: string }, slug: string): boolean {
+  return match.slug === slug || `${match.slug.slice(0, -10)}${match.kickoffAt.slice(0, 10)}` === slug;
 }
 
 export function buildScore(): FootballScore {

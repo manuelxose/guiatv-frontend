@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Subject, catchError, of, takeUntil } from 'rxjs';
 import { PortalContextNavComponent } from '../../components/portal-context-nav/portal-context-nav.component';
@@ -44,11 +44,13 @@ interface PopularItem { title: string; path: string; platform?: string; category
 })
 export class StatsComponent implements OnInit, OnDestroy {
   readonly appPaths=APP_PATHS; loading=true; error=false; items:PopularItem[]=[]; private readonly destroy$=new Subject<void>();
-  constructor(private readonly metaService:MetaService,private readonly catalogService:CatalogService){}
+  constructor(private readonly metaService:MetaService,private readonly catalogService:CatalogService,private readonly cdr:ChangeDetectorRef){}
   ngOnInit():void{
     this.metaService.setMetaTags({title:'Tendencias de TV y streaming | Guía TV',description:'Consulta los contenidos populares del catálogo de Guía TV.',canonicalUrl:APP_PATHS.stats,robots:'noindex, follow'});
     this.catalogService.queryState({sort:'popular',limit:10}).pipe(takeUntil(this.destroy$),catchError(()=>{this.error=true;return of({data:{items:[]}} as any);})).subscribe(result=>{
       const source=(result.data?.items||[]) as any[];this.items=source.map(item=>({title:item.title,path:item.detailPath||APP_PATHS.explore,platform:item.primaryPlatforms?.[0]||item.channel?.name,category:item.genres?.[0]}));this.loading=false;
+      // OnPush: without this the server rendered "Cargando…" while the meta below had already turned indexable.
+      this.cdr.markForCheck();
       if (!this.error && this.items.length >= 5) {
         this.metaService.setMetaTags({title:'Tendencias de TV y streaming | Guía TV',description:'Consulta los contenidos populares del catálogo de Guía TV.',canonicalUrl:APP_PATHS.stats,robots:'index, follow'});
       }

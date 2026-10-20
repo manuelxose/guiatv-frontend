@@ -61,6 +61,8 @@ export class AffiliateController {
 
     res.set('Cache-Control', 'no-store');
     res.set('Referrer-Policy', 'no-referrer');
+    // A click-tracking redirect, never a page: keep it out of the index (robots.txt also disallows crawling it).
+    res.set('X-Robots-Tag', 'noindex, nofollow');
     res.redirect(302, resolved.destinationUrl);
   }
 

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   dedupeTeamsFromMatches,
   extractSlugDate,
+  FootballDataOrgAdapter,
   filterMatchesByIsoDay,
   madridDayQueryRange,
   fixturesAroundNow,
@@ -223,4 +224,25 @@ test('available quota leaves the local request gate open', () => {
     'x-requestcounter-reset': '41',
   }, 3_000_000, 200);
   assert.deepEqual(state, { remaining: 8, blockedUntil: 0 });
+});
+
+// Regression (Phase 1 TS-09): a 01:00 Madrid kickoff is not in the provider's general (today, UTC) snapshot, so its
+// detail page said "Partido no encontrado". getMatch(slug) falls back to the dated range around the slug's day.
+test('getMatch resolves a cross-midnight slug, current or legacy, via the dated range when the general snapshot misses it', async () => {
+  const adapter = new FootballDataOrgAdapter('test-key');
+  const crossMidnight = rawMatch({ id: 555044, utcDate: '2026-10-19T23:00:00Z', status: 'SCHEDULED' });
+  const calls: Array<Record<string, string> | undefined> = [];
+  (adapter as any).fetch = async (_url: string, config: { params?: Record<string, string> } = {}) => {
+    calls.push(config.params);
+    return { data: { matches: config.params?.dateFrom ? [crossMidnight] : [] } };
+  };
+
+  const current = await adapter.getMatch('fc-barcelona-real-madrid-cf-2026-10-20');
+  assert.equal(current?.slug, 'fc-barcelona-real-madrid-cf-2026-10-20');
+  assert.deepEqual(calls.at(-1), { dateFrom: '2026-10-19', dateTo: '2026-10-21' });
+
+  const legacy = await adapter.getMatch('fc-barcelona-real-madrid-cf-2026-10-19');
+  assert.equal(legacy?.slug, 'fc-barcelona-real-madrid-cf-2026-10-20');
+
+  assert.equal(await adapter.getMatch('fc-barcelona-real-madrid-cf-2026-10-25'), null);
 });

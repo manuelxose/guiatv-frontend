@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, EventEmitter, Output, computed, inject, input } from '@angular/core';
-import { AffiliateService } from '../../services/affiliate.service';
+import { AffiliateService, outboundRel } from '../../services/affiliate.service';
 import { AffiliateCTA, AffiliateResolvedOffer } from '../../interfaces/affiliate.interface';
 import { resolvePlatformLogoUrl } from '../../utils/platform-logos';
 
@@ -75,7 +75,7 @@ export class AffiliateCTAComponent {
 
   readonly rel = computed(() => {
     if (!this.external()) return '';
-    return this.sponsored() ? 'sponsored noopener noreferrer' : 'noopener noreferrer';
+    return outboundRel(this.resolvedHref(), this.sponsored());
   });
 
   readonly screenReaderSuffix = computed(() => {

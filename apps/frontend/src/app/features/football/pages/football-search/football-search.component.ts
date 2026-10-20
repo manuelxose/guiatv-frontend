@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { map, of, switchMap } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FootballFacade } from '@app/features/football/football.facade';
@@ -13,8 +12,6 @@ import { FootballNewsCardComponent } from '@app/features/football/components/foo
 import { FootballTeamBadgeComponent } from '@app/features/football/components/football-team-badge/football-team-badge.component';
 import { FootballSectionHeaderComponent } from '@app/features/football/components/football-section-header/football-section-header.component';
 import { MetaService } from '@app/services/meta.service';
-import { environment } from 'src/environments/environment';
-import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
 
 const EMPTY_RESULT: FootballSearchDTO = { query: '', matches: [], teams: [], competitions: [], news: [], meta: {} };
 
@@ -45,7 +42,6 @@ export class FootballSearchComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly meta = inject(MetaService);
-  private readonly sanitizer = inject(DomSanitizer);
 
   // The query lives in the URL (shareable, back/forward-safe) — not local
   // component state.
@@ -79,8 +75,6 @@ export class FootballSearchComponent implements OnInit {
   readonly competitions = computed(() => this.teamsOnly() ? [] : this.result()?.competitions ?? []);
   readonly news = computed(() => this.teamsOnly() ? [] : this.result()?.news ?? []);
 
-  safeLdHtml: SafeHtml | null = null;
-
   ngOnInit(): void {
     this.meta.setMetaTags({
       title: 'Buscar en fútbol - Guía TV',
@@ -89,19 +83,6 @@ export class FootballSearchComponent implements OnInit {
       robots: 'noindex, follow',
     });
 
-    const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';
-    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(
-        generateFootballBreadcrumbSchema(
-          [
-            { name: 'Inicio', path: '/' },
-            { name: 'Fútbol', path: '/deportes/futbol' },
-            { name: 'Buscar', path: '/deportes/futbol/buscar' },
-          ],
-          baseUrl
-        )
-      )}</script>`
-    );
   }
 
   onSubmit(): void {

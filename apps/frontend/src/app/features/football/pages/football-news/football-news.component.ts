@@ -1,14 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs';
 import { FootballFacade } from '@app/features/football/football.facade';
 import { FootballContentType, FootballNewsDTO } from '@app/features/football/football.models';
 import { FootballNewsCardComponent } from '@app/features/football/components/football-news-card/football-news-card.component';
 import { MetaService } from '@app/services/meta.service';
-import { environment } from 'src/environments/environment';
-import { generateFootballBreadcrumbSchema } from '@app/features/football/football-seo';
 import { FilterChipBarComponent, FilterChipItem } from '@app/components/filter-chip-bar/filter-chip-bar.component';
 
 const PAGE_SIZE = 12;
@@ -34,7 +31,6 @@ const CONTENT_TYPE_LABELS: Record<FootballContentType, string> = {
 export class FootballNewsComponent implements OnInit {
   private readonly facade = inject(FootballFacade);
   private readonly meta = inject(MetaService);
-  private readonly sanitizer = inject(DomSanitizer);
 
   // Cumulative limit ("load more" grows this rather than paging with an
   // offset+merge) — simplest correct approach for a page this size, and it
@@ -75,8 +71,6 @@ export class FootballNewsComponent implements OnInit {
     return type === 'all' ? this.news() : this.news().filter((item) => item.contentType === type);
   });
 
-  safeLdHtml: SafeHtml | null = null;
-
   ngOnInit(): void {
     this.meta.setMetaTags({
       title: 'Noticias de fútbol: última hora, previas y crónicas - Guía TV',
@@ -84,19 +78,6 @@ export class FootballNewsComponent implements OnInit {
       canonicalUrl: '/deportes/futbol/noticias',
     });
 
-    const baseUrl = environment.SITE_URL || 'https://guiaprogramaciontv.com';
-    this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(
-        generateFootballBreadcrumbSchema(
-          [
-            { name: 'Inicio', path: '/' },
-            { name: 'Fútbol', path: '/deportes/futbol' },
-            { name: 'Noticias', path: '/deportes/futbol/noticias' },
-          ],
-          baseUrl
-        )
-      )}</script>`
-    );
   }
 
   typeLabel(type: FootballContentType): string {

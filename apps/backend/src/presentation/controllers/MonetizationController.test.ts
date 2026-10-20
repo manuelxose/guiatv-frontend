@@ -64,4 +64,5 @@ test('MonetizationController redirects with no-store and no-referrer headers', a
   assert.equal(response.headers.Location, 'https://www.netflix.com/es/signup');
   assert.equal(response.headers['Cache-Control'], 'no-store');
   assert.equal(response.headers['Referrer-Policy'], 'no-referrer');
+  assert.equal(response.headers['X-Robots-Tag'], 'noindex, nofollow');
 });

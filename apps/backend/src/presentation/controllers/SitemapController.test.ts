@@ -315,3 +315,56 @@ test('sitemap-blog.xml lists the rankings hub only when a ranking post is publis
     invalidateSitemapCache();
   }
 });
+
+// Phase 1 TS-13: lastmod carried the airing start (tomorrow's airings => future dates) and "today" on every static page.
+test('sitemap lastmod is a real change date: never in the future, absent when unknown', async () => {
+  invalidateSitemapCache();
+  const today = new Date().toISOString().slice(0, 10);
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString();
+  const tvReadQueryService = {
+    getChannels: async () => ({ channels: [], meta: {} }),
+    getIndexableProgramSitemapRows: async () => [
+      { title: 'Mañana estreno', start: tomorrow, updatedAt: '2026-10-18T09:00:00.000Z' },
+      { title: 'Mañana estreno', start: tomorrow, updatedAt: '2026-10-19T09:00:00.000Z' },
+      { title: 'Reloj adelantado', start: tomorrow, updatedAt: tomorrow },
+      { title: 'Sin fecha de cambio', start: tomorrow },
+    ],
+  } as any;
+  const controller = new SitemapController({} as any, {} as any, undefined, undefined, tvReadQueryService);
+  const programs = fakeReqRes();
+  await controller.getProgramsSitemap(programs.req, programs.res, (() => {}) as any);
+  const xml = programs.getSentXml();
+  const entry = (slug: string) => new RegExp(`/programas/${slug}</loc>\\n(\\s*<lastmod>([^<]+)</lastmod>)?`).exec(xml);
+  assert.equal(entry('maana-estreno')?.[2], '2026-10-19', 'newest change among the rows of that page');
+  assert.equal(entry('reloj-adelantado')?.[2], today, 'a future change time is clamped to today');
+  assert.equal(entry('sin-fecha-de-cambio')?.[1], undefined, 'unknown change time: no lastmod');
+  assert.equal(xml.match(/\/programas\/maana-estreno</g)?.length, 1);
+
+  invalidateSitemapCache();
+  const statics = fakeReqRes();
+  await controller.getStaticSitemap(statics.req, statics.res, (() => {}) as any);
+  const staticXml = statics.getSentXml();
+  assert.match(staticXml, /\/programacion-tv\/en-directo<\/loc>\n\s*<lastmod>/, 'schedule pages change daily');
+  assert.match(staticXml, /\/avisolegal<\/loc>\n\s*<changefreq>/, 'stable pages carry no lastmod');
+  for (const [, date] of staticXml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)) assert.ok(date <= today, date);
+});
+
+test('sitemap-blog.xml dates listings by their newest post and leaves out the redirected rankings category', async () => {
+  const Model = (await import('../../infrastructure/database/models/BlogPost.model')).BlogPostModel;
+  const originalFind = Model.find;
+  const ranking = (slug: string, updatedAt: string) => ({ slug, contentType: 'ranking', updatedAt: new Date(updatedAt), categories: [{ slug: 'rankings' }] });
+  (Model as any).find = () => ({ select: () => ({ lean: () => ({ exec: async () => [
+    ranking('a', '2026-10-01T10:00:00Z'), ranking('b', '2026-10-15T10:00:00Z'), ranking('c', '2026-10-05T10:00:00Z'),
+  ] }) }) });
+  try {
+    invalidateSitemapCache();
+    const controller = new SitemapController({} as any, {} as any);
+    const { req, res, getSentXml } = fakeReqRes();
+    await controller.getBlogSitemap(req, res, (() => {}) as any);
+    assert.match(getSentXml(), /\/guias\/rankings<\/loc>\n\s*<lastmod>2026-10-15<\/lastmod>/);
+    assert.doesNotMatch(getSentXml(), /\/guias\/categoria\/rankings/);
+  } finally {
+    (Model as any).find = originalFind;
+    invalidateSitemapCache();
+  }
+});

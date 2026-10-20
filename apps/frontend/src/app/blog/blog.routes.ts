@@ -16,6 +16,8 @@ export const BLOG_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/top10/top10.component').then((m) => m.Top10Component),
       },
+      // Same list as the rankings hub (the HTTP 301 is in ssr-server.mjs).
+      { path: 'categoria/rankings', redirectTo: '/guias/rankings', pathMatch: 'full' },
       {
         path: 'categoria/:slug',
         loadComponent: () =>

@@ -102,7 +102,7 @@ export class FootballNewsCardComponent {
   @Input({ required: true }) item!: FootballNewsDTO;
 
   get internalLink(): string {
-    return `/deportes/futbol/noticias/${this.item.slug}`;
+    return `/guias/${this.item.slug}`;
   }
 
   get contentTypeLabel(): string {

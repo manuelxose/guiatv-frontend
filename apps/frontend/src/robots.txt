@@ -8,6 +8,10 @@ Disallow: /iniciar-sesion
 Disallow: /registro
 Disallow: /comunidad
 
+# Outbound click-tracking redirects (affiliate and plan links): not pages, and crawler hits would count as clicks.
+Disallow: /v2/affiliate/go/
+Disallow: /v2/monetization/go/
+
 # Legacy routes remain crawlable so redirects consolidate into canonical URLs.
 
 Sitemap: https://guiaprogramaciontv.com/sitemap.xml

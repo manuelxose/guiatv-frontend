@@ -98,7 +98,11 @@ const KNOWN_ROUTES = [
 const NOINDEX_ROUTES = [
   /^\/(?:iniciar-sesion|registro|perfil|mi-cuenta|comunidad|para-ti|admin)(?:\/.*)?$/,
   /^\/contenido\/[^/]+$/,
+  // Client-rendered iframe widget: a 200 shell for third-party sites, never a search result.
+  /^\/embed\/programacion$/,
 ];
+// The only page other sites may frame (the widget advertised on /embed); everything else stays SAMEORIGIN.
+const FRAMEABLE_PATH = '/embed/programacion';
 
 function isKnownRoute(url) {
   const path = url.split('?')[0].split('#')[0];
@@ -275,7 +279,12 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  if (req.path === FRAMEABLE_PATH) {
+    // CSP frame-ancestors supersedes X-Frame-Options; XFO has no "allow any origin" value, so it is omitted here.
+    res.setHeader('Content-Security-Policy', 'frame-ancestors *');
+  } else {
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  }
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   next();
 });
@@ -304,6 +313,8 @@ const movedTo = (req, res, path) => {
 // 2026-10-20 restructure: section renamed to "Guías", live TV page named after its content, channel slugs hyphenated.
 app.get('/programacion-tv/guia-canales', (req, res) => movedTo(req, res, '/programacion-tv/en-directo'));
 app.get('/deportes/futbol/en-directo', (_req, res) => res.redirect(301, '/deportes/futbol/partidos-hoy?filter=live'));
+// Football is the only sport: the section root is its hub (Angular's redirectTo would answer 302).
+app.get('/deportes', (req, res) => movedTo(req, res, '/deportes/futbol'));
 app.get('/canales/:id', (req, res, next) =>
   req.params.id.includes('_') ? movedTo(req, res, `/canales/${encodeURIComponent(req.params.id.replace(/_/g, '-'))}`) : next()
 );
@@ -355,14 +366,17 @@ const guidePath = (slug) => {
   const target = EDITORIAL_REDIRECTS[slug] || slug;
   return target.startsWith('/') ? target : `/guias/${encodeURIComponent(target)}`;
 };
+// The "rankings" category is the rankings hub under a second URL.
+const categoryPath = (slug) => (slug === 'rankings' ? '/guias/rankings' : `/guias/categoria/${encodeURIComponent(slug)}`);
 app.get('/guias/:slug', (req, res, next) =>
   EDITORIAL_REDIRECTS[req.params.slug] ? movedTo(req, res, guidePath(req.params.slug)) : next()
 );
+app.get('/guias/categoria/rankings', (req, res) => movedTo(req, res, '/guias/rankings'));
+// Football articles are guides (the same blog posts); /guias/:slug is their one canonical URL.
+app.get('/deportes/futbol/noticias/:slug', (req, res) => movedTo(req, res, guidePath(req.params.slug)));
 app.get(['/editorial', '/blog'], (req, res) => movedTo(req, res, '/guias'));
 app.get(['/editorial/rankings', '/blog/top10'], (req, res) => movedTo(req, res, '/guias/rankings'));
-app.get(['/editorial/categoria/:slug', '/blog/categoria/:slug'], (req, res) =>
-  movedTo(req, res, `/guias/categoria/${encodeURIComponent(req.params.slug)}`)
-);
+app.get(['/editorial/categoria/:slug', '/blog/categoria/:slug'], (req, res) => movedTo(req, res, categoryPath(req.params.slug)));
 app.get(['/editorial/:slug', '/blog/:slug'], (req, res) => movedTo(req, res, guidePath(req.params.slug)));
 app.get('/mi-cuenta', (_req, res) => res.redirect(301, '/perfil'));
 app.get('/comunidad', (_req, res) => res.redirect(301, '/perfil'));

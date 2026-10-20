@@ -15,6 +15,16 @@ interface ApiEnvelope<T> {
   data?: T;
 }
 
+/**
+ * `rel` for an outbound offer link. Every click-tracking redirect (`/v2/affiliate/go`, `/v2/monetization/go`)
+ * is `nofollow`; only a commission-bearing one is also `sponsored`, so the badge, the disclosure and the
+ * markup all describe the same relationship. Plain editorial links never pass through here.
+ */
+export function outboundRel(href: string | null | undefined, sponsored: boolean): string {
+  const tracked = /\/v2\/(?:affiliate|monetization)\/go\//.test(href || '');
+  return `${sponsored ? 'sponsored ' : ''}${sponsored || tracked ? 'nofollow ' : ''}noopener noreferrer`;
+}
+
 interface AffiliateResolveResponse {
   items: AffiliateResolvedOffer[];
   meta: { market: string; placement: string; total: number; generatedAt: string };

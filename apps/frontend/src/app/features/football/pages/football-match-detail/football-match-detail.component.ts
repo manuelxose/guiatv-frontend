@@ -30,7 +30,7 @@ import {
 } from '@app/features/football/football-status.util';
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
-import { generateFootballBreadcrumbSchema, generateFootballMatchSchema } from '@app/features/football/football-seo';
+import { generateFootballMatchSchema } from '@app/features/football/football-seo';
 
 type MatchDetailState =
   | { status: 'loading' }
@@ -156,18 +156,8 @@ export class FootballMatchDetailComponent implements AfterViewInit, OnDestroy {
       canonicalUrl: `/deportes/futbol/partido/${match.slug}`,
     });
 
-    const schemas = [
-      generateFootballMatchSchema(match, baseUrl),
-      generateFootballBreadcrumbSchema(
-        [
-          { name: 'Inicio', path: '/' },
-          { name: 'Fútbol', path: '/deportes/futbol' },
-          { name: 'Hoy', path: '/deportes/futbol/partidos-hoy' },
-          { name: `${match.homeTeam.name} - ${match.awayTeam.name}`, path: `/deportes/futbol/partido/${match.slug}` },
-        ],
-        baseUrl
-      ),
-    ];
+    // The breadcrumb's BreadcrumbList comes from the visible breadcrumb in the section nav, not from here.
+    const schemas = [generateFootballMatchSchema(match, baseUrl)];
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
       schemas
         .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)

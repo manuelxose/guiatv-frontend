@@ -104,7 +104,7 @@ describe('WhereToWatchComponent', () => {
     const primeVideo = component.providers!.flatrate![0];
     const nonAffiliate = component.providers!.flatrate![1];
     expect(component.resolveHref(primeVideo)).toBe('https://guiaprogramaciontv.com/v2/affiliate/go/offer-1?placement=where-to-watch&market=ES');
-    expect(component.resolveRel(primeVideo)).toBe('sponsored noopener noreferrer');
+    expect(component.resolveRel(primeVideo)).toBe('sponsored nofollow noopener noreferrer');
     expect(component.resolveHref(nonAffiliate)).toBe('https://non-affiliate.example/x');
     expect(component.resolveRel(nonAffiliate)).toBe('noopener');
     expect(component.showSponsoredDisclosure).toBeTrue();
