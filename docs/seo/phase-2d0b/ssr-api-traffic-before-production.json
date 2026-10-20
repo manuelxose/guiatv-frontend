@@ -1,0 +1,124 @@
+{
+ "window": [
+  "2026-10-20T16:10:09.724Z",
+  "2026-10-20T18:09:57.247Z"
+ ],
+ "ssrTotal": 17319,
+ "groups": [
+  {
+   "source": "other",
+   "route": "internal",
+   "kind": "read",
+   "count": 55,
+   "shareOfSsr": null,
+   "status": {
+    "ok": 55
+   },
+   "backendMs": {
+    "p50": 0.6,
+    "p90": 287.8,
+    "p99": 3002
+   }
+  },
+  {
+   "source": "other",
+   "route": "public",
+   "kind": "read",
+   "count": 939,
+   "shareOfSsr": null,
+   "status": {
+    "404": 17,
+    "ok": 916,
+    "other4xx": 5,
+    "429": 1
+   },
+   "backendMs": {
+    "p50": 3.8,
+    "p90": 58.5,
+    "p99": 980
+   }
+  },
+  {
+   "source": "other",
+   "route": "public",
+   "kind": "write",
+   "count": 1551,
+   "shareOfSsr": null,
+   "status": {
+    "ok": 1529,
+    "429": 22
+   },
+   "backendMs": {
+    "p50": 3.3,
+    "p90": 20.6,
+    "p99": 89.6
+   }
+  },
+  {
+   "source": "ssr",
+   "route": "internal",
+   "kind": "read",
+   "count": 874,
+   "shareOfSsr": 0.0505,
+   "status": {
+    "5xx": 67,
+    "ok": 803,
+    "404": 4
+   },
+   "backendMs": {
+    "p50": 28.2,
+    "p90": 583.3,
+    "p99": 10188.4
+   }
+  },
+  {
+   "source": "ssr",
+   "route": "internal",
+   "kind": "write",
+   "count": 14,
+   "shareOfSsr": 0.0008,
+   "status": {
+    "ok": 14
+   },
+   "backendMs": {
+    "p50": 44.3,
+    "p90": 75.5,
+    "p99": 79.9
+   }
+  },
+  {
+   "source": "ssr",
+   "route": "public",
+   "kind": "read",
+   "count": 13831,
+   "shareOfSsr": 0.7986,
+   "status": {
+    "ok": 13210,
+    "404": 619,
+    "5xx": 2
+   },
+   "backendMs": {
+    "p50": 4.3,
+    "p90": 100.1,
+    "p99": 441.5
+   }
+  },
+  {
+   "source": "ssr",
+   "route": "public",
+   "kind": "write",
+   "count": 2600,
+   "shareOfSsr": 0.1501,
+   "status": {
+    "ok": 2594,
+    "429": 6
+   },
+   "backendMs": {
+    "p50": 24.9,
+    "p90": 65.1,
+    "p99": 208.9
+   }
+  }
+ ],
+ "ssrRenderTimeouts": 6
+}

@@ -1,0 +1,87 @@
+[
+ {
+  "path": "/",
+  "status": 200,
+  "browserApiRequests": 8,
+  "requests": [
+   "POST /v2/affiliate/resolve",
+   "POST /v2/affiliate/resolve",
+   "POST /v2/affiliate/resolve",
+   "POST /v2/affiliate/resolve",
+   "POST /v2/affiliate/resolve",
+   "POST /v2/affiliate/resolve",
+   "POST /v2/affiliate/resolve",
+   "POST /v2/affiliate/resolve"
+  ]
+ },
+ {
+  "path": "/canales",
+  "status": 200,
+  "browserApiRequests": 0,
+  "requests": []
+ },
+ {
+  "path": "/canales/la-1",
+  "status": 200,
+  "browserApiRequests": 1,
+  "requests": [
+   "POST /v2/affiliate/resolve"
+  ]
+ },
+ {
+  "path": "/programacion-tv/peliculas",
+  "status": 200,
+  "browserApiRequests": 1,
+  "requests": [
+   "GET /v2/discovery/browse"
+  ]
+ },
+ {
+  "path": "/guias",
+  "status": 200,
+  "browserApiRequests": 3,
+  "requests": [
+   "GET /v2/catalog",
+   "GET /v2/catalog",
+   "GET /v2/catalog"
+  ]
+ },
+ {
+  "path": "/guias/precios-plataformas-streaming-espana",
+  "status": 200,
+  "browserApiRequests": 0,
+  "requests": []
+ },
+ {
+  "path": "/peliculas/elvis",
+  "status": 200,
+  "browserApiRequests": 5,
+  "requests": [
+   "GET /v2/catalog",
+   "GET /v2/catalog/slug/movie/elvis",
+   "GET /v2/catalog/tmdb%3Amovie%3A614934/enrichment",
+   "GET /v2/content/providers/movie/614934",
+   "POST /v2/affiliate/resolve"
+  ]
+ },
+ {
+  "path": "/series/friends",
+  "status": 200,
+  "browserApiRequests": 5,
+  "requests": [
+   "GET /v2/catalog",
+   "GET /v2/catalog/slug/series/friends",
+   "GET /v2/catalog/tmdb%3Atv%3A1668/enrichment",
+   "GET /v2/content/providers/tv/1668",
+   "POST /v2/affiliate/resolve"
+  ]
+ },
+ {
+  "path": "/deportes/futbol",
+  "status": 200,
+  "browserApiRequests": 1,
+  "requests": [
+   "GET /v2/sports/football/matches/live"
+  ]
+ }
+]

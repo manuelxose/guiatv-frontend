@@ -47,8 +47,7 @@ export const appConfig: ApplicationConfig = {
     // are included so a read-shaped POST (e.g. `/v2/affiliate/resolve`, which
     // takes a context body) also transfers its SSR response instead of the
     // client silently refetching and flashing a loading state right after
-    // hydration — the same "prevent hydration refetches" goal as the
-    // HTTP_TRANSFER_CACHE_ORIGIN_MAP mapping in app.config.server.ts.
+    // hydration.
     provideClientHydration(withEventReplay(), withHttpTransferCacheOptions({ includePostRequests: true })),
 
     {

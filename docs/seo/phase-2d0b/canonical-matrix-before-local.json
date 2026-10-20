@@ -1,0 +1,460 @@
+[
+ {
+  "name": "Home",
+  "path": "/",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/"
+  ],
+  "domCanonical": [
+   "/"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Home ?utm",
+  "path": "/?utm_source=test",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/"
+  ],
+  "domCanonical": [
+   "/"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Channel",
+  "path": "/canales/la-1",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/canales/la-1"
+  ],
+  "domCanonical": [
+   "/canales/la-1"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Channel ?dia",
+  "path": "/canales/la-1?dia=manana",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/canales/la-1"
+  ],
+  "domCanonical": [
+   "/canales/la-1"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Programme",
+  "path": "/programas/the-last-ship",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/programas/the-last-ship"
+  ],
+  "domCanonical": [
+   "/programas/the-last-ship"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [
+   "/programas/the-last-ship"
+  ],
+  "consistent": true
+ },
+ {
+  "name": "Programme season suffix",
+  "path": "/programas/friends-t3",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/programas/friends-t3"
+  ],
+  "domCanonical": [
+   "/programas/friends-t3"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [
+   "/programas/friends-t3"
+  ],
+  "consistent": true
+ },
+ {
+  "name": "Programme accent-dropped",
+  "path": "/programas/espejo-pblico",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/programas/espejo-pblico"
+  ],
+  "domCanonical": [
+   "/programas/espejo-pblico"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Series",
+  "path": "/series/friends",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/series/friends"
+  ],
+  "domCanonical": [
+   "/series/friends"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [
+   "/series/friends"
+  ],
+  "consistent": true
+ },
+ {
+  "name": "Series noindex",
+  "path": "/series/la-promesa",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/series/la-promesa"
+  ],
+  "domCanonical": [
+   "/series/la-promesa"
+  ],
+  "rawRobots": "noindex, follow",
+  "domRobots": "noindex, follow",
+  "xRobots": "noindex, follow",
+  "fallback": "",
+  "jsonLdUrls": [
+   "/series/la-promesa"
+  ],
+  "consistent": true
+ },
+ {
+  "name": "Movie",
+  "path": "/peliculas/elvis",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/peliculas/elvis"
+  ],
+  "domCanonical": [
+   "/peliculas/elvis"
+  ],
+  "rawRobots": "noindex, follow",
+  "domRobots": "noindex, follow",
+  "xRobots": "noindex, follow",
+  "fallback": "",
+  "jsonLdUrls": [
+   "/peliculas/elvis"
+  ],
+  "consistent": true
+ },
+ {
+  "name": "Movie wrong TMDB bind",
+  "path": "/peliculas/2",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/peliculas/2"
+  ],
+  "domCanonical": [
+   "/peliculas/2"
+  ],
+  "rawRobots": "noindex, follow",
+  "domRobots": "noindex, follow",
+  "xRobots": "noindex, follow",
+  "fallback": "",
+  "jsonLdUrls": [
+   "/peliculas/2"
+  ],
+  "consistent": true
+ },
+ {
+  "name": "Guide",
+  "path": "/guias/precios-plataformas-streaming-espana",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/guias/precios-plataformas-streaming-espana"
+  ],
+  "domCanonical": [
+   "/guias/precios-plataformas-streaming-espana"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Football hub",
+  "path": "/deportes/futbol",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/deportes/futbol"
+  ],
+  "domCanonical": [
+   "/deportes/futbol"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Football today",
+  "path": "/deportes/futbol/partidos-hoy",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/deportes/futbol/partidos-hoy"
+  ],
+  "domCanonical": [
+   "/deportes/futbol/partidos-hoy"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Match canonical",
+  "path": "/deportes/futbol/partido/ca-paranaense-se-palmeiras-2026-10-18",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/deportes/futbol/partido/ca-paranaense-se-palmeiras-2026-10-18"
+  ],
+  "domCanonical": [
+   "/deportes/futbol/partido/ca-paranaense-se-palmeiras-2026-10-18"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [
+   "/deportes/futbol/partido/ca-paranaense-se-palmeiras-2026-10-18"
+  ],
+  "consistent": true
+ },
+ {
+  "name": "Match legacy",
+  "path": "/deportes/futbol/partido/ca-paranaense-se-palmeiras-2026-10-17",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/deportes/futbol/partido/ca-paranaense-se-palmeiras-2026-10-18"
+  ],
+  "domCanonical": [
+   "/deportes/futbol/partido/ca-paranaense-se-palmeiras-2026-10-18"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [
+   "/deportes/futbol/partido/ca-paranaense-se-palmeiras-2026-10-18"
+  ],
+  "consistent": true
+ },
+ {
+  "name": "Match missing",
+  "path": "/deportes/futbol/partido/equipo-a-equipo-b-2026-01-01",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [],
+  "domCanonical": [],
+  "rawRobots": "noindex, follow",
+  "domRobots": "noindex, follow",
+  "xRobots": "noindex, follow",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Redirect",
+  "path": "/programacion-tv/guia-canales",
+  "status": 301,
+  "location": "/programacion-tv/en-directo",
+  "rawCanonical": [],
+  "domCanonical": [],
+  "rawRobots": "",
+  "domRobots": "",
+  "xRobots": "",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Redirect legacy catalog",
+  "path": "/contenido/program:20260901_la_1_20260901150000",
+  "status": 503,
+  "location": "",
+  "rawCanonical": [],
+  "domCanonical": [],
+  "rawRobots": "noindex, nofollow",
+  "domRobots": "",
+  "xRobots": "noindex, nofollow",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Noindex (login)",
+  "path": "/iniciar-sesion",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [],
+  "domCanonical": [],
+  "rawRobots": "noindex, follow",
+  "domRobots": "noindex, follow",
+  "xRobots": "noindex, follow",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Noindex (tendencias?)",
+  "path": "/tendencias",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/tendencias"
+  ],
+  "domCanonical": [
+   "/tendencias"
+  ],
+  "rawRobots": "index, follow",
+  "domRobots": "index, follow",
+  "xRobots": "index, follow",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Unknown 404",
+  "path": "/no-existe-2d0",
+  "status": 404,
+  "location": "",
+  "rawCanonical": [],
+  "domCanonical": [],
+  "rawRobots": "noindex, nofollow",
+  "domRobots": "",
+  "xRobots": "noindex, nofollow",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Unknown programme 404",
+  "path": "/programas/no-existe-2d0",
+  "status": 404,
+  "location": "",
+  "rawCanonical": [],
+  "domCanonical": [],
+  "rawRobots": "noindex, nofollow",
+  "domRobots": "",
+  "xRobots": "noindex, nofollow",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Widget",
+  "path": "/embed/programacion",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [],
+  "domCanonical": [
+   "/embed/programacion"
+  ],
+  "rawRobots": "noindex, follow",
+  "domRobots": "noindex, follow",
+  "xRobots": "noindex, follow",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": false
+ },
+ {
+  "name": "Embed landing",
+  "path": "/embed",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/embed"
+  ],
+  "domCanonical": [
+   "/embed"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ },
+ {
+  "name": "Legal",
+  "path": "/avisolegal",
+  "status": 200,
+  "location": "",
+  "rawCanonical": [
+   "/avisolegal"
+  ],
+  "domCanonical": [
+   "/avisolegal"
+  ],
+  "rawRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "domRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "fallback": "",
+  "jsonLdUrls": [],
+  "consistent": true
+ }
+]

@@ -6,26 +6,41 @@
 import { spawn } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import http from 'node:http';
 
 const port = 3190;
 const canonicals = (html) => [...html.matchAll(/<link\b[^>]*rel="canonical"[^>]*href="([^"]*)"/g)].map((m) => m[1]);
 const routes = ['/canales', '/canales/la_sexta', '/guias', '/guias/categoria/series', '/guias/mejores-series-netflix', '/programas/un-lugar-llamado-milagro', '/peliculas/el-caballero-oscuro', '/pelicula-details/155', '/detalles/test-program', '/program-full-details/test-program', '/contenido/tmdb%3Amovie%3A155'];
-const child = spawn('node', ['apps/frontend/scripts/ssr-server.mjs'], {
-  env: { ...process.env, PORT: String(port), API_ORIGIN: 'http://127.0.0.1:9' }, // port 9 = discard, connection refused
-  stdio: ['ignore', 'pipe', 'ignore'],
-});
-try {
+async function startSsr(ssrPort, apiOrigin) {
+  const proc = spawn('node', ['apps/frontend/scripts/ssr-server.mjs'], {
+    env: { ...process.env, PORT: String(ssrPort), API_ORIGIN: apiOrigin },
+    stdio: ['ignore', 'pipe', 'ignore'],
+  });
   await new Promise((ok, fail) => {
     const timer = setTimeout(() => fail(new Error('ssr-server start timeout')), 30000).unref();
-    child.stdout.on('data', (d) => {
+    proc.stdout.on('data', (d) => {
       if (String(d).includes('listening')) {
         clearTimeout(timer);
         ok();
       }
     });
-    child.on('error', fail);
-    child.on('exit', () => fail(new Error('ssr-server exited early')));
+    proc.on('error', fail);
+    proc.on('exit', () => fail(new Error('ssr-server exited early')));
   });
+  return proc;
+}
+async function stop(proc) {
+  if (proc && proc.exitCode === null && proc.signalCode === null) {
+    const exited = once(proc, 'exit');
+    proc.kill();
+    const timer = setTimeout(() => proc.kill('SIGKILL'), 12000);
+    await exited;
+    clearTimeout(timer);
+  }
+}
+let child;
+try {
+  child = await startSsr(port, 'http://127.0.0.1:9'); // port 9 = discard, connection refused
   for (const route of routes) {
     const res = await fetch(`http://127.0.0.1:${port}${route}`, { signal: AbortSignal.timeout(30000) });
     const html = await res.text();
@@ -95,11 +110,56 @@ try {
   assert.equal(canonicals(await unknown.text()).length, 0, '/no-existe-2d0: a 404 must not declare a canonical');
   console.log('ok /no-existe-2d0 -> 404, no canonical');
 } finally {
-  if (child.exitCode === null && child.signalCode === null) {
-    const exited = once(child, 'exit');
-    child.kill();
-    const timer = setTimeout(() => child.kill('SIGKILL'), 12000);
-    await exited;
-    clearTimeout(timer);
+  await stop(child);
+}
+
+// Phase 2D-0B: SSR sends its API reads straight to API_ORIGIN, whatever Host the visitor sent, and forwards none of
+// the visitor's credentials. A fake API records what arrives; an API 429 or 500 must give 503, never a 404.
+const seen = [];
+let apiStatus = 429;
+const api = http.createServer((req, res) => {
+  seen.push({ method: req.method, url: req.url, host: req.headers.host, cookie: req.headers.cookie, authorization: req.headers.authorization, xff: req.headers['x-forwarded-for'] });
+  res.writeHead(apiStatus, { 'content-type': 'application/json' }).end(JSON.stringify({ success: false, error: { code: 'TEST' } }));
+});
+api.listen(0, '127.0.0.1');
+await once(api, 'listening');
+const apiHost = `127.0.0.1:${api.address().port}`;
+// fetch() cannot set Host, so the renders that pick one go through node:http.
+const render = (path, headers) => new Promise((ok, fail) => {
+  http.get({ host: '127.0.0.1', port: port + 1, path, headers, timeout: 30000 }, (res) => {
+    let body = '';
+    res.on('data', (d) => { body += d; }).on('end', () => ok({ status: res.statusCode, headers: res.headers, body }));
+  }).on('error', fail).on('timeout', () => fail(new Error(`${path}: render timeout`)));
+});
+let routed;
+try {
+  routed = await startSsr(port + 1, `http://${apiHost}`);
+  const visitor = { cookie: 'gtv_session=secret', authorization: 'Bearer secret', 'x-forwarded-proto': 'https' };
+  for (const host of ['guiaprogramaciontv.com', 'localhost:9999']) {
+    for (const route of ['/canales/la-sexta', '/guias', '/peliculas/el-caballero-oscuro']) {
+      const before = seen.length;
+      const res = await render(route, { ...visitor, host });
+      assert.ok(seen.length > before, `${host}${route}: no API request reached API_ORIGIN`);
+      assert.equal(res.status, 503, `${host}${route}: API 429 gave ${res.status}, expected 503`);
+      assert.match(res.headers['x-robots-tag'] || '', /noindex/, `${host}${route}: x-robots-tag`);
+      console.log(`ok Host ${host} ${route}: ${seen.length - before} API request(s) to API_ORIGIN, 429 -> 503 noindex`);
+    }
   }
+  for (const r of seen) {
+    assert.match(r.url, /^\/v2(\/|\?|$)/, `API request outside /v2: ${r.url}`);
+    assert.equal(r.host, apiHost, `API request Host ${r.host}`);
+    assert.equal(r.cookie, undefined, `visitor cookie forwarded to the API on ${r.url}`);
+    assert.equal(r.authorization, undefined, `visitor Authorization forwarded to the API on ${r.url}`);
+    assert.equal(r.xff, undefined, `X-Forwarded-For sent on ${r.url}`);
+  }
+  console.log(`ok ${seen.length} SSR API requests: all /v2 on API_ORIGIN, no visitor cookie/Authorization, no X-Forwarded-For`);
+  apiStatus = 500;
+  for (const route of ['/canales/la-sexta', '/guias', '/programas/un-lugar-llamado-milagro']) {
+    const res = await render(route, { host: 'guiaprogramaciontv.com', 'x-forwarded-proto': 'https' });
+    assert.equal(res.status, 503, `${route}: API 500 gave ${res.status}, expected 503`);
+    console.log(`ok ${route}: API 500 -> 503`);
+  }
+} finally {
+  await stop(routed);
+  api.close();
 }
