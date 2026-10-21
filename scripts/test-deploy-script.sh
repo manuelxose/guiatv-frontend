@@ -44,6 +44,8 @@ done
 if [ -e "${FAIL_FLAG}" ] && [ "$(basename "$(readlink -f "${APP_DIR}/current")")" = "${FAIL_RELEASE}" ]; then echo 500; exit 0; fi
 # Cold start: the first discovery/home call of a run times out (000), like production on 2026-10-20.
 case "${*: -1}" in */v2/discovery/home) [ -e "${COLD_FLAG}" ] || { touch "${COLD_FLAG}"; echo 000; exit 0; } ;; esac
+# A hub page whose render falls back (503) during the warm-up: visible, never counted as warm, never fatal.
+case "${*: -1}" in */tendencias) echo 503; exit 0 ;; esac
 # Legacy public paths answer like the real SSR server: a permanent redirect.
 case "${*: -1}" in */programacion-tv/guia-canales|*/canales/*_*|*/editorial) echo 301 ;; *) echo 200 ;; esac
 EOF
@@ -59,6 +61,9 @@ git -C "${SRV}" reset -q --hard HEAD # only fetched; the deploy script does the 
 bash "${ROOT}/deploy-guiatv.sh" >"${T}/run1.log" 2>&1 || { cat "${T}/run1.log"; fail "deploy must succeed after a history rewrite"; }
 [ "$(git -C "${SRV}" rev-parse HEAD)" = "$(git -C "${T}/origin.git" rev-parse main)" ] || fail "server checkout not aligned with origin/main"
 [ "$(basename "$(readlink -f "${SRV}/current")")" = "R2" ] || fail "release R2 was not activated"
+grep -q "SSR warm-up: /programacion-tv/que-ver-hoy -> 200" "${T}/run1.log" || fail "hub pages not warmed after the SSR restart"
+grep -q "SSR warm-up: /tendencias -> 503" "${T}/run1.log" || fail "a failed warm-up render is not reported"
+grep -q "WARN: SSR warm-up: 1 hub page(s) did not render 200" "${T}/run1.log" || fail "a 503 warm-up was counted as a render"
 
 # --- 2. smoke fails on the new release: roll back to R2 --------------------------------------------------------
 touch "${FAIL_FLAG}"

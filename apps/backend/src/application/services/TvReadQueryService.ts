@@ -1,6 +1,7 @@
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring.model';
 import { DateUtils } from '@/shared/utils/dateUtils';
+import { NotFoundError } from '@/shared/errors';
 import { l1Cache } from '@/infrastructure/cache/L1Cache';
 import { addTiming, measureTiming, setCacheTiming } from '@/shared/utils/performanceTiming';
 import {
@@ -1113,13 +1114,15 @@ export class TvReadQueryService {
       return this.hydrateItemResponseRuntimeState(cached, true);
     }
 
-    const item = (await TVReadAiringModel.findOne({ id: airingId }).lean().exec()) as unknown as TvReadItemDTO | null;
+    const item = (await this.readAiringModel.findOne({ id: airingId }).lean().exec()) as unknown as TvReadItemDTO | null;
+    // A 404, not a plain Error: the error handler turned that into a 500, which the SSR serves to crawlers
+    // as a 503 on every expired legacy `/contenido/program:*` URL. Database failures still throw as 5xx.
     if (!item || !isConsumerVisibleTvReadItem(item)) {
-      throw new Error(`TV read item not found: ${airingId}`);
+      throw new NotFoundError('TV read item', airingId);
     }
 
     // The channel's next airings, not the first twelve of its EPG day (which listed finished ones as upcoming).
-    const relatedChannelItems = (await TVReadAiringModel.find({
+    const relatedChannelItems = (await this.readAiringModel.find({
       date: item.airing.date,
       'channel.id': item.channel.id,
       id: { $ne: item.id },

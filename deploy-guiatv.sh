@@ -111,6 +111,22 @@ smoke_http() {
   exit 1
 }
 
+# Render the hub pages once, one at a time, so the first crawler after a deploy gets the SSR cache instead of
+# racing several cold renders (2D-2C: six concurrent hub misses passed the 20 s render timeout -> 503).
+# Never fails the deploy and never retries; only a 200 counts as warm (a 503 is the CSR fallback, not a render).
+warm_ssr_hubs() {
+  local path out code failed=0
+  for path in / /canales /plataformas /programacion-tv/peliculas /programacion-tv/series \
+    /programacion-tv/que-ver-hoy /programacion-tv/en-directo /guias /deportes/futbol /tendencias; do
+    out=$(curl --max-time "${WARM_TIMEOUT:-25}" -s -o /dev/null -H "Host: guiaprogramaciontv.com" \
+      -H "X-Forwarded-Proto: https" -w "%{http_code} %{time_total}" "http://127.0.0.1:${SSR_PORT}${path}" || true)
+    code="${out%% *}"
+    echo "SSR warm-up: ${path} -> ${out:-000}"
+    [ "$code" = "200" ] || failed=$((failed + 1))
+  done
+  [ "$failed" -eq 0 ] || echo "WARN: SSR warm-up: ${failed} hub page(s) did not render 200 (non-fatal)"
+}
+
 smoke_auth_http() {
   local url="$1"
   local expected="${2:-200}"
@@ -237,6 +253,7 @@ smoke_http "http://127.0.0.1:${SSR_PORT}/editorial" "301"
 smoke_http "http://127.0.0.1:${SSR_PORT}/plataformas" "200"
 smoke_http "http://127.0.0.1:${SSR_PORT}/deportes/futbol" "200"
 smoke_socket_io
+warm_ssr_hubs
 
 # Tell Google about the new release's sitemaps (URLs may have moved). Never fails the deploy: without
 # GSC_AUTO_SUBMIT_ENABLED / the service-account file it logs "skipped"; the daily precompute job submits too.

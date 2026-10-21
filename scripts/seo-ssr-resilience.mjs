@@ -163,3 +163,109 @@ try {
   await stop(routed);
   api.close();
 }
+
+// Phase 2D-2C.1: legacy catalog URLs. Only a verified destination redirects; a miss is 404 (410 only when the API
+// says so); a real API failure stays 503. Never the home page, another host or a loop. Then stale-while-revalidate.
+const catalog = {
+  'program:live': { status: 200, body: { success: true, data: { detailPath: '/programas/la-promesa' } } },
+  'program:expired': { status: 404, body: { success: false, error: { code: 'NOT_FOUND' } } },
+  'program:retired': { status: 410, body: { success: false, error: { code: 'GONE' } } },
+  'program:dbdown': { status: 500, body: { success: false, error: { code: 'INTERNAL_SERVER_ERROR' } } },
+  'program:home': { status: 200, body: { success: true, data: { detailPath: '/' } } },
+  'program:offsite': { status: 200, body: { success: true, data: { detailPath: '//evil.example/x' } } },
+  'program:nopath': { status: 200, body: { success: true, data: {} } },
+  'tmdb:movie:155': { status: 200, body: { success: true, data: { detailPath: '/peliculas/el-caballero-oscuro' } } },
+};
+const catalogApi = http.createServer((req, res) => {
+  const id = decodeURIComponent((req.url.match(/^\/v2\/catalog\/([^/?]+)$/) || [])[1] || '');
+  const hit = catalog[id] || { status: 404, body: { success: false } };
+  res.writeHead(hit.status, { 'content-type': 'application/json' }).end(JSON.stringify(hit.body));
+});
+catalogApi.listen(0, '127.0.0.1');
+await once(catalogApi, 'listening');
+let legacy;
+try {
+  legacy = await startSsr(port + 2, `http://127.0.0.1:${catalogApi.address().port}`);
+  const get = (path, headers = {}) =>
+    fetch(`http://127.0.0.1:${port + 2}${path}`, { redirect: 'manual', headers, signal: AbortSignal.timeout(30000) });
+  const expectations = [
+    ['/contenido/program%3Alive', 301, '/programas/la-promesa'],
+    ['/detalles/live', 301, '/programas/la-promesa'],
+    ['/pelicula-details/155', 301, '/peliculas/el-caballero-oscuro'],
+    ['/contenido/program%3Aexpired', 404],
+    ['/program-full-details/expired', 404],
+    ['/contenido/program%3Aretired', 410],
+    ['/contenido/program%3Adbdown', 503],
+    ['/contenido/program%3Ahome', 404],
+    ['/contenido/program%3Aoffsite', 404],
+    ['/contenido/program%3Anopath', 404],
+    ['/contenido/unparseable', 404],
+  ];
+  for (const [path, status, location] of expectations) {
+    const res = await get(path);
+    const body = await res.text();
+    assert.equal(res.status, status, `${path}: status ${res.status}, expected ${status}`);
+    if (location) assert.equal(res.headers.get('location'), location, `${path}: location`);
+    else assert.equal(res.headers.get('location'), null, `${path}: must not redirect`);
+    if (status === 503) {
+      assert.equal(res.headers.get('retry-after'), '120', `${path}: retry-after`);
+      assert.match(res.headers.get('x-robots-tag') || '', /noindex/, `${path}: x-robots-tag`);
+    } else if (status >= 400) {
+      // The body must not contradict the status: no rendered page, no canonical, no success markup.
+      assert.equal(canonicals(body).length, 0, `${path}: ${status} declares a canonical`);
+      assert.doesNotMatch(body, /<app-root/, `${path}: ${status} serves the app shell`);
+    }
+    console.log(`ok ${path} -> ${status}${location ? ` ${location}` : ''}`);
+  }
+} finally {
+  await stop(legacy);
+  catalogApi.close();
+}
+
+// Stale-while-revalidate (ssr-cache.mjs; the replace/evict/keep rules are unit-tested in ssr-cache.test.mjs): past
+// the TTL the cached page is served at once (STALE) while exactly one background render replaces it; a refresh
+// header sent from outside (through nginx) cannot skip the cache, and the internal token never reaches the logs.
+let swr;
+try {
+  const swrPort = port + 3;
+  const ttl = 3000;
+  let log = '';
+  swr = spawn('node', ['apps/frontend/scripts/ssr-server.mjs'], {
+    env: { ...process.env, PORT: String(swrPort), API_ORIGIN: 'http://127.0.0.1:9', SSR_CACHE_TTL_MS: String(ttl) },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  swr.stdout.on('data', (d) => (log += d));
+  swr.stderr.on('data', (d) => (log += d));
+  await new Promise((ok, fail) => {
+    const timer = setTimeout(() => fail(new Error('ssr-server start timeout')), 30000).unref();
+    const check = () => log.includes('listening') && (clearTimeout(timer), ok());
+    swr.stdout.on('data', check);
+    swr.on('exit', () => fail(new Error('ssr-server exited early')));
+  });
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const get = async (path, headers = {}) => {
+    const res = await fetch(`http://127.0.0.1:${swrPort}${path}`, { redirect: 'manual', headers, signal: AbortSignal.timeout(30000) });
+    await res.text();
+    return { status: res.status, cache: res.headers.get('x-ssr-cache') };
+  };
+  const refreshes = (path) => log.split('\n').filter((l) => l.includes(`stale refresh ${path} -> `)).length;
+  const waitFor = async (cond, what) => {
+    for (let i = 0; i < 80 && !cond(); i++) await sleep(100);
+    assert.ok(cond(), what);
+  };
+
+  const first = await get('/avisolegal');
+  assert.deepEqual([first.status, first.cache], [200, 'MISS'], 'first render');
+  assert.equal((await get('/avisolegal', { 'x-ssr-refresh': 'guess' })).cache, 'HIT', 'spoofed refresh header skipped the cache');
+  await sleep(ttl + 200);
+  const burst = await Promise.all(Array.from({ length: 10 }, () => get('/avisolegal')));
+  assert.ok(burst.every((r) => r.status === 200 && r.cache !== 'MISS'), `stale burst: ${JSON.stringify(burst)}`);
+  await waitFor(() => refreshes('/avisolegal') >= 1, 'no background refresh logged');
+  await sleep(300);
+  assert.equal(refreshes('/avisolegal'), 1, 'ten concurrent stale hits must start exactly one refresh');
+  assert.equal((await get('/avisolegal')).cache, 'HIT', 'the refresh did not replace the stale entry');
+  assert.doesNotMatch(log, /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/, 'refresh token logged');
+  console.log('ok /avisolegal: MISS -> STALE x10 concurrent -> exactly 1 refresh -> HIT; spoofed header ignored; token not logged');
+} finally {
+  await stop(swr);
+}

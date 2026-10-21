@@ -573,3 +573,20 @@ test('airingsNotEnded keeps on-air and future airings, drops finished ones, acro
   const kept = airingsNotEnded(items, new Date('2026-10-20T10:40:00.000Z')).map((item) => item.id); // 12:40 Madrid
   assert.deepEqual(kept, ['on-air', 'tonight-past-midnight']);
 });
+
+// 2D-2C.1: expired legacy `/contenido/program:*` ids answered 500, which the SSR served to crawlers as 503.
+test('getItem: a missing airing is a 404 NotFoundError; a database failure is not', async () => {
+  const cache = { get: async () => null, set: async () => undefined } as any;
+  const missing = { findOne: () => ({ lean: () => ({ exec: async () => null }) }) };
+  await assert.rejects(new TvReadQueryService(cache, missing as any).getItem('20260901_la_1_20260901150000'), (error: any) => {
+    assert.equal(error.name, 'NotFoundError');
+    assert.equal(error.statusCode, 404);
+    return true;
+  });
+
+  const down = { findOne: () => ({ lean: () => ({ exec: async () => Promise.reject(new Error('MongoWaitQueueTimeoutError')) }) }) };
+  await assert.rejects(new TvReadQueryService(cache, down as any).getItem('20260902_la_1_20260902150000'), (error: any) => {
+    assert.notEqual(error.statusCode, 404, 'a database failure must never become a 404');
+    return true;
+  });
+});
