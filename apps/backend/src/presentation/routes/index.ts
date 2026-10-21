@@ -1,6 +1,7 @@
 // src/v2/presentation/routes/index.ts
 
 import { Router } from 'express';
+import { createEntityRoutes } from './entities.routes';
 import { createHealthRoutes } from './health.routes';
 import { generalRateLimit } from '../middlewares/rateLimit';
 import { AdminController } from '../controllers/AdminController';
@@ -107,6 +108,7 @@ export const createV2Routes = (dependencies: RoutesDependencies): Router => {
   );
 
   // Aplicar rate limiting general al resto de recursos.
+  router.use('/entities', createEntityRoutes());
   router.use(generalRateLimit);
 
   // Rutas de recursos

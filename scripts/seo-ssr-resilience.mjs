@@ -47,8 +47,9 @@ try {
     assert.equal(res.status, 503, `${route}: status ${res.status}, expected 503`);
     assert.equal(res.headers.get('cache-control'), 'no-store', `${route}: cache-control`);
     assert.equal(res.headers.get('retry-after'), '120', `${route}: retry-after`);
-    assert.equal(res.headers.get('x-robots-tag'), 'noindex, nofollow', `${route}: x-robots-tag`);
-    assert.match(html, /<meta name="robots" content="noindex, nofollow"/, `${route}: robots meta`);
+    const robots = /^\/(programas|peliculas|series)\/[^/]+$/.test(route) ? 'noindex, follow' : 'noindex, nofollow';
+    assert.equal(res.headers.get('x-robots-tag'), robots, `${route}: x-robots-tag`);
+    assert.ok(html.includes(`<meta name="robots" content="${robots}"`), `${route}: robots meta`);
     assert.equal(canonicals(html).length, 0, `${route}: an error response must not declare a canonical`);
     console.log(`ok ${route} -> 503 no-store noindex, no canonical`);
   }

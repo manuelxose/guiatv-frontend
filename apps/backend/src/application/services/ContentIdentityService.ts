@@ -12,6 +12,7 @@ import {
   decideTitleMatch,
   newEntityId,
   normalizeContentPath,
+  KIND_PATH_PREFIX,
   TitleMatchDecision,
   TitleMatchInput,
   titleIdentityKey,
@@ -176,7 +177,15 @@ export class ContentIdentityService {
     if (entity.status === 'merged' && target?.status !== 'active') {
       return { status: 'integrity_error', detail: `${entity.entityId} merged into non-active ${entity.mergedInto}` };
     }
-    if (!target || target.status !== 'active' || !target.canonicalPath) return { status: 'not_found' };
+    if (!target || target.status !== 'active') return { status: 'not_found' };
+    const pathCheck = normalizeContentPath(target.canonicalPath);
+    const canonical = await this.slugs.findCanonical(target.entityId);
+    const owner = pathCheck.ok ? await this.slugs.findByPath(pathCheck.path) : null;
+    if (!pathCheck.ok || pathCheck.path !== target.canonicalPath ||
+      !pathCheck.path.startsWith(`${KIND_PATH_PREFIX[target.kind]}/`) ||
+      canonical?.path !== target.canonicalPath || owner?.entityId !== target.entityId || owner.role !== 'canonical') {
+      return { status: 'integrity_error', detail: `canonical ownership mismatch for ${target.entityId}` };
+    }
     if (target.canonicalPath === check.path) return { status: 'canonical', entity: target };
     return { status: 'redirect', location: target.canonicalPath, entityId: target.entityId };
   }

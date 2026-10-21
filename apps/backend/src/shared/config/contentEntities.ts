@@ -2,7 +2,7 @@ const truthy = (value: string | undefined) => ['1', 'true', 'yes', 'on'].include
 
 /**
  * Phase 2D-1 flag for persistent content identity. Off by default. While off, nothing creates,
- * reads or writes `content_entities`, `content_slugs` or `content_title_keys`; turning it on
+ * writes `content_entities`, `content_slugs` or `content_title_keys`; turning it on
  * only creates those (empty) collections and their indexes at boot. Rollback: unset + restart.
  */
 export function isContentEntitiesEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
@@ -24,8 +24,8 @@ export interface ContentIdentityFlags {
 
 /**
  * 2D-2 ingestion flags, all off by default and independent of each other except where a later
- * stage needs an earlier one. There is no public-resolution flag: no API route, sitemap or SSR
- * path reads entities in 2D-2, so no environment value can publish one.
+ * stage needs an earlier one. Phase 3A public reads use a separate, default-off flag and never
+ * enable these write or ingestion capabilities.
  */
 export function readContentIdentityFlags(env: NodeJS.ProcessEnv, databaseName: string | undefined): ContentIdentityFlags {
   const target = String(env.CONTENT_IDENTITY_WRITES || '').trim();

@@ -95,7 +95,9 @@ export class MongoContentEntityRepository implements IContentEntityRepository {
   }
 
   async findById(entityId: string): Promise<ContentEntityRecord | null> {
-    return stripMongo(await ContentEntityModel.findOne({ entityId }).lean().exec());
+    const rows = await ContentEntityModel.find({ entityId }).limit(2).maxTimeMS(2000).lean().exec();
+    if (rows.length > 1) throw new Error('Conflicting entity ownership');
+    return stripMongo(rows[0] ?? null);
   }
 
   async findByIds(entityIds: string[]): Promise<ContentEntityRecord[]> {
@@ -207,7 +209,7 @@ const toSlug = (doc: IContentSlugDocument | null): ContentSlugRecord | null => {
 
 export class MongoContentSlugRepository implements IContentSlugRepository {
   async findByPath(path: string): Promise<ContentSlugRecord | null> {
-    return toSlug(await ContentSlugModel.findById(path).lean<IContentSlugDocument>().exec());
+    return toSlug(await ContentSlugModel.findById(path).maxTimeMS(2000).lean<IContentSlugDocument>().exec());
   }
 
   async findByPaths(paths: string[]): Promise<ContentSlugRecord[]> {
@@ -219,7 +221,9 @@ export class MongoContentSlugRepository implements IContentSlugRepository {
   }
 
   async findCanonical(entityId: string): Promise<ContentSlugRecord | null> {
-    return toSlug(await ContentSlugModel.findOne({ entityId, role: 'canonical' }).lean<IContentSlugDocument>().exec());
+    const rows = await ContentSlugModel.find({ entityId, role: 'canonical' }).limit(2).maxTimeMS(2000).lean<IContentSlugDocument[]>().exec();
+    if (rows.length > 1) throw new Error('Conflicting canonical ownership');
+    return toSlug(rows[0] ?? null);
   }
 
   async listByEntity(entityId: string): Promise<ContentSlugRecord[]> {
