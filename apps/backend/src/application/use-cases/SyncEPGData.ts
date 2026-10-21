@@ -16,6 +16,7 @@ import type { ProgramProps } from '../../domain/entities/Program';
 import { DateRange } from '../../domain/value-objects/DateRange';
 import { ChannelId } from '../../domain/value-objects/ChannelId';
 import { ProgramDeduplicator } from '../services/ProgramDeduplicator';
+import { isEpgYearProvenanceEnabled } from '../../shared/config/contentEntities';
 import { normalizeCategory } from '../../shared/constants/categories';
 import { normalizeExternalMediaUrl } from '../../shared/utils/mediaUrl';
 import {
@@ -138,7 +139,30 @@ export class SyncEPGData {
       trustFlags: program.trustFlags,
       details: program.details,
       ...overrides,
+      ...this.yearProvenance(program, overrides),
     });
+  }
+
+  /**
+   * 2D-2G: enrichment overwrites `year` with the matched work's year, which made the feed's year
+   * unrecoverable. With EPG_YEAR_PROVENANCE on, every enrichment that sets `year` also records the
+   * feed's year (kept from the first enrichment), the resolved year and its source. Equal years are
+   * recorded too: that agreement is the evidence. `year` itself is unchanged.
+   */
+  private yearProvenance(program: Program, overrides: Partial<ProgramProps>): Partial<ProgramProps> {
+    if (!isEpgYearProvenanceEnabled() || !('year' in overrides) || overrides.tmdbId === undefined) return {};
+    const base = overrides.sourceProvenance ?? program.sourceProvenance ?? {};
+    const previous = (base as { yearProvenance?: { rawXmltvYear?: string | null } }).yearProvenance;
+    return {
+      sourceProvenance: {
+        ...base,
+        yearProvenance: {
+          rawXmltvYear: previous ? previous.rawXmltvYear ?? null : program.year ?? null,
+          resolvedWorkYear: overrides.year ?? null,
+          resolvedYearSource: String((overrides.trustFlags as { tmdbSource?: string } | undefined)?.tmdbSource ?? 'tmdb'),
+        },
+      },
+    };
   }
 
   /**
