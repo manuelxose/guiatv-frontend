@@ -267,6 +267,28 @@ export class ContentIdentityService {
     return this.titleKeys.review(id, { entityId, by, note });
   }
 
+  /**
+   * Promotes a provisional entity to `active` on a named person's decision: the only route to
+   * `active` that ingestion never takes. The decision is recorded as `matching.method = manual`
+   * (which makes `mayBeIndexable` true); `indexability.state` itself stays `noindex` until Phase 3 sets it.
+   */
+  async verifyEntity(entityId: string, reviewer: string, note: string): Promise<ContentEntityRecord> {
+    const by = normalizeReviewerName(reviewer);
+    const entity = await this.entities.findById(entityId);
+    if (!entity) throw new ContentIdentityError('not_found', entityId);
+    if (entity.status !== 'candidate') throw new ContentIdentityError('invalid_transition', `${entity.status} -> active (verify needs a candidate)`);
+    const res = await this.entities.transition(entityId, {
+      from: 'candidate',
+      to: 'active',
+      expectedVersion: entity.version,
+      matching: { method: 'manual', confidence: 1, decidedAt: new Date(), decidedBy: by },
+      by,
+      reason: `verified: ${String(note || '').trim() || 'reviewed'}`.slice(0, 200),
+    });
+    if (!res) throw new ContentIdentityError('concurrent_modification', entityId);
+    return res;
+  }
+
   /** Manual review: the title is not an entity (a slot, a container, a wrong provisional binding). */
   async rejectTitleKey(id: string, reviewer: string, note?: string): Promise<boolean> {
     return this.titleKeys.reject(id, { by: normalizeReviewerName(reviewer), note });

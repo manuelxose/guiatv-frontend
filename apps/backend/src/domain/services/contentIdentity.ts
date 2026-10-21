@@ -23,6 +23,14 @@ export type TitleKeyState = (typeof TITLE_KEY_STATES)[number];
 export const MATCH_METHODS = ['manual', 'tmdb_id', 'tmdb_exact', 'title_year', 'title_kind', 'title'] as const;
 export type MatchMethod = (typeof MATCH_METHODS)[number];
 
+/**
+ * How a stored entity earned its place beyond a title match. Absent: provisional (no machine or
+ * human evidence beyond the match). `independently_supported`: admitted by the 2D-2G evidence
+ * gate, stored as a `candidate`. A person's verification is the `active` status, not a value here.
+ */
+export const ASSURANCE_LEVELS = ['independently_supported'] as const;
+export type AssuranceLevel = (typeof ASSURANCE_LEVELS)[number];
+
 export const PROVENANCE_SOURCES = ['manual', 'tmdb', 'epg', 'backfill'] as const;
 export type ProvenanceSource = (typeof PROVENANCE_SOURCES)[number];
 

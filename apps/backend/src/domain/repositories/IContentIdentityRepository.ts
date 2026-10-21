@@ -1,4 +1,5 @@
 import {
+  AssuranceLevel,
   ContentKind,
   HistoricWork,
   ContentStatus,
@@ -29,7 +30,7 @@ export interface ContentEntityRecord {
   /** Denormalised from the entity's `canonical` row in `content_slugs`, which is the source of truth. */
   canonicalPath?: string;
   metadata: { synopsis?: ProvenancedValue<string>; genres?: ProvenancedValue<string[]>; images?: ProvenancedValue };
-  matching: { method: MatchMethod; confidence: number; decidedAt: Date; decidedBy: string };
+  matching: { method: MatchMethod; confidence: number; decidedAt: Date; decidedBy: string; assurance?: AssuranceLevel };
   indexability: { state: 'index' | 'noindex'; reasons: string[]; evaluatedAt?: Date };
   lifecycle?: { changedAt: Date; changedBy: string; reason: string };
   contentChangedAt?: Date;
@@ -52,6 +53,8 @@ export interface EntityTransition {
   to: ContentStatus;
   expectedVersion: number;
   mergedInto?: string;
+  /** A person's identity decision recorded with the transition (`verifyEntity`); replaces `matching`. */
+  matching?: ContentEntityRecord['matching'];
   by: string;
   reason: string;
 }

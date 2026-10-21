@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import { Schema } from 'mongoose';
 import {
+  ASSURANCE_LEVELS,
   CONTENT_KINDS,
   CONTENT_STATUSES,
   ENTITY_ID_PATTERN,
@@ -81,6 +82,7 @@ const ContentEntitySchema = new Schema<ContentEntityRecord>(
           confidence: { type: Number, required: true, min: 0, max: 1 },
           decidedAt: { type: Date, required: true },
           decidedBy: { type: String, required: true, maxlength: 64 },
+          assurance: { type: String, enum: ASSURANCE_LEVELS },
         },
         strictSub
       ),
