@@ -111,10 +111,9 @@
  "fates": {
   "kept": 298,
   "renamed": 35,
-  "unresolved:cross_kind_conflict": 23,
+  "unresolved:cross_kind_conflict": 31,
   "unresolved:title_uncertain": 11,
   "consolidated": 45,
-  "unresolved:cross_kind_conflict+unknown_kind": 8,
   "removed:episode_without_work": 6,
   "removed:generic_title": 1
  },
@@ -820,13 +819,6 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
-    {
-     "kind": "series",
-     "title": "Alma en suplicio",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
     }
    ]
   },
@@ -836,13 +828,6 @@
    "title": "Alma en suplicio",
    "path": "/series/alma-en-suplicio",
    "now": [
-    {
-     "kind": "movie",
-     "title": "Alma en suplicio",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
     {
      "kind": "series",
      "title": "Alma en suplicio",
@@ -1344,7 +1329,7 @@
    ]
   },
   {
-   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "fate": "unresolved:cross_kind_conflict",
    "kind": "movie",
    "title": "Cara a cara",
    "path": null,
@@ -1355,48 +1340,20 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
-    {
-     "kind": "show",
-     "title": "Cara a cara",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
-     "kind": "unknown",
-     "title": "Cara a cara",
-     "decision": "unresolved",
-     "reason": "unknown_kind",
-     "path": null
     }
    ]
   },
   {
-   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "fate": "unresolved:cross_kind_conflict",
    "kind": "show",
    "title": "Cara a cara",
    "path": "/programas/cara-a-cara",
    "now": [
     {
-     "kind": "movie",
-     "title": "Cara a Cara",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
      "kind": "show",
      "title": "Cara a cara",
      "decision": "review",
      "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
-     "kind": "unknown",
-     "title": "Cara a cara",
-     "decision": "unresolved",
-     "reason": "unknown_kind",
      "path": null
     }
    ]
@@ -1966,13 +1923,6 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
-    {
-     "kind": "show",
-     "title": "Cuando los muertos hablan",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
     }
    ]
   },
@@ -1982,13 +1932,6 @@
    "title": "Cuando los muertos hablan",
    "path": "/programas/cuando-los-muertos-hablan",
    "now": [
-    {
-     "kind": "series",
-     "title": "Cuando los muertos hablan",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
     {
      "kind": "show",
      "title": "Cuando los muertos hablan",
@@ -2139,7 +2082,7 @@
    ]
   },
   {
-   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "fate": "unresolved:cross_kind_conflict",
    "kind": "series",
    "title": "Diagnóstico",
    "path": "/series/diagnostico",
@@ -2150,48 +2093,20 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
-    {
-     "kind": "show",
-     "title": "Diagnóstico",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
-     "kind": "unknown",
-     "title": "Diagnóstico",
-     "decision": "unresolved",
-     "reason": "unknown_kind",
-     "path": null
     }
    ]
   },
   {
-   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "fate": "unresolved:cross_kind_conflict",
    "kind": "show",
    "title": "Diagnóstico",
    "path": "/programas/diagnostico",
    "now": [
     {
-     "kind": "series",
-     "title": "Diagnóstico",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
      "kind": "show",
      "title": "Diagnóstico",
      "decision": "review",
      "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
-     "kind": "unknown",
-     "title": "Diagnóstico",
-     "decision": "unresolved",
-     "reason": "unknown_kind",
      "path": null
     }
    ]
@@ -2794,13 +2709,6 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
-    {
-     "kind": "show",
-     "title": "Escápate de viaje",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
     }
    ]
   },
@@ -2810,13 +2718,6 @@
    "title": "Escápate de viaje",
    "path": "/programas/escapate-de-viaje",
    "now": [
-    {
-     "kind": "series",
-     "title": "Escápate de viaje",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
     {
      "kind": "show",
      "title": "Escápate de viaje",
@@ -3727,7 +3628,7 @@
    ]
   },
   {
-   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "fate": "unresolved:cross_kind_conflict",
    "kind": "series",
    "title": "La aventura del saber",
    "path": "/series/la-aventura-del-saber",
@@ -3738,48 +3639,20 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
-    {
-     "kind": "show",
-     "title": "La aventura del saber",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
-     "kind": "unknown",
-     "title": "La aventura del saber",
-     "decision": "unresolved",
-     "reason": "unknown_kind",
-     "path": null
     }
    ]
   },
   {
-   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "fate": "unresolved:cross_kind_conflict",
    "kind": "show",
    "title": "La aventura del saber",
    "path": "/programas/la-aventura-del-saber",
    "now": [
     {
-     "kind": "series",
-     "title": "La aventura del saber",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
      "kind": "show",
      "title": "La aventura del saber",
      "decision": "review",
      "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
-     "kind": "unknown",
-     "title": "La aventura del saber",
-     "decision": "unresolved",
-     "reason": "unknown_kind",
      "path": null
     }
    ]
@@ -3978,13 +3851,6 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
-    {
-     "kind": "series",
-     "title": "La gran belleza",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
     }
    ]
   },
@@ -3994,13 +3860,6 @@
    "title": "La gran belleza",
    "path": "/series/la-gran-belleza",
    "now": [
-    {
-     "kind": "movie",
-     "title": "La gran belleza",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
     {
      "kind": "series",
      "title": "La gran belleza",
@@ -4107,7 +3966,15 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "show",
+   "title": "La Renaixença",
+   "path": "/programas/la-renaixenca",
+   "now": [
     {
      "kind": "show",
      "title": "La Renaixença",
@@ -4119,28 +3986,6 @@
   },
   {
    "fate": "unresolved:cross_kind_conflict",
-   "kind": "show",
-   "title": "La Renaixença",
-   "path": "/programas/la-renaixenca",
-   "now": [
-    {
-     "kind": "series",
-     "title": "La Renaixença",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
-     "kind": "show",
-     "title": "La Renaixença",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    }
-   ]
-  },
-  {
-   "fate": "unresolved:cross_kind_conflict+unknown_kind",
    "kind": "series",
    "title": "La revuelta",
    "path": "/series/la-revuelta",
@@ -4151,48 +3996,20 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
-    {
-     "kind": "show",
-     "title": "La revuelta",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
-     "kind": "unknown",
-     "title": "La Revuelta",
-     "decision": "unresolved",
-     "reason": "unknown_kind",
-     "path": null
     }
    ]
   },
   {
-   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "fate": "unresolved:cross_kind_conflict",
    "kind": "show",
    "title": "La revuelta",
    "path": "/programas/la-revuelta",
    "now": [
     {
-     "kind": "series",
-     "title": "La revuelta",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
      "kind": "show",
      "title": "La revuelta",
      "decision": "review",
      "reason": "cross_kind_conflict",
-     "path": null
-    },
-    {
-     "kind": "unknown",
-     "title": "La Revuelta",
-     "decision": "unresolved",
-     "reason": "unknown_kind",
      "path": null
     }
    ]
@@ -5024,13 +4841,6 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
-    {
-     "kind": "show",
-     "title": "Mésnit",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
     }
    ]
   },
@@ -5040,13 +4850,6 @@
    "title": "Mésnit",
    "path": "/programas/mesnit",
    "now": [
-    {
-     "kind": "series",
-     "title": "Mésnit",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
     {
      "kind": "show",
      "title": "Mésnit",
@@ -6781,13 +6584,6 @@
      "decision": "review",
      "reason": "cross_kind_conflict",
      "path": null
-    },
-    {
-     "kind": "show",
-     "title": "Wonderblocks",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
     }
    ]
   },
@@ -6797,13 +6593,6 @@
    "title": "Wonderblocks",
    "path": "/programas/wonderblocks",
    "now": [
-    {
-     "kind": "series",
-     "title": "Wonderblocks",
-     "decision": "review",
-     "reason": "cross_kind_conflict",
-     "path": null
-    },
     {
      "kind": "show",
      "title": "Wonderblocks",

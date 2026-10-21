@@ -254,7 +254,7 @@ The definition of done is met on the evidence available here: episode duplicatio
 
 ## 15. Final read-only replay: owner-run (2026-10-21, second session)
 
-**Status: not run by Claude.** The owner authorised a bounded read-only replay, baseline checks and the new-seed sheet. In this session the auto-mode classifier still refused the first command (a read-only `mongosh` count over SSH) as a production read. As instructed, nothing was worked around. The replay is packaged so the owner can run it in one step.
+**Status: run, 2026-10-21 13:18–13:19 UTC, results in §16.** The first attempt was refused by the auto-mode classifier. The owner then authorised the run explicitly, and the bundle below was copied and run by Claude. `REL=/var/www/guiatv` was used because the release resolves `node_modules` from `/var/www/guiatv/node_modules`. Afterwards `/tmp/guiatv-2d2e*` was removed from the VPS.
 
 **PR status [V]:**
 - **#37:** open, CLEAN, CI `verify` and `ssr-resilience` green. Safety review: it changes only `ContentIdentity*`, `scripts/content-identity.ts`, `scripts/readOnlyGuard.ts`, tests and docs. It adds no route, controller, HTTP surface, environment default or index. The only write and DDL tokens are the guard's deny-list and its own test. **Ready to merge** (owner's decision; merging deploys, and every flag stays unset).
@@ -319,3 +319,93 @@ ssh contabo 'rm -r /tmp/guiatv-2d2e /tmp/guiatv-2d2e-bundle.tgz'   # afterwards
 5. Run `node dist/scripts/content-identity.js score <primary.csv> --verify <second.csv>`. Exit 0 means the gate passed.
 
 **Decision: production writes NO-GO.** No full-day metrics have been measured yet, and no human-labelled sample exists. The write canary is not to be started.
+
+## 16. Full-day production results, `20261020` [V]
+
+**Execution.** Production day `20261020` (11,211 airings, final since its 10-21 rebuild). The algorithms are the 2D-2D build `14dce35` and the 2D-2E build `1d0efd8`. The output files, all in `phase-2d2e/`:
+- `diff-20261020.json`: the diff, with every old proposal's fate;
+- `baseline-20261021-{before,after}.json`: the baselines;
+- `identity-20261020-2d2e-20261020-{review.csv,sample.json}`: the new sheet.
+
+**No production mutation:**
+
+| Check | Result |
+|---|---|
+| Commands | before 201, after 199, sheet run 199; every one a read (`find`/`getMore`/`endSessions`). Guard never tripped |
+| Resources | about 11 s and 181 MB peak RSS per run (cap 1.2 GB) |
+| Baseline before = after | **identical**: 40 collections, 272 indexes, no `content_*`, `tv_read_airings` 16 indexes, 0 `program.entityId`, 0 `program.canonicalPath`, 11,211 airings on the day. mongod uptime 77,450 s (no restart) |
+| Flags | every `CONTENT_*` variable removed from the run's environment; none exist in `api.env` |
+| Services | API `/health` 200 before (12 ms) and after (3 ms); nothing restarted |
+
+**Before / after, same day:**
+
+| Metric | 2D-2D | 2D-2E |
+|---|---|---|
+| Candidate titles (identity contexts) | 3,839 | 3,248 |
+| Proposed entities (show / series / movie) | 2,121 (1,313 / 487 / 321) | **1,694** (1,122 / 257 / 315) |
+| Machine-flagged proposals, any flag | 647 (30.5%) | **140 (8.3%)** |
+| · season/episode marker, ` · `/` - ` separator, episode word, `(N)` part | 692 hits | **3** (0.18%) |
+| · trailing number | 208 | 134, nearly all real titles: "Antena 3 Noticias 2", "Asalto al distrito 13", "Cleo de 5 a 7" |
+| · slot word | 6 | 3 |
+| Duplicate-slug groups / cross-kind splits / with two paths | 14 / 14 / 9 | **0 / 0 / 0** |
+| Canonical collisions (two proposals, one path) | 0 | **0** |
+| Excluded: slot / episode-only / unkeyable / sport | 34 / – / 39 / 1,370 airings | **63 / 45** / 35 / 1,370 |
+| Title evidence (airings) | – | work 9,189; marker 1,328; ` · ` 129; corroborated 162; film title 2; uncertain 258 |
+| Unresolved: unknown kind / title uncertain | 1,708 / – | 1,365 / 119 |
+| Review queue | 4 `several_entities`, 1 `kind_conflict` | 29 `cross_kind_conflict` |
+| Airing TMDB ids confirmed / rejected | 820 / 161 (16.4%) | 831 / **106 (11.3%)** |
+| Candidates with unconfirmed TMDB | 84 | 43 |
+| Paths proposed / to verified historic owner | 1,908 / 1,430 | 1,472 / 1,299 |
+| Pathless | 213 (10.0%) | 222 (13.1%): `historic_unverified` 211, `historic_conflict` 4, `historic_ambiguous` 5, `unsupported_slug` 2 |
+| Paths refused because another legacy work owns them | 22 | 21 (never allocated) |
+
+The pathless share rises because there are fewer entities. The absolute count rises by 9, all for intentional reasons.
+
+**Fate of the 2,121 2D-2D proposals** (each old proposal is mapped by shared spelling, same kind first):
+
+| Fate | Count |
+|---|---|
+| Kept | 1,554 |
+| Consolidated into a shared work (85 new entities) | 258 |
+| Renamed to their work | 167 |
+| Held `cross_kind_conflict` | 74 |
+| Held `title_uncertain` | 45 |
+| Removed: episode-only | 20 |
+| Removed: slot | 3 |
+
+**Cross-kind, all 15 works** (the 14 of 2D-2D plus "Caso abierto", newly visible because its episode spellings now share its key):
+- **Resolved to the TMDB work, title-only twin held:** Alma en suplicio (film), La gran belleza (film), La revuelta (series), Mésnit (series).
+- **Held on both sides:** Cara a cara, Caso abierto, Caso cerrado, Cómicos nuestros, Cuando los muertos hablan, Diagnóstico, Escápate de viaje, La aventura del saber, La Renaixença, Limpia y ordena, Los conciertos de Radio 3, Wild Ibex, Wonderblocks (TMDB tv confirmed under both kinds).
+- **No consolidation mixes kinds** (0 of 85).
+
+**Possible false merges:** 85 new entities absorb several old proposals. 5 of them came through a corroborated weak separator: Henry Danger (9), Grimm (4), Notícies en Xarxa (3), Informatiu Costa Brava (2), L'Informatiu (2). On inspection all are episodes or editions of one programme. All 85 are listed in `diff-20261020.json` → `consolidations` for the human check. Machine inspection is not a label.
+
+**Failure modes seen in the full day:**
+- **4-digit season:** "La ruleta de la suerte T2026 E4804" and "Coronilla … T2020" (the parser takes 1–2 digit seasons). 1 entity.
+- **Plural or range episode words:** "20 Preguntas a... 5: Episodios 8-9" (3 entities). "Arirang News 12:00 E1" keeps "E1".
+- **Feed-doubled titles:** "Amanda y Alan: reformas a la italiana: Amanda y Alan: reformas a la italiana 1/2" (2).
+- **Promos and slots not on the list:** "Avance En compañía de Loli", "+ Que Cine", "DOC", "DOCUMENTAL".
+- **Titles held as uncertain** (119, on purpose): recipes ("A pedir de boca - …"), concerts ("Bach - …"), news editions in French ("A la une : le journal"), and Basque competition sessions.
+- **TV kind from category:** "La revuelta" (a talk show) is a series.
+- **Unknown kind:** 42% of candidates, unchanged by design.
+
+These are now concrete inputs for the review (`error_category`) and for a later parser tweak. The algorithm measured here is unchanged.
+
+**New review sheet:** `docs/seo/phase-2d2e/identity-20261020-2d2e-20261020-review.csv`, 547 rows, seed `2d2e-20261020`, label columns empty. It contains:
+- 300 `auto_create` rows: a simple random sample of the 1,694 proposed entities (17.7%);
+- 25 rows per class. Populations: `episode_normalized` 483, `title_uncertain` 119, `cross_kind_conflict` 30, `generic_slot` 13, `tmdb_confirmed` 302, `tmdb_rejected` 50, `historic_ownership` 1,611, `pathless` 223, `shared_title` 122, `unknown_kind` 1,365, `manual_review` 29, `existing_match` 41.
+
+The sheet holds no airing, media or entity ids.
+
+**Representativeness** (`check-sample.js`): every share of the sample lies inside its exact 95% interval.
+
+| Share | Sample | Population | 95% CI |
+|---|---|---|---|
+| show | 66.0% | 66.2% | 60.3–71.4 |
+| series | 13.0% | 15.2% | 9.4–17.3 |
+| movie | 21.0% | 18.6% | 16.5–26.1 |
+| title-only | 82.3% | 82.3% | 77.5–86.5 |
+| TMDB-backed | 17.7% | 17.7% | 13.5–22.5 |
+| with a path | 87.0% | 86.9% | 82.7–90.6 |
+
+**Decision.** Episode-level and cross-kind duplication is **materially reduced**: strict episode flags fall from 692 hits to 3, and cross-kind twins from 14 to 0 (the rest held), with an identical production baseline. **Production writes remain NO-GO.** No human labels exist, and the gate (§9) has not passed. The write canary is not started.

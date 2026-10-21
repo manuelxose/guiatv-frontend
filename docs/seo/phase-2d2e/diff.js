@@ -5,7 +5,8 @@
 // (proposed title and path), never labels.
 const fs = require('node:fs');
 const read = (file) => {
-  const [head, ...traces] = fs.readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
+  // The app logger may share stdout with the dump: only JSON lines are data.
+  const [head, ...traces] = fs.readFileSync(file, 'utf8').split('\n').filter((l) => l.startsWith('{')).map((l) => JSON.parse(l));
   return { report: head.report, traces };
 };
 const FLAGS = {
@@ -67,7 +68,14 @@ const bySpelling = new Map();
 for (const t of after.traces) for (const s of t.spellings) bySpelling.set(s, [...(bySpelling.get(s) ?? []), t]);
 const id = (t) => t.candidateId;
 const oldCreates = before.traces.filter((t) => t.decision === 'create');
-const targetsOf = new Map(oldCreates.map((t) => [id(t), [...new Set(t.spellings.flatMap((s) => bySpelling.get(s) ?? []))]]));
+// A spelling can name several new candidates (a film and a held same-title series): same kind first.
+const targetsOf = new Map(
+  oldCreates.map((t) => {
+    const all = [...new Set(t.spellings.flatMap((s) => bySpelling.get(s) ?? []))];
+    const sameKind = all.filter((n) => n.kind === t.kind);
+    return [id(t), sameKind.length ? sameKind : all];
+  })
+);
 const sharers = new Map();
 for (const [oldId, targets] of targetsOf) for (const n of targets.filter((x) => x.decision === 'create')) sharers.set(id(n), [...(sharers.get(id(n)) ?? []), oldId]);
 const fate = (t) => {
