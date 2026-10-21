@@ -22,7 +22,7 @@ export interface IUserContentInteractionDocument {
 const UserContentInteractionSchema = new Schema<IUserContentInteractionDocument>(
   {
     userId: { type: String, required: true, index: true },
-    contentId: { type: String, required: true, index: true },
+    contentId: { type: String, required: true, index: { name: 'idx_content_id' } },
     contentTitle: { type: String, required: true, trim: true },
     contentType: {
       type: String,
@@ -51,12 +51,12 @@ const UserContentInteractionSchema = new Schema<IUserContentInteractionDocument>
   }
 );
 
-UserContentInteractionSchema.index({ userId: 1, contentId: 1 }, { unique: true });
-UserContentInteractionSchema.index({ userId: 1, contentType: 1 });
-UserContentInteractionSchema.index({ userId: 1, status: 1 });
-UserContentInteractionSchema.index({ userId: 1, genres: 1 });
-UserContentInteractionSchema.index({ userId: 1, rating: -1 });
-UserContentInteractionSchema.index({ userId: 1, updatedAt: -1 });
+UserContentInteractionSchema.index({ userId: 1, contentId: 1 }, { unique: true, name: 'idx_user_content_unique' });
+UserContentInteractionSchema.index({ userId: 1, contentType: 1 }, { name: 'idx_user_content_type' });
+UserContentInteractionSchema.index({ userId: 1, status: 1 }, { name: 'idx_user_status' });
+UserContentInteractionSchema.index({ userId: 1, genres: 1 }, { name: 'idx_user_genres' });
+UserContentInteractionSchema.index({ userId: 1, rating: -1 }, { name: 'idx_user_rating' });
+UserContentInteractionSchema.index({ userId: 1, updatedAt: -1 }, { name: 'idx_user_updated' });
 
 export const UserContentInteractionModel =
   mongoose.model<IUserContentInteractionDocument>(

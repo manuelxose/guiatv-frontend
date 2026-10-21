@@ -21,7 +21,7 @@ export interface IUserAssistantMemoryDocument extends Document {
 
 const UserAssistantMemorySchema = new Schema<IUserAssistantMemoryDocument>(
   {
-    userId: { type: String, required: true, unique: true, index: true },
+    userId: { type: String, required: true, index: { name: 'idx_memory_userId', unique: true } },
     likedGenres: { type: [String], default: [] },
     dislikedGenres: { type: [String], default: [] },
     preferredPlatforms: { type: [String], default: [] },

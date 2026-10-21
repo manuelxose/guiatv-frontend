@@ -172,7 +172,7 @@ export interface IUserAssistantConversationDocument extends Document {
 const UserAssistantConversationSchema = new Schema<IUserAssistantConversationDocument>(
   {
     userId: { type: String, required: true, index: true },
-    conversationId: { type: String, required: true, unique: true, index: true },
+    conversationId: { type: String, required: true, index: { name: 'idx_conv_conversationId', unique: true } },
     sessionTitle: { type: String, trim: true },
     pinned: { type: Boolean, default: false },
     archived: { type: Boolean, default: false },
@@ -185,8 +185,8 @@ const UserAssistantConversationSchema = new Schema<IUserAssistantConversationDoc
   }
 );
 
-UserAssistantConversationSchema.index({ userId: 1, lastUsedAt: -1 });
-UserAssistantConversationSchema.index({ userId: 1, pinned: -1, lastUsedAt: -1 });
+UserAssistantConversationSchema.index({ userId: 1, lastUsedAt: -1 }, { name: 'idx_conv_user_lastUsed' });
+UserAssistantConversationSchema.index({ userId: 1, pinned: -1, lastUsedAt: -1 }, { name: 'idx_conv_user_pinned_lastUsed' });
 // TTL: remove conversations with no activity for 90 days (7776000 s).
 // NOTE: the old index on { createdAt: 1 } must be dropped manually in MongoDB if it exists:
 //   db.user_assistant_conversations.dropIndex("createdAt_1")

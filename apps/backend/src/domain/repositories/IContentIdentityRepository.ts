@@ -1,5 +1,6 @@
 import {
   ContentKind,
+  HistoricWork,
   ContentStatus,
   MatchMethod,
   ProvenanceSource,
@@ -59,6 +60,8 @@ export interface IContentEntityRepository {
   /** `tmdb_taken`: a live (candidate/active) entity already owns that TMDB id; `existing` is it. */
   insert(entity: ContentEntityInsert): Promise<InsertResult<ContentEntityRecord, 'tmdb_taken' | 'id_taken'>>;
   findById(entityId: string): Promise<ContentEntityRecord | null>;
+  findByIds(entityIds: string[]): Promise<ContentEntityRecord[]>;
+  findLiveByTmdbRefs(refs: TmdbRef[]): Promise<ContentEntityRecord[]>;
   findLiveByTmdb(ref: TmdbRef): Promise<ContentEntityRecord | null>;
   findByNormalizedTitle(normalizedTitle: string, kind?: ContentKind): Promise<ContentEntityRecord[]>;
   /** Sets the denormalised path once; true if set now or already equal. Never overwrites a different path. */
@@ -103,6 +106,7 @@ export interface ContentSlugInsert {
 
 export interface IContentSlugRepository {
   findByPath(path: string): Promise<ContentSlugRecord | null>;
+  findByPaths(paths: string[]): Promise<ContentSlugRecord[]>;
   findCanonical(entityId: string): Promise<ContentSlugRecord | null>;
   listByEntity(entityId: string): Promise<ContentSlugRecord[]>;
   /** Insert-only: `path_taken` never overwrites; `entity_has_canonical` enforces one canonical per entity. */
@@ -122,10 +126,48 @@ export interface TitleKeyRecord extends TitleKeyRow {
 
 export interface IContentTitleKeyRepository {
   listByKey(key: string): Promise<TitleKeyRecord[]>;
+  listByKeys(keys: string[]): Promise<TitleKeyRecord[]>;
+  /** Moves `lastSeenAt` forward (never back) so the review queue sorts by recency. */
+  touch(ids: string[], at: Date): Promise<void>;
   /** Insert-only: a concurrent or repeated insert returns the stored row unchanged. */
   insert(row: TitleKeyRow & { decidedBy: string }): Promise<InsertResult<TitleKeyRecord, 'exists'>>;
   /** Manual review: the only way a stored row's entity changes. Sets state verified, method manual. */
   review(id: string, change: { entityId: string; by: string; note?: string }): Promise<boolean>;
+  /** Manual review: the title is not an entity. Unbinds a provisional candidate; never a verified row. */
+  reject(id: string, change: { by: string; note?: string }): Promise<boolean>;
+  /**
+   * A provisional row whose entity can't be materialised (its TMDB work belongs to another entity):
+   * unbinds it into the review queue (`manual_review`, `claim_conflict`). Only if it is still a
+   * `candidate` bound to `entityId`; a verified row is never touched. True if the row was moved.
+   */
+  flagClaimConflict(id: string, change: { entityId: string; candidates: string[]; by: string }): Promise<boolean>;
   listReviewQueue(limit: number): Promise<TitleKeyRecord[]>;
   countByState(): Promise<Record<TitleKeyState, number>>;
+}
+
+/** Read-only evidence for ingestion (2D-2): TMDB catalogue rows and the slugs legacy pages answered. */
+export interface CatalogEvidence {
+  mediaId: string;
+  tmdb?: TmdbRef;
+  title: string;
+  originalTitle?: string;
+  year?: number;
+}
+
+export interface IIdentityEvidenceSource {
+  catalogEntries(mediaIds: string[], tmdbIds: number[]): Promise<CatalogEvidence[]>;
+  /** For each requested slug, the works whose legacy page could answer it (missing = none). */
+  historicSlugOwners(slugs: string[]): Promise<ReadonlyMap<string, readonly HistoricWork[]>>;
+}
+
+export interface AiringEntityRef {
+  airingId: string;
+  entityId: string;
+  canonicalPath?: string;
+}
+
+export interface IAiringEntityRefWriter {
+  /** True only when `idx_tvread_entity_start` exists exactly as specified (built by hand, 2D-2 §I). */
+  indexReady(): Promise<boolean>;
+  apply(date: string, refs: AiringEntityRef[]): Promise<number>;
 }
