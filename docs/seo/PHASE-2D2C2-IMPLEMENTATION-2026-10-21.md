@@ -90,3 +90,42 @@ Targets:
 - **Home transfer state:** about 415 KB of duplicate state per home render. Removing the facade snapshot needs browser hydration validation (empty-state flash guard).
 - **`formatTime`:** the hottest application function, about 16% of busy render CPU, in two chunks. Likely a per-call `Intl.DateTimeFormat`.
 - **Production CPU per render is about 3–4× local,** so concurrency-6 throughput on the VPS is CPU-bound. Measure after the deploy before any further change.
+
+## 8. Pre-merge hardening (2026-10-21) [V]
+
+- **Rate limiter.** The first commit had overwritten main's HTTP-level `rateLimit.test.ts`, which uses a real Express app with `trust proxy` 1. Restored unchanged: nginx traffic limited, local GET exempt, spoofed forwarding headers limited, local writes limited, `exemptLocalReads: false` limits. Added HTTP cases:
+  - local HEAD is exempt;
+  - local `POST /v2/affiliate/resolve` is exempt, with or without a query string;
+  - a local impression POST stays limited;
+  - resolve through nginx, or with spoofed `X-Forwarded-For`, `X-Real-IP` or `Forwarded`, stays limited;
+  - `exemptLocalReads: false` also limits resolve.
+
+  The `isDirectLocalRead` unit test stays as extra coverage.
+- **SSR API timeout.** `timeout({ each })` measured the gaps between HTTP events, and a `reportProgress` request emits header and progress events that reset it. The backend now sets `FetchBackend`'s own request `timeout`:
+  - measured from the start of the request, headers and body together;
+  - aborts the fetch through its `AbortController`;
+  - cleared on teardown and run outside the zone;
+  - a shorter caller timeout is kept.
+
+  Tests: the Karma spec checks that the real `FetchBackend` aborts a stalled fetch, with the abort signal set and the error being a `TimeoutError`. Resilience covers a stalled API (no headers) and a never-ending body: both give 503 in 6.3 s. On today's build they take 20.07 s and 20.09 s.
+- **Affiliate routing.**
+  - `resolveOffers` calls only `findEligibleCandidates`, `getCandidatesByOfferIds`, `resolveMerchantIds` and `resolvePlacement`, none of which writes, and it never calls analytics.
+  - Only that exact path is rewritten. `/resolve/x`, impression, login and PUT are not (tests).
+  - The URL rewrite keeps method, body and query (tests). The 2D-0B resilience check shows no visitor cookie, `Authorization` or `X-Forwarded-For` on any SSR API request.
+  - Remote callers cannot get the exemption: it needs the TCP peer to be loopback and no forwarding header, and nginx always sets one.
+  - Residual risk: any process on the VPS can call resolve unlimited, as it already can for GETs. The upgrade path is an SSR-only credential.
+- **Slug fetch equivalence.**
+  - A read-only export of 2026-10-20..22 from production: 32,351 airings and 12,785 titles, including 5,316 broadcast more than once, 3,944 accented and 5,199 with punctuation. All 41,435 title-token fetches return the same airing as the title-only query, and 0 airings lack a title token. It holds by construction too: `rebuildDate` writes a whole day with one deterministic `buildSearchTokens(title, …)`.
+  - The title-only query is kept as a fallback for a `rebuildDate` race between `distinct` and `findOne`.
+  - New Mongo suite (`CatalogService.slug-lookup.test.ts`, `TEST_MONGO_URI`) covers accents, punctuation, two spellings sharing `csi-miami`, several broadcasts inserted out of order, generic `cine`, a channel name inside the title, previous vs current day, and rows without tokens. Each case is checked against the original query. The canonical path comes from the title slug, so it is unchanged.
+
+| Gate | Result |
+|---|---|
+| Backend lint (`tsc`), build | pass |
+| Backend tests with `TEST_MONGO_URI` (scratch mongod 8.0) | 437: 436 pass, 0 fail, 1 skip (Redis) |
+| Frontend `tsc` app + spec, eslint | 0 errors |
+| Karma (Windows, Chromium 151) | 277/277 |
+| Production SSR build (Windows) | OK, 1.10 MB / 259.25 kB initial, no budget error |
+| `seo-ssr-resilience` against that build | 50/50 checks, exit 0 |
+| Stalled affiliate | today's build: 503 at 20.1–20.2 s; candidate: 200 at 6.6 s with H1 and canonical |
+| Concurrency 6, 40 detail pages (same harness) | p50/p95 454/638 → 439/587 ms; sequential detail 320–325 → 65–113 ms; home 427 → 157 ms |

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { FetchBackend, HttpErrorResponse, HttpHeaders, HttpParams, HttpRequest } from '@angular/common/http';
-import { firstValueFrom, of } from 'rxjs';
+import { lastValueFrom, of } from 'rxjs';
 import { InternalApiBackend, SSR_API_TIMEOUT_MS, toInternalApiUrl } from './internal-api.backend';
 
 const INTERNAL = 'http://127.0.0.1:4000';
@@ -95,7 +95,7 @@ describe('InternalApiBackend', () => {
     });
     const backend = TestBed.inject(InternalApiBackend);
     const started = Date.now();
-    const error = await firstValueFrom(
+    const error = await lastValueFrom(
       backend.handle(new HttpRequest('GET', 'https://guiaprogramaciontv.com/v2/catalog', { timeout: 50 }))
     ).then(
       () => undefined,
