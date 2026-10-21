@@ -29,7 +29,7 @@ export const HUBS = ['/', '/canales', '/plataformas', '/programacion-tv/pelicula
 
 /** Names of activation flags set in env files (names only; a value never leaves this function). */
 export function flagNames(envText) {
-  return [...new Set(envText.split('\n').map((l) => /^\s*(?:export\s+)?([A-Z0-9_]+)\s*=/.exec(l)?.[1]).filter((n) => n && /^(CONTENT_|EPG_YEAR_PROVENANCE$)/.test(n)))].sort();
+  return [...new Set(envText.split('\n').map((l) => /^\s*(?:export\s+)?([A-Z0-9_]+)\s*=/.exec(l)?.[1]).filter((n) => n && /^(CONTENT_|EPG_YEAR_PROVENANCE$)/.test(n) && n !== 'CONTENT_OWNER_PUBLIC_KEY_FILE'))].sort();
 }
 
 /** Flags present that nobody approved (`expected` is the comma-separated GUIATV_EXPECTED_FLAGS). */
@@ -84,7 +84,8 @@ export async function run({ warm = false, waitSeconds = 300 } = {}) {
   report.activationFlagsPresent = [...new Set(present)].sort();
   const stray = unexpectedFlags(report.activationFlagsPresent, process.env.GUIATV_EXPECTED_FLAGS);
   if (stray.length) problems.push(`activation flag(s) set that are not on the approved list: ${stray.join(', ')}`);
-  if (!stray.length && !report.activationFlagsPresent.length) {
+  // Public entity reads must be off unless the owner listed their master switch as approved.
+  if (!(process.env.GUIATV_EXPECTED_FLAGS || '').split(',').map((x) => x.trim()).includes('CONTENT_ENTITY_PUBLIC_READ_ENABLED')) {
     const entity = await get(`${API}/v2/entities/resolve?path=/peliculas/post-boot-check`, 10_000);
     report.entityReads = entity.body.includes('ENTITY_PUBLIC_READ_DISABLED') ? 'off' : `unexpected ${entity.status}`;
     if (report.entityReads !== 'off') problems.push(`public entity read is not off (${entity.status})`);

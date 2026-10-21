@@ -200,3 +200,50 @@ test('admitted write scope: a longer admit file than the ceiling admits nothing;
     for (const v of ['', 'true', 'all', 'Admitted ']) assert.equal(contentIdentityWriteScope({ CONTENT_IDENTITY_WRITE_SCOPE: v } as NodeJS.ProcessEnv), v.trim() === 'admitted' ? 'admitted' : undefined);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('the grant pins the exact ledger the owner saw; a moved ledger certifies nothing', () => {
+  const v = verdictFor('la_isla', 100);
+  const approved = input({}, v);
+  assert.deepEqual(certificationProblems(approved, ctx), []);
+  const moved = input({ review: reviewFor([v.candidateId], { secondDecision: 'accept' }), authorization: grant(keys, [v], {}, 'oa_0123456789abcdef', 'f'.repeat(64)) }, v);
+  assert.ok(certificationProblems(moved, ctx).includes('review_ledger_not_approved'));
+  const other = reviewFor([v.candidateId, 'otra|movie|movie:2|2000']);
+  assert.notEqual(other.ledgerHeadHash, approved.review.ledgerHeadHash);
+  assert.ok(certificationProblems({ ...approved, review: other }, ctx).includes('review_ledger_not_approved'), 'a different ledger file, even one that passes the gate');
+});
+
+test('read-time: the lifetime comes from the signed grant, a long chain is corrupt, and the ledger pin must match', () => {
+  const { entity, record, body } = certified();
+  const reseal = (over: Partial<AttestationBody>) => seal(entity.entityId, 0, GENESIS, { ...body, ...over });
+  const stretched = reseal({ validUntil: '2027-12-31T00:00:00Z' });
+  const e = { ...entity, certification: { ...entity.certification!, hash: stretched.hash } };
+  assert.deepEqual(evaluateCertification(e, [stretched], ctx), { state: 'invalid', reason: 'validity_exceeds_grant' }, 'a re-sealed record cannot outlive the grant');
+  const early = reseal({ attestedAt: '2026-10-01T00:00:00Z', validUntil: '2026-10-31T00:00:00Z' });
+  assert.equal(evaluateCertification({ ...entity, certification: { ...entity.certification!, hash: early.hash } }, [early], ctx).state, 'invalid', 'attested before the grant existed');
+  const wrongLedger = reseal({ review: { ...body.review, ledgerHeadHash: 'e'.repeat(64) } });
+  assert.deepEqual(evaluateCertification({ ...entity, certification: { ...entity.certification!, hash: wrongLedger.hash } }, [wrongLedger], ctx), { state: 'invalid', reason: 'ledger_not_approved' });
+  const long = Array.from({ length: 101 }, () => record);
+  assert.deepEqual(evaluateCertification(entity, long, ctx), { state: 'invalid', reason: 'chain_too_long' });
+});
+
+test('an admit file pinned to the approved hash admits only that exact file, and a pin implies the canary scope', () => {
+  const fs = require('node:fs') as typeof import('node:fs');
+  const os = require('node:os') as typeof import('node:os');
+  const path = require('node:path') as typeof import('node:path');
+  const { admissionFromEnv } = require('./ContentIdentityIngestion') as typeof import('./ContentIdentityIngestion');
+  const { contentIdentityWriteScope } = require('@/shared/config/contentEntities') as typeof import('@/shared/config/contentEntities');
+  const { sha256 } = require('@/domain/services/contentCertification') as typeof import('@/domain/services/contentCertification');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pin-'));
+  try {
+    const line = (i: number) => JSON.stringify({ candidateId: `p${i}|movie|movie:${i}|2000`, decision: 'AUTO_ACCEPT', assurance: 'independently_supported' });
+    const file = path.join(dir, 'admit.jsonl');
+    const text = [1, 2].map(line).join('\n') + '\n';
+    fs.writeFileSync(file, text);
+    const env = (pin?: string) => ({ CONTENT_IDENTITY_ADMIT_FILE: file, ...(pin ? { CONTENT_IDENTITY_ADMIT_SHA256: pin } : {}) }) as NodeJS.ProcessEnv;
+    assert.equal(admissionFromEnv(env(sha256(text))).size, 2);
+    assert.equal(admissionFromEnv(env('0'.repeat(64))).size, 0, 'any other file admits nothing');
+    fs.writeFileSync(file, text + line(3) + '\n');
+    assert.equal(admissionFromEnv(env(sha256(text))).size, 0, 'a line added after approval admits nothing');
+    assert.equal(contentIdentityWriteScope(env('a'.repeat(64))), 'admitted', 'a pinned file is a canary: no scope variable to forget');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});

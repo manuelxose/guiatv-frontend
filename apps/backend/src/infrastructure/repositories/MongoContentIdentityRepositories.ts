@@ -26,7 +26,7 @@ import {
   TitleKeyState,
   TmdbRef,
 } from '@/domain/services/contentIdentity';
-import type { AttestationRecord } from '@/domain/services/contentCertification';
+import { MAX_CHAIN, type AttestationRecord } from '@/domain/services/contentCertification';
 import { ContentAttestationModel } from '../database/models/ContentAttestation.model';
 import { ContentEntityModel } from '../database/models/ContentEntity.model';
 import { ContentSlugModel, IContentSlugDocument } from '../database/models/ContentSlug.model';
@@ -554,7 +554,7 @@ export class MongoContentAttestationRepository implements IContentAttestationRep
   }
 
   async listForEntity(entityId: string): Promise<AttestationRecord[]> {
-    const docs = await ContentAttestationModel.find({ entityId }).sort({ seq: 1 }).limit(100).maxTimeMS(2000).lean().exec();
+    const docs = await ContentAttestationModel.find({ entityId }).sort({ seq: 1 }).limit(MAX_CHAIN + 1).maxTimeMS(2000).lean().exec();
     return docs.map((d) => ({ entityId: d.entityId, seq: d.seq, prevHash: d.prevHash, hash: d.hash, body: d.body }));
   }
 }

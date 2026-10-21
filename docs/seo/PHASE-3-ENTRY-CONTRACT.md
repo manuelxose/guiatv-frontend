@@ -104,6 +104,7 @@ Nothing in 2D publishes or indexes anything. Phase 3 must not index an entity wh
 | `CONTENT_IDENTITY_MAX_CREATES` | 1000 | `…WRITES` | cap per rebuild |
 | `CONTENT_IDENTITY_AIRING_REFS` | off | `…WRITES` and the hand-built airing index | writes `program.entityId` / `canonicalPath` on airings |
 | `CONTENT_IDENTITY_WRITE_SCOPE=admitted` | unset | `…WRITES` | (3C) a write run touches only the candidates in the admit file, which must hold ≤ 25 lines or admits nothing: no title key for any other candidate |
+| `CONTENT_IDENTITY_ADMIT_SHA256=<hex>` | unset | `…WRITES`, `…ADMIT_FILE` | (3C) pins the admit file to the owner-approved manifest (`admitSha256`); a different file admits nothing; implies `…WRITE_SCOPE=admitted` |
 | `CONTENT_OWNER_PUBLIC_KEY_FILE=<pem>` | unset | — | (3C) the owner's Ed25519 public key; certification and every public read of an `ai_attested` entity verify the owner's grant against it. Missing: nothing is valid |
 | `EPG_YEAR_PROVENANCE` | off | — | the sync keeps the feed's year in `sourceProvenance.yearProvenance` of enriched programmes (changes stored EPG documents; `year` and public output unchanged) |
 

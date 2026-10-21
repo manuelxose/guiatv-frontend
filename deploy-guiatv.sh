@@ -203,7 +203,7 @@ guard_build_memory() {
   local need="${BUILD_MIN_AVAILABLE_MB:-3500}" have
   have="$(available_mb)"
   if [ "${have}" -lt "${need}" ]; then
-    echo "Only ${have} MB of memory available, the build needs ${need}; aborting before any change (BUILD_MIN_AVAILABLE_MB overrides)"
+    echo "Only ${have} MB of memory available, the build needs ${need}; aborting before building or publishing anything (BUILD_MIN_AVAILABLE_MB overrides)"
     exit 75
   fi
 }
@@ -225,7 +225,7 @@ deployed_sha() {
 }
 
 # Paths that never change what runs in production.
-DOCS_ONLY_REGEX='^(docs/|graphify-out/|tasks/|design/|artifacts/|\.github/workflows/uptime\.yml$|scripts/(uptime-probe|post-boot-check|canary-legacy-probe)\.|.*\.md$)'
+DOCS_ONLY_REGEX='^(docs/|graphify-out/|tasks/|design/|artifacts/|\.github/workflows/uptime\.yml$|scripts/(uptime-probe|canary-legacy-probe)\.|.*\.md$)'
 
 PREVIOUS_RELEASE=""
 PUBLISH_STARTED=0
@@ -271,14 +271,25 @@ if [ "${SYNCED}" = "1" ] && [ "${FORCE_DEPLOY:-0}" != "1" ]; then
       echo "Release ${TARGET_SHA} is already live; nothing to deploy (FORCE_DEPLOY=1 overrides)"
       exit 0
     fi
-    if ! git diff --name-only "${LIVE_SHA}" "${TARGET_SHA}" | grep -qvE "${DOCS_ONLY_REGEX}"; then
+    CHANGED_FILES="$(git diff --name-only "${LIVE_SHA}" "${TARGET_SHA}")"
+    # A here-string, not a pipe: under pipefail an early-exiting `grep -q` could SIGPIPE the producer and read as "docs only".
+    if ! grep -qvE "${DOCS_ONLY_REGEX}" <<<"${CHANGED_FILES}"; then
       echo "Only documentation changed between ${LIVE_SHA} and ${TARGET_SHA}; no build, no restart (FORCE_DEPLOY=1 overrides)"
       exit 0
     fi
   fi
 fi
 
+# Dependencies change rarely: reinstall only when the lockfile does (or node_modules is missing).
+LOCK_STAMP="${APP_DIR}/.deploy-lock-sha256"
+LOCK_SHA="$(sha256sum package-lock.json 2>/dev/null | cut -d' ' -f1 || true)"
+
 if [ -n "${DEPLOY_ARTIFACT:-}" ]; then
+  # An artifact carries no node_modules: new code on stale dependencies is refused before anything changes.
+  if [ -n "${LOCK_SHA}" ] && [ -f "${LOCK_STAMP}" ] && [ "$(cat "${LOCK_STAMP}")" != "${LOCK_SHA}" ]; then
+    echo "package-lock.json changed since the last install; an artifact deploy installs nothing. Run a normal deploy first"
+    exit 1
+  fi
   # Built off-host (CI) from this exact commit: verify, unpack, publish. No dependency install, no compile here.
   [ -f "${DEPLOY_ARTIFACT}" ] || { echo "Artifact ${DEPLOY_ARTIFACT} not found"; exit 1; }
   [ -n "${DEPLOY_ARTIFACT_SHA256:-}" ] || { echo "DEPLOY_ARTIFACT_SHA256 is required with DEPLOY_ARTIFACT"; exit 1; }
@@ -295,9 +306,6 @@ if [ -n "${DEPLOY_ARTIFACT:-}" ]; then
   rm -rf "${ARTIFACT_DIR}"
 else
   guard_build_memory
-  # Dependencies change rarely: reinstall only when the lockfile does (or node_modules is missing).
-  LOCK_STAMP="${APP_DIR}/.deploy-lock-sha256"
-  LOCK_SHA="$(sha256sum package-lock.json 2>/dev/null | cut -d' ' -f1 || true)"
   if [ -n "${LOCK_SHA}" ] && [ -d node_modules ] && [ -f "${LOCK_STAMP}" ] && [ "$(cat "${LOCK_STAMP}")" = "${LOCK_SHA}" ]; then
     echo "package-lock.json unchanged since the last install; skipping npm install"
   else

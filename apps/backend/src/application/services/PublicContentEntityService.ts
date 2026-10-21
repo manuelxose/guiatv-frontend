@@ -1,6 +1,9 @@
+import { Logger } from '@/shared/utils/logger';
 import type { CertificationReader } from './ContentCertification';
 import { ContentIdentityService, normalizeReviewerName } from './ContentIdentityService';
 import type { ContentEntityRecord } from '@/domain/repositories/IContentIdentityRepository';
+
+const logger = new Logger('PublicContentEntity');
 
 /** The public contract deliberately excludes lifecycle, matching and provenance. */
 export interface PublicContentEntity {
@@ -42,7 +45,7 @@ export class PublicContentEntityService {
         normalizeReviewerName(entity.matching.decidedBy);
         normalizeReviewerName(entity.lifecycle?.changedBy);
       } catch { return { status: 'not_found' }; }
-    } else if (entity.matching?.method !== 'ai_attested' || !(await this.certifications?.isCertified(entity).catch(() => false))) {
+    } else if (entity.matching?.method !== 'ai_attested' || !(await this.certifications?.isCertified(entity).catch((error) => { logger.warn('Entity certification check failed; treated as not certified', { message: String(error?.message || error).slice(0, 200) }); return false; }))) {
       // Anything else, an AI attestation that is revoked, expired, tampered with or unreadable included, is not a page.
       return { status: 'not_found' };
     }

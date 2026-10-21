@@ -29,6 +29,8 @@ import {
   authorizationProblems,
   authorizationSignatureValid,
   canonicalJson,
+  CERTIFICATION_HARD_CAP,
+  CertificationContext,
   CertificationState,
   evaluateCertification,
   GENESIS,
@@ -110,9 +112,7 @@ export interface CertificationInput {
   authorization: SignedOwnerAuthorization;
 }
 
-export interface CertificationClock { now: Date; ownerPublicKeyPem?: string }
-
-export function certificationProblems(i: CertificationInput, ctx: CertificationClock): string[] {
+export function certificationProblems(i: CertificationInput, ctx: CertificationContext): string[] {
   const out: string[] = [];
   const { entity: e, verdict: v } = i;
   const tmdb = e.externalIds?.tmdb;
@@ -148,6 +148,7 @@ export function certificationProblems(i: CertificationInput, ctx: CertificationC
     try { normalizeReviewerName(a.payload.owner); } catch { out.push('authorization_owner'); }
     if (ctx.now.getTime() < Date.parse(a.payload.issuedAt)) out.push('authorization_not_yet_valid');
     if (ctx.now.getTime() > Date.parse(a.payload.executeBy)) out.push('authorization_expired');
+    if (a.payload.batch.ledgerHeadHash !== i.review.ledgerHeadHash) out.push('review_ledger_not_approved');
     const item = a.payload.batch.items.find((x) => x.candidateId === v.candidateId);
     if (!item) out.push('authorization_batch_mismatch');
     else if (item.verdictSha256 !== verdictDigest(v)) out.push('verdict_changed_since_approval');
@@ -181,14 +182,18 @@ export class ContentCertificationService {
 
   /** Where this entity stands, from its entity row and its chain. */
   async stateOf(entity: ContentEntityRecord): Promise<CertificationState> {
-    return evaluateCertification(entity, await this.attestations.listForEntity(entity.entityId), { now: this.now(), ownerPublicKeyPem: this.opts.ownerPublicKeyPem });
+    return evaluateCertification(entity, await this.attestations.listForEntity(entity.entityId), this.context());
   }
 
   /** All reasons the request would be refused, without writing anything (the dry run). */
   async check(req: CertifyRequest): Promise<string[]> {
     const entity = await this.entities.findById(req.entityId);
     if (!entity) return ['entity_not_found'];
-    return certificationProblems(await this.inputFor(entity, req), { now: this.now(), ownerPublicKeyPem: this.opts.ownerPublicKeyPem });
+    return certificationProblems(await this.inputFor(entity, req), this.context());
+  }
+
+  private context(): CertificationContext {
+    return { now: this.now(), ownerPublicKeyPem: this.opts.ownerPublicKeyPem };
   }
 
   private async inputFor(entity: ContentEntityRecord, req: CertifyRequest): Promise<CertificationInput> {
@@ -203,7 +208,7 @@ export class ContentCertificationService {
     const entity = await this.entities.findById(req.entityId);
     if (!entity) throw new ContentIdentityError('not_found', req.entityId);
     const chain = await this.attestations.listForEntity(entity.entityId);
-    const state = evaluateCertification(entity, chain, { now: this.now(), ownerPublicKeyPem: this.opts.ownerPublicKeyPem });
+    const state = evaluateCertification(entity, chain, this.context());
     const authorizationId = req.authorization.payload.authorizationId;
     const sameGrant = (r: AttestationRecord) => (r.body as AttestationBody).authorization.payload.authorizationId === authorizationId;
 
@@ -220,7 +225,7 @@ export class ContentCertificationService {
       throw new ContentIdentityError('certification_revoked', `${entity.entityId} was revoked under this authorisation; a new one is needed`);
     }
 
-    const problems = certificationProblems(await this.inputFor(entity, req), { now: this.now(), ownerPublicKeyPem: this.opts.ownerPublicKeyPem });
+    const problems = certificationProblems(await this.inputFor(entity, req), this.context());
     if (problems.length) throw new ContentIdentityError('certification_refused', problems.join(','));
 
     const record = state.state === 'pending' ? state.attestation : await this.append(entity, chain, req);
@@ -382,7 +387,7 @@ export async function buildCanaryAllowlist(
   const person = normalizeReviewerName(approvedBy);
   const refused: Array<{ candidateId: string; reason: string }> = [];
   const entries: Array<{ entityId: string; canonicalPath: string; approvedBy: string; approvedAt: string }> = [];
-  if (manifest.entities.length > Math.min(manifest.ceiling, 25)) refused.push({ candidateId: '*', reason: 'over_ceiling' });
+  if (manifest.entities.length > Math.min(manifest.ceiling, CERTIFICATION_HARD_CAP)) refused.push({ candidateId: '*', reason: 'over_ceiling' });
   for (const e of manifest.entities) {
     const entity = await source.entities.findLiveByTmdb(e.tmdb);
     if (!entity) { refused.push({ candidateId: e.candidateId, reason: 'entity_not_written' }); continue; }

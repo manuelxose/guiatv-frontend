@@ -23,10 +23,10 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { AUTO_CREATE, ERROR_CATEGORIES, REVIEW_COLUMNS, buildReviewRows, scoreReview, type ScoreGate } from './ContentIdentityAudit';
 import type { EvidenceVerdict } from './ContentIdentityEvidence';
 import type { IdentityTrace } from './ContentIdentityIngestion';
-import { canonicalJson } from '@/domain/services/contentCertification';
+import { canonicalJson, GENESIS } from '@/domain/services/contentCertification';
 import { ContentIdentityError, normalizeReviewerName } from './ContentIdentityService';
 
-export const GENESIS_HASH = '0'.repeat(64);
+export const GENESIS_HASH = GENESIS;
 export const DECISIONS = ['accept', 'reject', 'uncertain'] as const;
 export type ReviewDecisionKind = (typeof DECISIONS)[number];
 export const REQUIRED_GATE: ScoreGate = { precision: 0.98, minLabelled: 300, minVerified: 50 };

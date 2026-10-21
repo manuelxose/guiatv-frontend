@@ -14,10 +14,11 @@
  */
 import fs from 'node:fs';
 import { Logger } from '@/shared/utils/logger';
+import { CERTIFICATION_HARD_CAP } from '@/domain/services/contentCertification';
 import { normalizeReviewerName } from './ContentIdentityService';
 
 /** The canary is a handful of pages; a larger list is a configuration mistake, not a rollout. */
-export const CANARY_HARD_CAP = 25;
+export const CANARY_HARD_CAP = CERTIFICATION_HARD_CAP;
 const ENTITY_PATH = /^\/(peliculas|series|programas)\/[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const RECHECK_MS = 5_000;
 /** ponytail: in-memory breaker, per process, until restart; a shared breaker needs a store. */

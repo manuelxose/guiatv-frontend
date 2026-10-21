@@ -18,7 +18,7 @@ test('deploy.yml does not run for documentation-only pushes; its ignore list mat
   const regex = /DOCS_ONLY_REGEX='([^']+)'/.exec(read('deploy-guiatv.sh'))[1];
   const re = new RegExp(regex);
   for (const path of ['docs/seo/x.md', 'README.md', 'graphify-out/graph.json', 'tasks/a', 'scripts/uptime-probe.mjs', '.github/workflows/uptime.yml']) assert.ok(re.test(path), `${path} is documentation-only`);
-  for (const path of ['apps/backend/src/a.ts', 'apps/frontend/src/a.ts', 'deploy-guiatv.sh', 'package-lock.json', 'scripts/publish-release.mjs', '.github/workflows/deploy.yml']) assert.ok(!re.test(path), `${path} changes what runs`);
+  for (const path of ['apps/backend/src/a.ts', 'apps/frontend/src/a.ts', 'scripts/post-boot-check.mjs', 'scripts/guiatv-ops.sh', 'deploy-guiatv.sh', 'package-lock.json', 'scripts/publish-release.mjs', '.github/workflows/deploy.yml']) assert.ok(!re.test(path), `${path} changes what runs`);
 });
 
 test('the uptime probe is off-host, read-only and scheduled; the artifact deploy is manual only', () => {

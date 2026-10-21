@@ -54,11 +54,12 @@ export function reviewFor(ids: string[], opts: { second?: boolean; secondDecisio
   };
 }
 
-export function grant(keys: { privatePem: string }, verdicts: EvidenceVerdict[], over: Partial<OwnerAuthorizationPayload> = {}, id = 'oa_0123456789abcdef') {
+/** `ledgerHeadHash` defaults to the head of the ledger `reviewFor` builds for the same candidates. */
+export function grant(keys: { privatePem: string }, verdicts: EvidenceVerdict[], over: Partial<OwnerAuthorizationPayload> = {}, id = 'oa_0123456789abcdef', ledgerHeadHash = reviewFor([...new Set(verdicts.map((v) => v.candidateId))]).ledgerHeadHash) {
   const payload: OwnerAuthorizationPayload = {
     schema: 1, authorizationId: id, owner: 'manuelxose', scope: 'certify',
     issuedAt: new Date(NOW.getTime() - 3_600_000).toISOString(), executeBy: new Date(NOW.getTime() + 86_400_000).toISOString(), validDays: 30,
-    batch: { manifestDigest: sha256(canonicalJson(verdicts.map((v) => v.candidateId))), max: 25, items: verdicts.map((v) => ({ candidateId: v.candidateId, verdictSha256: verdictDigest(v) })) },
+    batch: { manifestDigest: sha256(canonicalJson(verdicts.map((v) => v.candidateId))), ledgerHeadHash, max: 25, items: verdicts.map((v) => ({ candidateId: v.candidateId, verdictSha256: verdictDigest(v) })) },
     statement: 'I authorise certifying exactly this batch.', ...over,
   };
   return signOwnerAuthorization(payload, keys.privatePem);

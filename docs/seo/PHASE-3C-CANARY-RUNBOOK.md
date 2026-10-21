@@ -35,7 +35,7 @@ Set `CONTENT_ENTITIES_ENABLED=true` in `/etc/guiatv/api.env`, restart the API (`
 
 ## 3. Write canary (approval 4b)
 
-In `/etc/guiatv/api.env`: `CONTENT_IDENTITY_WRITES=guiatv`, `CONTENT_IDENTITY_WRITE_SCOPE=admitted`, `CONTENT_IDENTITY_ADMIT_FILE=<admit.jsonl>`, `CONTENT_IDENTITY_MAX_CREATES=25`. `CONTENT_IDENTITY_AIRING_REFS` stays unset. Restart; the next read-model rebuild writes the batch (or trigger one for the evidence day).
+In `/etc/guiatv/api.env`: `CONTENT_IDENTITY_WRITES=guiatv`, `CONTENT_IDENTITY_WRITE_SCOPE=admitted`, `CONTENT_IDENTITY_ADMIT_FILE=<admit.jsonl>`, `CONTENT_IDENTITY_ADMIT_SHA256=<manifest admitSha256>` (pins the file to the approved batch and implies the admitted scope), `CONTENT_IDENTITY_MAX_CREATES=25`. `CONTENT_IDENTITY_AIRING_REFS` stays unset. Restart; the next read-model rebuild writes the batch (or trigger one for the evidence day).
 
 Verify (all must hold): `I pathless` lists none of the batch; `A status --manifest manifest.json` shows `candidate` for every entry and `certification: none`; `A baseline --compare … --structural` shows exactly +N documents in entities, slugs and title keys and nothing else; run the same rebuild again and the baseline does not move (idempotent). **Then unset the write flags and restart**: the canary does not need them to stay on.
 

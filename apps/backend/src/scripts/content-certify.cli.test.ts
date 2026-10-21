@@ -28,6 +28,9 @@ test('owner flow: only the owner key can authorise the exact committed batch; a 
     const auth = path.join(dir, 'a.json');
     const signed = sign(manifest, 'k1', auth);
     assert.equal(signed.status, 0, signed.stderr);
+    const payload = JSON.parse(fs.readFileSync(auth, 'utf8')).payload;
+    assert.ok(Date.parse(payload.executeBy) <= Date.parse(JSON.parse(fs.readFileSync(manifest, 'utf8')).freshUntil), 'the signed window is clamped to the evidence freshness');
+    assert.equal(payload.batch.ledgerHeadHash, committed.review.ledgerHeadHash);
     const verify = (key: string, m = manifest, a = auth) => run(['verify', '--manifest', m, '--authorization', a, '--public-key', path.join(dir, key, 'owner-public.pem'), '--admit', admit]);
     assert.equal(verify('k1').status, 0, verify('k1').stdout);
     assert.match(verify('k2').stdout, /authorization_signature/, 'another key');

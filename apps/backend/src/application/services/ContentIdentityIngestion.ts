@@ -5,6 +5,7 @@
  * keys by `$in`, TMDB owners, catalogue evidence, existing entities), then one decision per
  * distinct identity candidate, never per airing.
  */
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import mongoose from 'mongoose';
 import type {
@@ -731,7 +732,14 @@ export function admissionFromEnv(env: NodeJS.ProcessEnv = process.env): Readonly
   const file = String(env.CONTENT_IDENTITY_ADMIT_FILE || '').trim();
   if (!file) return admitted;
   try {
-    for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+    const text = fs.readFileSync(file, 'utf8');
+    // CONTENT_IDENTITY_ADMIT_SHA256: the admit file must be exactly the one the owner approved (manifest `admitSha256`).
+    const pin = String(env.CONTENT_IDENTITY_ADMIT_SHA256 || '').trim().toLowerCase();
+    if (pin && createHash('sha256').update(text).digest('hex') !== pin) {
+      log.warn('Content identity admission file differs from the approved hash; nothing is admitted');
+      return new Set();
+    }
+    for (const line of text.split('\n')) {
       if (!line.startsWith('{')) continue;
       const v = JSON.parse(line);
       if (v.decision === 'AUTO_ACCEPT' && v.assurance === 'independently_supported' && typeof v.candidateId === 'string') admitted.add(v.candidateId);

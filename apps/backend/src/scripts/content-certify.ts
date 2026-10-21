@@ -33,9 +33,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import mongoose from 'mongoose';
 import { connectMongoDB, disconnectMongoDB } from '../config/mongodb';
-import { authorizationSignatureValid, keyIdOf, signOwnerAuthorization } from '../domain/services/contentCertification';
+import { authorizationSignatureValid, CERTIFICATION_HARD_CAP, keyIdOf, sha256, SignedOwnerAuthorization, signOwnerAuthorization } from '../domain/services/contentCertification';
 import {
-  MongoContentAttestationRepository, MongoContentEntityRepository, MongoContentSlugRepository,
+  MongoContentAttestationRepository, MongoContentEntityRepository, MongoContentSlugRepository, MongoContentTitleKeyRepository,
 } from '../infrastructure/repositories/MongoContentIdentityRepositories';
 import { buildCanaryAllowlist, ContentCertificationService, CertifyRequest, createCertificationReader, loadReviewEvidence, verdictDigest } from '../application/services/ContentCertification';
 import {
@@ -43,7 +43,6 @@ import {
 } from '../application/services/ContentCanaryManifest';
 import { PublicContentEntityService } from '../application/services/PublicContentEntityService';
 import { ContentIdentityService } from '../application/services/ContentIdentityService';
-import { MongoContentTitleKeyRepository } from '../infrastructure/repositories/MongoContentIdentityRepositories';
 import { captureBaseline, diffBaselines, rehearseWriteCanary } from '../application/services/ContentCanaryRehearsal';
 import { rollbackProvisional } from '../application/services/ContentIdentityRollback';
 import type { EvidenceVerdict, TmdbSearchCheck } from '../application/services/ContentIdentityEvidence';
@@ -102,7 +101,7 @@ function offline(command: string, args: string[]): boolean {
     const now = option(args, '--now') ? new Date(option(args, '--now') as string) : new Date();
     const days = loadDays(args);
     if (!days.length) throw new Error('usage: manifest --day <traces.jsonl>:<verdicts-YYYYMMDD.jsonl> [--day …] --ledger … --sheet …');
-    const built = buildCanaryManifest({ days, review: loadReview(args), probes: probeFile ? readJson<LegacyProbe[]>(probeFile) : undefined, tmdbChecks: options(args, '--tmdb').flatMap((f) => readJson<TmdbSearchCheck[]>(f)), size: Number(option(args, '--size')) || 25, now, allowIndexedLegacy: args.includes('--allow-indexed-legacy') });
+    const built = buildCanaryManifest({ days, review: loadReview(args), probes: probeFile ? readJson<LegacyProbe[]>(probeFile) : undefined, tmdbChecks: options(args, '--tmdb').flatMap((f) => readJson<TmdbSearchCheck[]>(f)), size: Number(option(args, '--size')) || CERTIFICATION_HARD_CAP, now, allowIndexedLegacy: args.includes('--allow-indexed-legacy') });
     const out = option(args, '--out');
     if (out) fs.writeFileSync(out, JSON.stringify(built.manifest, null, 2) + '\n');
     const admit = option(args, '--admit-out');
@@ -129,13 +128,13 @@ function offline(command: string, args: string[]): boolean {
   }
   if (command === 'verify') {
     const manifest = readJson<CanaryManifest>(need(option(args, '--manifest'), '--manifest'));
-    const auth = readJson<ReturnType<typeof signOwnerAuthorization>>(need(option(args, '--authorization'), '--authorization'));
+    const auth = readJson<SignedOwnerAuthorization>(need(option(args, '--authorization'), '--authorization'));
     const problems = [...manifestProblems(manifest, new Date())];
     if (!authorizationSignatureValid(auth, fs.readFileSync(need(option(args, '--public-key'), '--public-key'), 'utf8'))) problems.push('authorization_signature');
     if (auth.payload.batch.manifestDigest !== manifest.digest) problems.push('authorization_for_another_manifest');
     if (Date.now() > Date.parse(auth.payload.executeBy)) problems.push('authorization_expired');
     const admit = option(args, '--admit');
-    if (admit && crypto.createHash('sha256').update(fs.readFileSync(admit)).digest('hex') !== manifest.admitSha256) problems.push('admit_file_differs');
+    if (admit && sha256(fs.readFileSync(admit)) !== manifest.admitSha256) problems.push('admit_file_differs');
     console.log(JSON.stringify({ ok: !problems.length, problems }, null, 2));
     process.exitCode = problems.length ? 2 : 0;
     return true;
@@ -214,7 +213,7 @@ async function database(command: string, args: string[]) {
     if (command !== 'certify') throw new Error('unknown command (see file header)');
 
     const problems = manifestProblems(manifest, new Date());
-    const auth = readJson<ReturnType<typeof signOwnerAuthorization>>(need(option(args, '--authorization'), '--authorization'));
+    const auth = readJson<SignedOwnerAuthorization>(need(option(args, '--authorization'), '--authorization'));
     if (auth.payload.batch.manifestDigest !== manifest.digest) problems.push('authorization_for_another_manifest');
     const verdicts = loadAdmitVerdicts(need(option(args, '--admit'), '--admit <admit.jsonl>'), manifest);
     const review = loadReview(args);

@@ -16,6 +16,8 @@ import type { TmdbRef } from './contentIdentity';
 /** The canary is a handful of pages; one authorisation can never cover more. Mirrors CANARY_HARD_CAP. */
 export const CERTIFICATION_HARD_CAP = 25;
 export const MAX_VALID_DAYS = 180;
+/** An entity's chain is a handful of records; one this long is read as corrupt, never truncated. */
+export const MAX_CHAIN = 100;
 export const GENESIS = '0'.repeat(64);
 export const ATTESTED_DECIDER_PREFIX = 'attestation:';
 
@@ -41,7 +43,8 @@ export interface OwnerAuthorizationPayload {
   /** How long each attestation made under this grant stays valid; reads refuse it afterwards. */
   validDays: number;
   /** The exact batch: the digest of the manifest and each approved identity with the verdict line it was approved on. */
-  batch: { manifestDigest: string; max: number; items: Array<{ candidateId: string; verdictSha256: string }> };
+  /** `ledgerHeadHash`: the exact AI-review ledger state the owner approved; a ledger that moved since (a later correction, adjudication or a different file) certifies nothing. */
+  batch: { manifestDigest: string; ledgerHeadHash: string; max: number; items: Array<{ candidateId: string; verdictSha256: string }> };
   /** The owner's own words, kept verbatim in every attestation made under the grant. */
   statement: string;
 }
@@ -76,7 +79,7 @@ export function authorizationProblems(p: OwnerAuthorizationPayload): string[] {
   const items = p?.batch?.items;
   if (!Array.isArray(items) || !items.length || items.length > CERTIFICATION_HARD_CAP || !Number.isInteger(p.batch.max) || p.batch.max < items.length || p.batch.max > CERTIFICATION_HARD_CAP) out.push('authorization_ceiling');
   else if (new Set(items.map((i) => i.candidateId)).size !== items.length) out.push('authorization_duplicate_item');
-  if (!/^[0-9a-f]{64}$/.test(p?.batch?.manifestDigest ?? '')) out.push('authorization_manifest_digest');
+  if (!/^[0-9a-f]{64}$/.test(p?.batch?.manifestDigest ?? '') || !/^[0-9a-f]{64}$/.test(p?.batch?.ledgerHeadHash ?? '')) out.push('authorization_manifest_digest');
   return out;
 }
 
@@ -177,6 +180,7 @@ export interface CertificationContext {
  * unsigned authorisation all fail closed on the next read.
  */
 export function evaluateCertification(entity: ContentEntityRecord, chain: readonly AttestationRecord[], ctx: CertificationContext): CertificationState {
+  if (chain.length > MAX_CHAIN) return { state: 'invalid', reason: 'chain_too_long' };
   const broken = chainProblem(entity.entityId, chain);
   if (broken) return { state: 'invalid', reason: broken };
   const last = chain[chain.length - 1];
@@ -197,6 +201,11 @@ export function evaluateCertification(entity: ContentEntityRecord, chain: readon
   const problems = authorizationProblems(b.authorization.payload);
   if (problems.length) return { state: 'invalid', reason: problems[0] };
   if (!b.authorization.payload.batch.items.some((i) => i.candidateId === b.candidateId && i.verdictSha256 === b.evidence.verdictSha256)) return { state: 'invalid', reason: 'not_in_authorized_batch' };
+  // The lifetime the grant allowed is the ceiling, whatever the stored body says.
+  const g = b.authorization.payload;
+  const attestedAt = Date.parse(b.attestedAt);
+  if (b.review.ledgerHeadHash !== g.batch.ledgerHeadHash) return { state: 'invalid', reason: 'ledger_not_approved' };
+  if (!(attestedAt >= Date.parse(g.issuedAt) && attestedAt <= Date.parse(g.executeBy)) || !(Date.parse(b.validUntil) <= attestedAt + g.validDays * 86_400_000)) return { state: 'invalid', reason: 'validity_exceeds_grant' };
   if (!(ctx.now.getTime() < Date.parse(b.validUntil))) return { state: 'invalid', reason: 'expired' };
   return { state: 'certified', attestation };
 }

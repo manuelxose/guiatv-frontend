@@ -6,12 +6,13 @@
  *
  *   node scripts/uptime-probe.mjs --origin https://guiaprogramaciontv.com [--attempts 3] [--pause 20000] [--timeout 30000]
  *
- * Checks: home (SSR), API health, robots.txt, sitemap index, a hub page, and the entity read invariant:
+ * Checks: plain HTTP redirects to HTTPS, the TLS certificate has at least 14 days left, home (SSR), API health, robots.txt, sitemap index, a hub page, and the entity read invariant:
  * with ENTITY_EXPECTATION=off (default) `/v2/entities/resolve` must answer ENTITY_PUBLIC_READ_DISABLED, so an
  * accidental activation of the public entity read is an alert, not a surprise. Exit 1 on any failure;
  * UPTIME_WEBHOOK_URL (optional) also receives a JSON message.
  */
 import https from 'node:https';
+import tls from 'node:tls';
 
 const arg = (name, fallback) => {
   const i = process.argv.indexOf(name);
@@ -29,6 +30,39 @@ export const CHECKS = (entityExpectation = 'off') => [
     : []),
 ];
 
+export const CERT_MIN_DAYS = 14;
+
+/** Days until a certificate's `valid_to` (e.g. "Jan  1 00:00:00 2027 GMT"); NaN when unreadable. */
+export const certDaysLeft = (validTo, now = Date.now()) => (Date.parse(validTo) - now) / 86_400_000;
+
+/** Port 80 must send visitors to HTTPS (301/308 with an https Location). */
+export const redirectsToHttps = (status, location) => [301, 308].includes(status) && /^https:\/\//.test(location ?? '');
+
+const peerCertificate = (host, timeoutMs) => new Promise((resolve) => {
+  const socket = tls.connect({ host, port: 443, servername: host, timeout: timeoutMs }, () => {
+    const cert = socket.getPeerCertificate();
+    socket.end();
+    resolve(cert?.valid_to ?? null);
+  });
+  socket.on('error', () => resolve(null));
+  socket.on('timeout', () => { socket.destroy(); resolve(null); });
+});
+
+/** The two transport checks, for an https origin only. */
+export async function transportChecks(origin, timeout, fetchImpl = fetch, certProbe = peerCertificate) {
+  const host = new URL(origin).hostname;
+  const out = [];
+  const http = await fetchOnce(`http://${host}/`, timeout, async (url, init) => {
+    const res = await fetchImpl(url, init);
+    return { status: res.status, text: async () => res.headers.get('location') ?? '' };
+  });
+  out.push({ name: 'http -> https redirect', path: `http://${host}/`, expected: 301, status: http.status, ms: http.ms, ok: redirectsToHttps(http.status, http.body), slow: false, error: http.error });
+  const validTo = await certProbe(host, timeout);
+  const days = validTo ? certDaysLeft(validTo) : NaN;
+  out.push({ name: `TLS certificate (${Number.isFinite(days) ? Math.floor(days) : '?'} days left)`, path: `tls://${host}:443`, expected: 200, status: Number.isFinite(days) ? 200 : 0, ms: 0, ok: days >= CERT_MIN_DAYS, slow: false });
+  return out;
+}
+
 /** One fetch with a hard timeout; never throws. */
 export async function fetchOnce(url, timeoutMs, fetchImpl = fetch) {
   const started = Date.now();
@@ -42,8 +76,8 @@ export async function fetchOnce(url, timeoutMs, fetchImpl = fetch) {
 }
 
 /** Runs every check, retrying a failed one `attempts` times; returns the failures and every measured latency. */
-export async function probe({ origin, attempts = 3, pause = 20_000, timeout = 30_000, entityExpectation = 'off', fetchImpl = fetch, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) }) {
-  const results = [];
+export async function probe({ origin, attempts = 3, pause = 20_000, timeout = 30_000, entityExpectation = 'off', fetchImpl = fetch, certProbe, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) }) {
+  const results = origin.startsWith('https://') ? await transportChecks(origin, timeout, fetchImpl, certProbe) : [];
   for (const check of CHECKS(entityExpectation)) {
     let last;
     for (let attempt = 1; attempt <= attempts; attempt++) {

@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
     # Nothing here changes what runs in production, so it must not build on the VPS or restart the services
-    # (a documentation PR used to trigger a full deploy). Keep in step with DOCS_ONLY_REGEX in deploy-guiatv.sh.
+    # (a documentation PR used to trigger a full deploy). Keep in step with DOCS_ONLY_REGEX in deploy-guiatv.sh. The post-boot
+    # check and guiatv-ops.sh run from the server checkout, which only advances on a deploy, so they are deliberately not listed.
     paths-ignore:
       - 'docs/**'
       - 'graphify-out/**'
@@ -13,7 +14,6 @@ on:
       - 'artifacts/**'
       - '.github/workflows/uptime.yml'
       - 'scripts/uptime-probe*'
-      - 'scripts/post-boot-check*'
       - 'scripts/canary-legacy-probe.mjs'
       - '**/*.md'
   workflow_dispatch:

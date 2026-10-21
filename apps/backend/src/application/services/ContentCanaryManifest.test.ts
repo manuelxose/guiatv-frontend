@@ -56,6 +56,15 @@ test('manifest: only films with a double AI accept, a clean path and a work titl
   assert.equal(eligiblePool(days, reviewFor([good.candidateId], { humanPrimary: true })).pool.length, 0, 'a non-AI label is not an AI attestation');
 });
 
+test('manifest: a contradiction on any replay day against the same identity excludes it', () => {
+  const s = scenario(2);
+  const [good, bad] = s.vs;
+  const later: DayInput = { day: '20261023', verdicts: [{ ...bad, decision: 'QUARANTINE' as never, contradictions: ['tmdb_conflict'] }], traces: [] };
+  const { pool, excluded } = eligiblePool([...s.days, later], s.review);
+  assert.deepEqual(pool.map((p) => p.verdict.candidateId), [good.candidateId]);
+  assert.equal(excluded.contradicted_on_another_day, 1);
+});
+
 test('manifest: content readiness is measured, never assumed; indexed legacy pages are held back by default', () => {
   const s = scenario(5);
   const [ok, thin, noProbe, indexed] = s.vs;
@@ -85,6 +94,10 @@ test('authorisation template covers exactly the manifest; a signed grant makes e
   const { signOwnerAuthorization } = require('@/domain/services/contentCertification') as typeof import('@/domain/services/contentCertification');
   const signed = signOwnerAuthorization(payload, keys.privatePem);
   assert.equal(authorizationSignatureValid(signed, keys.publicPem), true);
+  assert.equal(payload.batch.ledgerHeadHash, manifest.review.ledgerHeadHash, 'the grant pins the ledger the manifest was built from');
+  assert.ok(Date.parse(payload.executeBy) <= Date.parse(manifest.freshUntil), 'the signed window never outlives the evidence');
+  const long = authorizationTemplate(manifest, { owner: 'manuelxose', now: NOW, executeDays: 3650, validDays: 30, statement: 'Approved by the owner.', id: 'oa_00112233445566ff' });
+  assert.equal(long.executeBy, manifest.freshUntil, 'asking for a longer window is clamped to the freshness');
   assert.equal(admitLines(manifest.entities, verdicts).trim().split('\n').length, 3);
   for (const e of manifest.entities) {
     const v = verdicts.get(e.candidateId)!;

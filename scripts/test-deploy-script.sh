@@ -117,6 +117,19 @@ FORCE_DEPLOY=1 bash "${ROOT}/deploy-guiatv.sh" >"${T}/run8.log" 2>&1 || { cat "$
 grep -q "run build" "${T}/npm.log" || fail "FORCE_DEPLOY did not build"
 
 # --- 5. off-host artifact: verified and published, never compiled here -------------------------------------------
+(cd "${T}/work" && echo lock1 >package-lock.json && git add package-lock.json && git commit -qm "lock 1" && git push -q origin main)
+bash "${ROOT}/deploy-guiatv.sh" >"${T}/run8b.log" 2>&1 || { cat "${T}/run8b.log"; fail "deploy with a lockfile must succeed"; }
+[ -f "${SRV}/.deploy-lock-sha256" ] || fail "the lockfile hash was not recorded after the install"
+: >"${T}/npm.log"
+(cd "${T}/work" && echo lock2 >package-lock.json && git commit -qam "lock 2" && git push -q origin main)
+sha="$(git -C "${T}/origin.git" rev-parse main)"
+mkdir -p "${T}/lockart/apps/backend/dist/server" "${T}/lockart/apps/frontend/dist/guiatv/browser" "${T}/lockart/apps/frontend/dist/guiatv/server"
+echo "${sha}" >"${T}/lockart/ARTIFACT_GIT_SHA"; tar -czf "${T}/lockart.tgz" -C "${T}/lockart" ARTIFACT_GIT_SHA apps
+live="$(readlink -f "${SRV}/current")"
+set +e; DEPLOY_ARTIFACT="${T}/lockart.tgz" DEPLOY_ARTIFACT_SHA256="$(sha256sum "${T}/lockart.tgz" | cut -d' ' -f1)" bash "${ROOT}/deploy-guiatv.sh" >"${T}/run8c.log" 2>&1; code=$?; set -e
+[ "${code}" != "0" ] && grep -q "package-lock.json changed since the last install" "${T}/run8c.log" && [ "$(readlink -f "${SRV}/current")" = "${live}" ] || { cat "${T}/run8c.log"; fail "an artifact over a changed lockfile must be refused before any change"; }
+bash "${ROOT}/deploy-guiatv.sh" >"${T}/run8d.log" 2>&1 || { cat "${T}/run8d.log"; fail "a normal deploy must install the new lockfile"; }
+grep -q "install" "${T}/npm.log" || fail "the changed lockfile was not installed"
 (cd "${T}/work" && echo second >f && git commit -qam "runtime change 2" && git push -q origin main)
 sha="$(git -C "${T}/origin.git" rev-parse main)"
 art="${T}/art"; mkdir -p "${art}/apps/backend/dist/server" "${art}/apps/frontend/dist/guiatv/browser" "${art}/apps/frontend/dist/guiatv/server"

@@ -19,7 +19,7 @@ const origin = String(arg('--origin', '')).replace(/\/$/, '');
 const out = arg('--out');
 const delay = Number(arg('--delay', 1500));
 const max = Number(arg('--max', 120));
-if (!pool.length || !/^https:\/\/[a-z0-9.-]+$/.test(origin) || !out) {
+if (!pool.length || !pool.every((i) => typeof i.path === 'string' && i.path.startsWith('/')) || !/^https:\/\/[a-z0-9.-]+$/.test(origin) || !out) {
   console.error('usage: canary-legacy-probe.mjs --pool pool.json --origin https://host --out probes.json [--delay ms] [--max n]');
   process.exit(1);
 }

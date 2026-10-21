@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import { CHECKS, probe } from './uptime-probe.mjs';
+import { CERT_MIN_DAYS, certDaysLeft, CHECKS, probe, redirectsToHttps, transportChecks } from './uptime-probe.mjs';
 
 function site(overrides = {}) {
   const routes = {
@@ -61,4 +61,23 @@ test('an accidentally active public entity read is an alert; once expected (cana
     assert.deepEqual((await probe({ origin, ...fast })).failures.map((f) => f.name), ['entity reads stay off']);
     assert.deepEqual((await probe({ origin, ...fast, entityExpectation: 'canary' })).failures, []);
   } finally { server.close(); }
+});
+
+test('transport: plain HTTP must redirect to HTTPS, and the certificate must have time left', async () => {
+  assert.equal(redirectsToHttps(301, 'https://guiaprogramaciontv.com/'), true);
+  assert.equal(redirectsToHttps(308, 'https://x/'), true);
+  assert.equal(redirectsToHttps(200, ''), false, 'serving plain HTTP is a failure');
+  assert.equal(redirectsToHttps(302, 'https://x/'), false);
+  assert.equal(redirectsToHttps(301, 'http://x/'), false, 'a redirect to http is no redirect');
+  const now = Date.parse('2026-10-21T00:00:00Z');
+  assert.ok(certDaysLeft('Dec 31 00:00:00 2026 GMT', now) > CERT_MIN_DAYS);
+  assert.ok(certDaysLeft('Nov  1 00:00:00 2026 GMT', now) < CERT_MIN_DAYS);
+  assert.ok(Number.isNaN(certDaysLeft('garbage', now)));
+  const redirect = async () => ({ status: 301, headers: new Headers({ location: 'https://example.test/' }) });
+  const ok = await transportChecks('https://example.test', 100, redirect, async () => new Date(Date.now() + 60 * 86_400_000).toUTCString());
+  assert.deepEqual(ok.map((r) => r.ok), [true, true]);
+  const bad = await transportChecks('https://example.test', 100, async () => ({ status: 200, headers: new Headers() }), async () => new Date(Date.now() + 3 * 86_400_000).toUTCString());
+  assert.deepEqual(bad.map((r) => r.ok), [false, false]);
+  const unreachable = await transportChecks('https://example.test', 100, redirect, async () => null);
+  assert.equal(unreachable[1].ok, false, 'an unreadable certificate is a failure, not a pass');
 });

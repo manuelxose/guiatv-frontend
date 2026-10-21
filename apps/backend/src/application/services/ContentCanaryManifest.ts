@@ -88,6 +88,9 @@ const WARNINGS = [
   'review_basis_ai: every label behind the batch is an owner-authorised AI review; nothing here is human-validated precision',
 ];
 
+/** A legacy page Google may index today (answers 200 and robots does not say noindex). */
+const indexableLegacy = (p?: Pick<LegacyProbe, 'status' | 'robots'>) => Boolean(p && p.status === 200 && /\bindex\b/.test(p.robots ?? '') && !/noindex/.test(p.robots ?? ''));
+
 const dayOf = (now: Date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(now).replace(/-/g, '');
 const count = (m: Record<string, number>, k: string) => (m[k] = (m[k] ?? 0) + 1);
 
@@ -106,6 +109,8 @@ export function eligiblePool(days: DayInput[], review: ReviewEvidence, kinds: re
   const accepted = all.filter((x) => x.v.decision === 'AUTO_ACCEPT');
   const violations = evaluateEvidence(all.map((x) => x.v)).violations as Record<string, string[]>;
   const violating = new Set(Object.values(violations).flat());
+  // A contradiction on ANY replay day against the same identity is unresolved: one clean day does not outvote it.
+  const contradicted = new Set(all.filter((x) => x.v.contradictions?.length).map((x) => x.v.identity ?? x.v.candidateId));
   const idsByPath = new Map<string, Set<string>>();
   for (const { v } of all) if (v.path && v.decision !== 'AUTO_REJECT') idsByPath.set(v.path, (idsByPath.get(v.path) ?? new Set()).add(v.identity ?? v.candidateId));
   const byCandidate = new Map<string, { v: EvidenceVerdict; days: string[] }>();
@@ -127,6 +132,7 @@ export function eligiblePool(days: DayInput[], review: ReviewEvidence, kinds: re
     if (!kinds.includes(v.kind)) { reject(`kind_${v.kind}`); continue; }
     if (!m || !v.identity?.startsWith('new:') || !v.path) { reject('no_tmdb_identity_or_path'); continue; }
     if (violating.has(v.candidateId)) { reject('evidence_gate_violation'); continue; }
+    if (contradicted.has(v.identity)) { reject('contradicted_on_another_day'); continue; }
     if ((idsByPath.get(v.path)?.size ?? 0) > 1) { reject('path_contested'); continue; }
     if (isGenericContentTitle(v.title) || parseEpgTitle(v.title).resolutionState !== 'work') { reject('title_not_a_work'); continue; }
     if ((titleYear.get(`${v.key}|${m[5] ?? ''}`)?.size ?? 0) > 1) { reject('duplicate_title_year'); continue; }
@@ -199,7 +205,7 @@ export function buildCanaryManifest(o: BuildOptions): { manifest: CanaryManifest
     const upcoming = upcomingOf(item.verdict.candidateId);
     return { item, probe, upcoming, ...assess(item, probe, upcoming, facts.get(`${item.tmdb.type}:${item.tmdb.id}`)), roots: new Set(item.verdict.support.filter((s) => s.independent).map((s) => s.root)).size };
   });
-  const impact = (s: typeof scored[number]) => s.probe && s.probe.status === 200 && /\bindex\b/.test(s.probe.robots ?? '') && !/noindex/.test(s.probe.robots ?? '');
+  const impact = (s: typeof scored[number]) => indexableLegacy(s.probe);
   const eligible = (s: typeof scored[number]) => s.content === 'ready' && (o.allowIndexedLegacy || !impact(s));
   const rank = (a: typeof scored[number], b: typeof scored[number]) =>
     Number(!eligible(a)) - Number(!eligible(b)) ||
@@ -220,7 +226,7 @@ export function buildCanaryManifest(o: BuildOptions): { manifest: CanaryManifest
     tmdb: s.item.tmdb, canonicalPath: s.item.verdict.path!, verdictSha256: verdictDigest(s.item.verdict),
     evidence: { daysAccepted: s.item.days, independentRoots: s.roots, sources: [...new Set(s.item.verdict.support.map((x) => x.source))].sort() },
     review: { reviewers: s.item.review.reviewers.map((r) => `${r.name} (${r.role}, ${r.kind})`), decisionHashes: s.item.review.hashes },
-    legacy: { url: s.probe?.url ?? s.item.verdict.path!, status: s.probe?.status ?? null, robots: s.probe?.robots ?? null, indexableToday: s.probe ? s.probe.status === 200 && /\bindex\b/.test(s.probe.robots ?? '') && !/noindex/.test(s.probe.robots ?? '') : null },
+    legacy: { url: s.probe?.url ?? s.item.verdict.path!, status: s.probe?.status ?? null, robots: s.probe?.robots ?? null, indexableToday: s.probe ? indexableLegacy(s.probe) : null },
     readiness: {
       technical: 'eligible', content: s.content, needsEnrichment: s.needs,
       indexingBlockers: s.q.criteria.filter((c) => c.status !== 'pass').map((c) => c.id),
@@ -247,10 +253,13 @@ export function buildCanaryManifest(o: BuildOptions): { manifest: CanaryManifest
 
 /** The grant the owner would sign for exactly this manifest. Unsigned: only the owner's key can make it valid. */
 export function authorizationTemplate(m: CanaryManifest, o: { owner: string; now: Date; executeDays: number; validDays: number; statement: string; id: string }): OwnerAuthorizationPayload {
+  // The evidence stops being fresh at `freshUntil`; the signed window can never outlive it, so the guard
+  // lives in the signature and not in a field of the manifest file that anyone could edit.
+  const executeBy = Math.min(o.now.getTime() + o.executeDays * 86_400_000, Date.parse(m.freshUntil));
   return {
     schema: 1, authorizationId: o.id, owner: o.owner, scope: 'certify', issuedAt: o.now.toISOString(),
-    executeBy: new Date(o.now.getTime() + o.executeDays * 86_400_000).toISOString(), validDays: o.validDays,
-    batch: { manifestDigest: m.digest, max: m.ceiling, items: m.entities.map((e) => ({ candidateId: e.candidateId, verdictSha256: e.verdictSha256 })) },
+    executeBy: new Date(executeBy).toISOString(), validDays: o.validDays,
+    batch: { manifestDigest: m.digest, ledgerHeadHash: m.review.ledgerHeadHash, max: m.ceiling, items: m.entities.map((e) => ({ candidateId: e.candidateId, verdictSha256: e.verdictSha256 })) },
     statement: o.statement,
   };
 }
