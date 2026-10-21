@@ -1,0 +1,92 @@
+{
+ "date": "20261020",
+ "created": 2121,
+ "flaggedEntities": 657,
+ "flaggedWithPath": 617,
+ "flags": {
+  "subtitle_separator": 407,
+  "season_episode_marker": 322,
+  "trailing_number": 127,
+  "episode_word": 34,
+  "numbered_part": 10,
+  "slot_word": 6,
+  "date_in_title": 1
+ },
+ "examples": {
+  "subtitle_separator": [
+   "9-1-1 : ¿De qué te quejas -> /series/9-1-1-de-que-te-quejas",
+   "9-1-1 T4 E3 · El futuro -> /series/9-1-1-el-futuro",
+   "A pedir de boca - Setas de otoño -> /programas/a-pedir-de-boca-setas-de-otono",
+   "A un paso del cielo T5 E20 · El hijo 2 -> /series/a-un-paso-del-cielo-el-hijo-2",
+   "Aire Lliure T1 · Ebre, amb Peyu -> /programas/aire-lliure-ebre-amb-peyu",
+   "Aire Lliure T4 · Queralt Castellet -> /programas/aire-lliure-queralt-castellet"
+  ],
+  "season_episode_marker": [
+   "9-1-1 : ¿De qué te quejas -> /series/9-1-1-de-que-te-quejas",
+   "9-1-1 T4 E3 · El futuro -> /series/9-1-1-el-futuro",
+   "A un paso del cielo T5 E20 · El hijo 2 -> /series/a-un-paso-del-cielo-el-hijo-2",
+   "Accidente, suicidio o asesinato -> /programas/accidente-suicidio-o-asesinato",
+   "Agatha Christie: Poirot -> /series/agatha-christie-poirot",
+   "Agrosfera T26 E812 -> /programas/agrosfera"
+  ],
+  "trailing_number": [
+   "A un paso del cielo T5 E20 · El hijo 2 -> /series/a-un-paso-del-cielo-el-hijo-2",
+   "Acacias, 38 -> -",
+   "Amanda y Alan: reformas a la italiana T1 · 4 -> /programas/amanda-y-alan-reformas-a-la-italiana-4",
+   "Amanda y Alan: reformas a la italiana T1 · 5 -> /programas/amanda-y-alan-reformas-a-la-italiana-5",
+   "Amanda y Alan: reformas a la italiana T1 · 6 -> /programas/amanda-y-alan-reformas-a-la-italiana-6",
+   "Amanda y Alan: reformas a la italiana T1 · 7 -> /programas/amanda-y-alan-reformas-a-la-italiana-7"
+  ],
+  "episode_word": [
+   "Alerta Cobra T22 Ep09 -> /series/alerta-cobra-ep09",
+   "Alerta Cobra T22 Ep10 -> /series/alerta-cobra-ep10",
+   "Alerta Cobra T24 Ep17 -> /series/alerta-cobra-ep17",
+   "Alerta Cobra T24 Ep18 -> /series/alerta-cobra-ep18",
+   "Cazatesoros T1 Ep05 -> /series/cazatesoros-ep05",
+   "Cazatesoros T1 Ep06 -> /series/cazatesoros-ep06"
+  ],
+  "numbered_part": [
+   "Autopista hacia el cielo (171) 7 -> /series/autopista-hacia-el-cielo-171-7",
+   "Autopista hacia el cielo (172) 7 -> /series/autopista-hacia-el-cielo-172-7",
+   "Autopista hacia el cielo (177) 7 -> /series/autopista-hacia-el-cielo-177-7",
+   "Els millors curts. Filmets, Badalona Film Festival(22) -> -",
+   "Los conciertos de Radio 3 - Fito y los Fitipaldis (1999) -> /programas/los-conciertos-de-radio-3-fito-y-los-fitipaldis-1999",
+   "Los conciertos de Radio 3 - Jorge Drexler (1999) -> /programas/los-conciertos-de-radio-3-jorge-drexler-1999"
+  ],
+  "slot_word": [
+   "Avance En compañía de Loli -> /programas/avance-en-compania-de-loli",
+   "Avance Informativo -> /programas/avance-informativo",
+   "Cierre de Wall Street -> /programas/cierre-de-wall-street",
+   "Programación local -> /programas/programacion-local",
+   "+ Que Cine -> /programas/que-cine",
+   "Repetición de programas -> /programas/repeticion-de-programas"
+  ],
+  "date_in_title": [
+   "Un día en la Historia de España: 20 de octubre de 1982 -> /programas/un-dia-en-la-historia-de-espana-20-de-octubre-de-1982"
+  ]
+ },
+ "sharedSlugGroups": 14,
+ "sharedSlugEntities": 28,
+ "kindPairs": {
+  "movie+series": 2,
+  "movie+show": 2,
+  "series+show": 10
+ },
+ "splitWithTwoPaths": 9,
+ "splitExamples": [
+  "movie:Alma en suplicio:/peliculas/alma-en-suplicio / series:Alma en suplicio:/series/alma-en-suplicio",
+  "movie:Cara a cara:- / show:Cara a cara:-",
+  "series:Caso cerrado T6 E9:- / show:Caso cerrado:-",
+  "movie:Cómicos nuestros:- / show:Cómicos Nuestros:/programas/comicos-nuestros",
+  "series:Cuando los muertos hablan:/series/cuando-los-muertos-hablan / show:Cuando los muertos hablan:/programas/cuando-los-muertos-hablan",
+  "series:Diagnóstico:/series/diagnostico / show:Diagnóstico:/programas/diagnostico",
+  "series:Escápate de viaje:/series/escapate-de-viaje / show:Escápate de viaje:/programas/escapate-de-viaje",
+  "series:La aventura del saber:/series/la-aventura-del-saber / show:La aventura del saber:/programas/la-aventura-del-saber",
+  "movie:La gran belleza:/peliculas/la-gran-belleza / series:La gran belleza:/series/la-gran-belleza",
+  "series:La Renaixença:/series/la-renaixenca / show:La Renaixença:/programas/la-renaixenca",
+  "series:La revuelta:/series/la-revuelta / show:La revuelta:-",
+  "series:Limpia y ordena:/series/limpia-y-ordena / show:Limpia y ordena T5 E13:/programas/limpia-y-ordena",
+  "series:Mésnit:/series/mesnit / show:Mésnit:-",
+  "series:Wild Ibex:/series/wild-ibex / show:Wild ibex T1 E4:/programas/wild-ibex"
+ ]
+}

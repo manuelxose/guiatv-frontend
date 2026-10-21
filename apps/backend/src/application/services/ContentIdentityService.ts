@@ -41,11 +41,30 @@ export type PathResolution =
 
 export type RedirectResult = 'created' | 'exists' | 'path_taken' | 'target_not_canonical' | 'would_loop';
 
-/** Review decisions name a real person; there is no default reviewer and no automatic approval. */
-function assertReviewer(reviewer: string): void {
-  if (!/^\S.{0,63}$/.test(String(reviewer || '')) || ['ingest', 'system', 'auto'].includes(reviewer)) {
-    throw new ContentIdentityError('reviewer_required', 'a review needs the reviewer\'s name');
+/** Service actors and automation names: a review signed with one of these is not a person's decision. */
+const AUTOMATED_REVIEWERS = new Set([
+  'ingest', 'system', 'auto', 'automatic', 'automated', 'review', 'reviewer', 'admin', 'administrator', 'root', 'bot',
+  'cron', 'script', 'ci', 'test', 'default', 'anonymous', 'unknown', 'none', 'null', 'undefined', 'claude', 'codex',
+]);
+
+/**
+ * Review decisions name a real person; there is no default reviewer and no automatic approval.
+ * Returns the name to store: NFKC (full-width and compatibility forms folded), trimmed, inner
+ * whitespace collapsed. Refuses blanks, names without a letter, and any name whose whole value or
+ * any word of it is an automation name, ignoring case ("System", "AUTO ", "cron-job", "ci_bot").
+ */
+export function normalizeReviewerName(reviewer: unknown): string {
+  const name = String(reviewer ?? '').normalize('NFKC').trim().replace(/\s+/g, ' ');
+  const lower = name.toLowerCase();
+  if (
+    !/^[\p{L}\p{N}][\p{L}\p{M}\p{N} ._@'-]{1,63}$/u.test(name) ||
+    !/\p{L}/u.test(name) ||
+    AUTOMATED_REVIEWERS.has(lower) ||
+    lower.split(/[ ._@'-]+/).some((word) => AUTOMATED_REVIEWERS.has(word))
+  ) {
+    throw new ContentIdentityError('reviewer_required', "a review needs the reviewer's name");
   }
+  return name;
 }
 
 function normalizedOrThrow(path: string): string {
@@ -240,18 +259,17 @@ export class ContentIdentityService {
 
   /** Manual resolution of an ambiguous / manual_review row, or a reviewed re-point. */
   async reviewTitleKey(id: string, entityId: string, reviewer: string, note?: string): Promise<boolean> {
-    assertReviewer(reviewer);
+    const by = normalizeReviewerName(reviewer);
     const entity = await this.entities.findById(entityId);
     if (!entity || (entity.status !== 'active' && entity.status !== 'candidate')) {
       throw new ContentIdentityError('bad_review_target', entityId);
     }
-    return this.titleKeys.review(id, { entityId, by: reviewer, note });
+    return this.titleKeys.review(id, { entityId, by, note });
   }
 
   /** Manual review: the title is not an entity (a slot, a container, a wrong provisional binding). */
   async rejectTitleKey(id: string, reviewer: string, note?: string): Promise<boolean> {
-    assertReviewer(reviewer);
-    return this.titleKeys.reject(id, { by: reviewer, note });
+    return this.titleKeys.reject(id, { by: normalizeReviewerName(reviewer), note });
   }
 
   reviewQueue(limit = 100) {

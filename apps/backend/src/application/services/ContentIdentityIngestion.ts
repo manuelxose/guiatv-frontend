@@ -111,7 +111,38 @@ export function newIdentityReport(mode: 'shadow' | 'write', date: string) {
 }
 export type IdentityRunReport = ReturnType<typeof newIdentityReport>;
 
+/**
+ * One identity candidate as the run decided it: the unit an audit samples and a person reviews.
+ * Built only when `run` is given a trace array; it needs no reads beyond the run's own. `identity`
+ * is `new:<title-key row>` for an entity this run proposes, so shadow output is reproducible.
+ */
+export interface IdentityTrace {
+  candidateId: string;
+  key: string;
+  kind: ContentKind;
+  title: string;
+  /** Distinct EPG spellings grouped into this candidate (at most 5). */
+  spellings: string[];
+  airings: number;
+  epgYears: number[];
+  year?: number;
+  /** Airing TMDB ids, and whether the catalogue confirmed them (`mixed`: some airings unconfirmed). */
+  tmdb: { ids: number[]; evidence: 'confirmed' | 'unconfirmed' | 'mixed' | 'none'; ref?: TmdbRef };
+  decision: 'create' | 'bind' | 'matched' | 'held' | 'review' | 'unresolved' | 'deferred' | 'rejected' | 'failed';
+  state?: string;
+  method?: string;
+  confidence?: number;
+  reason?: string;
+  rowId?: string;
+  identity?: string;
+  path?: string | null;
+  pathRefused?: string[];
+  historicOwner?: boolean;
+  pathless?: string;
+}
+
 interface Candidate {
+  id: string;
   key: string;
   kind: ContentKind;
   title: string;
@@ -120,6 +151,11 @@ interface Candidate {
   airingIds: string[];
   entityId?: string;
   rowId?: string;
+  spellings: Set<string>;
+  epgYears: Set<number>;
+  tmdbIds: Set<number>;
+  unconfirmed: number;
+  outcome?: Pick<IdentityTrace, 'decision' | 'state' | 'method' | 'confidence' | 'reason'>;
 }
 
 export function observationsFromAirings(airings: any[], years: ReadonlyMap<string, unknown>): IdentityObservation[] {
@@ -167,7 +203,7 @@ export class ContentIdentityIngestion {
     private readonly opts: { mode: 'shadow' | 'write'; airingRefs: boolean; maxCreates: number; actor?: string }
   ) {}
 
-  async run(date: string, observations: IdentityObservation[]): Promise<IdentityRunReport> {
+  async run(date: string, observations: IdentityObservation[], trace?: IdentityTrace[]): Promise<IdentityRunReport> {
     const started = Date.now();
     const write = this.opts.mode === 'write';
     const report = newIdentityReport(this.opts.mode, date);
@@ -200,7 +236,13 @@ export class ContentIdentityIngestion {
       const tmdb = confirmed?.tmdb;
       const year = confirmed ? confirmed.year : kind === 'movie' ? obs.year : undefined;
       const id = [key, kind, tmdb ? `${tmdb.type}:${tmdb.id}` : '', year ?? ''].join('|');
-      const group = groups.get(id) ?? { key, kind, title: obs.title, year, tmdb, airingIds: [] };
+      const group: Candidate = groups.get(id) ?? {
+        id, key, kind, title: obs.title, year, tmdb, airingIds: [], spellings: new Set(), epgYears: new Set(), tmdbIds: new Set(), unconfirmed: 0,
+      };
+      group.spellings.add(obs.title);
+      if (obs.year) group.epgYears.add(obs.year);
+      if (obs.tmdbId) group.tmdbIds.add(obs.tmdbId);
+      if (obs.tmdbId && !confirmed) group.unconfirmed++;
       // The shortest spelling is the cleanest title ("La Promesa" over "La Promesa T1 E929").
       if (obs.title.length < group.title.length || (obs.title.length === group.title.length && obs.title < group.title)) {
         group.title = obs.title;
@@ -212,6 +254,8 @@ export class ContentIdentityIngestion {
     const candidates = [...groups.entries()]
       .sort(([a, x], [b, y]) => x.key.localeCompare(y.key) || Number(!x.tmdb) - Number(!y.tmdb) || Number(!x.year) - Number(!y.year) || a.localeCompare(b))
       .map(([, c]) => c);
+    const outcome = (c: Candidate, decision: IdentityTrace['decision'], row?: TitleKeyRow) =>
+      (c.outcome = { decision, state: row?.state, method: row?.method, confidence: row?.confidence, reason: row?.reason });
     report.candidates = candidates.length;
     candidates.forEach((c) => count(report.kinds, c.kind));
 
@@ -260,9 +304,11 @@ export class ContentIdentityIngestion {
       if (decision.decision === 'review' && decision.row.reason === 'unknown_kind') {
         count(report.decisions, 'unresolved');
         count(report.reasons, 'unknown_kind');
+        outcome(c, 'unresolved', decision.row);
         return;
       }
       count(report.decisions, decision.decision);
+      outcome(c, decision.decision, decision.decision === 'rejected' ? undefined : decision.row);
       let row: TitleKeyRow | null = null;
       if (decision.decision === 'matched' || decision.decision === 'held') {
         seenRows.push(decision.row.id);
@@ -275,6 +321,7 @@ export class ContentIdentityIngestion {
       if (decision.decision === 'create') {
         if (creates >= this.opts.maxCreates) {
           report.deferred++;
+          outcome(c, 'deferred', decision.row);
           return;
         }
         creates++;
@@ -306,6 +353,7 @@ export class ContentIdentityIngestion {
         if (!write || error instanceof ContentIdentityNotReadyError) throw error;
         report.failed++;
         c.entityId = undefined;
+        c.outcome = { decision: 'failed' };
         log.warn('Content identity candidate skipped', { error: String((error as Error)?.message || '').slice(0, 200) });
       }
     };
@@ -354,8 +402,11 @@ export class ContentIdentityIngestion {
     const taken = write
       ? new Set<string>()
       : new Set((await this.ports.slugs.findByPaths([...plans.values()].flatMap((p) => p.paths))).map((s) => s.path));
+    const pathOf = new Map<string, Pick<IdentityTrace, 'path' | 'pathRefused' | 'historicOwner' | 'pathless'>>();
     for (const e of pathless) {
       const plan = plans.get(e.entityId) as ReturnType<typeof planCanonicalPaths>;
+      const traced = { path: null as string | null, pathRefused: plan.blocked, historicOwner: false, pathless: undefined as string | undefined };
+      pathOf.set(e.entityId, traced);
       plan.blocked.forEach((reason) => count(report.slugs.refused, reason));
       let path: string | null = null;
       if (write && plan.paths.length) {
@@ -365,6 +416,7 @@ export class ContentIdentityIngestion {
           if (error instanceof ContentIdentityNotReadyError) throw error;
           report.failed++;
           count(report.slugs.pathless, 'write_failed');
+          traced.pathless = 'write_failed';
           log.warn('Content identity path allocation skipped', { error: String((error as Error)?.message || '').slice(0, 200) });
           continue;
         }
@@ -377,7 +429,11 @@ export class ContentIdentityIngestion {
         if (plan.historic.includes(path)) report.slugs.historicOwner++;
         if (write) report.writes.slugs++;
         e.canonicalPath = path;
-      } else count(report.slugs.pathless, plan.paths.length ? 'taken' : plan.blocked[0]);
+        Object.assign(traced, { path, historicOwner: plan.historic.includes(path) });
+      } else {
+        traced.pathless = plan.paths.length ? 'taken' : plan.blocked[0];
+        count(report.slugs.pathless, traced.pathless);
+      }
     }
 
     // 7. Airing references: only with the flag, and only once the hand-built index exists.
@@ -395,6 +451,29 @@ export class ContentIdentityIngestion {
     } else report.airingRefs.skipped = write ? 'flag_off' : 'shadow';
 
     if (write) await this.ports.titleKeys.touch(seenRows, new Date());
+    for (const c of trace ? candidates : []) {
+      const claimer = c.entityId ? claimed.get(c.entityId) : undefined;
+      const entity = c.entityId ? entities.get(c.entityId) : undefined;
+      trace!.push({
+        candidateId: c.id,
+        key: c.key,
+        kind: c.kind,
+        title: c.title,
+        spellings: [...c.spellings].sort().slice(0, 5),
+        airings: c.airingIds.length,
+        epgYears: [...c.epgYears].sort(),
+        year: c.year,
+        tmdb: {
+          ids: [...c.tmdbIds].sort((a, b) => a - b),
+          evidence: c.tmdb ? 'confirmed' : !c.unconfirmed ? 'none' : c.unconfirmed === c.airingIds.length ? 'unconfirmed' : 'mixed',
+          ref: c.tmdb,
+        },
+        ...(c.outcome ?? { decision: 'failed' }),
+        rowId: c.rowId,
+        identity: c.entityId && (claimer ? `new:${claimer.rowId}` : c.entityId),
+        ...(entity ? pathOf.get(entity.entityId) ?? { path: entity.canonicalPath ?? null } : {}),
+      });
+    }
     report.durationMs = Date.now() - started;
     return report;
   }
