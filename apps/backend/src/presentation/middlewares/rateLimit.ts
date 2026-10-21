@@ -17,16 +17,21 @@ const LOOPBACK_ADDRESSES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
  * location that proxies to the API sets X-Forwarded-For and X-Real-IP (`$proxy_add_x_forwarded_for`, never empty);
  * ports 3000/4000 are closed to the outside by ufw. The check uses the TCP peer address, which a remote client cannot
  * forge, and requires the forwarding headers to be absent, which a client cannot achieve through nginx. A forwarded
- * header never grants the exemption. Only GET/HEAD are exempt, so writes (login, telemetry, admin) stay limited.
+ * header never grants the exemption. Only GET/HEAD and the side-effect-free `READ_SHAPED_POSTS` are exempt, so writes
+ * (login, telemetry, impressions, admin) stay limited.
  * It skips rate limiting only, never authentication; per-endpoint quotas opt out with `exemptLocalReads: false`.
  *
  * ponytail: any process on this host is exempt, including the other sites' services (separate Unix users). Their
  * unlimited reads are an availability risk only; the upgrade path is a secret header that only guiatv-ssr holds
  * (root-only /etc/guiatv/ssr.env + api.env).
  */
+/** POSTs with no side effect that SSR sends like reads (frontend `READ_SHAPED_POSTS` in internal-api.backend.ts). */
+const READ_SHAPED_POSTS = new Set(['/v2/affiliate/resolve']);
+
 export function isDirectLocalRead(req: Request): boolean {
+  const readShaped = req.method === 'POST' && READ_SHAPED_POSTS.has((req.originalUrl || '').split('?')[0]);
   return (
-    (req.method === 'GET' || req.method === 'HEAD') &&
+    (req.method === 'GET' || req.method === 'HEAD' || readShaped) &&
     LOOPBACK_ADDRESSES.has(req.socket?.remoteAddress ?? '') &&
     req.headers['x-forwarded-for'] === undefined &&
     req.headers['x-real-ip'] === undefined &&

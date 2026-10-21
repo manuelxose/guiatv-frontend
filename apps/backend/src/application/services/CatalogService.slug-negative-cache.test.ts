@@ -227,3 +227,28 @@ test('program slug "deportes" resolves although the category token tags thousand
     cache.destroy();
   }
 });
+
+// 2D-2C.2: the exact-title fetch walked the whole day (prod: 11,697 docs, 499 ms) without the token that found it.
+test('program slug lookup narrows the airing fetch by the title token that found it', async () => {
+  const cache = new InMemoryCache();
+  const service = buildService({ count: 0 }, cache);
+  const fetched: Record<string, unknown>[] = [];
+  const restore = stubTvReadSlug({ joe: ['G.I. Joe'], syfy: ['Joe Night'] });
+  const stubbedFindOne = TVReadAiringModel.findOne;
+  (TVReadAiringModel as any).findOne = (query: Record<string, unknown>) => {
+    fetched.push(query);
+    return (stubbedFindOne as any)(query);
+  };
+
+  try {
+    assert.equal((await (service as any).findTvReadItemBySlug('g i joe', 'gi-joe', '20261021'))?.program.title, 'G.I. Joe');
+    assert.deepEqual(fetched[0], { date: '20261021', searchTokens: 'joe', 'program.title': 'G.I. Joe' });
+
+    // A token that is not part of the title (here a channel name) may be missing on some of its airings: no narrowing.
+    await (service as any).findTvReadItemBySlug('syfy', 'joe-night', '20261021');
+    assert.deepEqual(fetched[1], { date: '20261021', 'program.title': 'Joe Night' });
+  } finally {
+    restore();
+    cache.destroy();
+  }
+});

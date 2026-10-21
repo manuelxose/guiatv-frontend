@@ -269,3 +269,57 @@ try {
 } finally {
   await stop(swr);
 }
+
+// Phase 2D-2C.2: an API that accepts the connection and never answers used to hold a render for the whole 20 s
+// SSR timeout. InternalApiBackend now fails each SSR API request after 6 s, so a page whose required data hangs
+// answers 503 well inside the budget (optional sections fall back to empty instead).
+const hanging = [];
+const stalledApi = http.createServer((req) => hanging.push(req));
+stalledApi.listen(0, '127.0.0.1');
+await once(stalledApi, 'listening');
+let stalledSsr;
+try {
+  stalledSsr = await startSsr(port + 4, `http://127.0.0.1:${stalledApi.address().port}`);
+  const started = performance.now();
+  const res = await fetch(`http://127.0.0.1:${port + 4}/canales/la-sexta`, { headers: { host: 'guiaprogramaciontv.com' }, signal: AbortSignal.timeout(30000) });
+  await res.text();
+  const ms = Math.round(performance.now() - started);
+  assert.ok(hanging.length > 0, 'the render never reached the stalled API');
+  assert.equal(res.status, 503, `/canales/la-sexta with a stalled API: status ${res.status}`);
+  assert.match(res.headers.get('x-robots-tag') || '', /noindex/, 'stalled API: x-robots-tag');
+  assert.ok(ms < 15000, `stalled API held the render ${ms} ms (the 20 s SSR timeout, not the 6 s per-request cap)`);
+  console.log(`ok /canales/la-sexta with a stalled API -> 503 noindex in ${ms} ms (per-request cap, not the 20 s render timeout)`);
+} finally {
+  await stop(stalledSsr);
+  stalledApi.closeAllConnections?.();
+  stalledApi.close();
+}
+
+// Same budget when the API answers headers and then trickles a body that never ends: the cap is total duration.
+const trickling = [];
+const tricklingApi = http.createServer((req, res) => {
+  res.writeHead(200, { 'content-type': 'application/json' });
+  res.write('{"success":true,"data":');
+  const drip = setInterval(() => res.write(' '), 500);
+  trickling.push(drip);
+  req.on('close', () => clearInterval(drip));
+});
+tricklingApi.listen(0, '127.0.0.1');
+await once(tricklingApi, 'listening');
+let tricklingSsr;
+try {
+  tricklingSsr = await startSsr(port + 5, `http://127.0.0.1:${tricklingApi.address().port}`);
+  const started = performance.now();
+  const res = await fetch(`http://127.0.0.1:${port + 5}/canales/la-sexta`, { headers: { host: 'guiaprogramaciontv.com' }, signal: AbortSignal.timeout(30000) });
+  await res.text();
+  const ms = Math.round(performance.now() - started);
+  assert.ok(trickling.length > 0, 'the render never reached the trickling API');
+  assert.equal(res.status, 503, `/canales/la-sexta with a trickling API: status ${res.status}`);
+  assert.ok(ms < 15000, `a trickling API body held the render ${ms} ms`);
+  console.log(`ok /canales/la-sexta with a never-ending API body -> 503 in ${ms} ms (total-duration cap)`);
+} finally {
+  await stop(tricklingSsr);
+  trickling.forEach(clearInterval);
+  tricklingApi.closeAllConnections?.();
+  tricklingApi.close();
+}
