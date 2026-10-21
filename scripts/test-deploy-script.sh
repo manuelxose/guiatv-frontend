@@ -83,7 +83,7 @@ rm -f "${FAIL_FLAG}"
 export FAIL_RELEASE=none
 live="$(readlink -f "${SRV}/current")"
 : >"${T}/npm.log"
-( exec 8>"${DEPLOY_LOCK_FILE}"; flock 8; sleep 5 ) &
+( exec 8>"${DEPLOY_LOCK_FILE}"; flock 8; exec sleep 5 ) & # exec: killing the holder must release the lock at once, not after the sleep
 holder=$!
 sleep 0.5
 set +e; bash "${ROOT}/deploy-guiatv.sh" >"${T}/run3.log" 2>&1; code=$?; set -e
