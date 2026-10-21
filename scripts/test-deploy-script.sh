@@ -59,6 +59,8 @@ git -C "${SRV}" reset -q --hard HEAD # only fetched; the deploy script does the 
 bash "${ROOT}/deploy-guiatv.sh" >"${T}/run1.log" 2>&1 || { cat "${T}/run1.log"; fail "deploy must succeed after a history rewrite"; }
 [ "$(git -C "${SRV}" rev-parse HEAD)" = "$(git -C "${T}/origin.git" rev-parse main)" ] || fail "server checkout not aligned with origin/main"
 [ "$(basename "$(readlink -f "${SRV}/current")")" = "R2" ] || fail "release R2 was not activated"
+grep -q "SSR warm-up: /programacion-tv/que-ver-hoy -> 200" "${T}/run1.log" || fail "hub pages not warmed after the SSR restart"
+grep -q "WARN: SSR warm-up" "${T}/run1.log" && fail "a fully warmed run must not warn"
 
 # --- 2. smoke fails on the new release: roll back to R2 --------------------------------------------------------
 touch "${FAIL_FLAG}"

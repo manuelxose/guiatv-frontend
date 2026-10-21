@@ -2,6 +2,7 @@ import express from 'express';
 import { existsSync, readFileSync } from 'node:fs';
 import http from 'node:http';
 import https from 'node:https';
+import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -40,7 +41,13 @@ const backendOrigin = process.env.API_ORIGIN || 'http://127.0.0.1:4000';
 const backendUrl = new URL(backendOrigin);
 const backendClient = backendUrl.protocol === 'https:' ? https : http;
 const SSR_TIMEOUT_MS = 20000;
-const SSR_CACHE_TTL_MS = 5 * 60 * 1000;
+const SSR_CACHE_TTL_MS = Number(process.env.SSR_CACHE_TTL_MS) || 5 * 60 * 1000; // env override: tests only
+// Past the TTL a page is still served for this long while one background render replaces it: a hub render takes
+// 4-22 s on production (2D-2C.1), so a visitor or crawler arriving after expiry no longer waits for (or times out on) it.
+const SSR_STALE_MAX_MS = 30 * 60 * 1000;
+// Marks this process's own refresh requests; random per process, so a header sent through nginx cannot skip the cache.
+const SSR_REFRESH_TOKEN = randomUUID();
+const ssrRefreshing = new Set();
 const SSR_CACHE_MAX_ENTRIES = 200;
 const SSR_ALLOWED_HOSTS = [
   'guiaprogramaciontv.com',
@@ -137,11 +144,39 @@ function stripStatusMarker(html) {
 function getCachedResponse(pathname) {
   const entry = ssrCache.get(pathname);
   if (!entry) return null;
-  if (Date.now() - entry.ts > SSR_CACHE_TTL_MS) {
+  const age = Date.now() - entry.ts;
+  if (age > SSR_STALE_MAX_MS) {
     ssrCache.delete(pathname);
     return null;
   }
-  return entry;
+  return { ...entry, stale: age > SSR_CACHE_TTL_MS };
+}
+
+// One background re-render per path through this server's own pipeline (status, robots, canonical and caching
+// rules all apply). A failed render keeps the stale copy until SSR_STALE_MAX_MS, then requests render live again.
+function refreshInBackground(pathname) {
+  if (ssrRefreshing.has(pathname)) return;
+  ssrRefreshing.add(pathname);
+  const started = Date.now();
+  const done = (outcome) => {
+    ssrRefreshing.delete(pathname);
+    if (outcome !== 200) console.warn(`[SSR] stale refresh ${pathname} -> ${outcome} after ${Date.now() - started} ms`);
+  };
+  http
+    .get(
+      {
+        host: '127.0.0.1',
+        port,
+        path: pathname,
+        headers: { host: 'guiaprogramaciontv.com', 'x-forwarded-proto': 'https', 'x-ssr-refresh': SSR_REFRESH_TOKEN },
+        timeout: SSR_TIMEOUT_MS + 5000,
+      },
+      (res) => res.resume().on('end', () => done(res.statusCode))
+    )
+    .on('timeout', function onTimeout() {
+      this.destroy(new Error('timeout'));
+    })
+    .on('error', (error) => done(error.message));
 }
 
 function setCachedResponse(pathname, statusCode, html) {
@@ -149,6 +184,7 @@ function setCachedResponse(pathname, statusCode, html) {
     const oldestKey = ssrCache.keys().next().value;
     if (oldestKey) ssrCache.delete(oldestKey);
   }
+  ssrCache.delete(pathname);
   ssrCache.set(pathname, { statusCode, html, ts: Date.now() });
 }
 
@@ -380,10 +416,15 @@ async function redirectLegacyCatalog(req, res, catalogId) {
     if (!apiResponse.ok && apiResponse.status !== 404 && apiResponse.status !== 410) {
       return sendCsrFallback(req, res, 503);
     }
+    // 410 is the API's call (proof of permanent removal); a plain miss stays 404.
+    if (apiResponse.status === 410) return res.status(410).send('Gone');
     if (apiResponse.ok) {
       const payload = await apiResponse.json();
       const detailPath = payload?.data?.detailPath;
-      if (detailPath && detailPath !== req.path) return res.redirect(301, detailPath);
+      // Same-site content paths only: never the home page, another host (`//x`) or a redirect loop.
+      if (typeof detailPath === 'string' && /^\/[^/]/.test(detailPath) && detailPath !== req.path) {
+        return res.redirect(301, detailPath);
+      }
     }
   } catch {
     return sendCsrFallback(req, res, 503);
@@ -427,11 +468,14 @@ app.get('*', async (req, res) => {
   const noindexRoute = isNoindexRoute(req.originalUrl);
   const publicCacheable = !hasAuthCookie && !noindexRoute;
 
-  if (publicCacheable) {
+  const isRefresh = req.headers['x-ssr-refresh'] === SSR_REFRESH_TOKEN;
+
+  if (publicCacheable && !isRefresh) {
     const cached = getCachedResponse(cachePath);
     if (cached) {
-      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
-      res.setHeader('X-SSR-Cache', 'HIT');
+      res.setHeader('Cache-Control', cached.stale ? 'public, max-age=60, s-maxage=60' : 'public, max-age=60, s-maxage=300');
+      res.setHeader('X-SSR-Cache', cached.stale ? 'STALE' : 'HIT');
+      if (cached.stale) refreshInBackground(cachePath);
       applyRobotsHeader(cached.html, res);
       return res.status(cached.statusCode).send(cached.html);
     }
