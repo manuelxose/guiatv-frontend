@@ -4,7 +4,7 @@ import { adjudicate, type Assessment, type Assessor } from './ContentIdentityAdj
 import type { EvidenceVerdict } from './ContentIdentityEvidence';
 
 const verdict = (candidateId: string, decision: EvidenceVerdict['decision'], kind: EvidenceVerdict['kind'] = 'series'): EvidenceVerdict => ({
-  candidateId, key: candidateId, kind, title: candidateId, path: `/series/${candidateId}`, decision, kindBasis: 'category',
+  candidateId, key: candidateId, kind, title: candidateId, path: `/series/${candidateId}`, decision, assurance: 'independently_supported', kindBasis: 'category', unverified: [],
   support: [], contradictions: [], missing: [],
 });
 const answer = (over: Partial<Assessment> = {}): Assessment => ({

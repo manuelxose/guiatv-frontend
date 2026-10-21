@@ -76,17 +76,19 @@ async function shadow(from: string, to: string, sample?: SampleOptions) {
   if (!/^\d{8}$/.test(from) || !/^\d{8}$/.test(to)) throw new Error('dates are YYYYMMDD');
   const ingestion = createContentIdentityIngestion('shadow');
   for (const date of dates(from, to)) {
-    const airings = await TVReadAiringModel.find({ date }, { id: 1, program: 1, sourceProvenance: 1, 'channel.id': 1, 'channel.name': 1, 'channel.aliases': 1 }).lean().exec();
+    const airings = await TVReadAiringModel.find({ date }, { id: 1, program: 1, sourceProvenance: 1, 'channel.id': 1, 'channel.name': 1, 'channel.aliases': 1, 'airing.start': 1, 'airing.end': 1 }).lean().exec();
     // The EPG year lives on the source programme, not on the airing.
     const programIds = airings.map((a: any) => a.sourceProvenance?.legacyProgramIds?.[0]).filter(Boolean);
-    const years = new Map(
-      (await ProgramModel.find({ id: { $in: programIds }, year: { $exists: true } }, { id: 1, year: 1 }).lean().exec()).map(
-        (p: any) => [p.id, p.year] as const
-      )
-    );
-    const yearByAiring = new Map(airings.map((a: any) => [a.id, years.get(a.sourceProvenance?.legacyProgramIds?.[0])] as const));
+    const programs = await ProgramModel.find(
+      { id: { $in: programIds }, year: { $exists: true } },
+      { id: 1, year: 1, 'sourceProvenance.yearProvenance.rawXmltvYear': 1 }
+    ).lean().exec();
+    const sourceOf = (a: any) => a.sourceProvenance?.legacyProgramIds?.[0];
+    const years = new Map(programs.map((p: any) => [p.id, p] as const));
+    const yearByAiring = new Map(airings.map((a: any) => [a.id, (years.get(sourceOf(a)) as any)?.year] as const));
+    const rawYearByAiring = new Map(airings.map((a: any) => [a.id, (years.get(sourceOf(a)) as any)?.sourceProvenance?.yearProvenance?.rawXmltvYear] as const));
     const traces: IdentityTrace[] | undefined = sample ? [] : undefined;
-    const report = await ingestion.run(date, observationsFromAirings(airings, yearByAiring), traces);
+    const report = await ingestion.run(date, observationsFromAirings(airings, yearByAiring, rawYearByAiring), traces);
     console.log(JSON.stringify(report));
     if (sample && traces) writeSample(date, report, traces, sample);
   }

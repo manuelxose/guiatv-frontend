@@ -22,7 +22,7 @@ import {
 import { newEntityId, titleKeyId } from '@/domain/services/contentIdentity';
 import { PRIMARY_EPG_SOURCE_URL } from '@/shared/config/epgSources';
 import { ContentIdentityService } from './ContentIdentityService';
-import { broadcasterKey, ContentIdentityIngestion, IdentityObservation, IdentityTrace, runContentIdentity } from './ContentIdentityIngestion';
+import { broadcasterKey, ContentIdentityIngestion, IdentityObservation, IdentityTrace, observationsFromAirings, runContentIdentity } from './ContentIdentityIngestion';
 import { auditClasses, buildReviewRows, scoreReview, summarizeTraces, toCsv } from './ContentIdentityAudit';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
@@ -279,6 +279,17 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       ], 'one broadcaster from two feeds ("ETB 2", "ETB2.TV") is one key');
       assert.deepEqual([broadcasterKey({ id: 'tv_canaria', names: ['TV Canaria'] }), broadcasterKey({ id: 'canarias_tv', names: ['Canarias.TV'] })], ['tvcanaria', 'canarias'], 'different names stay apart');
       assert.equal(broadcasterKey({ id: 'x_tv', names: [] }), 'x_tv');
+
+      // 2D-2G: broadcaster evidence the sync never writes from TMDB.
+      const evidence: IdentityTrace[] = [];
+      await ingestion('shadow').run('20261020', [
+        obs('Alerta Cobra T22 Ep09', { genre: 'Series', minutes: 50, editorialCategory: 'Series' }),
+        obs('Alerta Cobra T24 Ep17', { genre: 'Series', minutes: 45, editorialCategory: 'Series' }),
+        obs('Alerta Cobra T2026 E4804', { genre: 'Series', editorialCategory: 'Series' }),
+      ], evidence);
+      assert.deepEqual(evidence.find((t) => t.title === 'Alerta Cobra')?.broadcaster, { genres: ['Series'], minutes: { min: 45, max: 50 }, maxSeason: 24 }, 'a 4-digit season is a year, not a season');
+      const [airing] = observationsFromAirings([{ id: 'x', program: { title: 'T', genre: 'Cine' }, airing: { start: '2026-10-20T20:00:00Z', end: '2026-10-20T22:05:00Z' } }], new Map());
+      assert.deepEqual([airing.genre, airing.minutes], ['Cine', 125]);
       assert.deepEqual(await contentCollections(), []);
     });
 

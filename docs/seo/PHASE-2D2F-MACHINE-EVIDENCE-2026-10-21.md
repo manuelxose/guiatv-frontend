@@ -1,5 +1,10 @@
 # Phase 2D-2F: automated machine-evidence quality gate (2026-10-21)
 
+> **Superseded in part by 2D-2G** (`PHASE-2D2G-EVIDENCE-PROVENANCE-2026-10-21.md`). The legacy-URL
+> row in §2 is wrong: legacy owners are EPG brand titles and TMDB guesses, so they prove ownership,
+> not identity. "529 of 3,145" mixed two levels; it is 529 of 1,662 proposed entities. Under 2D-2G
+> rules, the same data gives 163 independently supported entities.
+
 Status legend: **[V]** verified by a run recorded here, **[P]** proposed, not executed.
 
 ## 0. Summary
