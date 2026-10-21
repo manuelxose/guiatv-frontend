@@ -69,82 +69,82 @@
  "after": {
   "airings": 11211,
   "excluded": {
-   "generic_title": 63,
-   "unkeyable_title": 35,
+   "generic_title": 108,
+   "unkeyable_title": 36,
    "episode_without_work": 45,
    "sport_event": 1370
   },
   "titles": {
-   "work": 9189,
-   "episode:title_marker": 1328,
-   "uncertain": 258,
-   "episode:corroborated": 162,
-   "episode:title_separator": 129,
+   "work": 9027,
+   "episode:title_marker": 1508,
+   "uncertain": 252,
+   "episode:corroborated": 159,
+   "episode:title_separator": 74,
    "title_part": 2
   },
-  "candidates": 3248,
-  "created": 1694,
+  "candidates": 3189,
+  "created": 1664,
   "createdByKind": {
-   "show": 1122,
-   "series": 257,
-   "movie": 315
+   "show": 1099,
+   "series": 251,
+   "movie": 314
   },
-  "machineFlagged": 140,
+  "machineFlagged": 134,
   "machineFlags": {
-   "trailing_number": 134,
-   "slot_word": 3,
-   "subtitle_separator": 2,
-   "season_episode_marker": 1
+   "trailing_number": 129,
+   "slot_word": 1,
+   "subtitle_separator": 4
   },
   "duplicateSlugGroups": 0,
   "crossKindSplits": 0,
   "crossKindSplitsWithTwoPaths": 0,
   "canonicalCollisions": 0,
-  "unknownKindRate": 0.4430418719211823,
-  "pathlessRate": 0.13105076741440377,
+  "unknownKindRate": 0.4418312950768266,
+  "pathlessRate": 0.1346153846153846,
   "tmdbEvidence": {
-   "none": 2896,
-   "confirmed": 302,
+   "none": 2841,
+   "confirmed": 300,
    "mixed": 7,
-   "unconfirmed": 43
+   "unconfirmed": 41
   },
   "tmdbAirings": {
-   "confirmed": 831,
-   "unconfirmed": 106
+   "confirmed": 821,
+   "unconfirmed": 101
   },
   "paths": {
-   "proposed": 1472,
+   "proposed": 1440,
    "pathless": {
     "unsupported_slug": 2,
-    "historic_unverified": 211,
+    "historic_unverified": 213,
     "historic_conflict": 4,
     "historic_ambiguous": 5
    },
    "refused": {
     "unsupported_slug": 2,
-    "historic_unverified": 253,
+    "historic_unverified": 254,
     "historic_conflict": 4,
-    "historic_ambiguous": 17,
+    "historic_ambiguous": 15,
     "inventory_review": 1
    },
-   "historicOwner": 1299,
-   "ownershipConflictsRefused": 21
+   "historicOwner": 1278,
+   "ownershipConflictsRefused": 19
   },
   "reviewQueue": {
    "cross_kind_conflict": 29
   },
   "unresolved": {
-   "unknown_kind": 1365,
+   "unknown_kind": 1335,
    "title_uncertain": 119
   }
  },
  "fates": {
-  "kept": 1554,
+  "kept": 1522,
+  "consolidated": 282,
+  "removed:unkeyable_title": 1,
+  "renamed": 166,
   "unresolved:title_uncertain": 45,
-  "renamed": 167,
-  "consolidated": 258,
   "unresolved:cross_kind_conflict": 74,
-  "removed:generic_title": 3,
+  "removed:generic_title": 11,
   "removed:episode_without_work": 20
  },
  "consolidations": [
@@ -168,6 +168,23 @@
    "distinctOldKinds": 1
   },
   {
+   "kind": "show",
+   "title": "Cocina cosmopolita de Rachel Khoo",
+   "path": "/programas/cocina-cosmopolita-de-rachel-khoo",
+   "from": [
+    "show:Cocina cosmopolita de Rachel Khoo T1 · Archipiélago sueco",
+    "show:Cocina cosmopolita de Rachel Khoo T1 · Barcelona",
+    "show:Cocina cosmopolita de Rachel Khoo T1 · Costa Brava",
+    "show:Cocina cosmopolita de Rachel Khoo T1 · Estambul",
+    "show:Cocina cosmopolita de Rachel Khoo T1 · Estocolmo",
+    "show:Cocina cosmopolita de Rachel Khoo T1 · Islas Príncipe",
+    "show:Cocina cosmopolita de Rachel Khoo: La costa Amalfitana T1 · Costa Amalfitana",
+    "show:Cocina cosmopolita de Rachel Khoo T1 · Nápoles",
+    "show:Cocina cosmopolita de Rachel Khoo T1 · Niza"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
    "kind": "series",
    "title": "Henry Danger",
    "path": null,
@@ -186,22 +203,6 @@
   },
   {
    "kind": "show",
-   "title": "Cocina cosmopolita de Rachel Khoo",
-   "path": "/programas/cocina-cosmopolita-de-rachel-khoo",
-   "from": [
-    "show:Cocina cosmopolita de Rachel Khoo T1 · Archipiélago sueco",
-    "show:Cocina cosmopolita de Rachel Khoo T1 · Barcelona",
-    "show:Cocina cosmopolita de Rachel Khoo T1 · Costa Brava",
-    "show:Cocina cosmopolita de Rachel Khoo T1 · Estambul",
-    "show:Cocina cosmopolita de Rachel Khoo T1 · Estocolmo",
-    "show:Cocina cosmopolita de Rachel Khoo T1 · Islas Príncipe",
-    "show:Cocina cosmopolita de Rachel Khoo T1 · Nápoles",
-    "show:Cocina cosmopolita de Rachel Khoo T1 · Niza"
-   ],
-   "distinctOldKinds": 1
-  },
-  {
-   "kind": "show",
    "title": "Amanda y Alan: reformas a la italiana",
    "path": "/programas/amanda-y-alan-reformas-a-la-italiana",
    "from": [
@@ -210,7 +211,9 @@
     "show:Amanda y Alan: reformas a la italiana T1 · 5",
     "show:Amanda y Alan: reformas a la italiana T1 · 6",
     "show:Amanda y Alan: reformas a la italiana T1 · 7",
-    "show:Amanda y Alan: reformas a la italiana T1 · 8"
+    "show:Amanda y Alan: reformas a la italiana T1 · 8",
+    "show:Amanda y Alan: reformas a la italiana: Amanda y Alan: reformas a la italiana 1",
+    "show:Amanda y Alan: reformas a la italiana: Amanda y Alan: reformas a la italiana 2"
    ],
    "distinctOldKinds": 1
   },
@@ -347,6 +350,18 @@
    "distinctOldKinds": 1
   },
   {
+   "kind": "show",
+   "title": "Así se hace (MAX)",
+   "path": "/programas/asi-se-hace-max",
+   "from": [
+    "show:Así se hace (MAX): Arcilla/Ciruelas deshuesadas/Espuelas T12 · Arcilla, ciruelas sin hueso, espuelas y neumáticos de poliuretano",
+    "show:Así se hace (MAX): Césped/Carne de ternera curada/Bolos T12 · Césped, tiras de carne curada, trituradoras de madera y bolos",
+    "show:Así se hace (MAX): Multiherramientas, aceite de jojoba y marionetas T12 · Herramientas multiuso, aceite de jojoba y marionetas",
+    "show:Así se hace (MAX): Tasers/Sopa enlatada/Trampolines T12 · Táseres, sopa enlatada, arpas de boca y trampolines"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
    "kind": "series",
    "title": "Autopista hacia el cielo",
    "path": "/series/autopista-hacia-el-cielo",
@@ -391,6 +406,18 @@
     "show:Leo Talks: ¿Bien, o en Familia",
     "show:Leo Talks T7 · Crimen desorganizado",
     "show:Leo Talks T7 · Expediente Harlem"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "León",
+   "path": "/series/leon",
+   "from": [
+    "series:León: Capítulo cuatro: Ser rey E4 · León",
+    "series:León: Capítulo dos: Hermanos de sangre E2 · León",
+    "series:León: Capítulo tres: El mayor sacrificio E3 · León",
+    "series:León: Capítulo uno: Ha nacido un príncipe E1 · León"
    ],
    "distinctOldKinds": 1
   },
@@ -576,6 +603,28 @@
   },
   {
    "kind": "show",
+   "title": "Joyas sobre ruedas",
+   "path": null,
+   "from": [
+    "show:Joyas sobre ruedas",
+    "show:Joyas sobre ruedas T22 · Este caballo necesita que lo echen",
+    "show:Joyas sobre ruedas: Fiat X1//9 T23 · Fiat X1/9"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "L'INFORMATIU",
+   "path": "/programas/linformatiu",
+   "from": [
+    "show:L'INFORMATIU",
+    "show:L'Informatiu - Anoia",
+    "show:L'INFORMATIU (R)"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
    "title": "NOTÍCIES EN XARXA",
    "path": "/programas/noticies-en-xarxa",
    "from": [
@@ -587,12 +636,43 @@
   },
   {
    "kind": "show",
+   "title": "Pesca radical",
+   "path": null,
+   "from": [
+    "show:Pesca radical",
+    "show:Pesca radical T14 · Sangre y agua",
+    "show:Pesca radical: Sin puerto seguro · Pesca radical, Season 14: Sin puerto seguro"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
    "title": "Toyride",
    "path": "/programas/toyride",
    "from": [
     "show:Toyride T1 E9",
     "show:Toyride T1 E7 · Impulse Novelties",
     "show:Toyride T1 E8 · Lumberjill Leisurecrafts"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "10 Notícies",
+   "path": "/programas/10-noticies",
+   "from": [
+    "show:10 Notícies",
+    "show:10 Notícies (R)"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "20 Preguntas a... 7",
+   "path": "/series/20-preguntas-a-7",
+   "from": [
+    "series:20 Preguntas a... 7: Episodios 13-14",
+    "series:20 Preguntas a... 7: Episodios 3-4"
    ],
    "distinctOldKinds": 1
   },
@@ -818,31 +898,21 @@
   },
   {
    "kind": "show",
-   "title": "Joyas sobre ruedas",
-   "path": null,
+   "title": "Infovallès: Dimarts",
+   "path": "/programas/infovalles-dimarts",
    "from": [
-    "show:Joyas sobre ruedas",
-    "show:Joyas sobre ruedas T22 · Este caballo necesita que lo echen"
+    "show:Infovallès: Dimarts",
+    "show:Infovallès (R): Dimarts"
    ],
    "distinctOldKinds": 1
   },
   {
    "kind": "show",
-   "title": "Joyas sobre ruedas: Fiat X1//9",
-   "path": "/programas/joyas-sobre-ruedas-fiat-x1-9",
+   "title": "K Culture Dive",
+   "path": "/programas/k-culture-dive",
    "from": [
-    "show:Joyas sobre ruedas: Fiat X1//9",
-    "show:Joyas sobre ruedas: Fiat X1//9 T23 · Fiat X1/9"
-   ],
-   "distinctOldKinds": 1
-  },
-  {
-   "kind": "show",
-   "title": "L'INFORMATIU",
-   "path": "/programas/linformatiu",
-   "from": [
-    "show:L'INFORMATIU",
-    "show:L'Informatiu - Anoia"
+    "show:K Culture Dive [l] E1",
+    "show:K Culture Dive [r] E1"
    ],
    "distinctOldKinds": 1
   },
@@ -858,10 +928,10 @@
   },
   {
    "kind": "show",
-   "title": "La hora de La 1: La hora de la actualidad",
-   "path": "/programas/la-hora-de-la-1-la-hora-de-la-actualidad",
+   "title": "La hora de La 1",
+   "path": "/programas/la-hora-de-la-1",
    "from": [
-    "show:La hora de La 1: La hora de la actualidad",
+    "show:La hora de la 1",
     "show:La hora de La 1: La hora de la actualidad T10 · La hora de la 1"
    ],
    "distinctOldKinds": 1
@@ -958,6 +1028,46 @@
   },
   {
    "kind": "show",
+   "title": "News Generation",
+   "path": "/programas/news-generation",
+   "from": [
+    "show:News Generation [l] E1",
+    "show:News Generation [r] E1"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "Noticias Interalmeriatv",
+   "path": "/programas/noticias-interalmeriatv",
+   "from": [
+    "show:Noticias Interalmeriatv",
+    "show:Noticias Interalmeriatv (R)"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "NOTÍCIES MIGDIA",
+   "path": "/programas/noticies-migdia",
+   "from": [
+    "show:NOTÍCIES MIGDIA",
+    "show:NOTÍCIES Migdia (R)"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "NOTÍCIES VESPRE",
+   "path": "/programas/noticies-vespre",
+   "from": [
+    "show:NOTÍCIES VESPRE",
+    "show:NOTÍCIES Vespre (R)"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
    "title": "Pause",
    "path": "/programas/pause",
    "from": [
@@ -968,51 +1078,11 @@
   },
   {
    "kind": "show",
-   "title": "Pesca radical",
-   "path": null,
-   "from": [
-    "show:Pesca radical",
-    "show:Pesca radical T14 · Sangre y agua"
-   ],
-   "distinctOldKinds": 1
-  },
-  {
-   "kind": "show",
-   "title": "Pesca radical: Sin puerto seguro",
-   "path": "/programas/pesca-radical-sin-puerto-seguro",
-   "from": [
-    "show:Pesca radical: Sin puerto seguro",
-    "show:Pesca radical: Sin puerto seguro · Pesca radical, Season 14: Sin puerto seguro"
-   ],
-   "distinctOldKinds": 1
-  },
-  {
-   "kind": "show",
-   "title": "Premier Corner by Guiness 0,0: Pepe Reina",
-   "path": "/programas/premier-corner-by-guiness-0-0-pepe-reina",
-   "from": [
-    "show:Premier Corner by Guiness 0,0: Pepe Reina",
-    "show:Premier Corner by Guiness 0,0: Pepe Reina T2026 · Premier Corner: Pepe Reina"
-   ],
-   "distinctOldKinds": 1
-  },
-  {
-   "kind": "show",
    "title": "Roast Battle (España)",
    "path": "/programas/roast-battle-espana",
    "from": [
     "show:Roast Battle (España)",
     "show:Roast Battle (España) T1 · Los mejores golpes bajos"
-   ],
-   "distinctOldKinds": 1
-  },
-  {
-   "kind": "series",
-   "title": "Royals",
-   "path": "/series/royals",
-   "from": [
-    "series:Royals - La Casa Danesa: Episodios 5-6",
-    "series:Royals - La La Casa Danesa: Episodios 1-2"
    ],
    "distinctOldKinds": 1
   },
@@ -1083,6 +1153,16 @@
    "from": [
     "series:Vigilantes T1 E3",
     "series:Vigilantes T1 Ep03"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "Within The Frame",
+   "path": "/programas/within-the-frame",
+   "from": [
+    "show:Within The Frame [l] E1",
+    "show:Within The Frame [r] E1"
    ],
    "distinctOldKinds": 1
   }
@@ -1405,7 +1485,7 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "10 Notícies",
    "path": "/programas/10-noticies",
@@ -1419,16 +1499,16 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "10 Notícies (R)",
    "path": "/programas/10-noticies-r",
    "now": [
     {
      "kind": "show",
-     "title": "10 Notícies (R)",
+     "title": "10 Notícies",
      "decision": "create",
-     "path": "/programas/10-noticies-r"
+     "path": "/programas/10-noticies"
     }
    ]
   },
@@ -1475,58 +1555,59 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "removed:unkeyable_title",
    "kind": "show",
    "title": "180º (R)",
    "path": "/programas/180-r",
    "now": [
     {
-     "kind": "show",
+     "kind": "unknown",
      "title": "180º (R)",
-     "decision": "create",
-     "path": "/programas/180-r"
+     "decision": "rejected",
+     "reason": "unkeyable_title",
+     "path": null
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "renamed",
    "kind": "series",
    "title": "20 Preguntas a... 5: Episodios 8-9",
    "path": "/series/20-preguntas-a-5-episodios-8-9",
    "now": [
     {
      "kind": "series",
-     "title": "20 Preguntas a... 5: Episodios 8-9",
+     "title": "20 Preguntas a... 5",
      "decision": "create",
-     "path": "/series/20-preguntas-a-5-episodios-8-9"
+     "path": "/series/20-preguntas-a-5"
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "series",
    "title": "20 Preguntas a... 7: Episodios 13-14",
    "path": "/series/20-preguntas-a-7-episodios-13-14",
    "now": [
     {
      "kind": "series",
-     "title": "20 Preguntas a... 7: Episodios 13-14",
+     "title": "20 Preguntas a... 7",
      "decision": "create",
-     "path": "/series/20-preguntas-a-7-episodios-13-14"
+     "path": "/series/20-preguntas-a-7"
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "series",
    "title": "20 Preguntas a... 7: Episodios 3-4",
    "path": "/series/20-preguntas-a-7-episodios-3-4",
    "now": [
     {
      "kind": "series",
-     "title": "20 Preguntas a... 7: Episodios 3-4",
+     "title": "20 Preguntas a... 7",
      "decision": "create",
-     "path": "/series/20-preguntas-a-7-episodios-3-4"
+     "path": "/series/20-preguntas-a-7"
     }
    ]
   },
@@ -2795,30 +2876,30 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Amanda y Alan: reformas a la italiana: Amanda y Alan: reformas a la italiana 1",
    "path": "/programas/amanda-y-alan-reformas-a-la-italiana-amanda-y-alan-reformas-a-la-italiana-1",
    "now": [
     {
      "kind": "show",
-     "title": "Amanda y Alan: reformas a la italiana: Amanda y Alan: reformas a la italiana 1",
+     "title": "Amanda y Alan: reformas a la italiana",
      "decision": "create",
-     "path": "/programas/amanda-y-alan-reformas-a-la-italiana-amanda-y-alan-reformas-a-la-italiana-1"
+     "path": "/programas/amanda-y-alan-reformas-a-la-italiana"
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Amanda y Alan: reformas a la italiana: Amanda y Alan: reformas a la italiana 2",
    "path": "/programas/amanda-y-alan-reformas-a-la-italiana-amanda-y-alan-reformas-a-la-italiana-2",
    "now": [
     {
      "kind": "show",
-     "title": "Amanda y Alan: reformas a la italiana: Amanda y Alan: reformas a la italiana 2",
+     "title": "Amanda y Alan: reformas a la italiana",
      "decision": "create",
-     "path": "/programas/amanda-y-alan-reformas-a-la-italiana-amanda-y-alan-reformas-a-la-italiana-2"
+     "path": "/programas/amanda-y-alan-reformas-a-la-italiana"
     }
    ]
   },
@@ -3320,7 +3401,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Arirang News 12:00 E1",
+     "title": "Arirang News 12:00",
      "decision": "create",
      "path": "/programas/arirang-news-12-00"
     }
@@ -3524,58 +3605,58 @@
    ]
   },
   {
-   "fate": "renamed",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Así se hace (MAX): Arcilla/Ciruelas deshuesadas/Espuelas T12 · Arcilla, ciruelas sin hueso, espuelas y neumáticos de poliuretano",
    "path": "/programas/asi-se-hace-max-arcilla-ciruelas-deshuesadas-espuelas-arcilla-ciruelas-sin-hueso",
    "now": [
     {
      "kind": "show",
-     "title": "Así se hace (MAX): Arcilla/Ciruelas deshuesadas/Espuelas",
+     "title": "Así se hace (MAX)",
      "decision": "create",
-     "path": "/programas/asi-se-hace-max-arcilla-ciruelas-deshuesadas-espuelas"
+     "path": "/programas/asi-se-hace-max"
     }
    ]
   },
   {
-   "fate": "renamed",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Así se hace (MAX): Césped/Carne de ternera curada/Bolos T12 · Césped, tiras de carne curada, trituradoras de madera y bolos",
    "path": "/programas/asi-se-hace-max-cesped-carne-de-ternera-curada-bolos-cesped-tiras-de-carne",
    "now": [
     {
      "kind": "show",
-     "title": "Así se hace (MAX): Césped/Carne de ternera curada/Bolos",
+     "title": "Así se hace (MAX)",
      "decision": "create",
-     "path": "/programas/asi-se-hace-max-cesped-carne-de-ternera-curada-bolos"
+     "path": "/programas/asi-se-hace-max"
     }
    ]
   },
   {
-   "fate": "renamed",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Así se hace (MAX): Multiherramientas, aceite de jojoba y marionetas T12 · Herramientas multiuso, aceite de jojoba y marionetas",
    "path": "/programas/asi-se-hace-max-multiherramientas-aceite-de-jojoba-y-marionetas-herramientas",
    "now": [
     {
      "kind": "show",
-     "title": "Así se hace (MAX): Multiherramientas, aceite de jojoba y marionetas",
+     "title": "Así se hace (MAX)",
      "decision": "create",
-     "path": "/programas/asi-se-hace-max-multiherramientas-aceite-de-jojoba-y-marionetas"
+     "path": "/programas/asi-se-hace-max"
     }
    ]
   },
   {
-   "fate": "renamed",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Así se hace (MAX): Tasers/Sopa enlatada/Trampolines T12 · Táseres, sopa enlatada, arpas de boca y trampolines",
    "path": "/programas/asi-se-hace-max-tasers-sopa-enlatada-trampolines-taseres-sopa-enlatada-arpas-de",
    "now": [
     {
      "kind": "show",
-     "title": "Así se hace (MAX): Tasers/Sopa enlatada/Trampolines",
+     "title": "Así se hace (MAX)",
      "decision": "create",
-     "path": "/programas/asi-se-hace-max-tasers-sopa-enlatada-trampolines"
+     "path": "/programas/asi-se-hace-max"
     }
    ]
   },
@@ -3834,16 +3915,17 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "removed:generic_title",
    "kind": "show",
    "title": "Avance En compañía de Loli",
    "path": "/programas/avance-en-compania-de-loli",
    "now": [
     {
-     "kind": "show",
+     "kind": "unknown",
      "title": "Avance En compañía de Loli",
-     "decision": "create",
-     "path": "/programas/avance-en-compania-de-loli"
+     "decision": "rejected",
+     "reason": "generic_title",
+     "path": null
     }
    ]
   },
@@ -7368,16 +7450,16 @@
    ]
   },
   {
-   "fate": "renamed",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Cocina cosmopolita de Rachel Khoo: La costa Amalfitana T1 · Costa Amalfitana",
    "path": "/programas/cocina-cosmopolita-de-rachel-khoo-la-costa-amalfitana-costa-amalfitana",
    "now": [
     {
      "kind": "show",
-     "title": "Cocina cosmopolita de Rachel Khoo: La costa Amalfitana",
+     "title": "Cocina cosmopolita de Rachel Khoo",
      "decision": "create",
-     "path": "/programas/cocina-cosmopolita-de-rachel-khoo-la-costa-amalfitana"
+     "path": "/programas/cocina-cosmopolita-de-rachel-khoo"
     }
    ]
   },
@@ -8179,7 +8261,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Coronilla de la Divina Misericordia - Latinoamérica T2020",
+     "title": "Coronilla de la Divina Misericordia - Latinoamérica",
      "decision": "create",
      "path": "/programas/coronilla-de-la-divina-misericordia-latinoamerica"
     }
@@ -8221,7 +8303,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Countryside Escape E13",
+     "title": "Countryside Escape",
      "decision": "create",
      "path": "/programas/countryside-escape"
     }
@@ -8594,16 +8676,16 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "renamed",
    "kind": "show",
    "title": "Culture Crunch [l] E1",
    "path": "/programas/culture-crunch-l",
    "now": [
     {
      "kind": "show",
-     "title": "Culture Crunch [l] E1",
+     "title": "Culture Crunch",
      "decision": "create",
-     "path": "/programas/culture-crunch-l"
+     "path": "/programas/culture-crunch"
     }
    ]
   },
@@ -9127,16 +9209,16 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "renamed",
    "kind": "series",
    "title": "Dexter (Teleserie)",
    "path": "/series/dexter-teleserie",
    "now": [
     {
      "kind": "series",
-     "title": "Dexter (Teleserie)",
+     "title": "Dexter",
      "decision": "create",
-     "path": "/series/dexter-teleserie"
+     "path": null
     }
    ]
   },
@@ -9270,16 +9352,17 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "removed:generic_title",
    "kind": "series",
    "title": "Dibujos Animados T1",
    "path": "/series/dibujos-animados",
    "now": [
     {
-     "kind": "series",
-     "title": "Dibujos Animados",
-     "decision": "create",
-     "path": "/series/dibujos-animados"
+     "kind": "unknown",
+     "title": "Dibujos Animados T1",
+     "decision": "rejected",
+     "reason": "generic_title",
+     "path": null
     }
    ]
   },
@@ -9291,7 +9374,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Diplomat's Archive: Hidden Stories E66",
+     "title": "Diplomat's Archive: Hidden Stories",
      "decision": "create",
      "path": "/programas/diplomats-archive-hidden-stories"
     }
@@ -9382,16 +9465,17 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "removed:generic_title",
    "kind": "series",
    "title": "DOC",
    "path": "/series/doc-2025",
    "now": [
     {
-     "kind": "series",
+     "kind": "unknown",
      "title": "DOC",
-     "decision": "create",
-     "path": "/series/doc-2025"
+     "decision": "rejected",
+     "reason": "generic_title",
+     "path": null
     }
    ]
   },
@@ -9466,16 +9550,24 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "removed:generic_title",
    "kind": "show",
    "title": "DOCUMENTAL",
    "path": "/programas/documental-2016",
    "now": [
     {
-     "kind": "show",
+     "kind": "unknown",
      "title": "DOCUMENTAL",
-     "decision": "create",
-     "path": "/programas/documental-2016"
+     "decision": "rejected",
+     "reason": "generic_title",
+     "path": null
+    },
+    {
+     "kind": "unknown",
+     "title": "Documental",
+     "decision": "rejected",
+     "reason": "generic_title",
+     "path": null
     }
    ]
   },
@@ -11971,16 +12063,17 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "removed:generic_title",
    "kind": "show",
    "title": "Entrevista",
    "path": "/programas/entrevista",
    "now": [
     {
-     "kind": "show",
+     "kind": "unknown",
      "title": "Entrevista",
-     "decision": "create",
-     "path": "/programas/entrevista"
+     "decision": "rejected",
+     "reason": "generic_title",
+     "path": null
     }
    ]
   },
@@ -13162,7 +13255,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Familia, fe y finanzas T2026",
+     "title": "Familia, fe y finanzas",
      "decision": "create",
      "path": "/programas/familia-fe-y-finanzas"
     }
@@ -14456,7 +14549,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Gugak The Music Of Korea E144",
+     "title": "Gugak The Music Of Korea",
      "decision": "create",
      "path": "/programas/gugak-the-music-of-korea"
     }
@@ -14583,7 +14676,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Hanok Scene E3",
+     "title": "Hanok Scene",
      "decision": "create",
      "path": "/programas/hanok-scene"
     }
@@ -14920,7 +15013,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Heritage Walks With Little Friend E2",
+     "title": "Heritage Walks With Little Friend",
      "decision": "create",
      "path": "/programas/heritage-walks-with-little-friend"
     }
@@ -15839,7 +15932,7 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Infovallès: Dimarts",
    "path": "/programas/infovalles-dimarts",
@@ -15853,16 +15946,16 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Infovallès (R): Dimarts",
    "path": "/programas/infovalles-r-dimarts",
    "now": [
     {
      "kind": "show",
-     "title": "Infovallès (R): Dimarts",
+     "title": "Infovallès: Dimarts",
      "decision": "create",
-     "path": "/programas/infovalles-r-dimarts"
+     "path": "/programas/infovalles-dimarts"
     }
    ]
   },
@@ -16259,7 +16352,7 @@
    ]
   },
   {
-   "fate": "consolidated",
+   "fate": "kept",
    "kind": "show",
    "title": "Joyas sobre ruedas: Fiat X1//9",
    "path": "/programas/joyas-sobre-ruedas-fiat-x1-9",
@@ -16280,9 +16373,9 @@
    "now": [
     {
      "kind": "show",
-     "title": "Joyas sobre ruedas: Fiat X1//9",
+     "title": "Joyas sobre ruedas",
      "decision": "create",
-     "path": "/programas/joyas-sobre-ruedas-fiat-x1-9"
+     "path": null
     }
    ]
   },
@@ -16420,37 +16513,37 @@
    "now": [
     {
      "kind": "show",
-     "title": "K Arts Artists E33",
+     "title": "K Arts Artists",
      "decision": "create",
      "path": "/programas/k-arts-artists"
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "K Culture Dive [l] E1",
    "path": "/programas/k-culture-dive-l",
    "now": [
     {
      "kind": "show",
-     "title": "K Culture Dive [l] E1",
+     "title": "K Culture Dive",
      "decision": "create",
-     "path": "/programas/k-culture-dive-l"
+     "path": "/programas/k-culture-dive"
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "K Culture Dive [r] E1",
    "path": "/programas/k-culture-dive-r",
    "now": [
     {
      "kind": "show",
-     "title": "K Culture Dive [r] E1",
+     "title": "K Culture Dive",
      "decision": "create",
-     "path": "/programas/k-culture-dive-r"
+     "path": "/programas/k-culture-dive"
     }
    ]
   },
@@ -16462,7 +16555,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "K Culture Minutes: K Now E38",
+     "title": "K Culture Minutes: K Now",
      "decision": "create",
      "path": "/programas/k-culture-minutes-k-now"
     }
@@ -16476,7 +16569,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "K Culture Minutes: K People E42",
+     "title": "K Culture Minutes: K People",
      "decision": "create",
      "path": "/programas/k-culture-minutes-k-people"
     }
@@ -16780,16 +16873,16 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "L'INFORMATIU (R)",
    "path": "/programas/linformatiu-r",
    "now": [
     {
      "kind": "show",
-     "title": "L'INFORMATIU (R)",
+     "title": "L'INFORMATIU",
      "decision": "create",
-     "path": "/programas/linformatiu-r"
+     "path": "/programas/linformatiu"
     }
    ]
   },
@@ -17539,21 +17632,21 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "La hora de la 1",
    "path": "/programas/la-hora-de-la-1",
    "now": [
     {
      "kind": "show",
-     "title": "La hora de la 1",
+     "title": "La hora de La 1",
      "decision": "create",
      "path": "/programas/la-hora-de-la-1"
     }
    ]
   },
   {
-   "fate": "consolidated",
+   "fate": "kept",
    "kind": "show",
    "title": "La hora de La 1: La hora de la actualidad",
    "path": "/programas/la-hora-de-la-1-la-hora-de-la-actualidad",
@@ -17574,9 +17667,9 @@
    "now": [
     {
      "kind": "show",
-     "title": "La hora de La 1: La hora de la actualidad",
+     "title": "La hora de La 1",
      "decision": "create",
-     "path": "/programas/la-hora-de-la-1-la-hora-de-la-actualidad"
+     "path": "/programas/la-hora-de-la-1"
     }
    ]
   },
@@ -17630,9 +17723,9 @@
    "now": [
     {
      "kind": "series",
-     "title": "La huella del crimen: El crimen de Traspinedo",
-     "decision": "create",
-     "path": "/series/la-huella-del-crimen-el-crimen-de-traspinedo"
+     "title": "La huella del crimen",
+     "decision": "bind",
+     "path": "/series/la-huella-del-crimen"
     }
    ]
   },
@@ -18152,7 +18245,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "La ruleta de la suerte T2026 E4804",
+     "title": "La ruleta de la suerte",
      "decision": "create",
      "path": "/programas/la-ruleta-de-la-suerte"
     }
@@ -19021,58 +19114,58 @@
    ]
   },
   {
-   "fate": "renamed",
+   "fate": "consolidated",
    "kind": "series",
    "title": "León: Capítulo cuatro: Ser rey E4 · León",
    "path": "/series/leon-capitulo-cuatro-ser-rey-leon",
    "now": [
     {
      "kind": "series",
-     "title": "León: Capítulo cuatro: Ser rey E4",
+     "title": "León",
      "decision": "create",
-     "path": "/series/leon-capitulo-cuatro-ser-rey"
+     "path": "/series/leon"
     }
    ]
   },
   {
-   "fate": "renamed",
+   "fate": "consolidated",
    "kind": "series",
    "title": "León: Capítulo dos: Hermanos de sangre E2 · León",
    "path": "/series/leon-capitulo-dos-hermanos-de-sangre-leon",
    "now": [
     {
      "kind": "series",
-     "title": "León: Capítulo dos: Hermanos de sangre E2",
+     "title": "León",
      "decision": "create",
-     "path": "/series/leon-capitulo-dos-hermanos-de-sangre"
+     "path": "/series/leon"
     }
    ]
   },
   {
-   "fate": "renamed",
+   "fate": "consolidated",
    "kind": "series",
    "title": "León: Capítulo tres: El mayor sacrificio E3 · León",
    "path": "/series/leon-capitulo-tres-el-mayor-sacrificio-leon",
    "now": [
     {
      "kind": "series",
-     "title": "León: Capítulo tres: El mayor sacrificio E3",
+     "title": "León",
      "decision": "create",
-     "path": "/series/leon-capitulo-tres-el-mayor-sacrificio"
+     "path": "/series/leon"
     }
    ]
   },
   {
-   "fate": "renamed",
+   "fate": "consolidated",
    "kind": "series",
    "title": "León: Capítulo uno: Ha nacido un príncipe E1 · León",
    "path": "/series/leon-capitulo-uno-ha-nacido-un-principe-leon",
    "now": [
     {
      "kind": "series",
-     "title": "León: Capítulo uno: Ha nacido un príncipe E1",
+     "title": "León",
      "decision": "create",
-     "path": "/series/leon-capitulo-uno-ha-nacido-un-principe"
+     "path": "/series/leon"
     }
    ]
   },
@@ -23120,7 +23213,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "New Day At Arirang E1",
+     "title": "New Day At Arirang",
      "decision": "create",
      "path": "/programas/new-day-at-arirang"
     }
@@ -23141,30 +23234,30 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "News Generation [l] E1",
    "path": "/programas/news-generation-l",
    "now": [
     {
      "kind": "show",
-     "title": "News Generation [l] E1",
+     "title": "News Generation",
      "decision": "create",
-     "path": "/programas/news-generation-l"
+     "path": "/programas/news-generation"
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "News Generation [r] E1",
    "path": "/programas/news-generation-r",
    "now": [
     {
      "kind": "show",
-     "title": "News Generation [r] E1",
+     "title": "News Generation",
      "decision": "create",
-     "path": "/programas/news-generation-r"
+     "path": "/programas/news-generation"
     }
    ]
   },
@@ -23687,7 +23780,7 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Noticias Interalmeriatv",
    "path": "/programas/noticias-interalmeriatv",
@@ -23701,16 +23794,16 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Noticias Interalmeriatv (R)",
    "path": "/programas/noticias-interalmeriatv-r",
    "now": [
     {
      "kind": "show",
-     "title": "Noticias Interalmeriatv (R)",
+     "title": "Noticias Interalmeriatv",
      "decision": "create",
-     "path": "/programas/noticias-interalmeriatv-r"
+     "path": "/programas/noticias-interalmeriatv"
     }
    ]
   },
@@ -23959,7 +24052,7 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "NOTÍCIES MIGDIA",
    "path": "/programas/noticies-migdia",
@@ -23973,21 +24066,21 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "NOTÍCIES Migdia (R)",
    "path": "/programas/noticies-migdia-r",
    "now": [
     {
      "kind": "show",
-     "title": "NOTÍCIES Migdia (R)",
+     "title": "NOTÍCIES MIGDIA",
      "decision": "create",
-     "path": "/programas/noticies-migdia-r"
+     "path": "/programas/noticies-migdia"
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "NOTÍCIES VESPRE",
    "path": "/programas/noticies-vespre",
@@ -24001,16 +24094,16 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "NOTÍCIES Vespre (R)",
    "path": "/programas/noticies-vespre-r",
    "now": [
     {
      "kind": "show",
-     "title": "NOTÍCIES Vespre (R)",
+     "title": "NOTÍCIES VESPRE",
      "decision": "create",
-     "path": "/programas/noticies-vespre-r"
+     "path": "/programas/noticies-vespre"
     }
    ]
   },
@@ -24830,16 +24923,17 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "removed:generic_title",
    "kind": "movie",
    "title": "Película Clásica",
    "path": "/peliculas/pelicula-clasica-1960",
    "now": [
     {
-     "kind": "movie",
+     "kind": "unknown",
      "title": "Película Clásica",
-     "decision": "create",
-     "path": "/peliculas/pelicula-clasica-1960"
+     "decision": "rejected",
+     "reason": "generic_title",
+     "path": null
     }
    ]
   },
@@ -24865,7 +24959,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Performarts Reload E35",
+     "title": "Performarts Reload",
      "decision": "create",
      "path": "/programas/performarts-reload"
     }
@@ -24942,7 +25036,7 @@
    ]
   },
   {
-   "fate": "consolidated",
+   "fate": "kept",
    "kind": "show",
    "title": "Pesca radical: Sin puerto seguro",
    "path": "/programas/pesca-radical-sin-puerto-seguro",
@@ -24963,9 +25057,9 @@
    "now": [
     {
      "kind": "show",
-     "title": "Pesca radical: Sin puerto seguro",
+     "title": "Pesca radical",
      "decision": "create",
-     "path": "/programas/pesca-radical-sin-puerto-seguro"
+     "path": null
     }
    ]
   },
@@ -25404,7 +25498,7 @@
    ]
   },
   {
-   "fate": "consolidated",
+   "fate": "kept",
    "kind": "show",
    "title": "Premier Corner by Guiness 0,0: Pepe Reina",
    "path": "/programas/premier-corner-by-guiness-0-0-pepe-reina",
@@ -25418,30 +25512,30 @@
    ]
   },
   {
-   "fate": "consolidated",
+   "fate": "renamed",
    "kind": "show",
    "title": "Premier Corner by Guiness 0,0: Pepe Reina T2026 · Premier Corner: Pepe Reina",
    "path": "/programas/premier-corner-by-guiness-0-0-pepe-reina-premier-corner-pepe-reina",
    "now": [
     {
      "kind": "show",
-     "title": "Premier Corner by Guiness 0,0: Pepe Reina",
+     "title": "Premier Corner by Guiness 0,0",
      "decision": "create",
-     "path": "/programas/premier-corner-by-guiness-0-0-pepe-reina"
+     "path": "/programas/premier-corner-by-guiness-0-0"
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "renamed",
    "kind": "show",
    "title": "Press Perspective [l] E1",
    "path": "/programas/press-perspective-l",
    "now": [
     {
      "kind": "show",
-     "title": "Press Perspective [l] E1",
+     "title": "Press Perspective",
      "decision": "create",
-     "path": "/programas/press-perspective-l"
+     "path": "/programas/press-perspective"
     }
    ]
   },
@@ -25727,16 +25821,17 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "removed:generic_title",
    "kind": "show",
    "title": "+ Que Cine",
    "path": "/programas/que-cine",
    "now": [
     {
-     "kind": "show",
+     "kind": "unknown",
      "title": "+ Que Cine",
-     "decision": "create",
-     "path": "/programas/que-cine"
+     "decision": "rejected",
+     "reason": "generic_title",
+     "path": null
     }
    ]
   },
@@ -26007,16 +26102,17 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "removed:generic_title",
    "kind": "show",
    "title": "Redifusión",
    "path": "/programas/redifusion",
    "now": [
     {
-     "kind": "show",
+     "kind": "unknown",
      "title": "Redifusión",
-     "decision": "create",
-     "path": "/programas/redifusion"
+     "decision": "rejected",
+     "reason": "generic_title",
+     "path": null
     }
    ]
   },
@@ -26569,30 +26665,30 @@
    ]
   },
   {
-   "fate": "consolidated",
+   "fate": "renamed",
    "kind": "series",
    "title": "Royals - La Casa Danesa: Episodios 5-6",
    "path": "/series/royals-la-casa-danesa-episodios-5-6",
    "now": [
     {
      "kind": "series",
-     "title": "Royals",
+     "title": "Royals - La Casa Danesa",
      "decision": "create",
-     "path": "/series/royals"
+     "path": "/series/royals-la-casa-danesa"
     }
    ]
   },
   {
-   "fate": "consolidated",
+   "fate": "renamed",
    "kind": "series",
    "title": "Royals - La La Casa Danesa: Episodios 1-2",
    "path": "/series/royals-la-la-casa-danesa-episodios-1-2",
    "now": [
     {
      "kind": "series",
-     "title": "Royals",
+     "title": "Royals - La La Casa Danesa",
      "decision": "create",
-     "path": "/series/royals"
+     "path": "/series/royals-la-la-casa-danesa"
     }
    ]
   },
@@ -26963,16 +27059,16 @@
    ]
   },
   {
-   "fate": "kept",
+   "fate": "renamed",
    "kind": "series",
    "title": "Se ha escrito un crimen (teleserie)",
    "path": "/series/se-ha-escrito-un-crimen-teleserie",
    "now": [
     {
      "kind": "series",
-     "title": "Se ha escrito un crimen (teleserie)",
+     "title": "Se ha escrito un crimen",
      "decision": "create",
-     "path": "/series/se-ha-escrito-un-crimen-teleserie"
+     "path": null
     }
    ]
   },
@@ -27420,7 +27516,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Smartbiz Accelerators E257",
+     "title": "Smartbiz Accelerators",
      "decision": "create",
      "path": "/programas/smartbiz-accelerators"
     }
@@ -27434,7 +27530,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Smartbiz Accelerators 2 E480",
+     "title": "Smartbiz Accelerators 2",
      "decision": "create",
      "path": "/programas/smartbiz-accelerators-2"
     }
@@ -28780,7 +28876,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "The Grand Heritage Asmr E5",
+     "title": "The Grand Heritage Asmr",
      "decision": "create",
      "path": "/programas/the-grand-heritage-asmr"
     }
@@ -28850,7 +28946,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "The Living Sea Of Jeju E1",
+     "title": "The Living Sea Of Jeju",
      "decision": "create",
      "path": "/programas/the-living-sea-of-jeju"
     }
@@ -29298,9 +29394,9 @@
    "now": [
     {
      "kind": "show",
-     "title": "Top Gear (Especiales): Especial polo norte",
+     "title": "Top Gear (Especiales)",
      "decision": "create",
-     "path": "/programas/top-gear-especiales-especial-polo-norte"
+     "path": "/programas/top-gear-especiales"
     }
    ]
   },
@@ -29761,7 +29857,7 @@
    "now": [
     {
      "kind": "show",
-     "title": "Trip In Korea E1",
+     "title": "Trip In Korea",
      "decision": "create",
      "path": "/programas/trip-in-korea"
     }
@@ -31024,37 +31120,37 @@
    "now": [
     {
      "kind": "show",
-     "title": "With Science, We Live E7",
+     "title": "With Science, We Live",
      "decision": "create",
      "path": "/programas/with-science-we-live"
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Within The Frame [l] E1",
    "path": "/programas/within-the-frame-l",
    "now": [
     {
      "kind": "show",
-     "title": "Within The Frame [l] E1",
+     "title": "Within The Frame",
      "decision": "create",
-     "path": "/programas/within-the-frame-l"
+     "path": "/programas/within-the-frame"
     }
    ]
   },
   {
-   "fate": "kept",
+   "fate": "consolidated",
    "kind": "show",
    "title": "Within The Frame [r] E1",
    "path": "/programas/within-the-frame-r",
    "now": [
     {
      "kind": "show",
-     "title": "Within The Frame [r] E1",
+     "title": "Within The Frame",
      "decision": "create",
-     "path": "/programas/within-the-frame-r"
+     "path": "/programas/within-the-frame"
     }
    ]
   },

@@ -452,6 +452,14 @@ test('parseEpgTitle: season/episode markers in every feed format give the work a
     ['Velvet Ep. 12', 'Velvet', undefined, 12, undefined],
     ['Un si grand soleil: Episode 1923', 'Un si grand soleil', undefined, 1923, undefined],
     ['Com si fos ahir T10 E30 · Episodi 30', 'Com si fos ahir', 10, 30, 'Episodi 30'],
+    // 2D-2E full-day replay (production 20261020).
+    ['La ruleta de la suerte T2026 E4804', 'La ruleta de la suerte', 2026, 4804, undefined],
+    ['20 Preguntas a... 5: Episodios 8-9', '20 Preguntas a... 5', undefined, 8, undefined],
+    ['Amanda y Alan: reformas a la italiana: Amanda y Alan: reformas a la italiana 1', 'Amanda y Alan: reformas a la italiana', undefined, 1, undefined],
+    ['Así se hace (MAX): Vajillas /Tanques para frenos neumáticos/Cereales de desayuno T12 · Vajillas, frenos neumáticos, cereales azucarados y fósiles', 'Así se hace (MAX)', 12, undefined, 'Vajillas, frenos neumáticos, cereales azucarados y fósiles'],
+    ['Así se hace (MAX): Tasers/Sopa enlatada/Trampolines T12 · Táseres, sopa enlatada, arpas de boca y trampolines', 'Así se hace (MAX)', 12, undefined, 'Táseres, sopa enlatada, arpas de boca y trampolines'],
+    ['Countryside Escape E13', 'Countryside Escape', undefined, 13, undefined],
+    ['News Generation [r] E1', 'News Generation', undefined, 1, undefined],
     ['Aire Lliure T1 · Ebre, amb Peyu', 'Aire Lliure', 1, undefined, 'Ebre, amb Peyu'],
     ['Amanda y Alan: reformas a la italiana T1 · 4', 'Amanda y Alan: reformas a la italiana', 1, undefined, '4'],
     ['Rosario (76) 12', 'Rosario', undefined, 76, undefined],
@@ -480,6 +488,10 @@ test('parseEpgTitle: XMLTV sub-title is episode evidence; a repeated sub-title i
   assert.deepEqual([dash.resolutionState, dash.proposedWorkTitle], ['episode', 'A pedir de boca'], 'the dedicated field settles an otherwise uncertain " - "');
   const apart = parseEpgTitle('Alerta Cobra', 'Doble juego');
   assert.deepEqual([apart.resolutionState, apart.proposedWorkTitle, apart.episodeTitle], ['work', 'Alerta Cobra', 'Doble juego']);
+  // Production sub-titles are often metadata lines: they are neither an episode name nor evidence.
+  const meta = parseEpgTitle('León: Capítulo uno: Ha nacido un príncipe E1 · León', '2022 | ⑦ | ★5.8/10');
+  assert.deepEqual([meta.proposedWorkTitle, meta.episodeTitle], ['León', 'León']);
+  assert.equal(parseEpgTitle('La huella del crimen: El crimen de Traspinedo T1 E2 · El crimen de Traspinedo', '2023 | +16 | ★7.1/10').proposedWorkTitle, 'La huella del crimen');
   // The grid already swapped a generic title for its sub-title ("Cine" + "Matrix" -> "Matrix", "Matrix").
   assert.equal(parseEpgTitle('Matrix', 'Matrix').resolutionState, 'work');
 });
@@ -510,12 +522,12 @@ test('parseEpgTitle: " - " and " : " are uncertain, a colon without a space is p
 });
 
 test('parseEpgTitle: slots, episode-only and non-Latin titles hold no work', () => {
-  for (const title of ['Repetición de programas', 'Programación local', 'Fin de emisión', 'Información de programación', 'Cine', 'Película', 'Próximamente', 'Espacio promocional', 'Programación especial', 'Avance Informativo', 'Cine: Matrix', '★6.8/10']) {
+  for (const title of ['Dibujos Animados T1', '+ Que Cine', 'Entrevista', 'Redifusión', 'Película Clásica', 'Avance En compañía de Loli', 'DOC', 'DOCUMENTAL', 'Repetición de programas', 'Programación local', 'Fin de emisión', 'Información de programación', 'Cine', 'Película', 'Próximamente', 'Espacio promocional', 'Programación especial', 'Avance Informativo', 'Cine: Matrix', '★6.8/10']) {
     assert.equal(parseEpgTitle(title).resolutionState, 'generic', title);
     assert.ok(isGenericContentTitle(title), title);
   }
   // Legitimate works whose titles contain slot words.
-  for (const title of ['Cine de barrio', 'Historia de nuestro cine', 'Programación local de Navidad en Lugo', 'Próximamente en cines', 'Noticias de un secuestro', 'Repetición', 'Cine western']) {
+  for (const title of ['Avances de la ciencia', 'Documentales de La 2', 'Doctor Who', 'Cine de barrio', 'Historia de nuestro cine', 'Programación local de Navidad en Lugo', 'Próximamente en cines', 'Noticias de un secuestro', 'Repetición', 'Cine western']) {
     assert.notEqual(parseEpgTitle(title).resolutionState, 'generic', title);
   }
   for (const title of ['Episodio 770', 'T11 - Episodio 6', 'Capítulo 12', 'S01E02']) {
@@ -541,6 +553,16 @@ test('2D-2E regressions: digits, punctuation, accents and episode-like words do 
     assert.notEqual(parseEpgTitle(title).resolutionState, 'episode', title);
   }
   assert.notEqual(key('T2 Trainspotting'), key('Trainspotting'), 'a sequel is not the first film');
+  assert.equal(key('Mesa para dos: mesa para dos'), 'mesa_para_dos', 'an exact feed doubling is one title');
+  // A spin-off is not cut back to its parent by one shared word with the episode name.
+  assert.equal(key('Ley y Orden: Crimen organizado T5 E12 · Crimen en el puerto'), 'ley_y_orden_crimen_organizado');
+  assert.equal(key('Los pequeños asesinatos de Agatha Christie: años 50 T1 E17 · El hombre del traje marrón'), 'los_pequenos_asesinatos_de_agatha_christie_anos_50');
+  // Broadcast tags do not split a programme; "E3 Noticies" keeps its leading E3.
+  assert.equal(key('NOTÍCIES Vespre (R)'), key('Notícies Vespre'));
+  assert.equal(key('News Generation [l] E1'), key('News Generation [r] E2'));
+  assert.equal(key('Dexter (Teleserie)'), 'dexter');
+  assert.equal(key('E3 Noticies'), 'e3_noticies');
+  assert.equal(key('Mesa para dos: mesa para tres'), 'mesa_para_dos_mesa_para_tres', 'a near repetition is not');
   assert.notEqual(key('Dune: Parte dos'), key('Dune'), '"parte" is a film part, not an episode');
   // Two shows with similar names stay apart; a series with many episode titles is one work.
   assert.notEqual(key('MasterChef Junior T10 E3'), key('MasterChef T12 E3'));
@@ -622,7 +644,7 @@ test('property: parsing never throws, keeps the original, is idempotent on the w
       assert.equal(again.normalizedWorkKey, p.normalizedWorkKey, JSON.stringify(title));
     }
     // Without a marker, a sub-title or " · ", a separator alone never makes an episode.
-    if (!/[·•(]/.test(title) && !/(^|[\s·:,.\-(])([ST]\d|\d{1,2}x\d{2}|temporada|episodio|episodi|[eé]pisode|cap[ií]tulo|cap\.?\s*\d|ep\.?\s*\d|chapter)/iu.test(title)) {
+    if (!/[·•(]/.test(title) && !/(^|[\s·:,.\-(])([ST]\d|\d{1,2}x\d{2}|temporada|episodio|episodi|[eé]pisode|cap[ií]tulo|cap\.?\s*\d|ep\.?\s*\d|chapter)/iu.test(title) && !/(^|[\s·:,.\-(])E\d{1,4}\s*$/u.test(title)) {
       assert.notEqual(p.resolutionState, 'episode', JSON.stringify(title));
     }
   }

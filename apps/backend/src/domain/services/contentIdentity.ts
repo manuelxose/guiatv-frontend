@@ -125,7 +125,12 @@ const GENERIC_TITLE_KEYS = new Set([
   // Schedule fillers: descriptive slots, not works (2D-2D §7 slot flags; 2D-2E §4).
   'repeticion_de_programas', 'programacion_local', 'informacion_de_programacion', 'proximamente',
   'espacio_promocional', 'programacion_especial', 'avance_informativo',
+  // Bare genre labels used as titles (2D-2E full-day replay): "DOC", "DOCUMENTAL".
+  'doc', 'documental',
+  'entrevista', 'redifusion', 'pelicula_clasica', 'dibujos_animados', 'que_cine',
 ]);
+/** "Avance <programme>": a trailer for another programme, never a work of its own (2D-2E full-day replay). */
+const PROMO_PREFIX = /^avance_/;
 
 // ---------------------------------------------------------------------------------------------
 // EPG title parsing (2D-2E). An airing title may carry the episode it shows ("9-1-1 T4 E3 · El
@@ -162,11 +167,12 @@ export interface ParsedEpgTitle {
 // A marker stands alone: preceded by the start, a space or punctuation, followed by the end, a space or punctuation.
 const MARKER_SOURCE =
   String.raw`(?<=^|[\s·•:,.\-–—(])(?:` +
-  String.raw`[ST](?<s1>\d{1,2}) ?(?:E|Ep\.? ?)(?<e1>\d{1,4})` + // T4 E3, T4E3, S04E03, T22 Ep09
+  String.raw`[ST](?<s1>\d{1,2}|(?:19|20)\d{2}) ?(?:E|Ep\.? ?)(?<e1>\d{1,4})` + // T4 E3, T4E3, S04E03, T22 Ep09, T2026 E4804
   String.raw`|(?<s2>\d{1,2})x(?<e2>\d{2,3})` + // 4x03 (two-digit episode, so "4x4" stays a title)
   String.raw`|temporada\s+(?<s3>\d{1,2})(?:[\s,.\-–—]+(?:episodio|cap[ií]tulo|cap\.?|ep\.?)\s*(?<e3>\d{1,4}))?` +
-  String.raw`|T(?<s4>\d{1,2})` + // season only: "Aire Lliure T1"
-  String.raw`|(?:episodio|episodi|[eé]pisode|cap[ií]tulo|cap\.?|ep\.?|chapter)\s*(?<e4>\d{1,4})` + // Capítulo 12, Ep. 12, Ep09, Episodio 770, Episode 1923 (fr), Episodi 30 (ca)
+  String.raw`|T(?<s4>\d{1,2}|(?:19|20)\d{2})` + // season only: "Aire Lliure T1", "… T2020"
+  String.raw`|E(?<e5>\d{1,4})(?=\s*$)` + // trailing episode number only: "Countryside Escape E13" ("E3 Noticies" keeps its E3)
+  String.raw`|(?:episodios?|episodi|[eé]pisodes?|cap[ií]tulos?|cap\.?|ep\.?|chapter)\s*(?<e4>\d{1,4})(?:\s*[-–/y&]\s*\d{1,4})?` + // Capítulo 12, Ep. 12, Ep09, Episodio 770, Episode 1923 (fr), Episodi 30 (ca), Episodios 8-9
   String.raw`)(?=$|[\s·•:,.\-–—)/])`;
 const MARKERS = new RegExp(MARKER_SOURCE, 'giu');
 /** Trailing parenthesised episode number, optionally followed by another number: "Rosario (76) 12". Four digits are a year. */
@@ -174,6 +180,18 @@ const PAREN_EPISODE = /\s*\((\d{1,3})\)(?:\s+\d{1,3})?$/u;
 const FEED_SEPARATOR = /\s+[·•]\s+/u;
 const WEAK_SEPARATOR = /\s+[-–—:]\s+/u;
 const TRAILING_PUNCTUATION = /[\s·•:,;\-–—(/]+$/u;
+/** Rerun / live / format tags inside a title ("NOTÍCIES Vespre (R)", "News Generation [l] E1", "Dexter (Teleserie)"). */
+const BROADCAST_TAG = /\s*[(\[](?:r|l|rep|teleserie)[)\]]/giu;
+/** A sub-title that is a metadata line ("2013 | TP | ★6.0/10", seen in production), not an episode name. */
+const METADATA_LINE = /\||★|^\d{4}$/u;
+const contentWords = (text: string) => new Set((workKey(text) ?? '').split('_').filter((w) => w.length > 3));
+/** The colon tail repeats the episode name in other words: at least two shared words, half of the tail's. */
+function paraphrases(tail: string, episodeName: string): boolean {
+  const a = contentWords(tail);
+  const b = contentWords(episodeName);
+  const shared = [...a].filter((w) => b.has(w)).length;
+  return shared >= 2 && shared / a.size >= 0.5;
+}
 const LEADING_PUNCTUATION = /^[\s·•:,;\-–—)/]+/u;
 
 /** `buildProgramBrandKey` (unchanged, so stored brand keys stay reusable), or null when it is not a usable key. */
@@ -204,7 +222,7 @@ const numberOf = (value?: string) => (value === undefined ? undefined : Number.p
  */
 export function parseEpgTitle(title: string | null | undefined, subtitle?: string | null): ParsedEpgTitle {
   const originalTitle = String(title ?? '').trim();
-  let work = originalTitle;
+  let work = originalTitle.replace(BROADCAST_TAG, '');
   let episodeTitle: string | undefined;
   let seasonNumber: number | undefined;
   let episodeNumber: number | undefined;
@@ -212,8 +230,9 @@ export function parseEpgTitle(title: string | null | undefined, subtitle?: strin
   let confidence: ParsedEpgTitle['confidence'] = 'high';
   let episode = false;
 
+  let titleEpisode: string | undefined;
   const sub = String(subtitle ?? '').trim();
-  if (sub && sub.toLowerCase() !== work.toLowerCase()) {
+  if (sub && !METADATA_LINE.test(sub) && sub.toLowerCase() !== work.toLowerCase()) {
     const before = work.slice(0, work.length - sub.length);
     if (work.toLowerCase().endsWith(sub.toLowerCase()) && /[\p{L}\p{N}]/u.test(before) && TRAILING_PUNCTUATION.test(before)) {
       work = before;
@@ -223,12 +242,24 @@ export function parseEpgTitle(title: string | null | undefined, subtitle?: strin
     episodeTitle = sub;
   }
 
+  // The feed doubles the title before an episode number: "Amanda y Alan: reformas a la italiana:
+  // Amanda y Alan: reformas a la italiana 1". Only an exact repetition counts.
+  const doubled = work.match(/^(.{3,}?):\s+\1(?:\s+(\d{1,4}))?$/iu);
+  if (doubled) {
+    work = doubled[1];
+    episodeNumber = numberOf(doubled[2]);
+    [evidenceSource, confidence, episode] = ['title_separator', 'medium', true];
+  }
+
   const dot = work.match(FEED_SEPARATOR);
   if (dot?.index) {
     const rest = work.slice(dot.index + dot[0].length).trim();
     work = work.slice(0, dot.index);
     // "Criaturas indefensas · (The dog lover)": an original title, not an episode name.
-    if (!/^\(.*\)$/.test(rest)) episodeTitle ??= rest;
+    if (!/^\(.*\)$/.test(rest)) {
+      titleEpisode = rest;
+      episodeTitle ??= rest;
+    }
     if (!episode) [evidenceSource, confidence] = ['title_separator', 'medium'];
     episode = true;
   }
@@ -239,9 +270,12 @@ export function parseEpgTitle(title: string | null | undefined, subtitle?: strin
   if (marker) {
     const g = marker.groups ?? {};
     seasonNumber = numberOf(g.s1 ?? g.s2 ?? g.s3 ?? g.s4);
-    episodeNumber = numberOf(g.e1 ?? g.e2 ?? g.e3 ?? g.e4);
+    episodeNumber = numberOf(g.e1 ?? g.e2 ?? g.e3 ?? g.e4 ?? g.e5);
     const after = work.slice(marker.index! + marker[0].length).replace(MARKERS, ' ').replace(LEADING_PUNCTUATION, '').trim();
-    if (/\p{L}/u.test(after)) episodeTitle ??= after;
+    if (/\p{L}/u.test(after)) {
+      titleEpisode ??= after;
+      episodeTitle ??= after;
+    }
     work = work.slice(0, marker.index);
     if (evidenceSource !== 'xmltv_subtitle') [evidenceSource, confidence] = ['title_marker', 'high'];
     episode = true;
@@ -261,11 +295,13 @@ export function parseEpgTitle(title: string | null | undefined, subtitle?: strin
   // e insectoides", "¿Cómo lo hacen?: Ensalada… · ¿Cómo lo hacen?: Ensalada…". Only that repetition
   // drops a colon segment; a colon on its own stays part of the title.
   const segments = work.split(/:\s+/u);
-  if (episode && episodeTitle && segments.length > 1) {
-    const last = workKey(segments[segments.length - 1]);
-    const ep = workKey(episodeTitle);
-    if (last && ep && (ep === last || ep.endsWith(`_${last}`))) work = segments.slice(0, -1).join(': ');
-    else if (segments[0] && workKey(episodeTitle.split(/:\s+/u)[0]) === workKey(segments[0])) work = segments[0];
+  const named = titleEpisode ?? episodeTitle;
+  if (episode && named && segments.length > 1) {
+    const tail = segments[segments.length - 1];
+    const last = workKey(tail);
+    const ep = workKey(named);
+    if (last && ep && (ep === last || ep.endsWith(`_${last}`) || paraphrases(tail, named))) work = segments.slice(0, -1).join(': ');
+    else if (segments[0] && workKey(named.split(/:\s+/u)[0]) === workKey(segments[0])) work = segments[0];
   }
 
   const normalizedWorkKey = workKey(work);
@@ -288,7 +324,8 @@ export function parseEpgTitle(title: string | null | undefined, subtitle?: strin
     resolveProgramDisplayTitle(originalTitle) !== originalTitle ||
     // A rating line in the title field ("★6.8/10", seen in the 2D-2 replay) is not a work.
     RATING_LINE.test(originalTitle) ||
-    GENERIC_TITLE_KEYS.has(normalizedWorkKey)
+    GENERIC_TITLE_KEYS.has(normalizedWorkKey) ||
+    PROMO_PREFIX.test(normalizedWorkKey)
   ) {
     return { ...parsed, resolutionState: 'generic' };
   }
