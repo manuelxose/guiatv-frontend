@@ -269,7 +269,8 @@ export class ContentIdentityService {
 
   /**
    * Promotes a provisional entity to `active` on a named person's decision: the only route to
-   * `active` that ingestion never takes. Indexability is untouched (still `noindex`).
+   * `active` that ingestion never takes. The decision is recorded as `matching.method = manual`
+   * (which makes `mayBeIndexable` true); `indexability.state` itself stays `noindex` until Phase 3 sets it.
    */
   async verifyEntity(entityId: string, reviewer: string, note: string): Promise<ContentEntityRecord> {
     const by = normalizeReviewerName(reviewer);
@@ -280,6 +281,7 @@ export class ContentIdentityService {
       from: 'candidate',
       to: 'active',
       expectedVersion: entity.version,
+      matching: { method: 'manual', confidence: 1, decidedAt: new Date(), decidedBy: by },
       by,
       reason: `verified: ${String(note || '').trim() || 'reviewed'}`.slice(0, 200),
     });

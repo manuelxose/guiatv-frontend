@@ -22,6 +22,7 @@ import {
   MongoIdentityEvidenceSource,
 } from '@/infrastructure/repositories/MongoContentIdentityRepositories';
 import { ContentIdentityService } from './ContentIdentityService';
+import { mayBeIndexable } from '@/domain/services/contentIdentity';
 import * as ingestionModule from './ContentIdentityIngestion';
 import { admissionFromEnv, ContentIdentityIngestion, IdentityObservation, IdentityTrace, observationsFromAirings, runContentIdentity } from './ContentIdentityIngestion';
 import { rollbackProvisional } from './ContentIdentityRollback';
@@ -152,6 +153,9 @@ test('2D finalisation on MongoDB', { skip: mongoUri ? false : 'TEST_MONGO_URI no
       await assert.rejects(service.verifyEntity(a.entityId, 'ci-bot', 'ok'), /reviewer_required/);
       const verified = await service.verifyEntity(a.entityId, 'Ana García', 'checked against the broadcaster page');
       assert.deepEqual([verified.status, verified.lifecycle?.changedBy, verified.indexability.state], ['active', 'Ana García', 'noindex']);
+      assert.deepEqual([verified.matching.method, verified.matching.decidedBy, verified.matching.assurance], ['manual', 'Ana García', undefined], 'a person\'s decision replaces the machine marker');
+      assert.equal(mayBeIndexable(verified), true, 'eligible for indexing, not indexed');
+      assert.equal(mayBeIndexable(b), false, 'a machine-admitted candidate is never eligible');
       assert.equal((await service.resolvePath(a.canonicalPath as string)).status, 'canonical');
       await assert.rejects(service.verifyEntity(a.entityId, 'Ana García', 'again'), /invalid_transition/);
       assert.equal((await ContentEntityModel.findOne({ entityId: b.entityId }).lean())?.status, 'candidate');

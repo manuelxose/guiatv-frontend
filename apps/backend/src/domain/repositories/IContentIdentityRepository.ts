@@ -53,6 +53,8 @@ export interface EntityTransition {
   to: ContentStatus;
   expectedVersion: number;
   mergedInto?: string;
+  /** A person's identity decision recorded with the transition (`verifyEntity`); replaces `matching`. */
+  matching?: ContentEntityRecord['matching'];
   by: string;
   reason: string;
 }

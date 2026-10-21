@@ -161,6 +161,7 @@ export class MongoContentEntityRepository implements IContentEntityRepository {
       lifecycle: { changedAt: new Date(), changedBy: change.by, reason: change.reason },
     };
     if (change.mergedInto) set.mergedInto = change.mergedInto;
+    if (change.matching) set.matching = change.matching;
     const doc = await ContentEntityModel.findOneAndUpdate(
       { entityId, status: change.from, version: change.expectedVersion },
       { $set: set, $inc: { version: 1 } },
