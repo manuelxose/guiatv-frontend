@@ -37,6 +37,15 @@ export function readContentIdentityFlags(env: NodeJS.ProcessEnv, databaseName: s
   };
 }
 
+/**
+ * EPG_YEAR_PROVENANCE (2D-2G, off): when TMDB enrichment sets a programme's `year`, the sync also
+ * keeps the feed's own year in `sourceProvenance.yearProvenance`. `year` keeps its meaning, so no
+ * public output changes; turning it on adds that field to programme documents written afterwards.
+ */
+export function isEpgYearProvenanceEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return truthy(env.EPG_YEAR_PROVENANCE);
+}
+
 /** Upper bound on entities created by one rebuild; the rest wait for the next run (counted as deferred). */
 export function contentIdentityMaxCreates(env: NodeJS.ProcessEnv = process.env): number {
   const n = Number.parseInt(String(env.CONTENT_IDENTITY_MAX_CREATES || ''), 10);
