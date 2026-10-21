@@ -206,7 +206,21 @@ Artefacts: `docs/seo/phase-3b/ai-review/` (ledgers, exports, README), `docs/seo/
 
 **Owner attestation.** After the round-2 pass the owner declared the human-review requirement satisfied. Recorded as the owner's decision (contract v1.3); the evidence behind it is the AI review of §11, basis `ai`. Nothing else is implied: no flag, write run or publication was authorised by it.
 
-**Server incident.** After PR #45 deployed (release `20261021205747`), the Contabo VPS (`109.123.248.164`) stopped answering. Timeline (UTC): ~18:58 post-deploy checks passed (API `/health` 200, `/v2/entities/resolve` → `ENTITY_PUBLIC_READ_DISABLED`, no `CONTENT_*` names in `api.env`/`ssr.env`, database baseline identical: 40 collections / 272 indexes, no `content_*`); the home page answered 200 once through Cloudflare; ~19:00 onward `/`, `/sitemap.xml` and `/programacion-tv/peliculas` returned **522** and SSH timed out. At 19:08 and 19:16: ports 22 and 443 open nowhere, **100 % ping loss**, `curl` straight to the origin timed out. The signature (host unreachable, Cloudflare 522) is the same as the 2026-10-20 outage after PR #16. **Cause unknown**: the deploy had verified healthy minutes earlier, the timing coincides, and a host-level event cannot be excluded. Not diagnosable from here; recovery needs the owner (Contabo panel). After recovery, check memory pressure (the deploy builds on the server), `journalctl -b -1` for the previous boot, and re-run the post-deploy checks of §7/§8.
+**Server incident (resolved).** After PR #45 deployed (release `20261021205747`) the Contabo VPS (`109.123.248.164`) stopped answering. Timeline (UTC): ~18:58 post-deploy checks passed (API `/health` 200, `/v2/entities/resolve` → `ENTITY_PUBLIC_READ_DISABLED`, no `CONTENT_*` names in `api.env`/`ssr.env`, baseline identical); the home page answered 200 once through Cloudflare; from ~19:00 `/`, `/sitemap.xml` and `/programacion-tv/peliculas` returned **522** and SSH timed out; at 19:08 and 19:16 ports 22/443 were closed everywhere with **100 % ping loss**. The owner restarted the machine; it booted at 19:18 UTC and answered by 19:19.
+
+**Cause, from the previous boot's journal.** The log of boot −1 ends **abruptly at 18:58:47 UTC**, mid-service: the API still logging requests, Valkey saving ("100 changes in 300 seconds"), and **no shutdown sequence, no OOM-kill, no kernel panic, no hung-task or I/O/ext4 error**. A host that dies with no OS-level trace points to a **hypervisor/provider-side hard stop** (or power loss), not to the application or the deployed code. The deploy build itself peaked at 2.7 GB of 11.9 GB with no swap (user slice `deploy`), so memory pressure is not supported by the evidence. Same signature as the 2026-10-20 outage; with two occurrences in two days, ask Contabo whether the VPS was migrated or reset, and consider an external uptime monitor.
+
+**State after recovery (UTC 19:19–19:25), read-only checks.**
+
+| Check | Result |
+|---|---|
+| Release / services | `20261021205747` (gitSha `85c3ae17`); `guiatv-api`, `guiatv-ssr`, `nginx`, `mongod`, `valkey` (unit `valkey.service`) active; API connected to Valkey |
+| Data | 40 collections, 272 indexes, no `content_*`; 11,865 and 9,881 airings for 20261021/22 (unchanged); no MongoDB recovery/corruption lines this boot |
+| Flags | no `CONTENT_*` / `EPG_YEAR_PROVENANCE` name in `api.env` or `ssr.env`; `/v2/entities/resolve` → `ENTITY_PUBLIC_READ_DISABLED` |
+| Public | `/`, `/sitemap.xml`, `/programacion-tv/peliculas|series|que-ver-hoy`, `/guias`, `/guias/rankings`, a programme page: 200 |
+| Cold start | SSR logged `/v2/tv/read` timeouts at 19:18:47 (the 6 s API cap, caches empty after boot); `/guias` needed three tries (two slow ones, then 0.4 s) and one cold programme page took 15 s. Expected for a cold MongoDB/SSR cache (earlier measurements: 11–22 s cold hubs); no action, it warms with traffic |
+
+Nothing in the incident touched Phase 3B data or flags. The deploy script's hub warm-up runs only after deploys, not after a reboot: a manual warm-up (GET the main hubs) after any future reboot would shorten the cold window.
 
 ## 10. Proposed Phase 3C scope (not started)
 
