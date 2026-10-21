@@ -149,13 +149,26 @@ Behaviour:
 
 Criteria, thresholds and tiers: `docs/seo/PHASE-3B-CONTENT-QUALITY-CRITERIA.md`; code `PublicationQuality.ts`. Quality is kept separate from identity and fail-closed. Measured on the 519 accepted works: required metadata present for 92.5 %, but only **49.5 %** also have a ≥ 300-character synopsis, **10.6 %** have a synopsis under 150 characters (AdSense risk high), and 74 % of catalogue rows are sourced `epg`. **No accepted work can be an `index_candidate`**: nothing is human-verified, year provenance is unknown, no internal link points to an entity page and legacy pages stay live. A correctly identified entity is not a page worth indexing.
 
-## 7. Tests and CI
+## 7. Tests, CI and deployment
 
-(Filled in below after the PR runs.)
+| Check | Result |
+|---|---|
+| Backend suite, scratch MongoDB on 127.0.0.1:27118 (per-pid databases, all dropped) | **513 tests: 512 pass, 0 fail, 1 existing Redis skip** (481 before 3B; +32) |
+| Backend typecheck (`tsc`, the `lint` script) | PASS |
+| New coverage | policy (10 cases: master flag, scope, allowlist shape, ceiling, kill file/env, re-read on change, breaker, stats); canary HTTP integration on scratch MongoDB (allowlist, ceiling, pin mismatch, eligibility revocation, kill, breaker, master flag off, **zero writes**, **zero Mongo commands for refused paths**, `canary-check` CLI exit codes); canonical audit (unit + scratch MongoDB); reviewer ledger (8: roster, tamper detection, corrections, blind second review, adjudication, gate pass/fail matrix, sheet); evidence gate (pathless); quality criteria (7); admin stats route auth; sitemap exclusion in `off`/`all`/no-scope |
+| SSR smoke through the production entrypoint (`entity-read-ssr.test.mjs`) | PASS, now including entity cache isolation (kill is immediate) and the restart needed to add an entity |
+| `entity-canary-verify.test.mjs` | 3 pass |
+| Frontend source | unchanged in 3B (no Karma re-run; unchanged components were not rebuilt locally) |
+| `git diff --check` | PASS |
+| GitHub Actions on PR #44 (head `67bcfa5`) | `verify` pass (3 m 17 s), `ssr-resilience` pass (1 m 15 s: build, SSR smoke, resilience), `live-crawl` skipped by design |
+| Merge | squash `fd021a3` (2026-10-21 17:51 UTC) |
+| Deploy run `39647523406` (Deploy a producción) | success; release `20261021195307`, `release.json` gitSha `fd021a38`; rollback target `20261021190805` |
 
-## 8. Production flag state
+Post-deploy, read-only: API and SSR active; `/health` 200; `GET /v2/entities/resolve` → 404 `ENTITY_PUBLIC_READ_DISABLED` (legacy signal); `GET /v2/admin/entities/canary` without credentials → 401; `/`, `/sitemap.xml`, `/sitemap-programs.xml`, sampled programme pages, `/programacion-tv/peliculas|series|que-ver-hoy`, `/guias` → 200; database baseline identical to before (40 collections, 272 indexes, no `content_*`, 0 airing refs). (`/programacion-tv` and `/que-ver-hoy` are not routes.)
 
-Verified read-only on the VPS during the replay: no `CONTENT_*`, `EPG_YEAR_PROVENANCE` or public-read variable is set in the API environment (names checked, values never printed). Details after deploy in §7.
+## 8. Production flag state (exact)
+
+Checked by variable **name** only after the deploy (values never read or printed): `/etc/guiatv/api.env` (84 lines), `/etc/guiatv/ssr.env` (3 lines) and the `guiatv-api`/`guiatv-ssr` unit environments contain **no** `CONTENT_ENTITIES_ENABLED`, `CONTENT_IDENTITY_*`, `CONTENT_ENTITY_*` or `EPG_YEAR_PROVENANCE`. All are therefore at their code defaults: **off**. The release behaves as 3A did.
 
 ## 9. Open items and blockers
 
