@@ -1,9 +1,10 @@
+import type { AttestationRecord } from '../services/contentCertification';
 import {
   AssuranceLevel,
   ContentKind,
   HistoricWork,
   ContentStatus,
-  MatchMethod,
+  EntityMatchMethod,
   ProvenanceSource,
   SlugRole,
   TitleKeyRow,
@@ -30,7 +31,9 @@ export interface ContentEntityRecord {
   /** Denormalised from the entity's `canonical` row in `content_slugs`, which is the source of truth. */
   canonicalPath?: string;
   metadata: { synopsis?: ProvenancedValue<string>; genres?: ProvenancedValue<string[]>; images?: ProvenancedValue };
-  matching: { method: MatchMethod; confidence: number; decidedAt: Date; decidedBy: string; assurance?: AssuranceLevel };
+  matching: { method: EntityMatchMethod; confidence: number; decidedAt: Date; decidedBy: string; assurance?: AssuranceLevel };
+  /** Phase 3C: points at the entity's live attestation in `content_attestations` (the record is the source of truth). */
+  certification?: { attestationId: string; seq: number; hash: string; certifiedAt: Date };
   indexability: { state: 'index' | 'noindex'; reasons: string[]; evaluatedAt?: Date };
   lifecycle?: { changedAt: Date; changedBy: string; reason: string };
   contentChangedAt?: Date;
@@ -71,6 +74,13 @@ export interface IContentEntityRepository {
   setCanonicalPath(entityId: string, path: string): Promise<boolean>;
   /** Optimistic: applies only if status and version still match. Null on a lost race. */
   transition(entityId: string, change: EntityTransition): Promise<ContentEntityRecord | null>;
+  /**
+   * Phase 3C, the only way into `ai_attested`: a candidate backed by independent evidence becomes
+   * `active` under a stored attestation. Optimistic like `transition`; null on a lost race.
+   */
+  certify(entityId: string, change: { expectedVersion: number; matching: ContentEntityRecord['matching']; certification: NonNullable<ContentEntityRecord['certification']>; by: string; reason: string }): Promise<ContentEntityRecord | null>;
+  /** Undoes `certify`: back to `candidate` with the pre-certification `matching` and no pin. Only while the pin is still `attestationId`. */
+  revokeCertification(entityId: string, change: { expectedVersion: number; attestationId: string; matching: ContentEntityRecord['matching']; by: string; reason: string }): Promise<ContentEntityRecord | null>;
   /** Collapses merge chains: entities merged into `fromEntityId` now point at `toEntityId`. */
   repointMergedInto(fromEntityId: string, toEntityId: string): Promise<number>;
   /** Partial-write recovery: entities created before `createdBefore` that still have no canonical path. */
@@ -173,4 +183,15 @@ export interface IAiringEntityRefWriter {
   /** True only when `idx_tvread_entity_start` exists exactly as specified (built by hand, 2D-2 §I). */
   indexReady(): Promise<boolean>;
   apply(date: string, refs: AiringEntityRef[]): Promise<number>;
+}
+
+/** Phase 3C: insert-only audit chain per entity. There is deliberately no update and no delete. */
+export interface IContentAttestationRepository {
+  /**
+   * `seq_taken`: another writer appended at that position first (re-read and decide again).
+   * `exists`: this attestation or revocation is already stored; `existing` is it (idempotent replay).
+   */
+  insert(record: AttestationRecord): Promise<InsertResult<AttestationRecord, 'seq_taken' | 'exists'>>;
+  /** The entity's whole chain, oldest first. */
+  listForEntity(entityId: string): Promise<AttestationRecord[]>;
 }

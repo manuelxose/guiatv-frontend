@@ -1,7 +1,11 @@
 #!/bin/bash
-# Integration check for deploy-guiatv.sh in a throwaway sandbox (real git, stubbed npm/systemctl/curl):
+# Integration check for deploy-guiatv.sh and guiatv-ops.sh in a throwaway sandbox (real git, stubbed npm/systemctl/curl):
 #   1. the server checkout is aligned with origin even after the remote history was rewritten (force-push);
-#   2. a smoke failure after publishing rolls `current` back to the previous release and restarts both services.
+#   2. a smoke failure after publishing rolls `current` back to the previous release and restarts both services;
+#   3. one deploy at a time (lock), and a build that would starve the host is refused before any change;
+#   4. a deploy of what is live, or of documentation only, builds and restarts nothing;
+#   5. an off-host artifact is verified (checksum, commit) and published without installing or compiling;
+#   6. the ops script rolls back to the previous release and verifies the services.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -25,6 +29,7 @@ ln -sfn "${SRV}/releases/R1" "${SRV}/current"
 # --- stubs ------------------------------------------------------------------------------------------------------
 cat >"${T}/bin/npm" <<'EOF'
 #!/bin/bash
+echo "$*" >>"${NPM_LOG:-/dev/null}"
 if [ "$1 $2" = "run publish:release" ]; then
   n=$(( $(ls "${APP_DIR}/releases" | wc -l) + 1 ))
   mkdir -p "${APP_DIR}/releases/R${n}"
@@ -50,7 +55,7 @@ case "${*: -1}" in */tendencias) echo 503; exit 0 ;; esac
 case "${*: -1}" in */programacion-tv/guia-canales|*/canales/*_*|*/editorial) echo 301 ;; *) echo 200 ;; esac
 EOF
 chmod +x "${T}/bin/"*
-export PATH="${T}/bin:${PATH}" APP_DIR="${SRV}" DEPLOY_ALLOW_NON_ROOT=1 SYSTEMCTL_LOG="${T}/systemctl.log" FAIL_FLAG="${T}/fail" FAIL_RELEASE=none COLD_FLAG="${T}/cold" SMOKE_RETRY_DELAY=0
+export PATH="${T}/bin:${PATH}" APP_DIR="${SRV}" DEPLOY_ALLOW_NON_ROOT=1 SYSTEMCTL_LOG="${T}/systemctl.log" FAIL_FLAG="${T}/fail" FAIL_RELEASE=none COLD_FLAG="${T}/cold" SMOKE_RETRY_DELAY=0 NPM_LOG="${T}/npm.log" DEPLOY_LOCK_FILE="${T}/deploy.lock" BUILD_MIN_AVAILABLE_MB=1 OPS_POLL_DELAY=0
 : >"${SYSTEMCTL_LOG}"
 
 # --- 1. remote history rewritten after the server last synced --------------------------------------------------
@@ -72,5 +77,85 @@ if bash "${ROOT}/deploy-guiatv.sh" >"${T}/run2.log" 2>&1; then fail "deploy must
 [ "$(basename "$(readlink -f "${SRV}/current")")" = "R2" ] || { cat "${T}/run2.log"; fail "did not roll back to R2"; }
 grep -q "rolling back" "${T}/run2.log" || fail "rollback not announced"
 [ "$(grep -c 'restart guiatv-api guiatv-ssr' "${SYSTEMCTL_LOG}")" -ge 1 ] || fail "services not restarted after rollback"
+
+# --- 3. one deploy at a time; a build that would starve the host is refused ---------------------------------------
+rm -f "${FAIL_FLAG}"
+export FAIL_RELEASE=none
+live="$(readlink -f "${SRV}/current")"
+: >"${T}/npm.log"
+( exec 8>"${DEPLOY_LOCK_FILE}"; flock 8; exec sleep 5 ) & # exec: killing the holder must release the lock at once, not after the sleep
+holder=$!
+sleep 0.5
+set +e; bash "${ROOT}/deploy-guiatv.sh" >"${T}/run3.log" 2>&1; code=$?; set -e
+kill "${holder}" 2>/dev/null || true; wait "${holder}" 2>/dev/null || true
+[ "${code}" = "75" ] || { cat "${T}/run3.log"; fail "a second deploy must exit 75 while one holds the lock (got ${code})"; }
+grep -q "Another deploy is running" "${T}/run3.log" || fail "lock refusal not announced"
+[ "$(readlink -f "${SRV}/current")" = "${live}" ] && [ ! -s "${T}/npm.log" ] || fail "a refused deploy changed something"
+
+set +e; BUILD_MIN_AVAILABLE_MB=999999999 bash "${ROOT}/deploy-guiatv.sh" >"${T}/run4.log" 2>&1; code=$?; set -e
+[ "${code}" = "75" ] || { cat "${T}/run4.log"; fail "low memory must exit 75 (got ${code})"; }
+grep -q "the build needs" "${T}/run4.log" || fail "memory refusal not announced"
+[ "$(readlink -f "${SRV}/current")" = "${live}" ] && ! grep -q "run build" "${T}/npm.log" || fail "a memory-refused deploy built or published"
+
+# --- 4. already live / documentation only: no build, no restart -------------------------------------------------
+(cd "${T}/work" && echo runtime >f && git commit -qam "runtime change" && git push -q origin main)
+: >"${T}/npm.log"
+bash "${ROOT}/deploy-guiatv.sh" >"${T}/run5.log" 2>&1 || { cat "${T}/run5.log"; fail "runtime deploy must succeed"; }
+grep -q "run build" "${T}/npm.log" || fail "a runtime change was not built"
+grep -q "NODE_OPTIONS" "${ROOT}/deploy-guiatv.sh" || fail "the build is not heap-limited"
+live="$(readlink -f "${SRV}/current")"
+printf '{"gitSha": "%s"}\n' "$(git -C "${SRV}" rev-parse HEAD)" >"${live}/release.json"
+: >"${T}/npm.log"; : >"${SYSTEMCTL_LOG}"
+bash "${ROOT}/deploy-guiatv.sh" >"${T}/run6.log" 2>&1 || { cat "${T}/run6.log"; fail "redeploying the live commit must be a clean no-op"; }
+grep -q "is already live" "${T}/run6.log" || fail "an already-live release was not recognised"
+[ ! -s "${T}/npm.log" ] && [ ! -s "${SYSTEMCTL_LOG}" ] || fail "an already-live release built or restarted something"
+mkdir -p "${T}/work/docs" && (cd "${T}/work" && echo notes >docs/note.md && git add docs && git commit -qm "docs only" && git push -q origin main)
+bash "${ROOT}/deploy-guiatv.sh" >"${T}/run7.log" 2>&1 || { cat "${T}/run7.log"; fail "a docs-only push must exit cleanly"; }
+grep -q "Only documentation changed" "${T}/run7.log" || { cat "${T}/run7.log"; fail "docs-only change not recognised"; }
+[ ! -s "${T}/npm.log" ] && [ ! -s "${SYSTEMCTL_LOG}" ] && [ "$(readlink -f "${SRV}/current")" = "${live}" ] || fail "a docs-only change built, restarted or switched release"
+FORCE_DEPLOY=1 bash "${ROOT}/deploy-guiatv.sh" >"${T}/run8.log" 2>&1 || { cat "${T}/run8.log"; fail "FORCE_DEPLOY must deploy"; }
+grep -q "run build" "${T}/npm.log" || fail "FORCE_DEPLOY did not build"
+
+# --- 5. off-host artifact: verified and published, never compiled here -------------------------------------------
+(cd "${T}/work" && echo lock1 >package-lock.json && git add package-lock.json && git commit -qm "lock 1" && git push -q origin main)
+bash "${ROOT}/deploy-guiatv.sh" >"${T}/run8b.log" 2>&1 || { cat "${T}/run8b.log"; fail "deploy with a lockfile must succeed"; }
+[ -f "${SRV}/.deploy-lock-sha256" ] || fail "the lockfile hash was not recorded after the install"
+: >"${T}/npm.log"
+(cd "${T}/work" && echo lock2 >package-lock.json && git commit -qam "lock 2" && git push -q origin main)
+sha="$(git -C "${T}/origin.git" rev-parse main)"
+mkdir -p "${T}/lockart/apps/backend/dist/server" "${T}/lockart/apps/frontend/dist/guiatv/browser" "${T}/lockart/apps/frontend/dist/guiatv/server"
+echo "${sha}" >"${T}/lockart/ARTIFACT_GIT_SHA"; tar -czf "${T}/lockart.tgz" -C "${T}/lockart" ARTIFACT_GIT_SHA apps
+live="$(readlink -f "${SRV}/current")"
+set +e; DEPLOY_ARTIFACT="${T}/lockart.tgz" DEPLOY_ARTIFACT_SHA256="$(sha256sum "${T}/lockart.tgz" | cut -d' ' -f1)" bash "${ROOT}/deploy-guiatv.sh" >"${T}/run8c.log" 2>&1; code=$?; set -e
+[ "${code}" != "0" ] && grep -q "package-lock.json changed since the last install" "${T}/run8c.log" && [ "$(readlink -f "${SRV}/current")" = "${live}" ] || { cat "${T}/run8c.log"; fail "an artifact over a changed lockfile must be refused before any change"; }
+bash "${ROOT}/deploy-guiatv.sh" >"${T}/run8d.log" 2>&1 || { cat "${T}/run8d.log"; fail "a normal deploy must install the new lockfile"; }
+grep -q "install" "${T}/npm.log" || fail "the changed lockfile was not installed"
+(cd "${T}/work" && echo second >f && git commit -qam "runtime change 2" && git push -q origin main)
+sha="$(git -C "${T}/origin.git" rev-parse main)"
+art="${T}/art"; mkdir -p "${art}/apps/backend/dist/server" "${art}/apps/frontend/dist/guiatv/browser" "${art}/apps/frontend/dist/guiatv/server"
+touch "${art}/apps/backend/dist/server/index.js" "${art}/apps/frontend/dist/guiatv/browser/main.js" "${art}/apps/frontend/dist/guiatv/server/main.server.mjs" "${art}/apps/frontend/dist/guiatv/server/index.server.html"
+echo "${sha}" >"${art}/ARTIFACT_GIT_SHA"
+tar -czf "${T}/artifact.tgz" -C "${art}" ARTIFACT_GIT_SHA apps
+asum="$(sha256sum "${T}/artifact.tgz" | cut -d' ' -f1)"
+live="$(readlink -f "${SRV}/current")"; : >"${T}/npm.log"
+set +e; DEPLOY_ARTIFACT="${T}/artifact.tgz" DEPLOY_ARTIFACT_SHA256="$(printf '0%.0s' {1..64})" bash "${ROOT}/deploy-guiatv.sh" >"${T}/run9.log" 2>&1; code=$?; set -e
+[ "${code}" != "0" ] && grep -q "checksum mismatch" "${T}/run9.log" && [ "$(readlink -f "${SRV}/current")" = "${live}" ] || fail "a corrupt artifact must be refused before any change"
+echo "0000000000000000000000000000000000000000" >"${art}/ARTIFACT_GIT_SHA"; tar -czf "${T}/stale.tgz" -C "${art}" ARTIFACT_GIT_SHA apps
+set +e; DEPLOY_ARTIFACT="${T}/stale.tgz" DEPLOY_ARTIFACT_SHA256="$(sha256sum "${T}/stale.tgz" | cut -d' ' -f1)" bash "${ROOT}/deploy-guiatv.sh" >"${T}/run10.log" 2>&1; code=$?; set -e
+[ "${code}" != "0" ] && grep -q "not built from the checked-out commit" "${T}/run10.log" && [ "$(readlink -f "${SRV}/current")" = "${live}" ] || fail "an artifact from another commit must be refused"
+DEPLOY_ARTIFACT="${T}/artifact.tgz" DEPLOY_ARTIFACT_SHA256="${asum}" bash "${ROOT}/deploy-guiatv.sh" >"${T}/run11.log" 2>&1 || { cat "${T}/run11.log"; fail "a valid artifact must deploy"; }
+[ "$(readlink -f "${SRV}/current")" != "${live}" ] || fail "the artifact release was not activated"
+! grep -qE "run build|^install" "${T}/npm.log" || { cat "${T}/npm.log"; fail "artifact mode installed or compiled on the server"; }
+
+# --- 6. ops script: rollback to the previous release, verified -----------------------------------------------------
+now_live="$(basename "$(readlink -f "${SRV}/current")")"
+: >"${SYSTEMCTL_LOG}"
+bash "${ROOT}/scripts/guiatv-ops.sh" rollback >"${T}/ops1.log" 2>&1 || { cat "${T}/ops1.log"; fail "ops rollback must succeed"; }
+[ "$(basename "$(readlink -f "${SRV}/current")")" != "${now_live}" ] || fail "ops rollback did not move current"
+grep -q "restart guiatv-api" "${SYSTEMCTL_LOG}" && grep -q "restart guiatv-ssr" "${SYSTEMCTL_LOG}" || fail "ops rollback did not restart both services"
+grep -q "verified: release" "${T}/ops1.log" || fail "ops rollback did not verify health"
+set +e; bash "${ROOT}/scripts/guiatv-ops.sh" rollback not-a-release >"${T}/ops2.log" 2>&1; code=$?; set -e
+[ "${code}" != "0" ] || fail "rolling back to a release that does not exist must fail"
+bash "${ROOT}/scripts/guiatv-ops.sh" status >"${T}/ops3.log" 2>&1 || fail "ops status must work"
 
 echo "deploy script checks passed"

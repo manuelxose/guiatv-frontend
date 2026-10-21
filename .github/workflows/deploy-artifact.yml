@@ -1,0 +1,63 @@
+name: Deploy a producción por artefacto (manual, build fuera del VPS)
+
+# Builds in CI (with the Angular budgets), ships a checksummed tarball and lets the server only verify, unpack,
+# publish and smoke-test: no `npm install` and no compile on the production host. Manual until the owner
+# approves switching deploy.yml to it. Same concurrency group as deploy.yml, so the two never overlap, and the
+# server takes its own lock as well.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    outputs:
+      sha256: ${{ steps.pack.outputs.sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --legacy-peer-deps
+      - run: npm run build
+      - id: pack
+        run: |
+          echo "${GITHUB_SHA}" > ARTIFACT_GIT_SHA
+          tar -czf guiatv-artifact.tgz ARTIFACT_GIT_SHA apps/backend/dist apps/frontend/dist/guiatv
+          echo "sha256=$(sha256sum guiatv-artifact.tgz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: guiatv-artifact
+          path: guiatv-artifact.tgz
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: guiatv-artifact
+      - uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: guiatv-artifact.tgz
+          target: /var/tmp/guiatv-${{ github.sha }}
+      - uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          command_timeout: 15m
+          script_stop: true # a failed deploy must fail the workflow, not be masked by the cleanup line
+          script: |
+            sudo /var/www/guiatv/deploy-guiatv.sh main /var/tmp/guiatv-${{ github.sha }}/guiatv-artifact.tgz ${{ needs.build.outputs.sha256 }}
+            rm -rf /var/tmp/guiatv-${{ github.sha }}

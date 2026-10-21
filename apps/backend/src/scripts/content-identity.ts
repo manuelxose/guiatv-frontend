@@ -61,6 +61,7 @@ import {
   toCsv,
 } from '../application/services/ContentIdentityAudit';
 import { PublicContentEntityService } from '../application/services/PublicContentEntityService';
+import { createCertificationReader } from '../application/services/ContentCertification';
 import { parseCanaryAllowlist } from '../application/services/EntityPublicReadPolicy';
 import { auditProposedPaths, auditRegistry } from '../application/services/ContentIdentityCanonicalAudit';
 import { buildEvidenceSheet, EVIDENCE_SHEET_COLUMNS } from '../application/services/ContentIdentityReviewLedger';
@@ -186,7 +187,7 @@ async function canaryCheck(args: string[]) {
   const entries = parseCanaryAllowlist(fs.readFileSync(file, 'utf8'), Number(option(args, '--max') ?? process.env.CONTENT_ENTITY_CANARY_MAX));
   const service = new PublicContentEntityService(new ContentIdentityService(
     new MongoContentEntityRepository(), new MongoContentSlugRepository(), new MongoContentTitleKeyRepository()
-  ));
+  ), createCertificationReader());
   const { entities, slugs } = await readRegistryRows();
   const audit = auditRegistry(entities, slugs);
   const failures: Array<{ entityId: string; canonicalPath: string; problem: string }> = [];

@@ -1,0 +1,35 @@
+name: External uptime probe
+
+# Runs OFF the VPS. The in-host watchdog dies with the machine, so both 2026-10-20/21 outages went unseen
+# until someone looked. This is public GETs only (home, API health, robots, sitemap, a hub page) and fails
+# the run, which emails the repository's notification recipients, when the site does not answer.
+# It never deploys, restarts, reboots or writes anything.
+on:
+  schedule:
+    - cron: '*/15 * * * *' # GitHub may delay scheduled runs by several minutes under load
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uptime-probe
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Probe production
+        env:
+          # Set to "canary" (repository variable) only while the owner has activated the entity canary.
+          ENTITY_EXPECTATION: ${{ vars.ENTITY_EXPECTATION || 'off' }}
+          UPTIME_WEBHOOK_URL: ${{ secrets.UPTIME_WEBHOOK_URL }}
+        run: node scripts/uptime-probe.mjs --origin https://guiaprogramaciontv.com

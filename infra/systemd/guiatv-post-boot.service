@@ -1,0 +1,17 @@
+[Unit]
+Description=GuiaTV post-boot check and cold-cache warm-up (read-only; never restarts or reboots anything)
+After=network-online.target mongod.service valkey.service guiatv-api.service guiatv-ssr.service nginx.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/var/www/guiatv
+# Waits up to 5 minutes for the services, then renders the hub pages once, one at a time.
+ExecStart=/usr/bin/node /var/www/guiatv/scripts/post-boot-check.mjs --warm --wait 300
+TimeoutStartSec=900
+Nice=10
+# GUIATV_EXPECTED_FLAGS lists activation flags the owner has approved (empty today: none is).
+EnvironmentFile=-/etc/guiatv/post-boot.env
+
+[Install]
+WantedBy=multi-user.target

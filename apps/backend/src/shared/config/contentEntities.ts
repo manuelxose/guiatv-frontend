@@ -51,3 +51,16 @@ export function contentIdentityMaxCreates(env: NodeJS.ProcessEnv = process.env):
   const n = Number.parseInt(String(env.CONTENT_IDENTITY_MAX_CREATES || ''), 10);
   return Number.isFinite(n) && n >= 0 ? n : 1000;
 }
+
+/**
+ * CONTENT_IDENTITY_WRITE_SCOPE=admitted (Phase 3C, unset by default): write mode touches only the
+ * candidates in CONTENT_IDENTITY_ADMIT_FILE, so a canary writes the approved batch and nothing else.
+ * Any other value keeps the 2D-2 behaviour, unless CONTENT_IDENTITY_ADMIT_SHA256 pins the admit file to the approved manifest.
+ */
+export function contentIdentityWriteScope(env: NodeJS.ProcessEnv = process.env): 'admitted' | undefined {
+  // A pinned admit file (CONTENT_IDENTITY_ADMIT_SHA256, the manifest's admitSha256) is a canary by definition: it implies the scope.
+  return String(env.CONTENT_IDENTITY_WRITE_SCOPE || '').trim() === 'admitted' || String(env.CONTENT_IDENTITY_ADMIT_SHA256 || '').trim() ? 'admitted' : undefined;
+}
+
+/** The most identities one admitted-scope run may be handed; a longer admit file admits nothing. */
+export { CERTIFICATION_HARD_CAP as ADMITTED_SCOPE_CEILING } from '@/domain/services/contentCertification';

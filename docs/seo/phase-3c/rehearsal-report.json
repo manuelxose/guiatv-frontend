@@ -1,0 +1,156 @@
+{
+  "database": "guiatv_scratch_3c",
+  "batch": 20,
+  "ok": true,
+  "checks": [
+    {
+      "step": "manifest valid",
+      "ok": true,
+      "detail": "20 entities, digest 03fa15694ddb"
+    },
+    {
+      "step": "enabling the flag only creates the empty identity collections",
+      "ok": true,
+      "detail": "content_attestations,content_entities,content_slugs,content_title_keys"
+    },
+    {
+      "step": "dry run writes nothing",
+      "ok": true,
+      "detail": "baseline 0262ace9b8c8"
+    },
+    {
+      "step": "write run creates exactly the batch",
+      "ok": true,
+      "detail": "entities 20, slugs 20, title keys 20 of 20"
+    },
+    {
+      "step": "nothing outside content_entities/slugs/title_keys changed",
+      "ok": true,
+      "detail": "content_entities,content_slugs,content_title_keys"
+    },
+    {
+      "step": "noise is out of scope",
+      "ok": true,
+      "detail": "out_of_scope 20 of 20"
+    },
+    {
+      "step": "every stored entity is a provisional candidate with the assurance marker",
+      "ok": true,
+      "detail": "20 stored"
+    },
+    {
+      "step": "stored canonical paths equal the manifest",
+      "ok": true,
+      "detail": "20 paths"
+    },
+    {
+      "step": "idempotent: replays change nothing",
+      "ok": true,
+      "detail": "two replays"
+    },
+    {
+      "step": "no allowlist exists for an uncertified batch",
+      "ok": true,
+      "detail": "20 refusals"
+    },
+    {
+      "step": "certification dry run has no refusal reason",
+      "ok": true,
+      "detail": "all clear"
+    },
+    {
+      "step": "certification dry run writes nothing",
+      "ok": true,
+      "detail": "baseline unchanged"
+    },
+    {
+      "step": "certification adds only attestation records",
+      "ok": true,
+      "detail": "20 attestations"
+    },
+    {
+      "step": "idempotent: re-certification changes nothing",
+      "ok": true,
+      "detail": "second pass"
+    },
+    {
+      "step": "the allowlist builder accepts the certified batch",
+      "ok": true,
+      "detail": "20 entries"
+    },
+    {
+      "step": "the whole batch is served by the canary policy",
+      "ok": true,
+      "detail": "20/20"
+    },
+    {
+      "step": "a path outside the batch is not served",
+      "ok": true,
+      "detail": "/peliculas/rey-arturo-la-leyenda-de-excalibur"
+    },
+    {
+      "step": "revoked: nothing is served",
+      "ok": true,
+      "detail": "0 still served"
+    },
+    {
+      "step": "rollback removes the batch",
+      "ok": true,
+      "detail": "{\"entities\":20,\"slugs\":20,\"titleKeys\":20}"
+    },
+    {
+      "step": "rollback leaves only the audit trail",
+      "ok": true,
+      "detail": "content_attestations 40 (20 attestations + 20 revocations)"
+    }
+  ],
+  "baselines": {
+    "empty": "13f4961b2ac8578b3e4fd149e36a0e01ade88d10d2f432b051b178ab36b3805e",
+    "seeded": "0262ace9b8c898fe0559798a493fa0ecaf43403235c3a827b6f659e2d3c9efc5",
+    "afterWrite": "291c527be32028e443b107c4fb6fece0ba9260a424b7b097975a65f018467a1a",
+    "certified": "75950b6b4c19c24c2402cb70bfaa919d0b838664f3b59dd3f83299a79dbfe8a8",
+    "final": "bcd31491a0be1c35f0f3f3af495838423c741a219c91c4031346dd90043ab70f"
+  },
+  "bootCreates": {
+    "content_attestations": {
+      "documents": [
+        0,
+        0
+      ],
+      "indexes": [
+        0,
+        3
+      ]
+    },
+    "content_entities": {
+      "documents": [
+        0,
+        0
+      ],
+      "indexes": [
+        0,
+        5
+      ]
+    },
+    "content_slugs": {
+      "documents": [
+        0,
+        0
+      ],
+      "indexes": [
+        0,
+        3
+      ]
+    },
+    "content_title_keys": {
+      "documents": [
+        0,
+        0
+      ],
+      "indexes": [
+        0,
+        4
+      ]
+    }
+  }
+}

@@ -203,6 +203,8 @@ export class ContentIdentityService {
   ): Promise<ContentEntityRecord> {
     const entity = await this.entities.findById(entityId);
     if (!entity) throw new ContentIdentityError('not_found', entityId);
+    // Phase 3C: an AI-certified entity is withdrawn by `ContentCertificationService.revoke` first, never merged or removed under its attestation.
+    if (entity.certification) throw new ContentIdentityError('certified_entity', `${entityId} is AI-certified: revoke the certification before changing its lifecycle`);
     const resumingMerge = to === 'merged' && entity.status === 'merged' && entity.mergedInto === opts.mergedInto;
 
     if (to === 'merged') {

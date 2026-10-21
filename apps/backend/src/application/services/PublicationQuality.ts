@@ -30,6 +30,11 @@ export const QUALITY_THRESHOLDS = {
 export interface PublicationSignals {
   /** The public read says active + manual + named reviewers (PublicContentEntityService). */
   verified: boolean;
+  /**
+   * Phase 3C: certified from an owner-authorised AI review (`ai_attested`, reviewBasis `ai`) and valid at this read.
+   * Enough for a noindex canary page; never counts as a person's verification, so never an index candidate.
+   */
+  aiAttested?: boolean;
   kind: ContentKind;
   title: string;
   originalTitle?: string;
@@ -37,6 +42,8 @@ export interface PublicationSignals {
   /** `independent`: confirmed by the feed's own year (EPG_YEAR_PROVENANCE) and the catalogue; `tmdb_overwrite`: the stored year is TMDB's. */
   yearProvenance?: 'independent' | 'tmdb_overwrite' | 'unknown';
   synopsis?: string;
+  /** Length of a synopsis that was measured but not kept (e.g. read from the public page); `synopsis` wins when both are given. */
+  synopsisChars?: number;
   synopsisSource?: 'manual' | 'tmdb' | 'epg';
   /** The EPG description of the same work today, for the duplicate check. */
   epgDescription?: string;
@@ -77,7 +84,9 @@ const T = QUALITY_THRESHOLDS;
 
 export function assessPublicationQuality(s: PublicationSignals) {
   const c: Criterion[] = [];
-  c.push(s.verified ? ok('identity_verified', 'active, manual, named reviewers') : no('identity_verified', 'not verified by a named person'));
+  c.push(s.verified ? ok('identity_verified', 'active, manual, named reviewers')
+    : s.aiAttested ? unknown('identity_verified', 'AI-attested under the owner\'s authorisation (basis ai): not verified by a named person')
+      : no('identity_verified', 'not verified by a named person'));
 
   const parsed = parseEpgTitle(s.title);
   c.push(!s.title.trim() || isGenericContentTitle(s.title) || parsed.resolutionState !== 'work'
@@ -90,11 +99,12 @@ export function assessPublicationQuality(s: PublicationSignals) {
   else c.push(unknown('year_reliable', `year comes from ${s.yearProvenance ?? 'unknown'} provenance: the same source as the match, not independent evidence`));
 
   const synopsis = (s.synopsis ?? '').trim();
+  const chars = synopsis ? synopsis.length : Math.max(0, s.synopsisChars ?? 0);
   const overlap = synopsis && s.epgDescription ? overlapWithEpg(synopsis, s.epgDescription) : null;
-  if (!synopsis) c.push(no('description_reliable', 'no synopsis'));
-  else if (synopsis.length < T.synopsisMinChars) c.push(no('description_reliable', `synopsis has ${synopsis.length} characters, ${T.synopsisMinChars} needed`));
+  if (!chars) c.push(no('description_reliable', 'no synopsis'));
+  else if (chars < T.synopsisMinChars) c.push(no('description_reliable', `synopsis has ${chars} characters, ${T.synopsisMinChars} needed`));
   else if (!s.synopsisSource) c.push(unknown('description_reliable', 'synopsis without a recorded source'));
-  else c.push(ok('description_reliable', `${synopsis.length} characters from ${s.synopsisSource}`));
+  else c.push(ok('description_reliable', `${chars} characters from ${s.synopsisSource}`));
 
   c.push(overlap === null
     ? unknown('no_duplicate_of_epg', 'no EPG description to compare with')
@@ -107,7 +117,7 @@ export function assessPublicationQuality(s: PublicationSignals) {
 
   const required = needsYear ? T.requiredFilm : T.requiredOther;
   const present: Record<string, boolean> = {
-    title: !!s.title.trim(), year: s.year !== undefined, genres: !!s.genres?.length, synopsis: synopsis.length > 0, runtime: (s.runtimeMinutes ?? 0) > 0,
+    title: !!s.title.trim(), year: s.year !== undefined, genres: !!s.genres?.length, synopsis: chars > 0, runtime: (s.runtimeMinutes ?? 0) > 0,
   };
   const missing = required.filter((f) => !present[f]);
   c.push(missing.length ? no('metadata_complete', `missing ${missing.join(', ')}`) : ok('metadata_complete', `all ${required.length} required fields present`));
@@ -119,7 +129,7 @@ export function assessPublicationQuality(s: PublicationSignals) {
     : s.ssr.ok / s.ssr.total >= T.ssrMinSuccess ? ok('ssr_reliable', `${s.ssr.ok}/${s.ssr.total} renders correct`) : no('ssr_reliable', `${s.ssr.ok}/${s.ssr.total} renders correct`));
 
   // What a visitor gets that the EPG listing does not: a real description plus where to watch it.
-  const substantial = synopsis.length >= T.synopsisMinChars && (overlap === null || overlap < T.duplicateOfEpgMax);
+  const substantial = chars >= T.synopsisMinChars && (overlap === null || overlap < T.duplicateOfEpgMax);
   const useful = substantial && (s.upcomingAirings ?? 0) >= 1;
   c.push(useful ? ok('user_useful', 'a substantial description and at least one upcoming broadcast')
     : s.upcomingAirings === undefined ? unknown('user_useful', 'upcoming broadcasts not measured') : no('user_useful', substantial ? 'no upcoming broadcast to point to' : 'no description beyond the listing'));
@@ -127,16 +137,17 @@ export function assessPublicationQuality(s: PublicationSignals) {
   // AdSense / helpful-content risk. High: thin or a copy of the listing. Medium: short, or third-party text
   // (TMDB is on thousands of sites) with nothing of ours beside it. Low: substantial text plus manual
   // editorial content or a real programme schedule.
-  const thin = !synopsis || synopsis.length < T.synopsisThinChars || (overlap !== null && overlap >= T.duplicateOfEpgMax);
+  const thin = !chars || chars < T.synopsisThinChars || (overlap !== null && overlap >= T.duplicateOfEpgMax);
   const risk: AdsenseRisk = thin ? 'high'
-    : synopsis.length < T.synopsisMinChars || (s.synopsisSource !== 'manual' && (s.upcomingAirings ?? 0) < 1) ? 'medium' : 'low';
+    : chars < T.synopsisMinChars || (s.synopsisSource !== 'manual' && (s.upcomingAirings ?? 0) < 1) ? 'medium' : 'low';
   c.push(risk === 'high' ? no('adsense_risk', 'thin or duplicated content')
     : risk === 'medium' ? unknown('adsense_risk', 'short text, or third-party text with no schedule or editorial content beside it')
       : ok('adsense_risk', 'substantial text with original schedule or editorial content'));
 
   const status = (id: string) => c.find((x) => x.id === id)!.status;
   const need = (ids: string[], want: CriterionStatus = 'pass') => ids.every((id) => status(id) === want);
-  const canaryOk = need(['identity_verified', 'title_accurate', 'canonical_consistent', 'no_duplicate_entity']) && status('ssr_reliable') === 'pass';
+  const identityOk = status('identity_verified') === 'pass' || Boolean(s.aiAttested);
+  const canaryOk = identityOk && need(['title_accurate', 'canonical_consistent', 'no_duplicate_entity']) && status('ssr_reliable') === 'pass';
   const tier: Tier = [status('identity_verified'), status('title_accurate'), status('no_duplicate_entity')].includes('fail') || status('canonical_consistent') === 'fail'
     ? 'blocked'
     : c.every((x) => x.status === 'pass') ? 'index_candidate' : canaryOk ? 'canary' : 'blocked';
