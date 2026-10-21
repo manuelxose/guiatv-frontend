@@ -290,7 +290,7 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
         obs('Alerta Cobra T24 Ep17', { genre: 'Series', minutes: 45, editorialCategory: 'Series' }),
         obs('Alerta Cobra T2026 E4804', { genre: 'Series', editorialCategory: 'Series' }),
       ], evidence);
-      assert.deepEqual(evidence.find((t) => t.title === 'Alerta Cobra')?.broadcaster, { genres: ['Series'], minutes: { min: 45, max: 50 }, maxSeason: 24 }, 'a 4-digit season is a year, not a season');
+      assert.deepEqual(evidence.find((t) => t.title === 'Alerta Cobra')?.broadcaster, { genres: ['Series'], minutes: { min: 45, max: 50 }, maxSeason: 24, maxEpisodes: { 22: 9, 24: 17 } }, 'a 4-digit season is a year, not a season; episode numbers are kept per season (a 4-digit one is not an episode)');
       const [airing] = observationsFromAirings([{ id: 'x', program: { title: 'T', genre: 'Cine' }, airing: { start: '2026-10-20T20:00:00Z', end: '2026-10-20T22:05:00Z' } }], new Map());
       assert.deepEqual([airing.genre, airing.minutes], ['Cine', 125]);
       assert.deepEqual(await contentCollections(), []);

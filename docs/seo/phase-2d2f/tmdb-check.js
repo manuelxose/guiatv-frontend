@@ -13,7 +13,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { tmdbAuth } = require(path.resolve('dist/infrastructure/external/tmdbAuth'));
 
-const VERSION = 2;
+const VERSION = 3; // 3: + episodeCounts / episodes (3B)
 const OTHER_ALTERNATIVES = 5;
 const [tracesFile, cacheFile] = process.argv.slice(2);
 const auth = tmdbAuth(process.env.TMDB_API_KEY || '');
@@ -66,6 +66,8 @@ async function check({ type, id, query }) {
     year: Number(date.slice(0, 4)) || undefined,
     runtime: type === 'movie' ? d.runtime || undefined : Math.max(0, ...(d.episode_run_time ?? [])) || undefined,
     seasons: type === 'tv' ? d.number_of_seasons ?? undefined : undefined,
+    episodes: type === 'tv' ? d.number_of_episodes || undefined : undefined,
+    episodeCounts: type === 'tv' ? Object.fromEntries((d.seasons ?? []).filter((x) => x.season_number > 0 && x.episode_count > 0).map((x) => [x.season_number, x.episode_count])) : undefined,
     genreIds: (d.genres ?? []).map((g) => g.id).sort((a, b) => a - b),
     alternativeTitles: altTitles(d.alternative_titles),
   };

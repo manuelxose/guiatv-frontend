@@ -3,6 +3,8 @@
  * review sheet made by `content-identity shadow --sample`.
  *
  *   content-identity roster add <name> --roster <roster.json>          owner only: prints the person's token once, stores its hash
+ *   content-identity roster add "AI <model> <letter>" --ai --authorized-by <owner> --authorization-note <text> --roster <roster.json>
+ *                                                                      an AI reviewer, under the owner's recorded authorisation; reports count it as `ai`
  *   content-identity review open <sheet.csv> --ledger <ledger.jsonl> --by <name>
  *   REVIEW_TOKEN=… content-identity review next <sheet.csv> --ledger <l> --roster <r> --by <name> [--limit N] [--second-only]
  *   REVIEW_TOKEN=… content-identity review decide <sheet.csv> --ledger <l> --roster <r> --by <name> --row <candidate_id>
@@ -21,7 +23,7 @@ import { randomBytes } from 'node:crypto';
 import { parseCsv, REVIEW_COLUMNS, toCsv } from '../application/services/ContentIdentityAudit';
 import { normalizeReviewerName } from '../application/services/ContentIdentityService';
 import {
-  authenticate, hashToken, ledgerReport, nextRows, openLedger, parseLedger, parseRoster, recordDecision, toSheets, type LedgerEntry, type SubLabels,
+  authenticateMember, hashToken, reviewerName, ledgerReport, nextRows, openLedger, parseLedger, parseRoster, recordDecision, toSheets, type LedgerEntry, type SubLabels,
 } from '../application/services/ContentIdentityReviewLedger';
 
 const option = (args: string[], name: string) => {
@@ -62,11 +64,25 @@ export function runReviewCommand(command: string, args: string[]): number {
   if (command === 'roster') {
     if (args[0] !== 'add') throw new Error('usage: roster add <name> --roster <roster.json>');
     const file = need(args, '--roster');
-    const name = normalizeReviewerName(args[1]);
+    const ai = args.includes('--ai');
+    const name = reviewerName(args[1], ai ? 'ai' : undefined);
+    if (ai) {
+      // Owner-authorised AI review (the owner's instruction is quoted in the roster, not assumed).
+      const by = option(args, '--authorized-by');
+      const note = option(args, '--authorization-note');
+      if (!by || !note) throw new Error('--ai needs --authorized-by <owner name> and --authorization-note <what was authorised>');
+      const existing = fs.existsSync(file) ? parseRoster(fs.readFileSync(file, 'utf8')) : undefined;
+      if (existing && !existing.aiAuthorization) {
+        existing.aiAuthorization = { by: normalizeReviewerName(by), at: new Date().toISOString(), note };
+        fs.writeFileSync(file, JSON.stringify(existing, null, 2) + '\n', { mode: 0o600 });
+      } else if (!existing) {
+        fs.writeFileSync(file, JSON.stringify({ version: 1, aiAuthorization: { by: normalizeReviewerName(by), at: new Date().toISOString(), note }, reviewers: [] }, null, 2) + '\n', { mode: 0o600 });
+      }
+    }
     const roster = fs.existsSync(file) ? parseRoster(fs.readFileSync(file, 'utf8')) : { version: 1 as const, reviewers: [] };
     if (roster.reviewers.some((r) => r.name.toLowerCase() === name.toLowerCase())) throw new Error(`${name} is already on the roster`);
     const token = randomBytes(24).toString('base64url');
-    roster.reviewers.push({ name, tokenSha256: hashToken(token) });
+    roster.reviewers.push({ name, tokenSha256: hashToken(token), ...(ai ? { kind: 'ai' as const } : {}) });
     fs.writeFileSync(file, JSON.stringify(roster, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify({ reviewer: name, token, note: 'shown once: give it to that person only; the roster keeps its hash' }));
     return 0;
@@ -114,7 +130,8 @@ export function runReviewCommand(command: string, args: string[]): number {
   }
   if (sub === 'next' || sub === 'decide') {
     const roster = parseRoster(fs.readFileSync(need(rest, '--roster'), 'utf8'));
-    const by = authenticate(roster, need(rest, '--by'), process.env.REVIEW_TOKEN);
+    const member = authenticateMember(roster, need(rest, '--by'), process.env.REVIEW_TOKEN);
+    const by = member.name;
     if (sub === 'next') {
       const rows = nextRows(readLedger(ledger), sheet(), by, Number(option(rest, '--limit')) || 10, rest.includes('--second-only'));
       console.log(JSON.stringify(rows.map((r) => Object.fromEntries(Object.entries(r).filter(([k]) => !MACHINE_ONLY.has(k)))), null, 2));
@@ -128,7 +145,7 @@ export function runReviewCommand(command: string, args: string[]): number {
     const entry = withLock(ledger, () => {
       const entries = readLedger(ledger);
       const d = recordDecision(entries, sheet(), {
-        rowId: need(rest, '--row'), decision: need(rest, '--decision'), reviewer: by, errorCategory: option(rest, '--error-category'),
+        rowId: need(rest, '--row'), decision: need(rest, '--decision'), reviewer: by, reviewerKind: member.kind, errorCategory: option(rest, '--error-category'),
         labels, note: option(rest, '--note'), correct: rest.includes('--correct'),
       }, new Date());
       fs.appendFileSync(ledger, JSON.stringify(d) + '\n');

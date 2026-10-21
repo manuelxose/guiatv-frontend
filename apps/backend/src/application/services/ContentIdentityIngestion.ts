@@ -149,7 +149,7 @@ export interface IdentityTrace {
    * Broadcaster evidence the EPG sync never derives from TMDB (2D-2G): XMLTV categories, airing
    * slot lengths in minutes, and the highest season number in the titles (4-digit years excluded).
    */
-  broadcaster?: { genres: string[]; minutes: { min: number; max: number } | null; maxSeason: number | null; rawYears?: number[] };
+  broadcaster?: { genres: string[]; minutes: { min: number; max: number } | null; maxSeason: number | null; rawYears?: number[]; maxEpisodes?: Record<string, number> };
   /** Broadcaster keys of its airings, sorted (`broadcasterKey`; 2D-2F broadcaster consistency). */
   channels?: string[];
   /** Known kinds this candidate's work was seen under in the run, when more than one. */
@@ -186,6 +186,8 @@ interface Candidate {
   genres: Set<string>;
   minutes: number[];
   maxSeason: number | null;
+  /** Highest episode number seen per season (`0` = no season marker): the number of episodes the feed claims exist. */
+  maxEpisodes: Record<string, number>;
   rawYears: Set<number>;
   titleEvidence: Record<string, number>;
   /** Held out of matching for the whole run (unresolved, not stored). */
@@ -358,7 +360,7 @@ export class ContentIdentityIngestion {
       const year = confirmed ? confirmed.year : kind === 'movie' ? obs.year : undefined;
       const id = [key, kind, tmdb ? `${tmdb.type}:${tmdb.id}` : '', year ?? ''].join('|') + (hold ? '|held' : '');
       const group: Candidate = groups.get(id) ?? {
-        id, key, kind, title, year, tmdb, hold, airingIds: [], spellings: new Set(), channels: new Set(), genres: new Set(), minutes: [], maxSeason: null, rawYears: new Set(), titleEvidence: {}, epgYears: new Set(), tmdbIds: new Set(), unconfirmed: 0,
+        id, key, kind, title, year, tmdb, hold, airingIds: [], spellings: new Set(), channels: new Set(), genres: new Set(), minutes: [], maxSeason: null, maxEpisodes: {}, rawYears: new Set(), titleEvidence: {}, epgYears: new Set(), tmdbIds: new Set(), unconfirmed: 0,
       };
       group.spellings.add(obs.title);
       if (obs.channel) group.channels.add(broadcasterKey(obs.channel));
@@ -366,6 +368,10 @@ export class ContentIdentityIngestion {
       if (obs.minutes) group.minutes.push(obs.minutes);
       if (obs.rawYear) group.rawYears.add(obs.rawYear);
       if (parsed.seasonNumber !== undefined && parsed.seasonNumber < 1900) group.maxSeason = Math.max(group.maxSeason ?? 0, parsed.seasonNumber);
+      if (parsed.episodeNumber !== undefined && parsed.episodeNumber < 1900) {
+        const season = String(parsed.seasonNumber !== undefined && parsed.seasonNumber < 1900 ? parsed.seasonNumber : 0);
+        group.maxEpisodes[season] = Math.max(group.maxEpisodes[season] ?? 0, parsed.episodeNumber);
+      }
       count(group.titleEvidence, evidence);
       if (obs.year) group.epgYears.add(obs.year);
       if (obs.tmdbId) group.tmdbIds.add(obs.tmdbId);
@@ -616,6 +622,7 @@ export class ContentIdentityIngestion {
           genres: [...c.genres].sort(),
           minutes: c.minutes.length ? { min: Math.min(...c.minutes), max: Math.max(...c.minutes) } : null,
           maxSeason: c.maxSeason,
+          ...(Object.keys(c.maxEpisodes).length ? { maxEpisodes: c.maxEpisodes } : {}),
           ...(c.rawYears.size ? { rawYears: [...c.rawYears].sort() } : {}),
         },
         airings: c.airingIds.length,

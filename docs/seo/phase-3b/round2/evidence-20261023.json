@@ -1,0 +1,97 @@
+{
+  "status": "pass",
+  "meaning": "machine evidence only: no known violation among auto-accepted identities. Not human-validated precision; the human write gate is separate.",
+  "levels": {
+    "candidates": 1952,
+    "distinctWorkKeys": 1887,
+    "proposedEntities": 1333,
+    "candidatesNeverProposed": 592,
+    "rejectedSlotTitles": 12
+  },
+  "proposedEntities": {
+    "byAssurance": {
+      "contradictory": 336,
+      "independently_supported": 172,
+      "insufficient": 425,
+      "machine_supported": 400
+    },
+    "acceptedShare": 0.12903225806451613,
+    "acceptedByKind": {
+      "movie": 113,
+      "series": 58,
+      "show": 1
+    },
+    "acceptedByKindBasis": {
+      "tmdb_genres": 59,
+      "tmdb_runtime": 113
+    },
+    "acceptedPathless": 0
+  },
+  "candidatesNeverProposed": {
+    "byAssurance": {
+      "contradictory": 15,
+      "insufficient": 577
+    },
+    "reasons": {
+      "cross_kind_conflict": 15,
+      "title_uncertain": 57,
+      "unknown_kind": 520
+    }
+  },
+  "reasons": {
+    "contradictions": {
+      "broadcaster_kind_movie_vs_show": 5,
+      "broadcaster_kind_series_vs_movie": 1,
+      "broadcaster_kind_show_vs_movie": 1,
+      "broadcaster_kind_show_vs_series": 2,
+      "broadcaster_kinds": 2,
+      "edition_of": 21,
+      "episode_beyond_tmdb": 2,
+      "kind_unstable": 16,
+      "legacy_owner_conflict": 4,
+      "movie_with_episodes": 9,
+      "pathless_historic_ambiguous": 5,
+      "pathless_historic_conflict": 3,
+      "pathless_historic_unverified": 175,
+      "residue_date_in_title": 1,
+      "residue_parenthetical": 19,
+      "residue_part_marker": 2,
+      "residue_slot_wording": 28,
+      "residue_spaced_separator": 1,
+      "residue_time_of_day": 5,
+      "residue_trailing_number": 47,
+      "slot_shorter_than_runtime": 8,
+      "tmdb_genres_series_vs_show": 3,
+      "tmdb_genres_show_vs_series": 1,
+      "tmdb_id_unstable": 1,
+      "tmdb_mixed": 5,
+      "tmdb_not_exact": 1,
+      "tmdb_unconfirmed": 33
+    },
+    "missing": {
+      "movie_without_tmdb": 116,
+      "pathless_unsupported_slug": 1,
+      "seen_on_0_other_days": 198,
+      "seen_on_1_other_days": 199,
+      "title_only_several_channels": 114,
+      "title_only_without_legacy_url": 188
+    },
+    "unverified": {
+      "movie_without_independent_check": 8,
+      "title_only": 330,
+      "tmdb_homonyms": 69,
+      "tv_kind_unverified": 8
+    }
+  },
+  "violations": {
+    "canonicalOwnership": [],
+    "crossKindMerges": [],
+    "episodeAsWork": [],
+    "circularIndependence": [],
+    "unsupportedTmdb": [],
+    "kindUnverified": [],
+    "acceptedPathless": [],
+    "acceptedWithConflicts": []
+  },
+  "digest": "9e9588032b0605e546d7b52ae2c27cbb9dd1f4139ab6d9b94261b1a3eae66da3"
+}

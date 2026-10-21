@@ -12,6 +12,12 @@
  *  - `toSheets` exports the effective labels in the 2D-2E sheet format, so the unchanged gate
  *    (`scoreReview`: 300 labels, 98 % precision, 50 second-reviewer rows, error categories) decides.
  *    Nothing here lowers or bypasses it, and no machine verdict is ever a label.
+ *
+ * AI reviewers (3B-AI): on 2026-10-21 the owner authorised AI agents to do the review. They are never
+ * a person: names start with "AI " (a human name may not), the roster must carry the owner's
+ * `aiAuthorization`, every ledger entry says `reviewerKind: 'ai'`, and reports count them apart
+ * (`reviewBasis`). The human rule (`normalizeReviewerName`) is unchanged for everything else:
+ * `verifyEntity`, public reads and the canary still need a named person.
  */
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { AUTO_CREATE, ERROR_CATEGORIES, REVIEW_COLUMNS, buildReviewRows, scoreReview, type ScoreGate } from './ContentIdentityAudit';
@@ -28,7 +34,7 @@ export interface SubLabels { kind_ok?: string; tmdb_ok?: string; path_ok?: strin
 export interface LedgerOpen { seq: number; at: string; prev: string; hash: string; type: 'open'; sheetSha256: string; rows: number; openedBy: string }
 export interface LedgerDecision {
   seq: number; at: string; prev: string; hash: string; type: 'decision';
-  rowId: string; decision: ReviewDecisionKind; reviewer: string;
+  rowId: string; decision: ReviewDecisionKind; reviewer: string; reviewerKind?: 'ai';
   errorCategory?: string; labels?: SubLabels; note?: string; supersedes?: number;
 }
 export type LedgerEntry = LedgerOpen | LedgerDecision;
@@ -81,27 +87,48 @@ export function buildEvidenceSheet(days: ReadonlyArray<{ traces: readonly Identi
 // ---------------------------------------------------------------------------------------------
 // Roster
 
-export interface Roster { version: 1; reviewers: Array<{ name: string; tokenSha256: string }> }
+/** AI reviewer names: "AI Sonnet 5.5 A". Humans may not use this form, so a name always says what signed. */
+export const AI_REVIEWER_NAME = /^AI [\p{L}\p{N}][\p{L}\p{N} .-]{1,38}$/u;
+export interface AiAuthorization { by: string; at: string; note: string }
+export interface Roster { version: 1; aiAuthorization?: AiAuthorization; reviewers: Array<{ name: string; tokenSha256: string; kind?: 'ai' }> }
 
-/** The normalised reviewer name if `token` is the personal token of a roster member, else throws. */
-export function authenticate(roster: Roster, name: string, token: string | undefined): string {
-  const who = normalizeReviewerName(name);
+/** Name to store for a reviewer of the given kind; humans keep the unchanged person rule and may not look like an AI. */
+export function reviewerName(name: unknown, kind?: 'ai'): string {
+  const text = String(name ?? '').normalize('NFKC').trim().replace(/\s+/g, ' ');
+  if (kind === 'ai') {
+    if (!AI_REVIEWER_NAME.test(text)) throw new ContentIdentityError('reviewer_required', 'an AI reviewer is named "AI <model> <letter>"');
+    return text;
+  }
+  if (text.startsWith('AI ')) throw new ContentIdentityError('reviewer_required', 'a person cannot sign with an "AI …" name');
+  return normalizeReviewerName(text);
+}
+
+/** The roster member `name` with `token`, else throws. */
+export function authenticateMember(roster: Roster, name: string, token: string | undefined): { name: string; kind?: 'ai' } {
+  const who = String(name).trim().startsWith('AI ') ? reviewerName(name, 'ai') : reviewerName(name);
   const member = roster.reviewers.find((r) => r.name.toLowerCase() === who.toLowerCase());
   const given = Buffer.from(hashToken(token ?? ''), 'hex');
   const stored = Buffer.from(member?.tokenSha256 ?? '', 'hex');
   if (!member || !token || stored.length !== given.length || !timingSafeEqual(stored, given)) {
     throw new ContentIdentityError('reviewer_required', 'unknown reviewer or wrong token');
   }
-  return member.name;
+  return { name: member.name, ...(member.kind ? { kind: member.kind } : {}) };
 }
+
+/** The normalised reviewer name if `token` is the personal token of a roster member, else throws. */
+export const authenticate = (roster: Roster, name: string, token: string | undefined): string => authenticateMember(roster, name, token).name;
 
 /** Validates a roster document; every name must be a person, no duplicates. */
 export function parseRoster(text: string): Roster {
   const doc = JSON.parse(text) as Roster;
   if (doc.version !== 1 || !Array.isArray(doc.reviewers)) throw new Error('roster must be {version:1, reviewers:[{name, tokenSha256}]}');
   const seen = new Set<string>();
+  const auth = doc.aiAuthorization;
+  if (auth && (!auth.note || Number.isNaN(Date.parse(auth.at)) || !normalizeReviewerName(auth.by))) throw new Error('invalid aiAuthorization (by, at, note)');
   for (const r of doc.reviewers) {
-    r.name = normalizeReviewerName(r.name);
+    if (r.kind === 'ai' && !auth) throw new Error(`AI reviewer ${r.name} needs the owner's aiAuthorization in the roster`);
+    if (r.kind !== undefined && r.kind !== 'ai') throw new Error(`invalid reviewer kind for ${r.name}`);
+    r.name = reviewerName(r.name, r.kind);
     if (!/^[0-9a-f]{64}$/.test(r.tokenSha256) || seen.has(r.name.toLowerCase())) throw new Error(`invalid roster entry ${r.name}`);
     seen.add(r.name.toLowerCase());
   }
@@ -136,7 +163,7 @@ function seal(entries: readonly LedgerEntry[], body: Omit<LedgerOpen, 'seq' | 'p
 }
 
 export function openLedger(rows: readonly Record<string, string>[], by: string, now: Date): LedgerOpen {
-  return seal([], { type: 'open', at: now.toISOString(), sheetSha256: sheetDigest(rows), rows: rows.length, openedBy: normalizeReviewerName(by) }) as LedgerOpen;
+  return seal([], { type: 'open', at: now.toISOString(), sheetSha256: sheetDigest(rows), rows: rows.length, openedBy: reviewerName(by, AI_REVIEWER_NAME.test(by.trim()) ? 'ai' : undefined) }) as LedgerOpen;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -187,7 +214,7 @@ export function refusal(rows: readonly Record<string, string>[], states: Map<str
   if (!live) {
     const people = new Set(state?.history.map((d) => d.reviewer));
     if (people.size >= 3) return 'row already has a primary, a second reviewer and an adjudicator';
-    if (people.size === 2 && !(state?.primary && state.second && disagree(state))) return 'primary and second reviewer agree: nothing to adjudicate';
+    if (people.size === 2 && !(state?.primary && state.second && needsAdjudication(state))) return 'primary and second reviewer agree: nothing to adjudicate';
     if (people.size === 1 && !String(row.strata).split(';').includes(AUTO_CREATE)) return 'only auto-create rows take a second reviewer';
   }
   return null;
@@ -195,18 +222,20 @@ export function refusal(rows: readonly Record<string, string>[], states: Map<str
 
 const label = (d?: LedgerDecision) => (d?.decision === 'accept' ? 'y' : d?.decision === 'reject' ? 'n' : '?');
 export const disagree = (s: RowState) => !!s.primary && !!s.second && label(s.primary) !== label(s.second);
+/** Two reviewers disagreeing, or agreeing only that they cannot tell: either way the row has no yes/no label yet. */
+export const needsAdjudication = (s: RowState) => disagree(s) || (!!s.primary && !!s.second && label(s.primary) === '?');
 
 // ---------------------------------------------------------------------------------------------
 // Recording and serving rows
 
 export function recordDecision(
   entries: readonly LedgerEntry[], rows: readonly Record<string, string>[],
-  input: { rowId: string; decision: string; reviewer: string; errorCategory?: string; labels?: SubLabels; note?: string; correct?: boolean }, now: Date
+  input: { rowId: string; decision: string; reviewer: string; reviewerKind?: 'ai'; errorCategory?: string; labels?: SubLabels; note?: string; correct?: boolean }, now: Date
 ): LedgerDecision {
   const open = entries[0] as LedgerOpen | undefined;
   if (!open || open.sheetSha256 !== sheetDigest(rows)) throw new ContentIdentityError('invalid_ledger', 'the sheet is not the one this ledger was opened for');
   if (!(DECISIONS as readonly string[]).includes(input.decision)) throw new ContentIdentityError('invalid_decision', `decision must be one of ${DECISIONS.join(', ')}`);
-  const reviewer = normalizeReviewerName(input.reviewer);
+  const reviewer = reviewerName(input.reviewer, input.reviewerKind);
   const states = rowStates(entries);
   const latest = states.get(input.rowId)?.history.filter((d) => d.reviewer === reviewer).at(-1);
   if (input.correct && !latest) throw new ContentIdentityError('review_refused', 'nothing of yours to correct on this row');
@@ -216,6 +245,7 @@ export function recordDecision(
     throw new ContentIdentityError('invalid_decision', `a rejection needs --error-category (${ERROR_CATEGORIES.join(', ')})`);
   }
   const body: Omit<LedgerDecision, 'seq' | 'prev' | 'hash'> = { type: 'decision', at: now.toISOString(), rowId: input.rowId, decision: input.decision as ReviewDecisionKind, reviewer };
+  if (input.reviewerKind === 'ai') body.reviewerKind = 'ai';
   if (input.decision === 'reject') body.errorCategory = input.errorCategory;
   if (input.labels && Object.keys(input.labels).length) body.labels = input.labels;
   if (input.note) body.note = input.note;
@@ -228,8 +258,8 @@ export function recordDecision(
  * reviewer, so two people start at different rows and the second sample is not a copy of the first).
  * The result never contains another reviewer's label.
  */
-export function nextRows(entries: readonly LedgerEntry[], rows: readonly Record<string, string>[], reviewerName: string, limit = 10, secondOnly = false): Record<string, string>[] {
-  const reviewer = normalizeReviewerName(reviewerName);
+export function nextRows(entries: readonly LedgerEntry[], rows: readonly Record<string, string>[], reviewerNameInput: string, limit = 10, secondOnly = false): Record<string, string>[] {
+  const reviewer = reviewerName(reviewerNameInput, AI_REVIEWER_NAME.test(reviewerNameInput.trim()) ? 'ai' : undefined);
   const states = rowStates(entries);
   return rows
     .filter((r) => !states.get(r.candidate_id)?.history.some((d) => d.reviewer === reviewer) && !refusal(rows, states, r.candidate_id, reviewer))
@@ -271,7 +301,7 @@ export function toSheets(rows: readonly Record<string, string>[], entries: reado
   for (const row of rows) {
     const s = states.get(row.candidate_id);
     if (!s?.primary) { primary.push({ ...row }); continue; }
-    const settled = s.adjudication && disagree(s) ? s.adjudication : undefined;
+    const settled = s.adjudication && needsAdjudication(s) ? s.adjudication : undefined;
     primary.push(sheetRow(row, s.primary, settled));
     if (s.second) second.push(sheetRow(row, s.second, settled));
   }
@@ -281,7 +311,8 @@ export function toSheets(rows: readonly Record<string, string>[], entries: reado
 /** Gate score from the ledger alone, plus progress against each threshold and the open disagreements. */
 export function ledgerReport(rows: readonly Record<string, string>[], entries: readonly LedgerEntry[], gate: ScoreGate = REQUIRED_GATE) {
   const { primary, second } = toSheets(rows, entries);
-  const score = scoreReview(primary, gate, second);
+  const aiNames = new Set(decisions(entries).filter((d) => d.reviewerKind === 'ai').map((d) => d.reviewer));
+  const score = scoreReview(primary, gate, second, aiNames);
   const states = [...rowStates(entries).values()];
   const reviewers = new Map<string, number>();
   for (const d of decisions(entries)) reviewers.set(d.reviewer, (reviewers.get(d.reviewer) ?? 0) + 1);
@@ -289,8 +320,13 @@ export function ledgerReport(rows: readonly Record<string, string>[], entries: r
   const autoIds = new Set(rows.filter(auto).map((r) => r.candidate_id));
   const raw = states.filter((s) => s.primary && s.second && autoIds.has(s.primary.rowId));
   const agreed = raw.filter((s) => label(s.primary) === label(s.second)).length;
+  const humanNames = new Set(decisions(entries).filter((d) => d.reviewerKind !== 'ai').map((d) => d.reviewer));
   return {
     chain: verifyChain(entries),
+    /** Who the labels come from. `ai` and `mixed` are never reported as a human-validated precision. */
+    reviewBasis: aiNames.size && humanNames.size ? 'mixed' : aiNames.size ? 'ai' : 'human',
+    aiReviewers: [...aiNames].sort(),
+    humanReviewers: [...humanNames].sort(),
     sheetRows: rows.length,
     autoCreateRows: autoIds.size,
     decided: states.filter((s) => s.primary).length,
@@ -301,7 +337,7 @@ export function ledgerReport(rows: readonly Record<string, string>[], entries: r
     reviewers: Object.fromEntries([...reviewers].sort(([a], [b]) => a.localeCompare(b))),
     /** Raw agreement of the two first labels on rows with two reviewers, before any adjudication. */
     rawAgreement: raw.length ? agreed / raw.length : null,
-    openDisagreements: states.filter((s) => disagree(s) && !s.adjudication).map((s) => s.primary!.rowId).sort(),
+    openDisagreements: states.filter((s) => needsAdjudication(s) && !s.adjudication).map((s) => s.primary!.rowId).sort(),
     progress: {
       labelled: { have: score.autoCreate.identityPrecision.n, need: gate.minLabelled },
       verified: { have: score.verification?.overlap ?? 0, need: gate.minVerified ?? 0 },

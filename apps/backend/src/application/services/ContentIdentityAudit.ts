@@ -273,14 +273,17 @@ export interface ScoreGate {
   minVerified?: number;
 }
 
+const NO_AI_REVIEWERS: ReadonlySet<string> = new Set();
+
 /** Labelled rows signed by a valid reviewer name (normalised), and the ids of labelled rows that are not. */
-function signedRows(rows: readonly Record<string, string>[]) {
+function signedRows(rows: readonly Record<string, string>[], aiReviewers: ReadonlySet<string> = NO_AI_REVIEWERS) {
   const reviewed: Record<string, string>[] = [];
   const invalidReviewer: string[] = [];
   for (const r of rows) {
     if (!LABEL_COLUMNS.some((c) => c !== 'reviewer' && c !== 'notes' && norm(r[c]))) continue;
     try {
-      reviewed.push({ ...r, reviewer: normalizeReviewerName(r.reviewer) });
+      // Owner-authorised AI reviewers (3B-AI): only names the caller lists, never a default; humans go through the unchanged rule.
+      reviewed.push({ ...r, reviewer: aiReviewers.has(r.reviewer) ? r.reviewer : normalizeReviewerName(r.reviewer) });
     } catch {
       invalidReviewer.push(r.candidate_id);
     }
@@ -301,11 +304,11 @@ const adjudicatedFields = (notes: string | undefined) =>
  * identity_ok: …"); an adjudicated label still counts as a disagreement for agreement and Cohen's
  * kappa (identity labels are binary, so the primary's original label is the opposite of the verifier's).
  */
-export function compareReviews(primary: readonly Record<string, string>[], verification: readonly Record<string, string>[]) {
+export function compareReviews(primary: readonly Record<string, string>[], verification: readonly Record<string, string>[], aiReviewers: ReadonlySet<string> = NO_AI_REVIEWERS) {
   const auto = (list: Record<string, string>[]) =>
     new Map(list.filter((r) => String(r.strata).split(';').includes(AUTO_CREATE)).map((r) => [r.candidate_id, r] as const));
-  const a = auto(signedRows(primary).reviewed);
-  const b = auto(signedRows(verification).reviewed);
+  const a = auto(signedRows(primary, aiReviewers).reviewed);
+  const b = auto(signedRows(verification, aiReviewers).reviewed);
   const pairs = [...b].filter(([id, r]) => a.has(id) && yesNo(a.get(id)!.identity_ok) && yesNo(r.identity_ok)).map(([id, r]) => [a.get(id)!, r] as const);
   const sameReviewer = pairs.filter(([p, v]) => p.reviewer.toLowerCase() === v.reviewer.toLowerCase()).map(([p]) => p.candidate_id);
   const disagreements: Array<{ candidate_id: string; field: string; primary: string; verifier: string; adjudicated: boolean }> = [];
@@ -349,9 +352,10 @@ export function compareReviews(primary: readonly Record<string, string>[], verif
 export function scoreReview(
   rows: readonly Record<string, string>[],
   gate: ScoreGate = { precision: 0.98, minLabelled: 300, minVerified: 50 },
-  verification?: readonly Record<string, string>[]
+  verification?: readonly Record<string, string>[],
+  aiReviewers: ReadonlySet<string> = NO_AI_REVIEWERS
 ) {
-  const { reviewed, invalidReviewer } = signedRows(rows);
+  const { reviewed, invalidReviewer } = signedRows(rows, aiReviewers);
   const inStratum = (s: string) => reviewed.filter((r) => String(r.strata).split(';').includes(s));
   const auto = inStratum(AUTO_CREATE);
   const autoDrawn = rows.filter((r) => String(r.strata).split(';').includes(AUTO_CREATE)).length;
@@ -388,7 +392,7 @@ export function scoreReview(
   const uncategorised = wrong.filter((r) => !(ERROR_CATEGORIES as readonly string[]).includes(norm(r.error_category)));
   if (uncategorised.length) blockers.push(`${uncategorised.length} identity error(s) without a valid error_category`);
   const minVerified = gate.minVerified ?? 0;
-  const agreement = verification ? compareReviews(rows, verification) : null;
+  const agreement = verification ? compareReviews(rows, verification, aiReviewers) : null;
   if (minVerified > 0) {
     if (!agreement || agreement.overlap < minVerified) {
       blockers.push(`independent verification: ${agreement?.overlap ?? 0} auto-create rows labelled by a second person, ${minVerified} required`);

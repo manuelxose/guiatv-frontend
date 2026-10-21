@@ -2,8 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { IdentityTrace } from './ContentIdentityIngestion';
 import type { EvidenceVerdict } from './ContentIdentityEvidence';
+import { scoreReview } from './ContentIdentityAudit';
+import { normalizeReviewerName } from './ContentIdentityService';
 import {
-  EVIDENCE_SHEET_COLUMNS, buildEvidenceSheet,
+  EVIDENCE_SHEET_COLUMNS, buildEvidenceSheet, authenticateMember,
   authenticate, hashToken, ledgerReport, nextRows, openLedger, parseLedger, parseRoster, recordDecision, rowStates, toSheets, verifyChain,
   type LedgerEntry, type Roster,
 } from './ContentIdentityReviewLedger';
@@ -187,4 +189,54 @@ test('evidence sheet: only gate-accepted identities, one row per identity across
   const book = new Book(rows);
   book.decide(rows[0].candidate_id, 'accept', 'Ana García');
   assert.equal(ledgerReport(rows, book.entries).decided, 1);
+});
+
+test('AI reviewers: only under the owner\'s recorded authorisation, always labelled as AI, never as a person', () => {
+  const ai = (name: string) => ({ name, tokenSha256: hashToken(`tok-${name}`), kind: 'ai' as const });
+  const authorised = { version: 1, aiAuthorization: { by: 'Manuel García', at: '2026-10-21T20:00:00Z', note: 'owner authorises AI review of the 3B sheet' }, reviewers: [ai('AI Sonnet A'), ai('AI Opus B'), ai('AI Fable C')] };
+  assert.equal(parseRoster(JSON.stringify(authorised)).reviewers.length, 3);
+  assert.throws(() => parseRoster(JSON.stringify({ ...authorised, aiAuthorization: undefined })), /aiAuthorization/);
+  assert.throws(() => parseRoster(JSON.stringify({ ...authorised, aiAuthorization: { by: 'Manuel García', at: 'x', note: 'n' } })), /aiAuthorization/);
+  assert.throws(() => parseRoster(JSON.stringify({ ...authorised, reviewers: [ai('Claude')] })), /AI <model>/, 'an AI must say so in its name');
+  assert.throws(() => parseRoster(JSON.stringify({ version: 1, reviewers: [{ name: 'AI Smith', tokenSha256: hashToken('x') }] })), /cannot sign with an "AI/, 'a person cannot pose as an AI either');
+  const roster2 = parseRoster(JSON.stringify(authorised));
+  assert.deepEqual(authenticateMember(roster2, 'AI Opus B', 'tok-AI Opus B'), { name: 'AI Opus B', kind: 'ai' });
+  assert.throws(() => authenticateMember(roster2, 'AI Opus B', 'tok-AI Sonnet A'), /wrong token/);
+
+  const book = new Book(rows(4));
+  assert.throws(() => book.decide('c0', 'accept', 'AI Sonnet A'), /person|reviewer/, 'without the kind the name is a human name and is refused');
+  const entry = book.decide('c0', 'accept', 'AI Sonnet A', { reviewerKind: 'ai' });
+  assert.equal(entry.reviewerKind, 'ai');
+  assert.throws(() => book.decide('c1', 'accept', 'Ana García', { reviewerKind: 'ai' }), /named "AI/);
+  assert.throws(() => parseLedger(serialize(book.entries).replace('"reviewerKind":"ai"', '"reviewerKind":"human"')), /modified/);
+  assert.equal(ledgerReport(book.sheet, book.entries).reviewBasis, 'ai');
+  book.decide('c1', 'accept', 'Ana García');
+  assert.equal(ledgerReport(book.sheet, book.entries).reviewBasis, 'mixed');
+  // The default scorer still refuses an AI name: the opt-in is explicit per call.
+  const sheet = toSheets(book.sheet, book.entries).primary;
+  assert.throws(() => normalizeReviewerName('AI Sonnet A'), /reviewer/, 'verifyEntity and public reads keep refusing it');
+  assert.deepEqual(scoreReview(sheet, { precision: 0.98, minLabelled: 1, minVerified: 0 }).invalidReviewer, ['c0']);
+  assert.deepEqual(scoreReview(sheet, { precision: 0.98, minLabelled: 1, minVerified: 0 }, undefined, new Set(['AI Sonnet A'])).invalidReviewer, []);
+});
+
+test('the gate passes with AI reviewers only through the same thresholds, and reports the basis', () => {
+  const book = new Book(rows(320));
+  const kind = { reviewerKind: 'ai' as const };
+  for (let i = 0; i < 300; i++) book.decide(`c${i}`, 'accept', 'AI Sonnet A', { ...kind, labels: { kind_ok: 'y', path_ok: 'y', critical: 'n' } });
+  assert.equal(ledgerReport(book.sheet, book.entries).score.gate.pass, false, 'no second reviewer yet');
+  for (let i = 0; i < 60; i++) book.decide(`c${i}`, 'accept', 'AI Opus B', { ...kind, labels: { kind_ok: 'y', path_ok: 'y', critical: 'n' } });
+  const report = ledgerReport(book.sheet, book.entries);
+  assert.equal(report.score.gate.pass, true, JSON.stringify(report.score.gate.blockers));
+  assert.deepEqual([report.reviewBasis, report.aiReviewers, report.humanReviewers], ['ai', ['AI Opus B', 'AI Sonnet A'], []]);
+});
+
+test('two "uncertain" labels still need an adjudicator, and a settled row closes the gate blocker', () => {
+  const book = new Book(rows(3));
+  book.decide('c0', 'uncertain', 'Ana García');
+  book.decide('c0', 'uncertain', 'Luis Pérez');
+  assert.deepEqual(ledgerReport(book.sheet, book.entries).openDisagreements, ['c0']);
+  book.decide('c0', 'reject', 'Marta Ruiz', { errorCategory: 'wrong_tmdb', note: 'different series' });
+  const report = ledgerReport(book.sheet, book.entries);
+  assert.deepEqual(report.openDisagreements, []);
+  assert.equal(toSheets(book.sheet, book.entries).primary[0].identity_ok, 'n');
 });

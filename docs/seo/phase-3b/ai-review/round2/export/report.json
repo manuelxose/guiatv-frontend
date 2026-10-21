@@ -1,0 +1,145 @@
+{
+  "chain": {
+    "ok": true
+  },
+  "reviewBasis": "ai",
+  "aiReviewers": [
+    "AI Opus 5.5 B",
+    "AI Sonnet 5.5 A"
+  ],
+  "humanReviewers": [],
+  "sheetRows": 360,
+  "autoCreateRows": 360,
+  "decided": 360,
+  "uncertain": 0,
+  "secondReviewed": 119,
+  "entries": 479,
+  "corrections": 0,
+  "reviewers": {
+    "AI Opus 5.5 B": 119,
+    "AI Sonnet 5.5 A": 360
+  },
+  "rawAgreement": 1,
+  "openDisagreements": [],
+  "progress": {
+    "labelled": {
+      "have": 360,
+      "need": 300
+    },
+    "verified": {
+      "have": 119,
+      "need": 50
+    },
+    "precision": {
+      "observed": 0.9972222222222222,
+      "lower95": 0.9868909205800418,
+      "need": 0.98
+    }
+  },
+  "score": {
+    "rows": 360,
+    "reviewed": 360,
+    "reviewers": [
+      "AI Sonnet 5.5 A"
+    ],
+    "invalidReviewer": [],
+    "autoCreate": {
+      "drawn": 360,
+      "identityPrecision": {
+        "n": 360,
+        "ok": 359,
+        "unresolved": 0,
+        "observed": 0.9972222222222222,
+        "ci95": {
+          "lower": 0.9846211259987134,
+          "upper": 0.9999296752285018
+        },
+        "lower95": 0.9868909205800418
+      },
+      "kindAccuracy": {
+        "n": 360,
+        "ok": 359,
+        "unresolved": 0,
+        "observed": 0.9972222222222222,
+        "ci95": {
+          "lower": 0.9846211259987134,
+          "upper": 0.9999296752285018
+        },
+        "lower95": 0.9868909205800418
+      },
+      "duplicateRate": 0,
+      "duplicates": 0,
+      "tmdbAssignment": {
+        "n": 360,
+        "ok": 360,
+        "unresolved": 0,
+        "observed": 1,
+        "ci95": {
+          "lower": 0.9898054331180455,
+          "upper": 1
+        },
+        "lower95": 0.991713049124777
+      },
+      "canonicalOwnership": {
+        "n": 360,
+        "ok": 359,
+        "unresolved": 0,
+        "observed": 0.9972222222222222,
+        "ci95": {
+          "lower": 0.9846211259987134,
+          "upper": 0.9999296752285018
+        },
+        "lower95": 0.9868909205800418
+      },
+      "identityByMethod": {
+        "tmdb_exact": {
+          "n": 360,
+          "ok": 359,
+          "unresolved": 0,
+          "observed": 0.9972222222222222,
+          "ci95": {
+            "lower": 0.9846211259987134,
+            "upper": 0.9999296752285018
+          },
+          "lower95": 0.9868909205800418
+        }
+      }
+    },
+    "strata": {
+      "auto_create": {
+        "reviewed": 360,
+        "identityErrors": 1,
+        "kindErrors": 1,
+        "tmdbErrors": 0,
+        "pathErrors": 1
+      }
+    },
+    "errorCategories": {
+      "wrong_kind": 1
+    },
+    "verification": {
+      "overlap": 119,
+      "reviewers": {
+        "primary": [
+          "AI Sonnet 5.5 A"
+        ],
+        "verifier": [
+          "AI Opus 5.5 B"
+        ]
+      },
+      "sameReviewer": [],
+      "identityAgreement": 1,
+      "kappa": 1,
+      "disagreements": [],
+      "open": []
+    },
+    "criticalOwnershipViolations": [],
+    "gate": {
+      "precision": 0.98,
+      "minLabelled": 300,
+      "minVerified": 50,
+      "pass": true,
+      "blockers": []
+    }
+  }
+}

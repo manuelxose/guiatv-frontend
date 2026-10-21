@@ -81,7 +81,7 @@ export interface TmdbSearchCheck {
   id: number;
   query: string;
   results?: Array<{ id: number; title?: string; originalTitle?: string; year?: number; genreIds?: number[] }>;
-  details?: { year?: number; runtime?: number; seasons?: number; genreIds?: number[]; alternativeTitles?: string[] };
+  details?: { year?: number; runtime?: number; seasons?: number; /** TMDB episodes per season / in total (v3 checks). */ episodeCounts?: Record<string, number>; episodes?: number; genreIds?: number[]; alternativeTitles?: string[] };
   /** Alternative titles of other results of the same type, by TMDB id. */
   alternatives?: Record<string, string[]>;
   error?: string;
@@ -133,6 +133,8 @@ const isSlotWording = (title: string) => {
   return words.some((w) => !/^\d+$/.test(w) && SLOT_WORDS.has(w) && w.length > 3) && !named.length;
 };
 /** Pathless reasons that mean another work, or an unbound TMDB work, answers the slug. */
+/** TMDB can trail a running series by an episode; beyond that the feed's episode belongs to another work. */
+const EPISODE_SLACK = 1;
 const OWNERSHIP_DOUBT = new Set(['historic_conflict', 'historic_ambiguous', 'historic_unverified']);
 /** A title-only TV work needs this many other days showing the same key under the same kind. */
 export const MIN_OTHER_DAYS = 2;
@@ -295,6 +297,12 @@ export function adjudicateEvidence(
         const season = t.broadcaster?.maxSeason;
         if (season && details.seasons && season > details.seasons + 1) contradictions.push(`season_beyond_tmdb:${season}>${details.seasons}`);
         else if (season && details.seasons && season <= details.seasons) passed.push(`EPG season ${season} ≤ TMDB seasons ${details.seasons}`);
+        // An episode the feed shows that TMDB's season does not have is a different work with the same name ("La liberación"
+        // T1 E8/E12 against a 7-episode series). Only a contradiction, never support; TMDB may lag by an episode or so.
+        for (const [s, n] of Object.entries(t.broadcaster?.maxEpisodes ?? {})) {
+          const cap = s === '0' ? details.episodes : details.episodeCounts?.[s];
+          if (cap && n > cap + EPISODE_SLACK) contradictions.push(`episode_beyond_tmdb:${s === '0' ? '' : `T${s}`}E${n}>${cap}`);
+        }
         const kind = tmdbTvKind(details.genreIds);
         if (kind && kind !== t.kind) contradictions.push(`tmdb_genres_${kind}_vs_${t.kind}`);
         else if (kind) {
