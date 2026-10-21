@@ -25,6 +25,8 @@ import { ContentIdentityService } from './ContentIdentityService';
 import { broadcasterKey, ContentIdentityIngestion, IdentityObservation, IdentityTrace, observationsFromAirings, runContentIdentity } from './ContentIdentityIngestion';
 import { auditClasses, buildReviewRows, scoreReview, summarizeTraces, toCsv } from './ContentIdentityAudit';
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { TvReadModelBuilder } from './TvReadModelBuilder';
 
@@ -35,7 +37,7 @@ const BENCH_TITLES = Number(process.env.CONTENT_IDENTITY_BENCH_TITLES) || 3000;
 
 function ingestion(
   mode: 'shadow' | 'write',
-  opts: { airingRefs?: boolean; maxCreates?: number; titleKeys?: MongoContentTitleKeyRepository } = {}
+  opts: { airingRefs?: boolean; maxCreates?: number; titleKeys?: MongoContentTitleKeyRepository; admit?: ReadonlySet<string> | 'all' } = {}
 ) {
   const ports = {
     entities: new MongoContentEntityRepository(),
@@ -49,6 +51,7 @@ function ingestion(
     airingRefs: opts.airingRefs ?? false,
     maxCreates: opts.maxCreates ?? 10_000,
     actor: 'test',
+    admit: opts.admit ?? 'all',
   });
 }
 
@@ -325,7 +328,12 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       process.env.CONTENT_ENTITIES_ENABLED = 'true';
       process.env.CONTENT_IDENTITY_WRITES = dbName;
       process.env.CONTENT_IDENTITY_AIRING_REFS = 'true';
+      // An admitted creation is what reaches the store; a write flag alone creates nothing (2D finalisation).
+      const admitFile = path.join(os.tmpdir(), `admit-${process.pid}.jsonl`);
+      fs.writeFileSync(admitFile, JSON.stringify({ candidateId: 'espejo_publico|show||', decision: 'AUTO_ACCEPT', assurance: 'independently_supported' }) + '\n');
+      process.env.CONTENT_IDENTITY_ADMIT_FILE = admitFile;
       assert.equal(await runContentIdentity('20261028', [legacyAiring('n1', '20261028', 'Espejo Público')], new Map()), null);
+      fs.rmSync(admitFile, { force: true });
       const result = await builder.rebuildDate('2026-10-28');
       assert.equal(result.airingsUpserted, 4);
       assert.deepEqual(await contentCollections(), [], 'a refused write never creates a collection implicitly');
@@ -707,7 +715,7 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       const crashing = () => {
         const ports = { entities: new E(), slugs: new S(), titleKeys: new K(), evidence: new MongoIdentityEvidenceSource(), airingRefs: new MongoAiringEntityRefWriter() };
         return new ContentIdentityIngestion(ports, new ContentIdentityService(ports.entities, ports.slugs, ports.titleKeys, 'test'), {
-          mode: 'write', airingRefs: false, maxCreates: 100, actor: 'test',
+          mode: 'write', airingRefs: false, maxCreates: 100, actor: 'test', admit: 'all',
         });
       };
       await resetIdentity();
@@ -745,7 +753,7 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       const slugs = new FlakySlugs();
       const ports = { entities: new MongoContentEntityRepository(), slugs, titleKeys: new MongoContentTitleKeyRepository(), evidence: new MongoIdentityEvidenceSource(), airingRefs: new MongoAiringEntityRefWriter() };
       const flaky = new ContentIdentityIngestion(ports, new ContentIdentityService(ports.entities, ports.slugs, ports.titleKeys, 'test'), {
-        mode: 'write', airingRefs: false, maxCreates: 100, actor: 'test',
+        mode: 'write', airingRefs: false, maxCreates: 100, actor: 'test', admit: 'all',
       });
       const day = () => [obs('Saber y ganar'), obs('300', { editorialCategory: 'Cine', year: 2007 }), obs('No'), obs('Modern Family', { editorialCategory: 'Series' })];
       const first = await flaky.run('20261109', day());

@@ -15,8 +15,10 @@
  *   node dist/scripts/content-identity.js pathless [limit]              stored entities without a path, by reason (reads)
  *   node dist/scripts/content-identity.js approve <titleKeyId> <entityId> --by <name> [--note <text>]
  *   node dist/scripts/content-identity.js reject <titleKeyId> --by <name> [--note <text>]
+ *   node dist/scripts/content-identity.js verify <entityId> --by <name> --note <text>   candidate -> active, a named person's decision
+ *   node dist/scripts/content-identity.js rollback [--since <ISO date>] [--apply]       removes provisional candidates (dry run without --apply)
  *
- * `approve` and `reject` need the write flags (CONTENT_ENTITIES_ENABLED and CONTENT_IDENTITY_WRITES
+ * `approve`, `reject`, `verify` and `rollback --apply` need the write flags (CONTENT_ENTITIES_ENABLED and CONTENT_IDENTITY_WRITES
  * set to the database name) and a named reviewer. Every other command runs under the read-only
  * guard: a write or DDL command ends the process (exit 97) before it is sent. Simulating a whole
  * day needs CONTENT_IDENTITY_MAX_CREATES above the day's creations (the default cap is 1000).
@@ -33,6 +35,7 @@ import {
   MongoContentTitleKeyRepository,
 } from '../infrastructure/repositories/MongoContentIdentityRepositories';
 import { ContentIdentityService } from '../application/services/ContentIdentityService';
+import { rollbackProvisional } from '../application/services/ContentIdentityRollback';
 import {
   createContentIdentityIngestion,
   IdentityTrace,
@@ -162,7 +165,8 @@ async function main() {
     process.exitCode = result.status === 'pass' ? 0 : 2;
     return;
   }
-  const guard = command === 'approve' || command === 'reject' ? null : installReadOnlyGuard();
+  const writes = ['approve', 'reject', 'verify'].includes(command) || (command === 'rollback' && args.includes('--apply'));
+  const guard = writes ? null : installReadOnlyGuard();
   await connectMongoDB();
   try {
     const flags = readContentIdentityFlags(process.env, mongoose.connection.db?.databaseName);
@@ -184,10 +188,19 @@ async function main() {
     }
     if (command === 'pathless') return await pathless(Number(args[0]) || 10_000);
     if (command === 'queue') return console.log(JSON.stringify(await service.reviewQueue(Number(args[0]) || 50), null, 2));
-    if (command !== 'approve' && command !== 'reject') throw new Error('usage: shadow|queue|pathless|approve|reject (see file header)');
+    if (command === 'rollback') {
+      if (writes && !flags.writes) throw new Error('rollback --apply needs CONTENT_ENTITIES_ENABLED and CONTENT_IDENTITY_WRITES=<database name>');
+      const since = option(args, '--since');
+      return console.log(JSON.stringify(await rollbackProvisional({ apply: writes, since: since ? new Date(since) : undefined }), null, 2));
+    }
+    if (!['approve', 'reject', 'verify'].includes(command)) throw new Error('usage: shadow|queue|pathless|approve|reject|verify|rollback (see file header)');
     if (!flags.writes) throw new Error('review writes need CONTENT_ENTITIES_ENABLED and CONTENT_IDENTITY_WRITES=<database name>');
     const by = option(args, '--by') as string;
     const note = option(args, '--note');
+    if (command === 'verify') {
+      const e = await service.verifyEntity(args[0], by, note as string);
+      return console.log(JSON.stringify({ command, entityId: e.entityId, status: e.status, by }));
+    }
     const ok =
       command === 'approve' ? await service.reviewTitleKey(args[0], args[1], by, note) : await service.rejectTitleKey(args[0], by, note);
     console.log(JSON.stringify({ command, id: args[0], updated: ok }));

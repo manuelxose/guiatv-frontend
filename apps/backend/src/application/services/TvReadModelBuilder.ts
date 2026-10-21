@@ -139,6 +139,7 @@ export class TvReadModelBuilder {
     const brands = new Map<string, any>();
     const airingsById = new Map<string, any>();
     const identityYears = new Map<string, unknown>();
+    const identityRawYears = new Map<string, unknown>();
     scopedResolvedEntries.forEach(({ program, channelDoc, resolvedChannelId, channelGroup }) => {
       const anomalyKey = this.buildProgrammeGroupKey(program.startTime, program.title);
       const confirmedChannels =
@@ -341,6 +342,9 @@ export class TvReadModelBuilder {
       };
 
       if (program.year && !identityYears.has(airingId)) identityYears.set(airingId, program.year);
+      // EPG_YEAR_PROVENANCE (off by default): the feed's own year, kept beside the TMDB one.
+      const rawXmltvYear = (program.sourceProvenance?.yearProvenance as { rawXmltvYear?: unknown } | undefined)?.rawXmltvYear;
+      if (rawXmltvYear && !identityRawYears.has(airingId)) identityRawYears.set(airingId, rawXmltvYear);
       const currentAiring = airingsById.get(airingId);
       if (currentAiring) {
         airingsById.set(airingId, this.mergeAiringItems(currentAiring, item));
@@ -418,7 +422,7 @@ export class TvReadModelBuilder {
       await TVProgramBrandModel.bulkWrite(brandOps, { ordered: false });
     }
     // 2D-2: no-op unless a CONTENT_IDENTITY_* flag is on; never throws, so it can't break the day.
-    await runContentIdentity(date, airings, identityYears);
+    await runContentIdentity(date, airings, identityYears, identityRawYears);
 
     await this.cacheRepository.clear(`v3:tv:read:${date}:*`);
     await this.cacheRepository.clear(`tv:channels:${date}:*`);

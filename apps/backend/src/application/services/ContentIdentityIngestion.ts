@@ -5,6 +5,7 @@
  * keys by `$in`, TMDB owners, catalogue evidence, existing entities), then one decision per
  * distinct identity candidate, never per airing.
  */
+import fs from 'node:fs';
 import mongoose from 'mongoose';
 import type {
   AiringEntityRef,
@@ -268,8 +269,23 @@ export class ContentIdentityIngestion {
       airingRefs: IAiringEntityRefWriter;
     },
     private readonly service: ContentIdentityService,
-    private readonly opts: { mode: 'shadow' | 'write'; airingRefs: boolean; maxCreates: number; actor?: string }
+    private readonly opts: {
+      mode: 'shadow' | 'write';
+      airingRefs: boolean;
+      maxCreates: number;
+      actor?: string;
+      /**
+       * Write mode creates an entity only for a candidate id in this set (the evidence gate's
+       * `independently_supported` AUTO_ACCEPTs); `'all'` is for tests. Unset: nothing is created,
+       * existing rows still bind. Shadow mode ignores it and reports what an open gate would do.
+       */
+      admit?: ReadonlySet<string> | 'all';
+    }
   ) {}
+
+  private admitted(c: Candidate): boolean {
+    return this.opts.admit === 'all' || Boolean(this.opts.admit?.has(c.id));
+  }
 
   async run(date: string, observations: IdentityObservation[], trace?: IdentityTrace[]): Promise<IdentityRunReport> {
     const started = Date.now();
@@ -434,6 +450,12 @@ export class ContentIdentityIngestion {
         count(report.decisions, 'unresolved');
         count(report.reasons, 'unknown_kind');
         outcome(c, 'unresolved', decision.row);
+        return;
+      }
+      if (write && decision.decision === 'create' && !this.admitted(c)) {
+        count(report.decisions, 'unresolved');
+        count(report.reasons, 'not_admitted');
+        c.outcome = { decision: 'unresolved', reason: 'not_admitted' };
         return;
       }
       count(report.decisions, decision.decision);
@@ -649,6 +671,7 @@ export class ContentIdentityIngestion {
         confidence: row?.confidence ?? (c.tmdb ? CONFIRMED_SEARCH_CONFIDENCE : 0.8),
         decidedAt: new Date(),
         decidedBy: this.opts.actor ?? 'ingest',
+        ...(this.opts.admit instanceof Set && this.admitted(c) ? { assurance: 'independently_supported' as const } : {}),
       },
     };
   }
@@ -657,7 +680,11 @@ export class ContentIdentityIngestion {
 const log = logger.child('ContentIdentity');
 const evidence = new MongoIdentityEvidenceSource();
 
-export function createContentIdentityIngestion(mode: 'shadow' | 'write', airingRefs = false): ContentIdentityIngestion {
+export function createContentIdentityIngestion(
+  mode: 'shadow' | 'write',
+  airingRefs = false,
+  admit?: ReadonlySet<string>
+): ContentIdentityIngestion {
   const ports = {
     entities: new MongoContentEntityRepository(),
     slugs: new MongoContentSlugRepository(),
@@ -669,7 +696,30 @@ export function createContentIdentityIngestion(mode: 'shadow' | 'write', airingR
     mode,
     airingRefs,
     maxCreates: contentIdentityMaxCreates(),
+    admit,
   });
+}
+
+/**
+ * CONTENT_IDENTITY_ADMIT_FILE: the `content-identity evidence --out` verdicts. Only AUTO_ACCEPT
+ * lines of independently supported identities admit a candidate; an unset, missing or unreadable
+ * file admits nothing, so a write flag alone never creates an entity.
+ */
+export function admissionFromEnv(env: NodeJS.ProcessEnv = process.env): ReadonlySet<string> {
+  const admitted = new Set<string>();
+  const file = String(env.CONTENT_IDENTITY_ADMIT_FILE || '').trim();
+  if (!file) return admitted;
+  try {
+    for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
+      if (!line.startsWith('{')) continue;
+      const v = JSON.parse(line);
+      if (v.decision === 'AUTO_ACCEPT' && v.assurance === 'independently_supported' && typeof v.candidateId === 'string') admitted.add(v.candidateId);
+    }
+  } catch (error) {
+    log.warn('Content identity admission file unreadable; nothing is admitted', { message: String((error as Error)?.message || '').slice(0, 200) });
+    return new Set();
+  }
+  return admitted;
 }
 
 /**
@@ -679,14 +729,15 @@ export function createContentIdentityIngestion(mode: 'shadow' | 'write', airingR
 export async function runContentIdentity(
   date: string,
   airings: any[],
-  years: ReadonlyMap<string, unknown>
+  years: ReadonlyMap<string, unknown>,
+  rawYears?: ReadonlyMap<string, unknown>
 ): Promise<IdentityRunReport | null> {
   const flags = readContentIdentityFlags(process.env, mongoose.connection.db?.databaseName);
   if (!flags.shadow && !flags.writes) return null;
   try {
-    const report = await createContentIdentityIngestion(flags.writes ? 'write' : 'shadow', flags.airingRefs).run(
+    const report = await createContentIdentityIngestion(flags.writes ? 'write' : 'shadow', flags.airingRefs, admissionFromEnv()).run(
       date,
-      observationsFromAirings(airings, years)
+      observationsFromAirings(airings, years, rawYears)
     );
     log.info('Content identity run', report);
     return report;
