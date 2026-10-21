@@ -41,6 +41,13 @@ export type PathResolution =
 
 export type RedirectResult = 'created' | 'exists' | 'path_taken' | 'target_not_canonical' | 'would_loop';
 
+/** Review decisions name a real person; there is no default reviewer and no automatic approval. */
+function assertReviewer(reviewer: string): void {
+  if (!/^\S.{0,63}$/.test(String(reviewer || '')) || ['ingest', 'system', 'auto'].includes(reviewer)) {
+    throw new ContentIdentityError('reviewer_required', 'a review needs the reviewer\'s name');
+  }
+}
+
 function normalizedOrThrow(path: string): string {
   const check = normalizeContentPath(path);
   if (!check.ok) throw new ContentIdentityError('invalid_path', `${path}: ${check.reason}`);
@@ -72,16 +79,29 @@ export class ContentIdentityService {
     candidatePaths: string[]
   ): Promise<{ entity: ContentEntityRecord; path: string | null }> {
     const paths = candidatePaths.map(normalizedOrThrow);
-    let result = await this.entities.insert({ ...input, entityId: newEntityId() });
+    const entity = await this.ensureEntity(input);
+    const path = await this.allocateCanonicalPath(entity.entityId, paths);
+    return { entity: (await this.entities.findById(entity.entityId)) ?? entity, path };
+  }
+
+  /**
+   * Inserts an entity without a path. With `entityId` (an id a title key already claimed, 2D-2) the
+   * insert is idempotent: if that id exists, the stored entity is returned. A live entity that
+   * already owns the TMDB id wins over a new one, so callers must use the returned entity's id.
+   */
+  async ensureEntity(input: Omit<ContentEntityInsert, 'entityId'>, entityId?: string): Promise<ContentEntityRecord> {
+    let result = await this.entities.insert({ ...input, entityId: entityId ?? newEntityId() });
     if (!result.inserted && result.conflict === 'id_taken') {
+      if (entityId) {
+        const existing = await this.entities.findById(entityId);
+        if (existing) return existing;
+      }
       result = await this.entities.insert({ ...input, entityId: newEntityId() });
     }
     if (!result.inserted && !result.existing) {
       throw new ContentIdentityError(result.conflict, 'entity insert conflicted and no existing entity was found');
     }
-    const entity = result.inserted ? result.record : (result.existing as ContentEntityRecord);
-    const path = await this.allocateCanonicalPath(entity.entityId, paths);
-    return { entity: (await this.entities.findById(entity.entityId)) ?? entity, path };
+    return result.inserted ? result.record : (result.existing as ContentEntityRecord);
   }
 
   /**
@@ -220,11 +240,18 @@ export class ContentIdentityService {
 
   /** Manual resolution of an ambiguous / manual_review row, or a reviewed re-point. */
   async reviewTitleKey(id: string, entityId: string, reviewer: string, note?: string): Promise<boolean> {
+    assertReviewer(reviewer);
     const entity = await this.entities.findById(entityId);
     if (!entity || (entity.status !== 'active' && entity.status !== 'candidate')) {
       throw new ContentIdentityError('bad_review_target', entityId);
     }
     return this.titleKeys.review(id, { entityId, by: reviewer, note });
+  }
+
+  /** Manual review: the title is not an entity (a slot, a container, a wrong provisional binding). */
+  async rejectTitleKey(id: string, reviewer: string, note?: string): Promise<boolean> {
+    assertReviewer(reviewer);
+    return this.titleKeys.reject(id, { by: reviewer, note });
   }
 
   reviewQueue(limit = 100) {

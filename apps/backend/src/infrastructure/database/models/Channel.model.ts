@@ -147,9 +147,9 @@ const ChannelSchema = new Schema<IChannelDocument>(
 // Compound indexes for common queries
 ChannelSchema.index({ country: 1, active: 1, order: 1 });
 ChannelSchema.index({ active: 1, order: 1 });
-ChannelSchema.index({ normalizedName: 1, active: 1 });
-ChannelSchema.index({ aliases: 1, active: 1 });
-ChannelSchema.index({ sourceIds: 1, active: 1 });
+ChannelSchema.index({ normalizedName: 1, active: 1 }, { name: 'idx_channels_normalizedName_active' });
+ChannelSchema.index({ aliases: 1, active: 1 }, { name: 'idx_channels_aliases_active' });
+ChannelSchema.index({ sourceIds: 1, active: 1 }, { name: 'idx_channels_sourceIds_active' });
 
 /**
  * Channel model

@@ -1,20 +1,35 @@
 import type { Model } from 'mongoose';
 import type {
+  AiringEntityRef,
+  CatalogEvidence,
   ContentEntityInsert,
   ContentEntityRecord,
   ContentSlugInsert,
   ContentSlugRecord,
   EntityTransition,
+  IAiringEntityRefWriter,
   IContentEntityRepository,
   IContentSlugRepository,
   IContentTitleKeyRepository,
+  IIdentityEvidenceSource,
   InsertResult,
   TitleKeyRecord,
 } from '@/domain/repositories/IContentIdentityRepository';
-import { ContentKind, TITLE_KEY_STATES, TitleKeyRow, TitleKeyState, TmdbRef } from '@/domain/services/contentIdentity';
+import {
+  ContentKind,
+  legacyCatalogSlugs,
+  TITLE_KEY_STATES,
+  titleIdentityKey,
+  TitleKeyRow,
+  TitleKeyState,
+  TmdbRef,
+} from '@/domain/services/contentIdentity';
 import { ContentEntityModel } from '../database/models/ContentEntity.model';
 import { ContentSlugModel, IContentSlugDocument } from '../database/models/ContentSlug.model';
 import { ContentTitleKeyModel, IContentTitleKeyDocument } from '../database/models/ContentTitleKey.model';
+import { MediaCatalogModel } from '../database/models/MediaCatalogEntry.model';
+import { TVProgramBrandModel } from '../database/models/TVProgramBrand.model';
+import { TV_READ_AIRING_ENTITY_INDEX, TVReadAiringModel } from '../database/models/TVReadAiring.model';
 
 const DUPLICATE_KEY_ERROR_CODE = 11000;
 
@@ -47,6 +62,14 @@ function duplicateKeyPattern(error: unknown): Record<string, unknown> | null {
   return e?.code === DUPLICATE_KEY_ERROR_CODE ? e.keyPattern ?? {} : null;
 }
 
+/** `$in` lists stay well under the 16 MB command limit and keep each query's plan cheap. */
+const IN_CHUNK = 1000;
+async function inChunks<T, R>(values: T[], run: (chunk: T[]) => Promise<R[]>): Promise<R[]> {
+  const out: R[] = [];
+  for (let i = 0; i < values.length; i += IN_CHUNK) out.push(...(await run(values.slice(i, i + IN_CHUNK))));
+  return out;
+}
+
 const stripMongo = <T>(doc: any): T => {
   if (!doc) return doc;
   const { _id, __v, ...rest } = doc;
@@ -72,6 +95,33 @@ export class MongoContentEntityRepository implements IContentEntityRepository {
 
   async findById(entityId: string): Promise<ContentEntityRecord | null> {
     return stripMongo(await ContentEntityModel.findOne({ entityId }).lean().exec());
+  }
+
+  async findByIds(entityIds: string[]): Promise<ContentEntityRecord[]> {
+    return inChunks([...new Set(entityIds)], async (chunk) =>
+      (await ContentEntityModel.find({ entityId: { $in: chunk } }).lean().exec()).map((d) => stripMongo<ContentEntityRecord>(d))
+    );
+  }
+
+  async findLiveByTmdbRefs(refs: TmdbRef[]): Promise<ContentEntityRecord[]> {
+    const byType = (type: TmdbRef['type']) => [...new Set(refs.filter((r) => r.type === type).map((r) => r.id))];
+    const out: ContentEntityRecord[] = [];
+    for (const type of ['movie', 'tv'] as const) {
+      out.push(
+        ...(await inChunks(byType(type), async (ids) =>
+          (
+            await ContentEntityModel.find({
+              'externalIds.tmdb.type': type,
+              'externalIds.tmdb.id': { $in: ids },
+              status: { $in: ['candidate', 'active'] },
+            })
+              .lean()
+              .exec()
+          ).map((d) => stripMongo<ContentEntityRecord>(d))
+        ))
+      );
+    }
+    return out;
   }
 
   async findLiveByTmdb(ref: TmdbRef): Promise<ContentEntityRecord | null> {
@@ -156,6 +206,14 @@ const toSlug = (doc: IContentSlugDocument | null): ContentSlugRecord | null => {
 export class MongoContentSlugRepository implements IContentSlugRepository {
   async findByPath(path: string): Promise<ContentSlugRecord | null> {
     return toSlug(await ContentSlugModel.findById(path).lean<IContentSlugDocument>().exec());
+  }
+
+  async findByPaths(paths: string[]): Promise<ContentSlugRecord[]> {
+    return inChunks([...new Set(paths)], async (chunk) =>
+      (await ContentSlugModel.find({ _id: { $in: chunk } }).lean<IContentSlugDocument[]>().exec()).map(
+        (doc) => toSlug(doc) as ContentSlugRecord
+      )
+    );
   }
 
   async findCanonical(entityId: string): Promise<ContentSlugRecord | null> {
@@ -244,6 +302,23 @@ export class MongoContentTitleKeyRepository implements IContentTitleKeyRepositor
     return docs.map((doc) => toTitleKey(doc) as TitleKeyRecord);
   }
 
+  async listByKeys(keys: string[]): Promise<TitleKeyRecord[]> {
+    return inChunks([...new Set(keys)], async (chunk) =>
+      (await ContentTitleKeyModel.find({ key: { $in: chunk } }).lean<IContentTitleKeyDocument[]>().exec()).map(
+        (doc) => toTitleKey(doc) as TitleKeyRecord
+      )
+    );
+  }
+
+  async touch(ids: string[], at: Date): Promise<void> {
+    if (!ids.length) return;
+    await assertIndexed(ContentTitleKeyModel);
+    await inChunks(ids, async (chunk) => {
+      await ContentTitleKeyModel.updateMany({ _id: { $in: chunk } }, { $max: { lastSeenAt: at } }).exec();
+      return [];
+    });
+  }
+
   async insert(row: TitleKeyRow & { decidedBy: string }): Promise<InsertResult<TitleKeyRecord, 'exists'>> {
     await assertIndexed(ContentTitleKeyModel);
     const now = new Date();
@@ -280,6 +355,18 @@ export class MongoContentTitleKeyRepository implements IContentTitleKeyRepositor
     return res.modifiedCount === 1;
   }
 
+  async reject(id: string, change: { by: string; note?: string }): Promise<boolean> {
+    await assertIndexed(ContentTitleKeyModel);
+    const res = await ContentTitleKeyModel.updateOne(
+      { _id: id, state: { $in: ['candidate', 'ambiguous', 'manual_review'] } },
+      {
+        $set: { state: 'rejected', decidedBy: change.by, review: { by: change.by, at: new Date(), note: change.note } },
+        $unset: { entityId: 1 },
+      }
+    ).exec();
+    return res.modifiedCount === 1;
+  }
+
   async listReviewQueue(limit: number): Promise<TitleKeyRecord[]> {
     const docs = await ContentTitleKeyModel.find({ state: { $in: ['ambiguous', 'manual_review'] } })
       .sort({ lastSeenAt: -1 })
@@ -296,5 +383,90 @@ export class MongoContentTitleKeyRepository implements IContentTitleKeyRepositor
     const counts = Object.fromEntries(TITLE_KEY_STATES.map((state) => [state, 0])) as Record<TitleKeyState, number>;
     for (const row of rows) counts[row._id] = row.n;
     return counts;
+  }
+}
+
+const parseYear = (value: unknown): number | undefined => {
+  const year = Number.parseInt(String(value ?? ''), 10);
+  return year >= 1888 && year <= 2100 ? year : undefined;
+};
+
+const HISTORIC_SLUGS_TTL_MS = 6 * 60 * 60_000;
+
+export class MongoIdentityEvidenceSource implements IIdentityEvidenceSource {
+  private historic: { at: number; map: Map<string, Set<string>[]> } | null = null;
+
+  async catalogEntries(mediaIds: string[], tmdbIds: number[]): Promise<CatalogEvidence[]> {
+    const ids = [...new Set(mediaIds)].filter((id) => /^[0-9a-f]{24}$/i.test(id));
+    const or: Record<string, unknown>[] = [];
+    if (ids.length) or.push({ _id: { $in: ids } });
+    if (tmdbIds.length) or.push({ tmdbId: { $in: [...new Set(tmdbIds)] } });
+    if (!or.length) return [];
+    const docs = await MediaCatalogModel.find({ $or: or }, { tmdbId: 1, tmdbType: 1, title: 1, originalTitle: 1, year: 1 })
+      .lean()
+      .exec();
+    return docs.map((doc: any) => ({
+      mediaId: String(doc._id),
+      tmdb: doc.tmdbId && doc.tmdbType ? { type: doc.tmdbType, id: doc.tmdbId } : undefined,
+      title: doc.title,
+      originalTitle: doc.originalTitle,
+      year: parseYear(doc.year),
+    }));
+  }
+
+  /**
+   * ponytail: rebuilt in memory from every brand title (~150k in production) and catalogue title
+   * (~17k) every 6 h; memory at that scale is unmeasured (2D-2 §J). Upgrade path: store the legacy
+   * slugs on tv_program_brands and query by slug instead.
+   */
+  async historicSlugOwners(): Promise<ReadonlyMap<string, ReadonlyArray<ReadonlySet<string>>>> {
+    if (this.historic && Date.now() - this.historic.at < HISTORIC_SLUGS_TTL_MS) return this.historic.map;
+    const map = new Map<string, Set<string>[]>();
+    const add = (titles: Array<string | undefined>) => {
+      const keys = new Set(titles.map((t) => titleIdentityKey(t)).filter((k): k is string => Boolean(k)));
+      if (!keys.size) return;
+      for (const slug of new Set(titles.flatMap((t) => (t ? legacyCatalogSlugs(t) : [])))) {
+        const owners = map.get(slug) ?? [];
+        owners.push(keys);
+        map.set(slug, owners);
+      }
+    };
+    for await (const doc of TVProgramBrandModel.find({}, { title: 1 }).lean().cursor()) add([(doc as any).title]);
+    for await (const doc of MediaCatalogModel.find({}, { title: 1, originalTitle: 1 }).lean().cursor()) {
+      add([(doc as any).title, (doc as any).originalTitle]);
+    }
+    this.historic = { at: Date.now(), map };
+    return map;
+  }
+}
+
+export class MongoAiringEntityRefWriter implements IAiringEntityRefWriter {
+  async indexReady(): Promise<boolean> {
+    const spec = TV_READ_AIRING_ENTITY_INDEX;
+    const live = (await TVReadAiringModel.collection.indexes()).find((i) => i.name === spec.options.name);
+    return Boolean(
+      live &&
+        JSON.stringify(live.key) === JSON.stringify(spec.key) &&
+        JSON.stringify(live.partialFilterExpression) === JSON.stringify(spec.options.partialFilterExpression)
+    );
+  }
+
+  async apply(date: string, refs: AiringEntityRef[]): Promise<number> {
+    let modified = 0;
+    for (let i = 0; i < refs.length; i += IN_CHUNK) {
+      const res = await TVReadAiringModel.bulkWrite(
+        refs.slice(i, i + IN_CHUNK).map((ref) => ({
+          updateOne: {
+            filter: { id: ref.airingId, date },
+            update: ref.canonicalPath
+              ? { $set: { 'program.entityId': ref.entityId, 'program.canonicalPath': ref.canonicalPath } }
+              : { $set: { 'program.entityId': ref.entityId }, $unset: { 'program.canonicalPath': 1 as const } },
+          },
+        })),
+        { ordered: false }
+      );
+      modified += res.modifiedCount;
+    }
+    return modified;
   }
 }

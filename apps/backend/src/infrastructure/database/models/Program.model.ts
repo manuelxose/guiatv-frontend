@@ -198,12 +198,12 @@ const ProgramSchema = new Schema<IProgramDocument>(
 
 // Focus on the indexes used by live queries to keep storage under control.
 ProgramSchema.index({ channelId: 1, startTime: 1 });
-ProgramSchema.index({ startTime: 1, endTime: 1 });
-ProgramSchema.index({ tmdbId: 1 }, { sparse: true });
+ProgramSchema.index({ startTime: 1, endTime: 1 }, { name: 'idx_overlap' });
+ProgramSchema.index({ tmdbId: 1 }, { sparse: true, name: 'idx_tmdbId' });
 ProgramSchema.index({ title: 1, startTime: -1 });
-ProgramSchema.index({ normalizedTitle: 1, startTime: -1 });
-ProgramSchema.index({ titleAliases: 1, startTime: -1 });
-ProgramSchema.index({ date: 1, canonicalChannelId: 1, startTime: 1 });
+ProgramSchema.index({ normalizedTitle: 1, startTime: -1 }, { name: 'idx_normalizedTitle_startTime' });
+ProgramSchema.index({ titleAliases: 1, startTime: -1 }, { name: 'idx_titleAliases_startTime' });
+ProgramSchema.index({ date: 1, canonicalChannelId: 1, startTime: 1 }, { name: 'idx_date_canonicalChannel_start' });
 ProgramSchema.index({ brandKey: 1, date: 1 });
 ProgramSchema.index({ sourceFeed: 1, sourceProgrammeId: 1 });
 ProgramSchema.index({ sourceFeed: 1, channelId: 1, startTime: 1 });

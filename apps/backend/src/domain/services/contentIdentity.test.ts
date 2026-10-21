@@ -2,7 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   canTransition,
+  classifyContentKind,
+  decideIngestionMatch,
   decideTitleMatch,
+  entityCandidatePaths,
+  legacyCatalogSlugs,
+  slugifyEntityTitle,
   ENTITY_ID_PATTERN,
   isGenericContentTitle,
   mayBeIndexable,
@@ -12,6 +17,8 @@ import {
   titleIdentityKey,
   titleKeyId,
 } from './contentIdentity';
+import { CatalogService } from '@/application/services/CatalogService';
+import { readContentIdentityFlags } from '@/shared/config/contentEntities';
 
 const E1 = 'ce_01JBQ7Z4M8V2K5T3N9P6R1W0XA';
 const E2 = 'ce_01JBQ7Z4M8V2K5T3N9P6R1W0XB';
@@ -255,4 +262,99 @@ test('indexability: only active entities with a manual or reliable TMDB identity
   assert.ok(!at('active', 'title', 1));
   assert.ok(!at('active', 'title_year', 1));
   assert.ok(!at('candidate', 'manual', 1));
+});
+
+test('2D-2 slugs: transliterated, markers dropped, null when there is no usable slug', () => {
+  const cases: Array<[string, string | null]> = [
+    ['Espejo Público', 'espejo-publico'],
+    ["Grey's Anatomy", 'greys-anatomy'],
+    ['C.S.I. Miami', 'csi-miami'],
+    ['La Promesa T1 E929', 'la-promesa'],
+    ['Sueños de libertad T1 E672', 'suenos-de-libertad'],
+    ['Mañaneros 360', 'mananeros-360'],
+    ['Fast & Furious 7', 'fast-furious-7'],
+    ['Øyvind og Æsir', 'oyvind-og-aesir'],
+    ['Cine de barrio', 'cine-de-barrio'],
+    ['1899', null],
+    ['捕风追影2', null],
+    ['Noticias', null],
+    ['', null],
+  ];
+  for (const [title, slug] of cases) assert.equal(slugifyEntityTitle(title), slug, title);
+  const glued = 'El escaparate ' + 'la lectura en verano y otras historias '.repeat(10);
+  assert.equal(titleIdentityKey(glued), null, 'a synopsis glued onto the title is not a title');
+  assert.equal(slugifyEntityTitle(glued), null);
+  const long = slugifyEntityTitle('palabra '.repeat(14)) as string;
+  assert.ok(long.length <= 80 && !long.endsWith('-') && long.endsWith('palabra'));
+});
+
+test('2D-2 candidate paths: kind prefix, year only as an explicit disambiguator, nothing for unknown', () => {
+  assert.deepEqual(entityCandidatePaths('movie', 'Cenicienta', 2015), ['/peliculas/cenicienta', '/peliculas/cenicienta-2015']);
+  assert.deepEqual(entityCandidatePaths('series', 'Friends'), ['/series/friends']);
+  assert.deepEqual(entityCandidatePaths('show', 'Espejo Público'), ['/programas/espejo-publico']);
+  assert.deepEqual(entityCandidatePaths('unknown', 'Friends'), []);
+  assert.deepEqual(entityCandidatePaths('show', 'Noticias'), []);
+});
+
+test('2D-2 legacy slugs match CatalogService (recognition only)', () => {
+  const proto = CatalogService.prototype as any;
+  for (const title of ['Espejo Público', 'Romería del Rocío', 'Noé', "Grey's Anatomy", 'C.S.I. Miami', '  ', 'Asesinato en Mónaco']) {
+    const legacy = proto.slugify.call(proto, title);
+    const transliterated = proto.slugifyTitle.call(proto, title);
+    assert.deepEqual(legacyCatalogSlugs(title), [...new Set([legacy, transliterated])], title);
+  }
+  assert.deepEqual(legacyCatalogSlugs('Noé'), ['no', 'noe']);
+});
+
+test('2D-2 kind: TMDB decides film vs TV, named slots are shows, mixed categories stay unknown', () => {
+  const k = (title: string, editorialCategory?: string, tmdbType?: 'movie' | 'tv', sportFacet?: string) =>
+    classifyContentKind({ title, editorialCategory, tmdbType, sportFacet });
+  assert.equal(k('Cine de barrio', 'Cine'), 'show');
+  assert.equal(k('Historia de nuestro cine', 'Cine'), 'show');
+  assert.equal(k('Cinema Paradiso', 'Cine'), 'movie');
+  assert.equal(k('Fargo', 'Cine'), 'movie');
+  assert.equal(k('Fargo', 'Series', 'tv'), 'series');
+  assert.equal(k('Fargo', 'Cine', 'tv'), 'show', 'TMDB TV beats a film category; not scripted evidence, so show');
+  assert.equal(k('El hormiguero', 'Entretenimiento', 'tv'), 'show');
+  assert.equal(k('Fargo', 'Series', 'movie'), 'movie');
+  assert.equal(k('La Promesa', 'Series'), 'series');
+  assert.equal(k('Telediario', 'Noticias'), 'show');
+  assert.equal(k('Real Madrid - Barcelona', 'Deportes', undefined, 'futbol'), 'sport');
+  assert.equal(k('Bluey', 'Infantil'), 'unknown');
+  assert.equal(k('Planeta azul', 'Documental'), 'unknown');
+  assert.equal(k('Algo', 'Otros'), 'unknown');
+  assert.equal(k('La 2 en concierto', 'Música'), 'show');
+  assert.equal(k('El día del Señor', 'Religión'), 'show');
+});
+
+test('2D-2 unknown kind never creates or binds; it waits for review with evidence', () => {
+  const input = { title: 'Fargo', kind: 'unknown' as const, method: 'title' as const, confidence: 0.8 };
+  const fresh = decideIngestionMatch(input, []);
+  assert.equal(fresh.decision, 'review');
+  assert.equal(fresh.decision === 'review' && fresh.row.reason, 'unknown_kind');
+  assert.equal(fresh.decision === 'review' && fresh.row.entityId, undefined);
+  const withSeries = decideIngestionMatch(input, [row({ key: 'fargo', kind: 'series', discriminator: '*', entityId: E1 })]);
+  assert.deepEqual(withSeries.decision === 'review' && withSeries.row.candidates, [E1]);
+  // A reviewed (bound) unknown row is respected; a rejected row stays held.
+  assert.equal(decideIngestionMatch(input, [row({ key: 'fargo', kind: 'unknown', discriminator: '*', entityId: E2 })]).decision, 'matched');
+  const rejected = row({ key: 'fargo', kind: 'series', discriminator: '*', state: 'rejected' });
+  assert.equal(decideIngestionMatch({ ...input, kind: 'series' }, [rejected]).decision, 'held');
+});
+
+test('2D-2 flags: separate, default off, writes need the database name', () => {
+  const f = (env: Record<string, string>, db = 'guiatv') => readContentIdentityFlags(env, db);
+  const off = { shadow: false, writes: false, airingRefs: false };
+  assert.deepEqual(f({}), off);
+  assert.deepEqual(f({ CONTENT_ENTITIES_ENABLED: 'true' }), off, '2D-1 flag alone changes nothing in 2D-2');
+  assert.deepEqual(f({ CONTENT_IDENTITY_SHADOW: 'true' }), { ...off, shadow: true });
+  assert.deepEqual(f({ CONTENT_ENTITIES_ENABLED: 'true', CONTENT_IDENTITY_WRITES: 'true' }), off, '"true" is not a database name');
+  assert.deepEqual(f({ CONTENT_IDENTITY_WRITES: 'guiatv' }), off, 'writes need the 2D-1 flag');
+  assert.deepEqual(f({ CONTENT_ENTITIES_ENABLED: 'true', CONTENT_IDENTITY_WRITES: 'guiatv' }, 'guiatv_test'), off, 'other database');
+  assert.deepEqual(f({ CONTENT_ENTITIES_ENABLED: 'true', CONTENT_IDENTITY_WRITES: 'guiatv' }), { ...off, writes: true });
+  assert.deepEqual(f({ CONTENT_IDENTITY_AIRING_REFS: 'true' }), off, 'refs need writes');
+  assert.deepEqual(
+    f({ CONTENT_ENTITIES_ENABLED: 'true', CONTENT_IDENTITY_WRITES: 'guiatv', CONTENT_IDENTITY_AIRING_REFS: 'true' }),
+    { shadow: false, writes: true, airingRefs: true }
+  );
+  assert.deepEqual(f({ CONTENT_ENTITIES_ENABLED: 'true', CONTENT_IDENTITY_WRITES: '' }, ''), off);
 });

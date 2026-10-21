@@ -18,10 +18,10 @@ export interface ITVProgramBrandDocument {
 
 const TVProgramBrandSchema = new Schema<ITVProgramBrandDocument>(
   {
-    brandKey: { type: String, required: true, unique: true, index: true },
+    brandKey: { type: String, required: true, index: { name: 'idx_tvbrands_brandKey', unique: true } },
     title: { type: String, required: true, trim: true },
-    normalizedTitle: { type: String, required: true, trim: true, index: true },
-    titleAliases: { type: [String], default: [], index: true },
+    normalizedTitle: { type: String, required: true, trim: true, index: { name: 'idx_tvbrands_normalizedTitle' } },
+    titleAliases: { type: [String], default: [], index: { name: 'idx_tvbrands_titleAliases' } },
     editorialCategory: { type: String, trim: true, index: true },
     genre: { type: String, trim: true },
     tmdbId: { type: Number, sparse: true, index: true },

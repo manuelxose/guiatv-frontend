@@ -1,3 +1,4 @@
+import { runContentIdentity } from './ContentIdentityIngestion';
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import { IProgramRepository } from '@/domain/repositories/IProgramRepository';
 import { ChannelModel } from '@/infrastructure/database/models/Channel.model';
@@ -137,6 +138,7 @@ export class TvReadModelBuilder {
     const titleResolutions = this.buildTitleResolutionMap(scopedResolvedEntries);
     const brands = new Map<string, any>();
     const airingsById = new Map<string, any>();
+    const identityYears = new Map<string, unknown>();
     scopedResolvedEntries.forEach(({ program, channelDoc, resolvedChannelId, channelGroup }) => {
       const anomalyKey = this.buildProgrammeGroupKey(program.startTime, program.title);
       const confirmedChannels =
@@ -338,6 +340,7 @@ export class TvReadModelBuilder {
         ]),
       };
 
+      if (program.year && !identityYears.has(airingId)) identityYears.set(airingId, program.year);
       const currentAiring = airingsById.get(airingId);
       if (currentAiring) {
         airingsById.set(airingId, this.mergeAiringItems(currentAiring, item));
@@ -414,6 +417,8 @@ export class TvReadModelBuilder {
     if (brandOps.length) {
       await TVProgramBrandModel.bulkWrite(brandOps, { ordered: false });
     }
+    // 2D-2: no-op unless a CONTENT_IDENTITY_* flag is on; never throws, so it can't break the day.
+    await runContentIdentity(date, airings, identityYears);
 
     await this.cacheRepository.clear(`v3:tv:read:${date}:*`);
     await this.cacheRepository.clear(`tv:channels:${date}:*`);
