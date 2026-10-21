@@ -504,8 +504,9 @@ app.get('*', async (req, res) => {
     }
 
     html = stripStatusMarker(html);
-    if (statusCode >= 400 || noindexRoute) {
-      html = injectRobots(html, statusCode >= 400 ? 'noindex, nofollow' : 'noindex, follow');
+    const entityResponse = response.headers.get('X-Entity-Public-Read') === '1';
+    if (statusCode >= 400 || noindexRoute || entityResponse) {
+      html = injectRobots(html, statusCode >= 400 && !entityResponse ? 'noindex, nofollow' : 'noindex, follow');
     }
     // Keeps the canonical Angular rendered (it used to be overwritten with req.path); see ssr-canonical.mjs.
     const canonical = finalizeCanonical(html, { baseUrl: BASE_SITE_URL, pathname: req.path, statusCode });
@@ -518,9 +519,9 @@ app.get('*', async (req, res) => {
     if (statusCode >= 500) res.setHeader('Retry-After', '120');
     res.setHeader(
       'Cache-Control',
-      publicCacheable && statusCode < 500 ? 'public, max-age=60, s-maxage=300' : 'no-store'
+      publicCacheable && !entityResponse && statusCode < 500 ? 'public, max-age=60, s-maxage=300' : 'no-store'
     );
-    if (publicCacheable && statusCode < 500) {
+    if (publicCacheable && !entityResponse && statusCode < 500) {
       ssrCache.settle(cachePath, { statusCode, html, cacheable: true });
       stored = true;
     }

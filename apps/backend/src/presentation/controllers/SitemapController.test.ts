@@ -34,6 +34,25 @@ function fakeReqRes() {
   };
 }
 
+test('Phase 3A entity detail paths are excluded while enabled, including warmed sitemap caches', async () => {
+  const previous = process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED;
+  invalidateSitemapCache();
+  const controller = new SitemapController({} as any, { findByDate: async () => [{ title: 'Verified programme', tmdbId: 1, startTime: new Date() }] } as any);
+  const { req, res, getSentXml } = fakeReqRes();
+  try {
+    process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED = 'false';
+    await controller.getProgramsSitemap(req, res, (() => {}) as any);
+    assert.match(getSentXml(), /\/programas\/verified-programme/);
+    process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED = 'true';
+    await controller.getProgramsSitemap(req, res, (() => {}) as any);
+    assert.doesNotMatch(getSentXml(), /\/programas\/verified-programme/);
+    assert.match(getSentXml(), /<urlset/);
+  } finally {
+    if (previous === undefined) delete process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED; else process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED = previous;
+    invalidateSitemapCache();
+  }
+});
+
 test('sitemap-football.xml quarantines provider-only detail URLs', async () => {
   invalidateSitemapCache(); // module-level cache — same as every other sub-sitemap in this controller
   const footballQueryService = fakeFootballQueryService({

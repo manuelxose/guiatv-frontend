@@ -136,6 +136,7 @@ export class SitemapController {
   /* ------------------------------------------------------------------ */
 
   private async getCached(key: string, builder: () => Promise<string>): Promise<string> {
+    key = `${process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED === 'true' ? 'entities' : 'legacy'}:${key}`;
     const now = Date.now();
     const cached = cache.get(key);
     if (cached && cached.expiresAt > now) return cached.value;
@@ -437,6 +438,7 @@ export class SitemapController {
     ];
 
     for (const url of urls) {
+      if (process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED === 'true' && /^\/(peliculas|series|programas)\/[^/]+\/?$/.test(url.loc)) continue;
       const loc = this.escapeXml(this.joinUrl(baseUrl, url.loc));
       lines.push('  <url>');
       lines.push(`    <loc>${loc}</loc>`);

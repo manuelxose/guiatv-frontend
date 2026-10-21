@@ -24,6 +24,7 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - run: node --test apps/frontend/scripts/ssr-cache.test.mjs apps/frontend/scripts/ssr-canonical.test.mjs
       - run: npm run build:frontend
+      - run: node --test apps/frontend/scripts/entity-read-ssr.test.mjs
       - run: npm run seo:ssr-resilience
 
   live-crawl:

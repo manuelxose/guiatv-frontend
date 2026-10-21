@@ -199,8 +199,8 @@ export const routes: Routes = [
   {
     path: 'peliculas/:slug',
     loadComponent: () =>
-      import('./pages/catalog-detail/catalog-detail.component').then(
-        (m) => m.CatalogDetailComponent
+      import('./pages/entity-detail/entity-detail.component').then(
+        (m) => m.EntityDetailComponent
       ),
     title: 'Películas - Detalle - Guía TV',
     data: { contentType: 'movie', layout: 'public-shell' }
@@ -208,8 +208,8 @@ export const routes: Routes = [
   {
     path: 'series/:slug',
     loadComponent: () =>
-      import('./pages/catalog-detail/catalog-detail.component').then(
-        (m) => m.CatalogDetailComponent
+      import('./pages/entity-detail/entity-detail.component').then(
+        (m) => m.EntityDetailComponent
       ),
     title: 'Series - Detalle - Guía TV',
     data: { contentType: 'series', layout: 'public-shell' }
@@ -219,8 +219,8 @@ export const routes: Routes = [
   {
     path: 'programas/:slug',
     loadComponent: () =>
-      import('./pages/catalog-detail/catalog-detail.component').then(
-        (m) => m.CatalogDetailComponent
+      import('./pages/entity-detail/entity-detail.component').then(
+        (m) => m.EntityDetailComponent
       ),
     title: 'Programas - Detalle - Guía TV',
     data: { contentType: 'program', layout: 'public-shell' }
