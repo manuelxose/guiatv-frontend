@@ -36,6 +36,7 @@ function fakeReqRes() {
 
 test('Phase 3A entity detail paths are excluded while enabled, including warmed sitemap caches', async () => {
   const previous = process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED;
+  const previousScope = process.env.CONTENT_ENTITY_PUBLIC_READ_SCOPE;
   invalidateSitemapCache();
   const controller = new SitemapController({} as any, { findByDate: async () => [{ title: 'Verified programme', tmdbId: 1, startTime: new Date() }] } as any);
   const { req, res, getSentXml } = fakeReqRes();
@@ -44,11 +45,16 @@ test('Phase 3A entity detail paths are excluded while enabled, including warmed 
     await controller.getProgramsSitemap(req, res, (() => {}) as any);
     assert.match(getSentXml(), /\/programas\/verified-programme/);
     process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED = 'true';
+    delete process.env.CONTENT_ENTITY_PUBLIC_READ_SCOPE;
+    await controller.getProgramsSitemap(req, res, (() => {}) as any);
+    assert.match(getSentXml(), /\/programas\/verified-programme/, 'no scope: nothing is visible, so nothing is excluded');
+    process.env.CONTENT_ENTITY_PUBLIC_READ_SCOPE = 'all';
     await controller.getProgramsSitemap(req, res, (() => {}) as any);
     assert.doesNotMatch(getSentXml(), /\/programas\/verified-programme/);
     assert.match(getSentXml(), /<urlset/);
   } finally {
     if (previous === undefined) delete process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED; else process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED = previous;
+    if (previousScope === undefined) delete process.env.CONTENT_ENTITY_PUBLIC_READ_SCOPE; else process.env.CONTENT_ENTITY_PUBLIC_READ_SCOPE = previousScope;
     invalidateSitemapCache();
   }
 });

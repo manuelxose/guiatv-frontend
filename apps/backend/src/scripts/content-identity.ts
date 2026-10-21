@@ -11,6 +11,15 @@
  *                                                                       machine-evidence verdicts for the first day's traces
  *                                                                       (`trace-dump.js` files; no database); exit 2 on a
  *                                                                       violation. Not labels: never opens the write gate (2D-2F)
+ *   node dist/scripts/content-identity.js evidence-sheet --day <traces>:<verdicts> [--day …] --out <sheet.csv> [--seed S] [--size N]
+ *                                                                       review sheet drawn from the identities the evidence gate accepts, with the
+ *                                                                       machine's independent evidence beside each row (no database)
+ *   node dist/scripts/content-identity.js review|roster …              named-reviewer ledger over a review sheet (3B; file header of
+ *                                                                       content-identity-review.ts): open, next, decide, report, export, verify
+ *   node dist/scripts/content-identity.js canonical-audit <day.jsonl> [--verdicts <verdicts.jsonl>] [--registry] [--out <report.json>]
+ *                                                                       machine-readable path/collision/quarantine report of a replay (no database);
+ *                                                                       with --registry also audits stored entities and slugs (reads, guarded)
+ *   node dist/scripts/content-identity.js canary-check <allowlist.json>  revalidates each allowlisted entity as a public read would (reads, guarded); exit 2 on any failure
  *   node dist/scripts/content-identity.js queue [limit]                 review queue (reads)
  *   node dist/scripts/content-identity.js pathless [limit]              stored entities without a path, by reason (reads)
  *   node dist/scripts/content-identity.js approve <titleKeyId> <entityId> --by <name> [--note <text>]
@@ -33,6 +42,7 @@ import {
   MongoContentEntityRepository,
   MongoContentSlugRepository,
   MongoContentTitleKeyRepository,
+  readRegistryRows,
 } from '../infrastructure/repositories/MongoContentIdentityRepositories';
 import { ContentIdentityService } from '../application/services/ContentIdentityService';
 import { rollbackProvisional } from '../application/services/ContentIdentityRollback';
@@ -50,9 +60,14 @@ import {
   summarizeTraces,
   toCsv,
 } from '../application/services/ContentIdentityAudit';
-import { adjudicateEvidence, evaluateEvidence, TmdbSearchCheck } from '../application/services/ContentIdentityEvidence';
+import { PublicContentEntityService } from '../application/services/PublicContentEntityService';
+import { parseCanaryAllowlist } from '../application/services/EntityPublicReadPolicy';
+import { auditProposedPaths, auditRegistry } from '../application/services/ContentIdentityCanonicalAudit';
+import { buildEvidenceSheet, EVIDENCE_SHEET_COLUMNS } from '../application/services/ContentIdentityReviewLedger';
+import { adjudicateEvidence, evaluateEvidence, EvidenceVerdict, TmdbSearchCheck } from '../application/services/ContentIdentityEvidence';
 import { readContentIdentityFlags } from '../shared/config/contentEntities';
 import { installReadOnlyGuard } from './readOnlyGuard';
+import { runReviewCommand } from './content-identity-review';
 
 const option = (args: string[], name: string) => {
   const i = args.indexOf(name);
@@ -136,6 +151,57 @@ async function pathless(limit: number) {
   console.log(JSON.stringify({ total: rows.length, byReason, rows }, null, 2));
 }
 
+/**
+ * 3B: path/collision/quarantine report of a replay, and (with --registry) of what is stored. Exit 2
+ * on any blocker. The registry read is a plain `find` under the read-only guard.
+ */
+async function canonicalAudit(args: string[], registry: boolean) {
+  const file = args.find((a, i) => !a.startsWith('--') && !args[i - 1]?.startsWith('--'));
+  if (!file) throw new Error('usage: canonical-audit <day.jsonl> [--verdicts <verdicts.jsonl>] [--registry] [--out <report.json>]');
+  const verdictsFile = option(args, '--verdicts');
+  const accepted = new Set<string>();
+  if (verdictsFile) {
+    for (const line of fs.readFileSync(verdictsFile, 'utf8').split('\n').filter(Boolean)) {
+      const v = JSON.parse(line) as { decision?: string; identity?: string };
+      if (v.decision === 'AUTO_ACCEPT' && v.identity) accepted.add(v.identity);
+    }
+  }
+  const proposed = auditProposedPaths(readTraces(file), accepted);
+  const stored = registry ? await (async () => { const { entities, slugs } = await readRegistryRows(); return auditRegistry(entities, slugs); })() : undefined;
+  const report = { proposed, registry: stored, pass: proposed.pass && (stored?.pass ?? true) };
+  const out = option(args, '--out');
+  if (out) fs.writeFileSync(out, JSON.stringify(report, null, 2) + '\n');
+  console.log(JSON.stringify({ pass: report.pass, proposed: proposed.summary, collisions: proposed.collisions.length, registry: stored?.summary }, null, 2));
+  process.exitCode = report.pass ? 0 : 2;
+}
+
+/**
+ * 3B: revalidates every allowlisted canary entity exactly as a read would (`PublicContentEntityService`),
+ * plus the registry audit findings that touch them. Reads only, under the guard. Exit 2 on any failure:
+ * run it from cron against the live allowlist as the canonical-consistency monitor.
+ */
+async function canaryCheck(args: string[]) {
+  const file = args[0];
+  if (!file) throw new Error('usage: canary-check <allowlist.json> [--max N]');
+  const entries = parseCanaryAllowlist(fs.readFileSync(file, 'utf8'), Number(option(args, '--max') ?? process.env.CONTENT_ENTITY_CANARY_MAX));
+  const service = new PublicContentEntityService(new ContentIdentityService(
+    new MongoContentEntityRepository(), new MongoContentSlugRepository(), new MongoContentTitleKeyRepository()
+  ));
+  const { entities, slugs } = await readRegistryRows();
+  const audit = auditRegistry(entities, slugs);
+  const failures: Array<{ entityId: string; canonicalPath: string; problem: string }> = [];
+  for (const e of entries) {
+    const r = await service.resolve(e.canonicalPath);
+    if (r.status !== 'canonical') failures.push({ entityId: e.entityId, canonicalPath: e.canonicalPath, problem: `resolves as ${r.status}` });
+    else if (r.entity.entityId !== e.entityId) failures.push({ entityId: e.entityId, canonicalPath: e.canonicalPath, problem: `path is owned by ${r.entity.entityId}` });
+    for (const f of audit.findings.filter((x) => x.severity === 'blocker' && (x.entityId === e.entityId || x.path === e.canonicalPath))) {
+      failures.push({ entityId: e.entityId, canonicalPath: e.canonicalPath, problem: f.code });
+    }
+  }
+  console.log(JSON.stringify({ ok: !failures.length, checked: entries.length, registryBlockers: audit.summary.severity.blocker, failures }, null, 2));
+  process.exitCode = failures.length ? 2 : 0;
+}
+
 /** A `trace-dump.js` file: one `{ report }` line, then one trace per line. */
 const readTraces = (file: string): IdentityTrace[] =>
   fs.readFileSync(file, 'utf8').split('\n').filter((line) => line.startsWith('{"candidateId"')).map((line) => JSON.parse(line));
@@ -150,6 +216,23 @@ async function main() {
     const score = scoreReview(rows, { precision: 0.98, minLabelled, minVerified }, verify ? parseCsv(fs.readFileSync(verify, 'utf8')) : undefined);
     console.log(JSON.stringify(score, null, 2));
     process.exitCode = score.gate.pass ? 0 : 2;
+    return;
+  }
+  if (command === 'evidence-sheet') {
+    const days = args.flatMap((a, i) => (args[i - 1] === '--day' ? [a] : [])).map((pair) => {
+      const [traces, verdicts] = pair.split(':');
+      return { traces: readTraces(traces), verdicts: fs.readFileSync(verdicts, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l) as EvidenceVerdict) };
+    });
+    const out = option(args, '--out');
+    if (!days.length || !out) throw new Error('usage: evidence-sheet --day <traces.jsonl>:<verdicts.jsonl> [--day …] --out <sheet.csv> [--seed S] [--size N]');
+    const { population, rows } = buildEvidenceSheet(days, { seed: option(args, '--seed') ?? 'phase-3b', size: Number(option(args, '--size')) || 360 });
+    fs.writeFileSync(out, toCsv(rows, EVIDENCE_SHEET_COLUMNS));
+    console.log(JSON.stringify({ population, rows: rows.length, out }));
+    return;
+  }
+  if (command === 'canonical-audit' && !args.includes('--registry')) return await canonicalAudit(args, false);
+  if (command === 'review' || command === 'roster') {
+    process.exitCode = runReviewCommand(command, args);
     return;
   }
   if (command === 'evidence') {
@@ -186,6 +269,8 @@ async function main() {
       const sample = perClass && out ? { perClass, out, seed: option(args, '--seed'), precision: Number(option(args, '--precision-sample')) || 300 } : undefined;
       return await shadow(positional[0], positional[1] ?? positional[0], sample);
     }
+    if (command === 'canonical-audit') return await canonicalAudit(args, true);
+    if (command === 'canary-check') return await canaryCheck(args);
     if (command === 'pathless') return await pathless(Number(args[0]) || 10_000);
     if (command === 'queue') return console.log(JSON.stringify(await service.reviewQueue(Number(args[0]) || 50), null, 2));
     if (command === 'rollback') {

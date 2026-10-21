@@ -240,6 +240,8 @@ export function adjudicateEvidence(
     if ((slugOwners.get(slugifyEntityTitle(t.title) ?? t.key)?.size ?? 0) > 1) contradictions.push('duplicate_slug');
     if (t.path && (pathOwners.get(t.path)?.size ?? 0) > 1) contradictions.push('path_collision');
     if (t.pathless && OWNERSHIP_DOUBT.has(t.pathless)) contradictions.push(`pathless_${t.pathless}`);
+    // Any other missing path (unsupported slug, "9-1-1") is not identity doubt but the entity could never resolve.
+    else if (!t.path && t.decision === 'create') missing.push(`pathless_${t.pathless ?? 'unknown'}`);
     if (t.pathRefused?.includes('historic_conflict')) contradictions.push('legacy_owner_conflict');
     if (!isWork(t.title)) contradictions.push(`title_${parseEpgTitle(t.title).resolutionState}`);
     const tmdb = t.tmdb.evidence === 'confirmed' ? t.tmdb.ref : undefined;
@@ -382,6 +384,7 @@ export function evaluateEvidence(verdicts: readonly EvidenceVerdict[]) {
     circularIndependence: accepted.filter((v) => ![...rootsOf(v)].some((r) => r.startsWith('tmdb_index:') || r === 'manual')).map((v) => v.candidateId),
     unsupportedTmdb: accepted.filter((v) => !v.support.some((s) => s.source === 'tmdb_unique_title') && !rootsOf(v).has('manual')).map((v) => v.candidateId),
     kindUnverified: accepted.filter((v) => v.kindBasis === 'category' || v.kindBasis === 'none').filter((v) => !rootsOf(v).has('manual')).map((v) => v.candidateId),
+    acceptedPathless: accepted.filter((v) => !v.path).map((v) => v.candidateId),
     acceptedWithConflicts: accepted.filter((v) => v.contradictions.length || v.missing.length || v.unverified.length).map((v) => v.candidateId),
   };
   const identities = new Map<string, EvidenceVerdict>();

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { PublicContentEntityService } from '@/application/services/PublicContentEntityService';
+import { Decision, EntityPublicReadPolicy, entityPublicReadPolicy } from '@/application/services/EntityPublicReadPolicy';
 import { ContentIdentityService } from '@/application/services/ContentIdentityService';
 import { MongoContentEntityRepository, MongoContentSlugRepository, MongoContentTitleKeyRepository } from '@/infrastructure/repositories/MongoContentIdentityRepositories';
 import { errorResponse, successResponse } from '@/shared/types/ApiResponse';
@@ -8,16 +9,23 @@ import { createRateLimiter } from '../middlewares/rateLimit';
 
 const logger = new Logger('PublicContentEntity');
 
-export function createEntityRoutes(service = new PublicContentEntityService(new ContentIdentityService(
-  new MongoContentEntityRepository(), new MongoContentSlugRepository(), new MongoContentTitleKeyRepository()
-))): Router {
+export function createEntityRoutes(
+  service = new PublicContentEntityService(new ContentIdentityService(
+    new MongoContentEntityRepository(), new MongoContentSlugRepository(), new MongoContentTitleKeyRepository()
+  )),
+  policy: EntityPublicReadPolicy = entityPublicReadPolicy()
+): Router {
   const router = Router();
-  router.use((_req, res, next) => {
+  // Disabled, killed, breaker open, scope unset and "path not in the canary" all answer the same
+  // way, so the frontend keeps rendering the legacy page. They never touch Mongo or the limiter.
+  router.use((req, res, next) => {
     res.set({ 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, follow' });
-    if (process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED !== 'true') {
+    const decision = policy.decide(typeof req.query.path === 'string' ? req.query.path : '');
+    if (decision.action === 'legacy') {
       res.status(404).json(errorResponse('ENTITY_PUBLIC_READ_DISABLED', 'Entity reads are disabled'));
       return;
     }
+    res.locals.entityDecision = decision;
     next();
   });
   router.use(createRateLimiter());
@@ -26,8 +34,18 @@ export function createEntityRoutes(service = new PublicContentEntityService(new 
       res.status(400).json(errorResponse('ENTITY_PATH_INVALID', 'Invalid entity path'));
       return;
     }
+    const decision = res.locals.entityDecision as Extract<Decision, { action: 'entity' }>;
+    const legacy = () => res.status(404).json(errorResponse('ENTITY_PUBLIC_READ_DISABLED', 'Entity reads are disabled'));
+    const canary = decision.mode === 'canary';
     try {
       const result = await service.resolve(req.query.path);
+      // Canary: the registry must still agree with the approved pin, at this read.
+      if (canary && !(result.status === 'canonical' && result.entity.entityId === decision.entry.entityId && result.entity.canonicalPath === decision.entry.canonicalPath)) {
+        policy.outcome(req.query.path, result.status === 'integrity_error' ? 'integrity_error' : 'revalidation_failed');
+        legacy();
+        return;
+      }
+      if (canary) policy.outcome(req.query.path, 'served');
       if (result.status === 'canonical' || result.status === 'redirect') {
         if (result.status === 'redirect' && req.query.redirect !== 'false') {
           res.location(result.entity.canonicalPath).status(301).end();
@@ -39,6 +57,11 @@ export function createEntityRoutes(service = new PublicContentEntityService(new 
       res.status(status).json(errorResponse(`ENTITY_${result.status.toUpperCase()}`, 'Entity unavailable'));
     } catch (error) {
       logger.error('Entity read failed', error instanceof Error ? error : { error: String(error) });
+      if (canary) {
+        policy.outcome(req.query.path, 'error');
+        legacy();
+        return;
+      }
       res.status(503).json(errorResponse('ENTITY_UNAVAILABLE', 'Entity unavailable'));
     }
   });

@@ -1,6 +1,8 @@
-# Phase 3 entry contract — content identity (v1, 2026-10-21)
+# Phase 3 entry contract — content identity (v1.1, 2026-10-21)
 
 Status: **engineering readiness PASS · production activation BLOCKED** (no persistent write is authorised; every identity flag is unset in production). Evidence for every claim is in [PHASE-2D-FINALIZATION-2026-10-21.md](PHASE-2D-FINALIZATION-2026-10-21.md). Changing a rule below needs a new version of this file.
+
+**v1.1 (Phase 3B):** (a) `CONTENT_ENTITY_PUBLIC_READ_ENABLED` alone no longer serves anything: a scope (`canary` or `all`) must be written out, and `canary` needs an allowlist file and a ceiling ≤ 25 (§7a); (b) the evidence gate never accepts an identity without a canonical path (§3). No other rule changed; the human gate is unchanged. Details: [PHASE-3B-IMPLEMENTATION-2026-10-21.md](PHASE-3B-IMPLEMENTATION-2026-10-21.md).
 
 ## 1. Final Phase 2D architecture
 
@@ -96,6 +98,15 @@ Nothing in 2D publishes or indexes anything. Phase 3 must not index an entity wh
 | `EPG_YEAR_PROVENANCE` | off | — | the sync keeps the feed's year in `sourceProvenance.yearProvenance` of enriched programmes (changes stored EPG documents; `year` and public output unchanged) |
 
 There is no public-resolution flag. Phase 3 introduces its own, off by default.
+
+### 7a. Public-read flags (Phase 3B), all default off
+
+| Flag | Requires | Effect |
+|---|---|---|
+| `CONTENT_ENTITY_PUBLIC_READ_ENABLED=true` | — | master switch; with no scope it serves nothing |
+| `CONTENT_ENTITY_PUBLIC_READ_SCOPE=canary\|all` | the master switch | `all` = every eligible entity (3A behaviour); `canary` = the allowlist only |
+| `CONTENT_ENTITY_CANARY_FILE`, `CONTENT_ENTITY_CANARY_MAX` | scope `canary` | allowlist of named approvals, ceiling 1…25 |
+| `CONTENT_ENTITY_PUBLIC_READ_KILL=true`, `CONTENT_ENTITY_KILL_FILE` | — | instant legacy fallback, no restart |
 
 ## 8. Production activations (all optional for Phase 3 engineering)
 
