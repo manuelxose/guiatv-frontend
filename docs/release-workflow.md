@@ -107,3 +107,7 @@ retains five by default; no database migration is part of this rebuild release.
 Rollback immediately if the error rate exceeds twice its baseline, p95 latency
 increases by more than 50%, a new client error affects more than 0.1% of
 sessions, or any security/data-integrity regression appears.
+
+## Deploy safeguards (Phase 3C)
+
+`deploy-guiatv.sh` now: takes a host-level lock (`/var/lock/guiatv-deploy.lock`, exit 75 if another deploy or `guiatv-ops.sh` holds it); refuses to build when available memory is below `BUILD_MIN_AVAILABLE_MB` (3500) and caps the build (`--max-old-space-size`, `nice`, `ionice`, optional `BUILD_MEMORY_MAX`); reinstalls dependencies only when `package-lock.json` changed; exits 0 without building when the target commit is already live or only documentation changed (`FORCE_DEPLOY=1` overrides); and can publish an off-host artifact (`deploy-guiatv.sh <branch> <artifact.tgz> <sha256>`, built by `deploy-artifact.yml`) without installing or compiling on the server. `deploy.yml` does not run for documentation-only pushes. `scripts/guiatv-ops.sh` rolls back, restarts and warms safely. See `docs/ops/VPS-RELIABILITY-RUNBOOK.md`.

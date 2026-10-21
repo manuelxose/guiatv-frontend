@@ -1,3 +1,4 @@
+import type { CertificationReader } from './ContentCertification';
 import { ContentIdentityService, normalizeReviewerName } from './ContentIdentityService';
 import type { ContentEntityRecord } from '@/domain/repositories/IContentIdentityRepository';
 
@@ -18,7 +19,14 @@ type PublicResolution =
   | { status: 'invalid' | 'not_found' | 'gone' | 'integrity_error' };
 
 export class PublicContentEntityService {
-  constructor(private readonly identity: Pick<ContentIdentityService, 'resolvePath'>) {}
+  /**
+   * `certifications` admits entities certified from an owner-authorised AI review (Phase 3C). Without
+   * it, only a named person's verification serves a page and an `ai_attested` entity is not found.
+   */
+  constructor(
+    private readonly identity: Pick<ContentIdentityService, 'resolvePath'>,
+    private readonly certifications?: CertificationReader
+  ) {}
 
   async resolve(path: string): Promise<PublicResolution> {
     const result = await this.identity.resolvePath(path);
@@ -28,11 +36,16 @@ export class PublicContentEntityService {
       return { status: 'integrity_error' };
     }
     const entity = canonical.entity;
-    if (entity.status !== 'active' || entity.matching?.method !== 'manual') return { status: 'not_found' };
-    try {
-      normalizeReviewerName(entity.matching.decidedBy);
-      normalizeReviewerName(entity.lifecycle?.changedBy);
-    } catch { return { status: 'not_found' }; }
+    if (entity.status !== 'active') return { status: 'not_found' };
+    if (entity.matching?.method === 'manual') {
+      try {
+        normalizeReviewerName(entity.matching.decidedBy);
+        normalizeReviewerName(entity.lifecycle?.changedBy);
+      } catch { return { status: 'not_found' }; }
+    } else if (entity.matching?.method !== 'ai_attested' || !(await this.certifications?.isCertified(entity).catch(() => false))) {
+      // Anything else, an AI attestation that is revoked, expired, tampered with or unreadable included, is not a page.
+      return { status: 'not_found' };
+    }
     const dto: PublicContentEntity = {
       entityId: entity.entityId, kind: entity.kind, title: entity.title, canonicalPath: entity.canonicalPath!,
     };

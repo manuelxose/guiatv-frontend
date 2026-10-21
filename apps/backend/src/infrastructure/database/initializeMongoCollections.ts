@@ -36,6 +36,7 @@ import { AffiliateOfferModel } from './models/AffiliateOffer.model';
 import { AffiliatePlacementModel } from './models/AffiliatePlacement.model';
 import { AdminOperationModel } from './models/AdminOperation.model';
 import { AdminOperationalEventModel } from './models/AdminOperationalEvent.model';
+import { ContentAttestationModel } from './models/ContentAttestation.model';
 import { ContentEntityModel } from './models/ContentEntity.model';
 import { ContentSlugModel } from './models/ContentSlug.model';
 import { ContentTitleKeyModel } from './models/ContentTitleKey.model';
@@ -46,6 +47,7 @@ export const CONTENT_IDENTITY_RESOURCES = [
   { name: 'content_entities', model: ContentEntityModel },
   { name: 'content_slugs', model: ContentSlugModel },
   { name: 'content_title_keys', model: ContentTitleKeyModel },
+  { name: 'content_attestations', model: ContentAttestationModel },
 ] as const;
 
 /**

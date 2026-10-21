@@ -1,0 +1,1751 @@
+{
+  "version": 1,
+  "kind": "phase-3c-write-canary",
+  "generatedAt": "2026-10-21T19:55:00.000Z",
+  "contract": "PHASE-3-ENTRY-CONTRACT v1.4",
+  "reviewBasis": "ai",
+  "ceiling": 25,
+  "entities": [
+    {
+      "rank": 1,
+      "candidateId": "la_cura_del_bienestar|movie|movie:340837|2017",
+      "identity": "new:la_cura_del_bienestar|movie|tmdb:movie:340837",
+      "title": "La cura del bienestar",
+      "kind": "movie",
+      "year": 2017,
+      "tmdb": {
+        "type": "movie",
+        "id": 340837
+      },
+      "canonicalPath": "/peliculas/la-cura-del-bienestar",
+      "verdictSha256": "776ccbf76e2d0f1aadbe8e8aaedc45dc4fb653a9e71c606a832e6cb1872795fc",
+      "evidence": {
+        "daysAccepted": [
+          "20261023"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "a181a2712db4d7436b3408cd7a05937123f18c2fc5dc7a0442df412fbe9018e6",
+          "788b7738d506fb20dbbabe80cae2268d9a720740715a62a471cd2a6771a0ff5b"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/la-cura-del-bienestar",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable"
+        ],
+        "adsenseRisk": "low",
+        "upcomingAirings": 2
+      }
+    },
+    {
+      "rank": 2,
+      "candidateId": "venganza_en_las_vegas|movie|movie:1081620|2023",
+      "identity": "new:venganza_en_las_vegas|movie|tmdb:movie:1081620",
+      "title": "Venganza en Las Vegas",
+      "kind": "movie",
+      "year": 2023,
+      "tmdb": {
+        "type": "movie",
+        "id": 1081620
+      },
+      "canonicalPath": "/peliculas/venganza-en-las-vegas",
+      "verdictSha256": "ef38eb5c7d2e09b4afac3e925496dff6ac0a9ea83ceceec74581d478574ae46f",
+      "evidence": {
+        "daysAccepted": [
+          "20261023"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "cross_day",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "be02cfc33cdb6df6b53a8266ceb44279ba1cd3566e533aa6e943c43b4fd3fcb1",
+          "58d755c32e9cdf436dfdf20c077401395165d0a2ce81956493b8ffba903e66b5"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/venganza-en-las-vegas",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable"
+        ],
+        "adsenseRisk": "low",
+        "upcomingAirings": 2
+      }
+    },
+    {
+      "rank": 3,
+      "candidateId": "dobles_vidas|movie|movie:471856|2018",
+      "identity": "new:dobles_vidas|movie|tmdb:movie:471856",
+      "title": "Dobles vidas",
+      "kind": "movie",
+      "year": 2018,
+      "tmdb": {
+        "type": "movie",
+        "id": 471856
+      },
+      "canonicalPath": "/peliculas/dobles-vidas",
+      "verdictSha256": "7e19f2a35006ab514a050fd834d390f09b8aa26b3317a6d3dda59855effb1761",
+      "evidence": {
+        "daysAccepted": [
+          "20261023"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "f04d3ca3aae7f809d565f53c8889812f72823ff3227dc002b64724c8a207131c",
+          "2fc1a93368f54a0f6c661425893024b6b2ba2e43071f6217f4153fcbcf4c4497"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/dobles-vidas",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable"
+        ],
+        "adsenseRisk": "low",
+        "upcomingAirings": 1
+      }
+    },
+    {
+      "rank": 4,
+      "candidateId": "los_subdesarrollados|movie|movie:221650|1968",
+      "identity": "new:los_subdesarrollados|movie|tmdb:movie:221650",
+      "title": "Los subdesarrollados",
+      "kind": "movie",
+      "year": 1968,
+      "tmdb": {
+        "type": "movie",
+        "id": 221650
+      },
+      "canonicalPath": "/peliculas/los-subdesarrollados",
+      "verdictSha256": "469636ceab75bc2ee5572d2f28ca02cf82f41b7a5c1014ec193ed1bc4b9c05c8",
+      "evidence": {
+        "daysAccepted": [
+          "20261023"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "47f5f57b6402691c5ed0171a9d161734f4fb2c7da0eb161673b61b0457a9f806",
+          "4a39f7bf44d0caed67f54128d0695f925481bf7112a448df9eba91b250595792"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/los-subdesarrollados",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable"
+        ],
+        "adsenseRisk": "low",
+        "upcomingAirings": 1
+      }
+    },
+    {
+      "rank": 5,
+      "candidateId": "la_galaxia_del_terror|movie|movie:28893|1981",
+      "identity": "new:la_galaxia_del_terror|movie|tmdb:movie:28893",
+      "title": "La galaxia del terror",
+      "kind": "movie",
+      "year": 1981,
+      "tmdb": {
+        "type": "movie",
+        "id": 28893
+      },
+      "canonicalPath": "/peliculas/la-galaxia-del-terror",
+      "verdictSha256": "90c1a623deaf996df5c3684cbeb3ba6759041ad382918862d17f20ddafba516e",
+      "evidence": {
+        "daysAccepted": [
+          "20261023"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "28eb3f85e580c2fe8aa9bfb1b61426731852d81b230036633430baa408e5568e",
+          "063bef0a51aca05ff167eed1722c1f391d41a694cbe8942183ad99a0b9df0dc9"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/la-galaxia-del-terror",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable"
+        ],
+        "adsenseRisk": "low",
+        "upcomingAirings": 1
+      }
+    },
+    {
+      "rank": 6,
+      "candidateId": "jinetes_de_la_justicia|movie|movie:663870|2020",
+      "identity": "new:jinetes_de_la_justicia|movie|tmdb:movie:663870",
+      "title": "Jinetes de la justicia",
+      "kind": "movie",
+      "year": 2020,
+      "tmdb": {
+        "type": "movie",
+        "id": 663870
+      },
+      "canonicalPath": "/peliculas/jinetes-de-la-justicia",
+      "verdictSha256": "b24e89613cbfb88bc7816488734bd07f4bd4c3920a3546fab18607c507de7231",
+      "evidence": {
+        "daysAccepted": [
+          "20261023"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "34f99fe3003f690dc0abe5c20db889e3f50ed3aca127a59c87f16307aa45a50a",
+          "758b7964ec0ff914aad103721bcdf24e4a2ac1e471ea5b4ea1baa46683afc7cc"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/jinetes-de-la-justicia",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable"
+        ],
+        "adsenseRisk": "low",
+        "upcomingAirings": 1
+      }
+    },
+    {
+      "rank": 7,
+      "candidateId": "el_exorcista_iii|movie|movie:11587|1990",
+      "identity": "new:el_exorcista_iii|movie|tmdb:movie:11587",
+      "title": "El exorcista III",
+      "kind": "movie",
+      "year": 1990,
+      "tmdb": {
+        "type": "movie",
+        "id": 11587
+      },
+      "canonicalPath": "/peliculas/el-exorcista-iii",
+      "verdictSha256": "5f8174e8725a9e59e37cb4ad84daf70adc171060a36d4acc57e274ddb7501182",
+      "evidence": {
+        "daysAccepted": [
+          "20261023"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "e965da35e8a487d771fc54d48fa198dc0ad63ba7f63af075d4910a4771729b59",
+          "9ac3b2e699914f8a8ed862115876f78159c2d23e114d8fced2e2cb2f5b4e2dcc"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/el-exorcista-iii",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable"
+        ],
+        "adsenseRisk": "low",
+        "upcomingAirings": 1
+      }
+    },
+    {
+      "rank": 8,
+      "candidateId": "22_balas|movie|movie:37645|2010",
+      "identity": "new:22_balas|movie|tmdb:movie:37645",
+      "title": "22 balas",
+      "kind": "movie",
+      "year": 2010,
+      "tmdb": {
+        "type": "movie",
+        "id": 37645
+      },
+      "canonicalPath": "/peliculas/22-balas",
+      "verdictSha256": "496f6a3fdf728d51056d53d71b0d350be381d4efe1f1cf049ddbd904bfa43dfd",
+      "evidence": {
+        "daysAccepted": [
+          "20261023"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "cross_day",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "b7ffbdaba414a0d73aaa23be3f3fabc7c47a9190d82adaacd8a6470c418ee92e",
+          "6e18d7b0bbd768e5037f529a5259b3fdc933069efa9269141816678087ca0284"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/22-balas",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable"
+        ],
+        "adsenseRisk": "low",
+        "upcomingAirings": 1
+      }
+    },
+    {
+      "rank": 9,
+      "candidateId": "jurassic_world_dominion|movie|movie:507086|2022",
+      "identity": "new:jurassic_world_dominion|movie|tmdb:movie:507086",
+      "title": "Jurassic World: Dominion",
+      "kind": "movie",
+      "year": 2022,
+      "tmdb": {
+        "type": "movie",
+        "id": 507086
+      },
+      "canonicalPath": "/peliculas/jurassic-world-dominion",
+      "verdictSha256": "07a1011f730e22f8a2a03102f6c7bc95cf705c7d0e22cd95406718414457443c",
+      "evidence": {
+        "daysAccepted": [
+          "20261023"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "50ae8461477d8bd4bb2332b60c758be8c02504070c7ab596f3358fd2a50bd29d",
+          "9acc0bfc2d8ff382213ec5d7039c1d618296004ad1f59ce503db2c0e591688df"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/jurassic-world-dominion",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable"
+        ],
+        "adsenseRisk": "low",
+        "upcomingAirings": 1
+      }
+    },
+    {
+      "rank": 10,
+      "candidateId": "como_se_escribe_amor|movie|movie:289727|2014",
+      "identity": "new:como_se_escribe_amor|movie|tmdb:movie:289727",
+      "title": "¿Cómo se escribe amor?",
+      "kind": "movie",
+      "year": 2014,
+      "tmdb": {
+        "type": "movie",
+        "id": 289727
+      },
+      "canonicalPath": "/peliculas/como-se-escribe-amor",
+      "verdictSha256": "a336a8c1ad5ae29d085cdc951a74f80e86747355ed089642f61934ae6d1273f6",
+      "evidence": {
+        "daysAccepted": [
+          "20261023"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "335e0b02296bb7e1b5b2e6895854e475b6e6101cc49d73b3770f4dbdeb522d30",
+          "6da07ec4db4710b462a6d497c78d8be5b1bf842d6a1f74deffe4d4e30fbbf82a"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/como-se-escribe-amor",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable"
+        ],
+        "adsenseRisk": "low",
+        "upcomingAirings": 1
+      }
+    },
+    {
+      "rank": 11,
+      "candidateId": "bano_de_sangre_al_salir_el_sol|movie|movie:143747|1966",
+      "identity": "new:bano_de_sangre_al_salir_el_sol|movie|tmdb:movie:143747",
+      "title": "Baño de sangre al salir el sol",
+      "kind": "movie",
+      "year": 1966,
+      "tmdb": {
+        "type": "movie",
+        "id": 143747
+      },
+      "canonicalPath": "/peliculas/bano-de-sangre-al-salir-el-sol",
+      "verdictSha256": "99f3f4dc89585b3439c01a2c85f2bf3689b362790a26201bc6f7bc0dbcc5e590",
+      "evidence": {
+        "daysAccepted": [
+          "20261020"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "0476e9cd27bad01523985c3638b181f4d73f4ef0eb4a895f891c675ea1b9d93b",
+          "72ef3c84f08e1b2df851830cc4c298fc2c64928530f01a170d35952bf1089a28"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/bano-de-sangre-al-salir-el-sol",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable",
+          "user_useful",
+          "adsense_risk"
+        ],
+        "adsenseRisk": "medium",
+        "upcomingAirings": 0
+      }
+    },
+    {
+      "rank": 12,
+      "candidateId": "amerigeddon|movie|movie:395938|2016",
+      "identity": "new:amerigeddon|movie|tmdb:movie:395938",
+      "title": "AmeriGeddon",
+      "kind": "movie",
+      "year": 2016,
+      "tmdb": {
+        "type": "movie",
+        "id": 395938
+      },
+      "canonicalPath": "/peliculas/amerigeddon",
+      "verdictSha256": "a684618cd58d2dd0a1ac1934cf5827308a601390bba7c660866a76fb46cb5b5b",
+      "evidence": {
+        "daysAccepted": [
+          "20261020"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "cross_day",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "2866c2868e41ac0dce7a97b0c9e1973ff330c31a88eef3813f85fbaeb0827d01",
+          "5374422b9d59ebcb270d79e6385b04abd76db0c28fc2bf0a0a54bad5b84ccfbf"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/amerigeddon",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable",
+          "user_useful",
+          "adsense_risk"
+        ],
+        "adsenseRisk": "medium",
+        "upcomingAirings": 0
+      }
+    },
+    {
+      "rank": 13,
+      "candidateId": "las_catadoras_de_hitler|movie|movie:1291712|2025",
+      "identity": "new:las_catadoras_de_hitler|movie|tmdb:movie:1291712",
+      "title": "Las catadoras de Hitler",
+      "kind": "movie",
+      "year": 2025,
+      "tmdb": {
+        "type": "movie",
+        "id": 1291712
+      },
+      "canonicalPath": "/peliculas/las-catadoras-de-hitler",
+      "verdictSha256": "705ee750e9d7d1acdb125de62eec2cdc2b29a329fa3769d3b4ff65375fb61003",
+      "evidence": {
+        "daysAccepted": [
+          "20261020"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "cb14eadafd597f334f7d984e4c11101e0bdff97a8bcbf3d26db3e5c58f420a7f",
+          "9113718ab7429a59abe2889fe2345a20b8fcf0defa958330b1e94ababe5d3b25"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/las-catadoras-de-hitler",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable",
+          "user_useful",
+          "adsense_risk"
+        ],
+        "adsenseRisk": "medium",
+        "upcomingAirings": 0
+      }
+    },
+    {
+      "rank": 14,
+      "candidateId": "morir_no_siempre_sale_bien|movie|movie:1447881|2026",
+      "identity": "new:morir_no_siempre_sale_bien|movie|tmdb:movie:1447881",
+      "title": "Morir no siempre sale bien",
+      "kind": "movie",
+      "year": 2026,
+      "tmdb": {
+        "type": "movie",
+        "id": 1447881
+      },
+      "canonicalPath": "/peliculas/morir-no-siempre-sale-bien",
+      "verdictSha256": "5aaeb6d5dd99c5b95bb54a15c4978b56cbe5f096118317a191dc2cc5be967d07",
+      "evidence": {
+        "daysAccepted": [
+          "20261020"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "5e75d6602487491750d69b1df9ddc6d3b5748e79589d39bb541f86d7c2324b32",
+          "6c6a26e80887b9bec215457b8e2994ac7571a0666cc53d0bc81a4f6f9fa40cb5"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/morir-no-siempre-sale-bien",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable",
+          "user_useful",
+          "adsense_risk"
+        ],
+        "adsenseRisk": "medium",
+        "upcomingAirings": 0
+      }
+    },
+    {
+      "rank": 15,
+      "candidateId": "el_valle_de_la_furia|movie|movie:75552|1980",
+      "identity": "new:el_valle_de_la_furia|movie|tmdb:movie:75552",
+      "title": "El valle de la furia",
+      "kind": "movie",
+      "year": 1980,
+      "tmdb": {
+        "type": "movie",
+        "id": 75552
+      },
+      "canonicalPath": "/peliculas/el-valle-de-la-furia",
+      "verdictSha256": "faff65e1e9f8528e2feec4dc15c9b588aa226678828f50eea0adf1d441935a35",
+      "evidence": {
+        "daysAccepted": [
+          "20261020"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "c05bc2bcaff8599f97a89bfaff2793b82d8a1ad46c6a0a7e4f76babd8448e9ad",
+          "5044ce66bf95f45ea4a909960b7ebd0a2bfc23efb1e7d20bda95b598cb2ce8f7"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/el-valle-de-la-furia",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable",
+          "user_useful",
+          "adsense_risk"
+        ],
+        "adsenseRisk": "medium",
+        "upcomingAirings": 0
+      }
+    },
+    {
+      "rank": 16,
+      "candidateId": "bats_murcielagos|movie|movie:10496|1999",
+      "identity": "new:bats_murcielagos|movie|tmdb:movie:10496",
+      "title": "Bats (Murciélagos)",
+      "kind": "movie",
+      "year": 1999,
+      "tmdb": {
+        "type": "movie",
+        "id": 10496
+      },
+      "canonicalPath": "/peliculas/bats-murcielagos",
+      "verdictSha256": "5eba33aacd854691073319bbe985c76807b6f91cdfc0c6ed8efc911bc8739abf",
+      "evidence": {
+        "daysAccepted": [
+          "20261020"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "4cbdce74a2a6fbf9352dfebcb5f4979a6667e07ba8691469e12d3756700f5bb8",
+          "09777be3ac281c4c687bbfec889deef980c20d0e3d08fd2644080e3a61dc3800"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/bats-murcielagos",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable",
+          "user_useful",
+          "adsense_risk"
+        ],
+        "adsenseRisk": "medium",
+        "upcomingAirings": 0
+      }
+    },
+    {
+      "rank": 17,
+      "candidateId": "suzhou_river|movie|movie:11599|2000",
+      "identity": "new:suzhou_river|movie|tmdb:movie:11599",
+      "title": "Suzhou River",
+      "kind": "movie",
+      "year": 2000,
+      "tmdb": {
+        "type": "movie",
+        "id": 11599
+      },
+      "canonicalPath": "/peliculas/suzhou-river",
+      "verdictSha256": "0353a487fe913bda54abfa26f264623382e5c5c3644643080f4cb56e9f582551",
+      "evidence": {
+        "daysAccepted": [
+          "20261020"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "93f135194c7e3fea38e995e0cf19c98846cb076bf003a2144eebf75280f9029e",
+          "0a4bedd70ce48350f0b367a246ea055e8156c8ecdebc7850648b337e76a7bff1"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/suzhou-river",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable",
+          "user_useful",
+          "adsense_risk"
+        ],
+        "adsenseRisk": "medium",
+        "upcomingAirings": 0
+      }
+    },
+    {
+      "rank": 18,
+      "candidateId": "pecados_del_pasado|movie|movie:157079|2006",
+      "identity": "new:pecados_del_pasado|movie|tmdb:movie:157079",
+      "title": "Pecados del pasado",
+      "kind": "movie",
+      "year": 2006,
+      "tmdb": {
+        "type": "movie",
+        "id": 157079
+      },
+      "canonicalPath": "/peliculas/pecados-del-pasado",
+      "verdictSha256": "1437a833155319ce2817db5b5bedd0a37d8a9fb63e5629be8a2745cd62627444",
+      "evidence": {
+        "daysAccepted": [
+          "20261020"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "f9187b000720934588b3f9c684c082243eecdbb980ca9aa70ac6bd4defb41a75",
+          "01de7b3c41b6b3946585dc3aecbf42cff6477e7139021df4794c3b227caa941e"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/pecados-del-pasado",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable",
+          "user_useful",
+          "adsense_risk"
+        ],
+        "adsenseRisk": "medium",
+        "upcomingAirings": 0
+      }
+    },
+    {
+      "rank": 19,
+      "candidateId": "tres_tejanos|movie|movie:154091|1949",
+      "identity": "new:tres_tejanos|movie|tmdb:movie:154091",
+      "title": "Tres tejanos",
+      "kind": "movie",
+      "year": 1949,
+      "tmdb": {
+        "type": "movie",
+        "id": 154091
+      },
+      "canonicalPath": "/peliculas/tres-tejanos",
+      "verdictSha256": "8450d062383c34d50012a509c4eb7151d26233dbd8854327eca0d8cb88f81914",
+      "evidence": {
+        "daysAccepted": [
+          "20261020"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "2d6894702dc9829bad196bfc44b7726221cbb5e5035150afcca7e0a76151421c",
+          "eeddd29d3f1f04dc78e87c186963c0e9261fca3b7ba8fb10e2c5ef270e20f572"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/tres-tejanos",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable",
+          "user_useful",
+          "adsense_risk"
+        ],
+        "adsenseRisk": "medium",
+        "upcomingAirings": 0
+      }
+    },
+    {
+      "rank": 20,
+      "candidateId": "el_desafio_de_pancho_villa|movie|movie:74064|1972",
+      "identity": "new:el_desafio_de_pancho_villa|movie|tmdb:movie:74064",
+      "title": "El desafío de Pancho Villa",
+      "kind": "movie",
+      "year": 1972,
+      "tmdb": {
+        "type": "movie",
+        "id": 74064
+      },
+      "canonicalPath": "/peliculas/el-desafio-de-pancho-villa",
+      "verdictSha256": "f63f16de22791af95507636831cdddd49981863442b90a823c57dcb06be77a44",
+      "evidence": {
+        "daysAccepted": [
+          "20261020"
+        ],
+        "independentRoots": 2,
+        "sources": [
+          "consistency_check",
+          "historic_url",
+          "tmdb_catalogue",
+          "tmdb_unique_title"
+        ]
+      },
+      "review": {
+        "reviewers": [
+          "AI Sonnet 5.5 A (primary, ai)",
+          "AI Opus 5.5 B (second, ai)"
+        ],
+        "decisionHashes": [
+          "6e8f578e70c9f844dd285a71ca91796df85c0a29be9bc68062652714772778f5",
+          "af51fc5b1198941d3b4651d7d0055e33c43478321c5a83fed88d976b59bb5f31"
+        ]
+      },
+      "legacy": {
+        "url": "https://guiaprogramaciontv.com/peliculas/el-desafio-de-pancho-villa",
+        "status": 200,
+        "robots": "noindex, follow",
+        "indexableToday": false
+      },
+      "readiness": {
+        "technical": "eligible",
+        "content": "ready",
+        "needsEnrichment": [],
+        "indexingBlockers": [
+          "identity_verified",
+          "year_reliable",
+          "description_reliable",
+          "no_duplicate_of_epg",
+          "legacy_consolidated",
+          "internal_links_ready",
+          "ssr_reliable",
+          "user_useful",
+          "adsense_risk"
+        ],
+        "adsenseRisk": "medium",
+        "upcomingAirings": 0
+      }
+    }
+  ],
+  "review": {
+    "ledgerHeadHash": "0a4bedd70ce48350f0b367a246ea055e8156c8ecdebc7850648b337e76a7bff1",
+    "sheetSha256": "48385a0bbf3793d0ad5a2688307f61cbd763034dd7e74ddf0f11b8b0746719bf",
+    "gate": {
+      "pass": true,
+      "basis": "ai",
+      "labelled": 360,
+      "secondReviewed": 119,
+      "precisionLower95": 0.9868909205800418,
+      "blockers": []
+    }
+  },
+  "evidenceDays": [
+    "20261020",
+    "20261021",
+    "20261022",
+    "20261023"
+  ],
+  "evidenceDay": "20261023",
+  "freshUntil": "2026-10-25T00:00:00.000Z",
+  "probes": {
+    "count": 92,
+    "sha256": "b83ed9d4df31b397b14a7cab55f78028dc0c26afe0702a4f75eb4c9999dcc245"
+  },
+  "pool": {
+    "eligible": 92,
+    "excluded": {
+      "review_missing": 123,
+      "review_second_missing": 188,
+      "kind_series": 108,
+      "kind_show": 3,
+      "title_not_a_work": 3
+    }
+  },
+  "notSelected": [
+    {
+      "candidateId": "rey_arturo_la_leyenda_de_excalibur|movie|movie:274857|2017",
+      "title": "Rey Arturo: La leyenda de Excalibur",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "un_misterio_para_aurora_teagarden_perdiendo_la_cabeza|movie|movie:436398|2017",
+      "title": "Un misterio para Aurora Teagarden: Perdiendo la cabeza",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "3_dias_para_matar|movie|movie:192102|2014",
+      "title": "3 días para matar",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "men_in_black_international|movie|movie:479455|2019",
+      "title": "Men in Black International",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "ana_y_los_lobos|movie|movie:107287|1973",
+      "title": "Ana y los lobos",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "la_gran_belleza|movie|movie:179144|2013",
+      "title": "La gran belleza",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "la_conspiracion_de_noviembre|movie|movie:254904|2014",
+      "title": "La conspiración de noviembre",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "los_legendarios|movie|movie:677561|2026",
+      "title": "Los Legendarios",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "los_miserables_el_origen|movie|movie:1376439|2025",
+      "title": "Los miserables. El origen",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "en_tierra_de_muertos|movie|movie:1198984|2026",
+      "title": "En tierra de muertos",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "dracula_de_bram_stoker|movie|movie:6114|1992",
+      "title": "Drácula de Bram Stoker",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "simbad_y_el_ojo_del_tigre|movie|movie:11940|1977",
+      "title": "Simbad y el ojo del tigre",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "cobra_el_brazo_fuerte_de_la_ley|movie|movie:9874|1986",
+      "title": "Cobra, el brazo fuerte de la ley",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "los_commitments|movie|movie:11663|1991",
+      "title": "Los Commitments",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "me_olvide_de_vivir|movie|movie:544809|1980",
+      "title": "Me olvidé de vivir",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "una_mujer_descasada|movie|movie:38731|1978",
+      "title": "Una mujer descasada",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "camino_solitario|movie|movie:347995|1984",
+      "title": "Camino solitario",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "london_boulevard|movie|movie:48838|2010",
+      "title": "London Boulevard",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "pagando_por_ello|movie|movie:1298547|2025",
+      "title": "Pagando por ello",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "domingo_de_carnaval|movie|movie:102707|1945",
+      "title": "Domingo de carnaval",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "la_diputada|movie|movie:418446|1988",
+      "title": "La diputada",
+      "reasons": [
+        "synopsis_short_or_missing",
+        "adsense_risk_high"
+      ]
+    },
+    {
+      "candidateId": "el_amor_perjudica_seriamente_la_salud|movie|movie:74192|1997",
+      "title": "El amor perjudica seriamente la salud",
+      "reasons": [
+        "synopsis_short_or_missing",
+        "adsense_risk_high"
+      ]
+    },
+    {
+      "candidateId": "millennium_los_hombres_que_no_amaban_a_las_mujeres|movie|movie:65754|2011",
+      "title": "Millennium: Los hombres que no amaban a las mujeres",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "the_batman|movie|movie:414906|2022",
+      "title": "The Batman",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "un_doctor_en_la_campina|movie|movie:375950|2016",
+      "title": "Un doctor en la campiña",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "hook_el_capitan_garfio|movie|movie:879|1991",
+      "title": "Hook (El capitán Garfio)",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "la_mujer_que_sabia_demasiado|movie|movie:1320414|2025",
+      "title": "La mujer que sabía demasiado",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "altas_capacidades|movie|movie:1435734|2026",
+      "title": "Altas capacidades",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "en_compania_de_lobos|movie|movie:11905|1984",
+      "title": "En compañía de lobos",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "los_tigres|movie|movie:1464374|2025",
+      "title": "Los Tigres",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "tras_el_verano|movie|movie:1451288|2025",
+      "title": "Tras el verano",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "la_hermanastra_fea|movie|movie:1284120|2025",
+      "title": "La hermanastra fea",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "cuerpos_locos|movie|movie:1460448|2025",
+      "title": "Cuerpos locos",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "los_ultimos_golpes_de_el_torete|movie|movie:132008|1980",
+      "title": "Los últimos golpes de El Torete",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "satan_s_slaves_communion|movie|movie:925786|2022",
+      "title": "Satan's Slaves: Communion",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "como_satisfacer_a_una_mujer|movie|movie:894686|2022",
+      "title": "Cómo satisfacer a una mujer",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "el_silencio_de_los_corderos|movie|movie:274|1991",
+      "title": "El silencio de los corderos",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "amanecer_en_socorro|movie|movie:138949|1954",
+      "title": "Amanecer en Socorro",
+      "reasons": [
+        "synopsis_short_or_missing",
+        "adsense_risk_high"
+      ]
+    },
+    {
+      "candidateId": "sueno_y_silencio|movie|movie:112751|2012",
+      "title": "Sueño y silencio",
+      "reasons": [
+        "synopsis_short_or_missing",
+        "adsense_risk_high"
+      ]
+    },
+    {
+      "candidateId": "ninja_a_cuadros|movie|movie:523536|2018",
+      "title": "Ninja a cuadros",
+      "reasons": [
+        "synopsis_short_or_missing",
+        "adsense_risk_high"
+      ]
+    },
+    {
+      "candidateId": "strange_darling|movie|movie:1029281|2024",
+      "title": "Strange Darling",
+      "reasons": [
+        "synopsis_short_or_missing",
+        "adsense_risk_high"
+      ]
+    },
+    {
+      "candidateId": "matrix_reloaded|movie|movie:604|2003",
+      "title": "Matrix Reloaded",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "pasos_de_baile|movie|movie:20689|2002",
+      "title": "Pasos de baile",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "the_south_to_sian_journals|movie|movie:1017822|2017",
+      "title": "The South To Sian Journals",
+      "reasons": [
+        "metadata_genres"
+      ]
+    },
+    {
+      "candidateId": "truhanes|movie|movie:161389|1983",
+      "title": "Truhanes",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "el_chico_de_oro|movie|movie:10136|1986",
+      "title": "El chico de oro",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "oro_en_barras|movie|movie:32961|1951",
+      "title": "Oro en barras",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "el_discurso_del_rey|movie|movie:45269|2010",
+      "title": "El discurso del rey",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "amerikanuak|movie|movie:449376|2010",
+      "title": "Amerikanuak",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "whistle_el_silbido_del_mal|movie|movie:1193501|2026",
+      "title": "Whistle: El silbido del mal",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "el_pistolero_mas_tembloroso_del_oeste|movie|movie:20238|1968",
+      "title": "El pistolero más tembloroso del Oeste",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "ahi_va_otro_recluta|movie|movie:120140|1960",
+      "title": "¡Ahí va otro recluta!",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "el_coloso_en_llamas|movie|movie:5919|1974",
+      "title": "El coloso en llamas",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "conoces_a_joe_black|movie|movie:297|1998",
+      "title": "¿Conoces a Joe Black",
+      "reasons": [
+        "replaces_indexed_legacy_page"
+      ]
+    },
+    {
+      "candidateId": "conagher|movie|movie:37307|1991",
+      "title": "Conagher",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "el_coloso_de_rodas|movie|movie:43020|1961",
+      "title": "El coloso de Rodas",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "persecucion_extrema|movie|movie:8975|2006",
+      "title": "Persecución extrema",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "esa_mujer|movie|movie:151568|1969",
+      "title": "Esa mujer",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "duelo_de_titanes|movie|movie:22201|1957",
+      "title": "Duelo de titanes",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "matrix_resurrections|movie|movie:624860|2021",
+      "title": "Matrix Resurrections",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "viridiana|movie|movie:4497|1962",
+      "title": "Viridiana",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "el_desafio_de_las_aguilas|movie|movie:11046|1968",
+      "title": "El desafío de las águilas",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "como_locos_a_por_el_oro|movie|movie:8676|2008",
+      "title": "Como locos... a por el oro",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "las_vacaciones_de_mr_bean|movie|movie:1268|2007",
+      "title": "Las vacaciones de Mr. Bean",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "i_como_icaro|movie|movie:25264|1979",
+      "title": "I... como ícaro",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "yo_capitan|movie|movie:937746|2023",
+      "title": "Yo capitán",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "objetivo_el_zar_rojo|movie|movie:269729|1989",
+      "title": "Objetivo: El zar rojo",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "la_verdad_puede_matar|movie|movie:485464|2018",
+      "title": "La verdad puede matar",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "somos_los_miller|movie|movie:138832|2013",
+      "title": "Somos los Miller",
+      "reasons": [
+        "synopsis_short_or_missing"
+      ]
+    },
+    {
+      "candidateId": "asesinato_en_el_comite_central|movie|movie:115686|1982",
+      "title": "Asesinato en el Comité Central",
+      "reasons": [
+        "synopsis_short_or_missing",
+        "adsense_risk_high"
+      ]
+    },
+    {
+      "candidateId": "un_mundo_perfecto|movie|movie:9559|1993",
+      "title": "Un mundo perfecto",
+      "reasons": [
+        "synopsis_short_or_missing",
+        "adsense_risk_high"
+      ]
+    },
+    {
+      "candidateId": "mulleres_da_raia|movie|movie:671928|",
+      "title": "Mulleres da Raia",
+      "reasons": [
+        "synopsis_short_or_missing",
+        "metadata_year+genres+synopsis",
+        "adsense_risk_high"
+      ]
+    }
+  ],
+  "warnings": [
+    "entity_metadata_empty_at_admission: admission stores title, year, TMDB id and path only; a public canary page would show title and year until a sourced metadata copy exists, so \"content ready\" means the facts exist upstream (catalogue, TMDB), not on the entity",
+    "entity_page_answers_at_the_legacy_url: a served entity page replaces the legacy page at the same URL; entries marked indexableToday=true would lose a rich indexable page for a noindex one",
+    "year_provenance_unmeasured: EPG_YEAR_PROVENANCE is off, so no year is independently confirmed; this blocks indexing, not the noindex canary",
+    "review_basis_ai: every label behind the batch is an owner-authorised AI review; nothing here is human-validated precision"
+  ],
+  "digest": "03fa15694ddbca41f52962ea50352acedfade5e62100a6ad024e0f84dca4f5e2",
+  "admitSha256": "7c2ee02fba7f40978f170718f1dc69942af9c0c25229bff45e9283825044408c"
+}

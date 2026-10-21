@@ -1,4 +1,4 @@
-# Phase 3 entry contract — content identity (v1.3, 2026-10-21)
+# Phase 3 entry contract — content identity (v1.4, 2026-10-21)
 
 Status: **engineering readiness PASS · production activation BLOCKED** (no persistent write is authorised; every identity flag is unset in production). Evidence for every claim is in [PHASE-2D-FINALIZATION-2026-10-21.md](PHASE-2D-FINALIZATION-2026-10-21.md). Changing a rule below needs a new version of this file.
 
@@ -7,6 +7,8 @@ Status: **engineering readiness PASS · production activation BLOCKED** (no pers
 **v1.2 (owner-authorised AI review):** on 2026-10-21 the owner (manuelxose) authorised AI agents to perform the human review of the identity gate ("toda la revision humana es autorizada por mi para hacerlo por ia"; "ahora te doy la autorizacion"). Consequences, and only these: (a) the review ledger accepts reviewers named `AI <model> <letter>` listed in a roster that carries the owner's `aiAuthorization`; (b) the scorer takes an explicit opt-in list of AI reviewer names, so thresholds (300 labels, 98 %, 50 second-reviewer rows, categories, adjudication) are unchanged; (c) every ledger entry says `reviewerKind: 'ai'` and reports say `reviewBasis: ai`: AI labels are **ai_reviewed, never "human-validated precision"**; (d) `normalizeReviewerName` now also refuses the `AI ` prefix, so `verifyEntity`, public reads and the canary still need a named **person** — making an AI-reviewed entity publicly readable is a separate, explicit Phase 3C change. The independent evidence an AI reviewer uses is the TMDB page of the claimed work, not the machine's verdict; TMDB is also the gate's source, so the labels measure coherence with TMDB, not TMDB's own errors.
 
 **v1.3 (owner attestation):** after the AI review passed (round 2: 360 labels, 99.7 %, 119 second reviews, basis `ai`), the owner stated, in this session on 2026-10-21, that the human-review requirement is satisfied ("valida que el requisito humano ha pasado, te lo digo yo"). This is recorded as the **owner's decision**, not as a human labelling result: reports keep `reviewBasis: ai` and nobody should describe the precision as human-validated. It closes the "human gate" line of §10 for planning purposes; it does not enable any flag, write or publication, and §8's written authorisations for those remain separate.
+
+**v1.4 (Phase 3C: AI-review certification):** the owner's attestation (v1.3) gets an engineering mechanism, and nothing else changes. (a) A candidate backed by independent evidence **and** an accepted, hash-chained AI review (two AI reviewers, gate passed on basis `ai`) can become `active` only through `ContentCertificationService.certify`, a transition distinct from `verifyEntity`: `matching.method = ai_attested`, never `manual`. (b) It needs a **per-batch grant signed with the owner's Ed25519 key** (the private key stays off the server; only the public key is configured), so no agent can grant itself the authority it acts under; the attestation attests, it does not authorise. (c) Every certification and revocation is an insert-only, hash-chained record in `content_attestations`; the entity carries only a pin to it. (d) The public read serves an `ai_attested` entity only while its attestation is valid **at that read** (signature, expiry, revocation, binding to entity id, path and TMDB work); a revoked, expired, edited or unverifiable one is `not_found`, i.e. the legacy page. (e) `normalizeReviewerName` still refuses every AI name and `mayBeIndexable` is still false for `ai_attested`: reports keep `reviewBasis: ai`, and an AI-attested page is at most a noindex canary page, never an index candidate. (f) New opt-in scope `CONTENT_IDENTITY_WRITE_SCOPE=admitted` makes a write run touch only the candidates in the admit file (≤ 25), so a canary writes the approved batch and nothing else. Details and evidence: [PHASE-3C-IMPLEMENTATION-2026-10-21.md](PHASE-3C-IMPLEMENTATION-2026-10-21.md).
 
 ## 1. Final Phase 2D architecture
 
@@ -40,6 +42,7 @@ offline, no database:  trace-dump.js → tmdb-check.js → `content-identity evi
 |---|---|---|
 | **Verified** | entity `active`, `matching.method = manual`, `lifecycle.changedBy` = a named person | `verifyEntity` / `content-identity verify <id> --by <name> --note …`; refuses automation names (`normalizeReviewerName`) |
 | **Independently supported** | entity `candidate`, `matching.assurance = independently_supported` | the evidence gate's `AUTO_ACCEPT` listed in `CONTENT_IDENTITY_ADMIT_FILE` |
+| **AI-certified** (3C) | entity `active`, `matching.method = ai_attested`, `certification` pin to a valid attestation record; reviewBasis `ai` | `content-certify certify` with the owner's signed grant; reversible by `revoke` (back to `candidate`) |
 | **Provisional** | entity `candidate`, no `assurance` | only legacy 2D-2 behaviour; the gate no longer creates these (tests may, with `admit: 'all'`) |
 | **Quarantined** | no entity. Report: `decisions.unresolved` with `reasons` (`not_admitted`, `unknown_kind`, `title_uncertain`, `cross_kind_conflict`, `tmdb_conflict`…); title-key rows `ambiguous` / `manual_review` | everything else; stays here until evidence or a person changes it |
 | **Rejected** | title-key row `rejected` (a person), or trace `rejected` (slot / episode-without-work / unkeyable title, never a row) | `content-identity reject`; exclusion rules |
@@ -85,6 +88,7 @@ Phase 3 must add its own public DTO; it must not serialise `ContentEntityRecord`
 | Quarantined / rejected | no entity (review row only) | no | no |
 | Provisional | yes, `candidate` | no | no |
 | Independently supported | yes, `candidate` + `assurance` | no | no (never eligible: `mayBeIndexable` false) |
+| AI-certified (3C) | yes, `active` + pin + attestation chain | **only** inside the canary allowlist, behind the master switch, scope and kill switch, and only while the attestation is valid at that read | no (`mayBeIndexable` false; `noindex, follow`; never in a sitemap) |
 | Verified (`active`, manual) | yes | **only after Phase 3 adds a public route behind its own flag** | eligible, not indexed: `indexability.state` stays `noindex` until Phase 3 sets `index` after its own publication checks (self-canonical, sitemap, content quality) |
 
 Nothing in 2D publishes or indexes anything. Phase 3 must not index an entity whose canonical path is missing or whose entity is not `active`.
@@ -99,6 +103,8 @@ Nothing in 2D publishes or indexes anything. Phase 3 must not index an entity wh
 | `CONTENT_IDENTITY_ADMIT_FILE=<path>` | unset | `…WRITES` | verdicts file from `content-identity evidence --out`; only `AUTO_ACCEPT` + `independently_supported` lines admit. Missing, unreadable or broken file admits nothing |
 | `CONTENT_IDENTITY_MAX_CREATES` | 1000 | `…WRITES` | cap per rebuild |
 | `CONTENT_IDENTITY_AIRING_REFS` | off | `…WRITES` and the hand-built airing index | writes `program.entityId` / `canonicalPath` on airings |
+| `CONTENT_IDENTITY_WRITE_SCOPE=admitted` | unset | `…WRITES` | (3C) a write run touches only the candidates in the admit file, which must hold ≤ 25 lines or admits nothing: no title key for any other candidate |
+| `CONTENT_OWNER_PUBLIC_KEY_FILE=<pem>` | unset | — | (3C) the owner's Ed25519 public key; certification and every public read of an `ai_attested` entity verify the owner's grant against it. Missing: nothing is valid |
 | `EPG_YEAR_PROVENANCE` | off | — | the sync keeps the feed's year in `sourceProvenance.yearProvenance` of enriched programmes (changes stored EPG documents; `year` and public output unchanged) |
 
 There is no public-resolution flag. Phase 3 introduces its own, off by default.
@@ -114,7 +120,7 @@ There is no public-resolution flag. Phase 3 introduces its own, off by default.
 
 ## 8. Production activations (all optional for Phase 3 engineering)
 
-Each needs separate written owner authorisation. None is done.
+Each needs separate written owner authorisation. None is done. Phase 3C adds, in order and each separately approvable: **(3a)** enable the identity collections (`CONTENT_ENTITIES_ENABLED`; boot creates the four empty `content_*` collections and their indexes, now including `content_attestations`); **(3b)** the bounded write canary (admitted scope, ≤ 25, from the signed manifest); **(3c)** `certify` with the owner's signed grant; **(3d)** the public-read canary (allowlist + `CONTENT_ENTITY_PUBLIC_READ_*`). The runbook is [PHASE-3C-CANARY-RUNBOOK.md](PHASE-3C-CANARY-RUNBOOK.md).
 
 1. `EPG_YEAR_PROVENANCE=true`; after one sync cycle, compare population of the new field; rollback: unset (fields inert).
 2. Hand-build `idx_tvread_entity_start` off-peak, before any release that expects it, if airing refs are wanted.
@@ -144,7 +150,8 @@ Engineering start (isolated or read-only data) — **all met**:
 Production start (public pages, writes) — **not met**, owner-gated:
 
 - [ ] Written authorisation to enable writes (§8.3).
-- [ ] Human gate passed, or policy M1 accepted in writing.
+- [x] Human gate: replaced by the owner's attestation of the AI review (v1.3), basis `ai`; Phase 3C implements the mechanism that carries it without calling it human (v1.4).
+- [ ] Written authorisation of the first write canary and the owner's signed grant (Phase 3C exact approvals).
 - [ ] Fresh production replay of the latest rebuilt day with this build (blocked in this session: production database reads were refused by the environment; the packaged `docs/seo/phase-2d2f/run-evidence.sh` is ready for the owner).
 
 **First Phase 3 task:** a public read DTO and `GET` resolver behind a new flag (off), built on `resolvePath`, serving only `active` entities with a canonical path, `noindex`, no sitemap entry, tested on scratch MongoDB seeded through `verifyEntity`.

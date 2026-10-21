@@ -4,6 +4,9 @@ IFS=$'\n\t'
 
 APP_DIR="${APP_DIR:-/var/www/guiatv}"
 BRANCH="${1:-main}"
+# Off-host build (deploy-artifact workflow): path and sha256 of the artifact, as arguments (sudo passes arguments, not variables).
+DEPLOY_ARTIFACT="${2:-${DEPLOY_ARTIFACT:-}}"
+DEPLOY_ARTIFACT_SHA256="${3:-${DEPLOY_ARTIFACT_SHA256:-}}"
 SSR_PORT="3000"
 API_PORT="4000"
 BACKEND_BUILD_DIR="${APP_DIR}/apps/backend/dist"
@@ -13,6 +16,15 @@ CURRENT_RELEASE_LINK="${APP_DIR}/current"
 if [ "${EUID:-$(id -u)}" -ne 0 ] && [ "${DEPLOY_ALLOW_NON_ROOT:-0}" != "1" ]; then
   echo "Run as root"
   exit 1
+fi
+
+# One deploy at a time on this host. The workflow's concurrency group does not cover a manual run over SSH, and two
+# builds at once on the 12 GB VPS are exactly the memory pressure the deploy must not create. Exit 75: nothing changed.
+LOCK_FILE="${DEPLOY_LOCK_FILE:-/var/lock/guiatv-deploy.lock}"
+exec 9>"${LOCK_FILE}"
+if ! flock -n 9; then
+  echo "Another deploy is running (lock ${LOCK_FILE}); aborting without changes"
+  exit 75
 fi
 
 wait_http() {
@@ -183,6 +195,38 @@ socket.on('connect_error', (error) => {
 NODE
 }
 
+# What the build may cost the services that share this host (docs/ops/VPS-RELIABILITY-RUNBOOK.md). The pre-flight check
+# aborts before anything changes; the heap cap and nice/ionice keep a build from starving mongod, valkey and the API.
+available_mb() { awk '/MemAvailable/ { printf "%d", $2 / 1024 }' /proc/meminfo; }
+
+guard_build_memory() {
+  local need="${BUILD_MIN_AVAILABLE_MB:-3500}" have
+  have="$(available_mb)"
+  if [ "${have}" -lt "${need}" ]; then
+    echo "Only ${have} MB of memory available, the build needs ${need}; aborting before any change (BUILD_MIN_AVAILABLE_MB overrides)"
+    exit 75
+  fi
+}
+
+# BUILD_MEMORY_MAX (e.g. 5G) additionally confines the build to a cgroup, so an OOM kills the build, not mongod.
+build_limited() {
+  local -a runner=()
+  command -v nice >/dev/null 2>&1 && runner+=(nice -n 10)
+  command -v ionice >/dev/null 2>&1 && runner+=(ionice -c 3)
+  if [ -n "${BUILD_MEMORY_MAX:-}" ] && command -v systemd-run >/dev/null 2>&1; then
+    runner=(systemd-run --scope --quiet -p "MemoryMax=${BUILD_MEMORY_MAX}" -p MemorySwapMax=0 "${runner[@]}")
+  fi
+  NODE_OPTIONS="--max-old-space-size=${BUILD_HEAP_MB:-3072}" "${runner[@]}" "$@"
+}
+
+# Commit the live release was built from, from its release.json (empty when unknown).
+deployed_sha() {
+  grep -o '"gitSha": *"[0-9a-f]\{40\}"' "${CURRENT_RELEASE_LINK}/release.json" 2>/dev/null | grep -o '[0-9a-f]\{40\}' | head -n1 || true
+}
+
+# Paths that never change what runs in production.
+DOCS_ONLY_REGEX='^(docs/|graphify-out/|tasks/|design/|artifacts/|\.github/workflows/uptime\.yml$|scripts/(uptime-probe|post-boot-check|canary-legacy-probe)\.|.*\.md$)'
+
 PREVIOUS_RELEASE=""
 PUBLISH_STARTED=0
 
@@ -205,18 +249,63 @@ trap rollback_on_failure EXIT
 
 cd "${APP_DIR}"
 
+SYNCED=0
 if git diff --quiet && git diff --cached --quiet; then
   git fetch --prune origin
   git checkout "${BRANCH}"
   # The server never commits here, so align with the remote even when its history was rewritten
   # (a plain fast-forward pull fails after a force-push and used to block every deploy).
   git reset --hard "origin/${BRANCH}"
+  SYNCED=1
 else
   echo "Working tree has local changes. Deploying current checkout without git sync."
 fi
 
-npm install --workspaces --include-workspace-root --legacy-peer-deps --no-audit --no-fund
-npm run build
+# A deploy of what is already live, or of documentation only, would still build and restart the services.
+# FORCE_DEPLOY=1 overrides (e.g. to rebuild after a dependency or environment change).
+if [ "${SYNCED}" = "1" ] && [ "${FORCE_DEPLOY:-0}" != "1" ]; then
+  LIVE_SHA="$(deployed_sha)"
+  if [ -n "${LIVE_SHA}" ] && git cat-file -e "${LIVE_SHA}^{commit}" 2>/dev/null; then
+    TARGET_SHA="$(git rev-parse HEAD)"
+    if [ "${LIVE_SHA}" = "${TARGET_SHA}" ]; then
+      echo "Release ${TARGET_SHA} is already live; nothing to deploy (FORCE_DEPLOY=1 overrides)"
+      exit 0
+    fi
+    if ! git diff --name-only "${LIVE_SHA}" "${TARGET_SHA}" | grep -qvE "${DOCS_ONLY_REGEX}"; then
+      echo "Only documentation changed between ${LIVE_SHA} and ${TARGET_SHA}; no build, no restart (FORCE_DEPLOY=1 overrides)"
+      exit 0
+    fi
+  fi
+fi
+
+if [ -n "${DEPLOY_ARTIFACT:-}" ]; then
+  # Built off-host (CI) from this exact commit: verify, unpack, publish. No dependency install, no compile here.
+  [ -f "${DEPLOY_ARTIFACT}" ] || { echo "Artifact ${DEPLOY_ARTIFACT} not found"; exit 1; }
+  [ -n "${DEPLOY_ARTIFACT_SHA256:-}" ] || { echo "DEPLOY_ARTIFACT_SHA256 is required with DEPLOY_ARTIFACT"; exit 1; }
+  echo "${DEPLOY_ARTIFACT_SHA256}  ${DEPLOY_ARTIFACT}" | sha256sum -c --quiet - || { echo "Artifact checksum mismatch"; exit 1; }
+  ARTIFACT_DIR="${APP_DIR}/.artifact-incoming"
+  rm -rf "${ARTIFACT_DIR}"
+  mkdir -p "${ARTIFACT_DIR}"
+  tar -xzf "${DEPLOY_ARTIFACT}" -C "${ARTIFACT_DIR}"
+  [ "$(cat "${ARTIFACT_DIR}/ARTIFACT_GIT_SHA" 2>/dev/null)" = "$(git rev-parse HEAD)" ] || { rm -rf "${ARTIFACT_DIR}"; echo "Artifact was not built from the checked-out commit"; exit 1; }
+  rm -rf "${BACKEND_BUILD_DIR}" "${FRONTEND_BUILD_DIR}"
+  mkdir -p "$(dirname "${BACKEND_BUILD_DIR}")" "$(dirname "${FRONTEND_BUILD_DIR}")"
+  mv "${ARTIFACT_DIR}/apps/backend/dist" "${BACKEND_BUILD_DIR}"
+  mv "${ARTIFACT_DIR}/apps/frontend/dist/guiatv" "${FRONTEND_BUILD_DIR}"
+  rm -rf "${ARTIFACT_DIR}"
+else
+  guard_build_memory
+  # Dependencies change rarely: reinstall only when the lockfile does (or node_modules is missing).
+  LOCK_STAMP="${APP_DIR}/.deploy-lock-sha256"
+  LOCK_SHA="$(sha256sum package-lock.json 2>/dev/null | cut -d' ' -f1 || true)"
+  if [ -n "${LOCK_SHA}" ] && [ -d node_modules ] && [ -f "${LOCK_STAMP}" ] && [ "$(cat "${LOCK_STAMP}")" = "${LOCK_SHA}" ]; then
+    echo "package-lock.json unchanged since the last install; skipping npm install"
+  else
+    build_limited npm install --workspaces --include-workspace-root --legacy-peer-deps --no-audit --no-fund
+    [ -z "${LOCK_SHA}" ] || echo "${LOCK_SHA}" >"${LOCK_STAMP}"
+  fi
+  build_limited npm run build
+fi
 verify_backend_build
 verify_frontend_build
 PREVIOUS_RELEASE="$(readlink -f "${CURRENT_RELEASE_LINK}" 2>/dev/null || true)"

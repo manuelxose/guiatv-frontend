@@ -25,8 +25,12 @@ export interface RollbackReport {
 const CHUNK = 500;
 const chunks = <T>(list: T[]) => Array.from({ length: Math.ceil(list.length / CHUNK) }, (_, i) => list.slice(i * CHUNK, (i + 1) * CHUNK));
 
-export async function rollbackProvisional(opts: { apply: boolean; since?: Date }): Promise<RollbackReport> {
-  const filter = { status: 'candidate' as const, ...(opts.since ? { createdAt: { $gte: opts.since } } : {}) };
+/**
+ * `entityIds` (Phase 3C) limits the rollback to a canary batch: nothing outside the list is touched.
+ * Attestation records are never deleted: they are the audit trail of what was certified and revoked.
+ */
+export async function rollbackProvisional(opts: { apply: boolean; since?: Date; entityIds?: readonly string[] }): Promise<RollbackReport> {
+  const filter = { status: 'candidate' as const, ...(opts.since ? { createdAt: { $gte: opts.since } } : {}), ...(opts.entityIds ? { entityId: { $in: [...opts.entityIds] } } : {}) };
   const ids = (await ContentEntityModel.find(filter, { entityId: 1 }).lean().exec()).map((e) => e.entityId);
   const reviewed = new Set<string>();
   const referenced = new Set<string>();

@@ -222,6 +222,6 @@ Artefacts: `docs/seo/phase-3b/ai-review/` (ledgers, exports, README), `docs/seo/
 
 Nothing in the incident touched Phase 3B data or flags. The deploy script's hub warm-up runs only after deploys, not after a reboot: a manual warm-up (GET the main hubs) after any future reboot would shorten the cold window.
 
-## 10. Proposed Phase 3C scope (not started)
+## 10. Proposed Phase 3C scope (implemented in [PHASE-3C-IMPLEMENTATION-2026-10-21.md](PHASE-3C-IMPLEMENTATION-2026-10-21.md): (a) and the preparation of (b); (c)–(e) remain)
 
 Only on the owner's explicit go: (a) decide how an AI-reviewed identity is attested for `verifyEntity` and public reads (today both refuse it by design), or accept policy M1; (b) a ≤ 25-entity noindex canary using §5's runbook; (c) entity page content (upcoming-broadcast block, editorial text, links) and a legacy-consolidation plan; (d) `EPG_YEAR_PROVENANCE` for one sync cycle; (e) a separate decision on indexing, with the quality criteria as the gate.

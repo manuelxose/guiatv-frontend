@@ -5,7 +5,7 @@ import {
   CONTENT_KINDS,
   CONTENT_STATUSES,
   ENTITY_ID_PATTERN,
-  MATCH_METHODS,
+  ENTITY_MATCH_METHODS,
   mayBeIndexable,
   normalizeContentPath,
   PROVENANCE_SOURCES,
@@ -78,7 +78,7 @@ const ContentEntitySchema = new Schema<ContentEntityRecord>(
     matching: {
       type: new Schema(
         {
-          method: { type: String, enum: MATCH_METHODS, required: true },
+          method: { type: String, enum: ENTITY_MATCH_METHODS, required: true },
           confidence: { type: Number, required: true, min: 0, max: 1 },
           decidedAt: { type: Date, required: true },
           decidedBy: { type: String, required: true, maxlength: 64 },
@@ -111,6 +111,17 @@ const ContentEntitySchema = new Schema<ContentEntityRecord>(
           changedAt: { type: Date, required: true },
           changedBy: { type: String, required: true, maxlength: 64 },
           reason: { type: String, required: true, maxlength: 200 },
+        },
+        strictSub
+      ),
+    },
+    certification: {
+      type: new Schema(
+        {
+          attestationId: { type: String, required: true, maxlength: 64 },
+          seq: { type: Number, required: true, min: 0, validate: Number.isInteger },
+          hash: { type: String, required: true, match: /^[0-9a-f]{64}$/ },
+          certifiedAt: { type: Date, required: true },
         },
         strictSub
       ),

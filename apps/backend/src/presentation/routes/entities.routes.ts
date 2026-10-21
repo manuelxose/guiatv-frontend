@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createCertificationReader } from '@/application/services/ContentCertification';
 import { PublicContentEntityService } from '@/application/services/PublicContentEntityService';
 import { Decision, EntityPublicReadPolicy, entityPublicReadPolicy } from '@/application/services/EntityPublicReadPolicy';
 import { ContentIdentityService } from '@/application/services/ContentIdentityService';
@@ -12,7 +13,7 @@ const logger = new Logger('PublicContentEntity');
 export function createEntityRoutes(
   service = new PublicContentEntityService(new ContentIdentityService(
     new MongoContentEntityRepository(), new MongoContentSlugRepository(), new MongoContentTitleKeyRepository()
-  )),
+  ), createCertificationReader()),
   policy: EntityPublicReadPolicy = entityPublicReadPolicy()
 ): Router {
   const router = Router();

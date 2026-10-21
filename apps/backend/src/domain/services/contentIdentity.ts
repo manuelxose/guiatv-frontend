@@ -24,6 +24,14 @@ export const MATCH_METHODS = ['manual', 'tmdb_id', 'tmdb_exact', 'title_year', '
 export type MatchMethod = (typeof MATCH_METHODS)[number];
 
 /**
+ * How a stored entity's identity was decided. Title-key rows use `MATCH_METHODS`; only an entity can
+ * be `ai_attested` (Phase 3C: promoted by an owner-authorised AI review). It is not `manual`, so
+ * `mayBeIndexable` stays false for it and no person-only check accepts it.
+ */
+export const ENTITY_MATCH_METHODS = [...MATCH_METHODS, 'ai_attested'] as const;
+export type EntityMatchMethod = (typeof ENTITY_MATCH_METHODS)[number];
+
+/**
  * How a stored entity earned its place beyond a title match. Absent: provisional (no machine or
  * human evidence beyond the match). `independently_supported`: admitted by the 2D-2G evidence
  * gate, stored as a `candidate`. A person's verification is the `active` status, not a value here.
@@ -515,7 +523,7 @@ const TMDB_TYPE_BY_KIND: Partial<Record<ContentKind, TmdbRef['type']>> = { movie
  * Indexing needs an active entity whose identity is manual or a reliable TMDB link. Title-only
  * and low-confidence matches stay `noindex` until a person verifies them.
  */
-export function mayBeIndexable(entity: { status: ContentStatus; matching?: { method: MatchMethod; confidence: number } }): boolean {
+export function mayBeIndexable(entity: { status: ContentStatus; matching?: { method: EntityMatchMethod; confidence: number } }): boolean {
   const m = entity.matching;
   if (entity.status !== 'active' || !m) return false;
   return m.method === 'manual' || ((m.method === 'tmdb_id' || m.method === 'tmdb_exact') && m.confidence >= VERIFIED_CONFIDENCE);

@@ -33,7 +33,7 @@ import {
   titleIdentityKey,
   TmdbRef,
 } from '@/domain/services/contentIdentity';
-import { contentIdentityMaxCreates, readContentIdentityFlags } from '@/shared/config/contentEntities';
+import { ADMITTED_SCOPE_CEILING, contentIdentityMaxCreates, contentIdentityWriteScope, readContentIdentityFlags } from '@/shared/config/contentEntities';
 import { logger } from '@/shared/utils/logger';
 import {
   MongoAiringEntityRefWriter,
@@ -282,6 +282,12 @@ export class ContentIdentityIngestion {
        * existing rows still bind. Shadow mode ignores it and reports what an open gate would do.
        */
       admit?: ReadonlySet<string> | 'all';
+      /**
+       * Phase 3C: `admitted` makes write mode touch only the candidates in `admit` (no title-key row for
+       * any other candidate, no binding to an existing row), so a bounded canary writes a bounded set.
+       * Unset: the 2D-2 behaviour, where every decided candidate leaves a title-key row.
+       */
+      scope?: 'admitted';
     }
   ) {}
 
@@ -432,6 +438,12 @@ export class ContentIdentityIngestion {
       return res.existing ?? row;
     };
     const decide = async (c: Candidate) => {
+      if (write && this.opts.scope === 'admitted' && !this.admitted(c)) {
+        count(report.decisions, 'unresolved');
+        count(report.reasons, 'out_of_scope');
+        c.outcome = { decision: 'unresolved', reason: 'out_of_scope' };
+        return;
+      }
       if (c.hold) {
         count(report.decisions, 'unresolved');
         count(report.reasons, c.hold);
@@ -690,7 +702,8 @@ const evidence = new MongoIdentityEvidenceSource();
 export function createContentIdentityIngestion(
   mode: 'shadow' | 'write',
   airingRefs = false,
-  admit?: ReadonlySet<string>
+  admit?: ReadonlySet<string>,
+  scope?: 'admitted'
 ): ContentIdentityIngestion {
   const ports = {
     entities: new MongoContentEntityRepository(),
@@ -704,6 +717,7 @@ export function createContentIdentityIngestion(
     airingRefs,
     maxCreates: contentIdentityMaxCreates(),
     admit,
+    scope,
   });
 }
 
@@ -726,6 +740,10 @@ export function admissionFromEnv(env: NodeJS.ProcessEnv = process.env): Readonly
     log.warn('Content identity admission file unreadable; nothing is admitted', { message: String((error as Error)?.message || '').slice(0, 200) });
     return new Set();
   }
+  if (contentIdentityWriteScope(env) && admitted.size > ADMITTED_SCOPE_CEILING) {
+    log.warn('Content identity admission file exceeds the admitted-scope ceiling; nothing is admitted', { admitted: admitted.size, ceiling: ADMITTED_SCOPE_CEILING });
+    return new Set();
+  }
   return admitted;
 }
 
@@ -742,7 +760,7 @@ export async function runContentIdentity(
   const flags = readContentIdentityFlags(process.env, mongoose.connection.db?.databaseName);
   if (!flags.shadow && !flags.writes) return null;
   try {
-    const report = await createContentIdentityIngestion(flags.writes ? 'write' : 'shadow', flags.airingRefs, admissionFromEnv()).run(
+    const report = await createContentIdentityIngestion(flags.writes ? 'write' : 'shadow', flags.airingRefs, admissionFromEnv(), contentIdentityWriteScope()).run(
       date,
       observationsFromAirings(airings, years, rawYears)
     );

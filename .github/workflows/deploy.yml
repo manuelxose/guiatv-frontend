@@ -3,6 +3,19 @@ name: Deploy a producción (Contabo)
 on:
   push:
     branches: [main]
+    # Nothing here changes what runs in production, so it must not build on the VPS or restart the services
+    # (a documentation PR used to trigger a full deploy). Keep in step with DOCS_ONLY_REGEX in deploy-guiatv.sh.
+    paths-ignore:
+      - 'docs/**'
+      - 'graphify-out/**'
+      - 'tasks/**'
+      - 'design/**'
+      - 'artifacts/**'
+      - '.github/workflows/uptime.yml'
+      - 'scripts/uptime-probe*'
+      - 'scripts/post-boot-check*'
+      - 'scripts/canary-legacy-probe.mjs'
+      - '**/*.md'
   workflow_dispatch:
 
 concurrency:

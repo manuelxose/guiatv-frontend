@@ -92,3 +92,7 @@ AI_GUIDE.md
 copilot-instructions.md
 .mcp.json
 mcp.json
+
+# Deploy bookkeeping on the server
+/.deploy-lock-sha256
+/.artifact-incoming

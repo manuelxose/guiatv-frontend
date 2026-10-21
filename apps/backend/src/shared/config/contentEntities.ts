@@ -51,3 +51,15 @@ export function contentIdentityMaxCreates(env: NodeJS.ProcessEnv = process.env):
   const n = Number.parseInt(String(env.CONTENT_IDENTITY_MAX_CREATES || ''), 10);
   return Number.isFinite(n) && n >= 0 ? n : 1000;
 }
+
+/**
+ * CONTENT_IDENTITY_WRITE_SCOPE=admitted (Phase 3C, unset by default): write mode touches only the
+ * candidates in CONTENT_IDENTITY_ADMIT_FILE, so a canary writes the approved batch and nothing else.
+ * Any other value keeps the 2D-2 behaviour.
+ */
+export function contentIdentityWriteScope(env: NodeJS.ProcessEnv = process.env): 'admitted' | undefined {
+  return String(env.CONTENT_IDENTITY_WRITE_SCOPE || '').trim() === 'admitted' ? 'admitted' : undefined;
+}
+
+/** The most identities one admitted-scope run may be handed; a longer admit file admits nothing. */
+export const ADMITTED_SCOPE_CEILING = 25;

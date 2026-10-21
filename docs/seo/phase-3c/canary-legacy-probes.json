@@ -1,0 +1,829 @@
+[
+  {
+    "candidateId": "22_balas|movie|movie:37645|2010",
+    "url": "https://guiaprogramaciontv.com/peliculas/22-balas",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 362,
+    "year": 2010,
+    "measuredAt": "2026-10-21T19:51:40.912Z"
+  },
+  {
+    "candidateId": "3_dias_para_matar|movie|movie:192102|2014",
+    "url": "https://guiaprogramaciontv.com/peliculas/3-dias-para-matar",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 167,
+    "year": 2014,
+    "measuredAt": "2026-10-21T19:51:42.624Z"
+  },
+  {
+    "candidateId": "ahi_va_otro_recluta|movie|movie:120140|1960",
+    "url": "https://guiaprogramaciontv.com/peliculas/ahi-va-otro-recluta",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 345,
+    "year": 1960,
+    "measuredAt": "2026-10-21T19:51:44.349Z"
+  },
+  {
+    "candidateId": "altas_capacidades|movie|movie:1435734|2026",
+    "url": "https://guiaprogramaciontv.com/peliculas/altas-capacidades",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 236,
+    "year": 2026,
+    "measuredAt": "2026-10-21T19:51:46.077Z"
+  },
+  {
+    "candidateId": "amanecer_en_socorro|movie|movie:138949|1954",
+    "url": "https://guiaprogramaciontv.com/peliculas/amanecer-en-socorro",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 137,
+    "year": 1954,
+    "measuredAt": "2026-10-21T19:51:47.779Z"
+  },
+  {
+    "candidateId": "amerigeddon|movie|movie:395938|2016",
+    "url": "https://guiaprogramaciontv.com/peliculas/amerigeddon",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 418,
+    "year": 2016,
+    "measuredAt": "2026-10-21T19:51:49.491Z"
+  },
+  {
+    "candidateId": "amerikanuak|movie|movie:449376|2010",
+    "url": "https://guiaprogramaciontv.com/peliculas/amerikanuak",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 390,
+    "year": 2010,
+    "measuredAt": "2026-10-21T19:51:51.288Z"
+  },
+  {
+    "candidateId": "ana_y_los_lobos|movie|movie:107287|1973",
+    "url": "https://guiaprogramaciontv.com/peliculas/ana-y-los-lobos",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 416,
+    "year": 1973,
+    "measuredAt": "2026-10-21T19:51:52.992Z"
+  },
+  {
+    "candidateId": "asesinato_en_el_comite_central|movie|movie:115686|1982",
+    "url": "https://guiaprogramaciontv.com/peliculas/asesinato-en-el-comite-central",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 145,
+    "year": 1982,
+    "measuredAt": "2026-10-21T19:51:54.736Z"
+  },
+  {
+    "candidateId": "bano_de_sangre_al_salir_el_sol|movie|movie:143747|1966",
+    "url": "https://guiaprogramaciontv.com/peliculas/bano-de-sangre-al-salir-el-sol",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 449,
+    "year": 1966,
+    "measuredAt": "2026-10-21T19:51:56.462Z"
+  },
+  {
+    "candidateId": "bats_murcielagos|movie|movie:10496|1999",
+    "url": "https://guiaprogramaciontv.com/peliculas/bats-murcielagos",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 337,
+    "year": 1999,
+    "measuredAt": "2026-10-21T19:51:58.116Z"
+  },
+  {
+    "candidateId": "camino_solitario|movie|movie:347995|1984",
+    "url": "https://guiaprogramaciontv.com/peliculas/camino-solitario",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 327,
+    "year": 1984,
+    "measuredAt": "2026-10-21T19:51:59.781Z"
+  },
+  {
+    "candidateId": "cobra_el_brazo_fuerte_de_la_ley|movie|movie:9874|1986",
+    "url": "https://guiaprogramaciontv.com/peliculas/cobra-el-brazo-fuerte-de-la-ley",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 451,
+    "year": 1986,
+    "measuredAt": "2026-10-21T19:52:01.773Z"
+  },
+  {
+    "candidateId": "como_locos_a_por_el_oro|movie|movie:8676|2008",
+    "url": "https://guiaprogramaciontv.com/peliculas/como-locos-a-por-el-oro",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 237,
+    "year": 2008,
+    "measuredAt": "2026-10-21T19:52:03.746Z"
+  },
+  {
+    "candidateId": "como_satisfacer_a_una_mujer|movie|movie:894686|2022",
+    "url": "https://guiaprogramaciontv.com/peliculas/como-satisfacer-a-una-mujer",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 174,
+    "year": 2022,
+    "measuredAt": "2026-10-21T19:52:05.636Z"
+  },
+  {
+    "candidateId": "como_se_escribe_amor|movie|movie:289727|2014",
+    "url": "https://guiaprogramaciontv.com/peliculas/como-se-escribe-amor",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 324,
+    "year": 2014,
+    "measuredAt": "2026-10-21T19:52:07.255Z"
+  },
+  {
+    "candidateId": "conagher|movie|movie:37307|1991",
+    "url": "https://guiaprogramaciontv.com/peliculas/conagher",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 286,
+    "year": 1991,
+    "measuredAt": "2026-10-21T19:52:09.114Z"
+  },
+  {
+    "candidateId": "conoces_a_joe_black|movie|movie:297|1998",
+    "url": "https://guiaprogramaciontv.com/peliculas/conoces-a-joe-black",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 314,
+    "year": 1998,
+    "measuredAt": "2026-10-21T19:52:10.768Z"
+  },
+  {
+    "candidateId": "cuerpos_locos|movie|movie:1460448|2025",
+    "url": "https://guiaprogramaciontv.com/peliculas/cuerpos-locos",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 204,
+    "year": 2025,
+    "measuredAt": "2026-10-21T19:52:15.145Z"
+  },
+  {
+    "candidateId": "dobles_vidas|movie|movie:471856|2018",
+    "url": "https://guiaprogramaciontv.com/peliculas/dobles-vidas",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 474,
+    "year": 2018,
+    "measuredAt": "2026-10-21T19:52:16.819Z"
+  },
+  {
+    "candidateId": "domingo_de_carnaval|movie|movie:102707|1945",
+    "url": "https://guiaprogramaciontv.com/peliculas/domingo-de-carnaval",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 221,
+    "year": 1945,
+    "measuredAt": "2026-10-21T19:52:18.620Z"
+  },
+  {
+    "candidateId": "dracula_de_bram_stoker|movie|movie:6114|1992",
+    "url": "https://guiaprogramaciontv.com/peliculas/dracula-de-bram-stoker",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 230,
+    "year": 1992,
+    "measuredAt": "2026-10-21T19:52:20.404Z"
+  },
+  {
+    "candidateId": "duelo_de_titanes|movie|movie:22201|1957",
+    "url": "https://guiaprogramaciontv.com/peliculas/duelo-de-titanes",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 275,
+    "year": 1957,
+    "measuredAt": "2026-10-21T19:52:22.073Z"
+  },
+  {
+    "candidateId": "el_amor_perjudica_seriamente_la_salud|movie|movie:74192|1997",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-amor-perjudica-seriamente-la-salud",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 99,
+    "year": 1997,
+    "measuredAt": "2026-10-21T19:52:23.641Z"
+  },
+  {
+    "candidateId": "el_chico_de_oro|movie|movie:10136|1986",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-chico-de-oro",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 420,
+    "year": 1986,
+    "measuredAt": "2026-10-21T19:52:25.324Z"
+  },
+  {
+    "candidateId": "el_coloso_de_rodas|movie|movie:43020|1961",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-coloso-de-rodas",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 283,
+    "year": 1961,
+    "measuredAt": "2026-10-21T19:52:27.050Z"
+  },
+  {
+    "candidateId": "el_coloso_en_llamas|movie|movie:5919|1974",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-coloso-en-llamas",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 337,
+    "year": 1974,
+    "measuredAt": "2026-10-21T19:52:28.725Z"
+  },
+  {
+    "candidateId": "el_desafio_de_las_aguilas|movie|movie:11046|1968",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-desafio-de-las-aguilas",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 254,
+    "year": 1968,
+    "measuredAt": "2026-10-21T19:52:30.407Z"
+  },
+  {
+    "candidateId": "el_desafio_de_pancho_villa|movie|movie:74064|1972",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-desafio-de-pancho-villa",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 301,
+    "year": 1972,
+    "measuredAt": "2026-10-21T19:52:32.066Z"
+  },
+  {
+    "candidateId": "el_discurso_del_rey|movie|movie:45269|2010",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-discurso-del-rey",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 391,
+    "year": 2010,
+    "measuredAt": "2026-10-21T19:52:33.766Z"
+  },
+  {
+    "candidateId": "el_exorcista_iii|movie|movie:11587|1990",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-exorcista-iii",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 371,
+    "year": 1990,
+    "measuredAt": "2026-10-21T19:52:35.456Z"
+  },
+  {
+    "candidateId": "el_pistolero_mas_tembloroso_del_oeste|movie|movie:20238|1968",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-pistolero-mas-tembloroso-del-oeste",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 359,
+    "year": 1968,
+    "measuredAt": "2026-10-21T19:52:37.067Z"
+  },
+  {
+    "candidateId": "el_silencio_de_los_corderos|movie|movie:274|1991",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-silencio-de-los-corderos",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 162,
+    "year": 1991,
+    "measuredAt": "2026-10-21T19:52:38.796Z"
+  },
+  {
+    "candidateId": "el_valle_de_la_furia|movie|movie:75552|1980",
+    "url": "https://guiaprogramaciontv.com/peliculas/el-valle-de-la-furia",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 353,
+    "year": 1980,
+    "measuredAt": "2026-10-21T19:52:40.539Z"
+  },
+  {
+    "candidateId": "en_compania_de_lobos|movie|movie:11905|1984",
+    "url": "https://guiaprogramaciontv.com/peliculas/en-compania-de-lobos",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 235,
+    "year": 1984,
+    "measuredAt": "2026-10-21T19:52:42.111Z"
+  },
+  {
+    "candidateId": "en_tierra_de_muertos|movie|movie:1198984|2026",
+    "url": "https://guiaprogramaciontv.com/peliculas/en-tierra-de-muertos",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 263,
+    "year": 2026,
+    "measuredAt": "2026-10-21T19:52:43.892Z"
+  },
+  {
+    "candidateId": "esa_mujer|movie|movie:151568|1969",
+    "url": "https://guiaprogramaciontv.com/peliculas/esa-mujer",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 276,
+    "year": 1969,
+    "measuredAt": "2026-10-21T19:52:45.568Z"
+  },
+  {
+    "candidateId": "hook_el_capitan_garfio|movie|movie:879|1991",
+    "url": "https://guiaprogramaciontv.com/peliculas/hook-el-capitan-garfio",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 417,
+    "year": 1991,
+    "measuredAt": "2026-10-21T19:52:47.184Z"
+  },
+  {
+    "candidateId": "i_como_icaro|movie|movie:25264|1979",
+    "url": "https://guiaprogramaciontv.com/peliculas/i-como-icaro",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 227,
+    "year": 1979,
+    "measuredAt": "2026-10-21T19:52:48.845Z"
+  },
+  {
+    "candidateId": "jinetes_de_la_justicia|movie|movie:663870|2020",
+    "url": "https://guiaprogramaciontv.com/peliculas/jinetes-de-la-justicia",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 377,
+    "year": 2020,
+    "measuredAt": "2026-10-21T19:52:50.440Z"
+  },
+  {
+    "candidateId": "jurassic_world_dominion|movie|movie:507086|2022",
+    "url": "https://guiaprogramaciontv.com/peliculas/jurassic-world-dominion",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 344,
+    "year": 2022,
+    "measuredAt": "2026-10-21T19:52:52.162Z"
+  },
+  {
+    "candidateId": "la_conspiracion_de_noviembre|movie|movie:254904|2014",
+    "url": "https://guiaprogramaciontv.com/peliculas/la-conspiracion-de-noviembre",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 286,
+    "year": 2014,
+    "measuredAt": "2026-10-21T19:52:53.812Z"
+  },
+  {
+    "candidateId": "la_cura_del_bienestar|movie|movie:340837|2017",
+    "url": "https://guiaprogramaciontv.com/peliculas/la-cura-del-bienestar",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 491,
+    "year": 2017,
+    "measuredAt": "2026-10-21T19:52:55.520Z"
+  },
+  {
+    "candidateId": "la_diputada|movie|movie:418446|1988",
+    "url": "https://guiaprogramaciontv.com/peliculas/la-diputada",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 145,
+    "year": 1988,
+    "measuredAt": "2026-10-21T19:52:57.118Z"
+  },
+  {
+    "candidateId": "la_galaxia_del_terror|movie|movie:28893|1981",
+    "url": "https://guiaprogramaciontv.com/peliculas/la-galaxia-del-terror",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 420,
+    "year": 1981,
+    "measuredAt": "2026-10-21T19:52:58.818Z"
+  },
+  {
+    "candidateId": "la_gran_belleza|movie|movie:179144|2013",
+    "url": "https://guiaprogramaciontv.com/peliculas/la-gran-belleza",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 300,
+    "year": 2013,
+    "measuredAt": "2026-10-21T19:53:00.238Z"
+  },
+  {
+    "candidateId": "la_hermanastra_fea|movie|movie:1284120|2025",
+    "url": "https://guiaprogramaciontv.com/peliculas/la-hermanastra-fea",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 210,
+    "year": 2025,
+    "measuredAt": "2026-10-21T19:53:02.107Z"
+  },
+  {
+    "candidateId": "la_mujer_que_sabia_demasiado|movie|movie:1320414|2025",
+    "url": "https://guiaprogramaciontv.com/peliculas/la-mujer-que-sabia-demasiado",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 258,
+    "year": 2025,
+    "measuredAt": "2026-10-21T19:53:03.940Z"
+  },
+  {
+    "candidateId": "la_verdad_puede_matar|movie|movie:485464|2018",
+    "url": "https://guiaprogramaciontv.com/peliculas/la-verdad-puede-matar",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 172,
+    "year": 2018,
+    "measuredAt": "2026-10-21T19:53:05.709Z"
+  },
+  {
+    "candidateId": "las_catadoras_de_hitler|movie|movie:1291712|2025",
+    "url": "https://guiaprogramaciontv.com/peliculas/las-catadoras-de-hitler",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 418,
+    "year": 2025,
+    "measuredAt": "2026-10-21T19:53:08.316Z"
+  },
+  {
+    "candidateId": "las_vacaciones_de_mr_bean|movie|movie:1268|2007",
+    "url": "https://guiaprogramaciontv.com/peliculas/las-vacaciones-de-mr-bean",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 235,
+    "year": 2007,
+    "measuredAt": "2026-10-21T19:53:10.013Z"
+  },
+  {
+    "candidateId": "london_boulevard|movie|movie:48838|2010",
+    "url": "https://guiaprogramaciontv.com/peliculas/london-boulevard",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 321,
+    "year": 2010,
+    "measuredAt": "2026-10-21T19:53:11.631Z"
+  },
+  {
+    "candidateId": "los_commitments|movie|movie:11663|1991",
+    "url": "https://guiaprogramaciontv.com/peliculas/los-commitments",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 355,
+    "year": 1991,
+    "measuredAt": "2026-10-21T19:53:13.232Z"
+  },
+  {
+    "candidateId": "los_legendarios|movie|movie:677561|2026",
+    "url": "https://guiaprogramaciontv.com/peliculas/los-legendarios",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 313,
+    "year": 2026,
+    "measuredAt": "2026-10-21T19:53:14.928Z"
+  },
+  {
+    "candidateId": "los_miserables_el_origen|movie|movie:1376439|2025",
+    "url": "https://guiaprogramaciontv.com/peliculas/los-miserables-el-origen",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 272,
+    "year": 2025,
+    "measuredAt": "2026-10-21T19:53:16.574Z"
+  },
+  {
+    "candidateId": "los_subdesarrollados|movie|movie:221650|1968",
+    "url": "https://guiaprogramaciontv.com/peliculas/los-subdesarrollados",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 431,
+    "year": 1968,
+    "measuredAt": "2026-10-21T19:53:18.271Z"
+  },
+  {
+    "candidateId": "los_tigres|movie|movie:1464374|2025",
+    "url": "https://guiaprogramaciontv.com/peliculas/los-tigres",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 223,
+    "year": 2025,
+    "measuredAt": "2026-10-21T19:53:19.925Z"
+  },
+  {
+    "candidateId": "los_ultimos_golpes_de_el_torete|movie|movie:132008|1980",
+    "url": "https://guiaprogramaciontv.com/peliculas/los-ultimos-golpes-de-el-torete",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 179,
+    "year": 1980,
+    "measuredAt": "2026-10-21T19:53:21.508Z"
+  },
+  {
+    "candidateId": "matrix_reloaded|movie|movie:604|2003",
+    "url": "https://guiaprogramaciontv.com/peliculas/matrix-reloaded",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 482,
+    "year": 2003,
+    "measuredAt": "2026-10-21T19:53:23.219Z"
+  },
+  {
+    "candidateId": "matrix_resurrections|movie|movie:624860|2021",
+    "url": "https://guiaprogramaciontv.com/peliculas/matrix-resurrections",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 274,
+    "year": 2021,
+    "measuredAt": "2026-10-21T19:53:24.931Z"
+  },
+  {
+    "candidateId": "me_olvide_de_vivir|movie|movie:544809|1980",
+    "url": "https://guiaprogramaciontv.com/peliculas/me-olvide-de-vivir",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 347,
+    "year": 1980,
+    "measuredAt": "2026-10-21T19:53:26.519Z"
+  },
+  {
+    "candidateId": "men_in_black_international|movie|movie:479455|2019",
+    "url": "https://guiaprogramaciontv.com/peliculas/men-in-black-international",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 307,
+    "year": 2019,
+    "measuredAt": "2026-10-21T19:53:27.885Z"
+  },
+  {
+    "candidateId": "millennium_los_hombres_que_no_amaban_a_las_mujeres|movie|movie:65754|2011",
+    "url": "https://guiaprogramaciontv.com/peliculas/millennium-los-hombres-que-no-amaban-a-las-mujeres",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 500,
+    "year": 2011,
+    "measuredAt": "2026-10-21T19:53:29.524Z"
+  },
+  {
+    "candidateId": "morir_no_siempre_sale_bien|movie|movie:1447881|2026",
+    "url": "https://guiaprogramaciontv.com/peliculas/morir-no-siempre-sale-bien",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 376,
+    "year": 2026,
+    "measuredAt": "2026-10-21T19:53:31.183Z"
+  },
+  {
+    "candidateId": "mulleres_da_raia|movie|movie:671928|",
+    "url": "https://guiaprogramaciontv.com/peliculas/mulleres-da-raia",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 0,
+    "measuredAt": "2026-10-21T19:53:32.781Z"
+  },
+  {
+    "candidateId": "ninja_a_cuadros|movie|movie:523536|2018",
+    "url": "https://guiaprogramaciontv.com/peliculas/ninja-a-cuadros",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 124,
+    "year": 2018,
+    "measuredAt": "2026-10-21T19:53:34.404Z"
+  },
+  {
+    "candidateId": "objetivo_el_zar_rojo|movie|movie:269729|1989",
+    "url": "https://guiaprogramaciontv.com/peliculas/objetivo-el-zar-rojo",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 197,
+    "year": 1989,
+    "measuredAt": "2026-10-21T19:53:36.035Z"
+  },
+  {
+    "candidateId": "oro_en_barras|movie|movie:32961|1951",
+    "url": "https://guiaprogramaciontv.com/peliculas/oro-en-barras",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 393,
+    "year": 1951,
+    "measuredAt": "2026-10-21T19:53:37.667Z"
+  },
+  {
+    "candidateId": "pagando_por_ello|movie|movie:1298547|2025",
+    "url": "https://guiaprogramaciontv.com/peliculas/pagando-por-ello",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 254,
+    "year": 2025,
+    "measuredAt": "2026-10-21T19:53:39.414Z"
+  },
+  {
+    "candidateId": "pasos_de_baile|movie|movie:20689|2002",
+    "url": "https://guiaprogramaciontv.com/peliculas/pasos-de-baile",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 458,
+    "year": 2002,
+    "measuredAt": "2026-10-21T19:53:40.988Z"
+  },
+  {
+    "candidateId": "pecados_del_pasado|movie|movie:157079|2006",
+    "url": "https://guiaprogramaciontv.com/peliculas/pecados-del-pasado",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 314,
+    "year": 2006,
+    "measuredAt": "2026-10-21T19:53:42.708Z"
+  },
+  {
+    "candidateId": "persecucion_extrema|movie|movie:8975|2006",
+    "url": "https://guiaprogramaciontv.com/peliculas/persecucion-extrema",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 278,
+    "year": 2006,
+    "measuredAt": "2026-10-21T19:53:44.410Z"
+  },
+  {
+    "candidateId": "rey_arturo_la_leyenda_de_excalibur|movie|movie:274857|2017",
+    "url": "https://guiaprogramaciontv.com/peliculas/rey-arturo-la-leyenda-de-excalibur",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 404,
+    "year": 2017,
+    "measuredAt": "2026-10-21T19:53:46.021Z"
+  },
+  {
+    "candidateId": "satan_s_slaves_communion|movie|movie:925786|2022",
+    "url": "https://guiaprogramaciontv.com/peliculas/satans-slaves-communion",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 176,
+    "year": 2022,
+    "measuredAt": "2026-10-21T19:53:47.724Z"
+  },
+  {
+    "candidateId": "simbad_y_el_ojo_del_tigre|movie|movie:11940|1977",
+    "url": "https://guiaprogramaciontv.com/peliculas/simbad-y-el-ojo-del-tigre",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 485,
+    "year": 1977,
+    "measuredAt": "2026-10-21T19:53:49.331Z"
+  },
+  {
+    "candidateId": "somos_los_miller|movie|movie:138832|2013",
+    "url": "https://guiaprogramaciontv.com/peliculas/somos-los-miller",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 166,
+    "year": 2013,
+    "measuredAt": "2026-10-21T19:53:51.132Z"
+  },
+  {
+    "candidateId": "strange_darling|movie|movie:1029281|2024",
+    "url": "https://guiaprogramaciontv.com/peliculas/strange-darling",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 111,
+    "year": 2024,
+    "measuredAt": "2026-10-21T19:53:52.688Z"
+  },
+  {
+    "candidateId": "sueno_y_silencio|movie|movie:112751|2012",
+    "url": "https://guiaprogramaciontv.com/peliculas/sueno-y-silencio",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 125,
+    "year": 2012,
+    "measuredAt": "2026-10-21T19:53:54.535Z"
+  },
+  {
+    "candidateId": "suzhou_river|movie|movie:11599|2000",
+    "url": "https://guiaprogramaciontv.com/peliculas/suzhou-river",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 315,
+    "year": 2000,
+    "measuredAt": "2026-10-21T19:53:56.184Z"
+  },
+  {
+    "candidateId": "the_batman|movie|movie:414906|2022",
+    "url": "https://guiaprogramaciontv.com/peliculas/the-batman",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 450,
+    "year": 2022,
+    "measuredAt": "2026-10-21T19:53:57.754Z"
+  },
+  {
+    "candidateId": "the_south_to_sian_journals|movie|movie:1017822|2017",
+    "url": "https://guiaprogramaciontv.com/peliculas/the-south-to-sian-journals",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 443,
+    "year": 2017,
+    "measuredAt": "2026-10-21T19:53:59.518Z"
+  },
+  {
+    "candidateId": "tras_el_verano|movie|movie:1451288|2025",
+    "url": "https://guiaprogramaciontv.com/peliculas/tras-el-verano",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 211,
+    "year": 2025,
+    "measuredAt": "2026-10-21T19:54:01.363Z"
+  },
+  {
+    "candidateId": "tres_tejanos|movie|movie:154091|1949",
+    "url": "https://guiaprogramaciontv.com/peliculas/tres-tejanos",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 312,
+    "year": 1949,
+    "measuredAt": "2026-10-21T19:54:03.142Z"
+  },
+  {
+    "candidateId": "truhanes|movie|movie:161389|1983",
+    "url": "https://guiaprogramaciontv.com/peliculas/truhanes",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 429,
+    "year": 1983,
+    "measuredAt": "2026-10-21T19:54:05.230Z"
+  },
+  {
+    "candidateId": "un_doctor_en_la_campina|movie|movie:375950|2016",
+    "url": "https://guiaprogramaciontv.com/peliculas/un-doctor-en-la-campina",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 436,
+    "year": 2016,
+    "measuredAt": "2026-10-21T19:54:07.206Z"
+  },
+  {
+    "candidateId": "un_misterio_para_aurora_teagarden_perdiendo_la_cabeza|movie|movie:436398|2017",
+    "url": "https://guiaprogramaciontv.com/peliculas/un-misterio-para-aurora-teagarden-perdiendo-la-cabeza",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 198,
+    "year": 2017,
+    "measuredAt": "2026-10-21T19:54:09.202Z"
+  },
+  {
+    "candidateId": "un_mundo_perfecto|movie|movie:9559|1993",
+    "url": "https://guiaprogramaciontv.com/peliculas/un-mundo-perfecto",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 138,
+    "year": 1993,
+    "measuredAt": "2026-10-21T19:54:10.779Z"
+  },
+  {
+    "candidateId": "una_mujer_descasada|movie|movie:38731|1978",
+    "url": "https://guiaprogramaciontv.com/peliculas/una-mujer-descasada",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 329,
+    "year": 1978,
+    "measuredAt": "2026-10-21T19:54:12.504Z"
+  },
+  {
+    "candidateId": "venganza_en_las_vegas|movie|movie:1081620|2023",
+    "url": "https://guiaprogramaciontv.com/peliculas/venganza-en-las-vegas",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 350,
+    "year": 2023,
+    "measuredAt": "2026-10-21T19:54:14.282Z"
+  },
+  {
+    "candidateId": "viridiana|movie|movie:4497|1962",
+    "url": "https://guiaprogramaciontv.com/peliculas/viridiana",
+    "status": 200,
+    "robots": "noindex, follow",
+    "descriptionChars": 255,
+    "year": 1962,
+    "measuredAt": "2026-10-21T19:54:21.798Z"
+  },
+  {
+    "candidateId": "whistle_el_silbido_del_mal|movie|movie:1193501|2026",
+    "url": "https://guiaprogramaciontv.com/peliculas/whistle-el-silbido-del-mal",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 380,
+    "year": 2026,
+    "measuredAt": "2026-10-21T19:54:23.755Z"
+  },
+  {
+    "candidateId": "yo_capitan|movie|movie:937746|2023",
+    "url": "https://guiaprogramaciontv.com/peliculas/yo-capitan",
+    "status": 200,
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "descriptionChars": 221,
+    "year": 2023,
+    "measuredAt": "2026-10-21T19:54:25.505Z"
+  }
+]

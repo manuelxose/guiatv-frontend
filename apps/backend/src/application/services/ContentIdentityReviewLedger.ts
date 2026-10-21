@@ -23,6 +23,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { AUTO_CREATE, ERROR_CATEGORIES, REVIEW_COLUMNS, buildReviewRows, scoreReview, type ScoreGate } from './ContentIdentityAudit';
 import type { EvidenceVerdict } from './ContentIdentityEvidence';
 import type { IdentityTrace } from './ContentIdentityIngestion';
+import { canonicalJson } from '@/domain/services/contentCertification';
 import { ContentIdentityError, normalizeReviewerName } from './ContentIdentityService';
 
 export const GENESIS_HASH = '0'.repeat(64);
@@ -42,11 +43,7 @@ export type LedgerEntry = LedgerOpen | LedgerDecision;
 const sha = (text: string) => createHash('sha256').update(text).digest('hex');
 export const hashToken = (token: string) => sha(`guiatv-review\0${token}`);
 const bodyOf = ({ hash: _hash, ...rest }: LedgerEntry) => rest;
-/** JSON with sorted keys at every depth, so the hash covers nested labels and survives key reordering. */
-const canonical = (v: unknown): string =>
-  Array.isArray(v) ? `[${v.map(canonical).join(',')}]`
-    : v && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canonical((v as Record<string, unknown>)[k])}`).join(',')}}`
-      : JSON.stringify(v) ?? 'null';
+const canonical = canonicalJson;
 export const entryHash = (entry: Omit<LedgerEntry, 'hash'>) => sha(canonical(entry));
 export const sheetDigest = (rows: readonly Record<string, string>[]) => sha(rows.map((r) => `${r.candidate_id}|${r.strata}`).join('\n'));
 

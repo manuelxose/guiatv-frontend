@@ -8,6 +8,7 @@ import type {
   ContentSlugRecord,
   EntityTransition,
   IAiringEntityRefWriter,
+  IContentAttestationRepository,
   IContentEntityRepository,
   IContentSlugRepository,
   IContentTitleKeyRepository,
@@ -25,6 +26,8 @@ import {
   TitleKeyState,
   TmdbRef,
 } from '@/domain/services/contentIdentity';
+import type { AttestationRecord } from '@/domain/services/contentCertification';
+import { ContentAttestationModel } from '../database/models/ContentAttestation.model';
 import { ContentEntityModel } from '../database/models/ContentEntity.model';
 import { ContentSlugModel, IContentSlugDocument } from '../database/models/ContentSlug.model';
 import { ContentTitleKeyModel, IContentTitleKeyDocument } from '../database/models/ContentTitleKey.model';
@@ -173,6 +176,33 @@ export class MongoContentEntityRepository implements IContentEntityRepository {
     )
       .lean()
       .exec();
+    return stripMongo(doc);
+  }
+
+  async certify(
+    entityId: string,
+    change: { expectedVersion: number; matching: ContentEntityRecord['matching']; certification: NonNullable<ContentEntityRecord['certification']>; by: string; reason: string }
+  ): Promise<ContentEntityRecord | null> {
+    await assertIndexed(ContentEntityModel);
+    const doc = await ContentEntityModel.findOneAndUpdate(
+      // Only an independently supported candidate that still owns a canonical path can be certified.
+      { entityId, status: 'candidate', version: change.expectedVersion, 'matching.assurance': 'independently_supported', canonicalPath: { $exists: true }, certification: { $exists: false } },
+      { $set: { status: 'active', matching: change.matching, certification: change.certification, lifecycle: { changedAt: new Date(), changedBy: change.by, reason: change.reason } }, $inc: { version: 1 } },
+      { new: true }
+    ).lean().exec();
+    return stripMongo(doc);
+  }
+
+  async revokeCertification(
+    entityId: string,
+    change: { expectedVersion: number; attestationId: string; matching: ContentEntityRecord['matching']; by: string; reason: string }
+  ): Promise<ContentEntityRecord | null> {
+    await assertIndexed(ContentEntityModel);
+    const doc = await ContentEntityModel.findOneAndUpdate(
+      { entityId, status: 'active', version: change.expectedVersion, 'matching.method': 'ai_attested', 'certification.attestationId': change.attestationId },
+      { $set: { status: 'candidate', matching: change.matching, lifecycle: { changedAt: new Date(), changedBy: change.by, reason: change.reason } }, $unset: { certification: '' }, $inc: { version: 1 } },
+      { new: true }
+    ).lean().exec();
     return stripMongo(doc);
   }
 
@@ -504,4 +534,27 @@ export async function readRegistryRows() {
   const entities = await ContentEntityModel.find({}, { entityId: 1, kind: 1, status: 1, canonicalPath: 1, mergedInto: 1, _id: 0 }).limit(200_000).lean();
   const slugs = await ContentSlugModel.find({}, { entityId: 1, role: 1 }).limit(500_000).lean();
   return { entities, slugs: slugs.map((s) => ({ path: String(s._id), entityId: s.entityId, role: s.role })) };
+}
+
+export class MongoContentAttestationRepository implements IContentAttestationRepository {
+  async insert(record: AttestationRecord): Promise<InsertResult<AttestationRecord, 'seq_taken' | 'exists'>> {
+    await assertIndexed(ContentAttestationModel);
+    try {
+      await ContentAttestationModel.create({
+        entityId: record.entityId, seq: record.seq, type: record.body.type, attestationId: record.body.attestationId,
+        prevHash: record.prevHash, hash: record.hash, body: record.body,
+      });
+      return { inserted: true, record };
+    } catch (error) {
+      if (!duplicateKeyPattern(error)) throw error;
+      const chain = await this.listForEntity(record.entityId);
+      const same = chain.find((r) => r.body.type === record.body.type && r.body.attestationId === record.body.attestationId);
+      return same ? { inserted: false, conflict: 'exists', existing: same } : { inserted: false, conflict: 'seq_taken', existing: null };
+    }
+  }
+
+  async listForEntity(entityId: string): Promise<AttestationRecord[]> {
+    const docs = await ContentAttestationModel.find({ entityId }).sort({ seq: 1 }).limit(100).maxTimeMS(2000).lean().exec();
+    return docs.map((d) => ({ entityId: d.entityId, seq: d.seq, prevHash: d.prevHash, hash: d.hash, body: d.body }));
+  }
 }
