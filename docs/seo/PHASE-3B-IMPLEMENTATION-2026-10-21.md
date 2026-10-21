@@ -6,7 +6,7 @@ Four completion categories, kept apart:
 |---|---|
 | 1. Engineering | **Complete** (this PR): canary mechanism, canonical audit, reviewer ledger, quality criteria, gate fix. Scratch-MongoDB and unit tests pass |
 | 2. Data validation | **Partly complete**: fresh read-only replay of four production days done and deterministic; precision is **still not human-measured** |
-| 3. Human approval | **Done by AI under the owner's authorisation (§11)**: 360 labels, 99.7 % precision, 119 second-reviewer rows, gate **pass with basis `ai`**. It is `ai_reviewed`, never human-validated precision. (Originally 0 labels; see §4 for the tooling.) |
+| 3. Human approval | **Satisfied by the owner's declaration (§11, contract v1.3)**; the labels come from AI under the owner's authorisation: 360 labels, 99.7 % precision, 119 second-reviewer rows, gate **pass with basis `ai`**. It is `ai_reviewed`, never human-validated precision. (Originally 0 labels; see §4 for the tooling.) |
 | 4. Production activation | **Blocked, and not attempted.** Every `CONTENT_*` / public-read / `EPG_YEAR_PROVENANCE` flag is unset in production |
 
 ## 1. Fresh production replay (read-only)
@@ -201,6 +201,12 @@ The owner (manuelxose) authorised AI agents to perform the human review ("toda l
 **Limits, plainly.** (1) TMDB is the gate's source and the reviewers' main source: these labels measure coherence with TMDB (plus extra web checks for ambiguous titles), not TMDB's own errors. (2) Same-family models reviewing a pipeline they did not build are not equivalent to independent humans; raw agreement of 100 % on 118 rows says the sample is clean, not that the reviewers are independent. (3) The population is the gate-accepted identities (~516 of ~1,500 proposed per day), not the whole corpus. (4) Nothing here changes production: no flag was touched, no write run, and an AI-reviewed entity still cannot become publicly readable until a Phase 3C change decides how to attest it.
 
 Artefacts: `docs/seo/phase-3b/ai-review/` (ledgers, exports, README), `docs/seo/phase-3b/round2/` (evidence, canonical audits, baselines, replay inputs, sheet).
+
+## 12. Owner attestation and server status (2026-10-21, evening)
+
+**Owner attestation.** After the round-2 pass the owner declared the human-review requirement satisfied. Recorded as the owner's decision (contract v1.3); the evidence behind it is the AI review of §11, basis `ai`. Nothing else is implied: no flag, write run or publication was authorised by it.
+
+**Server incident.** After PR #45 deployed (release `20261021205747`), the Contabo VPS (`109.123.248.164`) stopped answering. Timeline (UTC): ~18:58 post-deploy checks passed (API `/health` 200, `/v2/entities/resolve` → `ENTITY_PUBLIC_READ_DISABLED`, no `CONTENT_*` names in `api.env`/`ssr.env`, database baseline identical: 40 collections / 272 indexes, no `content_*`); the home page answered 200 once through Cloudflare; ~19:00 onward `/`, `/sitemap.xml` and `/programacion-tv/peliculas` returned **522** and SSH timed out. At 19:08 and 19:16: ports 22 and 443 open nowhere, **100 % ping loss**, `curl` straight to the origin timed out. The signature (host unreachable, Cloudflare 522) is the same as the 2026-10-20 outage after PR #16. **Cause unknown**: the deploy had verified healthy minutes earlier, the timing coincides, and a host-level event cannot be excluded. Not diagnosable from here; recovery needs the owner (Contabo panel). After recovery, check memory pressure (the deploy builds on the server), `journalctl -b -1` for the previous boot, and re-run the post-deploy checks of §7/§8.
 
 ## 10. Proposed Phase 3C scope (not started)
 

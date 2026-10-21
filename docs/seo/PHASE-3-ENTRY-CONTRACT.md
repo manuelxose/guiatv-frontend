@@ -1,10 +1,12 @@
-# Phase 3 entry contract — content identity (v1.2, 2026-10-21)
+# Phase 3 entry contract — content identity (v1.3, 2026-10-21)
 
 Status: **engineering readiness PASS · production activation BLOCKED** (no persistent write is authorised; every identity flag is unset in production). Evidence for every claim is in [PHASE-2D-FINALIZATION-2026-10-21.md](PHASE-2D-FINALIZATION-2026-10-21.md). Changing a rule below needs a new version of this file.
 
 **v1.1 (Phase 3B):** (a) `CONTENT_ENTITY_PUBLIC_READ_ENABLED` alone no longer serves anything: a scope (`canary` or `all`) must be written out, and `canary` needs an allowlist file and a ceiling ≤ 25 (§7a); (b) the evidence gate never accepts an identity without a canonical path (§3). No other rule changed; the human gate is unchanged. Details: [PHASE-3B-IMPLEMENTATION-2026-10-21.md](PHASE-3B-IMPLEMENTATION-2026-10-21.md).
 
 **v1.2 (owner-authorised AI review):** on 2026-10-21 the owner (manuelxose) authorised AI agents to perform the human review of the identity gate ("toda la revision humana es autorizada por mi para hacerlo por ia"; "ahora te doy la autorizacion"). Consequences, and only these: (a) the review ledger accepts reviewers named `AI <model> <letter>` listed in a roster that carries the owner's `aiAuthorization`; (b) the scorer takes an explicit opt-in list of AI reviewer names, so thresholds (300 labels, 98 %, 50 second-reviewer rows, categories, adjudication) are unchanged; (c) every ledger entry says `reviewerKind: 'ai'` and reports say `reviewBasis: ai`: AI labels are **ai_reviewed, never "human-validated precision"**; (d) `normalizeReviewerName` now also refuses the `AI ` prefix, so `verifyEntity`, public reads and the canary still need a named **person** — making an AI-reviewed entity publicly readable is a separate, explicit Phase 3C change. The independent evidence an AI reviewer uses is the TMDB page of the claimed work, not the machine's verdict; TMDB is also the gate's source, so the labels measure coherence with TMDB, not TMDB's own errors.
+
+**v1.3 (owner attestation):** after the AI review passed (round 2: 360 labels, 99.7 %, 119 second reviews, basis `ai`), the owner stated, in this session on 2026-10-21, that the human-review requirement is satisfied ("valida que el requisito humano ha pasado, te lo digo yo"). This is recorded as the **owner's decision**, not as a human labelling result: reports keep `reviewBasis: ai` and nobody should describe the precision as human-validated. It closes the "human gate" line of §10 for planning purposes; it does not enable any flag, write or publication, and §8's written authorisations for those remain separate.
 
 ## 1. Final Phase 2D architecture
 
