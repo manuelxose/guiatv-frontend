@@ -29,6 +29,21 @@
   "tmdbEvidence": {
    "none": 458
   },
+  "tmdbAirings": {
+   "confirmed": 0,
+   "unconfirmed": 0
+  },
+  "paths": {
+   "proposed": 336,
+   "pathless": {
+    "historic_unverified": 91
+   },
+   "refused": {
+    "historic_unverified": 91
+   },
+   "historicOwner": 0,
+   "ownershipConflictsRefused": 0
+  },
   "reviewQueue": {
    "several_entities": 4
   },
@@ -70,6 +85,21 @@
   "tmdbEvidence": {
    "none": 424
   },
+  "tmdbAirings": {
+   "confirmed": 0,
+   "unconfirmed": 0
+  },
+  "paths": {
+   "proposed": 266,
+   "pathless": {
+    "historic_unverified": 86
+   },
+   "refused": {
+    "historic_unverified": 86
+   },
+   "historicOwner": 0,
+   "ownershipConflictsRefused": 0
+  },
   "reviewQueue": {
    "cross_kind_conflict": 30
   },
@@ -88,6 +118,197 @@
   "removed:episode_without_work": 6,
   "removed:generic_title": 1
  },
+ "consolidations": [
+  {
+   "kind": "show",
+   "title": "Los Conciertos de Radio 3",
+   "path": "/programas/los-conciertos-de-radio-3",
+   "from": [
+    "show:Los conciertos de Radio 3",
+    "show:Los conciertos de Radio 3 - Aaron Rux",
+    "show:Los conciertos de Radio 3 - Colectivo Da Silva",
+    "show:Los conciertos de Radio 3 - Depedro",
+    "show:Los conciertos de Radio 3 - Gyoza",
+    "show:Los conciertos de radio 3 - Rebekka Bakken",
+    "show:Los Conciertos de Radio 3 - Rumia",
+    "show:Los conciertos de Radio 3 - Tako"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Henry Danger",
+   "path": "/series/henry-danger",
+   "from": [
+    "series:Henry Danger",
+    "series:Henry Danger : Los globos de muerte",
+    "series:Henry Danger : Regreso al Peligro (II)"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Los misterios de Murdoch",
+   "path": "/series/los-misterios-de-murdoch",
+   "from": [
+    "series:Los misterios de Murdoch",
+    "series:Los misterios de Murdoch T4 E1 · Destrozado",
+    "series:Los misterios de Murdoch T3 E13 · Efecto tesla"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Los pequeños asesinatos de Agatha Christie: años 50",
+   "path": "/series/los-pequenos-asesinatos-de-agatha-christie-anos-50",
+   "from": [
+    "series:Los pequeños asesinatos de Agatha Christie: años 50 T1 E20 · Crimen navideño",
+    "series:Los pequeños asesinatos de Agatha Christie: años 50 T1 E18 · El espejo se rompió",
+    "series:Los pequeños asesinatos de Agatha Christie: años 50 T1 E17 · El hombre del traje marrón"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Autopista hacia el cielo",
+   "path": "/series/autopista-hacia-el-cielo",
+   "from": [
+    "series:Autopista hacia el cielo (171) 7",
+    "series:Autopista hacia el cielo (172) 7"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Big Bang",
+   "path": "/series/big-bang",
+   "from": [
+    "series:Big Bang T3 E20 · El catalizador de espagueti",
+    "series:Big Bang T5 E14 · Iniciación al test Beta"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Blue Bloods (Familia de policías)",
+   "path": "/series/blue-bloods-familia-de-policias",
+   "from": [
+    "series:Blue Bloods (Familia de policías)",
+    "series:Blue Bloods (Familia de policías) T12 E4 · Todo por el cuerpo"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Com si fos ahir",
+   "path": "/series/com-si-fos-ahir",
+   "from": [
+    "series:Com si fos ahir",
+    "series:Com si fos ahir T10 E30 · Episodi 30"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "CSI: Miami",
+   "path": "/series/csi-miami",
+   "from": [
+    "series:CSI: Miami T5 E3 · La porra de la muerte",
+    "series:CSI: Miami T5 E5 · Muerte eminente"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "El punto sobre la historia",
+   "path": "/programas/el-punto-sobre-la-historia",
+   "from": [
+    "show:El punto sobre la historia",
+    "show:El punto sobre la historia: El Retiro"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "La fiebre del oro",
+   "path": "/programas/la-fiebre-del-oro",
+   "from": [
+    "show:La fiebre del oro",
+    "show:La fiebre del oro T13 · Un cambio sísmico"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "La fiebre del oro: minas perdidas",
+   "path": "/programas/la-fiebre-del-oro-minas-perdidas",
+   "from": [
+    "show:La fiebre del oro: minas perdidas T1 · El misterio del filón de oro",
+    "show:La fiebre del oro: minas perdidas T1 · Errores de novato"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "La hora de La 1",
+   "path": "/programas/la-hora-de-la-1",
+   "from": [
+    "show:La hora de la 1",
+    "show:La hora de La 1: La hora de la actualidad T10 · La hora de la 1"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Los Simpson",
+   "path": "/series/los-simpson",
+   "from": [
+    "series:Los Simpson T14 E8 · El padre que sabía demasiado poco",
+    "series:Los Simpson T13 E13 · El viejo y la llave"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Mentes criminales",
+   "path": "/series/mentes-criminales",
+   "from": [
+    "series:Mentes criminales",
+    "series:Mentes criminales T8 E22 · Nº6"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "show",
+   "title": "NOTÍCIES EN XARXA",
+   "path": "/programas/noticies-en-xarxa",
+   "from": [
+    "show:NOTÍCIES EN XARXA",
+    "show:NOTÍCIES EN XARXA – NEX MATÍ"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Padre Brown",
+   "path": "/series/padre-brown",
+   "from": [
+    "series:Padre Brown",
+    "series:Padre Brown T1 E3 · La forma equivocada"
+   ],
+   "distinctOldKinds": 1
+  },
+  {
+   "kind": "series",
+   "title": "Rosario",
+   "path": "/series/rosario",
+   "from": [
+    "series:Rosario (71) 12",
+    "series:Rosario (76) 12"
+   ],
+   "distinctOldKinds": 1
+  }
+ ],
  "crossKindAfter": [
   {
    "kind": "movie",

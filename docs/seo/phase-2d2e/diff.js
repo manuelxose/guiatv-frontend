@@ -47,6 +47,15 @@ function metrics({ report, traces }) {
     unknownKindRate: candidates.filter((t) => t.kind === 'unknown').length / candidates.length,
     pathlessRate: created.length ? created.filter((t) => !t.path).length / created.length : null,
     tmdbEvidence: tally(candidates, (t) => t.tmdb.evidence),
+    tmdbAirings: report.tmdb,
+    paths: {
+      proposed: created.filter((t) => t.path).length,
+      pathless: tally(created.filter((t) => !t.path), (t) => t.pathless ?? 'none'),
+      refused: report.slugs?.refused ?? {},
+      historicOwner: created.filter((t) => t.historicOwner).length,
+      /** Refusals because another legacy work owns the slug (`planCanonicalPaths`): conflicts avoided, never allocated. */
+      ownershipConflictsRefused: (report.slugs?.refused?.historic_conflict ?? 0) + (report.slugs?.refused?.historic_ambiguous ?? 0),
+    },
     reviewQueue: tally(candidates.filter((t) => t.decision === 'review' || t.decision === 'held'), (t) => t.reason ?? t.state),
     unresolved: tally(candidates.filter((t) => t.decision === 'unresolved'), (t) => t.reason ?? 'unknown_kind'),
   };
@@ -84,6 +93,15 @@ const out = {
   before: metrics(before),
   after: metrics(after),
   fates: tally(decisions, (d) => d.fate),
+  /** Every new entity that absorbs several old proposals: the place to look for false merges (human check). */
+  consolidations: [...sharers]
+    .filter(([, olds]) => olds.length > 1)
+    .map(([newId, olds]) => {
+      const n = after.traces.find((t) => id(t) === newId);
+      const from = olds.map((o) => before.traces.find((t) => id(t) === o));
+      return { kind: n.kind, title: n.title, path: n.path ?? null, from: from.map((t) => `${t.kind}:${t.title}`), distinctOldKinds: new Set(from.map((t) => t.kind)).size };
+    })
+    .sort((a, b) => b.from.length - a.from.length || a.title.localeCompare(b.title)),
   crossKindAfter: after.traces.filter((t) => t.reason === 'cross_kind_conflict' || t.crossKind).map((t) => ({ kind: t.kind, title: t.title, decision: t.decision, crossKind: t.crossKind, tmdb: t.tmdb.evidence })),
   decisions,
 };

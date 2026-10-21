@@ -162,6 +162,8 @@ node docs/seo/phase-2d2e/diff.js traces-before.jsonl traces-after.jsonl > docs/s
 CONTENT_IDENTITY_MAX_CREATES=100000 node dist/scripts/content-identity.js shadow 20261020 --sample 25 --precision-sample 300 --seed 2d2e-20261020 --out <dir>
 ```
 
+**Superseded by the runbook in §15** (`phase-2d2e/run-replay.sh`), which wraps these commands with every safeguard.
+
 Expected cost, from the 2D-2D runs: about 200 reads, about 185 MB, about 10 s per run. `diff.js` reports:
 - candidates and creations by kind;
 - machine-flagged (episode-level) proposals;
@@ -245,4 +247,75 @@ The definition of done is met on the evidence available here: episode duplicatio
 | `docs/seo/phase-2d2e/trace-dump.js` | read-only full trace dump of one day, for either build (guard first) |
 | `docs/seo/phase-2d2e/diff.js` | machine-readable before/after diff of two dumps |
 | `docs/seo/phase-2d2e/replay-scratch-sample-20261020-diff.json` | scratch replay diff (§8.2), every old proposal's fate |
+| `docs/seo/phase-2d2e/run-replay.sh` | owner-run full-day replay: baseline before/after, both trace dumps, new-seed sheet (§15) |
+| `docs/seo/phase-2d2e/baseline.js` | read-only `mongosh` counts: collections, indexes, `content_*`, airing indexes, entity/path refs |
+| `docs/seo/phase-2d2e/check-sample.js` | representativeness of a sheet's auto-create sample (exit 2 if not) |
 | `docs/seo/phase-2d2d/*` | unchanged: the 2D-2D sheet, sample and flags, kept for comparison |
+
+## 15. Final read-only replay: owner-run (2026-10-21, second session)
+
+**Status: not run by Claude.** The owner authorised a bounded read-only replay, baseline checks and the new-seed sheet. In this session the auto-mode classifier still refused the first command (a read-only `mongosh` count over SSH) as a production read. As instructed, nothing was worked around. The replay is packaged so the owner can run it in one step.
+
+**PR status [V]:**
+- **#37:** open, CLEAN, CI `verify` and `ssr-resilience` green. Safety review: it changes only `ContentIdentity*`, `scripts/content-identity.ts`, `scripts/readOnlyGuard.ts`, tests and docs. It adds no route, controller, HTTP surface, environment default or index. The only write and DDL tokens are the guard's deny-list and its own test. **Ready to merge** (owner's decision; merging deploys, and every flag stays unset).
+- **#38:** open, based on #37's branch. CI green on `1d0efd8` (`verify` 4m13s, `ssr-resilience`). After #37 merges: `gh pr edit 38 --base main`, check that the diff lists only the 2D-2E files, and re-run CI.
+
+**The runbook (`run-replay.sh`), checked by a dry run [V].** The exact script was run locally against the scratch `mongod` with the two builds below. Each step and its safeguard:
+- **Flags:** every `CONTENT_*` variable is removed from the process environment. The dry run's env file set `CONTENT_IDENTITY_SHADOW=true` to check this.
+- **Connections:** pool of 2, minimum 0.
+- **Resources:** each node run gets `systemd-run --scope -p MemoryMax=1200M --nice=10`, `timeout 600` and `--max-old-space-size=1024`.
+- **Read-only guard** (`installReadOnlyGuard`, first in every process): mongoose `autoIndex` and `autoCreate` off, command monitoring forced on, exit 97 before any write, DDL or `$out`/`$merge` is sent.
+- **Order:**
+  1. `baseline.js` before the runs;
+  2. API `/health` probe;
+  3. two trace dumps (2D-2D and 2D-2E builds);
+  4. new-seed sheet (`--seed 2d2e-20261020`, 300 + 25 per class);
+  5. `/health` probe again;
+  6. `baseline.js` after the runs, compared field by field (anything other than `identical` exits 3);
+  7. guard trip check.
+- **Untouched:** no service, release, configuration or file outside `/tmp/guiatv-2d2e`, and no restart.
+- **Dry-run result:** 9 read commands per run, 0 writes, baseline identical, guard not tripped, sheet written. `check-sample.js` reported the sample representative (kind and path shares inside the exact 95% CIs).
+
+**Bundle:** `guiatv-2d2e-bundle.tgz`, 1.9 MB, sha256 `0e6d81f4cf468521e3a75cd890b912fad4b25c88a3d5941415aa2fd0ef6c11d3`. It contains:
+- `before/apps/backend/dist`, built from `14dce35` (2D-2D);
+- `after/apps/backend/dist`, built from `1d0efd8` (2D-2E);
+- `run-replay.sh`, `trace-dump.js` and `baseline.js`.
+
+Neither build adds a dependency, so the script links the release's `node_modules`.
+
+**Owner commands:**
+
+```sh
+scp guiatv-2d2e-bundle.tgz contabo:/tmp/ && ssh contabo 'cd /tmp && sha256sum guiatv-2d2e-bundle.tgz && tar xzf guiatv-2d2e-bundle.tgz && bash /tmp/guiatv-2d2e/run-replay.sh'
+scp -r contabo:/tmp/guiatv-2d2e/'{traces-before.jsonl,traces-after.jsonl,sheet,baseline-before.json,baseline-after.json,shadow-report.json}' /tmp/guiatv-2d2e-out/
+# locally, in apps/backend after npm run build:
+node ../../docs/seo/phase-2d2e/diff.js /tmp/guiatv-2d2e-out/traces-before.jsonl /tmp/guiatv-2d2e-out/traces-after.jsonl > ../../docs/seo/phase-2d2e/diff-20261020.json
+node ../../docs/seo/phase-2d2e/check-sample.js /tmp/guiatv-2d2e-out/sheet/identity-20261020-2d2e-20261020-sample.json /tmp/guiatv-2d2e-out/sheet/identity-20261020-2d2e-20261020-review.csv
+cp /tmp/guiatv-2d2e-out/sheet/* ../../docs/seo/phase-2d2e/
+ssh contabo 'rm -r /tmp/guiatv-2d2e /tmp/guiatv-2d2e-bundle.tgz'   # afterwards
+```
+
+**What `diff-20261020.json` answers:**
+
+| Question | Field |
+|---|---|
+| Candidate titles | `before/after.candidates` |
+| Proposed entities | `.created`, `.createdByKind` |
+| Episode-level proposals | `.machineFlagged`, `.machineFlags` |
+| Cross-kind duplicates | `.crossKindSplits`, `.crossKindSplitsWithTwoPaths` |
+| Unresolved / manual review | `.unresolved`, `.reviewQueue` |
+| Excluded slots and episode-only titles | `.excluded` |
+| TMDB confirmed/rejected | `.tmdbAirings`, `.tmdbEvidence` |
+| Paths proposed, refused, pathless; historic owner | `.paths` |
+| Canonical ownership conflicts | `.canonicalCollisions` (two proposals, one path) and `.paths.ownershipConflictsRefused` (legacy owner, refused) |
+| Decision differences | `fates` and `decisions` (each old proposal) |
+| Potential false merges | `consolidations`: every new entity that absorbs several old proposals, with their titles. Each must be checked by a person; machine output is not a label |
+
+**Human review**, after the sheet is copied into the repo:
+1. Label all 300 `auto_create` rows in `identity-20261020-2d2e-20261020-review.csv` (§9 columns; `error_category` on every `n`).
+2. Label the high-risk strata, including `episode_normalized`, `title_uncertain`, `cross_kind_conflict` and `generic_slot`.
+3. A second person labels a copy of at least 50 `auto_create` rows without seeing the first labels.
+4. Settle disagreements with notes such as "adjudicated identity_ok: …".
+5. Run `node dist/scripts/content-identity.js score <primary.csv> --verify <second.csv>`. Exit 0 means the gate passed.
+
+**Decision: production writes NO-GO.** No full-day metrics have been measured yet, and no human-labelled sample exists. The write canary is not to be started.
