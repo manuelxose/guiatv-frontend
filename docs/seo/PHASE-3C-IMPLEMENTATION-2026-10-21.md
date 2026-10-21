@@ -191,7 +191,7 @@ Evidence kept as found (§12 of the 3B report): two abrupt outages, the previous
 | Deploy script sandbox (`npm run test:deploy`) | PASS: history rewrite, rollback on smoke failure, lock, memory guard, already-live, docs-only, `FORCE_DEPLOY`, artifact (corrupt / wrong commit / valid), ops rollback. Checked for sensitivity: removing the lock or the docs-only rule makes it fail |
 | Ops scripts (`npm run test:ops`) | 13 pass: uptime probe, post-boot parsers, workflow guarantees (no activation flag in any workflow, docs never deploy, probe is off-host and read-only, artifact deploy is manual, actions pinned) |
 | SSR cache/canonical/canary-verify scripts | 15 pass; frontend source unchanged in 3C |
-| CI on the PR | {{CI}} |
+| CI on PR #47 (head after the last fix) | `verify` pass (4 m 58 s: lint, backend tests on MongoDB 8, deploy sandbox, ops tests, frontend Karma, production build with budgets), `ssr-resilience` pass (1 m 15 s), `live-crawl` skipped by design. One earlier run failed on a race in the sandbox test (the lock holder's `sleep` outlived `kill`), fixed in the test, not the script |
 
 ## 9. Remaining operational risks
 
