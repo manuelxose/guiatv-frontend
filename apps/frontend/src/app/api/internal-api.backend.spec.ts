@@ -1,6 +1,6 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { FetchBackend, HttpErrorResponse, HttpEventType, HttpHeaders, HttpParams, HttpRequest } from '@angular/common/http';
-import { NEVER, of, startWith } from 'rxjs';
+import { TestBed } from '@angular/core/testing';
+import { FetchBackend, HttpErrorResponse, HttpHeaders, HttpParams, HttpRequest } from '@angular/common/http';
+import { firstValueFrom, of } from 'rxjs';
 import { InternalApiBackend, SSR_API_TIMEOUT_MS, toInternalApiUrl } from './internal-api.backend';
 
 const INTERNAL = 'http://127.0.0.1:4000';
@@ -62,26 +62,48 @@ describe('InternalApiBackend', () => {
     expect(sent[0].headers.get('Accept')).toBe('application/json');
     expect(sent[0].headers.has('Cookie')).toBeFalse();
     expect(sent[1].url).toBe('http://127.0.0.1:4000/v2/affiliate/resolve');
+    expect(sent[1].method).toBe('POST');
     expect(sent[1].body).toEqual({ id: 1 });
-    expect(sent[2]).toBe(write);
+    expect(sent[2].url).toBe(write.url);
+    expect(sent[2].method).toBe('POST');
+    expect(sent[2].body).toBe(write.body);
   });
 
-  // 2D-2C.2: a dependency that never answers used to hold the render until the 20 s SSR timeout (503).
-  it('fails a stalled request with a 504 after SSR_API_TIMEOUT_MS, and lets a prompt one through', fakeAsync(() => {
+  it('caps every request at SSR_API_TIMEOUT_MS of total time, keeping a shorter caller timeout', () => {
     TestBed.configureTestingModule({ providers: [InternalApiBackend] });
-    const stalled = spyOn(FetchBackend.prototype, 'handle').and.returnValue(NEVER.pipe(startWith({ type: HttpEventType.Sent })) as any);
+    const sent: HttpRequest<unknown>[] = [];
+    spyOn(FetchBackend.prototype, 'handle').and.callFake((req: HttpRequest<unknown>) => {
+      sent.push(req);
+      return of();
+    });
     const backend = TestBed.inject(InternalApiBackend);
-    let error: HttpErrorResponse | undefined;
-    backend.handle(new HttpRequest('GET', 'https://guiaprogramaciontv.com/v2/catalog')).subscribe({ error: (e) => (error = e) });
-    tick(SSR_API_TIMEOUT_MS - 1);
-    expect(error).toBeUndefined();
-    tick(1);
-    expect(error?.status).toBe(504);
-    expect(error?.url).toBe('http://127.0.0.1:4000/v2/catalog');
+    backend.handle(new HttpRequest('GET', 'https://guiaprogramaciontv.com/v2/a'));
+    backend.handle(new HttpRequest('GET', 'https://guiaprogramaciontv.com/v2/b', { timeout: 1000 }));
+    backend.handle(new HttpRequest('GET', 'https://guiaprogramaciontv.com/v2/c', { timeout: 60_000 }));
+    backend.handle(new HttpRequest('GET', 'https://api.themoviedb.org/3/movie/1'));
+    expect(sent.map((r) => r.timeout)).toEqual([SSR_API_TIMEOUT_MS, 1000, SSR_API_TIMEOUT_MS, SSR_API_TIMEOUT_MS]);
+  });
 
-    stalled.and.returnValue(of({ type: HttpEventType.Sent }) as any);
-    let completed = false;
-    backend.handle(new HttpRequest('GET', 'https://guiaprogramaciontv.com/v2/x')).subscribe({ complete: () => (completed = true) });
-    expect(completed).toBeTrue();
-  }));
+  // 2D-2C.2: a dependency that never answers used to hold the render until the 20 s SSR timeout (503). The real
+  // FetchBackend enforces the timeout: it aborts the fetch itself and errors, however the response trickles in.
+  it('aborts a stalled fetch and fails with a TimeoutError once the timeout elapses', async () => {
+    TestBed.configureTestingModule({ providers: [InternalApiBackend] });
+    let signal: AbortSignal | undefined;
+    spyOn(globalThis, 'fetch').and.callFake((_url: RequestInfo | URL, init?: RequestInit) => {
+      signal = init?.signal ?? undefined;
+      return new Promise<Response>((_resolve, reject) => signal?.addEventListener('abort', () => reject(signal?.reason)));
+    });
+    const backend = TestBed.inject(InternalApiBackend);
+    const started = Date.now();
+    const error = await firstValueFrom(
+      backend.handle(new HttpRequest('GET', 'https://guiaprogramaciontv.com/v2/catalog', { timeout: 50 }))
+    ).then(
+      () => undefined,
+      (e: HttpErrorResponse) => e
+    );
+    expect(error instanceof HttpErrorResponse).toBeTrue();
+    expect(error?.error?.name).toBe('TimeoutError');
+    expect(signal?.aborted).toBeTrue();
+    expect(Date.now() - started).toBeLessThan(2000);
+  });
 });

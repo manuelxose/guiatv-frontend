@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { FetchBackend, HttpErrorResponse, HttpEvent, HttpRequest } from '@angular/common/http';
-import { Observable, throwError, timeout } from 'rxjs';
+import { FetchBackend, HttpEvent, HttpRequest } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 /**
  * Hostnames the SSR server accepts (`SSR_ALLOWED_HOSTS` in scripts/ssr-server.mjs). Angular resolves a relative
@@ -16,9 +16,11 @@ const SITE_HOSTNAMES = new Set(['guiaprogramaciontv.com', 'www.guiaprogramaciont
 export const READ_SHAPED_POSTS = new Set(['/v2/affiliate/resolve']);
 
 /**
- * Cap per SSR API request. The whole render has 20 s (SSR_TIMEOUT_MS in scripts/ssr-server.mjs) and the deepest page
- * chains three calls, so one stalled dependency can no longer use it all. A timeout surfaces as an HTTP 504 error:
- * optional sections already fall back to empty, required data still turns the page into a 503.
+ * Total-duration cap per SSR API request. The whole render has 20 s (SSR_TIMEOUT_MS in scripts/ssr-server.mjs) and
+ * the deepest page chains three calls, so one stalled dependency can no longer use it all. Enforced by FetchBackend's
+ * own `timeout`: measured from the start (headers and body), it aborts the fetch and fails the request with an
+ * HttpErrorResponse (status 0, TimeoutError). Optional sections already fall back to empty; required data still turns
+ * the page into a 503. A shorter timeout set by the caller is kept.
  */
 export const SSR_API_TIMEOUT_MS = 6000;
 
@@ -61,14 +63,8 @@ export function toInternalApiUrl(url: string, method: string, internalOrigin = I
 @Injectable()
 export class InternalApiBackend extends FetchBackend {
   override handle(req: HttpRequest<unknown>): Observable<HttpEvent<unknown>> {
-    const url = toInternalApiUrl(req.url, req.method);
-    const target = url ? req.clone({ url }) : req;
-    return super.handle(target).pipe(
-      timeout({
-        each: SSR_API_TIMEOUT_MS,
-        with: () =>
-          throwError(() => new HttpErrorResponse({ status: 504, statusText: 'SSR API timeout', url: target.urlWithParams })),
-      })
-    );
+    const url = toInternalApiUrl(req.url, req.method) ?? req.url;
+    const timeout = Math.min(req.timeout || SSR_API_TIMEOUT_MS, SSR_API_TIMEOUT_MS);
+    return super.handle(req.clone({ url, timeout }));
   }
 }

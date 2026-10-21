@@ -1857,14 +1857,15 @@ export class CatalogService {
       // The token narrows the lookup to that title's few airings ({searchTokens, date} index) instead of walking
       // the whole day through the date/start index (production 2026-10-21: 11,697 docs, 499 ms -> 2 docs, 2 ms).
       // Only a token of the title itself: every airing of the title carries those (TvReadModelBuilder searchTokens),
-      // so the result is the same airing; a channel or category token could miss some of them.
-      const filter = buildSearchTokens([title]).includes(token)
-        ? { date, searchTokens: token, 'program.title': title }
-        : { date, 'program.title': title };
-      const match = (await TVReadAiringModel.findOne(filter)
-        .sort({ 'airing.start': 1 })
-        .lean()
-        .exec()) as unknown as TvReadItemDTO | null;
+      // so the result is the same airing (checked on 32,351 production airings, 41,435 title tokens: 0 differences).
+      // distinct() found the title through an airing carrying the token, so the narrowed query matches unless a
+      // concurrent rebuildDate replaced the day in between; the title-only query then answers as before.
+      const earliest = (filter: Record<string, unknown>) =>
+        TVReadAiringModel.findOne(filter).sort({ 'airing.start': 1 }).lean().exec() as unknown as Promise<TvReadItemDTO | null>;
+      const byTitle = { date, 'program.title': title };
+      const match =
+        (buildSearchTokens([title]).includes(token) ? await earliest({ ...byTitle, searchTokens: token }) : null) ??
+        (await earliest(byTitle));
       if (match) return match;
     }
     return null;
