@@ -17,6 +17,7 @@ import type {
 } from '@/domain/repositories/IContentIdentityRepository';
 import {
   ContentKind,
+  HistoricWork,
   legacyCatalogSlugs,
   TITLE_KEY_STATES,
   titleIdentityKey,
@@ -367,6 +368,18 @@ export class MongoContentTitleKeyRepository implements IContentTitleKeyRepositor
     return res.modifiedCount === 1;
   }
 
+  async flagClaimConflict(id: string, change: { entityId: string; candidates: string[]; by: string }): Promise<boolean> {
+    await assertIndexed(ContentTitleKeyModel);
+    const res = await ContentTitleKeyModel.updateOne(
+      { _id: id, state: 'candidate', entityId: change.entityId },
+      {
+        $set: { state: 'manual_review', reason: 'claim_conflict', candidates: change.candidates, decidedBy: change.by },
+        $unset: { entityId: 1 },
+      }
+    ).exec();
+    return res.modifiedCount === 1;
+  }
+
   async listReviewQueue(limit: number): Promise<TitleKeyRecord[]> {
     const docs = await ContentTitleKeyModel.find({ state: { $in: ['ambiguous', 'manual_review'] } })
       .sort({ lastSeenAt: -1 })
@@ -391,11 +404,10 @@ const parseYear = (value: unknown): number | undefined => {
   return year >= 1888 && year <= 2100 ? year : undefined;
 };
 
-const HISTORIC_SLUGS_TTL_MS = 6 * 60 * 60_000;
+/** One legacy-title scan at a time per process: parallel rebuilds queue instead of each holding a scan. */
+let historicScan: Promise<unknown> = Promise.resolve();
 
 export class MongoIdentityEvidenceSource implements IIdentityEvidenceSource {
-  private historic: { at: number; map: Map<string, Set<string>[]> } | null = null;
-
   async catalogEntries(mediaIds: string[], tmdbIds: number[]): Promise<CatalogEvidence[]> {
     const ids = [...new Set(mediaIds)].filter((id) => /^[0-9a-f]{24}$/i.test(id));
     const or: Record<string, unknown>[] = [];
@@ -415,27 +427,38 @@ export class MongoIdentityEvidenceSource implements IIdentityEvidenceSource {
   }
 
   /**
-   * ponytail: rebuilt in memory from every brand title (~150k in production) and catalogue title
-   * (~17k) every 6 h; memory at that scale is unmeasured (2D-2 §J). Upgrade path: store the legacy
-   * slugs on tv_program_brands and query by slug instead.
+   * Streams every brand title (~150k in production) and catalogue title (~17k) and keeps only the
+   * works that answer a requested slug, so memory is bounded by the request, not by the
+   * collections (2D-2 §O.4: a full in-memory index held 110 MB of heap at that scale).
+   * ponytail: one full scan per call (~1 s at 168k titles). Upgrade path: store the legacy slugs on
+   * tv_program_brands with an index and query them by `$in`.
    */
-  async historicSlugOwners(): Promise<ReadonlyMap<string, ReadonlyArray<ReadonlySet<string>>>> {
-    if (this.historic && Date.now() - this.historic.at < HISTORIC_SLUGS_TTL_MS) return this.historic.map;
-    const map = new Map<string, Set<string>[]>();
-    const add = (titles: Array<string | undefined>) => {
+  historicSlugOwners(slugs: string[]): Promise<ReadonlyMap<string, readonly HistoricWork[]>> {
+    const run = historicScan.then(() => this.scanHistoric(new Set(slugs)));
+    historicScan = run.catch(() => undefined);
+    return run;
+  }
+
+  private async scanHistoric(wanted: ReadonlySet<string>): Promise<Map<string, HistoricWork[]>> {
+    const map = new Map<string, HistoricWork[]>();
+    if (!wanted.size) return map;
+    const add = (titles: Array<string | undefined>, work: Omit<HistoricWork, 'keys'> = {}) => {
+      const slugs = titles.flatMap((t) => (t ? legacyCatalogSlugs(t) : [])).filter((slug) => wanted.has(slug));
+      if (!slugs.length) return;
       const keys = new Set(titles.map((t) => titleIdentityKey(t)).filter((k): k is string => Boolean(k)));
-      if (!keys.size) return;
-      for (const slug of new Set(titles.flatMap((t) => (t ? legacyCatalogSlugs(t) : [])))) {
-        const owners = map.get(slug) ?? [];
-        owners.push(keys);
-        map.set(slug, owners);
-      }
+      for (const slug of new Set(slugs)) map.set(slug, [...(map.get(slug) ?? []), { keys, ...work }]);
     };
-    for await (const doc of TVProgramBrandModel.find({}, { title: 1 }).lean().cursor()) add([(doc as any).title]);
-    for await (const doc of MediaCatalogModel.find({}, { title: 1, originalTitle: 1 }).lean().cursor()) {
-      add([(doc as any).title, (doc as any).originalTitle]);
+    for await (const doc of TVProgramBrandModel.find({}, { _id: 0, title: 1 }).lean().batchSize(1000).cursor()) {
+      add([(doc as any).title]);
     }
-    this.historic = { at: Date.now(), map };
+    const catalog = MediaCatalogModel.find({}, { _id: 0, title: 1, originalTitle: 1, tmdbId: 1, tmdbType: 1, year: 1 }).lean().batchSize(1000);
+    for await (const doc of catalog.cursor()) {
+      const d = doc as any;
+      add([d.title, d.originalTitle], {
+        tmdb: d.tmdbId && (d.tmdbType === 'movie' || d.tmdbType === 'tv') ? { type: d.tmdbType, id: d.tmdbId } : undefined,
+        year: parseYear(d.year),
+      });
+    }
     return map;
   }
 }

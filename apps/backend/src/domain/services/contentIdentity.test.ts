@@ -13,6 +13,8 @@ import {
   mayBeIndexable,
   newEntityId,
   normalizeContentPath,
+  HistoricWork,
+  planCanonicalPaths,
   TitleKeyRow,
   titleIdentityKey,
   titleKeyId,
@@ -339,6 +341,79 @@ test('2D-2 unknown kind never creates or binds; it waits for review with evidenc
   assert.equal(decideIngestionMatch(input, [row({ key: 'fargo', kind: 'unknown', discriminator: '*', entityId: E2 })]).decision, 'matched');
   const rejected = row({ key: 'fargo', kind: 'series', discriminator: '*', state: 'rejected' });
   assert.equal(decideIngestionMatch({ ...input, kind: 'series' }, [rejected]).decision, 'held');
+});
+
+test('2D-2 rejected title: a later sighting with a year or TMDB id goes to review, not to a new entity', () => {
+  const rejected = row({ key: 'mi_casa', kind: 'movie', discriminator: '*', state: 'rejected', entityId: undefined, method: 'manual' });
+  const withYear = decideIngestionMatch({ title: 'Mi casa', kind: 'movie', year: 2001, method: 'title', confidence: 0.8 }, [rejected]);
+  assert.equal(withYear.decision, 'review');
+  assert.equal(withYear.decision === 'review' && withYear.row.reason, 'rejected_title');
+  const withTmdb = decideIngestionMatch({ title: 'Mi casa', kind: 'movie', tmdb: { type: 'movie', id: 7 }, method: 'tmdb_exact', confidence: 0.9 }, [rejected]);
+  assert.equal(withTmdb.decision === 'review' && withTmdb.row.reason, 'rejected_title');
+  // The same title as another kind is another identity, and the exact rejected row stays held.
+  assert.equal(decideIngestionMatch({ title: 'Mi casa', kind: 'show', method: 'title', confidence: 0.8 }, [rejected]).decision, 'create');
+  assert.equal(decideIngestionMatch({ title: 'Mi casa', kind: 'movie', method: 'title', confidence: 0.8 }, [rejected]).decision, 'held');
+  // A rating line in the title field is not a work.
+  assert.equal(isGenericContentTitle('★6.8/10'), true);
+  assert.equal(isGenericContentTitle('9-1-1'), false);
+});
+
+test('2D-2 path ownership: evidence decides, never arrival order', () => {
+  const works: Record<string, HistoricWork[]> = {
+    cenicienta: [
+      { keys: new Set(['la_cenicienta', 'cenicienta']), tmdb: { type: 'movie', id: 11224 }, year: 1950 },
+      { keys: new Set(['cenicienta']), tmdb: { type: 'movie', id: 150689 }, year: 2015 },
+      { keys: new Set(['cenicienta']) },
+    ],
+    fargo: [
+      { keys: new Set(['fargo']), tmdb: { type: 'movie', id: 275 }, year: 1996 },
+      { keys: new Set(['fargo']), tmdb: { type: 'tv', id: 60622 }, year: 2014 },
+    ],
+    no: [{ keys: new Set(['noe']) }, { keys: new Set(['no']) }],
+    'espejo-publico': [{ keys: new Set(['espejo_publico']) }],
+  };
+  const ownersOf = (slug: string) => works[slug] ?? [];
+  const film = (title: string, year?: number, id?: number) =>
+    planCanonicalPaths({ kind: 'movie', title, year, externalIds: id ? { tmdb: { type: 'movie', id } } : {} }, ownersOf);
+
+  // Remakes: two TMDB works answer the bare slug, so neither takes it; each gets its year path.
+  const c1950 = film('Cenicienta', 1950, 11224);
+  const c2015 = film('Cenicienta', 2015, 150689);
+  assert.deepEqual([c1950.paths, c1950.blocked], [['/peliculas/cenicienta-1950'], ['historic_ambiguous']]);
+  assert.deepEqual([c2015.paths, c2015.blocked], [['/peliculas/cenicienta-2015'], ['historic_ambiguous']]);
+  // A title-only remake proves nothing: no bare slug, and no year path a TMDB work of that year answers.
+  assert.deepEqual(film('Cenicienta', 2021).paths, ['/peliculas/cenicienta-2021']);
+  assert.deepEqual(film('Cenicienta', 1950).blocked, ['historic_ambiguous', 'historic_unverified']);
+  assert.deepEqual(film('Cenicienta').paths, []);
+  assert.deepEqual(film('Película nueva sin ficha').blocked, ['historic_unverified'], 'title-only film: bare slug never automatic');
+  assert.deepEqual(film('Película nueva sin ficha', 2020).paths, ['/peliculas/pelicula-nueva-sin-ficha-2020']);
+  // A TMDB work the evidence doesn't name can't take a slug another TMDB work answers.
+  assert.deepEqual(film('Cenicienta', 2015, 999).paths, []);
+
+  // Prefix-aware: the film owns /peliculas/fargo, the series /series/fargo, whatever arrives first.
+  assert.deepEqual(film('Fargo', 1996, 275).paths, ['/peliculas/fargo', '/peliculas/fargo-1996']);
+  const series = planCanonicalPaths({ kind: 'series', title: 'Fargo', year: 2014, externalIds: { tmdb: { type: 'tv', id: 60622 } } }, ownersOf);
+  assert.deepEqual(series.paths, ['/series/fargo', '/series/fargo-2014']);
+  assert.deepEqual(series.historic, ['/series/fargo'], 'a legacy title of the same work answered it: verified owner');
+  const titleOnlySeries = planCanonicalPaths({ kind: 'series', title: 'Fargo', externalIds: {} }, ownersOf);
+  assert.deepEqual(titleOnlySeries.blocked, ['historic_unverified'], 'a TMDB series answers it; the title-only one may be a duplicate');
+
+  const show = (title: string) => planCanonicalPaths({ kind: 'show', title, externalIds: {} }, ownersOf);
+  assert.deepEqual(show('No').blocked, ['historic_conflict']);
+  assert.deepEqual([show('Espejo Público').paths, show('Espejo Público').historic], [['/programas/espejo-publico'], ['/programas/espejo-publico']]);
+  assert.deepEqual(show('Programa sin historia').historic, []);
+  // 2C inventory: a legacy URL planned as a 301 or left to prefix review is never allocated.
+  assert.deepEqual(show('Espacio Innovación').paths, ['/programas/espacio-innovacion']);
+  assert.deepEqual(show('Rizzoli & Isles').paths, ['/programas/rizzoli-isles'], 'its historic URL, not accent damage');
+  assert.deepEqual(show('Modern Family').blocked, ['inventory_review']);
+  assert.deepEqual(planCanonicalPaths({ kind: 'series', title: 'La Promesa T1 E929', externalIds: {} }, ownersOf).blocked, ['inventory_review']);
+  assert.deepEqual(planCanonicalPaths({ kind: 'movie', title: '300', year: 2007, externalIds: {} }, ownersOf).blocked, ['unsupported_slug']);
+  assert.deepEqual(show('Noticias').blocked, ['reserved_slug']);
+
+  // Order independence: the plan is a pure function of the entity and the evidence.
+  const all = [c1950, c2015, film('Fargo', 1996, 275), series].map((p) => JSON.stringify(p));
+  const reversed = [series, film('Fargo', 1996, 275), c2015, c1950].map((p) => JSON.stringify(p)).reverse();
+  assert.deepEqual(all, reversed);
 });
 
 test('2D-2 flags: separate, default off, writes need the database name', () => {

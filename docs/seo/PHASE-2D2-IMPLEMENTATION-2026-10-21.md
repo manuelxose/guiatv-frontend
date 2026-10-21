@@ -88,11 +88,8 @@ All 2D-1 policies are reused unchanged through `decideTitleMatch`: composite key
 ## E. Slug allocation rules [V]
 
 - **Slug** (`slugifyEntityTitle`): lower-case; apostrophes and dots joined (`greys-anatomy`, `csi-miami`); ø/æ/œ/ß/ł/đ/þ transliterated; then the title-key rules, which fold accents and drop season, episode and edition markers. Null for non-Latin, digits-only, reserved or empty results. At most 80 characters, cut at a hyphen.
-- **Candidates:** `/{peliculas|series|programas}/{slug}`, then `-{year}` **only when the year comes from TMDB or a film's EPG year**. There is no counter fallback (2C §F.4's `-2` is dropped as silent collision resolution). When every candidate is taken, the entity stays pathless and is counted as a collision.
-- **Historic URLs:**
-  - An in-memory index maps every slug the legacy pages could answer (`CatalogService.slugify` and `slugifyTitle`, mirrored by `legacyCatalogSlugs` with a parity test) to the title keys of the works that produced it. Its sources are all `tv_program_brands` titles plus `media_catalog` titles and original titles.
-  - A candidate is allowed only if every historic owner includes this entity's key. Example from the test: "No" doesn't get `/programas/no`, because legacy "Noé" also answered it.
-  - The 2C legacy mapping CSV is not read: those mappings remain 2D-3 inputs, not redirects.
+- **Candidates:** `/{peliculas|series|programas}/{slug}`, then `-{year}` **only when the year comes from TMDB or a film's EPG year**. There is no counter fallback (2C §F.4's `-2` is dropped as silent collision resolution). When every candidate is refused or taken, the entity stays pathless (counted by reason, §O.2).
+- **Historic URLs and ownership** (superseded by the hardening review, §O.1): a candidate is offered only when no other work can claim it on the evidence (legacy titles in `tv_program_brands` and `media_catalog`, matched through `legacyCatalogSlugs` with a parity test, and the 2C dual-prefix URLs). The decision never depends on which entity arrives first.
 - **Stability:** registry inserts only, one canonical per entity, and the existing 2D-1 guarantees. Pathless entities are retried on later runs with the same deterministic candidates, never a new spelling.
 - No redirect, `gone` or public path is created in 2D-2.
 
@@ -116,7 +113,7 @@ Per day: about 3 + 3·⌈candidates/1000⌉ reads. Writes:
 - TMDB entity: entity first, then row.
 - Plus one `updateMany` per 1000 seen rows, and optional `bulkWrite` refs.
 
-`tv_read_airings` gets no new reads. Historic-slug index: one cursor over brands and catalogue every 6 h per process.
+`tv_read_airings` gets no new reads. Legacy-title evidence: one streamed scan of brands and catalogue per run that has pathless entities, keeping only the requested slugs, one scan at a time per process (§O.4).
 
 ## H. Concurrency and idempotency [V]
 
@@ -129,7 +126,7 @@ Per day: about 3 + 3·⌈candidates/1000⌉ reads. Writes:
   - `rebuildDate` never sees an identity exception.
 - **Tests:** two rebuilds of different dates in parallel (60 shared titles) gave 60 entities, 60 slugs, 0 duplicates. A rerun of the same day gave 0 writes. Both partial-crash shapes recover. The per-run cap defers creations and the next run catches up.
 - **Local replay:** a rerun of a fully created day (`parallel 20260907`) made 0 writes in 31 commands.
-- **Known edge:** a row can point at an id that never materialises only if two processes create entities for the same TMDB work under different title keys at the same instant. The run counts it in `claimConflicts` and logs it.
+- **Claim conflicts:** see §O.3. A bound row whose entity can never be created goes to review; it is never left dangling or re-pointed.
 
 ## I. Index safety [V]
 
@@ -181,7 +178,7 @@ WiredTiger cache: unchanged.
 - Prod days average 9,583 airings (2D-1 §G), so per-day cost should be similar to the replay: shadow about 0.2 s; write about 3 s while new entities still exceed the cap, then under 1.5 s.
 - 2D-1 put the upper bound at about 62k non-sport keys in 90 days. Minus about 45% unknown, that is roughly 30–35k entities, about 50 MB with indexes.
 - Review queue: replay growth was about 3–6 rows per day.
-- **Historic-slug index memory is unmeasured at production scale:** production has 150,797 brands against 11,849 locally (13×). The first local shadow run grew RSS by 76 MB, including module warm-up. Measure this before enabling shadow in production, or store legacy slugs on `tv_program_brands` (the upgrade path in the code comment).
+- **Legacy-title evidence memory:** measured at production scale and replaced, §O.4.
 
 ## K. Test results [V]
 
@@ -212,7 +209,7 @@ Coverage of the requested cases:
    - `tv_read_airings` still has 16 indexes;
    - no `content_*` collections;
    - crawl unchanged.
-2. **Shadow in production** (separate approval). Measure the historic-slug index memory first. Then either set `CONTENT_IDENTITY_SHADOW=true` for the precompute job only, or run `node dist/scripts/content-identity.js shadow <date>` (read-only).
+2. **Shadow in production** (separate approval). Run the CLI first (separate process, §O.8), then either set `CONTENT_IDENTITY_SHADOW=true` for the precompute job only, or run `node dist/scripts/content-identity.js shadow <date>` (read-only).
 3. **Writes** (separate approval):
    - `CONTENT_ENTITIES_ENABLED=true` and `CONTENT_IDENTITY_WRITES=guiatv`;
    - start with `CONTENT_IDENTITY_MAX_CREATES` low;
@@ -229,11 +226,106 @@ Coverage of the requested cases:
 
 1. **Unknown kinds (about 45%)** stay unresolved. Options: map more EPG categories, use TMDB TV genre or type, or accept. Kids, documentaries and "Otros" mix films, series and shows, so they aren't guessed.
 2. **TMDB enrichment** applies non-matching last search results to airings (§A). Identity is protected, but posters and synopses can still be wrong today. Fixing it is a separate change.
-3. **Historic-slug index memory** at production scale is unmeasured (§J).
-4. **First-come base slug for remakes:** the first work to allocate gets the bare slug; legacy history isn't consulted for which remake "owns" it (2C §F.4 rule 4). Both remakes stay `noindex` candidates until review.
+3. **Legacy-title evidence memory:** resolved, §O.4.
+4. **First-come base slug for remakes:** resolved, §O.1.
 5. **`assistant_operational_events` TTL:** declared, never applied in production. Decide whether to enforce the 30-day retention (deletes older events) or remove the TTL declaration.
 6. **Remaining 2D-2 production steps** each need explicit authorisation: shadow, writes, airing index build, refs.
 7. **Review ownership:** the owner by default; name any editor allowed to approve or reject.
 8. **Push and PR** not done. Pushing runs CI, including the new Mongo suite.
+
+## O. Final hardening review (2026-10-21)
+
+Same branch, all flags still unset. Measurements on the scratch `mongod` 8.0.29 (0.25 GB cache, WSL), restored from a fresh dump of the **local** development database; no production reads.
+
+### O.1 Canonical path ownership [V]
+
+`planCanonicalPaths` (domain, pure) decides which candidate paths an entity may take. It is a function of the entity and the evidence only, so reordered batches and parallel jobs allocate the same paths:
+
+| Path | Allowed when |
+|---|---|
+| any | not one of the 2C dual-prefix URLs (`/programas|series/la-promesa`, `/programas|series/modern-family`, 2C §G.3 rule 4: left to the series-prefix decision) and no legacy title with **another** key answers the slug ("No" vs "Noé") |
+| bare slug, TMDB work | it is the **only** TMDB work of the prefix's type (`/peliculas` → movie, `/series` and `/programas` → tv, as `CatalogService` resolved them) answering the slug |
+| bare slug, title-only work | no TMDB work answers it, and the entity is not a film (a remake can't be ruled out) |
+| `-{year}` path | the same test restricted to TMDB works of that year |
+
+- Verified historical ownership (`slugs.historicOwner`): the allowed path was already answered by a legacy title of this work. Ambiguous legacy matches are refused (`historic_ambiguous`), never assigned to whoever comes first. A TMDB search result alone never establishes ownership; the TMDB id must also be confirmed by the catalogue (§D).
+- Other 2C inventory rows: the 410 and season/episode 301 paths are unreachable by 2D-2 slugs (checked for all 63). Rule 3 "accent-damaged" rows are not treated as retired: where a 2D-2 slug equals one (`rizzoli-isles`, `objetivo-washington-dc`) it is that work's own historic URL, and 2C's targets for them (`rizzoli-amp-isles`) come from HTML-entity damage in the probe.
+- Tests: Cenicienta 1950/2015 (TMDB) and "El regreso" 1990/2005 (title-only) in both orders, in one reversed batch, in two parallel jobs, and in two parallel runs of the same day. Every scenario stores identical entities, paths and rows, and `/peliculas/cenicienta` is never allocated. Pure tests cover Fargo (film and series each own their prefix), conflicts, unverified cases and order independence.
+- Real-data effect (5 replayed days): 4,170 paths for 4,597 entities; 3,080 allocations went to the verified historic owner of the URL.
+
+### O.2 Pathless entities [V]
+
+The 5 pathless entities of the earlier replay could not be re-identified: the local database has changed since then. A replay of the same five days with the **2D-2 code as reviewed** left 4 pathless entities, all with digits-only slugs: "9-1-1", "300", "55" and "★6.8/10" (a rating line in the title field). "★6.8/10" is now excluded as a generic title. The other three are real works with no valid slug.
+
+With the hardened rules, the same replay leaves 427 of 4,597 entities pathless (9.3%), all intentional (`content-identity pathless` audit, 0 repairable):
+
+| Reason | n | Cause |
+|---|---|---|
+| `historic_unverified` | 339 | title-only film without year: bare slug never automatic, no year path |
+| `historic_unverified` | 78 | title-only series/show whose slug a TMDB TV work answers (likely the same work without a confirmed id: review or 2D-3) |
+| `historic_unverified` | 5 | film year collides with an unconfirmed TMDB work of that year (2); TMDB work whose catalogue title yields another slug (3) |
+| `unsupported_slug` | 3 | digits only |
+| `historic_conflict` | 1 | "Invasión U.S.A." vs another legacy title |
+| `historic_ambiguous` | 1 | "A ciegas": several TMDB films |
+
+Metrics: per run, `slugs.refused` (every refused candidate path by reason), `slugs.pathless` (entities by reason; every reason is intentional except `write_failed`, retried next run) and `slugs.repaired` (paths given to entities an earlier run left pathless). For stored data, `content-identity pathless [limit]` classifies every pathless entity as `repairable` (a safe path is free) or by its intentional reason. A pathless entity has no slug row, so `resolvePath` can't return it (test).
+
+### O.3 Concurrent claim recovery [V]
+
+- The documented edge doesn't occur through ingestion. TMDB works write the entity first, the TMDB partial unique index picks one winner, and the loser binds its row to the winner. Test: 8 parallel trials, one TMDB film under two title keys ("El jardín secreto" / "The Secret Garden"), alternating order. Result: always 1 entity, both rows bound to it, 0 conflicts.
+- A row whose entity is missing and whose TMDB work belongs to another entity (only possible after manual data changes) is now handled. A `candidate` row moves to `manual_review` / `claim_conflict`, with the owner in `candidates`: a conditional update, durable, in the review queue, and held on later runs with no retry loop. A `verified` row is never modified; it is counted and logged.
+- **Crash at every write boundary:** a day with 7 titles crosses all of its write boundaries: entity insert, title-key insert, slug insert, `setCanonicalPath`, `touch`. The run is aborted right after each one in turn, then followed by one normal run. Every case converges to the uninterrupted state, with no row or slug pointing at a missing entity.
+- Retries are bounded: one attempt per candidate per run, plus the per-run creation cap.
+
+### O.4 Legacy-title evidence memory [V]
+
+Fixture at production scale: 150,797 brand titles and 17,000 catalogue rows, built from the local real titles.
+
+| | Time | Commands | Retained heap | Peak RSS Δ | 2 concurrent calls | Heap cap 96 MB |
+|---|---|---|---|---|---|---|
+| Before (full in-memory index, 6 h cache) | 2.1 s | 199 | **110.6 MB** (226k slugs) | +246 MB | 2 copies, 220 MB heap, +375 MB RSS | **out of memory** |
+| After (streamed, keeps requested slugs only) | 1.0 s | 198 | **0.4 MB** | +150–270 MB (collectable garbage) | serialized, ~0.5 MB retained | completes (also at 64 MB) |
+
+- One scan per run that has pathless entities; no scan when there are none (rerun of a stored day: 0 extra commands). There is no cache, so there's no staleness.
+- One scan at a time per process: concurrent rebuilds queue rather than each holding a scan.
+- The transient peak is garbage V8 collects lazily under the API's `--max-old-space-size=1536`. RSS may stay raised until the next major GC.
+- Upgrade path (in the code comment): store legacy slugs on `tv_program_brands` with an index.
+- The VPS memory limits are unchanged.
+
+### O.5 Review queue and quality [V]
+
+- Ambiguous and review rows are unbound, so they get no entity and no path.
+- Every entity is a `noindex` candidate; `mayBeIndexable` needs `active` plus manual or ≥ 0.95 TMDB, which ingestion never sets.
+- Rows are insert-only with deterministic ids (no duplicates on rerun).
+- **New:** a title rejected without a discriminator (`key|kind|*`) that reappears with a year or TMDB id goes to review (`rejected_title`) instead of creating an entity (test).
+- A reviewed mapping survives later weaker evidence unchanged, with `review.by`, `review.at` and `decidedBy` kept (test).
+- Unknown kinds are counted, not stored.
+
+### O.6 Index declarations [V]
+
+- `check-index-names.cjs`: 59 indexes, 0 mismatches against production metadata.
+- Boot simulation: a scratch database was seeded with production's recorded indexes for the 6 renamed collections, then booted with every flag unset:
+  - 0 dropped and 0 added in each collection;
+  - no "different name" warnings;
+  - no `content_*` collections;
+  - `tv_read_airings` has 16 indexes, none on `program.entityId`.
+- Boot calls only `createIndexes()`. The airing entity index is not on the schema.
+- `assistant_operational_events` is unchanged (decision pending, §N.5).
+
+### O.7 Tests [V]
+
+| Check | Result |
+|---|---|
+| `tsc` lint | pass |
+| Backend `npm test`, no Mongo | 394: 391 pass, 0 fail, 3 skip |
+| Backend with `TEST_MONGO_URI` | 429: 428 pass, 0 fail, 1 skip (Redis) |
+| `test:deploy` | pass |
+| High-volume fixture (9,000 airings) | shadow 162 ms / 9 cmds; first write 6.2 s / 10,007 cmds; rerun 158 ms / 12 cmds |
+| Replay, 5 real days (`replay-hardened-20260903-07.jsonl`) | write 1.2–3.1 s per day; parallel rerun of 2 days: 0 conflicts, 0 failures |
+
+### O.8 Release state and next step [P]
+
+- A deploy of this branch with every flag unset creates no `content_*` collection, entity, airing index or airing reference. It changes no public URL, sitemap, canonical or EPG output (parity test, empty frontend/infra diff) and does not run shadow.
+- Next step, with separate approval: run `node dist/scripts/content-identity.js shadow <date>` once on the server as its own process. It is read-only and isolates memory from the API. Record RSS and duration. Only then consider `CONTENT_IDENTITY_SHADOW` for the precompute job.
 
 **STOP.** Nothing was pushed, merged, deployed, enabled, backfilled or indexed in production.

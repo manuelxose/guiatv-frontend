@@ -1,5 +1,6 @@
 import {
   ContentKind,
+  HistoricWork,
   ContentStatus,
   MatchMethod,
   ProvenanceSource,
@@ -134,6 +135,12 @@ export interface IContentTitleKeyRepository {
   review(id: string, change: { entityId: string; by: string; note?: string }): Promise<boolean>;
   /** Manual review: the title is not an entity. Unbinds a provisional candidate; never a verified row. */
   reject(id: string, change: { by: string; note?: string }): Promise<boolean>;
+  /**
+   * A provisional row whose entity can't be materialised (its TMDB work belongs to another entity):
+   * unbinds it into the review queue (`manual_review`, `claim_conflict`). Only if it is still a
+   * `candidate` bound to `entityId`; a verified row is never touched. True if the row was moved.
+   */
+  flagClaimConflict(id: string, change: { entityId: string; candidates: string[]; by: string }): Promise<boolean>;
   listReviewQueue(limit: number): Promise<TitleKeyRecord[]>;
   countByState(): Promise<Record<TitleKeyState, number>>;
 }
@@ -149,8 +156,8 @@ export interface CatalogEvidence {
 
 export interface IIdentityEvidenceSource {
   catalogEntries(mediaIds: string[], tmdbIds: number[]): Promise<CatalogEvidence[]>;
-  /** Legacy slug -> the title keys of each work whose legacy page answered it (one set per work). */
-  historicSlugOwners(): Promise<ReadonlyMap<string, ReadonlyArray<ReadonlySet<string>>>>;
+  /** For each requested slug, the works whose legacy page could answer it (missing = none). */
+  historicSlugOwners(slugs: string[]): Promise<ReadonlyMap<string, readonly HistoricWork[]>>;
 }
 
 export interface AiringEntityRef {

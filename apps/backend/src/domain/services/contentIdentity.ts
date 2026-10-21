@@ -147,9 +147,13 @@ export function titleIdentityKey(title: string | null | undefined): string | nul
  */
 export function isGenericContentTitle(title: string | null | undefined): boolean {
   if (resolveProgramDisplayTitle(title) !== String(title || '').trim()) return true;
+  // A rating line in the title field ("★6.8/10", seen in the 2D-2 replay) is not a work.
+  if (RATING_LINE.test(String(title || '').trim())) return true;
   const key = titleIdentityKey(title);
   return key !== null && GENERIC_TITLE_KEYS.has(key);
 }
+
+const RATING_LINE = /^[^\p{L}\d]*\d+(?:[.,]\d+)?\s*\/\s*10$/u;
 
 /** Most specific reliable context available: TMDB work, then release year, else none (`*`). */
 export function titleDiscriminator(input: { tmdb?: TmdbRef; year?: number }): string {
@@ -393,10 +397,106 @@ export function decideIngestionMatch(
   tmdbEntity?: { entityId: string; kind: ContentKind } | null
 ): TitleMatchDecision {
   const decision = decideTitleMatch(input, rows, tmdbEntity);
-  if (input.kind !== 'unknown' || (decision.decision !== 'create' && decision.decision !== 'bind')) return decision;
+  if (decision.decision !== 'create' && decision.decision !== 'bind') return decision;
   const { entityId, ...row } = decision.row;
-  return {
-    decision: 'review',
-    row: { ...row, state: 'manual_review', reason: 'unknown_kind', candidates: entityId ? [entityId] : [] },
-  };
+  const toReview = (reason: string) =>
+    ({ decision: 'review', row: { ...row, state: 'manual_review', reason, candidates: entityId ? [entityId] : [] } }) as const;
+  if (input.kind === 'unknown') return toReview('unknown_kind');
+  // A reviewer rejected this title for this kind without a discriminator ("any work called X"): a
+  // later sighting with a year or a TMDB id goes back to review instead of silently recreating it.
+  if (rows.some((r) => r.state === 'rejected' && r.kind === input.kind && r.discriminator === '*')) return toReview('rejected_title');
+  return decision;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Canonical path ownership (2D-2 hardening). A path is offered to an entity only when no other
+// work can claim it on the evidence: legacy titles (brands, catalogue) and the 2C URL inventory.
+// The decision depends on the entity and that evidence only, never on which entity came first, so
+// reordered batches and parallel jobs allocate the same paths.
+
+/** A work that a legacy page could answer a slug with: its title keys, and its TMDB identity if any. */
+export interface HistoricWork {
+  keys: ReadonlySet<string>;
+  tmdb?: TmdbRef;
+  year?: number;
+}
+
+export type PathBlock =
+  /** No valid slug: non-Latin, digits only ("300", "9-1-1"), empty. */
+  | 'unsupported_slug'
+  | 'reserved_slug'
+  /** The 2C plan leaves this legacy URL's prefix to review. */
+  | 'inventory_review'
+  /** A legacy title with another key answers this slug ("No" vs "Noé"). */
+  | 'historic_conflict'
+  /** Several TMDB works answer this slug (remakes, homonyms). */
+  | 'historic_ambiguous'
+  /** Ownership can't be proven: a title-only film's bare slug, or a TMDB work the evidence doesn't name. */
+  | 'historic_unverified';
+
+/**
+ * 2C §G.3 rule 4 (docs/seo/phase-2c/legacy-url-mapping.csv, "KEEP or 301"): the same slug answered
+ * 200 under two prefixes, and which one stays depends on the open series-prefix decision (2C §P.2).
+ * The probe's other actions need no entry: 2D-2 slugs never produce its 410 or season/episode
+ * paths, and where a 2D-2 slug equals an "accent-damaged" path (rizzoli-isles) it is that work's URL.
+ */
+const LEGACY_REVIEW_PATHS: ReadonlySet<string> = new Set([
+  '/programas/la-promesa', '/series/la-promesa', '/programas/modern-family', '/series/modern-family',
+]);
+
+/** TMDB type a legacy page under each prefix resolved (CatalogService: films, and TV for series and programmes). */
+const TMDB_TYPE_BY_PREFIX: Record<string, TmdbRef['type']> = { '/peliculas': 'movie', '/series': 'tv', '/programas': 'tv' };
+
+/**
+ * Candidate paths an entity may take, most preferred first, with the reason for each one refused
+ * and the allowed ones a legacy title already answered (`historic`: verified historical owner).
+ * The bare slug needs: no other key among its legacy titles; for a TMDB work, that it is the only
+ * TMDB work of its type answering the slug; for a title-only work, that no TMDB work answers it,
+ * and never for a title-only film (a remake can't be ruled out). The year path applies the same
+ * test to the works of that year. `ownersOf` must cover every slug of `entityCandidatePaths`.
+ */
+export function planCanonicalPaths(
+  entity: { kind: ContentKind; title: string; year?: number; externalIds?: { tmdb?: TmdbRef } },
+  ownersOf: (slug: string) => readonly HistoricWork[]
+): { paths: string[]; blocked: PathBlock[]; historic: string[] } {
+  const key = titleIdentityKey(entity.title);
+  const candidates = entityCandidatePaths(entity.kind, entity.title, entity.year);
+  if (!candidates.length) {
+    const reserved = entity.kind !== 'unknown' && key !== null && RESERVED_SLUGS.has(key.replace(/_/g, '-'));
+    return { paths: [], blocked: [reserved ? 'reserved_slug' : 'unsupported_slug'], historic: [] };
+  }
+  const own = entity.externalIds?.tmdb;
+  const prefix = KIND_PATH_PREFIX[entity.kind];
+  const bareSlug = candidates[0].slice(prefix.length + 1);
+  const out = { paths: [] as string[], blocked: [] as PathBlock[], historic: [] as string[] };
+  for (const path of candidates) {
+    const bare = path === candidates[0];
+    const legacy = ownersOf(path.slice(prefix.length + 1));
+    const works = new Set(
+      ownersOf(bareSlug)
+        .filter((w) => w.tmdb?.type === TMDB_TYPE_BY_PREFIX[prefix] && (bare || w.year === entity.year))
+        .map((w) => w.tmdb?.id)
+    );
+    const unverified = own ? !(works.size === 1 && works.has(own.id)) : works.size > 0 || (bare && entity.kind === 'movie');
+    const reason: PathBlock | null = LEGACY_REVIEW_PATHS.has(path)
+        ? 'inventory_review'
+        : legacy.some((w) => !key || !w.keys.has(key))
+          ? 'historic_conflict'
+          : works.size > 1
+            ? 'historic_ambiguous'
+            : unverified
+              ? 'historic_unverified'
+              : null;
+    if (reason) out.blocked.push(reason);
+    else {
+      out.paths.push(path);
+      if (legacy.length) out.historic.push(path);
+    }
+  }
+  return out;
+}
+
+/** Every slug `planCanonicalPaths` reads for an entity. */
+export function plannedSlugs(entity: { kind: ContentKind; title: string; year?: number }): string[] {
+  return entityCandidatePaths(entity.kind, entity.title, entity.year).map((path) => path.slice(path.lastIndexOf('/') + 1));
 }

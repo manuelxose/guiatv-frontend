@@ -3,6 +3,7 @@
  *
  *   node dist/scripts/content-identity.js shadow 20261020 [20261022]   read-only matching report per stored day
  *   node dist/scripts/content-identity.js queue [limit]                 review queue (reads)
+ *   node dist/scripts/content-identity.js pathless [limit]              stored entities without a path, by reason (reads)
  *   node dist/scripts/content-identity.js approve <titleKeyId> <entityId> --by <name> [--note <text>]
  *   node dist/scripts/content-identity.js reject <titleKeyId> --by <name> [--note <text>]
  *
@@ -53,6 +54,23 @@ async function shadow(from: string, to: string) {
   }
 }
 
+/** `repairable`: a safe path is free and the next run that sees the entity allocates it; every other reason is intentional. */
+async function pathless(limit: number) {
+  const entities = await new MongoContentEntityRepository().findWithoutCanonicalPath(new Date(), limit);
+  const plans = await createContentIdentityIngestion('shadow').planPaths(entities);
+  const taken = new Set(
+    (await new MongoContentSlugRepository().findByPaths([...plans.values()].flatMap((p) => p.paths))).map((s) => s.path)
+  );
+  const rows = entities.map((e) => {
+    const plan = plans.get(e.entityId)!;
+    const reason = plan.paths.some((p) => !taken.has(p)) ? 'repairable' : plan.paths.length ? 'taken' : plan.blocked[0];
+    return { entityId: e.entityId, title: e.title, kind: e.kind, year: e.year, tmdb: e.externalIds?.tmdb, reason, refused: plan.blocked };
+  });
+  const byReason: Record<string, number> = {};
+  rows.forEach((r) => (byReason[r.reason] = (byReason[r.reason] ?? 0) + 1));
+  console.log(JSON.stringify({ total: rows.length, byReason, rows }, null, 2));
+}
+
 async function main() {
   const [command, ...args] = process.argv.slice(2);
   await connectMongoDB();
@@ -65,8 +83,9 @@ async function main() {
       'review'
     );
     if (command === 'shadow') return await shadow(args[0], args[1] ?? args[0]);
+    if (command === 'pathless') return await pathless(Number(args[0]) || 10_000);
     if (command === 'queue') return console.log(JSON.stringify(await service.reviewQueue(Number(args[0]) || 50), null, 2));
-    if (command !== 'approve' && command !== 'reject') throw new Error('usage: shadow|queue|approve|reject (see file header)');
+    if (command !== 'approve' && command !== 'reject') throw new Error('usage: shadow|queue|pathless|approve|reject (see file header)');
     if (!flags.writes) throw new Error('review writes need CONTENT_ENTITIES_ENABLED and CONTENT_IDENTITY_WRITES=<database name>');
     const by = option(args, '--by') as string;
     const note = option(args, '--note');

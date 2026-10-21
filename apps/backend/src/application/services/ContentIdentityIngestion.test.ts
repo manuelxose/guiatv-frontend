@@ -17,6 +17,7 @@ import {
   MongoContentSlugRepository,
   MongoContentTitleKeyRepository,
   MongoIdentityEvidenceSource,
+  ContentIdentityNotReadyError,
 } from '@/infrastructure/repositories/MongoContentIdentityRepositories';
 import { newEntityId, titleKeyId } from '@/domain/services/contentIdentity';
 import { PRIMARY_EPG_SOURCE_URL } from '@/shared/config/epgSources';
@@ -121,6 +122,19 @@ const counts = async () => ({
   titleKeys: await ContentTitleKeyModel.countDocuments(),
 });
 
+/**
+ * Day fixture, first run: five safe paths. Pathless: "La novia" (two 2015 films), "Mi casa"
+ * (title-only film, no year), "No" (legacy "Noé") and "La Promesa" (/series/la-promesa is one of
+ * the 2C dual-prefix URLs left to review).
+ */
+const FIRST_RUN_SLUGS = {
+  allocated: 5,
+  repaired: 0,
+  historicOwner: 2,
+  refused: { historic_ambiguous: 4, inventory_review: 1, historic_unverified: 1, historic_conflict: 1 },
+  pathless: { historic_ambiguous: 1, inventory_review: 1, historic_unverified: 1, historic_conflict: 1 },
+};
+
 const legacyAiring = (id: string, date: string, title: string) => ({
   id,
   date,
@@ -198,7 +212,7 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       assert.equal(report.decisions.unresolved, 1, 'unknown kind: reported, not stored');
       assert.deepEqual(report.reasons, { tmdb_conflict: 1, unknown_kind: 1 });
       assert.equal(report.estimate.newEntities, 9);
-      assert.deepEqual(report.slugs, { allocated: 8, collisions: 0, historicConflicts: 1, pathless: 1 });
+      assert.deepEqual(report.slugs, FIRST_RUN_SLUGS);
       assert.equal(report.airingRefs.skipped, 'shadow');
     });
 
@@ -221,28 +235,29 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       const report = await ingestion('write').run('20261020', dayFixture());
       assert.equal(report.writes.entities, 9);
       assert.equal(report.writes.titleKeys, 11);
-      assert.deepEqual(report.slugs, { allocated: 8, collisions: 0, historicConflicts: 1, pathless: 1 });
-      assert.deepEqual(await counts(), { entities: 9, slugs: 8, titleKeys: 11 });
+      assert.deepEqual(report.slugs, FIRST_RUN_SLUGS);
+      assert.deepEqual(await counts(), { entities: 9, slugs: 5, titleKeys: 11 });
 
       const paths = (await ContentSlugModel.find().lean()).map((s) => s._id).sort();
+      // Remakes and homonyms get no bare slug: two TMDB films answer /peliculas/cenicienta, and the
+      // two 2015 "La novia" films leave even the year path ambiguous.
       assert.deepEqual(paths, [
-        '/peliculas/cenicienta',
+        '/peliculas/cenicienta-1950',
         '/peliculas/cenicienta-2015',
-        '/peliculas/la-novia',
-        '/peliculas/mi-casa',
         '/programas/cine-de-barrio',
         '/programas/espejo-publico',
         '/series/csi-miami',
-        '/series/la-promesa',
       ]);
       const cenicienta = await ContentEntityModel.find({ normalizedTitle: 'cenicienta' }).sort({ year: 1 }).lean();
       assert.deepEqual(cenicienta.map((e) => [e.year, e.externalIds?.tmdb?.id, e.canonicalPath]), [
-        [1950, 11224, '/peliculas/cenicienta'],
+        [1950, 11224, '/peliculas/cenicienta-1950'],
         [2015, 150689, '/peliculas/cenicienta-2015'],
       ]);
-      // "Mi casa": the airing's TMDB id names another title, so it's a title-only film.
+      // "Mi casa": the airing's TMDB id names another title, so it's a title-only film, and a
+      // title-only film never takes a bare slug (a remake can't be ruled out); it has no year.
       const miCasa = await ContentEntityModel.findOne({ normalizedTitle: 'mi_casa' }).lean();
       assert.equal(miCasa?.externalIds?.tmdb, undefined);
+      assert.equal(miCasa?.canonicalPath, undefined);
       // "No": /programas/no is the historic URL of "Noé" too, so it isn't taken.
       const no = await ContentEntityModel.findOne({ normalizedTitle: 'no' }).lean();
       assert.equal(no?.canonicalPath, undefined);
@@ -262,11 +277,11 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       const lastSeen = (await ContentTitleKeyModel.findById('la_novia|movie|tmdb:movie:502').lean())?.lastSeenAt;
       const report = await ingestion('write').run('20261021', dayFixture());
       assert.deepEqual(await counts(), before);
-      assert.deepEqual(report.writes, { entities: 0, titleKeys: 0, slugs: 0, duplicateKeyConflicts: 0, claimConflicts: 0 });
+      assert.deepEqual(report.writes, { entities: 0, titleKeys: 0, slugs: 0, duplicateKeyConflicts: 0, claimConflicts: 0, claimsFlagged: 0 });
       assert.equal(report.decisions.create ?? 0, 0);
       assert.ok(((await ContentTitleKeyModel.findById('la_novia|movie|tmdb:movie:502').lean())?.lastSeenAt as Date) > (lastSeen as Date));
-      // The pathless "No" is retried and still refused; it never falls back to another path.
-      assert.deepEqual(report.slugs, { allocated: 0, collisions: 0, historicConflicts: 1, pathless: 1 });
+      // The pathless entities are retried and still refused; they never fall back to another path.
+      assert.deepEqual(report.slugs, { ...FIRST_RUN_SLUGS, allocated: 0, historicOwner: 0, refused: { historic_ambiguous: 2, inventory_review: 1, historic_unverified: 1, historic_conflict: 1 } });
     });
 
     await t.test('simultaneous rebuilds of different dates: one entity per identity', async () => {
@@ -316,6 +331,7 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       });
       const report = await ingestion('write').run('20261024', [obs('El hormiguero'), obs('Saber y ganar')]);
       assert.equal(report.decisions.matched, 2);
+      assert.equal(report.slugs.repaired, 2, 'both were incomplete states left by an earlier run');
       assert.equal((await ContentEntityModel.findOne({ entityId: claimedId }).lean())?.canonicalPath, '/programas/el-hormiguero');
       assert.equal((await ContentEntityModel.findOne({ entityId: pathless.entityId }).lean())?.canonicalPath, '/programas/saber-y-ganar');
     });
@@ -389,6 +405,14 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       const counts = (await service.reviewQueue()).counts;
       assert.equal(counts.rejected, 1);
       assert.equal(counts.verified, 1);
+      // Weaker evidence later never overwrites the reviewed mapping, and the reviewer stays on record.
+      await ingestion('write').run('20261027', [obs('La novia', { editorialCategory: 'Cine', tmdbId: 502, mediaId: MEDIA.novia2 })]);
+      const reviewed = await ContentTitleKeyModel.findById('la_novia|movie|tmdb:movie:502').lean();
+      assert.deepEqual([reviewed?.state, reviewed?.entityId, reviewed?.method, reviewed?.review?.by], ['verified', target!.entityId, 'manual', 'owner']);
+      // A rejected title seen again with a year goes back to review; it is not recreated.
+      const again = await ingestion('write').run('20261027', [obs('Mi casa', { editorialCategory: 'Cine', year: 2001 })]);
+      assert.deepEqual([again.writes.entities, again.reasons.rejected_title], [0, 1]);
+      assert.equal((await ContentTitleKeyModel.findById('mi_casa|movie|year:2001').lean())?.state, 'manual_review');
     });
 
     await t.test('EPG output parity: flags off, shadow and writes store the same airings apart from refs', async () => {
@@ -443,6 +467,195 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       assert.equal(first.report.writes.entities, shadow.report.estimate.newEntities);
       assert.equal(rerun.report.writes.entities + rerun.report.writes.titleKeys + rerun.report.writes.slugs, 0);
       assert.ok(rerun.commands <= bound, `rerun is batched (${rerun.commands} commands)`);
+    });
+
+    const resetIdentity = async () => {
+      await ContentEntityModel.deleteMany({});
+      await ContentSlugModel.deleteMany({});
+      await ContentTitleKeyModel.deleteMany({});
+    };
+    /** Stored state without the random entity ids: entity identity -> path, title-key row -> state and entity identity. */
+    const identityState = async () => {
+      const entities = await ContentEntityModel.find().lean();
+      const name = new Map(entities.map((e) => [e.entityId, `${e.normalizedTitle}|${e.kind}|${e.externalIds?.tmdb?.id ?? ''}|${e.year ?? ''}`]));
+      const slugs = await ContentSlugModel.find().lean();
+      const rows = await ContentTitleKeyModel.find().lean();
+      return {
+        entities: Object.fromEntries([...entities].map((e) => [name.get(e.entityId), e.canonicalPath ?? null]).sort()),
+        slugs: Object.fromEntries(slugs.map((s) => [s._id, name.get(s.entityId) ?? 'MISSING']).sort()),
+        rows: Object.fromEntries(rows.map((r) => [r._id, `${r.state}>${r.entityId ? name.get(r.entityId) ?? 'MISSING' : '-'}`]).sort()),
+      };
+    };
+    const assertNoDangling = (state: Awaited<ReturnType<typeof identityState>>) => {
+      assert.doesNotMatch(JSON.stringify(state), /MISSING/, 'no row or slug points at a missing entity');
+    };
+
+    await t.test('remakes: same paths in either order, in one batch and in parallel jobs; the bare slug is never taken', async () => {
+      const c1950 = () => obs('Cenicienta', { editorialCategory: 'Cine', tmdbId: 11224, mediaId: MEDIA.cenicienta1950, year: 1950 });
+      const c2015 = () => obs('Cenicienta', { editorialCategory: 'Cine', tmdbId: 150689, mediaId: MEDIA.cenicienta2015 });
+      // Title-only remakes of a title with legacy history: only their year paths.
+      const r1990 = () => obs('El regreso', { editorialCategory: 'Cine', year: 1990 });
+      const r2005 = () => obs('El regreso', { editorialCategory: 'Cine', year: 2005 });
+      const scenarios: Array<[string, () => Promise<unknown>]> = [
+        ['1950 then 2015', async () => { await ingestion('write').run('20261101', [c1950(), r1990()]); await ingestion('write').run('20261102', [c2015(), r2005()]); }],
+        ['2015 then 1950', async () => { await ingestion('write').run('20261101', [c2015(), r2005()]); await ingestion('write').run('20261102', [c1950(), r1990()]); }],
+        ['one batch, reversed', () => ingestion('write').run('20261101', [r2005(), c2015(), r1990(), c1950()])],
+        ['parallel jobs', () => Promise.all([ingestion('write').run('20261101', [c2015(), r1990()]), ingestion('write').run('20261102', [r2005(), c1950()])])],
+        ['parallel jobs, same day twice', () => Promise.all([0, 1].map(() => ingestion('write').run('20261101', [c1950(), c2015(), r1990(), r2005()])))],
+      ];
+      await db.collection('tv_program_brands').insertOne({ brandKey: 'el_regreso', title: 'El regreso', normalizedTitle: 'el regreso' });
+      let expected: unknown;
+      for (const [label, scenario] of scenarios) {
+        await resetIdentity();
+        await scenario();
+        const state = await identityState();
+        assertNoDangling(state);
+        assert.deepEqual(Object.keys(state.slugs), [
+          '/peliculas/cenicienta-1950',
+          '/peliculas/cenicienta-2015',
+          '/peliculas/el-regreso-1990',
+          '/peliculas/el-regreso-2005',
+        ], label);
+        expected ??= state;
+        assert.deepEqual(state, expected, `${label}: same entities, paths and rows as the first order`);
+      }
+    });
+
+    await t.test('one TMDB work under two title keys in parallel processes: one entity, both rows bound to it', async () => {
+      await db.collection('media_catalog').insertOne({
+        _id: new mongoose.Types.ObjectId('64a000000000000000000009'),
+        tmdbId: 9001, tmdbType: 'movie', title: 'El jardín secreto', originalTitle: 'The Secret Garden', year: '1993',
+        contentType: 'movie', normalizedTitle: 'el jardin secreto', normalizedIdentity: 'el jardin secreto', metadataSource: 'tmdb',
+      });
+      const es = () => obs('El jardín secreto', { editorialCategory: 'Cine', tmdbId: 9001, year: 1993 });
+      const en = () => obs('The Secret Garden', { editorialCategory: 'Cine', tmdbId: 9001, year: 1993 });
+      for (let trial = 0; trial < 8; trial++) {
+        await resetIdentity();
+        const pair = trial % 2 ? [en(), es()] : [es(), en()];
+        const reports = await Promise.all(pair.map((o, i) => ingestion('write').run(`2026110${i + 3}`, [o])));
+        const entities = await ContentEntityModel.find({ 'externalIds.tmdb.id': 9001 }).lean();
+        assert.equal(entities.length, 1, `trial ${trial}: one entity for the TMDB work`);
+        const rows = await ContentTitleKeyModel.find({ discriminator: 'tmdb:movie:9001' }).lean();
+        assert.deepEqual(rows.map((r) => r.entityId), [entities[0].entityId, entities[0].entityId]);
+        assert.equal(reports.reduce((n, r) => n + r.writes.claimConflicts, 0), 0);
+        assertNoDangling(await identityState());
+      }
+    });
+
+    await t.test('a claim whose entity can never exist goes to review; a verified one is left alone', async () => {
+      const owner = (await ContentEntityModel.findOne({ 'externalIds.tmdb.id': 9001 }).lean())!;
+      const ghost = newEntityId();
+      const id = 'the_secret_garden|movie|tmdb:movie:9001';
+      await ContentTitleKeyModel.updateOne({ _id: id }, { $set: { entityId: ghost } });
+      const report = await ingestion('write').run('20261105', [obs('The Secret Garden', { editorialCategory: 'Cine', tmdbId: 9001, year: 1993 })]);
+      assert.deepEqual([report.writes.claimConflicts, report.writes.claimsFlagged, report.writes.entities], [1, 1, 0]);
+      const row = await ContentTitleKeyModel.findById(id).lean();
+      assert.deepEqual([row?.state, row?.reason, row?.entityId, row?.candidates], ['manual_review', 'claim_conflict', undefined, [owner.entityId]]);
+      assert.ok((await new MongoContentTitleKeyRepository().listReviewQueue(50)).some((r) => r.id === id), 'queryable in the review queue');
+      const rerun = await ingestion('write').run('20261106', [obs('The Secret Garden', { editorialCategory: 'Cine', tmdbId: 9001, year: 1993 })]);
+      assert.deepEqual([rerun.decisions.held, rerun.writes.claimConflicts], [1, 0], 'stable: held for review, no retry loop');
+
+      await ContentTitleKeyModel.updateOne({ _id: id }, { $set: { state: 'verified', entityId: ghost }, $unset: { reason: 1 } });
+      const verified = await ingestion('write').run('20261107', [obs('The Secret Garden', { editorialCategory: 'Cine', tmdbId: 9001, year: 1993 })]);
+      assert.deepEqual([verified.writes.claimConflicts, verified.writes.claimsFlagged], [1, 0]);
+      assert.equal((await ContentTitleKeyModel.findById(id).lean())?.entityId, ghost, 'a verified mapping is never rewritten by ingestion');
+    });
+
+    await t.test('interrupted after every write boundary: the next run converges to the uninterrupted result', async () => {
+      const day = () => [
+        obs('Espejo Público'),
+        obs('La Promesa T1 E940', { editorialCategory: 'Series' }),
+        obs('Cenicienta', { editorialCategory: 'Cine', tmdbId: 11224, mediaId: MEDIA.cenicienta1950, year: 1950 }),
+        obs('CSI: Miami', { editorialCategory: 'Series', tmdbId: 1620 }),
+        obs('C.S.I. Miami', { editorialCategory: 'Series', tmdbId: 1620 }),
+        obs('El regreso', { editorialCategory: 'Cine', year: 1990 }),
+        obs('Mi casa', { editorialCategory: 'Cine' }),
+      ];
+      let writes = 0;
+      let crashAt = 0;
+      const boundary = async <T>(write: () => Promise<T>): Promise<T> => {
+        const result = await write();
+        if (++writes === crashAt) throw new ContentIdentityNotReadyError('simulated crash', [`after write ${writes}`]);
+        return result;
+      };
+      class E extends MongoContentEntityRepository {
+        override insert(x: Parameters<MongoContentEntityRepository['insert']>[0]) { return boundary(() => super.insert(x)); }
+        override setCanonicalPath(id: string, path: string) { return boundary(() => super.setCanonicalPath(id, path)); }
+      }
+      class S extends MongoContentSlugRepository {
+        override insert(x: Parameters<MongoContentSlugRepository['insert']>[0]) { return boundary(() => super.insert(x)); }
+      }
+      class K extends MongoContentTitleKeyRepository {
+        override insert(x: Parameters<MongoContentTitleKeyRepository['insert']>[0]) { return boundary(() => super.insert(x)); }
+        override touch(ids: string[], at: Date) { return boundary(() => super.touch(ids, at)); }
+      }
+      const crashing = () => {
+        const ports = { entities: new E(), slugs: new S(), titleKeys: new K(), evidence: new MongoIdentityEvidenceSource(), airingRefs: new MongoAiringEntityRefWriter() };
+        return new ContentIdentityIngestion(ports, new ContentIdentityService(ports.entities, ports.slugs, ports.titleKeys, 'test'), {
+          mode: 'write', airingRefs: false, maxCreates: 100, actor: 'test',
+        });
+      };
+      await resetIdentity();
+      await crashing().run('20261108', day());
+      const total = writes;
+      const expected = await identityState();
+      assert.ok(total >= 15, `the day crosses ${total} write boundaries`);
+      assert.deepEqual(Object.keys(expected.slugs), [
+        '/peliculas/cenicienta-1950',
+        '/peliculas/el-regreso-1990',
+        '/programas/espejo-publico',
+        '/series/csi-miami',
+      ]);
+      for (crashAt = 1; crashAt <= total; crashAt++) {
+        await resetIdentity();
+        writes = 0;
+        await assert.rejects(crashing().run('20261108', day()), /simulated crash/);
+        await ingestion('write').run('20261108', day());
+        const state = await identityState();
+        assertNoDangling(state);
+        assert.deepEqual(state, expected, `crash after write ${crashAt} of ${total}`);
+      }
+      crashAt = 0;
+    });
+
+    await t.test('pathless: intentional reasons are stable, repairable states are repaired, nothing pathless resolves', async () => {
+      await resetIdentity();
+      class FlakySlugs extends MongoContentSlugRepository {
+        failures = 1;
+        override async insert(x: Parameters<MongoContentSlugRepository['insert']>[0]) {
+          if (this.failures-- > 0) throw new Error('simulated slug write failure');
+          return super.insert(x);
+        }
+      }
+      const slugs = new FlakySlugs();
+      const ports = { entities: new MongoContentEntityRepository(), slugs, titleKeys: new MongoContentTitleKeyRepository(), evidence: new MongoIdentityEvidenceSource(), airingRefs: new MongoAiringEntityRefWriter() };
+      const flaky = new ContentIdentityIngestion(ports, new ContentIdentityService(ports.entities, ports.slugs, ports.titleKeys, 'test'), {
+        mode: 'write', airingRefs: false, maxCreates: 100, actor: 'test',
+      });
+      const day = () => [obs('Saber y ganar'), obs('300', { editorialCategory: 'Cine', year: 2007 }), obs('No'), obs('Modern Family', { editorialCategory: 'Series' })];
+      const first = await flaky.run('20261109', day());
+      assert.deepEqual(first.slugs.pathless, { write_failed: 1, unsupported_slug: 1, historic_conflict: 1, inventory_review: 1 });
+      const pathlessIds = (await ContentEntityModel.find({ canonicalPath: { $exists: false } }).lean()).map((e) => e.entityId);
+      const service = new ContentIdentityService(new MongoContentEntityRepository(), new MongoContentSlugRepository(), new MongoContentTitleKeyRepository(), 'test');
+      for (const path of ['/programas/saber-y-ganar', '/programas/no', '/series/modern-family']) {
+        assert.equal((await service.resolvePath(path)).status, 'not_found', `${path}: a pathless entity never resolves`);
+      }
+      const plans = await ingestion('shadow').planPaths(await new MongoContentEntityRepository().findByIds(pathlessIds));
+      assert.deepEqual([...plans.values()].map((p) => p.paths.length).sort(), [0, 0, 0, 1], 'only the failed write has a safe path left');
+      const second = await ingestion('write').run('20261110', day());
+      assert.deepEqual(second.slugs.pathless, { unsupported_slug: 1, historic_conflict: 1, inventory_review: 1 });
+      assert.equal(second.slugs.repaired, 1);
+      assert.equal((await ContentEntityModel.findOne({ normalizedTitle: 'saber_y_ganar' }).lean())?.canonicalPath, '/programas/saber-y-ganar');
+    });
+
+    await t.test('legacy-title evidence: only the requested slugs are kept; no request, no scan', async () => {
+      const evidence = new MongoIdentityEvidenceSource();
+      commands = 0;
+      assert.equal((await evidence.historicSlugOwners([])).size, 0);
+      assert.equal(commands, 0);
+      const owners = await evidence.historicSlugOwners(['no', 'cenicienta', 'not-a-legacy-slug']);
+      assert.deepEqual([...owners.keys()].sort(), ['cenicienta', 'no']);
+      assert.deepEqual(owners.get('cenicienta')?.map((w) => w.tmdb?.id).sort(), [11224, 150689]);
     });
   } finally {
     restoreEnv();

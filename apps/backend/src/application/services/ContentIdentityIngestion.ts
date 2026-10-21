@@ -22,9 +22,10 @@ import {
   classifyContentKind,
   ContentKind,
   decideIngestionMatch,
-  entityCandidatePaths,
   isGenericContentTitle,
   newEntityId,
+  planCanonicalPaths,
+  plannedSlugs,
   TitleKeyRow,
   titleIdentityKey,
   TmdbRef,
@@ -79,8 +80,30 @@ export function newIdentityReport(mode: 'shadow' | 'write', date: string) {
     deferred: 0,
     /** Candidates skipped because a write failed; retried by the next run. */
     failed: 0,
-    slugs: { allocated: 0, collisions: 0, historicConflicts: 0, pathless: 0 },
-    writes: { entities: 0, titleKeys: 0, slugs: 0, duplicateKeyConflicts: 0, claimConflicts: 0 },
+    slugs: {
+      allocated: 0,
+      /** Paths given to entities an earlier run left pathless (crash leftovers, new evidence). */
+      repaired: 0,
+      /** Allocated paths a legacy title of this same work already answered. */
+      historicOwner: 0,
+      /** Candidate paths refused, by `PathBlock` reason (a refused bare slug may leave the year path). */
+      refused: {} as Record<string, number>,
+      /**
+       * Entities left without a path, by reason. All intentional (no safe path, or `taken` by
+       * another entity) except `write_failed`, which the next run retries.
+       */
+      pathless: {} as Record<string, number>,
+    },
+    writes: {
+      entities: 0,
+      titleKeys: 0,
+      slugs: 0,
+      duplicateKeyConflicts: 0,
+      /** Bound rows whose entity can't be materialised because another entity owns its TMDB work. */
+      claimConflicts: 0,
+      /** …of those, provisional rows moved to the review queue (`claim_conflict`). */
+      claimsFlagged: 0,
+    },
     airingRefs: { applied: 0, skipped: '' },
     estimate: { newEntities: 0, approxBytes: 0 },
     durationMs: 0,
@@ -96,6 +119,7 @@ interface Candidate {
   tmdb?: TmdbRef;
   airingIds: string[];
   entityId?: string;
+  rowId?: string;
 }
 
 export function observationsFromAirings(airings: any[], years: ReadonlyMap<string, unknown>): IdentityObservation[] {
@@ -242,6 +266,7 @@ export class ContentIdentityIngestion {
       let row: TitleKeyRow | null = null;
       if (decision.decision === 'matched' || decision.decision === 'held') {
         seenRows.push(decision.row.id);
+        c.rowId = decision.row.id;
         if (decision.row.reason) count(report.reasons, decision.row.reason);
         c.entityId = decision.decision === 'matched' ? decision.row.entityId : undefined;
         return;
@@ -269,6 +294,7 @@ export class ContentIdentityIngestion {
         row = await store(decision.row);
       }
       rowsByKey.set(c.key, [...rows, row as TitleKeyRecord]);
+      c.rowId = row.id;
       c.entityId = row.state === 'verified' || row.state === 'candidate' ? row.entityId : undefined;
     };
     // One bad candidate (a write the database refuses) is counted and skipped; the rest of the day
@@ -301,9 +327,15 @@ export class ContentIdentityIngestion {
       }
       const entity = await this.service.ensureEntity(this.entityInput(claimed.get(id) ?? c), id);
       if (entity.entityId !== id) {
-        // Only a concurrent TMDB creator can cause this; the row points at an id that won't exist.
+        // The row's entity is missing and its TMDB work belongs to another live entity, so this id
+        // can never be created. Not re-pointed automatically: a provisional row goes to review with
+        // the owner as evidence (durable, queryable); a verified row is left alone and counted.
         report.writes.claimConflicts++;
         c.entityId = undefined;
+        const by = this.opts.actor ?? 'ingest';
+        if (c.rowId && (await this.ports.titleKeys.flagClaimConflict(c.rowId, { entityId: id, candidates: [entity.entityId], by }))) {
+          report.writes.claimsFlagged++;
+        } else log.warn('Content identity claim conflict on a non-provisional row', { row: c.rowId, entityId: id });
         return;
       }
       // Counted by the run that claimed the id, whichever process got to insert it.
@@ -313,50 +345,39 @@ export class ContentIdentityIngestion {
     for (const c of bound) await isolated(c, materialise);
 
     // 6. Canonical paths for live entities that have none yet: new ones, crash leftovers and
-    // earlier collisions. A historic URL another work answered is never taken.
-    const historic = await this.ports.evidence.historicSlugOwners();
+    // earlier refusals. Only paths no other work can claim (`planCanonicalPaths`), so the result
+    // doesn't depend on processing order; a path already taken leaves the entity pathless.
     const pathless = [...new Map(bound.map((c) => [c.entityId as string, entities.get(c.entityId as string)])).values()].filter(
       (e): e is ContentEntityRecord => Boolean(e && LIVE.has(e.status) && !e.canonicalPath)
     );
-    const allowedPaths = new Map<string, string[]>();
-    for (const e of pathless) {
-      const ownKey = titleIdentityKey(e.title);
-      allowedPaths.set(
-        e.entityId,
-        entityCandidatePaths(e.kind, e.title, e.year).filter((path) => {
-          const owners = historic.get(path.slice(path.lastIndexOf('/') + 1)) ?? [];
-          const ours = owners.every((keys) => ownKey && keys.has(ownKey));
-          if (!ours) report.slugs.historicConflicts++;
-          return ours;
-        })
-      );
-    }
+    const plans = await this.planPaths(pathless);
     const taken = write
       ? new Set<string>()
-      : new Set((await this.ports.slugs.findByPaths([...allowedPaths.values()].flat())).map((s) => s.path));
+      : new Set((await this.ports.slugs.findByPaths([...plans.values()].flatMap((p) => p.paths))).map((s) => s.path));
     for (const e of pathless) {
-      const paths = allowedPaths.get(e.entityId) ?? [];
+      const plan = plans.get(e.entityId) as ReturnType<typeof planCanonicalPaths>;
+      plan.blocked.forEach((reason) => count(report.slugs.refused, reason));
       let path: string | null = null;
-      if (write && paths.length) {
+      if (write && plan.paths.length) {
         try {
-          path = await this.service.allocateCanonicalPath(e.entityId, paths);
+          path = await this.service.allocateCanonicalPath(e.entityId, plan.paths);
         } catch (error) {
           if (error instanceof ContentIdentityNotReadyError) throw error;
           report.failed++;
+          count(report.slugs.pathless, 'write_failed');
           log.warn('Content identity path allocation skipped', { error: String((error as Error)?.message || '').slice(0, 200) });
           continue;
         }
       }
-      if (!write) path = paths.find((p) => !taken.has(p)) ?? null;
+      if (!write) path = plan.paths.find((p) => !taken.has(p)) ?? null;
       if (path) {
         taken.add(path);
         report.slugs.allocated++;
+        if (!claimed.has(e.entityId)) report.slugs.repaired++;
+        if (plan.historic.includes(path)) report.slugs.historicOwner++;
         if (write) report.writes.slugs++;
         e.canonicalPath = path;
-      } else {
-        report.slugs.pathless++;
-        if (paths.length) report.slugs.collisions++;
-      }
+      } else count(report.slugs.pathless, plan.paths.length ? 'taken' : plan.blocked[0]);
     }
 
     // 7. Airing references: only with the flag, and only once the hand-built index exists.
@@ -376,6 +397,12 @@ export class ContentIdentityIngestion {
     if (write) await this.ports.titleKeys.touch(seenRows, new Date());
     report.durationMs = Date.now() - started;
     return report;
+  }
+
+  /** Path plan per entity from one bounded legacy-title read; also used by the `pathless` audit. */
+  async planPaths(entities: ContentEntityRecord[]): Promise<Map<string, ReturnType<typeof planCanonicalPaths>>> {
+    const owners = await this.ports.evidence.historicSlugOwners([...new Set(entities.flatMap((e) => plannedSlugs(e)))]);
+    return new Map(entities.map((e) => [e.entityId, planCanonicalPaths(e, (slug) => owners.get(slug) ?? [])] as const));
   }
 
   private entityInput(c: Candidate, row?: TitleKeyRow): Omit<ContentEntityInsert, 'entityId'> {
