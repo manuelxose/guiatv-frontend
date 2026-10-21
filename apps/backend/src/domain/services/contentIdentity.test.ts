@@ -14,6 +14,7 @@ import {
   newEntityId,
   normalizeContentPath,
   parseEpgTitle,
+  stripChannelSegment,
   HistoricWork,
   planCanonicalPaths,
   TitleKeyRow,
@@ -648,4 +649,15 @@ test('property: parsing never throws, keeps the original, is idempotent on the w
       assert.notEqual(p.resolutionState, 'episode', JSON.stringify(title));
     }
   }
+});
+
+test('2D-2F stripChannelSegment: a leading or trailing segment naming the airing channel is not part of the title', () => {
+  assert.equal(stripChannelSegment('ETB2 · Eguraldia', ['ETB 2', 'etb2']), 'Eguraldia', 'production spelling; "ETB 2" = "ETB2"');
+  assert.equal(stripChannelSegment('Informatiu · Elche 7 TV', ['Elche 7 TV']), 'Informatiu');
+  assert.equal(stripChannelSegment('ETB2 · Gaur Egun · Edizioa', ['ETB2']), 'Gaur Egun · Edizioa', 'only the channel segment goes');
+  assert.equal(stripChannelSegment('ETB2', ['ETB 2']), 'ETB2', 'a title that is only the channel is left to the slot rules');
+  assert.equal(stripChannelSegment('9-1-1 T4 E3 · El futuro', ['Cuatro']), '9-1-1 T4 E3 · El futuro');
+  assert.equal(stripChannelSegment('La 2 · Documental', []), 'La 2 · Documental', 'no channel names: unchanged');
+  assert.equal(stripChannelSegment('A · Noticias', ['A']), 'A · Noticias', 'one-character names never match');
+  assert.equal(stripChannelSegment('ETB2 - Eguraldia', ['ETB2']), 'ETB2 - Eguraldia', "only the feed's ' · ' separator");
 });

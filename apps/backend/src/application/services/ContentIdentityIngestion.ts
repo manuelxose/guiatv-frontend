@@ -25,6 +25,7 @@ import {
   newEntityId,
   ParsedEpgTitle,
   parseEpgTitle,
+  stripChannelSegment,
   planCanonicalPaths,
   plannedSlugs,
   TitleKeyRow,
@@ -52,8 +53,13 @@ export interface IdentityObservation {
   sportFacet?: string | null;
   tmdbId?: number;
   mediaId?: string;
-  /** EPG `<date>`; used only for films, where it tells remakes apart. */
+  /**
+   * EPG `<date>`; used only for films, where it tells remakes apart. The EPG sync overwrites it
+   * with the matched TMDB year, so on a TMDB-enriched airing it is not independent of that match.
+   */
   year?: number;
+  /** The airing's channel id and its names, so a channel-name segment is not taken for a work. */
+  channel?: { id: string; names: string[] };
 }
 
 /** A search-derived TMDB id confirmed by the catalogue title: provisional, never verified (2C §E.2). */
@@ -132,6 +138,8 @@ export interface IdentityTrace {
   airings: number;
   /** Airings by title evidence (`ContentIdentityIngestion` report `titles`). */
   titleEvidence?: Record<string, number>;
+  /** Broadcaster keys of its airings, sorted (`broadcasterKey`; 2D-2F broadcaster consistency). */
+  channels?: string[];
   /** Known kinds this candidate's work was seen under in the run, when more than one. */
   crossKind?: ContentKind[];
   epgYears: number[];
@@ -162,6 +170,7 @@ interface Candidate {
   entityId?: string;
   rowId?: string;
   spellings: Set<string>;
+  channels: Set<string>;
   titleEvidence: Record<string, number>;
   /** Held out of matching for the whole run (unresolved, not stored). */
   hold?: 'title_uncertain';
@@ -170,6 +179,15 @@ interface Candidate {
   tmdbIds: Set<number>;
   unconfirmed: number;
   outcome?: Pick<IdentityTrace, 'decision' | 'state' | 'method' | 'confidence' | 'reason'>;
+}
+
+/**
+ * One key per broadcaster: the channel name without accents, a ".TV" feed suffix or punctuation, so
+ * one channel ingested from two feeds ("ETB 2" and "ETB2.TV") counts once. Different names stay apart.
+ */
+export function broadcasterKey(channel: { id: string; names: string[] }): string {
+  const name = (channel.names[0] ?? '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\.tv$/, '');
+  return name.replace(/[^a-z0-9]/g, '') || channel.id;
 }
 
 export function observationsFromAirings(airings: any[], years: ReadonlyMap<string, unknown>): IdentityObservation[] {
@@ -184,6 +202,9 @@ export function observationsFromAirings(airings: any[], years: ReadonlyMap<strin
       tmdbId: Number.isInteger(airing.program?.tmdbId) ? airing.program.tmdbId : undefined,
       mediaId: airing.program?.mediaId ? String(airing.program.mediaId) : undefined,
       year: year >= 1888 && year <= 2100 ? year : undefined,
+      channel: airing.channel?.id
+        ? { id: String(airing.channel.id), names: [airing.channel.name, ...(airing.channel.aliases ?? [])].filter(Boolean).map(String) }
+        : undefined,
     };
   });
 }
@@ -233,7 +254,7 @@ export class ContentIdentityIngestion {
     const kept: Array<{ obs: IdentityObservation; title: ParsedEpgTitle }> = [];
     const rejectedTitles = new Map<string, { reason: string; airings: number }>();
     for (const obs of observations) {
-      const title = parseEpgTitle(obs.title, obs.subtitle);
+      const title = parseEpgTitle(stripChannelSegment(obs.title, obs.channel?.names), obs.subtitle);
       const reason = EXCLUDED_TITLES[title.resolutionState as keyof typeof EXCLUDED_TITLES];
       if (!reason) {
         kept.push({ obs, title });
@@ -292,9 +313,10 @@ export class ContentIdentityIngestion {
       const year = confirmed ? confirmed.year : kind === 'movie' ? obs.year : undefined;
       const id = [key, kind, tmdb ? `${tmdb.type}:${tmdb.id}` : '', year ?? ''].join('|') + (hold ? '|held' : '');
       const group: Candidate = groups.get(id) ?? {
-        id, key, kind, title, year, tmdb, hold, airingIds: [], spellings: new Set(), titleEvidence: {}, epgYears: new Set(), tmdbIds: new Set(), unconfirmed: 0,
+        id, key, kind, title, year, tmdb, hold, airingIds: [], spellings: new Set(), channels: new Set(), titleEvidence: {}, epgYears: new Set(), tmdbIds: new Set(), unconfirmed: 0,
       };
       group.spellings.add(obs.title);
+      if (obs.channel) group.channels.add(broadcasterKey(obs.channel));
       count(group.titleEvidence, evidence);
       if (obs.year) group.epgYears.add(obs.year);
       if (obs.tmdbId) group.tmdbIds.add(obs.tmdbId);
@@ -534,6 +556,7 @@ export class ContentIdentityIngestion {
         kind: c.kind,
         title: c.title,
         spellings: [...c.spellings].sort(),
+        channels: [...c.channels].sort(),
         airings: c.airingIds.length,
         titleEvidence: c.titleEvidence,
         ...(c.crossKind ? { crossKind: c.crossKind } : {}),
