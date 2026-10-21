@@ -14,7 +14,7 @@ const { createContentIdentityIngestion, observationsFromAirings } = dist('applic
   await connectMongoDB();
   const date = process.argv[2];
   if (!/^\d{8}$/.test(date || '')) throw new Error('usage: trace-dump.js YYYYMMDD');
-  const airings = await TVReadAiringModel.find({ date }, { id: 1, program: 1, sourceProvenance: 1 }).lean();
+  const airings = await TVReadAiringModel.find({ date }, { id: 1, program: 1, sourceProvenance: 1, 'channel.id': 1, 'channel.name': 1, 'channel.aliases': 1 }).lean();
   const ids = airings.map((a) => a.sourceProvenance?.legacyProgramIds?.[0]).filter(Boolean);
   const years = new Map((await ProgramModel.find({ id: { $in: ids }, year: { $exists: true } }, { id: 1, year: 1 }).lean()).map((p) => [p.id, p.year]));
   const y = new Map(airings.map((a) => [a.id, years.get(a.sourceProvenance?.legacyProgramIds?.[0])]));

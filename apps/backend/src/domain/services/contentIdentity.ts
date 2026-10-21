@@ -346,6 +346,21 @@ export function titleIdentityKey(title: string | null | undefined): string | nul
   return parseEpgTitle(title).normalizedWorkKey;
 }
 
+/**
+ * Drops a leading or trailing " · " segment that names the airing's own channel: some feeds write
+ * "<channel> · <programme>" ("ETB2 · Eguraldia") or the reverse, which would make the channel a work.
+ * Names compare as keys without separators ("ETB 2" = "ETB2"); a title that is only the channel stays.
+ */
+export function stripChannelSegment(title: string, channelNames: readonly string[] = []): string {
+  const compact = (text: string) => (buildProgramBrandKey(text) || '').replace(/_/g, '');
+  const names = new Set(channelNames.map(compact).filter((n) => n.length > 1));
+  const parts = title.split(FEED_SEPARATOR);
+  if (!names.size || parts.length < 2) return title;
+  if (names.has(compact(parts[0]))) return parts.slice(1).join(' · ');
+  if (names.has(compact(parts[parts.length - 1]))) return parts.slice(0, -1).join(' · ');
+  return title;
+}
+
 export function isGenericContentTitle(title: string | null | undefined): boolean {
   return parseEpgTitle(title).resolutionState === 'generic';
 }

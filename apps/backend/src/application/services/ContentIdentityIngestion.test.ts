@@ -22,7 +22,7 @@ import {
 import { newEntityId, titleKeyId } from '@/domain/services/contentIdentity';
 import { PRIMARY_EPG_SOURCE_URL } from '@/shared/config/epgSources';
 import { ContentIdentityService } from './ContentIdentityService';
-import { ContentIdentityIngestion, IdentityObservation, IdentityTrace, runContentIdentity } from './ContentIdentityIngestion';
+import { broadcasterKey, ContentIdentityIngestion, IdentityObservation, IdentityTrace, runContentIdentity } from './ContentIdentityIngestion';
 import { auditClasses, buildReviewRows, scoreReview, summarizeTraces, toCsv } from './ContentIdentityAudit';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
@@ -264,6 +264,22 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       const score = scoreReview(buildReviewRows(traces, plan), { precision: 0.98, minLabelled: 5 });
       assert.equal(score.reviewed, 0, 'machine output is never a label');
       assert.equal(score.gate.pass, false);
+    });
+
+    await t.test('a channel-name segment is not a work; traces carry channel ids (2D-2F)', async () => {
+      const etb2 = { id: 'etb_2', names: ['ETB 2', 'etb2'] };
+      const elche = { id: 'elche_7', names: ['Elche 7 TV'] };
+      const traces: IdentityTrace[] = [];
+      const etb2Feed = { id: 'etb2_tv', names: ['ETB2.TV', 'etb2'] };
+      const day = [obs('ETB2 · Eguraldia', { channel: etb2 }), obs('ETB2 · Eguraldia', { channel: etb2Feed }), obs('Informatiu · Elche 7 TV', { channel: elche })];
+      await ingestion('shadow').run('20261020', day, traces);
+      assert.deepEqual(traces.map((t) => [t.title, t.channels, t.spellings]).sort(), [
+        ['Eguraldia', ['etb2'], ['ETB2 · Eguraldia']],
+        ['Informatiu', ['elche7tv'], ['Informatiu · Elche 7 TV']],
+      ], 'one broadcaster from two feeds ("ETB 2", "ETB2.TV") is one key');
+      assert.deepEqual([broadcasterKey({ id: 'tv_canaria', names: ['TV Canaria'] }), broadcasterKey({ id: 'canarias_tv', names: ['Canarias.TV'] })], ['tvcanaria', 'canarias'], 'different names stay apart');
+      assert.equal(broadcasterKey({ id: 'x_tv', names: [] }), 'x_tv');
+      assert.deepEqual(await contentCollections(), []);
     });
 
     await t.test('read-only guard: a write ends the process before it is sent; model indexes are not built', () => {

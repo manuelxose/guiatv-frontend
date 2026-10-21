@@ -7,6 +7,10 @@
  *   node dist/scripts/content-identity.js score <review.csv> [--verify <second.csv>] [--min-labelled M] [--min-verified V]
  *                                                                       scores a labelled sheet (no database); the gate needs
  *                                                                       a second reviewer's sheet (2D-2E review protocol)
+ *   node dist/scripts/content-identity.js evidence <day.jsonl> [<other-day.jsonl> ...] [--tmdb <checks.json>] [--out <verdicts.jsonl>]
+ *                                                                       machine-evidence verdicts for the first day's traces
+ *                                                                       (`trace-dump.js` files; no database); exit 2 on a
+ *                                                                       violation. Not labels: never opens the write gate (2D-2F)
  *   node dist/scripts/content-identity.js queue [limit]                 review queue (reads)
  *   node dist/scripts/content-identity.js pathless [limit]              stored entities without a path, by reason (reads)
  *   node dist/scripts/content-identity.js approve <titleKeyId> <entityId> --by <name> [--note <text>]
@@ -43,6 +47,7 @@ import {
   summarizeTraces,
   toCsv,
 } from '../application/services/ContentIdentityAudit';
+import { adjudicateEvidence, evaluateEvidence, TmdbSearchCheck } from '../application/services/ContentIdentityEvidence';
 import { readContentIdentityFlags } from '../shared/config/contentEntities';
 import { installReadOnlyGuard } from './readOnlyGuard';
 
@@ -71,7 +76,7 @@ async function shadow(from: string, to: string, sample?: SampleOptions) {
   if (!/^\d{8}$/.test(from) || !/^\d{8}$/.test(to)) throw new Error('dates are YYYYMMDD');
   const ingestion = createContentIdentityIngestion('shadow');
   for (const date of dates(from, to)) {
-    const airings = await TVReadAiringModel.find({ date }, { id: 1, program: 1, sourceProvenance: 1 }).lean().exec();
+    const airings = await TVReadAiringModel.find({ date }, { id: 1, program: 1, sourceProvenance: 1, 'channel.id': 1, 'channel.name': 1, 'channel.aliases': 1 }).lean().exec();
     // The EPG year lives on the source programme, not on the airing.
     const programIds = airings.map((a: any) => a.sourceProvenance?.legacyProgramIds?.[0]).filter(Boolean);
     const years = new Map(
@@ -126,6 +131,10 @@ async function pathless(limit: number) {
   console.log(JSON.stringify({ total: rows.length, byReason, rows }, null, 2));
 }
 
+/** A `trace-dump.js` file: one `{ report }` line, then one trace per line. */
+const readTraces = (file: string): IdentityTrace[] =>
+  fs.readFileSync(file, 'utf8').split('\n').filter((line) => line.startsWith('{"candidateId"')).map((line) => JSON.parse(line));
+
 async function main() {
   const [command, ...args] = process.argv.slice(2);
   if (command === 'score') {
@@ -136,6 +145,19 @@ async function main() {
     const score = scoreReview(rows, { precision: 0.98, minLabelled, minVerified }, verify ? parseCsv(fs.readFileSync(verify, 'utf8')) : undefined);
     console.log(JSON.stringify(score, null, 2));
     process.exitCode = score.gate.pass ? 0 : 2;
+    return;
+  }
+  if (command === 'evidence') {
+    const out = option(args, '--out');
+    const [day, ...others] = args.filter((a, i) => !a.startsWith('--') && !args[i - 1]?.startsWith('--')).map(readTraces);
+    if (!day) throw new Error('usage: evidence <day.jsonl> [<other-day.jsonl> ...] [--tmdb <checks.json>] [--out <file>]');
+    const tmdbFile = option(args, '--tmdb');
+    const checks: TmdbSearchCheck[] = tmdbFile ? JSON.parse(fs.readFileSync(tmdbFile, 'utf8')) : [];
+    const verdicts = adjudicateEvidence(day, others, new Map(checks.map((c) => [`${c.type}:${c.id}`, c])));
+    if (out) fs.writeFileSync(out, verdicts.map((v) => JSON.stringify(v)).join('\n') + '\n');
+    const result = evaluateEvidence(verdicts);
+    console.log(JSON.stringify(result, null, 2));
+    process.exitCode = result.status === 'pass' ? 0 : 2;
     return;
   }
   const guard = command === 'approve' || command === 'reject' ? null : installReadOnlyGuard();
