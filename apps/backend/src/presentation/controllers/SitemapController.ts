@@ -8,6 +8,7 @@ import { FootballQueryService } from '../../application/sports/services/Football
 import { buildLegacyProgramSlug, normalizeTvToken, channelPagePath } from '../../shared/utils/tvMetadata';
 import { TvReadQueryService } from '../../application/services/TvReadQueryService';
 import { PUBLIC_EDITORIAL_FILTER } from '../../application/services/EditorialReviewPolicy';
+import { entityPublicReadPolicy, normalizeEntityPath } from '../../application/services/EntityPublicReadPolicy';
 
 type Changefreq =
   | 'always'
@@ -136,7 +137,7 @@ export class SitemapController {
   /* ------------------------------------------------------------------ */
 
   private async getCached(key: string, builder: () => Promise<string>): Promise<string> {
-    key = `${process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED === 'true' ? 'entities' : 'legacy'}:${key}`;
+    key = `${entityPublicReadPolicy().partition()}:${key}`;
     const now = Date.now();
     const cached = cache.get(key);
     if (cached && cached.expiresAt > now) return cached.value;
@@ -437,8 +438,12 @@ export class SitemapController {
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ];
 
+    const policy = entityPublicReadPolicy();
+    const mode = policy.readMode();
+    const canary = mode === 'canary' ? policy.canaryPaths() : null;
     for (const url of urls) {
-      if (process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED === 'true' && /^\/(peliculas|series|programas)\/[^/]+\/?$/.test(url.loc)) continue;
+      if (mode === 'all' && /^\/(peliculas|series|programas)\/[^/]+\/?$/.test(url.loc)) continue;
+      if (canary?.has(normalizeEntityPath(url.loc))) continue;
       const loc = this.escapeXml(this.joinUrl(baseUrl, url.loc));
       lines.push('  <url>');
       lines.push(`    <loc>${loc}</loc>`);

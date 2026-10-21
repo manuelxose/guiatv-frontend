@@ -14,7 +14,7 @@ import type { ApiResponse } from '@/shared/types/ApiResponse';
 import type { PublicContentEntity } from '@/application/services/PublicContentEntityService';
 
 test('public HTTP reads use lifecycle fixtures, fail closed and issue no Mongo writes', { skip: !process.env.TEST_MONGO_URI }, async () => {
-  const previous = { entities: process.env.CONTENT_ENTITIES_ENABLED, public: process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED };
+  const previous = { entities: process.env.CONTENT_ENTITIES_ENABLED, public: process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED, scope: process.env.CONTENT_ENTITY_PUBLIC_READ_SCOPE };
   const dbName = `guiatv_test_3a_${process.pid}`;
   await mongoose.connect(process.env.TEST_MONGO_URI!, { dbName, monitorCommands: true });
   const identity = new ContentIdentityService(new MongoContentEntityRepository(), new MongoContentSlugRepository(), new MongoContentTitleKeyRepository());
@@ -60,6 +60,11 @@ test('public HTTP reads use lifecycle fixtures, fail closed and issue no Mongo w
     assert.equal(disabled.headers.get('ratelimit-limit'), null, 'disabled probes never consume a rate limit');
     assert.equal((await disabled.json() as ApiResponse<PublicContentEntity>).error?.code, 'ENTITY_PUBLIC_READ_DISABLED');
     process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED = 'true';
+    // 3B: the master flag alone serves nothing; the whole corpus needs an explicit scope.
+    const unscoped = await read('/peliculas/verified');
+    assert.equal(unscoped.status, 404);
+    assert.equal((await unscoped.json() as ApiResponse<PublicContentEntity>).error?.code, 'ENTITY_PUBLIC_READ_DISABLED');
+    process.env.CONTENT_ENTITY_PUBLIC_READ_SCOPE = 'all';
     const response = await read('/peliculas/verified');
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('x-robots-tag'), 'noindex, follow');
@@ -84,6 +89,7 @@ test('public HTTP reads use lifecycle fixtures, fail closed and issue no Mongo w
     checking = false;
     if (previous.entities === undefined) delete process.env.CONTENT_ENTITIES_ENABLED; else process.env.CONTENT_ENTITIES_ENABLED = previous.entities;
     if (previous.public === undefined) delete process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED; else process.env.CONTENT_ENTITY_PUBLIC_READ_ENABLED = previous.public;
+    if (previous.scope === undefined) delete process.env.CONTENT_ENTITY_PUBLIC_READ_SCOPE; else process.env.CONTENT_ENTITY_PUBLIC_READ_SCOPE = previous.scope;
     await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
     await mongoose.connection.dropDatabase();
     await mongoose.disconnect();

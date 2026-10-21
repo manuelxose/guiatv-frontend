@@ -1,0 +1,2518 @@
+{
+  "proposed": {
+    "summary": {
+      "proposed": 1538,
+      "withPath": 1330,
+      "pathless": 208,
+      "legacyInherited": 1195,
+      "severity": {
+        "blocker": 0,
+        "quarantine": 208,
+        "review": 0
+      }
+    },
+    "collisions": [],
+    "quarantine": [
+      {
+        "candidateId": "candyman|movie||",
+        "identity": "new:candyman|movie|*",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "caso_cerrado|show||",
+        "identity": "new:caso_cerrado|show|*",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "clac|movie|movie:1556837|",
+        "identity": "new:clac|movie|tmdb:movie:1556837",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "heidi|series||",
+        "identity": "new:heidi|series|*",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "pesadilla_en_la_cocina|show||",
+        "identity": "new:pesadilla_en_la_cocina|show|*",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "quantum_leap|series||",
+        "identity": "new:quantum_leap|series|*",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "trato_hecho|series|tv:3730|",
+        "identity": "new:trato_hecho|series|tmdb:tv:3730",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "c_s_i_miami|series||",
+        "identity": "new:c_s_i_miami|series|*",
+        "code": "pathless_historic_conflict",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "c_s_i|series||",
+        "identity": "new:c_s_i|series|*",
+        "code": "pathless_historic_conflict",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "csi_las_vegas|series||",
+        "identity": "new:csi_las_vegas|series|*",
+        "code": "pathless_historic_conflict",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "csi_miami|series||",
+        "identity": "new:csi_miami|series|*",
+        "code": "pathless_historic_conflict",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "10_razones_para_odiarte|movie||",
+        "identity": "new:10_razones_para_odiarte|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "20yo_college_amateurs|movie||",
+        "identity": "new:20yo_college_amateurs|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "a_jugar_amb_en_tito_i_els_fa_la_la|show||",
+        "identity": "new:a_jugar_amb_en_tito_i_els_fa_la_la|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "a_puerta_fria|movie||",
+        "identity": "new:a_puerta_fria|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "a_un_paso_del_cielo|series||",
+        "identity": "new:a_un_paso_del_cielo|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "action_man|series||",
+        "identity": "new:action_man|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "adult_film_school|movie||",
+        "identity": "new:adult_film_school|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "aeroport|show||",
+        "identity": "new:aeroport|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "alex_de_la_iglesia_y_monica_ojeda|movie||",
+        "identity": "new:alex_de_la_iglesia_y_monica_ojeda|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "aliens_probe_uranus|movie||",
+        "identity": "new:aliens_probe_uranus|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "amateur_facials|movie||",
+        "identity": "new:amateur_facials|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "american_gangster|movie||",
+        "identity": "new:american_gangster|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "anderson_cooper_360|show||",
+        "identity": "new:anderson_cooper_360|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "aqui_llega_condemor_el_pecador_de_la_pradera|movie||",
+        "identity": "new:aqui_llega_condemor_el_pecador_de_la_pradera|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "asesinato_1_2_3|movie||",
+        "identity": "new:asesinato_1_2_3|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "atrapa_m_si_pots|show||",
+        "identity": "new:atrapa_m_si_pots|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "barrio|movie||",
+        "identity": "new:barrio|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "beetlejuice|series||",
+        "identity": "new:beetlejuice|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "bendita_loucura|movie||",
+        "identity": "new:bendita_loucura|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "big_bad_wolves|movie||",
+        "identity": "new:big_bad_wolves|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "black_mass_estrictamente_criminal|movie||",
+        "identity": "new:black_mass_estrictamente_criminal|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "blade_runner_el_montaje_del_director|movie||",
+        "identity": "new:blade_runner_el_montaje_del_director|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "blau_cinema_al_festival_de_sitges|movie||",
+        "identity": "new:blau_cinema_al_festival_de_sitges|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "bull|series||",
+        "identity": "new:bull|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "callejeros|show||",
+        "identity": "new:callejeros|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "camino_a_la_perdicion|movie||",
+        "identity": "new:camino_a_la_perdicion|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "cara_al_show_con_marc_giro|show||",
+        "identity": "new:cara_al_show_con_marc_giro|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "catfish_mentiras_en_la_red|show||",
+        "identity": "new:catfish_mentiras_en_la_red|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "central_de_comicos|show||",
+        "identity": "new:central_de_comicos|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "cinefilies_hiraeth|movie||",
+        "identity": "new:cinefilies_hiraeth|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ciudad_de_dios|movie||",
+        "identity": "new:ciudad_de_dios|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "cocina_abierta_de_karlos_arguinano|show||",
+        "identity": "new:cocina_abierta_de_karlos_arguinano|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "codigo_nuclear|movie||",
+        "identity": "new:codigo_nuclear|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "con_el_culo_al_aire|series||",
+        "identity": "new:con_el_culo_al_aire|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "cream_faced_latina_coeds|movie||",
+        "identity": "new:cream_faced_latina_coeds|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "csi_vegas|series||",
+        "identity": "new:csi_vegas|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "des_racines_et_des_ailes|movie||",
+        "identity": "new:des_racines_et_des_ailes|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "desmontando_galicia|show||",
+        "identity": "new:desmontando_galicia|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "dexter|series||",
+        "identity": "new:dexter|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "dia_a_dia|show||",
+        "identity": "new:dia_a_dia|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "documentos_tv|show||",
+        "identity": "new:documentos_tv|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "dragon_ball_super|series||",
+        "identity": "new:dragon_ball_super|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "dragon_ball|movie||",
+        "identity": "new:dragon_ball|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "drive|movie||",
+        "identity": "new:drive|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "duplicity|movie||",
+        "identity": "new:duplicity|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_anacoreta|movie||",
+        "identity": "new:el_anacoreta|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_caso_willingham|movie||",
+        "identity": "new:el_caso_willingham|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_chavo_del_ocho|series||",
+        "identity": "new:el_chavo_del_ocho|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_diario_de_jorge|show||",
+        "identity": "new:el_diario_de_jorge|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_faro|show||",
+        "identity": "new:el_faro|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_hombre_lobo|movie||",
+        "identity": "new:el_hombre_lobo|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_hormiguero|show||",
+        "identity": "new:el_hormiguero|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_intermedio|show||",
+        "identity": "new:el_intermedio|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_liquidador|show||",
+        "identity": "new:el_liquidador|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_mundo_perdido_jurassic_park|movie||",
+        "identity": "new:el_mundo_perdido_jurassic_park|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_nino_del_bosque|movie||",
+        "identity": "new:el_nino_del_bosque|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_ojo_critico|movie||",
+        "identity": "new:el_ojo_critico|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_resplandor|movie||",
+        "identity": "new:el_resplandor|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_senor_de_los_bosques_canada_juan_llanos|movie||",
+        "identity": "new:el_senor_de_los_bosques_canada_juan_llanos|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "els_millors_curts_filmets_badalona_film_festival|movie||",
+        "identity": "new:els_millors_curts_filmets_badalona_film_festival|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "els_millors_curts_filmets|movie||",
+        "identity": "new:els_millors_curts_filmets|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "elsa_y_fred|movie||",
+        "identity": "new:elsa_y_fred|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "emanet|series||",
+        "identity": "new:emanet|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "en_el_corazon_del_mar|movie||",
+        "identity": "new:en_el_corazon_del_mar|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "esposa_joven|series||",
+        "identity": "new:esposa_joven|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "esto_es_cultura|movie||",
+        "identity": "new:esto_es_cultura|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "face_a_face|show||",
+        "identity": "new:face_a_face|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "fast_furious_7_a_todo_gas_7|movie||",
+        "identity": "new:fast_furious_7_a_todo_gas_7|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "fbi_most_wanted|series||",
+        "identity": "new:fbi_most_wanted|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "figuras_ocultas|movie||",
+        "identity": "new:figuras_ocultas|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "filmets_2026|movie||",
+        "identity": "new:filmets_2026|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "filmets|movie||",
+        "identity": "new:filmets|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "focus|show||",
+        "identity": "new:focus|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "forjado_a_fuego|show||",
+        "identity": "new:forjado_a_fuego|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "frankenputa_vicios_diabolicos|movie||",
+        "identity": "new:frankenputa_vicios_diabolicos|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "futurama|series||",
+        "identity": "new:futurama|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "gail_daughtry_y_el_vale_por_un_rollo_vip|movie||",
+        "identity": "new:gail_daughtry_y_el_vale_por_un_rollo_vip|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "galerias_paradise|series||",
+        "identity": "new:galerias_paradise|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "gaupasa|show||",
+        "identity": "new:gaupasa|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "girls|series||",
+        "identity": "new:girls|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "goya_el_ojo_que_escucha|movie||",
+        "identity": "new:goya_el_ojo_que_escucha|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "grimm|series||",
+        "identity": "new:grimm|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "hawai_5_0|series||",
+        "identity": "new:hawai_5_0|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "henry_danger|series||",
+        "identity": "new:henry_danger|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "horizonte|show||",
+        "identity": "new:horizonte|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "hulk|movie||",
+        "identity": "new:hulk|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "infok|show||",
+        "identity": "new:infok|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "inside_story|show||",
+        "identity": "new:inside_story|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "investigacion|movie||",
+        "identity": "new:investigacion|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "joyas_sobre_ruedas|show||",
+        "identity": "new:joyas_sobre_ruedas|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "juerga_hasta_el_fin|movie||",
+        "identity": "new:juerga_hasta_el_fin|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "jurassic_park_parque_jurasico|movie||",
+        "identity": "new:jurassic_park_parque_jurasico|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "karate_kid_legends|movie||",
+        "identity": "new:karate_kid_legends|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "l_invite|show||",
+        "identity": "new:l_invite|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_ballena|movie||",
+        "identity": "new:la_ballena|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_boda_de_mi_mejor_amigo|movie||",
+        "identity": "new:la_boda_de_mi_mejor_amigo|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_controversia_de_valladolid|movie||",
+        "identity": "new:la_controversia_de_valladolid|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_estrella_de_fuego|movie||",
+        "identity": "new:la_estrella_de_fuego|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_fiebre_del_oro|show||",
+        "identity": "new:la_fiebre_del_oro|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_fuerza_del_amor|movie||",
+        "identity": "new:la_fuerza_del_amor|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_isla_de_las_tentaciones|show||",
+        "identity": "new:la_isla_de_las_tentaciones|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_jungla_4_0|movie||",
+        "identity": "new:la_jungla_4_0|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_particula_de_dios|movie||",
+        "identity": "new:la_particula_de_dios|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_revuelta|show||",
+        "identity": "new:la_revuelta|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_rosa_de_guadalupe|series||",
+        "identity": "new:la_rosa_de_guadalupe|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_selva|show||",
+        "identity": "new:la_selva|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "las_berrocal|show||",
+        "identity": "new:las_berrocal|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "las_hijas_de_la_criada|series||",
+        "identity": "new:las_hijas_de_la_criada|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "legendes_urbaines|show||",
+        "identity": "new:legendes_urbaines|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "les_feres|show||",
+        "identity": "new:les_feres|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ley_y_orden_crimen_organizado|series||",
+        "identity": "new:ley_y_orden_crimen_organizado|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "lo_sabe_no_lo_sabe|show||",
+        "identity": "new:lo_sabe_no_lo_sabe|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "loco_veneno|movie||",
+        "identity": "new:loco_veneno|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "los_originales|series||",
+        "identity": "new:los_originales|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "los_padres_de_el|movie||",
+        "identity": "new:los_padres_de_el|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "los_padres_de_ella|movie||",
+        "identity": "new:los_padres_de_ella|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "los_paraguas_de_cherburgo|movie||",
+        "identity": "new:los_paraguas_de_cherburgo|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "los_simpson|series||",
+        "identity": "new:los_simpson|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "lost_universe|series||",
+        "identity": "new:lost_universe|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "love_actually|movie||",
+        "identity": "new:love_actually|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "maestros_de_la_restauracion|show||",
+        "identity": "new:maestros_de_la_restauracion|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "marina|series||",
+        "identity": "new:marina|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "masterchef_celebrity_legends|show||",
+        "identity": "new:masterchef_celebrity_legends|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "matins|show||",
+        "identity": "new:matins|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "mcquade_lobo_solitario_ee_uu_1983_accion|movie||",
+        "identity": "new:mcquade_lobo_solitario_ee_uu_1983_accion|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "medianoche_en_el_jardin_del_bien_y_del_mal|movie||",
+        "identity": "new:medianoche_en_el_jardin_del_bien_y_del_mal|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "mentiroso_compulsivo|movie||",
+        "identity": "new:mentiroso_compulsivo|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "mesnit|show||",
+        "identity": "new:mesnit|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "mi_amiga_eva|movie||",
+        "identity": "new:mi_amiga_eva|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "michelle_jenner_y_diego_gonzalez_rivas|movie||",
+        "identity": "new:michelle_jenner_y_diego_gonzalez_rivas|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "monstruos|series||",
+        "identity": "new:monstruos|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ncis_los_angeles|series||",
+        "identity": "new:ncis_los_angeles|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ncis_nueva_orleans|series||",
+        "identity": "new:ncis_nueva_orleans|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "newsnight|show||",
+        "identity": "new:newsnight|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "nicole_wallace|movie||",
+        "identity": "new:nicole_wallace|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ninja_a_cuadros_el_origen|movie||",
+        "identity": "new:ninja_a_cuadros_el_origen|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "nino_dolce_il_cucinero_dell_amore|movie||",
+        "identity": "new:nino_dolce_il_cucinero_dell_amore|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "noir|series||",
+        "identity": "new:noir|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "nouvelle_vague|movie||",
+        "identity": "new:nouvelle_vague|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "nurse_jackie|series||",
+        "identity": "new:nurse_jackie|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "objetivo_londres|movie||",
+        "identity": "new:objetivo_londres|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "orgullo_y_prejuicio|movie||",
+        "identity": "new:orgullo_y_prejuicio|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "pathfinder_el_guia_del_desfiladero_maldito|movie||",
+        "identity": "new:pathfinder_el_guia_del_desfiladero_maldito|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "perdona_nuestros_pecados|series||",
+        "identity": "new:perdona_nuestros_pecados|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "profilage_perfiles_criminales|series||",
+        "identity": "new:profilage_perfiles_criminales|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "regreso_al_futuro_ii|movie||",
+        "identity": "new:regreso_al_futuro_ii|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "rosario|series||",
+        "identity": "new:rosario|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "rueda_la_letra|show||",
+        "identity": "new:rueda_la_letra|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "runner_runner|movie||",
+        "identity": "new:runner_runner|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "saber_y_ganar|show||",
+        "identity": "new:saber_y_ganar|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "salon_de_te_la_moderna|series||",
+        "identity": "new:salon_de_te_la_moderna|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "salt|movie||",
+        "identity": "new:salt|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "scream_2022|movie||",
+        "identity": "new:scream_2022|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "se_ha_escrito_un_crimen|series||",
+        "identity": "new:se_ha_escrito_un_crimen|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "seis_hermanas|series||",
+        "identity": "new:seis_hermanas|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "shazam|movie||",
+        "identity": "new:shazam|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "shutter_island|movie||",
+        "identity": "new:shutter_island|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "siete_vidas|movie||",
+        "identity": "new:siete_vidas|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "sister_boniface_mysteries|series||",
+        "identity": "new:sister_boniface_mysteries|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "sona|show||",
+        "identity": "new:sona|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "soul_hunter|movie||",
+        "identity": "new:soul_hunter|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "star_trek_en_la_oscuridad|movie||",
+        "identity": "new:star_trek_en_la_oscuridad|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "storytellers|show||",
+        "identity": "new:storytellers|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "supervivientes_all_stars|show||",
+        "identity": "new:supervivientes_all_stars|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "surrealestate|series||",
+        "identity": "new:surrealestate|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "syriana|movie||",
+        "identity": "new:syriana|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "teen_mom_uk|show||",
+        "identity": "new:teen_mom_uk|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "territorio_comanche|movie||",
+        "identity": "new:territorio_comanche|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "texas_metal|show||",
+        "identity": "new:texas_metal|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_amazing_spider_man|movie||",
+        "identity": "new:the_amazing_spider_man|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_ark|series||",
+        "identity": "new:the_ark|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_big_busty_anal_adventure|movie||",
+        "identity": "new:the_big_busty_anal_adventure|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_closer|series||",
+        "identity": "new:the_closer|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_disaster_artist|movie||",
+        "identity": "new:the_disaster_artist|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_floor|show||",
+        "identity": "new:the_floor|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_shadow_s_edge|movie||",
+        "identity": "new:the_shadow_s_edge|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "they_love_my_wife|movie||",
+        "identity": "new:they_love_my_wife|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "thi_mai_rumbo_a_vietnam|movie||",
+        "identity": "new:thi_mai_rumbo_a_vietnam|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "todo_es_mentira|show||",
+        "identity": "new:todo_es_mentira|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "todos_somos_sospechosos|movie||",
+        "identity": "new:todos_somos_sospechosos|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "toma_salami|show||",
+        "identity": "new:toma_salami|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "top_gear|show||",
+        "identity": "new:top_gear|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "trivial_pursuit|show||",
+        "identity": "new:trivial_pursuit|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "tropic_thunder_una_guerra_muy_perra|movie||",
+        "identity": "new:tropic_thunder_una_guerra_muy_perra|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ultimo_asalto|movie||",
+        "identity": "new:ultimo_asalto|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "una_noche_de_pelicula_policias_ladrones_y_novelistas_criminales|movie||",
+        "identity": "new:una_noche_de_pelicula_policias_ladrones_y_novelistas_criminales|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "una_rubia_muy_legal|movie||",
+        "identity": "new:una_rubia_muy_legal|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "v_de_vendetta|movie||",
+        "identity": "new:v_de_vendetta|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "valle_salvaje|series||",
+        "identity": "new:valle_salvaje|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "vaya_semanita|show||",
+        "identity": "new:vaya_semanita|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "verguenza_ajena|show||",
+        "identity": "new:verguenza_ajena|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "viajeros_cuatro|movie||",
+        "identity": "new:viajeros_cuatro|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "victorious|series||",
+        "identity": "new:victorious|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "voluntad_de_hierro|movie||",
+        "identity": "new:voluntad_de_hierro|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "zapeando|show||",
+        "identity": "new:zapeando|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "zoom_in|movie||",
+        "identity": "new:zoom_in|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "9_1_1|series|tv:75219|2018",
+        "identity": "new:9_1_1|series|tmdb:tv:75219",
+        "code": "pathless_unsupported_slug",
+        "severity": "quarantine"
+      }
+    ],
+    "findings": [
+      {
+        "candidateId": "candyman|movie||",
+        "identity": "new:candyman|movie|*",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "caso_cerrado|show||",
+        "identity": "new:caso_cerrado|show|*",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "clac|movie|movie:1556837|",
+        "identity": "new:clac|movie|tmdb:movie:1556837",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "heidi|series||",
+        "identity": "new:heidi|series|*",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "pesadilla_en_la_cocina|show||",
+        "identity": "new:pesadilla_en_la_cocina|show|*",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "quantum_leap|series||",
+        "identity": "new:quantum_leap|series|*",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "trato_hecho|series|tv:3730|",
+        "identity": "new:trato_hecho|series|tmdb:tv:3730",
+        "code": "pathless_historic_ambiguous",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "c_s_i_miami|series||",
+        "identity": "new:c_s_i_miami|series|*",
+        "code": "pathless_historic_conflict",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "c_s_i|series||",
+        "identity": "new:c_s_i|series|*",
+        "code": "pathless_historic_conflict",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "csi_las_vegas|series||",
+        "identity": "new:csi_las_vegas|series|*",
+        "code": "pathless_historic_conflict",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "csi_miami|series||",
+        "identity": "new:csi_miami|series|*",
+        "code": "pathless_historic_conflict",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "10_razones_para_odiarte|movie||",
+        "identity": "new:10_razones_para_odiarte|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "20yo_college_amateurs|movie||",
+        "identity": "new:20yo_college_amateurs|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "a_jugar_amb_en_tito_i_els_fa_la_la|show||",
+        "identity": "new:a_jugar_amb_en_tito_i_els_fa_la_la|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "a_puerta_fria|movie||",
+        "identity": "new:a_puerta_fria|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "a_un_paso_del_cielo|series||",
+        "identity": "new:a_un_paso_del_cielo|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "action_man|series||",
+        "identity": "new:action_man|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "adult_film_school|movie||",
+        "identity": "new:adult_film_school|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "aeroport|show||",
+        "identity": "new:aeroport|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "alex_de_la_iglesia_y_monica_ojeda|movie||",
+        "identity": "new:alex_de_la_iglesia_y_monica_ojeda|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "aliens_probe_uranus|movie||",
+        "identity": "new:aliens_probe_uranus|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "amateur_facials|movie||",
+        "identity": "new:amateur_facials|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "american_gangster|movie||",
+        "identity": "new:american_gangster|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "anderson_cooper_360|show||",
+        "identity": "new:anderson_cooper_360|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "aqui_llega_condemor_el_pecador_de_la_pradera|movie||",
+        "identity": "new:aqui_llega_condemor_el_pecador_de_la_pradera|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "asesinato_1_2_3|movie||",
+        "identity": "new:asesinato_1_2_3|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "atrapa_m_si_pots|show||",
+        "identity": "new:atrapa_m_si_pots|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "barrio|movie||",
+        "identity": "new:barrio|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "beetlejuice|series||",
+        "identity": "new:beetlejuice|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "bendita_loucura|movie||",
+        "identity": "new:bendita_loucura|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "big_bad_wolves|movie||",
+        "identity": "new:big_bad_wolves|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "black_mass_estrictamente_criminal|movie||",
+        "identity": "new:black_mass_estrictamente_criminal|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "blade_runner_el_montaje_del_director|movie||",
+        "identity": "new:blade_runner_el_montaje_del_director|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "blau_cinema_al_festival_de_sitges|movie||",
+        "identity": "new:blau_cinema_al_festival_de_sitges|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "bull|series||",
+        "identity": "new:bull|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "callejeros|show||",
+        "identity": "new:callejeros|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "camino_a_la_perdicion|movie||",
+        "identity": "new:camino_a_la_perdicion|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "cara_al_show_con_marc_giro|show||",
+        "identity": "new:cara_al_show_con_marc_giro|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "catfish_mentiras_en_la_red|show||",
+        "identity": "new:catfish_mentiras_en_la_red|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "central_de_comicos|show||",
+        "identity": "new:central_de_comicos|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "cinefilies_hiraeth|movie||",
+        "identity": "new:cinefilies_hiraeth|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ciudad_de_dios|movie||",
+        "identity": "new:ciudad_de_dios|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "cocina_abierta_de_karlos_arguinano|show||",
+        "identity": "new:cocina_abierta_de_karlos_arguinano|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "codigo_nuclear|movie||",
+        "identity": "new:codigo_nuclear|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "con_el_culo_al_aire|series||",
+        "identity": "new:con_el_culo_al_aire|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "cream_faced_latina_coeds|movie||",
+        "identity": "new:cream_faced_latina_coeds|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "csi_vegas|series||",
+        "identity": "new:csi_vegas|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "des_racines_et_des_ailes|movie||",
+        "identity": "new:des_racines_et_des_ailes|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "desmontando_galicia|show||",
+        "identity": "new:desmontando_galicia|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "dexter|series||",
+        "identity": "new:dexter|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "dia_a_dia|show||",
+        "identity": "new:dia_a_dia|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "documentos_tv|show||",
+        "identity": "new:documentos_tv|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "dragon_ball_super|series||",
+        "identity": "new:dragon_ball_super|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "dragon_ball|movie||",
+        "identity": "new:dragon_ball|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "drive|movie||",
+        "identity": "new:drive|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "duplicity|movie||",
+        "identity": "new:duplicity|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_anacoreta|movie||",
+        "identity": "new:el_anacoreta|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_caso_willingham|movie||",
+        "identity": "new:el_caso_willingham|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_chavo_del_ocho|series||",
+        "identity": "new:el_chavo_del_ocho|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_diario_de_jorge|show||",
+        "identity": "new:el_diario_de_jorge|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_faro|show||",
+        "identity": "new:el_faro|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_hombre_lobo|movie||",
+        "identity": "new:el_hombre_lobo|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_hormiguero|show||",
+        "identity": "new:el_hormiguero|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_intermedio|show||",
+        "identity": "new:el_intermedio|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_liquidador|show||",
+        "identity": "new:el_liquidador|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_mundo_perdido_jurassic_park|movie||",
+        "identity": "new:el_mundo_perdido_jurassic_park|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_nino_del_bosque|movie||",
+        "identity": "new:el_nino_del_bosque|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_ojo_critico|movie||",
+        "identity": "new:el_ojo_critico|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_resplandor|movie||",
+        "identity": "new:el_resplandor|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "el_senor_de_los_bosques_canada_juan_llanos|movie||",
+        "identity": "new:el_senor_de_los_bosques_canada_juan_llanos|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "els_millors_curts_filmets_badalona_film_festival|movie||",
+        "identity": "new:els_millors_curts_filmets_badalona_film_festival|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "els_millors_curts_filmets|movie||",
+        "identity": "new:els_millors_curts_filmets|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "elsa_y_fred|movie||",
+        "identity": "new:elsa_y_fred|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "emanet|series||",
+        "identity": "new:emanet|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "en_el_corazon_del_mar|movie||",
+        "identity": "new:en_el_corazon_del_mar|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "esposa_joven|series||",
+        "identity": "new:esposa_joven|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "esto_es_cultura|movie||",
+        "identity": "new:esto_es_cultura|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "face_a_face|show||",
+        "identity": "new:face_a_face|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "fast_furious_7_a_todo_gas_7|movie||",
+        "identity": "new:fast_furious_7_a_todo_gas_7|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "fbi_most_wanted|series||",
+        "identity": "new:fbi_most_wanted|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "figuras_ocultas|movie||",
+        "identity": "new:figuras_ocultas|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "filmets_2026|movie||",
+        "identity": "new:filmets_2026|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "filmets|movie||",
+        "identity": "new:filmets|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "focus|show||",
+        "identity": "new:focus|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "forjado_a_fuego|show||",
+        "identity": "new:forjado_a_fuego|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "frankenputa_vicios_diabolicos|movie||",
+        "identity": "new:frankenputa_vicios_diabolicos|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "futurama|series||",
+        "identity": "new:futurama|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "gail_daughtry_y_el_vale_por_un_rollo_vip|movie||",
+        "identity": "new:gail_daughtry_y_el_vale_por_un_rollo_vip|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "galerias_paradise|series||",
+        "identity": "new:galerias_paradise|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "gaupasa|show||",
+        "identity": "new:gaupasa|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "girls|series||",
+        "identity": "new:girls|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "goya_el_ojo_que_escucha|movie||",
+        "identity": "new:goya_el_ojo_que_escucha|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "grimm|series||",
+        "identity": "new:grimm|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "hawai_5_0|series||",
+        "identity": "new:hawai_5_0|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "henry_danger|series||",
+        "identity": "new:henry_danger|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "horizonte|show||",
+        "identity": "new:horizonte|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "hulk|movie||",
+        "identity": "new:hulk|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "infok|show||",
+        "identity": "new:infok|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "inside_story|show||",
+        "identity": "new:inside_story|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "investigacion|movie||",
+        "identity": "new:investigacion|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "joyas_sobre_ruedas|show||",
+        "identity": "new:joyas_sobre_ruedas|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "juerga_hasta_el_fin|movie||",
+        "identity": "new:juerga_hasta_el_fin|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "jurassic_park_parque_jurasico|movie||",
+        "identity": "new:jurassic_park_parque_jurasico|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "karate_kid_legends|movie||",
+        "identity": "new:karate_kid_legends|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "l_invite|show||",
+        "identity": "new:l_invite|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_ballena|movie||",
+        "identity": "new:la_ballena|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_boda_de_mi_mejor_amigo|movie||",
+        "identity": "new:la_boda_de_mi_mejor_amigo|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_controversia_de_valladolid|movie||",
+        "identity": "new:la_controversia_de_valladolid|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_estrella_de_fuego|movie||",
+        "identity": "new:la_estrella_de_fuego|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_fiebre_del_oro|show||",
+        "identity": "new:la_fiebre_del_oro|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_fuerza_del_amor|movie||",
+        "identity": "new:la_fuerza_del_amor|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_isla_de_las_tentaciones|show||",
+        "identity": "new:la_isla_de_las_tentaciones|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_jungla_4_0|movie||",
+        "identity": "new:la_jungla_4_0|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_particula_de_dios|movie||",
+        "identity": "new:la_particula_de_dios|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_revuelta|show||",
+        "identity": "new:la_revuelta|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_rosa_de_guadalupe|series||",
+        "identity": "new:la_rosa_de_guadalupe|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "la_selva|show||",
+        "identity": "new:la_selva|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "las_berrocal|show||",
+        "identity": "new:las_berrocal|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "las_hijas_de_la_criada|series||",
+        "identity": "new:las_hijas_de_la_criada|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "legendes_urbaines|show||",
+        "identity": "new:legendes_urbaines|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "les_feres|show||",
+        "identity": "new:les_feres|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ley_y_orden_crimen_organizado|series||",
+        "identity": "new:ley_y_orden_crimen_organizado|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "lo_sabe_no_lo_sabe|show||",
+        "identity": "new:lo_sabe_no_lo_sabe|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "loco_veneno|movie||",
+        "identity": "new:loco_veneno|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "los_originales|series||",
+        "identity": "new:los_originales|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "los_padres_de_el|movie||",
+        "identity": "new:los_padres_de_el|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "los_padres_de_ella|movie||",
+        "identity": "new:los_padres_de_ella|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "los_paraguas_de_cherburgo|movie||",
+        "identity": "new:los_paraguas_de_cherburgo|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "los_simpson|series||",
+        "identity": "new:los_simpson|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "lost_universe|series||",
+        "identity": "new:lost_universe|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "love_actually|movie||",
+        "identity": "new:love_actually|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "maestros_de_la_restauracion|show||",
+        "identity": "new:maestros_de_la_restauracion|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "marina|series||",
+        "identity": "new:marina|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "masterchef_celebrity_legends|show||",
+        "identity": "new:masterchef_celebrity_legends|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "matins|show||",
+        "identity": "new:matins|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "mcquade_lobo_solitario_ee_uu_1983_accion|movie||",
+        "identity": "new:mcquade_lobo_solitario_ee_uu_1983_accion|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "medianoche_en_el_jardin_del_bien_y_del_mal|movie||",
+        "identity": "new:medianoche_en_el_jardin_del_bien_y_del_mal|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "mentiroso_compulsivo|movie||",
+        "identity": "new:mentiroso_compulsivo|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "mesnit|show||",
+        "identity": "new:mesnit|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "mi_amiga_eva|movie||",
+        "identity": "new:mi_amiga_eva|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "michelle_jenner_y_diego_gonzalez_rivas|movie||",
+        "identity": "new:michelle_jenner_y_diego_gonzalez_rivas|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "monstruos|series||",
+        "identity": "new:monstruos|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ncis_los_angeles|series||",
+        "identity": "new:ncis_los_angeles|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ncis_nueva_orleans|series||",
+        "identity": "new:ncis_nueva_orleans|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "newsnight|show||",
+        "identity": "new:newsnight|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "nicole_wallace|movie||",
+        "identity": "new:nicole_wallace|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ninja_a_cuadros_el_origen|movie||",
+        "identity": "new:ninja_a_cuadros_el_origen|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "nino_dolce_il_cucinero_dell_amore|movie||",
+        "identity": "new:nino_dolce_il_cucinero_dell_amore|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "noir|series||",
+        "identity": "new:noir|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "nouvelle_vague|movie||",
+        "identity": "new:nouvelle_vague|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "nurse_jackie|series||",
+        "identity": "new:nurse_jackie|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "objetivo_londres|movie||",
+        "identity": "new:objetivo_londres|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "orgullo_y_prejuicio|movie||",
+        "identity": "new:orgullo_y_prejuicio|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "pathfinder_el_guia_del_desfiladero_maldito|movie||",
+        "identity": "new:pathfinder_el_guia_del_desfiladero_maldito|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "perdona_nuestros_pecados|series||",
+        "identity": "new:perdona_nuestros_pecados|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "profilage_perfiles_criminales|series||",
+        "identity": "new:profilage_perfiles_criminales|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "regreso_al_futuro_ii|movie||",
+        "identity": "new:regreso_al_futuro_ii|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "rosario|series||",
+        "identity": "new:rosario|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "rueda_la_letra|show||",
+        "identity": "new:rueda_la_letra|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "runner_runner|movie||",
+        "identity": "new:runner_runner|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "saber_y_ganar|show||",
+        "identity": "new:saber_y_ganar|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "salon_de_te_la_moderna|series||",
+        "identity": "new:salon_de_te_la_moderna|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "salt|movie||",
+        "identity": "new:salt|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "scream_2022|movie||",
+        "identity": "new:scream_2022|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "se_ha_escrito_un_crimen|series||",
+        "identity": "new:se_ha_escrito_un_crimen|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "seis_hermanas|series||",
+        "identity": "new:seis_hermanas|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "shazam|movie||",
+        "identity": "new:shazam|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "shutter_island|movie||",
+        "identity": "new:shutter_island|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "siete_vidas|movie||",
+        "identity": "new:siete_vidas|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "sister_boniface_mysteries|series||",
+        "identity": "new:sister_boniface_mysteries|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "sona|show||",
+        "identity": "new:sona|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "soul_hunter|movie||",
+        "identity": "new:soul_hunter|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "star_trek_en_la_oscuridad|movie||",
+        "identity": "new:star_trek_en_la_oscuridad|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "storytellers|show||",
+        "identity": "new:storytellers|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "supervivientes_all_stars|show||",
+        "identity": "new:supervivientes_all_stars|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "surrealestate|series||",
+        "identity": "new:surrealestate|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "syriana|movie||",
+        "identity": "new:syriana|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "teen_mom_uk|show||",
+        "identity": "new:teen_mom_uk|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "territorio_comanche|movie||",
+        "identity": "new:territorio_comanche|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "texas_metal|show||",
+        "identity": "new:texas_metal|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_amazing_spider_man|movie||",
+        "identity": "new:the_amazing_spider_man|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_ark|series||",
+        "identity": "new:the_ark|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_big_busty_anal_adventure|movie||",
+        "identity": "new:the_big_busty_anal_adventure|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_closer|series||",
+        "identity": "new:the_closer|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_disaster_artist|movie||",
+        "identity": "new:the_disaster_artist|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_floor|show||",
+        "identity": "new:the_floor|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "the_shadow_s_edge|movie||",
+        "identity": "new:the_shadow_s_edge|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "they_love_my_wife|movie||",
+        "identity": "new:they_love_my_wife|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "thi_mai_rumbo_a_vietnam|movie||",
+        "identity": "new:thi_mai_rumbo_a_vietnam|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "todo_es_mentira|show||",
+        "identity": "new:todo_es_mentira|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "todos_somos_sospechosos|movie||",
+        "identity": "new:todos_somos_sospechosos|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "toma_salami|show||",
+        "identity": "new:toma_salami|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "top_gear|show||",
+        "identity": "new:top_gear|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "trivial_pursuit|show||",
+        "identity": "new:trivial_pursuit|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "tropic_thunder_una_guerra_muy_perra|movie||",
+        "identity": "new:tropic_thunder_una_guerra_muy_perra|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "ultimo_asalto|movie||",
+        "identity": "new:ultimo_asalto|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "una_noche_de_pelicula_policias_ladrones_y_novelistas_criminales|movie||",
+        "identity": "new:una_noche_de_pelicula_policias_ladrones_y_novelistas_criminales|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "una_rubia_muy_legal|movie||",
+        "identity": "new:una_rubia_muy_legal|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "v_de_vendetta|movie||",
+        "identity": "new:v_de_vendetta|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "valle_salvaje|series||",
+        "identity": "new:valle_salvaje|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "vaya_semanita|show||",
+        "identity": "new:vaya_semanita|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "verguenza_ajena|show||",
+        "identity": "new:verguenza_ajena|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "viajeros_cuatro|movie||",
+        "identity": "new:viajeros_cuatro|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "victorious|series||",
+        "identity": "new:victorious|series|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "voluntad_de_hierro|movie||",
+        "identity": "new:voluntad_de_hierro|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "zapeando|show||",
+        "identity": "new:zapeando|show|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "zoom_in|movie||",
+        "identity": "new:zoom_in|movie|*",
+        "code": "pathless_historic_unverified",
+        "severity": "quarantine"
+      },
+      {
+        "candidateId": "9_1_1|series|tv:75219|2018",
+        "identity": "new:9_1_1|series|tmdb:tv:75219",
+        "code": "pathless_unsupported_slug",
+        "severity": "quarantine"
+      }
+    ],
+    "pass": true
+  },
+  "pass": true
+}

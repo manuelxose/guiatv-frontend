@@ -121,7 +121,7 @@ test('no circular independence: legacy URL, catalogue match, repetition and mark
 test('TMDB conflicts: unstable ids across days, mixed ids in one entity, not an exact title', () => {
   const other = { ...matrix, tmdb: { ids: [9999], evidence: 'confirmed' as const, ref: { type: 'movie', id: 9999 } as any } };
   assert.deepEqual(one(matrix, [[other]], matrixTmdb).contradictions, ['tmdb_id_unstable:movie:9999']);
-  const owner = series('9-1-1', 75219, { identity: 'new:9_1_1|series|tmdb:tv:75219', path: null, pathless: 'unsupported_slug' });
+  const owner = series('9-1-1', 75219, { identity: 'new:9_1_1|series|tmdb:tv:75219', path: '/series/9-1-1' });
   const bound = trace('9-1-1', {
     candidateId: '9_1_1|series||', kind: 'series', decision: 'bind', state: 'candidate', identity: owner.identity, path: null,
     tmdb: { ids: [65733], evidence: 'mixed' }, titleEvidence: { 'episode:title_marker': 2 },
@@ -212,4 +212,13 @@ test('gates: levels kept apart, reproducible digest, every planted violation cau
   assert.deepEqual(bad.violations.unsupportedTmdb, ['d']);
   assert.deepEqual(bad.violations.kindUnverified, ['d']);
   assert.deepEqual(bad.violations.acceptedWithConflicts, ['f']);
+});
+
+test('an identity without a canonical path is never accepted, whatever the reason', () => {
+  const nineOneOne = series('9-1-1', 75219, { path: null, pathless: 'unsupported_slug', pathRefused: ['unsupported_slug'] });
+  const v = one(nineOneOne, [], checks(lookup('tv', 75219, '9-1-1')));
+  assert.equal(v.decision, 'QUARANTINE');
+  assert.ok(v.missing.includes('pathless_unsupported_slug'));
+  const forced = { ...v, decision: 'AUTO_ACCEPT' as const, assurance: 'independently_supported' as const, missing: [] };
+  assert.deepEqual(evaluateEvidence([forced]).violations.acceptedPathless, [v.candidateId]);
 });

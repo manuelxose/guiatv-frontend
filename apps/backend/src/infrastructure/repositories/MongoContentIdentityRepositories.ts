@@ -498,3 +498,10 @@ export class MongoAiringEntityRefWriter implements IAiringEntityRefWriter {
     return modified;
   }
 }
+
+/** Read-only projection of the whole registry for the canonical audit (a slug row's path is its `_id`). */
+export async function readRegistryRows() {
+  const entities = await ContentEntityModel.find({}, { entityId: 1, kind: 1, status: 1, canonicalPath: 1, mergedInto: 1, _id: 0 }).limit(200_000).lean();
+  const slugs = await ContentSlugModel.find({}, { entityId: 1, role: 1 }).limit(500_000).lean();
+  return { entities, slugs: slugs.map((s) => ({ path: String(s._id), entityId: s.entityId, role: s.role })) };
+}

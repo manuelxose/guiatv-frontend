@@ -6,6 +6,8 @@ import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { strictRateLimit } from '../middlewares/rateLimit';
 import { AuthService } from '../../domain/services/AuthService';
 import { createAdminAccessGuard } from '../middlewares/adminAccessGuard';
+import { entityPublicReadPolicy } from '../../application/services/EntityPublicReadPolicy';
+import { successResponse } from '../../shared/types/ApiResponse';
 
 /**
  * Admin/maintenance endpoints used for operational tasks.
@@ -30,6 +32,8 @@ export const createAdminRoutes = (
   router.get('/cache/diagnostics', asyncHandler(controller.getCacheDiagnostics.bind(controller)));
   router.get('/events', asyncHandler(controller.listOperationalEvents.bind(controller)));
   router.get('/alerts', asyncHandler(controller.listAlerts.bind(controller)));
+  // 3B: per-route outcomes, breaker and kill state of the public entity canary (no entity content).
+  router.get('/entities/canary', (_req, res) => res.json(successResponse(entityPublicReadPolicy().stats())));
   router.post('/football/refresh', strictRateLimit, asyncHandler(controller.refreshFootball.bind(controller)));
   router.post('/cache/invalidate', strictRateLimit, asyncHandler(controller.invalidateCacheNamespace.bind(controller)));
 
