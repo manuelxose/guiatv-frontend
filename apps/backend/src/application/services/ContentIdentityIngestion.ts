@@ -22,8 +22,9 @@ import {
   classifyContentKind,
   ContentKind,
   decideIngestionMatch,
-  isGenericContentTitle,
   newEntityId,
+  ParsedEpgTitle,
+  parseEpgTitle,
   planCanonicalPaths,
   plannedSlugs,
   TitleKeyRow,
@@ -45,6 +46,8 @@ import { ContentIdentityNotReadyError } from '@/infrastructure/repositories/Mong
 export interface IdentityObservation {
   airingId: string;
   title: string;
+  /** XMLTV `sub-title`: the episode name when the feed sends one. */
+  subtitle?: string;
   editorialCategory?: string;
   sportFacet?: string | null;
   tmdbId?: number;
@@ -70,6 +73,8 @@ export function newIdentityReport(mode: 'shadow' | 'write', date: string) {
     airings: 0,
     candidates: 0,
     excluded: {} as Record<string, number>,
+    /** Kept airings by title evidence: `work`, `episode:<source>`, `episode:corroborated`, `title_part`, `uncertain` (2D-2E). */
+    titles: {} as Record<string, number>,
     kinds: {} as Record<string, number>,
     tmdb: { confirmed: 0, unconfirmed: 0 },
     decisions: {} as Record<string, number>,
@@ -120,10 +125,15 @@ export interface IdentityTrace {
   candidateId: string;
   key: string;
   kind: ContentKind;
+  /** The work title (an episode's series or programme, 2D-2E). */
   title: string;
-  /** Distinct EPG spellings grouped into this candidate (at most 5). */
+  /** Distinct EPG spellings grouped into this candidate, sorted (the review sheet shows 5). */
   spellings: string[];
   airings: number;
+  /** Airings by title evidence (`ContentIdentityIngestion` report `titles`). */
+  titleEvidence?: Record<string, number>;
+  /** Known kinds this candidate's work was seen under in the run, when more than one. */
+  crossKind?: ContentKind[];
   epgYears: number[];
   year?: number;
   /** Airing TMDB ids, and whether the catalogue confirmed them (`mixed`: some airings unconfirmed). */
@@ -152,6 +162,10 @@ interface Candidate {
   entityId?: string;
   rowId?: string;
   spellings: Set<string>;
+  titleEvidence: Record<string, number>;
+  /** Held out of matching for the whole run (unresolved, not stored). */
+  hold?: 'title_uncertain';
+  crossKind?: ContentKind[];
   epgYears: Set<number>;
   tmdbIds: Set<number>;
   unconfirmed: number;
@@ -164,6 +178,7 @@ export function observationsFromAirings(airings: any[], years: ReadonlyMap<strin
     return {
       airingId: airing.id,
       title: String(airing.program?.title || ''),
+      subtitle: airing.program?.subtitle ? String(airing.program.subtitle) : undefined,
       editorialCategory: airing.program?.editorialCategory,
       sportFacet: airing.program?.sportFacet,
       tmdbId: Number.isInteger(airing.program?.tmdbId) ? airing.program.tmdbId : undefined,
@@ -189,6 +204,9 @@ function confirmTmdb(obs: IdentityObservation, key: string, catalog: CatalogEvid
 }
 
 const LIVE = new Set(['candidate', 'active']);
+const LIVE_ROW = new Set(['verified', 'candidate']);
+/** Titles that never become candidates, by parse state: no work identity at all. */
+const EXCLUDED_TITLES = { generic: 'generic_title', no_work: 'episode_without_work', unkeyable: 'unkeyable_title' } as const;
 
 export class ContentIdentityIngestion {
   constructor(
@@ -209,43 +227,81 @@ export class ContentIdentityIngestion {
     const report = newIdentityReport(this.opts.mode, date);
     report.airings = observations.length;
 
-    // 1. Exclusions that need no I/O. Not the read model's `titleResolutionState`: it comes from
+    // 1. Title parse (2D-2E) and the exclusions that need no I/O: slots, titles without a work, no
+    // Latin identity. Not the read model's `titleResolutionState`: it comes from
     // `isGenericMovieTitle`, which also suppresses named programmes such as "Cine de barrio".
-    const kept: Array<{ obs: IdentityObservation; key: string }> = [];
+    const kept: Array<{ obs: IdentityObservation; title: ParsedEpgTitle }> = [];
+    const rejectedTitles = new Map<string, { reason: string; airings: number }>();
     for (const obs of observations) {
-      const key = titleIdentityKey(obs.title);
-      if (!key) count(report.excluded, 'unkeyable_title');
-      else if (isGenericContentTitle(obs.title)) count(report.excluded, 'generic_title');
-      else kept.push({ obs, key });
+      const title = parseEpgTitle(obs.title, obs.subtitle);
+      const reason = EXCLUDED_TITLES[title.resolutionState as keyof typeof EXCLUDED_TITLES];
+      if (!reason) {
+        kept.push({ obs, title });
+        continue;
+      }
+      count(report.excluded, reason);
+      const seen = rejectedTitles.get(obs.title) ?? { reason, airings: 0 };
+      seen.airings++;
+      rejectedTitles.set(obs.title, seen);
     }
 
-    // 2. TMDB evidence and kind, then group by identity context (same key, kind, TMDB work, year).
+    // 2. Evidence for the whole day, one read per source: catalogue (TMDB), and every stored title
+    // key for the works and the possible works behind an uncertain separator.
     const catalog = await this.ports.evidence.catalogEntries(
       kept.map(({ obs }) => obs.mediaId).filter((id): id is string => Boolean(id)),
       kept.map(({ obs }) => obs.tmdbId).filter((id): id is number => Boolean(id))
     );
+    const rowsByKey = new Map<string, TitleKeyRecord[]>();
+    const wanted = new Set(kept.flatMap(({ title: t }) => [t.normalizedWorkKey as string, ...(t.uncertainSplit ? [t.uncertainSplit.workKey] : [])]));
+    for (const row of await this.ports.titleKeys.listByKeys([...wanted])) {
+      rowsByKey.set(row.key, [...(rowsByKey.get(row.key) ?? []), row]);
+    }
+    const known = (key: string) => (rowsByKey.get(key) ?? []).some((r) => r.entityId && LIVE_ROW.has(r.state));
+    // Works the run sees without doubt: a plain title or an explicit episode of it.
+    const confident = new Set(kept.filter(({ title: t }) => t.resolutionState !== 'uncertain').map(({ title: t }) => t.normalizedWorkKey));
+
+    // 3. Work, TMDB evidence and kind per airing, then group by identity context (same key, kind,
+    // TMDB work, year). Every rule reads sets built from the whole day, never an earlier decision.
     const groups = new Map<string, Candidate>();
-    for (const { obs, key } of kept) {
-      const confirmed = confirmTmdb(obs, key, catalog);
+    for (const { obs, title: parsed } of kept) {
+      let key = parsed.normalizedWorkKey as string;
+      let title = parsed.proposedWorkTitle as string;
+      let evidence = parsed.resolutionState === 'episode' ? `episode:${parsed.evidenceSource}` : 'work';
+      let confirmed = confirmTmdb(obs, key, catalog);
+      let hold: Candidate['hold'];
+      const split = parsed.uncertainSplit;
+      if (split) {
+        // "X - Y": the whole text is the work when the catalogue or a stored row knows it, or when it
+        // is a film (film titles carry subtitles: "Misión imposible - Fallout"). It is an episode of X
+        // when TMDB, a stored row or another airing of the day confirms X. Otherwise: no guess.
+        const splitTmdb = confirmed ? null : confirmTmdb(obs, split.workKey, catalog);
+        const hint = classifyContentKind({ ...obs, tmdbType: (confirmed ?? splitTmdb)?.tmdb?.type });
+        if (confirmed || known(key) || hint === 'movie') evidence = 'title_part';
+        else if (splitTmdb || known(split.workKey) || confident.has(split.workKey)) {
+          [key, title, confirmed, evidence] = [split.workKey, split.workTitle, splitTmdb, 'episode:corroborated'];
+        } else [evidence, hold] = ['uncertain', 'title_uncertain'];
+      }
+      count(report.titles, evidence);
       if (obs.tmdbId) report.tmdb[confirmed ? 'confirmed' : 'unconfirmed']++;
-      const kind = classifyContentKind({ ...obs, tmdbType: confirmed?.tmdb?.type });
+      const kind = classifyContentKind({ ...obs, title, tmdbType: confirmed?.tmdb?.type });
       if (kind === 'sport') {
         count(report.excluded, 'sport_event');
         continue;
       }
       const tmdb = confirmed?.tmdb;
       const year = confirmed ? confirmed.year : kind === 'movie' ? obs.year : undefined;
-      const id = [key, kind, tmdb ? `${tmdb.type}:${tmdb.id}` : '', year ?? ''].join('|');
+      const id = [key, kind, tmdb ? `${tmdb.type}:${tmdb.id}` : '', year ?? ''].join('|') + (hold ? '|held' : '');
       const group: Candidate = groups.get(id) ?? {
-        id, key, kind, title: obs.title, year, tmdb, airingIds: [], spellings: new Set(), epgYears: new Set(), tmdbIds: new Set(), unconfirmed: 0,
+        id, key, kind, title, year, tmdb, hold, airingIds: [], spellings: new Set(), titleEvidence: {}, epgYears: new Set(), tmdbIds: new Set(), unconfirmed: 0,
       };
       group.spellings.add(obs.title);
+      count(group.titleEvidence, evidence);
       if (obs.year) group.epgYears.add(obs.year);
       if (obs.tmdbId) group.tmdbIds.add(obs.tmdbId);
       if (obs.tmdbId && !confirmed) group.unconfirmed++;
       // The shortest spelling is the cleanest title ("La Promesa" over "La Promesa T1 E929").
-      if (obs.title.length < group.title.length || (obs.title.length === group.title.length && obs.title < group.title)) {
-        group.title = obs.title;
+      if (title.length < group.title.length || (title.length === group.title.length && title < group.title)) {
+        group.title = title;
       }
       group.airingIds.push(obs.airingId);
       groups.set(id, group);
@@ -254,16 +310,27 @@ export class ContentIdentityIngestion {
     const candidates = [...groups.entries()]
       .sort(([a, x], [b, y]) => x.key.localeCompare(y.key) || Number(!x.tmdb) - Number(!y.tmdb) || Number(!x.year) - Number(!y.year) || a.localeCompare(b))
       .map(([, c]) => c);
+    // Cross-kind (2D-2E §5). One channel's category is weak evidence of kind: a title-only work seen
+    // under two known kinds, or one TMDB work under two kinds, is held for review instead of becoming
+    // two entities with two paths. A TMDB work is not held by a title-only sighting of another kind
+    // (that sighting is), and two different TMDB works may share a title (film and series).
+    const kindsOf = new Map<string, Set<ContentKind>>();
+    const note = (k: string, kind: ContentKind) => kindsOf.set(k, (kindsOf.get(k) ?? new Set()).add(kind));
+    const tmdbKey = (t: TmdbRef) => `tmdb:${t.type}:${t.id}`;
+    for (const c of candidates.filter((c) => c.kind !== 'unknown' && !c.hold)) {
+      note(c.key, c.kind);
+      if (c.tmdb) note(tmdbKey(c.tmdb), c.kind);
+    }
+    for (const c of candidates.filter((c) => c.kind !== 'unknown' && !c.hold)) {
+      const kinds = kindsOf.get(c.tmdb ? tmdbKey(c.tmdb) : c.key) as Set<ContentKind>;
+      if (kinds.size > 1) c.crossKind = [...kinds].sort();
+    }
     const outcome = (c: Candidate, decision: IdentityTrace['decision'], row?: TitleKeyRow) =>
       (c.outcome = { decision, state: row?.state, method: row?.method, confidence: row?.confidence, reason: row?.reason });
     report.candidates = candidates.length;
     candidates.forEach((c) => count(report.kinds, c.kind));
 
-    // 3. Everything already stored for these keys and TMDB works: one batch each.
-    const rowsByKey = new Map<string, TitleKeyRecord[]>();
-    for (const row of await this.ports.titleKeys.listByKeys([...new Set(candidates.map((c) => c.key))])) {
-      rowsByKey.set(row.key, [...(rowsByKey.get(row.key) ?? []), row]);
-    }
+    // TMDB works already owned by an entity: one batch.
     const tmdbOwner = new Map<string, { entityId: string; kind: ContentKind }>();
     const refs = candidates.map((c) => c.tmdb).filter((t): t is TmdbRef => Boolean(t));
     for (const e of refs.length ? await this.ports.entities.findLiveByTmdbRefs(refs) : []) {
@@ -288,6 +355,12 @@ export class ContentIdentityIngestion {
       return res.existing ?? row;
     };
     const decide = async (c: Candidate) => {
+      if (c.hold) {
+        count(report.decisions, 'unresolved');
+        count(report.reasons, c.hold);
+        c.outcome = { decision: 'unresolved', reason: c.hold };
+        return;
+      }
       const rows = rowsByKey.get(c.key) ?? [];
       const decision = decideIngestionMatch(
         {
@@ -299,7 +372,8 @@ export class ContentIdentityIngestion {
           confidence: c.tmdb ? CONFIRMED_SEARCH_CONFIDENCE : 0.8,
         },
         rows,
-        c.tmdb ? tmdbOwner.get(`${c.tmdb.type}:${c.tmdb.id}`) : null
+        c.tmdb ? tmdbOwner.get(`${c.tmdb.type}:${c.tmdb.id}`) : null,
+        { crossKind: Boolean(c.crossKind) }
       );
       if (decision.decision === 'review' && decision.row.reason === 'unknown_kind') {
         count(report.decisions, 'unresolved');
@@ -459,8 +533,10 @@ export class ContentIdentityIngestion {
         key: c.key,
         kind: c.kind,
         title: c.title,
-        spellings: [...c.spellings].sort().slice(0, 5),
+        spellings: [...c.spellings].sort(),
         airings: c.airingIds.length,
+        titleEvidence: c.titleEvidence,
+        ...(c.crossKind ? { crossKind: c.crossKind } : {}),
         epgYears: [...c.epgYears].sort(),
         year: c.year,
         tmdb: {
@@ -472,6 +548,21 @@ export class ContentIdentityIngestion {
         rowId: c.rowId,
         identity: c.entityId && (claimer ? `new:${claimer.rowId}` : c.entityId),
         ...(entity ? pathOf.get(entity.entityId) ?? { path: entity.canonicalPath ?? null } : {}),
+      });
+    }
+    // Excluded titles too, so slots and episode-only titles can be sampled; they hold no identity.
+    for (const [title, seen] of trace ? [...rejectedTitles].sort(([a], [b]) => a.localeCompare(b)) : []) {
+      trace!.push({
+        candidateId: `rejected|${title}`,
+        key: titleIdentityKey(title) ?? '',
+        kind: 'unknown',
+        title,
+        spellings: [title],
+        airings: seen.airings,
+        epgYears: [],
+        tmdb: { ids: [], evidence: 'none' },
+        decision: 'rejected',
+        reason: seen.reason,
       });
     }
     report.durationMs = Date.now() - started;

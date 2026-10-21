@@ -118,39 +118,236 @@ export function normalizeContentPath(input: unknown): PathCheck {
 // `key|kind|discriminator`, and several rows may share a key.
 
 export const MAX_TITLE_KEY_LENGTH = 120;
-const EPISODE_MARKER = /_(capitulo|cap|episodio|ep|chapter|parte)_\d+$/;
 /** Bare slot words only. Named programmes built on them ("Cine de barrio") are real entities. */
 const GENERIC_TITLE_KEYS = new Set([
   ...[...RESERVED_SLUGS].map((slug) => slug.replace(/-/g, '_')),
   'movie', 'film', 'cinema', 'estreno', 'blockbuster', 'taquillazo', 'peliculon',
+  // Schedule fillers: descriptive slots, not works (2D-2D §7 slot flags; 2D-2E §4).
+  'repeticion_de_programas', 'programacion_local', 'informacion_de_programacion', 'proximamente',
+  'espacio_promocional', 'programacion_especial', 'avance_informativo',
+  // Bare genre labels used as titles (2D-2E full-day replay): "DOC", "DOCUMENTAL".
+  'doc', 'documental',
+  'entrevista', 'redifusion', 'pelicula_clasica', 'dibujos_animados', 'que_cine',
 ]);
+/** "Avance <programme>": a trailer for another programme, never a work of its own (2D-2E full-day replay). */
+const PROMO_PREFIX = /^avance_/;
 
-/** `buildProgramBrandKey` (unchanged, so stored brand keys stay reusable) minus a trailing
- * "capítulo N" style episode marker. Null when the title has no usable Latin identity. */
-export function titleIdentityKey(title: string | null | undefined): string | null {
-  const brandKey = buildProgramBrandKey(title);
-  if (brandKey === 'unknown_brand') return null;
-  const key = brandKey.replace(EPISODE_MARKER, '');
+// ---------------------------------------------------------------------------------------------
+// EPG title parsing (2D-2E). An airing title may carry the episode it shows ("9-1-1 T4 E3 · El
+// futuro"); the work is "9-1-1". The original title is never changed, only read.
+
+export type TitleResolution =
+  /** The title is the work's title. */
+  | 'work'
+  /** An installment of a work: explicit season/episode marker, the feed's " · " separator, or a parenthesised episode number. */
+  | 'episode'
+  /** A " - " / " : " separator that may be part of the work's title ("Misión imposible - Fallout") or an episode subtitle. */
+  | 'uncertain'
+  /** Schedule slot or container, never a work (`GENERIC_TITLE_KEYS`, "Cine: Matrix", rating lines). */
+  | 'generic'
+  /** Episode markers with no work title ("Episodio 770", "T11 - Episodio 6"). */
+  | 'no_work'
+  /** No usable Latin identity, or a synopsis glued onto the title. */
+  | 'unkeyable';
+
+export interface ParsedEpgTitle {
+  originalTitle: string;
+  proposedWorkTitle: string | null;
+  normalizedWorkKey: string | null;
+  episodeTitle?: string;
+  seasonNumber?: number;
+  episodeNumber?: number;
+  evidenceSource: 'title' | 'title_marker' | 'title_separator' | 'xmltv_subtitle';
+  confidence: 'high' | 'medium' | 'low';
+  resolutionState: TitleResolution;
+  /** `uncertain` only: the work and episode the separator would give, if other evidence confirms the split. */
+  uncertainSplit?: { workTitle: string; workKey: string; episodeTitle: string };
+}
+
+// A marker stands alone: preceded by the start, a space or punctuation, followed by the end, a space or punctuation.
+const MARKER_SOURCE =
+  String.raw`(?<=^|[\s·•:,.\-–—(])(?:` +
+  String.raw`[ST](?<s1>\d{1,2}|(?:19|20)\d{2}) ?(?:E|Ep\.? ?)(?<e1>\d{1,4})` + // T4 E3, T4E3, S04E03, T22 Ep09, T2026 E4804
+  String.raw`|(?<s2>\d{1,2})x(?<e2>\d{2,3})` + // 4x03 (two-digit episode, so "4x4" stays a title)
+  String.raw`|temporada\s+(?<s3>\d{1,2})(?:[\s,.\-–—]+(?:episodio|cap[ií]tulo|cap\.?|ep\.?)\s*(?<e3>\d{1,4}))?` +
+  String.raw`|T(?<s4>\d{1,2}|(?:19|20)\d{2})` + // season only: "Aire Lliure T1", "… T2020"
+  String.raw`|E(?<e5>\d{1,4})(?=\s*$)` + // trailing episode number only: "Countryside Escape E13" ("E3 Noticies" keeps its E3)
+  String.raw`|(?:episodios?|episodi|[eé]pisodes?|cap[ií]tulos?|cap\.?|ep\.?|chapter)\s*(?<e4>\d{1,4})(?:\s*[-–/y&]\s*\d{1,4})?` + // Capítulo 12, Ep. 12, Ep09, Episodio 770, Episode 1923 (fr), Episodi 30 (ca), Episodios 8-9
+  String.raw`)(?=$|[\s·•:,.\-–—)/])`;
+const MARKERS = new RegExp(MARKER_SOURCE, 'giu');
+/** Trailing parenthesised episode number, optionally followed by another number: "Rosario (76) 12". Four digits are a year. */
+const PAREN_EPISODE = /\s*\((\d{1,3})\)(?:\s+\d{1,3})?$/u;
+const FEED_SEPARATOR = /\s+[·•]\s+/u;
+const WEAK_SEPARATOR = /\s+[-–—:]\s+/u;
+const TRAILING_PUNCTUATION = /[\s·•:,;\-–—(/]+$/u;
+/** Rerun / live / format tags inside a title ("NOTÍCIES Vespre (R)", "News Generation [l] E1", "Dexter (Teleserie)"). */
+const BROADCAST_TAG = /\s*[(\[](?:r|l|rep|teleserie)[)\]]/giu;
+/** A sub-title that is a metadata line ("2013 | TP | ★6.0/10", seen in production), not an episode name. */
+const METADATA_LINE = /\||★|^\d{4}$/u;
+const contentWords = (text: string) => new Set((workKey(text) ?? '').split('_').filter((w) => w.length > 3));
+/** The colon tail repeats the episode name in other words: at least two shared words, half of the tail's. */
+function paraphrases(tail: string, episodeName: string): boolean {
+  const a = contentWords(tail);
+  const b = contentWords(episodeName);
+  const shared = [...a].filter((w) => b.has(w)).length;
+  return shared >= 2 && shared / a.size >= 0.5;
+}
+const LEADING_PUNCTUATION = /^[\s·•:,;\-–—)/]+/u;
+
+/** `buildProgramBrandKey` (unchanged, so stored brand keys stay reusable), or null when it is not a usable key. */
+function workKey(title: string): string | null {
+  let key = buildProgramBrandKey(title);
+  if (key === 'unknown_brand') return null;
+  // The brand key drops "T2"/"E3" anywhere; at the start of a work title it is a title word ("T2
+  // Trainspotting" is not "Trainspotting"). Trailing markers were already parsed out.
+  const lead = /^[te]\d{1,2}(?=\s)/i.exec(title)?.[0].toLowerCase();
+  if (lead && key !== lead && !key.startsWith(`${lead}_`)) key = `${lead}_${key}`;
   // Non-Latin titles normalise to digits or nothing ("捕风追影2" -> "2"); that key would merge
   // unrelated works, so it is not a key at all.
-  if (/\p{L}/u.test(String(title)) && !/[a-z]/.test(key)) return null;
+  if (/\p{L}/u.test(title) && !/[a-z]/.test(key)) return null;
   // EPG feeds sometimes glue the synopsis onto the title (seen in real data, 400+ characters):
   // that is not a title, and its row id would exceed the 400-character limit.
   if (key.length > MAX_TITLE_KEY_LENGTH) return null;
   return key || null;
 }
 
+const numberOf = (value?: string) => (value === undefined ? undefined : Number.parseInt(value, 10));
+
 /**
- * Not `isGenericMovieTitle`: its "cine + up to 4 words" rule suppresses movie slots in the grid but
- * would reject named programmes such as "Cine de barrio". A container that carries a film
- * ("Cine: Matrix") is still rejected: the film is the identity, matched by its own title.
+ * Splits an EPG title into the work and the installment it shows. Only explicit evidence splits:
+ * a season/episode marker, the feed's " · " separator, a parenthesised episode number, or the XMLTV
+ * `sub-title` repeated at the end of the title. A bare " - " or " : " is `uncertain`: the caller
+ * decides with evidence from outside the title (`uncertainSplit`). A colon without a space before
+ * it ("Agatha Christie: Poirot", "Peter Rabbit 2: A la fuga") is part of the title.
  */
+export function parseEpgTitle(title: string | null | undefined, subtitle?: string | null): ParsedEpgTitle {
+  const originalTitle = String(title ?? '').trim();
+  let work = originalTitle.replace(BROADCAST_TAG, '');
+  let episodeTitle: string | undefined;
+  let seasonNumber: number | undefined;
+  let episodeNumber: number | undefined;
+  let evidenceSource: ParsedEpgTitle['evidenceSource'] = 'title';
+  let confidence: ParsedEpgTitle['confidence'] = 'high';
+  let episode = false;
+
+  let titleEpisode: string | undefined;
+  const sub = String(subtitle ?? '').trim();
+  if (sub && !METADATA_LINE.test(sub) && sub.toLowerCase() !== work.toLowerCase()) {
+    const before = work.slice(0, work.length - sub.length);
+    if (work.toLowerCase().endsWith(sub.toLowerCase()) && /[\p{L}\p{N}]/u.test(before) && TRAILING_PUNCTUATION.test(before)) {
+      work = before;
+      evidenceSource = 'xmltv_subtitle';
+      episode = true;
+    }
+    episodeTitle = sub;
+  }
+
+  // The feed doubles the title before an episode number: "Amanda y Alan: reformas a la italiana:
+  // Amanda y Alan: reformas a la italiana 1". Only an exact repetition counts.
+  const doubled = work.match(/^(.{3,}?):\s+\1(?:\s+(\d{1,4}))?$/iu);
+  if (doubled) {
+    work = doubled[1];
+    episodeNumber = numberOf(doubled[2]);
+    [evidenceSource, confidence, episode] = ['title_separator', 'medium', true];
+  }
+
+  const dot = work.match(FEED_SEPARATOR);
+  if (dot?.index) {
+    const rest = work.slice(dot.index + dot[0].length).trim();
+    work = work.slice(0, dot.index);
+    // "Criaturas indefensas · (The dog lover)": an original title, not an episode name.
+    if (!/^\(.*\)$/.test(rest)) {
+      titleEpisode = rest;
+      episodeTitle ??= rest;
+    }
+    if (!episode) [evidenceSource, confidence] = ['title_separator', 'medium'];
+    episode = true;
+  }
+
+  // The first marker with some title before it; a title that is nothing but markers has no work.
+  const markers = [...work.matchAll(MARKERS)];
+  const marker = markers.find((m) => /[\p{L}\p{N}]/u.test(work.slice(0, m.index).replace(MARKERS, '')));
+  if (marker) {
+    const g = marker.groups ?? {};
+    seasonNumber = numberOf(g.s1 ?? g.s2 ?? g.s3 ?? g.s4);
+    episodeNumber = numberOf(g.e1 ?? g.e2 ?? g.e3 ?? g.e4 ?? g.e5);
+    const after = work.slice(marker.index! + marker[0].length).replace(MARKERS, ' ').replace(LEADING_PUNCTUATION, '').trim();
+    if (/\p{L}/u.test(after)) {
+      titleEpisode ??= after;
+      episodeTitle ??= after;
+    }
+    work = work.slice(0, marker.index);
+    if (evidenceSource !== 'xmltv_subtitle') [evidenceSource, confidence] = ['title_marker', 'high'];
+    episode = true;
+  } else if (!/[\p{L}\p{N}]/u.test(work.replace(MARKERS, '').replace(/[\s·•:,;\-–—()/]+/gu, ''))) {
+    return { originalTitle, proposedWorkTitle: null, normalizedWorkKey: null, seasonNumber, episodeNumber, evidenceSource, confidence, resolutionState: markers.length ? 'no_work' : 'unkeyable' };
+  } else {
+    const paren = work.match(PAREN_EPISODE);
+    if (paren?.index) {
+      episodeNumber = numberOf(paren[1]);
+      work = work.slice(0, paren.index);
+      if (!episode) [evidenceSource, confidence] = ['title_marker', 'medium'];
+      episode = true;
+    }
+  }
+  work = work.replace(TRAILING_PUNCTUATION, '').trim();
+  // Feeds repeat the episode name in the title: "UFO Witness: Órbitas e insectoides T2 E2 · Órbitas
+  // e insectoides", "¿Cómo lo hacen?: Ensalada… · ¿Cómo lo hacen?: Ensalada…". Only that repetition
+  // drops a colon segment; a colon on its own stays part of the title.
+  const segments = work.split(/:\s+/u);
+  const named = titleEpisode ?? episodeTitle;
+  if (episode && named && segments.length > 1) {
+    const tail = segments[segments.length - 1];
+    const last = workKey(tail);
+    const ep = workKey(named);
+    if (last && ep && (ep === last || ep.endsWith(`_${last}`) || paraphrases(tail, named))) work = segments.slice(0, -1).join(': ');
+    else if (segments[0] && workKey(named.split(/:\s+/u)[0]) === workKey(segments[0])) work = segments[0];
+  }
+
+  const normalizedWorkKey = workKey(work);
+  const parsed: ParsedEpgTitle = {
+    originalTitle,
+    proposedWorkTitle: normalizedWorkKey ? work : null,
+    normalizedWorkKey,
+    ...(episodeTitle ? { episodeTitle } : {}),
+    ...(seasonNumber !== undefined ? { seasonNumber } : {}),
+    ...(episodeNumber !== undefined ? { episodeNumber } : {}),
+    evidenceSource,
+    confidence,
+    resolutionState: !normalizedWorkKey ? 'unkeyable' : episode ? 'episode' : 'work',
+  };
+  if (!normalizedWorkKey) return parsed;
+  // Not `isGenericMovieTitle`: its "cine + up to 4 words" rule suppresses movie slots in the grid but
+  // would reject named programmes such as "Cine de barrio". A container that carries a film
+  // ("Cine: Matrix") is still rejected: the film is the identity, matched by its own title.
+  if (
+    resolveProgramDisplayTitle(originalTitle) !== originalTitle ||
+    // A rating line in the title field ("★6.8/10", seen in the 2D-2 replay) is not a work.
+    RATING_LINE.test(originalTitle) ||
+    GENERIC_TITLE_KEYS.has(normalizedWorkKey) ||
+    PROMO_PREFIX.test(normalizedWorkKey)
+  ) {
+    return { ...parsed, resolutionState: 'generic' };
+  }
+  const weak = episode ? null : work.match(WEAK_SEPARATOR);
+  // The work the separator would give is parsed like any title, so its key is the one matching will
+  // compute from it ("Rosario (76) - X" -> "Rosario"), and a slot word on the left ("Cine - X") is no work.
+  const left = weak?.index ? parseEpgTitle(work.slice(0, weak.index)) : null;
+  if (weak && left?.normalizedWorkKey && (left.resolutionState === 'work' || left.resolutionState === 'episode') && left.normalizedWorkKey !== normalizedWorkKey) {
+    const right = work.slice(weak.index! + weak[0].length).trim();
+    const uncertainSplit = { workTitle: left.proposedWorkTitle as string, workKey: left.normalizedWorkKey, episodeTitle: right };
+    return { ...parsed, confidence: 'low', resolutionState: 'uncertain', uncertainSplit };
+  }
+  return parsed;
+}
+
+/** The identity key of a title: its work's key. An `uncertain` title keeps its whole text; slots keep theirs (rejected by `isGenericContentTitle`). */
+export function titleIdentityKey(title: string | null | undefined): string | null {
+  return parseEpgTitle(title).normalizedWorkKey;
+}
+
 export function isGenericContentTitle(title: string | null | undefined): boolean {
-  if (resolveProgramDisplayTitle(title) !== String(title || '').trim()) return true;
-  // A rating line in the title field ("★6.8/10", seen in the 2D-2 replay) is not a work.
-  if (RATING_LINE.test(String(title || '').trim())) return true;
-  const key = titleIdentityKey(title);
-  return key !== null && GENERIC_TITLE_KEYS.has(key);
+  return parseEpgTitle(title).resolutionState === 'generic';
 }
 
 const RATING_LINE = /^[^\p{L}\d]*\d+(?:[.,]\d+)?\s*\/\s*10$/u;
@@ -394,17 +591,33 @@ export function legacyCatalogSlugs(title: string | null | undefined): string[] {
 export function decideIngestionMatch(
   input: TitleMatchInput,
   rows: readonly TitleKeyRow[],
-  tmdbEntity?: { entityId: string; kind: ContentKind } | null
+  tmdbEntity?: { entityId: string; kind: ContentKind } | null,
+  /** `crossKind`: the same run saw this work under another known kind (ingestion's set-based check). */
+  context: { crossKind?: boolean } = {}
 ): TitleMatchDecision {
   const decision = decideTitleMatch(input, rows, tmdbEntity);
   if (decision.decision !== 'create' && decision.decision !== 'bind') return decision;
   const { entityId, ...row } = decision.row;
-  const toReview = (reason: string) =>
-    ({ decision: 'review', row: { ...row, state: 'manual_review', reason, candidates: entityId ? [entityId] : [] } }) as const;
+  const toReview = (reason: string, candidates = entityId ? [entityId] : []) =>
+    ({ decision: 'review', row: { ...row, state: 'manual_review', reason, candidates } }) as const;
   if (input.kind === 'unknown') return toReview('unknown_kind');
   // A reviewer rejected this title for this kind without a discriminator ("any work called X"): a
   // later sighting with a year or a TMDB id goes back to review instead of silently recreating it.
   if (rows.some((r) => r.state === 'rejected' && r.kind === input.kind && r.discriminator === '*')) return toReview('rejected_title');
+  if (decision.decision !== 'create') return decision;
+  // Cross-kind (2D-2E §5): a stored entity of another known kind with this title is the same work
+  // unless both sides name different TMDB works. A matching title is never enough to merge, nor to
+  // create a twin with a second path: a person decides, and the stored identity stays as it is.
+  const own = input.tmdb ? `tmdb:${input.tmdb.type}:${input.tmdb.id}` : null;
+  const rivals = rows.filter(
+    (r) =>
+      r.entityId &&
+      (r.state === 'verified' || r.state === 'candidate') &&
+      r.kind !== 'unknown' &&
+      r.kind !== input.kind &&
+      !(own && r.discriminator.startsWith('tmdb:') && r.discriminator !== own)
+  );
+  if (context.crossKind || rivals.length) return toReview('cross_kind_conflict', [...new Set(rivals.map((r) => r.entityId as string))]);
   return decision;
 }
 

@@ -4,7 +4,9 @@
  *   node dist/scripts/content-identity.js shadow 20261020 [20261022]   read-only matching report per stored day
  *       [--sample N --out <dir> [--seed S] [--precision-sample M]]      plus a deterministic sample per decision class
  *                                                                       and a review sheet (2D-2D; see the review protocol)
- *   node dist/scripts/content-identity.js score <review.csv> [--min-labelled M]   scores a labelled sheet (no database)
+ *   node dist/scripts/content-identity.js score <review.csv> [--verify <second.csv>] [--min-labelled M] [--min-verified V]
+ *                                                                       scores a labelled sheet (no database); the gate needs
+ *                                                                       a second reviewer's sheet (2D-2E review protocol)
  *   node dist/scripts/content-identity.js queue [limit]                 review queue (reads)
  *   node dist/scripts/content-identity.js pathless [limit]              stored entities without a path, by reason (reads)
  *   node dist/scripts/content-identity.js approve <titleKeyId> <entityId> --by <name> [--note <text>]
@@ -129,7 +131,9 @@ async function main() {
   if (command === 'score') {
     const rows = parseCsv(fs.readFileSync(args[0], 'utf8'));
     const minLabelled = Number(option(args, '--min-labelled')) || 300;
-    const score = scoreReview(rows, { precision: 0.98, minLabelled });
+    const minVerified = option(args, '--min-verified') === undefined ? 50 : Number(option(args, '--min-verified'));
+    const verify = option(args, '--verify');
+    const score = scoreReview(rows, { precision: 0.98, minLabelled, minVerified }, verify ? parseCsv(fs.readFileSync(verify, 'utf8')) : undefined);
     console.log(JSON.stringify(score, null, 2));
     process.exitCode = score.gate.pass ? 0 : 2;
     return;

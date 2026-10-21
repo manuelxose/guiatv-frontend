@@ -22,6 +22,11 @@ export const AUDIT_CLASSES = [
   'pathless',
   'historic_ownership',
   'deferred',
+  // 2D-2E strata: the normalisation and cross-kind rules under review.
+  'episode_normalized',
+  'title_uncertain',
+  'cross_kind_conflict',
+  'generic_slot',
 ] as const;
 export type AuditClass = (typeof AUDIT_CLASSES)[number];
 
@@ -50,7 +55,11 @@ export function auditClasses(traces: readonly IdentityTrace[]): Map<AuditClass, 
     if (t.tmdb.evidence === 'unconfirmed' || t.tmdb.evidence === 'mixed') add('tmdb_rejected', t);
     if ((t.decision === 'review' || t.decision === 'held') && t.state === 'ambiguous') add('ambiguous', t);
     if ((t.decision === 'review' || t.decision === 'held') && t.state === 'manual_review') add('manual_review', t);
-    if (t.decision === 'unresolved') add('unknown_kind', t);
+    if (t.decision === 'unresolved' && t.reason === 'unknown_kind') add('unknown_kind', t);
+    if (Object.keys(t.titleEvidence ?? {}).some((e) => e.startsWith('episode:')) || t.reason === 'episode_without_work') add('episode_normalized', t);
+    if (t.reason === 'title_uncertain') add('title_uncertain', t);
+    if (t.reason === 'cross_kind_conflict' || t.crossKind) add('cross_kind_conflict', t);
+    if (t.decision === 'rejected' && t.reason === 'generic_title') add('generic_slot', t);
     if (isNew(t) && (bySlug.get(slugOf(t))?.size ?? 0) > 1) add('duplicate_looking', t);
     if ((contexts.get(t.key) ?? 0) > 1) add('shared_title', t);
     if (t.pathless) add('pathless', t);
@@ -71,9 +80,17 @@ export function sampleTraces(traces: readonly IdentityTrace[], n: number, seed: 
 }
 
 /** Label columns a reviewer fills in; every other column is machine output. */
-export const LABEL_COLUMNS = ['reviewer', 'identity_ok', 'kind_ok', 'duplicate_of', 'tmdb_ok', 'path_ok', 'critical', 'notes'] as const;
+export const LABEL_COLUMNS = [
+  'reviewer', 'identity_ok', 'kind_ok', 'duplicate_of', 'tmdb_ok', 'path_ok', 'critical', 'error_category', 'notes',
+] as const;
+/** Required with `identity_ok=n` (2D-2E §9): what kind of error it is, so errors can be counted by cause. */
+export const ERROR_CATEGORIES = [
+  'episode_as_work', 'generic_slot', 'cross_kind_split', 'false_merge', 'duplicate', 'wrong_kind', 'wrong_tmdb', 'wrong_path',
+  'not_a_work', 'other',
+] as const;
 const MACHINE_COLUMNS = [
-  'strata', 'candidate_id', 'epg_title', 'spellings', 'normalized_title', 'kind', 'epg_years', 'identity_year', 'tmdb_id',
+  'strata', 'candidate_id', 'epg_title', 'work_title', 'title_evidence', 'cross_kind', 'spellings', 'normalized_title', 'kind',
+  'epg_years', 'identity_year', 'tmdb_id',
   'tmdb_type', 'tmdb_evidence', 'tmdb_url', 'decision', 'state', 'method', 'confidence', 'reason', 'proposed_identity',
   'proposed_path', 'path_refused', 'pathless_reason', 'historic_owner', 'airings',
 ] as const;
@@ -111,8 +128,11 @@ export function buildReviewRows(traces: readonly IdentityTrace[], plan: ReviewPl
     const row: Record<string, string> = {
       strata: strata.get(t.candidateId)!.join(';'),
       candidate_id: t.candidateId,
-      epg_title: t.title,
-      spellings: t.spellings.join(' | '),
+      epg_title: t.spellings[0] ?? t.title,
+      work_title: t.title,
+      title_evidence: Object.entries(t.titleEvidence ?? {}).map(([e, n]) => `${e}=${n}`).join(' '),
+      cross_kind: (t.crossKind ?? []).join(' '),
+      spellings: t.spellings.slice(0, 5).join(' | '),
       normalized_title: t.key,
       kind: t.kind,
       epg_years: t.epgYears.join(' '),
@@ -249,13 +269,12 @@ export interface ScoreGate {
   precision: number;
   /** Auto-create rows that must carry a label before the gate can pass. */
   minLabelled: number;
+  /** Auto-create rows a second, different person must label independently (2D-2E §9). */
+  minVerified?: number;
 }
 
-/**
- * Scores a labelled review sheet. Only rows signed by a named person count (the same reviewer rule
- * as approvals); a row with machine output and no label is unreviewed, never correct by default.
- */
-export function scoreReview(rows: readonly Record<string, string>[], gate: ScoreGate = { precision: 0.98, minLabelled: 300 }) {
+/** Labelled rows signed by a valid reviewer name (normalised), and the ids of labelled rows that are not. */
+function signedRows(rows: readonly Record<string, string>[]) {
   const reviewed: Record<string, string>[] = [];
   const invalidReviewer: string[] = [];
   for (const r of rows) {
@@ -266,6 +285,73 @@ export function scoreReview(rows: readonly Record<string, string>[], gate: Score
       invalidReviewer.push(r.candidate_id);
     }
   }
+  return { reviewed, invalidReviewer };
+}
+
+const COMPARED = ['identity_ok', 'kind_ok', 'path_ok', 'critical'] as const;
+const yesNo = (v: string) => (YES.has(norm(v)) ? 'y' : NO.has(norm(v)) ? 'n' : '');
+/** "adjudicated identity_ok kind_ok: …": the fields a note settles. */
+const adjudicatedFields = (notes: string | undefined) =>
+  /\badjudicated\b/i.test(notes ?? '') ? new Set(COMPARED.filter((f) => new RegExp(`\\b${f}\\b`, 'i').test(notes ?? ''))) : new Set<string>();
+
+/**
+ * Independent verification (2D-2E §9): a second person labels a copy of the sheet without seeing
+ * the first labels. Every overlapping auto-create row where the two differ is a disagreement until
+ * both settle it and the primary row carries the agreed label and a note naming it ("adjudicated
+ * identity_ok: …"); an adjudicated label still counts as a disagreement for agreement and Cohen's
+ * kappa (identity labels are binary, so the primary's original label is the opposite of the verifier's).
+ */
+export function compareReviews(primary: readonly Record<string, string>[], verification: readonly Record<string, string>[]) {
+  const auto = (list: Record<string, string>[]) =>
+    new Map(list.filter((r) => String(r.strata).split(';').includes(AUTO_CREATE)).map((r) => [r.candidate_id, r] as const));
+  const a = auto(signedRows(primary).reviewed);
+  const b = auto(signedRows(verification).reviewed);
+  const pairs = [...b].filter(([id, r]) => a.has(id) && yesNo(a.get(id)!.identity_ok) && yesNo(r.identity_ok)).map(([id, r]) => [a.get(id)!, r] as const);
+  const sameReviewer = pairs.filter(([p, v]) => p.reviewer.toLowerCase() === v.reviewer.toLowerCase()).map(([p]) => p.candidate_id);
+  const disagreements: Array<{ candidate_id: string; field: string; primary: string; verifier: string; adjudicated: boolean }> = [];
+  let agreed = 0;
+  let primaryYes = 0;
+  let verifierYes = 0;
+  for (const [p, v] of pairs) {
+    const settled = adjudicatedFields(p.notes);
+    for (const field of COMPARED) {
+      const [x, y] = [yesNo(p[field]), yesNo(v[field])];
+      const adjudicated = settled.has(field);
+      if (x !== y || adjudicated) disagreements.push({ candidate_id: p.candidate_id, field, primary: x, verifier: y, adjudicated });
+    }
+    const verifier = yesNo(v.identity_ok);
+    const original = settled.has('identity_ok') && yesNo(p.identity_ok) === verifier ? (verifier === 'y' ? 'n' : 'y') : yesNo(p.identity_ok);
+    if (original === verifier) agreed++;
+    if (original === 'y') primaryYes++;
+    if (verifier === 'y') verifierYes++;
+  }
+  const n = pairs.length;
+  const observed = n ? agreed / n : null;
+  const chance = n ? (primaryYes / n) * (verifierYes / n) + (1 - primaryYes / n) * (1 - verifierYes / n) : null;
+  const kappa = observed === null || chance === null ? null : chance === 1 ? (observed === 1 ? 1 : 0) : (observed - chance) / (1 - chance);
+  return {
+    overlap: n,
+    reviewers: { primary: [...new Set(pairs.map(([p]) => p.reviewer))].sort(), verifier: [...new Set(pairs.map(([, v]) => v.reviewer))].sort() },
+    sameReviewer,
+    identityAgreement: observed,
+    kappa,
+    disagreements,
+    /** Disagreements not yet settled: the labels still differ, or the primary row has no adjudication note. */
+    open: disagreements.filter((d) => d.primary !== d.verifier || !d.adjudicated),
+  };
+}
+
+/**
+ * Scores a labelled review sheet. Only rows signed by a named person count (the same reviewer rule
+ * as approvals); a row with machine output and no label is unreviewed, never correct by default.
+ * `verification` is the second reviewer's sheet; without it the gate cannot pass when `minVerified` > 0.
+ */
+export function scoreReview(
+  rows: readonly Record<string, string>[],
+  gate: ScoreGate = { precision: 0.98, minLabelled: 300, minVerified: 50 },
+  verification?: readonly Record<string, string>[]
+) {
+  const { reviewed, invalidReviewer } = signedRows(rows);
   const inStratum = (s: string) => reviewed.filter((r) => String(r.strata).split(';').includes(s));
   const auto = inStratum(AUTO_CREATE);
   const autoDrawn = rows.filter((r) => String(r.strata).split(';').includes(AUTO_CREATE)).length;
@@ -298,6 +384,18 @@ export function scoreReview(rows: readonly Record<string, string>[], gate: Score
   }
   if (critical.length) blockers.push(`${critical.length} critical canonical-ownership violation(s)`);
   if (invalidReviewer.length) blockers.push(`${invalidReviewer.length} labelled row(s) without a named reviewer`);
+  const wrong = reviewed.filter((r) => NO.has(norm(r.identity_ok)));
+  const uncategorised = wrong.filter((r) => !(ERROR_CATEGORIES as readonly string[]).includes(norm(r.error_category)));
+  if (uncategorised.length) blockers.push(`${uncategorised.length} identity error(s) without a valid error_category`);
+  const minVerified = gate.minVerified ?? 0;
+  const agreement = verification ? compareReviews(rows, verification) : null;
+  if (minVerified > 0) {
+    if (!agreement || agreement.overlap < minVerified) {
+      blockers.push(`independent verification: ${agreement?.overlap ?? 0} auto-create rows labelled by a second person, ${minVerified} required`);
+    }
+    if (agreement?.sameReviewer.length) blockers.push(`${agreement.sameReviewer.length} verification row(s) labelled by the primary reviewer`);
+    if (agreement?.open.length) blockers.push(`${agreement.open.length} reviewer disagreement(s) not adjudicated`);
+  }
   return {
     rows: rows.length,
     reviewed: reviewed.length,
@@ -315,6 +413,10 @@ export function scoreReview(rows: readonly Record<string, string>[], gate: Score
       identityByMethod: byMethod,
     },
     strata,
+    errorCategories: Object.fromEntries(
+      [...new Set(wrong.map((r) => norm(r.error_category) || 'missing'))].sort().map((c) => [c, wrong.filter((r) => (norm(r.error_category) || 'missing') === c).length])
+    ),
+    verification: agreement,
     criticalOwnershipViolations: critical.map((r) => ({ candidate_id: r.candidate_id, proposed_path: r.proposed_path, notes: r.notes })),
     gate: { ...gate, pass: blockers.length === 0, blockers },
   };
@@ -330,11 +432,20 @@ export function summarizeTraces(traces: readonly IdentityTrace[]) {
     }
     return out;
   };
+  const rejected = traces.filter((t) => t.decision === 'rejected');
+  traces = traces.filter((t) => t.decision !== 'rejected');
   const created = traces.filter(isNew);
   const proposed = new Map(created.map((t) => [t.identity, t]));
   const pathless = [...proposed.values()].filter((t) => t.pathless);
   return {
     candidates: traces.length,
+    /** Excluded titles (slots, episode-only, unkeyable) by reason, with their airing counts. */
+    rejectedTitles: count(rejected, (t) => t.reason),
+    rejectedAirings: rejected.reduce((n, t) => n + t.airings, 0),
+    titleEvidence: traces.reduce<Record<string, number>>((acc, t) => {
+      for (const [e, n] of Object.entries(t.titleEvidence ?? {})) acc[e] = (acc[e] ?? 0) + n;
+      return acc;
+    }, {}),
     decisions: count(traces, (t) => t.decision),
     kinds: count(traces, (t) => t.kind),
     tmdbEvidence: count(traces, (t) => t.tmdb.evidence),
@@ -346,6 +457,6 @@ export function summarizeTraces(traces: readonly IdentityTrace[]) {
     pathlessByReason: count(pathless, (t) => t.pathless),
     pathlessRate: proposed.size ? pathless.length / proposed.size : null,
     reviewReasons: count(traces.filter((t) => t.decision === 'review' || t.decision === 'held'), (t) => t.reason),
-    classes: Object.fromEntries([...auditClasses(traces)].map(([c, list]) => [c, list.length])),
+    classes: Object.fromEntries([...auditClasses([...traces, ...rejected])].map(([c, list]) => [c, list.length])),
   };
 }
