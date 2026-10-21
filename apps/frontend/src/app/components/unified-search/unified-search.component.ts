@@ -102,6 +102,9 @@ export class UnifiedSearchComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     this.control.setValue(this.query || '', { emitEvent: false });
     this.history = this.readHistory();
+    // Suggestions only exist in the browser. On the server, startWith + debounceTime armed a 300 ms timer that
+    // Angular SSR waited for on every page (this search sits in the top nav), idle time on each render.
+    if (!this.isBrowser) return;
 
     this.control.valueChanges
       .pipe(
