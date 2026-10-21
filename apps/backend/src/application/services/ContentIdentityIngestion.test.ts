@@ -22,7 +22,10 @@ import {
 import { newEntityId, titleKeyId } from '@/domain/services/contentIdentity';
 import { PRIMARY_EPG_SOURCE_URL } from '@/shared/config/epgSources';
 import { ContentIdentityService } from './ContentIdentityService';
-import { ContentIdentityIngestion, IdentityObservation, runContentIdentity } from './ContentIdentityIngestion';
+import { ContentIdentityIngestion, IdentityObservation, IdentityTrace, runContentIdentity } from './ContentIdentityIngestion';
+import { auditClasses, buildReviewRows, scoreReview, summarizeTraces, toCsv } from './ContentIdentityAudit';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
 import { TvReadModelBuilder } from './TvReadModelBuilder';
 
 const mongoUri = process.env.TEST_MONGO_URI;
@@ -214,6 +217,76 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       assert.equal(report.estimate.newEntities, 9);
       assert.deepEqual(report.slugs, FIRST_RUN_SLUGS);
       assert.equal(report.airingRefs.skipped, 'shadow');
+    });
+
+    await t.test('shadow sample: same reads, nothing stored, reproducible, every decision class traced', async () => {
+      commands = 0;
+      const plain = await ingestion('shadow').run('20261020', dayFixture());
+      const plainCommands = commands;
+      commands = 0;
+      const traces: IdentityTrace[] = [];
+      const traced = await ingestion('shadow').run('20261020', dayFixture(), traces);
+      assert.equal(commands, plainCommands, 'tracing adds no database command');
+      assert.deepEqual({ ...traced, durationMs: 0 }, { ...plain, durationMs: 0 });
+      assert.deepEqual(await contentCollections(), []);
+      const again: IdentityTrace[] = [];
+      await ingestion('shadow').run('20261020', [...dayFixture()].reverse(), again);
+      assert.deepEqual(again, traces, 'same day in another order: identical traces (no random ids)');
+
+      assert.equal(traces.length, traced.candidates);
+      const summary = summarizeTraces(traces);
+      assert.deepEqual(summary.decisions, { create: 9, bind: 1, review: 1, unresolved: 1 });
+      assert.equal(summary.newEntities, traced.estimate.newEntities);
+      assert.deepEqual(summary.pathlessByReason, FIRST_RUN_SLUGS.pathless);
+      const byClass = auditClasses(traces);
+      const keys = (c: Parameters<typeof byClass.get>[0]) => byClass.get(c)!.map((t) => t.title).sort();
+      assert.deepEqual(keys('manual_review'), ['La novia']);
+      assert.deepEqual(keys('unknown_kind'), ['Bluey']);
+      assert.deepEqual(keys('tmdb_rejected'), ['Mi casa'], 'catalogue title differs: the id is not identity evidence');
+      assert.deepEqual(keys('shared_title'), ['Cenicienta', 'Cenicienta', 'La novia', 'La novia']);
+      assert.deepEqual(keys('duplicate_looking'), ['Cenicienta', 'Cenicienta'], 'two proposed films with one slug go to a person');
+      assert.deepEqual(keys('pathless'), ['La Promesa T1 E929', 'La novia', 'Mi casa', 'No']);
+      assert.deepEqual(keys('historic_ownership'), ['C.S.I. Miami', 'CSI: Miami', 'Cenicienta', 'Cenicienta', 'Espejo Publico', 'La novia', 'Mi casa', 'No']);
+      const csi = traces.find((t) => t.title === 'CSI: Miami')!;
+      const csiOwner = traces.find((t) => t.title === 'C.S.I. Miami')!;
+      assert.deepEqual([csi.decision, csi.identity], ['bind', csiOwner.identity], 'a same-run bind points at the proposed entity');
+      assert.equal(csiOwner.identity, 'new:c_s_i_miami|series|tmdb:tv:1620');
+
+      const plan = { seed: 'gate', perClass: 3, precision: 5 };
+      const sheet = toCsv(buildReviewRows(traces, plan));
+      assert.equal(toCsv(buildReviewRows(again, plan)), sheet);
+      assert.doesNotMatch(sheet, /64a0{20}|ce_[0-9a-f]/, 'no media or entity ids in the sheet');
+      const score = scoreReview(buildReviewRows(traces, plan), { precision: 0.98, minLabelled: 5 });
+      assert.equal(score.reviewed, 0, 'machine output is never a label');
+      assert.equal(score.gate.pass, false);
+    });
+
+    await t.test('read-only guard: a write ends the process before it is sent; model indexes are not built', () => {
+      const guard = path.resolve(__dirname, '../../scripts/readOnlyGuard.js');
+      const child = spawnSync(
+        process.execPath,
+        [
+          '-e',
+          `const { installReadOnlyGuard } = require(${JSON.stringify(guard)});
+           const g = installReadOnlyGuard();
+           const mongoose = require('mongoose');
+           const M = mongoose.model('Guarded', new mongoose.Schema({ a: { type: String, index: true } }), 'guarded');
+           (async () => {
+             await mongoose.connect(${JSON.stringify(mongoUri)}, { dbName: ${JSON.stringify(`${dbName}_guard`)} });
+             await M.find().lean();
+             await new Promise((r) => setTimeout(r, 200));
+             console.log(JSON.stringify(g.summary()));
+             await M.collection.insertOne({ a: 'x' });
+             console.log('not reached');
+           })();`,
+        ],
+        { encoding: 'utf8', timeout: 30_000 }
+      );
+      assert.equal(child.status, 97, child.stderr);
+      assert.match(child.stderr, /READ_ONLY_GUARD abort: insert guarded/);
+      assert.doesNotMatch(child.stdout, /not reached|createIndexes|create:/);
+      assert.match(child.stdout, /"find:guarded":1/);
+      return mongoose.connection.useDb(`${dbName}_guard`).db!.listCollections().toArray().then((c) => assert.deepEqual(c, []));
     });
 
     await t.test('write flags before the store is ready: the identity step fails, the day does not', async () => {
@@ -413,6 +486,16 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       const again = await ingestion('write').run('20261027', [obs('Mi casa', { editorialCategory: 'Cine', year: 2001 })]);
       assert.deepEqual([again.writes.entities, again.reasons.rejected_title], [0, 1]);
       assert.equal((await ContentTitleKeyModel.findById('mi_casa|movie|year:2001').lean())?.state, 'manual_review');
+      // Reserved names in any case or spacing are refused, and a refused review leaves the verified decision as it was.
+      for (const name of ['System', 'AUTO ', ' ingest', 'ＳＹＳＴＥＭ', 'cron-job', '\u00a0']) {
+        await assert.rejects(service.reviewTitleKey('la_novia|movie|tmdb:movie:502', target!.entityId, name), /reviewer_required/, name);
+      }
+      const kept = await ContentTitleKeyModel.findById('la_novia|movie|tmdb:movie:502').lean();
+      assert.deepEqual([kept?.review?.by, kept?.decidedBy, kept?.review?.at], [reviewed?.review?.by, reviewed?.decidedBy, reviewed?.review?.at]);
+      // The stored name is the normalised one.
+      assert.equal(await service.rejectTitleKey('mi_casa|movie|year:2001', '  Ana\u00a0 García ', 'same container'), true);
+      const signed = await ContentTitleKeyModel.findById('mi_casa|movie|year:2001').lean();
+      assert.deepEqual([signed?.state, signed?.review?.by, signed?.decidedBy], ['rejected', 'Ana García', 'Ana García']);
     });
 
     await t.test('EPG output parity: flags off, shadow and writes store the same airings apart from refs', async () => {

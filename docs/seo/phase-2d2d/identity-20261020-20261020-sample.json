@@ -1,0 +1,5836 @@
+{
+  "date": "20261020",
+  "seed": "20261020",
+  "perClass": 25,
+  "precisionSample": 300,
+  "report": {
+    "mode": "shadow",
+    "date": "20261020",
+    "airings": 11211,
+    "candidates": 3839,
+    "excluded": {
+      "generic_title": 34,
+      "unkeyable_title": 39,
+      "sport_event": 1370
+    },
+    "kinds": {
+      "unknown": 1712,
+      "show": 1317,
+      "series": 487,
+      "movie": 323
+    },
+    "tmdb": {
+      "confirmed": 820,
+      "unconfirmed": 161
+    },
+    "decisions": {
+      "unresolved": 1708,
+      "create": 2121,
+      "review": 5,
+      "bind": 5
+    },
+    "newRows": {
+      "candidate": 2126,
+      "ambiguous": 4,
+      "manual_review": 1
+    },
+    "reasons": {
+      "unknown_kind": 1708,
+      "several_entities": 4,
+      "kind_conflict": 1
+    },
+    "deferred": 0,
+    "failed": 0,
+    "slugs": {
+      "allocated": 1908,
+      "repaired": 0,
+      "historicOwner": 1430,
+      "refused": {
+        "unsupported_slug": 2,
+        "historic_unverified": 247,
+        "historic_conflict": 3,
+        "historic_ambiguous": 19,
+        "inventory_review": 1
+      },
+      "pathless": {
+        "unsupported_slug": 2,
+        "historic_unverified": 201,
+        "historic_conflict": 3,
+        "historic_ambiguous": 7
+      }
+    },
+    "writes": {
+      "entities": 0,
+      "titleKeys": 0,
+      "slugs": 0,
+      "duplicateKeyConflicts": 0,
+      "claimConflicts": 0,
+      "claimsFlagged": 0
+    },
+    "airingRefs": {
+      "applied": 0,
+      "skipped": "shadow"
+    },
+    "estimate": {
+      "newEntities": 2121,
+      "approxBytes": 3181500
+    },
+    "durationMs": 6172
+  },
+  "summary": {
+    "candidates": 3839,
+    "decisions": {
+      "unresolved": 1708,
+      "create": 2121,
+      "review": 5,
+      "bind": 5
+    },
+    "kinds": {
+      "unknown": 1712,
+      "show": 1317,
+      "series": 487,
+      "movie": 323
+    },
+    "tmdbEvidence": {
+      "none": 3453,
+      "confirmed": 300,
+      "unconfirmed": 84,
+      "mixed": 2
+    },
+    "newEntities": 2121,
+    "newEntitiesByKind": {
+      "show": 1313,
+      "series": 487,
+      "movie": 321
+    },
+    "newEntitiesByMethod": {
+      "title": 1822,
+      "tmdb_exact": 299
+    },
+    "withPath": 1908,
+    "historicOwner": 1430,
+    "pathlessByReason": {
+      "unsupported_slug": 2,
+      "historic_unverified": 201,
+      "historic_conflict": 3,
+      "historic_ambiguous": 7
+    },
+    "pathlessRate": 0.10042432814710042,
+    "reviewReasons": {
+      "several_entities": 4,
+      "kind_conflict": 1
+    },
+    "classes": {
+      "new_entity": 2121,
+      "existing_match": 5,
+      "tmdb_confirmed": 300,
+      "tmdb_rejected": 86,
+      "ambiguous": 4,
+      "manual_review": 1,
+      "unknown_kind": 1708,
+      "duplicate_looking": 28,
+      "shared_title": 46,
+      "pathless": 213,
+      "historic_ownership": 1703,
+      "deferred": 0
+    }
+  },
+  "classes": {
+    "new_entity": {
+      "population": 2121,
+      "rows": [
+        {
+          "candidateId": "atrapado_por_su_pasado|movie||1975",
+          "key": "atrapado_por_su_pasado",
+          "kind": "movie",
+          "title": "Atrapado por su pasado",
+          "spellings": [
+            "Atrapado por su pasado"
+          ],
+          "airings": 2,
+          "epgYears": [
+            1975
+          ],
+          "year": 1975,
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "atrapado_por_su_pasado|movie|year:1975",
+          "identity": "new:atrapado_por_su_pasado|movie|year:1975",
+          "path": "/peliculas/atrapado-por-su-pasado-1975",
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "cinegetis_argentina|movie||",
+          "key": "cinegetis_argentina",
+          "kind": "movie",
+          "title": "Cinegetis Argentina",
+          "spellings": [
+            "Cinegetis Argentina",
+            "Cinegetis argentina T1 E1",
+            "Cinegetis argentina T1 E2",
+            "Cinegetis argentina T1 E3"
+          ],
+          "airings": 7,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "cinegetis_argentina|movie|*",
+          "identity": "new:cinegetis_argentina|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "camera_cafe_guerra_de_pintura_amiga_frita_pedro_luis_los_seres|series||",
+          "key": "camera_cafe_guerra_de_pintura_amiga_frita_pedro_luis_los_seres",
+          "kind": "series",
+          "title": "Camera Café T1 E109 · Guerra De Pintura - Amiga Frita - Pedro Luis - Los Seres",
+          "spellings": [
+            "Camera Café T1 E109 · Guerra De Pintura - Amiga Frita - Pedro Luis - Los Seres"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "camera_cafe_guerra_de_pintura_amiga_frita_pedro_luis_los_seres|series|*",
+          "identity": "new:camera_cafe_guerra_de_pintura_amiga_frita_pedro_luis_los_seres|series|*",
+          "path": "/series/camera-cafe-guerra-de-pintura-amiga-frita-pedro-luis-los-seres",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "heldt|series|tv:60851|2013",
+          "key": "heldt",
+          "kind": "series",
+          "title": "Heldt",
+          "spellings": [
+            "Heldt",
+            "Heldt T4 E5",
+            "Heldt T4 E6",
+            "Heldt T4 E7",
+            "Heldt T4 E8"
+          ],
+          "airings": 12,
+          "epgYears": [
+            2013
+          ],
+          "year": 2013,
+          "tmdb": {
+            "ids": [
+              60851
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 60851
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "heldt|series|tmdb:tv:60851",
+          "identity": "new:heldt|series|tmdb:tv:60851",
+          "path": "/series/heldt",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "historia_de_una_calle|show||",
+          "key": "historia_de_una_calle",
+          "kind": "show",
+          "title": "Historia de una calle",
+          "spellings": [
+            "Historia de una calle"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "historia_de_una_calle|show|*",
+          "identity": "new:historia_de_una_calle|show|*",
+          "path": "/programas/historia-de-una-calle",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_hora_de_la_1|show||",
+          "key": "la_hora_de_la_1",
+          "kind": "show",
+          "title": "La hora de la 1",
+          "spellings": [
+            "La hora de la 1"
+          ],
+          "airings": 3,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_hora_de_la_1|show|*",
+          "identity": "new:la_hora_de_la_1|show|*",
+          "path": "/programas/la-hora-de-la-1",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_conspiracion_de_noviembre|movie|movie:254904|2014",
+          "key": "la_conspiracion_de_noviembre",
+          "kind": "movie",
+          "title": "La conspiración de noviembre",
+          "spellings": [
+            "La conspiración de noviembre"
+          ],
+          "airings": 2,
+          "epgYears": [
+            2014
+          ],
+          "year": 2014,
+          "tmdb": {
+            "ids": [
+              254904
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 254904
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "la_conspiracion_de_noviembre|movie|tmdb:movie:254904",
+          "identity": "new:la_conspiracion_de_noviembre|movie|tmdb:movie:254904",
+          "path": "/peliculas/la-conspiracion-de-noviembre",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "ciencia_traviesa|show||",
+          "key": "ciencia_traviesa",
+          "kind": "show",
+          "title": "Ciencia traviesa",
+          "spellings": [
+            "Ciencia traviesa"
+          ],
+          "airings": 3,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "ciencia_traviesa|show|*",
+          "identity": "new:ciencia_traviesa|show|*",
+          "path": "/programas/ciencia-traviesa",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "mentes_criminales|series|tv:4057|2005",
+          "key": "mentes_criminales",
+          "kind": "series",
+          "title": "Mentes criminales",
+          "spellings": [
+            "Mentes criminales"
+          ],
+          "airings": 11,
+          "epgYears": [
+            2005
+          ],
+          "year": 2005,
+          "tmdb": {
+            "ids": [
+              4057
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 4057
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "mentes_criminales|series|tmdb:tv:4057",
+          "identity": "new:mentes_criminales|series|tmdb:tv:4057",
+          "path": "/series/mentes-criminales",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "merci_professeur|show||",
+          "key": "merci_professeur",
+          "kind": "show",
+          "title": "Merci Professeur",
+          "spellings": [
+            "Merci Professeur"
+          ],
+          "airings": 4,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "merci_professeur|show|*",
+          "identity": "new:merci_professeur|show|*",
+          "path": "/programas/merci-professeur",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "rosario_76_12|series||",
+          "key": "rosario_76_12",
+          "kind": "series",
+          "title": "Rosario (76) 12",
+          "spellings": [
+            "Rosario (76) 12"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2016
+          ],
+          "tmdb": {
+            "ids": [
+              74428
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "rosario_76_12|series|*",
+          "identity": "new:rosario_76_12|series|*",
+          "path": "/series/rosario-76-12",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "expediente_64_los_casos_del_departamento_q|movie|movie:479226|2018",
+          "key": "expediente_64_los_casos_del_departamento_q",
+          "kind": "movie",
+          "title": "Expediente 64: Los casos del departamento Q",
+          "spellings": [
+            "Expediente 64: Los casos del departamento Q"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2018
+          ],
+          "year": 2018,
+          "tmdb": {
+            "ids": [
+              479226
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 479226
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "expediente_64_los_casos_del_departamento_q|movie|tmdb:movie:479226",
+          "identity": "new:expediente_64_los_casos_del_departamento_q|movie|tmdb:movie:479226",
+          "path": "/peliculas/expediente-64-los-casos-del-departamento-q",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "generacion_like|movie||1994",
+          "key": "generacion_like",
+          "kind": "movie",
+          "title": "Generación like",
+          "spellings": [
+            "Generación like"
+          ],
+          "airings": 3,
+          "epgYears": [
+            1994
+          ],
+          "year": 1994,
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "generacion_like|movie|year:1994",
+          "identity": "new:generacion_like|movie|year:1994",
+          "path": "/peliculas/generacion-like-1994",
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "cara_a_cara_villanas_segun_nawja_nimri_y_alba_flores|movie||",
+          "key": "cara_a_cara_villanas_segun_nawja_nimri_y_alba_flores",
+          "kind": "movie",
+          "title": "Cara a Cara T1 · Villanas según Nawja Nimri y Alba Flores",
+          "spellings": [
+            "Cara a Cara T1 · Villanas según Nawja Nimri y Alba Flores"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "cara_a_cara_villanas_segun_nawja_nimri_y_alba_flores|movie|*",
+          "identity": "new:cara_a_cara_villanas_segun_nawja_nimri_y_alba_flores|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "los_conciertos_de_radio_3_tako|show||",
+          "key": "los_conciertos_de_radio_3_tako",
+          "kind": "show",
+          "title": "Los conciertos de Radio 3 - Tako",
+          "spellings": [
+            "Los conciertos de Radio 3 - Tako"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1984
+          ],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "los_conciertos_de_radio_3_tako|show|*",
+          "identity": "new:los_conciertos_de_radio_3_tako|show|*",
+          "path": "/programas/los-conciertos-de-radio-3-tako",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "mareas_vivas_a_serie_que_cambiou_a_tua_vida|series||",
+          "key": "mareas_vivas_a_serie_que_cambiou_a_tua_vida",
+          "kind": "series",
+          "title": "Mareas vivas. A serie que cambiou a túa vida",
+          "spellings": [
+            "Mareas vivas. A serie que cambiou a túa vida"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "mareas_vivas_a_serie_que_cambiou_a_tua_vida|series|*",
+          "identity": "new:mareas_vivas_a_serie_que_cambiou_a_tua_vida|series|*",
+          "path": "/series/mareas-vivas-a-serie-que-cambiou-a-tua-vida",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "reporter|movie||",
+          "key": "reporter",
+          "kind": "movie",
+          "title": "Reporter",
+          "spellings": [
+            "Reporter"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "reporter|movie|*",
+          "identity": "new:reporter|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "ley_y_orden|series|tv:549|1990",
+          "key": "ley_y_orden",
+          "kind": "series",
+          "title": "Ley y Orden",
+          "spellings": [
+            "Ley y Orden"
+          ],
+          "airings": 2,
+          "epgYears": [
+            1990
+          ],
+          "year": 1990,
+          "tmdb": {
+            "ids": [
+              549
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 549
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "ley_y_orden|series|tmdb:tv:549",
+          "identity": "new:ley_y_orden|series|tmdb:tv:549",
+          "path": "/series/ley-y-orden",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "padre_brown_la_forma_equivocada|series||",
+          "key": "padre_brown_la_forma_equivocada",
+          "kind": "series",
+          "title": "Padre Brown T1 E3 · La forma equivocada",
+          "spellings": [
+            "Padre Brown T1 E3 · La forma equivocada"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "padre_brown_la_forma_equivocada|series|*",
+          "identity": "new:padre_brown_la_forma_equivocada|series|*",
+          "path": "/series/padre-brown-la-forma-equivocada",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "chicago_p_d_atrapada|series||",
+          "key": "chicago_p_d_atrapada",
+          "kind": "series",
+          "title": "Chicago P.D. T10 E14 · Atrapada",
+          "spellings": [
+            "Chicago P.D. T10 E14 · Atrapada"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "chicago_p_d_atrapada|series|*",
+          "identity": "new:chicago_p_d_atrapada|series|*",
+          "path": "/series/chicago-pd-atrapada",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "ley_y_orden_crimen_organizado_off_the_books|series||",
+          "key": "ley_y_orden_crimen_organizado_off_the_books",
+          "kind": "series",
+          "title": "Ley y Orden: Crimen organizado T5 E12 · Off the Books",
+          "spellings": [
+            "Ley y Orden: Crimen organizado T5 E12 · Off the Books"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "ley_y_orden_crimen_organizado_off_the_books|series|*",
+          "identity": "new:ley_y_orden_crimen_organizado_off_the_books|series|*",
+          "path": "/series/ley-y-orden-crimen-organizado-off-the-books",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "el_gran_dictat|show||",
+          "key": "el_gran_dictat",
+          "kind": "show",
+          "title": "El gran dictat",
+          "spellings": [
+            "El gran dictat"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "el_gran_dictat|show|*",
+          "identity": "new:el_gran_dictat|show|*",
+          "path": "/programas/el-gran-dictat",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "adinberri|show||",
+          "key": "adinberri",
+          "kind": "show",
+          "title": "Adinberri",
+          "spellings": [
+            "Adinberri"
+          ],
+          "airings": 3,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "adinberri|show|*",
+          "identity": "new:adinberri|show|*",
+          "path": "/programas/adinberri",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "turismo_rural_en_el_mundo|show||",
+          "key": "turismo_rural_en_el_mundo",
+          "kind": "show",
+          "title": "Turismo rural en el mundo",
+          "spellings": [
+            "Turismo rural en el mundo"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "turismo_rural_en_el_mundo|show|*",
+          "identity": "new:turismo_rural_en_el_mundo|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "noticias_informacion_tv|show||",
+          "key": "noticias_informacion_tv",
+          "kind": "show",
+          "title": "Noticias Información TV",
+          "spellings": [
+            "Noticias Información TV"
+          ],
+          "airings": 10,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "noticias_informacion_tv|show|*",
+          "identity": "new:noticias_informacion_tv|show|*",
+          "path": "/programas/noticias-informacion-tv",
+          "pathRefused": [],
+          "historicOwner": true
+        }
+      ]
+    },
+    "existing_match": {
+      "population": 5,
+      "rows": [
+        {
+          "candidateId": "mundo_natural|show||",
+          "key": "mundo_natural",
+          "kind": "show",
+          "title": "Mundo Natural",
+          "spellings": [
+            "Mundo Natural"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "bind",
+          "state": "candidate",
+          "method": "title_kind",
+          "confidence": 0.8,
+          "rowId": "mundo_natural|show|*",
+          "identity": "new:mundo_natural|show|tmdb:tv:21145",
+          "path": "/programas/mundo-natural",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "pareja_a_la_puja|show||",
+          "key": "pareja_a_la_puja",
+          "kind": "show",
+          "title": "Pareja a la puja T2 E1",
+          "spellings": [
+            "Pareja a la puja T1 E13",
+            "Pareja a la puja T1 E14",
+            "Pareja a la puja T1 E16",
+            "Pareja a la puja T2 E1",
+            "Pareja a la puja T2 E12"
+          ],
+          "airings": 8,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "bind",
+          "state": "candidate",
+          "method": "title_kind",
+          "confidence": 0.8,
+          "rowId": "pareja_a_la_puja|show|*",
+          "identity": "new:pareja_a_la_puja|show|tmdb:tv:40030",
+          "path": "/programas/pareja-a-la-puja",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "goya_en_burdeos|movie||",
+          "key": "goya_en_burdeos",
+          "kind": "movie",
+          "title": "Goya en Burdeos",
+          "spellings": [
+            "Goya en Burdeos"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "bind",
+          "state": "candidate",
+          "method": "title_kind",
+          "confidence": 0.8,
+          "rowId": "goya_en_burdeos|movie|*",
+          "identity": "new:goya_en_burdeos|movie|tmdb:movie:170767",
+          "path": "/peliculas/goya-en-burdeos",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "el_espiritu_de_la_colmena|movie||",
+          "key": "el_espiritu_de_la_colmena",
+          "kind": "movie",
+          "title": "El espíritu de la colmena",
+          "spellings": [
+            "El espíritu de la colmena"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "bind",
+          "state": "candidate",
+          "method": "title_kind",
+          "confidence": 0.8,
+          "rowId": "el_espiritu_de_la_colmena|movie|*",
+          "identity": "new:el_espiritu_de_la_colmena|movie|year:1940",
+          "path": "/peliculas/el-espiritu-de-la-colmena-1940",
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "empenos_a_lo_bestia|show||",
+          "key": "empenos_a_lo_bestia",
+          "kind": "show",
+          "title": "Empeños a lo bestia T3 E2",
+          "spellings": [
+            "Empeños a lo bestia T3 E2",
+            "Empeños a lo bestia T3 E3",
+            "Empeños a lo bestia T3 E4",
+            "Empeños a lo bestia T3 E5",
+            "Empeños a lo bestia T3 E6"
+          ],
+          "airings": 16,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "bind",
+          "state": "candidate",
+          "method": "title_kind",
+          "confidence": 0.8,
+          "rowId": "empenos_a_lo_bestia|show|*",
+          "identity": "new:empenos_a_lo_bestia|show|tmdb:tv:33478",
+          "path": "/programas/empenos-a-lo-bestia",
+          "pathRefused": [],
+          "historicOwner": true
+        }
+      ]
+    },
+    "tmdb_confirmed": {
+      "population": 300,
+      "rows": [
+        {
+          "candidateId": "el_hombre_del_brazo_de_oro|movie|movie:541|1955",
+          "key": "el_hombre_del_brazo_de_oro",
+          "kind": "movie",
+          "title": "El hombre del brazo de oro",
+          "spellings": [
+            "El hombre del brazo de oro"
+          ],
+          "airings": 2,
+          "epgYears": [
+            1955
+          ],
+          "year": 1955,
+          "tmdb": {
+            "ids": [
+              541
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 541
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "el_hombre_del_brazo_de_oro|movie|tmdb:movie:541",
+          "identity": "new:el_hombre_del_brazo_de_oro|movie|tmdb:movie:541",
+          "path": "/peliculas/el-hombre-del-brazo-de-oro",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "aqui_no_hay_quien_viva|series|tv:2282|2003",
+          "key": "aqui_no_hay_quien_viva",
+          "kind": "series",
+          "title": "Aquí no hay quien viva",
+          "spellings": [
+            "Aquí no hay quien viva"
+          ],
+          "airings": 2,
+          "epgYears": [
+            2003
+          ],
+          "year": 2003,
+          "tmdb": {
+            "ids": [
+              2282
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 2282
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "aqui_no_hay_quien_viva|series|tmdb:tv:2282",
+          "identity": "new:aqui_no_hay_quien_viva|series|tmdb:tv:2282",
+          "path": "/series/aqui-no-hay-quien-viva",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "casa_bloc_rehabilitacio_d_una_idea|movie|movie:1426962|2024",
+          "key": "casa_bloc_rehabilitacio_d_una_idea",
+          "kind": "movie",
+          "title": "Casa Bloc, rehabilitació d'una idea",
+          "spellings": [
+            "Casa Bloc, rehabilitació d'una idea"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2024
+          ],
+          "year": 2024,
+          "tmdb": {
+            "ids": [
+              1426962
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 1426962
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "casa_bloc_rehabilitacio_d_una_idea|movie|tmdb:movie:1426962",
+          "identity": "new:casa_bloc_rehabilitacio_d_una_idea|movie|tmdb:movie:1426962",
+          "path": "/peliculas/casa-bloc-rehabilitacio-duna-idea",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "pasion_prohibida|series|tv:44824|2013",
+          "key": "pasion_prohibida",
+          "kind": "series",
+          "title": "Pasión Prohibida",
+          "spellings": [
+            "Pasión Prohibida",
+            "Pasión Prohibida T1 E30",
+            "Pasión Prohibida T1 E31"
+          ],
+          "airings": 5,
+          "epgYears": [
+            2013
+          ],
+          "year": 2013,
+          "tmdb": {
+            "ids": [
+              44824
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 44824
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "pasion_prohibida|series|tmdb:tv:44824",
+          "identity": "new:pasion_prohibida|series|tmdb:tv:44824",
+          "path": "/series/pasion-prohibida",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "bodas_reales|movie|movie:18646|1951",
+          "key": "bodas_reales",
+          "kind": "movie",
+          "title": "Bodas reales",
+          "spellings": [
+            "Bodas reales"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1951
+          ],
+          "year": 1951,
+          "tmdb": {
+            "ids": [
+              18646
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 18646
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "bodas_reales|movie|tmdb:movie:18646",
+          "identity": "new:bodas_reales|movie|tmdb:movie:18646",
+          "path": "/peliculas/bodas-reales",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "padre_brown|series|tv:61511|2013",
+          "key": "padre_brown",
+          "kind": "series",
+          "title": "Padre Brown",
+          "spellings": [
+            "Padre Brown"
+          ],
+          "airings": 5,
+          "epgYears": [
+            2013
+          ],
+          "year": 2013,
+          "tmdb": {
+            "ids": [
+              61511
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 61511
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "padre_brown|series|tmdb:tv:61511",
+          "identity": "new:padre_brown|series|tmdb:tv:61511",
+          "path": "/series/padre-brown",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "crypto|movie|movie:567733|2019",
+          "key": "crypto",
+          "kind": "movie",
+          "title": "Crypto",
+          "spellings": [
+            "Crypto"
+          ],
+          "airings": 3,
+          "epgYears": [
+            2019
+          ],
+          "year": 2019,
+          "tmdb": {
+            "ids": [
+              567733
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 567733
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "crypto|movie|tmdb:movie:567733",
+          "identity": "new:crypto|movie|tmdb:movie:567733",
+          "path": "/peliculas/crypto",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "wonderblocks|show|tv:281441|2025",
+          "key": "wonderblocks",
+          "kind": "show",
+          "title": "Wonderblocks",
+          "spellings": [
+            "Wonderblocks"
+          ],
+          "airings": 7,
+          "epgYears": [
+            2025
+          ],
+          "year": 2025,
+          "tmdb": {
+            "ids": [
+              281441
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 281441
+            }
+          },
+          "decision": "review",
+          "state": "manual_review",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "reason": "kind_conflict",
+          "rowId": "wonderblocks|show|tmdb:tv:281441"
+        },
+        {
+          "candidateId": "un_amigo_extraordinario|movie|movie:501907|2019",
+          "key": "un_amigo_extraordinario",
+          "kind": "movie",
+          "title": "Un amigo extraordinario",
+          "spellings": [
+            "Un amigo extraordinario"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2019
+          ],
+          "year": 2019,
+          "tmdb": {
+            "ids": [
+              501907
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 501907
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "un_amigo_extraordinario|movie|tmdb:movie:501907",
+          "identity": "new:un_amigo_extraordinario|movie|tmdb:movie:501907",
+          "path": "/peliculas/un-amigo-extraordinario",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "bloodshot|movie|movie:338762|2020",
+          "key": "bloodshot",
+          "kind": "movie",
+          "title": "Bloodshot",
+          "spellings": [
+            "Bloodshot"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2020
+          ],
+          "year": 2020,
+          "tmdb": {
+            "ids": [
+              338762
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 338762
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "bloodshot|movie|tmdb:movie:338762",
+          "identity": "new:bloodshot|movie|tmdb:movie:338762",
+          "path": "/peliculas/bloodshot",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "peter_rabbit_2_a_la_fuga|movie|movie:522478|2021",
+          "key": "peter_rabbit_2_a_la_fuga",
+          "kind": "movie",
+          "title": "Peter Rabbit 2: A la fuga",
+          "spellings": [
+            "Peter Rabbit 2: A la fuga"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2021
+          ],
+          "year": 2021,
+          "tmdb": {
+            "ids": [
+              522478
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 522478
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "peter_rabbit_2_a_la_fuga|movie|tmdb:movie:522478",
+          "identity": "new:peter_rabbit_2_a_la_fuga|movie|tmdb:movie:522478",
+          "path": "/peliculas/peter-rabbit-2-a-la-fuga",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "los_asesinatos_de_mama|movie|movie:11592|1994",
+          "key": "los_asesinatos_de_mama",
+          "kind": "movie",
+          "title": "Los asesinatos de mamá",
+          "spellings": [
+            "Los asesinatos de mamá"
+          ],
+          "airings": 2,
+          "epgYears": [
+            1994
+          ],
+          "year": 1994,
+          "tmdb": {
+            "ids": [
+              11592
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 11592
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "los_asesinatos_de_mama|movie|tmdb:movie:11592",
+          "identity": "new:los_asesinatos_de_mama|movie|tmdb:movie:11592",
+          "path": "/peliculas/los-asesinatos-de-mama",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "com_si_fos_ahir|series|tv:260609|2017",
+          "key": "com_si_fos_ahir",
+          "kind": "series",
+          "title": "Com si fos ahir",
+          "spellings": [
+            "Com si fos ahir"
+          ],
+          "airings": 4,
+          "epgYears": [
+            2017
+          ],
+          "year": 2017,
+          "tmdb": {
+            "ids": [
+              260609
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 260609
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "com_si_fos_ahir|series|tmdb:tv:260609",
+          "identity": "new:com_si_fos_ahir|series|tmdb:tv:260609",
+          "path": "/series/com-si-fos-ahir",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "me_voy_a_comer_el_mundo|show|tv:122311|2016",
+          "key": "me_voy_a_comer_el_mundo",
+          "kind": "show",
+          "title": "Me voy a comer el mundo T4 E11",
+          "spellings": [
+            "Me voy a comer el mundo T4 E11"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2016
+          ],
+          "year": 2016,
+          "tmdb": {
+            "ids": [
+              122311
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 122311
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "me_voy_a_comer_el_mundo|show|tmdb:tv:122311",
+          "identity": "new:me_voy_a_comer_el_mundo|show|tmdb:tv:122311",
+          "path": "/programas/me-voy-a-comer-el-mundo",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "polloliebre_y_el_secreto_de_la_marmota|movie|movie:1215532|2025",
+          "key": "polloliebre_y_el_secreto_de_la_marmota",
+          "kind": "movie",
+          "title": "Polloliebre y el secreto de la marmota",
+          "spellings": [
+            "Polloliebre y el secreto de la marmota"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2025
+          ],
+          "year": 2025,
+          "tmdb": {
+            "ids": [
+              1215532
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 1215532
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "polloliebre_y_el_secreto_de_la_marmota|movie|tmdb:movie:1215532",
+          "identity": "new:polloliebre_y_el_secreto_de_la_marmota|movie|tmdb:movie:1215532",
+          "path": "/peliculas/polloliebre-y-el-secreto-de-la-marmota",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "cleo_de_5_a_7|movie|movie:499|1962",
+          "key": "cleo_de_5_a_7",
+          "kind": "movie",
+          "title": "Cleo de 5 a 7",
+          "spellings": [
+            "Cleo de 5 a 7"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1962
+          ],
+          "year": 1962,
+          "tmdb": {
+            "ids": [
+              499
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 499
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "cleo_de_5_a_7|movie|tmdb:movie:499",
+          "identity": "new:cleo_de_5_a_7|movie|tmdb:movie:499",
+          "path": "/peliculas/cleo-de-5-a-7",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "icarly|series|tv:5371|2007",
+          "key": "icarly",
+          "kind": "series",
+          "title": "iCarly",
+          "spellings": [
+            "iCarly"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2007
+          ],
+          "year": 2007,
+          "tmdb": {
+            "ids": [
+              5371
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 5371
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "icarly|series|tmdb:tv:5371",
+          "identity": "new:icarly|series|tmdb:tv:5371",
+          "path": "/series/icarly",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "el_segundo_acto|movie|movie:1161108|2024",
+          "key": "el_segundo_acto",
+          "kind": "movie",
+          "title": "El segundo acto",
+          "spellings": [
+            "El segundo acto"
+          ],
+          "airings": 2,
+          "epgYears": [
+            2024
+          ],
+          "year": 2024,
+          "tmdb": {
+            "ids": [
+              1161108
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 1161108
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "el_segundo_acto|movie|tmdb:movie:1161108",
+          "identity": "new:el_segundo_acto|movie|tmdb:movie:1161108",
+          "path": "/peliculas/el-segundo-acto",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_agencia|series|tv:219971|2024",
+          "key": "la_agencia",
+          "kind": "series",
+          "title": "La agencia",
+          "spellings": [
+            "La agencia"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2024
+          ],
+          "year": 2024,
+          "tmdb": {
+            "ids": [
+              219971
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 219971
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "la_agencia|series|tmdb:tv:219971",
+          "identity": "new:la_agencia|series|tmdb:tv:219971",
+          "path": "/series/la-agencia",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "tracker|series|tv:211288|2024",
+          "key": "tracker",
+          "kind": "series",
+          "title": "Tracker",
+          "spellings": [
+            "Tracker"
+          ],
+          "airings": 2,
+          "epgYears": [
+            2024
+          ],
+          "year": 2024,
+          "tmdb": {
+            "ids": [
+              211288
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 211288
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "tracker|series|tmdb:tv:211288",
+          "identity": "new:tracker|series|tmdb:tv:211288",
+          "path": "/series/tracker",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "brooklyn_nine_nine|series|tv:48891|2013",
+          "key": "brooklyn_nine_nine",
+          "kind": "series",
+          "title": "Brooklyn Nine-Nine",
+          "spellings": [
+            "Brooklyn Nine-Nine"
+          ],
+          "airings": 4,
+          "epgYears": [
+            2013
+          ],
+          "year": 2013,
+          "tmdb": {
+            "ids": [
+              48891
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 48891
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "brooklyn_nine_nine|series|tmdb:tv:48891",
+          "identity": "new:brooklyn_nine_nine|series|tmdb:tv:48891",
+          "path": "/series/brooklyn-nine-nine",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "s_w_a_t_los_hombres_de_harrelson|series|tv:71790|2017",
+          "key": "s_w_a_t_los_hombres_de_harrelson",
+          "kind": "series",
+          "title": "S.W.A.T.: Los hombres de Harrelson",
+          "spellings": [
+            "S.W.A.T.: Los hombres de Harrelson"
+          ],
+          "airings": 2,
+          "epgYears": [
+            2017
+          ],
+          "year": 2017,
+          "tmdb": {
+            "ids": [
+              71790
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 71790
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "s_w_a_t_los_hombres_de_harrelson|series|tmdb:tv:71790",
+          "identity": "new:s_w_a_t_los_hombres_de_harrelson|series|tmdb:tv:71790",
+          "path": "/series/swat-los-hombres-de-harrelson",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "los_misterios_de_murdoch|series|tv:12786|2008",
+          "key": "los_misterios_de_murdoch",
+          "kind": "series",
+          "title": "Los misterios de Murdoch",
+          "spellings": [
+            "Los misterios de Murdoch"
+          ],
+          "airings": 5,
+          "epgYears": [
+            2008
+          ],
+          "year": 2008,
+          "tmdb": {
+            "ids": [
+              12786
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 12786
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "los_misterios_de_murdoch|series|tmdb:tv:12786",
+          "identity": "new:los_misterios_de_murdoch|series|tmdb:tv:12786",
+          "path": "/series/los-misterios-de-murdoch",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "estoy_hecho_un_chaval|movie|movie:81174|1977",
+          "key": "estoy_hecho_un_chaval",
+          "kind": "movie",
+          "title": "Estoy hecho un chaval",
+          "spellings": [
+            "Estoy hecho un chaval"
+          ],
+          "airings": 2,
+          "epgYears": [
+            1977
+          ],
+          "year": 1977,
+          "tmdb": {
+            "ids": [
+              81174
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 81174
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "estoy_hecho_un_chaval|movie|tmdb:movie:81174",
+          "identity": "new:estoy_hecho_un_chaval|movie|tmdb:movie:81174",
+          "path": "/peliculas/estoy-hecho-un-chaval",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "papa_o_mama|movie|movie:980137|2023",
+          "key": "papa_o_mama",
+          "kind": "movie",
+          "title": "Papá o mamá",
+          "spellings": [
+            "Papá o mamá"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2023
+          ],
+          "year": 2023,
+          "tmdb": {
+            "ids": [
+              980137
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 980137
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "papa_o_mama|movie|tmdb:movie:980137",
+          "identity": "new:papa_o_mama|movie|tmdb:movie:980137",
+          "path": "/peliculas/papa-o-mama",
+          "pathRefused": [],
+          "historicOwner": true
+        }
+      ]
+    },
+    "tmdb_rejected": {
+      "population": 86,
+      "rows": [
+        {
+          "candidateId": "criaturas_indefensas_the_dog_lover|movie||2016",
+          "key": "criaturas_indefensas_the_dog_lover",
+          "kind": "movie",
+          "title": "Criaturas indefensas · (The dog lover)",
+          "spellings": [
+            "Criaturas indefensas · (The dog lover)"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2016
+          ],
+          "year": 2016,
+          "tmdb": {
+            "ids": [
+              394047
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "criaturas_indefensas_the_dog_lover|movie|year:2016",
+          "identity": "new:criaturas_indefensas_the_dog_lover|movie|year:2016",
+          "path": "/peliculas/criaturas-indefensas-the-dog-lover-2016",
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "vigilantes|series||",
+          "key": "vigilantes",
+          "kind": "series",
+          "title": "Vigilantes T1 E3",
+          "spellings": [
+            "Vigilantes T1 E3"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2025
+          ],
+          "tmdb": {
+            "ids": [
+              280110
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "vigilantes|series|*",
+          "identity": "new:vigilantes|series|*",
+          "path": "/series/vigilantes",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "que_cine|show||",
+          "key": "que_cine",
+          "kind": "show",
+          "title": "+ Que Cine",
+          "spellings": [
+            "+ Que Cine"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [
+              1553288
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "que_cine|show|*",
+          "identity": "new:que_cine|show|*",
+          "path": "/programas/que-cine",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "rosario_76_12|series||",
+          "key": "rosario_76_12",
+          "kind": "series",
+          "title": "Rosario (76) 12",
+          "spellings": [
+            "Rosario (76) 12"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2016
+          ],
+          "tmdb": {
+            "ids": [
+              74428
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "rosario_76_12|series|*",
+          "identity": "new:rosario_76_12|series|*",
+          "path": "/series/rosario-76-12",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "episodio_770|series||",
+          "key": "episodio_770",
+          "kind": "series",
+          "title": "Episodio 770",
+          "spellings": [
+            "Episodio 770"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2022
+          ],
+          "tmdb": {
+            "ids": [
+              207044
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "episodio_770|series|*",
+          "identity": "new:episodio_770|series|*",
+          "path": "/series/episodio-770",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "el_tiempo|unknown||",
+          "key": "el_tiempo",
+          "kind": "unknown",
+          "title": "El tiempo",
+          "spellings": [
+            "El tiempo"
+          ],
+          "airings": 2,
+          "epgYears": [
+            2015
+          ],
+          "tmdb": {
+            "ids": [
+              62099
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title_kind",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "autopista_hacia_el_cielo_171_7|series||",
+          "key": "autopista_hacia_el_cielo_171_7",
+          "kind": "series",
+          "title": "Autopista hacia el cielo (171) 7",
+          "spellings": [
+            "Autopista hacia el cielo (171) 7"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1984
+          ],
+          "tmdb": {
+            "ids": [
+              2440
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "autopista_hacia_el_cielo_171_7|series|*",
+          "identity": "new:autopista_hacia_el_cielo_171_7|series|*",
+          "path": "/series/autopista-hacia-el-cielo-171-7",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "jesse_stone_inocentes_perdidos|movie||2011",
+          "key": "jesse_stone_inocentes_perdidos",
+          "kind": "movie",
+          "title": "Jesse stone: inocentes perdidos",
+          "spellings": [
+            "Jesse stone: inocentes perdidos"
+          ],
+          "airings": 2,
+          "epgYears": [
+            2011
+          ],
+          "year": 2011,
+          "tmdb": {
+            "ids": [
+              59238
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "jesse_stone_inocentes_perdidos|movie|year:2011",
+          "identity": "new:jesse_stone_inocentes_perdidos|movie|year:2011",
+          "path": "/peliculas/jesse-stone-inocentes-perdidos-2011",
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "boardwalk_empire_21|series||",
+          "key": "boardwalk_empire_21",
+          "kind": "series",
+          "title": "Boardwalk Empire T2 E1 · 21",
+          "spellings": [
+            "Boardwalk Empire T2 E1 · 21"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2010
+          ],
+          "tmdb": {
+            "ids": [
+              1621
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "boardwalk_empire_21|series|*",
+          "identity": "new:boardwalk_empire_21|series|*",
+          "path": "/series/boardwalk-empire-21",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "niche|series||",
+          "key": "niche",
+          "kind": "series",
+          "title": "Niche",
+          "spellings": [
+            "Niche"
+          ],
+          "airings": 3,
+          "epgYears": [
+            2000
+          ],
+          "tmdb": {
+            "ids": [
+              254883
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "niche|series|*",
+          "identity": "new:niche|series|*",
+          "path": "/series/niche",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "ojos_de_dragon|movie||2012",
+          "key": "ojos_de_dragon",
+          "kind": "movie",
+          "title": "Ojos de dragón",
+          "spellings": [
+            "Ojos de dragón"
+          ],
+          "airings": 2,
+          "epgYears": [
+            2012
+          ],
+          "year": 2012,
+          "tmdb": {
+            "ids": [
+              100683
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "ojos_de_dragon|movie|year:2012",
+          "identity": "new:ojos_de_dragon|movie|year:2012",
+          "path": "/peliculas/ojos-de-dragon-2012",
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "los_pequenos_asesinatos_de_agatha_christie_anos_50_crimen_navideno|series||",
+          "key": "los_pequenos_asesinatos_de_agatha_christie_anos_50_crimen_navideno",
+          "kind": "series",
+          "title": "Los pequeños asesinatos de Agatha Christie: años 50 T1 E20 · Crimen navideño",
+          "spellings": [
+            "Los pequeños asesinatos de Agatha Christie: años 50 T1 E20 · Crimen navideño"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2009
+          ],
+          "tmdb": {
+            "ids": [
+              61431
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "los_pequenos_asesinatos_de_agatha_christie_anos_50_crimen_navideno|series|*",
+          "identity": "new:los_pequenos_asesinatos_de_agatha_christie_anos_50_crimen_navideno|series|*",
+          "path": "/series/los-pequenos-asesinatos-de-agatha-christie-anos-50-crimen-navideno",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "episodio_771|series||",
+          "key": "episodio_771",
+          "kind": "series",
+          "title": "Episodio 771",
+          "spellings": [
+            "Episodio 771"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2022
+          ],
+          "tmdb": {
+            "ids": [
+              207044
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "episodio_771|series|*",
+          "identity": "new:episodio_771|series|*",
+          "path": "/series/episodio-771",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "lazos_mortales|series||",
+          "key": "lazos_mortales",
+          "kind": "series",
+          "title": "Lazos mortales Temporada 2",
+          "spellings": [
+            "Lazos mortales Temporada 2"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2026
+          ],
+          "tmdb": {
+            "ids": [
+              304490
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "lazos_mortales|series|*",
+          "identity": "new:lazos_mortales|series|*",
+          "path": "/series/lazos-mortales",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "scream_2|movie||2000",
+          "key": "scream_2",
+          "kind": "movie",
+          "title": "Scream 2",
+          "spellings": [
+            "Scream 2"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2000
+          ],
+          "year": 2000,
+          "tmdb": {
+            "ids": [
+              4234
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "scream_2|movie|year:2000",
+          "identity": "new:scream_2|movie|year:2000",
+          "path": "/peliculas/scream-2-2000",
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "episodio_6|series||",
+          "key": "episodio_6",
+          "kind": "series",
+          "title": "T11 - Episodio 6",
+          "spellings": [
+            "T11 - Episodio 6"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2022
+          ],
+          "tmdb": {
+            "ids": [
+              207044
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "episodio_6|series|*",
+          "identity": "new:episodio_6|series|*",
+          "path": "/series/episodio-6",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "los_pequenos_asesinatos_de_agatha_christie_anos_50_el_espejo_se_rompio|series||",
+          "key": "los_pequenos_asesinatos_de_agatha_christie_anos_50_el_espejo_se_rompio",
+          "kind": "series",
+          "title": "Los pequeños asesinatos de Agatha Christie: años 50 T1 E18 · El espejo se rompió",
+          "spellings": [
+            "Los pequeños asesinatos de Agatha Christie: años 50 T1 E18 · El espejo se rompió"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2009
+          ],
+          "tmdb": {
+            "ids": [
+              61431
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "los_pequenos_asesinatos_de_agatha_christie_anos_50_el_espejo_se_rompio|series|*",
+          "identity": "new:los_pequenos_asesinatos_de_agatha_christie_anos_50_el_espejo_se_rompio|series|*",
+          "path": "/series/los-pequenos-asesinatos-de-agatha-christie-anos-50-el-espejo-se-rompio",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "mentes_criminales_n_6|series||",
+          "key": "mentes_criminales_n_6",
+          "kind": "series",
+          "title": "Mentes criminales T8 E22 · Nº6",
+          "spellings": [
+            "Mentes criminales T8 E22 · Nº6"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2005
+          ],
+          "tmdb": {
+            "ids": [
+              4057
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "mentes_criminales_n_6|series|*",
+          "identity": "new:mentes_criminales_n_6|series|*",
+          "path": "/series/mentes-criminales-n-6",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "blue_bloods_familia_de_policias|series||",
+          "key": "blue_bloods_familia_de_policias",
+          "kind": "series",
+          "title": "Blue Bloods (Familia de policías)",
+          "spellings": [
+            "Blue Bloods (Familia de policías)"
+          ],
+          "airings": 6,
+          "epgYears": [
+            2010
+          ],
+          "tmdb": {
+            "ids": [
+              32692
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "blue_bloods_familia_de_policias|series|*",
+          "identity": "new:blue_bloods_familia_de_policias|series|*",
+          "path": "/series/blue-bloods-familia-de-policias",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "asalto_al_distrito_13|movie||1976",
+          "key": "asalto_al_distrito_13",
+          "kind": "movie",
+          "title": "Asalto al distrito 13",
+          "spellings": [
+            "Asalto al distrito 13"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1976
+          ],
+          "year": 1976,
+          "tmdb": {
+            "ids": [
+              17814
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "asalto_al_distrito_13|movie|year:1976",
+          "identity": "new:asalto_al_distrito_13|movie|year:1976",
+          "path": "/peliculas/asalto-al-distrito-13-1976",
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "gone|movie||2014",
+          "key": "gone",
+          "kind": "movie",
+          "title": "Gone",
+          "spellings": [
+            "Gone"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2014
+          ],
+          "year": 2014,
+          "tmdb": {
+            "ids": [
+              210577
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "gone|movie|year:2014",
+          "identity": "new:gone|movie|year:2014",
+          "path": "/peliculas/gone-2014",
+          "pathRefused": [
+            "historic_ambiguous"
+          ],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "episodio_779|series||",
+          "key": "episodio_779",
+          "kind": "series",
+          "title": "Episodio 779",
+          "spellings": [
+            "Episodio 779"
+          ],
+          "airings": 3,
+          "epgYears": [
+            2022
+          ],
+          "tmdb": {
+            "ids": [
+              207044
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "episodio_779|series|*",
+          "identity": "new:episodio_779|series|*",
+          "path": "/series/episodio-779",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "hudson_y_rex|series||",
+          "key": "hudson_y_rex",
+          "kind": "series",
+          "title": "Hudson y Rex",
+          "spellings": [
+            "Hudson y Rex"
+          ],
+          "airings": 8,
+          "epgYears": [
+            2019
+          ],
+          "tmdb": {
+            "ids": [
+              87940
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "hudson_y_rex|series|*",
+          "identity": "new:hudson_y_rex|series|*",
+          "path": "/series/hudson-y-rex",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "episodio_773|series||",
+          "key": "episodio_773",
+          "kind": "series",
+          "title": "Episodio 773",
+          "spellings": [
+            "Episodio 773"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2022
+          ],
+          "tmdb": {
+            "ids": [
+              207044
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "episodio_773|series|*",
+          "identity": "new:episodio_773|series|*",
+          "path": "/series/episodio-773",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "spermageddon_una_comedia_seminal|movie||2024",
+          "key": "spermageddon_una_comedia_seminal",
+          "kind": "movie",
+          "title": "Spermageddon. Una comedia seminal",
+          "spellings": [
+            "Spermageddon. Una comedia seminal"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2024
+          ],
+          "year": 2024,
+          "tmdb": {
+            "ids": [
+              1064307
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "spermageddon_una_comedia_seminal|movie|year:2024",
+          "identity": "new:spermageddon_una_comedia_seminal|movie|year:2024",
+          "path": "/peliculas/spermageddon-una-comedia-seminal-2024",
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false
+        }
+      ]
+    },
+    "ambiguous": {
+      "population": 4,
+      "rows": [
+        {
+          "candidateId": "diagnostico|unknown||",
+          "key": "diagnostico",
+          "kind": "unknown",
+          "title": "Diagnóstico",
+          "spellings": [
+            "Diagnóstico"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "review",
+          "state": "ambiguous",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "several_entities",
+          "rowId": "diagnostico|unknown|*"
+        },
+        {
+          "candidateId": "la_revuelta|unknown||",
+          "key": "la_revuelta",
+          "kind": "unknown",
+          "title": "La Revuelta",
+          "spellings": [
+            "La Revuelta",
+            "La revuelta"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "review",
+          "state": "ambiguous",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "several_entities",
+          "rowId": "la_revuelta|unknown|*"
+        },
+        {
+          "candidateId": "cara_a_cara|unknown||",
+          "key": "cara_a_cara",
+          "kind": "unknown",
+          "title": "Cara a cara",
+          "spellings": [
+            "Cara a cara"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "review",
+          "state": "ambiguous",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "several_entities",
+          "rowId": "cara_a_cara|unknown|*"
+        },
+        {
+          "candidateId": "la_aventura_del_saber|unknown||",
+          "key": "la_aventura_del_saber",
+          "kind": "unknown",
+          "title": "La aventura del saber",
+          "spellings": [
+            "La aventura del saber"
+          ],
+          "airings": 3,
+          "epgYears": [
+            2026
+          ],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "review",
+          "state": "ambiguous",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "several_entities",
+          "rowId": "la_aventura_del_saber|unknown|*"
+        }
+      ]
+    },
+    "manual_review": {
+      "population": 1,
+      "rows": [
+        {
+          "candidateId": "wonderblocks|show|tv:281441|2025",
+          "key": "wonderblocks",
+          "kind": "show",
+          "title": "Wonderblocks",
+          "spellings": [
+            "Wonderblocks"
+          ],
+          "airings": 7,
+          "epgYears": [
+            2025
+          ],
+          "year": 2025,
+          "tmdb": {
+            "ids": [
+              281441
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 281441
+            }
+          },
+          "decision": "review",
+          "state": "manual_review",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "reason": "kind_conflict",
+          "rowId": "wonderblocks|show|tmdb:tv:281441"
+        }
+      ]
+    },
+    "unknown_kind": {
+      "population": 1708,
+      "rows": [
+        {
+          "candidateId": "semana_santa_2026|unknown||",
+          "key": "semana_santa_2026",
+          "kind": "unknown",
+          "title": "Semana Santa 2026",
+          "spellings": [
+            "Semana Santa 2026"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "los_windsor_una_historia_de_poder_y_escandalos_amor_o_deber_dinastias_los_windsor_amor_o_deber|unknown||",
+          "key": "los_windsor_una_historia_de_poder_y_escandalos_amor_o_deber_dinastias_los_windsor_amor_o_deber",
+          "kind": "unknown",
+          "title": "Los Windsor: una historia de poder y escándalos: ¿Amor o deber? · Dinastías: Los Windsor: ¿Amor o deber?",
+          "spellings": [
+            "Los Windsor: una historia de poder y escándalos: ¿Amor o deber? · Dinastías: Los Windsor: ¿Amor o deber?"
+          ],
+          "airings": 3,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "dragones_al_rescate_no_hay_humo_sin_fuego|unknown||",
+          "key": "dragones_al_rescate_no_hay_humo_sin_fuego",
+          "kind": "unknown",
+          "title": "Dragones al rescate T1 E4 · No hay humo sin fuego",
+          "spellings": [
+            "Dragones al rescate T1 E4 · No hay humo sin fuego"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "la_casa_de_mickey_mouse_el_percance_marciano|unknown||",
+          "key": "la_casa_de_mickey_mouse_el_percance_marciano",
+          "kind": "unknown",
+          "title": "La casa de Mickey Mouse+ T1 E18 · El percance marciano",
+          "spellings": [
+            "La casa de Mickey Mouse+ T1 E18 · El percance marciano"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "rebobinando|unknown||",
+          "key": "rebobinando",
+          "kind": "unknown",
+          "title": "Rebobinando",
+          "spellings": [
+            "Rebobinando"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "la_muga|unknown||",
+          "key": "la_muga",
+          "kind": "unknown",
+          "title": "La muga",
+          "spellings": [
+            "La muga"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "los_osos_polares_y_los_osos_pardos_osos_en_lo_mas_alto_del_planeta|unknown||",
+          "key": "los_osos_polares_y_los_osos_pardos_osos_en_lo_mas_alto_del_planeta",
+          "kind": "unknown",
+          "title": "Los osos polares y los osos pardos: osos en lo más alto del planeta",
+          "spellings": [
+            "Los osos polares y los osos pardos: osos en lo más alto del planeta"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "spi_tvspi_tv_r|unknown||",
+          "key": "spi_tvspi_tv_r",
+          "kind": "unknown",
+          "title": "SPi+TvSPi+Tv (R)",
+          "spellings": [
+            "SPi+TvSPi+Tv (R)"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "superkitties_superraton_selva_salvaje|unknown||",
+          "key": "superkitties_superraton_selva_salvaje",
+          "kind": "unknown",
+          "title": "Superkitties T3 E1 · Superratón / Selva salvaje",
+          "spellings": [
+            "Superkitties T3 E1 · Superratón / Selva salvaje"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "como_lo_hacen_ensalada_cuerda_insulina_como_lo_hacen_ensalada_cuerda_e_insulina|unknown||",
+          "key": "como_lo_hacen_ensalada_cuerda_insulina_como_lo_hacen_ensalada_cuerda_e_insulina",
+          "kind": "unknown",
+          "title": "¿Cómo lo hacen?: Ensalada / Cuerda / Insulina · ¿Cómo lo hacen?: Ensalada, cuerda e insulina",
+          "spellings": [
+            "¿Cómo lo hacen?: Ensalada / Cuerda / Insulina · ¿Cómo lo hacen?: Ensalada, cuerda e insulina"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "bernard|unknown||",
+          "key": "bernard",
+          "kind": "unknown",
+          "title": "Bernard",
+          "spellings": [
+            "Bernard"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "fernando_tejero|unknown||",
+          "key": "fernando_tejero",
+          "kind": "unknown",
+          "title": "Fernando Tejero",
+          "spellings": [
+            "Fernando Tejero"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "la_ruta_morancos|unknown||",
+          "key": "la_ruta_morancos",
+          "kind": "unknown",
+          "title": "La Ruta Morancos",
+          "spellings": [
+            "La Ruta Morancos"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "los_green_en_la_gran_ciudad_el_oferton_un_felino_prohibido|unknown||",
+          "key": "los_green_en_la_gran_ciudad_el_oferton_un_felino_prohibido",
+          "kind": "unknown",
+          "title": "Los Green en la Gran Ciudad T1 E19 · El ofertón/ Un felino prohibido",
+          "spellings": [
+            "Los Green en la Gran Ciudad T1 E19 · El ofertón/ Un felino prohibido"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "los_iglesias_hermanos_a_la_obra|unknown||",
+          "key": "los_iglesias_hermanos_a_la_obra",
+          "kind": "unknown",
+          "title": "Los Iglesias. Hermanos A La Obra",
+          "spellings": [
+            "Los Iglesias. Hermanos A La Obra"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "bluey_el_pulpo|unknown||",
+          "key": "bluey_el_pulpo",
+          "kind": "unknown",
+          "title": "Bluey T2 E45 · El pulpo",
+          "spellings": [
+            "Bluey T2 E45 · El pulpo"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "ingenieria_abandonada|unknown||",
+          "key": "ingenieria_abandonada",
+          "kind": "unknown",
+          "title": "Ingeniería abandonada",
+          "spellings": [
+            "Ingeniería abandonada",
+            "Ingeniería abandonada E2"
+          ],
+          "airings": 8,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "peter_rabbit_2_a_la_fuga|unknown||",
+          "key": "peter_rabbit_2_a_la_fuga",
+          "kind": "unknown",
+          "title": "Peter Rabbit 2: a la fuga",
+          "spellings": [
+            "Peter Rabbit 2: a la fuga"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title_kind",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "el_bebe_jefazo_vuelta_al_curro_a_por_el_equipo|unknown||",
+          "key": "el_bebe_jefazo_vuelta_al_curro_a_por_el_equipo",
+          "kind": "unknown",
+          "title": "El Bebé Jefazo: Vuelta al curro T4 E11 · A por el equipo",
+          "spellings": [
+            "El Bebé Jefazo: Vuelta al curro T4 E11 · A por el equipo"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "la_verdad_sobre_la_comida_sana|unknown||",
+          "key": "la_verdad_sobre_la_comida_sana",
+          "kind": "unknown",
+          "title": "La verdad sobre la comida sana",
+          "spellings": [
+            "La verdad sobre la comida sana"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "bath_tubbies|unknown||",
+          "key": "bath_tubbies",
+          "kind": "unknown",
+          "title": "Bath Tubbies",
+          "spellings": [
+            "Bath Tubbies"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "espacio_innovacion|unknown||",
+          "key": "espacio_innovacion",
+          "kind": "unknown",
+          "title": "Espacio Innovación",
+          "spellings": [
+            "Espacio Innovación"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "nex_mati|unknown||",
+          "key": "nex_mati",
+          "kind": "unknown",
+          "title": "NEX MATÍ",
+          "spellings": [
+            "NEX MATÍ",
+            "NEX Matí",
+            "NEX matí"
+          ],
+          "airings": 7,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "beyond_the_beaten_path|unknown||",
+          "key": "beyond_the_beaten_path",
+          "kind": "unknown",
+          "title": "Beyond The Beaten Path",
+          "spellings": [
+            "Beyond The Beaten Path"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "ufo_witness_orbitas_e_insectoides_orbitas_e_insectoides|unknown||",
+          "key": "ufo_witness_orbitas_e_insectoides_orbitas_e_insectoides",
+          "kind": "unknown",
+          "title": "UFO Witness: Órbitas e insectoides T2 E2 · Órbitas e insectoides",
+          "spellings": [
+            "UFO Witness: Órbitas e insectoides T2 E2 · Órbitas e insectoides"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        }
+      ]
+    },
+    "duplicate_looking": {
+      "population": 28,
+      "rows": [
+        {
+          "candidateId": "diagnostico|series||",
+          "key": "diagnostico",
+          "kind": "series",
+          "title": "Diagnóstico",
+          "spellings": [
+            "Diagnóstico"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1993
+          ],
+          "tmdb": {
+            "ids": [
+              2625
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "diagnostico|series|*",
+          "identity": "new:diagnostico|series|*",
+          "path": "/series/diagnostico",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_renaixenca|series||",
+          "key": "la_renaixenca",
+          "kind": "series",
+          "title": "La Renaixença",
+          "spellings": [
+            "La Renaixença"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_renaixenca|series|*",
+          "identity": "new:la_renaixenca|series|*",
+          "path": "/series/la-renaixenca",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "limpia_y_ordena|series||",
+          "key": "limpia_y_ordena",
+          "kind": "series",
+          "title": "Limpia y ordena",
+          "spellings": [
+            "Limpia y ordena"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "limpia_y_ordena|series|*",
+          "identity": "new:limpia_y_ordena|series|*",
+          "path": "/series/limpia-y-ordena",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "escapate_de_viaje|show||",
+          "key": "escapate_de_viaje",
+          "kind": "show",
+          "title": "Escápate de viaje",
+          "spellings": [
+            "Escápate de viaje"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "escapate_de_viaje|show|*",
+          "identity": "new:escapate_de_viaje|show|*",
+          "path": "/programas/escapate-de-viaje",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "caso_cerrado|series||",
+          "key": "caso_cerrado",
+          "kind": "series",
+          "title": "Caso cerrado T6 E9",
+          "spellings": [
+            "Caso cerrado T6 E10",
+            "Caso cerrado T6 E9"
+          ],
+          "airings": 2,
+          "epgYears": [
+            1967
+          ],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "caso_cerrado|series|*",
+          "identity": "new:caso_cerrado|series|*",
+          "path": null,
+          "pathRefused": [
+            "historic_ambiguous"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_ambiguous"
+        },
+        {
+          "candidateId": "wild_ibex|show||",
+          "key": "wild_ibex",
+          "kind": "show",
+          "title": "Wild ibex T1 E4",
+          "spellings": [
+            "Wild ibex T1 E4"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "wild_ibex|show|*",
+          "identity": "new:wild_ibex|show|*",
+          "path": "/programas/wild-ibex",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_revuelta|series|tv:270462|2024",
+          "key": "la_revuelta",
+          "kind": "series",
+          "title": "La revuelta",
+          "spellings": [
+            "La revuelta"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2024
+          ],
+          "year": 2024,
+          "tmdb": {
+            "ids": [
+              270462
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 270462
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "la_revuelta|series|tmdb:tv:270462",
+          "identity": "new:la_revuelta|series|tmdb:tv:270462",
+          "path": "/series/la-revuelta",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_aventura_del_saber|series||",
+          "key": "la_aventura_del_saber",
+          "kind": "series",
+          "title": "La aventura del saber",
+          "spellings": [
+            "La aventura del saber"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_aventura_del_saber|series|*",
+          "identity": "new:la_aventura_del_saber|series|*",
+          "path": "/series/la-aventura-del-saber",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "mesnit|series|tv:270838|2015",
+          "key": "mesnit",
+          "kind": "series",
+          "title": "Mésnit",
+          "spellings": [
+            "Mésnit"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2015
+          ],
+          "year": 2015,
+          "tmdb": {
+            "ids": [
+              270838
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 270838
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "mesnit|series|tmdb:tv:270838",
+          "identity": "new:mesnit|series|tmdb:tv:270838",
+          "path": "/series/mesnit",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "diagnostico|show||",
+          "key": "diagnostico",
+          "kind": "show",
+          "title": "Diagnóstico",
+          "spellings": [
+            "Diagnóstico"
+          ],
+          "airings": 3,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "diagnostico|show|*",
+          "identity": "new:diagnostico|show|*",
+          "path": "/programas/diagnostico",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "cara_a_cara|movie||",
+          "key": "cara_a_cara",
+          "kind": "movie",
+          "title": "Cara a cara",
+          "spellings": [
+            "Cara a cara"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "cara_a_cara|movie|*",
+          "identity": "new:cara_a_cara|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "cuando_los_muertos_hablan|series||",
+          "key": "cuando_los_muertos_hablan",
+          "kind": "series",
+          "title": "Cuando los muertos hablan",
+          "spellings": [
+            "Cuando los muertos hablan"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "cuando_los_muertos_hablan|series|*",
+          "identity": "new:cuando_los_muertos_hablan|series|*",
+          "path": "/series/cuando-los-muertos-hablan",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "cuando_los_muertos_hablan|show||",
+          "key": "cuando_los_muertos_hablan",
+          "kind": "show",
+          "title": "Cuando los muertos hablan",
+          "spellings": [
+            "Cuando los muertos hablan"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "cuando_los_muertos_hablan|show|*",
+          "identity": "new:cuando_los_muertos_hablan|show|*",
+          "path": "/programas/cuando-los-muertos-hablan",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "wild_ibex|series||",
+          "key": "wild_ibex",
+          "kind": "series",
+          "title": "Wild Ibex",
+          "spellings": [
+            "Wild Ibex"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "wild_ibex|series|*",
+          "identity": "new:wild_ibex|series|*",
+          "path": "/series/wild-ibex",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_gran_belleza|series||",
+          "key": "la_gran_belleza",
+          "kind": "series",
+          "title": "La gran belleza",
+          "spellings": [
+            "La gran belleza"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_gran_belleza|series|*",
+          "identity": "new:la_gran_belleza|series|*",
+          "path": "/series/la-gran-belleza",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "limpia_y_ordena|show||",
+          "key": "limpia_y_ordena",
+          "kind": "show",
+          "title": "Limpia y ordena T5 E13",
+          "spellings": [
+            "Limpia y ordena T5 E13",
+            "Limpia y ordena T5 E14"
+          ],
+          "airings": 3,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "limpia_y_ordena|show|*",
+          "identity": "new:limpia_y_ordena|show|*",
+          "path": "/programas/limpia-y-ordena",
+          "pathRefused": [],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "la_renaixenca|show||",
+          "key": "la_renaixenca",
+          "kind": "show",
+          "title": "La Renaixença",
+          "spellings": [
+            "La Renaixença"
+          ],
+          "airings": 4,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_renaixenca|show|*",
+          "identity": "new:la_renaixenca|show|*",
+          "path": "/programas/la-renaixenca",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "caso_cerrado|show||",
+          "key": "caso_cerrado",
+          "kind": "show",
+          "title": "Caso cerrado",
+          "spellings": [
+            "Caso cerrado",
+            "Caso cerrado T13 E34",
+            "Caso cerrado T14 E69",
+            "Caso cerrado T15 E106",
+            "Caso cerrado T15 E120"
+          ],
+          "airings": 20,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "caso_cerrado|show|*",
+          "identity": "new:caso_cerrado|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_ambiguous"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_ambiguous"
+        },
+        {
+          "candidateId": "alma_en_suplicio|series||",
+          "key": "alma_en_suplicio",
+          "kind": "series",
+          "title": "Alma en suplicio",
+          "spellings": [
+            "Alma en suplicio"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "alma_en_suplicio|series|*",
+          "identity": "new:alma_en_suplicio|series|*",
+          "path": "/series/alma-en-suplicio",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "comicos_nuestros|show||",
+          "key": "comicos_nuestros",
+          "kind": "show",
+          "title": "Cómicos Nuestros",
+          "spellings": [
+            "Cómicos Nuestros",
+            "Cómicos nuestros T1 E1"
+          ],
+          "airings": 4,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "comicos_nuestros|show|*",
+          "identity": "new:comicos_nuestros|show|*",
+          "path": "/programas/comicos-nuestros",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_aventura_del_saber|show||",
+          "key": "la_aventura_del_saber",
+          "kind": "show",
+          "title": "La aventura del saber",
+          "spellings": [
+            "La aventura del saber"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_aventura_del_saber|show|*",
+          "identity": "new:la_aventura_del_saber|show|*",
+          "path": "/programas/la-aventura-del-saber",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "alma_en_suplicio|movie|movie:3309|1945",
+          "key": "alma_en_suplicio",
+          "kind": "movie",
+          "title": "Alma en suplicio",
+          "spellings": [
+            "Alma en suplicio"
+          ],
+          "airings": 2,
+          "epgYears": [
+            1945
+          ],
+          "year": 1945,
+          "tmdb": {
+            "ids": [
+              3309
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 3309
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "alma_en_suplicio|movie|tmdb:movie:3309",
+          "identity": "new:alma_en_suplicio|movie|tmdb:movie:3309",
+          "path": "/peliculas/alma-en-suplicio",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "mesnit|show||",
+          "key": "mesnit",
+          "kind": "show",
+          "title": "Mésnit",
+          "spellings": [
+            "Mésnit"
+          ],
+          "airings": 5,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "mesnit|show|*",
+          "identity": "new:mesnit|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "la_revuelta|show||",
+          "key": "la_revuelta",
+          "kind": "show",
+          "title": "La revuelta",
+          "spellings": [
+            "La revuelta",
+            "La revuelta T3 E348"
+          ],
+          "airings": 50,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_revuelta|show|*",
+          "identity": "new:la_revuelta|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "cara_a_cara|show||",
+          "key": "cara_a_cara",
+          "kind": "show",
+          "title": "Cara a cara",
+          "spellings": [
+            "Cara a cara"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "cara_a_cara|show|*",
+          "identity": "new:cara_a_cara|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        }
+      ]
+    },
+    "shared_title": {
+      "population": 46,
+      "rows": [
+        {
+          "candidateId": "la_aventura_del_saber|show||",
+          "key": "la_aventura_del_saber",
+          "kind": "show",
+          "title": "La aventura del saber",
+          "spellings": [
+            "La aventura del saber"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_aventura_del_saber|show|*",
+          "identity": "new:la_aventura_del_saber|show|*",
+          "path": "/programas/la-aventura-del-saber",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_gran_belleza|series||",
+          "key": "la_gran_belleza",
+          "kind": "series",
+          "title": "La gran belleza",
+          "spellings": [
+            "La gran belleza"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_gran_belleza|series|*",
+          "identity": "new:la_gran_belleza|series|*",
+          "path": "/series/la-gran-belleza",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_gran_belleza|movie|movie:179144|2013",
+          "key": "la_gran_belleza",
+          "kind": "movie",
+          "title": "La gran belleza",
+          "spellings": [
+            "La gran belleza"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2013
+          ],
+          "year": 2013,
+          "tmdb": {
+            "ids": [
+              179144
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 179144
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "la_gran_belleza|movie|tmdb:movie:179144",
+          "identity": "new:la_gran_belleza|movie|tmdb:movie:179144",
+          "path": "/peliculas/la-gran-belleza",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "wild_ibex|show||",
+          "key": "wild_ibex",
+          "kind": "show",
+          "title": "Wild ibex T1 E4",
+          "spellings": [
+            "Wild ibex T1 E4"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "wild_ibex|show|*",
+          "identity": "new:wild_ibex|show|*",
+          "path": "/programas/wild-ibex",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_revuelta|unknown||",
+          "key": "la_revuelta",
+          "kind": "unknown",
+          "title": "La Revuelta",
+          "spellings": [
+            "La Revuelta",
+            "La revuelta"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "review",
+          "state": "ambiguous",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "several_entities",
+          "rowId": "la_revuelta|unknown|*"
+        },
+        {
+          "candidateId": "empenos_a_lo_bestia|unknown||",
+          "key": "empenos_a_lo_bestia",
+          "kind": "unknown",
+          "title": "Empeños a lo bestia",
+          "spellings": [
+            "Empeños a lo bestia"
+          ],
+          "airings": 15,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "unresolved",
+          "state": "manual_review",
+          "method": "title_kind",
+          "confidence": 0.8,
+          "reason": "unknown_kind"
+        },
+        {
+          "candidateId": "cara_a_cara|unknown||",
+          "key": "cara_a_cara",
+          "kind": "unknown",
+          "title": "Cara a cara",
+          "spellings": [
+            "Cara a cara"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "review",
+          "state": "ambiguous",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "several_entities",
+          "rowId": "cara_a_cara|unknown|*"
+        },
+        {
+          "candidateId": "caso_cerrado|show||",
+          "key": "caso_cerrado",
+          "kind": "show",
+          "title": "Caso cerrado",
+          "spellings": [
+            "Caso cerrado",
+            "Caso cerrado T13 E34",
+            "Caso cerrado T14 E69",
+            "Caso cerrado T15 E106",
+            "Caso cerrado T15 E120"
+          ],
+          "airings": 20,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "caso_cerrado|show|*",
+          "identity": "new:caso_cerrado|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_ambiguous"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_ambiguous"
+        },
+        {
+          "candidateId": "la_aventura_del_saber|unknown||",
+          "key": "la_aventura_del_saber",
+          "kind": "unknown",
+          "title": "La aventura del saber",
+          "spellings": [
+            "La aventura del saber"
+          ],
+          "airings": 3,
+          "epgYears": [
+            2026
+          ],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "review",
+          "state": "ambiguous",
+          "method": "title",
+          "confidence": 0.8,
+          "reason": "several_entities",
+          "rowId": "la_aventura_del_saber|unknown|*"
+        },
+        {
+          "candidateId": "la_aventura_del_saber|series||",
+          "key": "la_aventura_del_saber",
+          "kind": "series",
+          "title": "La aventura del saber",
+          "spellings": [
+            "La aventura del saber"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_aventura_del_saber|series|*",
+          "identity": "new:la_aventura_del_saber|series|*",
+          "path": "/series/la-aventura-del-saber",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "wild_ibex|series||",
+          "key": "wild_ibex",
+          "kind": "series",
+          "title": "Wild Ibex",
+          "spellings": [
+            "Wild Ibex"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "wild_ibex|series|*",
+          "identity": "new:wild_ibex|series|*",
+          "path": "/series/wild-ibex",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_renaixenca|series||",
+          "key": "la_renaixenca",
+          "kind": "series",
+          "title": "La Renaixença",
+          "spellings": [
+            "La Renaixença"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_renaixenca|series|*",
+          "identity": "new:la_renaixenca|series|*",
+          "path": "/series/la-renaixenca",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "alma_en_suplicio|movie|movie:3309|1945",
+          "key": "alma_en_suplicio",
+          "kind": "movie",
+          "title": "Alma en suplicio",
+          "spellings": [
+            "Alma en suplicio"
+          ],
+          "airings": 2,
+          "epgYears": [
+            1945
+          ],
+          "year": 1945,
+          "tmdb": {
+            "ids": [
+              3309
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 3309
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "alma_en_suplicio|movie|tmdb:movie:3309",
+          "identity": "new:alma_en_suplicio|movie|tmdb:movie:3309",
+          "path": "/peliculas/alma-en-suplicio",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "cara_a_cara|movie||",
+          "key": "cara_a_cara",
+          "kind": "movie",
+          "title": "Cara a cara",
+          "spellings": [
+            "Cara a cara"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "cara_a_cara|movie|*",
+          "identity": "new:cara_a_cara|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "la_revuelta|series|tv:270462|2024",
+          "key": "la_revuelta",
+          "kind": "series",
+          "title": "La revuelta",
+          "spellings": [
+            "La revuelta"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2024
+          ],
+          "year": 2024,
+          "tmdb": {
+            "ids": [
+              270462
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 270462
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "la_revuelta|series|tmdb:tv:270462",
+          "identity": "new:la_revuelta|series|tmdb:tv:270462",
+          "path": "/series/la-revuelta",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "diagnostico|series||",
+          "key": "diagnostico",
+          "kind": "series",
+          "title": "Diagnóstico",
+          "spellings": [
+            "Diagnóstico"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1993
+          ],
+          "tmdb": {
+            "ids": [
+              2625
+            ],
+            "evidence": "unconfirmed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "diagnostico|series|*",
+          "identity": "new:diagnostico|series|*",
+          "path": "/series/diagnostico",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "comicos_nuestros|show||",
+          "key": "comicos_nuestros",
+          "kind": "show",
+          "title": "Cómicos Nuestros",
+          "spellings": [
+            "Cómicos Nuestros",
+            "Cómicos nuestros T1 E1"
+          ],
+          "airings": 4,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "comicos_nuestros|show|*",
+          "identity": "new:comicos_nuestros|show|*",
+          "path": "/programas/comicos-nuestros",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "comicos_nuestros|movie||",
+          "key": "comicos_nuestros",
+          "kind": "movie",
+          "title": "Cómicos nuestros",
+          "spellings": [
+            "Cómicos nuestros"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "comicos_nuestros|movie|*",
+          "identity": "new:comicos_nuestros|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "mesnit|show||",
+          "key": "mesnit",
+          "kind": "show",
+          "title": "Mésnit",
+          "spellings": [
+            "Mésnit"
+          ],
+          "airings": 5,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "mesnit|show|*",
+          "identity": "new:mesnit|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "escapate_de_viaje|series||",
+          "key": "escapate_de_viaje",
+          "kind": "series",
+          "title": "Escápate de viaje",
+          "spellings": [
+            "Escápate de viaje"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "escapate_de_viaje|series|*",
+          "identity": "new:escapate_de_viaje|series|*",
+          "path": "/series/escapate-de-viaje",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "el_espiritu_de_la_colmena|movie||1940",
+          "key": "el_espiritu_de_la_colmena",
+          "kind": "movie",
+          "title": "El espíritu de la colmena",
+          "spellings": [
+            "El espíritu de la colmena"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1940
+          ],
+          "year": 1940,
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "el_espiritu_de_la_colmena|movie|year:1940",
+          "identity": "new:el_espiritu_de_la_colmena|movie|year:1940",
+          "path": "/peliculas/el-espiritu-de-la-colmena-1940",
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false
+        },
+        {
+          "candidateId": "alma_en_suplicio|series||",
+          "key": "alma_en_suplicio",
+          "kind": "series",
+          "title": "Alma en suplicio",
+          "spellings": [
+            "Alma en suplicio"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "alma_en_suplicio|series|*",
+          "identity": "new:alma_en_suplicio|series|*",
+          "path": "/series/alma-en-suplicio",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "mesnit|series|tv:270838|2015",
+          "key": "mesnit",
+          "kind": "series",
+          "title": "Mésnit",
+          "spellings": [
+            "Mésnit"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2015
+          ],
+          "year": 2015,
+          "tmdb": {
+            "ids": [
+              270838
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 270838
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "mesnit|series|tmdb:tv:270838",
+          "identity": "new:mesnit|series|tmdb:tv:270838",
+          "path": "/series/mesnit",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "mundo_natural|show|tv:21145|1983",
+          "key": "mundo_natural",
+          "kind": "show",
+          "title": "Mundo Natural",
+          "spellings": [
+            "Mundo Natural"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1983
+          ],
+          "year": 1983,
+          "tmdb": {
+            "ids": [
+              21145
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 21145
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "mundo_natural|show|tmdb:tv:21145",
+          "identity": "new:mundo_natural|show|tmdb:tv:21145",
+          "path": "/programas/mundo-natural",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "la_revuelta|show||",
+          "key": "la_revuelta",
+          "kind": "show",
+          "title": "La revuelta",
+          "spellings": [
+            "La revuelta",
+            "La revuelta T3 E348"
+          ],
+          "airings": 50,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "la_revuelta|show|*",
+          "identity": "new:la_revuelta|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        }
+      ]
+    },
+    "pathless": {
+      "population": 213,
+      "rows": [
+        {
+          "candidateId": "las_verdes_praderas|movie||",
+          "key": "las_verdes_praderas",
+          "kind": "movie",
+          "title": "Las verdes praderas",
+          "spellings": [
+            "Las verdes praderas"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "las_verdes_praderas|movie|*",
+          "identity": "new:las_verdes_praderas|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "los_picapiedras|movie||",
+          "key": "los_picapiedras",
+          "kind": "movie",
+          "title": "Los Picapiedras",
+          "spellings": [
+            "Los Picapiedras"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "los_picapiedras|movie|*",
+          "identity": "new:los_picapiedras|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "cara_a_cara|movie||",
+          "key": "cara_a_cara",
+          "kind": "movie",
+          "title": "Cara a cara",
+          "spellings": [
+            "Cara a cara"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "cara_a_cara|movie|*",
+          "identity": "new:cara_a_cara|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "catfish_mentiras_en_la_red|show||",
+          "key": "catfish_mentiras_en_la_red",
+          "kind": "show",
+          "title": "Catfish: mentiras en la red",
+          "spellings": [
+            "Catfish: mentiras en la red"
+          ],
+          "airings": 5,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "catfish_mentiras_en_la_red|show|*",
+          "identity": "new:catfish_mentiras_en_la_red|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "el_liquidador|show||",
+          "key": "el_liquidador",
+          "kind": "show",
+          "title": "El liquidador T4 E6",
+          "spellings": [
+            "El liquidador T4 E10",
+            "El liquidador T4 E12",
+            "El liquidador T4 E13",
+            "El liquidador T4 E6",
+            "El liquidador T4 E8"
+          ],
+          "airings": 7,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "el_liquidador|show|*",
+          "identity": "new:el_liquidador|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "forjado_a_fuego|show||",
+          "key": "forjado_a_fuego",
+          "kind": "show",
+          "title": "Forjado a fuego",
+          "spellings": [
+            "Forjado a fuego"
+          ],
+          "airings": 6,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "forjado_a_fuego|show|*",
+          "identity": "new:forjado_a_fuego|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "deep_dish_deliverance|movie||",
+          "key": "deep_dish_deliverance",
+          "kind": "movie",
+          "title": "Deep dish deliverance",
+          "spellings": [
+            "Deep dish deliverance"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "deep_dish_deliverance|movie|*",
+          "identity": "new:deep_dish_deliverance|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "cara_a_cara|show||",
+          "key": "cara_a_cara",
+          "kind": "show",
+          "title": "Cara a cara",
+          "spellings": [
+            "Cara a cara"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "cara_a_cara|show|*",
+          "identity": "new:cara_a_cara|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "pesadillas|movie||",
+          "key": "pesadillas",
+          "kind": "movie",
+          "title": "Pesadillas",
+          "spellings": [
+            "Pesadillas"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "pesadillas|movie|*",
+          "identity": "new:pesadillas|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "starship_troopers_las_brigadas_del_espacio|movie||",
+          "key": "starship_troopers_las_brigadas_del_espacio",
+          "kind": "movie",
+          "title": "Starship Troopers (Las brigadas del espacio)",
+          "spellings": [
+            "Starship Troopers (Las brigadas del espacio)"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "starship_troopers_las_brigadas_del_espacio|movie|*",
+          "identity": "new:starship_troopers_las_brigadas_del_espacio|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "desaparecida|series||",
+          "key": "desaparecida",
+          "kind": "series",
+          "title": "Desaparecida",
+          "spellings": [
+            "Desaparecida"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "desaparecida|series|*",
+          "identity": "new:desaparecida|series|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "action_man|series||",
+          "key": "action_man",
+          "kind": "series",
+          "title": "Action Man",
+          "spellings": [
+            "Action Man"
+          ],
+          "airings": 3,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "action_man|series|*",
+          "identity": "new:action_man|series|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "todos_somos_sospechosos|movie||",
+          "key": "todos_somos_sospechosos",
+          "kind": "movie",
+          "title": "Todos somos sospechosos",
+          "spellings": [
+            "Todos somos sospechosos"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "todos_somos_sospechosos|movie|*",
+          "identity": "new:todos_somos_sospechosos|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "the_closer|series||",
+          "key": "the_closer",
+          "kind": "series",
+          "title": "The Closer",
+          "spellings": [
+            "The Closer"
+          ],
+          "airings": 8,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "the_closer|series|*",
+          "identity": "new:the_closer|series|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "los_piratas_del_mar_de_china|movie||",
+          "key": "los_piratas_del_mar_de_china",
+          "kind": "movie",
+          "title": "Los piratas del mar de China",
+          "spellings": [
+            "Los piratas del mar de China"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "los_piratas_del_mar_de_china|movie|*",
+          "identity": "new:los_piratas_del_mar_de_china|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "mossen_capella|series||",
+          "key": "mossen_capella",
+          "kind": "series",
+          "title": "Mossèn Capellà",
+          "spellings": [
+            "Mossèn Capellà"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "mossen_capella|series|*",
+          "identity": "new:mossen_capella|series|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "verguenza_ajena|show||",
+          "key": "verguenza_ajena",
+          "kind": "show",
+          "title": "Vergüenza Ajena",
+          "spellings": [
+            "Vergüenza Ajena",
+            "Vergüenza ajena"
+          ],
+          "airings": 13,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "verguenza_ajena|show|*",
+          "identity": "new:verguenza_ajena|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "los_economicamente_debiles|movie||",
+          "key": "los_economicamente_debiles",
+          "kind": "movie",
+          "title": "Los económicamente débiles",
+          "spellings": [
+            "Los económicamente débiles"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "los_economicamente_debiles|movie|*",
+          "identity": "new:los_economicamente_debiles|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "dia_a_dia|show||",
+          "key": "dia_a_dia",
+          "kind": "show",
+          "title": "Dia a dia",
+          "spellings": [
+            "Dia a dia",
+            "Día a Día"
+          ],
+          "airings": 9,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "dia_a_dia|show|*",
+          "identity": "new:dia_a_dia|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "zapeando|show||",
+          "key": "zapeando",
+          "kind": "show",
+          "title": "Zapeando T14 E3214",
+          "spellings": [
+            "Zapeando T14 E3214"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "zapeando|show|*",
+          "identity": "new:zapeando|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "codigo_10|show||",
+          "key": "codigo_10",
+          "kind": "show",
+          "title": "Código 10",
+          "spellings": [
+            "Código 10"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "codigo_10|show|*",
+          "identity": "new:codigo_10|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "defense|movie||",
+          "key": "defense",
+          "kind": "movie",
+          "title": "Defense",
+          "spellings": [
+            "Defense"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "defense|movie|*",
+          "identity": "new:defense|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "love_actually|movie||",
+          "key": "love_actually",
+          "kind": "movie",
+          "title": "Love Actually",
+          "spellings": [
+            "Love Actually"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "love_actually|movie|*",
+          "identity": "new:love_actually|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "pesca_radical|show||",
+          "key": "pesca_radical",
+          "kind": "show",
+          "title": "Pesca radical",
+          "spellings": [
+            "Pesca radical"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "pesca_radical|show|*",
+          "identity": "new:pesca_radical|show|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "bold_desires|movie||",
+          "key": "bold_desires",
+          "kind": "movie",
+          "title": "Bold desires",
+          "spellings": [
+            "Bold desires"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "bold_desires|movie|*",
+          "identity": "new:bold_desires|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        }
+      ]
+    },
+    "historic_ownership": {
+      "population": 1703,
+      "rows": [
+        {
+          "candidateId": "nuestros_arroces|show||",
+          "key": "nuestros_arroces",
+          "kind": "show",
+          "title": "Nuestros arroces",
+          "spellings": [
+            "Nuestros arroces"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "nuestros_arroces|show|*",
+          "identity": "new:nuestros_arroces|show|*",
+          "path": "/programas/nuestros-arroces",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "bodas_reales|movie|movie:18646|1951",
+          "key": "bodas_reales",
+          "kind": "movie",
+          "title": "Bodas reales",
+          "spellings": [
+            "Bodas reales"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1951
+          ],
+          "year": 1951,
+          "tmdb": {
+            "ids": [
+              18646
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 18646
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "bodas_reales|movie|tmdb:movie:18646",
+          "identity": "new:bodas_reales|movie|tmdb:movie:18646",
+          "path": "/peliculas/bodas-reales",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "mulleres_da_raia|movie|movie:671928|",
+          "key": "mulleres_da_raia",
+          "kind": "movie",
+          "title": "Mulleres da Raia",
+          "spellings": [
+            "Mulleres da Raia"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [
+              671928
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 671928
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "mulleres_da_raia|movie|tmdb:movie:671928",
+          "identity": "new:mulleres_da_raia|movie|tmdb:movie:671928",
+          "path": "/peliculas/mulleres-da-raia",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "serie_el_virginiano|series||",
+          "key": "serie_el_virginiano",
+          "kind": "series",
+          "title": "SERIE «EL VIRGINIANO»",
+          "spellings": [
+            "SERIE «EL VIRGINIANO»"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "serie_el_virginiano|series|*",
+          "identity": "new:serie_el_virginiano|series|*",
+          "path": "/series/serie-el-virginiano",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "aqui_no_hay_quien_viva|series|tv:2282|2003",
+          "key": "aqui_no_hay_quien_viva",
+          "kind": "series",
+          "title": "Aquí no hay quien viva",
+          "spellings": [
+            "Aquí no hay quien viva"
+          ],
+          "airings": 2,
+          "epgYears": [
+            2003
+          ],
+          "year": 2003,
+          "tmdb": {
+            "ids": [
+              2282
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 2282
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "aqui_no_hay_quien_viva|series|tmdb:tv:2282",
+          "identity": "new:aqui_no_hay_quien_viva|series|tmdb:tv:2282",
+          "path": "/series/aqui-no-hay-quien-viva",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "the_office_adios_michael_2_parte|series||",
+          "key": "the_office_adios_michael_2_parte",
+          "kind": "series",
+          "title": "The Office : Adiós, Michael (2ª parte)",
+          "spellings": [
+            "The Office : Adiós, Michael (2ª parte)"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "the_office_adios_michael_2_parte|series|*",
+          "identity": "new:the_office_adios_michael_2_parte|series|*",
+          "path": "/series/the-office-adios-michael-2-parte",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "le_telejournal|show||",
+          "key": "le_telejournal",
+          "kind": "show",
+          "title": "Le téléjournal",
+          "spellings": [
+            "Le téléjournal"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "le_telejournal|show|*",
+          "identity": "new:le_telejournal|show|*",
+          "path": "/programas/le-telejournal",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "una_cita_para_jane|movie||",
+          "key": "una_cita_para_jane",
+          "kind": "movie",
+          "title": "Una cita para Jane",
+          "spellings": [
+            "Una cita para Jane"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "una_cita_para_jane|movie|*",
+          "identity": "new:una_cita_para_jane|movie|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "entrevista|show||",
+          "key": "entrevista",
+          "kind": "show",
+          "title": "Entrevista",
+          "spellings": [
+            "Entrevista"
+          ],
+          "airings": 6,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "entrevista|show|*",
+          "identity": "new:entrevista|show|*",
+          "path": "/programas/entrevista",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "diagnostico|show||",
+          "key": "diagnostico",
+          "kind": "show",
+          "title": "Diagnóstico",
+          "spellings": [
+            "Diagnóstico"
+          ],
+          "airings": 3,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "diagnostico|show|*",
+          "identity": "new:diagnostico|show|*",
+          "path": "/programas/diagnostico",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "animado_presidente_cambio_climatico|series||",
+          "key": "animado_presidente_cambio_climatico",
+          "kind": "series",
+          "title": "Animado presidente : Cambio Climático",
+          "spellings": [
+            "Animado presidente : Cambio Climático"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "animado_presidente_cambio_climatico|series|*",
+          "identity": "new:animado_presidente_cambio_climatico|series|*",
+          "path": "/series/animado-presidente-cambio-climatico",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "romeria_del_rocio|show||",
+          "key": "romeria_del_rocio",
+          "kind": "show",
+          "title": "Romería del Rocío",
+          "spellings": [
+            "Romería del Rocío"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "romeria_del_rocio|show|*",
+          "identity": "new:romeria_del_rocio|show|*",
+          "path": "/programas/romeria-del-rocio",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "the_closer|series||",
+          "key": "the_closer",
+          "kind": "series",
+          "title": "The Closer",
+          "spellings": [
+            "The Closer"
+          ],
+          "airings": 8,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "the_closer|series|*",
+          "identity": "new:the_closer|series|*",
+          "path": null,
+          "pathRefused": [
+            "historic_unverified"
+          ],
+          "historicOwner": false,
+          "pathless": "historic_unverified"
+        },
+        {
+          "candidateId": "wonderblocks|series|tv:281441|2025",
+          "key": "wonderblocks",
+          "kind": "series",
+          "title": "Wonderblocks",
+          "spellings": [
+            "Wonderblocks"
+          ],
+          "airings": 5,
+          "epgYears": [
+            2025
+          ],
+          "year": 2025,
+          "tmdb": {
+            "ids": [
+              281441
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "tv",
+              "id": 281441
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "wonderblocks|series|tmdb:tv:281441",
+          "identity": "new:wonderblocks|series|tmdb:tv:281441",
+          "path": "/series/wonderblocks",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "the_context_usa|show||",
+          "key": "the_context_usa",
+          "kind": "show",
+          "title": "The Context USA",
+          "spellings": [
+            "The Context USA"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "the_context_usa|show|*",
+          "identity": "new:the_context_usa|show|*",
+          "path": "/programas/the-context-usa",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "capitan_conan|movie|movie:46334|1996",
+          "key": "capitan_conan",
+          "kind": "movie",
+          "title": "Capitán Conan",
+          "spellings": [
+            "Capitán Conan"
+          ],
+          "airings": 1,
+          "epgYears": [
+            1996
+          ],
+          "year": 1996,
+          "tmdb": {
+            "ids": [
+              46334
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 46334
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "capitan_conan|movie|tmdb:movie:46334",
+          "identity": "new:capitan_conan|movie|tmdb:movie:46334",
+          "path": "/peliculas/capitan-conan",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "l_actu|show||",
+          "key": "l_actu",
+          "kind": "show",
+          "title": "L'actu",
+          "spellings": [
+            "L'actu"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "l_actu|show|*",
+          "identity": "new:l_actu|show|*",
+          "path": "/programas/lactu",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "animales_en_familia|show||",
+          "key": "animales_en_familia",
+          "kind": "show",
+          "title": "Animales en familia",
+          "spellings": [
+            "Animales en familia"
+          ],
+          "airings": 2,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "animales_en_familia|show|*",
+          "identity": "new:animales_en_familia|show|*",
+          "path": "/programas/animales-en-familia",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "estando_contigo|show||",
+          "key": "estando_contigo",
+          "kind": "show",
+          "title": "Estando contigo",
+          "spellings": [
+            "Estando contigo"
+          ],
+          "airings": 4,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "estando_contigo|show|*",
+          "identity": "new:estando_contigo|show|*",
+          "path": "/programas/estando-contigo",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "miss_carbon|movie|movie:1321656|2025",
+          "key": "miss_carbon",
+          "kind": "movie",
+          "title": "Miss Carbón",
+          "spellings": [
+            "Miss Carbón"
+          ],
+          "airings": 1,
+          "epgYears": [
+            2025
+          ],
+          "year": 2025,
+          "tmdb": {
+            "ids": [
+              1321656
+            ],
+            "evidence": "confirmed",
+            "ref": {
+              "type": "movie",
+              "id": 1321656
+            }
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "tmdb_exact",
+          "confidence": 0.9,
+          "rowId": "miss_carbon|movie|tmdb:movie:1321656",
+          "identity": "new:miss_carbon|movie|tmdb:movie:1321656",
+          "path": "/peliculas/miss-carbon",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "fbi_promesas_rotas|series||",
+          "key": "fbi_promesas_rotas",
+          "kind": "series",
+          "title": "FBI : Promesas Rotas",
+          "spellings": [
+            "FBI : Promesas Rotas",
+            "FBI T2 E17 · Promesas rotas"
+          ],
+          "airings": 3,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "fbi_promesas_rotas|series|*",
+          "identity": "new:fbi_promesas_rotas|series|*",
+          "path": "/series/fbi-promesas-rotas",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "noticias_cuatro_mediodia|show||",
+          "key": "noticias_cuatro_mediodia",
+          "kind": "show",
+          "title": "Noticias Cuatro mediodía",
+          "spellings": [
+            "Noticias Cuatro mediodía"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "noticias_cuatro_mediodia|show|*",
+          "identity": "new:noticias_cuatro_mediodia|show|*",
+          "path": "/programas/noticias-cuatro-mediodia",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "buenos_dias_madrid|show||",
+          "key": "buenos_dias_madrid",
+          "kind": "show",
+          "title": "Buenos días Madrid",
+          "spellings": [
+            "Buenos días Madrid"
+          ],
+          "airings": 3,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "buenos_dias_madrid|show|*",
+          "identity": "new:buenos_dias_madrid|show|*",
+          "path": "/programas/buenos-dias-madrid",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "telediario_2|show||",
+          "key": "telediario_2",
+          "kind": "show",
+          "title": "Telediario 2",
+          "spellings": [
+            "Telediario 2"
+          ],
+          "airings": 10,
+          "epgYears": [
+            1957,
+            2026
+          ],
+          "tmdb": {
+            "ids": [
+              15202
+            ],
+            "evidence": "mixed"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "telediario_2|show|*",
+          "identity": "new:telediario_2|show|*",
+          "path": "/programas/telediario-2",
+          "pathRefused": [],
+          "historicOwner": true
+        },
+        {
+          "candidateId": "adoracion_eucaristica|show||",
+          "key": "adoracion_eucaristica",
+          "kind": "show",
+          "title": "Adoración eucarística",
+          "spellings": [
+            "Adoración eucarística"
+          ],
+          "airings": 1,
+          "epgYears": [],
+          "tmdb": {
+            "ids": [],
+            "evidence": "none"
+          },
+          "decision": "create",
+          "state": "candidate",
+          "method": "title",
+          "confidence": 0.8,
+          "rowId": "adoracion_eucaristica|show|*",
+          "identity": "new:adoracion_eucaristica|show|*",
+          "path": "/programas/adoracion-eucaristica",
+          "pathRefused": [],
+          "historicOwner": true
+        }
+      ]
+    },
+    "deferred": {
+      "population": 0,
+      "rows": []
+    }
+  }
+}
