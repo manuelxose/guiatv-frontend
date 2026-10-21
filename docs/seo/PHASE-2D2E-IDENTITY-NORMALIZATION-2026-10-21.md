@@ -437,3 +437,9 @@ The assistant reviewed all 300 `auto_create` rows of the final sheet and all 145
 This is a consistency check, not the gate. The gate (§9) still needs a named person's labels on all 300 rows and an independent second reviewer on at least 50.
 
 **Decision.** Episode-level and cross-kind duplication is resolved on the full production day: 692 marker/separator hits → 4 real titles, 14 cross-kind twins → 0, 0 collisions, and a baseline that is identical every time. **Production writes remain NO-GO** until human labels pass the gate. The write canary is not started.
+
+## 19. Integration status (2026-10-21, ~14:45 UTC) [V]
+
+- **PR #37 merged** (squash `bf7d047`, head `14dce35`, CI `verify` + `ssr-resilience` green). Auto-deploy run 39618914038 succeeded: release `20261021164208` serves `bf7d047`; API `/health` 200, home 200, both services active; no `CONTENT_*` variable in `api.env`.
+- **Post-deploy baseline (read-only `mongosh`):** 40 collections, 272 indexes, no `content_*`, 16 `tv_read_airings` indexes, 0 `program.entityId`: identical to §16.
+- **This PR** rebased onto `bf7d047` (`git rebase --onto origin/main 14dce35`, no conflicts) and retargeted to `main`; the diff lists only the 2D-2E files. Backend lint clean; `npm test` with `TEST_MONGO_URI`: 454, 453 pass, 0 fail, 1 skip (Redis).
