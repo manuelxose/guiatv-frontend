@@ -43,11 +43,14 @@ Measured on production 2026-10-21 at 09:04 UTC, loopback, sequential, no crawl r
 
 ### Implementation
 
-- **Stale-while-revalidate** (`ssr-server.mjs`):
-  - An entry is fresh for 5 minutes (`HIT`). After that it is served as `STALE` for up to 30 minutes (`s-maxage=60`), and one background render per path (single-flight) runs through the server's own pipeline, so the status, robots, canonical and cache rules all apply.
-  - 5xx results are never cached. A failed refresh keeps the stale copy and logs `[SSR] stale refresh <path> -> <status>`.
-  - Refresh requests carry a random per-process token, so a public request can't bypass the cache.
-  - After 30 minutes, requests render live again.
+- **Stale-while-revalidate** (`ssr-cache.mjs`, used by `ssr-server.mjs`):
+  - An entry is fresh for 5 minutes (`HIT`). After that it is served as `STALE` (`s-maxage=60`) for at most **10 minutes** on "on now" pages (`/`, `en-directo`, `que-ver-hoy`, `/canales/:id`, `/deportes/futbol…`) and **30 minutes** elsewhere. Meanwhile one background render per path (single-flight) runs through the server's own pipeline, so the status, robots, canonical, host and cache rules all apply.
+  - **Every public render outcome settles the cache** (one rule, via the response `finish` event):
+    - a cacheable result below 500 replaces the entry, including a 404 page or a new robots/canonical;
+    - any other result below 500 (redirect, 404/410 fallback, non-HTML) **evicts** it, so an obsolete 200 never outlives a confirmed change;
+    - a 5xx keeps the stale copy until its window ends, then requests render live again.
+  - Every refresh logs `[SSR] stale refresh <path> -> <status> in <ms>` (warn level unless 200).
+  - Refresh requests carry a random per-process token. It is never logged, never sent to clients (the SSR forwards no incoming headers), and a guessed header is ignored.
 - **Post-deploy warm-up** (`deploy-guiatv.sh`, after the smoke checks):
   - 10 hub pages are rendered sequentially, each capped at 25 s, with no retries.
   - Only a 200 counts as warm, so a 503 fallback is never reported as a render.
@@ -64,9 +67,10 @@ Measured on production 2026-10-21 at 09:04 UTC, loopback, sequential, no crawl r
 | Backend `npm test` (local) | 395 tests: 392 pass, 0 fail, 3 skip |
 | Backend with `TEST_MONGO_URI` (scratch mongod) | 430 tests: 429 pass, 0 fail, 1 skip |
 | New backend test | `getItem`: missing gives `NotFoundError` 404; database failure gives no 404 |
-| `seo-ssr-resilience` new sections (local and CI) | 11-case legacy matrix (301 ×3, 404 ×6, 410, 503) plus the SWR cycle MISS → HIT (spoofed token) → STALE → HIT |
+| `seo-ssr-resilience` new sections (local and CI) | 11-case legacy matrix (301 ×3, 404 ×6, 410, 503); SWR over HTTP: 10 concurrent stale hits give exactly 1 refresh and then HIT, a spoofed token gives HIT, no token in the logs (stable over 3 local runs) |
+| `ssr-cache.test.mjs` (fake clock; now run in CI with `ssr-canonical.test.mjs`) | live 10 min / default 30 min windows; stale 200 replaced by 404 or noindex, evicted by 301/410, kept through 503 only until its window ends; single-flight under 20 concurrent calls; failed refresh releases the path; size bound |
 | Red check | the new suite fails against `main`'s `ssr-server.mjs` (`410 expected, got 404`) |
-| `test:deploy` | pass; asserts the warm-up runs and does not warn when every page is 200 |
+| `test:deploy` | pass; a hub page answering 503 during the warm-up is reported (`-> 503`), counted as not warm (`WARN … 1 hub page(s)`), and the deploy still succeeds |
 | `ssr-canonical.test.mjs` | 8/8 |
 | CI `verify` (lint backend/frontend, backend tests with Mongo, `test:deploy`, Karma, production build) | pass |
 | CI `ssr-resilience` (fresh SSR build, full script incl. 2D-0B and canonical checks) | pass |
@@ -91,6 +95,8 @@ Rollback: revert the merge, or repoint `/var/www/guiatv/current` to the previous
 
 - Expired airing URLs now give 404, not 410. Google drops them a little more slowly, but reversibly; the 410 decision belongs to 2D-3.
 - Hub renders still cost 4–22 s per miss. API latency (4 s calls, per-programme enrichment fan-out in SSR) is the next performance target, issue #27.
-- A stale page can be up to 30 minutes old in the worst case, when every refresh fails. "En directo" content may then be out of date; the normal case is one stale response, then fresh.
+- In the worst case (every refresh failing), a stale page is up to 10 minutes old on "on now" pages and 30 minutes on others. The normal case is one stale response, then fresh.
+- The SSR's own `CatalogService` keeps detail data in-process for 10 minutes, a pre-existing cache. A removal therefore reaches the rendered page only after that expires, whatever the SSR cache does.
+- The warm-up adds at most 10 × 25 s ≈ 4 minutes to a deploy in the worst case (typically under 1 minute), inside the 25-minute deploy timeout.
 - The SSR cache is per process and in memory, and a restart clears it; the warm-up covers that.
 - 2D-2C open items are unchanged: reviewer normalisation, entity sample review before write mode.

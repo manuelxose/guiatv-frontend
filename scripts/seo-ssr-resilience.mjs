@@ -222,37 +222,50 @@ try {
   catalogApi.close();
 }
 
-// Stale-while-revalidate: past the TTL the cached page is served at once (STALE) while one background render
-// replaces it; a refresh header sent from outside (through nginx) cannot skip the cache.
+// Stale-while-revalidate (ssr-cache.mjs; the replace/evict/keep rules are unit-tested in ssr-cache.test.mjs): past
+// the TTL the cached page is served at once (STALE) while exactly one background render replaces it; a refresh
+// header sent from outside (through nginx) cannot skip the cache, and the internal token never reaches the logs.
 let swr;
 try {
   const swrPort = port + 3;
-  const proc = spawn('node', ['apps/frontend/scripts/ssr-server.mjs'], {
-    env: { ...process.env, PORT: String(swrPort), API_ORIGIN: 'http://127.0.0.1:9', SSR_CACHE_TTL_MS: '1500' },
-    stdio: ['ignore', 'pipe', 'ignore'],
+  const ttl = 3000;
+  let log = '';
+  swr = spawn('node', ['apps/frontend/scripts/ssr-server.mjs'], {
+    env: { ...process.env, PORT: String(swrPort), API_ORIGIN: 'http://127.0.0.1:9', SSR_CACHE_TTL_MS: String(ttl) },
+    stdio: ['ignore', 'pipe', 'pipe'],
   });
-  swr = proc;
+  swr.stdout.on('data', (d) => (log += d));
+  swr.stderr.on('data', (d) => (log += d));
   await new Promise((ok, fail) => {
     const timer = setTimeout(() => fail(new Error('ssr-server start timeout')), 30000).unref();
-    proc.stdout.on('data', (d) => String(d).includes('listening') && (clearTimeout(timer), ok()));
-    proc.on('exit', () => fail(new Error('ssr-server exited early')));
+    const check = () => log.includes('listening') && (clearTimeout(timer), ok());
+    swr.stdout.on('data', check);
+    swr.on('exit', () => fail(new Error('ssr-server exited early')));
   });
-  const page = async (headers = {}) => {
-    const res = await fetch(`http://127.0.0.1:${swrPort}/avisolegal`, { headers, signal: AbortSignal.timeout(30000) });
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const get = async (path, headers = {}) => {
+    const res = await fetch(`http://127.0.0.1:${swrPort}${path}`, { redirect: 'manual', headers, signal: AbortSignal.timeout(30000) });
     await res.text();
     return { status: res.status, cache: res.headers.get('x-ssr-cache') };
   };
-  assert.deepEqual(await page(), { status: 200, cache: 'MISS' }, 'first render');
-  assert.deepEqual(await page({ 'x-ssr-refresh': 'guess' }), { status: 200, cache: 'HIT' }, 'spoofed refresh header');
-  await new Promise((r) => setTimeout(r, 1700));
-  assert.deepEqual(await page(), { status: 200, cache: 'STALE' }, 'expired entry served stale');
-  let refreshed = null;
-  for (let i = 0; i < 40 && refreshed !== 'HIT'; i++) {
-    await new Promise((r) => setTimeout(r, 250));
-    refreshed = (await page()).cache;
-  }
-  assert.equal(refreshed, 'HIT', 'background render did not replace the stale entry');
-  console.log('ok /avisolegal: MISS -> HIT -> STALE (expired) -> HIT after one background render; spoofed refresh ignored');
+  const refreshes = (path) => log.split('\n').filter((l) => l.includes(`stale refresh ${path} -> `)).length;
+  const waitFor = async (cond, what) => {
+    for (let i = 0; i < 80 && !cond(); i++) await sleep(100);
+    assert.ok(cond(), what);
+  };
+
+  const first = await get('/avisolegal');
+  assert.deepEqual([first.status, first.cache], [200, 'MISS'], 'first render');
+  assert.equal((await get('/avisolegal', { 'x-ssr-refresh': 'guess' })).cache, 'HIT', 'spoofed refresh header skipped the cache');
+  await sleep(ttl + 200);
+  const burst = await Promise.all(Array.from({ length: 10 }, () => get('/avisolegal')));
+  assert.ok(burst.every((r) => r.status === 200 && r.cache !== 'MISS'), `stale burst: ${JSON.stringify(burst)}`);
+  await waitFor(() => refreshes('/avisolegal') >= 1, 'no background refresh logged');
+  await sleep(300);
+  assert.equal(refreshes('/avisolegal'), 1, 'ten concurrent stale hits must start exactly one refresh');
+  assert.equal((await get('/avisolegal')).cache, 'HIT', 'the refresh did not replace the stale entry');
+  assert.doesNotMatch(log, /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/, 'refresh token logged');
+  console.log('ok /avisolegal: MISS -> STALE x10 concurrent -> exactly 1 refresh -> HIT; spoofed header ignored; token not logged');
 } finally {
   await stop(swr);
 }
