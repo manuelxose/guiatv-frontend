@@ -222,3 +222,14 @@ test('an identity without a canonical path is never accepted, whatever the reaso
   const forced = { ...v, decision: 'AUTO_ACCEPT' as const, assurance: 'independently_supported' as const, missing: [] };
   assert.deepEqual(evaluateEvidence([forced]).violations.acceptedPathless, [v.candidateId]);
 });
+
+test('an EPG episode the TMDB season does not have is a contradiction ("La liberación" T1 E8/E12 against 7 episodes)', () => {
+  const liberacion = (episodes: Record<string, number>) => series('La liberación', 261217, { broadcaster: { genres: ['Series'], minutes: { min: 45, max: 50 }, maxSeason: 1, maxEpisodes: episodes } });
+  const tmdb = checks(lookup('tv', 261217, 'La liberación', { details: { seasons: 1, episodes: 7, episodeCounts: { 1: 7 }, genreIds: [18, 35] } }));
+  const bad = one(liberacion({ 1: 12 }), twoDays(liberacion({ 1: 12 })), tmdb);
+  assert.deepEqual([bad.decision, bad.assurance, bad.contradictions], ['QUARANTINE', 'contradictory', ['episode_beyond_tmdb:T1E12>7']]);
+  assert.equal(one(liberacion({ 1: 8 }), twoDays(liberacion({ 1: 8 })), tmdb).contradictions.length, 0, 'one episode of slack: TMDB may lag a running series');
+  assert.deepEqual(one(liberacion({ 0: 30 }), [], tmdb).contradictions, ['episode_beyond_tmdb:E30>7'], 'no season marker: against the total');
+  // Without episode counts (old checks, or TMDB lacks them) nothing is claimed either way.
+  assert.deepEqual(one(liberacion({ 1: 12 }), [], checks(lookup('tv', 261217, 'La liberación'))).contradictions, []);
+});

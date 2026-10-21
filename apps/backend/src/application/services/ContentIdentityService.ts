@@ -60,6 +60,8 @@ export function normalizeReviewerName(reviewer: unknown): string {
   if (
     !/^[\p{L}\p{N}][\p{L}\p{M}\p{N} ._@'-]{1,63}$/u.test(name) ||
     !/\p{L}/u.test(name) ||
+    // "AI <model> …" is how an owner-authorised AI reviewer signs (ledger only); it is never a person, here or in public reads.
+    name.startsWith('AI ') ||
     AUTOMATED_REVIEWERS.has(lower) ||
     lower.split(/[ ._@'-]+/).some((word) => AUTOMATED_REVIEWERS.has(word))
   ) {

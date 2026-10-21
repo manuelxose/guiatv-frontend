@@ -6,7 +6,7 @@ Four completion categories, kept apart:
 |---|---|
 | 1. Engineering | **Complete** (this PR): canary mechanism, canonical audit, reviewer ledger, quality criteria, gate fix. Scratch-MongoDB and unit tests pass |
 | 2. Data validation | **Partly complete**: fresh read-only replay of four production days done and deterministic; precision is **still not human-measured** |
-| 3. Human approval | **Not started**: 0 labels of 300, 0 second-reviewer rows of 50. Thresholds unchanged. A review sheet and the ledger are ready |
+| 3. Human approval | **Done by AI under the owner's authorisation (§11)**: 360 labels, 99.7 % precision, 119 second-reviewer rows, gate **pass with basis `ai`**. It is `ai_reviewed`, never human-validated precision. (Originally 0 labels; see §4 for the tooling.) |
 | 4. Production activation | **Blocked, and not attempted.** Every `CONTENT_*` / public-read / `EPG_YEAR_PROVENANCE` flag is unset in production |
 
 ## 1. Fresh production replay (read-only)
@@ -172,13 +172,36 @@ Checked by variable **name** only after the deploy (values never read or printed
 
 ## 9. Open items and blockers
 
-1. **Human gate unmet** (0/300, 0/50): the only blocker to any persistent write. Owner action: `roster add` for named reviewers, then label `review-sheet-3b.csv`.
+1. **Human gate:** replaced by the owner-authorised AI review (§11): passes with basis `ai`. A persistent write still needs the owner's written go and an attestation path for AI-reviewed identities (Phase 3C).
 2. **EPG day volume dropped 25.5 %** for 20261020 between two measurements (11,211 → 8,348 airings). Not caused by Phase 3 (all flags unset, zero writes), but the read-model rebuild or retention for past days deserves a look before comparing days.
 3. **Unknown kind is 42 % of candidates** and never proposed; the largest coverage loss.
 4. **Year provenance** stays unmeasured until the owner authorises `EPG_YEAR_PROVENANCE`.
 5. **Legacy consolidation, internal links and the upcoming-broadcast block** do not exist on the entity page; they gate any indexing.
 6. Direct ad-hoc production reads can be refused by the environment's classifier; the packaged runner is the reliable path.
 
+## 11. AI review under the owner's authorisation (2026-10-21)
+
+The owner (manuelxose) authorised AI agents to perform the human review ("toda la revision humana es autorizada por mi para hacerlo por ia"; "ahora te doy la autorizacion"). Policy recorded in the contract (v1.2). The human rule is unchanged where it matters: `normalizeReviewerName` now **also refuses the `AI ` prefix**, so `verifyEntity`, public reads and the canary still need a named person (closing a gap: "AI Sonnet A" used to pass as a person's name). AI reviewers exist only in the ledger/scorer path, with a roster carrying the owner's `aiAuthorization`, an explicit scorer opt-in per call, `reviewerKind: 'ai'` on every entry and `reviewBasis: 'ai'` in reports. Thresholds are unchanged.
+
+**Method.** Each row was checked by fetching its TMDB page (title, original title, year, type, runtime, seasons/episodes). Reviewers: `AI Sonnet 5.5 A` (primary, every row, 12 parallel agents of 30 rows), `AI Opus 5.5 B` (blind second review of 119 rows, a different model and prompt, with an extra web search for ambiguous titles; never shown A's labels), `AI Fable 5.1 C` (adjudicator for rows with no yes/no label). Notes cite what was fetched.
+
+| | Round 1 (pre-fix population) | Round 2 (corrected population, fresh draw) |
+|---|---|---|
+| Rows / second-reviewed | 360 / 119 | 360 / 119 (246 rows also in round 1, 114 new) |
+| Errors found | 1: `la_liberacion` (wrong TMDB work, **critical**) | 1: `la_huella_del_asesino` (`wrong_kind`: a documentary series filed as a scripted series; right work, not critical) |
+| Identity precision | 359/360 = 99.7 % (95 % lower 98.7 %) | 359/360 = 99.7 % (95 % lower 98.7 %) |
+| Critical ownership violations | **1 → gate blocked** | 0 |
+| Reviewer agreement (A vs B, first labels) | 99.2 % identity (a degenerate kappa: every row but one was "accept") | 100 %, kappa 1 (both rejected the same row) |
+| Gate (300 labels, 98 %, 50 second reviews, no critical, no open disagreement) | **fail** (critical) | **pass, basis `ai`** |
+
+**Round 1 earned its keep.** Both A and B independently flagged `la_liberacion` (TMDB: 1 season of 7 episodes; the EPG airs T1 E8 and E12) and C rejected it with sources (TMDB, TheTVDB, SensaCine). That exposed a gate defect: the season check passed ("T1 ≤ 1 season") and counted as independent support. Fix: the trace now carries the highest episode number per season, the TMDB check (v3) carries episodes per season, and an episode beyond TMDB's count (+1 slack) is a **contradiction** (quarantine). Effect on the four replay days: −4, −2, −3, −1 accepted identities (131 / 191 / 178 / 172 independently supported). Known cost: long-running daily series that TMDB covers badly (*Sueños de libertad* E672 vs 280, *Autopista hacia el cielo*, *Alerta Cobra*) are now quarantined although probably the right work; coverage is traded for safety. Because the fix changed the population, round 1 could not certify it, so round 2 re-drew and re-reviewed everything.
+
+**Sensitivity control.** A separate calibration (not in any ledger): 12 rows, 6 genuine and 6 whose TMDB link was swapped for another film's. The primary reviewer accepted all 6 genuine and rejected all 6 planted errors. Two rows were also flagged by reviewers as weak evidence and were forced into the second review.
+
+**Limits, plainly.** (1) TMDB is the gate's source and the reviewers' main source: these labels measure coherence with TMDB (plus extra web checks for ambiguous titles), not TMDB's own errors. (2) Same-family models reviewing a pipeline they did not build are not equivalent to independent humans; raw agreement of 100 % on 118 rows says the sample is clean, not that the reviewers are independent. (3) The population is the gate-accepted identities (~516 of ~1,500 proposed per day), not the whole corpus. (4) Nothing here changes production: no flag was touched, no write run, and an AI-reviewed entity still cannot become publicly readable until a Phase 3C change decides how to attest it.
+
+Artefacts: `docs/seo/phase-3b/ai-review/` (ledgers, exports, README), `docs/seo/phase-3b/round2/` (evidence, canonical audits, baselines, replay inputs, sheet).
+
 ## 10. Proposed Phase 3C scope (not started)
 
-Only after the human gate passes: (a) owner-labelled sample → decide M1 or human-verified canary; (b) a ≤ 25-entity noindex canary using §5's runbook; (c) entity page content (upcoming-broadcast block, editorial text, links) and a legacy-consolidation plan; (d) `EPG_YEAR_PROVENANCE` for one sync cycle; (e) a separate decision on indexing, with the quality criteria as the gate.
+Only on the owner's explicit go: (a) decide how an AI-reviewed identity is attested for `verifyEntity` and public reads (today both refuse it by design), or accept policy M1; (b) a ≤ 25-entity noindex canary using §5's runbook; (c) entity page content (upcoming-broadcast block, editorial text, links) and a legacy-consolidation plan; (d) `EPG_YEAR_PROVENANCE` for one sync cycle; (e) a separate decision on indexing, with the quality criteria as the gate.
