@@ -29,7 +29,7 @@ Status legend: **[V]** verified by a run recorded here, **[P]** proposed, not in
   - `ContentIdentityAudit.ts` (the human scorer) untouched;
   - no route, sitemap, canonical or SSR file;
   - the ingestion change only runs under identity flags, which are unset.
-- **Merged** as squash `33c973d` and auto-deployed.
+- **Merged** as squash `33c973d`; auto-deployed as release `20261021173128` (`release.json` gitSha `33c973d`); post-merge CI green.
 - **After the deploy:** health 200, flags unset, baseline 40 collections / 272 indexes, no `content_*`.
 
 ## 2. Denominators
