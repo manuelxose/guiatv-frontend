@@ -233,7 +233,12 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       await ingestion('shadow').run('20261020', [...dayFixture()].reverse(), again);
       assert.deepEqual(again, traces, 'same day in another order: identical traces (no random ids)');
 
-      assert.equal(traces.length, traced.candidates);
+      assert.equal(traces.filter((t) => t.decision !== 'rejected').length, traced.candidates);
+      assert.deepEqual(
+        traces.filter((t) => t.decision === 'rejected').map((t) => [t.title, t.reason]),
+        [['Cine', 'generic_title'], ['Película', 'generic_title'], ['捕风追影2', 'unkeyable_title']],
+        'excluded titles are traced for sampling, apart from the candidates'
+      );
       const summary = summarizeTraces(traces);
       assert.deepEqual(summary.decisions, { create: 9, bind: 1, review: 1, unresolved: 1 });
       assert.equal(summary.newEntities, traced.estimate.newEntities);
@@ -245,7 +250,7 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       assert.deepEqual(keys('tmdb_rejected'), ['Mi casa'], 'catalogue title differs: the id is not identity evidence');
       assert.deepEqual(keys('shared_title'), ['Cenicienta', 'Cenicienta', 'La novia', 'La novia']);
       assert.deepEqual(keys('duplicate_looking'), ['Cenicienta', 'Cenicienta'], 'two proposed films with one slug go to a person');
-      assert.deepEqual(keys('pathless'), ['La Promesa T1 E929', 'La novia', 'Mi casa', 'No']);
+      assert.deepEqual(keys('pathless'), ['La Promesa', 'La novia', 'Mi casa', 'No'], 'an episode spelling proposes its series, by the series title');
       assert.deepEqual(keys('historic_ownership'), ['C.S.I. Miami', 'CSI: Miami', 'Cenicienta', 'Cenicienta', 'Espejo Publico', 'La novia', 'Mi casa', 'No']);
       const csi = traces.find((t) => t.title === 'CSI: Miami')!;
       const csiOwner = traces.find((t) => t.title === 'C.S.I. Miami')!;
@@ -729,6 +734,96 @@ test('content identity ingestion on MongoDB', { skip: mongoUri ? false : 'TEST_M
       assert.deepEqual(second.slugs.pathless, { unsupported_slug: 1, historic_conflict: 1, inventory_review: 1 });
       assert.equal(second.slugs.repaired, 1);
       assert.equal((await ContentEntityModel.findOne({ normalizedTitle: 'saber_y_ganar' }).lean())?.canonicalPath, '/programas/saber-y-ganar');
+    });
+
+    await t.test('2D-2E: one work per series, uncertain separators corroborated or held, cross-kind twins held', async () => {
+      await db.collection('media_catalog').insertMany([
+        { _id: new mongoose.Types.ObjectId('64a000000000000000000007'), tmdbId: 179144, tmdbType: 'movie', title: 'La gran belleza', year: '2013', contentType: 'movie', normalizedTitle: 'la gran belleza', normalizedIdentity: 'la gran belleza', metadataSource: 'tmdb' },
+        { _id: new mongoose.Types.ObjectId('64a000000000000000000008'), tmdbId: 4242, tmdbType: 'tv', title: 'La aventura del saber', year: '1992', contentType: 'series', normalizedTitle: 'la aventura del saber', normalizedIdentity: 'la aventura del saber', metadataSource: 'tmdb' },
+      ]);
+      const day = (): IdentityObservation[] => [
+        obs('Alerta Cobra T22 Ep09', { editorialCategory: 'Series' }),
+        obs('Alerta Cobra T22 Ep10', { editorialCategory: 'Series' }),
+        obs('Alerta Cobra T24 E17 · Persecución', { editorialCategory: 'Series' }),
+        obs('Alerta Cobra · Doble juego', { editorialCategory: 'Series', subtitle: 'Doble juego' }),
+        obs('Rosario (76) 12', { editorialCategory: 'Series' }),
+        obs('Rosario (77) 12', { editorialCategory: 'Series' }),
+        obs('Episodio 770', { editorialCategory: 'Series' }),
+        obs('Repetición de programas'),
+        obs('Programación local'),
+        obs('Zapeando'),
+        obs('Zapeando - Especial Halloween'),
+        obs('Los conciertos de Radio 3 - Tako', { editorialCategory: 'Música' }),
+        obs('Misión imposible - Fallout', { editorialCategory: 'Cine', year: 2018 }),
+        obs('Misión imposible', { editorialCategory: 'Cine', year: 1996 }),
+        obs('Diagnóstico T1 E3', { editorialCategory: 'Series' }),
+        obs('Diagnóstico'),
+        obs('La gran belleza', { editorialCategory: 'Cine', tmdbId: 179144, mediaId: '64a000000000000000000007' }),
+        obs('La gran belleza', { editorialCategory: 'Series' }),
+        obs('La aventura del saber', { editorialCategory: 'Series', tmdbId: 4242, mediaId: '64a000000000000000000008' }),
+        obs('La aventura del saber', { tmdbId: 4242, mediaId: '64a000000000000000000008' }),
+      ];
+      const traces: IdentityTrace[] = [];
+      const report = await ingestion('shadow').run('20261111', day(), traces);
+      assert.deepEqual(report.excluded, { episode_without_work: 1, generic_title: 2 }, 'slots and episode-only titles never become candidates');
+      assert.deepEqual(report.titles, {
+        'episode:title_marker': 6,
+        'episode:xmltv_subtitle': 1,
+        'episode:corroborated': 1,
+        work: 7,
+        title_part: 1,
+        uncertain: 1,
+      });
+      const by = (title: string) => traces.filter((t) => t.title === title).map((t) => [t.kind, t.decision, t.reason ?? '']).sort();
+      const cobra = traces.find((t) => t.title === 'Alerta Cobra')!;
+      assert.deepEqual([cobra.decision, cobra.airings, cobra.key, cobra.path], ['create', 4, 'alerta_cobra', '/series/alerta-cobra'], 'four episode spellings, one work, one path');
+      assert.deepEqual(by('Rosario'), [['series', 'create', '']]);
+      assert.deepEqual(traces.find((t) => t.title === 'Zapeando')?.titleEvidence, { work: 1, 'episode:corroborated': 1 });
+      assert.deepEqual(by('Los conciertos de Radio 3 - Tako'), [['show', 'unresolved', 'title_uncertain']], 'no guess without evidence');
+      assert.deepEqual(by('Misión imposible - Fallout'), [['movie', 'create', '']], 'a film keeps its subtitle: not merged into the 1996 film');
+      assert.deepEqual(by('Misión imposible'), [['movie', 'create', '']]);
+      assert.deepEqual(by('Diagnóstico'), [['series', 'review', 'cross_kind_conflict'], ['show', 'review', 'cross_kind_conflict']]);
+      assert.deepEqual(by('La gran belleza'), [['movie', 'create', ''], ['series', 'review', 'cross_kind_conflict']], 'the TMDB film stands; the title-only "series" is held');
+      assert.deepEqual(by('La aventura del saber'), [['series', 'review', 'cross_kind_conflict'], ['show', 'review', 'cross_kind_conflict']], 'one TMDB work under two kinds');
+      assert.deepEqual(traces.find((t) => t.title === 'La aventura del saber')?.crossKind, ['series', 'show']);
+      assert.ok(traces.filter((t) => t.reason === 'cross_kind_conflict').every((t) => !t.path && !t.identity), 'a held twin gets no entity and no path');
+      const classes = auditClasses(traces);
+      assert.equal(classes.get('cross_kind_conflict')!.length, 5);
+      assert.deepEqual(classes.get('generic_slot')!.map((t) => t.title), ['Programación local', 'Repetición de programas']);
+      assert.ok(classes.get('episode_normalized')!.some((t) => t.title === 'Episodio 770'));
+      assert.deepEqual(classes.get('title_uncertain')!.map((t) => t.title), ['Los conciertos de Radio 3 - Tako']);
+
+      const reversed: IdentityTrace[] = [];
+      await ingestion('shadow').run('20261111', [...day()].reverse(), reversed);
+      assert.deepEqual(reversed, traces, 'order-independent: the same decisions in reverse order');
+
+      // Write: held twins are stored as review rows, without an entity or a path; the rest is created.
+      const before = await counts();
+      const written = await ingestion('write').run('20261111', day());
+      assert.equal(written.writes.entities, 6, "Alerta Cobra, Rosario, Zapeando, two Misión imposible films, La gran belleza");
+      const held = await ContentTitleKeyModel.find({ reason: 'cross_kind_conflict' }).sort({ _id: 1 }).lean();
+      assert.deepEqual(held.map((r) => [r.key, r.kind, r.state, r.entityId ?? null]), [
+        ['diagnostico', 'series', 'manual_review', null],
+        ['diagnostico', 'show', 'manual_review', null],
+        ['la_aventura_del_saber', 'series', 'manual_review', null],
+        ['la_aventura_del_saber', 'show', 'manual_review', null],
+        ['la_gran_belleza', 'series', 'manual_review', null],
+      ]);
+      assert.equal((await counts()).entities - before.entities, 6);
+      assert.equal(await ContentSlugModel.countDocuments({ path: { $in: ['/series/diagnostico', '/programas/diagnostico', '/series/la-gran-belleza'] } }), 0);
+
+      // Next day: one channel only. The held row stays held (no twin appears), and a title-only
+      // sighting under another kind than a stored entity goes to review with that entity as evidence.
+      const next: IdentityTrace[] = [];
+      await ingestion('write').run('20261112', [obs('Diagnóstico'), obs('Zapeando', { editorialCategory: 'Series' }), obs('Los conciertos de Radio 3', { editorialCategory: 'Música' }), obs('Los conciertos de Radio 3 - Tako', { editorialCategory: 'Música' })], next);
+      assert.deepEqual(next.filter((t) => t.title === 'Diagnóstico').map((t) => [t.decision, t.state]), [['held', 'manual_review']]);
+      const zapeandoShow = (await ContentEntityModel.findOne({ normalizedTitle: 'zapeando' }).lean())!;
+      const zap = next.find((t) => t.title === 'Zapeando')!;
+      assert.deepEqual([zap.kind, zap.decision, zap.reason], ['series', 'review', 'cross_kind_conflict']);
+      assert.deepEqual((await ContentTitleKeyModel.findOne({ _id: zap.rowId }).lean())?.candidates, [zapeandoShow.entityId]);
+      assert.equal(zapeandoShow.kind, 'show', 'the stored kind is never overwritten');
+      const radio = next.filter((t) => t.key === 'los_conciertos_de_radio_3');
+      assert.deepEqual(radio.map((t) => [t.airings, t.decision, t.titleEvidence]), [[2, 'create', { work: 1, 'episode:corroborated': 1 }]], 'corroborated by the plain title the same day');
     });
 
     await t.test('legacy-title evidence: only the requested slugs are kept; no request, no scan', async () => {

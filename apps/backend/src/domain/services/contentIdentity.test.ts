@@ -13,6 +13,7 @@ import {
   mayBeIndexable,
   newEntityId,
   normalizeContentPath,
+  parseEpgTitle,
   HistoricWork,
   planCanonicalPaths,
   TitleKeyRow,
@@ -432,4 +433,197 @@ test('2D-2 flags: separate, default off, writes need the database name', () => {
     { shadow: false, writes: true, airingRefs: true }
   );
   assert.deepEqual(f({ CONTENT_ENTITIES_ENABLED: 'true', CONTENT_IDENTITY_WRITES: '' }, ''), off);
+});
+
+// ---------------------------------------------------------------------------------------------
+// 2D-2E: EPG title parsing. Real production spellings (2D-2D sample, 20261020) unless noted.
+
+test('parseEpgTitle: season/episode markers in every feed format give the work and the numbers', () => {
+  const cases: Array<[string, string, number | undefined, number | undefined, string | undefined]> = [
+    ['9-1-1 T4 E3 · El futuro', '9-1-1', 4, 3, 'El futuro'],
+    ['Alerta Cobra T22 Ep09', 'Alerta Cobra', 22, 9, undefined],
+    ['Agrosfera T26 E812', 'Agrosfera', 26, 812, undefined],
+    ['Bluey T4E3', 'Bluey', 4, 3, undefined],
+    ['Friends S04E03', 'Friends', 4, 3, undefined],
+    ['Friends 4x03', 'Friends', 4, 3, undefined],
+    ['Friends Temporada 4 Episodio 3', 'Friends', 4, 3, undefined],
+    ['Lazos mortales Temporada 2', 'Lazos mortales', 2, undefined, undefined],
+    ['Aquí no hay quien viva - Capítulo 12', 'Aquí no hay quien viva', undefined, 12, undefined],
+    ['Velvet Ep. 12', 'Velvet', undefined, 12, undefined],
+    ['Un si grand soleil: Episode 1923', 'Un si grand soleil', undefined, 1923, undefined],
+    ['Com si fos ahir T10 E30 · Episodi 30', 'Com si fos ahir', 10, 30, 'Episodi 30'],
+    ['Aire Lliure T1 · Ebre, amb Peyu', 'Aire Lliure', 1, undefined, 'Ebre, amb Peyu'],
+    ['Amanda y Alan: reformas a la italiana T1 · 4', 'Amanda y Alan: reformas a la italiana', 1, undefined, '4'],
+    ['Rosario (76) 12', 'Rosario', undefined, 76, undefined],
+    ['Autopista hacia el cielo (171) 7', 'Autopista hacia el cielo', undefined, 171, undefined],
+    ['Chicago P.D. T10 E14 · Atrapada', 'Chicago P.D.', 10, 14, 'Atrapada'],
+    ['Camera Café T1 E109 · Guerra De Pintura - Amiga Frita', 'Camera Café', 1, 109, 'Guerra De Pintura - Amiga Frita'],
+    ['Los pequeños asesinatos de Agatha Christie: años 50 T1 E18 · El espejo se rompió', 'Los pequeños asesinatos de Agatha Christie: años 50', 1, 18, 'El espejo se rompió'],
+    // The feed repeats the episode name in the title: only that repetition drops a colon segment.
+    ['UFO Witness: Órbitas e insectoides T2 E2 · Órbitas e insectoides', 'UFO Witness', 2, 2, 'Órbitas e insectoides'],
+  ];
+  for (const [title, work, season, episode, episodeTitle] of cases) {
+    const p = parseEpgTitle(title);
+    assert.equal(p.resolutionState, 'episode', title);
+    assert.equal(p.originalTitle, title, 'the original title is kept as it is');
+    assert.deepEqual([p.proposedWorkTitle, p.seasonNumber, p.episodeNumber, p.episodeTitle], [work, season, episode, episodeTitle], title);
+  }
+  assert.equal(parseEpgTitle('Alerta Cobra T22 Ep09').evidenceSource, 'title_marker');
+  assert.equal(parseEpgTitle('Alerta Cobra T22 Ep09').confidence, 'high');
+  assert.deepEqual([parseEpgTitle('Criaturas indefensas · (The dog lover)').evidenceSource, parseEpgTitle('Criaturas indefensas · (The dog lover)').episodeTitle], ['title_separator', undefined], 'a parenthesised original title is not an episode name');
+});
+
+test('parseEpgTitle: XMLTV sub-title is episode evidence; a repeated sub-title is cut from the title', () => {
+  const p = parseEpgTitle('Alerta Cobra · Doble juego', 'Doble juego');
+  assert.deepEqual([p.resolutionState, p.proposedWorkTitle, p.episodeTitle, p.evidenceSource, p.confidence], ['episode', 'Alerta Cobra', 'Doble juego', 'xmltv_subtitle', 'high']);
+  const dash = parseEpgTitle('A pedir de boca - Setas de otoño', 'Setas de otoño');
+  assert.deepEqual([dash.resolutionState, dash.proposedWorkTitle], ['episode', 'A pedir de boca'], 'the dedicated field settles an otherwise uncertain " - "');
+  const apart = parseEpgTitle('Alerta Cobra', 'Doble juego');
+  assert.deepEqual([apart.resolutionState, apart.proposedWorkTitle, apart.episodeTitle], ['work', 'Alerta Cobra', 'Doble juego']);
+  // The grid already swapped a generic title for its sub-title ("Cine" + "Matrix" -> "Matrix", "Matrix").
+  assert.equal(parseEpgTitle('Matrix', 'Matrix').resolutionState, 'work');
+});
+
+test('parseEpgTitle: " - " and " : " are uncertain, a colon without a space is part of the title', () => {
+  for (const [title, work] of [
+    ['A pedir de boca - Setas de otoño', 'A pedir de boca'],
+    ['9-1-1 : ¿De qué te quejas', '9-1-1'],
+    ['FBI : Promesas Rotas', 'FBI'],
+    ['Los conciertos de Radio 3 - Tako', 'Los conciertos de Radio 3'],
+    ['Misión imposible - Fallout', 'Misión imposible'],
+  ]) {
+    const p = parseEpgTitle(title);
+    assert.deepEqual([p.resolutionState, p.confidence, p.proposedWorkTitle, p.uncertainSplit?.workTitle], ['uncertain', 'low', title, work], title);
+  }
+  assert.deepEqual(parseEpgTitle('Rosario (76) - La boda').uncertainSplit, { workTitle: 'Rosario', workKey: 'rosario', episodeTitle: 'La boda' });
+  assert.equal(titleIdentityKey(parseEpgTitle('Rosario (76) - La boda').uncertainSplit!.workTitle), 'rosario', 'the split key is the key matching computes');
+  assert.deepEqual([parseEpgTitle('Noticias - Edición tarde').resolutionState, parseEpgTitle('Noticias - Edición tarde').uncertainSplit], ['work', undefined], 'a slot word is never the work');
+  assert.equal(parseEpgTitle('Cine - Matrix').resolutionState, 'generic', 'a film container: the film is matched by its own title');
+  for (const title of [
+    'Agatha Christie: Poirot', 'Peter Rabbit 2: A la fuga', 'Expediente 64: Los casos del departamento Q', 'S.W.A.T.: Los hombres de Harrelson',
+    'Catfish: mentiras en la red', 'Blue Bloods (Familia de policías)', 'Brooklyn Nine-Nine', 'Acacias, 38', 'Un día en la Historia de España: 20 de octubre de 1982',
+    'Los conciertos de Radio 3 - Fito y los Fitipaldis (1999)'.replace(' - ', ' '),
+  ]) {
+    const p = parseEpgTitle(title);
+    assert.deepEqual([p.resolutionState, p.proposedWorkTitle], ['work', title], title);
+  }
+});
+
+test('parseEpgTitle: slots, episode-only and non-Latin titles hold no work', () => {
+  for (const title of ['Repetición de programas', 'Programación local', 'Fin de emisión', 'Información de programación', 'Cine', 'Película', 'Próximamente', 'Espacio promocional', 'Programación especial', 'Avance Informativo', 'Cine: Matrix', '★6.8/10']) {
+    assert.equal(parseEpgTitle(title).resolutionState, 'generic', title);
+    assert.ok(isGenericContentTitle(title), title);
+  }
+  // Legitimate works whose titles contain slot words.
+  for (const title of ['Cine de barrio', 'Historia de nuestro cine', 'Programación local de Navidad en Lugo', 'Próximamente en cines', 'Noticias de un secuestro', 'Repetición', 'Cine western']) {
+    assert.notEqual(parseEpgTitle(title).resolutionState, 'generic', title);
+  }
+  for (const title of ['Episodio 770', 'T11 - Episodio 6', 'Capítulo 12', 'S01E02']) {
+    const p = parseEpgTitle(title);
+    assert.deepEqual([p.resolutionState, p.normalizedWorkKey], ['no_work', null], title);
+  }
+  for (const title of ['捕风追影2 T1 E3', 'Ελληνικά T1', 'Москва слезам не верит', '', '   ', '·', ' - ']) {
+    assert.equal(parseEpgTitle(title).normalizedWorkKey, null, JSON.stringify(title));
+  }
+});
+
+test('2D-2E regressions: digits, punctuation, accents and episode-like words do not split or merge works', () => {
+  const key = (t: string) => titleIdentityKey(t);
+  // A one-off documentary or film with an episode-like word keeps its title.
+  for (const [title, k] of [
+    ['Apolo 13', 'apolo_13'], ['Capítulo final', 'capitulo_final'], ['El capítulo perdido', 'el_capitulo_perdido'],
+    ['La guerra civil española, parte 2', 'la_guerra_civil_espanola_parte_2'], ['Dune: Parte dos', 'dune_parte_dos'],
+    ['Malcolm X', 'malcolm_x'], ['Supervivientes 4x4', 'supervivientes_4x4'], ['Mossèn Capellà', 'mossen_capella'], ['Capitán Conan', 'capitan_conan'],
+    ['T2 Trainspotting', 't2_trainspotting'], ['Ocean\'s 11', 'ocean_s_11'], ['Fast & Furious 7', 'fast_furious_7'], ['Mañaneros 360', 'mananeros_360'],
+    ['24', '24'], ['9-1-1', '9_1_1'],
+  ]) {
+    assert.equal(key(title), k, title);
+    assert.notEqual(parseEpgTitle(title).resolutionState, 'episode', title);
+  }
+  assert.notEqual(key('T2 Trainspotting'), key('Trainspotting'), 'a sequel is not the first film');
+  assert.notEqual(key('Dune: Parte dos'), key('Dune'), '"parte" is a film part, not an episode');
+  // Two shows with similar names stay apart; a series with many episode titles is one work.
+  assert.notEqual(key('MasterChef Junior T10 E3'), key('MasterChef T12 E3'));
+  assert.notEqual(key('Supervivientes: Tierra de nadie'), key('Supervivientes'));
+  const episodes = ['FBI T2 E17 · Promesas rotas', 'FBI T2 E18 · Amenaza', 'FBI T3 E1', 'FBI'];
+  assert.deepEqual(new Set(episodes.map(key)), new Set(['fbi']));
+  // An anthology with titled installments is one work, its installments are episodes.
+  assert.equal(key('Historias para no dormir T1 E3 · El doble'), key('Historias para no dormir T1 E4 · La casa'));
+  // Accents fold, non-Latin titles have no key.
+  assert.equal(key('Sueños de libertad T1 E672'), 'suenos_de_libertad');
+  assert.equal(key('Pasión Prohibida T1 E30'), key('Pasion prohibida'));
+  assert.equal(slugifyEntityTitle('Chicago P.D. T10 E14 · Atrapada'), 'chicago-pd');
+  assert.equal(slugifyEntityTitle('9-1-1 T4 E3 · El futuro'), null, 'digits only: no slug, as before');
+  assert.equal(slugifyEntityTitle('Alerta Cobra T22 Ep09'), 'alerta-cobra');
+});
+
+test('2D-2E cross-kind: a title alone never merges kinds nor creates a twin; distinct TMDB works may share a title', () => {
+  const film = row({ key: 'la_gran_belleza', kind: 'movie', discriminator: 'tmdb:movie:179144', entityId: E1 });
+  const series = (over: Partial<Parameters<typeof decideIngestionMatch>[0]> = {}) =>
+    decideIngestionMatch({ title: 'La gran belleza', kind: 'series', method: 'title', confidence: 0.8, ...over }, [film]);
+  const held = series();
+  assert.equal(held.decision, 'review');
+  assert.deepEqual([held.row.state, held.row.reason, held.row.candidates, held.row.entityId], ['manual_review', 'cross_kind_conflict', [E1], undefined]);
+  // Two different TMDB works (the film, and a series with its own TMDB id) are two works.
+  assert.equal(series({ tmdb: { type: 'tv', id: 9 }, method: 'tmdb_exact', confidence: 0.9 }).decision, 'create');
+  // A stored title-only work of another kind holds a TMDB sighting too: it may be the same work.
+  const showOnly = row({ key: 'diagnostico', kind: 'show', discriminator: '*', state: 'candidate', method: 'title', confidence: 0.8, entityId: E2 });
+  const tv = decideIngestionMatch({ title: 'Diagnóstico', kind: 'series', tmdb: { type: 'tv', id: 5 }, method: 'tmdb_exact', confidence: 0.9 }, [showOnly]);
+  assert.deepEqual([tv.decision, tv.decision === 'review' && tv.row.reason], ['review', 'cross_kind_conflict']);
+  // The same-kind identity still matches and binds (existing identity first), the run flag only stops creations.
+  assert.equal(decideIngestionMatch({ title: 'Diagnóstico', kind: 'show', method: 'title', confidence: 0.8 }, [showOnly], null, { crossKind: true }).decision, 'matched');
+  assert.equal(decideIngestionMatch({ title: 'Nueva', kind: 'show', method: 'title', confidence: 0.8 }, [], null, { crossKind: true }).decision, 'review');
+  // Unrelated kinds of rows (unknown, rejected, review-only) are no rivals.
+  const loose = [row({ key: 'x', kind: 'unknown', discriminator: '*', entityId: E3 }), row({ key: 'x', kind: 'show', discriminator: '*', state: 'ambiguous' })];
+  assert.equal(decideIngestionMatch({ title: 'X', kind: 'series', method: 'title', confidence: 0.8 }, loose).decision, 'create');
+});
+
+// Seeded property checks (no dependency): xorshift32, so a failure reproduces from the seed.
+function rng(seed: number) {
+  let x = seed >>> 0 || 1;
+  return () => ((x ^= x << 13), (x ^= x >>> 17), (x ^= x << 5), (x >>> 0) / 2 ** 32);
+}
+const WORK_WORDS = ['Casa', 'papel', 'Ñandú', 'Él', 'niños', 'Fast', '&', 'Furious', '7', '24', 'Año', 'Über', "l'Été", 'C.S.I.', 'Miami', 'Mañana', 'Grey\'s', 'Anatomía', 'García', 'Lugo', 'Barça', '1899', 'Ocho', 'apellidos', 'vascos'];
+const EPISODE_WORDS = ['El futuro', 'Promesas rotas', 'Persecución', 'Nº6', 'La boda', '21', 'Atrapada', 'Fin de año'];
+const markerFor = (s: number, e: number, pick: number) =>
+  [`T${s} E${e}`, `T${s}E${e}`, `S${String(s).padStart(2, '0')}E${String(e).padStart(2, '0')}`, `${s}x${String(e).padStart(2, '0')}`, `Temporada ${s} Episodio ${e}`, `T${s} Ep${String(e).padStart(2, '0')}`][pick];
+
+test('property: work + any marker (+ episode name) parses back to the work, with the numbers (2,000 seeded cases)', () => {
+  const r = rng(20261021);
+  const int = (n: number) => Math.floor(r() * n);
+  for (let i = 0; i < 2000; i++) {
+    const work = Array.from({ length: 1 + int(4) }, () => WORK_WORDS[int(WORK_WORDS.length)]).join(' ');
+    const base = parseEpgTitle(work);
+    if (!base.normalizedWorkKey || base.resolutionState !== 'work') continue;
+    const [s, e] = [1 + int(30), 1 + int(99)];
+    const episodeTitle = int(2) ? EPISODE_WORDS[int(EPISODE_WORDS.length)] : undefined;
+    const title = `${work} ${markerFor(s, e, int(6))}${episodeTitle ? ` · ${episodeTitle}` : ''}`;
+    const p = parseEpgTitle(title);
+    const ctx = JSON.stringify({ i, title });
+    assert.equal(p.resolutionState, 'episode', ctx);
+    assert.equal(p.normalizedWorkKey, base.normalizedWorkKey, ctx);
+    assert.equal(p.proposedWorkTitle, work, ctx);
+    assert.deepEqual([p.seasonNumber, p.episodeNumber, p.episodeTitle], [s, e, episodeTitle], ctx);
+  }
+});
+
+test('property: parsing never throws, keeps the original, is idempotent on the work title, and is a pure function of its input', () => {
+  const r = rng(7);
+  const alphabet = ['a', 'Z', 'ñ', 'é', '9', '0', ' ', ' ', '·', '-', ':', '(', ')', '.', ',', 'T', 'E', 'x', 'p', '捕', 'Ж', '★', '/', '\t', 'Ep', 'Capítulo'];
+  for (let i = 0; i < 5000; i++) {
+    const title = Array.from({ length: Math.floor(r() * 40) }, () => alphabet[Math.floor(r() * alphabet.length)]).join('');
+    const p = parseEpgTitle(title);
+    assert.equal(p.originalTitle, title.trim());
+    assert.deepEqual(parseEpgTitle(title), p);
+    if (p.normalizedWorkKey) assert.ok(p.normalizedWorkKey.length <= 120 && /^[a-z0-9_]+$/.test(p.normalizedWorkKey), title);
+    if (p.resolutionState === 'episode' && p.proposedWorkTitle) {
+      // The work title of an episode is itself a work (or one whose own " - " is still uncertain), with the same key.
+      const again = parseEpgTitle(p.proposedWorkTitle);
+      assert.equal(again.normalizedWorkKey, p.normalizedWorkKey, JSON.stringify(title));
+    }
+    // Without a marker, a sub-title or " · ", a separator alone never makes an episode.
+    if (!/[·•(]/.test(title) && !/(^|[\s·:,.\-(])([ST]\d|\d{1,2}x\d{2}|temporada|episodio|episodi|[eé]pisode|cap[ií]tulo|cap\.?\s*\d|ep\.?\s*\d|chapter)/iu.test(title)) {
+      assert.notEqual(p.resolutionState, 'episode', JSON.stringify(title));
+    }
+  }
 });

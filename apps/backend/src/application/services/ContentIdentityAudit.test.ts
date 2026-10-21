@@ -10,6 +10,7 @@ import {
   REVIEW_COLUMNS,
   sampleTraces,
   scoreReview,
+  compareReviews,
   toCsv,
   wilson,
 } from './ContentIdentityAudit';
@@ -106,13 +107,20 @@ test('scoring: only signed labels count; the gate needs the full sample and no c
   assert.equal(unlabelled.reviewed, 0);
   assert.equal(unlabelled.gate.pass, false);
 
-  rows.forEach((r, i) => label(r, i >= 3));
-  const ok = scoreReview(rows);
+  rows.forEach((r, i) => label(r, i >= 3, i < 3 ? { error_category: 'episode_as_work' } : {}));
+  // A second person labels 50 of the same rows without seeing the first labels (2D-2E §9).
+  const verify = () => rows.slice(0, 50).map((r) => ({ ...r, reviewer: 'Ana García' }));
+  assert.match(scoreReview(rows).gate.blockers.join(), /independent verification: 0 auto-create rows/);
+  const ok = scoreReview(rows, undefined, verify());
   assert.equal(ok.autoCreate.identityPrecision.n, 300);
   assert.equal(ok.autoCreate.identityPrecision.observed, 297 / 300);
   assert.ok(ok.autoCreate.identityPrecision.lower95 > 0.97);
+  assert.deepEqual(ok.errorCategories, { episode_as_work: 3 });
   assert.deepEqual(ok.gate.blockers, []);
   assert.equal(ok.gate.pass, true);
+  rows[0].error_category = '';
+  assert.match(scoreReview(rows, undefined, verify()).gate.blockers.join(), /1 identity error\(s\) without a valid error_category/);
+  rows[0].error_category = 'false_merge';
 
   rows[10].path_ok = 'n';
   rows[10].critical = 'y';
@@ -129,4 +137,43 @@ test('scoring: only signed labels count; the gate needs the full sample and no c
   assert.match(scoreReview(rows).gate.blockers.join(), /precision 0.9666/);
   rows[50].identity_ok = '?';
   assert.match(scoreReview(rows).gate.blockers.join(), /1 unresolved/);
+});
+
+test('independent verification: disagreements block until adjudicated; kappa counts them; one person cannot verify themself', () => {
+  const traces = Array.from({ length: 60 }, () => trace());
+  const primary = buildReviewRows(traces, { seed: 'v', perClass: 0, precision: 60 }).map((r, i) =>
+    Object.assign(r, { reviewer: 'Manuel', identity_ok: i < 6 ? 'n' : 'y', kind_ok: 'y', path_ok: 'y', error_category: i < 6 ? 'duplicate' : '' })
+  );
+  const second = primary.map((r) => ({ ...r, reviewer: 'Ana García' }));
+  second[10].identity_ok = 'n';
+  second[0].identity_ok = 'y';
+  second[20].kind_ok = 'n';
+
+  const raw = compareReviews(primary, second);
+  assert.equal(raw.overlap, 60);
+  assert.deepEqual(raw.open.map((d) => [d.candidate_id, d.field]).sort(), [
+    [primary[0].candidate_id, 'identity_ok'],
+    [primary[10].candidate_id, 'identity_ok'],
+    [primary[20].candidate_id, 'kind_ok'],
+  ].sort());
+  assert.equal(raw.identityAgreement, 58 / 60);
+  // Cohen's kappa by hand: po = 58/60; primary 54 y, verifier 54 y; pe = 0.9² + 0.1² = 0.82.
+  assert.ok(Math.abs((raw.kappa as number) - (58 / 60 - 0.82) / (1 - 0.82)) < 1e-12);
+  const gate = { precision: 0.9, minLabelled: 60, minVerified: 50 };
+  assert.match(scoreReview(primary, gate, second).gate.blockers.join(), /3 reviewer disagreement\(s\) not adjudicated/);
+
+  // Settled: the primary rows take the agreed labels and say so; agreement still counts the originals.
+  Object.assign(primary[0], { identity_ok: 'y', error_category: '', notes: 'adjudicated identity_ok with Ana: same work' });
+  Object.assign(primary[10], { identity_ok: 'n', error_category: 'episode_as_work', notes: 'Adjudicated identity_ok: episode' });
+  Object.assign(primary[20], { kind_ok: 'n', notes: 'adjudicated' });
+  assert.equal(compareReviews(primary, second).open.length, 0, 'labels agree now');
+  assert.deepEqual(compareReviews(primary, second).disagreements.length, 2, 'a note naming no field settles nothing it can be counted for');
+  primary[20].notes = 'adjudicated kind_ok';
+  const settled = compareReviews(primary, second);
+  assert.deepEqual(settled.open, []);
+  assert.equal(settled.identityAgreement, 58 / 60, 'adjudication does not erase a disagreement');
+  assert.equal(scoreReview(primary, gate, second).gate.pass, true);
+
+  assert.match(scoreReview(primary, gate, primary).gate.blockers.join(), /60 verification row\(s\) labelled by the primary reviewer/);
+  assert.match(scoreReview(primary, gate, second.slice(0, 49)).gate.blockers.join(), /49 auto-create rows labelled by a second person, 50 required/);
 });

@@ -1,0 +1,6638 @@
+{
+ "date": "20261020",
+ "before": {
+  "airings": 521,
+  "excluded": {},
+  "titles": null,
+  "candidates": 458,
+  "created": 427,
+  "createdByKind": {
+   "show": 233,
+   "series": 103,
+   "movie": 91
+  },
+  "machineFlagged": 116,
+  "machineFlags": {
+   "subtitle_separator": 65,
+   "trailing_number": 34,
+   "numbered_part": 5,
+   "season_episode_marker": 47,
+   "episode_word": 7,
+   "slot_word": 2
+  },
+  "duplicateSlugGroups": 15,
+  "crossKindSplits": 15,
+  "crossKindSplitsWithTwoPaths": 11,
+  "canonicalCollisions": 0,
+  "unknownKindRate": 0.06768558951965066,
+  "pathlessRate": 0.21311475409836064,
+  "tmdbEvidence": {
+   "none": 458
+  },
+  "reviewQueue": {
+   "several_entities": 4
+  },
+  "unresolved": {
+   "unknown_kind": 27
+  }
+ },
+ "after": {
+  "airings": 521,
+  "excluded": {
+   "episode_without_work": 6,
+   "generic_title": 1
+  },
+  "titles": {
+   "work": 357,
+   "episode:title_marker": 127,
+   "uncertain": 11,
+   "episode:title_separator": 8,
+   "episode:corroborated": 11
+  },
+  "candidates": 424,
+  "created": 352,
+  "createdByKind": {
+   "show": 202,
+   "series": 64,
+   "movie": 86
+  },
+  "machineFlagged": 20,
+  "machineFlags": {
+   "trailing_number": 19,
+   "slot_word": 1
+  },
+  "duplicateSlugGroups": 0,
+  "crossKindSplits": 0,
+  "crossKindSplitsWithTwoPaths": 0,
+  "canonicalCollisions": 0,
+  "unknownKindRate": 0.07311320754716981,
+  "pathlessRate": 0.24431818181818182,
+  "tmdbEvidence": {
+   "none": 424
+  },
+  "reviewQueue": {
+   "cross_kind_conflict": 30
+  },
+  "unresolved": {
+   "title_uncertain": 11,
+   "unknown_kind": 31
+  }
+ },
+ "fates": {
+  "kept": 298,
+  "renamed": 35,
+  "unresolved:cross_kind_conflict": 23,
+  "unresolved:title_uncertain": 11,
+  "consolidated": 45,
+  "unresolved:cross_kind_conflict+unknown_kind": 8,
+  "removed:episode_without_work": 6,
+  "removed:generic_title": 1
+ },
+ "crossKindAfter": [
+  {
+   "kind": "movie",
+   "title": "Alma en suplicio",
+   "decision": "review",
+   "crossKind": [
+    "movie",
+    "series"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "Alma en suplicio",
+   "decision": "review",
+   "crossKind": [
+    "movie",
+    "series"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "movie",
+   "title": "Cara a Cara",
+   "decision": "review",
+   "crossKind": [
+    "movie",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "Cara a cara",
+   "decision": "review",
+   "crossKind": [
+    "movie",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "Caso cerrado",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "Caso cerrado",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "movie",
+   "title": "Cómicos nuestros",
+   "decision": "review",
+   "crossKind": [
+    "movie",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "Cómicos Nuestros",
+   "decision": "review",
+   "crossKind": [
+    "movie",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "Cuando los muertos hablan",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "Cuando los muertos hablan",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "Diagnóstico",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "Diagnóstico",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "Escápate de viaje",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "Escápate de viaje",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "La aventura del saber",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "La aventura del saber",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "movie",
+   "title": "La gran belleza",
+   "decision": "review",
+   "crossKind": [
+    "movie",
+    "series"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "La gran belleza",
+   "decision": "review",
+   "crossKind": [
+    "movie",
+    "series"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "La Renaixença",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "La Renaixença",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "La revuelta",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "La revuelta",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "Limpia y ordena",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "Limpia y ordena",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "Mésnit",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "Mésnit",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "Wild Ibex",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "Wild ibex",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "series",
+   "title": "Wonderblocks",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  },
+  {
+   "kind": "show",
+   "title": "Wonderblocks",
+   "decision": "review",
+   "crossKind": [
+    "series",
+    "show"
+   ],
+   "tmdb": "none"
+  }
+ ],
+ "decisions": [
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "24 Horas al día",
+   "path": "/programas/24-horas-al-dia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "24 Horas al día",
+     "decision": "create",
+     "path": "/programas/24-horas-al-dia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "A boas horas",
+   "path": "/programas/a-boas-horas",
+   "now": [
+    {
+     "kind": "show",
+     "title": "A boas horas",
+     "decision": "create",
+     "path": "/programas/a-boas-horas"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "A Grande Escolla",
+   "path": "/programas/a-grande-escolla",
+   "now": [
+    {
+     "kind": "show",
+     "title": "A Grande Escolla",
+     "decision": "create",
+     "path": "/programas/a-grande-escolla"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "À Punt Notícies migdia",
+   "path": "/programas/a-punt-noticies-migdia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "À Punt Notícies migdia",
+     "decision": "create",
+     "path": "/programas/a-punt-noticies-migdia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Access: Middle East",
+   "path": "/programas/access-middle-east",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Access: Middle East",
+     "decision": "create",
+     "path": "/programas/access-middle-east"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Accidente, suicidio o asesinato",
+   "path": "/programas/accidente-suicidio-o-asesinato",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Accidente, suicidio o asesinato",
+     "decision": "create",
+     "path": "/programas/accidente-suicidio-o-asesinato"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Action Man",
+   "path": "/series/action-man",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Action Man",
+     "decision": "create",
+     "path": "/series/action-man"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Adinberri",
+   "path": "/programas/adinberri",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Adinberri",
+     "decision": "create",
+     "path": "/programas/adinberri"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Adoración eucarística",
+   "path": "/programas/adoracion-eucaristica",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Adoración eucarística",
+     "decision": "create",
+     "path": "/programas/adoracion-eucaristica"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "África el sueño cumplido de un niño",
+   "path": "/programas/africa-el-sueno-cumplido-de-un-nino",
+   "now": [
+    {
+     "kind": "show",
+     "title": "África el sueño cumplido de un niño",
+     "decision": "create",
+     "path": "/programas/africa-el-sueno-cumplido-de-un-nino"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Aixeca i Pica",
+   "path": "/programas/aixeca-i-pica",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Aixeca i Pica",
+     "decision": "create",
+     "path": "/programas/aixeca-i-pica"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "movie",
+   "title": "Al encuentro de T1 · Alberto Rodríguez",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Al encuentro de",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Al rojo vivo",
+   "path": "/programas/al-rojo-vivo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Al rojo vivo",
+     "decision": "create",
+     "path": "/programas/al-rojo-vivo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Alias J.J.",
+   "path": "/series/alias-jj",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Alias J.J.",
+     "decision": "create",
+     "path": "/series/alias-jj"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "movie",
+   "title": "Alma en suplicio",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Alma en suplicio",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "series",
+     "title": "Alma en suplicio",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "series",
+   "title": "Alma en suplicio",
+   "path": "/series/alma-en-suplicio",
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Alma en suplicio",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "series",
+     "title": "Alma en suplicio",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Amanda y Alan: reformas a la italiana: Amanda y Alan: reformas a la italiana 1",
+   "path": "/programas/amanda-y-alan-reformas-a-la-italiana-amanda-y-alan-reformas-a-la-italiana-1",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Amanda y Alan: reformas a la italiana: Amanda y Alan: reformas a la italiana 1",
+     "decision": "create",
+     "path": "/programas/amanda-y-alan-reformas-a-la-italiana-amanda-y-alan-reformas-a-la-italiana-1"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Ancha es Castilla-La Mancha",
+   "path": "/programas/ancha-es-castilla-la-mancha",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Ancha es Castilla-La Mancha",
+     "decision": "create",
+     "path": "/programas/ancha-es-castilla-la-mancha"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "series",
+   "title": "Animado presidente : Cambio Climático",
+   "path": "/series/animado-presidente-cambio-climatico",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Animado presidente : Cambio Climático",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Animales en familia",
+   "path": "/programas/animales-en-familia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Animales en familia",
+     "decision": "create",
+     "path": "/programas/animales-en-familia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Apartado de correos 1001",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Apartado de correos 1001",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Aprende inglés con Vaughan en Realmadrid TV",
+   "path": "/programas/aprende-ingles-con-vaughan-en-realmadrid-tv",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Aprende inglés con Vaughan en Realmadrid TV",
+     "decision": "create",
+     "path": "/programas/aprende-ingles-con-vaughan-en-realmadrid-tv"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Aquí la Tierra",
+   "path": "/programas/aqui-la-tierra",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Aquí la Tierra",
+     "decision": "create",
+     "path": "/programas/aqui-la-tierra"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Aquí no hay quien viva",
+   "path": "/series/aqui-no-hay-quien-viva",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Aquí no hay quien viva",
+     "decision": "create",
+     "path": "/series/aqui-no-hay-quien-viva"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Asalto al distrito 13",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Asalto al distrito 13",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Atrapado por su pasado",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Atrapado por su pasado",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Autopista hacia el cielo (171) 7",
+   "path": "/series/autopista-hacia-el-cielo-171-7",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Autopista hacia el cielo",
+     "decision": "create",
+     "path": "/series/autopista-hacia-el-cielo"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Autopista hacia el cielo (172) 7",
+   "path": "/series/autopista-hacia-el-cielo-172-7",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Autopista hacia el cielo",
+     "decision": "create",
+     "path": "/series/autopista-hacia-el-cielo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Betevé notícies migdia",
+   "path": "/programas/beteve-noticies-migdia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Betevé notícies migdia",
+     "decision": "create",
+     "path": "/programas/beteve-noticies-migdia"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Big Bang T3 E20 · El catalizador de espagueti",
+   "path": "/series/big-bang-el-catalizador-de-espagueti",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Big Bang",
+     "decision": "create",
+     "path": "/series/big-bang"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Big Bang T5 E14 · Iniciación al test Beta",
+   "path": "/series/big-bang-iniciacion-al-test-beta",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Big Bang",
+     "decision": "create",
+     "path": "/series/big-bang"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Bloodshot",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Bloodshot",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Bloomberg the Close",
+   "path": "/programas/bloomberg-the-close",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Bloomberg the Close",
+     "decision": "create",
+     "path": "/programas/bloomberg-the-close"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Blue Bloods (Familia de policías)",
+   "path": "/series/blue-bloods-familia-de-policias",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Blue Bloods (Familia de policías)",
+     "decision": "create",
+     "path": "/series/blue-bloods-familia-de-policias"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Blue Bloods (Familia de policías) T12 E4 · Todo por el cuerpo",
+   "path": "/series/blue-bloods-familia-de-policias-todo-por-el-cuerpo",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Blue Bloods (Familia de policías)",
+     "decision": "create",
+     "path": "/series/blue-bloods-familia-de-policias"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Boarding pass T1 E9",
+   "path": "/programas/boarding-pass",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Boarding pass",
+     "decision": "create",
+     "path": "/programas/boarding-pass"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Boardwalk Empire T2 E1 · 21",
+   "path": "/series/boardwalk-empire-21",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Boardwalk Empire",
+     "decision": "create",
+     "path": "/series/boardwalk-empire"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Bodas reales",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Bodas reales",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Bold desires",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Bold desires",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Boulevard",
+   "path": "/programas/boulevard",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Boulevard",
+     "decision": "create",
+     "path": "/programas/boulevard"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Brooklyn Nine-Nine",
+   "path": "/series/brooklyn-nine-nine",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Brooklyn Nine-Nine",
+     "decision": "create",
+     "path": "/series/brooklyn-nine-nine"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Buen Provecho",
+   "path": "/programas/buen-provecho",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Buen Provecho",
+     "decision": "create",
+     "path": "/programas/buen-provecho"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Buenos días",
+   "path": "/programas/buenos-dias",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Buenos días",
+     "decision": "create",
+     "path": "/programas/buenos-dias"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Buenos días, Castilla y León",
+   "path": "/programas/buenos-dias-castilla-y-leon",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Buenos días, Castilla y León",
+     "decision": "create",
+     "path": "/programas/buenos-dias-castilla-y-leon"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Buenos días Madrid",
+   "path": "/programas/buenos-dias-madrid",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Buenos días Madrid",
+     "decision": "create",
+     "path": "/programas/buenos-dias-madrid"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Business Today",
+   "path": "/programas/business-today",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Business Today",
+     "decision": "create",
+     "path": "/programas/business-today"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Camera Café T1 E109 · Guerra De Pintura - Amiga Frita - Pedro Luis - Los Seres",
+   "path": "/series/camera-cafe-guerra-de-pintura-amiga-frita-pedro-luis-los-seres",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Camera Café",
+     "decision": "create",
+     "path": "/series/camera-cafe"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Canal 24H en directo",
+   "path": "/programas/canal-24h-en-directo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Canal 24H en directo",
+     "decision": "create",
+     "path": "/programas/canal-24h-en-directo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Canal Andalucía Turismo",
+   "path": "/programas/canal-andalucia-turismo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Canal Andalucía Turismo",
+     "decision": "create",
+     "path": "/programas/canal-andalucia-turismo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Canta con Abradelo",
+   "path": "/programas/canta-con-abradelo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Canta con Abradelo",
+     "decision": "create",
+     "path": "/programas/canta-con-abradelo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Capitán Conan",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Capitán Conan",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "kind": "movie",
+   "title": "Cara a cara",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Cara a Cara",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Cara a cara",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "unknown",
+     "title": "Cara a cara",
+     "decision": "unresolved",
+     "reason": "unknown_kind",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "kind": "show",
+   "title": "Cara a cara",
+   "path": "/programas/cara-a-cara",
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Cara a Cara",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Cara a cara",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "unknown",
+     "title": "Cara a cara",
+     "decision": "unresolved",
+     "reason": "unknown_kind",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "movie",
+   "title": "Cara a Cara T1 · Villanas según Nawja Nimri y Alba Flores",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Cara a Cara",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Carnaza T1 · Ensalada y canelones fríos de perdiz",
+   "path": "/programas/carnaza-ensalada-y-canelones-frios-de-perdiz",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Carnaza",
+     "decision": "create",
+     "path": "/programas/carnaza"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Casa Bloc, rehabilitació d'una idea",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Casa Bloc, rehabilitació d'una idea",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Casas señoriales con Phil Spencer T3 E1 · Chatsworth House",
+   "path": "/series/casas-senoriales-con-phil-spencer-chatsworth-house",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Casas señoriales con Phil Spencer",
+     "decision": "create",
+     "path": "/series/casas-senoriales-con-phil-spencer"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Caso abierto T6 E2 · Vocación auténtica",
+   "path": "/series/caso-abierto-vocacion-autentica",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Caso abierto",
+     "decision": "create",
+     "path": "/series/caso-abierto"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "series",
+   "title": "Caso cerrado T6 E9",
+   "path": "/series/caso-cerrado",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Caso cerrado",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "show",
+   "title": "Caso cerrado",
+   "path": "/programas/caso-cerrado",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Caso cerrado",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Casos de Familia",
+   "path": "/programas/casos-de-familia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Casos de Familia",
+     "decision": "create",
+     "path": "/programas/casos-de-familia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Castilla-La Mancha a las 8",
+   "path": "/programas/castilla-la-mancha-a-las-8",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Castilla-La Mancha a las 8",
+     "decision": "create",
+     "path": "/programas/castilla-la-mancha-a-las-8"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Castilla-La Mancha Despierta",
+   "path": "/programas/castilla-la-mancha-despierta",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Castilla-La Mancha Despierta",
+     "decision": "create",
+     "path": "/programas/castilla-la-mancha-despierta"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Catfish: mentiras en la red",
+   "path": "/programas/catfish-mentiras-en-la-red",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Catfish: mentiras en la red",
+     "decision": "create",
+     "path": "/programas/catfish-mentiras-en-la-red"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Caza al asesino",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Caza al asesino",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "CC Presents",
+   "path": "/programas/cc-presents",
+   "now": [
+    {
+     "kind": "show",
+     "title": "CC Presents",
+     "decision": "create",
+     "path": "/programas/cc-presents"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "series",
+   "title": "Chicago Med : ¿Quién debería ser el juez",
+   "path": "/series/chicago-med-quien-deberia-ser-el-juez",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Chicago Med : ¿Quién debería ser el juez",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Chicago P.D. T10 E14 · Atrapada",
+   "path": "/series/chicago-pd-atrapada",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Chicago P.D.",
+     "decision": "create",
+     "path": "/series/chicago-pd"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Ciencia traviesa",
+   "path": "/programas/ciencia-traviesa",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Ciencia traviesa",
+     "decision": "create",
+     "path": "/programas/ciencia-traviesa"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Ciencia y tecnología",
+   "path": "/series/ciencia-y-tecnologia",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Ciencia y tecnología",
+     "decision": "create",
+     "path": "/series/ciencia-y-tecnologia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Cinegetis Argentina",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Cinegetis Argentina",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Classica Spotlight",
+   "path": "/programas/classica-spotlight",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Classica Spotlight",
+     "decision": "create",
+     "path": "/programas/classica-spotlight"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Cleo de 5 a 7",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Cleo de 5 a 7",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "CNN Newsroom",
+   "path": "/programas/cnn-newsroom",
+   "now": [
+    {
+     "kind": "show",
+     "title": "CNN Newsroom",
+     "decision": "create",
+     "path": "/programas/cnn-newsroom"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "CNN This Morning",
+   "path": "/programas/cnn-this-morning",
+   "now": [
+    {
+     "kind": "show",
+     "title": "CNN This Morning",
+     "decision": "create",
+     "path": "/programas/cnn-this-morning"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Cocina cosmopolita de Rachel Khoo T1 · Estocolmo",
+   "path": "/programas/cocina-cosmopolita-de-rachel-khoo-estocolmo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Cocina cosmopolita de Rachel Khoo",
+     "decision": "create",
+     "path": "/programas/cocina-cosmopolita-de-rachel-khoo"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Cocina familiar · Cabezada de cerdo con pimientos a la riojana",
+   "path": "/programas/cocina-familiar-cabezada-de-cerdo-con-pimientos-a-la-riojana",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Cocina familiar",
+     "decision": "create",
+     "path": "/programas/cocina-familiar"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Código 10",
+   "path": "/programas/codigo-10",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Código 10",
+     "decision": "create",
+     "path": "/programas/codigo-10"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Com si fos ahir",
+   "path": "/series/com-si-fos-ahir",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Com si fos ahir",
+     "decision": "create",
+     "path": "/series/com-si-fos-ahir"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Com si fos ahir T10 E30 · Episodi 30",
+   "path": "/series/com-si-fos-ahir-episodi-30",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Com si fos ahir",
+     "decision": "create",
+     "path": "/series/com-si-fos-ahir"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Comarca Informatiu: Edició migdia",
+   "path": "/programas/comarca-informatiu-edicio-migdia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Comarca Informatiu: Edició migdia",
+     "decision": "create",
+     "path": "/programas/comarca-informatiu-edicio-migdia"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "show",
+   "title": "Comedia - Pesadilla para un rico",
+   "path": "/programas/comedia-pesadilla-para-un-rico",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Comedia - Pesadilla para un rico",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "movie",
+   "title": "Cómicos nuestros",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Cómicos nuestros",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "show",
+   "title": "Cómicos Nuestros",
+   "path": "/programas/comicos-nuestros",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Cómicos Nuestros",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Con la música a todas partes",
+   "path": "/programas/con-la-musica-a-todas-partes",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Con la música a todas partes",
+     "decision": "create",
+     "path": "/programas/con-la-musica-a-todas-partes"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Conectamos empleo",
+   "path": "/programas/conectamos-empleo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Conectamos empleo",
+     "decision": "create",
+     "path": "/programas/conectamos-empleo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Conexión Aragón",
+   "path": "/programas/conexion-aragon",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Conexión Aragón",
+     "decision": "create",
+     "path": "/programas/conexion-aragon"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Coolgadas",
+   "path": "/programas/coolgadas",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Coolgadas",
+     "decision": "create",
+     "path": "/programas/coolgadas"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "movie",
+   "title": "Criaturas indefensas · (The dog lover)",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Criaturas indefensas",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Crypto",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Crypto",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "CSI: Miami T5 E3 · La porra de la muerte",
+   "path": "/series/csi-miami-la-porra-de-la-muerte",
+   "now": [
+    {
+     "kind": "series",
+     "title": "CSI: Miami",
+     "decision": "create",
+     "path": "/series/csi-miami"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "CSI: Miami T5 E5 · Muerte eminente",
+   "path": "/series/csi-miami-muerte-eminente",
+   "now": [
+    {
+     "kind": "series",
+     "title": "CSI: Miami",
+     "decision": "create",
+     "path": "/series/csi-miami"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "series",
+   "title": "Cuando los muertos hablan",
+   "path": "/series/cuando-los-muertos-hablan",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Cuando los muertos hablan",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Cuando los muertos hablan",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "show",
+   "title": "Cuando los muertos hablan",
+   "path": "/programas/cuando-los-muertos-hablan",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Cuando los muertos hablan",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Cuando los muertos hablan",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Culture",
+   "path": "/programas/culture",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Culture",
+     "decision": "create",
+     "path": "/programas/culture"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "CyLTV Noticias",
+   "path": "/programas/cyltv-noticias",
+   "now": [
+    {
+     "kind": "show",
+     "title": "CyLTV Noticias",
+     "decision": "create",
+     "path": "/programas/cyltv-noticias"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Dando caña",
+   "path": "/programas/dando-cana",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Dando caña",
+     "decision": "create",
+     "path": "/programas/dando-cana"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Dans la presse",
+   "path": "/programas/dans-la-presse",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Dans la presse",
+     "decision": "create",
+     "path": "/programas/dans-la-presse"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "De sin a con T2 E11",
+   "path": "/programas/de-sin-a-con",
+   "now": [
+    {
+     "kind": "show",
+     "title": "De sin a con",
+     "decision": "create",
+     "path": "/programas/de-sin-a-con"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "De viaje: en las aguas doradas del Curixá",
+   "path": "/programas/de-viaje-en-las-aguas-doradas-del-curixa",
+   "now": [
+    {
+     "kind": "show",
+     "title": "De viaje: en las aguas doradas del Curixá",
+     "decision": "create",
+     "path": "/programas/de-viaje-en-las-aguas-doradas-del-curixa"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Deep dish deliverance",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Deep dish deliverance",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Defense",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Defense",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Desaparecida",
+   "path": "/series/desaparecida",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Desaparecida",
+     "decision": "create",
+     "path": "/series/desaparecida"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Dia a dia",
+   "path": "/programas/dia-a-dia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Dia a dia",
+     "decision": "create",
+     "path": "/programas/dia-a-dia"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "kind": "series",
+   "title": "Diagnóstico",
+   "path": "/series/diagnostico",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Diagnóstico",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Diagnóstico",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "unknown",
+     "title": "Diagnóstico",
+     "decision": "unresolved",
+     "reason": "unknown_kind",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "kind": "show",
+   "title": "Diagnóstico",
+   "path": "/programas/diagnostico",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Diagnóstico",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Diagnóstico",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "unknown",
+     "title": "Diagnóstico",
+     "decision": "unresolved",
+     "reason": "unknown_kind",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Diario de Diana",
+   "path": "/programas/diario-de-diana",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Diario de Diana",
+     "decision": "create",
+     "path": "/programas/diario-de-diana"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Director's Short Cut T1 E32",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Director's Short Cut",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Díselo con flores",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Díselo con flores",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Dos butacas",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Dos butacas",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Dulces con Alma",
+   "path": "/programas/dulces-con-alma",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Dulces con Alma",
+     "decision": "create",
+     "path": "/programas/dulces-con-alma"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Ecclesia",
+   "path": "/programas/ecclesia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Ecclesia",
+     "decision": "create",
+     "path": "/programas/ecclesia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Eguraldia",
+   "path": "/programas/eguraldia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Eguraldia",
+     "decision": "create",
+     "path": "/programas/eguraldia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "EITB Kultura",
+   "path": "/programas/eitb-kultura",
+   "now": [
+    {
+     "kind": "show",
+     "title": "EITB Kultura",
+     "decision": "create",
+     "path": "/programas/eitb-kultura"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "El ejecutor",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "El ejecutor",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "El espíritu de la colmena",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "El espíritu de la colmena",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "El Foraster",
+   "path": "/programas/el-foraster",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El Foraster",
+     "decision": "create",
+     "path": "/programas/el-foraster"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "El gran dictat",
+   "path": "/programas/el-gran-dictat",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El gran dictat",
+     "decision": "create",
+     "path": "/programas/el-gran-dictat"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "El hombre del brazo de oro",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "El hombre del brazo de oro",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "El increíble doctor Pol T15 · Los viajes de Pol-Iver",
+   "path": "/programas/el-increible-doctor-pol-los-viajes-de-pol-iver",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El increíble doctor Pol",
+     "decision": "create",
+     "path": "/programas/el-increible-doctor-pol"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "El kanka",
+   "path": "/programas/el-kanka",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El kanka",
+     "decision": "create",
+     "path": "/programas/el-kanka"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "El liquidador T4 E6",
+   "path": "/programas/el-liquidador",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El liquidador",
+     "decision": "create",
+     "path": "/programas/el-liquidador"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "El Magazín: Estudiants MAP.",
+   "path": "/programas/el-magazin-estudiants-map",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El Magazín: Estudiants MAP.",
+     "decision": "create",
+     "path": "/programas/el-magazin-estudiants-map"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "El Mapa",
+   "path": "/programas/el-mapa",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El Mapa",
+     "decision": "create",
+     "path": "/programas/el-mapa"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "El mentalista T1 E3 · Marea roja",
+   "path": "/series/el-mentalista-marea-roja",
+   "now": [
+    {
+     "kind": "series",
+     "title": "El mentalista",
+     "decision": "create",
+     "path": "/series/el-mentalista"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "El programa de Ana Rosa T23 E37",
+   "path": "/programas/el-programa-de-ana-rosa",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El programa de Ana Rosa",
+     "decision": "create",
+     "path": "/programas/el-programa-de-ana-rosa"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "El punto en la i",
+   "path": "/programas/el-punto-en-la-i",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El punto en la i",
+     "decision": "create",
+     "path": "/programas/el-punto-en-la-i"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "El punto sobre la historia",
+   "path": "/programas/el-punto-sobre-la-historia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El punto sobre la historia",
+     "decision": "create",
+     "path": "/programas/el-punto-sobre-la-historia"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "El punto sobre la historia: El Retiro",
+   "path": "/programas/el-punto-sobre-la-historia-el-retiro",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El punto sobre la historia",
+     "decision": "create",
+     "path": "/programas/el-punto-sobre-la-historia"
+    },
+    {
+     "kind": "show",
+     "title": "El punto sobre la historia: El Retiro",
+     "decision": "create",
+     "path": "/programas/el-punto-sobre-la-historia-el-retiro"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "El renacer de luna",
+   "path": "/series/el-renacer-de-luna",
+   "now": [
+    {
+     "kind": "series",
+     "title": "El renacer de luna",
+     "decision": "create",
+     "path": "/series/el-renacer-de-luna"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "El sargento de hierro",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "El sargento de hierro",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "El segundo acto",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "El segundo acto",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "El submarino amarillo",
+   "path": "/programas/el-submarino-amarillo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El submarino amarillo",
+     "decision": "create",
+     "path": "/programas/el-submarino-amarillo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "El Temps Vespre",
+   "path": "/programas/el-temps-vespre",
+   "now": [
+    {
+     "kind": "show",
+     "title": "El Temps Vespre",
+     "decision": "create",
+     "path": "/programas/el-temps-vespre"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "movie",
+   "title": "Els millors curts. Filmets, Badalona Film Festival(22)",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Els millors curts. Filmets, Badalona Film Festival",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Empeños a lo bestia T3 E2",
+   "path": "/programas/empenos-a-lo-bestia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Empeños a lo bestia",
+     "decision": "create",
+     "path": "/programas/empenos-a-lo-bestia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "En primera persona",
+   "path": "/programas/en-primera-persona",
+   "now": [
+    {
+     "kind": "show",
+     "title": "En primera persona",
+     "decision": "create",
+     "path": "/programas/en-primera-persona"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Enescu Competition 2022",
+   "path": "/programas/enescu-competition-2022",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Enescu Competition 2022",
+     "decision": "create",
+     "path": "/programas/enescu-competition-2022"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Entrevista",
+   "path": "/programas/entrevista",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Entrevista",
+     "decision": "create",
+     "path": "/programas/entrevista"
+    }
+   ]
+  },
+  {
+   "fate": "removed:episode_without_work",
+   "kind": "series",
+   "title": "T11 - Episodio 6",
+   "path": "/series/episodio-6",
+   "now": [
+    {
+     "kind": "unknown",
+     "title": "T11 - Episodio 6",
+     "decision": "rejected",
+     "reason": "episode_without_work",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "removed:episode_without_work",
+   "kind": "series",
+   "title": "Episodio 770",
+   "path": "/series/episodio-770",
+   "now": [
+    {
+     "kind": "unknown",
+     "title": "Episodio 770",
+     "decision": "rejected",
+     "reason": "episode_without_work",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "removed:episode_without_work",
+   "kind": "series",
+   "title": "Episodio 771",
+   "path": "/series/episodio-771",
+   "now": [
+    {
+     "kind": "unknown",
+     "title": "Episodio 771",
+     "decision": "rejected",
+     "reason": "episode_without_work",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "removed:episode_without_work",
+   "kind": "series",
+   "title": "Episodio 773",
+   "path": "/series/episodio-773",
+   "now": [
+    {
+     "kind": "unknown",
+     "title": "Episodio 773",
+     "decision": "rejected",
+     "reason": "episode_without_work",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "removed:episode_without_work",
+   "kind": "series",
+   "title": "Episodio 779",
+   "path": "/series/episodio-779",
+   "now": [
+    {
+     "kind": "unknown",
+     "title": "Episodio 779",
+     "decision": "rejected",
+     "reason": "episode_without_work",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "removed:episode_without_work",
+   "kind": "series",
+   "title": "T11 - Episodio 8",
+   "path": "/series/episodio-8",
+   "now": [
+    {
+     "kind": "unknown",
+     "title": "T11 - Episodio 8",
+     "decision": "rejected",
+     "reason": "episode_without_work",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Equipo Danger T2 E1 · Un impostor entre nosotros",
+   "path": "/series/equipo-danger-un-impostor-entre-nosotros",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Equipo Danger",
+     "decision": "create",
+     "path": "/series/equipo-danger"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Era visto",
+   "path": "/programas/era-visto",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Era visto",
+     "decision": "create",
+     "path": "/programas/era-visto"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "series",
+   "title": "Escápate de viaje",
+   "path": "/series/escapate-de-viaje",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Escápate de viaje",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Escápate de viaje",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "show",
+   "title": "Escápate de viaje",
+   "path": "/programas/escapate-de-viaje",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Escápate de viaje",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Escápate de viaje",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Espartaco",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Espartaco",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Esta es mi casa",
+   "path": "/programas/esta-es-mi-casa",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Esta es mi casa",
+     "decision": "create",
+     "path": "/programas/esta-es-mi-casa"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Està passant",
+   "path": "/programas/esta-passant",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Està passant",
+     "decision": "create",
+     "path": "/programas/esta-passant"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Estando contigo",
+   "path": "/programas/estando-contigo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Estando contigo",
+     "decision": "create",
+     "path": "/programas/estando-contigo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Estoy hecho un chaval",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Estoy hecho un chaval",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Europe Conversation",
+   "path": "/programas/europe-conversation",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Europe Conversation",
+     "decision": "create",
+     "path": "/programas/europe-conversation"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Europe Today",
+   "path": "/programas/europe-today",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Europe Today",
+     "decision": "create",
+     "path": "/programas/europe-today"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Expediente 64: Los casos del departamento Q",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Expediente 64: Los casos del departamento Q",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Exposición 'El Rocío con el color de los sesenta' en Punta Umbría",
+   "path": "/programas/exposicion-el-rocio-con-el-color-de-los-sesenta-en-punta-umbria",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Exposición 'El Rocío con el color de los sesenta' en Punta Umbría",
+     "decision": "create",
+     "path": "/programas/exposicion-el-rocio-con-el-color-de-los-sesenta-en-punta-umbria"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Fantasmas T1 E14 · El escritor fantasma",
+   "path": "/series/fantasmas-el-escritor-fantasma",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Fantasmas",
+     "decision": "create",
+     "path": "/series/fantasmas"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Fauchées",
+   "path": "/series/fauchees",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Fauchées",
+     "decision": "create",
+     "path": "/series/fauchees"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "FBI : Promesas Rotas",
+   "path": "/series/fbi-promesas-rotas",
+   "now": [
+    {
+     "kind": "series",
+     "title": "FBI",
+     "decision": "create",
+     "path": "/series/fbi"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Feria Cinegética de Gibraleón",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Feria Cinegética de Gibraleón",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Filmets",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Filmets",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Forjado a fuego",
+   "path": "/programas/forjado-a-fuego",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Forjado a fuego",
+     "decision": "create",
+     "path": "/programas/forjado-a-fuego"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Frank HGD Show",
+   "path": "/programas/frank-hgd-show",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Frank HGD Show",
+     "decision": "create",
+     "path": "/programas/frank-hgd-show"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Frankenputa (Vicios diabólicos)",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Frankenputa (Vicios diabólicos)",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Friends T7 E23 · El de la boda de Chandler y Mónica",
+   "path": "/series/friends-el-de-la-boda-de-chandler-y-monica",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Friends",
+     "decision": "create",
+     "path": "/series/friends"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Frutos del Mar con Rick Stein T1 · Mayday",
+   "path": "/programas/frutos-del-mar-con-rick-stein-mayday",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Frutos del Mar con Rick Stein",
+     "decision": "create",
+     "path": "/programas/frutos-del-mar-con-rick-stein"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Futurama T5 E12 · Frydisíaco",
+   "path": "/series/futurama-frydisiaco",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Futurama",
+     "decision": "create",
+     "path": "/series/futurama"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Galicia On",
+   "path": "/programas/galicia-on",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Galicia On",
+     "decision": "create",
+     "path": "/programas/galicia-on"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Generación like",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Generación like",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Gente poco corriente",
+   "path": "/series/gente-poco-corriente",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Gente poco corriente",
+     "decision": "create",
+     "path": "/series/gente-poco-corriente"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Gestión de corzas en tierras burgalesas",
+   "path": "/programas/gestion-de-corzas-en-tierras-burgalesas",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Gestión de corzas en tierras burgalesas",
+     "decision": "create",
+     "path": "/programas/gestion-de-corzas-en-tierras-burgalesas"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Gone",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Gone",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Goya en Burdeos",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Goya en Burdeos",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "series",
+   "title": "Grimm : Iniciación",
+   "path": "/series/grimm-iniciacion",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Grimm : Iniciación",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "show",
+   "title": "Handel : Tamerlano - Opera Real de Versalles",
+   "path": "/programas/handel-tamerlano-opera-real-de-versalles",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Handel : Tamerlano - Opera Real de Versalles",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "show",
+   "title": "Haydn: Las Estaciones - Il Giardino Armonico Giovanni Antonini",
+   "path": "/programas/haydn-las-estaciones-il-giardino-armonico-giovanni-antonini",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Haydn: Las Estaciones - Il Giardino Armonico Giovanni Antonini",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Heldt",
+   "path": "/series/heldt",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Heldt",
+     "decision": "create",
+     "path": "/series/heldt"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Henry Danger",
+   "path": "/series/henry-danger",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Henry Danger",
+     "decision": "create",
+     "path": "/series/henry-danger"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Henry Danger : Los globos de muerte",
+   "path": "/series/henry-danger-los-globos-de-muerte",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Henry Danger",
+     "decision": "create",
+     "path": "/series/henry-danger"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Henry Danger : Regreso al Peligro (II)",
+   "path": "/series/henry-danger-regreso-al-peligro-ii",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Henry Danger",
+     "decision": "create",
+     "path": "/series/henry-danger"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "High Potential",
+   "path": "/series/high-potential",
+   "now": [
+    {
+     "kind": "series",
+     "title": "High Potential",
+     "decision": "create",
+     "path": "/series/high-potential"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Historia de una calle",
+   "path": "/programas/historia-de-una-calle",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Historia de una calle",
+     "decision": "create",
+     "path": "/programas/historia-de-una-calle"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Hitch: Especialista en ligues",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Hitch: Especialista en ligues",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Hudson y Rex",
+   "path": "/series/hudson-y-rex",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Hudson y Rex",
+     "decision": "create",
+     "path": "/series/hudson-y-rex"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "iCarly",
+   "path": "/series/icarly",
+   "now": [
+    {
+     "kind": "series",
+     "title": "iCarly",
+     "decision": "create",
+     "path": "/series/icarly"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Ilustres ignorantes",
+   "path": "/programas/ilustres-ignorantes",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Ilustres ignorantes",
+     "decision": "create",
+     "path": "/programas/ilustres-ignorantes"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Informativo RD",
+   "path": "/programas/informativo-rd",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Informativo RD",
+     "decision": "create",
+     "path": "/programas/informativo-rd"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Informativo territorial 2",
+   "path": "/programas/informativo-territorial-2",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Informativo territorial 2",
+     "decision": "create",
+     "path": "/programas/informativo-territorial-2"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Informativos III",
+   "path": "/programas/informativos-iii",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Informativos III",
+     "decision": "create",
+     "path": "/programas/informativos-iii"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Ink Master",
+   "path": "/programas/ink-master",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Ink Master",
+     "decision": "create",
+     "path": "/programas/ink-master"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Inside Sitges 2025: Dark Circus T1 E15",
+   "path": "/programas/inside-sitges-2025-dark-circus",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Inside Sitges 2025: Dark Circus",
+     "decision": "create",
+     "path": "/programas/inside-sitges-2025-dark-circus"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Inteligencia artificial: ¿Aliada o enemiga?",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Inteligencia artificial: ¿Aliada o enemiga?",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Isa Soares Tonight",
+   "path": "/programas/isa-soares-tonight",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Isa Soares Tonight",
+     "decision": "create",
+     "path": "/programas/isa-soares-tonight"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "It moms: madre hay más que una",
+   "path": "/programas/it-moms-madre-hay-mas-que-una",
+   "now": [
+    {
+     "kind": "show",
+     "title": "It moms: madre hay más que una",
+     "decision": "create",
+     "path": "/programas/it-moms-madre-hay-mas-que-una"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "IVC",
+   "path": "/programas/ivc",
+   "now": [
+    {
+     "kind": "show",
+     "title": "IVC",
+     "decision": "create",
+     "path": "/programas/ivc"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Jabalineros T6 · Cazando en la Majúa",
+   "path": "/programas/jabalineros-cazando-en-la-majua",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Jabalineros",
+     "decision": "create",
+     "path": "/programas/jabalineros"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "movie",
+   "title": "Jaws 3 (El gran tiburón) · Tiburón 3, El gran tiburón",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Jaws 3 (El gran tiburón)",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Jesse stone: inocentes perdidos",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Jesse stone: inocentes perdidos",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Joey Alexander Trio",
+   "path": "/programas/joey-alexander-trio",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Joey Alexander Trio",
+     "decision": "create",
+     "path": "/programas/joey-alexander-trio"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Joyas sobre ruedas: El Datsun que brilla T22 · Datsun reluciente",
+   "path": "/programas/joyas-sobre-ruedas-el-datsun-que-brilla-datsun-reluciente",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Joyas sobre ruedas: El Datsun que brilla",
+     "decision": "create",
+     "path": "/programas/joyas-sobre-ruedas-el-datsun-que-brilla"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "JT 19h30",
+   "path": "/programas/jt-19h30",
+   "now": [
+    {
+     "kind": "show",
+     "title": "JT 19h30",
+     "decision": "create",
+     "path": "/programas/jt-19h30"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "K Culture Minutes: K Now E38",
+   "path": "/programas/k-culture-minutes-k-now",
+   "now": [
+    {
+     "kind": "show",
+     "title": "K Culture Minutes: K Now E38",
+     "decision": "create",
+     "path": "/programas/k-culture-minutes-k-now"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Klute",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Klute",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "KULT Agenda",
+   "path": "/programas/kult-agenda",
+   "now": [
+    {
+     "kind": "show",
+     "title": "KULT Agenda",
+     "decision": "create",
+     "path": "/programas/kult-agenda"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "L'actu",
+   "path": "/programas/lactu",
+   "now": [
+    {
+     "kind": "show",
+     "title": "L'actu",
+     "decision": "create",
+     "path": "/programas/lactu"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "L'EBRE NOTÍCIES",
+   "path": "/programas/lebre-noticies",
+   "now": [
+    {
+     "kind": "show",
+     "title": "L'EBRE NOTÍCIES",
+     "decision": "create",
+     "path": "/programas/lebre-noticies"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "show",
+   "title": "L'édition nuit : le journal",
+   "path": "/programas/ledition-nuit-le-journal",
+   "now": [
+    {
+     "kind": "show",
+     "title": "L'édition nuit : le journal",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "L'invité",
+   "path": "/programas/linvite",
+   "now": [
+    {
+     "kind": "show",
+     "title": "L'invité",
+     "decision": "create",
+     "path": "/programas/linvite"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "La 7, Fuentes oficiales",
+   "path": "/programas/la-7-fuentes-oficiales",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La 7, Fuentes oficiales",
+     "decision": "create",
+     "path": "/programas/la-7-fuentes-oficiales"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "La agencia",
+   "path": "/series/la-agencia",
+   "now": [
+    {
+     "kind": "series",
+     "title": "La agencia",
+     "decision": "create",
+     "path": "/series/la-agencia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "La Autonómica",
+   "path": "/programas/la-autonomica",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La Autonómica",
+     "decision": "create",
+     "path": "/programas/la-autonomica"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "kind": "series",
+   "title": "La aventura del saber",
+   "path": "/series/la-aventura-del-saber",
+   "now": [
+    {
+     "kind": "series",
+     "title": "La aventura del saber",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "La aventura del saber",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "unknown",
+     "title": "La aventura del saber",
+     "decision": "unresolved",
+     "reason": "unknown_kind",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "kind": "show",
+   "title": "La aventura del saber",
+   "path": "/programas/la-aventura-del-saber",
+   "now": [
+    {
+     "kind": "series",
+     "title": "La aventura del saber",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "La aventura del saber",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "unknown",
+     "title": "La aventura del saber",
+     "decision": "unresolved",
+     "reason": "unknown_kind",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "La base",
+   "path": "/programas/la-base",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La base",
+     "decision": "create",
+     "path": "/programas/la-base"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "La base América Latina",
+   "path": "/programas/la-base-america-latina",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La base América Latina",
+     "decision": "create",
+     "path": "/programas/la-base-america-latina"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "La camarera del Titanic",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "La camarera del Titanic",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "La Cancha",
+   "path": "/programas/la-cancha",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La Cancha",
+     "decision": "create",
+     "path": "/programas/la-cancha"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "La chica de las series",
+   "path": "/series/la-chica-de-las-series",
+   "now": [
+    {
+     "kind": "series",
+     "title": "La chica de las series",
+     "decision": "create",
+     "path": "/series/la-chica-de-las-series"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "La ciudad en llamas",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "La ciudad en llamas",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "La cocina de Pepa",
+   "path": "/programas/la-cocina-de-pepa",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La cocina de Pepa",
+     "decision": "create",
+     "path": "/programas/la-cocina-de-pepa"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "La cocina de Rachel Khoo: Londres",
+   "path": "/programas/la-cocina-de-rachel-khoo-londres",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La cocina de Rachel Khoo: Londres",
+     "decision": "create",
+     "path": "/programas/la-cocina-de-rachel-khoo-londres"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "La conspiración de noviembre",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "La conspiración de noviembre",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "La fiebre del oro",
+   "path": "/programas/la-fiebre-del-oro",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La fiebre del oro",
+     "decision": "create",
+     "path": "/programas/la-fiebre-del-oro"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "La fiebre del oro: minas perdidas T1 · El misterio del filón de oro",
+   "path": "/programas/la-fiebre-del-oro-minas-perdidas-el-misterio-del-filon-de-oro",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La fiebre del oro: minas perdidas",
+     "decision": "create",
+     "path": "/programas/la-fiebre-del-oro-minas-perdidas"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "La fiebre del oro: minas perdidas T1 · Errores de novato",
+   "path": "/programas/la-fiebre-del-oro-minas-perdidas-errores-de-novato",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La fiebre del oro: minas perdidas",
+     "decision": "create",
+     "path": "/programas/la-fiebre-del-oro-minas-perdidas"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "La fiebre del oro T13 · Un cambio sísmico",
+   "path": "/programas/la-fiebre-del-oro-un-cambio-sismico",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La fiebre del oro",
+     "decision": "create",
+     "path": "/programas/la-fiebre-del-oro"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "movie",
+   "title": "La gran belleza",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "La gran belleza",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "series",
+     "title": "La gran belleza",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "series",
+   "title": "La gran belleza",
+   "path": "/series/la-gran-belleza",
+   "now": [
+    {
+     "kind": "movie",
+     "title": "La gran belleza",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "series",
+     "title": "La gran belleza",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "La hora de la 1",
+   "path": "/programas/la-hora-de-la-1",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La hora de La 1",
+     "decision": "create",
+     "path": "/programas/la-hora-de-la-1"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "La hora de La 1: La hora de la actualidad T10 · La hora de la 1",
+   "path": "/programas/la-hora-de-la-1-la-hora-de-la-actualidad-la-hora-de-la-1",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La hora de La 1",
+     "decision": "create",
+     "path": "/programas/la-hora-de-la-1"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "La huella del crimen",
+   "path": "/series/la-huella-del-crimen",
+   "now": [
+    {
+     "kind": "series",
+     "title": "La huella del crimen",
+     "decision": "create",
+     "path": "/series/la-huella-del-crimen"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "La palama actualidad local",
+   "path": "/programas/la-palama-actualidad-local",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La palama actualidad local",
+     "decision": "create",
+     "path": "/programas/la-palama-actualidad-local"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "La pesca y la vida, un legado de pasión",
+   "path": "/programas/la-pesca-y-la-vida-un-legado-de-pasion",
+   "now": [
+    {
+     "kind": "show",
+     "title": "La pesca y la vida, un legado de pasión",
+     "decision": "create",
+     "path": "/programas/la-pesca-y-la-vida-un-legado-de-pasion"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "show",
+   "title": "LA RAZÓN - En tu cuadra o en la mía",
+   "path": "/programas/la-razon-en-tu-cuadra-o-en-la-mia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "LA RAZÓN - En tu cuadra o en la mía",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "series",
+   "title": "La Renaixença",
+   "path": "/series/la-renaixenca",
+   "now": [
+    {
+     "kind": "series",
+     "title": "La Renaixença",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "La Renaixença",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "show",
+   "title": "La Renaixença",
+   "path": "/programas/la-renaixenca",
+   "now": [
+    {
+     "kind": "series",
+     "title": "La Renaixença",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "La Renaixença",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "kind": "series",
+   "title": "La revuelta",
+   "path": "/series/la-revuelta",
+   "now": [
+    {
+     "kind": "series",
+     "title": "La revuelta",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "La revuelta",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "unknown",
+     "title": "La Revuelta",
+     "decision": "unresolved",
+     "reason": "unknown_kind",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict+unknown_kind",
+   "kind": "show",
+   "title": "La revuelta",
+   "path": "/programas/la-revuelta",
+   "now": [
+    {
+     "kind": "series",
+     "title": "La revuelta",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "La revuelta",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "unknown",
+     "title": "La Revuelta",
+     "decision": "unresolved",
+     "reason": "unknown_kind",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "show",
+   "title": "Lang Lang: Fauré Schumann Chopin - Philharmonie París",
+   "path": "/programas/lang-lang-faure-schumann-chopin-philharmonie-paris",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Lang Lang: Fauré Schumann Chopin - Philharmonie París",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Las 13 rosas",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Las 13 rosas",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Las catadoras de Hitler",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Las catadoras de Hitler",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Las verdes praderas",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Las verdes praderas",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "laSexta Clave",
+   "path": "/programas/lasexta-clave",
+   "now": [
+    {
+     "kind": "show",
+     "title": "laSexta Clave",
+     "decision": "create",
+     "path": "/programas/lasexta-clave"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Lazos mortales Temporada 2",
+   "path": "/series/lazos-mortales",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Lazos mortales",
+     "decision": "create",
+     "path": "/series/lazos-mortales"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Le débat de parlons-en",
+   "path": "/programas/le-debat-de-parlons-en",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Le débat de parlons-en",
+     "decision": "create",
+     "path": "/programas/le-debat-de-parlons-en"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Le Journal de la RTS",
+   "path": "/programas/le-journal-de-la-rts",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Le Journal de la RTS",
+     "decision": "create",
+     "path": "/programas/le-journal-de-la-rts"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Le téléjournal",
+   "path": "/programas/le-telejournal",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Le téléjournal",
+     "decision": "create",
+     "path": "/programas/le-telejournal"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Le zoom de L'actu 360",
+   "path": "/programas/le-zoom-de-lactu-360",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Le zoom de L'actu 360",
+     "decision": "create",
+     "path": "/programas/le-zoom-de-lactu-360"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Leo Talks T7 · Expediente Harlem",
+   "path": "/programas/leo-talks-expediente-harlem",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Leo Talks",
+     "decision": "create",
+     "path": "/programas/leo-talks"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Levante al dia",
+   "path": "/programas/levante-al-dia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Levante al dia",
+     "decision": "create",
+     "path": "/programas/levante-al-dia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Ley y Orden",
+   "path": "/series/ley-y-orden",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Ley y Orden",
+     "decision": "create",
+     "path": "/series/ley-y-orden"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Ley y Orden: Crimen organizado T5 E12 · Off the Books",
+   "path": "/series/ley-y-orden-crimen-organizado-off-the-books",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Ley y Orden: Crimen organizado",
+     "decision": "create",
+     "path": "/series/ley-y-orden-crimen-organizado"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Ley y orden: unidad de víctimas especiales",
+   "path": "/series/ley-y-orden-unidad-de-victimas-especiales",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Ley y orden: unidad de víctimas especiales",
+     "decision": "create",
+     "path": "/series/ley-y-orden-unidad-de-victimas-especiales"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "series",
+   "title": "Limpia y ordena",
+   "path": "/series/limpia-y-ordena",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Limpia y ordena",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "show",
+   "title": "Limpia y ordena T5 E13",
+   "path": "/programas/limpia-y-ordena",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Limpia y ordena",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Link",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Link",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Llueve sobre mi corazón",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Llueve sobre mi corazón",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Lo mejor de Negocios TV",
+   "path": "/programas/lo-mejor-de-negocios-tv",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Lo mejor de Negocios TV",
+     "decision": "create",
+     "path": "/programas/lo-mejor-de-negocios-tv"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "LocoMundo T2 · Trabajo",
+   "path": "/programas/locomundo-trabajo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "LocoMundo",
+     "decision": "create",
+     "path": "/programas/locomundo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Los asesinatos de mamá",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Los asesinatos de mamá",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "Los conciertos de Radio 3",
+   "path": "/programas/los-conciertos-de-radio-3",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Los Conciertos de Radio 3",
+     "decision": "create",
+     "path": "/programas/los-conciertos-de-radio-3"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "Los conciertos de Radio 3 - Aaron Rux",
+   "path": "/programas/los-conciertos-de-radio-3-aaron-rux",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Los Conciertos de Radio 3",
+     "decision": "create",
+     "path": "/programas/los-conciertos-de-radio-3"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "Los conciertos de Radio 3 - Colectivo Da Silva",
+   "path": "/programas/los-conciertos-de-radio-3-colectivo-da-silva",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Los Conciertos de Radio 3",
+     "decision": "create",
+     "path": "/programas/los-conciertos-de-radio-3"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "Los conciertos de Radio 3 - Depedro",
+   "path": "/programas/los-conciertos-de-radio-3-depedro",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Los Conciertos de Radio 3",
+     "decision": "create",
+     "path": "/programas/los-conciertos-de-radio-3"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "Los conciertos de Radio 3 - Gyoza",
+   "path": "/programas/los-conciertos-de-radio-3-gyoza",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Los Conciertos de Radio 3",
+     "decision": "create",
+     "path": "/programas/los-conciertos-de-radio-3"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "Los conciertos de radio 3 - Rebekka Bakken",
+   "path": "/programas/los-conciertos-de-radio-3-rebekka-bakken",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Los Conciertos de Radio 3",
+     "decision": "create",
+     "path": "/programas/los-conciertos-de-radio-3"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "Los Conciertos de Radio 3 - Rumia",
+   "path": "/programas/los-conciertos-de-radio-3-rumia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Los Conciertos de Radio 3",
+     "decision": "create",
+     "path": "/programas/los-conciertos-de-radio-3"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "Los conciertos de Radio 3 - Tako",
+   "path": "/programas/los-conciertos-de-radio-3-tako",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Los Conciertos de Radio 3",
+     "decision": "create",
+     "path": "/programas/los-conciertos-de-radio-3"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Los económicamente débiles",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Los económicamente débiles",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Los Juegos del Hambre: Balada de pájaros cantores y serpientes",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Los Juegos del Hambre: Balada de pájaros cantores y serpientes",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Los mercenarios 2",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Los mercenarios 2",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Los misterios de Murdoch",
+   "path": "/series/los-misterios-de-murdoch",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Los misterios de Murdoch",
+     "decision": "create",
+     "path": "/series/los-misterios-de-murdoch"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Los misterios de Murdoch T4 E1 · Destrozado",
+   "path": "/series/los-misterios-de-murdoch-destrozado",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Los misterios de Murdoch",
+     "decision": "create",
+     "path": "/series/los-misterios-de-murdoch"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Los misterios de Murdoch T3 E13 · Efecto tesla",
+   "path": "/series/los-misterios-de-murdoch-efecto-tesla",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Los misterios de Murdoch",
+     "decision": "create",
+     "path": "/series/los-misterios-de-murdoch"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Los pequeños asesinatos de Agatha Christie: años 50 T1 E20 · Crimen navideño",
+   "path": "/series/los-pequenos-asesinatos-de-agatha-christie-anos-50-crimen-navideno",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Los pequeños asesinatos de Agatha Christie: años 50",
+     "decision": "create",
+     "path": "/series/los-pequenos-asesinatos-de-agatha-christie-anos-50"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Los pequeños asesinatos de Agatha Christie: años 50 T1 E18 · El espejo se rompió",
+   "path": "/series/los-pequenos-asesinatos-de-agatha-christie-anos-50-el-espejo-se-rompio",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Los pequeños asesinatos de Agatha Christie: años 50",
+     "decision": "create",
+     "path": "/series/los-pequenos-asesinatos-de-agatha-christie-anos-50"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Los pequeños asesinatos de Agatha Christie: años 50 T1 E17 · El hombre del traje marrón",
+   "path": "/series/los-pequenos-asesinatos-de-agatha-christie-anos-50-el-hombre-del-traje-marron",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Los pequeños asesinatos de Agatha Christie: años 50",
+     "decision": "create",
+     "path": "/series/los-pequenos-asesinatos-de-agatha-christie-anos-50"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Los Picapiedras",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Los Picapiedras",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Los piratas del mar de China",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Los piratas del mar de China",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Los Repobladores",
+   "path": "/programas/los-repobladores",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Los Repobladores",
+     "decision": "create",
+     "path": "/programas/los-repobladores"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Los Simpson T14 E8 · El padre que sabía demasiado poco",
+   "path": "/series/los-simpson-el-padre-que-sabia-demasiado-poco",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Los Simpson",
+     "decision": "create",
+     "path": "/series/los-simpson"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Los Simpson T13 E13 · El viejo y la llave",
+   "path": "/series/los-simpson-el-viejo-y-la-llave",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Los Simpson",
+     "decision": "create",
+     "path": "/series/los-simpson"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Los timadores",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Los timadores",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Love Actually",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Love Actually",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Maestros de la restauración T16 · Un ratón en la mesa",
+   "path": "/programas/maestros-de-la-restauracion-un-raton-en-la-mesa",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Maestros de la restauración",
+     "decision": "create",
+     "path": "/programas/maestros-de-la-restauracion"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Malas lenguas",
+   "path": "/programas/malas-lenguas",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Malas lenguas",
+     "decision": "create",
+     "path": "/programas/malas-lenguas"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Malcolm in the Middle",
+   "path": "/series/malcolm-in-the-middle",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Malcolm in the Middle",
+     "decision": "create",
+     "path": "/series/malcolm-in-the-middle"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Mañaneros 360",
+   "path": "/programas/mananeros-360",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Mañaneros 360",
+     "decision": "create",
+     "path": "/programas/mananeros-360"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Mareas vivas. A serie que cambiou a túa vida",
+   "path": "/series/mareas-vivas-a-serie-que-cambiou-a-tua-vida",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Mareas vivas. A serie que cambiou a túa vida",
+     "decision": "create",
+     "path": "/series/mareas-vivas-a-serie-que-cambiou-a-tua-vida"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Más de series",
+   "path": "/series/mas-de-series",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Más de series",
+     "decision": "create",
+     "path": "/series/mas-de-series"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Me voy a comer el mundo T4 E11",
+   "path": "/programas/me-voy-a-comer-el-mundo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Me voy a comer el mundo",
+     "decision": "create",
+     "path": "/programas/me-voy-a-comer-el-mundo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Mediodía en RNE",
+   "path": "/programas/mediodia-en-rne",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Mediodía en RNE",
+     "decision": "create",
+     "path": "/programas/mediodia-en-rne"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Mega Casino Live Experience",
+   "path": "/programas/mega-casino-live-experience",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Mega Casino Live Experience",
+     "decision": "create",
+     "path": "/programas/mega-casino-live-experience"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Mentes criminales",
+   "path": "/series/mentes-criminales",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Mentes criminales",
+     "decision": "create",
+     "path": "/series/mentes-criminales"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Mentes criminales T8 E22 · Nº6",
+   "path": "/series/mentes-criminales-n-6",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Mentes criminales",
+     "decision": "create",
+     "path": "/series/mentes-criminales"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Merci Professeur",
+   "path": "/programas/merci-professeur",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Merci Professeur",
+     "decision": "create",
+     "path": "/programas/merci-professeur"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "series",
+   "title": "Mésnit",
+   "path": "/series/mesnit",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Mésnit",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Mésnit",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "show",
+   "title": "Mésnit",
+   "path": "/programas/mesnit",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Mésnit",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Mésnit",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Mi casa cámper T1 E13",
+   "path": "/programas/mi-casa-camper",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Mi casa cámper",
+     "decision": "create",
+     "path": "/programas/mi-casa-camper"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Mi querido Frankie",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Mi querido Frankie",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Miss Carbón",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Miss Carbón",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "MISTERIOS DOLOROSOS",
+   "path": "/programas/misterios-dolorosos",
+   "now": [
+    {
+     "kind": "show",
+     "title": "MISTERIOS DOLOROSOS",
+     "decision": "create",
+     "path": "/programas/misterios-dolorosos"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Mossèn Capellà",
+   "path": "/series/mossen-capella",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Mossèn Capellà",
+     "decision": "create",
+     "path": "/series/mossen-capella"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Mucho Elche",
+   "path": "/programas/mucho-elche",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Mucho Elche",
+     "decision": "create",
+     "path": "/programas/mucho-elche"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Mulleres da Raia",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Mulleres da Raia",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Mundo Natural",
+   "path": "/programas/mundo-natural",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Mundo Natural",
+     "decision": "create",
+     "path": "/programas/mundo-natural"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Música.cat",
+   "path": "/programas/musicacat",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Música.cat",
+     "decision": "create",
+     "path": "/programas/musicacat"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "MusicBox BanyolesTV",
+   "path": "/programas/musicbox-banyolestv",
+   "now": [
+    {
+     "kind": "show",
+     "title": "MusicBox BanyolesTV",
+     "decision": "create",
+     "path": "/programas/musicbox-banyolestv"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "News Live",
+   "path": "/programas/news-live",
+   "now": [
+    {
+     "kind": "show",
+     "title": "News Live",
+     "decision": "create",
+     "path": "/programas/news-live"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Ni AM, ni FM, ni MP3 T1 · El matrimonio y sus retos",
+   "path": "/programas/ni-am-ni-fm-ni-mp3-el-matrimonio-y-sus-retos",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Ni AM, ni FM, ni MP3",
+     "decision": "create",
+     "path": "/programas/ni-am-ni-fm-ni-mp3"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Niche",
+   "path": "/series/niche",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Niche",
+     "decision": "create",
+     "path": "/series/niche"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Niños mutantes",
+   "path": "/programas/ninos-mutantes",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Niños mutantes",
+     "decision": "create",
+     "path": "/programas/ninos-mutantes"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "No tenim vergonya",
+   "path": "/programas/no-tenim-vergonya",
+   "now": [
+    {
+     "kind": "show",
+     "title": "No tenim vergonya",
+     "decision": "create",
+     "path": "/programas/no-tenim-vergonya"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Noticias 2 Navarra",
+   "path": "/programas/noticias-2-navarra",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Noticias 2 Navarra",
+     "decision": "create",
+     "path": "/programas/noticias-2-navarra"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Noticias Almería 24 Horas",
+   "path": "/programas/noticias-almeria-24-horas",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Noticias Almería 24 Horas",
+     "decision": "create",
+     "path": "/programas/noticias-almeria-24-horas"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Noticias Cuatro mediodía",
+   "path": "/programas/noticias-cuatro-mediodia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Noticias Cuatro mediodía",
+     "decision": "create",
+     "path": "/programas/noticias-cuatro-mediodia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Noticias Diez TV: Úbeda",
+   "path": "/programas/noticias-diez-tv-ubeda",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Noticias Diez TV: Úbeda",
+     "decision": "create",
+     "path": "/programas/noticias-diez-tv-ubeda"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Noticias Información TV",
+   "path": "/programas/noticias-informacion-tv",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Noticias Información TV",
+     "decision": "create",
+     "path": "/programas/noticias-informacion-tv"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Noticiero cultural",
+   "path": "/programas/noticiero-cultural",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Noticiero cultural",
+     "decision": "create",
+     "path": "/programas/noticiero-cultural"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Notícies 12. Edició esports",
+   "path": "/programas/noticies-12-edicio-esports",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Notícies 12. Edició esports",
+     "decision": "create",
+     "path": "/programas/noticies-12-edicio-esports"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "NOTÍCIES 21",
+   "path": "/programas/noticies-21",
+   "now": [
+    {
+     "kind": "show",
+     "title": "NOTÍCIES 21",
+     "decision": "create",
+     "path": "/programas/noticies-21"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "NOTÍCIES EN XARXA",
+   "path": "/programas/noticies-en-xarxa",
+   "now": [
+    {
+     "kind": "show",
+     "title": "NOTÍCIES EN XARXA",
+     "decision": "create",
+     "path": "/programas/noticies-en-xarxa"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "show",
+   "title": "NOTÍCIES EN XARXA – NEX MATÍ",
+   "path": "/programas/noticies-en-xarxa-nex-mati",
+   "now": [
+    {
+     "kind": "show",
+     "title": "NOTÍCIES EN XARXA",
+     "decision": "create",
+     "path": "/programas/noticies-en-xarxa"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "NTC Comarques",
+   "path": "/programas/ntc-comarques",
+   "now": [
+    {
+     "kind": "show",
+     "title": "NTC Comarques",
+     "decision": "create",
+     "path": "/programas/ntc-comarques"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Nuestros arroces",
+   "path": "/programas/nuestros-arroces",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Nuestros arroces",
+     "decision": "create",
+     "path": "/programas/nuestros-arroces"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Ojos de dragón",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Ojos de dragón",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "On the road",
+   "path": "/programas/on-the-road",
+   "now": [
+    {
+     "kind": "show",
+     "title": "On the road",
+     "decision": "create",
+     "path": "/programas/on-the-road"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "On va plus loin",
+   "path": "/programas/on-va-plus-loin",
+   "now": [
+    {
+     "kind": "show",
+     "title": "On va plus loin",
+     "decision": "create",
+     "path": "/programas/on-va-plus-loin"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Operación Swordfish",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Operación Swordfish",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Orquesta Filarmónica de Varsovia Krzysztof Urba?ski: Tormis Szymanowski Stravinsky",
+   "path": "/programas/orquesta-filarmonica-de-varsovia-krzysztof-urba-ski-tormis-szymanowski",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Orquesta Filarmónica de Varsovia Krzysztof Urba?ski: Tormis Szymanowski Stravinsky",
+     "decision": "create",
+     "path": "/programas/orquesta-filarmonica-de-varsovia-krzysztof-urba-ski-tormis-szymanowski"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Padre Brown",
+   "path": "/series/padre-brown",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Padre Brown",
+     "decision": "create",
+     "path": "/series/padre-brown"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Padre Brown T1 E3 · La forma equivocada",
+   "path": "/series/padre-brown-la-forma-equivocada",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Padre Brown",
+     "decision": "create",
+     "path": "/series/padre-brown"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "movie",
+   "title": "Pánico Nuclear · Pánico nuclear",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Pánico Nuclear",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Papá o mamá",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Papá o mamá",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Pareja a la puja T2 E1",
+   "path": "/programas/pareja-a-la-puja",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Pareja a la puja",
+     "decision": "create",
+     "path": "/programas/pareja-a-la-puja"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Pasión Prohibida",
+   "path": "/series/pasion-prohibida",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Pasión Prohibida",
+     "decision": "create",
+     "path": "/series/pasion-prohibida"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Pause · Elche 7 TV",
+   "path": "/programas/pause-elche-7-tv",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Pause",
+     "decision": "create",
+     "path": "/programas/pause"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Película Clásica",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Película Clásica",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Pesadillas",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Pesadillas",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Pesca radical",
+   "path": "/programas/pesca-radical",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Pesca radical",
+     "decision": "create",
+     "path": "/programas/pesca-radical"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Pescando en El Farión",
+   "path": "/programas/pescando-en-el-farion",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Pescando en El Farión",
+     "decision": "create",
+     "path": "/programas/pescando-en-el-farion"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Peter Rabbit 2: A la fuga",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Peter Rabbit 2: A la fuga",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Polloliebre y el secreto de la marmota",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Polloliebre y el secreto de la marmota",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Por fin",
+   "path": "/programas/por-fin",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Por fin",
+     "decision": "create",
+     "path": "/programas/por-fin"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Productos artesanos",
+   "path": "/programas/productos-artesanos",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Productos artesanos",
+     "decision": "create",
+     "path": "/programas/productos-artesanos"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Profilage: Perfiles criminales",
+   "path": "/series/profilage-perfiles-criminales",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Profilage: Perfiles criminales",
+     "decision": "create",
+     "path": "/series/profilage-perfiles-criminales"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "+ Que Cine",
+   "path": "/programas/que-cine",
+   "now": [
+    {
+     "kind": "show",
+     "title": "+ Que Cine",
+     "decision": "create",
+     "path": "/programas/que-cine"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Rebuilding",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Rebuilding",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Redecora con Raquel",
+   "path": "/programas/redecora-con-raquel",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Redecora con Raquel",
+     "decision": "create",
+     "path": "/programas/redecora-con-raquel"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Redifusión",
+   "path": "/programas/redifusion",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Redifusión",
+     "decision": "create",
+     "path": "/programas/redifusion"
+    }
+   ]
+  },
+  {
+   "fate": "removed:generic_title",
+   "kind": "show",
+   "title": "Repetición de programas",
+   "path": "/programas/repeticion-de-programas",
+   "now": [
+    {
+     "kind": "unknown",
+     "title": "Repetición de programas",
+     "decision": "rejected",
+     "reason": "generic_title",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Reportajes TeleSUR",
+   "path": "/programas/reportajes-telesur",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Reportajes TeleSUR",
+     "decision": "create",
+     "path": "/programas/reportajes-telesur"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Reporte 360º",
+   "path": "/programas/reporte-360",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Reporte 360º",
+     "decision": "create",
+     "path": "/programas/reporte-360"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Reporter",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Reporter",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "Rico al rescate T1 · Midcentury Mess",
+   "path": "/programas/rico-al-rescate-midcentury-mess",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Rico al rescate",
+     "decision": "create",
+     "path": "/programas/rico-al-rescate"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Rio Grande",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Rio Grande",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Rizzoli & Isles T3 E12 · Me encanta como mientes",
+   "path": "/series/rizzoli-isles-me-encanta-como-mientes",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Rizzoli & Isles",
+     "decision": "create",
+     "path": "/series/rizzoli-isles"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Romería del Rocío",
+   "path": "/programas/romeria-del-rocio",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Romería del Rocío",
+     "decision": "create",
+     "path": "/programas/romeria-del-rocio"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Ronda Artística",
+   "path": "/programas/ronda-artistica",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Ronda Artística",
+     "decision": "create",
+     "path": "/programas/ronda-artistica"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Room Service T1 E2",
+   "path": "/programas/room-service",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Room Service",
+     "decision": "create",
+     "path": "/programas/room-service"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Rosario (71) 12",
+   "path": "/series/rosario-71-12",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Rosario",
+     "decision": "create",
+     "path": "/series/rosario"
+    }
+   ]
+  },
+  {
+   "fate": "consolidated",
+   "kind": "series",
+   "title": "Rosario (76) 12",
+   "path": "/series/rosario-76-12",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Rosario",
+     "decision": "create",
+     "path": "/series/rosario"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Rutes del Pirineu",
+   "path": "/programas/rutes-del-pirineu",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Rutes del Pirineu",
+     "decision": "create",
+     "path": "/programas/rutes-del-pirineu"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "S.W.A.T.: Los hombres de Harrelson",
+   "path": "/series/swat-los-hombres-de-harrelson",
+   "now": [
+    {
+     "kind": "series",
+     "title": "S.W.A.T.: Los hombres de Harrelson",
+     "decision": "create",
+     "path": "/series/swat-los-hombres-de-harrelson"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Saber Y Ganar",
+   "path": "/programas/saber-y-ganar",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Saber Y Ganar",
+     "decision": "create",
+     "path": "/programas/saber-y-ganar"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Sanamente con Aissa García",
+   "path": "/programas/sanamente-con-aissa-garcia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Sanamente con Aissa García",
+     "decision": "create",
+     "path": "/programas/sanamente-con-aissa-garcia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "School of Sex T1 E7",
+   "path": "/programas/school-of-sex",
+   "now": [
+    {
+     "kind": "show",
+     "title": "School of Sex",
+     "decision": "create",
+     "path": "/programas/school-of-sex"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Scream 2",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Scream 2",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Se ha escrito un crimen (teleserie)",
+   "path": "/series/se-ha-escrito-un-crimen-teleserie",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Se ha escrito un crimen (teleserie)",
+     "decision": "create",
+     "path": "/series/se-ha-escrito-un-crimen-teleserie"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "SERIE «EL VIRGINIANO»",
+   "path": "/series/serie-el-virginiano",
+   "now": [
+    {
+     "kind": "series",
+     "title": "SERIE «EL VIRGINIANO»",
+     "decision": "create",
+     "path": "/series/serie-el-virginiano"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "SERIE: Valencia, un viaje por el futuro del coche eléctrico, la guerra del agua y la crisis del gas ruso",
+   "path": "/series/serie-valencia-un-viaje-por-el-futuro-del-coche-electrico-la-guerra-del-agua-y",
+   "now": [
+    {
+     "kind": "series",
+     "title": "SERIE: Valencia, un viaje por el futuro del coche eléctrico, la guerra del agua y la crisis del gas ruso",
+     "decision": "create",
+     "path": "/series/serie-valencia-un-viaje-por-el-futuro-del-coche-electrico-la-guerra-del-agua-y"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Servicios informativos",
+   "path": "/programas/servicios-informativos",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Servicios informativos",
+     "decision": "create",
+     "path": "/programas/servicios-informativos"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Show Business",
+   "path": "/programas/show-business",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Show Business",
+     "decision": "create",
+     "path": "/programas/show-business"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "SHOW BUSINESS NEWS",
+   "path": "/programas/show-business-news",
+   "now": [
+    {
+     "kind": "show",
+     "title": "SHOW BUSINESS NEWS",
+     "decision": "create",
+     "path": "/programas/show-business-news"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Sin escapatoria",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Sin escapatoria",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Somos",
+   "path": "/programas/somos",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Somos",
+     "decision": "create",
+     "path": "/programas/somos"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Sonic 3: la película",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Sonic 3: la película",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Sonrisas y lágrimas",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Sonrisas y lágrimas",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "show",
+   "title": "SOS: La Gran Reforma T31 · Barnstaple",
+   "path": "/programas/sos-la-gran-reforma-barnstaple",
+   "now": [
+    {
+     "kind": "show",
+     "title": "SOS: La Gran Reforma",
+     "decision": "create",
+     "path": "/programas/sos-la-gran-reforma"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Spermageddon. Una comedia seminal",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Spermageddon. Una comedia seminal",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Starship Troopers (Las brigadas del espacio)",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Starship Troopers (Las brigadas del espacio)",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Sueños de libertad T1 E672",
+   "path": "/series/suenos-de-libertad",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Sueños de libertad",
+     "decision": "create",
+     "path": "/series/suenos-de-libertad"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "series",
+   "title": "Suits : Enfrentados",
+   "path": "/series/suits-enfrentados",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Suits : Enfrentados",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Sustraia",
+   "path": "/programas/sustraia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Sustraia",
+     "decision": "create",
+     "path": "/programas/sustraia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Telediario 2",
+   "path": "/programas/telediario-2",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Telediario 2",
+     "decision": "create",
+     "path": "/programas/telediario-2"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "The Closer",
+   "path": "/series/the-closer",
+   "now": [
+    {
+     "kind": "series",
+     "title": "The Closer",
+     "decision": "create",
+     "path": "/series/the-closer"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "The Context USA",
+   "path": "/programas/the-context-usa",
+   "now": [
+    {
+     "kind": "show",
+     "title": "The Context USA",
+     "decision": "create",
+     "path": "/programas/the-context-usa"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "The Exchange",
+   "path": "/programas/the-exchange",
+   "now": [
+    {
+     "kind": "show",
+     "title": "The Exchange",
+     "decision": "create",
+     "path": "/programas/the-exchange"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:title_uncertain",
+   "kind": "series",
+   "title": "The Office : Adiós, Michael (2ª parte)",
+   "path": "/series/the-office-adios-michael-2-parte",
+   "now": [
+    {
+     "kind": "series",
+     "title": "The Office : Adiós, Michael (2ª parte)",
+     "decision": "unresolved",
+     "reason": "title_uncertain",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "The Source with Kaitlan Collins",
+   "path": "/programas/the-source-with-kaitlan-collins",
+   "now": [
+    {
+     "kind": "show",
+     "title": "The Source with Kaitlan Collins",
+     "decision": "create",
+     "path": "/programas/the-source-with-kaitlan-collins"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Tiburón, la venganza",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Tiburón, la venganza",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Todos somos sospechosos",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Todos somos sospechosos",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Tracker",
+   "path": "/series/tracker",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Tracker",
+     "decision": "create",
+     "path": "/series/tracker"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Transporter T1 Ep03",
+   "path": "/series/transporter-ep03",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Transporter",
+     "decision": "create",
+     "path": "/series/transporter"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Tú eres el siguiente",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Tú eres el siguiente",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Turismo rural en el mundo",
+   "path": "/programas/turismo-rural-en-el-mundo",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Turismo rural en el mundo",
+     "decision": "create",
+     "path": "/programas/turismo-rural-en-el-mundo"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "TUYA NOTICIAS",
+   "path": "/programas/tuya-noticias",
+   "now": [
+    {
+     "kind": "show",
+     "title": "TUYA NOTICIAS",
+     "decision": "create",
+     "path": "/programas/tuya-noticias"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Última edición",
+   "path": "/programas/ultima-edicion",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Última edición",
+     "decision": "create",
+     "path": "/programas/ultima-edicion"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Un amigo extraordinario",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Un amigo extraordinario",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Un estupendo chico indio",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Un estupendo chico indio",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Un si grand soleil: Episode 1923",
+   "path": "/series/un-si-grand-soleil-episode-1923",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Un si grand soleil",
+     "decision": "create",
+     "path": "/series/un-si-grand-soleil"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Una cita para Jane",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Una cita para Jane",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Una familia de diez",
+   "path": "/series/una-familia-de-diez",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Una familia de diez",
+     "decision": "create",
+     "path": "/series/una-familia-de-diez"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Una historia china de fantasmas",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Una historia china de fantasmas",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Una quinta portuguesa",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Una quinta portuguesa",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Una trompeta lejana",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Una trompeta lejana",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Universo Syfy",
+   "path": "/programas/universo-syfy",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Universo Syfy",
+     "decision": "create",
+     "path": "/programas/universo-syfy"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Valencians 100%",
+   "path": "/programas/valencians-100",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Valencians 100%",
+     "decision": "create",
+     "path": "/programas/valencians-100"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Vergüenza Ajena",
+   "path": "/programas/verguenza-ajena",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Vergüenza Ajena",
+     "decision": "create",
+     "path": "/programas/verguenza-ajena"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Verified Live",
+   "path": "/programas/verified-live",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Verified Live",
+     "decision": "create",
+     "path": "/programas/verified-live"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Vidas por la vida",
+   "path": "/programas/vidas-por-la-vida",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Vidas por la vida",
+     "decision": "create",
+     "path": "/programas/vidas-por-la-vida"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Vigilantes T1 E3",
+   "path": "/series/vigilantes",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Vigilantes",
+     "decision": "create",
+     "path": "/series/vigilantes"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Viva suecia",
+   "path": "/programas/viva-suecia",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Viva suecia",
+     "decision": "create",
+     "path": "/programas/viva-suecia"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Vivir es fácil con los ojos cerrados",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Vivir es fácil con los ojos cerrados",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Vroum",
+   "path": "/programas/vroum",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Vroum",
+     "decision": "create",
+     "path": "/programas/vroum"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "series",
+   "title": "Vuelven los Magos de Waverly Place",
+   "path": "/series/vuelven-los-magos-de-waverly-place",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Vuelven los Magos de Waverly Place",
+     "decision": "create",
+     "path": "/series/vuelven-los-magos-de-waverly-place"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "What We Know with Max Foster",
+   "path": "/programas/what-we-know-with-max-foster",
+   "now": [
+    {
+     "kind": "show",
+     "title": "What We Know with Max Foster",
+     "decision": "create",
+     "path": "/programas/what-we-know-with-max-foster"
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "series",
+   "title": "Wild Ibex",
+   "path": "/series/wild-ibex",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Wild Ibex",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "show",
+   "title": "Wild ibex T1 E4",
+   "path": "/programas/wild-ibex",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Wild ibex",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "movie",
+   "title": "Wild Namibia 2.0",
+   "path": null,
+   "now": [
+    {
+     "kind": "movie",
+     "title": "Wild Namibia 2.0",
+     "decision": "create",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "series",
+   "title": "Wonderblocks",
+   "path": "/series/wonderblocks",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Wonderblocks",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Wonderblocks",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "unresolved:cross_kind_conflict",
+   "kind": "show",
+   "title": "Wonderblocks",
+   "path": "/programas/wonderblocks",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Wonderblocks",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    },
+    {
+     "kind": "show",
+     "title": "Wonderblocks",
+     "decision": "review",
+     "reason": "cross_kind_conflict",
+     "path": null
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Y ahora, Sonsoles T5 E1014",
+   "path": "/programas/y-ahora-sonsoles",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Y ahora, Sonsoles",
+     "decision": "create",
+     "path": "/programas/y-ahora-sonsoles"
+    }
+   ]
+  },
+  {
+   "fate": "renamed",
+   "kind": "series",
+   "title": "Yo siempre a veces (Extras) T1 E3 · Las creadoras",
+   "path": "/series/yo-siempre-a-veces-extras-las-creadoras",
+   "now": [
+    {
+     "kind": "series",
+     "title": "Yo siempre a veces (Extras)",
+     "decision": "create",
+     "path": "/series/yo-siempre-a-veces-extras"
+    }
+   ]
+  },
+  {
+   "fate": "kept",
+   "kind": "show",
+   "title": "Zapeando T14 E3214",
+   "path": "/programas/zapeando",
+   "now": [
+    {
+     "kind": "show",
+     "title": "Zapeando",
+     "decision": "create",
+     "path": "/programas/zapeando"
+    }
+   ]
+  }
+ ]
+}
