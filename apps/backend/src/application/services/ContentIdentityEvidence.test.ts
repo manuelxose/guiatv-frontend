@@ -1,16 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { IdentityTrace } from './ContentIdentityIngestion';
-import { adjudicateEvidence, evaluateEvidence, exactTmdbWorks, type EvidenceVerdict, type TmdbSearchCheck } from './ContentIdentityEvidence';
+import {
+  adjudicateEvidence,
+  broadcasterKinds,
+  evaluateEvidence,
+  exactTmdbWorks,
+  tmdbTvKind,
+  type EvidenceVerdict,
+  type TmdbSearchCheck,
+} from './ContentIdentityEvidence';
 
 const slug = (title: string) => title.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-');
+const keyOf = (title: string) => title.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '_');
 const trace = (title: string, over: Partial<IdentityTrace> = {}): IdentityTrace => ({
   candidateId: `${title}|${over.kind ?? 'show'}`,
-  key: title.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+  key: keyOf(title),
   kind: 'show',
   title,
   spellings: [title],
-  channels: ['la_1'],
+  channels: ['la1'],
+  broadcaster: { genres: [], minutes: { min: 60, max: 60 }, maxSeason: null },
   airings: 2,
   epgYears: [],
   tmdb: { ids: [], evidence: 'none' },
@@ -19,90 +29,118 @@ const trace = (title: string, over: Partial<IdentityTrace> = {}): IdentityTrace 
   path: `/programas/${slug(title)}`,
   ...over,
 });
-const tmdbWork = (title: string, type: 'movie' | 'tv', id: number, year: number, over: Partial<IdentityTrace> = {}) =>
+const film = (title: string, id: number, over: Partial<IdentityTrace> = {}) =>
   trace(title, {
-    kind: type === 'movie' ? 'movie' : 'series', year, epgYears: [year], path: `/${type === 'movie' ? 'peliculas' : 'series'}/${slug(title)}`,
-    tmdb: { ids: [id], evidence: 'confirmed', ref: { type, id } as any }, ...over,
+    kind: 'movie', year: 1999, epgYears: [1999], path: `/peliculas/${slug(title)}`,
+    broadcaster: { genres: ['Cine'], minutes: { min: 140, max: 140 }, maxSeason: null },
+    tmdb: { ids: [id], evidence: 'confirmed', ref: { type: 'movie', id } as any }, ...over,
   });
-/** A TMDB search whose results are the given works (title, id). */
-const search = (type: 'movie' | 'tv', id: number, query: string, ...works: Array<[string, number]>): TmdbSearchCheck => ({
-  type, id, query, results: works.map(([title, wid]) => ({ id: wid, title })),
+const series = (title: string, id: number, over: Partial<IdentityTrace> = {}) =>
+  trace(title, {
+    kind: 'series', path: `/series/${slug(title)}`,
+    broadcaster: { genres: ['Series'], minutes: { min: 45, max: 50 }, maxSeason: 3 },
+    tmdb: { ids: [id], evidence: 'confirmed', ref: { type: 'tv', id } as any }, ...over,
+  });
+const lookup = (type: 'movie' | 'tv', id: number, query: string, over: Partial<TmdbSearchCheck> = {}): TmdbSearchCheck => ({
+  v: 2, type, id, query, results: [{ id, title: query }],
+  details: type === 'movie' ? { runtime: 136, genreIds: [28] } : { seasons: 5, genreIds: [18, 80] }, alternatives: {}, ...over,
 });
 const checks = (...list: TmdbSearchCheck[]) => new Map(list.map((c) => [`${c.type}:${c.id}`, c]));
 const show = (title: string, over: Partial<IdentityTrace> = {}) => trace(title, { historicOwner: true, ...over });
 const one = (t: IdentityTrace, others: IdentityTrace[][] = [], tmdb = new Map<string, TmdbSearchCheck>()) => adjudicateEvidence([t], others, tmdb)[0];
 const twoDays = (t: IdentityTrace) => [[{ ...t }], [{ ...t }]];
-const matrix = tmdbWork('Matrix', 'movie', 603, 1999);
-const matrixUnique = checks(search('movie', 603, 'Matrix', ['Matrix', 603], ['Matrix Reloaded', 604]));
+const matrix = film('Matrix', 603);
+const matrixTmdb = checks(lookup('movie', 603, 'Matrix', { results: [{ id: 603, title: 'Matrix' }, { id: 604, title: 'Matrix Reloaded' }] }));
+const mentes = series('Mentes criminales', 4057);
+const mentesTmdb = checks(lookup('tv', 4057, 'Mentes criminales'));
 
-test('exactTmdbWorks: title or original title with the same key, each work once', () => {
-  const check: TmdbSearchCheck = { type: 'tv', id: 1, query: 'Bordertown', results: [
-    { id: 554, title: 'Bordertown' }, { id: 66573, title: 'Sorjonen', originalTitle: 'Bordertown' }, { id: 554, title: 'Bordertown' }, { id: 9, title: 'Border Town Blues' },
-  ] };
-  assert.deepEqual(exactTmdbWorks(check, 'bordertown'), [554, 66573]);
+test('TMDB helpers: exact titles include alternative titles; genres and categories give kinds only when decisive', () => {
+  const check: TmdbSearchCheck = {
+    type: 'tv', id: 554, query: 'Bordertown',
+    results: [{ id: 554, title: 'Bordertown' }, { id: 66573, title: 'Sorjonen', originalTitle: 'Bordertown' }, { id: 9, title: 'Border Town Blues' }, { id: 77, title: 'Grenzland' }],
+    alternatives: { 77: ['Bordertown'] },
+  };
+  assert.deepEqual(exactTmdbWorks(check, 'bordertown'), [77, 554, 66573], 'a Spanish/alternative title is a homonym too');
   assert.deepEqual(exactTmdbWorks({ ...check, results: undefined, error: 'HTTP 503' }, 'bordertown'), []);
+  assert.equal(tmdbTvKind([10767]), 'show');
+  assert.equal(tmdbTvKind([18, 80]), 'series');
+  assert.equal(tmdbTvKind([35, 10767]), null, 'comedy talk show: undecided');
+  assert.equal(tmdbTvKind([99]), null, 'documentary: undecided');
+  assert.deepEqual(broadcasterKinds(['Series', 'Documental']), ['series']);
+  assert.deepEqual(broadcasterKinds(['Noticias', 'Series']), ['series', 'show']);
+  assert.deepEqual(broadcasterKinds(['Infantil', 'Documental']), []);
 });
 
-test('a TMDB work is accepted only when a TMDB search finds it as the only work with that title', () => {
-  const ok = one(matrix, [], matrixUnique);
-  assert.equal(ok.decision, 'AUTO_ACCEPT');
-  assert.equal(ok.kindBasis, 'tmdb_type');
-  assert.deepEqual(ok.support.filter((s) => s.independent).map((s) => s.source), ['tmdb_search']);
-  assert.equal(ok.support.find((s) => s.source === 'tmdb_catalogue')?.independent, false, "the catalogue row is the match's own result");
-  assert.deepEqual(one(matrix).missing, ['tmdb_search_unchecked']);
-  assert.deepEqual(one(matrix, [], checks({ type: 'movie', id: 603, query: 'Matrix', error: 'HTTP 503' })).missing, ['tmdb_search_failed']);
-  // Production case: "Bordertown T3 E4" bound to the 1989 series; the 2016 one has the same original title.
-  const bordertown = tmdbWork('Bordertown', 'tv', 554, 1989);
-  const homonyms = one(bordertown, [], checks({ type: 'tv', id: 554, query: 'Bordertown', results: [{ id: 554, title: 'Bordertown' }, { id: 66573, title: 'Sorjonen', originalTitle: 'Bordertown' }] }));
-  assert.equal(homonyms.decision, 'QUARANTINE');
-  assert.deepEqual(homonyms.missing, ['tmdb_homonyms:554,66573']);
-  const elsewhere = one(matrix, [], checks(search('movie', 603, 'Matrix', ['The Matrix Resurrections', 624860])));
-  assert.deepEqual(elsewhere.contradictions, ['tmdb_not_exact:none']);
+test('independently supported film: unique TMDB title plus an independent runtime check', () => {
+  const ok = one(matrix, [], matrixTmdb);
+  assert.deepEqual([ok.decision, ok.assurance, ok.kindBasis], ['AUTO_ACCEPT', 'independently_supported', 'tmdb_runtime']);
+  assert.deepEqual(ok.support.filter((s) => s.independent).map((s) => [s.source, s.provenance, s.root]), [
+    ['tmdb_unique_title', 'external_metadata', 'tmdb_index:movie:603'],
+    ['consistency_check', 'external_metadata', 'tmdb_index:movie:603+broadcaster_feed'],
+  ]);
+  assert.deepEqual(ok.support.find((s) => s.source === 'tmdb_catalogue')?.root, 'tmdb_guess', "the catalogue row is the sync's own guess");
+  // A unique search result alone is not proof: without a check it is machine-supported only.
+  const noSlot = one({ ...matrix, broadcaster: { genres: ['Cine'], minutes: null, maxSeason: null } }, [], matrixTmdb);
+  assert.deepEqual([noSlot.assurance, noSlot.unverified], ['machine_supported', ['movie_without_independent_check']]);
+  const short = one({ ...matrix, broadcaster: { genres: ['Cine'], minutes: { min: 30, max: 30 }, maxSeason: null } }, [], matrixTmdb);
+  assert.deepEqual([short.assurance, short.contradictions], ['contradictory', ['slot_shorter_than_runtime:30m<136m']]);
+  assert.deepEqual(one(matrix).unverified, ['tmdb_lookup_missing', 'tmdb_details_missing']);
+  // The feed's own year (EPG_YEAR_PROVENANCE) is an independent check: a remake is caught, a match counts.
+  const withYear = (rawYears: number[]) => ({ ...matrix, broadcaster: { genres: ['Cine'], minutes: null, maxSeason: null, rawYears } });
+  const yearTmdb = checks(lookup('movie', 603, 'Matrix', { details: { runtime: 136, year: 1999 } }));
+  assert.deepEqual(one(withYear([1999]), [], yearTmdb).assurance, 'independently_supported');
+  assert.deepEqual(one(withYear([2021]), [], yearTmdb).contradictions, ['raw_year_vs_tmdb:2021≠1999']);
 });
 
-test('the EPG year is not evidence (the sync writes the TMDB year into it), but a mismatch still contradicts', () => {
-  assert.equal(one({ ...matrix, epgYears: [] }, [], matrixUnique).decision, 'AUTO_ACCEPT', 'no year needed');
-  assert.match(one({ ...matrix, epgYears: [2021] }, [], matrixUnique).contradictions.join(), /movie_year/);
-  const titleOnly = one(trace('Matrix', { kind: 'movie', epgYears: [1999] }));
-  assert.equal(titleOnly.decision, 'QUARANTINE', 'a title-only film may be a remake');
-  assert.ok(titleOnly.missing.includes('movie_without_tmdb'));
+test('independently supported series: unique title, TMDB genres decide the kind, seasons fit', () => {
+  const ok = one(mentes, [], mentesTmdb);
+  assert.deepEqual([ok.decision, ok.kindBasis], ['AUTO_ACCEPT', 'tmdb_genres']);
+  assert.ok(ok.support.some((s) => s.claim === 'EPG season 3 ≤ TMDB seasons 5'));
+  const talk = one(series('La revuelta', 1), [], checks(lookup('tv', 1, 'La revuelta', { details: { seasons: 2, genreIds: [10767, 35] } })));
+  assert.deepEqual([talk.assurance, talk.unverified], ['machine_supported', ['tv_kind_unverified']], 'undecided genres: kind not verified');
+  const wrongKind = one(series('Late Motiv', 2), [], checks(lookup('tv', 2, 'Late Motiv', { details: { seasons: 9, genreIds: [10767] } })));
+  assert.deepEqual(wrongKind.contradictions, ['tmdb_genres_show_vs_series'], 'a talk show the category called a series');
+  // Production case: "Bordertown T3" bound to the 1989 series; the 2016 one shares the original title.
+  const bordertown = one(series('Bordertown', 554), [], checks(lookup('tv', 554, 'Bordertown', { results: [{ id: 554, title: 'Bordertown' }, { id: 66573, title: 'Sorjonen', originalTitle: 'Bordertown' }] })));
+  assert.deepEqual(bordertown.unverified, ['tmdb_homonyms:554,66573']);
+  const beyond = one(series('Aída', 3, { broadcaster: { genres: ['Series'], minutes: null, maxSeason: 10 } }), [], checks(lookup('tv', 3, 'Aída', { details: { seasons: 2, genreIds: [35] } })));
+  assert.deepEqual(beyond.contradictions, ['season_beyond_tmdb:10>2'], 'EPG season 10 on a 2-season TMDB work: another work');
 });
 
-test('a title-only TV work needs a legacy URL, one channel, and the same kind on two other days', () => {
-  const t = show('Saber y ganar');
-  const ok = one(t, twoDays(t));
-  assert.equal(ok.decision, 'AUTO_ACCEPT');
-  assert.equal(ok.kindBasis, 'category', 'series vs show stays the broadcaster category');
-  assert.deepEqual(one(t, [[{ ...t }]]).missing, ['seen_on_1_other_days']);
-  const noLegacy = trace('Saber y ganar');
-  assert.deepEqual(one(noLegacy, twoDays(noLegacy)).missing, ['title_only_without_legacy_url']);
-  const regional = show('Informativo Territorial', { channels: ['aragon_tv', 'la_1'] });
-  assert.deepEqual(one(regional, twoDays(regional)).missing, ['title_only_several_channels']);
+test('no circular independence: legacy URL, catalogue match, repetition and markers never make a title-only work independent', () => {
+  const t = show('Saber y ganar', { titleEvidence: { 'episode:title_marker': 3 } });
+  const v = one(t, twoDays(t));
+  assert.deepEqual([v.decision, v.assurance, v.kindBasis], ['QUARANTINE', 'machine_supported', 'category']);
+  assert.ok(v.support.length >= 3 && v.support.every((s) => !s.independent));
+  assert.deepEqual(new Set(v.support.map((s) => s.root)), new Set(['epg_title', 'legacy_url']));
+  assert.deepEqual(v.unverified, ['title_only']);
+  // The 2D-2F machine rules still apply below that: without them the work is insufficient.
+  assert.deepEqual([one(t, [[t]]).assurance, one(t, [[t]]).missing], ['insufficient', ['seen_on_1_other_days']]);
 });
 
-test('no circular proof: repetition, episode markers and the catalogue match never stand in for independent evidence', () => {
-  const t = trace('Serie nueva', { kind: 'series', titleEvidence: { 'episode:title_marker': 9 } });
-  const v = one(t, [[t], [t], [t], [t]]);
-  assert.equal(v.decision, 'QUARANTINE');
-  assert.ok(v.support.length && v.support.every((s) => !s.independent));
-});
-
-test('one decision per identity: a contradicting airing group quarantines the entity it binds to', () => {
-  // Production case: "9-1-1" from TMDB 75219, plus episode spellings carrying another, unconfirmed id.
-  const owner = tmdbWork('9-1-1', 'tv', 75219, 2018, { identity: 'new:9_1_1|series|tmdb:tv:75219', path: null, pathless: 'unsupported_slug' });
+test('TMDB conflicts: unstable ids across days, mixed ids in one entity, not an exact title', () => {
+  const other = { ...matrix, tmdb: { ids: [9999], evidence: 'confirmed' as const, ref: { type: 'movie', id: 9999 } as any } };
+  assert.deepEqual(one(matrix, [[other]], matrixTmdb).contradictions, ['tmdb_id_unstable:movie:9999']);
+  const owner = series('9-1-1', 75219, { identity: 'new:9_1_1|series|tmdb:tv:75219', path: null, pathless: 'unsupported_slug' });
   const bound = trace('9-1-1', {
     candidateId: '9_1_1|series||', kind: 'series', decision: 'bind', state: 'candidate', identity: owner.identity, path: null,
-    tmdb: { ids: [65733], evidence: 'mixed' }, epgYears: [2005], titleEvidence: { 'episode:title_marker': 2 },
+    tmdb: { ids: [65733], evidence: 'mixed' }, titleEvidence: { 'episode:title_marker': 2 },
   });
-  const tmdb = checks(search('tv', 75219, '9-1-1', ['9-1-1', 75219]));
+  const tmdb = checks(lookup('tv', 75219, '9-1-1'));
   assert.equal(adjudicateEvidence([owner], [], tmdb)[0].decision, 'AUTO_ACCEPT');
   const both = adjudicateEvidence([owner, bound], [], tmdb);
-  assert.deepEqual(both.map((v) => v.decision), ['QUARANTINE', 'QUARANTINE']);
-  assert.deepEqual(both[0].contradictions, ['tmdb_mixed:65733']);
-  assert.ok(!both[1].missing.includes('stored_candidate'), 'an in-run bind is not a stored row');
+  assert.deepEqual(both.map((v) => [v.decision, v.assurance]), [['QUARANTINE', 'contradictory'], ['QUARANTINE', 'contradictory']]);
+  assert.deepEqual(one(matrix, [], checks(lookup('movie', 603, 'Matrix', { results: [{ id: 624860, title: 'Matrix Resurrections' }] }))).contradictions, ['tmdb_not_exact:none']);
 });
 
-test('contradictions quarantine even with independent support', () => {
+test('broadcaster category conflicts: XMLTV category against the kind the run gave', () => {
+  assert.deepEqual(one({ ...mentes, broadcaster: { genres: ['Noticias'], minutes: null, maxSeason: 3 } }, [], mentesTmdb).contradictions, ['broadcaster_kind_show_vs_series']);
+  assert.deepEqual(one({ ...matrix, broadcaster: { genres: ['Series'], minutes: { min: 140, max: 140 }, maxSeason: null } }, [], matrixTmdb).contradictions, ['broadcaster_kind_series_vs_movie']);
+  assert.match(one({ ...mentes, broadcaster: { genres: ['Noticias', 'Series'], minutes: null, maxSeason: 3 } }, [], mentesTmdb).contradictions.join(), /broadcaster_kinds:series\+show/);
+  assert.equal(one({ ...mentes, broadcaster: { genres: ['Documental'], minutes: null, maxSeason: 3 } }, [], mentesTmdb).decision, 'AUTO_ACCEPT', 'a category that claims no kind is no conflict');
+});
+
+test('2D-2F contradictions still quarantine', () => {
   const t = show('Cara a cara');
   const cases: Array<[IdentityTrace, IdentityTrace[][], RegExp]> = [
     [{ ...t, tmdb: { ids: [5], evidence: 'mixed' } }, twoDays(t), /tmdb_mixed/],
@@ -111,104 +149,67 @@ test('contradictions quarantine even with independent support', () => {
     [{ ...t, pathless: 'historic_unverified', path: null }, twoDays(t), /pathless_historic_unverified/],
     [{ ...t, pathRefused: ['historic_conflict'] }, twoDays(t), /legacy_owner_conflict/],
     [show('Antena 3 Noticias 2'), twoDays(show('Antena 3 Noticias 2')), /residue_trailing_number/],
-    [show('Royals - La Casa Danesa'), twoDays(show('Royals - La Casa Danesa')), /residue_spaced_separator/],
     [show('El inmortal (extras)'), twoDays(show('El inmortal (extras)')), /residue_parenthetical/],
+    [show('Informativo mediodía'), [], /residue_slot_wording/],
+    [show('Serie: Autopista hacia el cielo'), [], /residue_container_prefix/],
+    [show('JT 19h30'), [], /residue_time_of_day/],
     [show('9-1-1 T4 E3'), twoDays(show('9-1-1 T4 E3')), /title_episode/],
     [{ ...matrix, titleEvidence: { 'episode:title_marker': 1 } }, [], /movie_with_episodes/],
-    [tmdbWork('Bordertown', 'movie', 554, 2016, { kind: 'series' }), [], /tmdb_type_movie_vs_series/],
+    [series('Bordertown', 554, { kind: 'movie' }), [], /tmdb_type_tv_vs_movie/],
   ];
   for (const [c, others, reason] of cases) {
-    const v = one(c, others, matrixUnique);
-    assert.equal(v.decision, 'QUARANTINE', c.title);
+    const v = one(c, others, matrixTmdb);
+    assert.deepEqual([v.decision, v.assurance], ['QUARANTINE', 'contradictory'], c.title);
     assert.match(v.contradictions.join(' '), reason, c.title);
   }
+  const day = ['Noticias Cuatro', 'Noticias Cuatro mediodía'].map((title) => show(title));
+  assert.deepEqual(adjudicateEvidence(day, [day, day]).map((v) => v.contradictions), [[], ['edition_of:noticias_cuatro']]);
   // A TMDB title match settles residue: "Scream 2" is the film.
-  assert.equal(one(tmdbWork('Scream 2', 'movie', 4233, 1997), [], checks(search('movie', 4233, 'Scream 2', ['Scream 2', 4233]))).decision, 'AUTO_ACCEPT');
+  assert.equal(one(film('Scream 2', 4233), [], checks(lookup('movie', 4233, 'Scream 2', { details: { runtime: 120 } }))).decision, 'AUTO_ACCEPT');
 });
 
-test('duplicates and shared paths quarantine every side; slots are rejected; undecided runs stay quarantined', () => {
-  const a = show('Grimm');
-  const b = show('Grimm', { candidateId: 'Grimm|series', kind: 'series', identity: 'new:other', path: '/series/grimm' });
-  assert.deepEqual(adjudicateEvidence([a, b], [[a], [a]]).map((v) => v.decision), ['QUARANTINE', 'QUARANTINE']);
-  const c = show('Uno', { path: '/programas/x' });
-  const d = show('Dos', { path: '/programas/x' });
-  assert.ok(adjudicateEvidence([c, d], [[c, d], [c, d]]).every((v) => v.contradictions.includes('path_collision')));
+test('undecided runs, slots and duplicates', () => {
   const slot = trace('Cine', { decision: 'rejected', reason: 'generic_title', kind: 'unknown', identity: undefined, path: undefined });
-  assert.equal(one(slot).decision, 'AUTO_REJECT');
-  for (const decision of ['held', 'review', 'unresolved', 'deferred', 'failed'] as const) {
-    const v = one(show('X', { decision, reason: 'cross_kind_conflict', identity: undefined }), twoDays(show('X')));
-    assert.deepEqual([v.decision, v.contradictions], ['QUARANTINE', ['cross_kind_conflict']]);
-  }
+  assert.deepEqual([one(slot).decision, one(slot).assurance], ['AUTO_REJECT', 'rejected_slot']);
+  const held = (reason: string) => one(show('X', { decision: 'unresolved', reason, identity: undefined }));
+  assert.deepEqual([held('unknown_kind').assurance, held('cross_kind_conflict').assurance], ['insufficient', 'contradictory']);
+  const a = series('Grimm', 39351);
+  const b = show('Grimm', { candidateId: 'Grimm|show', identity: 'new:other', path: '/programas/grimm' });
+  assert.ok(adjudicateEvidence([a, b], [], checks(lookup('tv', 39351, 'Grimm'))).every((v) => v.contradictions.includes('duplicate_slug')));
 });
 
-test('gates: pass with a reproducible digest, fail on any planted violation', () => {
+test('gates: levels kept apart, reproducible digest, every planted violation caught', () => {
   const t = show('Saber y ganar');
-  const day = [matrix, t, trace('Cine', { decision: 'rejected', reason: 'generic_title', identity: undefined })];
-  const run = () => evaluateEvidence(adjudicateEvidence(day, twoDays(t), matrixUnique));
+  const unresolved = show('Bluey', { decision: 'unresolved', reason: 'unknown_kind', identity: undefined });
+  const day = [matrix, mentes, t, unresolved, trace('Cine', { decision: 'rejected', reason: 'generic_title', identity: undefined })];
+  const tmdb = new Map([...matrixTmdb, ...mentesTmdb]);
+  const run = () => evaluateEvidence(adjudicateEvidence(day, twoDays(t), tmdb));
   const r = run();
   assert.equal(r.status, 'pass');
-  assert.deepEqual(r.identities, { AUTO_ACCEPT: 2 });
-  assert.deepEqual(r.candidates, { AUTO_ACCEPT: 2, AUTO_REJECT: 1 });
-  assert.deepEqual(r.accepted.byIndependentSource, { tmdb_search: 1, historic_url: 1 });
+  assert.deepEqual(r.levels, { candidates: 4, distinctWorkKeys: 4, proposedEntities: 3, candidatesNeverProposed: 1, rejectedSlotTitles: 1 });
+  assert.deepEqual(r.proposedEntities.byAssurance, { independently_supported: 2, machine_supported: 1 });
+  assert.equal(r.proposedEntities.acceptedShare, 2 / 3, 'share of proposed entities, not of candidates');
+  assert.deepEqual(r.candidatesNeverProposed.byAssurance, { insufficient: 1 });
   assert.equal(r.digest, run().digest);
   assert.match(r.meaning, /not human-validated/i);
+  const independent = { source: 'tmdb_unique_title', claim: '', provenance: 'external_metadata' as const, root: 'tmdb_index:movie:1', independent: true };
   const accepted = (over: Partial<EvidenceVerdict>): EvidenceVerdict => ({
-    candidateId: 'v', key: 'k', kind: 'show', title: 'K', identity: `new:${over.candidateId}`, path: '/programas/k', decision: 'AUTO_ACCEPT', kindBasis: 'category',
-    support: [{ source: 'historic_url', claim: '', independent: true }], contradictions: [], missing: [], ...over,
+    candidateId: 'v', key: 'k', kind: 'movie', title: 'K', identity: `new:${over.candidateId}`, path: '/peliculas/k', decision: 'AUTO_ACCEPT',
+    assurance: 'independently_supported', kindBasis: 'tmdb_runtime', support: [independent], contradictions: [], missing: [], unverified: [], ...over,
   });
   const bad = evaluateEvidence([
     accepted({ candidateId: 'a' }),
-    accepted({ candidateId: 'b', kind: 'series' }),
-    accepted({ candidateId: 'c', key: 'e', title: 'La Promesa T1 E929', path: '/programas/e' }),
-    accepted({ candidateId: 'd', key: 'n', path: null, support: [{ source: 'cross_day', claim: '', independent: false }] }),
-    accepted({ candidateId: 'f', key: 'f', path: '/programas/f', missing: ['seen_on_0_other_days'] }),
+    accepted({ candidateId: 'b', kind: 'series', kindBasis: 'tmdb_genres' }),
+    accepted({ candidateId: 'c', key: 'e', title: 'La Promesa T1 E929', path: '/series/e' }),
+    accepted({ candidateId: 'd', key: 'n', path: '/programas/n', kindBasis: 'category', support: [{ source: 'historic_url', claim: '', provenance: 'historic_url', root: 'legacy_url', independent: true }] }),
+    accepted({ candidateId: 'f', key: 'f', path: '/peliculas/f', unverified: ['title_only'] }),
   ]);
   assert.equal(bad.status, 'fail');
   assert.deepEqual(bad.violations.canonicalOwnership, ['a', 'b']);
   assert.deepEqual(bad.violations.crossKindMerges, ['a', 'b']);
   assert.deepEqual(bad.violations.episodeAsWork, ['c']);
-  assert.deepEqual(bad.violations.withoutIndependentEvidence, ['d']);
+  assert.deepEqual(bad.violations.circularIndependence, ['d'], 'a legacy URL marked independent is caught by its root');
+  assert.deepEqual(bad.violations.unsupportedTmdb, ['d']);
+  assert.deepEqual(bad.violations.kindUnverified, ['d']);
   assert.deepEqual(bad.violations.acceptedWithConflicts, ['f']);
-});
-
-test('slot wording, container prefixes and part markers quarantine title-only works; named programmes pass', () => {
-  const verdict = (title: string) => one(show(title), twoDays(show(title)));
-  // Production titles that leaked through every other rule in the first 2D-2F replay.
-  for (const [title, reason] of [
-    ['Informativo mediodía', 'residue_slot_wording'],
-    ['Boletín informativo', 'residue_slot_wording'],
-    ['Espacios comerciales', 'residue_slot_wording'],
-    ['Videoclips', 'residue_slot_wording'],
-    ['Les Notícies Edició vespre', 'residue_slot_wording'],
-    ['Informativos II Edición', 'residue_slot_wording'],
-    ['Newsroom', 'residue_slot_wording'],
-    ['Serie: Autopista hacia el cielo', 'residue_container_prefix'],
-    ['SERIE «EL VIRGINIANO»', 'residue_container_prefix'],
-    ['Monteando entre robles y chaparros 1º parte', 'residue_part_marker'],
-    ['JT 19h30', 'residue_time_of_day'],
-    ['Le 6h info', 'residue_time_of_day'],
-  ]) {
-    const v = verdict(title);
-    assert.equal(v.decision, 'QUARANTINE', title);
-    assert.ok(v.contradictions.includes(reason), `${title}: ${v.contradictions}`);
-  }
-  for (const title of ['Noticias Cuatro', 'Informativos Telecinco', 'CNN Newsroom', 'Por fin', 'Vamos a ver', 'Cine de barrio', 'Las mañanas contigo', 'Al lío']) {
-    assert.equal(verdict(title).decision, 'AUTO_ACCEPT', title);
-  }
-});
-
-test('a news edition of a proposed programme is quarantined; a spin-off with its own name is not', () => {
-  const day = ['Noticias Cuatro', 'Noticias Cuatro mediodía', 'Informativos Telecinco Noche', 'Ley y orden', 'Ley y orden: unidad de víctimas especiales', 'Levante al día', 'Al día']
-    .map((title) => show(title, { key: title.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '_') }));
-  const verdicts = adjudicateEvidence(day, [day, day]);
-  const decided = Object.fromEntries(verdicts.map((v) => [v.title, v.contradictions.find((c) => c.startsWith('edition_of')) ?? v.decision]));
-  assert.deepEqual(decided, {
-    'Noticias Cuatro': 'AUTO_ACCEPT',
-    'Noticias Cuatro mediodía': 'edition_of:noticias_cuatro',
-    'Informativos Telecinco Noche': 'AUTO_ACCEPT',
-    'Ley y orden': 'AUTO_ACCEPT',
-    'Ley y orden: unidad de víctimas especiales': 'AUTO_ACCEPT',
-    'Levante al día': 'AUTO_ACCEPT',
-    'Al día': 'AUTO_ACCEPT',
-  });
 });

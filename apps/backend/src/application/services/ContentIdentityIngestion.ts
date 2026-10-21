@@ -60,6 +60,12 @@ export interface IdentityObservation {
   year?: number;
   /** The airing's channel id and its names, so a channel-name segment is not taken for a work. */
   channel?: { id: string; names: string[] };
+  /** XMLTV category as the sync normalised it (`normalizeCategory`); never written from TMDB (2D-2G provenance). */
+  genre?: string;
+  /** Airing slot length in minutes, from the feed's start and stop. */
+  minutes?: number;
+  /** The feed's own `<date>` before TMDB enrichment, when the sync kept it (`yearProvenance.rawXmltvYear`). */
+  rawYear?: number;
 }
 
 /** A search-derived TMDB id confirmed by the catalogue title: provisional, never verified (2C §E.2). */
@@ -138,6 +144,11 @@ export interface IdentityTrace {
   airings: number;
   /** Airings by title evidence (`ContentIdentityIngestion` report `titles`). */
   titleEvidence?: Record<string, number>;
+  /**
+   * Broadcaster evidence the EPG sync never derives from TMDB (2D-2G): XMLTV categories, airing
+   * slot lengths in minutes, and the highest season number in the titles (4-digit years excluded).
+   */
+  broadcaster?: { genres: string[]; minutes: { min: number; max: number } | null; maxSeason: number | null; rawYears?: number[] };
   /** Broadcaster keys of its airings, sorted (`broadcasterKey`; 2D-2F broadcaster consistency). */
   channels?: string[];
   /** Known kinds this candidate's work was seen under in the run, when more than one. */
@@ -171,6 +182,10 @@ interface Candidate {
   rowId?: string;
   spellings: Set<string>;
   channels: Set<string>;
+  genres: Set<string>;
+  minutes: number[];
+  maxSeason: number | null;
+  rawYears: Set<number>;
   titleEvidence: Record<string, number>;
   /** Held out of matching for the whole run (unresolved, not stored). */
   hold?: 'title_uncertain';
@@ -190,9 +205,20 @@ export function broadcasterKey(channel: { id: string; names: string[] }): string
   return name.replace(/[^a-z0-9]/g, '') || channel.id;
 }
 
-export function observationsFromAirings(airings: any[], years: ReadonlyMap<string, unknown>): IdentityObservation[] {
+const slotMinutes = (start: unknown, end: unknown): number | undefined => {
+  const minutes = Math.round((new Date(String(end)).getTime() - new Date(String(start)).getTime()) / 60_000);
+  return minutes > 0 && minutes < 24 * 60 ? minutes : undefined;
+};
+
+const parseYear = (value: unknown) => {
+  const year = Number.parseInt(String(value ?? ''), 10);
+  return year >= 1888 && year <= 2100 ? year : undefined;
+};
+
+/** `rawYears`: the feed's own year by airing, where the sync kept it (`EPG_YEAR_PROVENANCE`, 2D-2G). */
+export function observationsFromAirings(airings: any[], years: ReadonlyMap<string, unknown>, rawYears?: ReadonlyMap<string, unknown>): IdentityObservation[] {
   return airings.map((airing) => {
-    const year = Number.parseInt(String(years.get(airing.id) ?? ''), 10);
+    const year = parseYear(years.get(airing.id));
     return {
       airingId: airing.id,
       title: String(airing.program?.title || ''),
@@ -201,7 +227,10 @@ export function observationsFromAirings(airings: any[], years: ReadonlyMap<strin
       sportFacet: airing.program?.sportFacet,
       tmdbId: Number.isInteger(airing.program?.tmdbId) ? airing.program.tmdbId : undefined,
       mediaId: airing.program?.mediaId ? String(airing.program.mediaId) : undefined,
-      year: year >= 1888 && year <= 2100 ? year : undefined,
+      year,
+      rawYear: parseYear(rawYears?.get(airing.id)),
+      genre: airing.program?.genre ? String(airing.program.genre) : undefined,
+      minutes: slotMinutes(airing.airing?.start, airing.airing?.end),
       channel: airing.channel?.id
         ? { id: String(airing.channel.id), names: [airing.channel.name, ...(airing.channel.aliases ?? [])].filter(Boolean).map(String) }
         : undefined,
@@ -313,10 +342,14 @@ export class ContentIdentityIngestion {
       const year = confirmed ? confirmed.year : kind === 'movie' ? obs.year : undefined;
       const id = [key, kind, tmdb ? `${tmdb.type}:${tmdb.id}` : '', year ?? ''].join('|') + (hold ? '|held' : '');
       const group: Candidate = groups.get(id) ?? {
-        id, key, kind, title, year, tmdb, hold, airingIds: [], spellings: new Set(), channels: new Set(), titleEvidence: {}, epgYears: new Set(), tmdbIds: new Set(), unconfirmed: 0,
+        id, key, kind, title, year, tmdb, hold, airingIds: [], spellings: new Set(), channels: new Set(), genres: new Set(), minutes: [], maxSeason: null, rawYears: new Set(), titleEvidence: {}, epgYears: new Set(), tmdbIds: new Set(), unconfirmed: 0,
       };
       group.spellings.add(obs.title);
       if (obs.channel) group.channels.add(broadcasterKey(obs.channel));
+      if (obs.genre) group.genres.add(obs.genre);
+      if (obs.minutes) group.minutes.push(obs.minutes);
+      if (obs.rawYear) group.rawYears.add(obs.rawYear);
+      if (parsed.seasonNumber !== undefined && parsed.seasonNumber < 1900) group.maxSeason = Math.max(group.maxSeason ?? 0, parsed.seasonNumber);
       count(group.titleEvidence, evidence);
       if (obs.year) group.epgYears.add(obs.year);
       if (obs.tmdbId) group.tmdbIds.add(obs.tmdbId);
@@ -557,6 +590,12 @@ export class ContentIdentityIngestion {
         title: c.title,
         spellings: [...c.spellings].sort(),
         channels: [...c.channels].sort(),
+        broadcaster: {
+          genres: [...c.genres].sort(),
+          minutes: c.minutes.length ? { min: Math.min(...c.minutes), max: Math.max(...c.minutes) } : null,
+          maxSeason: c.maxSeason,
+          ...(c.rawYears.size ? { rawYears: [...c.rawYears].sort() } : {}),
+        },
         airings: c.airingIds.length,
         titleEvidence: c.titleEvidence,
         ...(c.crossKind ? { crossKind: c.crossKind } : {}),
