@@ -16,6 +16,7 @@ const BATCH = 500;
 const MAX_TMDB_IDS = 5_000;
 const MAX_SAMPLES = 200;
 const READ_MAX_MS = 5_000;
+const RUN_MAX_MS = 10_000;
 
 let warnedValue: string | undefined;
 
@@ -101,6 +102,7 @@ export async function runCatalogueLinkShadow(
     const rows: LinkRow[] = [];
     let queries = 0;
     for (let i = 0; i < wanted.length; i += BATCH) {
+      if (performance.now() - started > RUN_MAX_MS) throw new Error('catalogue read deadline exceeded');
       rows.push(...(await reader(wanted.slice(i, i + BATCH))));
       queries += 1;
     }

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-22T12:30:32.079Z",
+ "generatedAt": "2026-10-22T12:34:41.576Z",
  "dates": [
   "20261021",
   "20261022",
@@ -32,7 +32,7 @@
   "catalogueRows": 1031,
   "queries": 3,
   "truncated": false,
-  "ms": 392.25,
+  "ms": 330.1,
   "unlinked": 2746
  },
  "perDate": {
@@ -57,7 +57,7 @@
    "catalogueRows": 335,
    "queries": 1,
    "truncated": false,
-   "ms": 84.22
+   "ms": 75.86
   },
   "20261022": {
    "evaluated": 1099,
@@ -80,7 +80,7 @@
    "catalogueRows": 425,
    "queries": 1,
    "truncated": false,
-   "ms": 82.51
+   "ms": 76.52
   },
   "20261023": {
    "evaluated": 1035,
@@ -103,7 +103,7 @@
    "catalogueRows": 418,
    "queries": 1,
    "truncated": false,
-   "ms": 87.37
+   "ms": 73.2
   },
   "20261024": {
    "evaluated": 777,
@@ -126,7 +126,7 @@
    "catalogueRows": 351,
    "queries": 1,
    "truncated": false,
-   "ms": 54.1
+   "ms": 64.19
   },
   "20261025": {
    "evaluated": 0,
@@ -149,7 +149,7 @@
    "catalogueRows": 0,
    "queries": 0,
    "truncated": false,
-   "ms": 0.12
+   "ms": 0.2
   },
   "20261026": {
    "evaluated": 0,

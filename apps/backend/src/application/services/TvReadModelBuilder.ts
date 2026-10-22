@@ -137,7 +137,6 @@ export class TvReadModelBuilder {
       primarySourceUrl
     );
     const titleResolutions = this.buildTitleResolutionMap(scopedResolvedEntries);
-    await runCatalogueLinkShadow(scopedResolvedEntries.map((entry) => entry.program));
     const brands = new Map<string, any>();
     const airingsById = new Map<string, any>();
     const identityYears = new Map<string, unknown>();
@@ -407,6 +406,8 @@ export class TvReadModelBuilder {
 
     });
     const airings = Array.from(airingsById.values());
+    // M03-L1: no-op unless EPG_CATALOGUE_LINK_MODE=shadow; reads the built programme fields (resolved category), never mutates.
+    await runCatalogueLinkShadow(airings.map((airing) => airing.program));
 
     await TVReadAiringModel.deleteMany({ date }).exec();
     if (airings.length) {

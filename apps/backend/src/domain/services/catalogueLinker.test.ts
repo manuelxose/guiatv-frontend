@@ -42,6 +42,7 @@ test('existing mediaId that is unknown, for another TMDB id, or invalid is a con
 test('invalid catalogue rows are excluded', () => {
   is(decide(prog(), [{ ...heat, normalizedTitle: '' }]), 'REJECTED', 'invalid_catalogue_row');
   is(decide(prog(), [{ ...heat, title: ' ' }]), 'REJECTED', 'invalid_catalogue_row');
+  is(decide(prog({ editorialCategory: 'Otros' }), [{ ...heat, tmdbType: null }]), 'REJECTED', 'invalid_catalogue_row');
   is(decide(prog(), [{ ...heat, normalizedTitle: '' }, { ...heat, id: 'r2' }]), 'LINKABLE', 'strict_match');
 });
 test('title-key mismatch, similarity and unsupported aliases never link', () => {

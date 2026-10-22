@@ -63,7 +63,7 @@ export interface LinkDecision {
 }
 
 const isTmdbId = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v > 0;
-const isValidRow = (r: LinkRow) => Boolean(r.title?.trim() && r.normalizedTitle?.trim());
+const isValidRow = (r: LinkRow) => Boolean(r.title?.trim() && r.normalizedTitle?.trim() && (r.tmdbType === 'movie' || r.tmdbType === 'tv'));
 
 function expectedType(category: string | null | undefined): 'movie' | 'tv' | null {
   return category === 'Cine' ? 'movie' : category === 'Series' ? 'tv' : null;
