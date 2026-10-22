@@ -46,7 +46,7 @@ import {
                   <div class="min-w-0 flex-1">
                     <p class="flex flex-wrap items-baseline gap-x-2">
                       <a [routerLink]="row.item.channel.path" class="truncate text-sm font-semibold text-[var(--portal-text)] underline-offset-4 hover:underline focus-visible:underline">{{ row.item.channel.name }}</a>
-                      <span class="text-xs font-semibold" [class.text-[var(--accent-live)]]="row.timing.state === 'live'" [class.text-[var(--portal-text-muted)]]="row.timing.state !== 'live'">{{ row.timing.text }}</span>
+                      <span class="text-xs font-semibold" [class.text-[var(--portal-text)]]="row.timing.state === 'live'" [class.text-[var(--portal-text-muted)]]="row.timing.state !== 'live'">{{ row.timing.text }}</span>
                     </p>
                     <p class="mt-1 text-sm text-[var(--portal-text-soft)]">
                       <time [attr.datetime]="row.item.startLocal" [attr.aria-label]="row.display.full">{{ row.display.day }} · {{ row.display.time }}</time>

@@ -9,7 +9,8 @@ let ssr: { origin: string; stop: () => Promise<void> };
 // Phase 3E: the legacy film page, enriched, through the real SSR bundle in desktop and mobile browsers.
 const SLUG = 'la-cura-del-bienestar';
 const POSTER = '<svg xmlns="http://www.w3.org/2000/svg" width="380" height="570"><rect width="380" height="570" fill="#445"/></svg>';
-const at = (h: number) => new Date(Date.now() + h * 3_600_000);
+const fixtureNow = Date.now();
+const at = (h: number) => new Date(fixtureNow + h * 3_600_000);
 const airing = (channelId: string, h: number) => ({ channelId, channelName: channelId.toUpperCase(), start: at(h).toISOString(), end: at(h + 2).toISOString(), title: 'La cura del bienestar', catalogId: `program:${channelId}`, detailPath: `/peliculas/${SLUG}` });
 const broadcast = (id: string, name: string, h: number) => ({
   airingId: `b-${id}`, channel: { id, name, path: `/canales/${id}` }, programmeTitle: 'La cura del bienestar', start: at(h).toISOString(), end: at(h + 2).toISOString(),
@@ -66,7 +67,7 @@ test('the enriched legacy page keeps its SEO surface and gains the verified sche
   const plain = await open(page, 'plain');
   const before = await seo(page);
   expect(plain.status()).toBe(200);
-  await expect(page.locator('app-entity-broadcast-list')).toHaveCount(0);
+  await expect(page.locator('app-entity-broadcast-list li')).toHaveCount(2);
 
   const response = await open(page, 'enriched');
   expect(response.status()).toBe(200);
@@ -85,7 +86,7 @@ test('the enriched legacy page keeps its SEO surface and gains the verified sche
   await expect(page.getByText('147 min')).toBeVisible();
   await expect(page.getByText('Terror')).toBeVisible();
   const cards = page.locator('app-entity-broadcast-list li');
-  await expect(cards).toHaveCount(2);
+  await expect(cards).toHaveCount(3);
   await expect(cards.first().getByRole('link', { name: 'AMC' })).toHaveAttribute('href', '/canales/amc');
   await expect(page.getByText('TCM').first()).toBeVisible(); // the legacy airing the join did not confirm is kept
   await expect(page.getByText('Datos e imágenes de TMDB.')).toBeVisible();
@@ -99,7 +100,7 @@ test('empty and unreadable schedules', async ({ page }) => {
   await open(page, 'empty');
   await expect(page.getByText('No hay emisiones programadas en la programación disponible')).toBeVisible();
   await open(page, 'unreadable');
-  await expect(page.locator('app-entity-broadcast-list')).toHaveCount(0);
+  await expect(page.locator('app-entity-broadcast-list li')).toHaveCount(2);
   await expect(page.getByText('AMC').first()).toBeVisible();
 });
 
