@@ -1,0 +1,237 @@
+{
+  "generatedAt": "2026-10-22T12:08:20.981Z",
+  "database": "guiatv",
+  "coverage": {
+    "window": {
+      "dates": [
+        "20261021",
+        "20261022",
+        "20261023",
+        "20261024",
+        "20261025",
+        "20261026",
+        "20261027",
+        "20261028",
+        "20261029"
+      ],
+      "horizonDaysWithAirings": 4
+    },
+    "perDate": [
+      {
+        "date": "20261021",
+        "airings": 9539,
+        "withTmdb": 814,
+        "withTmdbAndCatalogueRow": 211,
+        "catalogueRowShare": 25.9
+      },
+      {
+        "date": "20261022",
+        "airings": 12318,
+        "withTmdb": 1099,
+        "withTmdbAndCatalogueRow": 301,
+        "catalogueRowShare": 27.4
+      },
+      {
+        "date": "20261023",
+        "airings": 10563,
+        "withTmdb": 1035,
+        "withTmdbAndCatalogueRow": 265,
+        "catalogueRowShare": 25.6
+      },
+      {
+        "date": "20261024",
+        "airings": 7586,
+        "withTmdb": 777,
+        "withTmdbAndCatalogueRow": 202,
+        "catalogueRowShare": 26
+      }
+    ],
+    "distinctTmdbIds": 1009,
+    "catalogue": {
+      "movie": {
+        "rows": 751,
+        "fullyFetched": 672,
+        "withRuntime": 662,
+        "withGenres": 737,
+        "withOriginalTitle": 421
+      },
+      "tv": {
+        "rows": 274,
+        "fullyFetched": 239,
+        "withRuntime": 138,
+        "withGenres": 263,
+        "withOriginalTitle": 103
+      },
+      "idsWithoutAnyRow": 6
+    }
+  },
+  "candidates": [
+    {
+      "path": "/peliculas/3-dias-para-matar",
+      "tmdbId": 192102,
+      "catalogue": {
+        "row": true,
+        "fullyFetched": true,
+        "runtime": true,
+        "genres": 3,
+        "originalTitle": true
+      },
+      "refusals": [],
+      "gaps": [
+        "originalTitle",
+        "runtimeMinutes",
+        "genres"
+      ],
+      "airingsRead": 4,
+      "airingsWithCatalogueRow": 4,
+      "verifiedBroadcasts": 2,
+      "beyondLegacyWindow": 0,
+      "titleOnlyWouldAdd": 0,
+      "rejected": {
+        "duplicate_slot": 2
+      },
+      "ms": {
+        "catalogue": 5,
+        "schedule": 16
+      },
+      "scheduleError": null
+    },
+    {
+      "path": "/peliculas/los-otros",
+      "tmdbId": 1933,
+      "catalogue": {
+        "row": true,
+        "fullyFetched": true,
+        "runtime": true,
+        "genres": 3,
+        "originalTitle": true
+      },
+      "refusals": [],
+      "gaps": [
+        "originalTitle",
+        "runtimeMinutes",
+        "genres"
+      ],
+      "airingsRead": 3,
+      "airingsWithCatalogueRow": 3,
+      "verifiedBroadcasts": 2,
+      "beyondLegacyWindow": 1,
+      "titleOnlyWouldAdd": 0,
+      "rejected": {
+        "already_ended": 1
+      },
+      "ms": {
+        "catalogue": 5,
+        "schedule": 8
+      },
+      "scheduleError": null
+    },
+    {
+      "path": "/peliculas/la-pianista",
+      "tmdbId": 1791,
+      "catalogue": {
+        "row": true,
+        "fullyFetched": true,
+        "runtime": true,
+        "genres": 2,
+        "originalTitle": true
+      },
+      "refusals": [],
+      "gaps": [
+        "originalTitle",
+        "runtimeMinutes",
+        "genres"
+      ],
+      "airingsRead": 2,
+      "airingsWithCatalogueRow": 2,
+      "verifiedBroadcasts": 1,
+      "beyondLegacyWindow": 0,
+      "titleOnlyWouldAdd": 0,
+      "rejected": {
+        "duplicate_slot": 1
+      },
+      "ms": {
+        "catalogue": 6,
+        "schedule": 7
+      },
+      "scheduleError": null
+    },
+    {
+      "path": "/peliculas/poltergeist-fenomenos-extranos",
+      "tmdbId": 609,
+      "catalogue": {
+        "row": true,
+        "fullyFetched": true,
+        "runtime": true,
+        "genres": 1,
+        "originalTitle": true
+      },
+      "refusals": [],
+      "gaps": [
+        "originalTitle",
+        "runtimeMinutes",
+        "genres"
+      ],
+      "airingsRead": 2,
+      "airingsWithCatalogueRow": 2,
+      "verifiedBroadcasts": 2,
+      "beyondLegacyWindow": 0,
+      "titleOnlyWouldAdd": 0,
+      "rejected": {},
+      "ms": {
+        "catalogue": 8,
+        "schedule": 4
+      },
+      "scheduleError": null
+    },
+    {
+      "path": "/peliculas/jungla-de-cristal-la-venganza",
+      "tmdbId": 1572,
+      "catalogue": {
+        "row": true,
+        "fullyFetched": true,
+        "runtime": true,
+        "genres": 2,
+        "originalTitle": true
+      },
+      "refusals": [],
+      "gaps": [
+        "originalTitle",
+        "runtimeMinutes",
+        "genres"
+      ],
+      "airingsRead": 2,
+      "airingsWithCatalogueRow": 2,
+      "verifiedBroadcasts": 2,
+      "beyondLegacyWindow": 0,
+      "titleOnlyWouldAdd": 0,
+      "rejected": {},
+      "ms": {
+        "catalogue": 3,
+        "schedule": 4
+      },
+      "scheduleError": null
+    }
+  ],
+  "candidateTotals": {
+    "n": 5,
+    "accepted": 5,
+    "withVerifiedBroadcasts": 5,
+    "verifiedBroadcasts": 9,
+    "beyondLegacyWindow": 1,
+    "titleOnlyWouldAdd": 0,
+    "scheduleMsP50": 7,
+    "scheduleMsP95": 16,
+    "scheduleErrors": 0
+  },
+  "readOnlyGuard": {
+    "total": 16,
+    "counts": {
+      "aggregate:tv_read_airings": 1,
+      "distinct:tv_read_airings": 1,
+      "find:media_catalog": 7,
+      "getMore:": 2,
+      "find:tv_read_airings": 5
+    }
+  }
+}

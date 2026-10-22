@@ -1,0 +1,1815 @@
+{
+ "generatedAt": "2026-10-22T12:09:28.940Z",
+ "deployedAt": "2026-10-22T11:20:32.000Z",
+ "catalogueAll": {
+  "movie": {
+   "rows": 13369,
+   "invalidRows": 27,
+   "withTmdbId": 13369,
+   "genres": 12977,
+   "runtime": 9524,
+   "originalTitle": 5334,
+   "enriched": 9836,
+   "fullyEnriched": 5314
+  },
+  "tv": {
+   "rows": 3955,
+   "invalidRows": 28,
+   "withTmdbId": 3955,
+   "genres": 3775,
+   "runtime": 1706,
+   "originalTitle": 1199,
+   "enriched": 3025,
+   "fullyEnriched": 724
+  }
+ },
+ "epgHorizon": {
+  "datesWithAirings": [
+   [
+    "20261021",
+    9539
+   ],
+   [
+    "20261022",
+    12318
+   ],
+   [
+    "20261023",
+    10563
+   ],
+   [
+    "20261024",
+    7586
+   ]
+  ],
+  "today": "20261022"
+ },
+ "perDate": [
+  {
+   "date": "20261021",
+   "airings": 9539,
+   "withTmdb": 814,
+   "withTmdbAndCatalogueRow": 211,
+   "catalogueRowShare": 25.9
+  },
+  {
+   "date": "20261022",
+   "airings": 12318,
+   "withTmdb": 1099,
+   "withTmdbAndCatalogueRow": 301,
+   "catalogueRowShare": 27.4
+  },
+  {
+   "date": "20261023",
+   "airings": 10563,
+   "withTmdb": 1035,
+   "withTmdbAndCatalogueRow": 265,
+   "catalogueRowShare": 25.6
+  },
+  {
+   "date": "20261024",
+   "airings": 7586,
+   "withTmdb": 777,
+   "withTmdbAndCatalogueRow": 202,
+   "catalogueRowShare": 26
+  }
+ ],
+ "epgTotals": {
+  "airings": 40006,
+  "withTmdb": 3725,
+  "withTmdbShare": 9.3,
+  "withCatalogueRow": 979,
+  "catalogueRowShare": 26.3
+ },
+ "byCategory": [
+  {
+   "_id": "Otros",
+   "airings": 8254,
+   "withTmdb": 43,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Noticias",
+   "airings": 6907,
+   "withTmdb": 6,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Entretenimiento",
+   "airings": 6295,
+   "withTmdb": 9,
+   "withMediaId": 8
+  },
+  {
+   "_id": "Deportes",
+   "airings": 4077,
+   "withTmdb": 6,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Series",
+   "airings": 3867,
+   "withTmdb": 2035,
+   "withMediaId": 625
+  },
+  {
+   "_id": "Documental",
+   "airings": 3554,
+   "withTmdb": 360,
+   "withMediaId": 118
+  },
+  {
+   "_id": "Infantil",
+   "airings": 3183,
+   "withTmdb": 25,
+   "withMediaId": 9
+  },
+  {
+   "_id": "Cine",
+   "airings": 2216,
+   "withTmdb": 1230,
+   "withMediaId": 218
+  },
+  {
+   "_id": "Música",
+   "airings": 648,
+   "withTmdb": 5,
+   "withMediaId": 1
+  },
+  {
+   "_id": "Sin clasificar",
+   "airings": 351,
+   "withTmdb": 0,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Culture",
+   "airings": 276,
+   "withTmdb": 0,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Cultural/educativo",
+   "airings": 228,
+   "withTmdb": 0,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Decoración",
+   "airings": 78,
+   "withTmdb": 6,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Religión",
+   "airings": 24,
+   "withTmdb": 0,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Cortometrajes",
+   "airings": 18,
+   "withTmdb": 0,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Toros",
+   "airings": 16,
+   "withTmdb": 0,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Aventura",
+   "airings": 6,
+   "withTmdb": 0,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Moda",
+   "airings": 4,
+   "withTmdb": 0,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Entrevistas",
+   "airings": 2,
+   "withTmdb": 0,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Reportaje",
+   "airings": 1,
+   "withTmdb": 0,
+   "withMediaId": 0
+  },
+  {
+   "_id": "Bienestar",
+   "airings": 1,
+   "withTmdb": 0,
+   "withMediaId": 0
+  }
+ ],
+ "linkability": {
+  "airings": {
+   "linkable": 2150,
+   "blocked_title_key_differs": 290,
+   "blocked_tmdb_id_shared_by_other_titles": 63,
+   "blocked_no_row_of_expected_type": 221,
+   "blocked_several_rows_same_type": 6,
+   "blocked_only_invalid_rows": 12,
+   "blocked_airing_title_has_no_key": 4
+  },
+  "identities": {
+   "linkable": 655,
+   "blocked_title_key_differs": 106,
+   "blocked_tmdb_id_shared_by_other_titles": 10,
+   "blocked_no_row_of_expected_type": 9,
+   "blocked_several_rows_same_type": 1,
+   "blocked_only_invalid_rows": 5,
+   "blocked_airing_title_has_no_key": 1
+  },
+  "byCategory": {
+   "Cine": {
+    "linkable": 873,
+    "blocked_title_key_differs": 120,
+    "blocked_tmdb_id_shared_by_other_titles": 7,
+    "blocked_no_row_of_expected_type": 8,
+    "blocked_only_invalid_rows": 4
+   },
+   "Series": {
+    "linkable": 1036,
+    "blocked_tmdb_id_shared_by_other_titles": 56,
+    "blocked_no_row_of_expected_type": 213,
+    "blocked_title_key_differs": 100,
+    "blocked_only_invalid_rows": 1,
+    "blocked_airing_title_has_no_key": 4
+   },
+   "Documental": {
+    "blocked_title_key_differs": 26,
+    "linkable": 215,
+    "blocked_only_invalid_rows": 1
+   },
+   "Infantil": {
+    "blocked_title_key_differs": 6,
+    "linkable": 4,
+    "blocked_several_rows_same_type": 6
+   },
+   "Entretenimiento": {
+    "linkable": 1
+   },
+   "Noticias": {
+    "blocked_title_key_differs": 6
+   },
+   "Otros": {
+    "linkable": 17,
+    "blocked_title_key_differs": 20,
+    "blocked_only_invalid_rows": 6
+   },
+   "Decoración": {
+    "blocked_title_key_differs": 6
+   },
+   "Deportes": {
+    "blocked_title_key_differs": 6
+   },
+   "Música": {
+    "linkable": 4
+   }
+  },
+  "note": "airings = airings without mediaId; identities = distinct (tmdbId, title key) pairs; projection assumes every linkable airing would be linked"
+ },
+ "identity": {
+  "outcomes": {
+   "verified_upcoming": 458,
+   "missing_media_id": 2746,
+   "verified_on_tmdb_id_shared_by_other_titles": 30,
+   "title_key_mismatch": 238,
+   "verified_already_ended": 278,
+   "catalogue_tmdb_mismatch": 2,
+   "wrong_content_type": 3
+  },
+  "unlinkedProjection": {
+   "rowWithMatchingTitleKey": 2196,
+   "rowWithDifferentTitleKey": 317
+  },
+  "titleKeyMismatchKinds": {
+   "no_part_matches": 214,
+   "a_part_of_the_title_equals_a_row_key": 24
+  },
+  "titleKeyMismatchSamples": {
+   "no_part_matches": [
+    {
+     "tmdbId": 118,
+     "category": "Cine",
+     "airing": "Chocolate",
+     "row": "Charlie y la fábrica de chocolate",
+     "rowOriginal": "Charlie and the Chocolate Factory"
+    },
+    {
+     "tmdbId": 187,
+     "category": "Cine",
+     "airing": "Frank Miller's Sin City - Ciudad del pecado",
+     "row": "Sin City: Ciudad del pecado",
+     "rowOriginal": "Sin City"
+    },
+    {
+     "tmdbId": 9455,
+     "category": "Cine",
+     "airing": "El corruptor",
+     "row": "El corruptor (The corruptor)",
+     "rowOriginal": "The Corruptor"
+    },
+    {
+     "tmdbId": 20417,
+     "category": "Cine",
+     "airing": "Vestida para un asesinato",
+     "row": "Sherlock Holmes. Vestida para un asesinato",
+     "rowOriginal": "Dressed to Kill"
+    },
+    {
+     "tmdbId": 39195,
+     "category": "Cine",
+     "airing": "Atómica",
+     "row": "Combustión espontánea",
+     "rowOriginal": null
+    },
+    {
+     "tmdbId": 42693,
+     "category": "Series",
+     "airing": "Ser un hombre",
+     "row": "Karol, el hombre que llegó a ser Papa",
+     "rowOriginal": "Karol, un uomo diventato Papa"
+    },
+    {
+     "tmdbId": 52832,
+     "category": "Entretenimiento",
+     "airing": "Festival de Eurovisión Junior 2026",
+     "row": "Festival de Eurovision junior",
+     "rowOriginal": null
+    },
+    {
+     "tmdbId": 54722,
+     "category": "Cine",
+     "airing": "Texas Tren",
+     "row": "Texas Train",
+     "rowOriginal": "Once Upon a Texas Train"
+    },
+    {
+     "tmdbId": 80005,
+     "category": "Series",
+     "airing": "Corto",
+     "row": "Corto Maltés",
+     "rowOriginal": "Corto Maltese"
+    },
+    {
+     "tmdbId": 90464,
+     "category": "Series",
+     "airing": "C.S.I.",
+     "row": "S.C.I.谜案集",
+     "rowOriginal": null
+    },
+    {
+     "tmdbId": 130853,
+     "category": "Series",
+     "airing": "Negocios turbios",
+     "row": "Mono malo",
+     "rowOriginal": "Bad Monkey"
+    },
+    {
+     "tmdbId": 140823,
+     "category": "Cine",
+     "airing": "Al encuentro de",
+     "row": "Al encuentro de Mr. Banks",
+     "rowOriginal": "Saving Mr. Banks"
+    },
+    {
+     "tmdbId": 207044,
+     "category": "Series",
+     "airing": "T11 - Episodio 7",
+     "row": "Star & Sky Episódio Especial",
+     "rowOriginal": "Star & Sky Episódio Especial"
+    },
+    {
+     "tmdbId": 213834,
+     "category": "Documental",
+     "airing": "Asesinas",
+     "row": "Mujeres Asesinas",
+     "rowOriginal": null
+    },
+    {
+     "tmdbId": 254883,
+     "category": "Series",
+     "airing": "Niche",
+     "row": "Ek Akasher Niche",
+     "rowOriginal": "Ek Akasher Niche"
+    },
+    {
+     "tmdbId": 265129,
+     "category": "Cine",
+     "airing": "Una de cine",
+     "row": "Una lección de cine",
+     "rowOriginal": "Una lección de cine"
+    },
+    {
+     "tmdbId": 283125,
+     "category": "Cine",
+     "airing": "Horrorland",
+     "row": "Alicja",
+     "rowOriginal": "Alicja"
+    },
+    {
+     "tmdbId": 327562,
+     "category": "Documental",
+     "airing": "Documentales",
+     "row": "Somos Documentales",
+     "rowOriginal": "Somos Documentales"
+    },
+    {
+     "tmdbId": 333391,
+     "category": "Series",
+     "airing": "Canal Sur",
+     "row": "Toros Canal Sur",
+     "rowOriginal": "Toros Canal Sur"
+    },
+    {
+     "tmdbId": 447665,
+     "category": "Cine",
+     "airing": "Kickboxer: Contrataque",
+     "row": "Kickboxer: Contraataque",
+     "rowOriginal": "Kickboxer: Retaliation"
+    },
+    {
+     "tmdbId": 478437,
+     "category": "Cine",
+     "airing": "De cine",
+     "row": "Cine de guerrilla",
+     "rowOriginal": "Cine de guerrilla"
+    },
+    {
+     "tmdbId": 588787,
+     "category": "Cine",
+     "airing": "Eternament enamorats",
+     "row": "Eternamente enamorados",
+     "rowOriginal": "Ordinary Love"
+    },
+    {
+     "tmdbId": 748049,
+     "category": "Música",
+     "airing": "Conciertos de Radio-3",
+     "row": "Los conciertos de Radio 3 - Fito y los Fitipaldis",
+     "rowOriginal": null
+    },
+    {
+     "tmdbId": 785084,
+     "category": "Cine",
+     "airing": "La ballena",
+     "row": "La ballena (The Whale)",
+     "rowOriginal": "The Whale"
+    },
+    {
+     "tmdbId": 808624,
+     "category": "Cine",
+     "airing": "Bom Cine",
+     "row": "O Bom Cinema",
+     "rowOriginal": "O Bom Cinema"
+    }
+   ],
+   "a_part_of_the_title_equals_a_row_key": [
+    {
+     "tmdbId": 2750,
+     "category": "Series",
+     "airing": "Silent Witness (Testigo mudo)",
+     "row": "Testigo mudo",
+     "rowOriginal": "Silent Witness"
+    },
+    {
+     "tmdbId": 12405,
+     "category": "Cine",
+     "airing": ": ¿Quién quiere ser millonario? · Slumdog Millionaire",
+     "row": "Slumdog Millionaire",
+     "rowOriginal": "Slumdog Millionaire"
+    },
+    {
+     "tmdbId": 13851,
+     "category": "Series",
+     "airing": "Jane Eyre : Jane Eyre 1",
+     "row": "Jane Eyre",
+     "rowOriginal": "Jane Eyre"
+    },
+    {
+     "tmdbId": 24619,
+     "category": "Cine",
+     "airing": "Blind horizon (el enemigo está dentro)",
+     "row": "El enemigo está dentro",
+     "rowOriginal": "Blind Horizon"
+    },
+    {
+     "tmdbId": 32692,
+     "category": "Series",
+     "airing": "Blue Bloods (Familia de policías)",
+     "row": "Familia de policías",
+     "rowOriginal": "Blue Bloods"
+    },
+    {
+     "tmdbId": 37165,
+     "category": "Cine",
+     "airing": "El show de Truman (Una vida en directo)",
+     "row": "El show de Truman",
+     "rowOriginal": "The Truman Show"
+    },
+    {
+     "tmdbId": 78798,
+     "category": "Series",
+     "airing": "9-1-1 : Sorpresa",
+     "row": "Sorpresa",
+     "rowOriginal": "범인은 바로 너!"
+    },
+    {
+     "tmdbId": 138843,
+     "category": "Cine",
+     "airing": "Expediente Warren: The Conjuring",
+     "row": "Expediente Warren",
+     "rowOriginal": "The Conjuring"
+    },
+    {
+     "tmdbId": 168259,
+     "category": "Cine",
+     "airing": "Fast & Furious 7 (A todo gas 7)",
+     "row": "Fast & Furious 7",
+     "rowOriginal": "Furious 7"
+    },
+    {
+     "tmdbId": 238615,
+     "category": "Cine",
+     "airing": "Eternal (Self/less)",
+     "row": "Eternal",
+     "rowOriginal": "Self/less"
+    }
+   ]
+  },
+  "missingMediaIdDetail": {
+   "single_row_exists_unlinked": 2513,
+   "multiple_rows_exist_unlinked": 233
+  },
+  "categoryByRowType": {
+   "Entretenimiento|tv": 8,
+   "Cine|movie": 218,
+   "Series|tv": 620,
+   "Documental|tv": 112,
+   "Infantil|tv": 9,
+   "Series|movie": 3,
+   "Documental|movie": 6,
+   "Música|movie": 1
+  },
+  "verifiedUpcoming": {
+   "movies": 93,
+   "movieBroadcasts": 121,
+   "broadcastsPerMovie": 1.3,
+   "series": 51,
+   "seriesBroadcasts": 337,
+   "broadcastsPerSeries": 6.6
+  },
+  "tmdbIdsWithMultipleTitleKeys": 19,
+  "verifiedMoviesOnSharedTmdbId": 4,
+  "distinctTmdbIds": 1009
+ },
+ "catalogueRelevant": {
+  "movie": {
+   "rows": 753,
+   "invalidRows": 2,
+   "withTmdbId": 753,
+   "genres": 739,
+   "runtime": 663,
+   "originalTitle": 421,
+   "enriched": 673,
+   "fullyEnriched": 421
+  },
+  "tv": {
+   "rows": 278,
+   "invalidRows": 4,
+   "withTmdbId": 278,
+   "genres": 267,
+   "runtime": 139,
+   "originalTitle": 103,
+   "enriched": 240,
+   "fullyEnriched": 63
+  },
+  "tmdbIdsWithoutAnyRow": 0,
+  "distinctTmdbIdsInWindow": 1009
+ },
+ "mediaIdFix": {
+  "projectedEffectOfNextSync": {
+   "missingAirings": 2746,
+   "tmdbIdHasStoredProgrammeWithMediaId": 417,
+   "storedMediaIdConsistent": 417,
+   "storedMediaIdInconsistent": 0,
+   "storedMediaIdDangling": 0,
+   "storedProgrammesForWindow": 1851
+  },
+  "airingsByLastWrite": {
+   "updated_before_deploy": {
+    "tmdb": 3725,
+    "withMediaId": 979,
+    "share": 26.3
+   }
+  },
+  "lastAiringUpdate": "2026-10-22T10:21:58.236Z",
+  "airingsCreatedAfterDeploy": {
+   "tmdb": 0,
+   "withMediaId": 0
+  },
+  "storedProgrammesWithTmdbId": [
+   {
+    "hasMediaId": true,
+    "n": 3761,
+    "lastUpdated": "2026-10-22T10:20:39.211Z"
+   },
+   {
+    "hasMediaId": false,
+    "n": 13074,
+    "lastUpdated": "2026-10-22T10:19:44.034Z"
+   }
+  ]
+ },
+ "candidatePool": {
+  "size": 89,
+  "top": [
+   {
+    "tmdbId": 192102,
+    "title": "3 días para matar",
+    "originalTitle": "3 Days to Kill",
+    "year": "2014",
+    "verifiedUpcoming": 4,
+    "legacyWindowAirings": 4,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T20:48:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 609,
+    "title": "Poltergeist. Fenómenos extraños",
+    "originalTitle": "Poltergeist",
+    "year": "1982",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T03:55:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 1572,
+    "title": "Jungla de cristal: la venganza",
+    "originalTitle": "Die Hard: With a Vengeance",
+    "year": "1995",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T12:00:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 1791,
+    "title": "La pianista",
+    "originalTitle": "La Pianiste",
+    "year": "2001",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T20:30:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 1933,
+    "title": "Los Otros",
+    "originalTitle": "The Others",
+    "year": "2001",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 1,
+    "channels": 2,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T14:09:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 9624,
+    "title": "En tierra peligrosa",
+    "originalTitle": "On Deadly Ground",
+    "year": "1994",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T15:35:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 9874,
+    "title": "Cobra, el brazo fuerte de la ley",
+    "originalTitle": "Cobra",
+    "year": "1986",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T18:27:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 10480,
+    "title": "Persiguiendo a Betty",
+    "originalTitle": "Nurse Betty",
+    "year": "2000",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T11:30:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 37233,
+    "title": "La tapadera",
+    "originalTitle": "The Firm",
+    "year": "1993",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T15:50:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 804150,
+    "title": "Oso vicioso",
+    "originalTitle": "Cocaine Bear",
+    "year": "2023",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T20:00:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 196,
+    "title": "Regreso al futuro III",
+    "originalTitle": "Back to the Future Part III",
+    "year": "1990",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T11:13:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 262,
+    "title": "El rey de la comedia",
+    "originalTitle": "The King of Comedy",
+    "year": "1982",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T16:45:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 666,
+    "title": "Estación central de Brasil",
+    "originalTitle": "Central do Brasil",
+    "year": "1998",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T22:25:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 2898,
+    "title": "Mejor... imposible",
+    "originalTitle": "As Good as It Gets",
+    "year": "1997",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T17:44:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 4995,
+    "title": "Boogie nights",
+    "originalTitle": "Boogie Nights",
+    "year": "1997",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T17:53:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 6973,
+    "title": "En el valle de Elah",
+    "originalTitle": "In the Valley of Elah",
+    "year": "2007",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T18:00:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 9424,
+    "title": "Comportamiento Perturbado",
+    "originalTitle": "Disturbing Behavior",
+    "year": "1998",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T18:37:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 10467,
+    "title": "El balneario de Battle Creek",
+    "originalTitle": "The Road to Wellville",
+    "year": "1994",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T04:20:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 10665,
+    "title": "Los extraños",
+    "originalTitle": "The Strangers",
+    "year": "2008",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T12:55:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 28424,
+    "title": "La pérdida de un diamante lágrima",
+    "originalTitle": "The Loss of a Teardrop Diamond",
+    "year": "2008",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T06:44:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 28893,
+    "title": "La galaxia del terror",
+    "originalTitle": "Galaxy of Terror",
+    "year": "1981",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T10:18:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 37645,
+    "title": "22 balas",
+    "originalTitle": "L'Immortel",
+    "year": "2010",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T07:26:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 57800,
+    "title": "Ice Age 4: La formación de los continentes",
+    "originalTitle": "Ice Age: Continental Drift",
+    "year": "2012",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T10:26:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 220733,
+    "title": "Adolescente y desaparecida",
+    "originalTitle": "Seventeen and Missing",
+    "year": "2007",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T11:43:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 266856,
+    "title": "La teoría del todo",
+    "originalTitle": "The Theory of Everything",
+    "year": "2014",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T08:52:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 300669,
+    "title": "No respires",
+    "originalTitle": "Don't Breathe",
+    "year": "2016",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T15:39:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 353081,
+    "title": "Misión: Imposible - Fallout",
+    "originalTitle": "Mission: Impossible - Fallout",
+    "year": "2018",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T10:25:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 368702,
+    "title": "Lecciones peligrosas",
+    "originalTitle": "A Student's Obsession",
+    "year": "2015",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T10:13:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 401469,
+    "title": "Viudas",
+    "originalTitle": "Widows",
+    "year": "2018",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T12:57:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 402900,
+    "title": "Ocean's 8",
+    "originalTitle": "Ocean's Eight",
+    "year": "2018",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T13:17:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 423108,
+    "title": "Expediente Warren: Obligado por el demonio",
+    "originalTitle": "The Conjuring: The Devil Made Me Do It",
+    "year": "2021",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T20:00:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 471856,
+    "title": "Dobles vidas",
+    "originalTitle": "Doubles vies",
+    "year": "2018",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T13:26:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 551804,
+    "title": "Este cuerpo me sienta de muerte",
+    "originalTitle": "Freaky",
+    "year": "2020",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T17:03:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 695089,
+    "title": "Onoda, 10.000 noches en la jungla",
+    "originalTitle": "Onoda, 10 000 nuits dans la jungle",
+    "year": "2021",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-22T13:55:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 842356,
+    "title": "El leopardo de las nieves",
+    "originalTitle": "La Panthère des neiges",
+    "year": "2021",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T05:47:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 1169789,
+    "title": "Un \"like\" de Bob Trevino",
+    "originalTitle": "Bob Trevino Likes It",
+    "year": "2025",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T06:00:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 544,
+    "title": "Algo pasa con Mary",
+    "originalTitle": "There's Something About Mary",
+    "year": "1998",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 2,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T05:42:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 296098,
+    "title": "El puente de los espías",
+    "originalTitle": "Bridge of Spies",
+    "year": "2015",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 2,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T22:34:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 754,
+    "title": "Cara a cara",
+    "originalTitle": "Face/Off",
+    "year": "1997",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T17:44:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 765,
+    "title": "Terroríficamente muertos",
+    "originalTitle": "Evil Dead II",
+    "year": "1987",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T11:53:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 2757,
+    "title": "Adaptation. El ladrón de orquídeas",
+    "originalTitle": "Adaptation.",
+    "year": "2002",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T16:46:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 6346,
+    "title": "Cámara sellada",
+    "originalTitle": "The Chamber",
+    "year": "1996",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T10:40:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 10479,
+    "title": "Reglas de compromiso",
+    "originalTitle": "Rules of Engagement",
+    "year": "2000",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T21:54:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 12143,
+    "title": "Teniente corrupto",
+    "originalTitle": "Bad Lieutenant",
+    "year": "1992",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-23T22:35:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 19833,
+    "title": "In the loop",
+    "originalTitle": "In the Loop",
+    "year": "2009",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T11:55:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 24825,
+    "title": "Duelo final",
+    "originalTitle": "The Octagon",
+    "year": "1980",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T18:56:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 25403,
+    "title": "Caro Diario (Querido diario)",
+    "originalTitle": "Caro diario",
+    "year": "1993",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T18:47:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 77338,
+    "title": "Intocable",
+    "originalTitle": "Intouchables",
+    "year": "2011",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T13:36:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 337339,
+    "title": "Fast & Furious 8",
+    "originalTitle": "The Fate of the Furious",
+    "year": "2017",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T17:58:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 884315,
+    "title": "Llanura salvaje",
+    "originalTitle": "Terror on the Prairie",
+    "year": "2022",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 0,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": true
+    },
+    "rowComplete": true,
+    "firstAiring": "2026-10-24T01:30:00.000Z",
+    "missingFields": []
+   },
+   {
+    "tmdbId": 1538,
+    "title": "Collateral",
+    "originalTitle": null,
+    "year": "2004",
+    "verifiedUpcoming": 3,
+    "legacyWindowAirings": 3,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": false
+    },
+    "rowComplete": false,
+    "firstAiring": "2026-10-22T20:00:00.000Z",
+    "missingFields": [
+     "originalTitle"
+    ]
+   },
+   {
+    "tmdbId": 1246886,
+    "title": "The Informant",
+    "originalTitle": null,
+    "year": "1973",
+    "verifiedUpcoming": 3,
+    "legacyWindowAirings": 3,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": false,
+     "originalTitle": false
+    },
+    "rowComplete": false,
+    "firstAiring": "2026-10-22T20:11:00.000Z",
+    "missingFields": [
+     "genres",
+     "originalTitle"
+    ]
+   },
+   {
+    "tmdbId": 680,
+    "title": "Pulp Fiction",
+    "originalTitle": null,
+    "year": "1994",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 1,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": false
+    },
+    "rowComplete": false,
+    "firstAiring": "2026-10-23T21:30:00.000Z",
+    "missingFields": [
+     "originalTitle"
+    ]
+   },
+   {
+    "tmdbId": 11906,
+    "title": "Suspiria",
+    "originalTitle": null,
+    "year": "1977",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": false
+    },
+    "rowComplete": false,
+    "firstAiring": "2026-10-23T04:54:00.000Z",
+    "missingFields": [
+     "originalTitle"
+    ]
+   },
+   {
+    "tmdbId": 757947,
+    "title": "Naturaleza Viva",
+    "originalTitle": null,
+    "year": "2020",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": false,
+     "originalTitle": false
+    },
+    "rowComplete": false,
+    "firstAiring": "2026-10-22T17:05:00.000Z",
+    "missingFields": [
+     "genres",
+     "originalTitle"
+    ]
+   },
+   {
+    "tmdbId": 762430,
+    "title": "Retribution",
+    "originalTitle": null,
+    "year": "2023",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": false
+    },
+    "rowComplete": false,
+    "firstAiring": "2026-10-22T22:37:00.000Z",
+    "missingFields": [
+     "originalTitle"
+    ]
+   },
+   {
+    "tmdbId": 882598,
+    "title": "Smile",
+    "originalTitle": null,
+    "year": "2022",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 2,
+    "row": {
+     "enriched": true,
+     "runtime": true,
+     "genres": true,
+     "originalTitle": false
+    },
+    "rowComplete": false,
+    "firstAiring": "2026-10-23T04:14:00.000Z",
+    "missingFields": [
+     "originalTitle"
+    ]
+   },
+   {
+    "tmdbId": 1276604,
+    "title": "El asesino de British Airways",
+    "originalTitle": null,
+    "year": "2024",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": false,
+     "runtime": false,
+     "genres": true,
+     "originalTitle": false
+    },
+    "rowComplete": false,
+    "firstAiring": "2026-10-22T14:16:00.000Z",
+    "missingFields": [
+     "runtime",
+     "originalTitle"
+    ]
+   },
+   {
+    "tmdbId": 1406494,
+    "title": "Testigo Protegido",
+    "originalTitle": null,
+    "year": "2013",
+    "verifiedUpcoming": 2,
+    "legacyWindowAirings": 2,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": true,
+     "runtime": false,
+     "genres": false,
+     "originalTitle": false
+    },
+    "rowComplete": false,
+    "firstAiring": "2026-10-23T11:14:00.000Z",
+    "missingFields": [
+     "runtime",
+     "genres",
+     "originalTitle"
+    ]
+   },
+   {
+    "tmdbId": 5718,
+    "title": "El rey de California",
+    "originalTitle": null,
+    "year": "2007",
+    "verifiedUpcoming": 1,
+    "legacyWindowAirings": 1,
+    "beyondLegacyWindow": 0,
+    "channels": 1,
+    "row": {
+     "enriched": false,
+     "runtime": false,
+     "genres": true,
+     "originalTitle": false
+    },
+    "rowComplete": false,
+    "firstAiring": "2026-10-23T05:19:00.000Z",
+    "missingFields": [
+     "runtime",
+     "originalTitle"
+    ]
+   }
+  ]
+ },
+ "readOnlyGuard": {
+  "total": 31,
+  "counts": {
+   "find:media_catalog": 1,
+   "getMore:": 24,
+   "aggregate:tv_read_airings": 3,
+   "find:tv_read_airings": 1,
+   "aggregate:programs": 1,
+   "find:programs": 1
+  }
+ }
+}
