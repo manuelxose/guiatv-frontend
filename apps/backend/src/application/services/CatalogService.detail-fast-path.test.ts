@@ -174,6 +174,7 @@ function buildService(options: {
   tmdbCounters: { searchMovies: number; searchTV: number; discoverMovies: number; discoverTV: number };
   providersCounters: { calls: number };
   tvReadItem?: any;
+  relatedChannelItems?: any[];
   mediaCatalogOverrides?: Parameters<typeof fakeMediaCatalogService>[0];
   providersThrow?: boolean;
 }) {
@@ -182,7 +183,7 @@ function buildService(options: {
   const streamingProvidersService = fakeStreamingProviders(options.providersCounters, {
     throwOnCall: options.providersThrow,
   });
-  const tvReadQueryService = fakeTvReadQueryService(options.tvReadItem || tvReadItemFixture());
+  const tvReadQueryService = fakeTvReadQueryService(options.tvReadItem || tvReadItemFixture(), options.relatedChannelItems);
   const mediaCatalogService = fakeMediaCatalogService(options.mediaCatalogOverrides);
 
   const service = new CatalogService(
@@ -452,4 +453,59 @@ test('tmdbId airings of the opposite kind are not broadcasts of the page', async
   } finally {
     TVReadAiringModel.find = originalFind;
   }
+});
+
+test('a programme-sourced page lists only its own slots as airings; the rest of the channel is channelAirings', async () => {
+  const slot = (id: string, title: string, hour: number, category = 'Cine') => tvReadItemFixture({
+    id,
+    program: { title, editorialCategory: category, genre: category, genreTags: [] },
+    airing: { date: '20260828', start: `2026-08-28T${hour}:00:00.000Z`, end: `2026-08-28T${hour}:59:00.000Z`, durationMinutes: 59, liveNow: false },
+  });
+  const { service } = buildService({
+    tmdbCounters: { searchMovies: 0, searchTV: 0, discoverMovies: 0, discoverTV: 0 },
+    providersCounters: { calls: 0 },
+    mediaCatalogOverrides: { getLocalOnly: async () => null },
+    relatedChannelItems: [slot('airing-2', 'Ran', 22), slot('airing-3', 'Misión Imposible', 23), slot('airing-4', 'Telediario', 21, 'Noticias')],
+  });
+
+  const result = await service.getDetail('program:airing-1');
+
+  assert.deepEqual(result.airings?.map((a) => a.catalogId), ['program:airing-1', 'program:airing-3']);
+  assert.deepEqual(result.channelAirings?.map((a) => a.title), ['Ran', 'Telediario']);
+  assert.ok(result.airings?.every((a) => a.detailPath === `/contenido/program:${encodeURIComponent(a.catalogId!.slice('program:'.length))}`));
+});
+
+test('work broadcasts reject conflicting identities and kinds even when the slug is identical', async () => {
+  const original = tvReadItemFixture({
+    program: { title: 'Misión Imposible', editorialCategory: 'Cine', genre: 'Cine', tmdbId: 100, mediaId: 'work-100' },
+  });
+  const related = (id: string, program: object) => tvReadItemFixture({
+    id, channel: { ...original.channel, id }, program: { ...original.program, ...program },
+  });
+  const { service } = buildService({
+    tmdbCounters: { searchMovies: 0, searchTV: 0, discoverMovies: 0, discoverTV: 0 },
+    providersCounters: { calls: 0 },
+    tvReadItem: original,
+    relatedChannelItems: [
+      related('different-tmdb', { tmdbId: 200 }),
+      related('different-media', { mediaId: 'work-200' }),
+      related('different-kind', { editorialCategory: 'Series', genre: 'Series' }),
+      related('verified-repeat', { title: 'Mission: Impossible' }),
+      related('unlinked-repeat', { tmdbId: undefined, mediaId: undefined }),
+    ],
+  });
+  const result = await service.getDetail('program:airing-1');
+  assert.deepEqual(result.airings?.map((a) => a.catalogId), ['program:airing-1', 'program:verified-repeat', 'program:unlinked-repeat']);
+  assert.deepEqual(result.channelAirings?.map((a) => a.catalogId), ['program:different-tmdb', 'program:different-media', 'program:different-kind']);
+});
+
+test('an unmatched slug never resolves to the first unrelated TMDB search result', async () => {
+  const { service, tmdbService } = buildService({
+    tmdbCounters: { searchMovies: 0, searchTV: 0, discoverMovies: 0, discoverTV: 0 },
+    providersCounters: { calls: 0 },
+  });
+  tmdbService.searchTV = async () => [{ id: 42, name: 'Otra serie' }];
+  await withStubbedTvReadFind(() => assert.rejects(
+    service.getBySlug('series', 'camino-a-la-perdicion'), NotFoundError
+  ));
 });

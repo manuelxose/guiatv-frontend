@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { CatalogService } from './CatalogService';
 import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring.model';
+import { airingDetailSlug, programDetailPath } from '@/domain/services/detailPath';
 
 const catalog = new CatalogService({} as any, {} as any, {} as any, {} as any, {} as any, {} as any);
 
@@ -21,14 +22,20 @@ const paths = (title: string, category: string) => [
 ];
 
 // Production 2026-10-22: hub cards linked /peliculas/atmica and /series/friends-t3-e1-… (404); these resolve.
-test('film and series airings link to the slug their detail page resolves', () => {
-  assert.deepEqual(paths('Atómica', 'Cine'), ['/peliculas/atomica', '/peliculas/atomica']);
-  assert.deepEqual(paths('Friends T3 E1 El de la fantasía de la princesa Leia', 'Series'), ['/series/friends', '/series/friends']);
-  assert.deepEqual(paths('Agatha Christie: Poirot', 'Series'), ['/series/agatha-christie-poirot', '/series/agatha-christie-poirot']);
+test('film and series airings link to their known airing instead of guessing a work route', () => {
+  const knownPath = ['/contenido/program:airing-1', '/contenido/program:airing-1'];
+  assert.deepEqual(paths('Atómica', 'Cine'), knownPath);
+  assert.deepEqual(paths('Friends T3 E1 El de la fantasía de la princesa Leia', 'Series'), knownPath);
+  assert.deepEqual(paths('Camino a la perdición', 'Series'), knownPath);
+  assert.deepEqual(paths('Agatha Christie: Poirot', 'Series'), knownPath);
+  assert.equal(airingDetailSlug('movie', 'Atómica'), 'atomica');
+  assert.equal(airingDetailSlug('series', 'Friends T3 E1 El de la fantasía de la princesa Leia'), 'friends');
+  assert.equal(programDetailPath('source/unsafe?#'), '/contenido/program:source%2Funsafe%3F%23');
 });
 
-test('programme airings keep the legacy slug of their indexed URLs', () => {
-  assert.deepEqual(paths('España directo', 'Magacín'), ['/programas/espaa-directo', '/programas/espaa-directo']);
+test('programme airings use known ids while their legacy indexed slug is retained', () => {
+  assert.deepEqual(paths('España directo', 'Magacín'), ['/contenido/program:airing-1', '/contenido/program:airing-1']);
+  assert.equal(airingDetailSlug('program', 'España directo'), 'espaa-directo');
 });
 
 // QA on this change: with no TMDB match the slug falls back to the TV read model, which must accept every slug
@@ -46,6 +53,21 @@ test('the TV read slug fallback resolves the slugs airing links now use', async 
     assert.equal((await find('serie local', 'serie-local'))?.id, 'Serie Local T1 E3');
     assert.equal((await find('espaa directo', 'espaa-directo'))?.id, 'España directo');
     assert.equal(await find('otro titulo', 'otro-titulo'), null);
+  } finally {
+    Object.assign(TVReadAiringModel, original);
+  }
+});
+
+test('a series slug cannot fall back to a homonymous movie airing', async () => {
+  const original = { distinct: TVReadAiringModel.distinct, findOne: TVReadAiringModel.findOne };
+  (TVReadAiringModel as any).distinct = () => ({ exec: async () => ['Camino a la perdición'] });
+  (TVReadAiringModel as any).findOne = () => ({
+    sort: () => ({ lean: () => ({ exec: async () => tvRead('Camino a la perdición', 'Cine') }) }),
+  });
+  try {
+    const find = (type: string) => (catalog as any).findTvReadItemBySlug('camino a la perdicion', 'camino-a-la-perdicion', '20261022', type);
+    assert.equal(await find('series'), null);
+    assert.equal((await find('movie'))?.id, 'airing-1');
   } finally {
     Object.assign(TVReadAiringModel, original);
   }

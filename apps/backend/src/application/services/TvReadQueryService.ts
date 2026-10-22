@@ -4,6 +4,7 @@ import { DateUtils } from '@/shared/utils/dateUtils';
 import { NotFoundError } from '@/shared/errors';
 import { l1Cache } from '@/infrastructure/cache/L1Cache';
 import { addTiming, measureTiming, setCacheTiming } from '@/shared/utils/performanceTiming';
+import { programDetailPath } from '@/domain/services/detailPath';
 import {
   buildChannelIdentityMetadata,
   buildLegacyProgramSlug,
@@ -385,6 +386,7 @@ export function hydrateTvReadItemRuntime(
 
   return {
     ...item,
+    detailPath: programDetailPath(item.id),
     airing: {
       ...item.airing,
       liveNow,
@@ -480,6 +482,7 @@ export function compactTvReadItem(item: TvReadItemDTO): TvReadItemDTO {
     sourceProvenance: { schedule: [], metadata: [], assets: [] },
     timingContext: item.timingContext,
     relevance: item.relevance,
+    detailPath: item.detailPath,
   };
 }
 

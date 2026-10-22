@@ -52,7 +52,8 @@ import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring
 import { MediaCatalogService } from './MediaCatalogService';
 import { measureTiming } from '@/shared/utils/performanceTiming';
 import { logger } from '@/shared/utils/logger';
-import { parseEpgTitle, titleIdentityKey } from '@/domain/services/contentIdentity';
+import { titleIdentityKey } from '@/domain/services/contentIdentity';
+import { airingDetailSlug, buildDetailPath, episodeWorkTitle, inferContentType, normalizeToken, programDetailPath, slugify, slugifyTitle } from '@/domain/services/detailPath';
 
 export interface CatalogQueryParams {
   userId?: string;
@@ -160,7 +161,7 @@ export class CatalogService {
         return hotCached;
       }
     }
-    const cacheKey = `catalog:query:${JSON.stringify(normalized)}`;
+    const cacheKey = `catalog:query:v2:${JSON.stringify(normalized)}`;
     const cached = await this.cacheRepository.get<CatalogQueryResultDTO>(cacheKey);
     if (cached) {
       if (hotCacheKey) {
@@ -235,7 +236,7 @@ export class CatalogService {
       return [];
     }
 
-    const cacheKey = `catalog:suggest:${normalizedQuery.toLowerCase()}:${userId || 'anon'}:${limit}`;
+    const cacheKey = `catalog:suggest:v2:${normalizedQuery.toLowerCase()}:${userId || 'anon'}:${limit}`;
     const cached = await this.cacheRepository.get<CatalogSuggestionDTO[]>(cacheKey);
     if (cached) {
       return cached;
@@ -429,11 +430,12 @@ export class CatalogService {
       // Fallback: the TV read model. EPG serials are classified as
       // 'series'/'movie' by category inference, but daily serials have no
       // TMDB entry and must still resolve against today's TV airings.
-      if (!results.length) {
+      {
         const tvFound = await this.findTvReadItemBySlug(
           searchText,
           slug,
-          DateUtils.getTodayYYYYMMDD()
+          DateUtils.getTodayYYYYMMDD(),
+          contentType
         );
         if (tvFound) {
           return this.getProgramDetail(tvFound.id, userId);
@@ -441,15 +443,12 @@ export class CatalogService {
         const tvTomorrow = await this.findTvReadItemBySlug(
           searchText,
           slug,
-          DateUtils.getTomorrowYYYYMMDD()
+          DateUtils.getTomorrowYYYYMMDD(),
+          contentType
         );
         if (tvTomorrow) {
           return this.getProgramDetail(tvTomorrow.id, userId);
         }
-      }
-      // Fallback: first result
-      if (results.length) {
-        return this.getTmdbDetail(results[0].id, tmdbType, userId);
       }
       await this.cacheSlugNotFound(negativeCacheKey);
       throw new NotFoundError('Catalog item', slug);
@@ -728,16 +727,23 @@ export class CatalogService {
         ? await measureTiming('tmdb', () => this.fetchLocalTmdbDetail(item.tmdbId as number, tmdbType))
         : null;
 
-    // Current/next airing for this program is already in tvReadDetail — no
-    // extra query needed to satisfy the "airings when locally available" bar.
-    const airings = await measureTiming('airings', async () =>
-      this.mergeAirings(
-        [this.mapTvReadItemToAiring(tvReadDetail.item)],
-        tvReadDetail.relatedChannelItems.map((relatedItem) =>
-          this.mapTvReadItemToAiring(relatedItem)
-        )
-      )
-    );
+    // A URL is not identity: homonymous works can share a slug. Reject explicit identity conflicts before titles.
+    const own = this.mapTvReadItemToAiring(tvReadDetail.item);
+    const sameWork = (candidate: TvReadItemDTO) => {
+      if (this.inferTvReadContentType(candidate) !== item.contentType) return false;
+      const original = tvReadDetail.item.program;
+      const related = candidate.program;
+      if (original.mediaId && related.mediaId && original.mediaId !== related.mediaId) return false;
+      if (original.tmdbId && related.tmdbId && original.tmdbId !== related.tmdbId) return false;
+      if (original.mediaId && original.mediaId === related.mediaId) return true;
+      if (original.tmdbId && original.tmdbId === related.tmdbId) return true;
+      const workTitle = (title: string) => this.normalizeToken(
+        (item.contentType === 'series' && episodeWorkTitle(title)) || title
+      );
+      return workTitle(original.title) === workTitle(related.title);
+    };
+    const airings = this.mergeAirings([own], tvReadDetail.relatedChannelItems.filter(sameWork).map((slot) => this.mapTvReadItemToAiring(slot)));
+    const channelAirings = tvReadDetail.relatedChannelItems.filter((slot) => !sameWork(slot)).map((slot) => this.mapTvReadItemToAiring(slot));
 
     return {
       ...item,
@@ -748,6 +754,7 @@ export class CatalogService {
       cast: this.mapCast(tmdbDetail),
       director: this.extractDirector(tmdbDetail),
       airings,
+      channelAirings,
       enrichmentPending: true,
     };
   }
@@ -776,7 +783,7 @@ export class CatalogService {
       contentType,
       title: item.program.title,
       slug,
-      detailPath: this.buildDetailPath(contentType, slug),
+      detailPath: programDetailPath(item.id),
       subtitle: item.program.subtitle,
       synopsis: item.program.description,
       image,
@@ -934,54 +941,19 @@ export class CatalogService {
   }
 
   private slugify(text: string): string {
-    const s = String(text || '').trim();
-    if (!s) return 'sin-titulo';
-    return s
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]+/g, '')
-      .replace(/--+/g, '-')
-      .replace(/^-+|-+$/g, '') || 'sin-titulo';
+    return slugify(text);
   }
 
-  /**
-   * Slugifier for TMDB-sourced movie/series titles. The legacy slugifier drops
-   * accented characters entirely ("último" -> "ltimo"), which corrupts the
-   * TMDB search text derived from the slug and leaves detail pages
-   * unresolvable for accented Spanish titles. This variant keeps the base
-   * letter ("último" -> "ultimo") so generated detail URLs and slug lookups
-   * resolve. Program/EPG URLs intentionally keep the legacy slugifier to
-   * preserve already-indexed public URLs.
-   */
   private slugifyTitle(text: string): string {
-    const transliterated = String(text || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-    return this.slugify(transliterated);
+    return slugifyTitle(text);
   }
 
-  /**
-   * Detail slug for an EPG airing. Programmes keep the legacy slug (indexed URLs); films and series use the slug
-   * their detail pages resolve (accents folded), and a series airing titled with an explicit season/episode marker
-   * ("Friends T3 E1 …") links to the work, not to an episode URL that 404s.
-   */
   private airingDetailSlug(contentType: CatalogContentType, title: string): string {
-    if (contentType === 'program') return this.slugify(title);
-    return this.slugifyTitle((contentType === 'series' && this.episodeWorkTitle(title)) || title);
-  }
-
-  /** The work of an EPG title with an explicit, high-confidence season/episode marker; null otherwise. */
-  private episodeWorkTitle(title: string): string | null {
-    const parsed = parseEpgTitle(title);
-    return parsed.resolutionState === 'episode' && parsed.confidence === 'high' ? parsed.proposedWorkTitle : null;
+    return airingDetailSlug(contentType, title);
   }
 
   private buildDetailPath(contentType: CatalogContentType, slug: string): string {
-    const prefix =
-      contentType === 'movie' ? '/peliculas' :
-      contentType === 'series' ? '/series' :
-      '/programas';
-    return `${prefix}/${slug}`;
+    return buildDetailPath(contentType, slug);
   }
 
   private mapTmdbToCatalogItem(
@@ -1456,7 +1428,7 @@ export class CatalogService {
       return null;
     }
 
-    return `catalog:hot:${query.date}:${query.timeSlot || 'all'}:${query.sort}:${query.types.join(',')}:${query.platforms.join(',')}:${query.genres.join(',')}:${query.availability.join(',')}`;
+    return `catalog:hot:v2:${query.date}:${query.timeSlot || 'all'}:${query.sort}:${query.types.join(',')}:${query.platforms.join(',')}:${query.genres.join(',')}:${query.availability.join(',')}`;
   }
 
   private matchesAvailability(item: CatalogItemDTO, availability: string[]): boolean {
@@ -1689,28 +1661,8 @@ export class CatalogService {
     );
   }
 
-  private inferCatalogContentTypeFromValues(
-    editorialCategory?: string,
-    genre?: string,
-    title?: string
-  ): CatalogContentType {
-    const token = this.normalizeToken([editorialCategory, genre, title].filter(Boolean).join(' '));
-    if (
-      token.includes('series') ||
-      token.includes('serie') ||
-      token.includes('ficcion seriada')
-    ) {
-      return 'series';
-    }
-    if (
-      token.includes('cine') ||
-      token.includes('pelicula') ||
-      token.includes('pel') ||
-      token.includes('film')
-    ) {
-      return 'movie';
-    }
-    return 'program';
+  private inferCatalogContentTypeFromValues(editorialCategory?: string, genre?: string, title?: string): CatalogContentType {
+    return inferContentType(editorialCategory, genre, title);
   }
 
   private inferTmdbTypeFromContentType(
@@ -1874,7 +1826,8 @@ export class CatalogService {
   private async findTvReadItemBySlug(
     searchText: string,
     slug: string,
-    date: string
+    date: string,
+    contentType?: CatalogContentType
   ): Promise<TvReadItemDTO | null> {
     // Never hydrate the whole day's 20k+ airings for a slug lookup. Bots
     // enumerate distinct missing slugs, so negative caching cannot protect
@@ -1904,7 +1857,7 @@ export class CatalogService {
       }).exec()) as string[];
       // Every slug airingDetailSlug may have linked: legacy, accent-folded, or the work of an episode title.
       const title = titles.find((candidate) => {
-        const work = this.episodeWorkTitle(candidate);
+        const work = episodeWorkTitle(candidate);
         return [this.slugify(candidate), this.slugifyTitle(candidate), ...(work ? [this.slugifyTitle(work)] : [])].includes(slug);
       });
       if (!title) continue;
@@ -1920,7 +1873,7 @@ export class CatalogService {
       const match =
         (buildSearchTokens([title]).includes(token) ? await earliest({ ...byTitle, searchTokens: token }) : null) ??
         (await earliest(byTitle));
-      if (match) return match;
+      if (match && (!contentType || this.inferTvReadContentType(match) === contentType)) return match;
     }
     return null;
   }
@@ -2016,8 +1969,6 @@ export class CatalogService {
   }
 
   private mapTvReadItemToAiring(item: TvReadItemDTO): CatalogAiringDTO {
-    const contentType = this.inferTvReadContentType(item);
-    const slug = this.airingDetailSlug(contentType, item.program.title);
     return {
       channelId: item.channel.id,
       channelName: item.channel.name,
@@ -2026,7 +1977,7 @@ export class CatalogService {
       end: item.airing.end,
       title: item.program.title,
       catalogId: buildProgramCatalogId(item.id),
-      detailPath: this.buildDetailPath(contentType, slug),
+      detailPath: programDetailPath(item.id),
       liveNow: item.airing.liveNow,
       // Same fallback chain mapTvReadItemToCatalogItem uses for `image` —
       // without this, "Próximas emisiones"/"A continuación" cards on the
@@ -2106,12 +2057,7 @@ export class CatalogService {
   }
 
   private normalizeToken(value: string): string {
-    return String(value || '')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, ' ')
-      .trim();
+    return normalizeToken(value);
   }
 
   private expandAcceptedContentIds(catalogId: string): string[] {

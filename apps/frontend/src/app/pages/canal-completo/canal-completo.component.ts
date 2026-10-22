@@ -23,11 +23,9 @@ import { AffiliateDisclosureComponent } from 'src/app/components/affiliate-discl
 import { AffiliateImpressionDirective } from 'src/app/directives/affiliate-impression.directive';
 import { AffiliateContext, AffiliateResolvedOffer } from 'src/app/interfaces/affiliate.interface';
 import {
-  buildDetailPath,
-  buildProgramCatalogId,
   CatalogContentType,
-  slugifyTitle,
 } from 'src/app/utils/catalog';
+import { normalizeToCard } from 'src/app/utils/tv-normalizers';
 import { normalizePublicImageUrl } from 'src/app/utils/media-url';
 import { slugify } from 'src/app/utils/utils';
 import { channelCanonicalPath } from '../../config/route-map';
@@ -463,9 +461,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       start,
       end,
       liveNow: Boolean(program?.airing?.liveNow),
-      detailPath: contentType === 'program'
-        ? `/contenido/${buildProgramCatalogId(itemId)}`
-        : buildDetailPath(contentType, title, slugifyTitle),
+      detailPath: normalizeToCard(program as TvReadItemDTO).detailPath,
       durationMinutes: program?.airing?.durationMinutes || durationMinutes,
     };
   }

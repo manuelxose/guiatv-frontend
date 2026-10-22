@@ -108,6 +108,8 @@ export interface CatalogItem {
     /** Program poster/still, when the EPG source has one. */
     image?: string;
   }>;
+  /** Programme-sourced detail only: the channel's other upcoming programmes, never airings of this work. */
+  channelAirings?: CatalogItem['airings'];
   userInteraction?: CatalogUserInteraction;
   cast?: Array<{ name: string; character?: string; profile?: string }>;
   director?: string;

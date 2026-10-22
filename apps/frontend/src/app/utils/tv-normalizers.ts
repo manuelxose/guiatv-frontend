@@ -1,8 +1,7 @@
 import { CatalogItem } from '../services/catalog.service';
 import { TvReadItemDTO } from '../api/models';
 import { buildDetailPath, CatalogContentType, slugifyTitle } from './catalog';
-import { slugify } from './utils';
-import { channelPath } from '../config/route-map';
+import { APP_PATHS, channelPath } from '../config/route-map';
 
 // The five verticals the design system's accent tokens key off
 // (--accent-live/discover/streaming/sports/editorial). See
@@ -86,11 +85,8 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
       category,
       platforms,
       sport,
-      detailPath: buildDetailPath(
-        contentType,
-        item.program.title,
-        contentType === 'program' ? slugify : slugifyTitle
-      ),
+      // Older cached responses lack a resolved target: the channel is still a valid destination.
+      detailPath: item.detailPath || (item.channel.id ? channelPath(item.channel.id) : APP_PATHS.guide),
       badges: buildTvBadges(item, category),
       progressPercent: computeProgress(item.airing.start, item.airing.end),
       contentType,
@@ -118,12 +114,13 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
     category,
     platforms,
     sport: '',
-    // Movie/series paths are always derived from the title so a stale cached
-    // detailPath (pre-transliteration) can never resurface; program paths keep
-    // the API-provided value (or the legacy slugifier) for URL stability.
+    // TMDB movie/series paths are derived from the title so a stale cached
+    // detailPath (pre-transliteration) can never resurface; program paths and
+    // programme-sourced films/series keep the API-provided value, which is
+    // episode-safe ("Friends T3 E13 …" links to /series/friends).
     detailPath:
-      contentType === 'program'
-        ? item.detailPath || buildDetailPath(contentType, item.title, slugify)
+      contentType === 'program' || item.source === 'program'
+        ? item.detailPath || (item.channel?.id ? channelPath(item.channel.id) : APP_PATHS.guide)
         : buildDetailPath(contentType, item.title, slugifyTitle),
     badges: buildCatalogBadges(item),
     progressPercent: computeProgress(item.start, item.end),

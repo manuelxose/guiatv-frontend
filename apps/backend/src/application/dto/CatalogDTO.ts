@@ -134,6 +134,8 @@ export interface CatalogItemDTO {
   whereToWatch?: CatalogWhereToWatchDTO;
   channel?: CatalogChannelDTO;
   airings?: CatalogAiringDTO[];
+  /** Programme-sourced detail only: the channel's other upcoming programmes, never airings of this work. */
+  channelAirings?: CatalogAiringDTO[];
   userInteraction?: CatalogUserInteractionDTO;
 }
 
