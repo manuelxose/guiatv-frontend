@@ -36,10 +36,19 @@ export function flagNames(envText) {
 export const unexpectedFlags = (present, expected = '') => present.filter((n) => !expected.split(',').map((x) => x.trim()).filter(Boolean).includes(n));
 
 /**
- * Did the previous boot's journal end without any shutdown sequence? A clean stop always logs one of
- * these; an abrupt end (power, hypervisor) logs nothing. A statement of fact, not of cause.
+ * How did the previous boot's journal end? Only the system manager (`systemd[1]`), `systemd-shutdown` and journald
+ * count as a shutdown sequence: a per-user manager (`systemd[96133]: Reached target Shutdown`) ends with every
+ * login session and used to hide the abrupt end of 2026-10-21. Kernel OOM/panic lines come from the kernel journal.
+ * Statements about the journal, never about the cause of an outage.
  */
-export const endedWithoutShutdown = (tail) => tail.trim().length > 0 && !/Reached target (Shutdown|Power-Off|Reboot|System Shutdown)|Journal stopped|systemd-shutdown|Shutting down|Stopped target Multi-User/i.test(tail);
+export function classifyPreviousBoot(tail, kernel = '') {
+  if (!tail.trim()) return { kind: 'insufficient-evidence' };
+  if (/Kernel panic/i.test(kernel)) return { kind: 'kernel-panic' };
+  if (/Out of memory|oom-kill|Killed process/i.test(kernel)) return { kind: 'kernel-oom' };
+  const systemShutdown = /systemd\[1\]: .*Reached target .*(Shutdown|Power-Off|Reboot)|systemd-shutdown\[\d+\]|systemd-journald\[\d+\]: Journal stopped/i;
+  return { kind: systemShutdown.test(tail) ? 'clean-shutdown' : 'abrupt-end' };
+}
+export const endedWithoutShutdown = (tail) => classifyPreviousBoot(tail).kind === 'abrupt-end';
 
 async function get(url, timeout = 30_000, headers = {}) {
   const started = Date.now();
@@ -71,8 +80,10 @@ export async function run({ warm = false, waitSeconds = 300 } = {}) {
 
   // 2. previous boot
   const previous = sh('journalctl', ['-b', '-1', '-n', '60', '--no-pager', '-q']);
-  report.previousBoot = previous ? { endedWithoutShutdown: endedWithoutShutdown(previous), note: 'a fact about the journal, not a cause' } : { known: false };
-  if (report.previousBoot.endedWithoutShutdown) problems.push('previous boot ended without a shutdown sequence (cause not established)');
+  const kernel = sh('journalctl', ['-k', '-b', '-1', '-n', '300', '--no-pager', '-q']);
+  const { kind } = classifyPreviousBoot(previous, kernel);
+  report.previousBoot = { kind, endedWithoutShutdown: kind === 'abrupt-end', note: 'a fact about the journal, not a cause' };
+  if (kind !== 'clean-shutdown' && kind !== 'insufficient-evidence') problems.push(`previous boot: ${kind} (cause not established)`);
 
   // 3. units, release, flags
   report.units = Object.fromEntries(UNITS.map((u) => [u, sh('systemctl', ['is-active', u]) || 'unknown']));

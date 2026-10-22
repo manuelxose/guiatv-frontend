@@ -51,3 +51,21 @@ test('3D: outage visibility needs no webhook: the run summary and one self-closi
 test('actions are pinned to a version', () => {
   for (const f of workflows) for (const m of read(`.github/workflows/${f}`).matchAll(/uses:\s*(\S+)/g)) assert.match(m[1], /@v?\d/, `${f}: ${m[1]}`);
 });
+
+test('M01-B1: only the two manual deploy workflows may use the SSH secrets; neither can start implicitly', () => {
+  const deploys = ['deploy.yml', 'deploy-artifact.yml'];
+  for (const f of workflows) {
+    const yml = read(`.github/workflows/${f}`);
+    if (!deploys.includes(f)) assert.doesNotMatch(yml, /DEPLOY_SSH|appleboy\/(ssh|scp)-action/, `${f} must not reach production`);
+  }
+  for (const f of deploys) assert.doesNotMatch(read(`.github/workflows/${f}`), /^\s+(push|pull_request|pull_request_target|schedule|workflow_run|release|repository_dispatch|issue_comment):/m, `${f} must be dispatch-only`);
+});
+
+test('M01-B1: the proposed main ruleset blocks force-push/deletion and requires a PR plus the always-running check', () => {
+  const rules = JSON.parse(read('docs/ops/main-ruleset.json')).rules;
+  const types = rules.map((r) => r.type);
+  for (const t of ['deletion', 'non_fast_forward', 'pull_request', 'required_status_checks']) assert.ok(types.includes(t), t);
+  const contexts = rules.find((r) => r.type === 'required_status_checks').parameters.required_status_checks.map((c) => c.context);
+  assert.deepEqual(contexts, ['verify']);
+  assert.match(read('.github/workflows/performance.yml'), /on:\s*\n\s+pull_request:\s*\n\s+push:/, 'verify must run on every PR (no path filter)');
+});

@@ -8,6 +8,7 @@ import { config, validateConfig } from './config';
 import { createContainer } from '../config/container';
 import { logger } from '../shared/utils/logger';
 import { ChatSocketHub } from '../presentation/realtime/ChatSocketHub';
+import { createShutdown } from './shutdown';
 
 /**
  * Entry point for the standalone Express server.
@@ -100,32 +101,23 @@ async function startServer() {
       logger.info(`Server listening on http://localhost:${config.port}`);
     });
 
-    const shutdown = async (signal: string) => {
-      logger.warn(`${signal} received, shutting down HTTP server`);
+    const shutdown = createShutdown({
+      server,
+      closeRealtime: () => ChatSocketHub.getInstance().close(),
+      cleanup: () => container.cleanup(),
+      exit: (code) => {
+        if (code !== 0) logger.error('Forcefully exiting after timeout');
+        process.exit(code);
+      },
+      warn: (message, meta) => logger.warn(message, meta as Record<string, unknown>),
+    });
 
-      server.close(async () => {
-        logger.info('HTTP server closed');
-        try {
-          await ChatSocketHub.getInstance().close();
-        } catch (error) {
-          logger.warn('Error while closing chat socket hub', { error });
-        }
-        try {
-          await container.cleanup();
-        } catch (error) {
-          logger.warn('Error while cleaning up container during shutdown', { error });
-        }
-        process.exit(0);
+    for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+      process.on(signal, () => {
+        logger.warn(`${signal} received, shutting down HTTP server`);
+        void shutdown();
       });
-
-      setTimeout(() => {
-        logger.error('Forcefully exiting after timeout');
-        process.exit(1);
-      }, 10000);
-    };
-
-    process.on('SIGTERM', () => shutdown('SIGTERM'));
-    process.on('SIGINT', () => shutdown('SIGINT'));
+    }
   } catch (error) {
     logger.error('Fatal error while starting server', { error });
     process.exit(1);
