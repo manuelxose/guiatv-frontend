@@ -1,0 +1,15 @@
+path	status	time_s	bytes	x-robots	meta-robots	canonical	jsonld_blocks
+/	200	0.293761	1106398	index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1	"index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"	"https://guiaprogramaciontv.com/"	1
+/canales/la-1	200	0.685251	351373	index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1	"index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"	"https://guiaprogramaciontv.com/canales/la-1"	1
+/canales/la-2	200	0.852100	422456	index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1	"index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"	"https://guiaprogramaciontv.com/canales/la-2"	1
+/programacion-tv/en-directo	200	1.016766	451208	index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1	"index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"	"https://guiaprogramaciontv.com/programacion-tv/en-directo"	1
+/guias	200	0.900492	322325	index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1	"index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"	"https://guiaprogramaciontv.com/guias"	1
+/plataformas	200	0.914562	366787	index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1	"index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"	"https://guiaprogramaciontv.com/plataformas"	1
+/deportes/futbol	200	0.445588	214077	index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1	"index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"	"https://guiaprogramaciontv.com/deportes/futbol"	1
+/robots.txt	200	0.103084	470				0
+/sitemap.xml	200	0.122054	619				0
+/sitemap-static.xml	200	0.159087	3758				0
+/sitemap-channels.xml	200	0.184736	14936				0
+/sitemap-programs.xml	200	0.175259	156713				0
+/sitemap-blog.xml	200	0.130641	2747				0
+/v2/health	200	0.110394	527				0
