@@ -68,7 +68,7 @@ test('verified enrichment adds content to the legacy page and changes nothing SE
   assert.match(enriched.html, /<app-entity-broadcast-list/);
   assert.match(enriched.html, /href="\/canales\/amc"/);
   assert.match(enriched.html, /href="\/canales\/la_1"|href="\/canales\/la-1"/);
-  assert.match(enriched.html, /Título original: <\/span><i>A Cure for Wellness/);
+  assert.match(enriched.html, /Título original: <\/span><i[^>]*>A Cure for Wellness/);
   assert.match(enriched.html, /Texto editorial propio de la ficha\./);
   assert.match(enriched.html, /themoviedb\.org/);
   assert.match(enriched.html, /TCM/, 'a legacy airing the verification did not confirm is still listed');
