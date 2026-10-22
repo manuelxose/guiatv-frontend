@@ -109,7 +109,9 @@ Validated on scratch with the real enrichment, repository and read-model builder
 | Ops tests | 14 pass (new: issue-based alerting guarantees) |
 | Not run | deploy sandbox script test (script unchanged), production smoke, live rollback drill, Google Rich Results test, `graphify update` (the CLI is not installed here; the graph still reflects commit 16184a0c) |
 
-CI results for the PR: see the PR (filled in when the checks complete).
+CI on PR #48 (head `fix(content): Phase 3D review fixes`): `verify` pass (4 m 57 s: lint, backend tests on MongoDB 8, deploy sandbox, ops tests, frontend Karma, production build with budgets), `ssr-resilience` pass (2 m 1 s: SSR tests including the new enriched-page test, and the Playwright entity suite), `live-crawl` skipped by design. The local `icon-cache-deferred` flake did not occur in CI.
+
+**Not merged.** A merge of code changes runs `deploy.yml`, which compiles on the VPS (the path running during both outages). The approved off-host route (artifact deploy, Phase 3C bootstrap) needs root SSH to the production host, which the session's authorisation classifier has refused for this task, and the owner has not approved a deploy window. The PR is ready to merge; with every flag unset the deployed code is inert.
 
 ## 12. Production flags and database state
 
